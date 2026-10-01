@@ -11,6 +11,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -325,233 +326,6 @@ function unanimous(reply: ScriptedCoverage,): readonly ScriptedCoverage[] {
   },);
 }
 
-await describe({
-  name: decidePassInsertionAdmission.name,
-  children: [
-    it({
-      name: 'ADMITS a linked factual passage on destination evidence when roster says whole passage is absent, '
-        + 'even though unrelated verbosity makes whole page look long enough',
-      fn: async () => {
-        const admission = await runAdmission({
-          sourcePassage: 'The cat record is linked at [memo](https://example.test/cat-record).',
-          targetText: LONG_TARGET,
-          replies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([0,],);
-      },
-    },),
-    it({
-      name: 'ADMITS a link-free passage within whole-page shortfall when roster says it is absent',
-      fn: async () => {
-        const admission = await runAdmission({
-          sourcePassage: '猫的记录没有译文。',
-          targetText: 'Cat.',
-          replies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([0,],);
-      },
-    },),
-    it({
-      name: 'REFUSES an absent verdict with neither deterministic corroborator, preserving duplicate protection',
-      fn: async () => {
-        // Not admitted and not thrown: the round settles once and the refusal
-        // lives on the findings instead of pausing the entry.
-        const admission = await runAdmission({
-          sourcePassage: '猫的记录没有译文。',
-          targetText: LONG_TARGET,
-          replies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
-        expect(
-          admission.findings
-            .some(function namesUnresolved(finding,): boolean {
-              return finding.includes('insertion-unresolved-after-single-round',);
-            },),
-        ).toBe(true,);
-      },
-    },),
-    it({
-      name: 'RECORDS full coverage as carried elsewhere instead of insertion or interruption',
-      fn: async () => {
-        const admission = await runAdmission({
-          sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
-          targetText: LONG_TARGET,
-          replies: unanimous({ coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
-        expect(admission.carried,).toEqual([{
-          position: 0,
-          sliceIndex: 0,
-          sourceText: '[Cat](https://example.test/cat-record) sleeps.',
-          evidence: [
-            '## Cats\n\nThe cat sleeps in warm sunlight.',
-            '## Cats\n\nThe cat sleeps in warm sunlight.',
-            '## Cats\n\nThe cat sleeps in warm sunlight.',
-          ],
-        },],);
-      },
-    },),
-    it({
-      name: 'REFUSES partial coverage because inserting whole passage would duplicate carried content',
-      fn: async () => {
-        // An empty follow-up script doubles as the no-re-ask proof: any second
-        // coverage round would throw inside the scripted client.
-        const admission = await runAdmission({
-          sourcePassage: '[Cat](https://example.test/cat-record) sleeps and dreams.',
-          targetText: LONG_TARGET,
-          replies: unanimous({ coverage: 'partial', quote: 'The cat sleeps in warm sunlight.', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
-        expect(admission.carried,).toEqual([],);
-        expect(
-          admission.findings
-            .some(function namesUnresolved(finding,): boolean {
-              return finding.includes('insertion-unresolved-after-single-round (slice 0',);
-            },),
-        ).toBe(true,);
-      },
-    },),
-    it({
-      name: 'REFUSES a split roster in one round rather than treating one absence voice as proof',
-      fn: async () => {
-        // The scripted follow-up would prove absence, but no follow-up may be
-        // asked: the single round records the split and moves on.
-        // THE FULL QUOTE MUST ANCHOR: the bare sentence occurs twenty times in
-        // the target and locates nowhere (ambiguous-quote), which left this
-        // fixture split between an absence and an unanchorable claim, the shape
-        // class forty-eight now admits by the shortfall; the heading makes it
-        // unique, so the split here is between two anchored, opposite votes.
-        const admission = await runAdmission({
-          sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
-          targetText: LONG_TARGET,
-          replies: [
-            { coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },
-            { coverage: 'none', quote: '', },
-            COVERAGE_VOICE_LOST,
-          ],
-          followupReplies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
-        expect(
-          admission.findings
-            .some(function namesUnresolved(finding,): boolean {
-              return finding.includes('insertion-unresolved-after-single-round',);
-            },),
-        ).toBe(true,);
-      },
-    },),
-    it({
-      name: 'ADMITS THE OPENING HALF OF A CONTAINER BESIDE ITS ADMITTED CLOSING HALF when the roster split on '
-        + 'the summary alone (class fifty-seven, XingZ607: two disclosure blocks lost their opening halves, '
-        + 'the closing tags shipped alone, and the translate lane withdrew every slice)',
-      fn: async () => {
-        // Slice 0, the summary, splits one full against one partial against one
-        // absent, all anchored, so on its own it stays unresolved; slice 1, the
-        // block's end, is absent by every voice and the page is short of it.
-        const admission = await decidePassInsertionAdmission({
-          client: coverageClient({
-            replies: [
-              { coverage: 'full', quote: 'Cat.', },
-              { coverage: 'partial', quote: 'Cat.', },
-              { coverage: 'none', quote: '', },
-              ...unanimous({ coverage: 'none', quote: '', },),
-            ],
-          },),
-          prepared: preparedHalves({ targetText: 'Cat.', },),
-          modelIds: ROSTER,
-          overlap: 1,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect([...admission.positions,].toSorted(function ascending(
-          left,
-          right,
-        ): number {
-          return left - right;
-        },),).toEqual([0, 1,],);
-        expect(
-          admission.findings
-            .some(function namesTheHalf(finding,): boolean {
-              return finding.startsWith('insertion-container-half-admitted (slice 0 beside slice 1',);
-            },),
-        ).toBe(true,);
-      },
-    },),
-    it({
-      name: 'LEAVES BOTH HALVES UNFILLED when neither is admitted on its own evidence, so the rule widens '
-        + 'nothing without a corroborated half',
-      fn: async () => {
-        const admission = await decidePassInsertionAdmission({
-          client: coverageClient({
-            replies: [
-              { coverage: 'full', quote: 'Cat.', },
-              { coverage: 'partial', quote: 'Cat.', },
-              { coverage: 'none', quote: '', },
-              { coverage: 'full', quote: 'Cat.', },
-              { coverage: 'partial', quote: 'Cat.', },
-              { coverage: 'none', quote: '', },
-            ],
-          },),
-          prepared: preparedHalves({ targetText: 'Cat.', },),
-          modelIds: ROSTER,
-          overlap: 1,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect([...admission.positions,],).toEqual([],);
-        expect(
-          admission.findings
-            .some(function namesTheHalf(finding,): boolean {
-              return finding.startsWith('insertion-container-half-admitted',);
-            },),
-        ).toBe(false,);
-      },
-    },),
-    it({
-      name: 'THROWS provider-unavailable when every coverage voice is lost, never a quality refusal',
-      fn: async () => {
-        let thrown: unknown;
-        try {
-          await runAdmission({
-            sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
-            targetText: LONG_TARGET,
-            replies: [ COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, ],
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
-        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
-        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
-      },
-    },),
-    it({
-      name: 'TREATS trailing-slash destination spellings as same address rather than false local corroboration',
-      fn: async () => {
-        const admission = await runAdmission({
-          sourcePassage: '[Cat](https://example.test/cat-record/) sleeps.',
-          targetText: `${LONG_TARGET}\nhttps://example.test/cat-record`,
-          replies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([],);
-      },
-    },),
-    it({
-      name: 'READS a reference-style source destination as local corroboration',
-      fn: async () => {
-        const admission = await runAdmission({
-          sourcePassage: '[Cat memo][memo]\n\n[memo]: https://example.test/cat-record',
-          targetText: LONG_TARGET,
-          replies: unanimous({ coverage: 'none', quote: '', },),
-        },);
-        expect([...admission.positions,],).toEqual([0,],);
-      },
-    },),
-  ],
-},);
-
 /**
  Paragraph the archive never carried, holding a source link and a marker:
  the link admits it on destination evidence whatever the budget has left.
@@ -609,76 +383,6 @@ function preparedDefinition({ definition, }: { readonly definition: string; },):
     alignmentPairCount: 2,
   };
 }
-
-await describe({
-  name: 'a definition the budget refused beside the marker that references it (class fifty-nine, XingZ608)',
-  children: [
-    it({
-      name: 'ADMITS THE DEFINITION BESIDE THE ADMITTED MARKER when the whole-page budget has no room left '
-        + '(XingZ608: the budget ran out 80 code points before the definitions and the assembly withdrew '
-        + 'every marker carrier)',
-      fn: async () => {
-        // Both slices are absent by every voice; the page is long, so only the
-        // link admits slice 0, and slice 1 is admitted by slice 0's marker.
-        const admission = await decidePassInsertionAdmission({
-          client: coverageClient({
-            replies: [
-              ...unanimous({ coverage: 'none', quote: '', },),
-              ...unanimous({ coverage: 'none', quote: '', },),
-            ],
-          },),
-          prepared: preparedDefinition({ definition: '[^1]: 猫在夜里回家了。', },),
-          modelIds: ROSTER,
-          overlap: 1,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect([...admission.positions,].toSorted(function ascending(
-          left,
-          right,
-        ): number {
-          return left - right;
-        },),).toEqual([
-          0,
-          1,
-        ],);
-        expect(
-          admission.findings
-            .some(function namesDefinition(finding,): boolean {
-              return finding.startsWith('insertion-definition-admitted (slice 1 defines 1, referenced by slice 0',);
-            },),
-        ).toBe(true,);
-      },
-    },),
-    it({
-      name: 'LEAVES A DEFINITION NOTHING REFERENCES unresolved under the same budget',
-      fn: async () => {
-        const admission = await decidePassInsertionAdmission({
-          client: coverageClient({
-            replies: [
-              ...unanimous({ coverage: 'none', quote: '', },),
-              ...unanimous({ coverage: 'none', quote: '', },),
-            ],
-          },),
-          prepared: preparedDefinition({ definition: '[^2]: 猫不喜欢洗澡。', },),
-          modelIds: ROSTER,
-          overlap: 1,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect([...admission.positions,],).toEqual([0,],);
-        expect(
-          admission.findings
-            .some(function namesUnresolved(finding,): boolean {
-              return finding.startsWith('insertion-unresolved-after-single-round (slice 1',);
-            },),
-        ).toBe(true,);
-      },
-    },),
-  ],
-},);
 
 /**
  Source paragraph the archive translated, standing before the tail.
@@ -767,50 +471,6 @@ function preparedStoppedArchive({ tailLast, }: { readonly tailLast: boolean; },)
     alignmentPairCount: 1,
   };
 }
-
-await describe({
-  name: 'an archive that stops before the source does (owner, 2026-09-19; XingZ608)',
-  children: [
-    it({
-      name: 'ADMITS THE UNTRANSLATED TAIL on the pairing\'s evidence when the translated part runs long enough '
-        + 'to spend the whole-page budget',
-      fn: async () => {
-        const admission = await decidePassInsertionAdmission({
-          client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
-          prepared: preparedStoppedArchive({ tailLast: true, },),
-          modelIds: ROSTER,
-          overlap: 1,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect([...admission.positions,],).toEqual([1,],);
-        expect(
-          admission.findings
-            .some(function namesTail(finding,): boolean {
-              return finding.includes('insertion-corroboration (slice 1, tail admitted',);
-            },),
-        ).toBe(true,);
-      },
-    },),
-    it({
-      name: 'STILL REFUSES an interior passage on the same long page, since the tail is read off the pairing '
-        + 'and the interior keeps the whole-page budget',
-      fn: async () => {
-        const admission = await decidePassInsertionAdmission({
-          client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
-          prepared: preparedStoppedArchive({ tailLast: false, },),
-          modelIds: ROSTER,
-          overlap: 1,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect([...admission.positions,],).toEqual([],);
-      },
-    },),
-  ],
-},);
 
 /**
  Opening half of a disclosure block: the tag and its summary.
@@ -1053,76 +713,6 @@ async function deficitAdmission(
  */
 const DEFICIT_FINDING_OPENING = 'insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3';
 
-await describe({
-  name: `${decidePassInsertionAdmission.name} over a container the archive carries short (class sixty-one)`,
-  children: [
-    it({
-      name: 'ADMITS the absent paragraph on the deficit, records the finding, and logs it under the admission\'s '
-        + 'tag; the same paragraph inside a block the archive carries whole is neither admitted on a deficit nor '
-        + 'logged as one, the control',
-      fn: async () => {
-        /**
-         Admission over the short block.
-         */
-        const short = await deficitAdmission({ archiveShort: true, },);
-        /**
-         Admission over the whole block.
-         */
-        const whole = await deficitAdmission({ archiveShort: false, },);
-        /**
-         What one admission made of the paragraph.
-
-         @param run - admission and its lines
-
-         @returns Whether the paragraph was admitted, and whether the finding
-         was recorded and logged
-
-         @example
-         ```ts
-         const read = deficitReading({ run: short, },);
-         ```
-         */
-        function deficitReading(
-          { run, }: { readonly run: Awaited<ReturnType<typeof deficitAdmission>>; },
-        ): {
-          readonly admitted: boolean;
-          readonly recorded: boolean;
-          readonly logged: boolean;
-        } {
-          return {
-            admitted: run.admission
-              .positions
-              .has(2,),
-            recorded: run.admission
-              .findings
-              .some(function opensTheFinding(finding,): boolean {
-                return finding.startsWith(DEFICIT_FINDING_OPENING,);
-              },),
-            logged: run.messages.some(function logsTheFinding(message,): boolean {
-              return message.startsWith(`[${decidePassInsertionAdmission.name}] ${DEFICIT_FINDING_OPENING}`,);
-            },),
-          };
-        }
-        expect({
-          short: deficitReading({ run: short, },),
-          whole: deficitReading({ run: whole, },),
-        },).toEqual({
-          short: {
-            admitted: true,
-            recorded: true,
-            logged: true,
-          },
-          whole: {
-            admitted: false,
-            recorded: false,
-            logged: false,
-          },
-        },);
-      },
-    },),
-  ],
-},);
-
 /**
  Roster a hook hands back after a dry-out, none of it the fixture's own.
  */
@@ -1215,36 +805,458 @@ async function coverageSeatsAsked(
 }
 
 await describe({
-  name: `${decidePassInsertionAdmission.name} re-seated under a hold (ledger X12)`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ASKS A CANDIDATE OF THE ROSTER ITS HOOK RETURNS, so a roster re-read after a provider dry-out is '
-        + 'the one asked whether the archive carries the passage, rather than the roster read before it',
-      fn: async () => {
-        /**
-         Seats a caller with no hook asked.
-         */
-        const control = await coverageSeatsAsked({},);
-        /**
-         Seats asked when the hook re-seats the candidate elsewhere.
-         */
-        const moved = await coverageSeatsAsked({
-          beforeCandidate: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_ROSTER, }),
-        },);
-        expect({
-          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
-            return ROSTER.includes(seat,);
-          },),
-          movedAskedAny: moved.length > 0,
-          outsideReseated: moved.filter(function outside(seat,): boolean {
-            return !RESEATED_ROSTER.includes(seat,);
-          },),
-        },).toEqual({
-          controlOnRoster: true,
-          movedAskedAny: true,
-          outsideReseated: [],
-        },);
-      },
+    describe({
+      name: decidePassInsertionAdmission.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ADMITS a linked factual passage on destination evidence when roster says whole passage is absent, '
+            + 'even though unrelated verbosity makes whole page look long enough',
+          fn: async () => {
+            const admission = await runAdmission({
+              sourcePassage: 'The cat record is linked at [memo](https://example.test/cat-record).',
+              targetText: LONG_TARGET,
+              replies: unanimous({ coverage: 'none', quote: '', },),
+            },);
+            expect([...admission.positions,],).toEqual([0,],);
+          },
+        },),
+        it({
+          name: 'ADMITS a link-free passage within whole-page shortfall when roster says it is absent',
+          fn: async () => {
+            const admission = await runAdmission({
+              sourcePassage: '猫的记录没有译文。',
+              targetText: 'Cat.',
+              replies: unanimous({ coverage: 'none', quote: '', },),
+            },);
+            expect([...admission.positions,],).toEqual([0,],);
+          },
+        },),
+        it({
+          name: 'REFUSES an absent verdict with neither deterministic corroborator, preserving duplicate protection',
+          fn: async () => {
+            // Not admitted and not thrown: the round settles once and the refusal
+            // lives on the findings instead of pausing the entry.
+            const admission = await runAdmission({
+              sourcePassage: '猫的记录没有译文。',
+              targetText: LONG_TARGET,
+              replies: unanimous({ coverage: 'none', quote: '', },),
+            },);
+            expect([...admission.positions,],).toEqual([],);
+            expect(
+              admission.findings
+                .some(function namesUnresolved(finding,): boolean {
+                  return finding.includes('insertion-unresolved-after-single-round',);
+                },),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'RECORDS full coverage as carried elsewhere instead of insertion or interruption',
+          fn: async () => {
+            const admission = await runAdmission({
+              sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
+              targetText: LONG_TARGET,
+              replies: unanimous({ coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },),
+            },);
+            expect([...admission.positions,],).toEqual([],);
+            expect(admission.carried,).toEqual([{
+              position: 0,
+              sliceIndex: 0,
+              sourceText: '[Cat](https://example.test/cat-record) sleeps.',
+              evidence: [
+                '## Cats\n\nThe cat sleeps in warm sunlight.',
+                '## Cats\n\nThe cat sleeps in warm sunlight.',
+                '## Cats\n\nThe cat sleeps in warm sunlight.',
+              ],
+            },],);
+          },
+        },),
+        it({
+          name: 'REFUSES partial coverage because inserting whole passage would duplicate carried content',
+          fn: async () => {
+            // An empty follow-up script doubles as the no-re-ask proof: any second
+            // coverage round would throw inside the scripted client.
+            const admission = await runAdmission({
+              sourcePassage: '[Cat](https://example.test/cat-record) sleeps and dreams.',
+              targetText: LONG_TARGET,
+              replies: unanimous({ coverage: 'partial', quote: 'The cat sleeps in warm sunlight.', },),
+            },);
+            expect([...admission.positions,],).toEqual([],);
+            expect(admission.carried,).toEqual([],);
+            expect(
+              admission.findings
+                .some(function namesUnresolved(finding,): boolean {
+                  return finding.includes('insertion-unresolved-after-single-round (slice 0',);
+                },),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'REFUSES a split roster in one round rather than treating one absence voice as proof',
+          fn: async () => {
+            // The scripted follow-up would prove absence, but no follow-up may be
+            // asked: the single round records the split and moves on.
+            // THE FULL QUOTE MUST ANCHOR: the bare sentence occurs twenty times in
+            // the target and locates nowhere (ambiguous-quote), which left this
+            // fixture split between an absence and an unanchorable claim, the shape
+            // class forty-eight now admits by the shortfall; the heading makes it
+            // unique, so the split here is between two anchored, opposite votes.
+            const admission = await runAdmission({
+              sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
+              targetText: LONG_TARGET,
+              replies: [
+                { coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },
+                { coverage: 'none', quote: '', },
+                COVERAGE_VOICE_LOST,
+              ],
+              followupReplies: unanimous({ coverage: 'none', quote: '', },),
+            },);
+            expect([...admission.positions,],).toEqual([],);
+            expect(
+              admission.findings
+                .some(function namesUnresolved(finding,): boolean {
+                  return finding.includes('insertion-unresolved-after-single-round',);
+                },),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'ADMITS THE OPENING HALF OF A CONTAINER BESIDE ITS ADMITTED CLOSING HALF when the roster split on '
+            + 'the summary alone (class fifty-seven, XingZ607: two disclosure blocks lost their opening halves, '
+            + 'the closing tags shipped alone, and the translate lane withdrew every slice)',
+          fn: async () => {
+            // Slice 0, the summary, splits one full against one partial against one
+            // absent, all anchored, so on its own it stays unresolved; slice 1, the
+            // block's end, is absent by every voice and the page is short of it.
+            const admission = await decidePassInsertionAdmission({
+              client: coverageClient({
+                replies: [
+                  { coverage: 'full', quote: 'Cat.', },
+                  { coverage: 'partial', quote: 'Cat.', },
+                  { coverage: 'none', quote: '', },
+                  ...unanimous({ coverage: 'none', quote: '', },),
+                ],
+              },),
+              prepared: preparedHalves({ targetText: 'Cat.', },),
+              modelIds: ROSTER,
+              overlap: 1,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect([...admission.positions,].toSorted(function ascending(
+              left,
+              right,
+            ): number {
+              return left - right;
+            },),).toEqual([0, 1,],);
+            expect(
+              admission.findings
+                .some(function namesTheHalf(finding,): boolean {
+                  return finding.startsWith('insertion-container-half-admitted (slice 0 beside slice 1',);
+                },),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'LEAVES BOTH HALVES UNFILLED when neither is admitted on its own evidence, so the rule widens '
+            + 'nothing without a corroborated half',
+          fn: async () => {
+            const admission = await decidePassInsertionAdmission({
+              client: coverageClient({
+                replies: [
+                  { coverage: 'full', quote: 'Cat.', },
+                  { coverage: 'partial', quote: 'Cat.', },
+                  { coverage: 'none', quote: '', },
+                  { coverage: 'full', quote: 'Cat.', },
+                  { coverage: 'partial', quote: 'Cat.', },
+                  { coverage: 'none', quote: '', },
+                ],
+              },),
+              prepared: preparedHalves({ targetText: 'Cat.', },),
+              modelIds: ROSTER,
+              overlap: 1,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect([...admission.positions,],).toEqual([],);
+            expect(
+              admission.findings
+                .some(function namesTheHalf(finding,): boolean {
+                  return finding.startsWith('insertion-container-half-admitted',);
+                },),
+            ).toBe(false,);
+          },
+        },),
+        it({
+          name: 'THROWS provider-unavailable when every coverage voice is lost, never a quality refusal',
+          fn: async () => {
+            let thrown: unknown;
+            try {
+              await runAdmission({
+                sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
+                targetText: LONG_TARGET,
+                replies: [ COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, COVERAGE_VOICE_LOST, ],
+              },);
+            }
+            catch (error) {
+              thrown = error;
+            }
+            expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
+            expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
+          },
+        },),
+        it({
+          name: 'TREATS trailing-slash destination spellings as same address rather than false local corroboration',
+          fn: async () => {
+            const admission = await runAdmission({
+              sourcePassage: '[Cat](https://example.test/cat-record/) sleeps.',
+              targetText: `${LONG_TARGET}\nhttps://example.test/cat-record`,
+              replies: unanimous({ coverage: 'none', quote: '', },),
+            },);
+            expect([...admission.positions,],).toEqual([],);
+          },
+        },),
+        it({
+          name: 'READS a reference-style source destination as local corroboration',
+          fn: async () => {
+            const admission = await runAdmission({
+              sourcePassage: '[Cat memo][memo]\n\n[memo]: https://example.test/cat-record',
+              targetText: LONG_TARGET,
+              replies: unanimous({ coverage: 'none', quote: '', },),
+            },);
+            expect([...admission.positions,],).toEqual([0,],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'a definition the budget refused beside the marker that references it (class fifty-nine, XingZ608)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ADMITS THE DEFINITION BESIDE THE ADMITTED MARKER when the whole-page budget has no room left '
+            + '(XingZ608: the budget ran out 80 code points before the definitions and the assembly withdrew '
+            + 'every marker carrier)',
+          fn: async () => {
+            // Both slices are absent by every voice; the page is long, so only the
+            // link admits slice 0, and slice 1 is admitted by slice 0's marker.
+            const admission = await decidePassInsertionAdmission({
+              client: coverageClient({
+                replies: [
+                  ...unanimous({ coverage: 'none', quote: '', },),
+                  ...unanimous({ coverage: 'none', quote: '', },),
+                ],
+              },),
+              prepared: preparedDefinition({ definition: '[^1]: 猫在夜里回家了。', },),
+              modelIds: ROSTER,
+              overlap: 1,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect([...admission.positions,].toSorted(function ascending(
+              left,
+              right,
+            ): number {
+              return left - right;
+            },),).toEqual([
+              0,
+              1,
+            ],);
+            expect(
+              admission.findings
+                .some(function namesDefinition(finding,): boolean {
+                  return finding.startsWith('insertion-definition-admitted (slice 1 defines 1, referenced by slice 0',);
+                },),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'LEAVES A DEFINITION NOTHING REFERENCES unresolved under the same budget',
+          fn: async () => {
+            const admission = await decidePassInsertionAdmission({
+              client: coverageClient({
+                replies: [
+                  ...unanimous({ coverage: 'none', quote: '', },),
+                  ...unanimous({ coverage: 'none', quote: '', },),
+                ],
+              },),
+              prepared: preparedDefinition({ definition: '[^2]: 猫不喜欢洗澡。', },),
+              modelIds: ROSTER,
+              overlap: 1,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect([...admission.positions,],).toEqual([0,],);
+            expect(
+              admission.findings
+                .some(function namesUnresolved(finding,): boolean {
+                  return finding.startsWith('insertion-unresolved-after-single-round (slice 1',);
+                },),
+            ).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'an archive that stops before the source does (owner, 2026-09-19; XingZ608)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ADMITS THE UNTRANSLATED TAIL on the pairing\'s evidence when the translated part runs long enough '
+            + 'to spend the whole-page budget',
+          fn: async () => {
+            const admission = await decidePassInsertionAdmission({
+              client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+              prepared: preparedStoppedArchive({ tailLast: true, },),
+              modelIds: ROSTER,
+              overlap: 1,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect([...admission.positions,],).toEqual([1,],);
+            expect(
+              admission.findings
+                .some(function namesTail(finding,): boolean {
+                  return finding.includes('insertion-corroboration (slice 1, tail admitted',);
+                },),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'STILL REFUSES an interior passage on the same long page, since the tail is read off the pairing '
+            + 'and the interior keeps the whole-page budget',
+          fn: async () => {
+            const admission = await decidePassInsertionAdmission({
+              client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+              prepared: preparedStoppedArchive({ tailLast: false, },),
+              modelIds: ROSTER,
+              overlap: 1,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect([...admission.positions,],).toEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${decidePassInsertionAdmission.name} over a container the archive carries short (class sixty-one)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ADMITS the absent paragraph on the deficit, records the finding, and logs it under the admission\'s '
+            + 'tag; the same paragraph inside a block the archive carries whole is neither admitted on a deficit nor '
+            + 'logged as one, the control',
+          fn: async () => {
+            /**
+             Admission over the short block.
+             */
+            const short = await deficitAdmission({ archiveShort: true, },);
+            /**
+             Admission over the whole block.
+             */
+            const whole = await deficitAdmission({ archiveShort: false, },);
+            /**
+             What one admission made of the paragraph.
+
+             @param run - admission and its lines
+
+             @returns Whether the paragraph was admitted, and whether the finding
+             was recorded and logged
+
+             @example
+             ```ts
+             const read = deficitReading({ run: short, },);
+             ```
+             */
+            function deficitReading(
+              { run, }: { readonly run: Awaited<ReturnType<typeof deficitAdmission>>; },
+            ): {
+              readonly admitted: boolean;
+              readonly recorded: boolean;
+              readonly logged: boolean;
+            } {
+              return {
+                admitted: run.admission
+                  .positions
+                  .has(2,),
+                recorded: run.admission
+                  .findings
+                  .some(function opensTheFinding(finding,): boolean {
+                    return finding.startsWith(DEFICIT_FINDING_OPENING,);
+                  },),
+                logged: run.messages.some(function logsTheFinding(message,): boolean {
+                  return message.startsWith(`[${decidePassInsertionAdmission.name}] ${DEFICIT_FINDING_OPENING}`,);
+                },),
+              };
+            }
+            expect({
+              short: deficitReading({ run: short, },),
+              whole: deficitReading({ run: whole, },),
+            },).toEqual({
+              short: {
+                admitted: true,
+                recorded: true,
+                logged: true,
+              },
+              whole: {
+                admitted: false,
+                recorded: false,
+                logged: false,
+              },
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${decidePassInsertionAdmission.name} re-seated under a hold (ledger X12)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS A CANDIDATE OF THE ROSTER ITS HOOK RETURNS, so a roster re-read after a provider dry-out is '
+            + 'the one asked whether the archive carries the passage, rather than the roster read before it',
+          fn: async () => {
+            /**
+             Seats a caller with no hook asked.
+             */
+            const control = await coverageSeatsAsked({},);
+            /**
+             Seats asked when the hook re-seats the candidate elsewhere.
+             */
+            const moved = await coverageSeatsAsked({
+              beforeCandidate: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_ROSTER, }),
+            },);
+            expect({
+              controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
+                return ROSTER.includes(seat,);
+              },),
+              movedAskedAny: moved.length > 0,
+              outsideReseated: moved.filter(function outside(seat,): boolean {
+                return !RESEATED_ROSTER.includes(seat,);
+              },),
+            },).toEqual({
+              controlOnRoster: true,
+              movedAskedAny: true,
+              outsideReseated: [],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

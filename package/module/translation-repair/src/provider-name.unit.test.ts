@@ -6,6 +6,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -19,80 +20,90 @@ import {
 } from '../dist/final/node/index.mjs';
 
 await describe({
-  name: 'PROVIDER_ORDER',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SPENDS ON SYNTHETIC, THEN BEDROCK, THEN HYPER, THEN OPENROUTER, which is the owner\'s '
-        + 'order of 2026-09-03 with the 2026-09-07 insertion: the subscription first, the expiring '
-        + 'credits that will never be topped up next, the balance that will not be topped up after, '
-        + 'and the per-token provider last',
-      fn: async () => {
-        expect(PROVIDER_ORDER,).toEqual([
-          'synthetic',
-          'bedrock',
-          'hyper',
-          'openrouter',
-        ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: providerRecord.name,
-  children: [
-    it({
-      name: 'FILLS every provider from one function, in order, so a shape keyed by provider cannot '
-        + 'be built with one missing',
-      fn: async () => {
-        /**
-         Positions each provider was asked in.
-         */
-        const asked: string[] = [];
-        expect(providerRecord({
-          of: function position(provider,): number {
-            asked.push(provider,);
-            return asked.length;
+    describe({
+      name: 'PROVIDER_ORDER',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SPENDS ON SYNTHETIC, THEN BEDROCK, THEN HYPER, THEN OPENROUTER, which is the owner\'s '
+            + 'order of 2026-09-03 with the 2026-09-07 insertion: the subscription first, the expiring '
+            + 'credits that will never be topped up next, the balance that will not be topped up after, '
+            + 'and the per-token provider last',
+          fn: async () => {
+            expect(PROVIDER_ORDER,).toEqual([
+              'synthetic',
+              'bedrock',
+              'hyper',
+              'openrouter',
+            ],);
           },
-        },),).toEqual({
-          synthetic: 1,
-          bedrock: 2,
-          hyper: 3,
-          openrouter: 4,
-        },);
-        expect(asked,).toEqual(PROVIDER_ORDER,);
-      },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: otherProviders.name,
-  children: [
-    it({
-      name: 'NAMES the others in spending order, whichever one is left out',
-      fn: async () => {
-        expect(otherProviders({ provider: 'hyper', },),).toEqual(['synthetic', 'bedrock', 'openrouter',],);
-        expect(otherProviders({ provider: 'synthetic', },),).toEqual(['bedrock', 'hyper', 'openrouter',],);
-        expect(otherProviders({ provider: 'bedrock', },),).toEqual(['synthetic', 'hyper', 'openrouter',],);
-        expect(otherProviders({ provider: 'openrouter', },),).toEqual(['synthetic', 'bedrock', 'hyper',],);
-      },
+    describe({
+      name: providerRecord.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FILLS every provider from one function, in order, so a shape keyed by provider cannot '
+            + 'be built with one missing',
+          fn: async () => {
+            /**
+             Positions each provider was asked in.
+             */
+            const asked: string[] = [];
+            expect(providerRecord({
+              of: function position(provider,): number {
+                asked.push(provider,);
+                return asked.length;
+              },
+            },),).toEqual({
+              synthetic: 1,
+              bedrock: 2,
+              hyper: 3,
+              openrouter: 4,
+            },);
+            expect(asked,).toEqual(PROVIDER_ORDER,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: isProviderName.name,
-  children: [
-    it({
-      name: 'ADMITS the four names and nothing else, since a flag value reaches this unchecked',
-      fn: async () => {
-        expect(PROVIDER_ORDER.every(function admitted(provider,): boolean {
-          return isProviderName(provider,);
-        },),).toBe(true,);
-        expect(isProviderName('anthropic',),).toBe(false,);
-        expect(isProviderName('',),).toBe(false,);
-      },
+    describe({
+      name: otherProviders.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the others in spending order, whichever one is left out',
+          fn: async () => {
+            expect(otherProviders({ provider: 'hyper', },),).toEqual(['synthetic', 'bedrock', 'openrouter',],);
+            expect(otherProviders({ provider: 'synthetic', },),).toEqual(['bedrock', 'hyper', 'openrouter',],);
+            expect(otherProviders({ provider: 'bedrock', },),).toEqual(['synthetic', 'hyper', 'openrouter',],);
+            expect(otherProviders({ provider: 'openrouter', },),).toEqual(['synthetic', 'bedrock', 'hyper',],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: isProviderName.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ADMITS the four names and nothing else, since a flag value reaches this unchecked',
+          fn: async () => {
+            expect(PROVIDER_ORDER.every(function admitted(provider,): boolean {
+              return isProviderName(provider,);
+            },),).toBe(true,);
+            expect(isProviderName('anthropic',),).toBe(false,);
+            expect(isProviderName('',),).toBe(false,);
+          },
+        },),
+      ],
     },),
   ],
 },);

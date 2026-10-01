@@ -11,6 +11,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -58,136 +59,144 @@ const BEDROCK_ALONE: BudgetView = {
 };
 
 await describe({
-  name: unreachableWritingBenches.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'NAMES NOTHING when every provider is wet, and NOTHING for a phase that leans on no writing '
-        + 'bench however dry the providers, since judges short of quorum are the thirteenth class and not '
-        + 'this one',
-      fn: async () => {
-        expect(unreachableWritingBenches({
-          benches: benchesOf({ seats: judgeSeatsFor({ dry: ALL_WET, },), },),
-          names: phaseBenches({ phase: 'lanes', },),
-          dry: ALL_WET,
-        },),).toEqual([],);
-        expect(unreachableWritingBenches({
-          benches: benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },),
-          names: phaseBenches({ phase: 'consolidation', },),
-          dry: BEDROCK_ALONE,
-        },),).toEqual([],);
-        expect(unreachableWritingBenches({
-          benches: benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },),
-          names: phaseBenches({ phase: 'pictures', },),
-          dry: BEDROCK_ALONE,
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'NAMES each writing bench below the pair a slate needs, with the reachable count against the '
-        + 'floor, in the order the phase lists them: the eighth hakureico pass at the lanes, no editor, '
-        + 'no refiner and one translator reachable on the roster of that day; since google.gemma-4-e2b '
-        + 'took the translator seat (2026-09-08) Bedrock alone reaches the pair and the lanes name only '
-        + 'the editors and refiners',
-      fn: async () => {
-        const benches = benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },);
-        /**
-         Translators Bedrock serves under that view: the pair the floor asks for.
-         */
-        const translatorsReachable = reachableSeats({
-          seats: RUN_TRANSLATORS,
-          dry: BEDROCK_ALONE,
-        },);
-        expect(translatorsReachable,).toEqual([
-          SEAT_HYPER_TEXT_BEDROCK,
-          SEAT_BEDROCK_ONLY_TEXT,
-        ],);
-        expect(reachableSeats({
-          seats: RUN_MODELS.editorModelIds,
-          dry: BEDROCK_ALONE,
-        },),).toEqual([],);
-        expect(unreachableWritingBenches({
-          benches,
-          names: phaseBenches({ phase: 'lanes', },),
-          dry: BEDROCK_ALONE,
-        },),).toEqual([
-          `editors 0 of ${String(RUN_MODELS.editorModelIds.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
-          `refiners 0 of ${String(RUN_MODELS.refinerModelIds.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
-        ],);
-        expect(unreachableWritingBenches({
-          benches,
-          names: phaseBenches({ phase: 'translate lane', },),
-          dry: BEDROCK_ALONE,
-        },),).toEqual([],);
-        /**
-         The eighth pass's translators bench, the roster of that day: one Bedrock seat.
-         */
-        const thatDay = RUN_TRANSLATORS.filter(function seatedBefore(modelId,): boolean {
-          return modelId !== SEAT_BEDROCK_ONLY_TEXT;
-        },);
-        expect(unreachableWritingBenches({
-          benches: {
-            ...benches,
-            translators: thatDay,
+    describe({
+      name: unreachableWritingBenches.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES NOTHING when every provider is wet, and NOTHING for a phase that leans on no writing '
+            + 'bench however dry the providers, since judges short of quorum are the thirteenth class and not '
+            + 'this one',
+          fn: async () => {
+            expect(unreachableWritingBenches({
+              benches: benchesOf({ seats: judgeSeatsFor({ dry: ALL_WET, },), },),
+              names: phaseBenches({ phase: 'lanes', },),
+              dry: ALL_WET,
+            },),).toEqual([],);
+            expect(unreachableWritingBenches({
+              benches: benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },),
+              names: phaseBenches({ phase: 'consolidation', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([],);
+            expect(unreachableWritingBenches({
+              benches: benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },),
+              names: phaseBenches({ phase: 'pictures', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([],);
           },
-          names: phaseBenches({ phase: 'translate lane', },),
-          dry: BEDROCK_ALONE,
-        },),).toEqual([
-          `translators 1 of ${String(thatDay.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
-        ],);
-      },
-    },),
-    it({
-      name: 'HOLDS THE FLOOR AT A PAIR on exactly the benches that write, so a judge bench never trips it '
-        + 'and a bench of two reachable writers passes',
-      fn: async () => {
-        expect(WRITING_BENCH_FLOOR,).toBe(2,);
-        expect([...WRITING_BENCHES,].toSorted(),).toEqual([
-          'editors',
-          'refiners',
-          'translators',
-        ],);
-        const benches = benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },);
-        /**
-         The translators bench with two Bedrock-served seats.
-         */
-        const pair = [
-          SEAT_HYPER_TEXT_BEDROCK,
-          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-        ] as const;
-        expect(unreachableWritingBenches({
-          benches: {
-            ...benches,
-            translators: pair,
+        },),
+        it({
+          name: 'NAMES each writing bench below the pair a slate needs, with the reachable count against the '
+            + 'floor, in the order the phase lists them: the eighth hakureico pass at the lanes, no editor, '
+            + 'no refiner and one translator reachable on the roster of that day; since google.gemma-4-e2b '
+            + 'took the translator seat (2026-09-08) Bedrock alone reaches the pair and the lanes name only '
+            + 'the editors and refiners',
+          fn: async () => {
+            const benches = benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },);
+            /**
+             Translators Bedrock serves under that view: the pair the floor asks for.
+             */
+            const translatorsReachable = reachableSeats({
+              seats: RUN_TRANSLATORS,
+              dry: BEDROCK_ALONE,
+            },);
+            expect(translatorsReachable,).toEqual([
+              SEAT_HYPER_TEXT_BEDROCK,
+              SEAT_BEDROCK_ONLY_TEXT,
+            ],);
+            expect(reachableSeats({
+              seats: RUN_MODELS.editorModelIds,
+              dry: BEDROCK_ALONE,
+            },),).toEqual([],);
+            expect(unreachableWritingBenches({
+              benches,
+              names: phaseBenches({ phase: 'lanes', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([
+              `editors 0 of ${String(RUN_MODELS.editorModelIds.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
+              `refiners 0 of ${String(RUN_MODELS.refinerModelIds.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
+            ],);
+            expect(unreachableWritingBenches({
+              benches,
+              names: phaseBenches({ phase: 'translate lane', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([],);
+            /**
+             The eighth pass's translators bench, the roster of that day: one Bedrock seat.
+             */
+            const thatDay = RUN_TRANSLATORS.filter(function seatedBefore(modelId,): boolean {
+              return modelId !== SEAT_BEDROCK_ONLY_TEXT;
+            },);
+            expect(unreachableWritingBenches({
+              benches: {
+                ...benches,
+                translators: thatDay,
+              },
+              names: phaseBenches({ phase: 'translate lane', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([
+              `translators 1 of ${String(thatDay.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
+            ],);
           },
-          names: ['translators',],
-          dry: BEDROCK_ALONE,
-        },),).toEqual([],);
-      },
+        },),
+        it({
+          name: 'HOLDS THE FLOOR AT A PAIR on exactly the benches that write, so a judge bench never trips it '
+            + 'and a bench of two reachable writers passes',
+          fn: async () => {
+            expect(WRITING_BENCH_FLOOR,).toBe(2,);
+            expect([...WRITING_BENCHES,].toSorted(),).toEqual([
+              'editors',
+              'refiners',
+              'translators',
+            ],);
+            const benches = benchesOf({ seats: judgeSeatsFor({ dry: BEDROCK_ALONE, },), },);
+            /**
+             The translators bench with two Bedrock-served seats.
+             */
+            const pair = [
+              SEAT_HYPER_TEXT_BEDROCK,
+              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            ] as const;
+            expect(unreachableWritingBenches({
+              benches: {
+                ...benches,
+                translators: pair,
+              },
+              names: ['translators',],
+              dry: BEDROCK_ALONE,
+            },),).toEqual([],);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: WritingBenchUnreachableError.name,
-  children: [
-    it({
-      name: 'NAMES the phase and every clause and nothing from a provider, so the tally can print it',
-      fn: async () => {
-        const error = new WritingBenchUnreachableError({
-          phase: 'lanes',
-          clauses: [
-            'editors 0 of 3 reachable, floor 2',
-            'translators 1 of 7 reachable, floor 2',
-          ],
-        },);
-        expect(error.name,).toBe('WritingBenchUnreachableError',);
-        expect(error.messageNamesOnly,).toBe(true,);
-        expect(error.clauses.length,).toBe(2,);
-        expect(error.message,).toBe(
-          'writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; translators 1 of 7 reachable, '
-            + 'floor 2; no provider has named its return, so the entry stops for a pass that has the bench',
-        );
-      },
+    describe({
+      name: WritingBenchUnreachableError.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the phase and every clause and nothing from a provider, so the tally can print it',
+          fn: async () => {
+            const error = new WritingBenchUnreachableError({
+              phase: 'lanes',
+              clauses: [
+                'editors 0 of 3 reachable, floor 2',
+                'translators 1 of 7 reachable, floor 2',
+              ],
+            },);
+            expect(error.name,).toBe('WritingBenchUnreachableError',);
+            expect(error.messageNamesOnly,).toBe(true,);
+            expect(error.clauses.length,).toBe(2,);
+            expect(error.message,).toBe(
+              'writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; translators 1 of 7 reachable, '
+                + 'floor 2; no provider has named its return, so the entry stops for a pass that has the bench',
+            );
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -28,6 +28,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -327,463 +328,472 @@ function translateEvidence(
 }
 
 await describe({
-  name: assertIndexSetsMatchLedger.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ACCEPTS a lane whose two lists are exactly what its ledger rows '
-        + 'produce, which is the control every refusal case here is a '
-        + 'one-field departure from',
-      fn: async () => {
-        expect(function acceptAgreeing() {
-          assertIndexSetsMatchLedger({
-            evidence: repairEvidence(),
-            ledger: mixedLedger(),
-            path: LANE_PATH,
-          },);
-        },).not.toThrow();
-      },
-    },),
+    describe({
+      name: assertIndexSetsMatchLedger.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a lane whose two lists are exactly what its ledger rows '
+            + 'produce, which is the control every refusal case here is a '
+            + 'one-field departure from',
+          fn: async () => {
+            expect(function acceptAgreeing() {
+              assertIndexSetsMatchLedger({
+                evidence: repairEvidence(),
+                ledger: mixedLedger(),
+                path: LANE_PATH,
+              },);
+            },).not.toThrow();
+          },
+        },),
 
-    it({
-      name: 'REFUSES a changed list shorter than the shipped rows, naming how '
-        + 'many the ledger holds rather than how many were recorded',
-      fn: async () => {
-        const refusalOfShortList = caught(function shortList() {
-          assertIndexSetsMatchLedger({
-            evidence: repairEvidence({ changedSliceIndices: [0,], },),
-            ledger: mixedLedger(),
-            path: LANE_PATH,
-          },);
-        },);
+        it({
+          name: 'REFUSES a changed list shorter than the shipped rows, naming how '
+            + 'many the ledger holds rather than how many were recorded',
+          fn: async () => {
+            const refusalOfShortList = caught(function shortList() {
+              assertIndexSetsMatchLedger({
+                evidence: repairEvidence({ changedSliceIndices: [0,], },),
+                ledger: mixedLedger(),
+                path: LANE_PATH,
+              },);
+            },);
 
-        expect(refusalOfShortList,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfShortList as Error).message,)
-          .toContain('lanes.repair.result.changedSliceIndices',);
-        expect((refusalOfShortList as Error).message,).toContain('2 slices',);
-      },
-    },),
+            expect(refusalOfShortList,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfShortList as Error).message,)
+              .toContain('lanes.repair.result.changedSliceIndices',);
+            expect((refusalOfShortList as Error).message,).toContain('2 slices',);
+          },
+        },),
 
-    it({
-      name: 'REFUSES a changed list holding the right indices in the wrong '
-        + 'order, which is the case a membership check would have called '
-        + 'agreement. Both contracts say document order, so a lane that '
-        + 'recorded them another way derived them another way',
-      fn: async () => {
-        const refusalOfReordered = caught(function reordered() {
-          assertIndexSetsMatchLedger({
-            evidence: repairEvidence({
-              changedSliceIndices: [
-                3,
-                0,
-              ],
-            },),
-            ledger: mixedLedger(),
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfReordered,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfReordered as Error).message,)
-          .toContain('lanes.repair.result.changedSliceIndices[0]',);
-        expect((refusalOfReordered as Error).message,).toContain('slice 0',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a changed list naming one slice twice, which a set would '
-        + 'have collapsed into a list of the right length',
-      fn: async () => {
-        const refusalOfRepeat = caught(function repeat() {
-          assertIndexSetsMatchLedger({
-            evidence: repairEvidence({
-              changedSliceIndices: [
-                0,
-                0,
-              ],
-            },),
-            ledger: mixedLedger(),
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfRepeat,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfRepeat as Error).message,)
-          .toContain('lanes.repair.result.changedSliceIndices[1]',);
-        expect((refusalOfRepeat as Error).message,).toContain('slice 3',);
-      },
-    },),
-
-    it({
-      name: 'ACCEPTS a withdrawn list that leaves out a whole-document '
-        + 'refusal, since the withdrawn set names slices the assembly guard '
-        + 'took back and a blocked run never assembled anything',
-      fn: async () => {
-        expect(function acceptOmittedRefusal() {
-          assertIndexSetsMatchLedger({
-            evidence: repairEvidence({
-              status: 'blocked-non-translation',
-              sliceCount: 2,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [],
-            },),
-            ledger: [
-              row({
-                sliceIndex: 0,
-                delivery: {
-                  kind: 'replacement-withdrawn',
-                  reason: 'blocked-non-translation',
-                },
-              },),
-              row({
-                sliceIndex: 1,
-                delivery: { kind: 'incumbent-retained', },
-              },),
-            ],
-            path: LANE_PATH,
-          },);
-        },).not.toThrow();
-      },
-    },),
-
-    it({
-      name: 'REFUSES a withdrawn list that counts a whole-document refusal as '
-        + 'a guard withdrawal, which would make every blocked run look like a '
-        + 'document the guard tore apart',
-      fn: async () => {
-        const refusalOfCountedRefusal = caught(function countedRefusal() {
-          assertIndexSetsMatchLedger({
-            evidence: repairEvidence({
-              status: 'blocked-non-translation',
-              sliceCount: 1,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [0,],
-            },),
-            ledger: [
-              row({
-                sliceIndex: 0,
-                delivery: {
-                  kind: 'replacement-withdrawn',
-                  reason: 'blocked-non-translation',
-                },
-              },),
-            ],
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfCountedRefusal,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfCountedRefusal as Error).message,)
-          .toContain('lanes.repair.result.withdrawnSliceIndices',);
-        expect((refusalOfCountedRefusal as Error).message,)
-          .toContain('0 slices',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a slice count that disagrees with how many rows the '
-        + 'ledger holds, which is the third statement of the same fact and '
-        + 'the one every index in the lists is out of',
-      fn: async () => {
-        const refusalOfWrongCount = caught(function wrongCount() {
-          assertIndexSetsMatchLedger({
-            evidence: repairEvidence({ sliceCount: 5, },),
-            ledger: mixedLedger(),
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfWrongCount,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfWrongCount as Error).message,)
-          .toContain('lanes.repair.result.sliceCount',);
-        expect((refusalOfWrongCount as Error).message,).toContain('4 slices',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: assertBlockedCompatible.name,
-  children: [
-    it({
-      name: 'ACCEPTS a blocked lane whose every slice kept the archive, which '
-        + 'is the ledger an unblocked run that changed nothing also produces. '
-        + 'This is why the status is checked for compatibility rather than '
-        + 'recomputed',
-      fn: async () => {
-        expect(function acceptQuietBlocked() {
-          assertBlockedCompatible({
-            evidence: repairEvidence({
-              status: 'blocked-non-translation',
-              sliceCount: 2,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [],
-            },),
-            ledger: [
-              row({
-                sliceIndex: 0,
-                delivery: { kind: 'incumbent-retained', },
-              },),
-              row({
-                sliceIndex: 1,
-                delivery: { kind: 'gap-remains', },
-              },),
-            ],
-            path: LANE_PATH,
-          },);
-        },).not.toThrow();
-      },
-    },),
-
-    it({
-      name: 'REFUSES a blocked lane whose ledger ships a replacement, since '
-        + 'nothing was assembled by a blocked run and so nothing of it shipped',
-      fn: async () => {
-        const refusalOfBlockedShipping = caught(function blockedShipping() {
-          assertBlockedCompatible({
-            evidence: repairEvidence({ status: 'blocked-non-translation', },),
-            ledger: mixedLedger(),
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfBlockedShipping,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfBlockedShipping as Error).message,)
-          .toContain('lanes.repair.result.status',);
-        expect((refusalOfBlockedShipping as Error).message,)
-          .toContain('slice 0 reports assembly having run',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a blocked lane whose ledger records a guard withdrawal, '
-        + 'because the guard only ever ran on a document that was assembled',
-      fn: async () => {
-        const refusalOfBlockedGuard = caught(function blockedGuard() {
-          assertBlockedCompatible({
-            evidence: repairEvidence({
-              status: 'blocked-non-translation',
-              sliceCount: 1,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [7,],
-            },),
-            ledger: [
-              row({
-                sliceIndex: 7,
-                delivery: {
-                  kind: 'replacement-withdrawn',
-                  reason: 'assembly-integrity',
-                },
-              },),
-            ],
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfBlockedGuard,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfBlockedGuard as Error).message,)
-          .toContain('slice 7 reports assembly having run',);
-      },
-    },),
-
-    it({
-      name: 'ACCEPTS a blocked lane whose ledger withdraws by whole-document '
-        + 'refusal, which is the withdrawal a blocked run is supposed to leave',
-      fn: async () => {
-        expect(function acceptBlockedRefusal() {
-          assertBlockedCompatible({
-            evidence: repairEvidence({
-              status: 'blocked-non-translation',
-              sliceCount: 1,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [],
-            },),
-            ledger: [
-              row({
-                sliceIndex: 0,
-                delivery: {
-                  kind: 'replacement-withdrawn',
-                  reason: 'blocked-non-translation',
-                },
-              },),
-            ],
-            path: LANE_PATH,
-          },);
-        },).not.toThrow();
-      },
-    },),
-
-    it({
-      name: 'REFUSES an unblocked lane whose ledger withdraws by '
-        + 'whole-document refusal, which only a blocked run produces',
-      fn: async () => {
-        const refusalOfStrayRefusal = caught(function strayRefusal() {
-          assertBlockedCompatible({
-            evidence: repairEvidence({
-              status: 'unchanged',
-              sliceCount: 1,
-              changedSliceIndices: [],
-              withdrawnSliceIndices: [],
-            },),
-            ledger: [
-              row({
-                sliceIndex: 0,
-                delivery: {
-                  kind: 'replacement-withdrawn',
-                  reason: 'blocked-non-translation',
-                },
-              },),
-            ],
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfStrayRefusal,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfStrayRefusal as Error).message,)
-          .toContain('lanes.repair.result.status',);
-        expect((refusalOfStrayRefusal as Error).message,)
-          .toContain('slice 0 reports a withdrawal by whole-document refusal',);
-      },
-    },),
-
-    it({
-      name: 'ACCEPTS an unblocked lane carrying both a shipped replacement '
-        + 'and a guard withdrawal, which is what an ordinary repaired '
-        + 'document looks like',
-      fn: async () => {
-        expect(function acceptOrdinaryRepair() {
-          assertBlockedCompatible({
-            evidence: repairEvidence(),
-            ledger: mixedLedger(),
-            path: LANE_PATH,
-          },);
-        },).not.toThrow();
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: assertTranslateCountsAgree.name,
-  children: [
-    it({
-      name: 'ACCEPTS a lane whose two counts equal the lists beside them and '
-        + 'whose status matches what its slices record',
-      fn: async () => {
-        expect(function acceptAgreeing() {
-          assertTranslateCountsAgree({
-            evidence: translateEvidence(),
-            path: LANE_PATH,
-          },);
-        },).not.toThrow();
-      },
-    },),
-
-    it({
-      name: 'REFUSES a changed count that disagrees with the changed list, '
-        + 'naming how many slices the list holds',
-      fn: async () => {
-        const refusalOfWrongChanged = caught(function wrongChanged() {
-          assertTranslateCountsAgree({
-            evidence: translateEvidence({ changedSliceCount: 1, },),
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfWrongChanged,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfWrongChanged as Error).message,)
-          .toContain('lanes.repair.result.changedSliceCount',);
-        expect((refusalOfWrongChanged as Error).message,)
-          .toContain('expected 2,',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a withdrawn count that disagrees with the withdrawn list',
-      fn: async () => {
-        const refusalOfWrongWithdrawn = caught(function wrongWithdrawn() {
-          assertTranslateCountsAgree({
-            evidence: translateEvidence({ withdrawnSliceCount: 0, },),
-            path: LANE_PATH,
-          },);
-        },);
-
-        expect(refusalOfWrongWithdrawn,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfWrongWithdrawn as Error).message,)
-          .toContain('lanes.repair.result.withdrawnSliceCount',);
-        expect((refusalOfWrongWithdrawn as Error).message,)
-          .toContain('expected 1,',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a lane calling itself complete while one slice it '
-        + 'reached went unfilled, which is a document with a hole in it '
-        + 'reported as a whole translation',
-      fn: async () => {
-        const refusalOfCompleteHole = caught(function completeHole() {
-          assertTranslateCountsAgree({
-            evidence: translateEvidence({
-              sliceTexts: [
-                evidenceRow({
-                  sliceIndex: 0,
-                  outcome: { kind: 'unfilled', },
+        it({
+          name: 'REFUSES a changed list holding the right indices in the wrong '
+            + 'order, which is the case a membership check would have called '
+            + 'agreement. Both contracts say document order, so a lane that '
+            + 'recorded them another way derived them another way',
+          fn: async () => {
+            const refusalOfReordered = caught(function reordered() {
+              assertIndexSetsMatchLedger({
+                evidence: repairEvidence({
+                  changedSliceIndices: [
+                    3,
+                    0,
+                  ],
                 },),
-              ],
-            },),
-            path: LANE_PATH,
-          },);
-        },);
+                ledger: mixedLedger(),
+                path: LANE_PATH,
+              },);
+            },);
 
-        expect(refusalOfCompleteHole,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfCompleteHole as Error).message,)
-          .toContain('lanes.repair.result.status',);
-        expect((refusalOfCompleteHole as Error).message,)
-          .toContain('expected unfilled,',);
-      },
+            expect(refusalOfReordered,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfReordered as Error).message,)
+              .toContain('lanes.repair.result.changedSliceIndices[0]',);
+            expect((refusalOfReordered as Error).message,).toContain('slice 0',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a changed list naming one slice twice, which a set would '
+            + 'have collapsed into a list of the right length',
+          fn: async () => {
+            const refusalOfRepeat = caught(function repeat() {
+              assertIndexSetsMatchLedger({
+                evidence: repairEvidence({
+                  changedSliceIndices: [
+                    0,
+                    0,
+                  ],
+                },),
+                ledger: mixedLedger(),
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfRepeat,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfRepeat as Error).message,)
+              .toContain('lanes.repair.result.changedSliceIndices[1]',);
+            expect((refusalOfRepeat as Error).message,).toContain('slice 3',);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a withdrawn list that leaves out a whole-document '
+            + 'refusal, since the withdrawn set names slices the assembly guard '
+            + 'took back and a blocked run never assembled anything',
+          fn: async () => {
+            expect(function acceptOmittedRefusal() {
+              assertIndexSetsMatchLedger({
+                evidence: repairEvidence({
+                  status: 'blocked-non-translation',
+                  sliceCount: 2,
+                  changedSliceIndices: [],
+                  withdrawnSliceIndices: [],
+                },),
+                ledger: [
+                  row({
+                    sliceIndex: 0,
+                    delivery: {
+                      kind: 'replacement-withdrawn',
+                      reason: 'blocked-non-translation',
+                    },
+                  },),
+                  row({
+                    sliceIndex: 1,
+                    delivery: { kind: 'incumbent-retained', },
+                  },),
+                ],
+                path: LANE_PATH,
+              },);
+            },).not.toThrow();
+          },
+        },),
+
+        it({
+          name: 'REFUSES a withdrawn list that counts a whole-document refusal as '
+            + 'a guard withdrawal, which would make every blocked run look like a '
+            + 'document the guard tore apart',
+          fn: async () => {
+            const refusalOfCountedRefusal = caught(function countedRefusal() {
+              assertIndexSetsMatchLedger({
+                evidence: repairEvidence({
+                  status: 'blocked-non-translation',
+                  sliceCount: 1,
+                  changedSliceIndices: [],
+                  withdrawnSliceIndices: [0,],
+                },),
+                ledger: [
+                  row({
+                    sliceIndex: 0,
+                    delivery: {
+                      kind: 'replacement-withdrawn',
+                      reason: 'blocked-non-translation',
+                    },
+                  },),
+                ],
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfCountedRefusal,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfCountedRefusal as Error).message,)
+              .toContain('lanes.repair.result.withdrawnSliceIndices',);
+            expect((refusalOfCountedRefusal as Error).message,)
+              .toContain('0 slices',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a slice count that disagrees with how many rows the '
+            + 'ledger holds, which is the third statement of the same fact and '
+            + 'the one every index in the lists is out of',
+          fn: async () => {
+            const refusalOfWrongCount = caught(function wrongCount() {
+              assertIndexSetsMatchLedger({
+                evidence: repairEvidence({ sliceCount: 5, },),
+                ledger: mixedLedger(),
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfWrongCount,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfWrongCount as Error).message,)
+              .toContain('lanes.repair.result.sliceCount',);
+            expect((refusalOfWrongCount as Error).message,).toContain('4 slices',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES a lane calling itself unfilled while every slice it '
-        + 'reached was filled, which understates a document that is whole',
-      fn: async () => {
-        const refusalOfIdleUnfilled = caught(function idleUnfilled() {
-          assertTranslateCountsAgree({
-            evidence: translateEvidence({ status: 'unfilled', },),
-            path: LANE_PATH,
-          },);
-        },);
+    describe({
+      name: assertBlockedCompatible.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a blocked lane whose every slice kept the archive, which '
+            + 'is the ledger an unblocked run that changed nothing also produces. '
+            + 'This is why the status is checked for compatibility rather than '
+            + 'recomputed',
+          fn: async () => {
+            expect(function acceptQuietBlocked() {
+              assertBlockedCompatible({
+                evidence: repairEvidence({
+                  status: 'blocked-non-translation',
+                  sliceCount: 2,
+                  changedSliceIndices: [],
+                  withdrawnSliceIndices: [],
+                },),
+                ledger: [
+                  row({
+                    sliceIndex: 0,
+                    delivery: { kind: 'incumbent-retained', },
+                  },),
+                  row({
+                    sliceIndex: 1,
+                    delivery: { kind: 'gap-remains', },
+                  },),
+                ],
+                path: LANE_PATH,
+              },);
+            },).not.toThrow();
+          },
+        },),
 
-        expect(refusalOfIdleUnfilled,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfIdleUnfilled as Error).message,)
-          .toContain('lanes.repair.result.status',);
-        expect((refusalOfIdleUnfilled as Error).message,)
-          .toContain('expected complete,',);
-      },
+        it({
+          name: 'REFUSES a blocked lane whose ledger ships a replacement, since '
+            + 'nothing was assembled by a blocked run and so nothing of it shipped',
+          fn: async () => {
+            const refusalOfBlockedShipping = caught(function blockedShipping() {
+              assertBlockedCompatible({
+                evidence: repairEvidence({ status: 'blocked-non-translation', },),
+                ledger: mixedLedger(),
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfBlockedShipping,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfBlockedShipping as Error).message,)
+              .toContain('lanes.repair.result.status',);
+            expect((refusalOfBlockedShipping as Error).message,)
+              .toContain('slice 0 reports assembly having run',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a blocked lane whose ledger records a guard withdrawal, '
+            + 'because the guard only ever ran on a document that was assembled',
+          fn: async () => {
+            const refusalOfBlockedGuard = caught(function blockedGuard() {
+              assertBlockedCompatible({
+                evidence: repairEvidence({
+                  status: 'blocked-non-translation',
+                  sliceCount: 1,
+                  changedSliceIndices: [],
+                  withdrawnSliceIndices: [7,],
+                },),
+                ledger: [
+                  row({
+                    sliceIndex: 7,
+                    delivery: {
+                      kind: 'replacement-withdrawn',
+                      reason: 'assembly-integrity',
+                    },
+                  },),
+                ],
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfBlockedGuard,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfBlockedGuard as Error).message,)
+              .toContain('slice 7 reports assembly having run',);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a blocked lane whose ledger withdraws by whole-document '
+            + 'refusal, which is the withdrawal a blocked run is supposed to leave',
+          fn: async () => {
+            expect(function acceptBlockedRefusal() {
+              assertBlockedCompatible({
+                evidence: repairEvidence({
+                  status: 'blocked-non-translation',
+                  sliceCount: 1,
+                  changedSliceIndices: [],
+                  withdrawnSliceIndices: [],
+                },),
+                ledger: [
+                  row({
+                    sliceIndex: 0,
+                    delivery: {
+                      kind: 'replacement-withdrawn',
+                      reason: 'blocked-non-translation',
+                    },
+                  },),
+                ],
+                path: LANE_PATH,
+              },);
+            },).not.toThrow();
+          },
+        },),
+
+        it({
+          name: 'REFUSES an unblocked lane whose ledger withdraws by '
+            + 'whole-document refusal, which only a blocked run produces',
+          fn: async () => {
+            const refusalOfStrayRefusal = caught(function strayRefusal() {
+              assertBlockedCompatible({
+                evidence: repairEvidence({
+                  status: 'unchanged',
+                  sliceCount: 1,
+                  changedSliceIndices: [],
+                  withdrawnSliceIndices: [],
+                },),
+                ledger: [
+                  row({
+                    sliceIndex: 0,
+                    delivery: {
+                      kind: 'replacement-withdrawn',
+                      reason: 'blocked-non-translation',
+                    },
+                  },),
+                ],
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfStrayRefusal,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfStrayRefusal as Error).message,)
+              .toContain('lanes.repair.result.status',);
+            expect((refusalOfStrayRefusal as Error).message,)
+              .toContain('slice 0 reports a withdrawal by whole-document refusal',);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS an unblocked lane carrying both a shipped replacement '
+            + 'and a guard withdrawal, which is what an ordinary repaired '
+            + 'document looks like',
+          fn: async () => {
+            expect(function acceptOrdinaryRepair() {
+              assertBlockedCompatible({
+                evidence: repairEvidence(),
+                ledger: mixedLedger(),
+                path: LANE_PATH,
+              },);
+            },).not.toThrow();
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS a complete lane holding a slice it never evaluated, '
-        + 'since only a slice reached and left unfilled makes a hole and a '
-        + 'slice left alone keeps the archive wording',
-      fn: async () => {
-        expect(function acceptNotEvaluated() {
-          assertTranslateCountsAgree({
-            evidence: translateEvidence({
-              sliceTexts: [
-                evidenceRow({
-                  sliceIndex: 0,
-                  outcome: { kind: 'not-evaluated', },
+    describe({
+      name: assertTranslateCountsAgree.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a lane whose two counts equal the lists beside them and '
+            + 'whose status matches what its slices record',
+          fn: async () => {
+            expect(function acceptAgreeing() {
+              assertTranslateCountsAgree({
+                evidence: translateEvidence(),
+                path: LANE_PATH,
+              },);
+            },).not.toThrow();
+          },
+        },),
+
+        it({
+          name: 'REFUSES a changed count that disagrees with the changed list, '
+            + 'naming how many slices the list holds',
+          fn: async () => {
+            const refusalOfWrongChanged = caught(function wrongChanged() {
+              assertTranslateCountsAgree({
+                evidence: translateEvidence({ changedSliceCount: 1, },),
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfWrongChanged,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfWrongChanged as Error).message,)
+              .toContain('lanes.repair.result.changedSliceCount',);
+            expect((refusalOfWrongChanged as Error).message,)
+              .toContain('expected 2,',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a withdrawn count that disagrees with the withdrawn list',
+          fn: async () => {
+            const refusalOfWrongWithdrawn = caught(function wrongWithdrawn() {
+              assertTranslateCountsAgree({
+                evidence: translateEvidence({ withdrawnSliceCount: 0, },),
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfWrongWithdrawn,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfWrongWithdrawn as Error).message,)
+              .toContain('lanes.repair.result.withdrawnSliceCount',);
+            expect((refusalOfWrongWithdrawn as Error).message,)
+              .toContain('expected 1,',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a lane calling itself complete while one slice it '
+            + 'reached went unfilled, which is a document with a hole in it '
+            + 'reported as a whole translation',
+          fn: async () => {
+            const refusalOfCompleteHole = caught(function completeHole() {
+              assertTranslateCountsAgree({
+                evidence: translateEvidence({
+                  sliceTexts: [
+                    evidenceRow({
+                      sliceIndex: 0,
+                      outcome: { kind: 'unfilled', },
+                    },),
+                  ],
                 },),
-                evidenceRow({
-                  sliceIndex: 1,
-                  outcome: { kind: 'not-applicable', },
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfCompleteHole,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfCompleteHole as Error).message,)
+              .toContain('lanes.repair.result.status',);
+            expect((refusalOfCompleteHole as Error).message,)
+              .toContain('expected unfilled,',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a lane calling itself unfilled while every slice it '
+            + 'reached was filled, which understates a document that is whole',
+          fn: async () => {
+            const refusalOfIdleUnfilled = caught(function idleUnfilled() {
+              assertTranslateCountsAgree({
+                evidence: translateEvidence({ status: 'unfilled', },),
+                path: LANE_PATH,
+              },);
+            },);
+
+            expect(refusalOfIdleUnfilled,).toBeInstanceOf(ArtifactParseError,);
+            expect((refusalOfIdleUnfilled as Error).message,)
+              .toContain('lanes.repair.result.status',);
+            expect((refusalOfIdleUnfilled as Error).message,)
+              .toContain('expected complete,',);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a complete lane holding a slice it never evaluated, '
+            + 'since only a slice reached and left unfilled makes a hole and a '
+            + 'slice left alone keeps the archive wording',
+          fn: async () => {
+            expect(function acceptNotEvaluated() {
+              assertTranslateCountsAgree({
+                evidence: translateEvidence({
+                  sliceTexts: [
+                    evidenceRow({
+                      sliceIndex: 0,
+                      outcome: { kind: 'not-evaluated', },
+                    },),
+                    evidenceRow({
+                      sliceIndex: 1,
+                      outcome: { kind: 'not-applicable', },
+                    },),
+                  ],
                 },),
-              ],
-            },),
-            path: LANE_PATH,
-          },);
-        },).not.toThrow();
-      },
+                path: LANE_PATH,
+              },);
+            },).not.toThrow();
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -29,6 +29,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -308,141 +309,149 @@ const [
 ] = history.commits;
 
 await describe({
-  name: resolveCommit.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'RESOLVES a symbolic name to the full object id of the commit it '
-        + 'names, which is the control the refusal departs from',
-      fn: async () => {
-        expect(await resolveCommit({
-          revision: 'HEAD',
-          repository: history.full,
-        },),)
-          .toBe(third,);
-      },
-    },),
-
-    it({
-      name: 'RESOLVES an abbreviation to the full id, since a requirement '
-        + 'spelled short would otherwise be compared against full ids and '
-        + 'match nothing',
-      fn: async () => {
-        expect(await resolveCommit({
-          revision: first.slice(
-            0,
-            ABBREVIATION_LENGTH,
-          ),
-          repository: history.full,
-        },),)
-          .toBe(first,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a name the repository does not know, naming the '
-        + 'resolution that failed rather than quietly filtering nothing',
-      fn: async () => {
-        /**
-         What the refusal says.
-         */
-        const said = await refusalOf({
-          act: () =>
-            resolveCommit({
-              revision: 'no-such-thing',
+    describe({
+      name: resolveCommit.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RESOLVES a symbolic name to the full object id of the commit it '
+            + 'names, which is the control the refusal departs from',
+          fn: async () => {
+            expect(await resolveCommit({
+              revision: 'HEAD',
               repository: history.full,
-            },),
-        },);
+            },),)
+              .toBe(third,);
+          },
+        },),
 
-        expect(said.includes('Cannot resolve "no-such-thing" to a commit',),).toBe(true,);
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'RESOLVES an abbreviation to the full id, since a requirement '
+            + 'spelled short would otherwise be compared against full ids and '
+            + 'match nothing',
+          fn: async () => {
+            expect(await resolveCommit({
+              revision: first.slice(
+                0,
+                ABBREVIATION_LENGTH,
+              ),
+              repository: history.full,
+            },),)
+              .toBe(first,);
+          },
+        },),
 
-await describe({
-  name: tipContains.name,
-  children: [
-    it({
-      name: 'ANSWERS TRUE where the required commit is an ancestor of the tip',
-      fn: async () => {
-        expect(await tipContains({
-          tip: third,
-          commit: first,
-          repository: history.full,
-        },),)
-          .toBe(true,);
-      },
-    },),
+        it({
+          name: 'REFUSES a name the repository does not know, naming the '
+            + 'resolution that failed rather than quietly filtering nothing',
+          fn: async () => {
+            /**
+             What the refusal says.
+             */
+            const said = await refusalOf({
+              act: () =>
+                resolveCommit({
+                  revision: 'no-such-thing',
+                  repository: history.full,
+                },),
+            },);
 
-    it({
-      name: 'ANSWERS TRUE where the two are one commit, since a tip contains '
-        + 'itself',
-      fn: async () => {
-        expect(await tipContains({
-          tip: second,
-          commit: second,
-          repository: history.full,
-        },),)
-          .toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'ANSWERS FALSE on a clean negative in a complete history, which is '
-        + 'the one exit git defines for not an ancestor',
-      fn: async () => {
-        expect(await tipContains({
-          tip: first,
-          commit: third,
-          repository: history.full,
-        },),)
-          .toBe(false,);
-      },
+            expect(said.includes('Cannot resolve "no-such-thing" to a commit',),).toBe(true,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES TO ANSWER THE SAME NEGATIVE IN A SHALLOW CLONE, naming '
-        + 'the clone, since git reports a cut history with the exit it uses '
-        + 'for a real negative and the pool would otherwise lose every entry '
-        + 'produced before the cut',
-      fn: async () => {
-        /**
-         What the refusal says.
-         */
-        const said = await refusalOf({
-          act: () =>
-            tipContains({
-              tip: second,
-              commit: third,
-              repository: history.shallow,
-            },),
-        },);
-
-        expect(said.includes('SHALLOW',),).toBe(true,);
-        expect(said.includes('Unshallow the repository',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES A COMMIT THE REPOSITORY DOES NOT KNOW rather than reading '
-        + 'it as not eligible, since a pool that cannot be partitioned must '
-        + 'not be silently narrowed',
-      fn: async () => {
-        /**
-         What the refusal says.
-         */
-        const said = await refusalOf({
-          act: () =>
-            tipContains({
+    describe({
+      name: tipContains.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ANSWERS TRUE where the required commit is an ancestor of the tip',
+          fn: async () => {
+            expect(await tipContains({
               tip: third,
-              commit: UNKNOWN_COMMIT,
+              commit: first,
               repository: history.full,
-            },),
-        },);
+            },),)
+              .toBe(true,);
+          },
+        },),
 
-        expect(said.includes('Cannot place pipeline commit',),).toBe(true,);
-        expect(said.includes('NOT treated as "not eligible"',),).toBe(true,);
-      },
+        it({
+          name: 'ANSWERS TRUE where the two are one commit, since a tip contains '
+            + 'itself',
+          fn: async () => {
+            expect(await tipContains({
+              tip: second,
+              commit: second,
+              repository: history.full,
+            },),)
+              .toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'ANSWERS FALSE on a clean negative in a complete history, which is '
+            + 'the one exit git defines for not an ancestor',
+          fn: async () => {
+            expect(await tipContains({
+              tip: first,
+              commit: third,
+              repository: history.full,
+            },),)
+              .toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES TO ANSWER THE SAME NEGATIVE IN A SHALLOW CLONE, naming '
+            + 'the clone, since git reports a cut history with the exit it uses '
+            + 'for a real negative and the pool would otherwise lose every entry '
+            + 'produced before the cut',
+          fn: async () => {
+            /**
+             What the refusal says.
+             */
+            const said = await refusalOf({
+              act: () =>
+                tipContains({
+                  tip: second,
+                  commit: third,
+                  repository: history.shallow,
+                },),
+            },);
+
+            expect(said.includes('SHALLOW',),).toBe(true,);
+            expect(said.includes('Unshallow the repository',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A COMMIT THE REPOSITORY DOES NOT KNOW rather than reading '
+            + 'it as not eligible, since a pool that cannot be partitioned must '
+            + 'not be silently narrowed',
+          fn: async () => {
+            /**
+             What the refusal says.
+             */
+            const said = await refusalOf({
+              act: () =>
+                tipContains({
+                  tip: third,
+                  commit: UNKNOWN_COMMIT,
+                  repository: history.full,
+                },),
+            },);
+
+            expect(said.includes('Cannot place pipeline commit',),).toBe(true,);
+            expect(said.includes('NOT treated as "not eligible"',),).toBe(true,);
+          },
+        },),
+      ],
     },),
   ],
 },);

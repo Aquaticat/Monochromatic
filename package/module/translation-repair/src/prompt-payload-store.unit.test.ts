@@ -15,6 +15,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -75,162 +76,6 @@ const REQUEST: ChatTextRequest = {
   messages: [{ role: 'user', content: 'Read one cat sentence.', },],
   signal: AbortSignal.timeout(5_000,),
 };
-
-await describe({
-  name: promptPayloadStore.name,
-  children: [
-    it({
-      name: 'REPLAYS COMPLETED PAYLOAD across client instances without provider call',
-      fn: async () => {
-        await using dir = await temporaryDirectory();
-        const store = promptPayloadStore({ dir: dir.path, },);
-        /** Provider calls across both client instances. */
-        let providerCalls = 0;
-        const firstInner: SyntheticClient = {
-          chatText: async () => {
-            providerCalls += 1;
-            return {
-              text: 'The cat slept.',
-              finishReason: 'stop',
-              usage: {
-                prompt_tokens: 4,
-                completion_tokens: 5,
-              },
-            };
-          },
-          chatJson: async () => {
-            throw new Error('chatJson bypassed by prompt payload reader',);
-          },
-          quotas: async () => {
-            throw new Error('quotas unused by prompt payload fixture',);
-          },
-        };
-        const first = promptUniqueClient({
-          inner: firstInner,
-          store,
-        },);
-        const initial = await first.chatText(REQUEST,);
-
-        const resumedInner: SyntheticClient = {
-          chatText: async () => {
-            providerCalls += 1;
-            throw new Error('resumed client must not call provider',);
-          },
-          chatJson: async () => {
-            throw new Error('chatJson bypassed by prompt payload reader',);
-          },
-          quotas: async () => {
-            throw new Error('quotas unused by prompt payload fixture',);
-          },
-        };
-        const resumed = promptUniqueClient({
-          inner: resumedInner,
-          store,
-        },);
-        expect(await resumed.chatText(REQUEST,),).toEqual(initial,);
-        expect(providerCalls,).toBe(1,);
-      },
-    },),
-
-    it({
-      name: 'REPLAYS WHICH PROVIDER SERVED A PAYLOAD, since a resumed run that lost it could not re-ask '
-        + 'elsewhere and would answer differently from the run it resumes (ledger P9)',
-      fn: async () => {
-        await using dir = await temporaryDirectory();
-        const store = promptPayloadStore({ dir: dir.path, },);
-        const first = promptUniqueClient({
-          inner: {
-            chatText: async () => (
-              {
-                text: 'The cat slept.',
-                servedBy: 'hyper',
-              }
-            ),
-            chatJson: async () => {
-              throw new Error('chatJson bypassed by prompt payload reader',);
-            },
-            quotas: async () => {
-              throw new Error('quotas unused by prompt payload fixture',);
-            },
-          },
-          store,
-        },);
-        await first.chatText(REQUEST,);
-
-        const resumed = promptUniqueClient({
-          inner: {
-            chatText: async () => {
-              throw new Error('resumed client must not call provider',);
-            },
-            chatJson: async () => {
-              throw new Error('chatJson bypassed by prompt payload reader',);
-            },
-            quotas: async () => {
-              throw new Error('quotas unused by prompt payload fixture',);
-            },
-          },
-          store,
-        },);
-        expect((await resumed.chatText(REQUEST,)).servedBy,).toBe('hyper',);
-      },
-    },),
-
-    it({
-      name: 'REPLAYS A STORED REFUSAL, where the provider declined in words rather than answered',
-      fn: async () => {
-        await using dir = await temporaryDirectory();
-        const store = promptPayloadStore({ dir: dir.path, },);
-        const promptDigest = modelPromptDigest({ request: REQUEST, },);
-        const reply = {
-          text: '',
-          refusal: 'The cat declines to judge.',
-          finishReason: 'stop',
-        };
-        await store.write({ promptDigest, reply, },);
-        expect(await store.read({ promptDigest, },),).toStrictEqual(reply,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES CORRUPTED DURABLE PAYLOAD rather than recalling provider',
-      fn: async () => {
-        await using dir = await temporaryDirectory();
-        const promptDigest = modelPromptDigest({ request: REQUEST, },);
-        await writeFile(
-          join(
-            dir.path,
-            `${promptDigest}.json`,
-          ),
-          '{"version":1,"reply":{"text":7}}\n',
-        );
-        const store = promptPayloadStore({ dir: dir.path, },);
-        let providerCalls = 0;
-        const inner: SyntheticClient = {
-          chatText: async () => {
-            providerCalls += 1;
-            return { text: 'must not run', };
-          },
-          chatJson: async () => {
-            throw new Error('chatJson bypassed by prompt payload reader',);
-          },
-          quotas: async () => {
-            throw new Error('quotas unused by prompt payload fixture',);
-          },
-        };
-        const client = promptUniqueClient({ inner, store, },);
-        let caught: unknown;
-        try {
-          await client.chatText(REQUEST,);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(PromptPayloadStoreError,);
-        expect(providerCalls,).toBe(0,);
-      },
-    },),
-  ],
-},);
 
 /**
  Digest the refusal cases store their records under.
@@ -448,72 +293,236 @@ const REFUSED_RECORDS: readonly RefusedRecord[] = [
   },
 ];
 
-// EACH REFUSAL NAMES WHAT REFUSED (ledger B69). The error's message is all the
-// tally line prints, so one message for every check left an operator unable
-// to tell a corrupted record from a format change from a full disk, and let a
-// case pass whichever check fired.
 await describe({
-  name: 'promptPayloadStore refusals, each naming what refused (ledger B69)',
+  name: '',
+  concurrency: 1,
   children: [
-    ...REFUSED_RECORDS.map(function toCase({ name, record, reason, },) {
-      return it({
-        name: `refuses ${name}, naming it`,
-        fn: async () => {
-          await using dir = await temporaryDirectory();
-          await writeFile(
-            join(
+    describe({
+      name: promptPayloadStore.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REPLAYS COMPLETED PAYLOAD across client instances without provider call',
+          fn: async () => {
+            await using dir = await temporaryDirectory();
+            const store = promptPayloadStore({ dir: dir.path, },);
+            /** Provider calls across both client instances. */
+            let providerCalls = 0;
+            const firstInner: SyntheticClient = {
+              chatText: async () => {
+                providerCalls += 1;
+                return {
+                  text: 'The cat slept.',
+                  finishReason: 'stop',
+                  usage: {
+                    prompt_tokens: 4,
+                    completion_tokens: 5,
+                  },
+                };
+              },
+              chatJson: async () => {
+                throw new Error('chatJson bypassed by prompt payload reader',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused by prompt payload fixture',);
+              },
+            };
+            const first = promptUniqueClient({
+              inner: firstInner,
+              store,
+            },);
+            const initial = await first.chatText(REQUEST,);
+
+            const resumedInner: SyntheticClient = {
+              chatText: async () => {
+                providerCalls += 1;
+                throw new Error('resumed client must not call provider',);
+              },
+              chatJson: async () => {
+                throw new Error('chatJson bypassed by prompt payload reader',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused by prompt payload fixture',);
+              },
+            };
+            const resumed = promptUniqueClient({
+              inner: resumedInner,
+              store,
+            },);
+            expect(await resumed.chatText(REQUEST,),).toEqual(initial,);
+            expect(providerCalls,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'REPLAYS WHICH PROVIDER SERVED A PAYLOAD, since a resumed run that lost it could not re-ask '
+            + 'elsewhere and would answer differently from the run it resumes (ledger P9)',
+          fn: async () => {
+            await using dir = await temporaryDirectory();
+            const store = promptPayloadStore({ dir: dir.path, },);
+            const first = promptUniqueClient({
+              inner: {
+                chatText: async () => (
+                  {
+                    text: 'The cat slept.',
+                    servedBy: 'hyper',
+                  }
+                ),
+                chatJson: async () => {
+                  throw new Error('chatJson bypassed by prompt payload reader',);
+                },
+                quotas: async () => {
+                  throw new Error('quotas unused by prompt payload fixture',);
+                },
+              },
+              store,
+            },);
+            await first.chatText(REQUEST,);
+
+            const resumed = promptUniqueClient({
+              inner: {
+                chatText: async () => {
+                  throw new Error('resumed client must not call provider',);
+                },
+                chatJson: async () => {
+                  throw new Error('chatJson bypassed by prompt payload reader',);
+                },
+                quotas: async () => {
+                  throw new Error('quotas unused by prompt payload fixture',);
+                },
+              },
+              store,
+            },);
+            expect((await resumed.chatText(REQUEST,)).servedBy,).toBe('hyper',);
+          },
+        },),
+
+        it({
+          name: 'REPLAYS A STORED REFUSAL, where the provider declined in words rather than answered',
+          fn: async () => {
+            await using dir = await temporaryDirectory();
+            const store = promptPayloadStore({ dir: dir.path, },);
+            const promptDigest = modelPromptDigest({ request: REQUEST, },);
+            const reply = {
+              text: '',
+              refusal: 'The cat declines to judge.',
+              finishReason: 'stop',
+            };
+            await store.write({ promptDigest, reply, },);
+            expect(await store.read({ promptDigest, },),).toStrictEqual(reply,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES CORRUPTED DURABLE PAYLOAD rather than recalling provider',
+          fn: async () => {
+            await using dir = await temporaryDirectory();
+            const promptDigest = modelPromptDigest({ request: REQUEST, },);
+            await writeFile(
+              join(
+                dir.path,
+                `${promptDigest}.json`,
+              ),
+              '{"version":1,"reply":{"text":7}}\n',
+            );
+            const store = promptPayloadStore({ dir: dir.path, },);
+            let providerCalls = 0;
+            const inner: SyntheticClient = {
+              chatText: async () => {
+                providerCalls += 1;
+                return { text: 'must not run', };
+              },
+              chatJson: async () => {
+                throw new Error('chatJson bypassed by prompt payload reader',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused by prompt payload fixture',);
+              },
+            };
+            const client = promptUniqueClient({ inner, store, },);
+            let caught: unknown;
+            try {
+              await client.chatText(REQUEST,);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(caught,).toBeInstanceOf(PromptPayloadStoreError,);
+            expect(providerCalls,).toBe(0,);
+          },
+        },),
+      ],
+    },),
+
+    // EACH REFUSAL NAMES WHAT REFUSED (ledger B69). The error's message is all the
+    // tally line prints, so one message for every check left an operator unable
+    // to tell a corrupted record from a format change from a full disk, and let a
+    // case pass whichever check fired.
+    describe({
+      name: 'promptPayloadStore refusals, each naming what refused (ledger B69)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        ...REFUSED_RECORDS.map(function toCase({ name, record, reason, },) {
+          return it({
+            name: `refuses ${name}, naming it`,
+            fn: async () => {
+              await using dir = await temporaryDirectory();
+              await writeFile(
+                join(
+                  dir.path,
+                  `${PROMPT_DIGEST}.json`,
+                ),
+                `${record}\n`,
+              );
+              const refusal = await refusalOf(promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },),);
+              expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
+              // WHAT THE TALLY LINE PRINTS, whole: the reason survives its cap.
+              expect(tallyErrorText({ error: refusal, },),).toBe(readRefusal({ reason, },),);
+            },
+          },);
+        },),
+
+        it({
+          name: 'names the filesystem code when the record cannot be read',
+          fn: async () => {
+            await using dir = await temporaryDirectory();
+            // A directory where the record belongs fails the read as a record the
+            // run may not open would.
+            await mkdir(join(
               dir.path,
               `${PROMPT_DIGEST}.json`,
-            ),
-            `${record}\n`,
-          );
-          const refusal = await refusalOf(promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },),);
-          expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
-          // WHAT THE TALLY LINE PRINTS, whole: the reason survives its cap.
-          expect(tallyErrorText({ error: refusal, },),).toBe(readRefusal({ reason, },),);
-        },
-      },);
-    },),
+            ),);
+            const refusal = await refusalOf(promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },),);
+            expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
+            expect(tallyErrorText({ error: refusal, },),).toBe(readRefusal({ reason: 'the record could not be read (EISDIR)', },),);
+          },
+        },),
 
-    it({
-      name: 'names the filesystem code when the record cannot be read',
-      fn: async () => {
-        await using dir = await temporaryDirectory();
-        // A directory where the record belongs fails the read as a record the
-        // run may not open would.
-        await mkdir(join(
-          dir.path,
-          `${PROMPT_DIGEST}.json`,
-        ),);
-        const refusal = await refusalOf(promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },),);
-        expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
-        expect(tallyErrorText({ error: refusal, },),).toBe(readRefusal({ reason: 'the record could not be read (EISDIR)', },),);
-      },
-    },),
-
-    it({
-      name: 'names the filesystem code when the record cannot be written',
-      fn: async () => {
-        await using dir = await temporaryDirectory();
-        /**
-         Store directory path, taken by a file.
-         */
-        const storeDir = join(
-          dir.path,
-          'prompt-payloads',
-        );
-        await writeFile(
-          storeDir,
-          '',
-        );
-        const refusal = await refusalOf(promptPayloadStore({ dir: storeDir, },).write({
-          promptDigest: PROMPT_DIGEST,
-          reply: { text: SLEPT, },
-        },),);
-        const message = `prompt payload write failed for ${PROMPT_DIGEST}: the record could not be written (EEXIST)`;
-        expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
-        expect(tallyErrorText({ error: refusal, },),).toBe(message,);
-      },
+        it({
+          name: 'names the filesystem code when the record cannot be written',
+          fn: async () => {
+            await using dir = await temporaryDirectory();
+            /**
+             Store directory path, taken by a file.
+             */
+            const storeDir = join(
+              dir.path,
+              'prompt-payloads',
+            );
+            await writeFile(
+              storeDir,
+              '',
+            );
+            const refusal = await refusalOf(promptPayloadStore({ dir: storeDir, },).write({
+              promptDigest: PROMPT_DIGEST,
+              reply: { text: SLEPT, },
+            },),);
+            const message = `prompt payload write failed for ${PROMPT_DIGEST}: the record could not be written (EEXIST)`;
+            expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
+            expect(tallyErrorText({ error: refusal, },),).toBe(message,);
+          },
+        },),
+      ],
     },),
   ],
 },);

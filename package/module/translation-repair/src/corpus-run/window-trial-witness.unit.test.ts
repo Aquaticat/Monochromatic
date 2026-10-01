@@ -15,6 +15,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -105,117 +106,125 @@ function sheetOf(
 }
 
 await describe({
-  name: witnessSheets.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'FORWARDS EVERY CALL rather than answering on the model\'s behalf, since the '
-        + 'first slice\'s rows are kept and a substituted answer would make them unlike every '
-        + 'later row',
-      fn: async () => {
-        const rig = recordingClient();
-        const witness = witnessSheets({ client: rig.client, },);
+    describe({
+      name: witnessSheets.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FORWARDS EVERY CALL rather than answering on the model\'s behalf, since the '
+            + 'first slice\'s rows are kept and a substituted answer would make them unlike every '
+            + 'later row',
+          fn: async () => {
+            const rig = recordingClient();
+            const witness = witnessSheets({ client: rig.client, },);
 
-        /**
-         What the wrapper returned for a sheet.
-         */
-        const outcome = await witness.client
-          .chatJson(sheetOf({ content: 'A sheet about a cat.', },),);
+            /**
+             What the wrapper returned for a sheet.
+             */
+            const outcome = await witness.client
+              .chatJson(sheetOf({ content: 'A sheet about a cat.', },),);
 
-        expect(outcome.kind,).toBe('ok',);
-        expect(rig.served,).toEqual(['A sheet about a cat.',],);
-      },
-    },),
-    it({
-      name: 'records sheets in the order they went out, joining every message of one exchange, so '
-        + 'a label carried by a system message counts as much as one in the user turn',
-      fn: async () => {
-        const witness = witnessSheets({ client: recordingClient().client, },);
-        await witness.client
-          .chatJson(sheetOf({ content: 'first', },),);
-        await witness.client
-          .chatJson(sheetOf({ content: 'second', },),);
+            expect(outcome.kind,).toBe('ok',);
+            expect(rig.served,).toEqual(['A sheet about a cat.',],);
+          },
+        },),
+        it({
+          name: 'records sheets in the order they went out, joining every message of one exchange, so '
+            + 'a label carried by a system message counts as much as one in the user turn',
+          fn: async () => {
+            const witness = witnessSheets({ client: recordingClient().client, },);
+            await witness.client
+              .chatJson(sheetOf({ content: 'first', },),);
+            await witness.client
+              .chatJson(sheetOf({ content: 'second', },),);
 
-        expect(witness.sheets,).toEqual(['first',
-          'second',],);
-      },
+            expect(witness.sheets,).toEqual(['first',
+              'second',],);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: assertWindowReachedJudges.name,
-  children: [
-    it({
-      name: 'accepts a run whose wide sheets all carried the window',
-      fn: async () => {
-        assertWindowReachedJudges({
-          sheets: ['narrow sheet',
-            `wide sheet with ${WINDOW_LABEL} in it`,
-            `another with ${WINDOW_LABEL}`,],
-          expected: 2,
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES a run where the window reached nobody, which is the failure the whole check '
-        + 'exists for: all three arms would then have seen the same evidence and every later row '
-        + 'would report a false null',
-      fn: async () => {
-        expect(function refuses() {
-          assertWindowReachedJudges({
-            sheets: ['narrow sheet',
-              'another narrow sheet',],
-            expected: 2,
-          },);
-        },).toThrow(WindowEvidenceError,);
-      },
-    },),
-    it({
-      name: 'REFUSES A PARTIAL FORWARD, where one judge of several saw the window: that moves a '
-        + 'rate slightly in the direction the trial expects, so a presence check would pass it and '
-        + 'the run would report a real effect at a fraction of its true size',
-      fn: async () => {
-        expect(function refuses() {
-          assertWindowReachedJudges({
-            sheets: [`only this one has ${WINDOW_LABEL}`,
-              'this one does not',
-              'nor this',],
-            expected: 3,
-          },);
-        },).toThrow(WindowEvidenceError,);
-      },
-    },),
-    it({
-      name: 'refuses a run carrying MORE labelled sheets than the arms bought, since the window '
-        + 'leaking into a narrow arm collapses the comparison just as completely as it missing '
-        + 'from the wide one',
-      fn: async () => {
-        expect(function refuses() {
-          assertWindowReachedJudges({
-            sheets: [`wide ${WINDOW_LABEL}`,
-              `narrow that should not have ${WINDOW_LABEL}`,],
-            expected: 1,
-          },);
-        },).toThrow(WindowEvidenceError,);
-      },
-    },),
-    it({
-      name: 'names both counts in the message, so an operator reading a stopped run learns whether '
-        + 'the window missed entirely or only partly',
-      fn: async () => {
-        /**
-         What refuses raised, read for its class as well as its wording.
-         */
-        const refusalOfRefuses = caught(function refuses() {
-          assertWindowReachedJudges({
-            sheets: [`one ${WINDOW_LABEL}`,],
-            expected: 6,
-          },);
-        },);
+    describe({
+      name: assertWindowReachedJudges.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'accepts a run whose wide sheets all carried the window',
+          fn: async () => {
+            assertWindowReachedJudges({
+              sheets: ['narrow sheet',
+                `wide sheet with ${WINDOW_LABEL} in it`,
+                `another with ${WINDOW_LABEL}`,],
+              expected: 2,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES a run where the window reached nobody, which is the failure the whole check '
+            + 'exists for: all three arms would then have seen the same evidence and every later row '
+            + 'would report a false null',
+          fn: async () => {
+            expect(function refuses() {
+              assertWindowReachedJudges({
+                sheets: ['narrow sheet',
+                  'another narrow sheet',],
+                expected: 2,
+              },);
+            },).toThrow(WindowEvidenceError,);
+          },
+        },),
+        it({
+          name: 'REFUSES A PARTIAL FORWARD, where one judge of several saw the window: that moves a '
+            + 'rate slightly in the direction the trial expects, so a presence check would pass it and '
+            + 'the run would report a real effect at a fraction of its true size',
+          fn: async () => {
+            expect(function refuses() {
+              assertWindowReachedJudges({
+                sheets: [`only this one has ${WINDOW_LABEL}`,
+                  'this one does not',
+                  'nor this',],
+                expected: 3,
+              },);
+            },).toThrow(WindowEvidenceError,);
+          },
+        },),
+        it({
+          name: 'refuses a run carrying MORE labelled sheets than the arms bought, since the window '
+            + 'leaking into a narrow arm collapses the comparison just as completely as it missing '
+            + 'from the wide one',
+          fn: async () => {
+            expect(function refuses() {
+              assertWindowReachedJudges({
+                sheets: [`wide ${WINDOW_LABEL}`,
+                  `narrow that should not have ${WINDOW_LABEL}`,],
+                expected: 1,
+              },);
+            },).toThrow(WindowEvidenceError,);
+          },
+        },),
+        it({
+          name: 'names both counts in the message, so an operator reading a stopped run learns whether '
+            + 'the window missed entirely or only partly',
+          fn: async () => {
+            /**
+             What refuses raised, read for its class as well as its wording.
+             */
+            const refusalOfRefuses = caught(function refuses() {
+              assertWindowReachedJudges({
+                sheets: [`one ${WINDOW_LABEL}`,],
+                expected: 6,
+              },);
+            },);
 
-        expect(refusalOfRefuses,).toBeInstanceOf(WindowEvidenceError,);
-        expect((refusalOfRefuses as Error).message,).toContain('1 of the judge sheets carried SURROUNDING ORIGINAL where 6',);
-      },
+            expect(refusalOfRefuses,).toBeInstanceOf(WindowEvidenceError,);
+            expect((refusalOfRefuses as Error).message,).toContain('1 of the judge sheets carried SURROUNDING ORIGINAL where 6',);
+          },
+        },),
+      ],
     },),
   ],
 },);

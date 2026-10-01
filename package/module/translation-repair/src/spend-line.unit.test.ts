@@ -23,6 +23,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -91,214 +92,222 @@ function silent(): { readonly text: string; } {
 }
 
 await describe({
-  name: reportSpend.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'NAMES the metered provider, the seat, and both counts, which is '
-        + 'the control the rest of these cases depart from one field at a time',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'hyper',
-            label: HYPER_MODEL,
-            extracted: reported({
-              promptTokens: 5_120,
-              completionTokens: 3_072,
-            },),
-          },),
-        )
-          .toBe('SPEND provider=hyper model=qwen3.8-max prompt=5120 completion=3072',);
-      },
+    describe({
+      name: reportSpend.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the metered provider, the seat, and both counts, which is '
+            + 'the control the rest of these cases depart from one field at a time',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'hyper',
+                label: HYPER_MODEL,
+                extracted: reported({
+                  promptTokens: 5_120,
+                  completionTokens: 3_072,
+                },),
+              },),
+            )
+              .toBe('SPEND provider=hyper model=qwen3.8-max prompt=5120 completion=3072',);
+          },
+        },),
+
+        it({
+          name: 'NAMES the subscription provider on its own calls, so a reader '
+            + 'totalling credits can drop the half of a run that is not priced per '
+            + 'token instead of adding it',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'synthetic',
+                label: SYNTHETIC_MODEL,
+                extracted: reported({
+                  promptTokens: 12,
+                  completionTokens: 34,
+                },),
+              },),
+            )
+              .toBe('SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash prompt=12 completion=34',);
+          },
+        },),
+
+        it({
+          name: 'KEEPS the line and marks both counts absent when the provider '
+            + 'reported no usage, so an unreported run cannot be read as a cheap one',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'hyper',
+                label: HYPER_MODEL,
+                extracted: silent(),
+              },),
+            )
+              .toBe('SPEND provider=hyper model=qwen3.8-max prompt=unreported completion=unreported',);
+          },
+        },),
+
+        it({
+          name: 'REPORTS a reported zero as zero rather than as absent, which is '
+            + 'the distinction the named absence exists to protect: a provider that '
+            + 'said nothing and one that said nothing was spent are not the same run',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'hyper',
+                label: HYPER_MODEL,
+                extracted: reported({
+                  promptTokens: 0,
+                  completionTokens: 0,
+                },),
+              },),
+            )
+              .toBe('SPEND provider=hyper model=qwen3.8-max prompt=0 completion=0',);
+          },
+        },),
+
+        it({
+          name: 'APPENDS the USD cost as a trailing field only when the caller has one, so the provider '
+            + 'billing in USD says what a call cost and every other line keeps its shape',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'openrouter',
+                label: 'deepseek/deepseek-v4.1-flash',
+                extracted: reported({
+                  promptTokens: 342,
+                  completionTokens: 400,
+                },),
+                costUsd: 0.00015646,
+              },),
+            )
+              .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=342 completion=400 cost=0.00015646',);
+          },
+        },),
+
+        it({
+          name: 'APPENDS the serving upstream as a trailing field only when the caller names one, '
+            + 'percent-encoded so a display name with a space stays one field of a line that splits '
+            + 'on spaces',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'openrouter',
+                label: 'minimax/minimax-m3',
+                extracted: reported({
+                  promptTokens: 2_263,
+                  completionTokens: 117,
+                },),
+                costUsd: 0.00032778,
+                endpoint: 'Parasail',
+              },),
+            )
+              .toBe('SPEND provider=openrouter model=minimax/minimax-m3 prompt=2263 completion=117 cost=0.00032778 endpoint=Parasail',);
+            expect(
+              reportSpend({
+                provider: 'openrouter',
+                label: 'google/gemma-4-26b-a4b-it',
+                extracted: reported({
+                  promptTokens: 1,
+                  completionTokens: 2,
+                },),
+                endpoint: 'Google AI Studio',
+              },),
+            )
+              .toBe('SPEND provider=openrouter model=google/gemma-4-26b-a4b-it prompt=1 completion=2 endpoint=Google%20AI%20Studio',);
+          },
+        },),
+
+        it({
+          name: 'OPENS the returned line with the marker the reader finds it by, so '
+            + 'a line this module wrote round-trips through `readSpendLine` rather '
+            + 'than reading as prose that happens to mention it',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'hyper',
+                label: HYPER_MODEL,
+                extracted: silent(),
+              },)
+                .startsWith(SPEND_MARKER,),
+            )
+              .toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'writes every field as one name and one value, so a reader splits '
+            + 'the line rather than matching it and no field can hide a space',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'synthetic',
+                label: SYNTHETIC_MODEL,
+                extracted: reported({
+                  promptTokens: 1,
+                  completionTokens: 2,
+                },),
+              },)
+                .split(' ',)
+                .slice(1,)
+                .map(function nameOf(field,): string {
+                  return field.split('=',)[0] ?? '';
+                },),
+            )
+              .toEqual([
+                'provider',
+                'model',
+                'prompt',
+                'completion',
+              ],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'NAMES the subscription provider on its own calls, so a reader '
-        + 'totalling credits can drop the half of a run that is not priced per '
-        + 'token instead of adding it',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'synthetic',
-            label: SYNTHETIC_MODEL,
-            extracted: reported({
-              promptTokens: 12,
-              completionTokens: 34,
-            },),
-          },),
-        )
-          .toBe('SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash prompt=12 completion=34',);
-      },
-    },),
-
-    it({
-      name: 'KEEPS the line and marks both counts absent when the provider '
-        + 'reported no usage, so an unreported run cannot be read as a cheap one',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'hyper',
-            label: HYPER_MODEL,
-            extracted: silent(),
-          },),
-        )
-          .toBe('SPEND provider=hyper model=qwen3.8-max prompt=unreported completion=unreported',);
-      },
-    },),
-
-    it({
-      name: 'REPORTS a reported zero as zero rather than as absent, which is '
-        + 'the distinction the named absence exists to protect: a provider that '
-        + 'said nothing and one that said nothing was spent are not the same run',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'hyper',
-            label: HYPER_MODEL,
-            extracted: reported({
-              promptTokens: 0,
-              completionTokens: 0,
-            },),
-          },),
-        )
-          .toBe('SPEND provider=hyper model=qwen3.8-max prompt=0 completion=0',);
-      },
-    },),
-
-    it({
-      name: 'APPENDS the USD cost as a trailing field only when the caller has one, so the provider '
-        + 'billing in USD says what a call cost and every other line keeps its shape',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'openrouter',
-            label: 'deepseek/deepseek-v4.1-flash',
-            extracted: reported({
-              promptTokens: 342,
-              completionTokens: 400,
-            },),
-            costUsd: 0.00015646,
-          },),
-        )
-          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=342 completion=400 cost=0.00015646',);
-      },
-    },),
-
-    it({
-      name: 'APPENDS the serving upstream as a trailing field only when the caller names one, '
-        + 'percent-encoded so a display name with a space stays one field of a line that splits '
-        + 'on spaces',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'openrouter',
-            label: 'minimax/minimax-m3',
-            extracted: reported({
-              promptTokens: 2_263,
-              completionTokens: 117,
-            },),
-            costUsd: 0.00032778,
-            endpoint: 'Parasail',
-          },),
-        )
-          .toBe('SPEND provider=openrouter model=minimax/minimax-m3 prompt=2263 completion=117 cost=0.00032778 endpoint=Parasail',);
-        expect(
-          reportSpend({
-            provider: 'openrouter',
-            label: 'google/gemma-4-26b-a4b-it',
-            extracted: reported({
-              promptTokens: 1,
-              completionTokens: 2,
-            },),
-            endpoint: 'Google AI Studio',
-          },),
-        )
-          .toBe('SPEND provider=openrouter model=google/gemma-4-26b-a4b-it prompt=1 completion=2 endpoint=Google%20AI%20Studio',);
-      },
-    },),
-
-    it({
-      name: 'OPENS the returned line with the marker the reader finds it by, so '
-        + 'a line this module wrote round-trips through `readSpendLine` rather '
-        + 'than reading as prose that happens to mention it',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'hyper',
-            label: HYPER_MODEL,
-            extracted: silent(),
-          },)
-            .startsWith(SPEND_MARKER,),
-        )
-          .toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'writes every field as one name and one value, so a reader splits '
-        + 'the line rather than matching it and no field can hide a space',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'synthetic',
-            label: SYNTHETIC_MODEL,
-            extracted: reported({
-              promptTokens: 1,
-              completionTokens: 2,
-            },),
-          },)
-            .split(' ',)
-            .slice(1,)
-            .map(function nameOf(field,): string {
-              return field.split('=',)[0] ?? '';
-            },),
-        )
-          .toEqual([
-            'provider',
-            'model',
-            'prompt',
-            'completion',
-          ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: `${reportSpend.name} trailing marks`,
-  children: [
-    it({
-      name: 'APPENDS estimated=abandoned and cached=N as trailing fields only when given, after the cost '
-        + 'and the endpoint, so the 2026-09-09 reckoning of abandoned streams and the cache hits of '
-        + 'price-sorted routing both read off the same grammar',
-      fn: async () => {
-        expect(
-          reportSpend({
-            provider: 'openrouter',
-            label: 'deepseek/deepseek-v4.1-flash',
-            extracted: reported({
-              promptTokens: 1_000,
-              completionTokens: 10,
-            },),
-            costUsd: 0.0006,
-            estimated: 'abandoned',
-          },),
-        )
-          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=1000 completion=10 cost=0.0006 estimated=abandoned',);
-        expect(
-          reportSpend({
-            provider: 'openrouter',
-            label: 'deepseek/deepseek-v4.1-flash',
-            extracted: reported({
-              promptTokens: 4_000,
-              completionTokens: 12,
-            },),
-            costUsd: 0.0004,
-            endpoint: 'Baidu',
-            cachedTokens: 3_072,
-          },),
-        )
-          .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=4000 completion=12 cost=0.0004 endpoint=Baidu cached=3072',);
-      },
+    describe({
+      name: `${reportSpend.name} trailing marks`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'APPENDS estimated=abandoned and cached=N as trailing fields only when given, after the cost '
+            + 'and the endpoint, so the 2026-09-09 reckoning of abandoned streams and the cache hits of '
+            + 'price-sorted routing both read off the same grammar',
+          fn: async () => {
+            expect(
+              reportSpend({
+                provider: 'openrouter',
+                label: 'deepseek/deepseek-v4.1-flash',
+                extracted: reported({
+                  promptTokens: 1_000,
+                  completionTokens: 10,
+                },),
+                costUsd: 0.0006,
+                estimated: 'abandoned',
+              },),
+            )
+              .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=1000 completion=10 cost=0.0006 estimated=abandoned',);
+            expect(
+              reportSpend({
+                provider: 'openrouter',
+                label: 'deepseek/deepseek-v4.1-flash',
+                extracted: reported({
+                  promptTokens: 4_000,
+                  completionTokens: 12,
+                },),
+                costUsd: 0.0004,
+                endpoint: 'Baidu',
+                cachedTokens: 3_072,
+              },),
+            )
+              .toBe('SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=4000 completion=12 cost=0.0004 endpoint=Baidu cached=3072',);
+          },
+        },),
+      ],
     },),
   ],
 },);

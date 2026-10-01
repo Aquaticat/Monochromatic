@@ -13,6 +13,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -178,231 +179,239 @@ function scriptedViews(
 }
 
 await describe({
-  name: readJudgeSeats.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS the dryness view off the run client, and SEATS the full bench when the view cannot be '
-        + 'read, since an unreadable view is not evidence of dryness',
-      fn: async () => {
-        const dry = await readJudgeSeats({
-          client: viewClient({ providerDryness: async () => SYNTHETIC_DRY, },),
-          phase: 'lanes',
-          signal: new AbortController().signal,
-          l,
-        },);
-        expect(dry.dry,).toEqual(SYNTHETIC_DRY,);
-        expect(dry.wideSeats.includes(QWEN,),).toBe(false,);
+    describe({
+      name: readJudgeSeats.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS the dryness view off the run client, and SEATS the full bench when the view cannot be '
+            + 'read, since an unreadable view is not evidence of dryness',
+          fn: async () => {
+            const dry = await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => SYNTHETIC_DRY, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l,
+            },);
+            expect(dry.dry,).toEqual(SYNTHETIC_DRY,);
+            expect(dry.wideSeats.includes(QWEN,),).toBe(false,);
 
-        const wet = await readJudgeSeats({
-          client: viewClient({ providerDryness: async () => ALL_WET, },),
-          phase: 'lane contest',
-          signal: new AbortController().signal,
-          l,
-        },);
-        expect(wet.dry,).toEqual(ALL_WET,);
-        expect(wet.wideSeats.includes(QWEN,),).toBe(true,);
+            const wet = await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => ALL_WET, },),
+              phase: 'lane contest',
+              signal: new AbortController().signal,
+              l,
+            },);
+            expect(wet.dry,).toEqual(ALL_WET,);
+            expect(wet.wideSeats.includes(QWEN,),).toBe(true,);
 
-        const unread = await readJudgeSeats({
-          client: viewClient({
-            providerDryness: async () => {
-              throw new Error('meters offline',);
-            },
-          },),
-          phase: 'consolidation',
-          signal: new AbortController().signal,
-          l,
-        },);
-        expect(unread.dry,).toEqual(ALL_WET,);
-        expect(unread.wideSeats.includes(QWEN,),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'WAITS OUT THE SHORTEST HOLD ONCE and reads again when a bench this phase leans on cannot '
-        + 'reach quorum among the seats a wet provider serves and a provider has named its return, '
-        + 'the thirteenth class: Bedrock alone wet at the translate lane, Hyper held for its daily limit',
-      fn: async () => {
-        const script = scriptedViews({
-          views: [
-            BEDROCK_ALONE,
-            ALL_WET,
-          ],
-        },);
-        const seats = await readJudgeSeats({
-          client: viewClient({
-            providerDryness: script.read,
-            providerHolds: () => ({
-              ...NO_HOLDS,
-              hyper: 40,
-            }),
-          },),
-          phase: 'translate lane',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },);
-        expect(script.counter.reads,).toBe(2,);
-        expect(seats.dry,).toEqual(ALL_WET,);
-        expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
-      },
-    },),
-    it({
-      name: 'DOES NOT WAIT when no provider has named its return, seating what it read, nor when every '
-        + 'bench can reach quorum however long a provider is held',
-      fn: async () => {
-        const noHold = scriptedViews({
-          views: [
-            BEDROCK_ALONE,
-            ALL_WET,
-          ],
-        },);
-        const short = await readJudgeSeats({
-          client: viewClient({ providerDryness: noHold.read, },),
-          phase: 'consolidation',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },);
-        expect(noHold.counter.reads,).toBe(1,);
-        expect(short.dry,).toEqual(BEDROCK_ALONE,);
+            const unread = await readJudgeSeats({
+              client: viewClient({
+                providerDryness: async () => {
+                  throw new Error('meters offline',);
+                },
+              },),
+              phase: 'consolidation',
+              signal: new AbortController().signal,
+              l,
+            },);
+            expect(unread.dry,).toEqual(ALL_WET,);
+            expect(unread.wideSeats.includes(QWEN,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'WAITS OUT THE SHORTEST HOLD ONCE and reads again when a bench this phase leans on cannot '
+            + 'reach quorum among the seats a wet provider serves and a provider has named its return, '
+            + 'the thirteenth class: Bedrock alone wet at the translate lane, Hyper held for its daily limit',
+          fn: async () => {
+            const script = scriptedViews({
+              views: [
+                BEDROCK_ALONE,
+                ALL_WET,
+              ],
+            },);
+            const seats = await readJudgeSeats({
+              client: viewClient({
+                providerDryness: script.read,
+                providerHolds: () => ({
+                  ...NO_HOLDS,
+                  hyper: 40,
+                }),
+              },),
+              phase: 'translate lane',
+              signal: new AbortController().signal,
+              l,
+              pollMs: 5,
+            },);
+            expect(script.counter.reads,).toBe(2,);
+            expect(seats.dry,).toEqual(ALL_WET,);
+            expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
+          },
+        },),
+        it({
+          name: 'DOES NOT WAIT when no provider has named its return, seating what it read, nor when every '
+            + 'bench can reach quorum however long a provider is held',
+          fn: async () => {
+            const noHold = scriptedViews({
+              views: [
+                BEDROCK_ALONE,
+                ALL_WET,
+              ],
+            },);
+            const short = await readJudgeSeats({
+              client: viewClient({ providerDryness: noHold.read, },),
+              phase: 'consolidation',
+              signal: new AbortController().signal,
+              l,
+              pollMs: 5,
+            },);
+            expect(noHold.counter.reads,).toBe(1,);
+            expect(short.dry,).toEqual(BEDROCK_ALONE,);
 
-        const wet = scriptedViews({ views: [ALL_WET,], },);
-        const full = await readJudgeSeats({
-          client: viewClient({
-            providerDryness: wet.read,
-            providerHolds: () => ({
-              ...NO_HOLDS,
-              openrouter: 60_000,
-            }),
-          },),
-          phase: 'consolidation',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },);
-        expect(wet.counter.reads,).toBe(1,);
-        expect(full.dry,).toEqual(ALL_WET,);
-      },
-    },),
-    it({
-      name: 'SAYS SO when a bench the phase leans on is short of quorum and no provider has named its '
-        + 'return, seating what it read without a wait: the seventh hakureico launch, Bedrock alone, whose '
-        + 'seats lines read roster=10 withheld=none with three seats reachable (two since the owner culled '
-        + 'gpt-oss-120b on 2026-09-24)',
-      fn: async () => {
-        const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
-        const { logger, lines, } = capturingLogger();
-        const seats = await readJudgeSeats({
-          client: viewClient({ providerDryness: script.read, },),
-          phase: 'preparation',
-          signal: new AbortController().signal,
-          l: logger,
-          pollMs: 5,
-        },);
-        expect(script.counter.reads,).toBe(1,);
-        expect(seats.wideSeats.length,).toBe(RUN_WIDE_SEATS.length,);
-        /**
-         The line that names the shortfall, if the reading said so.
-         */
-        const said = lines.find(function namesShortfall(line: string,): boolean {
-          return line.includes(`JUDGE SEATS phase=preparation short of quorum: wide ${
+            const wet = scriptedViews({ views: [ALL_WET,], },);
+            const full = await readJudgeSeats({
+              client: viewClient({
+                providerDryness: wet.read,
+                providerHolds: () => ({
+                  ...NO_HOLDS,
+                  openrouter: 60_000,
+                }),
+              },),
+              phase: 'consolidation',
+              signal: new AbortController().signal,
+              l,
+              pollMs: 5,
+            },);
+            expect(wet.counter.reads,).toBe(1,);
+            expect(full.dry,).toEqual(ALL_WET,);
+          },
+        },),
+        it({
+          name: 'SAYS SO when a bench the phase leans on is short of quorum and no provider has named its '
+            + 'return, seating what it read without a wait: the seventh hakureico launch, Bedrock alone, whose '
+            + 'seats lines read roster=10 withheld=none with three seats reachable (two since the owner culled '
+            + 'gpt-oss-120b on 2026-09-24)',
+          fn: async () => {
+            const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
+            const { logger, lines, } = capturingLogger();
+            const seats = await readJudgeSeats({
+              client: viewClient({ providerDryness: script.read, },),
+              phase: 'preparation',
+              signal: new AbortController().signal,
+              l: logger,
+              pollMs: 5,
+            },);
+            expect(script.counter.reads,).toBe(1,);
+            expect(seats.wideSeats.length,).toBe(RUN_WIDE_SEATS.length,);
+            /**
+             The line that names the shortfall, if the reading said so.
+             */
+            const said = lines.find(function namesShortfall(line: string,): boolean {
+              return line.includes(`JUDGE SEATS phase=preparation short of quorum: wide ${
             String(reachableSeats({ seats: RUN_WIDE_SEATS, dry: BEDROCK_ALONE, },).length,)
           } of ${
             String(RUN_WIDE_SEATS.length,)
           } reachable, quorum ${String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)}`,);
-        },);
-        expect(said === undefined,).toBe(false,);
-        expect(said?.includes('no provider has named its return',),).toBe(true,);
+            },);
+            expect(said === undefined,).toBe(false,);
+            expect(said?.includes('no provider has named its return',),).toBe(true,);
 
-        const whole = scriptedViews({ views: [ALL_WET,], },);
-        const quiet = capturingLogger();
-        await readJudgeSeats({
-          client: viewClient({ providerDryness: whole.read, },),
-          phase: 'pictures',
-          signal: new AbortController().signal,
-          l: quiet.logger,
-          pollMs: 5,
-        },);
-        expect(quiet.lines.some(function namesShortfall(line: string,): boolean {
-          return line.includes('short of quorum',);
-        },),).toBe(false,);
-      },
+            const whole = scriptedViews({ views: [ALL_WET,], },);
+            const quiet = capturingLogger();
+            await readJudgeSeats({
+              client: viewClient({ providerDryness: whole.read, },),
+              phase: 'pictures',
+              signal: new AbortController().signal,
+              l: quiet.logger,
+              pollMs: 5,
+            },);
+            expect(quiet.lines.some(function namesShortfall(line: string,): boolean {
+              return line.includes('short of quorum',);
+            },),).toBe(false,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: `${readJudgeSeats.name} on the writing-bench floor`,
-  children: [
-    it({
-      name: 'STOPS THE ENTRY when a writing bench the phase leans on is below the pair a slate needs and no '
-        + 'provider has named its return, the fifteenth class: the eighth hakureico pass at the lanes on '
-        + 'Bedrock alone, no editor, no refiner (and, since google.gemma-4-e2b writes, a pair of '
-        + 'translators at the floor)',
-      fn: async () => {
-        const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
-        const { logger, lines, } = capturingLogger();
-        await expect(readJudgeSeats({
-          client: viewClient({ providerDryness: script.read, },),
-          phase: 'lanes',
-          signal: new AbortController().signal,
-          l: logger,
-          pollMs: 5,
-        },),).rejects.toThrow(WritingBenchUnreachableError,);
-        expect(script.counter.reads,).toBe(1,);
-        expect(lines.some(function namesStop(line: string,): boolean {
-          return line.includes('JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of',)
-            && line.includes('stopping the entry',);
-        },),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'WAITS OUT THE HOLD ONCE and STOPS when a bench is still below the floor after it (the editors '
-        + 'at the lanes, since Bedrock alone reaches a pair of translators from 2026-09-08), and SEATS when '
-        + 'the wait brought the bench back',
-      fn: async () => {
-        const stays = scriptedViews({
-          views: [
-            BEDROCK_ALONE,
-            BEDROCK_ALONE,
-          ],
-        },);
-        await expect(readJudgeSeats({
-          client: viewClient({
-            providerDryness: stays.read,
-            providerHolds: () => ({
-              ...NO_HOLDS,
-              hyper: 40,
-            }),
-          },),
-          phase: 'lanes',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },),).rejects.toThrow('writing bench unreachable at lanes: editors',);
-        expect(stays.counter.reads,).toBe(2,);
+    describe({
+      name: `${readJudgeSeats.name} on the writing-bench floor`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'STOPS THE ENTRY when a writing bench the phase leans on is below the pair a slate needs and no '
+            + 'provider has named its return, the fifteenth class: the eighth hakureico pass at the lanes on '
+            + 'Bedrock alone, no editor, no refiner (and, since google.gemma-4-e2b writes, a pair of '
+            + 'translators at the floor)',
+          fn: async () => {
+            const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
+            const { logger, lines, } = capturingLogger();
+            await expect(readJudgeSeats({
+              client: viewClient({ providerDryness: script.read, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: logger,
+              pollMs: 5,
+            },),).rejects.toThrow(WritingBenchUnreachableError,);
+            expect(script.counter.reads,).toBe(1,);
+            expect(lines.some(function namesStop(line: string,): boolean {
+              return line.includes('JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of',)
+                && line.includes('stopping the entry',);
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'WAITS OUT THE HOLD ONCE and STOPS when a bench is still below the floor after it (the editors '
+            + 'at the lanes, since Bedrock alone reaches a pair of translators from 2026-09-08), and SEATS when '
+            + 'the wait brought the bench back',
+          fn: async () => {
+            const stays = scriptedViews({
+              views: [
+                BEDROCK_ALONE,
+                BEDROCK_ALONE,
+              ],
+            },);
+            await expect(readJudgeSeats({
+              client: viewClient({
+                providerDryness: stays.read,
+                providerHolds: () => ({
+                  ...NO_HOLDS,
+                  hyper: 40,
+                }),
+              },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l,
+              pollMs: 5,
+            },),).rejects.toThrow('writing bench unreachable at lanes: editors',);
+            expect(stays.counter.reads,).toBe(2,);
 
-        const returns = scriptedViews({
-          views: [
-            BEDROCK_ALONE,
-            ALL_WET,
-          ],
-        },);
-        const seats = await readJudgeSeats({
-          client: viewClient({
-            providerDryness: returns.read,
-            providerHolds: () => ({
-              ...NO_HOLDS,
-              hyper: 40,
-            }),
-          },),
-          phase: 'lanes',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },);
-        expect(returns.counter.reads,).toBe(2,);
-        expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
-      },
+            const returns = scriptedViews({
+              views: [
+                BEDROCK_ALONE,
+                ALL_WET,
+              ],
+            },);
+            const seats = await readJudgeSeats({
+              client: viewClient({
+                providerDryness: returns.read,
+                providerHolds: () => ({
+                  ...NO_HOLDS,
+                  hyper: 40,
+                }),
+              },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l,
+              pollMs: 5,
+            },);
+            expect(returns.counter.reads,).toBe(2,);
+            expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
+          },
+        },),
+      ],
     },),
   ],
 },);

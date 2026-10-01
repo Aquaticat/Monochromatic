@@ -36,6 +36,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -158,174 +159,6 @@ function pooled(
   };
 }
 
-await describe({
-  name: poolGeneration.name,
-  children: [
-    it({
-      name: 'NAMES the one build every kept entry recorded, and how many were offered',
-      fn: async () => {
-        expect(poolGeneration({
-          eligible: pooled({
-            digests: [
-              [
-                WHISKERS,
-                SETTLED_UNDER,
-              ],
-              [
-                MITTENS,
-                SETTLED_UNDER,
-              ],
-              [
-                SAFFRON,
-                SETTLED_UNDER,
-              ],
-              [
-                UNDRAWN,
-                UNDRAWN_BUILD,
-              ],
-            ],
-          },),
-          names: WHOLE_HOUSEHOLD,
-        },),).toEqual({
-          kind: 'recorded',
-          digest: SETTLED_UNDER,
-          entries: HOUSEHOLD_SIZE,
-        },);
-      },
-    },),
-    it({
-      name: 'COUNTS every kept name, including ones that recorded no build',
-      fn: async () => {
-        // Only one of the three kept artifacts recorded a digest. The pool still
-        // has one generation and still offered three entries, so the count must
-        // not shrink to the one that happened to be tagged.
-        expect(poolGeneration({
-          eligible: pooled({
-            digests: [
-              [
-                MITTENS,
-                SETTLED_UNDER,
-              ],
-              [
-                UNDRAWN,
-                UNDRAWN_BUILD,
-              ],
-            ],
-          },),
-          names: WHOLE_HOUSEHOLD,
-        },),).toEqual({
-          kind: 'recorded',
-          digest: SETTLED_UNDER,
-          entries: HOUSEHOLD_SIZE,
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES to name a build when no kept entry recorded one',
-      fn: async () => {
-        // The lookup is not empty: it holds a build for an entry this draw did
-        // not keep. Reading values rather than kept names would report that one
-        // as the pool's generation.
-        expect(poolGeneration({
-          eligible: pooled({
-            digests: [
-              [
-                UNDRAWN,
-                UNDRAWN_BUILD,
-              ],
-            ],
-          },),
-          names: WHOLE_HOUSEHOLD,
-        },),).toEqual({
-          kind: 'unrecorded',
-          reason: NOTHING_RECORDED,
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES to name a build for a draw that kept nothing',
-      fn: async () => {
-        expect(poolGeneration({
-          eligible: pooled({
-            digests: [
-              [
-                WHISKERS,
-                SETTLED_UNDER,
-              ],
-            ],
-          },),
-          names: [],
-        },),).toEqual({
-          kind: 'unrecorded',
-          reason: NOTHING_RECORDED,
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES a pool spanning two builds, and says the guard should have caught it',
-      fn: async () => {
-        expect(poolGeneration({
-          eligible: pooled({
-            digests: [
-              [
-                WHISKERS,
-                SETTLED_UNDER,
-              ],
-              [
-                MITTENS,
-                OTHER_BUILD,
-              ],
-              [
-                SAFFRON,
-                SETTLED_UNDER,
-              ],
-            ],
-          },),
-          names: WHOLE_HOUSEHOLD,
-        },),).toEqual({
-          kind: 'unrecorded',
-          reason: TWO_GENERATIONS,
-        },);
-      },
-    },),
-    it({
-      name: 'IGNORES an undrawn entry that recorded a build of its own',
-      fn: async () => {
-        // Same lookup as the two-generation case except the second build sits on
-        // the entry nobody kept. A reader of the lookup refuses this pool; a
-        // reader of the kept names names its one build, which is correct.
-        expect(poolGeneration({
-          eligible: pooled({
-            digests: [
-              [
-                WHISKERS,
-                SETTLED_UNDER,
-              ],
-              [
-                MITTENS,
-                SETTLED_UNDER,
-              ],
-              [
-                SAFFRON,
-                SETTLED_UNDER,
-              ],
-              [
-                UNDRAWN,
-                OTHER_BUILD,
-              ],
-            ],
-          },),
-          names: WHOLE_HOUSEHOLD,
-        },),).toEqual({
-          kind: 'recorded',
-          digest: SETTLED_UNDER,
-          entries: HOUSEHOLD_SIZE,
-        },);
-      },
-    },),
-  ],
-},);
-
 /**
  Commit the directory's artifacts record, a full object id so they place.
  */
@@ -391,49 +224,225 @@ async function settledArtifacts(
 }
 
 await describe({
-  name: `${poolGeneration.name} over a census`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'NAMES the build of a pool resolved from real artifacts, whose lookup keys entry ids while the '
-        + 'draw keeps file names (ledger B63)',
-      fn: async () => {
-        /**
-         Entries the directory settles, every one of which the draw keeps.
-         */
-        const entryIds = [
-          'whiskers',
-          'mittens',
-        ];
-        await using settled = await settledArtifacts({ entryIds, },);
+    describe({
+      name: poolGeneration.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the one build every kept entry recorded, and how many were offered',
+          fn: async () => {
+            expect(poolGeneration({
+              eligible: pooled({
+                digests: [
+                  [
+                    WHISKERS,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    MITTENS,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    SAFFRON,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    UNDRAWN,
+                    UNDRAWN_BUILD,
+                  ],
+                ],
+              },),
+              names: WHOLE_HOUSEHOLD,
+            },),).toEqual({
+              kind: 'recorded',
+              digest: SETTLED_UNDER,
+              entries: HOUSEHOLD_SIZE,
+            },);
+          },
+        },),
+        it({
+          name: 'COUNTS every kept name, including ones that recorded no build',
+          fn: async () => {
+            // Only one of the three kept artifacts recorded a digest. The pool still
+            // has one generation and still offered three entries, so the count must
+            // not shrink to the one that happened to be tagged.
+            expect(poolGeneration({
+              eligible: pooled({
+                digests: [
+                  [
+                    MITTENS,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    UNDRAWN,
+                    UNDRAWN_BUILD,
+                  ],
+                ],
+              },),
+              names: WHOLE_HOUSEHOLD,
+            },),).toEqual({
+              kind: 'recorded',
+              digest: SETTLED_UNDER,
+              entries: HOUSEHOLD_SIZE,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES to name a build when no kept entry recorded one',
+          fn: async () => {
+            // The lookup is not empty: it holds a build for an entry this draw did
+            // not keep. Reading values rather than kept names would report that one
+            // as the pool's generation.
+            expect(poolGeneration({
+              eligible: pooled({
+                digests: [
+                  [
+                    UNDRAWN,
+                    UNDRAWN_BUILD,
+                  ],
+                ],
+              },),
+              names: WHOLE_HOUSEHOLD,
+            },),).toEqual({
+              kind: 'unrecorded',
+              reason: NOTHING_RECORDED,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES to name a build for a draw that kept nothing',
+          fn: async () => {
+            expect(poolGeneration({
+              eligible: pooled({
+                digests: [
+                  [
+                    WHISKERS,
+                    SETTLED_UNDER,
+                  ],
+                ],
+              },),
+              names: [],
+            },),).toEqual({
+              kind: 'unrecorded',
+              reason: NOTHING_RECORDED,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES a pool spanning two builds, and says the guard should have caught it',
+          fn: async () => {
+            expect(poolGeneration({
+              eligible: pooled({
+                digests: [
+                  [
+                    WHISKERS,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    MITTENS,
+                    OTHER_BUILD,
+                  ],
+                  [
+                    SAFFRON,
+                    SETTLED_UNDER,
+                  ],
+                ],
+              },),
+              names: WHOLE_HOUSEHOLD,
+            },),).toEqual({
+              kind: 'unrecorded',
+              reason: TWO_GENERATIONS,
+            },);
+          },
+        },),
+        it({
+          name: 'IGNORES an undrawn entry that recorded a build of its own',
+          fn: async () => {
+            // Same lookup as the two-generation case except the second build sits on
+            // the entry nobody kept. A reader of the lookup refuses this pool; a
+            // reader of the kept names names its one build, which is correct.
+            expect(poolGeneration({
+              eligible: pooled({
+                digests: [
+                  [
+                    WHISKERS,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    MITTENS,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    SAFFRON,
+                    SETTLED_UNDER,
+                  ],
+                  [
+                    UNDRAWN,
+                    OTHER_BUILD,
+                  ],
+                ],
+              },),
+              names: WHOLE_HOUSEHOLD,
+            },),).toEqual({
+              kind: 'recorded',
+              digest: SETTLED_UNDER,
+              entries: HOUSEHOLD_SIZE,
+            },);
+          },
+        },),
+      ],
+    },),
 
-        /**
-         The directory as a draw lists it.
-         */
-        const listed = await listArtifactFiles({ artifactsDir: settled.artifactsDir, },);
+    describe({
+      name: `${poolGeneration.name} over a census`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the build of a pool resolved from real artifacts, whose lookup keys entry ids while the '
+            + 'draw keeps file names (ledger B63)',
+          fn: async () => {
+            /**
+             Entries the directory settles, every one of which the draw keeps.
+             */
+            const entryIds = [
+              'whiskers',
+              'mittens',
+            ];
+            await using settled = await settledArtifacts({ entryIds, },);
 
-        /**
-         The pool as the draw resolves it, from one census of that listing.
-         */
-        const eligible = await selectEligible({
-          census: await censusByGeneration({
-            artifactsDir: settled.artifactsDir,
-            names: listed,
-          },),
-          pooledDeliberately: false,
-        },);
+            /**
+             The directory as a draw lists it.
+             */
+            const listed = await listArtifactFiles({ artifactsDir: settled.artifactsDir, },);
 
-        expect(poolGeneration({
-          eligible,
-          names: keepEligible({
-            names: listed,
-            eligible,
-          },),
-        },),).toEqual({
-          kind: 'recorded',
-          digest: PLACED_DIGEST,
-          entries: entryIds.length,
-        },);
-      },
+            /**
+             The pool as the draw resolves it, from one census of that listing.
+             */
+            const eligible = await selectEligible({
+              census: await censusByGeneration({
+                artifactsDir: settled.artifactsDir,
+                names: listed,
+              },),
+              pooledDeliberately: false,
+            },);
+
+            expect(poolGeneration({
+              eligible,
+              names: keepEligible({
+                names: listed,
+                eligible,
+              },),
+            },),).toEqual({
+              kind: 'recorded',
+              digest: PLACED_DIGEST,
+              entries: entryIds.length,
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

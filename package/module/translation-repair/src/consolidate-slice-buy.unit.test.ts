@@ -13,6 +13,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -58,30 +59,6 @@ function settlementEnding(
     findings: [],
   } as unknown as ConsolidationSettlement;
 }
-
-await describe({
-  name: standingKeptUnendorsed.name,
-  children: [
-    it({
-      name: 'NAMES an unendorsed standing the attempt kept, and neither an endorsed one nor a consolidated '
-        + 'settlement',
-      fn: async () => {
-        expect(standingKeptUnendorsed({
-          settlement: settlementEnding({ terminal: 'gate-kept-standing', },),
-          standingMayShip: false,
-        },),).toBe(true,);
-        expect(standingKeptUnendorsed({
-          settlement: settlementEnding({ terminal: 'gate-kept-standing', },),
-          standingMayShip: true,
-        },),).toBe(false,);
-        expect(standingKeptUnendorsed({
-          settlement: settlementEnding({ terminal: 'consolidated', },),
-          standingMayShip: false,
-        },),).toBe(false,);
-      },
-    },),
-  ],
-},);
 
 /**
  Marker only the consolidate gate's sheet carries.
@@ -213,42 +190,74 @@ async function buyOverEmptyStanding(
 }
 
 await describe({
-  name: buyConsolidationSlice.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ASKS NOBODY over an empty standing with no lane text, and settles on the slice having nothing to '
-        + 'consolidate against',
-      fn: async () => {
-        const { client, asked, } = countingClient();
-        const settled = await buyOverEmptyStanding({
-          client,
-          laneTexts: [],
-        },);
-        expect({
-          terminal: settled.terminal,
-          asked,
-        },).toEqual({
-          terminal: 'no-standing-text',
-          asked: { producer: 0, judge: 0, gate: 0, },
-        },);
-      },
+    describe({
+      name: standingKeptUnendorsed.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES an unendorsed standing the attempt kept, and neither an endorsed one nor a consolidated '
+            + 'settlement',
+          fn: async () => {
+            expect(standingKeptUnendorsed({
+              settlement: settlementEnding({ terminal: 'gate-kept-standing', },),
+              standingMayShip: false,
+            },),).toBe(true,);
+            expect(standingKeptUnendorsed({
+              settlement: settlementEnding({ terminal: 'gate-kept-standing', },),
+              standingMayShip: true,
+            },),).toBe(false,);
+            expect(standingKeptUnendorsed({
+              settlement: settlementEnding({ terminal: 'consolidated', },),
+              standingMayShip: false,
+            },),).toBe(false,);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'ASKS NO PRODUCER over an empty standing, since producers write from it, and takes the lane text '
-        + 'to the slate judges (class eighty-seven)',
-      fn: async () => {
-        const { client, asked, } = countingClient();
-        const settled = await buyOverEmptyStanding({
-          client,
-          laneTexts: [{
-            lane: 'translate',
-            text: 'The cat fell asleep by the window.\nShe woke at four.',
-          },],
-        },);
-        expect(asked.producer,).toBe(0,);
-        expect(asked.judge,).toBeGreaterThan(0,);
-        expect(settled.terminal,).not.toBe('no-standing-text',);
-      },
+
+    describe({
+      name: buyConsolidationSlice.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS NOBODY over an empty standing with no lane text, and settles on the slice having nothing to '
+            + 'consolidate against',
+          fn: async () => {
+            const { client, asked, } = countingClient();
+            const settled = await buyOverEmptyStanding({
+              client,
+              laneTexts: [],
+            },);
+            expect({
+              terminal: settled.terminal,
+              asked,
+            },).toEqual({
+              terminal: 'no-standing-text',
+              asked: { producer: 0, judge: 0, gate: 0, },
+            },);
+          },
+        },),
+        it({
+          name: 'ASKS NO PRODUCER over an empty standing, since producers write from it, and takes the lane text '
+            + 'to the slate judges (class eighty-seven)',
+          fn: async () => {
+            const { client, asked, } = countingClient();
+            const settled = await buyOverEmptyStanding({
+              client,
+              laneTexts: [{
+                lane: 'translate',
+                text: 'The cat fell asleep by the window.\nShe woke at four.',
+              },],
+            },);
+            expect(asked.producer,).toBe(0,);
+            expect(asked.judge,).toBeGreaterThan(0,);
+            expect(settled.terminal,).not.toBe('no-standing-text',);
+          },
+        },),
+      ],
     },),
   ],
 },);

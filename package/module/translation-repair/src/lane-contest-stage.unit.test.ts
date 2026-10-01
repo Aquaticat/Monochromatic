@@ -16,6 +16,7 @@ import { setTimeout as abortableWait, } from 'node:timers/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -263,259 +264,6 @@ async function contest(
   },);
 }
 
-await describe({
-  name: contestLaneSlice.name,
-  children: [
-    it({
-      name: 'SHIPS the candidate two judges named against one for the other',
-      fn: async () => {
-        const outcome = await contest({
-          replyByModel: [
-            ballot({ choice: 'repair', },),
-            ballot({ choice: 'repair', },),
-            ballot({ choice: 'translate', },),
-          ],
-        },);
-        expect(outcome.choice,).toBe('repair',);
-        expect(outcome.usable,).toBe(3,);
-        expect(outcome.findings,).toEqual([],);
-      },
-    },),
-    it({
-      name:
-        'NAMES THE JUDGE on every ballot (hulicaijia26, 2026-09-26: four of five contest ballots '
-        + 'called the archive\'s wordplay note an addition and no record said which models cast them)',
-      fn: async () => {
-        const outcome = await contest({
-          replyByModel: [
-            ballot({ choice: 'repair', },),
-            ballot({ choice: 'repair', },),
-            ballot({ choice: 'translate', },),
-          ],
-        },);
-        expect(outcome.ballots.map(function judgeOf(cast,) {
-          return cast.modelId;
-        },),).toEqual([...ROSTER,],);
-      },
-    },),
-    it({
-      name: 'RECORDS RAW HALF-QUORUM BALLOTS without waiting for delayed seats excluded downstream',
-      fn: async () => {
-        const outcome = await contestLaneSlice({
-          // Whole bench: this case scripts every seat and reads over the bench it wrote.
-          fanOut: 'whole-bench',
-          client: cannedClient({
-            replyByModel: [
-              ballot({ choice: 'repair', },),
-              ballot({ choice: 'repair', },),
-              ballot({ choice: 'translate', },),
-              ballot({ choice: 'translate', },),
-            ],
-            // NEVER, NOT 100 MS (ledger T5): at 0.2 CPU the two prompt seats
-            // took longer than 100 ms and the delayed ones arrived too, 2 of 5
-            // runs; seats that answer only past the exchange bound are
-            // abandoned at quorum whatever the machine's speed.
-            delayByModel: [
-              0,
-              0,
-              NEVER_ANSWERS_MS,
-              NEVER_ANSWERS_MS,
-            ],
-          },),
-          modelIds: ELIGIBILITY_ROSTER,
-          subject: {
-            ...SUBJECT,
-            ineligibleCandidates: ['repair',],
-          },
-          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-          graceMs: 0,
-          l,
-        },);
-        expect(outcome.usable,).toBe(2,);
-        expect(outcome.ballots.filter(function choseTranslate(ballotValue,): boolean {
-          return ballotValue.choice === 'translate';
-        },),).toHaveLength(0,);
-        // RAW STAGE RETAINS BALLOTS UNCHANGED. `lane-contest-driver` applies
-        // deterministic eligibility, settles this as neither, and refuses
-        // persistence, pinned by its unsafe front-matter winner test.
-        expect(outcome.choice,).toBe('repair',);
-      },
-    },),
-
-    it({
-      name: 'KEEPS DELAYED ELIGIBLE VOICES that arrive inside bounded grace',
-      fn: async () => {
-        const outcome = await contestLaneSlice({
-          // Whole bench: this case scripts every seat and reads over the bench it wrote.
-          fanOut: 'whole-bench',
-          client: cannedClient({
-            replyByModel: [
-              ballot({ choice: 'repair', },),
-              ballot({ choice: 'repair', },),
-              ballot({ choice: 'translate', },),
-              ballot({ choice: 'translate', },),
-            ],
-            delayByModel: [
-              0,
-              0,
-              30,
-              30,
-            ],
-          },),
-          modelIds: ELIGIBILITY_ROSTER,
-          subject: {
-            ...SUBJECT,
-            ineligibleCandidates: ['repair',],
-          },
-          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-          graceMs: 100,
-          l,
-        },);
-        expect(outcome.usable,).toBe(4,);
-        expect(outcome.ballots.filter(function choseTranslate(ballotValue,): boolean {
-          return ballotValue.choice === 'translate';
-        },),).toHaveLength(2,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES to ship on a tie, rather than picking by list order',
-      fn: async () => {
-        // A CANDIDATE THAT TIES HAS NOT BEEN CHOSEN. Shipping either here would
-        // be deciding what a reader sees on a memorial page by which lane the
-        // code happens to name first.
-        const outcome = await contest({
-          replyByModel: [
-            ballot({ choice: 'repair', },),
-            ballot({ choice: 'translate', },),
-            ballot({ choice: 'neither', },),
-          ],
-        },);
-        expect(outcome.choice,).toBe('neither',);
-        expect(outcome.usable,).toBe(3,);
-      },
-    },),
-    it({
-      name: 'REFUSES a candidate only ONE judge named, however the rest split',
-      fn: async () => {
-        const outcome = await contest({
-          replyByModel: [
-            ballot({ choice: 'repair', },),
-            ballot({ choice: 'neither', },),
-            ballot({ choice: 'neither', },),
-          ],
-        },);
-        expect(outcome.choice,).toBe('neither',);
-      },
-    },),
-    it({
-      name: 'READS a unanimous decline as a settled verdict, with NO finding',
-      fn: async () => {
-        // THE DISTINCTION THE FINDING EXISTS FOR: three judges saying the
-        // candidates are equally faithful is a decided slice. Three judges
-        // never answering is not, and only the second is a finding.
-        const outcome = await contest({
-          replyByModel: [
-            ballot({ choice: 'neither', },),
-            ballot({ choice: 'neither', },),
-            ballot({ choice: 'neither', },),
-          ],
-        },);
-        expect(outcome.choice,).toBe('neither',);
-        expect(outcome.usable,).toBe(3,);
-        expect(outcome.findings,).toEqual([],);
-      },
-    },),
-    it({
-      name: 'REPORTS a finding when too few ballots survived to settle anything',
-      fn: async () => {
-        const outcome = await contest({
-          replyByModel: [
-            ballot({ choice: 'repair', },),
-            'not json at all',
-            'also not json',
-          ],
-        },);
-        expect(outcome.choice,).toBe('neither',);
-        expect(outcome.usable,).toBe(1,);
-        expect(outcome.findings.length,).toBe(1,);
-      },
-    },),
-    it({
-      name: 'SAYS THE BENCH WAS SHORT when the router refuses seats past the bench quorum, and still settles on '
-        + 'the ballots it heard (ledger X8)',
-      fn: async () => {
-        /**
-         Seats the router refuses, leaving the contest's quorum in reach and
-         the bench's out of it.
-         */
-        const refused = SIX_SEAT_ROSTER.slice(LANE_CONTEST_QUORUM,);
-
-        /**
-         The bench's quorum once those seats are out of reach.
-         */
-        const quorum = reachableQuorum({
-          benchSize: SIX_SEAT_ROSTER.length,
-          unreachable: refused.length,
-        },);
-        expect(quorum.short,).toBe(true,);
-
-        /**
-         What the two reachable seats settled.
-         */
-        const outcome = await contestLaneSlice({
-          // Whole bench: this case scripts every seat and reads over the bench it wrote.
-          fanOut: 'whole-bench',
-          client: refusingClient({
-            choice: 'repair',
-            refused,
-          },),
-          modelIds: SIX_SEAT_ROSTER,
-          subject: SUBJECT,
-          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-          l,
-        },);
-        expect(outcome.choice,).toBe('repair',);
-        expect(outcome.usable,).toBe(SIX_SEAT_ROSTER.length - refused.length,);
-        expect(outcome.findings,).toStrictEqual([
-          shortBenchStageFinding({
-            stage: 'lane-contest',
-            quorum,
-            benchSize: SIX_SEAT_ROSTER.length,
-          },),
-        ],);
-      },
-    },),
-    it({
-      name: 'KEEPS the findings each judge reported, for the audit trail',
-      fn: async () => {
-        const outcome = await contest({
-          replyByModel: [
-            JSON.stringify({
-              choice: 'translate',
-              unsupported: [ 'repair', ],
-              dropped: [],
-              reason: 'the repair candidate adds an afternoon the original never mentions',
-            },),
-            JSON.stringify({
-              choice: 'translate',
-              unsupported: [ 'repair', ],
-              dropped: [],
-              reason: 'same',
-            },),
-            ballot({ choice: 'neither', },),
-          ],
-        },);
-        expect(outcome.choice,).toBe('translate',);
-        expect(outcome.ballots.at(0,)?.unsupported,).toEqual([ 'repair', ],);
-      },
-    },),
-  ],
-},);
-
 /**
  Builds one ballot body that also answers the archive question.
  
@@ -579,41 +327,302 @@ async function contestWithNoArchive(
 }
 
 await describe({
-  name: 'archive answers on a slice with no archive',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'KEEPS THE ANSWERS where an archive rendering exists, which is the positive control: '
-        + 'without it, a stripped result would look the same as a roster that never answered',
-      fn: async () => {
-        const outcome = await contest({
-          replyByModel: [
-            archiveBallot({ choice: 'neither', archive: 'flawed', },),
-            archiveBallot({ choice: 'neither', archive: 'flawed', },),
-            archiveBallot({ choice: 'neither', archive: 'flawed', },),
-          ],
-        },);
+    describe({
+      name: contestLaneSlice.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHIPS the candidate two judges named against one for the other',
+          fn: async () => {
+            const outcome = await contest({
+              replyByModel: [
+                ballot({ choice: 'repair', },),
+                ballot({ choice: 'repair', },),
+                ballot({ choice: 'translate', },),
+              ],
+            },);
+            expect(outcome.choice,).toBe('repair',);
+            expect(outcome.usable,).toBe(3,);
+            expect(outcome.findings,).toEqual([],);
+          },
+        },),
+        it({
+          name:
+            'NAMES THE JUDGE on every ballot (hulicaijia26, 2026-09-26: four of five contest ballots '
+            + 'called the archive\'s wordplay note an addition and no record said which models cast them)',
+          fn: async () => {
+            const outcome = await contest({
+              replyByModel: [
+                ballot({ choice: 'repair', },),
+                ballot({ choice: 'repair', },),
+                ballot({ choice: 'translate', },),
+              ],
+            },);
+            expect(outcome.ballots.map(function judgeOf(cast,) {
+              return cast.modelId;
+            },),).toEqual([...ROSTER,],);
+          },
+        },),
+        it({
+          name: 'RECORDS RAW HALF-QUORUM BALLOTS without waiting for delayed seats excluded downstream',
+          fn: async () => {
+            const outcome = await contestLaneSlice({
+              // Whole bench: this case scripts every seat and reads over the bench it wrote.
+              fanOut: 'whole-bench',
+              client: cannedClient({
+                replyByModel: [
+                  ballot({ choice: 'repair', },),
+                  ballot({ choice: 'repair', },),
+                  ballot({ choice: 'translate', },),
+                  ballot({ choice: 'translate', },),
+                ],
+                // NEVER, NOT 100 MS (ledger T5): at 0.2 CPU the two prompt seats
+                // took longer than 100 ms and the delayed ones arrived too, 2 of 5
+                // runs; seats that answer only past the exchange bound are
+                // abandoned at quorum whatever the machine's speed.
+                delayByModel: [
+                  0,
+                  0,
+                  NEVER_ANSWERS_MS,
+                  NEVER_ANSWERS_MS,
+                ],
+              },),
+              modelIds: ELIGIBILITY_ROSTER,
+              subject: {
+                ...SUBJECT,
+                ineligibleCandidates: ['repair',],
+              },
+              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              graceMs: 0,
+              l,
+            },);
+            expect(outcome.usable,).toBe(2,);
+            expect(outcome.ballots.filter(function choseTranslate(ballotValue,): boolean {
+              return ballotValue.choice === 'translate';
+            },),).toHaveLength(0,);
+            // RAW STAGE RETAINS BALLOTS UNCHANGED. `lane-contest-driver` applies
+            // deterministic eligibility, settles this as neither, and refuses
+            // persistence, pinned by its unsafe front-matter winner test.
+            expect(outcome.choice,).toBe('repair',);
+          },
+        },),
 
-        expect(settleArchiveBallots({ ballots: outcome.ballots, },),).toBe('declined',);
-      },
+        it({
+          name: 'KEEPS DELAYED ELIGIBLE VOICES that arrive inside bounded grace',
+          fn: async () => {
+            const outcome = await contestLaneSlice({
+              // Whole bench: this case scripts every seat and reads over the bench it wrote.
+              fanOut: 'whole-bench',
+              client: cannedClient({
+                replyByModel: [
+                  ballot({ choice: 'repair', },),
+                  ballot({ choice: 'repair', },),
+                  ballot({ choice: 'translate', },),
+                  ballot({ choice: 'translate', },),
+                ],
+                delayByModel: [
+                  0,
+                  0,
+                  30,
+                  30,
+                ],
+              },),
+              modelIds: ELIGIBILITY_ROSTER,
+              subject: {
+                ...SUBJECT,
+                ineligibleCandidates: ['repair',],
+              },
+              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              graceMs: 100,
+              l,
+            },);
+            expect(outcome.usable,).toBe(4,);
+            expect(outcome.ballots.filter(function choseTranslate(ballotValue,): boolean {
+              return ballotValue.choice === 'translate';
+            },),).toHaveLength(2,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES to ship on a tie, rather than picking by list order',
+          fn: async () => {
+            // A CANDIDATE THAT TIES HAS NOT BEEN CHOSEN. Shipping either here would
+            // be deciding what a reader sees on a memorial page by which lane the
+            // code happens to name first.
+            const outcome = await contest({
+              replyByModel: [
+                ballot({ choice: 'repair', },),
+                ballot({ choice: 'translate', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },);
+            expect(outcome.choice,).toBe('neither',);
+            expect(outcome.usable,).toBe(3,);
+          },
+        },),
+        it({
+          name: 'REFUSES a candidate only ONE judge named, however the rest split',
+          fn: async () => {
+            const outcome = await contest({
+              replyByModel: [
+                ballot({ choice: 'repair', },),
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },);
+            expect(outcome.choice,).toBe('neither',);
+          },
+        },),
+        it({
+          name: 'READS a unanimous decline as a settled verdict, with NO finding',
+          fn: async () => {
+            // THE DISTINCTION THE FINDING EXISTS FOR: three judges saying the
+            // candidates are equally faithful is a decided slice. Three judges
+            // never answering is not, and only the second is a finding.
+            const outcome = await contest({
+              replyByModel: [
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },);
+            expect(outcome.choice,).toBe('neither',);
+            expect(outcome.usable,).toBe(3,);
+            expect(outcome.findings,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REPORTS a finding when too few ballots survived to settle anything',
+          fn: async () => {
+            const outcome = await contest({
+              replyByModel: [
+                ballot({ choice: 'repair', },),
+                'not json at all',
+                'also not json',
+              ],
+            },);
+            expect(outcome.choice,).toBe('neither',);
+            expect(outcome.usable,).toBe(1,);
+            expect(outcome.findings.length,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'SAYS THE BENCH WAS SHORT when the router refuses seats past the bench quorum, and still settles on '
+            + 'the ballots it heard (ledger X8)',
+          fn: async () => {
+            /**
+             Seats the router refuses, leaving the contest's quorum in reach and
+             the bench's out of it.
+             */
+            const refused = SIX_SEAT_ROSTER.slice(LANE_CONTEST_QUORUM,);
+
+            /**
+             The bench's quorum once those seats are out of reach.
+             */
+            const quorum = reachableQuorum({
+              benchSize: SIX_SEAT_ROSTER.length,
+              unreachable: refused.length,
+            },);
+            expect(quorum.short,).toBe(true,);
+
+            /**
+             What the two reachable seats settled.
+             */
+            const outcome = await contestLaneSlice({
+              // Whole bench: this case scripts every seat and reads over the bench it wrote.
+              fanOut: 'whole-bench',
+              client: refusingClient({
+                choice: 'repair',
+                refused,
+              },),
+              modelIds: SIX_SEAT_ROSTER,
+              subject: SUBJECT,
+              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              l,
+            },);
+            expect(outcome.choice,).toBe('repair',);
+            expect(outcome.usable,).toBe(SIX_SEAT_ROSTER.length - refused.length,);
+            expect(outcome.findings,).toStrictEqual([
+              shortBenchStageFinding({
+                stage: 'lane-contest',
+                quorum,
+                benchSize: SIX_SEAT_ROSTER.length,
+              },),
+            ],);
+          },
+        },),
+        it({
+          name: 'KEEPS the findings each judge reported, for the audit trail',
+          fn: async () => {
+            const outcome = await contest({
+              replyByModel: [
+                JSON.stringify({
+                  choice: 'translate',
+                  unsupported: [ 'repair', ],
+                  dropped: [],
+                  reason: 'the repair candidate adds an afternoon the original never mentions',
+                },),
+                JSON.stringify({
+                  choice: 'translate',
+                  unsupported: [ 'repair', ],
+                  dropped: [],
+                  reason: 'same',
+                },),
+                ballot({ choice: 'neither', },),
+              ],
+            },);
+            expect(outcome.choice,).toBe('translate',);
+            expect(outcome.ballots.at(0,)?.unsupported,).toEqual([ 'repair', ],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'DROPS THE ANSWERS where the archive rendering is absent, because the sheet then shows '
-        + 'judges an empty block while the schema still asks whether it is publishable, so the '
-        + 'answers that come back are about nothing at all',
-      fn: async () => {
-        const outcome = await contestWithNoArchive({
-          replyByModel: [
-            archiveBallot({ choice: 'neither', archive: 'flawed', },),
-            archiveBallot({ choice: 'neither', archive: 'flawed', },),
-            archiveBallot({ choice: 'neither', archive: 'flawed', },),
-          ],
-        },);
+    describe({
+      name: 'archive answers on a slice with no archive',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS THE ANSWERS where an archive rendering exists, which is the positive control: '
+            + 'without it, a stripped result would look the same as a roster that never answered',
+          fn: async () => {
+            const outcome = await contest({
+              replyByModel: [
+                archiveBallot({ choice: 'neither', archive: 'flawed', },),
+                archiveBallot({ choice: 'neither', archive: 'flawed', },),
+                archiveBallot({ choice: 'neither', archive: 'flawed', },),
+              ],
+            },);
 
-        expect(settleArchiveBallots({ ballots: outcome.ballots, },),).toBe('unjudged',);
-        expect(outcome.usable,).toBe(3,);
-        expect(outcome.choice,).toBe('neither',);
-      },
+            expect(settleArchiveBallots({ ballots: outcome.ballots, },),).toBe('declined',);
+          },
+        },),
+
+        it({
+          name: 'DROPS THE ANSWERS where the archive rendering is absent, because the sheet then shows '
+            + 'judges an empty block while the schema still asks whether it is publishable, so the '
+            + 'answers that come back are about nothing at all',
+          fn: async () => {
+            const outcome = await contestWithNoArchive({
+              replyByModel: [
+                archiveBallot({ choice: 'neither', archive: 'flawed', },),
+                archiveBallot({ choice: 'neither', archive: 'flawed', },),
+                archiveBallot({ choice: 'neither', archive: 'flawed', },),
+              ],
+            },);
+
+            expect(settleArchiveBallots({ ballots: outcome.ballots, },),).toBe('unjudged',);
+            expect(outcome.usable,).toBe(3,);
+            expect(outcome.choice,).toBe('neither',);
+          },
+        },),
+      ],
     },),
   ],
 },);

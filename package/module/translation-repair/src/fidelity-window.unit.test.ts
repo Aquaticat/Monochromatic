@@ -18,6 +18,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -124,119 +125,6 @@ const SLICES: readonly ChunkPair[] = [
     text,
     sliceIndex,
   },);
-},);
-
-await describe({
-  name: neighbouringSource.name,
-  children: [
-    it({
-      name: 'joins ONE section each way for a slice in the middle, which is the window the relocation finding '
-        + 'says would fix a passage carried across a single boundary',
-      fn: async () => {
-        expect(neighbouringSource({
-          slices: SLICES,
-          slicePosition: 1,
-        },),).toBe('小猫在窗台上睡觉。\n\n\n傍晚她回到炉火旁。\n',);
-      },
-    },),
-    it({
-      name: 'gives the FIRST slice only its follower, since asking for index minus one at the '
-        + 'start of a document must not read the end of the array',
-      fn: async () => {
-        expect(neighbouringSource({
-          slices: SLICES,
-          slicePosition: 0,
-        },),).toBe('她看着外面的鸟。\n',);
-      },
-    },),
-    it({
-      name: 'gives the LAST slice only its predecessor, and reaches ONE section back rather than '
-        + 'to the start of the document',
-      fn: async () => {
-        expect(neighbouringSource({
-          slices: SLICES,
-          slicePosition: 2,
-        },),).toBe('她看着外面的鸟。\n',);
-      },
-    },),
-    it({
-      name: 'answers EMPTY for a lone slice, which is the value the trial reads as "render the '
-        + 'narrow sheet" rather than an empty context block',
-      fn: async () => {
-        expect(neighbouringSource({
-          slices: [sliceOf({
-            text: '小猫在窗台上睡觉。\n',
-            sliceIndex: 0,
-          },),],
-          slicePosition: 0,
-        },),).toBe('',);
-      },
-    },),
-    it({
-      name: 'THROWS on an index past the end rather than answering empty, because empty is what a '
-        + 'lone slice answers: a wide arm handed a stray index would send the narrow sheet, and '
-        + 'the comparison would report the window as making no difference',
-      fn: async () => {
-        expect(function askPastEnd() {
-          return neighbouringSource({
-            slices: SLICES,
-            slicePosition: SLICES.length,
-          },);
-        },).toThrow(RangeError,);
-      },
-    },),
-    it({
-      name: 'THROWS on a STAMPED chunk index that is not this array position, which is the live '
-        + 'mistake already recorded once: the same number names three different things, and two of them '
-        + 'silently read the wrong neighbours or none',
-      fn: async () => {
-        /**
-         Two slices of one section, stamped with the document-wide indices they
-         would carry in an entry whose earlier sections were not sliced.
-         
-         Passing `sliceIndex` here rather than the array position is the whole
-         hazard: `11` and `12` are ordinary stamps, and both are outside a
-         two-element array.
-         */
-        const stamped: readonly ChunkPair[] = [
-          sliceOf({
-            text: '小猫在窗台上睡觉。\n',
-            sliceIndex: 11,
-          },),
-          sliceOf({
-            text: '她看着外面的鸟。\n',
-            sliceIndex: 12,
-          },),
-        ];
-        /**
-         What askByStamp raised, read for its class as well as its wording.
-         */
-        const refusalOfAskByStamp = caught(function askByStamp() {
-          return neighbouringSource({
-            slices: stamped,
-            slicePosition: stamped[0]?.source
-              .sliceIndex ?? 0,
-          },);
-        },);
-
-        expect(refusalOfAskByStamp,).toBeInstanceOf(RangeError,);
-        expect((refusalOfAskByStamp as Error).message,).toContain('not a position in this entry',);
-      },
-    },),
-    it({
-      name: 'THROWS on a negative index rather than reading the end of the array, since a caller '
-        + 'that already subtracted one would otherwise be handed the LAST slice as a neighbour of '
-        + 'the first',
-      fn: async () => {
-        expect(function askBeforeStart() {
-          return neighbouringSource({
-            slices: SLICES,
-            slicePosition: -1,
-          },);
-        },).toThrow(RangeError,);
-      },
-    },),
-  ],
 },);
 
 /**
@@ -369,73 +257,6 @@ async function sheetsFor(
   };
 }
 
-await describe({
-  name: `${runFidelityTrial.name} evidence`,
-  children: [
-    it({
-      name: 'POSITIVE CONTROL: the narrow run reaches a verdict, so the sheets the other cases '
-        + 'read were captured from a trial that completed rather than one that failed every call',
-      fn: async () => {
-        const run = await sheetsFor({ contextText: '', },);
-        expect(run.verdict,).toBe('clean',);
-        expect(run.sheets
-          .length,).toBe(ROSTER.length,);
-      },
-    },),
-    it({
-      name: 'renders NO surrounding block on a narrow run, in EVERY judge sheet, so the arm '
-        + 'measured before the window was widened is the sheet that was always sent',
-      fn: async () => {
-        const run = await sheetsFor({ contextText: '', },);
-        expect(run.sheets
-          .filter(function carriesLabel(sheet,) {
-            return sheet.includes(SURROUNDING_LABEL,);
-          },)
-          .length,).toBe(0,);
-      },
-    },),
-    it({
-      name: 'renders the surrounding block AND its context-only caveat when a caller supplies '
-        + 'one, which is the single difference between the narrow and wide arms',
-      fn: async () => {
-        const run = await sheetsFor({ contextText: '她看着外面的鸟。\n', },);
-        expect(run.verdict,).toBe('clean',);
-        expect(run.sheets
-          .filter(function carriesContext(sheet,) {
-            if (!sheet.includes(SURROUNDING_LABEL,))
-              return false;
-            if (!sheet.includes('她看着外面的鸟。',))
-              return false;
-            return sheet.includes('not expected to render this',);
-          },)
-          .length,).toBe(ROSTER.length,);
-      },
-    },),
-    it({
-      name: 'carries the slice ORIGINAL either way, since widening ADDS evidence rather than '
-        + 'replacing what the judges were already reading',
-      fn: async () => {
-        /**
-         Both arms, run together because neither reads the other.
-         */
-        const runs = await Promise.all([
-          '',
-          '她看着外面的鸟。\n',
-        ].map(async function toRun(contextText,) {
-          return await sheetsFor({ contextText, },);
-        },),);
-        for (const run of runs) {
-          expect(run.sheets
-            .filter(function carriesOriginal(sheet,) {
-              return sheet.includes('小猫在二零二三年五月搬到窗台上。',);
-            },)
-            .length,).toBe(ROSTER.length,);
-        }
-      },
-    },),
-  ],
-},);
-
 /**
  Pairs carrying wording on BOTH sides, which `SLICES` deliberately does not:
  that fixture leaves the target empty because the source window is all it
@@ -512,65 +333,254 @@ const TRANSLATED: readonly ChunkPair[] = [
 },);
 
 await describe({
-  name: neighbouringIncumbent.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'TAKES THE ARCHIVE ONE SECTION EACH WAY, which is the half of the window that shows a '
-        + 'relocation: the original says each thing once in its own place, while the English can '
-        + 'say it next door, and only the English side reveals where a missing passage went',
-      fn: async () => {
-        /**
-         Archive wording either side of the middle slice.
-         */
-        const beside = neighbouringIncumbent({
-          slices: TRANSLATED,
-          slicePosition: 1,
-        },);
-
-        expect(beside.includes('window sill',),).toBe(true,);
-        expect(beside.includes('the stove',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'GIVES THE FIRST SLICE ONLY ITS FOLLOWER, since asking for index minus one at the '
-        + 'start of a document must not read the end of the array',
-      fn: async () => {
-        /**
-         Archive wording beside the opening slice.
-         */
-        const beside = neighbouringIncumbent({
-          slices: TRANSLATED,
-          slicePosition: 0,
-        },);
-
-        expect(beside.includes('the stove',),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES AN INDEX THAT IS NOT A POSITION rather than returning nothing, because empty '
-        + 'means a lone slice with no neighbours and a stamped index arriving here would report a '
-        + 'measured null instead of the mistake it is',
-      fn: async () => {
-        /**
-         What the call did, as a value, since the throw is what is asserted.
-         */
-        const outcome = (() => {
-          try {
-            neighbouringIncumbent({
-              slices: TRANSLATED,
-              slicePosition: TRANSLATED.length,
+    describe({
+      name: neighbouringSource.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'joins ONE section each way for a slice in the middle, which is the window the relocation finding '
+            + 'says would fix a passage carried across a single boundary',
+          fn: async () => {
+            expect(neighbouringSource({
+              slices: SLICES,
+              slicePosition: 1,
+            },),).toBe('小猫在窗台上睡觉。\n\n\n傍晚她回到炉火旁。\n',);
+          },
+        },),
+        it({
+          name: 'gives the FIRST slice only its follower, since asking for index minus one at the '
+            + 'start of a document must not read the end of the array',
+          fn: async () => {
+            expect(neighbouringSource({
+              slices: SLICES,
+              slicePosition: 0,
+            },),).toBe('她看着外面的鸟。\n',);
+          },
+        },),
+        it({
+          name: 'gives the LAST slice only its predecessor, and reaches ONE section back rather than '
+            + 'to the start of the document',
+          fn: async () => {
+            expect(neighbouringSource({
+              slices: SLICES,
+              slicePosition: 2,
+            },),).toBe('她看着外面的鸟。\n',);
+          },
+        },),
+        it({
+          name: 'answers EMPTY for a lone slice, which is the value the trial reads as "render the '
+            + 'narrow sheet" rather than an empty context block',
+          fn: async () => {
+            expect(neighbouringSource({
+              slices: [sliceOf({
+                text: '小猫在窗台上睡觉。\n',
+                sliceIndex: 0,
+              },),],
+              slicePosition: 0,
+            },),).toBe('',);
+          },
+        },),
+        it({
+          name: 'THROWS on an index past the end rather than answering empty, because empty is what a '
+            + 'lone slice answers: a wide arm handed a stray index would send the narrow sheet, and '
+            + 'the comparison would report the window as making no difference',
+          fn: async () => {
+            expect(function askPastEnd() {
+              return neighbouringSource({
+                slices: SLICES,
+                slicePosition: SLICES.length,
+              },);
+            },).toThrow(RangeError,);
+          },
+        },),
+        it({
+          name: 'THROWS on a STAMPED chunk index that is not this array position, which is the live '
+            + 'mistake already recorded once: the same number names three different things, and two of them '
+            + 'silently read the wrong neighbours or none',
+          fn: async () => {
+            /**
+             Two slices of one section, stamped with the document-wide indices they
+             would carry in an entry whose earlier sections were not sliced.
+         
+             Passing `sliceIndex` here rather than the array position is the whole
+             hazard: `11` and `12` are ordinary stamps, and both are outside a
+             two-element array.
+             */
+            const stamped: readonly ChunkPair[] = [
+              sliceOf({
+                text: '小猫在窗台上睡觉。\n',
+                sliceIndex: 11,
+              },),
+              sliceOf({
+                text: '她看着外面的鸟。\n',
+                sliceIndex: 12,
+              },),
+            ];
+            /**
+             What askByStamp raised, read for its class as well as its wording.
+             */
+            const refusalOfAskByStamp = caught(function askByStamp() {
+              return neighbouringSource({
+                slices: stamped,
+                slicePosition: stamped[0]?.source
+                  .sliceIndex ?? 0,
+              },);
             },);
-            return 'returned';
-          }
-          catch (error) {
-            return (error instanceof RangeError) ? 'refused' : `threw ${String(error,)}`;
-          }
-        })();
 
-        expect(outcome,).toBe('refused',);
-      },
+            expect(refusalOfAskByStamp,).toBeInstanceOf(RangeError,);
+            expect((refusalOfAskByStamp as Error).message,).toContain('not a position in this entry',);
+          },
+        },),
+        it({
+          name: 'THROWS on a negative index rather than reading the end of the array, since a caller '
+            + 'that already subtracted one would otherwise be handed the LAST slice as a neighbour of '
+            + 'the first',
+          fn: async () => {
+            expect(function askBeforeStart() {
+              return neighbouringSource({
+                slices: SLICES,
+                slicePosition: -1,
+              },);
+            },).toThrow(RangeError,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${runFidelityTrial.name} evidence`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'POSITIVE CONTROL: the narrow run reaches a verdict, so the sheets the other cases '
+            + 'read were captured from a trial that completed rather than one that failed every call',
+          fn: async () => {
+            const run = await sheetsFor({ contextText: '', },);
+            expect(run.verdict,).toBe('clean',);
+            expect(run.sheets
+              .length,).toBe(ROSTER.length,);
+          },
+        },),
+        it({
+          name: 'renders NO surrounding block on a narrow run, in EVERY judge sheet, so the arm '
+            + 'measured before the window was widened is the sheet that was always sent',
+          fn: async () => {
+            const run = await sheetsFor({ contextText: '', },);
+            expect(run.sheets
+              .filter(function carriesLabel(sheet,) {
+                return sheet.includes(SURROUNDING_LABEL,);
+              },)
+              .length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'renders the surrounding block AND its context-only caveat when a caller supplies '
+            + 'one, which is the single difference between the narrow and wide arms',
+          fn: async () => {
+            const run = await sheetsFor({ contextText: '她看着外面的鸟。\n', },);
+            expect(run.verdict,).toBe('clean',);
+            expect(run.sheets
+              .filter(function carriesContext(sheet,) {
+                if (!sheet.includes(SURROUNDING_LABEL,))
+                  return false;
+                if (!sheet.includes('她看着外面的鸟。',))
+                  return false;
+                return sheet.includes('not expected to render this',);
+              },)
+              .length,).toBe(ROSTER.length,);
+          },
+        },),
+        it({
+          name: 'carries the slice ORIGINAL either way, since widening ADDS evidence rather than '
+            + 'replacing what the judges were already reading',
+          fn: async () => {
+            /**
+             Both arms, run together because neither reads the other.
+             */
+            const runs = await Promise.all([
+              '',
+              '她看着外面的鸟。\n',
+            ].map(async function toRun(contextText,) {
+              return await sheetsFor({ contextText, },);
+            },),);
+            for (const run of runs) {
+              expect(run.sheets
+                .filter(function carriesOriginal(sheet,) {
+                  return sheet.includes('小猫在二零二三年五月搬到窗台上。',);
+                },)
+                .length,).toBe(ROSTER.length,);
+            }
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: neighbouringIncumbent.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'TAKES THE ARCHIVE ONE SECTION EACH WAY, which is the half of the window that shows a '
+            + 'relocation: the original says each thing once in its own place, while the English can '
+            + 'say it next door, and only the English side reveals where a missing passage went',
+          fn: async () => {
+            /**
+             Archive wording either side of the middle slice.
+             */
+            const beside = neighbouringIncumbent({
+              slices: TRANSLATED,
+              slicePosition: 1,
+            },);
+
+            expect(beside.includes('window sill',),).toBe(true,);
+            expect(beside.includes('the stove',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'GIVES THE FIRST SLICE ONLY ITS FOLLOWER, since asking for index minus one at the '
+            + 'start of a document must not read the end of the array',
+          fn: async () => {
+            /**
+             Archive wording beside the opening slice.
+             */
+            const beside = neighbouringIncumbent({
+              slices: TRANSLATED,
+              slicePosition: 0,
+            },);
+
+            expect(beside.includes('the stove',),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES AN INDEX THAT IS NOT A POSITION rather than returning nothing, because empty '
+            + 'means a lone slice with no neighbours and a stamped index arriving here would report a '
+            + 'measured null instead of the mistake it is',
+          fn: async () => {
+            /**
+             What the call did, as a value, since the throw is what is asserted.
+             */
+            const outcome = (() => {
+              try {
+                neighbouringIncumbent({
+                  slices: TRANSLATED,
+                  slicePosition: TRANSLATED.length,
+                },);
+                return 'returned';
+              }
+              catch (error) {
+                return (error instanceof RangeError) ? 'refused' : `threw ${String(error,)}`;
+              }
+            })();
+
+            expect(outcome,).toBe('refused',);
+          },
+        },),
+      ],
     },),
   ],
 },);

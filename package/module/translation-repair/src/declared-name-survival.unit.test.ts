@@ -12,6 +12,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -23,318 +24,327 @@ import {
 } from '../dist/final/node/index.mjs';
 
 await describe({
-  name: declaredNameForms.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SPLITS a comma-joined alias field into handles, longest first',
-      fn: async () => {
-        expect(declaredNameForms({
-          identity: {
-            name: 'Mittens',
-            alias: 'Blossom, Patch',
+    describe({
+      name: declaredNameForms.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SPLITS a comma-joined alias field into handles, longest first',
+          fn: async () => {
+            expect(declaredNameForms({
+              identity: {
+                name: 'Mittens',
+                alias: 'Blossom, Patch',
+              },
+            },),).toEqual([ 'Mittens', 'Blossom', 'Patch', ],);
           },
-        },),).toEqual([ 'Mittens', 'Blossom', 'Patch', ],);
-      },
-    },),
-    it({
-      name: 'IGNORES the declared location, which is a place and not a name',
-      fn: async () => {
-        // A translation may render or omit a place, and demanding its survival
-        // would refuse candidates that did nothing wrong.
-        expect(declaredNameForms({
-          identity: {
-            name: 'Mittens',
-            location: 'Windowsill, Kyoto',
+        },),
+        it({
+          name: 'IGNORES the declared location, which is a place and not a name',
+          fn: async () => {
+            // A translation may render or omit a place, and demanding its survival
+            // would refuse candidates that did nothing wrong.
+            expect(declaredNameForms({
+              identity: {
+                name: 'Mittens',
+                location: 'Windowsill, Kyoto',
+              },
+            },),).toEqual([ 'Mittens', ],);
           },
-        },),).toEqual([ 'Mittens', ],);
-      },
-    },),
-    it({
-      name: 'DROPS a handle too short for its survival to mean anything',
-      fn: async () => {
-        expect(declaredNameForms({ identity: { name: 'Mo', }, },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'KEEPS a handle written in letters beyond the first plane, a Han name with an ideograph '
-        + 'from Extension B or one in mathematical script, which a scan by UTF-16 unit read as two '
-        + 'characters or none and dropped as too short (ledger B21)',
-      fn: async () => {
-        expect(declaredNameForms({
-          identity: {
-            name: '\u{20BB7}\u{7965}\u{732B}',
-            alias: '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}',
+        },),
+        it({
+          name: 'DROPS a handle too short for its survival to mean anything',
+          fn: async () => {
+            expect(declaredNameForms({ identity: { name: 'Mo', }, },),).toEqual([],);
           },
-        },),).toEqual([ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', '\u{20BB7}\u{7965}\u{732B}', ],);
-      },
-    },),
-    it({
-      name: 'NAMES one form once when two fields declare it',
-      fn: async () => {
-        expect(declaredNameForms({
-          identity: {
-            name: 'Mittens',
-            alias: 'Mittens',
+        },),
+        it({
+          name: 'KEEPS a handle written in letters beyond the first plane, a Han name with an ideograph '
+            + 'from Extension B or one in mathematical script, which a scan by UTF-16 unit read as two '
+            + 'characters or none and dropped as too short (ledger B21)',
+          fn: async () => {
+            expect(declaredNameForms({
+              identity: {
+                name: '\u{20BB7}\u{7965}\u{732B}',
+                alias: '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}',
+              },
+            },),).toEqual([ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', '\u{20BB7}\u{7965}\u{732B}', ],);
           },
-        },),).toEqual([ 'Mittens', ],);
-      },
+        },),
+        it({
+          name: 'NAMES one form once when two fields declare it',
+          fn: async () => {
+            expect(declaredNameForms({
+              identity: {
+                name: 'Mittens',
+                alias: 'Mittens',
+              },
+            },),).toEqual([ 'Mittens', ],);
+          },
+        },),
+        it({
+          name: 'REPORTS nothing when neither field is declared',
+          fn: async () => {
+            expect(declaredNameForms({ identity: {}, },),).toEqual([],);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REPORTS nothing when neither field is declared',
-      fn: async () => {
-        expect(declaredNameForms({ identity: {}, },),).toEqual([],);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: findDroppedDeclaredNames.name,
-  children: [
-    it({
-      name: 'NAMES a declared handle the base carried and the candidate lost',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mittens', 'Blossom', ],
-          baseText: 'Mittens (Blossom) is a calico cat.',
-          candidateText: 'Mittens is a calico cat.',
-        },),).toEqual([ 'Blossom', ],);
-      },
+    describe({
+      name: findDroppedDeclaredNames.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES a declared handle the base carried and the candidate lost',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens (Blossom) is a calico cat.',
+              candidateText: 'Mittens is a calico cat.',
+            },),).toEqual([ 'Blossom', ],);
+          },
+        },),
+        it({
+          name: 'REQUIRES nothing the base text never carried',
+          fn: async () => {
+            // THE CONSERVATIVE PROPERTY THIS RESTS ON. Only what was already there
+            // has to stay, so this can refuse a real loss and can never demand that
+            // a translator insert a name the passage never had.
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              baseText: 'She is a calico cat.',
+              candidateText: 'She is a calico cat who naps.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS a respelled handle, since spelling is not loss',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Blossom', ],
+              baseText: 'Blossom naps.',
+              candidateText: 'blossom naps.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REPORTS a lost long form ONCE, not once per fragment inside it',
+          fn: async () => {
+            // Losing `Mittens Blossom` should not read as two separate losses when
+            // the shorter form only ever appeared inside the longer one.
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens Blossom', 'Blossom', ],
+              baseText: 'Mittens Blossom naps on the sill.',
+              candidateText: 'The cat naps on the sill.',
+            },),).toEqual([ 'Mittens Blossom', ],);
+          },
+        },),
+        it({
+          name: 'STAYS quiet when every declared handle survives',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens (Blossom) naps.',
+              candidateText: 'Blossom, also called Mittens, naps in the sun.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'SEES a handle the archive escaped for Markdown, which a raw substring comparison '
+            + 'cannot: the underscores are written back-slashed and the declaration is not, so the '
+            + 'guard would have called the name absent and skipped it entirely',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens_the_Cat', ],
+              baseText: String.raw`Mittens\_the\_Cat naps on the sill.`,
+              candidateText: 'The cat naps on the sill.',
+            },),).toEqual([ 'Mittens_the_Cat', ],);
+          },
+        },),
+        it({
+          name: 'SEES a handle the two sides separate differently, one writing a space where the other '
+            + 'writes an underscore, since a handle is one name however it is punctuated',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens Cat', ],
+              baseText: 'Everyone called her Mittens_Cat back then.',
+              candidateText: 'Everyone called her that back then.',
+            },),).toEqual([ 'Mittens Cat', ],);
+          },
+        },),
+        it({
+          name: 'SEES a handle the archive spaces and the declaration runs together, which is the same '
+            + 'disagreement in the other direction',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'MittensCat', ],
+              baseText: 'Mittens Cat slept through it.',
+              candidateText: 'She slept through it.',
+            },),).toEqual([ 'MittensCat', ],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS a handle whose diacritic is spelled the other way, since a combining mark is '
+            + 'neither letter nor digit and would otherwise vanish from one side only, reporting a '
+            + 'name lost that is sitting right there',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mitt\u00EBns', ],
+              baseText: 'Mitte\u0308ns naps.',
+              candidateText: 'Mitte\u0308ns naps in the sun.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REPORTS that same handle as lost when it really goes, so the "ACCEPTS a handle whose diacritic '
+            + 'is spelled the other way" case is the '
+            + 'comparison working rather than the comparison never firing',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mitt\u00EBns', ],
+              baseText: 'Mitte\u0308ns naps.',
+              candidateText: 'The cat naps in the sun.',
+            },),).toEqual([ 'Mitt\u00EBns', ],);
+          },
+        },),
+        it({
+          name: 'REPORTS a handle in mathematical script as lost when it goes, which a scan by UTF-16 unit '
+            + 'projected to nothing and so found on every side (ledger B21)',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', ],
+              baseText: '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8} naps.',
+              candidateText: 'The cat naps.',
+            },),).toEqual([ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', ],);
+          },
+        },),
+        it({
+          name: 'NAMES A NAME LOST WHERE THE CANDIDATE HOLDS ITS LETTERS ONLY ACROSS A WORD EDGE (ledger B23): '
+            + '"Ann" inside "cannot" is no Ann',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Ann', ],
+              baseText: 'Ann naps on the sill.',
+              candidateText: 'The cat cannot nap on the sill.',
+            },),).toEqual([ 'Ann', ],);
+          },
+        },),
+        it({
+          name: 'REQUIRES NOTHING OF A NAME THE BASE HELD ONLY ACROSS A WORD EDGE',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Ann', ],
+              baseText: 'The cat cannot nap.',
+              candidateText: 'The cat naps.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'READS A SMALL LETTER RUNNING ON AS NO EDGE, and a case change or a digit inside a handle as one',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Blossom', ],
+              baseText: 'Blossom naps.',
+              candidateText: 'The cherryblossom naps.',
+            },),).toEqual([ 'Blossom', ],);
+            for (const candidateText of [
+              'MittensBlossom naps.',
+              'Blossom2024 naps.',
+              '2024Blossom naps.',
+            ]) {
+              expect(findDroppedDeclaredNames({
+                forms: [ 'Blossom', ],
+                baseText: 'Blossom naps.',
+                candidateText,
+              },),).toEqual([],);
+            }
+          },
+        },),
+        it({
+          name: 'NEEDS NO EDGE BESIDE A HAN NAME, since Chinese writes no spaces',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ '\u{732B}\u{5C0F}\u{59D0}', ],
+              baseText: 'Mittens\u{732B}\u{5C0F}\u{59D0}naps.',
+              candidateText: 'cat\u{732B}\u{5C0F}\u{59D0}naps.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REPORTS A LOST SHORTER FORM ON ITS OWN when it stood apart and only runs on inside the longer one',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Annabel', 'Ann', ],
+              baseText: 'Annabel and Ann nap.',
+              candidateText: 'The cats nap.',
+            },),).toEqual([ 'Annabel', 'Ann', ],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS a handle whose emoji the candidate leaves out, since an emoji is neither letter nor '
+            + 'digit and drops out of both sides alike',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens\u{1F63A}', ],
+              baseText: 'Mittens\u{1F63A} naps.',
+              candidateText: 'Mittens naps in the sun.',
+            },),).toEqual([],);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REQUIRES nothing the base text never carried',
-      fn: async () => {
-        // THE CONSERVATIVE PROPERTY THIS RESTS ON. Only what was already there
-        // has to stay, so this can refuse a real loss and can never demand that
-        // a translator insert a name the passage never had.
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mittens', 'Blossom', ],
-          baseText: 'She is a calico cat.',
-          candidateText: 'She is a calico cat who naps.',
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'ACCEPTS a respelled handle, since spelling is not loss',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Blossom', ],
-          baseText: 'Blossom naps.',
-          candidateText: 'blossom naps.',
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'REPORTS a lost long form ONCE, not once per fragment inside it',
-      fn: async () => {
-        // Losing `Mittens Blossom` should not read as two separate losses when
-        // the shorter form only ever appeared inside the longer one.
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mittens Blossom', 'Blossom', ],
-          baseText: 'Mittens Blossom naps on the sill.',
-          candidateText: 'The cat naps on the sill.',
-        },),).toEqual([ 'Mittens Blossom', ],);
-      },
-    },),
-    it({
-      name: 'STAYS quiet when every declared handle survives',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mittens', 'Blossom', ],
-          baseText: 'Mittens (Blossom) naps.',
-          candidateText: 'Blossom, also called Mittens, naps in the sun.',
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'SEES a handle the archive escaped for Markdown, which a raw substring comparison '
-        + 'cannot: the underscores are written back-slashed and the declaration is not, so the '
-        + 'guard would have called the name absent and skipped it entirely',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mittens_the_Cat', ],
-          baseText: String.raw`Mittens\_the\_Cat naps on the sill.`,
-          candidateText: 'The cat naps on the sill.',
-        },),).toEqual([ 'Mittens_the_Cat', ],);
-      },
-    },),
-    it({
-      name: 'SEES a handle the two sides separate differently, one writing a space where the other '
-        + 'writes an underscore, since a handle is one name however it is punctuated',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mittens Cat', ],
-          baseText: 'Everyone called her Mittens_Cat back then.',
-          candidateText: 'Everyone called her that back then.',
-        },),).toEqual([ 'Mittens Cat', ],);
-      },
-    },),
-    it({
-      name: 'SEES a handle the archive spaces and the declaration runs together, which is the same '
-        + 'disagreement in the other direction',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'MittensCat', ],
-          baseText: 'Mittens Cat slept through it.',
-          candidateText: 'She slept through it.',
-        },),).toEqual([ 'MittensCat', ],);
-      },
-    },),
-    it({
-      name: 'ACCEPTS a handle whose diacritic is spelled the other way, since a combining mark is '
-        + 'neither letter nor digit and would otherwise vanish from one side only, reporting a '
-        + 'name lost that is sitting right there',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mitt\u00EBns', ],
-          baseText: 'Mitte\u0308ns naps.',
-          candidateText: 'Mitte\u0308ns naps in the sun.',
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'REPORTS that same handle as lost when it really goes, so the "ACCEPTS a handle whose diacritic '
-        + 'is spelled the other way" case is the '
-        + 'comparison working rather than the comparison never firing',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mitt\u00EBns', ],
-          baseText: 'Mitte\u0308ns naps.',
-          candidateText: 'The cat naps in the sun.',
-        },),).toEqual([ 'Mitt\u00EBns', ],);
-      },
-    },),
-    it({
-      name: 'REPORTS a handle in mathematical script as lost when it goes, which a scan by UTF-16 unit '
-        + 'projected to nothing and so found on every side (ledger B21)',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', ],
-          baseText: '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8} naps.',
-          candidateText: 'The cat naps.',
-        },),).toEqual([ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', ],);
-      },
-    },),
-    it({
-      name: 'NAMES A NAME LOST WHERE THE CANDIDATE HOLDS ITS LETTERS ONLY ACROSS A WORD EDGE (ledger B23): '
-        + '"Ann" inside "cannot" is no Ann',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Ann', ],
-          baseText: 'Ann naps on the sill.',
-          candidateText: 'The cat cannot nap on the sill.',
-        },),).toEqual([ 'Ann', ],);
-      },
-    },),
-    it({
-      name: 'REQUIRES NOTHING OF A NAME THE BASE HELD ONLY ACROSS A WORD EDGE',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Ann', ],
-          baseText: 'The cat cannot nap.',
-          candidateText: 'The cat naps.',
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'READS A SMALL LETTER RUNNING ON AS NO EDGE, and a case change or a digit inside a handle as one',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Blossom', ],
-          baseText: 'Blossom naps.',
-          candidateText: 'The cherryblossom naps.',
-        },),).toEqual([ 'Blossom', ],);
-        for (const candidateText of [
-          'MittensBlossom naps.',
-          'Blossom2024 naps.',
-          '2024Blossom naps.',
-        ]) {
-          expect(findDroppedDeclaredNames({
-            forms: [ 'Blossom', ],
-            baseText: 'Blossom naps.',
-            candidateText,
-          },),).toEqual([],);
-        }
-      },
-    },),
-    it({
-      name: 'NEEDS NO EDGE BESIDE A HAN NAME, since Chinese writes no spaces',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ '\u{732B}\u{5C0F}\u{59D0}', ],
-          baseText: 'Mittens\u{732B}\u{5C0F}\u{59D0}naps.',
-          candidateText: 'cat\u{732B}\u{5C0F}\u{59D0}naps.',
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'REPORTS A LOST SHORTER FORM ON ITS OWN when it stood apart and only runs on inside the longer one',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Annabel', 'Ann', ],
-          baseText: 'Annabel and Ann nap.',
-          candidateText: 'The cats nap.',
-        },),).toEqual([ 'Annabel', 'Ann', ],);
-      },
-    },),
-    it({
-      name: 'ACCEPTS a handle whose emoji the candidate leaves out, since an emoji is neither letter nor '
-        + 'digit and drops out of both sides alike',
-      fn: async () => {
-        expect(findDroppedDeclaredNames({
-          forms: [ 'Mittens\u{1F63A}', ],
-          baseText: 'Mittens\u{1F63A} naps.',
-          candidateText: 'Mittens naps in the sun.',
-        },),).toEqual([],);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: declaredNameRefusalReport.name,
-  children: [
-    it({
-      name: 'NAMES THE FIELD WITH AN EMPTY LIST when nothing was refused, so a reader of a settled '
-        + 'slice never has to tell dropping nothing from nobody writing the field',
-      fn: async () => {
-        /**
-         Report for a slice where every declared handle survived.
-         */
-        const quiet = declaredNameRefusalReport({
-          sliceIndex: 3,
-          dropped: [],
-        },);
+    describe({
+      name: declaredNameRefusalReport.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE FIELD WITH AN EMPTY LIST when nothing was refused, so a reader of a settled '
+            + 'slice never has to tell dropping nothing from nobody writing the field',
+          fn: async () => {
+            /**
+             Report for a slice where every declared handle survived.
+             */
+            const quiet = declaredNameRefusalReport({
+              sliceIndex: 3,
+              dropped: [],
+            },);
 
-        expect(quiet.record.droppedDeclaredNames,).toEqual([],);
-        expect(quiet.findings,).toEqual([],);
-      },
-    },),
-    it({
-      name: 'CARRIES the refused forms into both the record a reader queries and the finding a '
-        + 'scorecard counts, since a refusal missing from either is one nobody can audit',
-      fn: async () => {
-        /**
-         Report for a slice whose replacement lost two declared handles.
-         */
-        const refused = declaredNameRefusalReport({
-          sliceIndex: 3,
-          dropped: [
-            'Mittens',
-            'Whiskers',
-          ],
-        },);
+            expect(quiet.record.droppedDeclaredNames,).toEqual([],);
+            expect(quiet.findings,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'CARRIES the refused forms into both the record a reader queries and the finding a '
+            + 'scorecard counts, since a refusal missing from either is one nobody can audit',
+          fn: async () => {
+            /**
+             Report for a slice whose replacement lost two declared handles.
+             */
+            const refused = declaredNameRefusalReport({
+              sliceIndex: 3,
+              dropped: [
+                'Mittens',
+                'Whiskers',
+              ],
+            },);
 
-        expect(refused.record.droppedDeclaredNames,).toEqual([
-          'Mittens',
-          'Whiskers',
-        ],);
-        expect(refused.findings.length,).toBe(1,);
-        expect(refused.findings[0],).toBe(
-          'translate-refused-declared-name (slice 3: archive text carries "Mittens", "Whiskers" '
-            + 'and the replacement does not; keeping the archive text)',
-        );
-      },
+            expect(refused.record.droppedDeclaredNames,).toEqual([
+              'Mittens',
+              'Whiskers',
+            ],);
+            expect(refused.findings.length,).toBe(1,);
+            expect(refused.findings[0],).toBe(
+              'translate-refused-declared-name (slice 3: archive text carries "Mittens", "Whiskers" '
+                + 'and the replacement does not; keeping the archive text)',
+            );
+          },
+        },),
+      ],
     },),
   ],
 },);

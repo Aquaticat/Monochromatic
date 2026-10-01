@@ -12,6 +12,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -85,170 +86,178 @@ function benchesUnder(
 }
 
 await describe({
-  name: reachableSeats.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'KEEPS every seat when every provider is wet, and ONLY the seats Bedrock serves when it is '
-        + 'the one wet provider',
-      fn: async () => {
-        expect(reachableSeats({
-          seats: RUN_WIDE_SEATS,
-          dry: ALL_WET,
-        },),).toEqual(RUN_WIDE_SEATS,);
-        const alone = reachableSeats({
-          seats: RUN_WIDE_SEATS,
-          dry: BEDROCK_ALONE,
-        },);
-        expect(alone.length,).toBeLessThan(RUN_WIDE_SEATS.length,);
-        expect(alone.includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(true,);
-        // The four-provider seat left every bench on 2026-09-24 (owner cull),
-        // so Bedrock alone no longer reaches it through the wide seats.
-        expect(RUN_WIDE_SEATS.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
-        expect(alone.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
-        expect(alone.includes(SEAT_HYPER_ONLY,),).toBe(false,);
-      },
+    describe({
+      name: reachableSeats.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS every seat when every provider is wet, and ONLY the seats Bedrock serves when it is '
+            + 'the one wet provider',
+          fn: async () => {
+            expect(reachableSeats({
+              seats: RUN_WIDE_SEATS,
+              dry: ALL_WET,
+            },),).toEqual(RUN_WIDE_SEATS,);
+            const alone = reachableSeats({
+              seats: RUN_WIDE_SEATS,
+              dry: BEDROCK_ALONE,
+            },);
+            expect(alone.length,).toBeLessThan(RUN_WIDE_SEATS.length,);
+            expect(alone.includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(true,);
+            // The four-provider seat left every bench on 2026-09-24 (owner cull),
+            // so Bedrock alone no longer reaches it through the wide seats.
+            expect(RUN_WIDE_SEATS.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
+            expect(alone.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
+            expect(alone.includes(SEAT_HYPER_ONLY,),).toBe(false,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: shortBenches.name,
-  children: [
-    it({
-      name: 'NAMES NOTHING when every bench can reach quorum',
-      fn: async () => {
-        expect(shortBenches({
-          benches: benchesUnder({ dry: ALL_WET, },),
-          names: phaseBenches({ phase: 'consolidation', },),
-          dry: ALL_WET,
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'NAMES each bench that cannot reach quorum among the seats a wet provider serves, with the '
-        + 'reachable count against the quorum, in the order the phase lists them',
-      fn: async () => {
-        const clauses = shortBenches({
-          benches: benchesUnder({ dry: BEDROCK_ALONE, },),
-          names: phaseBenches({ phase: 'lanes', },),
-          dry: BEDROCK_ALONE,
-        },);
-        /**
-         Wide seats Bedrock serves under that view.
-         */
-        const wideReachable = reachableSeats({
-          seats: RUN_WIDE_SEATS,
-          dry: BEDROCK_ALONE,
-        },).length;
-        /**
-         Writers Bedrock serves under that view.
-         */
-        const writersReachable = reachableSeats({
-          seats: RUN_TRANSLATORS,
-          dry: BEDROCK_ALONE,
-        },).length;
-        /**
-         Editors and refiners, none of which Bedrock serves.
-         */
-        const editors = RUN_MODELS.editorModelIds;
-        const refiners = RUN_MODELS.refinerModelIds;
-        expect(wideReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),);
-        expect(writersReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),);
-        expect(clauses,).toEqual([
-          `wide ${String(wideReachable,)} of ${String(RUN_WIDE_SEATS.length,)} reachable, quorum ${
+    describe({
+      name: shortBenches.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES NOTHING when every bench can reach quorum',
+          fn: async () => {
+            expect(shortBenches({
+              benches: benchesUnder({ dry: ALL_WET, },),
+              names: phaseBenches({ phase: 'consolidation', },),
+              dry: ALL_WET,
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'NAMES each bench that cannot reach quorum among the seats a wet provider serves, with the '
+            + 'reachable count against the quorum, in the order the phase lists them',
+          fn: async () => {
+            const clauses = shortBenches({
+              benches: benchesUnder({ dry: BEDROCK_ALONE, },),
+              names: phaseBenches({ phase: 'lanes', },),
+              dry: BEDROCK_ALONE,
+            },);
+            /**
+             Wide seats Bedrock serves under that view.
+             */
+            const wideReachable = reachableSeats({
+              seats: RUN_WIDE_SEATS,
+              dry: BEDROCK_ALONE,
+            },).length;
+            /**
+             Writers Bedrock serves under that view.
+             */
+            const writersReachable = reachableSeats({
+              seats: RUN_TRANSLATORS,
+              dry: BEDROCK_ALONE,
+            },).length;
+            /**
+             Editors and refiners, none of which Bedrock serves.
+             */
+            const editors = RUN_MODELS.editorModelIds;
+            const refiners = RUN_MODELS.refinerModelIds;
+            expect(wideReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),);
+            expect(writersReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),);
+            expect(clauses,).toEqual([
+              `wide ${String(wideReachable,)} of ${String(RUN_WIDE_SEATS.length,)} reachable, quorum ${
             String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)
           }`,
-          `editors 0 of ${String(editors.length,)} reachable, quorum ${
+              `editors 0 of ${String(editors.length,)} reachable, quorum ${
             String(rosterQuorumSize({ rosterSize: editors.length, },),)
           }`,
-          `refiners 0 of ${String(refiners.length,)} reachable, quorum ${
+              `refiners 0 of ${String(refiners.length,)} reachable, quorum ${
             String(rosterQuorumSize({ rosterSize: refiners.length, },),)
           }`,
-          `translators ${String(writersReachable,)} of ${String(RUN_TRANSLATORS.length,)} reachable, quorum ${
+              `translators ${String(writersReachable,)} of ${String(RUN_TRANSLATORS.length,)} reachable, quorum ${
             String(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),)
           }`,
-        ],);
-      },
-    },),
-    it({
-      name: 'HOLDS THE READERS TO A PAIR, not to a majority: two Bedrock readers of six can corroborate a '
-        + 'picture, so a Bedrock-only pictures phase is not short (2026-09-08), and one reader alone is',
-      fn: async () => {
-        const benches = benchesUnder({ dry: BEDROCK_ALONE, },);
-        /**
-         Readers Bedrock serves under that view.
-         */
-        const readersReachable = reachableSeats({
-          seats: benches.readers,
-          dry: BEDROCK_ALONE,
-        },);
-        expect(readersReachable.length,).toBe(2,);
-        expect(shortBenches({
-          benches,
-          names: phaseBenches({ phase: 'pictures', },),
-          dry: BEDROCK_ALONE,
-        },),).toEqual([],);
-        /**
-         The same bench with one Bedrock reader gone: a single reachable reader.
-         */
-        const oneReader = benches.readers.filter(function keeps(modelId,): boolean {
-          return modelId !== readersReachable[0];
-        },);
-        expect(shortBenches({
-          benches: {
-            ...benches,
-            readers: oneReader,
+            ],);
           },
-          names: phaseBenches({ phase: 'pictures', },),
-          dry: BEDROCK_ALONE,
-        },),).toEqual([
-          `readers 1 of ${String(oneReader.length,)} reachable, quorum 2`,
-        ],);
-      },
-    },),
-    it({
-      name: 'READS ONLY the benches the phase leans on, so a phase that reads no pictures never waits on '
-        + 'the readers',
-      fn: async () => {
-        expect(phaseBenches({ phase: 'pictures', },),).toEqual(['readers',],);
-        expect(phaseBenches({ phase: 'translate lane', },),).toEqual([
-          'translators',
-          'select',
-        ],);
-        expect(phaseBenches({ phase: 'consolidation', },).includes('readers',),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'NAMES EVERY PHASE\'S BENCHES as the table in `run-seats-wait.ts` documents them, the insertion '
-        + 'admission on the wide bench it asks as the preparation does (ledger X12), so a phase never waits on '
-        + 'a bench it does not ask nor starts past one it does',
-      fn: async () => {
-        /**
-         Every phase a seat reading is taken for.
-         */
-        const phases = [
-          'preparation',
-          'pictures',
-          'insertion admission',
-          'lanes',
-          'translate lane',
-          'lane contest',
-          'consolidation',
-        ] as const;
-        expect(
-          Object.fromEntries(phases.map(function benchesOf(phase,) {
-          return [phase, phaseBenches({ phase, },),];
-        },),),
-        ).toEqual({
-          preparation: ['wide',],
-          pictures: ['readers',],
-          'insertion admission': ['wide',],
-          lanes: ['wide', 'editors', 'refiners', 'translators',],
-          'translate lane': ['translators', 'select',],
-          'lane contest': ['wide',],
-          consolidation: ['slate', 'wide',],
-        },);
-      },
+        },),
+        it({
+          name: 'HOLDS THE READERS TO A PAIR, not to a majority: two Bedrock readers of six can corroborate a '
+            + 'picture, so a Bedrock-only pictures phase is not short (2026-09-08), and one reader alone is',
+          fn: async () => {
+            const benches = benchesUnder({ dry: BEDROCK_ALONE, },);
+            /**
+             Readers Bedrock serves under that view.
+             */
+            const readersReachable = reachableSeats({
+              seats: benches.readers,
+              dry: BEDROCK_ALONE,
+            },);
+            expect(readersReachable.length,).toBe(2,);
+            expect(shortBenches({
+              benches,
+              names: phaseBenches({ phase: 'pictures', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([],);
+            /**
+             The same bench with one Bedrock reader gone: a single reachable reader.
+             */
+            const oneReader = benches.readers.filter(function keeps(modelId,): boolean {
+              return modelId !== readersReachable[0];
+            },);
+            expect(shortBenches({
+              benches: {
+                ...benches,
+                readers: oneReader,
+              },
+              names: phaseBenches({ phase: 'pictures', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([
+              `readers 1 of ${String(oneReader.length,)} reachable, quorum 2`,
+            ],);
+          },
+        },),
+        it({
+          name: 'READS ONLY the benches the phase leans on, so a phase that reads no pictures never waits on '
+            + 'the readers',
+          fn: async () => {
+            expect(phaseBenches({ phase: 'pictures', },),).toEqual(['readers',],);
+            expect(phaseBenches({ phase: 'translate lane', },),).toEqual([
+              'translators',
+              'select',
+            ],);
+            expect(phaseBenches({ phase: 'consolidation', },).includes('readers',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'NAMES EVERY PHASE\'S BENCHES as the table in `run-seats-wait.ts` documents them, the insertion '
+            + 'admission on the wide bench it asks as the preparation does (ledger X12), so a phase never waits on '
+            + 'a bench it does not ask nor starts past one it does',
+          fn: async () => {
+            /**
+             Every phase a seat reading is taken for.
+             */
+            const phases = [
+              'preparation',
+              'pictures',
+              'insertion admission',
+              'lanes',
+              'translate lane',
+              'lane contest',
+              'consolidation',
+            ] as const;
+            expect(
+              Object.fromEntries(phases.map(function benchesOf(phase,) {
+              return [phase, phaseBenches({ phase, },),];
+            },),),
+            ).toEqual({
+              preparation: ['wide',],
+              pictures: ['readers',],
+              'insertion admission': ['wide',],
+              lanes: ['wide', 'editors', 'refiners', 'translators',],
+              'translate lane': ['translators', 'select',],
+              'lane contest': ['wide',],
+              consolidation: ['slate', 'wide',],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

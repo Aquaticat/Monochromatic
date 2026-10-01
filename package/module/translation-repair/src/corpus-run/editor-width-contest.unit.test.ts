@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -59,86 +60,94 @@ function armOffering(patchedText: string,) {
 }
 
 await describe({
-  name: seatThatWon.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'NAMES THE SEAT WHOSE TEXT SHIPPED when a candidate actually won, which the stage '
-        + 'reports by marking the shipped producer a composite',
-      fn: async function adecidedRoundNamesItsSeat() {
-        expect(
-          seatThatWon({
-            shippedProducer: {
-              kind: 'composite',
-              contributors: [],
-            },
-            shipped: REWRITTEN,
-            first: armOffering(UNTOUCHED,),
-            second: armOffering(REWRITTEN,),
-          },),
-        ).toBe('second',);
-      },
+    describe({
+      name: seatThatWon.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE SEAT WHOSE TEXT SHIPPED when a candidate actually won, which the stage '
+            + 'reports by marking the shipped producer a composite',
+          fn: async function adecidedRoundNamesItsSeat() {
+            expect(
+              seatThatWon({
+                shippedProducer: {
+                  kind: 'composite',
+                  contributors: [],
+                },
+                shipped: REWRITTEN,
+                first: armOffering(UNTOUCHED,),
+                second: armOffering(REWRITTEN,),
+              },),
+            ).toBe('second',);
+          },
+        },),
+
+        it({
+          name: 'CREDITS NOBODY WHEN THE PANEL DECLINED even though the shipped bytes match an arm '
+            + 'exactly, which is the collision this reader exists for: a declining arm offers the '
+            + 'untouched translation and so does the fallback, so text alone cannot tell them apart',
+          fn: async function indecisionIsNotAWinForTheDecliningArm() {
+            expect(
+              seatThatWon({
+                // `incumbent` is what the indecision fallback carries, and no arm is
+                // ever seated as one.
+                shippedProducer: {
+                  kind: 'incumbent',
+                  matched: [],
+                },
+                shipped: UNTOUCHED,
+                first: armOffering(UNTOUCHED,),
+                second: armOffering(REWRITTEN,),
+              },),
+            ).toBe('none',);
+          },
+        },),
+
+        it({
+          name: 'CREDITS NOBODY WHEN THE SLATE WAS REJECTED, which the stage reports as unattributed '
+            + 'rather than as any candidate',
+          fn: async function rejectionCreditsNobody() {
+            expect(
+              seatThatWon({
+                shippedProducer: { kind: 'unattributed', },
+                shipped: UNTOUCHED,
+                first: armOffering(UNTOUCHED,),
+                second: armOffering(REWRITTEN,),
+              },),
+            ).toBe('none',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'CREDITS NOBODY WHEN THE PANEL DECLINED even though the shipped bytes match an arm '
-        + 'exactly, which is the collision this reader exists for: a declining arm offers the '
-        + 'untouched translation and so does the fallback, so text alone cannot tell them apart',
-      fn: async function indecisionIsNotAWinForTheDecliningArm() {
-        expect(
-          seatThatWon({
-            // `incumbent` is what the indecision fallback carries, and no arm is
-            // ever seated as one.
-            shippedProducer: {
-              kind: 'incumbent',
-              matched: [],
-            },
-            shipped: UNTOUCHED,
-            first: armOffering(UNTOUCHED,),
-            second: armOffering(REWRITTEN,),
-          },),
-        ).toBe('none',);
-      },
-    },),
+    describe({
+      name: armInSeat.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'MAPS THE SAME SEAT TO OPPOSITE ARMS ACROSS THE TWO ORDERS, which is the whole '
+            + 'mechanism cancelling position bias: winning the first seat means narrow in one order '
+            + 'and wide in the other',
+          fn: async function oneSeatMeansOppositeArmsAcrossOrders() {
+            expect(armInSeat({ seat: 'first', firstArm: 'narrow', },),).toBe('narrow',);
+            expect(armInSeat({ seat: 'first', firstArm: 'wide', },),).toBe('wide',);
+            expect(armInSeat({ seat: 'second', firstArm: 'narrow', },),).toBe('wide',);
+            expect(armInSeat({ seat: 'second', firstArm: 'wide', },),).toBe('narrow',);
+          },
+        },),
 
-    it({
-      name: 'CREDITS NOBODY WHEN THE SLATE WAS REJECTED, which the stage reports as unattributed '
-        + 'rather than as any candidate',
-      fn: async function rejectionCreditsNobody() {
-        expect(
-          seatThatWon({
-            shippedProducer: { kind: 'unattributed', },
-            shipped: UNTOUCHED,
-            first: armOffering(UNTOUCHED,),
-            second: armOffering(REWRITTEN,),
-          },),
-        ).toBe('none',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: armInSeat.name,
-  children: [
-    it({
-      name: 'MAPS THE SAME SEAT TO OPPOSITE ARMS ACROSS THE TWO ORDERS, which is the whole '
-        + 'mechanism cancelling position bias: winning the first seat means narrow in one order '
-        + 'and wide in the other',
-      fn: async function oneSeatMeansOppositeArmsAcrossOrders() {
-        expect(armInSeat({ seat: 'first', firstArm: 'narrow', },),).toBe('narrow',);
-        expect(armInSeat({ seat: 'first', firstArm: 'wide', },),).toBe('wide',);
-        expect(armInSeat({ seat: 'second', firstArm: 'narrow', },),).toBe('wide',);
-        expect(armInSeat({ seat: 'second', firstArm: 'wide', },),).toBe('narrow',);
-      },
-    },),
-
-    it({
-      name: 'CARRIES A NONE THROUGH rather than resolving it to whichever arm sat somewhere, so a '
-        + 'round nobody won cannot become a win downstream',
-      fn: async function noneStaysNone() {
-        expect(armInSeat({ seat: 'none', firstArm: 'narrow', },),).toBe('none',);
-        expect(armInSeat({ seat: 'none', firstArm: 'wide', },),).toBe('none',);
-      },
+        it({
+          name: 'CARRIES A NONE THROUGH rather than resolving it to whichever arm sat somewhere, so a '
+            + 'round nobody won cannot become a win downstream',
+          fn: async function noneStaysNone() {
+            expect(armInSeat({ seat: 'none', firstArm: 'narrow', },),).toBe('none',);
+            expect(armInSeat({ seat: 'none', firstArm: 'wide', },),).toBe('none',);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -18,6 +18,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -43,282 +44,6 @@ const FALLBACK = 180_000;
  Longer window a measurement run would ask for.
  */
 const LONGER = 300_000;
-
-await describe({
-  name: resolveStragglerGraceMs.name,
-  children: [
-    it({
-      name: 'SPELLS the variable the way the documentation does, since an operator who exports a '
-        + 'name nothing reads gets the built-in window and no complaint',
-      fn: async () => {
-        expect(STRAGGLER_GRACE_VAR,).toBe('TRANSLATION_REPAIR_STRAGGLER_GRACE_MS',);
-      },
-    },),
-
-    it({
-      name: 'USES the built-in window when nothing overrides it, which is every ordinary run',
-      fn: async () => {
-        expect(resolveStragglerGraceMs({
-          fallback: FALLBACK,
-          raw: '',
-        },),).toBe(FALLBACK,);
-      },
-    },),
-
-    it({
-      name: 'HONORS a positive override, which is what makes a longer-window run one build apart '
-        + 'from its matched control',
-      fn: async () => {
-        expect(resolveStragglerGraceMs({
-          fallback: FALLBACK,
-          raw: '300000',
-        },),).toBe(LONGER,);
-      },
-    },),
-
-    it({
-      name: 'IGNORES an empty override and falls back, since an exported-but-empty variable is a '
-        + 'shell accident rather than an intention',
-      fn: async () => {
-        expect(resolveStragglerGraceMs({
-          fallback: FALLBACK,
-          raw: '   ',
-        },),).toBe(FALLBACK,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a value that is not a number rather than falling back, as a stated refusal '
-        + 'naming the variable and the value, because a typo silently becoming the built-in window '
-        + 'would compare two matched runs and conclude the window buys nothing',
-      fn: async () => {
-        /**
-         What the reader threw on a value nothing could read.
-         */
-        const refusal = caught(function readProse(): number {
-          return resolveStragglerGraceMs({
-            fallback: FALLBACK,
-            raw: 'five minutes',
-          },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
-        expect((refusal as Error).message,).toContain('five minutes',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a trailing-unit value such as `300s`, which `parseFloat` would have read as '
-        + '300 and accepted: the number is right and the operator\'s belief about what they set '
-        + 'is not',
-      fn: async () => {
-        expect(
-          caught(function readUnit(): number {
-            return resolveStragglerGraceMs({
-              fallback: FALLBACK,
-              raw: '300s',
-            },);
-          },),
-        ).toBeInstanceOf(StatedRefusalError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES zero and negatives, which would abandon every straggler the instant quorum '
-        + 'stood and lose the very voices the window exists to keep',
-      fn: async () => {
-        expect(
-          caught(function readZero(): number {
-            return resolveStragglerGraceMs({
-              fallback: FALLBACK,
-              raw: '0',
-            },);
-          },),
-        ).toBeInstanceOf(StatedRefusalError,);
-        expect(
-          caught(function readNegative(): number {
-            return resolveStragglerGraceMs({
-              fallback: FALLBACK,
-              raw: '-1000',
-            },);
-          },),
-        ).toBeInstanceOf(StatedRefusalError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a fraction and a value past the longest timer, because a timer rounds the one '
-        + 'and clamps the other to a millisecond, so the window that ran would not be the window '
-        + 'that was set',
-      fn: async () => {
-        expect(
-          caught(function readFraction(): number {
-            return resolveStragglerGraceMs({
-              fallback: FALLBACK,
-              raw: '0.5',
-            },);
-          },),
-        ).toBeInstanceOf(StatedRefusalError,);
-        expect(
-          caught(function readOverflow(): number {
-            return resolveStragglerGraceMs({
-              fallback: FALLBACK,
-              raw: String(MAX_TIMER_DELAY_MS + 1,),
-            },);
-          },),
-        ).toBeInstanceOf(StatedRefusalError,);
-        expect(resolveStragglerGraceMs({
-          fallback: FALLBACK,
-          raw: String(MAX_TIMER_DELAY_MS,),
-        },),).toBe(MAX_TIMER_DELAY_MS,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: isTimerWindow.name,
-  children: [
-    it({
-      name: 'HOLDS exactly the whole numbers from one to the longest timer delay, the range a '
-        + 'JavaScript timer runs as written',
-      fn: async () => {
-        expect(isTimerWindow({ ms: 1, },),).toBe(true,);
-        expect(isTimerWindow({ ms: FALLBACK, },),).toBe(true,);
-        expect(isTimerWindow({ ms: MAX_TIMER_DELAY_MS, },),).toBe(true,);
-        expect(isTimerWindow({ ms: 0, },),).toBe(false,);
-        expect(isTimerWindow({ ms: -1, },),).toBe(false,);
-        expect(isTimerWindow({ ms: 1.5, },),).toBe(false,);
-        expect(isTimerWindow({ ms: MAX_TIMER_DELAY_MS + 1, },),).toBe(false,);
-        expect(isTimerWindow({ ms: Number.NaN, },),).toBe(false,);
-        expect(isTimerWindow({ ms: Number.POSITIVE_INFINITY, },),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: readWindowDial.name,
-  children: [
-    it({
-      name: 'THROWS on a fallback no timer holds rather than returning it on a blank dial, since '
-        + 'a caller passing such a window is a defect and not an operator\'s input',
-      fn: async () => {
-        expect(
-          caught(function readBadFallback(): number {
-            return readWindowDial({
-              variable: STRAGGLER_GRACE_VAR,
-              fallback: 0,
-              raw: '',
-              unsetMeans: 'run under the built-in window',
-            },);
-          },),
-        ).toBeInstanceOf(RangeError,);
-      },
-    },),
-
-    it({
-      name: 'NAMES the variable it was asked to read in the refusal, which is what lets two dials '
-        + 'share one reader without the operator correcting the wrong one',
-      fn: async () => {
-        /**
-         What the reader threw for a made-up variable.
-         */
-        const refusal = caught(function readOther(): number {
-          return readWindowDial({
-            variable: 'SOME_OTHER_WINDOW_MS',
-            fallback: FALLBACK,
-            raw: 'soon',
-            unsetMeans: 'do nothing',
-          },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusal as Error).message,).toContain('SOME_OTHER_WINDOW_MS',);
-        expect((refusal as Error).message,).toContain('do nothing',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a window not written in digits, which `Number` read as a window nobody typed: a '
-        + 'hexadecimal, an exponent, a sign, a space either side and a point; a leading zero still reads as '
-        + 'written (ledger B73)',
-      fn: async () => {
-        /**
-         Spellings `Number` reads as one second that no operator writes as one.
-         */
-        const spellings = [
-          '0x3E8',
-          '1e3',
-          '+1000',
-          ' 1000',
-          '1000 ',
-          '1000.0',
-        ];
-        expect(spellings.map(function refusalOf(raw,): string {
-          /**
-           What the reader threw.
-           */
-          const refusal = caught(function readSpelling(): number {
-            return readWindowDial({
-              variable: STRAGGLER_GRACE_VAR,
-              fallback: FALLBACK,
-              raw,
-              unsetMeans: 'run under the built-in window',
-            },);
-          },);
-          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-          return (refusal as Error).message;
-        },),).toEqual(spellings.map(function expectedOf(raw,): string {
-          return `${STRAGGLER_GRACE_VAR} must be a whole number of milliseconds from 1 to `
-            + `${String(MAX_TIMER_DELAY_MS,)}, and ${JSON.stringify(raw,)} is not; leave it unset to run under `
-            + 'the built-in window';
-        },),);
-        expect(readWindowDial({
-          variable: STRAGGLER_GRACE_VAR,
-          fallback: FALLBACK,
-          raw: '01000',
-          unsetMeans: 'run under the built-in window',
-        },),).toBe(1_000,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: graceOverrideNote.name,
-  children: [
-    it({
-      name: 'SAYS NOTHING when the run is under the built-in window, so an ordinary run carries no '
-        + 'note claiming an override it did not make',
-      fn: async () => {
-        expect(graceOverrideNote({
-          effectiveMs: FALLBACK,
-          builtInMs: FALLBACK,
-        },),).toBe('',);
-      },
-    },),
-
-    it({
-      name: 'NAMES BOTH WINDOWS AND THE VARIABLE when they differ, so a reader of the log can tell '
-        + 'which run this was without reading the shell that launched it',
-      fn: async () => {
-        /**
-         Note for a run under the longer window.
-         */
-        const note = graceOverrideNote({
-          effectiveMs: LONGER,
-          builtInMs: FALLBACK,
-        },);
-
-        expect(note,).toContain(STRAGGLER_GRACE_VAR,);
-        expect(note,).toContain('300000ms',);
-        expect(note,).toContain('built-in 180000ms',);
-      },
-    },),
-  ],
-},);
 
 /**
  Sets or clears the window variable for one case, restoring it after.
@@ -354,50 +79,336 @@ function windowSaying({ says, }: { readonly says?: string; },): Disposable {
 }
 
 await describe({
-  name: adoptCalibrationGrace.name,
-  // ONE AT A TIME: every case writes the same process-wide variable.
+  name: '',
   concurrency: 1,
   children: [
-    it({
-      name: 'ADOPTS the calibration window through the variable when nothing was set, so every stage '
-        + 'round the calibration drives reads it by the path a launch already has',
-      fn: async () => {
-        using dial = windowSaying({},);
+    describe({
+      name: resolveStragglerGraceMs.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SPELLS the variable the way the documentation does, since an operator who exports a '
+            + 'name nothing reads gets the built-in window and no complaint',
+          fn: async () => {
+            expect(STRAGGLER_GRACE_VAR,).toBe('TRANSLATION_REPAIR_STRAGGLER_GRACE_MS',);
+          },
+        },),
 
-        expect(adoptCalibrationGrace(),).toStrictEqual({
-          effectiveMs: CALIBRATION_STRAGGLER_GRACE_MS,
-          source: 'calibration-default',
-        },);
-        expect(process.env[STRAGGLER_GRACE_VAR],).toBe(String(CALIBRATION_STRAGGLER_GRACE_MS,),);
-        expect(resolveStragglerGraceMs({ fallback: FALLBACK, },),).toBe(CALIBRATION_STRAGGLER_GRACE_MS,);
-      },
+        it({
+          name: 'USES the built-in window when nothing overrides it, which is every ordinary run',
+          fn: async () => {
+            expect(resolveStragglerGraceMs({
+              fallback: FALLBACK,
+              raw: '',
+            },),).toBe(FALLBACK,);
+          },
+        },),
+
+        it({
+          name: 'HONORS a positive override, which is what makes a longer-window run one build apart '
+            + 'from its matched control',
+          fn: async () => {
+            expect(resolveStragglerGraceMs({
+              fallback: FALLBACK,
+              raw: '300000',
+            },),).toBe(LONGER,);
+          },
+        },),
+
+        it({
+          name: 'IGNORES an empty override and falls back, since an exported-but-empty variable is a '
+            + 'shell accident rather than an intention',
+          fn: async () => {
+            expect(resolveStragglerGraceMs({
+              fallback: FALLBACK,
+              raw: '   ',
+            },),).toBe(FALLBACK,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a value that is not a number rather than falling back, as a stated refusal '
+            + 'naming the variable and the value, because a typo silently becoming the built-in window '
+            + 'would compare two matched runs and conclude the window buys nothing',
+          fn: async () => {
+            /**
+             What the reader threw on a value nothing could read.
+             */
+            const refusal = caught(function readProse(): number {
+              return resolveStragglerGraceMs({
+                fallback: FALLBACK,
+                raw: 'five minutes',
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
+            expect((refusal as Error).message,).toContain('five minutes',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a trailing-unit value such as `300s`, which `parseFloat` would have read as '
+            + '300 and accepted: the number is right and the operator\'s belief about what they set '
+            + 'is not',
+          fn: async () => {
+            expect(
+              caught(function readUnit(): number {
+                return resolveStragglerGraceMs({
+                  fallback: FALLBACK,
+                  raw: '300s',
+                },);
+              },),
+            ).toBeInstanceOf(StatedRefusalError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES zero and negatives, which would abandon every straggler the instant quorum '
+            + 'stood and lose the very voices the window exists to keep',
+          fn: async () => {
+            expect(
+              caught(function readZero(): number {
+                return resolveStragglerGraceMs({
+                  fallback: FALLBACK,
+                  raw: '0',
+                },);
+              },),
+            ).toBeInstanceOf(StatedRefusalError,);
+            expect(
+              caught(function readNegative(): number {
+                return resolveStragglerGraceMs({
+                  fallback: FALLBACK,
+                  raw: '-1000',
+                },);
+              },),
+            ).toBeInstanceOf(StatedRefusalError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a fraction and a value past the longest timer, because a timer rounds the one '
+            + 'and clamps the other to a millisecond, so the window that ran would not be the window '
+            + 'that was set',
+          fn: async () => {
+            expect(
+              caught(function readFraction(): number {
+                return resolveStragglerGraceMs({
+                  fallback: FALLBACK,
+                  raw: '0.5',
+                },);
+              },),
+            ).toBeInstanceOf(StatedRefusalError,);
+            expect(
+              caught(function readOverflow(): number {
+                return resolveStragglerGraceMs({
+                  fallback: FALLBACK,
+                  raw: String(MAX_TIMER_DELAY_MS + 1,),
+                },);
+              },),
+            ).toBeInstanceOf(StatedRefusalError,);
+            expect(resolveStragglerGraceMs({
+              fallback: FALLBACK,
+              raw: String(MAX_TIMER_DELAY_MS,),
+            },),).toBe(MAX_TIMER_DELAY_MS,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'HONORS a launch that set the variable, as an override, and leaves it as set',
-      fn: async () => {
-        using dial = windowSaying({ says: '180000', },);
-
-        expect(adoptCalibrationGrace(),).toStrictEqual({
-          effectiveMs: FALLBACK,
-          source: 'override',
-        },);
-        expect(process.env[STRAGGLER_GRACE_VAR],).toBe('180000',);
-      },
+    describe({
+      name: isTimerWindow.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'HOLDS exactly the whole numbers from one to the longest timer delay, the range a '
+            + 'JavaScript timer runs as written',
+          fn: async () => {
+            expect(isTimerWindow({ ms: 1, },),).toBe(true,);
+            expect(isTimerWindow({ ms: FALLBACK, },),).toBe(true,);
+            expect(isTimerWindow({ ms: MAX_TIMER_DELAY_MS, },),).toBe(true,);
+            expect(isTimerWindow({ ms: 0, },),).toBe(false,);
+            expect(isTimerWindow({ ms: -1, },),).toBe(false,);
+            expect(isTimerWindow({ ms: 1.5, },),).toBe(false,);
+            expect(isTimerWindow({ ms: MAX_TIMER_DELAY_MS + 1, },),).toBe(false,);
+            expect(isTimerWindow({ ms: Number.NaN, },),).toBe(false,);
+            expect(isTimerWindow({ ms: Number.POSITIVE_INFINITY, },),).toBe(false,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES an unreadable launch value the way the dial does, instead of adopting over it',
-      fn: async () => {
-        using dial = windowSaying({ says: 'five minutes', },);
+    describe({
+      name: readWindowDial.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THROWS on a fallback no timer holds rather than returning it on a blank dial, since '
+            + 'a caller passing such a window is a defect and not an operator\'s input',
+          fn: async () => {
+            expect(
+              caught(function readBadFallback(): number {
+                return readWindowDial({
+                  variable: STRAGGLER_GRACE_VAR,
+                  fallback: 0,
+                  raw: '',
+                  unsetMeans: 'run under the built-in window',
+                },);
+              },),
+            ).toBeInstanceOf(RangeError,);
+          },
+        },),
 
-        const refusal = caught(function adoptsProse() {
-          adoptCalibrationGrace();
-        },);
+        it({
+          name: 'NAMES the variable it was asked to read in the refusal, which is what lets two dials '
+            + 'share one reader without the operator correcting the wrong one',
+          fn: async () => {
+            /**
+             What the reader threw for a made-up variable.
+             */
+            const refusal = caught(function readOther(): number {
+              return readWindowDial({
+                variable: 'SOME_OTHER_WINDOW_MS',
+                fallback: FALLBACK,
+                raw: 'soon',
+                unsetMeans: 'do nothing',
+              },);
+            },);
 
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
-      },
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect((refusal as Error).message,).toContain('SOME_OTHER_WINDOW_MS',);
+            expect((refusal as Error).message,).toContain('do nothing',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a window not written in digits, which `Number` read as a window nobody typed: a '
+            + 'hexadecimal, an exponent, a sign, a space either side and a point; a leading zero still reads as '
+            + 'written (ledger B73)',
+          fn: async () => {
+            /**
+             Spellings `Number` reads as one second that no operator writes as one.
+             */
+            const spellings = [
+              '0x3E8',
+              '1e3',
+              '+1000',
+              ' 1000',
+              '1000 ',
+              '1000.0',
+            ];
+            expect(spellings.map(function refusalOf(raw,): string {
+              /**
+               What the reader threw.
+               */
+              const refusal = caught(function readSpelling(): number {
+                return readWindowDial({
+                  variable: STRAGGLER_GRACE_VAR,
+                  fallback: FALLBACK,
+                  raw,
+                  unsetMeans: 'run under the built-in window',
+                },);
+              },);
+              expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+              return (refusal as Error).message;
+            },),).toEqual(spellings.map(function expectedOf(raw,): string {
+              return `${STRAGGLER_GRACE_VAR} must be a whole number of milliseconds from 1 to `
+                + `${String(MAX_TIMER_DELAY_MS,)}, and ${JSON.stringify(raw,)} is not; leave it unset to run under `
+                + 'the built-in window';
+            },),);
+            expect(readWindowDial({
+              variable: STRAGGLER_GRACE_VAR,
+              fallback: FALLBACK,
+              raw: '01000',
+              unsetMeans: 'run under the built-in window',
+            },),).toBe(1_000,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: graceOverrideNote.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SAYS NOTHING when the run is under the built-in window, so an ordinary run carries no '
+            + 'note claiming an override it did not make',
+          fn: async () => {
+            expect(graceOverrideNote({
+              effectiveMs: FALLBACK,
+              builtInMs: FALLBACK,
+            },),).toBe('',);
+          },
+        },),
+
+        it({
+          name: 'NAMES BOTH WINDOWS AND THE VARIABLE when they differ, so a reader of the log can tell '
+            + 'which run this was without reading the shell that launched it',
+          fn: async () => {
+            /**
+             Note for a run under the longer window.
+             */
+            const note = graceOverrideNote({
+              effectiveMs: LONGER,
+              builtInMs: FALLBACK,
+            },);
+
+            expect(note,).toContain(STRAGGLER_GRACE_VAR,);
+            expect(note,).toContain('300000ms',);
+            expect(note,).toContain('built-in 180000ms',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: adoptCalibrationGrace.name,
+      // ONE AT A TIME: every case writes the same process-wide variable.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'ADOPTS the calibration window through the variable when nothing was set, so every stage '
+            + 'round the calibration drives reads it by the path a launch already has',
+          fn: async () => {
+            using dial = windowSaying({},);
+
+            expect(adoptCalibrationGrace(),).toStrictEqual({
+              effectiveMs: CALIBRATION_STRAGGLER_GRACE_MS,
+              source: 'calibration-default',
+            },);
+            expect(process.env[STRAGGLER_GRACE_VAR],).toBe(String(CALIBRATION_STRAGGLER_GRACE_MS,),);
+            expect(resolveStragglerGraceMs({ fallback: FALLBACK, },),).toBe(CALIBRATION_STRAGGLER_GRACE_MS,);
+          },
+        },),
+
+        it({
+          name: 'HONORS a launch that set the variable, as an override, and leaves it as set',
+          fn: async () => {
+            using dial = windowSaying({ says: '180000', },);
+
+            expect(adoptCalibrationGrace(),).toStrictEqual({
+              effectiveMs: FALLBACK,
+              source: 'override',
+            },);
+            expect(process.env[STRAGGLER_GRACE_VAR],).toBe('180000',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an unreadable launch value the way the dial does, instead of adopting over it',
+          fn: async () => {
+            using dial = windowSaying({ says: 'five minutes', },);
+
+            const refusal = caught(function adoptsProse() {
+              adoptCalibrationGrace();
+            },);
+
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
+          },
+        },),
+      ],
     },),
   ],
 },);

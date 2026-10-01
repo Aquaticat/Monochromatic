@@ -19,6 +19,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -117,338 +118,349 @@ function printMarker({
 }
 
 await describe({
-  name: runSuite.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'COUNTS THE MARKERS A PASSING COMMAND PRINTED, with the coverage directory handed to it',
-      fn: async () => {
-        await using directory = await scratch();
-        const coverageDirectory = join(
-          directory.path,
-          'coverage',
-        );
-        const logPath = join(
-          directory.path,
-          'suite.log',
-        );
-        expect(await runSuite({
-          command: [
-            process.execPath,
-            '--eval',
-            `${printMarker({
+    describe({
+      name: runSuite.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS THE MARKERS A PASSING COMMAND PRINTED, with the coverage directory handed to it',
+          fn: async () => {
+            await using directory = await scratch();
+            const coverageDirectory = join(
+              directory.path,
+              'coverage',
+            );
+            const logPath = join(
+              directory.path,
+              'suite.log',
+            );
+            expect(await runSuite({
+              command: [
+                process.execPath,
+                '--eval',
+                `${printMarker({
               marker: 'PASS',
               label: 'nap',
             },)} ${printMarker({
               marker: 'PASS',
               label: 'purr',
             },)} console.log(process.env.NODE_V8_COVERAGE);`,
-          ],
-          cwd: directory.path,
-          coverageDirectory,
-          logPath,
-        },),).toEqual({
-          passes: 2,
-          failures: 0,
-          exitCode: 0,
-        },);
-        expect(await readFile(
-          logPath,
-          'utf8',
-        ),).toContain(coverageDirectory,);
-      },
-    },),
-    it({
-      name: 'READS A FAILING COMMAND\'S EXIT CODE AND FAIL MARKERS, and a command that never started as exit 1',
-      fn: async () => {
-        await using directory = await scratch();
-        const logPath = join(
-          directory.path,
-          'suite.log',
-        );
-        expect(await runSuite({
-          command: [
-            process.execPath,
-            '--eval',
-            `${printMarker({
+              ],
+              cwd: directory.path,
+              coverageDirectory,
+              logPath,
+            },),).toEqual({
+              passes: 2,
+              failures: 0,
+              exitCode: 0,
+            },);
+            expect(await readFile(
+              logPath,
+              'utf8',
+            ),).toContain(coverageDirectory,);
+          },
+        },),
+        it({
+          name: 'READS A FAILING COMMAND\'S EXIT CODE AND FAIL MARKERS, and a command that never started as exit 1',
+          fn: async () => {
+            await using directory = await scratch();
+            const logPath = join(
+              directory.path,
+              'suite.log',
+            );
+            expect(await runSuite({
+              command: [
+                process.execPath,
+                '--eval',
+                `${printMarker({
               marker: 'FAIL',
               label: 'knead',
             },)} process.exit(3);`,
-          ],
-          cwd: directory.path,
-          coverageDirectory: join(
-            directory.path,
-            'coverage',
-          ),
-          logPath,
-        },),).toEqual({
-          passes: 0,
-          failures: 1,
-          exitCode: 3,
-        },);
-        expect((await runSuite({
-          command: ['translation-repair-no-such-cat-program',],
-          cwd: directory.path,
-          coverageDirectory: join(
-            directory.path,
-            'coverage',
-          ),
-          logPath,
-        },)).exitCode,).toBe(1,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: tallyCoverage.name,
-  children: [
-    it({
-      name: 'READS EVERY COVERAGE FILE TWICE: a block one process lists as cold ran in the other, and one file alone leaves it cold',
-      fn: async () => {
-        await using both = await scratch();
-        await writeFile(
-          join(
-            both.path,
-            'coverage-1.json',
-          ),
-          coverageText({
-            prefix: PREFIX,
-            napRanges: [[10, 90, 2,], [40, 60, 0,],],
-          },),
-        );
-        await writeFile(
-          join(
-            both.path,
-            'coverage-2.json',
-          ),
-          coverageText({
-            prefix: PREFIX,
-            napRanges: [[10, 90, 3,],],
-          },),
-        );
-        const tally = await tallyCoverage({
-          coverageDirectory: both.path,
-          bundleUrlPrefix: PREFIX,
-        },);
-        expect(tally.coldStretches(),).toEqual([],);
-        expect(tally.loadedBundles(),).toEqual(['nap.mjs',],);
-
-        await using one = await scratch();
-        await writeFile(
-          join(
-            one.path,
-            'coverage-1.json',
-          ),
-          coverageText({
-            prefix: PREFIX,
-            napRanges: [[10, 90, 2,], [40, 60, 0,],],
-          },),
-        );
-        expect((await tallyCoverage({
-          coverageDirectory: one.path,
-          bundleUrlPrefix: PREFIX,
-        },)).coldStretches(),).toEqual([{
-          bundle: 'nap.mjs',
-          start: 40,
-          end: 60,
-          shape: { kind: 'block', },
-        },],);
-      },
-    },),
-    it({
-      name: 'REFUSES A COVERAGE FILE THAT DOES NOT READ as V8 writes one',
-      fn: async () => {
-        await using directory = await scratch();
-        await writeFile(
-          join(
-            directory.path,
-            'coverage-1.json',
-          ),
-          JSON.stringify({ result: 'none', },),
-        );
-        await expect(tallyCoverage({
-          coverageDirectory: directory.path,
-          bundleUrlPrefix: PREFIX,
-        },),).rejects.toThrow(CoverageFileError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: coverageReadings.name,
-  children: [
-    it({
-      name: 'YIELDS EACH FILE\'S BUNDLE SCRIPTS IN THE ORDER GIVEN',
-      fn: async () => {
-        await using directory = await scratch();
-        const purrPrefix = 'file:///cattery/purr/';
-        const paths = [
-          join(
-            directory.path,
-            'b.json',
-          ),
-          join(
-            directory.path,
-            'a.json',
-          ),
-        ];
-        await writeFile(
-          paths[0] ?? '',
-          coverageText({
-            prefix: PREFIX,
-            napRanges: [[10, 90, 1,],],
-          },),
-        );
-        await writeFile(
-          paths[1] ?? '',
-          coverageText({
-            prefix: purrPrefix,
-            napRanges: [[10, 90, 1,],],
-          },),
-        );
-        const counts = [];
-        for await (const scripts of coverageReadings({
-          paths,
-          bundleUrlPrefix: PREFIX,
-        },))
-          counts.push(scripts.length,);
-        expect(counts,).toEqual([1, 0,],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: readBundle.name,
-  children: [
-    it({
-      name: 'READS A BUNDLE AND ITS MAP, naming its sources from the package',
-      fn: async () => {
-        await using directory = await scratch();
-        const distDirectory = join(
-          directory.path,
-          'dist',
-          'final',
-          'node',
-        );
-        await mkdir(
-          distDirectory,
-          { recursive: true, },
-        );
-        await writeFile(
-          join(
-            distDirectory,
-            'nap.mjs',
-          ),
-          'x\ny',
-        );
-        await writeFile(
-          join(
-            distDirectory,
-            'nap.mjs.map',
-          ),
-          JSON.stringify({
-            version: 3,
-            sources: ['../../../src/nap.ts',],
-            names: [],
-            mappings: ';AAAA',
-          },),
-        );
-        const { lines, sources, } = await readBundle({
-          distDirectory,
-          packageDirectory: directory.path,
-          bundle: 'nap.mjs',
-        },);
-        expect(sources,).toEqual(['src/nap.ts',],);
-        expect(sourceLineAt({
-          lines,
-          offset: 2,
-        },),).toEqual({
-          kind: 'mapped',
-          source: 'src/nap.ts',
-          line: 1,
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES A BUNDLE WHOSE MAP DOES NOT READ as a version 3 map',
-      fn: async () => {
-        await using directory = await scratch();
-        await writeFile(
-          join(
-            directory.path,
-            'nap.mjs',
-          ),
-          'x',
-        );
-        await writeFile(
-          join(
-            directory.path,
-            'nap.mjs.map',
-          ),
-          JSON.stringify({ version: 2, },),
-        );
-        await expect(readBundle({
-          distDirectory: directory.path,
-          packageDirectory: directory.path,
-          bundle: 'nap.mjs',
-        },),).rejects.toThrow(SourceMapFileError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: unloadedSourcesOf.name,
-  children: [
-    it({
-      name: 'KEEPS EACH SOURCE ONCE, LEAVES OUT ONE A LOADED BUNDLE CARRIES, and counts each one\'s physical lines with its kind',
-      fn: async () => {
-        await using directory = await scratch();
-        await mkdir(
-          join(
-            directory.path,
-            'src',
-            'corpus-run',
-          ),
-          { recursive: true, },
-        );
-        await writeFile(
-          join(
-            directory.path,
-            'src',
-            'nap.ts',
-          ),
-          'doze\nyawn\nstretch',
-        );
-        await writeFile(
-          join(
-            directory.path,
-            'src',
-            'corpus-run',
-            'nap-probe.ts',
-          ),
-          'blink\n',
-        );
-        expect(await unloadedSourcesOf({
-          packageDirectory: directory.path,
-          carried: ['src/nap.ts', 'src/corpus-run/nap-probe.ts', 'src/nap.ts', 'src/purr.ts',],
-          loadedSources: new Set(['src/purr.ts',],),
-          entryFiles: new Set(['src/corpus-run/nap-probe.ts',],),
-        },),).toEqual([
-          {
-            source: 'src/corpus-run/nap-probe.ts',
-            kind: 'entry file',
-            lines: 2,
+              ],
+              cwd: directory.path,
+              coverageDirectory: join(
+                directory.path,
+                'coverage',
+              ),
+              logPath,
+            },),).toEqual({
+              passes: 0,
+              failures: 1,
+              exitCode: 3,
+            },);
+            expect((await runSuite({
+              command: ['translation-repair-no-such-cat-program',],
+              cwd: directory.path,
+              coverageDirectory: join(
+                directory.path,
+                'coverage',
+              ),
+              logPath,
+            },)).exitCode,).toBe(1,);
           },
-          {
-            source: 'src/nap.ts',
-            kind: 'library source',
-            lines: 3,
+        },),
+      ],
+    },),
+
+    describe({
+      name: tallyCoverage.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS EVERY COVERAGE FILE TWICE: a block one process lists as cold ran in the other, and one file alone leaves it cold',
+          fn: async () => {
+            await using both = await scratch();
+            await writeFile(
+              join(
+                both.path,
+                'coverage-1.json',
+              ),
+              coverageText({
+                prefix: PREFIX,
+                napRanges: [[10, 90, 2,], [40, 60, 0,],],
+              },),
+            );
+            await writeFile(
+              join(
+                both.path,
+                'coverage-2.json',
+              ),
+              coverageText({
+                prefix: PREFIX,
+                napRanges: [[10, 90, 3,],],
+              },),
+            );
+            const tally = await tallyCoverage({
+              coverageDirectory: both.path,
+              bundleUrlPrefix: PREFIX,
+            },);
+            expect(tally.coldStretches(),).toEqual([],);
+            expect(tally.loadedBundles(),).toEqual(['nap.mjs',],);
+
+            await using one = await scratch();
+            await writeFile(
+              join(
+                one.path,
+                'coverage-1.json',
+              ),
+              coverageText({
+                prefix: PREFIX,
+                napRanges: [[10, 90, 2,], [40, 60, 0,],],
+              },),
+            );
+            expect((await tallyCoverage({
+              coverageDirectory: one.path,
+              bundleUrlPrefix: PREFIX,
+            },)).coldStretches(),).toEqual([{
+              bundle: 'nap.mjs',
+              start: 40,
+              end: 60,
+              shape: { kind: 'block', },
+            },],);
           },
-        ],);
-      },
+        },),
+        it({
+          name: 'REFUSES A COVERAGE FILE THAT DOES NOT READ as V8 writes one',
+          fn: async () => {
+            await using directory = await scratch();
+            await writeFile(
+              join(
+                directory.path,
+                'coverage-1.json',
+              ),
+              JSON.stringify({ result: 'none', },),
+            );
+            await expect(tallyCoverage({
+              coverageDirectory: directory.path,
+              bundleUrlPrefix: PREFIX,
+            },),).rejects.toThrow(CoverageFileError,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: coverageReadings.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'YIELDS EACH FILE\'S BUNDLE SCRIPTS IN THE ORDER GIVEN',
+          fn: async () => {
+            await using directory = await scratch();
+            const purrPrefix = 'file:///cattery/purr/';
+            const paths = [
+              join(
+                directory.path,
+                'b.json',
+              ),
+              join(
+                directory.path,
+                'a.json',
+              ),
+            ];
+            await writeFile(
+              paths[0] ?? '',
+              coverageText({
+                prefix: PREFIX,
+                napRanges: [[10, 90, 1,],],
+              },),
+            );
+            await writeFile(
+              paths[1] ?? '',
+              coverageText({
+                prefix: purrPrefix,
+                napRanges: [[10, 90, 1,],],
+              },),
+            );
+            const counts = [];
+            for await (const scripts of coverageReadings({
+              paths,
+              bundleUrlPrefix: PREFIX,
+            },))
+              counts.push(scripts.length,);
+            expect(counts,).toEqual([1, 0,],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readBundle.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS A BUNDLE AND ITS MAP, naming its sources from the package',
+          fn: async () => {
+            await using directory = await scratch();
+            const distDirectory = join(
+              directory.path,
+              'dist',
+              'final',
+              'node',
+            );
+            await mkdir(
+              distDirectory,
+              { recursive: true, },
+            );
+            await writeFile(
+              join(
+                distDirectory,
+                'nap.mjs',
+              ),
+              'x\ny',
+            );
+            await writeFile(
+              join(
+                distDirectory,
+                'nap.mjs.map',
+              ),
+              JSON.stringify({
+                version: 3,
+                sources: ['../../../src/nap.ts',],
+                names: [],
+                mappings: ';AAAA',
+              },),
+            );
+            const { lines, sources, } = await readBundle({
+              distDirectory,
+              packageDirectory: directory.path,
+              bundle: 'nap.mjs',
+            },);
+            expect(sources,).toEqual(['src/nap.ts',],);
+            expect(sourceLineAt({
+              lines,
+              offset: 2,
+            },),).toEqual({
+              kind: 'mapped',
+              source: 'src/nap.ts',
+              line: 1,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES A BUNDLE WHOSE MAP DOES NOT READ as a version 3 map',
+          fn: async () => {
+            await using directory = await scratch();
+            await writeFile(
+              join(
+                directory.path,
+                'nap.mjs',
+              ),
+              'x',
+            );
+            await writeFile(
+              join(
+                directory.path,
+                'nap.mjs.map',
+              ),
+              JSON.stringify({ version: 2, },),
+            );
+            await expect(readBundle({
+              distDirectory: directory.path,
+              packageDirectory: directory.path,
+              bundle: 'nap.mjs',
+            },),).rejects.toThrow(SourceMapFileError,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: unloadedSourcesOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS EACH SOURCE ONCE, LEAVES OUT ONE A LOADED BUNDLE CARRIES, and counts each one\'s physical lines with its kind',
+          fn: async () => {
+            await using directory = await scratch();
+            await mkdir(
+              join(
+                directory.path,
+                'src',
+                'corpus-run',
+              ),
+              { recursive: true, },
+            );
+            await writeFile(
+              join(
+                directory.path,
+                'src',
+                'nap.ts',
+              ),
+              'doze\nyawn\nstretch',
+            );
+            await writeFile(
+              join(
+                directory.path,
+                'src',
+                'corpus-run',
+                'nap-probe.ts',
+              ),
+              'blink\n',
+            );
+            expect(await unloadedSourcesOf({
+              packageDirectory: directory.path,
+              carried: ['src/nap.ts', 'src/corpus-run/nap-probe.ts', 'src/nap.ts', 'src/purr.ts',],
+              loadedSources: new Set(['src/purr.ts',],),
+              entryFiles: new Set(['src/corpus-run/nap-probe.ts',],),
+            },),).toEqual([
+              {
+                source: 'src/corpus-run/nap-probe.ts',
+                kind: 'entry file',
+                lines: 2,
+              },
+              {
+                source: 'src/nap.ts',
+                kind: 'library source',
+                lines: 3,
+              },
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

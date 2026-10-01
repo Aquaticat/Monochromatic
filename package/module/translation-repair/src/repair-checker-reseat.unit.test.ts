@@ -15,6 +15,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -67,145 +68,153 @@ const FRESH_CHECKERS = [
 ];
 
 await describe({
-  name: checkerBenchAtStage.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'KEEPS THE CHUNK\'S BENCH where the hook says the given roster still stands',
-      fn: async () => {
-        expect(await checkerBenchAtStage({
-          models: SEATED,
-          reseat: standingSeating,
-          l,
-        },),).toEqual(SEATED.checkerModelIds,);
-        expect(await checkerBenchAtStage({
-          models: SEATED,
-          reseat: async (): Promise<RepairSliceSeating> => ({}),
-          l,
-        },),).toEqual(SEATED.checkerModelIds,);
-      },
+    describe({
+      name: checkerBenchAtStage.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS THE CHUNK\'S BENCH where the hook says the given roster still stands',
+          fn: async () => {
+            expect(await checkerBenchAtStage({
+              models: SEATED,
+              reseat: standingSeating,
+              l,
+            },),).toEqual(SEATED.checkerModelIds,);
+            expect(await checkerBenchAtStage({
+              models: SEATED,
+              reseat: async (): Promise<RepairSliceSeating> => ({}),
+              l,
+            },),).toEqual(SEATED.checkerModelIds,);
+          },
+        },),
+        it({
+          name: 'ASKS THE BENCH READ AT THE STAGE where the hook hands a roster whose checkers differ',
+          fn: async () => {
+            expect(await checkerBenchAtStage({
+              models: SEATED,
+              reseat: async (): Promise<RepairSliceSeating> => ({
+                repairModels: { ...SEATED, checkerModelIds: FRESH_CHECKERS, },
+              }),
+              l,
+            },),).toEqual(FRESH_CHECKERS,);
+          },
+        },),
+        it({
+          name: 'REFUSES a re-seated bench below the checker floor rather than running a stage the contract refuses',
+          fn: async () => {
+            await expect(checkerBenchAtStage({
+              models: SEATED,
+              reseat: async (): Promise<RepairSliceSeating> => ({
+                repairModels: { ...SEATED, checkerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
+              }),
+              l,
+            },),).rejects
+              .toThrow(CheckerQuorumError,);
+          },
+        },),
+        // LEDGER B29: the re-seated bench was read for quorum alone, so a bench
+        // naming the model that edited this chunk would have graded its own
+        // rewrite. The chunk's editors wrote the text the stage checks, whatever
+        // the fresh roster names as its editors.
+        it({
+          name: 'REFUSES a re-seated bench naming the editor that wrote this chunk\'s text',
+          fn: async () => {
+            await expect(checkerBenchAtStage({
+              models: SEATED,
+              reseat: async (): Promise<RepairSliceSeating> => ({
+                repairModels: {
+                  ...SEATED,
+                  editorModelIds: [SEAT_OPENROUTER_ONLY_CHECKER,],
+                  checkerModelIds: [
+                    SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                    SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                    SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                  ],
+                },
+              }),
+              l,
+            },),).rejects
+              .toThrow(CheckerIndependenceError,);
+          },
+        },),
+        it({
+          name: 'REFUSES a re-seated bench naming the chunk\'s refiner',
+          fn: async () => {
+            await expect(checkerBenchAtStage({
+              models: { ...SEATED, refinerModelIds: [SEAT_OPENROUTER_ONLY_CHECKER,], },
+              reseat: async (): Promise<RepairSliceSeating> => ({
+                repairModels: { ...SEATED, checkerModelIds: FRESH_CHECKERS, },
+              }),
+              l,
+            },),).rejects
+              .toThrow(CheckerIndependenceError,);
+          },
+        },),
+        it({
+          name: 'ASKS a re-seated bench naming the chunk\'s editor where the chunk permits self-certification',
+          fn: async () => {
+            /**
+             Bench naming the chunk's editor.
+             */
+            const overlapping = [
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            ];
+            expect(await checkerBenchAtStage({
+              models: { ...SEATED, checkerSelfCertificationPermitted: true, },
+              reseat: async (): Promise<RepairSliceSeating> => ({
+                repairModels: { ...SEATED, checkerModelIds: overlapping, },
+              }),
+              l,
+            },),).toEqual(overlapping,);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'ASKS THE BENCH READ AT THE STAGE where the hook hands a roster whose checkers differ',
-      fn: async () => {
-        expect(await checkerBenchAtStage({
-          models: SEATED,
-          reseat: async (): Promise<RepairSliceSeating> => ({
-            repairModels: { ...SEATED, checkerModelIds: FRESH_CHECKERS, },
-          }),
-          l,
-        },),).toEqual(FRESH_CHECKERS,);
-      },
-    },),
-    it({
-      name: 'REFUSES a re-seated bench below the checker floor rather than running a stage the contract refuses',
-      fn: async () => {
-        await expect(checkerBenchAtStage({
-          models: SEATED,
-          reseat: async (): Promise<RepairSliceSeating> => ({
-            repairModels: { ...SEATED, checkerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
-          }),
-          l,
-        },),).rejects
-          .toThrow(CheckerQuorumError,);
-      },
-    },),
-    // LEDGER B29: the re-seated bench was read for quorum alone, so a bench
-    // naming the model that edited this chunk would have graded its own
-    // rewrite. The chunk's editors wrote the text the stage checks, whatever
-    // the fresh roster names as its editors.
-    it({
-      name: 'REFUSES a re-seated bench naming the editor that wrote this chunk\'s text',
-      fn: async () => {
-        await expect(checkerBenchAtStage({
-          models: SEATED,
-          reseat: async (): Promise<RepairSliceSeating> => ({
-            repairModels: {
-              ...SEATED,
-              editorModelIds: [SEAT_OPENROUTER_ONLY_CHECKER,],
-              checkerModelIds: [
-                SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-                SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-              ],
-            },
-          }),
-          l,
-        },),).rejects
-          .toThrow(CheckerIndependenceError,);
-      },
-    },),
-    it({
-      name: 'REFUSES a re-seated bench naming the chunk\'s refiner',
-      fn: async () => {
-        await expect(checkerBenchAtStage({
-          models: { ...SEATED, refinerModelIds: [SEAT_OPENROUTER_ONLY_CHECKER,], },
-          reseat: async (): Promise<RepairSliceSeating> => ({
-            repairModels: { ...SEATED, checkerModelIds: FRESH_CHECKERS, },
-          }),
-          l,
-        },),).rejects
-          .toThrow(CheckerIndependenceError,);
-      },
-    },),
-    it({
-      name: 'ASKS a re-seated bench naming the chunk\'s editor where the chunk permits self-certification',
-      fn: async () => {
-        /**
-         Bench naming the chunk's editor.
-         */
-        const overlapping = [
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-        ];
-        expect(await checkerBenchAtStage({
-          models: { ...SEATED, checkerSelfCertificationPermitted: true, },
-          reseat: async (): Promise<RepairSliceSeating> => ({
-            repairModels: { ...SEATED, checkerModelIds: overlapping, },
-          }),
-          l,
-        },),).toEqual(overlapping,);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: assertCheckerBench.name,
-  children: [
-    it({
-      name: 'ACCEPTS a chunk roster whose checkers neither edit nor refine',
-      fn: async () => {
-        expect(() => {
-          assertCheckerBench({
-            models: { ...SEATED, refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,], },
-          },);
-        },).not
-          .toThrow();
-      },
-    },),
-    it({
-      name: 'REFUSES a chunk roster whose checker edits',
-      fn: async () => {
-        expect(() => {
-          assertCheckerBench({
-            models: { ...SEATED, editorModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
-          },);
-        },).toThrow(CheckerIndependenceError,);
-      },
-    },),
-    // LEDGER B29: the chunk check left the refiners out while its own TSDoc
-    // said it refused a checker who refines, and every other caller of the
-    // independence check passes them.
-    it({
-      name: 'REFUSES a chunk roster whose checker refines',
-      fn: async () => {
-        expect(() => {
-          assertCheckerBench({
-            models: { ...SEATED, refinerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
-          },);
-        },).toThrow(CheckerIndependenceError,);
-      },
+    describe({
+      name: assertCheckerBench.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a chunk roster whose checkers neither edit nor refine',
+          fn: async () => {
+            expect(() => {
+              assertCheckerBench({
+                models: { ...SEATED, refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,], },
+              },);
+            },).not
+              .toThrow();
+          },
+        },),
+        it({
+          name: 'REFUSES a chunk roster whose checker edits',
+          fn: async () => {
+            expect(() => {
+              assertCheckerBench({
+                models: { ...SEATED, editorModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
+              },);
+            },).toThrow(CheckerIndependenceError,);
+          },
+        },),
+        // LEDGER B29: the chunk check left the refiners out while its own TSDoc
+        // said it refused a checker who refines, and every other caller of the
+        // independence check passes them.
+        it({
+          name: 'REFUSES a chunk roster whose checker refines',
+          fn: async () => {
+            expect(() => {
+              assertCheckerBench({
+                models: { ...SEATED, refinerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
+              },);
+            },).toThrow(CheckerIndependenceError,);
+          },
+        },),
+      ],
     },),
   ],
 },);

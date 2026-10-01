@@ -25,6 +25,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -67,145 +68,153 @@ function fileIn(
 }
 
 await describe({
-  name: belongsToNamespace.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'CLAIMS EVERY PREFIXED NAMESPACE THIS PACKAGE DEFINES, so a lane added without '
-        + 'registering its prefix fails here rather than silently in production. The repair lane '
-        + 'is defined by subtraction, so an unregistered prefix is adopted by it and deleted on '
-        + 'the next generation change, which is the error this list has cost four times',
-      fn: async () => {
-        for (const namespace of EVERY_SLICE_NAMESPACE) {
-          if (namespace.prefix === '')
-            continue;
+    describe({
+      name: belongsToNamespace.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CLAIMS EVERY PREFIXED NAMESPACE THIS PACKAGE DEFINES, so a lane added without '
+            + 'registering its prefix fails here rather than silently in production. The repair lane '
+            + 'is defined by subtraction, so an unregistered prefix is adopted by it and deleted on '
+            + 'the next generation change, which is the error this list has cost four times',
+          fn: async () => {
+            for (const namespace of EVERY_SLICE_NAMESPACE) {
+              if (namespace.prefix === '')
+                continue;
 
-          /**
-           A file of this lane's, offered to the lane defined by subtraction.
-           */
-          const name = fileIn({
-            namespace,
-            key: 'whatever-hash',
-          },);
+              /**
+               A file of this lane's, offered to the lane defined by subtraction.
+               */
+              const name = fileIn({
+                namespace,
+                key: 'whatever-hash',
+              },);
 
-          expect(belongsToNamespace({
-            name,
-            namespace: REPAIR_SLICE_NAMESPACE,
-          },),).toBe(false,);
-          expect(belongsToNamespace({
-            name,
-            namespace,
-          },),).toBe(true,);
-        }
-      },
-    },),
+              expect(belongsToNamespace({
+                name,
+                namespace: REPAIR_SLICE_NAMESPACE,
+              },),).toBe(false,);
+              expect(belongsToNamespace({
+                name,
+                namespace,
+              },),).toBe(true,);
+            }
+          },
+        },),
 
-    it({
-      name: 'REFUSES A PICTURE READING TO THE REPAIR LANE, which is the exact file the repair '
-        + 'lane deleted before its prefix was registered',
-      fn: async () => {
-        /**
-         Name a stored picture reading carries.
-         */
-        const name = fileIn({
-          namespace: PICTURE_READING_NAMESPACE,
-          key: 'picture-hash-aaa',
-        },);
+        it({
+          name: 'REFUSES A PICTURE READING TO THE REPAIR LANE, which is the exact file the repair '
+            + 'lane deleted before its prefix was registered',
+          fn: async () => {
+            /**
+             Name a stored picture reading carries.
+             */
+            const name = fileIn({
+              namespace: PICTURE_READING_NAMESPACE,
+              key: 'picture-hash-aaa',
+            },);
 
-        expect(belongsToNamespace({
-          name,
-          namespace: REPAIR_SLICE_NAMESPACE,
-        },),).toBe(false,);
-        expect(belongsToNamespace({
-          name,
-          namespace: TRANSLATE_SLICE_NAMESPACE,
-        },),).toBe(false,);
-        expect(belongsToNamespace({
-          name,
-          namespace: PICTURE_READING_NAMESPACE,
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'GIVES THE REPAIR LANE AN UNPREFIXED FILE, since it owns the names already on disk '
-        + 'from before any lane had a prefix. A namespace that claims too little would strand '
-        + 'every slice settled before the split',
-      fn: async () => {
-        expect(belongsToNamespace({
-          name: 'plain-hash.json',
-          namespace: REPAIR_SLICE_NAMESPACE,
-        },),).toBe(true,);
-        expect(belongsToNamespace({
-          name: 'plain-hash.json',
-          namespace: PICTURE_READING_NAMESPACE,
-        },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES A GENERATION MARKER TO EVERY LANE, since a marker is not a cached slice and '
-        + 'a discard that swept one would erase the stamp it is about to compare against',
-      fn: async () => {
-        for (const namespace of EVERY_SLICE_NAMESPACE)
-          for (const marker of EVERY_SLICE_NAMESPACE.map(function toMarker(one,): string {
-            return one.marker;
-          },))
             expect(belongsToNamespace({
-              name: marker,
-              namespace,
+              name,
+              namespace: REPAIR_SLICE_NAMESPACE,
             },),).toBe(false,);
-      },
+            expect(belongsToNamespace({
+              name,
+              namespace: TRANSLATE_SLICE_NAMESPACE,
+            },),).toBe(false,);
+            expect(belongsToNamespace({
+              name,
+              namespace: PICTURE_READING_NAMESPACE,
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'GIVES THE REPAIR LANE AN UNPREFIXED FILE, since it owns the names already on disk '
+            + 'from before any lane had a prefix. A namespace that claims too little would strand '
+            + 'every slice settled before the split',
+          fn: async () => {
+            expect(belongsToNamespace({
+              name: 'plain-hash.json',
+              namespace: REPAIR_SLICE_NAMESPACE,
+            },),).toBe(true,);
+            expect(belongsToNamespace({
+              name: 'plain-hash.json',
+              namespace: PICTURE_READING_NAMESPACE,
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A GENERATION MARKER TO EVERY LANE, since a marker is not a cached slice and '
+            + 'a discard that swept one would erase the stamp it is about to compare against',
+          fn: async () => {
+            for (const namespace of EVERY_SLICE_NAMESPACE)
+              for (const marker of EVERY_SLICE_NAMESPACE.map(function toMarker(one,): string {
+                return one.marker;
+              },))
+                expect(belongsToNamespace({
+                  name: marker,
+                  namespace,
+                },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'GIVES EVERY LANE A DISTINCT MARKER FILE, so one lane restamping its generation '
+            + 'cannot retire another lane whose work is still current',
+          fn: async () => {
+            /**
+             Marker file name per lane, which must be as distinct as the prefixes.
+             */
+            const markers = EVERY_SLICE_NAMESPACE.map(function toMarker(one,): string {
+              return one.marker;
+            },);
+
+            expect(new Set(markers,).size,).toBe(markers.length,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'GIVES EVERY LANE A DISTINCT MARKER FILE, so one lane restamping its generation '
-        + 'cannot retire another lane whose work is still current',
-      fn: async () => {
-        /**
-         Marker file name per lane, which must be as distinct as the prefixes.
-         */
-        const markers = EVERY_SLICE_NAMESPACE.map(function toMarker(one,): string {
-          return one.marker;
-        },);
+    describe({
+      name: isSliceFileName.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS every lane\'s slice file, the control the refusals depart from',
+          fn: async () => {
+            for (const namespace of EVERY_SLICE_NAMESPACE)
+              expect(isSliceFileName({
+                name: fileIn({
+                  namespace,
+                  key: 'abc',
+                },),
+              },),).toBe(true,);
+          },
+        },),
 
-        expect(new Set(markers,).size,).toBe(markers.length,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: isSliceFileName.name,
-  children: [
-    it({
-      name: 'ACCEPTS every lane\'s slice file, the control the refusals depart from',
-      fn: async () => {
-        for (const namespace of EVERY_SLICE_NAMESPACE)
-          expect(isSliceFileName({
-            name: fileIn({
-              namespace,
-              key: 'abc',
-            },),
-          },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES every lane\'s generation marker and a slice still being written under its temporary name '
-        + '(ledger B65)',
-      fn: async () => {
-        for (const namespace of EVERY_SLICE_NAMESPACE) {
-          expect(isSliceFileName({ name: namespace.marker, },),).toBe(false,);
-          expect(isSliceFileName({
-            name: `${
+        it({
+          name: 'REFUSES every lane\'s generation marker and a slice still being written under its temporary name '
+            + '(ledger B65)',
+          fn: async () => {
+            for (const namespace of EVERY_SLICE_NAMESPACE) {
+              expect(isSliceFileName({ name: namespace.marker, },),).toBe(false,);
+              expect(isSliceFileName({
+                name: `${
               fileIn({
                 namespace,
                 key: 'abc',
               },)
             }.4242.partial`,
-          },),).toBe(false,);
-        }
-      },
+              },),).toBe(false,);
+            }
+          },
+        },),
+      ],
     },),
   ],
 },);

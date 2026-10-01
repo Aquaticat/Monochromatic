@@ -40,6 +40,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -198,327 +199,338 @@ function namesOf(
 }
 
 await describe({
-  name: namesIn.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS a directory that is there, which is the control every '
-        + 'other case departs from',
-      fn: async () => {
-        const dir = await runSettling({ names: ['Mittens.json',], },);
-        expect(namesOf({ reading: await namesIn({
-          dir: join(
-            dir,
-            ARTIFACTS,
-          ),
-          kind: 'file',
-        },), },),)
-          .toEqual(['Mittens.json',],);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a directory that is not there, naming ENOENT rather than '
-        + 'returning an empty listing a caller reads as a clean one',
-      fn: async () => {
-        const reading = await namesIn({
-          dir: join(
-            await disposableRun(),
-            'nowhere',
-          ),
-          kind: 'directory',
-        },);
-        expect(reading.kind,).toBe('unreadable',);
-        expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a path that is a file with ENOTDIR, which is a different '
-        + 'operator action from ENOENT and used to read as the same Error',
-      fn: async () => {
-        const dir = await disposableRun();
-        const file = join(
-          dir,
-          'not-a-directory',
-        );
-        await writeFile(
-          file,
-          'the cat sat on the keyboard\n',
-          'utf8',
-        );
-        const reading = await namesIn({
-          dir: file,
-          kind: 'directory',
-        },);
-        expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOTDIR',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: filesystemReason.name,
-  children: [
-    it({
-      name: 'NAMES the filesystem code when the caught value carries one',
-      fn: async () => {
-        expect(filesystemReason({ error: Object.assign(
-          new Error('unread',),
-          { code: 'EACCES', },
-        ), },),).toBe('EACCES',);
-      },
-    },),
-
-    it({
-      name: 'FALLS BACK to the class name when the caught value carries no code',
-      fn: async () => {
-        expect(filesystemReason({ error: new TypeError('no code here',), },),)
-          .toBe('TypeError',);
-      },
-    },),
-
-    it({
-      name: 'FALLS BACK for a thrown value that is not an Error at all, since '
-        + 'a catch binding may hold anything',
-      fn: async () => {
-        expect(filesystemReason({ error: 'a string nobody should have thrown', },),)
-          .toContain('not an Error',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: settledEntryIds.name,
-  children: [
-    it({
-      name: 'LISTS artifact ids sorted, dropping a file that is not one',
-      fn: async () => {
-        const runsDir = await runSettling({ names: [
-          'Whiskers.json',
-          'Mittens.json',
-          'notes.txt',
-        ], },);
-        expect(namesOf({ reading: await settledEntryIds({ runsDir, },), },),)
-          .toEqual([
-            'Mittens',
-            'Whiskers',
-          ],);
-      },
-    },),
-
-    it({
-      name: 'SKIPS a directory and a symlink named like an artifact, which the census and the scheduler never '
-        + 'count as settled either, so verifying and republishing never look for their pages (ledger B64)',
-      fn: async () => {
-        const runsDir = await runSettling({ names: ['Mittens.json',], },);
-        await mkdir(join(
-          runsDir,
-          ARTIFACTS,
-          'Tabby.json',
-        ),);
-        await symlink(
-          'Mittens.json',
-          join(
-            runsDir,
-            ARTIFACTS,
-            'Siamese.json',
-          ),
-        );
-        expect(namesOf({ reading: await settledEntryIds({ runsDir, },), },),)
-          .toEqual(['Mittens',],);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a run directory with no artifacts directory, rather than '
-        + 'reporting a run that settled nothing',
-      fn: async () => {
-        const reading = await settledEntryIds({ runsDir: await disposableRun(), },);
-        expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: publishedEntryIds.name,
-  children: [
-    it({
-      name: 'LISTS published entries sorted',
-      fn: async () => {
-        const runsDir = await runSettling({ names: [], },);
-        await publishInto({
-          runsDir,
-          entryIds: [
-            'Whiskers',
-            'Mittens',
-          ],
-        },);
-        expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
-          .toEqual([
-            'Mittens',
-            'Whiskers',
-          ],);
-      },
-    },),
-
-    it({
-      name: 'SKIPS an entry directory whose page is gone, so the entry reads as unpublished rather than as '
-        + 'a page that fails to read (ledger A16b)',
-      fn: async () => {
-        const runsDir = await runSettling({ names: [], },);
-        await publishInto({
-          runsDir,
-          entryIds: ['Mittens',],
-        },);
-        await mkdir(
-          join(
-            runsDir,
-            FIXED_TREE,
-            PEOPLE,
-            'Whiskers',
-          ),
-          { recursive: true, },
-        );
-        expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
-          .toEqual(['Mittens',],);
-      },
-    },),
-
-    it({
-      name: 'SKIPS a file and a symlink in the people directory, which no pass writes there, rather than raising '
-        + 'ENOTDIR out of the verifier or counting a page that lives under another name (ledger B65)',
-      fn: async () => {
-        const runsDir = await runSettling({ names: [], },);
-        await publishInto({
-          runsDir,
-          entryIds: [
-            'Mittens',
-            'Whiskers',
-          ],
-        },);
-
-        /**
-         The published tree's people directory.
-         */
-        const peopleDir = join(
-          runsDir,
-          FIXED_TREE,
-          PEOPLE,
-        );
-        await writeFile(
-          join(
-            peopleDir,
-            'Tabby',
-          ),
-          'a note the cat left\n',
-          'utf8',
-        );
-        await symlink(
-          'Whiskers',
-          join(
-            peopleDir,
-            'Siamese',
-          ),
-        );
-        expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
-          .toEqual([
-            'Mittens',
-            'Whiskers',
-          ],);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a run directory that published nothing at all',
-      fn: async () => {
-        const reading = await publishedEntryIds({ runsDir: await disposableRun(), },);
-        expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: whatThereIsToVerify.name,
-  children: [
-    it({
-      name: 'REFUSES a directory that is not a run, carrying the reason into '
-        + 'the verdict so the report can name ENOENT',
-      fn: async () => {
-        const verdict = whatThereIsToVerify({
-          settled: {
-            kind: 'unreadable',
-            reason: 'ENOENT',
+    describe({
+      name: namesIn.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS a directory that is there, which is the control every '
+            + 'other case departs from',
+          fn: async () => {
+            const dir = await runSettling({ names: ['Mittens.json',], },);
+            expect(namesOf({ reading: await namesIn({
+              dir: join(
+                dir,
+                ARTIFACTS,
+              ),
+              kind: 'file',
+            },), },),)
+              .toEqual(['Mittens.json',],);
           },
-          published: {
-            kind: 'unreadable',
-            reason: 'ENOENT',
+        },),
+
+        it({
+          name: 'REFUSES a directory that is not there, naming ENOENT rather than '
+            + 'returning an empty listing a caller reads as a clean one',
+          fn: async () => {
+            const reading = await namesIn({
+              dir: join(
+                await disposableRun(),
+                'nowhere',
+              ),
+              kind: 'directory',
+            },);
+            expect(reading.kind,).toBe('unreadable',);
+            expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
           },
-        },);
-        expect(verdict.kind,).toBe('nothing-verified',);
-        expect((verdict.kind === 'nothing-verified') ? verdict.why : '',)
-          .toContain('ENOENT',);
-      },
+        },),
+
+        it({
+          name: 'REFUSES a path that is a file with ENOTDIR, which is a different '
+            + 'operator action from ENOENT and used to read as the same Error',
+          fn: async () => {
+            const dir = await disposableRun();
+            const file = join(
+              dir,
+              'not-a-directory',
+            );
+            await writeFile(
+              file,
+              'the cat sat on the keyboard\n',
+              'utf8',
+            );
+            const reading = await namesIn({
+              dir: file,
+              kind: 'directory',
+            },);
+            expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOTDIR',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES a run that settled no entry, which is the original defect itself: an '
-        + 'empty run used to report exactly what a perfect run reports',
-      fn: async () => {
-        const verdict = whatThereIsToVerify({
-          settled: {
-            kind: 'read',
-            names: [],
+    describe({
+      name: filesystemReason.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the filesystem code when the caught value carries one',
+          fn: async () => {
+            expect(filesystemReason({ error: Object.assign(
+              new Error('unread',),
+              { code: 'EACCES', },
+            ), },),).toBe('EACCES',);
           },
-          published: {
-            kind: 'read',
-            names: [],
+        },),
+
+        it({
+          name: 'FALLS BACK to the class name when the caught value carries no code',
+          fn: async () => {
+            expect(filesystemReason({ error: new TypeError('no code here',), },),)
+              .toBe('TypeError',);
           },
-        },);
-        expect(verdict.kind,).toBe('nothing-verified',);
-      },
+        },),
+
+        it({
+          name: 'FALLS BACK for a thrown value that is not an Error at all, since '
+            + 'a catch binding may hold anything',
+          fn: async () => {
+            expect(filesystemReason({ error: 'a string nobody should have thrown', },),)
+              .toContain('not an Error',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS a run with entries to check, carrying both sides through',
-      fn: async () => {
-        const verdict = whatThereIsToVerify({
-          settled: {
-            kind: 'read',
-            names: ['Mittens',],
+    describe({
+      name: settledEntryIds.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'LISTS artifact ids sorted, dropping a file that is not one',
+          fn: async () => {
+            const runsDir = await runSettling({ names: [
+              'Whiskers.json',
+              'Mittens.json',
+              'notes.txt',
+            ], },);
+            expect(namesOf({ reading: await settledEntryIds({ runsDir, },), },),)
+              .toEqual([
+                'Mittens',
+                'Whiskers',
+              ],);
           },
-          published: {
-            kind: 'read',
-            names: ['Mittens',],
+        },),
+
+        it({
+          name: 'SKIPS a directory and a symlink named like an artifact, which the census and the scheduler never '
+            + 'count as settled either, so verifying and republishing never look for their pages (ledger B64)',
+          fn: async () => {
+            const runsDir = await runSettling({ names: ['Mittens.json',], },);
+            await mkdir(join(
+              runsDir,
+              ARTIFACTS,
+              'Tabby.json',
+            ),);
+            await symlink(
+              'Mittens.json',
+              join(
+                runsDir,
+                ARTIFACTS,
+                'Siamese.json',
+              ),
+            );
+            expect(namesOf({ reading: await settledEntryIds({ runsDir, },), },),)
+              .toEqual(['Mittens',],);
           },
-        },);
-        expect(verdict.kind,).toBe('checkable',);
-        expect((verdict.kind === 'checkable') ? verdict.published : [],)
-          .toEqual(['Mittens',],);
-      },
+        },),
+
+        it({
+          name: 'REFUSES a run directory with no artifacts directory, rather than '
+            + 'reporting a run that settled nothing',
+          fn: async () => {
+            const reading = await settledEntryIds({ runsDir: await disposableRun(), },);
+            expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS real artifacts with no published tree as an empty tree, '
-        + 'because every settled entry being unpublished is a finding rather '
-        + 'than a silence',
-      fn: async () => {
-        const verdict = whatThereIsToVerify({
-          settled: {
-            kind: 'read',
-            names: ['Mittens',],
+    describe({
+      name: publishedEntryIds.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'LISTS published entries sorted',
+          fn: async () => {
+            const runsDir = await runSettling({ names: [], },);
+            await publishInto({
+              runsDir,
+              entryIds: [
+                'Whiskers',
+                'Mittens',
+              ],
+            },);
+            expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
+              .toEqual([
+                'Mittens',
+                'Whiskers',
+              ],);
           },
-          published: {
-            kind: 'unreadable',
-            reason: 'ENOENT',
+        },),
+
+        it({
+          name: 'SKIPS an entry directory whose page is gone, so the entry reads as unpublished rather than as '
+            + 'a page that fails to read (ledger A16b)',
+          fn: async () => {
+            const runsDir = await runSettling({ names: [], },);
+            await publishInto({
+              runsDir,
+              entryIds: ['Mittens',],
+            },);
+            await mkdir(
+              join(
+                runsDir,
+                FIXED_TREE,
+                PEOPLE,
+                'Whiskers',
+              ),
+              { recursive: true, },
+            );
+            expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
+              .toEqual(['Mittens',],);
           },
-        },);
-        expect(verdict.kind,).toBe('checkable',);
-        expect((verdict.kind === 'checkable') ? verdict.published : ['unset',],)
-          .toEqual([],);
-      },
+        },),
+
+        it({
+          name: 'SKIPS a file and a symlink in the people directory, which no pass writes there, rather than raising '
+            + 'ENOTDIR out of the verifier or counting a page that lives under another name (ledger B65)',
+          fn: async () => {
+            const runsDir = await runSettling({ names: [], },);
+            await publishInto({
+              runsDir,
+              entryIds: [
+                'Mittens',
+                'Whiskers',
+              ],
+            },);
+
+            /**
+             The published tree's people directory.
+             */
+            const peopleDir = join(
+              runsDir,
+              FIXED_TREE,
+              PEOPLE,
+            );
+            await writeFile(
+              join(
+                peopleDir,
+                'Tabby',
+              ),
+              'a note the cat left\n',
+              'utf8',
+            );
+            await symlink(
+              'Whiskers',
+              join(
+                peopleDir,
+                'Siamese',
+              ),
+            );
+            expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
+              .toEqual([
+                'Mittens',
+                'Whiskers',
+              ],);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a run directory that published nothing at all',
+          fn: async () => {
+            const reading = await publishedEntryIds({ runsDir: await disposableRun(), },);
+            expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: whatThereIsToVerify.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES a directory that is not a run, carrying the reason into '
+            + 'the verdict so the report can name ENOENT',
+          fn: async () => {
+            const verdict = whatThereIsToVerify({
+              settled: {
+                kind: 'unreadable',
+                reason: 'ENOENT',
+              },
+              published: {
+                kind: 'unreadable',
+                reason: 'ENOENT',
+              },
+            },);
+            expect(verdict.kind,).toBe('nothing-verified',);
+            expect((verdict.kind === 'nothing-verified') ? verdict.why : '',)
+              .toContain('ENOENT',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a run that settled no entry, which is the original defect itself: an '
+            + 'empty run used to report exactly what a perfect run reports',
+          fn: async () => {
+            const verdict = whatThereIsToVerify({
+              settled: {
+                kind: 'read',
+                names: [],
+              },
+              published: {
+                kind: 'read',
+                names: [],
+              },
+            },);
+            expect(verdict.kind,).toBe('nothing-verified',);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a run with entries to check, carrying both sides through',
+          fn: async () => {
+            const verdict = whatThereIsToVerify({
+              settled: {
+                kind: 'read',
+                names: ['Mittens',],
+              },
+              published: {
+                kind: 'read',
+                names: ['Mittens',],
+              },
+            },);
+            expect(verdict.kind,).toBe('checkable',);
+            expect((verdict.kind === 'checkable') ? verdict.published : [],)
+              .toEqual(['Mittens',],);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS real artifacts with no published tree as an empty tree, '
+            + 'because every settled entry being unpublished is a finding rather '
+            + 'than a silence',
+          fn: async () => {
+            const verdict = whatThereIsToVerify({
+              settled: {
+                kind: 'read',
+                names: ['Mittens',],
+              },
+              published: {
+                kind: 'unreadable',
+                reason: 'ENOENT',
+              },
+            },);
+            expect(verdict.kind,).toBe('checkable',);
+            expect((verdict.kind === 'checkable') ? verdict.published : ['unset',],)
+              .toEqual([],);
+          },
+        },),
+      ],
     },),
   ],
 },);

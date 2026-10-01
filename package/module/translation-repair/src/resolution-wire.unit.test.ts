@@ -9,6 +9,7 @@
 
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -52,76 +53,6 @@ const NAP_ISSUE: AdjudicatedIssue = {
   tallies: {},
 };
 
-await describe({
-  name: '',
-  children: [
-    describe({
-      name: buildResolutionMessages.name,
-      children: [
-        it({
-          name: 'binds issue ids in sheet order and renders claim lines',
-          fn: async () => {
-            const plan = buildResolutionMessages({
-              sourceText: '猫猫在中午打盹。',
-              patchedText: 'The cat naps at noon.',
-              issues: [NAP_ISSUE,],
-            },);
-            expect(plan.issueIds,).toEqual(['issue/whisker',],);
-
-            /**
-             User sheet carrying documents and issue blocks.
-             */
-            const sheet = plan.messages[1]?.content ?? '';
-            expect(sheet,).toContain('ISSUE 1',);
-            expect(sheet,).toContain(
-              '- (accuracy/mistranslation, major): Napping is rendered as hunting.',
-            );
-          },
-        },),
-        it({
-          name: 'fences the original beside the revised translation',
-          fn: async () => {
-            const plan = buildResolutionMessages({
-              sourceText: '猫猫在中午打盹。',
-              patchedText: 'The cat naps at noon.',
-              issues: [NAP_ISSUE,],
-            },);
-
-            /**
-             User sheet carrying the fenced pair.
-             */
-            const sheet = plan.messages[1]?.content ?? '';
-            expect(sheet,).toContain('ORIGINAL',);
-            expect(sheet,).toContain('猫猫在中午打盹。',);
-            expect(sheet,).toContain('REVISED TRANSLATION',);
-            expect(sheet,).toContain('The cat naps at noon.',);
-          },
-        },),
-      ],
-    },),
-    describe({
-      name: isResolutionVerdict.name,
-      children: [
-        ...RESOLUTION_VERDICTS.map(function toCase(verdict,) {
-          return it({
-            name: `admits ${verdict}`,
-            fn: async () => {
-              expect(isResolutionVerdict(verdict,),).toBe(true,);
-            },
-          },);
-        },),
-        it({
-          name: 'rejects unlisted strings and non-strings',
-          fn: async () => {
-            expect(isResolutionVerdict('pounced',),).toBe(false,);
-            expect(isResolutionVerdict(1,),).toBe(false,);
-          },
-        },),
-      ],
-    },),
-  ],
-},);
-
 /**
  Original carrying a row of five equals signs, the fence the builder once
  used, on a line of its own.
@@ -153,18 +84,96 @@ function userText({ messages, }: { readonly messages: readonly ChatMessage[]; },
 }
 
 await describe({
-  name: 'fence choice',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'FENCES the blocks with a delimiter the enclosed text cannot reproduce, so a passage holding a row '
-        + 'of five equals signs cannot close its own block and turn what follows into instructions',
-      fn: async () => {
-        const content = userText({ messages: buildResolutionMessages({ sourceText: RULED_SOURCE, patchedText: 'Line one.', issues: [], },).messages, },);
+    describe({
+      name: '',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        describe({
+          name: buildResolutionMessages.name,
+          children: [
+            it({
+              name: 'binds issue ids in sheet order and renders claim lines',
+              fn: async () => {
+                const plan = buildResolutionMessages({
+                  sourceText: '猫猫在中午打盹。',
+                  patchedText: 'The cat naps at noon.',
+                  issues: [NAP_ISSUE,],
+                },);
+                expect(plan.issueIds,).toEqual(['issue/whisker',],);
 
-        expect(content.includes('====== ORIGINAL ======',),).toBe(true,);
-        expect(content.includes('\n===== ',),).toBe(false,);
-        expect(content.includes(RULED_SOURCE,),).toBe(true,);
-      },
+                /**
+                 User sheet carrying documents and issue blocks.
+                 */
+                const sheet = plan.messages[1]?.content ?? '';
+                expect(sheet,).toContain('ISSUE 1',);
+                expect(sheet,).toContain(
+                  '- (accuracy/mistranslation, major): Napping is rendered as hunting.',
+                );
+              },
+            },),
+            it({
+              name: 'fences the original beside the revised translation',
+              fn: async () => {
+                const plan = buildResolutionMessages({
+                  sourceText: '猫猫在中午打盹。',
+                  patchedText: 'The cat naps at noon.',
+                  issues: [NAP_ISSUE,],
+                },);
+
+                /**
+                 User sheet carrying the fenced pair.
+                 */
+                const sheet = plan.messages[1]?.content ?? '';
+                expect(sheet,).toContain('ORIGINAL',);
+                expect(sheet,).toContain('猫猫在中午打盹。',);
+                expect(sheet,).toContain('REVISED TRANSLATION',);
+                expect(sheet,).toContain('The cat naps at noon.',);
+              },
+            },),
+          ],
+        },),
+        describe({
+          name: isResolutionVerdict.name,
+          children: [
+            ...RESOLUTION_VERDICTS.map(function toCase(verdict,) {
+              return it({
+                name: `admits ${verdict}`,
+                fn: async () => {
+                  expect(isResolutionVerdict(verdict,),).toBe(true,);
+                },
+              },);
+            },),
+            it({
+              name: 'rejects unlisted strings and non-strings',
+              fn: async () => {
+                expect(isResolutionVerdict('pounced',),).toBe(false,);
+                expect(isResolutionVerdict(1,),).toBe(false,);
+              },
+            },),
+          ],
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'fence choice',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FENCES the blocks with a delimiter the enclosed text cannot reproduce, so a passage holding a row '
+            + 'of five equals signs cannot close its own block and turn what follows into instructions',
+          fn: async () => {
+            const content = userText({ messages: buildResolutionMessages({ sourceText: RULED_SOURCE, patchedText: 'Line one.', issues: [], },).messages, },);
+
+            expect(content.includes('====== ORIGINAL ======',),).toBe(true,);
+            expect(content.includes('\n===== ',),).toBe(false,);
+            expect(content.includes(RULED_SOURCE,),).toBe(true,);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -136,6 +136,71 @@ export function nodesUnder({ root, }: { readonly root: TreeNode; },): readonly T
 }
 
 /**
+ Every node of a parsed file with the node that holds it.
+
+ @param program - file's program
+
+ @returns Each node's parent, the program having none
+
+ @example
+ ```ts
+ const parents = parentsOf({ program, },);
+ ```
+ */
+export function parentsOf({ program, }: { readonly program: TreeNode; },): ReadonlyMap<TreeNode, TreeNode> {
+  /**
+   Parents found so far.
+   */
+  const parents = new Map<TreeNode, TreeNode>();
+  /**
+   Nodes still to visit.
+   */
+  const pending: TreeNode[] = [program,];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    for (const child of childNodes({ node, },)) {
+      parents.set(
+        child,
+        node,
+      );
+      pending.push(child,);
+    }
+  }
+  return parents;
+}
+
+/**
+ The nodes holding a node, nearest first.
+
+ @param node - node read
+
+ @param parents - each node's parent
+
+ @returns Its ancestors up to the program
+
+ @example
+ ```ts
+ const chain = ancestorsOf({ node, parents, },);
+ ```
+ */
+export function ancestorsOf(
+  {
+    node,
+    parents,
+  }: {
+    readonly node: TreeNode;
+    readonly parents: ReadonlyMap<TreeNode, TreeNode>;
+  },
+): readonly TreeNode[] {
+  /**
+   Ancestors found so far.
+   */
+  const chain: TreeNode[] = [];
+  for (let at = parents.get(node,); at !== undefined; at = parents.get(at,))
+    chain.push(at,);
+  return chain;
+}
+
+/**
  Name an identifier node carries.
 
  @param node - node read, of any kind or none

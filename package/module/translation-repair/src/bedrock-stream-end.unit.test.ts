@@ -10,6 +10,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -43,101 +44,109 @@ const GEMMA_STREAM = `${CONTENT_CHUNK}${USAGE_CHUNK}data: [DONE]\n\n`;
 const GPT_OSS_STREAM = `${CONTENT_CHUNK}${USAGE_CHUNK}`;
 
 await describe({
-  name: requireBedrockStreamEnd.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ACCEPTS a sentinel-ended stream on the sentinel route and REFUSES one cut off before it',
-      fn: async () => {
-        expect(function whole(): void {
-          requireBedrockStreamEnd({
-            bodyText: GEMMA_STREAM,
-            streamEnd: 'done-sentinel',
-          },);
-        },).not.toThrow();
-        expect(function cut(): void {
-          requireBedrockStreamEnd({
-            bodyText: GPT_OSS_STREAM,
-            streamEnd: 'done-sentinel',
-          },);
-        },).toThrow(MalformedCompletionError,);
-      },
+    describe({
+      name: requireBedrockStreamEnd.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a sentinel-ended stream on the sentinel route and REFUSES one cut off before it',
+          fn: async () => {
+            expect(function whole(): void {
+              requireBedrockStreamEnd({
+                bodyText: GEMMA_STREAM,
+                streamEnd: 'done-sentinel',
+              },);
+            },).not.toThrow();
+            expect(function cut(): void {
+              requireBedrockStreamEnd({
+                bodyText: GPT_OSS_STREAM,
+                streamEnd: 'done-sentinel',
+              },);
+            },).toThrow(MalformedCompletionError,);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a stream ending on its usage chunk on the usage route and REFUSES one that never '
+            + 'reached it, since the gpt-oss route sends no sentinel (measured 2026-09-07)',
+          fn: async () => {
+            expect(function whole(): void {
+              requireBedrockStreamEnd({
+                bodyText: GPT_OSS_STREAM,
+                streamEnd: 'usage-chunk',
+              },);
+            },).not.toThrow();
+            expect(function cut(): void {
+              requireBedrockStreamEnd({
+                bodyText: CONTENT_CHUNK,
+                streamEnd: 'usage-chunk',
+              },);
+            },).toThrow(MalformedCompletionError,);
+          },
+        },),
+
+        it({
+          name: 'IGNORES a line that is not JSON while looking for the usage chunk, as a comment line or a '
+            + 'torn frame is not one',
+          fn: async () => {
+            expect(function torn(): void {
+              requireBedrockStreamEnd({
+                bodyText: `: keepalive\n\ndata: {"choices":[{"index":0,"de\n\n${USAGE_CHUNK}`,
+                streamEnd: 'usage-chunk',
+              },);
+            },).not.toThrow();
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS A USAGE CHUNK SENT IN THE TIGHT FORM, `data:{...}` being the same message as '
+            + '`data: {...}` (audit area six: the prefix was spelled with its space)',
+          fn: async () => {
+            expect(function tight(): void {
+              requireBedrockStreamEnd({
+                bodyText: `${CONTENT_CHUNK}${USAGE_CHUNK.replace('data: ', 'data:',)}`,
+                streamEnd: 'usage-chunk',
+              },);
+            },).not.toThrow();
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS a stream ending on its usage chunk on the usage route and REFUSES one that never '
-        + 'reached it, since the gpt-oss route sends no sentinel (measured 2026-09-07)',
-      fn: async () => {
-        expect(function whole(): void {
-          requireBedrockStreamEnd({
-            bodyText: GPT_OSS_STREAM,
-            streamEnd: 'usage-chunk',
-          },);
-        },).not.toThrow();
-        expect(function cut(): void {
-          requireBedrockStreamEnd({
-            bodyText: CONTENT_CHUNK,
-            streamEnd: 'usage-chunk',
-          },);
-        },).toThrow(MalformedCompletionError,);
-      },
-    },),
+    describe({
+      name: withDoneSentinel.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SUPPLIES THE SENTINEL on the usage route so the shared reader folds the stream, and leaves '
+            + 'a sentinel route\'s stream as it came',
+          fn: async () => {
+            expect(withDoneSentinel({
+              bodyText: GEMMA_STREAM,
+              streamEnd: 'done-sentinel',
+            },),).toBe(GEMMA_STREAM,);
 
-    it({
-      name: 'IGNORES a line that is not JSON while looking for the usage chunk, as a comment line or a '
-        + 'torn frame is not one',
-      fn: async () => {
-        expect(function torn(): void {
-          requireBedrockStreamEnd({
-            bodyText: `: keepalive\n\ndata: {"choices":[{"index":0,"de\n\n${USAGE_CHUNK}`,
-            streamEnd: 'usage-chunk',
-          },);
-        },).not.toThrow();
-      },
-    },),
+            /**
+             gpt-oss stream as the shared reader receives it.
+             */
+            const supplied = withDoneSentinel({
+              bodyText: GPT_OSS_STREAM,
+              streamEnd: 'usage-chunk',
+            },);
+            expect(supplied.endsWith('data: [DONE]\n',),).toBe(true,);
 
-    it({
-      name: 'ACCEPTS A USAGE CHUNK SENT IN THE TIGHT FORM, `data:{...}` being the same message as '
-        + '`data: {...}` (audit area six: the prefix was spelled with its space)',
-      fn: async () => {
-        expect(function tight(): void {
-          requireBedrockStreamEnd({
-            bodyText: `${CONTENT_CHUNK}${USAGE_CHUNK.replace('data: ', 'data:',)}`,
-            streamEnd: 'usage-chunk',
-          },);
-        },).not.toThrow();
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: withDoneSentinel.name,
-  children: [
-    it({
-      name: 'SUPPLIES THE SENTINEL on the usage route so the shared reader folds the stream, and leaves '
-        + 'a sentinel route\'s stream as it came',
-      fn: async () => {
-        expect(withDoneSentinel({
-          bodyText: GEMMA_STREAM,
-          streamEnd: 'done-sentinel',
-        },),).toBe(GEMMA_STREAM,);
-
-        /**
-         gpt-oss stream as the shared reader receives it.
-         */
-        const supplied = withDoneSentinel({
-          bodyText: GPT_OSS_STREAM,
-          streamEnd: 'usage-chunk',
-        },);
-        expect(supplied.endsWith('data: [DONE]\n',),).toBe(true,);
-
-        /**
-         What the shared reader makes of it.
-         */
-        const extracted = extractStreamedCompletion({ bodyText: supplied, },);
-        expect(extracted.text,).toBe('{"spot":"sunbeam"}',);
-        expect(extracted.usage?.completion_tokens,).toBe(75,);
-      },
+            /**
+             What the shared reader makes of it.
+             */
+            const extracted = extractStreamedCompletion({ bodyText: supplied, },);
+            expect(extracted.text,).toBe('{"spot":"sunbeam"}',);
+            expect(extracted.usage?.completion_tokens,).toBe(75,);
+          },
+        },),
+      ],
     },),
   ],
 },);

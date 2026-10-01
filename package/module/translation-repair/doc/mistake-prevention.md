@@ -194,13 +194,14 @@ is read against that precondition in the code first.
 A case guarding a short circuit is run once with the short circuit removed,
 and must fail there,
 before its commit says what it guards.
-A guard-off build mutates cases in one top-level suite per file,
-since a failing suite ends its file,
-and a mutant whose case prints no FAIL line is read as surviving
-only once that case's suite printed its pass line.
-A red case counts as red only from its own FAIL line,
-and a file awaiting several suites at the top level is wrapped in one root `describe`
-before a case is added to any suite but its first.
+Every test file awaits one root `describe` at its top,
+its suites as children run one at a time (ledger B99),
+since a failing suite awaited at the top ends its file
+and every suite after it goes unrun and unreported;
+`multi-suite-top-level.unit.test.ts` holds each file to it.
+A mutant whose case prints no FAIL line is still read as surviving
+only once that case's suite printed its pass line,
+and a red case counts as red only from its own FAIL line.
 When one side of a compared pair becomes derived from the other,
 every guard comparing them is re-read:
 one that can no longer fail goes,

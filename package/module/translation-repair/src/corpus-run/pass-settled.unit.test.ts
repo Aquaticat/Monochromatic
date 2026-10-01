@@ -21,6 +21,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -57,58 +58,66 @@ async function mixedDirectory(): Promise<string> {
 }
 
 await describe({
-  name: artifactBackedIds.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'REFUSES to count a directory named like an artifact, which once marked an entry settled without '
-        + 'the entry ever having run',
-      fn: async () => {
-        const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
+    describe({
+      name: artifactBackedIds.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES to count a directory named like an artifact, which once marked an entry settled without '
+            + 'the entry ever having run',
+          fn: async () => {
+            const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
 
-        expect(ids.has('mittens',),).toBe(false,);
-      },
+            expect(ids.has('mittens',),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES to count a symlink named like an artifact, for the same reason',
+          fn: async () => {
+            const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
+
+            expect(ids.has('ghost',),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'KEEPS every regular artifact under its id, and nothing without the suffix',
+          fn: async () => {
+            const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
+
+            expect([...ids,].toSorted(),).toEqual([
+              'tabby',
+              'whiskers',
+            ],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES to count a symlink named like an artifact, for the same reason',
-      fn: async () => {
-        const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
+    describe({
+      name: countSettled.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'counts exactly the ids the scheduler would skip, so the against-target line and the '
+            + 'skip set cannot drift apart again',
+          fn: async () => {
+            /**
+             One directory read by both.
+             */
+            const artifactsDir = await mixedDirectory();
 
-        expect(ids.has('ghost',),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'KEEPS every regular artifact under its id, and nothing without the suffix',
-      fn: async () => {
-        const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
-
-        expect([...ids,].toSorted(),).toEqual([
-          'tabby',
-          'whiskers',
-        ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: countSettled.name,
-  children: [
-    it({
-      name: 'counts exactly the ids the scheduler would skip, so the against-target line and the '
-        + 'skip set cannot drift apart again',
-      fn: async () => {
-        /**
-         One directory read by both.
-         */
-        const artifactsDir = await mixedDirectory();
-
-        expect(await countSettled({ artifactsDir, },),).toBe(
-          (await artifactBackedIds({ artifactsDir, },)).size,
-        );
-        expect(await countSettled({ artifactsDir, },),).toBe(2,);
-      },
+            expect(await countSettled({ artifactsDir, },),).toBe(
+              (await artifactBackedIds({ artifactsDir, },)).size,
+            );
+            expect(await countSettled({ artifactsDir, },),).toBe(2,);
+          },
+        },),
+      ],
     },),
   ],
 },);

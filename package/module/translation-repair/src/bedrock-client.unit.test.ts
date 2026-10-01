@@ -13,6 +13,7 @@
 import { setTimeout as sleepFor, } from 'node:timers/promises';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -292,444 +293,452 @@ function recordedClient(
 }
 
 await describe({
-  name: createBedrockClient.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SENDS the chat completions body on the Gemma route with the Bedrock spelling, the schema '
-        + 'in both places, streaming usage on, no provider field and no store, and READS the answer '
-        + 'back, PRICING it into the ledger',
-      fn: async () => {
-        const { client, exchanges, noted, } = recordedClient({},);
+    describe({
+      name: createBedrockClient.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SENDS the chat completions body on the Gemma route with the Bedrock spelling, the schema '
+            + 'in both places, streaming usage on, no provider field and no store, and READS the answer '
+            + 'back, PRICING it into the ledger',
+          fn: async () => {
+            const { client, exchanges, noted, } = recordedClient({},);
 
-        /**
-         One schema'd call as a stage would make it, on the shared seat.
-         */
-        const reply = await client.chatText({
-          modelId: SEAT_HYPER_TEXT_BEDROCK,
-          messages: [
-            { role: 'system', content: 'You are a careful cat.', },
-            { role: 'user', content: 'Where does the cat sleep?', },
-          ],
-          signal: SIGNAL,
-          responseFormat: {
-            type: 'json_schema',
-            json_schema: {
-              name: 'nap_spot',
-              schema: {
-                type: 'object',
-                required: ['spot',],
-                properties: { spot: { type: 'string', }, },
+            /**
+             One schema'd call as a stage would make it, on the shared seat.
+             */
+            const reply = await client.chatText({
+              modelId: SEAT_HYPER_TEXT_BEDROCK,
+              messages: [
+                { role: 'system', content: 'You are a careful cat.', },
+                { role: 'user', content: 'Where does the cat sleep?', },
+              ],
+              signal: SIGNAL,
+              responseFormat: {
+                type: 'json_schema',
+                json_schema: {
+                  name: 'nap_spot',
+                  schema: {
+                    type: 'object',
+                    required: ['spot',],
+                    properties: { spot: { type: 'string', }, },
+                  },
+                },
               },
-            },
-          },
-        },);
+            },);
 
-        expect(reply.text,).toBe('{"spot":"sunbeam"}',);
-        expect(reply.usage,).toMatchObject({
-          prompt_tokens: 90,
-          completion_tokens: 10,
-        },);
+            expect(reply.text,).toBe('{"spot":"sunbeam"}',);
+            expect(reply.usage,).toMatchObject({
+              prompt_tokens: 90,
+              completion_tokens: 10,
+            },);
 
-        /**
-         What went on the wire.
-         */
-        const [exchange,] = exchanges;
-        if (exchange === undefined)
-          throw new Error('nothing was sent',);
-        expect(exchange.url,).toBe('https://mantle.invalid/openai/v1/chat/completions',);
-        expect(exchange.headers.Authorization,).toBe('Bearer test-key',);
+            /**
+             What went on the wire.
+             */
+            const [exchange,] = exchanges;
+            if (exchange === undefined)
+              throw new Error('nothing was sent',);
+            expect(exchange.url,).toBe('https://mantle.invalid/openai/v1/chat/completions',);
+            expect(exchange.headers.Authorization,).toBe('Bearer test-key',);
 
-        /**
-         Body as the endpoint would parse it.
-         */
-        const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
-        expect(body,).toMatchObject({
-          model: 'google.gemma-4-26b-a4b',
-          stream: true,
-          stream_options: { include_usage: true, },
-          response_format: {
-            type: 'json_schema',
-            json_schema: {
-              name: 'nap_spot',
-              schema: {
-                type: 'object',
-                required: ['spot',],
-                properties: { spot: { type: 'string', }, },
+            /**
+             Body as the endpoint would parse it.
+             */
+            const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
+            expect(body,).toMatchObject({
+              model: 'google.gemma-4-26b-a4b',
+              stream: true,
+              stream_options: { include_usage: true, },
+              response_format: {
+                type: 'json_schema',
+                json_schema: {
+                  name: 'nap_spot',
+                  schema: {
+                    type: 'object',
+                    required: ['spot',],
+                    properties: { spot: { type: 'string', }, },
+                  },
+                },
               },
-            },
+            },);
+            expect(JSON.stringify(body,),).toContain('nap_spot',);
+            expect(JSON.stringify(body,),).not.toContain('"provider"',);
+            expect(JSON.stringify(body,),).not.toContain('"store"',);
+            expect(JSON.stringify(body,),).not.toContain('reasoning_effort',);
+            // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
+            // credit behind this provider is never topped up.
+            expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_TEXT_BEDROCK], },);
+
+            /**
+             What the ledger was told.
+             */
+            const [entry,] = noted;
+            if (entry === undefined)
+              throw new Error('nothing was noted',);
+            expect(entry.model,).toBe('google.gemma-4-26b-a4b',);
+            expect(entry.promptTokens,).toBe(90,);
+            expect(entry.completionTokens,).toBe(10,);
+            expect(entry.usd,).toBeGreaterThan(0,);
           },
-        },);
-        expect(JSON.stringify(body,),).toContain('nap_spot',);
-        expect(JSON.stringify(body,),).not.toContain('"provider"',);
-        expect(JSON.stringify(body,),).not.toContain('"store"',);
-        expect(JSON.stringify(body,),).not.toContain('reasoning_effort',);
-        // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
-        // credit behind this provider is never topped up.
-        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_TEXT_BEDROCK], },);
+        },),
 
-        /**
-         What the ledger was told.
-         */
-        const [entry,] = noted;
-        if (entry === undefined)
-          throw new Error('nothing was noted',);
-        expect(entry.model,).toBe('google.gemma-4-26b-a4b',);
-        expect(entry.promptTokens,).toBe(90,);
-        expect(entry.completionTokens,).toBe(10,);
-        expect(entry.usd,).toBeGreaterThan(0,);
-      },
-    },),
-
-    it({
-      name: 'READS the gpt-oss route\'s stream, which ends on its usage chunk with no sentinel and '
-        + 'carries reasoning deltas first, under /v1',
-      fn: async () => {
-        const { client, exchanges, } = recordedClient({
-          reply: {
-            status: 200,
-            bodyText: GPT_OSS_STREAM,
-          },
-        },);
-
-        /**
-         One plain call on the seat every provider serves.
-         */
-        const reply = await client.chatText({
-          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-          messages: [{ role: 'user', content: 'Where does the cat nap?', },],
-          signal: SIGNAL,
-        },);
-        expect(reply.text,).toBe('{"spot":"windowsill"}',);
-        expect(reply.usage?.completion_tokens,).toBe(10,);
-        expect(exchanges[0]?.url,).toBe('https://mantle.invalid/v1/chat/completions',);
-        expect(JSON.parse(exchanges[0]?.bodyJson ?? '{}',),).toMatchObject({ model: 'openai.gpt-oss-120b', },);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a Gemma-route stream cut off before its sentinel as malformed rather than '
-        + 'returning the fragment, since a stream that stopped early comes back as 200, and LEDGERS it at '
-        + 'what it could have been billed, since the endpoint accepted it (ledger P1)',
-      fn: async () => {
-        const { client, noted, exchanges, } = recordedClient({
-          reply: {
-            status: 200,
-            bodyText: chunkOf({ delta: { content: '{"spot":', }, },),
-          },
-        },);
-
-        /**
-         What the cut stream produced.
-         */
-        let thrown: unknown;
-        try {
-          await client.chatText({
-            modelId: SEAT_BEDROCK_ONLY_TEXT,
-            messages: [{ role: 'user', content: 'meow', },],
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown,).toBeInstanceOf(Error,);
-        expect((thrown as Error).name,).toBe('MalformedCompletionError',);
-        expect(noted,).toHaveLength(1,);
-        expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
-      },
-    },),
-
-    it({
-      name: 'READS the ledger for its credits, which is this provider\'s whole budget signal',
-      fn: async () => {
-        const { client, } = recordedClient({},);
-        expect(await client.credits({ signal: SIGNAL, },),).toEqual({
-          creditUsd: 200,
-          spentUsd: 50,
-          reckonedUsd: 0,
-          remainingUsd: 150,
-          calls: 0,
-        },);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a roster model it has no spelling for before touching the wire, since that is a '
-        + 'routing mistake in our own code',
-      fn: async () => {
-        const { client, exchanges, } = recordedClient({},);
-
-        /**
-         What a call for a seat this provider does not serve produces.
-         */
-        let thrown: unknown;
-        try {
-          await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-            messages: [{ role: 'user', content: 'meow', },],
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof BedrockModelNotServedError,).toBe(true,);
-        expect(exchanges,).toHaveLength(0,);
-      },
-    },),
-
-    it({
-      name: 'THROWS the shared HTTP failure class on a non-success status, which the budget layer '
-        + 'reads for a refusal, and NOTES nothing',
-      fn: async () => {
-        const { client, noted, } = recordedClient({
-          reply: {
-            status: 429,
-            bodyText: '{"error":{"message":"Too many requests"}}',
-          },
-        },);
-
-        /**
-         What the refused call produced.
-         */
-        let thrown: unknown;
-        try {
-          await client.chatText({
-            modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-            messages: [{ role: 'user', content: 'meow', },],
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof SyntheticHttpError,).toBe(true,);
-        expect((thrown as SyntheticHttpError).status,).toBe(429,);
-        expect(noted,).toHaveLength(0,);
-      },
-    },),
-
-    it({
-      name: 'VALIDATES a schema\'d answer through the shared outcome reader on chatJson',
-      fn: async () => {
-        const { client, } = recordedClient({},);
-
-        /**
-         Outcome of a guarded call.
-         */
-        const outcome = await client.chatJson({
-          modelId: SEAT_BEDROCK_ONLY_TEXT,
-          messages: [{ role: 'user', content: 'Where does the cat nap?', },],
-          signal: SIGNAL,
-          validate: function isNapSpot(value: unknown,): value is { readonly spot: string; } {
-            return ((typeof value) === 'object') && (value !== null) && ('spot' in value);
-          },
-        },);
-        expect(outcome.kind,).toBe('ok',);
-        if (outcome.kind === 'ok')
-          expect(outcome.value.spot,).toBe('sunbeam',);
-      },
-    },),
-
-    it({
-      name: 'GIVES EACH ATTEMPT THE WHOLE STREAM BOUND, so a retry after a slow transient failure is not cut by '
-        + 'the time the failed attempt spent (ledger P13: the bound was armed once around the retry ladder)',
-      fn: async () => {
-        /**
-         Attempts the transport saw.
-         */
-        const calls = { count: 0, };
-        const client = createBedrockClient({
-          apiKey: 'test-key',
-          ledger: memoryLedger({},).ledger,
-          baseUrl: 'https://mantle.invalid',
-          transport: async function slowFailureThenWhole(exchange,) {
-            calls.count += 1;
-            await sleepFor(
-              ATTEMPT_MS,
-              undefined,
-              { signal: exchange.signal, },
-            );
-            return (calls.count === 1)
-              ? {
-                status: 503,
-                bodyText: 'busy',
-              }
-              : {
+        it({
+          name: 'READS the gpt-oss route\'s stream, which ends on its usage chunk with no sentinel and '
+            + 'carries reasoning deltas first, under /v1',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({
+              reply: {
                 status: 200,
-                bodyText: GEMMA_STREAM,
-              };
-          },
-          retryPolicy: {
-            limit: 1,
-            baseMs: 1,
-          },
-          streamBoundMsOverride: TEST_BOUND_MS,
-        },);
-        expect({
-          ...(await boundedAsk({ client, },)),
-          calls: calls.count,
-        },).toEqual({
-          text: '{"spot":"sunbeam"}',
-          cut: false,
-          calls: 2,
-        },);
-      },
-    },),
+                bodyText: GPT_OSS_STREAM,
+              },
+            },);
 
-    it({
-      name: 'NEVER RETRIES A STREAM THE BOUND CUT, since the cut is this system\'s own end and the router holds '
-        + 'Bedrock out for the model on it',
-      fn: async () => {
-        /**
-         Attempts the transport saw.
-         */
-        const calls = { count: 0, };
-        const client = createBedrockClient({
-          apiKey: 'test-key',
-          ledger: memoryLedger({},).ledger,
-          baseUrl: 'https://mantle.invalid',
-          transport: async function queuedPastTheBound(exchange,) {
-            calls.count += 1;
-            await sleepFor(
-              TEST_BOUND_MS * 2,
-              undefined,
-              { signal: exchange.signal, },
-            );
-            return {
-              status: 200,
-              bodyText: GEMMA_STREAM,
-            };
+            /**
+             One plain call on the seat every provider serves.
+             */
+            const reply = await client.chatText({
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              messages: [{ role: 'user', content: 'Where does the cat nap?', },],
+              signal: SIGNAL,
+            },);
+            expect(reply.text,).toBe('{"spot":"windowsill"}',);
+            expect(reply.usage?.completion_tokens,).toBe(10,);
+            expect(exchanges[0]?.url,).toBe('https://mantle.invalid/v1/chat/completions',);
+            expect(JSON.parse(exchanges[0]?.bodyJson ?? '{}',),).toMatchObject({ model: 'openai.gpt-oss-120b', },);
           },
-          retryPolicy: {
-            limit: 2,
-            baseMs: 1,
-          },
-          streamBoundMsOverride: TEST_BOUND_MS,
-        },);
-        expect({
-          ...(await boundedAsk({ client, },)),
-          calls: calls.count,
-        },).toEqual({
-          text: '',
-          cut: true,
-          calls: 1,
-        },);
-      },
-    },),
-  ],
-},);
+        },),
 
-await describe({
-  name: 'every billed Bedrock attempt reaches the ledger (ledger P1)',
-  children: [
-    it({
-      name: 'LEDGERS A STREAM THIS PIPELINE ENDED, at what it could have been billed: 873 Bedrock streams ended '
-        + 'cut or overrun across the logs and none reached the ledger, the only guard on the owner\'s card',
-      fn: async () => {
-        /**
-         Exchanges the transport saw.
-         */
-        const exchanges: TransportExchange[] = [];
-        /**
-         Ledger the client writes to.
-         */
-        const { ledger, noted, } = memoryLedger({},);
-        /**
-         Client whose one stream overruns.
-         */
-        const client = createBedrockClient({
-          apiKey: 'test-key',
-          ledger,
-          baseUrl: 'https://mantle.invalid',
-          transport: async function overrunning(exchange,) {
-            exchanges.push(exchange,);
-            throw new StreamOverrunError({
-              label: 'google.gemma-4-e2b',
-              channel: 'content',
-              charsSeen: 900,
-              cap: 800,
-              rawChars: 81_000,
+        it({
+          name: 'REFUSES a Gemma-route stream cut off before its sentinel as malformed rather than '
+            + 'returning the fragment, since a stream that stopped early comes back as 200, and LEDGERS it at '
+            + 'what it could have been billed, since the endpoint accepted it (ledger P1)',
+          fn: async () => {
+            const { client, noted, exchanges, } = recordedClient({
+              reply: {
+                status: 200,
+                bodyText: chunkOf({ delta: { content: '{"spot":', }, },),
+              },
+            },);
+
+            /**
+             What the cut stream produced.
+             */
+            let thrown: unknown;
+            try {
+              await client.chatText({
+                modelId: SEAT_BEDROCK_ONLY_TEXT,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: SIGNAL,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown,).toBeInstanceOf(Error,);
+            expect((thrown as Error).name,).toBe('MalformedCompletionError',);
+            expect(noted,).toHaveLength(1,);
+            expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
+          },
+        },),
+
+        it({
+          name: 'READS the ledger for its credits, which is this provider\'s whole budget signal',
+          fn: async () => {
+            const { client, } = recordedClient({},);
+            expect(await client.credits({ signal: SIGNAL, },),).toEqual({
+              creditUsd: 200,
+              spentUsd: 50,
+              reckonedUsd: 0,
+              remainingUsd: 150,
+              calls: 0,
             },);
           },
-          retryPolicy: {
-            limit: 2,
-            baseMs: 1,
+        },),
+
+        it({
+          name: 'REFUSES a roster model it has no spelling for before touching the wire, since that is a '
+            + 'routing mistake in our own code',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({},);
+
+            /**
+             What a call for a seat this provider does not serve produces.
+             */
+            let thrown: unknown;
+            try {
+              await client.chatText({
+                modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: SIGNAL,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof BedrockModelNotServedError,).toBe(true,);
+            expect(exchanges,).toHaveLength(0,);
           },
-        },);
-        await expect(client.chatText({
-          modelId: SEAT_BEDROCK_ONLY_TEXT,
-          messages: [{ role: 'user', content: 'meow', },],
-          signal: SIGNAL,
-        },),).rejects.toBeInstanceOf(StreamOverrunError,);
-        expect(noted,).toHaveLength(1,);
-        expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
-      },
+        },),
+
+        it({
+          name: 'THROWS the shared HTTP failure class on a non-success status, which the budget layer '
+            + 'reads for a refusal, and NOTES nothing',
+          fn: async () => {
+            const { client, noted, } = recordedClient({
+              reply: {
+                status: 429,
+                bodyText: '{"error":{"message":"Too many requests"}}',
+              },
+            },);
+
+            /**
+             What the refused call produced.
+             */
+            let thrown: unknown;
+            try {
+              await client.chatText({
+                modelId: SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: SIGNAL,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof SyntheticHttpError,).toBe(true,);
+            expect((thrown as SyntheticHttpError).status,).toBe(429,);
+            expect(noted,).toHaveLength(0,);
+          },
+        },),
+
+        it({
+          name: 'VALIDATES a schema\'d answer through the shared outcome reader on chatJson',
+          fn: async () => {
+            const { client, } = recordedClient({},);
+
+            /**
+             Outcome of a guarded call.
+             */
+            const outcome = await client.chatJson({
+              modelId: SEAT_BEDROCK_ONLY_TEXT,
+              messages: [{ role: 'user', content: 'Where does the cat nap?', },],
+              signal: SIGNAL,
+              validate: function isNapSpot(value: unknown,): value is { readonly spot: string; } {
+                return ((typeof value) === 'object') && (value !== null) && ('spot' in value);
+              },
+            },);
+            expect(outcome.kind,).toBe('ok',);
+            if (outcome.kind === 'ok')
+              expect(outcome.value.spot,).toBe('sunbeam',);
+          },
+        },),
+
+        it({
+          name: 'GIVES EACH ATTEMPT THE WHOLE STREAM BOUND, so a retry after a slow transient failure is not cut by '
+            + 'the time the failed attempt spent (ledger P13: the bound was armed once around the retry ladder)',
+          fn: async () => {
+            /**
+             Attempts the transport saw.
+             */
+            const calls = { count: 0, };
+            const client = createBedrockClient({
+              apiKey: 'test-key',
+              ledger: memoryLedger({},).ledger,
+              baseUrl: 'https://mantle.invalid',
+              transport: async function slowFailureThenWhole(exchange,) {
+                calls.count += 1;
+                await sleepFor(
+                  ATTEMPT_MS,
+                  undefined,
+                  { signal: exchange.signal, },
+                );
+                return (calls.count === 1)
+                  ? {
+                    status: 503,
+                    bodyText: 'busy',
+                  }
+                  : {
+                    status: 200,
+                    bodyText: GEMMA_STREAM,
+                  };
+              },
+              retryPolicy: {
+                limit: 1,
+                baseMs: 1,
+              },
+              streamBoundMsOverride: TEST_BOUND_MS,
+            },);
+            expect({
+              ...(await boundedAsk({ client, },)),
+              calls: calls.count,
+            },).toEqual({
+              text: '{"spot":"sunbeam"}',
+              cut: false,
+              calls: 2,
+            },);
+          },
+        },),
+
+        it({
+          name: 'NEVER RETRIES A STREAM THE BOUND CUT, since the cut is this system\'s own end and the router holds '
+            + 'Bedrock out for the model on it',
+          fn: async () => {
+            /**
+             Attempts the transport saw.
+             */
+            const calls = { count: 0, };
+            const client = createBedrockClient({
+              apiKey: 'test-key',
+              ledger: memoryLedger({},).ledger,
+              baseUrl: 'https://mantle.invalid',
+              transport: async function queuedPastTheBound(exchange,) {
+                calls.count += 1;
+                await sleepFor(
+                  TEST_BOUND_MS * 2,
+                  undefined,
+                  { signal: exchange.signal, },
+                );
+                return {
+                  status: 200,
+                  bodyText: GEMMA_STREAM,
+                };
+              },
+              retryPolicy: {
+                limit: 2,
+                baseMs: 1,
+              },
+              streamBoundMsOverride: TEST_BOUND_MS,
+            },);
+            expect({
+              ...(await boundedAsk({ client, },)),
+              calls: calls.count,
+            },).toEqual({
+              text: '',
+              cut: true,
+              calls: 1,
+            },);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'LEDGERS EVERY BILLED ATTEMPT OF A RETRIED CALL, the refused one at its bound and the whole one '
-        + 'at its reported usage',
-      fn: async () => {
-        /**
-         Exchanges the transport saw.
-         */
-        const exchanges: TransportExchange[] = [];
-        /**
-         Ledger the client writes to.
-         */
-        const { ledger, noted, } = memoryLedger({},);
-        /**
-         Client whose first stream stops early and whose second is whole.
-         */
-        const client = createBedrockClient({
-          apiKey: 'test-key',
-          ledger,
-          baseUrl: 'https://mantle.invalid',
-          transport: async function truncatedThenWhole(exchange,) {
-            exchanges.push(exchange,);
-            return (exchanges.length === 1)
-              ? { status: 200, bodyText: chunkOf({ delta: { content: '{"spot":', }, },), }
-              : { status: 200, bodyText: GEMMA_STREAM, };
+
+    describe({
+      name: 'every billed Bedrock attempt reaches the ledger (ledger P1)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'LEDGERS A STREAM THIS PIPELINE ENDED, at what it could have been billed: 873 Bedrock streams ended '
+            + 'cut or overrun across the logs and none reached the ledger, the only guard on the owner\'s card',
+          fn: async () => {
+            /**
+             Exchanges the transport saw.
+             */
+            const exchanges: TransportExchange[] = [];
+            /**
+             Ledger the client writes to.
+             */
+            const { ledger, noted, } = memoryLedger({},);
+            /**
+             Client whose one stream overruns.
+             */
+            const client = createBedrockClient({
+              apiKey: 'test-key',
+              ledger,
+              baseUrl: 'https://mantle.invalid',
+              transport: async function overrunning(exchange,) {
+                exchanges.push(exchange,);
+                throw new StreamOverrunError({
+                  label: 'google.gemma-4-e2b',
+                  channel: 'content',
+                  charsSeen: 900,
+                  cap: 800,
+                  rawChars: 81_000,
+                },);
+              },
+              retryPolicy: {
+                limit: 2,
+                baseMs: 1,
+              },
+            },);
+            await expect(client.chatText({
+              modelId: SEAT_BEDROCK_ONLY_TEXT,
+              messages: [{ role: 'user', content: 'meow', },],
+              signal: SIGNAL,
+            },),).rejects.toBeInstanceOf(StreamOverrunError,);
+            expect(noted,).toHaveLength(1,);
+            expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
           },
-          retryPolicy: {
-            limit: 1,
-            baseMs: 1,
+        },),
+        it({
+          name: 'LEDGERS EVERY BILLED ATTEMPT OF A RETRIED CALL, the refused one at its bound and the whole one '
+            + 'at its reported usage',
+          fn: async () => {
+            /**
+             Exchanges the transport saw.
+             */
+            const exchanges: TransportExchange[] = [];
+            /**
+             Ledger the client writes to.
+             */
+            const { ledger, noted, } = memoryLedger({},);
+            /**
+             Client whose first stream stops early and whose second is whole.
+             */
+            const client = createBedrockClient({
+              apiKey: 'test-key',
+              ledger,
+              baseUrl: 'https://mantle.invalid',
+              transport: async function truncatedThenWhole(exchange,) {
+                exchanges.push(exchange,);
+                return (exchanges.length === 1)
+                  ? { status: 200, bodyText: chunkOf({ delta: { content: '{"spot":', }, },), }
+                  : { status: 200, bodyText: GEMMA_STREAM, };
+              },
+              retryPolicy: {
+                limit: 1,
+                baseMs: 1,
+              },
+            },);
+            await client.chatText({
+              modelId: SEAT_BEDROCK_ONLY_TEXT,
+              messages: [{ role: 'user', content: 'meow', },],
+              signal: SIGNAL,
+            },);
+            expect(noted,).toHaveLength(2,);
+            expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
+            expect(noted[1],).toMatchObject({ promptTokens: 90, completionTokens: 10, },);
+            expect(noted[1]?.estimated,).toBeUndefined();
           },
-        },);
-        await client.chatText({
-          modelId: SEAT_BEDROCK_ONLY_TEXT,
-          messages: [{ role: 'user', content: 'meow', },],
-          signal: SIGNAL,
-        },);
-        expect(noted,).toHaveLength(2,);
-        expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
-        expect(noted[1],).toMatchObject({ promptTokens: 90, completionTokens: 10, },);
-        expect(noted[1]?.estimated,).toBeUndefined();
-      },
-    },),
-    it({
-      name: 'LEDGERS A WHOLE CALL WHOSE STREAM REPORTED NO USAGE at its bound, marked so, since the call was '
-        + 'billed whatever the stream said; none of 190,009 logged Bedrock calls lacked usage, and the guard '
-        + 'on the owner\'s card must not rest on that',
-      fn: async () => {
-        const { client, noted, exchanges, } = recordedClient({
-          reply: {
-            status: 200,
-            bodyText: [
-              chunkOf({ delta: { role: 'assistant', content: '', }, },),
-              chunkOf({ delta: { content: '{"spot":"sunbeam"}', }, },),
-              'data: [DONE]\n\n',
-            ].join('',),
+        },),
+        it({
+          name: 'LEDGERS A WHOLE CALL WHOSE STREAM REPORTED NO USAGE at its bound, marked so, since the call was '
+            + 'billed whatever the stream said; none of 190,009 logged Bedrock calls lacked usage, and the guard '
+            + 'on the owner\'s card must not rest on that',
+          fn: async () => {
+            const { client, noted, exchanges, } = recordedClient({
+              reply: {
+                status: 200,
+                bodyText: [
+                  chunkOf({ delta: { role: 'assistant', content: '', }, },),
+                  chunkOf({ delta: { content: '{"spot":"sunbeam"}', }, },),
+                  'data: [DONE]\n\n',
+                ].join('',),
+              },
+            },);
+            await client.chatText({
+              modelId: SEAT_BEDROCK_ONLY_TEXT,
+              messages: [{ role: 'user', content: 'meow', },],
+              signal: SIGNAL,
+            },);
+            expect(noted,).toHaveLength(1,);
+            expect(noted[0],).toMatchObject({
+              ...boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),
+              estimated: 'unreported-bound',
+            },);
           },
-        },);
-        await client.chatText({
-          modelId: SEAT_BEDROCK_ONLY_TEXT,
-          messages: [{ role: 'user', content: 'meow', },],
-          signal: SIGNAL,
-        },);
-        expect(noted,).toHaveLength(1,);
-        expect(noted[0],).toMatchObject({
-          ...boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),
-          estimated: 'unreported-bound',
-        },);
-      },
+        },),
+      ],
     },),
   ],
 },);

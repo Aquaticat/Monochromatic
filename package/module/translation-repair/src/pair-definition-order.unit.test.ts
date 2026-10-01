@@ -9,6 +9,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -43,178 +44,187 @@ const TARGET = parseDocument({
 //endregion Fixtures
 
 await describe({
-  name: definitionIndexes.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'names the footnote definition blocks by their chunk-local index and nothing else',
-      fn: async () => {
-        expect([ ...definitionIndexes({ nodes: SOURCE.nodes, },), ],).toStrictEqual([
-          2,
-          3,
-        ],);
-        expect([ ...definitionIndexes({ nodes: TARGET.nodes, },), ],).toStrictEqual([
-          3,
-          4,
-        ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: definitionLabelsOf.name,
-  children: [
-    it({
-      name: 'reads the label a definition opens with and nothing off a body block',
-      fn: async () => {
-        expect(SOURCE.nodes
-          .map(function toLabels(node,): readonly string[] {
-            return definitionLabelsOf({ node, },);
-          },),).toStrictEqual([
-          [],
-          [],
-          [ '1', ],
-          [ '2', ],
-        ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: splitDefinitionPairs.name,
-  children: [
-    it({
-      name: 'keeps crossing definition pairs out of the slicing and reads them by label for the relabel',
-      fn: async () => {
-        /**
-         The pairing six of eight voices gave on one entry's third launch: body
-         paired in order, definitions paired by content, crossing.
-         */
-        const split = splitDefinitionPairs({
-          pairs: [
-            {
-              source: 0,
-              target: 0,
-            },
-            {
-              source: 1,
-              target: 1,
-            },
-            {
-              source: 1,
-              target: 2,
-            },
-            {
-              source: 2,
-              target: 4,
-            },
-            {
-              source: 3,
-              target: 3,
-            },
-          ],
-          sourceNodes: SOURCE.nodes,
-          targetNodes: TARGET.nodes,
-        },);
-        expect(split.crossing,).toBe(true,);
-        expect(split.forSlicing,).toStrictEqual([
-          {
-            source: 0,
-            target: 0,
+    describe({
+      name: definitionIndexes.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'names the footnote definition blocks by their chunk-local index and nothing else',
+          fn: async () => {
+            expect([ ...definitionIndexes({ nodes: SOURCE.nodes, },), ],).toStrictEqual([
+              2,
+              3,
+            ],);
+            expect([ ...definitionIndexes({ nodes: TARGET.nodes, },), ],).toStrictEqual([
+              3,
+              4,
+            ],);
           },
-          {
-            source: 1,
-            target: 1,
-          },
-          {
-            source: 1,
-            target: 2,
-          },
-        ],);
-        expect(split.definitionPairs,).toStrictEqual([
-          {
-            sourceLabel: '1',
-            targetLabel: '2',
-          },
-          {
-            sourceLabel: '2',
-            targetLabel: '1',
-          },
-        ],);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'hands every pair to the slicing, definitions included, where the definitions pair in order',
-      fn: async () => {
-        /**
-         The same documents after the relabel and the reorder: definitions
-         pair in order.
-         */
-        const split = splitDefinitionPairs({
-          pairs: [
-            {
-              source: 1,
-              target: 1,
-            },
-            {
-              source: 2,
-              target: 3,
-            },
-            {
-              source: 3,
-              target: 4,
-            },
-          ],
-          sourceNodes: SOURCE.nodes,
-          targetNodes: TARGET.nodes,
-        },);
-        expect(split.crossing,).toBe(false,);
-        expect(split.forSlicing
-          .length,).toBe(3,);
-        expect(split.definitionPairs
-          .length,).toBe(2,);
-        expect(crossingFinding({ pairIndex: 4, },),).toContain('section 4',);
-      },
+    describe({
+      name: definitionLabelsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'reads the label a definition opens with and nothing off a body block',
+          fn: async () => {
+            expect(SOURCE.nodes
+              .map(function toLabels(node,): readonly string[] {
+                return definitionLabelsOf({ node, },);
+              },),).toStrictEqual([
+              [],
+              [],
+              [ '1', ],
+              [ '2', ],
+            ],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'reads two definition pairs sharing an original as in order whichever comes first, '
-        + 'since pairs tied on the original are ordered by the archive before any step back is sought',
-      fn: async () => {
-        /**
-         One original note the archive split across both its definitions,
-         given with the later archive block first.
-         */
-        const pairs = [
-          {
-            source: 2,
-            target: 4,
+    describe({
+      name: splitDefinitionPairs.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'keeps crossing definition pairs out of the slicing and reads them by label for the relabel',
+          fn: async () => {
+            /**
+             The pairing six of eight voices gave on one entry's third launch: body
+             paired in order, definitions paired by content, crossing.
+             */
+            const split = splitDefinitionPairs({
+              pairs: [
+                {
+                  source: 0,
+                  target: 0,
+                },
+                {
+                  source: 1,
+                  target: 1,
+                },
+                {
+                  source: 1,
+                  target: 2,
+                },
+                {
+                  source: 2,
+                  target: 4,
+                },
+                {
+                  source: 3,
+                  target: 3,
+                },
+              ],
+              sourceNodes: SOURCE.nodes,
+              targetNodes: TARGET.nodes,
+            },);
+            expect(split.crossing,).toBe(true,);
+            expect(split.forSlicing,).toStrictEqual([
+              {
+                source: 0,
+                target: 0,
+              },
+              {
+                source: 1,
+                target: 1,
+              },
+              {
+                source: 1,
+                target: 2,
+              },
+            ],);
+            expect(split.definitionPairs,).toStrictEqual([
+              {
+                sourceLabel: '1',
+                targetLabel: '2',
+              },
+              {
+                sourceLabel: '2',
+                targetLabel: '1',
+              },
+            ],);
           },
-          {
-            source: 2,
-            target: 3,
+        },),
+
+        it({
+          name: 'hands every pair to the slicing, definitions included, where the definitions pair in order',
+          fn: async () => {
+            /**
+             The same documents after the relabel and the reorder: definitions
+             pair in order.
+             */
+            const split = splitDefinitionPairs({
+              pairs: [
+                {
+                  source: 1,
+                  target: 1,
+                },
+                {
+                  source: 2,
+                  target: 3,
+                },
+                {
+                  source: 3,
+                  target: 4,
+                },
+              ],
+              sourceNodes: SOURCE.nodes,
+              targetNodes: TARGET.nodes,
+            },);
+            expect(split.crossing,).toBe(false,);
+            expect(split.forSlicing
+              .length,).toBe(3,);
+            expect(split.definitionPairs
+              .length,).toBe(2,);
+            expect(crossingFinding({ pairIndex: 4, },),).toContain('section 4',);
           },
-        ];
-        const split = splitDefinitionPairs({
-          pairs,
-          sourceNodes: SOURCE.nodes,
-          targetNodes: TARGET.nodes,
-        },);
-        expect(split.crossing,).toBe(false,);
-        expect(split.forSlicing,).toStrictEqual(pairs,);
-        expect(split.definitionPairs,).toStrictEqual([
-          {
-            sourceLabel: '1',
-            targetLabel: '2',
+        },),
+
+        it({
+          name: 'reads two definition pairs sharing an original as in order whichever comes first, '
+            + 'since pairs tied on the original are ordered by the archive before any step back is sought',
+          fn: async () => {
+            /**
+             One original note the archive split across both its definitions,
+             given with the later archive block first.
+             */
+            const pairs = [
+              {
+                source: 2,
+                target: 4,
+              },
+              {
+                source: 2,
+                target: 3,
+              },
+            ];
+            const split = splitDefinitionPairs({
+              pairs,
+              sourceNodes: SOURCE.nodes,
+              targetNodes: TARGET.nodes,
+            },);
+            expect(split.crossing,).toBe(false,);
+            expect(split.forSlicing,).toStrictEqual(pairs,);
+            expect(split.definitionPairs,).toStrictEqual([
+              {
+                sourceLabel: '1',
+                targetLabel: '2',
+              },
+              {
+                sourceLabel: '1',
+                targetLabel: '1',
+              },
+            ],);
           },
-          {
-            sourceLabel: '1',
-            targetLabel: '1',
-          },
-        ],);
-      },
+        },),
+      ],
     },),
   ],
 },);

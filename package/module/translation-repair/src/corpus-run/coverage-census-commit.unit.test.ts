@@ -21,6 +21,7 @@ import { join, } from 'node:path';
 
 import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -157,199 +158,207 @@ async function commitAll({
 }
 
 await describe({
-  name: packageCommit.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'NAMES THE COMMIT BY NINE CHARACTERS, clean until a file under the package changes',
-      fn: async () => {
-        await using directory = await throwawayRepository();
-        await gitIn({
-          directory: directory.path,
-          args: ['init',],
-        },);
-        await writeUnder({
-          directory: directory.path,
-          path: 'nap.txt',
-          text: 'nap\n',
-        },);
-        await commitAll({
-          directory: directory.path,
-          message: 'nap',
-        },);
-        const { stdout: full, } = await gitIn({
-          directory: directory.path,
-          args: [
-            'rev-parse',
-            'HEAD',
-          ],
-        },);
-        const committed = await packageCommit({ packageDirectory: directory.path, },);
-        expect(committed.head,).toBe(full.slice(
-          0,
-          9,
-        ),);
-        expect(committed.clean,).toBe(true,);
-        await writeUnder({
-          directory: directory.path,
-          path: 'nap.txt',
-          text: 'purr\n',
-        },);
-        expect((await packageCommit({ packageDirectory: directory.path, },)).clean,).toBe(false,);
-      },
+    describe({
+      name: packageCommit.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE COMMIT BY NINE CHARACTERS, clean until a file under the package changes',
+          fn: async () => {
+            await using directory = await throwawayRepository();
+            await gitIn({
+              directory: directory.path,
+              args: ['init',],
+            },);
+            await writeUnder({
+              directory: directory.path,
+              path: 'nap.txt',
+              text: 'nap\n',
+            },);
+            await commitAll({
+              directory: directory.path,
+              message: 'nap',
+            },);
+            const { stdout: full, } = await gitIn({
+              directory: directory.path,
+              args: [
+                'rev-parse',
+                'HEAD',
+              ],
+            },);
+            const committed = await packageCommit({ packageDirectory: directory.path, },);
+            expect(committed.head,).toBe(full.slice(
+              0,
+              9,
+            ),);
+            expect(committed.clean,).toBe(true,);
+            await writeUnder({
+              directory: directory.path,
+              path: 'nap.txt',
+              text: 'purr\n',
+            },);
+            expect((await packageCommit({ packageDirectory: directory.path, },)).clean,).toBe(false,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: sourcesEditedSince.name,
-  children: [
-    it({
-      name:
-        'NAMES THE SOURCES THAT DIFFER FROM A COMMIT, relative to the package as a census names them: one edited '
-        + 'and not committed, one added and committed since, and not one left as it was',
-      fn: async () => {
-        await using repository = await throwawayRepository();
-        await gitIn({
-          directory: repository.path,
-          args: ['init',],
-        },);
-        /**
-         Package directory, a subdirectory of the repository as in this one.
-         */
-        const packageDirectory = join(
-          repository.path,
-          'package',
-          'cat',
-        );
-        await writeUnder({
-          directory: packageDirectory,
-          path: 'src/nap.ts',
-          text: 'export const nap = 1;\n',
-        },);
-        await writeUnder({
-          directory: packageDirectory,
-          path: 'src/purr.ts',
-          text: 'export const purr = 1;\n',
-        },);
-        await commitAll({
-          directory: repository.path,
-          message: 'nap and purr',
-        },);
-        /**
-         Commit an earlier census would record.
-         */
-        const { head, } = await packageCommit({ packageDirectory, },);
-        await writeUnder({
-          directory: packageDirectory,
-          path: 'src/knead.ts',
-          text: 'export const knead = 1;\n',
-        },);
-        await commitAll({
-          directory: repository.path,
-          message: 'knead',
-        },);
-        await writeUnder({
-          directory: packageDirectory,
-          path: 'src/nap.ts',
-          text: '// one more line renumbers the rest of the file\nexport const nap = 1;\n',
-        },);
-        expect([...await sourcesEditedSince({
-          packageDirectory,
-          head,
-        },),].toSorted(),).toEqual(['src/knead.ts', 'src/nap.ts',],);
-      },
-    },),
-    it({
-      name:
-        'NAMES EVERY CHANGED FILE IN THE WORK TREE, relative to the package, since a census reads the sources of '
-        + 'other packages the suite loads too: one asked about only inside the package left their stretches matched '
-        + 'by line across an edit (ledger B62). Names git would quote, a space, a double quote, a newline and Han, '
-        + 'come back as the census names them',
-      fn: async () => {
-        await using repository = await throwawayRepository();
-        await gitIn({
-          directory: repository.path,
-          args: ['init',],
-        },);
-        /**
-         Package directory, a subdirectory of the repository.
-         */
-        const packageDirectory = join(
-          repository.path,
-          'package',
-          'cat',
-        );
-        await writeUnder({
-          directory: packageDirectory,
-          path: 'src/nap.ts',
-          text: 'export const nap = 1;\n',
-        },);
-        await writeUnder({
-          directory: packageDirectory,
-          path: 'doc/whiskers.md',
-          text: '# Whiskers\n',
-        },);
-        await writeUnder({
-          directory: repository.path,
-          path: 'README.md',
-          text: '# Litter\n',
-        },);
-        await writeUnder({
-          directory: repository.path,
-          path: 'package/whisker/src/index.ts',
-          text: 'export const whisker = 1;\n',
-        },);
-        /**
-         Sources whose names git quotes in its default output.
-         */
-        const unusual = ['src/猫 "nap".ts', 'src/nap\nkitten.ts',];
-        await Promise.all(unusual.map(async function writeFirst(path,) {
-          await writeUnder({
-            directory: packageDirectory,
-            path,
-            text: 'export const nap = 1;\n',
-          },);
-        },),);
-        await commitAll({
-          directory: repository.path,
-          message: 'nap, whiskers, litter and whisker',
-        },);
-        /**
-         Commit an earlier census would record.
-         */
-        const { head, } = await packageCommit({ packageDirectory, },);
-        await writeUnder({
-          directory: packageDirectory,
-          path: 'doc/whiskers.md',
-          text: '# Whiskers, groomed\n',
-        },);
-        await writeUnder({
-          directory: repository.path,
-          path: 'README.md',
-          text: '# Litter, fresh\n',
-        },);
-        await writeUnder({
-          directory: repository.path,
-          path: 'package/whisker/src/index.ts',
-          text: '// one more line renumbers the rest of the file\nexport const whisker = 1;\n',
-        },);
-        await Promise.all(unusual.map(async function rewrite(path,) {
-          await writeUnder({
-            directory: packageDirectory,
-            path,
-            text: 'export const nap = 2;\n',
-          },);
-        },),);
-        expect([...await sourcesEditedSince({
-          packageDirectory,
-          head,
-        },),].toSorted(),).toEqual([
-          '../../README.md',
-          '../whisker/src/index.ts',
-          'doc/whiskers.md',
-          ...unusual,
-        ].toSorted(),);
-      },
+    describe({
+      name: sourcesEditedSince.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'NAMES THE SOURCES THAT DIFFER FROM A COMMIT, relative to the package as a census names them: one edited '
+            + 'and not committed, one added and committed since, and not one left as it was',
+          fn: async () => {
+            await using repository = await throwawayRepository();
+            await gitIn({
+              directory: repository.path,
+              args: ['init',],
+            },);
+            /**
+             Package directory, a subdirectory of the repository as in this one.
+             */
+            const packageDirectory = join(
+              repository.path,
+              'package',
+              'cat',
+            );
+            await writeUnder({
+              directory: packageDirectory,
+              path: 'src/nap.ts',
+              text: 'export const nap = 1;\n',
+            },);
+            await writeUnder({
+              directory: packageDirectory,
+              path: 'src/purr.ts',
+              text: 'export const purr = 1;\n',
+            },);
+            await commitAll({
+              directory: repository.path,
+              message: 'nap and purr',
+            },);
+            /**
+             Commit an earlier census would record.
+             */
+            const { head, } = await packageCommit({ packageDirectory, },);
+            await writeUnder({
+              directory: packageDirectory,
+              path: 'src/knead.ts',
+              text: 'export const knead = 1;\n',
+            },);
+            await commitAll({
+              directory: repository.path,
+              message: 'knead',
+            },);
+            await writeUnder({
+              directory: packageDirectory,
+              path: 'src/nap.ts',
+              text: '// one more line renumbers the rest of the file\nexport const nap = 1;\n',
+            },);
+            expect([...await sourcesEditedSince({
+              packageDirectory,
+              head,
+            },),].toSorted(),).toEqual(['src/knead.ts', 'src/nap.ts',],);
+          },
+        },),
+        it({
+          name:
+            'NAMES EVERY CHANGED FILE IN THE WORK TREE, relative to the package, since a census reads the sources of '
+            + 'other packages the suite loads too: one asked about only inside the package left their stretches matched '
+            + 'by line across an edit (ledger B62). Names git would quote, a space, a double quote, a newline and Han, '
+            + 'come back as the census names them',
+          fn: async () => {
+            await using repository = await throwawayRepository();
+            await gitIn({
+              directory: repository.path,
+              args: ['init',],
+            },);
+            /**
+             Package directory, a subdirectory of the repository.
+             */
+            const packageDirectory = join(
+              repository.path,
+              'package',
+              'cat',
+            );
+            await writeUnder({
+              directory: packageDirectory,
+              path: 'src/nap.ts',
+              text: 'export const nap = 1;\n',
+            },);
+            await writeUnder({
+              directory: packageDirectory,
+              path: 'doc/whiskers.md',
+              text: '# Whiskers\n',
+            },);
+            await writeUnder({
+              directory: repository.path,
+              path: 'README.md',
+              text: '# Litter\n',
+            },);
+            await writeUnder({
+              directory: repository.path,
+              path: 'package/whisker/src/index.ts',
+              text: 'export const whisker = 1;\n',
+            },);
+            /**
+             Sources whose names git quotes in its default output.
+             */
+            const unusual = ['src/猫 "nap".ts', 'src/nap\nkitten.ts',];
+            await Promise.all(unusual.map(async function writeFirst(path,) {
+              await writeUnder({
+                directory: packageDirectory,
+                path,
+                text: 'export const nap = 1;\n',
+              },);
+            },),);
+            await commitAll({
+              directory: repository.path,
+              message: 'nap, whiskers, litter and whisker',
+            },);
+            /**
+             Commit an earlier census would record.
+             */
+            const { head, } = await packageCommit({ packageDirectory, },);
+            await writeUnder({
+              directory: packageDirectory,
+              path: 'doc/whiskers.md',
+              text: '# Whiskers, groomed\n',
+            },);
+            await writeUnder({
+              directory: repository.path,
+              path: 'README.md',
+              text: '# Litter, fresh\n',
+            },);
+            await writeUnder({
+              directory: repository.path,
+              path: 'package/whisker/src/index.ts',
+              text: '// one more line renumbers the rest of the file\nexport const whisker = 1;\n',
+            },);
+            await Promise.all(unusual.map(async function rewrite(path,) {
+              await writeUnder({
+                directory: packageDirectory,
+                path,
+                text: 'export const nap = 2;\n',
+              },);
+            },),);
+            expect([...await sourcesEditedSince({
+              packageDirectory,
+              head,
+            },),].toSorted(),).toEqual([
+              '../../README.md',
+              '../whisker/src/index.ts',
+              'doc/whiskers.md',
+              ...unusual,
+            ].toSorted(),);
+          },
+        },),
+      ],
     },),
   ],
 },);

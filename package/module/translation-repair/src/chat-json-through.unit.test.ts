@@ -9,6 +9,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -36,54 +37,62 @@ function namesCat(value: unknown,): value is { readonly cat: string; } {
 }
 
 await describe({
-  name: chatJsonThrough.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'FORWARDS EVERY FIELD OF THE REQUEST BUT ITS VALIDATOR to the text exchange, the ones no copy '
-        + 'named included, and reads the reply against the validator',
-      fn: async () => {
-        /**
-         Requests the text exchange received.
-         */
-        const seen: Record<string, unknown>[] = [];
-        const chatJson = chatJsonThrough({
-          chatText: async function chatText(request,) {
-            seen.push({ ...request, },);
-            return { text: '{"cat":"Mittens"}', };
+    describe({
+      name: chatJsonThrough.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FORWARDS EVERY FIELD OF THE REQUEST BUT ITS VALIDATOR to the text exchange, the ones no copy '
+            + 'named included, and reads the reply against the validator',
+          fn: async () => {
+            /**
+             Requests the text exchange received.
+             */
+            const seen: Record<string, unknown>[] = [];
+            const chatJson = chatJsonThrough({
+              chatText: async function chatText(request,) {
+                seen.push({ ...request, },);
+                return { text: '{"cat":"Mittens"}', };
+              },
+            },);
+            const outcome = await chatJson({
+              modelId: 'minimax-m3',
+              messages: [{ role: 'user', content: 'Name the cat.', },],
+              signal: AbortSignal.timeout(60_000,),
+              maxTokens: 64,
+              otherThan: 'synthetic',
+              validate: namesCat,
+            },);
+            expect(outcome.kind,).toBe('ok',);
+            expect(Object.keys(seen[0] ?? {},).toSorted(),).toEqual([
+              'maxTokens',
+              'messages',
+              'modelId',
+              'otherThan',
+              'signal',
+            ],);
           },
-        },);
-        const outcome = await chatJson({
-          modelId: 'minimax-m3',
-          messages: [{ role: 'user', content: 'Name the cat.', },],
-          signal: AbortSignal.timeout(60_000,),
-          maxTokens: 64,
-          otherThan: 'synthetic',
-          validate: namesCat,
-        },);
-        expect(outcome.kind,).toBe('ok',);
-        expect(Object.keys(seen[0] ?? {},).toSorted(),).toEqual([
-          'maxTokens',
-          'messages',
-          'modelId',
-          'otherThan',
-          'signal',
-        ],);
-      },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: perModelLimiter.name,
-  children: [
-    it({
-      name: 'HANDS EACH MODEL ONE LIMITER OF ITS OWN, kept across calls, at the concurrency asked for',
-      fn: async () => {
-        const limiterFor = perModelLimiter({ perModelConcurrency: 2, },);
-        expect(limiterFor('minimax-m3',),).toBe(limiterFor('minimax-m3',),);
-        expect(limiterFor('minimax-m3',),).not.toBe(limiterFor('google.gemma-4-31b',),);
-        expect(limiterFor('minimax-m3',).concurrency,).toBe(2,);
-      },
+    describe({
+      name: perModelLimiter.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'HANDS EACH MODEL ONE LIMITER OF ITS OWN, kept across calls, at the concurrency asked for',
+          fn: async () => {
+            const limiterFor = perModelLimiter({ perModelConcurrency: 2, },);
+            expect(limiterFor('minimax-m3',),).toBe(limiterFor('minimax-m3',),);
+            expect(limiterFor('minimax-m3',),).not.toBe(limiterFor('google.gemma-4-31b',),);
+            expect(limiterFor('minimax-m3',).concurrency,).toBe(2,);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -257,264 +257,270 @@ function anyRecord(value: unknown,): value is object {
 //endregion Fixtures
 
 await describe({
-  name: discardNamespace.name,
-  // SEQUENTIAL BECAUSE THE CAPTURE IS GLOBAL. `console.log` is one binding, and
-  // each case here holds it across an await while the discard runs. Run
-  // concurrently, the cases divert each other's lines into each other's lists,
-  // which is how this file first failed: one case saw none of its own and
-  // another saw two.
+  name: '',
   concurrency: 1,
   children: [
-    it({
-      name: 'COUNTS what it removed and NAMES who filled it, since slices are bought from the roster '
-        + 'and this line is the only notice that a generation change just spent that money again',
-      fn: async () => {
-        /**
-         A cache holding two of this lane's slices, one of another lane's, and
-         this lane's own marker, which is deliberately not a `.json` name.
-         */
-        const { lines, left, } = await discarding({
-          names: [
-            'mittens.a.json',
-            'mittens.b.json',
-            OTHER_LANE_FILE,
-            MITTENS.marker,
-          ],
-          cached: 'nap-3',
-        },);
+    describe({
+      name: discardNamespace.name,
+      // SEQUENTIAL BECAUSE THE CAPTURE IS GLOBAL. `console.log` is one binding, and
+      // each case here holds it across an await while the discard runs. Run
+      // concurrently, the cases divert each other's lines into each other's lists,
+      // which is how this file first failed: one case saw none of its own and
+      // another saw two.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'COUNTS what it removed and NAMES who filled it, since slices are bought from the roster '
+            + 'and this line is the only notice that a generation change just spent that money again',
+          fn: async () => {
+            /**
+             A cache holding two of this lane's slices, one of another lane's, and
+             this lane's own marker, which is deliberately not a `.json` name.
+             */
+            const { lines, left, } = await discarding({
+              names: [
+                'mittens.a.json',
+                'mittens.b.json',
+                OTHER_LANE_FILE,
+                MITTENS.marker,
+              ],
+              cached: 'nap-3',
+            },);
 
-        /**
-         Lines announcing a discard, which is the only kind this asks about.
-         THROUGH THE LOGGER, so the line carries its level and tag prefix and
-         the notice is found inside it rather than at its start.
-         */
-        const announced = lines.filter(function isDiscard(line,): boolean {
-          return line.includes('SLICE discarding',);
-        },);
+            /**
+             Lines announcing a discard, which is the only kind this asks about.
+             THROUGH THE LOGGER, so the line carries its level and tag prefix and
+             the notice is found inside it rather than at its start.
+             */
+            const announced = lines.filter(function isDiscard(line,): boolean {
+              return line.includes('SLICE discarding',);
+            },);
 
-        expect(announced.length,).toBe(1,);
-        // THE LOGGER'S TAG proves the notice went through the tagged logger
-        // rather than a bare console call, which is what lets it be filtered
-        // and attributed like every other cache line.
-        expect(announced[0],).toContain('[discardNamespace]',);
-        expect(announced[0],).toContain('discarding 2 cached slices',);
-        expect(announced[0],).toContain('filled by nap-3',);
-        expect(left,).toStrictEqual([
-          MITTENS.marker,
-          OTHER_LANE_FILE,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'STAYS QUIET when this lane owned nothing here, which is what keeps the line the "COUNTS what '
-        + 'it removed" case reads worth reading rather than printed on every run',
-      fn: async () => {
-        /**
-         A cache holding only another lane's slice.
-         */
-        const { lines, left, } = await discarding({
-          names: [OTHER_LANE_FILE,],
-          cached: 'nap-3',
-        },);
-
-        expect(lines.filter(function isDiscard(line,): boolean {
-          return line.includes('SLICE discarding',);
-        },),).toStrictEqual([],);
-        expect(left,).toStrictEqual([OTHER_LANE_FILE,],);
-      },
-    },),
-
-    it({
-      name: 'SAYS unstamped where no pipeline claimed the slices, so a reader is never shown an empty '
-        + 'name and left to guess whether one was recorded',
-      fn: async () => {
-        /**
-         A cache whose lane never wrote a marker.
-         */
-        const { lines, } = await discarding({
-          names: ['mittens.a.json',],
-          cached: '',
-        },);
-
-        expect(lines.length,).toBe(1,);
-        expect(lines[0],).toContain('filled by (unstamped)',);
-      },
-    },),
-
-    it({
-      name: 'LEAVES A DIRECTORY NAMED LIKE ONE OF ITS SLICES, which no lane wrote, rather than raising out of '
-        + 'the open that asked for the discard (ledger B65)',
-      fn: async () => {
-        /**
-         A cache holding one of this lane's slices beside a directory named
-         like another.
-         */
-        const dir = await cacheHolding({ names: ['mittens.a.json',], },);
-        await mkdir(join(
-          dir,
-          'mittens.b.json',
-        ),);
-
-        /**
-         Lines the discard printed, captured so none reach the test output.
-         */
-        const lines: string[] = [];
-        {
-          using capture = collectingInto({ lines, },);
-          await discardNamespace({
-            dir,
-            namespace: MITTENS,
-            cached: 'nap-3',
-          },);
-        }
-
-        /**
-         Names still on disk.
-         */
-        const left = (await readdir(dir,)).toSorted();
-        await rm(
-          dir,
-          {
-            recursive: true,
-            force: true,
+            expect(announced.length,).toBe(1,);
+            // THE LOGGER'S TAG proves the notice went through the tagged logger
+            // rather than a bare console call, which is what lets it be filtered
+            // and attributed like every other cache line.
+            expect(announced[0],).toContain('[discardNamespace]',);
+            expect(announced[0],).toContain('discarding 2 cached slices',);
+            expect(announced[0],).toContain('filled by nap-3',);
+            expect(left,).toStrictEqual([
+              MITTENS.marker,
+              OTHER_LANE_FILE,
+            ],);
           },
-        );
+        },),
 
-        expect(left,).toStrictEqual(['mittens.b.json',],);
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'STAYS QUIET when this lane owned nothing here, which is what keeps the line the "COUNTS what '
+            + 'it removed" case reads worth reading rather than printed on every run',
+          fn: async () => {
+            /**
+             A cache holding only another lane's slice.
+             */
+            const { lines, left, } = await discarding({
+              names: [OTHER_LANE_FILE,],
+              cached: 'nap-3',
+            },);
 
-await describe({
-  name: openNamespacedCache.name,
-  // Sequential for the same reason as the discard cases: `console.warn` is one
-  // binding held across an await.
-  concurrency: 1,
-  children: [
-    it({
-      name: 'WARNS about a slice file that does not parse, naming it, since that slice is bought again '
-        + '(ledger A11)',
-      fn: async () => {
-        /**
-         Cache this lane filled under the running pipeline: one slice torn
-         mid-write, one that parses but is no envelope this loader wrote.
-         */
-        const dir = await cacheHolding({ names: ['mittens.b.json',], },);
-        await writeFile(
-          join(
-            dir,
-            MITTENS.marker,
-          ),
-          'nap-3\n',
-          'utf8',
-        );
-        await writeFile(
-          join(
-            dir,
-            'mittens.a.json',
-          ),
-          '{"key":"a","val',
-          'utf8',
-        );
-
-        /**
-         Warnings the open printed.
-         */
-        const lines: string[] = [];
-        {
-          using capture = warningsInto({ lines, },);
-          /**
-           Cache as the lane opens it.
-           */
-          const cache = await openNamespacedCache({
-            dir,
-            generation: 'nap-3',
-            namespace: MITTENS,
-            isValue: anyRecord,
-          },);
-          expect(cache.resumed.size,).toBe(0,);
-        }
-        await rm(
-          dir,
-          {
-            recursive: true,
-            force: true,
+            expect(lines.filter(function isDiscard(line,): boolean {
+              return line.includes('SLICE discarding',);
+            },),).toStrictEqual([],);
+            expect(left,).toStrictEqual([OTHER_LANE_FILE,],);
           },
-        );
+        },),
 
-        // Positive control: the refused envelope was already announced, so the
-        // capture sees this loader's warnings.
-        expect(lines.filter(function namesB(line,): boolean {
-          return line.includes('mittens.b.json',);
-        },).length,).toBe(1,);
+        it({
+          name: 'SAYS unstamped where no pipeline claimed the slices, so a reader is never shown an empty '
+            + 'name and left to guess whether one was recorded',
+          fn: async () => {
+            /**
+             A cache whose lane never wrote a marker.
+             */
+            const { lines, } = await discarding({
+              names: ['mittens.a.json',],
+              cached: '',
+            },);
 
-        /**
-         Warnings naming the torn slice.
-         */
-        const torn = lines.filter(function namesA(line,): boolean {
-          return line.includes('mittens.a.json',);
-        },);
-        expect(torn.length,).toBe(1,);
-        expect(torn[0],).toContain('recomputed',);
-      },
+            expect(lines.length,).toBe(1,);
+            expect(lines[0],).toContain('filled by (unstamped)',);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A DIRECTORY NAMED LIKE ONE OF ITS SLICES, which no lane wrote, rather than raising out of '
+            + 'the open that asked for the discard (ledger B65)',
+          fn: async () => {
+            /**
+             A cache holding one of this lane's slices beside a directory named
+             like another.
+             */
+            const dir = await cacheHolding({ names: ['mittens.a.json',], },);
+            await mkdir(join(
+              dir,
+              'mittens.b.json',
+            ),);
+
+            /**
+             Lines the discard printed, captured so none reach the test output.
+             */
+            const lines: string[] = [];
+            {
+              using capture = collectingInto({ lines, },);
+              await discardNamespace({
+                dir,
+                namespace: MITTENS,
+                cached: 'nap-3',
+              },);
+            }
+
+            /**
+             Names still on disk.
+             */
+            const left = (await readdir(dir,)).toSorted();
+            await rm(
+              dir,
+              {
+                recursive: true,
+                force: true,
+              },
+            );
+
+            expect(left,).toStrictEqual(['mittens.b.json',],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'RESUMES PAST A DIRECTORY NAMED LIKE ONE OF ITS SLICES, which no lane wrote, rather than stopping '
-        + 'the entry on EISDIR (ledger B65)',
-      fn: async () => {
-        /**
-         Cache this lane filled under the running pipeline: one slice the
-         loader wrote, beside a directory named like another.
-         */
-        const dir = await cacheHolding({ names: [], },);
-        await writeFile(
-          join(
-            dir,
-            MITTENS.marker,
-          ),
-          'nap-3\n',
-          'utf8',
-        );
-        await writeFile(
-          join(
-            dir,
-            'mittens.a.json',
-          ),
-          JSON.stringify({
-            cacheKey: 'a',
-            record: { purred: true, },
-          },),
-          'utf8',
-        );
-        await mkdir(join(
-          dir,
-          'mittens.b.json',
-        ),);
+    describe({
+      name: openNamespacedCache.name,
+      // Sequential for the same reason as the discard cases: `console.warn` is one
+      // binding held across an await.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'WARNS about a slice file that does not parse, naming it, since that slice is bought again '
+            + '(ledger A11)',
+          fn: async () => {
+            /**
+             Cache this lane filled under the running pipeline: one slice torn
+             mid-write, one that parses but is no envelope this loader wrote.
+             */
+            const dir = await cacheHolding({ names: ['mittens.b.json',], },);
+            await writeFile(
+              join(
+                dir,
+                MITTENS.marker,
+              ),
+              'nap-3\n',
+              'utf8',
+            );
+            await writeFile(
+              join(
+                dir,
+                'mittens.a.json',
+              ),
+              '{"key":"a","val',
+              'utf8',
+            );
 
-        /**
-         Keys the open resumed.
-         */
-        const resumed = [
-          ...(await openNamespacedCache({
-            dir,
-            generation: 'nap-3',
-            namespace: MITTENS,
-            isValue: anyRecord,
-          },)).resumed.keys(),
-        ];
-        await rm(
-          dir,
-          {
-            recursive: true,
-            force: true,
+            /**
+             Warnings the open printed.
+             */
+            const lines: string[] = [];
+            {
+              using capture = warningsInto({ lines, },);
+              /**
+               Cache as the lane opens it.
+               */
+              const cache = await openNamespacedCache({
+                dir,
+                generation: 'nap-3',
+                namespace: MITTENS,
+                isValue: anyRecord,
+              },);
+              expect(cache.resumed.size,).toBe(0,);
+            }
+            await rm(
+              dir,
+              {
+                recursive: true,
+                force: true,
+              },
+            );
+
+            // Positive control: the refused envelope was already announced, so the
+            // capture sees this loader's warnings.
+            expect(lines.filter(function namesB(line,): boolean {
+              return line.includes('mittens.b.json',);
+            },).length,).toBe(1,);
+
+            /**
+             Warnings naming the torn slice.
+             */
+            const torn = lines.filter(function namesA(line,): boolean {
+              return line.includes('mittens.a.json',);
+            },);
+            expect(torn.length,).toBe(1,);
+            expect(torn[0],).toContain('recomputed',);
           },
-        );
+        },),
 
-        expect(resumed,).toStrictEqual(['a',],);
-      },
+        it({
+          name: 'RESUMES PAST A DIRECTORY NAMED LIKE ONE OF ITS SLICES, which no lane wrote, rather than stopping '
+            + 'the entry on EISDIR (ledger B65)',
+          fn: async () => {
+            /**
+             Cache this lane filled under the running pipeline: one slice the
+             loader wrote, beside a directory named like another.
+             */
+            const dir = await cacheHolding({ names: [], },);
+            await writeFile(
+              join(
+                dir,
+                MITTENS.marker,
+              ),
+              'nap-3\n',
+              'utf8',
+            );
+            await writeFile(
+              join(
+                dir,
+                'mittens.a.json',
+              ),
+              JSON.stringify({
+                cacheKey: 'a',
+                record: { purred: true, },
+              },),
+              'utf8',
+            );
+            await mkdir(join(
+              dir,
+              'mittens.b.json',
+            ),);
+
+            /**
+             Keys the open resumed.
+             */
+            const resumed = [
+              ...(await openNamespacedCache({
+                dir,
+                generation: 'nap-3',
+                namespace: MITTENS,
+                isValue: anyRecord,
+              },)).resumed.keys(),
+            ];
+            await rm(
+              dir,
+              {
+                recursive: true,
+                force: true,
+              },
+            );
+
+            expect(resumed,).toStrictEqual(['a',],);
+          },
+        },),
+      ],
     },),
   ],
 },);

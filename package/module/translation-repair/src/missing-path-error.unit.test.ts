@@ -21,6 +21,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -123,140 +124,149 @@ async function realFailures(): Promise<{
 }
 
 await describe({
-  name: isMissingPathError.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS a real ENOENT as the missing-path answer, and a real ENOTDIR, a plain object carrying '
-        + 'the code, and a thrown string as not it',
-      fn: async () => {
-        await using failures = await realFailures();
-        // The fixture's failures are the ones it names, so the readings that
-        // follow are about those codes and not about some other failure.
-        expect(failures.absent,).toHaveProperty(
-          'code',
-          'ENOENT',
-        );
-        expect(failures.throughFile,).toHaveProperty(
-          'code',
-          'ENOTDIR',
-        );
+    describe({
+      name: isMissingPathError.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS a real ENOENT as the missing-path answer, and a real ENOTDIR, a plain object carrying '
+            + 'the code, and a thrown string as not it',
+          fn: async () => {
+            await using failures = await realFailures();
+            // The fixture's failures are the ones it names, so the readings that
+            // follow are about those codes and not about some other failure.
+            expect(failures.absent,).toHaveProperty(
+              'code',
+              'ENOENT',
+            );
+            expect(failures.throughFile,).toHaveProperty(
+              'code',
+              'ENOTDIR',
+            );
 
-        expect({
-          absent: isMissingPathError({ error: failures.absent, },),
-          throughFile: isMissingPathError({ error: failures.throughFile, },),
-          plainObject: isMissingPathError({ error: { code: 'ENOENT', }, },),
-          thrownString: isMissingPathError({ error: 'ENOENT', },),
-        },).toEqual({
-          absent: true,
-          throughFile: false,
-          plainObject: false,
-          thrownString: false,
-        },);
-      },
+            expect({
+              absent: isMissingPathError({ error: failures.absent, },),
+              throughFile: isMissingPathError({ error: failures.throughFile, },),
+              plainObject: isMissingPathError({ error: { code: 'ENOENT', }, },),
+              thrownString: isMissingPathError({ error: 'ENOENT', },),
+            },).toEqual({
+              absent: true,
+              throughFile: false,
+              plainObject: false,
+              thrownString: false,
+            },);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: rethrowUnlessMissingPath.name,
-  children: [
-    it({
-      name: 'RETURNS for the missing-path answer, so the catch goes on to its "not there" reading',
-      fn: async () => {
-        await using failures = await realFailures();
+    describe({
+      name: rethrowUnlessMissingPath.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RETURNS for the missing-path answer, so the catch goes on to its "not there" reading',
+          fn: async () => {
+            await using failures = await realFailures();
 
-        expect(rethrowUnlessMissingPath({ error: failures.absent, },),).toBeUndefined();
-      },
+            expect(rethrowUnlessMissingPath({ error: failures.absent, },),).toBeUndefined();
+          },
+        },),
+        it({
+          name: 'RETHROWS every other failure as it came, the same value and not a wrapper, so the caller\'s '
+            + 'caller sees the real fault',
+          fn: async () => {
+            await using failures = await realFailures();
+            /**
+             A plain object carrying the code, which no Node call throws.
+             */
+            const lookalike = { code: 'ENOENT', };
+
+            expect({
+              throughFile: await caughtFrom({
+                body: async () => {
+                  rethrowUnlessMissingPath({ error: failures.throughFile, },);
+                },
+              },) === failures.throughFile,
+              lookalike: await caughtFrom({
+                body: async () => {
+                  rethrowUnlessMissingPath({ error: lookalike, },);
+                },
+              },) === lookalike,
+            },).toEqual({
+              throughFile: true,
+              lookalike: true,
+            },);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'RETHROWS every other failure as it came, the same value and not a wrapper, so the caller\'s '
-        + 'caller sees the real fault',
-      fn: async () => {
-        await using failures = await realFailures();
-        /**
-         A plain object carrying the code, which no Node call throws.
-         */
-        const lookalike = { code: 'ENOENT', };
 
-        expect({
-          throughFile: await caughtFrom({
-            body: async () => {
-              rethrowUnlessMissingPath({ error: failures.throughFile, },);
-            },
-          },) === failures.throughFile,
-          lookalike: await caughtFrom({
-            body: async () => {
-              rethrowUnlessMissingPath({ error: lookalike, },);
-            },
-          },) === lookalike,
-        },).toEqual({
-          throughFile: true,
-          lookalike: true,
-        },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: readTextOrEmptyIfMissing.name,
-  children: [
-    it({
-      name: 'READS a file\'s text, EMPTY where nothing stands at the path, and RAISES a read that failed for '
-        + 'any other reason rather than calling it empty',
-      fn: async () => {
-        /**
-         Directory this case owns.
-         */
-        const dir = await mkdtemp(join(
-          tmpdir(),
-          'read-text-if-present-',
-        ),);
-        await using owned = {
-          [Symbol.asyncDispose]: async () => {
-            await rm(
-              dir,
-              {
-                recursive: true,
-                force: true,
+    describe({
+      name: readTextOrEmptyIfMissing.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS a file\'s text, EMPTY where nothing stands at the path, and RAISES a read that failed for '
+            + 'any other reason rather than calling it empty',
+          fn: async () => {
+            /**
+             Directory this case owns.
+             */
+            const dir = await mkdtemp(join(
+              tmpdir(),
+              'read-text-if-present-',
+            ),);
+            await using owned = {
+              [Symbol.asyncDispose]: async () => {
+                await rm(
+                  dir,
+                  {
+                    recursive: true,
+                    force: true,
+                  },
+                );
               },
+            };
+            /**
+             A file with a line in it.
+             */
+            const diary = join(
+              dir,
+              'diary.txt',
+            );
+            await writeFile(
+              diary,
+              'The cat napped.\n',
+            );
+
+            expect({
+              present: await readTextOrEmptyIfMissing({ path: diary, },),
+              absent: await readTextOrEmptyIfMissing({
+                path: join(
+                  dir,
+                  'no-diary.txt',
+                ),
+              },),
+            },).toEqual({
+              present: 'The cat napped.\n',
+              absent: '',
+            },);
+            await expect(readTextOrEmptyIfMissing({
+              path: join(
+                diary,
+                'page.txt',
+              ),
+            },),).rejects.toHaveProperty(
+              'code',
+              'ENOTDIR',
             );
           },
-        };
-        /**
-         A file with a line in it.
-         */
-        const diary = join(
-          dir,
-          'diary.txt',
-        );
-        await writeFile(
-          diary,
-          'The cat napped.\n',
-        );
-
-        expect({
-          present: await readTextOrEmptyIfMissing({ path: diary, },),
-          absent: await readTextOrEmptyIfMissing({
-            path: join(
-              dir,
-              'no-diary.txt',
-            ),
-          },),
-        },).toEqual({
-          present: 'The cat napped.\n',
-          absent: '',
-        },);
-        await expect(readTextOrEmptyIfMissing({
-          path: join(
-            diary,
-            'page.txt',
-          ),
-        },),).rejects.toHaveProperty(
-          'code',
-          'ENOTDIR',
-        );
-      },
+        },),
+      ],
     },),
   ],
 },);

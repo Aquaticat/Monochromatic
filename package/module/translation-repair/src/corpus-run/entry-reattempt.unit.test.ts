@@ -24,6 +24,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -42,197 +43,205 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 await describe({
-  name: readAttemptOutcome.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'REPORTS settled when an artifact was written, whatever the cache '
-        + 'did. A settled entry discards its slice cache on the way out, so '
-        + 'this is the case where the count falls furthest and means the most',
-      fn: async () => {
-        expect(readAttemptOutcome({
-          outcome: { kind: 'settled', },
-          cachedBefore: 64,
-          cachedAfter: 0,
-        },),).toEqual({ kind: 'settled', },);
-      },
+    describe({
+      name: readAttemptOutcome.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REPORTS settled when an artifact was written, whatever the cache '
+            + 'did. A settled entry discards its slice cache on the way out, so '
+            + 'this is the case where the count falls furthest and means the most',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'settled', },
+              cachedBefore: 64,
+              cachedAfter: 0,
+            },),).toEqual({ kind: 'settled', },);
+          },
+        },),
+
+        it({
+          name: 'EARNS another attempt when the entry cached slices it did not '
+            + 'have, since the next attempt then starts further along than this '
+            + 'one did and the cap is the only thing that stopped it',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'resumable-failure', },
+              cachedBefore: 45,
+              cachedAfter: 64,
+            },),).toEqual({
+              kind: 'earned',
+              gained: 19,
+            },);
+          },
+        },),
+
+        it({
+          name: 'STOPS WHOLE-ENTRY RETRY when stage-local work remains despite cache growth',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'stopped', },
+              cachedBefore: 0,
+              cachedAfter: 13,
+            },),).toEqual({ kind: 'stopped', },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES another attempt when the count did not move, which is the '
+            + 'stop condition: no progress guarantee holds, so an entry that '
+            + 'bought nothing would repeat itself until the soft budget was gone',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'resumable-failure', },
+              cachedBefore: 45,
+              cachedAfter: 45,
+            },),).toEqual({
+              kind: 'stalled',
+              cached: 45,
+            },);
+          },
+        },),
+
+        it({
+          name: 'EARNS another attempt when the count FELL but slices remain, '
+            + 'because a fall means the lane discarded an older build\'s cache and '
+            + 'every slice left was bought by this attempt. Reading the plain '
+            + 'difference would drop the entry exactly when it started paying for '
+            + 'a fresh generation',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'resumable-failure', },
+              cachedBefore: 65,
+              cachedAfter: 10,
+            },),).toEqual({
+              kind: 'earned',
+              gained: 10,
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES another attempt when a reset left nothing at all, so an '
+            + 'entry that cannot cache even one slice under this build stops '
+            + 'rather than repeating a failure the cache cannot shorten',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'resumable-failure', },
+              cachedBefore: 65,
+              cachedAfter: 0,
+            },),).toEqual({
+              kind: 'stalled',
+              cached: 0,
+            },);
+          },
+        },),
+
+        it({
+          name: 'EARNS the first attempt on an entry with no cache at all, which '
+            + 'is every large entry the first time it is seen',
+          fn: async () => {
+            expect(readAttemptOutcome({
+              outcome: { kind: 'resumable-failure', },
+              cachedBefore: 0,
+              cachedAfter: 45,
+            },),).toEqual({
+              kind: 'earned',
+              gained: 45,
+            },);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'EARNS another attempt when the entry cached slices it did not '
-        + 'have, since the next attempt then starts further along than this '
-        + 'one did and the cap is the only thing that stopped it',
-      fn: async () => {
-        expect(readAttemptOutcome({
-          outcome: { kind: 'resumable-failure', },
-          cachedBefore: 45,
-          cachedAfter: 64,
-        },),).toEqual({
-          kind: 'earned',
-          gained: 19,
-        },);
-      },
-    },),
+    describe({
+      name: countCachedSlices.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS slices of every lane and no generation marker, so progress '
+            + 'in one lane counts while the `.txt` markers beside them do not',
+          fn: async () => {
+            /**
+             Throwaway cache directory standing in for one entry's.
+             */
+            const dir = await mkdtemp(join(
+              tmpdir(),
+              'whiskers-cache-',
+            ),);
 
-    it({
-      name: 'STOPS WHOLE-ENTRY RETRY when stage-local work remains despite cache growth',
-      fn: async () => {
-        expect(readAttemptOutcome({
-          outcome: { kind: 'stopped', },
-          cachedBefore: 0,
-          cachedAfter: 13,
-        },),).toEqual({ kind: 'stopped', },);
-      },
-    },),
+            await Promise.all([
+              'generation.txt',
+              'translate-generation.txt',
+              'contest-generation.txt',
+              '0-1-tabby.json',
+              'translate.0-1-tabby.json',
+              'contest.0-1-tabby.json',
+            ].map(async function writeOne(name,): Promise<void> {
+              await writeFile(
+                join(
+                  dir,
+                  name,
+                ),
+                '{}\n',
+              );
+            },),);
 
-    it({
-      name: 'REFUSES another attempt when the count did not move, which is the '
-        + 'stop condition: no progress guarantee holds, so an entry that '
-        + 'bought nothing would repeat itself until the soft budget was gone',
-      fn: async () => {
-        expect(readAttemptOutcome({
-          outcome: { kind: 'resumable-failure', },
-          cachedBefore: 45,
-          cachedAfter: 45,
-        },),).toEqual({
-          kind: 'stalled',
-          cached: 45,
-        },);
-      },
-    },),
+            expect(await countCachedSlices({ dir, },),).toBe(3,);
+          },
+        },),
 
-    it({
-      name: 'EARNS another attempt when the count FELL but slices remain, '
-        + 'because a fall means the lane discarded an older build\'s cache and '
-        + 'every slice left was bought by this attempt. Reading the plain '
-        + 'difference would drop the entry exactly when it started paying for '
-        + 'a fresh generation',
-      fn: async () => {
-        expect(readAttemptOutcome({
-          outcome: { kind: 'resumable-failure', },
-          cachedBefore: 65,
-          cachedAfter: 10,
-        },),).toEqual({
-          kind: 'earned',
-          gained: 10,
-        },);
-      },
-    },),
+        it({
+          name: 'REPORTS zero for a directory that does not exist, which is every '
+            + 'entry before its first slice is bought',
+          fn: async () => {
+            expect(await countCachedSlices({
+              dir: join(
+                tmpdir(),
+                'whiskers-cache-that-was-never-created',
+              ),
+            },),).toBe(0,);
+          },
+        },),
 
-    it({
-      name: 'REFUSES another attempt when a reset left nothing at all, so an '
-        + 'entry that cannot cache even one slice under this build stops '
-        + 'rather than repeating a failure the cache cannot shorten',
-      fn: async () => {
-        expect(readAttemptOutcome({
-          outcome: { kind: 'resumable-failure', },
-          cachedBefore: 65,
-          cachedAfter: 0,
-        },),).toEqual({
-          kind: 'stalled',
-          cached: 0,
-        },);
-      },
-    },),
+        it({
+          name: 'COUNTS ONLY FILES: a directory named like a slice was bought by no attempt, and a slice still '
+            + 'being written under its `.partial` name is not yet one (ledger B65)',
+          fn: async () => {
+            /**
+             Throwaway cache directory standing in for one entry's.
+             */
+            const dir = await mkdtemp(join(
+              tmpdir(),
+              'whiskers-cache-',
+            ),);
 
-    it({
-      name: 'EARNS the first attempt on an entry with no cache at all, which '
-        + 'is every large entry the first time it is seen',
-      fn: async () => {
-        expect(readAttemptOutcome({
-          outcome: { kind: 'resumable-failure', },
-          cachedBefore: 0,
-          cachedAfter: 45,
-        },),).toEqual({
-          kind: 'earned',
-          gained: 45,
-        },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: countCachedSlices.name,
-  children: [
-    it({
-      name: 'COUNTS slices of every lane and no generation marker, so progress '
-        + 'in one lane counts while the `.txt` markers beside them do not',
-      fn: async () => {
-        /**
-         Throwaway cache directory standing in for one entry's.
-         */
-        const dir = await mkdtemp(join(
-          tmpdir(),
-          'whiskers-cache-',
-        ),);
-
-        await Promise.all([
-          'generation.txt',
-          'translate-generation.txt',
-          'contest-generation.txt',
-          '0-1-tabby.json',
-          'translate.0-1-tabby.json',
-          'contest.0-1-tabby.json',
-        ].map(async function writeOne(name,): Promise<void> {
-          await writeFile(
-            join(
+            await writeFile(
+              join(
+                dir,
+                '0-1-tabby.json',
+              ),
+              '{}\n',
+            );
+            await writeFile(
+              join(
+                dir,
+                'translate.0-2-tabby.json.4242.partial',
+              ),
+              '{',
+            );
+            await mkdir(join(
               dir,
-              name,
-            ),
-            '{}\n',
-          );
-        },),);
+              'contest.0-3-tabby.json',
+            ),);
 
-        expect(await countCachedSlices({ dir, },),).toBe(3,);
-      },
-    },),
-
-    it({
-      name: 'REPORTS zero for a directory that does not exist, which is every '
-        + 'entry before its first slice is bought',
-      fn: async () => {
-        expect(await countCachedSlices({
-          dir: join(
-            tmpdir(),
-            'whiskers-cache-that-was-never-created',
-          ),
-        },),).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'COUNTS ONLY FILES: a directory named like a slice was bought by no attempt, and a slice still '
-        + 'being written under its `.partial` name is not yet one (ledger B65)',
-      fn: async () => {
-        /**
-         Throwaway cache directory standing in for one entry's.
-         */
-        const dir = await mkdtemp(join(
-          tmpdir(),
-          'whiskers-cache-',
-        ),);
-
-        await writeFile(
-          join(
-            dir,
-            '0-1-tabby.json',
-          ),
-          '{}\n',
-        );
-        await writeFile(
-          join(
-            dir,
-            'translate.0-2-tabby.json.4242.partial',
-          ),
-          '{',
-        );
-        await mkdir(join(
-          dir,
-          'contest.0-3-tabby.json',
-        ),);
-
-        expect(await countCachedSlices({ dir, },),).toBe(1,);
-      },
+            expect(await countCachedSlices({ dir, },),).toBe(1,);
+          },
+        },),
+      ],
     },),
   ],
 },);

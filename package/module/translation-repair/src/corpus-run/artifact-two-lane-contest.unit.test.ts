@@ -12,6 +12,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -162,140 +163,148 @@ function catRow(
 }
 
 await describe({
-  name: describeContestSlice.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name:
-        'RECORDS the lane enough voices backed, naming it rather than leaving a reader to count the '
-        + 'ballots back up',
-      fn: async () => {
-        expect(describeContestSlice({
-          sliceIndex: 3,
-          outcome: catOutcome({
-            ballots: [
-              FOR_REPAIR,
-              FOR_REPAIR,
-              FOR_TRANSLATE,
-            ],
-            choice: 'repair',
-          },),
-        },),).toEqual({
-          sliceIndex: 3,
-          verdict: {
-            kind: 'lane-won',
-            lane: 'repair',
+    describe({
+      name: describeContestSlice.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'RECORDS the lane enough voices backed, naming it rather than leaving a reader to count the '
+            + 'ballots back up',
+          fn: async () => {
+            expect(describeContestSlice({
+              sliceIndex: 3,
+              outcome: catOutcome({
+                ballots: [
+                  FOR_REPAIR,
+                  FOR_REPAIR,
+                  FOR_TRANSLATE,
+                ],
+                choice: 'repair',
+              },),
+            },),).toEqual({
+              sliceIndex: 3,
+              verdict: {
+                kind: 'lane-won',
+                lane: 'repair',
+              },
+              ballots: [
+                FOR_REPAIR,
+                FOR_REPAIR,
+                FOR_TRANSLATE,
+              ],
+              usable: 3,
+            },);
           },
-          ballots: [
-            FOR_REPAIR,
-            FOR_REPAIR,
-            FOR_TRANSLATE,
-          ],
-          usable: 3,
-        },);
-      },
-    },),
-    it({
-      name:
-        'SEPARATES a roster that heard enough voices and backed neither lane from one that went '
-        + 'unheard, since the stage answers `neither` for both and a reader counting refusals would '
-        + 'otherwise be counting silence',
-      fn: async () => {
-        /**
-         Enough voices, none of them carrying a lane.
-         */
-        const settled = describeContestSlice({
-          sliceIndex: 0,
-          outcome: catOutcome({
-            ballots: [
-              FOR_NEITHER,
-              FOR_NEITHER,
-            ],
-            choice: 'neither',
-          },),
-        },);
-
-        /**
-         One voice, which cannot settle anything under the same rule.
-         */
-        const unheard = describeContestSlice({
-          sliceIndex: 1,
-          outcome: catOutcome({
-            ballots: [FOR_REPAIR,],
-            choice: 'neither',
-          },),
-        },);
-        expect(settled.verdict,).toEqual({ kind: 'settled-neither', },);
-        expect(unheard.verdict,).toEqual({ kind: 'quorum-not-met', },);
-      },
-    },),
-    it({
-      name:
-        'KEEPS THE BALLOTS on a verdict that ships nothing, which is exactly where a reader asking '
-        + 'why is looking',
-      fn: async () => {
-        expect(describeContestSlice({
-          sliceIndex: 0,
-          outcome: catOutcome({
-            ballots: [
-              FOR_NEITHER,
-              FOR_NEITHER,
-            ],
-            choice: 'neither',
-          },),
-        },).ballots,).toEqual([
-          FOR_NEITHER,
-          FOR_NEITHER,
-        ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: contestEligibleIndexes.name,
-  children: [
-    it({
-      name:
-        'NAMES ONLY the slices whose two lane wordings differ, since a contest between two identical '
-        + 'candidates has nothing to ask and no answer worth buying',
-      fn: async () => {
-        expect(contestEligibleIndexes({
-          comparison: [
-            catRow({
+        },),
+        it({
+          name:
+            'SEPARATES a roster that heard enough voices and backed neither lane from one that went '
+            + 'unheard, since the stage answers `neither` for both and a reader counting refusals would '
+            + 'otherwise be counting silence',
+          fn: async () => {
+            /**
+             Enough voices, none of them carrying a lane.
+             */
+            const settled = describeContestSlice({
               sliceIndex: 0,
-              repairText: REPAIR_NAP,
-              translateText: TRANSLATE_NAP,
-            },),
-            catRow({
+              outcome: catOutcome({
+                ballots: [
+                  FOR_NEITHER,
+                  FOR_NEITHER,
+                ],
+                choice: 'neither',
+              },),
+            },);
+
+            /**
+             One voice, which cannot settle anything under the same rule.
+             */
+            const unheard = describeContestSlice({
               sliceIndex: 1,
-              repairText: ARCHIVE_NAP,
-              translateText: ARCHIVE_NAP,
-            },),
-            catRow({
-              sliceIndex: 2,
-              repairText: REPAIR_NAP,
-              translateText: ARCHIVE_NAP,
-            },),
-          ],
-        },),).toEqual([
-          0,
-          2,
-        ],);
-      },
-    },),
-    it({
-      name: 'NAMES NOTHING when the two documents agree everywhere, rather than naming every slice',
-      fn: async () => {
-        expect(contestEligibleIndexes({
-          comparison: [
-            catRow({
+              outcome: catOutcome({
+                ballots: [FOR_REPAIR,],
+                choice: 'neither',
+              },),
+            },);
+            expect(settled.verdict,).toEqual({ kind: 'settled-neither', },);
+            expect(unheard.verdict,).toEqual({ kind: 'quorum-not-met', },);
+          },
+        },),
+        it({
+          name:
+            'KEEPS THE BALLOTS on a verdict that ships nothing, which is exactly where a reader asking '
+            + 'why is looking',
+          fn: async () => {
+            expect(describeContestSlice({
               sliceIndex: 0,
-              repairText: ARCHIVE_NAP,
-              translateText: ARCHIVE_NAP,
-            },),
-          ],
-        },),).toEqual([],);
-      },
+              outcome: catOutcome({
+                ballots: [
+                  FOR_NEITHER,
+                  FOR_NEITHER,
+                ],
+                choice: 'neither',
+              },),
+            },).ballots,).toEqual([
+              FOR_NEITHER,
+              FOR_NEITHER,
+            ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: contestEligibleIndexes.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'NAMES ONLY the slices whose two lane wordings differ, since a contest between two identical '
+            + 'candidates has nothing to ask and no answer worth buying',
+          fn: async () => {
+            expect(contestEligibleIndexes({
+              comparison: [
+                catRow({
+                  sliceIndex: 0,
+                  repairText: REPAIR_NAP,
+                  translateText: TRANSLATE_NAP,
+                },),
+                catRow({
+                  sliceIndex: 1,
+                  repairText: ARCHIVE_NAP,
+                  translateText: ARCHIVE_NAP,
+                },),
+                catRow({
+                  sliceIndex: 2,
+                  repairText: REPAIR_NAP,
+                  translateText: ARCHIVE_NAP,
+                },),
+              ],
+            },),).toEqual([
+              0,
+              2,
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES NOTHING when the two documents agree everywhere, rather than naming every slice',
+          fn: async () => {
+            expect(contestEligibleIndexes({
+              comparison: [
+                catRow({
+                  sliceIndex: 0,
+                  repairText: ARCHIVE_NAP,
+                  translateText: ARCHIVE_NAP,
+                },),
+              ],
+            },),).toEqual([],);
+          },
+        },),
+      ],
     },),
   ],
 },);

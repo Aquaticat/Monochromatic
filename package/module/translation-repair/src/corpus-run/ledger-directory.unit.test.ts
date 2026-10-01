@@ -31,6 +31,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -119,237 +120,245 @@ async function ledgerOf(
 }
 
 await describe({
-  name: readLedgerDirectory.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS an absent directory as empty rather than raising, since a run may have written none',
-      fn: async () => {
-        /**
-         Reading of a directory that was never created.
-         */
-        const reading = await readLedgerDirectory({
-          dir: join(
-            await mkdtemp(join(
-              tmpdir(),
-              'ledger-directory-',
-            ),),
-            'ledger',
-          ),
-        },);
-
-        expect(reading.rounds.length,).toBe(0,);
-        expect(reading.refused.length,).toBe(0,);
-      },
-    },),
-    it({
-      name: 'READS a clean directory with nothing refused',
-      fn: async () => {
-        /**
-         Reading of two well-formed contests.
-         */
-        const reading = await readLedgerDirectory({
-          dir: await ledgerOf({
-            files: {
-              '000001.json': ONE_ROUND,
-              '000002.json': ONE_ROUND,
-            },
-          },),
-        },);
-
-        expect(reading.rounds.length,).toBe(2,);
-        expect(reading.refused.length,).toBe(0,);
-      },
-    },),
-    it({
-      name: 'READS EVERY FILE past a refusal, so one bad file costs only itself',
-      fn: async () => {
-        /**
-         Reading of a good file sitting between two unreadable ones, so a
-         reader that stopped at the first refusal would report zero contests
-         and a reader that stopped at the last would report one refusal.
-         */
-        const reading = await readLedgerDirectory({
-          dir: await ledgerOf({
-            files: {
-              '000001.json': '{"task":"whiskerfield-1",',
-              '000002.json': ONE_ROUND,
-              '000003.json': 'Bixbyfluff dozed here and wrote no JSON',
-            },
-          },),
-        },);
-
-        expect(reading.rounds.length,).toBe(1,);
-        expect(reading.refused.map(function named(refusal,): string {
-          return refusal.file;
-        },),).toEqual([
-          '000001.json',
-          '000003.json',
-        ],);
-      },
-    },),
-    it({
-      name: 'REFUSES well-formed JSON that is not a contest, naming the field rather than the value',
-      fn: async () => {
-        /**
-         Reading of a file that parses but holds no contest.
-         */
-        const reading = await readLedgerDirectory({
-          dir: await ledgerOf({
-            files: { '000001.json': '{"cat":"Bixbyfluff"}', },
-          },),
-        },);
-
-        expect(reading.rounds.length,).toBe(0,);
-        expect(reading.refused.length,).toBe(1,);
-        expect((reading.refused[0]?.says ?? '').includes('task',),).toBe(true,);
-        expect((reading.refused[0]?.says ?? '').includes('Bixbyfluff',),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'KEEPS contest order, which is the order the recorder stamped',
-      fn: async () => {
-        /**
-         Reading whose files were written out of order on disk.
-         */
-        const reading = await readLedgerDirectory({
-          dir: await ledgerOf({
-            files: {
-              '000003.json': ONE_ROUND.replace(
-                'whiskerfield-0',
-                'whiskerfield-3',
+    describe({
+      name: readLedgerDirectory.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS an absent directory as empty rather than raising, since a run may have written none',
+          fn: async () => {
+            /**
+             Reading of a directory that was never created.
+             */
+            const reading = await readLedgerDirectory({
+              dir: join(
+                await mkdtemp(join(
+                  tmpdir(),
+                  'ledger-directory-',
+                ),),
+                'ledger',
               ),
-              '000001.json': ONE_ROUND.replace(
-                'whiskerfield-0',
-                'whiskerfield-1',
+            },);
+
+            expect(reading.rounds.length,).toBe(0,);
+            expect(reading.refused.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'READS a clean directory with nothing refused',
+          fn: async () => {
+            /**
+             Reading of two well-formed contests.
+             */
+            const reading = await readLedgerDirectory({
+              dir: await ledgerOf({
+                files: {
+                  '000001.json': ONE_ROUND,
+                  '000002.json': ONE_ROUND,
+                },
+              },),
+            },);
+
+            expect(reading.rounds.length,).toBe(2,);
+            expect(reading.refused.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'READS EVERY FILE past a refusal, so one bad file costs only itself',
+          fn: async () => {
+            /**
+             Reading of a good file sitting between two unreadable ones, so a
+             reader that stopped at the first refusal would report zero contests
+             and a reader that stopped at the last would report one refusal.
+             */
+            const reading = await readLedgerDirectory({
+              dir: await ledgerOf({
+                files: {
+                  '000001.json': '{"task":"whiskerfield-1",',
+                  '000002.json': ONE_ROUND,
+                  '000003.json': 'Bixbyfluff dozed here and wrote no JSON',
+                },
+              },),
+            },);
+
+            expect(reading.rounds.length,).toBe(1,);
+            expect(reading.refused.map(function named(refusal,): string {
+              return refusal.file;
+            },),).toEqual([
+              '000001.json',
+              '000003.json',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES well-formed JSON that is not a contest, naming the field rather than the value',
+          fn: async () => {
+            /**
+             Reading of a file that parses but holds no contest.
+             */
+            const reading = await readLedgerDirectory({
+              dir: await ledgerOf({
+                files: { '000001.json': '{"cat":"Bixbyfluff"}', },
+              },),
+            },);
+
+            expect(reading.rounds.length,).toBe(0,);
+            expect(reading.refused.length,).toBe(1,);
+            expect((reading.refused[0]?.says ?? '').includes('task',),).toBe(true,);
+            expect((reading.refused[0]?.says ?? '').includes('Bixbyfluff',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'KEEPS contest order, which is the order the recorder stamped',
+          fn: async () => {
+            /**
+             Reading whose files were written out of order on disk.
+             */
+            const reading = await readLedgerDirectory({
+              dir: await ledgerOf({
+                files: {
+                  '000003.json': ONE_ROUND.replace(
+                    'whiskerfield-0',
+                    'whiskerfield-3',
+                  ),
+                  '000001.json': ONE_ROUND.replace(
+                    'whiskerfield-0',
+                    'whiskerfield-1',
+                  ),
+                  '000002.json': ONE_ROUND.replace(
+                    'whiskerfield-0',
+                    'whiskerfield-2',
+                  ),
+                },
+              },),
+            },);
+
+            expect(reading.rounds.map(function task(round,): string {
+              return round.task;
+            },),).toEqual([
+              'whiskerfield-1',
+              'whiskerfield-2',
+              'whiskerfield-3',
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES OUT A CONTEST STILL BEING WRITTEN: the recorder writes each file under a `.partial` name and '
+            + 'renames it, so a partial file is a write in flight or cut short, never a contest (ledger B65)',
+          fn: async () => {
+            /**
+             Reading of one contest beside two partial files, one whole and one
+             cut short, as a report run mid-write or after a crash finds them.
+             */
+            const reading = await readLedgerDirectory({
+              dir: await ledgerOf({
+                files: {
+                  '000001.json': ONE_ROUND,
+                  '000002.json.4242.partial': ONE_ROUND,
+                  '000003.json.4242.partial': '{"task":"whiskerfield-3",',
+                },
+              },),
+            },);
+
+            expect(reading.rounds.length,).toBe(1,);
+            expect(reading.refused.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'LEAVES OUT AN ENTRY THAT IS NOT A FILE: a directory named like a contest is no contest the run '
+            + 'recorded, and a symlink to one would count that contest twice (ledger B65)',
+          fn: async () => {
+            /**
+             Ledger holding one contest the recorder wrote.
+             */
+            const dir = await ledgerOf({ files: { '000001.json': ONE_ROUND, }, },);
+            await mkdir(join(
+              dir,
+              '000002.json',
+            ),);
+            await symlink(
+              '000001.json',
+              join(
+                dir,
+                '000003.json',
               ),
-              '000002.json': ONE_ROUND.replace(
-                'whiskerfield-0',
-                'whiskerfield-2',
-              ),
-            },
-          },),
-        },);
+            );
 
-        expect(reading.rounds.map(function task(round,): string {
-          return round.task;
-        },),).toEqual([
-          'whiskerfield-1',
-          'whiskerfield-2',
-          'whiskerfield-3',
-        ],);
-      },
-    },),
-    it({
-      name: 'LEAVES OUT A CONTEST STILL BEING WRITTEN: the recorder writes each file under a `.partial` name and '
-        + 'renames it, so a partial file is a write in flight or cut short, never a contest (ledger B65)',
-      fn: async () => {
-        /**
-         Reading of one contest beside two partial files, one whole and one
-         cut short, as a report run mid-write or after a crash finds them.
-         */
-        const reading = await readLedgerDirectory({
-          dir: await ledgerOf({
-            files: {
-              '000001.json': ONE_ROUND,
-              '000002.json.4242.partial': ONE_ROUND,
-              '000003.json.4242.partial': '{"task":"whiskerfield-3",',
-            },
-          },),
-        },);
+            /**
+             What the reader makes of the three entries.
+             */
+            const reading = await readLedgerDirectory({ dir, },);
 
-        expect(reading.rounds.length,).toBe(1,);
-        expect(reading.refused.length,).toBe(0,);
-      },
+            expect(reading.rounds.length,).toBe(1,);
+            expect(reading.refused.length,).toBe(0,);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'LEAVES OUT AN ENTRY THAT IS NOT A FILE: a directory named like a contest is no contest the run '
-        + 'recorded, and a symlink to one would count that contest twice (ledger B65)',
-      fn: async () => {
-        /**
-         Ledger holding one contest the recorder wrote.
-         */
-        const dir = await ledgerOf({ files: { '000001.json': ONE_ROUND, }, },);
-        await mkdir(join(
-          dir,
-          '000002.json',
-        ),);
-        await symlink(
-          '000001.json',
-          join(
-            dir,
-            '000003.json',
-          ),
-        );
 
-        /**
-         What the reader makes of the three entries.
-         */
-        const reading = await readLedgerDirectory({ dir, },);
-
-        expect(reading.rounds.length,).toBe(1,);
-        expect(reading.refused.length,).toBe(0,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: refusalOf.name,
-  children: [
-    it({
-      name: 'FORWARDS a RunJsonUnreadableError message, which is built to name rather than quote',
-      fn: async () => {
-        expect(refusalOf({
-          error: new RunJsonUnreadableError({
-            file: '000001.json',
-            failure: 'SyntaxError',
-            at: 27,
-          },),
-          file: '000001.json',
-        },).says,).toBe('could not read 000001.json as JSON (SyntaxError at byte 27)',);
-      },
-    },),
-    it({
-      name: 'FORWARDS a LedgerShapeError message, which names a file and a field and no value',
-      fn: async () => {
-        expect(refusalOf({
-          error: new LedgerShapeError({
-            from: '000001.json',
-            field: 'ballots',
-          },),
-          file: '000001.json',
-        },).says,).toBe('ledger file 000001.json has no usable ballots',);
-      },
-    },),
-    it({
-      name: 'REFUSES to forward a foreign message, naming only the class',
-      fn: async () => {
-        /**
-         Wording a foreign error carries, which must not reach the report.
+    describe({
+      name: refusalOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FORWARDS a RunJsonUnreadableError message, which is built to name rather than quote',
+          fn: async () => {
+            expect(refusalOf({
+              error: new RunJsonUnreadableError({
+                file: '000001.json',
+                failure: 'SyntaxError',
+                at: 27,
+              },),
+              file: '000001.json',
+            },).says,).toBe('could not read 000001.json as JSON (SyntaxError at byte 27)',);
+          },
+        },),
+        it({
+          name: 'FORWARDS a LedgerShapeError message, which names a file and a field and no value',
+          fn: async () => {
+            expect(refusalOf({
+              error: new LedgerShapeError({
+                from: '000001.json',
+                field: 'ballots',
+              },),
+              file: '000001.json',
+            },).says,).toBe('ledger file 000001.json has no usable ballots',);
+          },
+        },),
+        it({
+          name: 'REFUSES to forward a foreign message, naming only the class',
+          fn: async () => {
+            /**
+             Wording a foreign error carries, which must not reach the report.
          
-         A CLASS FROM OUTSIDE THIS PACKAGE writes whatever it likes into its
-         message, and a run directory is full of text nobody here chose. The
-         "FORWARDS a RunJsonUnreadableError message" and "FORWARDS a
-         LedgerShapeError message" cases pass a message through BECAUSE those two classes
-         promise not to quote; this one proves the promise is what earns it.
-         */
-        const { says, } = refusalOf({
-          error: new RangeError('Bixbyfluff dozed by the radiator',),
-          file: '000001.json',
-        },);
+             A CLASS FROM OUTSIDE THIS PACKAGE writes whatever it likes into its
+             message, and a run directory is full of text nobody here chose. The
+             "FORWARDS a RunJsonUnreadableError message" and "FORWARDS a
+             LedgerShapeError message" cases pass a message through BECAUSE those two classes
+             promise not to quote; this one proves the promise is what earns it.
+             */
+            const { says, } = refusalOf({
+              error: new RangeError('Bixbyfluff dozed by the radiator',),
+              file: '000001.json',
+            },);
 
-        expect(says,).toBe('refused by RangeError',);
-        expect(says.includes('Bixbyfluff',),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'NAMES a thrown value that is not an Error at all',
-      fn: async () => {
-        expect(refusalOf({
-          error: 'Bixbyfluff',
-          file: '000001.json',
-        },).says,).toBe('refused by a thrown value that is not an Error',);
-      },
+            expect(says,).toBe('refused by RangeError',);
+            expect(says.includes('Bixbyfluff',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'NAMES a thrown value that is not an Error at all',
+          fn: async () => {
+            expect(refusalOf({
+              error: 'Bixbyfluff',
+              file: '000001.json',
+            },).says,).toBe('refused by a thrown value that is not an Error',);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -18,6 +18,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -209,70 +210,78 @@ function artifactWhoseLanesRemovedTheWording(): WouldShipSource {
 }
 
 await describe({
-  name: fixedPagePath.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name:
-        'NAMES THE CORPUS\'S OWN PATH for an entry, `people/<id>/page.en.md`, because the owner asked '
-        + 'for the corpus directory structure replicated rather than for a flat pile named by id: a '
-        + 'tree shaped this way can be diffed against the one it mirrors with nothing to translate first',
-      fn: async () => {
-        expect(fixedPagePath({
-          publishDir: '/tmp/run/fixed',
-          entryId: 'BookshopCat',
-        },),).toBe('/tmp/run/fixed/people/BookshopCat/page.en.md',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: shippableReplacements.name,
-  children: [
-    it({
-      name:
-        'NAMES AN UNFILLED ANCHOR NOWHERE, because a row carrying blank text there claims a '
-        + 'rendering was written where none was, and `spliceSlices` refuses that outright. It used '
-        + 'to emit one, and the refusal landed in `publishFixedPage`, which runs before the '
-        + 'artifact is written: `XIEPT2` recorded the slice unfilled three and a half hours in and '
-        + 'then lost the whole entry at the last step, four hours and forty-eight minutes of calls '
-        + 'with no page and no artifact kept',
-      fn: async () => {
-        expect(shippableReplacements({ artifact: artifactWithAnUnfilledAnchor(), },),).toEqual([],);
-      },
-    },),
-
-    it({
-      name:
-        'STILL HANDS A SILENT CONTENT SPAN THE EMPTY STRING, which is what makes the anchor case '
-        + 'evidence about anchors rather than about silence. Both lanes removing wording the archive '
-        + 'holds is a decision, and a slice the assembler is never told about keeps whatever the '
-        + 'archive had, so dropping this row would republish that wording and undo them',
-      fn: async () => {
-        expect(shippableReplacements({ artifact: artifactWhoseLanesRemovedTheWording(), },),).toEqual([
-          {
-            sliceIndex: 1,
-            replacementText: '',
+    describe({
+      name: fixedPagePath.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'NAMES THE CORPUS\'S OWN PATH for an entry, `people/<id>/page.en.md`, because the owner asked '
+            + 'for the corpus directory structure replicated rather than for a flat pile named by id: a '
+            + 'tree shaped this way can be diffed against the one it mirrors with nothing to translate first',
+          fn: async () => {
+            expect(fixedPagePath({
+              publishDir: '/tmp/run/fixed',
+              entryId: 'BookshopCat',
+            },),).toBe('/tmp/run/fixed/people/BookshopCat/page.en.md',);
           },
-        ],);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name:
-        'CARRIES THE DECIDED WORDING for a slice that settled on some, which is what makes the "STILL HANDS A '
-        + 'SILENT CONTENT SPAN THE EMPTY STRING" case evidence: a builder that emitted the empty string for everything would satisfy it '
-        + 'just as well and would publish an empty page',
-      fn: async () => {
-        expect(shippableReplacements({
-          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-        },),).toEqual([
-          {
-            sliceIndex: 1,
-            replacementText: DECIDED_MIDDLE,
+    describe({
+      name: shippableReplacements.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'NAMES AN UNFILLED ANCHOR NOWHERE, because a row carrying blank text there claims a '
+            + 'rendering was written where none was, and `spliceSlices` refuses that outright. It used '
+            + 'to emit one, and the refusal landed in `publishFixedPage`, which runs before the '
+            + 'artifact is written: `XIEPT2` recorded the slice unfilled three and a half hours in and '
+            + 'then lost the whole entry at the last step, four hours and forty-eight minutes of calls '
+            + 'with no page and no artifact kept',
+          fn: async () => {
+            expect(shippableReplacements({ artifact: artifactWithAnUnfilledAnchor(), },),).toEqual([],);
           },
-        ],);
-      },
+        },),
+
+        it({
+          name:
+            'STILL HANDS A SILENT CONTENT SPAN THE EMPTY STRING, which is what makes the anchor case '
+            + 'evidence about anchors rather than about silence. Both lanes removing wording the archive '
+            + 'holds is a decision, and a slice the assembler is never told about keeps whatever the '
+            + 'archive had, so dropping this row would republish that wording and undo them',
+          fn: async () => {
+            expect(shippableReplacements({ artifact: artifactWhoseLanesRemovedTheWording(), },),).toEqual([
+              {
+                sliceIndex: 1,
+                replacementText: '',
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name:
+            'CARRIES THE DECIDED WORDING for a slice that settled on some, which is what makes the "STILL HANDS A '
+            + 'SILENT CONTENT SPAN THE EMPTY STRING" case evidence: a builder that emitted the empty string for everything would satisfy it '
+            + 'just as well and would publish an empty page',
+          fn: async () => {
+            expect(shippableReplacements({
+              artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+            },),).toEqual([
+              {
+                sliceIndex: 1,
+                replacementText: DECIDED_MIDDLE,
+              },
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -7,6 +7,7 @@
 
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -91,188 +92,6 @@ const CLUSTERS: readonly ClaimCluster[] = [
   },
 ];
 
-await describe({
-  name: buildAdjudicationMessages.name,
-  children: [
-    it({
-      name: 'requires a claim be checked against its own quoted evidence',
-      fn: async () => {
-        /** Panelist system instructions. */
-        const system = buildAdjudicationMessages({
-          sourceText: '猫猫在中午打盹。',
-          targetText: 'The cat naps at noon.',
-          clusters: CLUSTERS,
-        },)
-          .messages[0]
-          ?.content ?? '';
-        // A claim alleging an omission its own target quote contains survived
-        // adjudication in the graded sample.
-        expect(system,).toContain('check the claim against its OWN quoted evidence',);
-        expect(system,).toContain('already carries it',);
-        expect(system,).toContain('however confidently it is worded',);
-      },
-    },),
-    it({
-      name: 'ASKS FOR THE REASON BEFORE THE VOTE, in the instruction and in the reply shape it shows '
-        + '(owner, 2026-09-27, "Reason before vote"): a panelist writes out what decides the claim, '
-        + 'then votes, and the reason is stored with the ballot',
-      fn: async () => {
-        /** Panelist system instructions. */
-        const system = buildAdjudicationMessages({
-          sourceText: '猫猫在中午打盹。',
-          targetText: 'The cat naps at noon.',
-          clusters: CLUSTERS,
-        },)
-          .messages[0]
-          ?.content ?? '';
-        expect(system,).toContain('write its reason first, then cast exactly one vote',);
-        /**
-         Where the reply shape the sheet shows names each field.
-         */
-        const shape = system.slice(system.indexOf('{"verdicts"',),);
-        expect(shape.indexOf('"reason"',),).toBeGreaterThan(0,);
-        expect(shape.indexOf('"reason"',),).toBeLessThan(shape.indexOf('"vote"',),);
-      },
-    },),
-    it({
-      name: 'numbers claims globally and maps ids in prompt order',
-      fn: async () => {
-        /** Plan for the two-cluster sheet. */
-        const plan = buildAdjudicationMessages({
-          sourceText: '猫猫在中午打盹，然后追蝴蝶。',
-          targetText: 'The cat hunts at noon, then chases butterflies.',
-          clusters: CLUSTERS,
-        },);
-        expect(plan.claimIds,).toEqual([
-          'issue/whisker',
-          'issue/paw',
-          'issue/tail',
-        ],);
-        expect(plan.clusterIds,).toEqual(['cluster/nap', 'cluster/chase',],);
-        /** Sheet text shown to the panelist. */
-        const sheet = plan.messages[1]?.content ?? '';
-        expect(sheet,).toContain('CLAIM 1',);
-        expect(sheet,).toContain('CLAIM 2',);
-        expect(sheet,).toContain('CLAIM 3',);
-        expect(sheet,).toContain('GROUP 1',);
-        expect(sheet,).toContain('GROUP 2',);
-      },
-    },),
-
-    it({
-      name: 'asks the same-defect question only for multi-member groups',
-      fn: async () => {
-        /** Plan for the two-cluster sheet. */
-        const plan = buildAdjudicationMessages({
-          sourceText: '原文',
-          targetText: 'translation',
-          clusters: CLUSTERS,
-        },);
-        /** Sheet text shown to the panelist. */
-        const sheet = plan.messages[1]?.content ?? '';
-        expect(sheet,).toContain('GROUP 1 (claims below may describe one defect; answer sameDefect)',);
-        expect(sheet.includes('GROUP 2 (claims below',),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'presents quoted evidence and insertion points distinctly',
-      fn: async () => {
-        /** Plan for the two-cluster sheet. */
-        const plan = buildAdjudicationMessages({
-          sourceText: '原文',
-          targetText: 'translation',
-          clusters: CLUSTERS,
-        },);
-        /** Sheet text shown to the panelist. */
-        const sheet = plan.messages[1]?.content ?? '';
-        expect(sheet,).toContain('- evidence (TRANSLATION): hunts at noon',);
-        expect(sheet,).toContain('- evidence (TRANSLATION): insertion point, content claimed missing here',);
-        expect(sheet,).toContain('- evidence (ORIGINAL): 猫猫追蝴蝶。',);
-      },
-    },),
-
-    it({
-      name: 'CARRIES the cited references after the claims with their rule (class thirty-five), and no block at all when the original links nowhere',
-      fn: async () => {
-        /** Plan built with one reference line. */
-        const plan = buildAdjudicationMessages({
-          sourceText: '原文',
-          targetText: 'translation',
-          clusters: CLUSTERS,
-          referenceContext: '- reference 1 https://cats.example/post: the kitten has an older sister.',
-        },);
-        /** Sheet text shown to the panelist. */
-        const sheet = plan.messages[1]?.content ?? '';
-        expect(sheet.indexOf('CITED REFERENCES, EVIDENCE ONLY',),).toBeGreaterThan(sheet.indexOf('CLAIMS',),);
-        expect(sheet,).toContain('- reference 1 https://cats.example/post: the kitten has an older sister.',);
-        expect(sheet,).toContain('never report or support it as accuracy/addition',);
-        /** Sheet built without references. */
-        const bare = buildAdjudicationMessages({
-          sourceText: '原文',
-          targetText: 'translation',
-          clusters: CLUSTERS,
-        },).messages[1]?.content ?? '';
-        expect(bare,).not
-          .toContain('CITED REFERENCES',);
-      },
-    },),
-
-    it({
-      name: 'CARRIES THE DECLARED NAMES before the documents and the rule reading them (ledger S4), and no block '
-        + 'when the page declares nothing',
-      fn: async () => {
-        /** Sheet built with one declared name. */
-        const plan = buildAdjudicationMessages({
-          sourceText: '咪咪在睡觉。',
-          targetText: 'Mittens is asleep.',
-          clusters: CLUSTERS,
-          identityContext: '- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"',
-        },);
-        /** System half, where standing rules live. */
-        const system = plan.messages[0]?.content ?? '';
-        /** Sheet text shown to the panelist. */
-        const sheet = plan.messages[1]?.content ?? '';
-        expect(sheet,).toContain('- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"',);
-        expect(sheet.indexOf('DECLARED NAMES',),).toBeGreaterThan(-1,);
-        expect(sheet.indexOf('DECLARED NAMES',),).toBeLessThan(sheet.indexOf('咪咪在睡觉。',),);
-        expect(system,).toContain('Declared identity, when a DECLARED NAMES block precedes the documents:',);
-        expect(system,).toContain('Vote unsupported on a claim whose whole case is a rendering the block makes correct.',);
-        /** Sheet built without declarations. */
-        const bare = buildAdjudicationMessages({
-          sourceText: '咪咪在睡觉。',
-          targetText: 'Mittens is asleep.',
-          clusters: CLUSTERS,
-        },).messages[1]?.content ?? '';
-        expect(bare,).not
-          .toContain('DECLARED NAMES',);
-      },
-    },),
-
-    it({
-      name: 'keeps proposer identity out of the sheet',
-      fn: async () => {
-        /** Plan for the two-cluster sheet. */
-        const plan = buildAdjudicationMessages({
-          sourceText: '原文',
-          targetText: 'translation',
-          clusters: CLUSTERS,
-        },);
-        /** Whole prompt joined for scanning. */
-        const wholePrompt = plan
-          .messages
-          .map(function toContent(message,) {
-            return messageText({ message, },);
-          },)
-          .join('\n',);
-        expect(wholePrompt.includes('GLM',),).toBe(false,);
-        expect(wholePrompt.includes('issue/',),).toBe(false,);
-        expect(wholePrompt.includes('cluster/',),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
 /**
  Original carrying a row of five equals signs, the fence the builder once
  used, on a line of its own.
@@ -304,18 +123,208 @@ function userText({ messages, }: { readonly messages: readonly ChatMessage[]; },
 }
 
 await describe({
-  name: 'fence choice',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'FENCES the blocks with a delimiter the enclosed text cannot reproduce, so a passage holding a row '
-        + 'of five equals signs cannot close its own block and turn what follows into instructions',
-      fn: async () => {
-        const content = userText({ messages: buildAdjudicationMessages({ sourceText: RULED_SOURCE, targetText: 'Line one.', clusters: [], },).messages, },);
+    describe({
+      name: buildAdjudicationMessages.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'requires a claim be checked against its own quoted evidence',
+          fn: async () => {
+            /** Panelist system instructions. */
+            const system = buildAdjudicationMessages({
+              sourceText: '猫猫在中午打盹。',
+              targetText: 'The cat naps at noon.',
+              clusters: CLUSTERS,
+            },)
+              .messages[0]
+              ?.content ?? '';
+            // A claim alleging an omission its own target quote contains survived
+            // adjudication in the graded sample.
+            expect(system,).toContain('check the claim against its OWN quoted evidence',);
+            expect(system,).toContain('already carries it',);
+            expect(system,).toContain('however confidently it is worded',);
+          },
+        },),
+        it({
+          name: 'ASKS FOR THE REASON BEFORE THE VOTE, in the instruction and in the reply shape it shows '
+            + '(owner, 2026-09-27, "Reason before vote"): a panelist writes out what decides the claim, '
+            + 'then votes, and the reason is stored with the ballot',
+          fn: async () => {
+            /** Panelist system instructions. */
+            const system = buildAdjudicationMessages({
+              sourceText: '猫猫在中午打盹。',
+              targetText: 'The cat naps at noon.',
+              clusters: CLUSTERS,
+            },)
+              .messages[0]
+              ?.content ?? '';
+            expect(system,).toContain('write its reason first, then cast exactly one vote',);
+            /**
+             Where the reply shape the sheet shows names each field.
+             */
+            const shape = system.slice(system.indexOf('{"verdicts"',),);
+            expect(shape.indexOf('"reason"',),).toBeGreaterThan(0,);
+            expect(shape.indexOf('"reason"',),).toBeLessThan(shape.indexOf('"vote"',),);
+          },
+        },),
+        it({
+          name: 'numbers claims globally and maps ids in prompt order',
+          fn: async () => {
+            /** Plan for the two-cluster sheet. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '猫猫在中午打盹，然后追蝴蝶。',
+              targetText: 'The cat hunts at noon, then chases butterflies.',
+              clusters: CLUSTERS,
+            },);
+            expect(plan.claimIds,).toEqual([
+              'issue/whisker',
+              'issue/paw',
+              'issue/tail',
+            ],);
+            expect(plan.clusterIds,).toEqual(['cluster/nap', 'cluster/chase',],);
+            /** Sheet text shown to the panelist. */
+            const sheet = plan.messages[1]?.content ?? '';
+            expect(sheet,).toContain('CLAIM 1',);
+            expect(sheet,).toContain('CLAIM 2',);
+            expect(sheet,).toContain('CLAIM 3',);
+            expect(sheet,).toContain('GROUP 1',);
+            expect(sheet,).toContain('GROUP 2',);
+          },
+        },),
 
-        expect(content.includes('====== ORIGINAL ======',),).toBe(true,);
-        expect(content.includes('\n===== ',),).toBe(false,);
-        expect(content.includes(RULED_SOURCE,),).toBe(true,);
-      },
+        it({
+          name: 'asks the same-defect question only for multi-member groups',
+          fn: async () => {
+            /** Plan for the two-cluster sheet. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '原文',
+              targetText: 'translation',
+              clusters: CLUSTERS,
+            },);
+            /** Sheet text shown to the panelist. */
+            const sheet = plan.messages[1]?.content ?? '';
+            expect(sheet,).toContain('GROUP 1 (claims below may describe one defect; answer sameDefect)',);
+            expect(sheet.includes('GROUP 2 (claims below',),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'presents quoted evidence and insertion points distinctly',
+          fn: async () => {
+            /** Plan for the two-cluster sheet. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '原文',
+              targetText: 'translation',
+              clusters: CLUSTERS,
+            },);
+            /** Sheet text shown to the panelist. */
+            const sheet = plan.messages[1]?.content ?? '';
+            expect(sheet,).toContain('- evidence (TRANSLATION): hunts at noon',);
+            expect(sheet,).toContain('- evidence (TRANSLATION): insertion point, content claimed missing here',);
+            expect(sheet,).toContain('- evidence (ORIGINAL): 猫猫追蝴蝶。',);
+          },
+        },),
+
+        it({
+          name: 'CARRIES the cited references after the claims with their rule (class thirty-five), and no block at all when the original links nowhere',
+          fn: async () => {
+            /** Plan built with one reference line. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '原文',
+              targetText: 'translation',
+              clusters: CLUSTERS,
+              referenceContext: '- reference 1 https://cats.example/post: the kitten has an older sister.',
+            },);
+            /** Sheet text shown to the panelist. */
+            const sheet = plan.messages[1]?.content ?? '';
+            expect(sheet.indexOf('CITED REFERENCES, EVIDENCE ONLY',),).toBeGreaterThan(sheet.indexOf('CLAIMS',),);
+            expect(sheet,).toContain('- reference 1 https://cats.example/post: the kitten has an older sister.',);
+            expect(sheet,).toContain('never report or support it as accuracy/addition',);
+            /** Sheet built without references. */
+            const bare = buildAdjudicationMessages({
+              sourceText: '原文',
+              targetText: 'translation',
+              clusters: CLUSTERS,
+            },).messages[1]?.content ?? '';
+            expect(bare,).not
+              .toContain('CITED REFERENCES',);
+          },
+        },),
+
+        it({
+          name: 'CARRIES THE DECLARED NAMES before the documents and the rule reading them (ledger S4), and no block '
+            + 'when the page declares nothing',
+          fn: async () => {
+            /** Sheet built with one declared name. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '咪咪在睡觉。',
+              targetText: 'Mittens is asleep.',
+              clusters: CLUSTERS,
+              identityContext: '- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"',
+            },);
+            /** System half, where standing rules live. */
+            const system = plan.messages[0]?.content ?? '';
+            /** Sheet text shown to the panelist. */
+            const sheet = plan.messages[1]?.content ?? '';
+            expect(sheet,).toContain('- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"',);
+            expect(sheet.indexOf('DECLARED NAMES',),).toBeGreaterThan(-1,);
+            expect(sheet.indexOf('DECLARED NAMES',),).toBeLessThan(sheet.indexOf('咪咪在睡觉。',),);
+            expect(system,).toContain('Declared identity, when a DECLARED NAMES block precedes the documents:',);
+            expect(system,).toContain('Vote unsupported on a claim whose whole case is a rendering the block makes correct.',);
+            /** Sheet built without declarations. */
+            const bare = buildAdjudicationMessages({
+              sourceText: '咪咪在睡觉。',
+              targetText: 'Mittens is asleep.',
+              clusters: CLUSTERS,
+            },).messages[1]?.content ?? '';
+            expect(bare,).not
+              .toContain('DECLARED NAMES',);
+          },
+        },),
+
+        it({
+          name: 'keeps proposer identity out of the sheet',
+          fn: async () => {
+            /** Plan for the two-cluster sheet. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '原文',
+              targetText: 'translation',
+              clusters: CLUSTERS,
+            },);
+            /** Whole prompt joined for scanning. */
+            const wholePrompt = plan
+              .messages
+              .map(function toContent(message,) {
+                return messageText({ message, },);
+              },)
+              .join('\n',);
+            expect(wholePrompt.includes('GLM',),).toBe(false,);
+            expect(wholePrompt.includes('issue/',),).toBe(false,);
+            expect(wholePrompt.includes('cluster/',),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'fence choice',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FENCES the blocks with a delimiter the enclosed text cannot reproduce, so a passage holding a row '
+            + 'of five equals signs cannot close its own block and turn what follows into instructions',
+          fn: async () => {
+            const content = userText({ messages: buildAdjudicationMessages({ sourceText: RULED_SOURCE, targetText: 'Line one.', clusters: [], },).messages, },);
+
+            expect(content.includes('====== ORIGINAL ======',),).toBe(true,);
+            expect(content.includes('\n===== ',),).toBe(false,);
+            expect(content.includes(RULED_SOURCE,),).toBe(true,);
+          },
+        },),
+      ],
     },),
   ],
 },);

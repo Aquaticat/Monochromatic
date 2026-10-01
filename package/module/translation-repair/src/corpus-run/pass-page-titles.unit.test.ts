@@ -18,6 +18,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -249,260 +250,269 @@ function readBack(
 }
 
 await describe({
-  name: `${passPageTitles.name} (ledger H16)`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS NO HOOK AND ASKS NOBODY for a page that repeats no unpaired title',
-      fn: async () => {
-        /**
-         Round over a title written once.
-         */
-        const once = await lexiconRun({ sourceText: ONCE, usable: true, resumed: new Map(), reseat: true, },);
-        expect({
-          asked: once.asked,
-          hookReads: once.hookReads,
-          lines: once.added.lines,
-          stored: once.persisted.size,
-        },).toEqual({
-          asked: [],
-          hookReads: 0,
-          lines: [],
-          stored: 0,
-        },);
-      },
-    },),
-    it({
-      name: 'ASKS THE ROSTER ITS HOOK HANDS OVER, carries the settled title and stores the round once',
-      fn: async () => {
-        /**
-         Round re-seated elsewhere.
-         */
-        const moved = await lexiconRun({ sourceText: REPEATING, usable: true, resumed: new Map(), reseat: true, },);
-        expect({
-          askedAny: moved.asked.length > 0,
-          offReseated: moved.asked.filter(function outside(seat,): boolean {
-            return !RESEATED.includes(seat,);
-          },),
-          hookReads: moved.hookReads,
-          carries: moved.added.lines.some(function names(line,): boolean {
-            return line.startsWith('- 猫之歌',) && line.includes('"Song of the Cat"',);
-          },),
-          stored: moved.persisted.size,
-          // Stored under the roster that answered, so a resume on another
-          // bench asks again rather than reading this bench's answer.
-          storedUnderAnswering: moved.persisted.has(pageTitleKey({
-            sourceText: REPEATING,
-            spans: [{ source: '猫之歌', occurrences: 2, },],
-            identityContext: '',
-            modelIds: RESEATED,
-          },),),
-        },).toEqual({
-          askedAny: true,
-          offReseated: [],
-          hookReads: 1,
-          carries: true,
-          stored: 1,
-          storedUnderAnswering: true,
-        },);
-      },
-    },),
-    it({
-      name: 'RESUMES A STORED ROUND without asking, so the lines, and every slice key they reach, stay put',
-      fn: async () => {
-        /**
-         First round, which stores its answer.
-         */
-        const first = await lexiconRun({ sourceText: REPEATING, usable: true, resumed: new Map(), reseat: false, },);
-        /**
-         Second round over the stored answer.
-         */
-        const second = await lexiconRun({
-          sourceText: REPEATING,
-          usable: true,
-          resumed: readBack({ persisted: first.persisted, },),
-          reseat: false,
-        },);
-        expect({
-          asked: second.asked,
-          sameLines: JSON.stringify(second.added.lines,) === JSON.stringify(first.added.lines,),
-          sameFindings: JSON.stringify(second.added.findings,) === JSON.stringify(first.added.findings,),
-        },).toEqual({
-          asked: [],
-          sameLines: true,
-          sameFindings: true,
-        },);
-      },
-    },),
-    it({
-      name: 'STORES NOTHING when nobody answered usably, since an unreachable bench is not an answer',
-      fn: async () => {
-        /**
-         Round the bench never answered usably.
-         */
-        const silent = await lexiconRun({ sourceText: REPEATING, usable: false, resumed: new Map(), reseat: false, },);
-        expect({
-          askedAny: silent.asked.length > 0,
-          lines: silent.added.lines,
-          stored: silent.persisted.size,
-        },).toEqual({
-          askedAny: true,
-          lines: [],
-          stored: 0,
-        },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: `${openPageTitleCache.name} (ledger T8)`,
-  children: [
-    it({
-      name: 'RESUMES A STORED ROUND FROM DISK, and refuses a stored value that is not a round, or holds a title or a '
-        + 'finding of the wrong shape, so a damaged record is asked again rather than read as settled',
-      fn: async () => {
-        /**
-         Entry cache directory this case owns.
-         */
-        const dir = await mkdtemp(join(tmpdir(), 'page-title-cache-',),);
-        await using cleanup = {
-          [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
-            await rm(dir, { recursive: true, force: true, },);
+    describe({
+      name: `${passPageTitles.name} (ledger H16)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS NO HOOK AND ASKS NOBODY for a page that repeats no unpaired title',
+          fn: async () => {
+            /**
+             Round over a title written once.
+             */
+            const once = await lexiconRun({ sourceText: ONCE, usable: true, resumed: new Map(), reseat: true, },);
+            expect({
+              asked: once.asked,
+              hookReads: once.hookReads,
+              lines: once.added.lines,
+              stored: once.persisted.size,
+            },).toEqual({
+              asked: [],
+              hookReads: 0,
+              lines: [],
+              stored: 0,
+            },);
           },
-        };
-        /**
-         One settled title, every field of the right shape.
-         */
-        const title = {
-          source: '猫之歌',
-          occurrences: 2,
-          rendering: 'Song of the Cat',
-          voices: 2,
-          heard: 3,
-        };
-        /**
-         A round a run stored.
-         */
-        const round: PageTitleLexiconRecord = {
-          titles: [title,],
-          findings: ['the kitten sang twice',],
-        };
-        /**
-         Stored values by label, the round first and every refusal after it.
-         */
-        const stored: readonly (readonly [string, unknown])[] = [
-          ['round', round,],
-          ['not a record', [round,],],
-          ['titles not a list', { titles: title, findings: [], },],
-          ['findings not a list', { titles: [], findings: 'none', },],
-          ['finding not text', { titles: [], findings: [1,], },],
-          ['title not a record', { titles: ['猫之歌',], findings: [], },],
-          ['source not text', { titles: [{ ...title, source: 1, },], findings: [], },],
-          ['rendering not text', { titles: [{ ...title, rendering: null, },], findings: [], },],
-          ['occurrences not whole', { titles: [{ ...title, occurrences: 1.5, },], findings: [], },],
-          ['voices not whole', { titles: [{ ...title, voices: '2', },], findings: [], },],
-          ['heard not whole', { titles: [{ ...title, heard: undefined, },], findings: [], },],
-        ];
-        /**
-         Key a label is stored under, shaped as the lexicon's keys are.
-
-         @param label - stored value's label
-
-         @returns Its key
-         */
-        function keyOf(label: string,): string {
-          return createHash('sha256',).update(label, 'utf8',).digest('hex',);
-        }
-        /**
-         Cache the run wrote through.
-         */
-        const written = await openPageTitleCache({
-          dir,
-          generation: 'page-title-cache-test',
-        },);
-        await Promise.all(stored.map(async function persistOne([label, value,],): Promise<void> {
-          await written.persist({
-            key: keyOf(label,),
-            serialized: JSON.stringify(value,),
-          },);
-        },),);
-        /**
-         Cache a resumed run opens over the same directory.
-         */
-        const reopened = await openPageTitleCache({
-          dir,
-          generation: 'page-title-cache-test',
-        },);
-        expect([...reopened.resumed.entries(),],).toEqual([[keyOf('round',), round,],],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: `${pageTitleKey.name} (ledger H16)`,
-  children: [
-    it({
-      name: 'NAMES THE QUESTION BY THE ORIGINAL, THE TITLES, THE DECLARED IDENTITY AND THE ROSTER, and by nothing else '
-        + '(ledger B28)',
-      fn: async () => {
-        /**
-         The titles asked.
-         */
-        const spans = [{ source: '猫之歌', occurrences: 2, },];
-        /**
-         Key of the fixture question.
-         */
-        const key = pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: ROSTER, },);
-        expect({
-          same: pageTitleKey({ sourceText: REPEATING, spans: [...spans,], identityContext: '', modelIds: [...ROSTER,], },)
-            === key,
-          roster: pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: RESEATED, },) === key,
-          titles: pageTitleKey({
-            sourceText: REPEATING,
-            spans: [{ source: '猫之歌', occurrences: 3, },],
-            identityContext: '',
-            modelIds: ROSTER,
-          },) === key,
-          original: pageTitleKey({ sourceText: `${REPEATING}喵。\n`, spans, identityContext: '', modelIds: ROSTER, },) === key,
-          identity: pageTitleKey({
-            sourceText: REPEATING,
-            spans,
-            identityContext: '- 猫之歌 (web lookup): "Song of the Cat"',
-            modelIds: ROSTER,
-          },) === key,
-        },).toEqual({
-          same: true,
-          roster: false,
-          titles: false,
-          original: false,
-          identity: false,
-        },);
-      },
-    },),
-    it({
-      name: 'IS THE SHA-256 OF ONE JSON VALUE carrying the cache version, so moving the version moves every key '
-        + '(ledger M25) and no two questions share bytes (ledger X15)',
-      fn: async () => {
-        /**
-         The titles asked.
-         */
-        const spans = [{ source: '猫之歌', occurrences: 2, },];
-        expect(pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: ROSTER, },),).toBe(
-          createHash('sha256',)
-            .update(
-              JSON.stringify({
-                version: PAGE_TITLE_CACHE_VERSION,
-                source: hashContent({ content: REPEATING, },),
-                titles: spans,
-                identity: hashContent({ content: '', },),
-                roster: ROSTER,
+        },),
+        it({
+          name: 'ASKS THE ROSTER ITS HOOK HANDS OVER, carries the settled title and stores the round once',
+          fn: async () => {
+            /**
+             Round re-seated elsewhere.
+             */
+            const moved = await lexiconRun({ sourceText: REPEATING, usable: true, resumed: new Map(), reseat: true, },);
+            expect({
+              askedAny: moved.asked.length > 0,
+              offReseated: moved.asked.filter(function outside(seat,): boolean {
+                return !RESEATED.includes(seat,);
               },),
-              'utf8',
-            )
-            .digest('hex',),
-        );
-      },
+              hookReads: moved.hookReads,
+              carries: moved.added.lines.some(function names(line,): boolean {
+                return line.startsWith('- 猫之歌',) && line.includes('"Song of the Cat"',);
+              },),
+              stored: moved.persisted.size,
+              // Stored under the roster that answered, so a resume on another
+              // bench asks again rather than reading this bench's answer.
+              storedUnderAnswering: moved.persisted.has(pageTitleKey({
+                sourceText: REPEATING,
+                spans: [{ source: '猫之歌', occurrences: 2, },],
+                identityContext: '',
+                modelIds: RESEATED,
+              },),),
+            },).toEqual({
+              askedAny: true,
+              offReseated: [],
+              hookReads: 1,
+              carries: true,
+              stored: 1,
+              storedUnderAnswering: true,
+            },);
+          },
+        },),
+        it({
+          name: 'RESUMES A STORED ROUND without asking, so the lines, and every slice key they reach, stay put',
+          fn: async () => {
+            /**
+             First round, which stores its answer.
+             */
+            const first = await lexiconRun({ sourceText: REPEATING, usable: true, resumed: new Map(), reseat: false, },);
+            /**
+             Second round over the stored answer.
+             */
+            const second = await lexiconRun({
+              sourceText: REPEATING,
+              usable: true,
+              resumed: readBack({ persisted: first.persisted, },),
+              reseat: false,
+            },);
+            expect({
+              asked: second.asked,
+              sameLines: JSON.stringify(second.added.lines,) === JSON.stringify(first.added.lines,),
+              sameFindings: JSON.stringify(second.added.findings,) === JSON.stringify(first.added.findings,),
+            },).toEqual({
+              asked: [],
+              sameLines: true,
+              sameFindings: true,
+            },);
+          },
+        },),
+        it({
+          name: 'STORES NOTHING when nobody answered usably, since an unreachable bench is not an answer',
+          fn: async () => {
+            /**
+             Round the bench never answered usably.
+             */
+            const silent = await lexiconRun({ sourceText: REPEATING, usable: false, resumed: new Map(), reseat: false, },);
+            expect({
+              askedAny: silent.asked.length > 0,
+              lines: silent.added.lines,
+              stored: silent.persisted.size,
+            },).toEqual({
+              askedAny: true,
+              lines: [],
+              stored: 0,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${openPageTitleCache.name} (ledger T8)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RESUMES A STORED ROUND FROM DISK, and refuses a stored value that is not a round, or holds a title or a '
+            + 'finding of the wrong shape, so a damaged record is asked again rather than read as settled',
+          fn: async () => {
+            /**
+             Entry cache directory this case owns.
+             */
+            const dir = await mkdtemp(join(tmpdir(), 'page-title-cache-',),);
+            await using cleanup = {
+              [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
+                await rm(dir, { recursive: true, force: true, },);
+              },
+            };
+            /**
+             One settled title, every field of the right shape.
+             */
+            const title = {
+              source: '猫之歌',
+              occurrences: 2,
+              rendering: 'Song of the Cat',
+              voices: 2,
+              heard: 3,
+            };
+            /**
+             A round a run stored.
+             */
+            const round: PageTitleLexiconRecord = {
+              titles: [title,],
+              findings: ['the kitten sang twice',],
+            };
+            /**
+             Stored values by label, the round first and every refusal after it.
+             */
+            const stored: readonly (readonly [string, unknown])[] = [
+              ['round', round,],
+              ['not a record', [round,],],
+              ['titles not a list', { titles: title, findings: [], },],
+              ['findings not a list', { titles: [], findings: 'none', },],
+              ['finding not text', { titles: [], findings: [1,], },],
+              ['title not a record', { titles: ['猫之歌',], findings: [], },],
+              ['source not text', { titles: [{ ...title, source: 1, },], findings: [], },],
+              ['rendering not text', { titles: [{ ...title, rendering: null, },], findings: [], },],
+              ['occurrences not whole', { titles: [{ ...title, occurrences: 1.5, },], findings: [], },],
+              ['voices not whole', { titles: [{ ...title, voices: '2', },], findings: [], },],
+              ['heard not whole', { titles: [{ ...title, heard: undefined, },], findings: [], },],
+            ];
+            /**
+             Key a label is stored under, shaped as the lexicon's keys are.
+
+             @param label - stored value's label
+
+             @returns Its key
+             */
+            function keyOf(label: string,): string {
+              return createHash('sha256',).update(label, 'utf8',).digest('hex',);
+            }
+            /**
+             Cache the run wrote through.
+             */
+            const written = await openPageTitleCache({
+              dir,
+              generation: 'page-title-cache-test',
+            },);
+            await Promise.all(stored.map(async function persistOne([label, value,],): Promise<void> {
+              await written.persist({
+                key: keyOf(label,),
+                serialized: JSON.stringify(value,),
+              },);
+            },),);
+            /**
+             Cache a resumed run opens over the same directory.
+             */
+            const reopened = await openPageTitleCache({
+              dir,
+              generation: 'page-title-cache-test',
+            },);
+            expect([...reopened.resumed.entries(),],).toEqual([[keyOf('round',), round,],],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${pageTitleKey.name} (ledger H16)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE QUESTION BY THE ORIGINAL, THE TITLES, THE DECLARED IDENTITY AND THE ROSTER, and by nothing else '
+            + '(ledger B28)',
+          fn: async () => {
+            /**
+             The titles asked.
+             */
+            const spans = [{ source: '猫之歌', occurrences: 2, },];
+            /**
+             Key of the fixture question.
+             */
+            const key = pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: ROSTER, },);
+            expect({
+              same: pageTitleKey({ sourceText: REPEATING, spans: [...spans,], identityContext: '', modelIds: [...ROSTER,], },)
+                === key,
+              roster: pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: RESEATED, },) === key,
+              titles: pageTitleKey({
+                sourceText: REPEATING,
+                spans: [{ source: '猫之歌', occurrences: 3, },],
+                identityContext: '',
+                modelIds: ROSTER,
+              },) === key,
+              original: pageTitleKey({ sourceText: `${REPEATING}喵。\n`, spans, identityContext: '', modelIds: ROSTER, },) === key,
+              identity: pageTitleKey({
+                sourceText: REPEATING,
+                spans,
+                identityContext: '- 猫之歌 (web lookup): "Song of the Cat"',
+                modelIds: ROSTER,
+              },) === key,
+            },).toEqual({
+              same: true,
+              roster: false,
+              titles: false,
+              original: false,
+              identity: false,
+            },);
+          },
+        },),
+        it({
+          name: 'IS THE SHA-256 OF ONE JSON VALUE carrying the cache version, so moving the version moves every key '
+            + '(ledger M25) and no two questions share bytes (ledger X15)',
+          fn: async () => {
+            /**
+             The titles asked.
+             */
+            const spans = [{ source: '猫之歌', occurrences: 2, },];
+            expect(pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: ROSTER, },),).toBe(
+              createHash('sha256',)
+                .update(
+                  JSON.stringify({
+                    version: PAGE_TITLE_CACHE_VERSION,
+                    source: hashContent({ content: REPEATING, },),
+                    titles: spans,
+                    identity: hashContent({ content: '', },),
+                    roster: ROSTER,
+                  },),
+                  'utf8',
+                )
+                .digest('hex',),
+            );
+          },
+        },),
+      ],
     },),
   ],
 },);

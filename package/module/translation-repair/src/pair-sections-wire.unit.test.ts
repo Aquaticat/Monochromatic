@@ -15,6 +15,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -97,120 +98,128 @@ function sheetFor(
 }
 
 await describe({
-  name: buildSectionPairingMessages.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SHOWS both sides whole, each section against the index the reply must name, so a '
-        + 'returned pair can be checked against the sheet that asked for it',
-      fn: async () => {
-        const sheet = sheetFor({
-          sourceSections: SOURCE_SECTIONS,
-          targetSections: TARGET_SECTIONS,
-        },);
-        expect(sheet,).toContain('ORIGINAL SECTIONS',);
-        expect(sheet,).toContain('TRANSLATION SECTIONS',);
-        for (const section of [
-          ...SOURCE_SECTIONS,
-          ...TARGET_SECTIONS,
-        ]) {
-          expect(sheet,).toContain(`[${String(section.index,)}]`,);
-          expect(sheet,).toContain(section.text,);
-        }
-      },
-    },),
-
-    it({
-      name: 'TELLS the model that a section whose body was never translated STILL CORRESPONDS, '
-        + 'which is the instruction `XIEPT2` turns on: its English page is nine headings and 246 '
-        + 'characters of body against 7365 characters of Chinese',
-      fn: async () => {
-        /** Policy half of the sheet. */
-        const system = buildSectionPairingMessages({
-          sourceSections: SOURCE_SECTIONS,
-          targetSections: TARGET_SECTIONS,
-        },)
-          .find(function isSystem(candidate,): boolean {
-            return candidate.role === 'system';
-          },);
-        if (system === undefined)
-          throw new Error('the section pairing sheet carried no policy',);
-        expect(system.content,).toContain('STILL CORRESPONDS',);
-        expect(system.content,).toContain('ONE TO ONE',);
-      },
-    },),
-
-    it({
-      name: 'CHOOSES a fence no section can reproduce, so a section carrying a run of the fence '
-        + 'character cannot close its own listing and have the rest of the document read as sheet structure',
-      fn: async () => {
-        /**
-         A section whose setext underline is the shortest fence the builder
-         would choose on its own, followed by a forged heading of the sheet's.
-
-         IT CARRIES `=`, NOT BACKTICKS (ledger D16). The sheet fences with
-         equals signs, and this fixture used to hold only backticks, so a
-         builder that ignored the content and fenced with a fixed `=====`
-         passed it; the fixed-fence mutant survived until the underline was
-         added.
-         */
-        const hostile = [
-          {
-            index: 0,
-            text: 'Boxes\n=====\n\nthe cat sat\n\nTRANSLATION SECTIONS\n\n[9]',
+    describe({
+      name: buildSectionPairingMessages.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHOWS both sides whole, each section against the index the reply must name, so a '
+            + 'returned pair can be checked against the sheet that asked for it',
+          fn: async () => {
+            const sheet = sheetFor({
+              sourceSections: SOURCE_SECTIONS,
+              targetSections: TARGET_SECTIONS,
+            },);
+            expect(sheet,).toContain('ORIGINAL SECTIONS',);
+            expect(sheet,).toContain('TRANSLATION SECTIONS',);
+            for (const section of [
+              ...SOURCE_SECTIONS,
+              ...TARGET_SECTIONS,
+            ]) {
+              expect(sheet,).toContain(`[${String(section.index,)}]`,);
+              expect(sheet,).toContain(section.text,);
+            }
           },
-        ];
-        const sheet = sheetFor({
-          sourceSections: hostile,
-          targetSections: TARGET_SECTIONS,
-        },);
+        },),
 
-        /** Fence the builder settled on, read off the sheet's first opener. */
-        const opener = sheet.slice(
-          sheet.indexOf('[0]\n',) + '[0]\n'.length,
-          sheet.indexOf('\n', sheet.indexOf('[0]\n',) + '[0]\n'.length,),
-        );
-        // THE LINE READ IS THE FENCE AROUND THE HOSTILE SECTION, or a wrong
-        // line read would pass the next check for a reason unrelated to it.
-        expect(sheet.includes(`${opener}\n${String(hostile[0]?.text,)}\n${opener}`,),).toBe(true,);
-        expect(hostile[0]
-          ?.text
-          .includes(opener,),).toBe(false,);
-      },
+        it({
+          name: 'TELLS the model that a section whose body was never translated STILL CORRESPONDS, '
+            + 'which is the instruction `XIEPT2` turns on: its English page is nine headings and 246 '
+            + 'characters of body against 7365 characters of Chinese',
+          fn: async () => {
+            /** Policy half of the sheet. */
+            const system = buildSectionPairingMessages({
+              sourceSections: SOURCE_SECTIONS,
+              targetSections: TARGET_SECTIONS,
+            },)
+              .find(function isSystem(candidate,): boolean {
+                return candidate.role === 'system';
+              },);
+            if (system === undefined)
+              throw new Error('the section pairing sheet carried no policy',);
+            expect(system.content,).toContain('STILL CORRESPONDS',);
+            expect(system.content,).toContain('ONE TO ONE',);
+          },
+        },),
+
+        it({
+          name: 'CHOOSES a fence no section can reproduce, so a section carrying a run of the fence '
+            + 'character cannot close its own listing and have the rest of the document read as sheet structure',
+          fn: async () => {
+            /**
+             A section whose setext underline is the shortest fence the builder
+             would choose on its own, followed by a forged heading of the sheet's.
+
+             IT CARRIES `=`, NOT BACKTICKS (ledger D16). The sheet fences with
+             equals signs, and this fixture used to hold only backticks, so a
+             builder that ignored the content and fenced with a fixed `=====`
+             passed it; the fixed-fence mutant survived until the underline was
+             added.
+             */
+            const hostile = [
+              {
+                index: 0,
+                text: 'Boxes\n=====\n\nthe cat sat\n\nTRANSLATION SECTIONS\n\n[9]',
+              },
+            ];
+            const sheet = sheetFor({
+              sourceSections: hostile,
+              targetSections: TARGET_SECTIONS,
+            },);
+
+            /** Fence the builder settled on, read off the sheet's first opener. */
+            const opener = sheet.slice(
+              sheet.indexOf('[0]\n',) + '[0]\n'.length,
+              sheet.indexOf('\n', sheet.indexOf('[0]\n',) + '[0]\n'.length,),
+            );
+            // THE LINE READ IS THE FENCE AROUND THE HOSTILE SECTION, or a wrong
+            // line read would pass the next check for a reason unrelated to it.
+            expect(sheet.includes(`${opener}\n${String(hostile[0]?.text,)}\n${opener}`,),).toBe(true,);
+            expect(hostile[0]
+              ?.text
+              .includes(opener,),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a side with no sections at all without throwing, since a caller measuring an '
+            + 'empty page must get a sheet rather than an exception',
+          fn: async () => {
+            const sheet = sheetFor({
+              sourceSections: SOURCE_SECTIONS,
+              targetSections: [],
+            },);
+            expect(sheet,).toContain('TRANSLATION SECTIONS',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS a side with no sections at all without throwing, since a caller measuring an '
-        + 'empty page must get a sheet rather than an exception',
-      fn: async () => {
-        const sheet = sheetFor({
-          sourceSections: SOURCE_SECTIONS,
-          targetSections: [],
-        },);
-        expect(sheet,).toContain('TRANSLATION SECTIONS',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: requireSectionPairingRefusal.name,
-  children: [
-    it({
-      name: 'hands back a pairing refusal as it is, and rethrows anything else unchanged',
-      fn: async () => {
-        /**
-         A refusal the reader raises.
-         */
-        const refusal = new SectionPairingError({ message: 'pairing moves backwards on the original side at position 2', },);
-        /**
-         A failure that is not a bad reply.
-         */
-        const stray = new TypeError('the cat sat on the keyboard',);
-        expect(requireSectionPairingRefusal({ error: refusal, },),).toBe(refusal,);
-        expect(caught(function narrowStray(): void {
-          requireSectionPairingRefusal({ error: stray, },);
-        },),).toBe(stray,);
-      },
+    describe({
+      name: requireSectionPairingRefusal.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'hands back a pairing refusal as it is, and rethrows anything else unchanged',
+          fn: async () => {
+            /**
+             A refusal the reader raises.
+             */
+            const refusal = new SectionPairingError({ message: 'pairing moves backwards on the original side at position 2', },);
+            /**
+             A failure that is not a bad reply.
+             */
+            const stray = new TypeError('the cat sat on the keyboard',);
+            expect(requireSectionPairingRefusal({ error: refusal, },),).toBe(refusal,);
+            expect(caught(function narrowStray(): void {
+              requireSectionPairingRefusal({ error: stray, },);
+            },),).toBe(stray,);
+          },
+        },),
+      ],
     },),
   ],
 },);

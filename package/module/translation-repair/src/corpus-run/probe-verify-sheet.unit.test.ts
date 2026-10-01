@@ -27,6 +27,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -229,376 +230,385 @@ function manifestRows(
 }
 
 await describe({
-  name: orderBlind.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ORDERS the same items the same way every time',
-      fn: async () => {
-        /**
-         Items as the caller built them.
-         */
-        const items = household();
+    describe({
+      name: orderBlind.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ORDERS the same items the same way every time',
+          fn: async () => {
+            /**
+             Items as the caller built them.
+             */
+            const items = household();
 
-        expect(idsOf({ items: orderBlind({ items, },), },),)
-          .toEqual(idsOf({ items: orderBlind({ items, },), },),);
-      },
-    },),
-    it({
-      name: 'IGNORES the order the caller built them in, which would leak the partition',
-      fn: async () => {
-        /**
-         Items as the caller built them.
-         */
-        const items = household();
+            expect(idsOf({ items: orderBlind({ items, },), },),)
+              .toEqual(idsOf({ items: orderBlind({ items, },), },),);
+          },
+        },),
+        it({
+          name: 'IGNORES the order the caller built them in, which would leak the partition',
+          fn: async () => {
+            /**
+             Items as the caller built them.
+             */
+            const items = household();
 
-        expect(idsOf({ items: orderBlind({ items, },), },),)
-          .toEqual(idsOf({ items: orderBlind({ items: items.toReversed(), },), },),);
-      },
-    },),
-    it({
-      name: 'IGNORES the partition itself, so relabelling an item cannot move it',
-      fn: async () => {
-        /**
-         Items as the caller built them.
-         */
-        const items = household();
+            expect(idsOf({ items: orderBlind({ items, },), },),)
+              .toEqual(idsOf({ items: orderBlind({ items: items.toReversed(), },), },),);
+          },
+        },),
+        it({
+          name: 'IGNORES the partition itself, so relabelling an item cannot move it',
+          fn: async () => {
+            /**
+             Items as the caller built them.
+             */
+            const items = household();
 
-        /**
-         Same items with every partition label flipped.
-         */
-        const flipped = items.map(function relabel(item,): VerifyItem {
-          return {
-            ...item,
-            kind: (item.kind === FIRST_PARTITION) ? SECOND_PARTITION : FIRST_PARTITION,
-          };
-        },);
+            /**
+             Same items with every partition label flipped.
+             */
+            const flipped = items.map(function relabel(item,): VerifyItem {
+              return {
+                ...item,
+                kind: (item.kind === FIRST_PARTITION) ? SECOND_PARTITION : FIRST_PARTITION,
+              };
+            },);
 
-        expect(idsOf({ items: orderBlind({ items: flipped, },), },),)
-          .toEqual(idsOf({ items: orderBlind({ items, },), },),);
-      },
-    },),
-    it({
-      name: 'MOVES an item when its identity changes, since identity is the key',
-      fn: async () => {
-        // A positive control for the "ORDERS the same items the same way every
-        // time", "IGNORES the order the caller built them in" and "IGNORES the
-        // partition itself" cases: they all assert that
-        // something does NOT move the order, and a sort that ignored its input
-        // entirely would pass every one of them.
-        /**
-         Items as the caller built them.
-         */
-        const items = household();
+            expect(idsOf({ items: orderBlind({ items: flipped, },), },),)
+              .toEqual(idsOf({ items: orderBlind({ items, },), },),);
+          },
+        },),
+        it({
+          name: 'MOVES an item when its identity changes, since identity is the key',
+          fn: async () => {
+            // A positive control for the "ORDERS the same items the same way every
+            // time", "IGNORES the order the caller built them in" and "IGNORES the
+            // partition itself" cases: they all assert that
+            // something does NOT move the order, and a sort that ignored its input
+            // entirely would pass every one of them.
+            /**
+             Items as the caller built them.
+             */
+            const items = household();
 
-        /**
-         Same items under different entry ids.
-         */
-        const renamed = items.map(function rename(item,): VerifyItem {
-          return {
-            ...item,
-            relabelCase: {
-              ...item.relabelCase,
-              entryId: `${item.relabelCase.entryId}-ii`,
-            },
-          };
-        },);
-
-        expect(idsOf({ items: orderBlind({ items: renamed, },), },)
-          .map(function stripSuffix(id,): string {
-            return id.replace(
-              '-ii',
-              '',
-            );
-          },),)
-          .not
-          .toEqual(idsOf({ items: orderBlind({ items, },), },),);
-      },
-    },),
-    it({
-      name: 'KEEPS every item it was given',
-      fn: async () => {
-        /**
-         Items as the caller built them.
-         */
-        const items = household();
-
-        expect(idsOf({ items: orderBlind({ items, },), },)
-          .toSorted(),)
-          .toEqual(idsOf({ items, },)
-            .toSorted(),);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: formatVerifySheet.name,
-  children: [
-    it({
-      name: 'NUMBERS the sheet in the order the manifest numbers its rows',
-      fn: async () => {
-        // THE CASE THIS FILE EXISTS FOR. Both functions sort independently, and
-        // a scorer reads a grade off sheet position N as a verdict on manifest
-        // row N. Divergence would misattribute every grade and still look clean.
-        /**
-         Items as the caller built them.
-         */
-        const items = household();
-
-        /**
-         Sheet as a grader receives it.
-         */
-        const sheet = formatVerifySheet({ items, },);
-
-        for (const row of manifestRows({ items, },)) {
-          /**
-           Heading the sheet gives that position.
-           */
-          const heading = `### ${String(row.position,)}. grade: [ ]`;
-
-          /**
-           Where that heading stands in the sheet.
-           */
-          const at = sheet.indexOf(heading,);
-
-          /**
-           Text between that heading and whatever follows it.
-           */
-          const section = sheet.slice(
-            at,
-            sheet.indexOf(
-              '### ',
-              at + heading.length,
-            ),
-          );
-
-          expect(at,).not.toBe(-1,);
-          expect(section.includes(`source text of ${row.envelopeId}`,),).toBe(true,);
-        }
-      },
-    },),
-    it({
-      name: 'TELLS a blind grader that the reviewer flagged some items and not others, and never that '
-        + 'it flagged each, since the damage sheet mixes both with the claims stripped',
-      fn: async () => {
-        /**
-         The damage sheet's page.
-         */
-        const sheet = formatVerifySheet({
-          items: household(),
-          framing: 'blind',
-        },);
-        expect(sheet.includes('claims each one introduced a defect',),).toBe(false,);
-        expect(sheet.includes('flagged some of them as damaging and stayed silent on the others',),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'KEEPS the reviewer-claims framing by default, which is the verify sheet where every item '
-        + 'was flagged and its claims are printed',
-      fn: async () => {
-        expect(formatVerifySheet({ items: household(), },).includes('claims each one introduced a defect',),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'REFUSES to name which partition an item came from, anywhere on the page',
-      fn: async () => {
-        /**
-         Sheet as a grader receives it.
-         */
-        const sheet = formatVerifySheet({ items: household(), },);
-
-        expect(sheet.includes(FIRST_PARTITION,),).toBe(false,);
-        expect(sheet.includes(SECOND_PARTITION,),).toBe(false,);
-        expect(sheet.includes('kind',),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'SHOWS every text a grader needs, on both sides of the edit',
-      fn: async () => {
-        /**
-         Sheet built from one item, so the assertions name one region.
-         */
-        const sheet = formatVerifySheet({
-          items: [
-            verifyItem({
-              entryId: 'whiskers',
-              envelopeId: 'lone',
-              kind: FIRST_PARTITION,
-              claims: [],
-            },),
-          ],
-        },);
-
-        expect(sheet.includes('source text of lone',),).toBe(true,);
-        expect(sheet.includes('baseline text of lone',),).toBe(true,);
-        expect(sheet.includes('before text of lone',),).toBe(true,);
-        expect(sheet.includes('after text of lone',),).toBe(true,);
-        expect(sheet.includes('Items: 1',),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'WITHHOLDS the reviewer\'s claim from an item that carries none',
-      fn: async () => {
-        /**
-         Sheet built from one unclaimed item.
-         */
-        const sheet = formatVerifySheet({
-          items: [
-            verifyItem({
-              entryId: 'whiskers',
-              envelopeId: 'lone',
-              kind: SECOND_PARTITION,
-              claims: [],
-            },),
-          ],
-        },);
-
-        expect(sheet.includes('An automated reviewer says',),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'NAMES an added-wording claim as added, quoting the after side',
-      fn: async () => {
-        /**
-         Sheet built from one item the probe flagged for adding wording.
-         */
-        const sheet = formatVerifySheet({
-          items: [
-            verifyItem({
-              entryId: 'whiskers',
-              envelopeId: 'lone',
-              kind: FIRST_PARTITION,
-              claims: [
-                {
-                  evidence: ADDED_WORDING,
-                  omittedText: '',
+            /**
+             Same items under different entry ids.
+             */
+            const renamed = items.map(function rename(item,): VerifyItem {
+              return {
+                ...item,
+                relabelCase: {
+                  ...item.relabelCase,
+                  entryId: `${item.relabelCase.entryId}-ii`,
                 },
+              };
+            },);
+
+            expect(idsOf({ items: orderBlind({ items: renamed, },), },)
+              .map(function stripSuffix(id,): string {
+                return id.replace(
+                  '-ii',
+                  '',
+                );
+              },),)
+              .not
+              .toEqual(idsOf({ items: orderBlind({ items, },), },),);
+          },
+        },),
+        it({
+          name: 'KEEPS every item it was given',
+          fn: async () => {
+            /**
+             Items as the caller built them.
+             */
+            const items = household();
+
+            expect(idsOf({ items: orderBlind({ items, },), },)
+              .toSorted(),)
+              .toEqual(idsOf({ items, },)
+                .toSorted(),);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: formatVerifySheet.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NUMBERS the sheet in the order the manifest numbers its rows',
+          fn: async () => {
+            // THE CASE THIS FILE EXISTS FOR. Both functions sort independently, and
+            // a scorer reads a grade off sheet position N as a verdict on manifest
+            // row N. Divergence would misattribute every grade and still look clean.
+            /**
+             Items as the caller built them.
+             */
+            const items = household();
+
+            /**
+             Sheet as a grader receives it.
+             */
+            const sheet = formatVerifySheet({ items, },);
+
+            for (const row of manifestRows({ items, },)) {
+              /**
+               Heading the sheet gives that position.
+               */
+              const heading = `### ${String(row.position,)}. grade: [ ]`;
+
+              /**
+               Where that heading stands in the sheet.
+               */
+              const at = sheet.indexOf(heading,);
+
+              /**
+               Text between that heading and whatever follows it.
+               */
+              const section = sheet.slice(
+                at,
+                sheet.indexOf(
+                  '### ',
+                  at + heading.length,
+                ),
+              );
+
+              expect(at,).not.toBe(-1,);
+              expect(section.includes(`source text of ${row.envelopeId}`,),).toBe(true,);
+            }
+          },
+        },),
+        it({
+          name: 'TELLS a blind grader that the reviewer flagged some items and not others, and never that '
+            + 'it flagged each, since the damage sheet mixes both with the claims stripped',
+          fn: async () => {
+            /**
+             The damage sheet's page.
+             */
+            const sheet = formatVerifySheet({
+              items: household(),
+              framing: 'blind',
+            },);
+            expect(sheet.includes('claims each one introduced a defect',),).toBe(false,);
+            expect(sheet.includes('flagged some of them as damaging and stayed silent on the others',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'KEEPS the reviewer-claims framing by default, which is the verify sheet where every item '
+            + 'was flagged and its claims are printed',
+          fn: async () => {
+            expect(formatVerifySheet({ items: household(), },).includes('claims each one introduced a defect',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'REFUSES to name which partition an item came from, anywhere on the page',
+          fn: async () => {
+            /**
+             Sheet as a grader receives it.
+             */
+            const sheet = formatVerifySheet({ items: household(), },);
+
+            expect(sheet.includes(FIRST_PARTITION,),).toBe(false,);
+            expect(sheet.includes(SECOND_PARTITION,),).toBe(false,);
+            expect(sheet.includes('kind',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'SHOWS every text a grader needs, on both sides of the edit',
+          fn: async () => {
+            /**
+             Sheet built from one item, so the assertions name one region.
+             */
+            const sheet = formatVerifySheet({
+              items: [
+                verifyItem({
+                  entryId: 'whiskers',
+                  envelopeId: 'lone',
+                  kind: FIRST_PARTITION,
+                  claims: [],
+                },),
               ],
-            },),
-          ],
-        },);
+            },);
 
-        expect(sheet.includes('wording the edit ADDED or altered',),).toBe(true,);
-        expect(sheet.includes(ADDED_WORDING,),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'NAMES a dropped-wording claim as dropped, quoting the before side',
-      fn: async () => {
-        // The two directions read opposite quotes off the same claim, so a
-        // formatter that picked the wrong field would show a grader wording
-        // that is present in the text it says was removed.
-        /**
-         Sheet built from one item the probe flagged for dropping wording.
-         */
-        const sheet = formatVerifySheet({
-          items: [
-            verifyItem({
-              entryId: 'whiskers',
-              envelopeId: 'lone',
-              kind: FIRST_PARTITION,
-              claims: [
-                {
-                  evidence: ADDED_WORDING,
-                  omittedText: DROPPED_WORDING,
-                },
+            expect(sheet.includes('source text of lone',),).toBe(true,);
+            expect(sheet.includes('baseline text of lone',),).toBe(true,);
+            expect(sheet.includes('before text of lone',),).toBe(true,);
+            expect(sheet.includes('after text of lone',),).toBe(true,);
+            expect(sheet.includes('Items: 1',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'WITHHOLDS the reviewer\'s claim from an item that carries none',
+          fn: async () => {
+            /**
+             Sheet built from one unclaimed item.
+             */
+            const sheet = formatVerifySheet({
+              items: [
+                verifyItem({
+                  entryId: 'whiskers',
+                  envelopeId: 'lone',
+                  kind: SECOND_PARTITION,
+                  claims: [],
+                },),
               ],
-            },),
-          ],
-        },);
+            },);
 
-        expect(sheet.includes('wording the edit DROPPED',),).toBe(true,);
-        expect(sheet.includes(DROPPED_WORDING,),).toBe(true,);
-        expect(sheet.includes('wording the edit ADDED or altered',),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: formatVerifyManifest.name,
-  children: [
-    it({
-      name: 'RECORDS the partition the sheet withholds',
-      fn: async () => {
-        /**
-         Rows the manifest carries.
-         */
-        const rows = manifestRows({ items: household(), },);
-
-        expect(rows.length,).toBe(household().length,);
-        expect(rows.some(function isDamaged(row,): boolean {
-          return row.kind === FIRST_PARTITION;
-        },),).toBe(true,);
-        expect(rows.some(function isControl(row,): boolean {
-          return row.kind === SECOND_PARTITION;
-        },),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'NUMBERS its rows from one, with no gaps',
-      fn: async () => {
-        expect(manifestRows({ items: household(), },)
-          .map(function toPosition(row,): number {
-            return row.position;
-          },),)
-          .toEqual(household()
-            .map(function toOneBased(
-              _item,
-              index,
-            ): number {
-              return index + 1;
-            },),);
-      },
-    },),
-    it({
-      name: 'NAMES who claimed what, so a graded sheet can be read per prober',
-      fn: async () => {
-        /**
-         Rows built from one claimed item and one unclaimed one.
-         */
-        const rows = manifestRows({
-          items: [
-            verifyItem({
-              entryId: 'whiskers',
-              envelopeId: 'claimed',
-              kind: FIRST_PARTITION,
-              claims: [
-                {
-                  evidence: ADDED_WORDING,
-                  omittedText: '',
-                },
+            expect(sheet.includes('An automated reviewer says',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'NAMES an added-wording claim as added, quoting the after side',
+          fn: async () => {
+            /**
+             Sheet built from one item the probe flagged for adding wording.
+             */
+            const sheet = formatVerifySheet({
+              items: [
+                verifyItem({
+                  entryId: 'whiskers',
+                  envelopeId: 'lone',
+                  kind: FIRST_PARTITION,
+                  claims: [
+                    {
+                      evidence: ADDED_WORDING,
+                      omittedText: '',
+                    },
+                  ],
+                },),
               ],
-            },),
-            verifyItem({
-              entryId: 'mittens',
-              envelopeId: 'unclaimed',
-              kind: SECOND_PARTITION,
-              claims: [],
-            },),
-          ],
-        },);
+            },);
 
-        /**
-         Claimants recorded against the claimed region.
-         */
-        const claimed = rows
-          .filter(function isClaimed(row,): boolean {
-            return row.envelopeId === 'claimed';
-          },)
-          .flatMap(function toClaimants(row,): readonly string[] {
-            return row.claimants;
-          },);
+            expect(sheet.includes('wording the edit ADDED or altered',),).toBe(true,);
+            expect(sheet.includes(ADDED_WORDING,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'NAMES a dropped-wording claim as dropped, quoting the before side',
+          fn: async () => {
+            // The two directions read opposite quotes off the same claim, so a
+            // formatter that picked the wrong field would show a grader wording
+            // that is present in the text it says was removed.
+            /**
+             Sheet built from one item the probe flagged for dropping wording.
+             */
+            const sheet = formatVerifySheet({
+              items: [
+                verifyItem({
+                  entryId: 'whiskers',
+                  envelopeId: 'lone',
+                  kind: FIRST_PARTITION,
+                  claims: [
+                    {
+                      evidence: ADDED_WORDING,
+                      omittedText: DROPPED_WORDING,
+                    },
+                  ],
+                },),
+              ],
+            },);
 
-        expect(claimed,).toEqual([CLAIMANT,],);
-        expect(rows
-          .filter(function isUnclaimed(row,): boolean {
-            return row.envelopeId === 'unclaimed';
-          },)
-          .flatMap(function toClaimants(row,): readonly string[] {
-            return row.claimants;
-          },),).toEqual([],);
-      },
+            expect(sheet.includes('wording the edit DROPPED',),).toBe(true,);
+            expect(sheet.includes(DROPPED_WORDING,),).toBe(true,);
+            expect(sheet.includes('wording the edit ADDED or altered',),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: formatVerifyManifest.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RECORDS the partition the sheet withholds',
+          fn: async () => {
+            /**
+             Rows the manifest carries.
+             */
+            const rows = manifestRows({ items: household(), },);
+
+            expect(rows.length,).toBe(household().length,);
+            expect(rows.some(function isDamaged(row,): boolean {
+              return row.kind === FIRST_PARTITION;
+            },),).toBe(true,);
+            expect(rows.some(function isControl(row,): boolean {
+              return row.kind === SECOND_PARTITION;
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'NUMBERS its rows from one, with no gaps',
+          fn: async () => {
+            expect(manifestRows({ items: household(), },)
+              .map(function toPosition(row,): number {
+                return row.position;
+              },),)
+              .toEqual(household()
+                .map(function toOneBased(
+                  _item,
+                  index,
+                ): number {
+                  return index + 1;
+                },),);
+          },
+        },),
+        it({
+          name: 'NAMES who claimed what, so a graded sheet can be read per prober',
+          fn: async () => {
+            /**
+             Rows built from one claimed item and one unclaimed one.
+             */
+            const rows = manifestRows({
+              items: [
+                verifyItem({
+                  entryId: 'whiskers',
+                  envelopeId: 'claimed',
+                  kind: FIRST_PARTITION,
+                  claims: [
+                    {
+                      evidence: ADDED_WORDING,
+                      omittedText: '',
+                    },
+                  ],
+                },),
+                verifyItem({
+                  entryId: 'mittens',
+                  envelopeId: 'unclaimed',
+                  kind: SECOND_PARTITION,
+                  claims: [],
+                },),
+              ],
+            },);
+
+            /**
+             Claimants recorded against the claimed region.
+             */
+            const claimed = rows
+              .filter(function isClaimed(row,): boolean {
+                return row.envelopeId === 'claimed';
+              },)
+              .flatMap(function toClaimants(row,): readonly string[] {
+                return row.claimants;
+              },);
+
+            expect(claimed,).toEqual([CLAIMANT,],);
+            expect(rows
+              .filter(function isUnclaimed(row,): boolean {
+                return row.envelopeId === 'unclaimed';
+              },)
+              .flatMap(function toClaimants(row,): readonly string[] {
+                return row.claimants;
+              },),).toEqual([],);
+          },
+        },),
+      ],
     },),
   ],
 },);

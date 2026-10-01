@@ -20,6 +20,7 @@ import { join, } from 'node:path';
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -95,231 +96,239 @@ async function gateOutcome(act: () => Promise<void>,): Promise<unknown> {
 }
 
 await describe({
-  name: readRequiredProviders.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS ORDERED DISTINCT PROVIDER REQUIREMENT, the third provider included',
-      fn: async () => {
-        expect(readRequiredProviders({
-          line: lineOf({
-            command: 'corpus-pass',
-            typed: [
-              '--require-providers',
-              'synthetic,openrouter,hyper,synthetic',
-            ],
-          },),
-        },),).toEqual([
-          'synthetic',
-          'openrouter',
-          'hyper',
-        ],);
-      },
-    },),
-    it({
-      name: 'REQUIRES NOTHING when the flag is absent, which is every ordinary run (ledger T8)',
-      fn: async () => {
-        expect(readRequiredProviders({
-          line: lineOf({
-            command: 'corpus-pass',
-            typed: [],
-          },),
-        },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'REFUSES the flag with no value, an empty value, separators naming nobody or a provider nobody '
-        + 'serves, naming what it accepts (ledger T8, B75)',
-      fn: async () => {
-        for (
-          const typed of [
-            ['--require-providers',],
-            ['--require-providers', '',],
-            ['--require-providers', ',',],
-            ['--require-providers', 'synthetic,catnip',],
-          ]
-        ) {
-          /**
-           What the reader raised for these arguments.
-           */
-          const refusal = caught(function readFlag(): unknown {
-            return readRequiredProviders({
+    describe({
+      name: readRequiredProviders.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS ORDERED DISTINCT PROVIDER REQUIREMENT, the third provider included',
+          fn: async () => {
+            expect(readRequiredProviders({
               line: lineOf({
                 command: 'corpus-pass',
-                typed,
+                typed: [
+                  '--require-providers',
+                  'synthetic,openrouter,hyper,synthetic',
+                ],
               },),
+            },),).toEqual([
+              'synthetic',
+              'openrouter',
+              'hyper',
+            ],);
+          },
+        },),
+        it({
+          name: 'REQUIRES NOTHING when the flag is absent, which is every ordinary run (ledger T8)',
+          fn: async () => {
+            expect(readRequiredProviders({
+              line: lineOf({
+                command: 'corpus-pass',
+                typed: [],
+              },),
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REFUSES the flag with no value, an empty value, separators naming nobody or a provider nobody '
+            + 'serves, naming what it accepts (ledger T8, B75)',
+          fn: async () => {
+            for (
+              const typed of [
+                ['--require-providers',],
+                ['--require-providers', '',],
+                ['--require-providers', ',',],
+                ['--require-providers', 'synthetic,catnip',],
+              ]
+            ) {
+              /**
+               What the reader raised for these arguments.
+               */
+              const refusal = caught(function readFlag(): unknown {
+                return readRequiredProviders({
+                  line: lineOf({
+                    command: 'corpus-pass',
+                    typed,
+                  },),
+                },);
+              },);
+              expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+              expect((refusal as Error).message,).toContain('synthetic, bedrock, hyper, openrouter',);
+            }
+          },
+        },),
+        it({
+          name: 'QUOTES the provider it refuses, so a spaced or mistyped name shows as typed (ledger B75)',
+          fn: async () => {
+            expect((caught(function readSpaced(): unknown {
+              return readRequiredProviders({
+                line: lineOf({
+                  command: 'corpus-pass',
+                  typed: ['--require-providers', 'synthetic,cat nip',],
+                },),
+              },);
+            },) as Error).message,).toBe(
+              '--require-providers accepts only synthetic, bedrock, hyper, openrouter, and "cat nip" is none of them',
+            );
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: assertRequiredProvidersReady.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS NO METER when nothing is required (ledger T8)',
+          fn: async () => {
+            expect(await gateOutcome(async function gateNothing() {
+              await assertRequiredProvidersReady({
+                required: [],
+                env: {},
+                transport: unreachedTransport,
+                signal: AbortSignal.timeout(5_000,),
+              },);
+            },),).toBe('passed',);
+          },
+        },),
+        it({
+          name: 'REFUSES MISSING REQUIRED KEY before transport call',
+          fn: async () => {
+            /**
+             What the gate raised for a requirement whose key is unset.
+             */
+            const refusal = await gateOutcome(async function gateKeyless() {
+              await assertRequiredProvidersReady({
+                required: ['synthetic', 'hyper',],
+                env: { [KEY_NAMES.hyper]: 'test-hyper', },
+                transport: unreachedTransport,
+                signal: AbortSignal.timeout(5_000,),
+              },);
             },);
-          },);
-          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-          expect((refusal as Error).message,).toContain('synthetic, bedrock, hyper, openrouter',);
-        }
-      },
-    },),
-    it({
-      name: 'QUOTES the provider it refuses, so a spaced or mistyped name shows as typed (ledger B75)',
-      fn: async () => {
-        expect((caught(function readSpaced(): unknown {
-          return readRequiredProviders({
-            line: lineOf({
-              command: 'corpus-pass',
-              typed: ['--require-providers', 'synthetic,cat nip',],
-            },),
-          },);
-        },) as Error).message,).toBe(
-          '--require-providers accepts only synthetic, bedrock, hyper, openrouter, and "cat nip" is none of them',
-        );
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: assertRequiredProvidersReady.name,
-  children: [
-    it({
-      name: 'ASKS NO METER when nothing is required (ledger T8)',
-      fn: async () => {
-        expect(await gateOutcome(async function gateNothing() {
-          await assertRequiredProvidersReady({
-            required: [],
-            env: {},
-            transport: unreachedTransport,
-            signal: AbortSignal.timeout(5_000,),
-          },);
-        },),).toBe('passed',);
-      },
-    },),
-    it({
-      name: 'REFUSES MISSING REQUIRED KEY before transport call',
-      fn: async () => {
-        /**
-         What the gate raised for a requirement whose key is unset.
-         */
-        const refusal = await gateOutcome(async function gateKeyless() {
-          await assertRequiredProvidersReady({
-            required: ['synthetic', 'hyper',],
-            env: { [KEY_NAMES.hyper]: 'test-hyper', },
-            transport: unreachedTransport,
-            signal: AbortSignal.timeout(5_000,),
-          },);
-        },);
-        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
-        expect((refusal as Error).message,).toContain('synthetic is not ready: key missing',);
-      },
-    },),
-    it({
-      name: 'ACCEPTS EVERY WET METER without model endpoint call, OpenRouter\'s credits included',
-      fn: async () => {
-        const urls: string[] = [];
-        await assertRequiredProvidersReady({
-          required: ['synthetic', 'hyper', 'openrouter',],
-          env: {
-            [KEY_NAMES.synthetic]: 'test-synthetic',
-            [KEY_NAMES.hyper]: 'test-hyper',
-            [KEY_NAMES.openrouter]: 'test-openrouter',
+            expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+            expect((refusal as Error).message,).toContain('synthetic is not ready: key missing',);
           },
-          transport: async function transport(exchange,) {
-            urls.push(exchange.url,);
-            if (exchange.url === HYPER_CREDITS_URL)
-              return { status: 200, bodyText: '{"balance":243}', };
-            if (exchange.url === OPENROUTER_CREDITS_URL)
-              return { status: 200, bodyText: '{"data":{"total_credits":1913,"total_usage":1855.38}}', };
-            return { status: 200, bodyText: WET_SYNTHETIC_BODY, };
-          },
-          signal: AbortSignal.timeout(5_000,),
-        },);
-        expect(urls,).toHaveLength(3,);
-        expect(urls,).toContain(HYPER_CREDITS_URL,);
-        expect(urls,).toContain(OPENROUTER_CREDITS_URL,);
-        expect(urls.some(function modelEndpoint(url,): boolean {
-          return url.includes('/chat/',);
-        },),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'REFUSES A DRY REQUIRED METER, naming the provider, so a measured arm never starts on a '
-        + 'provider that cannot serve it',
-      fn: async () => {
-        /**
-         What the gate raised over a spent OpenRouter balance.
-         */
-        const refusal = await gateOutcome(async function gateDry() {
-          await assertRequiredProvidersReady({
-            required: ['openrouter',],
-            env: { [KEY_NAMES.openrouter]: 'test-openrouter', },
-            transport: async function transport() {
-              return { status: 200, bodyText: '{"data":{"total_credits":10,"total_usage":10}}', };
-            },
-            signal: AbortSignal.timeout(5_000,),
-          },);
-        },);
-        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
-        expect((refusal as Error).message,).toContain('openrouter is not ready: budget dry',);
-      },
-    },),
-    it({
-      name: 'REFUSES A METER THAT CANNOT BE READ as unavailable rather than wet, whatever the transport did '
-        + '(ledger T8)',
-      fn: async () => {
-        /**
-         What the gate raised when the Hyper meter refused the key, a status
-         the client does not retry.
-         */
-        const refusal = await gateOutcome(async function gateUnreadable() {
-          await assertRequiredProvidersReady({
-            required: ['hyper',],
-            env: { [KEY_NAMES.hyper]: 'test-hyper', },
-            transport: async function transport() {
-              return { status: 401, bodyText: 'no such cat', };
-            },
-            signal: AbortSignal.timeout(5_000,),
-          },);
-        },);
-        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
-        expect((refusal as Error).message,).toContain('hyper is not ready: meter unavailable',);
-      },
-    },),
-    it({
-      name: 'READS BEDROCK OFF THE LEDGER THE HANDED ENVIRONMENT NAMES, over no HTTP, wet under its credit and dry '
-        + 'at none (ledger T8)',
-      fn: async () => {
-        /**
-         Directory holding this case's empty ledger.
-         */
-        const dir = await mkdtemp(join(tmpdir(), 'required-providers-ledger-',),);
-        await using cleanup = {
-          [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
-            await rm(dir, { recursive: true, force: true, },);
-          },
-        };
-        /**
-         Gate over Bedrock with one credit override.
-
-         @param creditUsd - credit the environment grants
-
-         @returns What the gate did
-         */
-        async function gateBedrock(creditUsd: string,): Promise<unknown> {
-          return await gateOutcome(async function gateLedger() {
+        },),
+        it({
+          name: 'ACCEPTS EVERY WET METER without model endpoint call, OpenRouter\'s credits included',
+          fn: async () => {
+            const urls: string[] = [];
             await assertRequiredProvidersReady({
-              required: ['bedrock',],
+              required: ['synthetic', 'hyper', 'openrouter',],
               env: {
-                [KEY_NAMES.bedrock]: 'test-bedrock',
-                [BEDROCK_LEDGER_PATH_VAR]: join(dir, 'bedrock-spend.jsonl',),
-                [BEDROCK_CREDIT_USD_VAR]: creditUsd,
+                [KEY_NAMES.synthetic]: 'test-synthetic',
+                [KEY_NAMES.hyper]: 'test-hyper',
+                [KEY_NAMES.openrouter]: 'test-openrouter',
               },
-              transport: unreachedTransport,
+              transport: async function transport(exchange,) {
+                urls.push(exchange.url,);
+                if (exchange.url === HYPER_CREDITS_URL)
+                  return { status: 200, bodyText: '{"balance":243}', };
+                if (exchange.url === OPENROUTER_CREDITS_URL)
+                  return { status: 200, bodyText: '{"data":{"total_credits":1913,"total_usage":1855.38}}', };
+                return { status: 200, bodyText: WET_SYNTHETIC_BODY, };
+              },
               signal: AbortSignal.timeout(5_000,),
             },);
-          },);
-        }
-        expect(await gateBedrock('40',),).toBe('passed',);
-        /**
-         What the gate raised with no credit to spend.
-         */
-        const refusal = await gateBedrock('0',);
-        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
-        expect((refusal as Error).message,).toContain('bedrock is not ready: budget dry',);
-      },
+            expect(urls,).toHaveLength(3,);
+            expect(urls,).toContain(HYPER_CREDITS_URL,);
+            expect(urls,).toContain(OPENROUTER_CREDITS_URL,);
+            expect(urls.some(function modelEndpoint(url,): boolean {
+              return url.includes('/chat/',);
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'REFUSES A DRY REQUIRED METER, naming the provider, so a measured arm never starts on a '
+            + 'provider that cannot serve it',
+          fn: async () => {
+            /**
+             What the gate raised over a spent OpenRouter balance.
+             */
+            const refusal = await gateOutcome(async function gateDry() {
+              await assertRequiredProvidersReady({
+                required: ['openrouter',],
+                env: { [KEY_NAMES.openrouter]: 'test-openrouter', },
+                transport: async function transport() {
+                  return { status: 200, bodyText: '{"data":{"total_credits":10,"total_usage":10}}', };
+                },
+                signal: AbortSignal.timeout(5_000,),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+            expect((refusal as Error).message,).toContain('openrouter is not ready: budget dry',);
+          },
+        },),
+        it({
+          name: 'REFUSES A METER THAT CANNOT BE READ as unavailable rather than wet, whatever the transport did '
+            + '(ledger T8)',
+          fn: async () => {
+            /**
+             What the gate raised when the Hyper meter refused the key, a status
+             the client does not retry.
+             */
+            const refusal = await gateOutcome(async function gateUnreadable() {
+              await assertRequiredProvidersReady({
+                required: ['hyper',],
+                env: { [KEY_NAMES.hyper]: 'test-hyper', },
+                transport: async function transport() {
+                  return { status: 401, bodyText: 'no such cat', };
+                },
+                signal: AbortSignal.timeout(5_000,),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+            expect((refusal as Error).message,).toContain('hyper is not ready: meter unavailable',);
+          },
+        },),
+        it({
+          name: 'READS BEDROCK OFF THE LEDGER THE HANDED ENVIRONMENT NAMES, over no HTTP, wet under its credit and dry '
+            + 'at none (ledger T8)',
+          fn: async () => {
+            /**
+             Directory holding this case's empty ledger.
+             */
+            const dir = await mkdtemp(join(tmpdir(), 'required-providers-ledger-',),);
+            await using cleanup = {
+              [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
+                await rm(dir, { recursive: true, force: true, },);
+              },
+            };
+            /**
+             Gate over Bedrock with one credit override.
+
+             @param creditUsd - credit the environment grants
+
+             @returns What the gate did
+             */
+            async function gateBedrock(creditUsd: string,): Promise<unknown> {
+              return await gateOutcome(async function gateLedger() {
+                await assertRequiredProvidersReady({
+                  required: ['bedrock',],
+                  env: {
+                    [KEY_NAMES.bedrock]: 'test-bedrock',
+                    [BEDROCK_LEDGER_PATH_VAR]: join(dir, 'bedrock-spend.jsonl',),
+                    [BEDROCK_CREDIT_USD_VAR]: creditUsd,
+                  },
+                  transport: unreachedTransport,
+                  signal: AbortSignal.timeout(5_000,),
+                },);
+              },);
+            }
+            expect(await gateBedrock('40',),).toBe('passed',);
+            /**
+             What the gate raised with no credit to spend.
+             */
+            const refusal = await gateBedrock('0',);
+            expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+            expect((refusal as Error).message,).toContain('bedrock is not ready: budget dry',);
+          },
+        },),
+      ],
     },),
   ],
 },);

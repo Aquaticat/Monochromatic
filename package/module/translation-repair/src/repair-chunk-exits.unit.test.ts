@@ -17,6 +17,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -349,217 +350,225 @@ async function runChunk(
 //endregion Fixtures
 
 await describe({
-  name: repairChunk.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SHIPS THE ARCHIVE when the panel accepts no claim, since there is nothing to edit, and '
-        + 'asks no editor',
-      fn: async () => {
-        const { outcome, sent, } = await runChunk({
-          script: {
-            claims: [CLAIMS.chase,],
-            panelVote: 'unsupported',
-            edits: [],
-            checks: everyIssue({ verdict: 'fixed', },),
+    describe({
+      name: repairChunk.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHIPS THE ARCHIVE when the panel accepts no claim, since there is nothing to edit, and '
+            + 'asks no editor',
+          fn: async () => {
+            const { outcome, sent, } = await runChunk({
+              script: {
+                claims: [CLAIMS.chase,],
+                panelVote: 'unsupported',
+                edits: [],
+                checks: everyIssue({ verdict: 'fixed', },),
+              },
+            },);
+            expect([
+              outcome.changed,
+              outcome.repairedText,
+              sent.has('editor_report',),
+            ],).toEqual([false, TARGET_TEXT, false,],);
+            expect(outcome.issues
+              .map(function toStatus(issue,) {
+                return issue.status;
+              },),).toEqual(['rejected',],);
           },
-        },);
-        expect([
-          outcome.changed,
-          outcome.repairedText,
-          sent.has('editor_report',),
-        ],).toEqual([false, TARGET_TEXT, false,],);
-        expect(outcome.issues
-          .map(function toStatus(issue,) {
-            return issue.status;
-          },),).toEqual(['rejected',],);
-      },
+        },),
+        it({
+          name: 'SHIPS THE ARCHIVE when the gate refuses every edit the editor wrote, and names the '
+            + 'editor that repaired nothing',
+          fn: async () => {
+            const { outcome, sent, } = await runChunk({
+              script: {
+                claims: [CLAIMS.nap, CLAIMS.chase,],
+                panelVote: 'supported',
+                edits: [
+                  // Drops the link the archive carries.
+                  { region: 1, newText: 'The kitten naps on the windowsill.', },
+                  // Writes the region back as it stands.
+                  { region: 2, newText: CHASE, },
+                ],
+                checks: everyIssue({ verdict: 'fixed', },),
+              },
+            },);
+            expect([
+              outcome.changed,
+              outcome.repairedText,
+              sent.has('resolution_report',),
+            ],).toEqual([false, TARGET_TEXT, false,],);
+            expect(outcome.findings,).toContain('editor-candidates (1/1 heard, 0 repairing)',);
+          },
+        },),
+        it({
+          name: 'COUNTS the edits the gate refused by reason, detail stripped and sorted, beside the one '
+            + 'it let through, so a run whose gate refused most of a patch does not read as ordinary',
+          fn: async () => {
+            const { outcome, } = await runChunk({
+              script: {
+                claims: [CLAIMS.nap, CLAIMS.chase, CLAIMS.bowl,],
+                panelVote: 'supported',
+                edits: [
+                  { region: 1, newText: 'The kitten naps on the windowsill.', },
+                  { region: 2, newText: CHASE, },
+                  { region: 3, newText: 'The bowl is full.', },
+                ],
+                checks: everyIssue({ verdict: 'fixed', },),
+              },
+            },);
+            expect(outcome.repairedText,).toContain('The bowl is full.',);
+            expect(outcome.findings
+              .filter(function isRefusalCount(finding,): boolean {
+                return finding.startsWith('editor-rejected ',);
+              },),).toEqual([
+              'editor-rejected preservation-lost-markup (1)',
+              'editor-rejected unchanged-region (1)',
+            ],);
+          },
+        },),
+        it({
+          name: 'SHIPS THE ARCHIVE when every checker votes every edit worse, stripping them all and '
+            + 'buying no recheck of a patch with nothing left in it',
+          fn: async () => {
+            const { outcome, sent, } = await runChunk({
+              script: {
+                claims: [CLAIMS.chase, CLAIMS.bowl,],
+                panelVote: 'supported',
+                edits: [
+                  { region: 1, newText: 'The cat loves chasing butterflies.', },
+                  { region: 2, newText: 'The bowl is full.', },
+                ],
+                checks: everyIssue({ verdict: 'worse', },),
+              },
+            },);
+            expect([
+              outcome.changed,
+              outcome.repairedText,
+              sent.get('resolution_report',)?.length,
+            ],).toEqual([false, TARGET_TEXT, MODELS.checkerModelIds.length,],);
+            expect(outcome.findings.some(function isStrip(finding,): boolean {
+              return finding.startsWith('repair-stripped-worse-voted (',);
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'KEEPS an edit no checker ruled on, since only an edit the checkers did not confirm and '
+            + 'voted worse is stripped, and credits only the issue they confirmed',
+          fn: async () => {
+            const { outcome, } = await runChunk({
+              script: {
+                claims: [CLAIMS.chase, CLAIMS.bowl,],
+                panelVote: 'supported',
+                edits: [
+                  { region: 1, newText: 'The cat loves chasing butterflies.', },
+                  { region: 2, newText: 'The bowl is full.', },
+                ],
+                // The checkers rule on the first issue and leave the second alone.
+                checks: function firstOnly() {
+                  return [{ issue: 1, verdict: 'fixed', },];
+                },
+              },
+            },);
+            expect([
+              outcome.repairedText.includes('The cat loves chasing butterflies.',),
+              outcome.repairedText.includes('The bowl is full.',),
+              outcome.resolvedIssueIds.length,
+            ],).toEqual([true, true, 1,],);
+          },
+        },),
+        it({
+          name: 'TELLS the editor the roster\'s rule addendum and the line-structure fact of the enclosing '
+            + 'chunk, which it reads nowhere else',
+          fn: async () => {
+            /** Rule only this roster adds. */
+            const addendum = 'Keep every cat named as the archive names it.';
+            const { sent, } = await runChunk({
+              script: {
+                claims: [CLAIMS.chase,],
+                panelVote: 'supported',
+                edits: [{ region: 1, newText: 'The cat loves chasing butterflies.', },],
+                checks: everyIssue({ verdict: 'fixed', },),
+              },
+              lineStructured: true,
+              models: {
+                ...MODELS,
+                editorRuleAddendum: addendum,
+              },
+            },);
+            /** What the editor was sent. */
+            const [editorSheet = '',] = sent.get('editor_report',) ?? [];
+            expect([
+              editorSheet.includes(addendum,),
+              editorSheet.includes('This region\'s ORIGINAL IS line-structured',),
+            ],).toEqual([true, true,],);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'SHIPS THE ARCHIVE when the gate refuses every edit the editor wrote, and names the '
-        + 'editor that repaired nothing',
-      fn: async () => {
-        const { outcome, sent, } = await runChunk({
-          script: {
-            claims: [CLAIMS.nap, CLAIMS.chase,],
-            panelVote: 'supported',
-            edits: [
-              // Drops the link the archive carries.
-              { region: 1, newText: 'The kitten naps on the windowsill.', },
-              // Writes the region back as it stands.
-              { region: 2, newText: CHASE, },
-            ],
-            checks: everyIssue({ verdict: 'fixed', },),
-          },
-        },);
-        expect([
-          outcome.changed,
-          outcome.repairedText,
-          sent.has('resolution_report',),
-        ],).toEqual([false, TARGET_TEXT, false,],);
-        expect(outcome.findings,).toContain('editor-candidates (1/1 heard, 0 repairing)',);
-      },
-    },),
-    it({
-      name: 'COUNTS the edits the gate refused by reason, detail stripped and sorted, beside the one '
-        + 'it let through, so a run whose gate refused most of a patch does not read as ordinary',
-      fn: async () => {
-        const { outcome, } = await runChunk({
-          script: {
-            claims: [CLAIMS.nap, CLAIMS.chase, CLAIMS.bowl,],
-            panelVote: 'supported',
-            edits: [
-              { region: 1, newText: 'The kitten naps on the windowsill.', },
-              { region: 2, newText: CHASE, },
-              { region: 3, newText: 'The bowl is full.', },
-            ],
-            checks: everyIssue({ verdict: 'fixed', },),
-          },
-        },);
-        expect(outcome.repairedText,).toContain('The bowl is full.',);
-        expect(outcome.findings
-          .filter(function isRefusalCount(finding,): boolean {
-            return finding.startsWith('editor-rejected ',);
-          },),).toEqual([
-          'editor-rejected preservation-lost-markup (1)',
-          'editor-rejected unchanged-region (1)',
-        ],);
-      },
-    },),
-    it({
-      name: 'SHIPS THE ARCHIVE when every checker votes every edit worse, stripping them all and '
-        + 'buying no recheck of a patch with nothing left in it',
-      fn: async () => {
-        const { outcome, sent, } = await runChunk({
-          script: {
-            claims: [CLAIMS.chase, CLAIMS.bowl,],
-            panelVote: 'supported',
-            edits: [
-              { region: 1, newText: 'The cat loves chasing butterflies.', },
-              { region: 2, newText: 'The bowl is full.', },
-            ],
-            checks: everyIssue({ verdict: 'worse', },),
-          },
-        },);
-        expect([
-          outcome.changed,
-          outcome.repairedText,
-          sent.get('resolution_report',)?.length,
-        ],).toEqual([false, TARGET_TEXT, MODELS.checkerModelIds.length,],);
-        expect(outcome.findings.some(function isStrip(finding,): boolean {
-          return finding.startsWith('repair-stripped-worse-voted (',);
-        },),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'KEEPS an edit no checker ruled on, since only an edit the checkers did not confirm and '
-        + 'voted worse is stripped, and credits only the issue they confirmed',
-      fn: async () => {
-        const { outcome, } = await runChunk({
-          script: {
-            claims: [CLAIMS.chase, CLAIMS.bowl,],
-            panelVote: 'supported',
-            edits: [
-              { region: 1, newText: 'The cat loves chasing butterflies.', },
-              { region: 2, newText: 'The bowl is full.', },
-            ],
-            // The checkers rule on the first issue and leave the second alone.
-            checks: function firstOnly() {
-              return [{ issue: 1, verdict: 'fixed', },];
-            },
-          },
-        },);
-        expect([
-          outcome.repairedText.includes('The cat loves chasing butterflies.',),
-          outcome.repairedText.includes('The bowl is full.',),
-          outcome.resolvedIssueIds.length,
-        ],).toEqual([true, true, 1,],);
-      },
-    },),
-    it({
-      name: 'TELLS the editor the roster\'s rule addendum and the line-structure fact of the enclosing '
-        + 'chunk, which it reads nowhere else',
-      fn: async () => {
-        /** Rule only this roster adds. */
-        const addendum = 'Keep every cat named as the archive names it.';
-        const { sent, } = await runChunk({
-          script: {
-            claims: [CLAIMS.chase,],
-            panelVote: 'supported',
-            edits: [{ region: 1, newText: 'The cat loves chasing butterflies.', },],
-            checks: everyIssue({ verdict: 'fixed', },),
-          },
-          lineStructured: true,
-          models: {
-            ...MODELS,
-            editorRuleAddendum: addendum,
-          },
-        },);
-        /** What the editor was sent. */
-        const [editorSheet = '',] = sent.get('editor_report',) ?? [];
-        expect([
-          editorSheet.includes(addendum,),
-          editorSheet.includes('This region\'s ORIGINAL IS line-structured',),
-        ],).toEqual([true, true,],);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: repairPreparedDocument.name,
-  children: [
-    it({
-      name: 'REJECTS an addition claim on an archive detail a cited reference states, before the '
-        + 'panel, and says so in the run\'s findings, when preparation attested that detail',
-      fn: async () => {
-        /** Archive sentence a cited page states word for word. */
-        const attested = 'She has an older sister.';
-        /** Pair whose archive carries the attested detail. */
-        const prepared = prepareDocumentPair({
-          sourceText: '小猫在窗台上打盹。\n',
-          targetText: `The kitten dozes on the windowsill. ${attested}\n`,
-        },);
-        /** Every exchange's messages, by stage. */
-        const sent = new Map<string, string[]>();
-        /** Run over the pair with the detail attested. */
-        const result = await repairPreparedDocument({
-          client: scriptedChunkClient({
-            script: {
-              claims: [{
-                category: 'accuracy/addition',
-                severity: 'major',
-                summary: 'The older sister has no source.',
-                sourceQuote: '小猫在窗台上打盹。',
-                targetQuote: attested,
-              },],
-              panelVote: 'supported',
-              edits: [],
-              checks: everyIssue({ verdict: 'fixed', },),
-            },
-            sent,
-          },),
-          prepared: {
-            ...prepared,
-            attestedDetails: [{
-              archiveQuote: attested,
-              reference: 1,
-              referenceQuote: 'The kitten has an older sister.',
-              voices: 2,
-              heard: 3,
-            },],
+    describe({
+      name: repairPreparedDocument.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REJECTS an addition claim on an archive detail a cited reference states, before the '
+            + 'panel, and says so in the run\'s findings, when preparation attested that detail',
+          fn: async () => {
+            /** Archive sentence a cited page states word for word. */
+            const attested = 'She has an older sister.';
+            /** Pair whose archive carries the attested detail. */
+            const prepared = prepareDocumentPair({
+              sourceText: '小猫在窗台上打盹。\n',
+              targetText: `The kitten dozes on the windowsill. ${attested}\n`,
+            },);
+            /** Every exchange's messages, by stage. */
+            const sent = new Map<string, string[]>();
+            /** Run over the pair with the detail attested. */
+            const result = await repairPreparedDocument({
+              client: scriptedChunkClient({
+                script: {
+                  claims: [{
+                    category: 'accuracy/addition',
+                    severity: 'major',
+                    summary: 'The older sister has no source.',
+                    sourceQuote: '小猫在窗台上打盹。',
+                    targetQuote: attested,
+                  },],
+                  panelVote: 'supported',
+                  edits: [],
+                  checks: everyIssue({ verdict: 'fixed', },),
+                },
+                sent,
+              },),
+              prepared: {
+                ...prepared,
+                attestedDetails: [{
+                  archiveQuote: attested,
+                  reference: 1,
+                  referenceQuote: 'The kitten has an older sister.',
+                  voices: 2,
+                  heard: 3,
+                },],
+              },
+              models: MODELS,
+              signal: AbortSignal.timeout(120_000,),
+              perCallTimeoutMs: 30_000,
+            },);
+            expect([
+              result.repairedText,
+              sent.has('panel_ballot',),
+            ],).toEqual([prepared.targetText, false,],);
+            expect(result.findings.some(function isScreen(finding,): boolean {
+              return finding.startsWith('addition claim rejected before the panel, reference-attested:',);
+            },),).toBe(true,);
           },
-          models: MODELS,
-          signal: AbortSignal.timeout(120_000,),
-          perCallTimeoutMs: 30_000,
-        },);
-        expect([
-          result.repairedText,
-          sent.has('panel_ballot',),
-        ],).toEqual([prepared.targetText, false,],);
-        expect(result.findings.some(function isScreen(finding,): boolean {
-          return finding.startsWith('addition claim rejected before the panel, reference-attested:',);
-        },),).toBe(true,);
-      },
+        },),
+      ],
     },),
   ],
 },);

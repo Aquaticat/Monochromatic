@@ -20,6 +20,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -39,215 +40,224 @@ import {
 const FALLBACK = 420;
 
 await describe({
-  name: resolveHardCapMinutes.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SPELLS the variable the way the documentation does. Earlier in '
-        + 'this work a sibling key was written as TRANSLATION_REPAIR_HYPER_API_KEY '
-        + 'when the real name carried CHARM, and nothing failed until a live '
-        + 'probe did: an operator who exports a name nothing reads gets the '
-        + 'default and no complaint',
-      fn: async () => {
-        expect(HARD_CAP_VAR,).toBe('TRANSLATION_REPAIR_HARD_CAP_MINUTES',);
-      },
-    },),
+    describe({
+      name: resolveHardCapMinutes.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SPELLS the variable the way the documentation does. Earlier in '
+            + 'this work a sibling key was written as TRANSLATION_REPAIR_HYPER_API_KEY '
+            + 'when the real name carried CHARM, and nothing failed until a live '
+            + 'probe did: an operator who exports a name nothing reads gets the '
+            + 'default and no complaint',
+          fn: async () => {
+            expect(HARD_CAP_VAR,).toBe('TRANSLATION_REPAIR_HARD_CAP_MINUTES',);
+          },
+        },),
 
-    it({
-      name: 'USES the built-in ceiling when nothing overrides it, which is '
-        + 'every ordinary run',
-      fn: async () => {
-        expect(resolveHardCapMinutes({
-          fallback: FALLBACK,
-          raw: '',
-        },),).toBe(FALLBACK,);
-      },
-    },),
-
-    it({
-      name: 'HONORS a positive override, which is what lets the re-attempt '
-        + 'queue be exercised against an entry that fits in one run',
-      fn: async () => {
-        expect(resolveHardCapMinutes({
-          fallback: FALLBACK,
-          raw: '15',
-        },),).toBe(15,);
-      },
-    },),
-
-    it({
-      name: 'IGNORES an empty override and falls back, since an '
-        + 'exported-but-empty variable is a shell accident rather than an '
-        + 'intention',
-      fn: async () => {
-        expect(resolveHardCapMinutes({
-          fallback: FALLBACK,
-          raw: '   ',
-        },),).toBe(FALLBACK,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a value that is not a number rather than falling back, '
-        + 'because a typo silently becoming the default leaves an operator '
-        + 'believing the run is bounded the way they asked for',
-      fn: async () => {
-        expect(
-          caught(function readTypo(): number {
-            return resolveHardCapMinutes({
+        it({
+          name: 'USES the built-in ceiling when nothing overrides it, which is '
+            + 'every ordinary run',
+          fn: async () => {
+            expect(resolveHardCapMinutes({
               fallback: FALLBACK,
-              raw: 'soon',
-            },);
-          },),
-        ).toBeInstanceOf(HardCapOverrideError,);
-      },
-    },),
+              raw: '',
+            },),).toBe(FALLBACK,);
+          },
+        },),
 
-    it({
-      name: 'REFUSES a trailing-unit value such as `30m`, which `parseFloat` '
-        + 'would have read as 30 and accepted: the number is right and the '
-        + 'operator\'s belief about what they set is not',
-      fn: async () => {
-        expect(
-          caught(function readUnit(): number {
-            return resolveHardCapMinutes({
+        it({
+          name: 'HONORS a positive override, which is what lets the re-attempt '
+            + 'queue be exercised against an entry that fits in one run',
+          fn: async () => {
+            expect(resolveHardCapMinutes({
               fallback: FALLBACK,
-              raw: '30m',
-            },);
-          },),
-        ).toBeInstanceOf(HardCapOverrideError,);
-      },
-    },),
+              raw: '15',
+            },),).toBe(15,);
+          },
+        },),
 
-    it({
-      name: 'REFUSES zero and negatives, which would cut every entry before it '
-        + 'bought a single slice and leave the queue dropping all of them',
-      fn: async () => {
-        expect(
-          caught(function readZero(): number {
-            return resolveHardCapMinutes({
+        it({
+          name: 'IGNORES an empty override and falls back, since an '
+            + 'exported-but-empty variable is a shell accident rather than an '
+            + 'intention',
+          fn: async () => {
+            expect(resolveHardCapMinutes({
               fallback: FALLBACK,
-              raw: '0',
-            },);
-          },),
-        ).toBeInstanceOf(HardCapOverrideError,);
-        expect(
-          caught(function readNegative(): number {
-            return resolveHardCapMinutes({
+              raw: '   ',
+            },),).toBe(FALLBACK,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a value that is not a number rather than falling back, '
+            + 'because a typo silently becoming the default leaves an operator '
+            + 'believing the run is bounded the way they asked for',
+          fn: async () => {
+            expect(
+              caught(function readTypo(): number {
+                return resolveHardCapMinutes({
+                  fallback: FALLBACK,
+                  raw: 'soon',
+                },);
+              },),
+            ).toBeInstanceOf(HardCapOverrideError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a trailing-unit value such as `30m`, which `parseFloat` '
+            + 'would have read as 30 and accepted: the number is right and the '
+            + 'operator\'s belief about what they set is not',
+          fn: async () => {
+            expect(
+              caught(function readUnit(): number {
+                return resolveHardCapMinutes({
+                  fallback: FALLBACK,
+                  raw: '30m',
+                },);
+              },),
+            ).toBeInstanceOf(HardCapOverrideError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES zero and negatives, which would cut every entry before it '
+            + 'bought a single slice and leave the queue dropping all of them',
+          fn: async () => {
+            expect(
+              caught(function readZero(): number {
+                return resolveHardCapMinutes({
+                  fallback: FALLBACK,
+                  raw: '0',
+                },);
+              },),
+            ).toBeInstanceOf(HardCapOverrideError,);
+            expect(
+              caught(function readNegative(): number {
+                return resolveHardCapMinutes({
+                  fallback: FALLBACK,
+                  raw: '-5',
+                },);
+              },),
+            ).toBeInstanceOf(HardCapOverrideError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a value not written as a plain decimal, which `Number` read as minutes nobody typed: a '
+            + 'hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side, '
+            + 'while a plain decimal such as 7.5 still reads (ledger B73)',
+          fn: async () => {
+            /**
+             Spellings `Number` reads as minutes that no operator writes as minutes.
+             */
+            const spellings = [
+              '0x10',
+              '1e1',
+              '+15',
+              ' 15',
+              '15 ',
+              '15.',
+              '.5',
+            ];
+            expect(spellings.map(function refusedOf(raw,): boolean {
+              return caught(function readSpelling(): number {
+                return resolveHardCapMinutes({
+                  fallback: FALLBACK,
+                  raw,
+                },);
+              },) instanceof HardCapOverrideError;
+            },),).toEqual(spellings.map(function refused(): boolean {
+              return true;
+            },),);
+            expect(resolveHardCapMinutes({
               fallback: FALLBACK,
-              raw: '-5',
+              raw: '7.5',
+            },),).toBe(7.5,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: capOutlastsOneCall.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a ceiling longer than one exchange, which is the only shape that can buy a slice',
+          fn: async () => {
+            expect(capOutlastsOneCall({
+              capMs: 420_000,
+              perCallMs: 360_000,
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name:
+            'REFUSES a ceiling equal to one exchange, because the attempt ends at the same instant the '
+            + 'exchange is allowed to and nothing has returned yet',
+          fn: async () => {
+            expect(capOutlastsOneCall({
+              capMs: 360_000,
+              perCallMs: 360_000,
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name:
+            'REFUSES the ceiling a live run actually used, five minutes against a six minute exchange, '
+            + 'which cached nothing across two attempts and reported STALLED',
+          fn: async () => {
+            expect(capOutlastsOneCall({
+              capMs: 300_000,
+              perCallMs: 360_000,
+            },),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: capTooTightNote.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES BOTH NUMBERS, so a reader can tell which one to move without reading the source',
+          fn: async () => {
+            /**
+             Note built over the ceiling and exchange deadline of the live run.
+             */
+            const note = capTooTightNote({
+              capMs: 300_000,
+              perCallMs: 360_000,
             },);
-          },),
-        ).toBeInstanceOf(HardCapOverrideError,);
-      },
-    },),
 
-    it({
-      name: 'REFUSES a value not written as a plain decimal, which `Number` read as minutes nobody typed: a '
-        + 'hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side, '
-        + 'while a plain decimal such as 7.5 still reads (ledger B73)',
-      fn: async () => {
-        /**
-         Spellings `Number` reads as minutes that no operator writes as minutes.
-         */
-        const spellings = [
-          '0x10',
-          '1e1',
-          '+15',
-          ' 15',
-          '15 ',
-          '15.',
-          '.5',
-        ];
-        expect(spellings.map(function refusedOf(raw,): boolean {
-          return caught(function readSpelling(): number {
-            return resolveHardCapMinutes({
-              fallback: FALLBACK,
-              raw,
+            expect(note.includes('300000',),).toBe(true,);
+            expect(note.includes('360000',),).toBe(true,);
+          },
+        },),
+        it({
+          name:
+            'SAYS WHAT FOLLOWS rather than only that something is wrong: no slice caches, so the queue '
+            + 'reads no progress and drops the entry',
+          fn: async () => {
+            /**
+             Same note, read for its consequence clause.
+             */
+            const note = capTooTightNote({
+              capMs: 300_000,
+              perCallMs: 360_000,
             },);
-          },) instanceof HardCapOverrideError;
-        },),).toEqual(spellings.map(function refused(): boolean {
-          return true;
-        },),);
-        expect(resolveHardCapMinutes({
-          fallback: FALLBACK,
-          raw: '7.5',
-        },),).toBe(7.5,);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: capOutlastsOneCall.name,
-  children: [
-    it({
-      name: 'ACCEPTS a ceiling longer than one exchange, which is the only shape that can buy a slice',
-      fn: async () => {
-        expect(capOutlastsOneCall({
-          capMs: 420_000,
-          perCallMs: 360_000,
-        },),).toBe(true,);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a ceiling equal to one exchange, because the attempt ends at the same instant the '
-        + 'exchange is allowed to and nothing has returned yet',
-      fn: async () => {
-        expect(capOutlastsOneCall({
-          capMs: 360_000,
-          perCallMs: 360_000,
-        },),).toBe(false,);
-      },
-    },),
-    it({
-      name:
-        'REFUSES the ceiling a live run actually used, five minutes against a six minute exchange, '
-        + 'which cached nothing across two attempts and reported STALLED',
-      fn: async () => {
-        expect(capOutlastsOneCall({
-          capMs: 300_000,
-          perCallMs: 360_000,
-        },),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: capTooTightNote.name,
-  children: [
-    it({
-      name: 'NAMES BOTH NUMBERS, so a reader can tell which one to move without reading the source',
-      fn: async () => {
-        /**
-         Note built over the ceiling and exchange deadline of the live run.
-         */
-        const note = capTooTightNote({
-          capMs: 300_000,
-          perCallMs: 360_000,
-        },);
-
-        expect(note.includes('300000',),).toBe(true,);
-        expect(note.includes('360000',),).toBe(true,);
-      },
-    },),
-    it({
-      name:
-        'SAYS WHAT FOLLOWS rather than only that something is wrong: no slice caches, so the queue '
-        + 'reads no progress and drops the entry',
-      fn: async () => {
-        /**
-         Same note, read for its consequence clause.
-         */
-        const note = capTooTightNote({
-          capMs: 300_000,
-          perCallMs: 360_000,
-        },);
-
-        expect(note.includes('no slice caches',),).toBe(true,);
-        expect(note.includes('stalled',),).toBe(true,);
-      },
+            expect(note.includes('no slice caches',),).toBe(true,);
+            expect(note.includes('stalled',),).toBe(true,);
+          },
+        },),
+      ],
     },),
   ],
 },);

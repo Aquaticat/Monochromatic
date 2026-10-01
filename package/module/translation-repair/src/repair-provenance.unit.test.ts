@@ -14,6 +14,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -381,263 +382,271 @@ function throughArtifact(
 }
 
 await describe({
-  name: 'repair provenance end to end',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'carries a shipped repair from the slice outcome through the '
-        + 'artifact onto the repair sheet, with the replacement intact',
-      fn: async () => {
-        const candidates = throughArtifact({ accuracyPatchSelected: true, },);
-        expect(candidates,).toHaveLength(1,);
-        expect(candidates[0]?.repair?.disposition,).toBe('shipped',);
-        expect(candidates[0]?.repair?.regions[0]?.editorAfter,)
-          .toBe(REPLACEMENT,);
+    describe({
+      name: 'repair provenance end to end',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'carries a shipped repair from the slice outcome through the '
+            + 'artifact onto the repair sheet, with the replacement intact',
+          fn: async () => {
+            const candidates = throughArtifact({ accuracyPatchSelected: true, },);
+            expect(candidates,).toHaveLength(1,);
+            expect(candidates[0]?.repair?.disposition,).toBe('shipped',);
+            expect(candidates[0]?.repair?.regions[0]?.editorAfter,)
+              .toBe(REPLACEMENT,);
 
-        /** Repair sheet over the round-tripped candidate. */
-        const sheet = formatRepairSheet({
-          sample: candidates,
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          drawDigest: 'digest-of-this-draw',
-        },);
-        expect(sheet.includes(REPLACEMENT,),).toBe(true,);
-        expect(sheet.includes('- repair grade: [ ]',),).toBe(true,);
+            /** Repair sheet over the round-tripped candidate. */
+            const sheet = formatRepairSheet({
+              sample: candidates,
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              drawDigest: 'digest-of-this-draw',
+            },);
+            expect(sheet.includes(REPLACEMENT,),).toBe(true,);
+            expect(sheet.includes('- repair grade: [ ]',),).toBe(true,);
 
-        // The claim that justifies omitting finalSliceText, checked against the
-        // text the run actually returns rather than against a fixture constant.
-        expect(candidates[0]?.repair?.finalSliceText,).toBeUndefined();
-        expect(PATCHED_TEXT.includes(REPLACEMENT,),).toBe(true,);
-      },
+            // The claim that justifies omitting finalSliceText, checked against the
+            // text the run actually returns rather than against a fixture constant.
+            expect(candidates[0]?.repair?.finalSliceText,).toBeUndefined();
+            expect(PATCHED_TEXT.includes(REPLACEMENT,),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'reads its own graded sheet back, closing the loop between the '
+            + 'formatter and the parser rather than testing each against a fixture '
+            + 'of the other\'s shape',
+          fn: async () => {
+            const candidates = throughArtifact({ accuracyPatchSelected: true, },);
+
+            /** Sheet exactly as the runbook hands it to the grader. */
+            const blank = formatRepairSheet({
+              sample: candidates,
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              drawDigest: 'digest-of-this-draw',
+            },);
+
+            /** Same sheet with the one box filled in, as a grader leaves it. */
+            const graded = blank.replace(
+              '- repair grade: [ ]',
+              '- repair grade: [Y, the tense now matches]',
+            );
+
+            /** Verdicts read back off the grader's file. */
+            const items = parseGradedRepairSheet({ text: graded, },);
+            expect(items,).toHaveLength(candidates.length,);
+            expect(items[0]?.verdict,).toBe('fixes',);
+            expect(items[0]?.note,).toBe('the tense now matches',);
+
+            // The ungraded sheet must read as unscored, or a blank run would look
+            // like a graded one whose repairs all failed.
+            expect(
+              parseGradedRepairSheet({ text: blank, },)[0]
+                ?.verdict,
+            ).toBe('unscored',);
+          },
+        },),
+
+        it({
+          name: 'carries a rejected repair through as not-selected, so the sheet '
+            + 'shows what was attempted and asks for no grade',
+          fn: async () => {
+            const candidates = throughArtifact({ accuracyPatchSelected: false, },);
+            expect(candidates[0]?.repair?.disposition,).toBe('not-selected',);
+
+            /** Repair sheet over the rejected repair. */
+            const sheet = formatRepairSheet({
+              sample: candidates,
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              drawDigest: 'digest-of-this-draw',
+            },);
+            expect(sheet.includes(REPLACEMENT,),).toBe(true,);
+            expect(sheet.includes('- repair grade: [ ]',),).toBe(false,);
+            expect(sheet.includes('counts against coverage',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'leaves the detection sheet identical whether a repair shipped or '
+            + 'not, which is what makes the two numbers independent',
+          fn: async () => {
+            /** Detection sheet where the repair shipped. */
+            const shipped = formatGradingSheet({
+              sample: throughArtifact({ accuracyPatchSelected: true, },),
+              seed: 'cat-seed',
+              bar: 0.9,
+              corpusSha: 'sha/1',
+              drawDigest: 'digest-of-this-draw',
+            },);
+
+            /** Detection sheet where it did not. */
+            const rejected = formatGradingSheet({
+              sample: throughArtifact({ accuracyPatchSelected: false, },),
+              seed: 'cat-seed',
+              bar: 0.9,
+              corpusSha: 'sha/1',
+              drawDigest: 'digest-of-this-draw',
+            },);
+            expect(shipped,).toBe(rejected,);
+            expect(shipped.includes(REPLACEMENT,),).toBe(false,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'reads its own graded sheet back, closing the loop between the '
-        + 'formatter and the parser rather than testing each against a fixture '
-        + 'of the other\'s shape',
-      fn: async () => {
-        const candidates = throughArtifact({ accuracyPatchSelected: true, },);
+    describe({
+      name: 'checker round across the disk boundary',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CARRIES every ballot and the seated roster through the artifact JSON, because '
+            + '`resolved` alone cannot say whether the checkers were unanimous or one vote apart, and a '
+            + 'field that survives a clone can still vanish through a file',
+          fn: async () => {
+            /**
+             Issue report as bytes. Written and re-read rather than cloned: JSON
+             drops what `structuredClone` keeps, and an optional field is exactly
+             what survives a clone and vanishes through a file.
+             */
+            const onDisk = JSON.stringify(buildIssueRecords({
+              outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
+              blocked: false,
+            },),);
 
-        /** Sheet exactly as the runbook hands it to the grader. */
-        const blank = formatRepairSheet({
-          sample: candidates,
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          drawDigest: 'digest-of-this-draw',
-        },);
+            /** Those bytes read back. */
+            const readBack: unknown = JSON.parse(onDisk,);
+            if (!Array.isArray(readBack,))
+              throw new Error('issue report should read back as a list',);
 
-        /** Same sheet with the one box filled in, as a grader leaves it. */
-        const graded = blank.replace(
-          '- repair grade: [ ]',
-          '- repair grade: [Y, the tense now matches]',
-        );
+            /** First record, as it came off disk. */
+            const [record,] = readBack as readonly { readonly checkerReading?: unknown; readonly resolved?: unknown; }[];
+            expect(record?.resolved,).toBe(true,);
+            expect(record?.checkerReading,).toEqual(CHECKER_READING,);
+          },
+        },),
 
-        /** Verdicts read back off the grader's file. */
-        const items = parseGradedRepairSheet({ text: graded, },);
-        expect(items,).toHaveLength(candidates.length,);
-        expect(items[0]?.verdict,).toBe('fixes',);
-        expect(items[0]?.note,).toBe('the tense now matches',);
+        it({
+          name: 'RECORDS NOTHING for an issue no checker ruled on, so an absent reading never reads as '
+            + 'agreement',
+          fn: async () => {
+            /** Outcome whose checker round said nothing about this issue. */
+            const silent = {
+              ...settledOutcome({ accuracyPatchSelected: true, },),
+              checkerReadings: {},
+              recheckReadings: {},
+            };
 
-        // The ungraded sheet must read as unscored, or a blank run would look
-        // like a graded one whose repairs all failed.
-        expect(
-          parseGradedRepairSheet({ text: blank, },)[0]
-            ?.verdict,
-        ).toBe('unscored',);
-      },
-    },),
+            /** Report over that outcome, as bytes. */
+            const onDisk = JSON.stringify(buildIssueRecords({
+              outcomes: [silent,],
+              blocked: false,
+            },),);
 
-    it({
-      name: 'carries a rejected repair through as not-selected, so the sheet '
-        + 'shows what was attempted and asks for no grade',
-      fn: async () => {
-        const candidates = throughArtifact({ accuracyPatchSelected: false, },);
-        expect(candidates[0]?.repair?.disposition,).toBe('not-selected',);
+            /** Those bytes read back. */
+            const readBack: unknown = JSON.parse(onDisk,);
+            if (!Array.isArray(readBack,))
+              throw new Error('issue report should read back as a list',);
+            const [record,] = readBack as readonly { readonly checkerReading?: unknown; }[];
+            expect(record?.checkerReading,).toBe(undefined,);
+          },
+        },),
 
-        /** Repair sheet over the rejected repair. */
-        const sheet = formatRepairSheet({
-          sample: candidates,
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          drawDigest: 'digest-of-this-draw',
-        },);
-        expect(sheet.includes(REPLACEMENT,),).toBe(true,);
-        expect(sheet.includes('- repair grade: [ ]',),).toBe(false,);
-        expect(sheet.includes('counts against coverage',),).toBe(true,);
-      },
-    },),
+        it({
+          name: 'KEEPS the refinement recheck as its own field rather than folding it into the deciding '
+            + 'round, since both rule on the same issue id and only the first one `resolved` rests on',
+          fn: async () => {
+            /** Issue report as bytes, carrying both rounds. */
+            const onDisk = JSON.stringify(buildIssueRecords({
+              outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
+              blocked: false,
+            },),);
 
-    it({
-      name: 'leaves the detection sheet identical whether a repair shipped or '
-        + 'not, which is what makes the two numbers independent',
-      fn: async () => {
-        /** Detection sheet where the repair shipped. */
-        const shipped = formatGradingSheet({
-          sample: throughArtifact({ accuracyPatchSelected: true, },),
-          seed: 'cat-seed',
-          bar: 0.9,
-          corpusSha: 'sha/1',
-          drawDigest: 'digest-of-this-draw',
-        },);
+            /** Those bytes read back. */
+            const readBack: unknown = JSON.parse(onDisk,);
+            if (!Array.isArray(readBack,))
+              throw new Error('issue report should read back as a list',);
 
-        /** Detection sheet where it did not. */
-        const rejected = formatGradingSheet({
-          sample: throughArtifact({ accuracyPatchSelected: false, },),
-          seed: 'cat-seed',
-          bar: 0.9,
-          corpusSha: 'sha/1',
-          drawDigest: 'digest-of-this-draw',
-        },);
-        expect(shipped,).toBe(rejected,);
-        expect(shipped.includes(REPLACEMENT,),).toBe(false,);
-      },
-    },),
-  ],
-},);
+            /** First record, as it came off disk. */
+            const [record,] = readBack as readonly {
+              readonly checkerReading?: unknown;
+              readonly recheckReading?: unknown;
+            }[];
+            expect(record?.checkerReading,).toEqual(CHECKER_READING,);
+            expect(record?.recheckReading,).toEqual(RECHECK_READING,);
 
-await describe({
-  name: 'checker round across the disk boundary',
-  children: [
-    it({
-      name: 'CARRIES every ballot and the seated roster through the artifact JSON, because '
-        + '`resolved` alone cannot say whether the checkers were unanimous or one vote apart, and a '
-        + 'field that survives a clone can still vanish through a file',
-      fn: async () => {
-        /**
-         Issue report as bytes. Written and re-read rather than cloned: JSON
-         drops what `structuredClone` keeps, and an optional field is exactly
-         what survives a clone and vanishes through a file.
-         */
-        const onDisk = JSON.stringify(buildIssueRecords({
-          outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
-          blocked: false,
-        },),);
+            // THE POINT OF TWO FIELDS. One voice answered differently across the
+            // rounds, and a merged record could not report that at all.
+            expect(record?.recheckReading,).not.toEqual(record?.checkerReading,);
+          },
+        },),
 
-        /** Those bytes read back. */
-        const readBack: unknown = JSON.parse(onDisk,);
-        if (!Array.isArray(readBack,))
-          throw new Error('issue report should read back as a list',);
+        it({
+          name: 'RECORDS NOTHING for a slice the naturalness lane never rewrote, which is most of them, '
+            + 'so an absent recheck never reads as a rewrite that held',
+          fn: async () => {
+            /** Outcome the refinement lane bought no second round on. */
+            const unrefined = {
+              ...settledOutcome({ accuracyPatchSelected: true, },),
+              recheckReadings: {},
+            };
 
-        /** First record, as it came off disk. */
-        const [record,] = readBack as readonly { readonly checkerReading?: unknown; readonly resolved?: unknown; }[];
-        expect(record?.resolved,).toBe(true,);
-        expect(record?.checkerReading,).toEqual(CHECKER_READING,);
-      },
-    },),
+            /** Report over that outcome, as bytes. */
+            const onDisk = JSON.stringify(buildIssueRecords({
+              outcomes: [unrefined,],
+              blocked: false,
+            },),);
 
-    it({
-      name: 'RECORDS NOTHING for an issue no checker ruled on, so an absent reading never reads as '
-        + 'agreement',
-      fn: async () => {
-        /** Outcome whose checker round said nothing about this issue. */
-        const silent = {
-          ...settledOutcome({ accuracyPatchSelected: true, },),
-          checkerReadings: {},
-          recheckReadings: {},
-        };
+            /** Those bytes read back. */
+            const readBack: unknown = JSON.parse(onDisk,);
+            if (!Array.isArray(readBack,))
+              throw new Error('issue report should read back as a list',);
+            const [record,] = readBack as readonly {
+              readonly checkerReading?: unknown;
+              readonly recheckReading?: unknown;
+            }[];
+            expect(record?.recheckReading,).toBe(undefined,);
 
-        /** Report over that outcome, as bytes. */
-        const onDisk = JSON.stringify(buildIssueRecords({
-          outcomes: [silent,],
-          blocked: false,
-        },),);
+            // The deciding round is untouched by the lane never running.
+            expect(record?.checkerReading,).toEqual(CHECKER_READING,);
+          },
+        },),
 
-        /** Those bytes read back. */
-        const readBack: unknown = JSON.parse(onDisk,);
-        if (!Array.isArray(readBack,))
-          throw new Error('issue report should read back as a list',);
-        const [record,] = readBack as readonly { readonly checkerReading?: unknown; }[];
-        expect(record?.checkerReading,).toBe(undefined,);
-      },
-    },),
+        it({
+          name: 'CARRIES THE ADJUDICATION PANEL\'S BALLOTS through the same file, since the accept gate decides whether an issue exists at all and its five weighted numbers cannot say who voted or who abstained',
+          fn: async () => {
+            /** Issue report as bytes. */
+            const onDisk = JSON.stringify(buildIssueRecords({
+              outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
+              blocked: false,
+            },),);
 
-    it({
-      name: 'KEEPS the refinement recheck as its own field rather than folding it into the deciding '
-        + 'round, since both rule on the same issue id and only the first one `resolved` rests on',
-      fn: async () => {
-        /** Issue report as bytes, carrying both rounds. */
-        const onDisk = JSON.stringify(buildIssueRecords({
-          outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
-          blocked: false,
-        },),);
+            /** Those bytes read back. */
+            const readBack: unknown = JSON.parse(onDisk,);
+            if (!Array.isArray(readBack,))
+              throw new Error('issue report should read back as a list',);
 
-        /** Those bytes read back. */
-        const readBack: unknown = JSON.parse(onDisk,);
-        if (!Array.isArray(readBack,))
-          throw new Error('issue report should read back as a list',);
+            /** First record, as it came off disk. */
+            const [record,] = readBack as readonly {
+              readonly issue?: {
+                readonly readings?: Readonly<Record<string, unknown>>;
+                readonly tallies?: Readonly<Record<string, unknown>>;
+              };
+            }[];
+            expect(record?.issue?.readings?.['claim/nap'],).toEqual(PANEL_READING,);
 
-        /** First record, as it came off disk. */
-        const [record,] = readBack as readonly {
-          readonly checkerReading?: unknown;
-          readonly recheckReading?: unknown;
-        }[];
-        expect(record?.checkerReading,).toEqual(CHECKER_READING,);
-        expect(record?.recheckReading,).toEqual(RECHECK_READING,);
-
-        // THE POINT OF TWO FIELDS. One voice answered differently across the
-        // rounds, and a merged record could not report that at all.
-        expect(record?.recheckReading,).not.toEqual(record?.checkerReading,);
-      },
-    },),
-
-    it({
-      name: 'RECORDS NOTHING for a slice the naturalness lane never rewrote, which is most of them, '
-        + 'so an absent recheck never reads as a rewrite that held',
-      fn: async () => {
-        /** Outcome the refinement lane bought no second round on. */
-        const unrefined = {
-          ...settledOutcome({ accuracyPatchSelected: true, },),
-          recheckReadings: {},
-        };
-
-        /** Report over that outcome, as bytes. */
-        const onDisk = JSON.stringify(buildIssueRecords({
-          outcomes: [unrefined,],
-          blocked: false,
-        },),);
-
-        /** Those bytes read back. */
-        const readBack: unknown = JSON.parse(onDisk,);
-        if (!Array.isArray(readBack,))
-          throw new Error('issue report should read back as a list',);
-        const [record,] = readBack as readonly {
-          readonly checkerReading?: unknown;
-          readonly recheckReading?: unknown;
-        }[];
-        expect(record?.recheckReading,).toBe(undefined,);
-
-        // The deciding round is untouched by the lane never running.
-        expect(record?.checkerReading,).toEqual(CHECKER_READING,);
-      },
-    },),
-
-    it({
-      name: 'CARRIES THE ADJUDICATION PANEL\'S BALLOTS through the same file, since the accept gate decides whether an issue exists at all and its five weighted numbers cannot say who voted or who abstained',
-      fn: async () => {
-        /** Issue report as bytes. */
-        const onDisk = JSON.stringify(buildIssueRecords({
-          outcomes: [settledOutcome({ accuracyPatchSelected: true, },),],
-          blocked: false,
-        },),);
-
-        /** Those bytes read back. */
-        const readBack: unknown = JSON.parse(onDisk,);
-        if (!Array.isArray(readBack,))
-          throw new Error('issue report should read back as a list',);
-
-        /** First record, as it came off disk. */
-        const [record,] = readBack as readonly {
-          readonly issue?: {
-            readonly readings?: Readonly<Record<string, unknown>>;
-            readonly tallies?: Readonly<Record<string, unknown>>;
-          };
-        }[];
-        expect(record?.issue?.readings?.['claim/nap'],).toEqual(PANEL_READING,);
-
-        // KEYED AS THE TALLIES ARE, so nothing has to guess the pairing.
-        expect(Object.keys(record?.issue?.readings ?? {},),).toStrictEqual(
-          Object.keys(record?.issue?.tallies ?? {},),
-        );
-      },
+            // KEYED AS THE TALLIES ARE, so nothing has to guess the pairing.
+            expect(Object.keys(record?.issue?.readings ?? {},),).toStrictEqual(
+              Object.keys(record?.issue?.tallies ?? {},),
+            );
+          },
+        },),
+      ],
     },),
   ],
 },);

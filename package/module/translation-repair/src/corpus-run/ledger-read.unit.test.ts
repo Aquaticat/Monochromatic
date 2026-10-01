@@ -28,6 +28,7 @@
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -315,536 +316,545 @@ function refusalMessageFor(
 
 
 await describe({
-  name: summariseLedger.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'CREDITS both authors of a jointly written candidate, so a reader '
-        + 'that kept only the first author would under-count the second',
-      fn: async () => {
-        /**
-         One contest read.
-         */
-        const summary = summariseLedger({ rounds: [CONTEST,], },);
+    describe({
+      name: summariseLedger.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CREDITS both authors of a jointly written candidate, so a reader '
+            + 'that kept only the first author would under-count the second',
+          fn: async () => {
+            /**
+             One contest read.
+             */
+            const summary = summariseLedger({ rounds: [CONTEST,], },);
 
-        expect({
-          one: seatOf({
-            summary,
-            model: JOINT_ONE,
-          },).candidates,
-          two: seatOf({
-            summary,
-            model: JOINT_TWO,
-          },).candidates,
-        },)
-          .toEqual({
-            one: 1,
-            two: 1,
-          },);
-      },
-    },),
-
-    it({
-      name: 'COUNTS a self-vote apart from the votes that are evidence about a '
-        + 'seat, matching what the standing does with the same rounds',
-      fn: async () => {
-        /**
-         One contest read.
-         */
-        const summary = summariseLedger({ rounds: [CONTEST,], },);
-
-        /**
-         First author of the joint candidate, which voted for its own work.
-         */
-        const seat = seatOf({
-          summary,
-          model: JOINT_ONE,
-        },);
-
-        expect({
-          selfVotes: seat.selfVotes,
-          votes: seat.votes,
-        },)
-          .toEqual({
-            selfVotes: 1,
-            votes: 0,
-          },);
-      },
-    },),
-
-    it({
-      name: 'EXCLUDES the authors of a candidate from its own denominator, so '
-        + 'a seat two judges wrote is weighed by the three that did not',
-      fn: async () => {
-        /**
-         One contest read.
-         */
-        const summary = summariseLedger({ rounds: [CONTEST,], },);
-
-        expect({
-          joint: seatOf({
-            summary,
-            model: JOINT_ONE,
-          },).ballots,
-          solo: seatOf({
-            summary,
-            model: SOLO,
-          },).ballots,
-        },)
-          .toEqual({
-            joint: 3,
-            solo: 4,
-          },);
-      },
-    },),
-
-    it({
-      name: 'NAMES the winner by the position the contest selected, and gives '
-        + 'the losing seats no win',
-      fn: async () => {
-        /**
-         One contest read.
-         */
-        const summary = summariseLedger({ rounds: [CONTEST,], },);
-
-        expect({
-          won: seatOf({
-            summary,
-            model: SOLO,
-          },).wins,
-          lost: seatOf({
-            summary,
-            model: JOINT_ONE,
-          },).wins,
-        },)
-          .toEqual({
-            won: 1,
-            lost: 0,
-          },);
-      },
-    },),
-
-    it({
-      name: 'COUNTS votes for a candidate whose own author abstained, which is '
-        + 'a seat winning on other judges alone',
-      fn: async () => {
-        /**
-         One contest read.
-         */
-        const summary = summariseLedger({ rounds: [CONTEST,], },);
-
-        /**
-         Solo seat, whose author named nothing at all.
-         */
-        const seat = seatOf({
-          summary,
-          model: SOLO,
-        },);
-
-        expect({
-          votes: seat.votes,
-          selfVotes: seat.selfVotes,
-        },)
-          .toEqual({
-            votes: 2,
-            selfVotes: 0,
-          },);
-      },
-    },),
-
-    it({
-      name: 'SEPARATES an abstention from a ballot naming a candidate the '
-        + 'slate does not have, since only the second is a fault in the judge',
-      fn: async () => {
-        /**
-         One contest read.
-         */
-        const summary = summariseLedger({ rounds: [CONTEST,], },);
-
-        expect({
-          abstentions: summary.abstentions,
-          namedMissing: summary.namedMissing,
-        },)
-          .toEqual({
-            abstentions: 1,
-            namedMissing: 1,
-          },);
-      },
-    },),
-
-    it({
-      name: 'AWARDS no win where the panel declined, while still counting the '
-        + 'ballot that backed the candidate it refused',
-      fn: async () => {
-        /**
-         One contest whose panel chose nothing.
-         */
-        const summary = summariseLedger({ rounds: [DECLINED,], },);
-
-        /**
-         Only seat that wrote anything in it.
-         */
-        const seat = seatOf({
-          summary,
-          model: THIRD,
-        },);
-
-        expect({
-          candidates: seat.candidates,
-          wins: seat.wins,
-          votes: seat.votes,
-        },)
-          .toEqual({
-            candidates: 1,
-            wins: 0,
-            votes: 1,
-          },);
-      },
-    },),
-
-    it({
-      name: 'COUNTS a ballot naming the LAST candidate on a slate as an '
-        + 'ordinary vote, not as one naming a candidate that is not there',
-      fn: async () => {
-        // THE OFF-BY-ONE CASE. A ballot names a one-based position and the
-        // slate is a zero-based array, so the join subtracts one. Every ballot
-        // naming a middle position resolves under either indexing, and so does
-        // a ballot past the end; only a ballot naming the LAST candidate tells
-        // the two apart. The declined contest holds exactly one candidate and
-        // its only judge names it, which is that case at its smallest.
-        expect(summariseLedger({ rounds: [DECLINED,], },).namedMissing,)
-          .toEqual(0,);
-      },
-    },),
-
-    it({
-      name: 'ORDERS seats by how much they wrote across every contest read, '
-        + 'not by how often they were chosen',
-      fn: async () => {
-        /**
-         Both contests read, so the third seat wrote twice and the rest once.
-         */
-        const summary = summariseLedger({
-          rounds: [
-            CONTEST,
-            DECLINED,
-          ],
-        },);
-
-        expect({
-          first: summary
-            .models
-            .at(0,)
-            ?.model,
-          rounds: summary.rounds,
-        },)
-          .toEqual({
-            first: THIRD,
-            rounds: 2,
-          },);
-      },
-    },),
-
-    it({
-      name: 'READS a ledger holding no contests as nothing rather than '
-        + 'refusing, since a run that judged nothing is an ordinary run',
-      fn: async () => {
-        /**
-         No contests at all.
-         */
-        const summary = summariseLedger({ rounds: [], },);
-
-        expect(summary,)
-          .toEqual({
-            models: [],
-            rounds: 0,
-            abstentions: 0,
-            namedMissing: 0,
-          },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: workOfModel.name,
-  children: [
-    it({
-      name: 'JOINS the stated reason of every disinterested judge to the '
-        + 'candidate it named, which is the evidence a roster question needs',
-      fn: async () => {
-        /**
-         Everything the solo seat wrote across one contest.
-         */
-        const written = workOfModel({
-          rounds: [CONTEST,],
-          model: SOLO,
-        },);
-
-        expect({
-          pieces: written.length,
-          remarks: written
-            .at(0,)
-            ?.remarks,
-        },)
-          .toEqual({
-            pieces: 1,
-            remarks: [
-              `${OUTSIDER}: keeps the warmth of the sill, which the others drop`,
-              `${THIRD}: plainest of the three`,
-            ],
-          },);
-      },
-    },),
-
-    it({
-      name: 'OMITS the remark an author made about its own candidate, so a '
-        + 'seat cannot supply its own evidence',
-      fn: async () => {
-        /**
-         Everything the joint candidate's first author wrote.
-         */
-        const written = workOfModel({
-          rounds: [CONTEST,],
-          model: JOINT_ONE,
-        },);
-
-        // Its own ballot is the only one naming position 2, so nothing is left.
-        expect(written
-          .at(0,)
-          ?.remarks,)
-          .toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'CARRIES the text the judges actually compared, together with what '
-        + 'they were deciding and whether it was chosen',
-      fn: async () => {
-        /**
-         Everything the solo seat wrote.
-         */
-        const written = workOfModel({
-          rounds: [CONTEST,],
-          model: SOLO,
-        },);
-
-        expect({
-          rendered: written
-            .at(0,)
-            ?.rendered,
-          won: written
-            .at(0,)
-            ?.won,
-          task: written
-            .at(0,)
-            ?.task,
-        },)
-          .toEqual({
-            rendered: 'The tabby slept on the warm windowsill.',
-            won: true,
-            task: 'render this passage',
-          },);
-      },
-    },),
-
-    it({
-      name: 'MARKS a declined contest as won by nobody, rather than reading '
-        + 'the refusal as a loss to some other seat',
-      fn: async () => {
-        /**
-         Everything the third seat wrote across both contests.
-         */
-        const written = workOfModel({
-          rounds: [
-            CONTEST,
-            DECLINED,
-          ],
-          model: THIRD,
-        },);
-
-        expect({
-          pieces: written.length,
-          declined: written
-            .at(1,)
-            ?.won,
-        },)
-          .toEqual({
-            pieces: 2,
-            declined: false,
-          },);
-      },
-    },),
-
-    it({
-      name: 'FINDS nothing for a seat that judged but never wrote, which is a '
-        + 'silent answer and not an empty candidate',
-      fn: async () => {
-        /**
-         A judge that never produced a candidate of its own.
-         */
-        const written = workOfModel({
-          rounds: [CONTEST,],
-          model: OUTSIDER,
-        },);
-
-        expect(written,)
-          .toEqual([],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: parseLedgerRound.name,
-  children: [
-    it({
-      name: 'ACCEPTS a contest holding every field, and reads the slate and '
-        + 'the ballots back in the order they were written',
-      fn: async () => {
-        /**
-         A contest round-tripped through the JSON a ledger file holds.
-         */
-        const round = parseLedgerRound({
-          value: asFileWould({ round: CONTEST, },),
-          from: 'ledger/000001.json',
-        },);
-
-        expect(round,)
-          .toEqual(CONTEST,);
-      },
-    },),
-
-    it({
-      name: 'READS a declined outcome as the refusal it is, rather than '
-        + 'refusing the file for holding no winning position',
-      fn: async () => {
-        /**
-         The contest whose panel chose nothing.
-         */
-        const round = parseLedgerRound({
-          value: asFileWould({ round: DECLINED, },),
-          from: 'ledger/000002.json',
-        },);
-
-        expect(round.selectedIndex,)
-          .toEqual('declined',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a file whose ballots are missing, rather than reading it '
-        + 'as a contest nobody judged',
-      fn: async () => {
-        expect(function noBallots(): void {
-          parseLedgerRound({
-            value: {
-              task: 'render this passage',
-              at: '2026-08-25T00:00:00.000Z',
-              candidates: [],
-              selectedIndex: 'declined',
-            },
-            from: 'ledger/000003.json',
-          },);
-        },)
-          .toThrow(LedgerShapeError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a candidate whose producer list holds something that is '
-        + 'not a model id, since the join reads those ids',
-      fn: async () => {
-        expect(function badProducer(): void {
-          parseLedgerRound({
-            value: {
-              task: 'render this passage',
-              at: '2026-08-25T00:00:00.000Z',
-              candidates: [
-                {
-                  index: 1,
-                  producers: [7,],
-                  rendered: 'The tabby slept.',
-                },
-              ],
-              ballots: [],
-              selectedIndex: 1,
-            },
-            from: 'ledger/000004.json',
-          },);
-        },)
-          .toThrow(LedgerShapeError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a selected position that is neither a number nor the word '
-        + 'a declining panel writes',
-      fn: async () => {
-        expect(function badOutcome(): void {
-          parseLedgerRound({
-            value: {
-              task: 'render this passage',
-              at: '2026-08-25T00:00:00.000Z',
-              candidates: [],
-              ballots: [],
-              selectedIndex: 'maybe',
-            },
-            from: 'ledger/000005.json',
-          },);
-        },)
-          .toThrow(LedgerShapeError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a value that is not an object at all, which is what a '
-        + 'truncated write leaves behind',
-      fn: async () => {
-        expect(function notAnObject(): void {
-          parseLedgerRound({
-            value: null,
-            from: 'ledger/000006.json',
-          },);
-        },)
-          .toThrow(LedgerShapeError,);
-      },
-    },),
-
-    it({
-      name: 'NAMES the file and the field in a refusal and quotes neither the '
-        + 'passage nor the reason, since a ledger holds corpus wording',
-      fn: async () => {
-        /**
-         A contest whose ballots field is a string, carrying a passage in a
-         field beside it that the refusal must not echo.
-         */
-        const message = refusalMessageFor({
-          value: {
-            task: 'render this passage',
-            at: '2026-08-25T00:00:00.000Z',
-            candidates: [
-              {
-                index: 1,
-                producers: [SOLO,],
-                rendered: 'The tabby slept on the warm windowsill.',
-              },
-            ],
-            selectedIndex: 1,
+            expect({
+              one: seatOf({
+                summary,
+                model: JOINT_ONE,
+              },).candidates,
+              two: seatOf({
+                summary,
+                model: JOINT_TWO,
+              },).candidates,
+            },)
+              .toEqual({
+                one: 1,
+                two: 1,
+              },);
           },
-          from: 'ledger/000007.json',
-        },);
+        },),
 
-        expect({
-          namesFile: message.includes('ledger/000007.json',),
-          namesField: message.includes('ballots',),
-          quotesPassage: message.includes('windowsill',),
-        },)
-          .toEqual({
-            namesFile: true,
-            namesField: true,
-            quotesPassage: false,
-          },);
-      },
+        it({
+          name: 'COUNTS a self-vote apart from the votes that are evidence about a '
+            + 'seat, matching what the standing does with the same rounds',
+          fn: async () => {
+            /**
+             One contest read.
+             */
+            const summary = summariseLedger({ rounds: [CONTEST,], },);
+
+            /**
+             First author of the joint candidate, which voted for its own work.
+             */
+            const seat = seatOf({
+              summary,
+              model: JOINT_ONE,
+            },);
+
+            expect({
+              selfVotes: seat.selfVotes,
+              votes: seat.votes,
+            },)
+              .toEqual({
+                selfVotes: 1,
+                votes: 0,
+              },);
+          },
+        },),
+
+        it({
+          name: 'EXCLUDES the authors of a candidate from its own denominator, so '
+            + 'a seat two judges wrote is weighed by the three that did not',
+          fn: async () => {
+            /**
+             One contest read.
+             */
+            const summary = summariseLedger({ rounds: [CONTEST,], },);
+
+            expect({
+              joint: seatOf({
+                summary,
+                model: JOINT_ONE,
+              },).ballots,
+              solo: seatOf({
+                summary,
+                model: SOLO,
+              },).ballots,
+            },)
+              .toEqual({
+                joint: 3,
+                solo: 4,
+              },);
+          },
+        },),
+
+        it({
+          name: 'NAMES the winner by the position the contest selected, and gives '
+            + 'the losing seats no win',
+          fn: async () => {
+            /**
+             One contest read.
+             */
+            const summary = summariseLedger({ rounds: [CONTEST,], },);
+
+            expect({
+              won: seatOf({
+                summary,
+                model: SOLO,
+              },).wins,
+              lost: seatOf({
+                summary,
+                model: JOINT_ONE,
+              },).wins,
+            },)
+              .toEqual({
+                won: 1,
+                lost: 0,
+              },);
+          },
+        },),
+
+        it({
+          name: 'COUNTS votes for a candidate whose own author abstained, which is '
+            + 'a seat winning on other judges alone',
+          fn: async () => {
+            /**
+             One contest read.
+             */
+            const summary = summariseLedger({ rounds: [CONTEST,], },);
+
+            /**
+             Solo seat, whose author named nothing at all.
+             */
+            const seat = seatOf({
+              summary,
+              model: SOLO,
+            },);
+
+            expect({
+              votes: seat.votes,
+              selfVotes: seat.selfVotes,
+            },)
+              .toEqual({
+                votes: 2,
+                selfVotes: 0,
+              },);
+          },
+        },),
+
+        it({
+          name: 'SEPARATES an abstention from a ballot naming a candidate the '
+            + 'slate does not have, since only the second is a fault in the judge',
+          fn: async () => {
+            /**
+             One contest read.
+             */
+            const summary = summariseLedger({ rounds: [CONTEST,], },);
+
+            expect({
+              abstentions: summary.abstentions,
+              namedMissing: summary.namedMissing,
+            },)
+              .toEqual({
+                abstentions: 1,
+                namedMissing: 1,
+              },);
+          },
+        },),
+
+        it({
+          name: 'AWARDS no win where the panel declined, while still counting the '
+            + 'ballot that backed the candidate it refused',
+          fn: async () => {
+            /**
+             One contest whose panel chose nothing.
+             */
+            const summary = summariseLedger({ rounds: [DECLINED,], },);
+
+            /**
+             Only seat that wrote anything in it.
+             */
+            const seat = seatOf({
+              summary,
+              model: THIRD,
+            },);
+
+            expect({
+              candidates: seat.candidates,
+              wins: seat.wins,
+              votes: seat.votes,
+            },)
+              .toEqual({
+                candidates: 1,
+                wins: 0,
+                votes: 1,
+              },);
+          },
+        },),
+
+        it({
+          name: 'COUNTS a ballot naming the LAST candidate on a slate as an '
+            + 'ordinary vote, not as one naming a candidate that is not there',
+          fn: async () => {
+            // THE OFF-BY-ONE CASE. A ballot names a one-based position and the
+            // slate is a zero-based array, so the join subtracts one. Every ballot
+            // naming a middle position resolves under either indexing, and so does
+            // a ballot past the end; only a ballot naming the LAST candidate tells
+            // the two apart. The declined contest holds exactly one candidate and
+            // its only judge names it, which is that case at its smallest.
+            expect(summariseLedger({ rounds: [DECLINED,], },).namedMissing,)
+              .toEqual(0,);
+          },
+        },),
+
+        it({
+          name: 'ORDERS seats by how much they wrote across every contest read, '
+            + 'not by how often they were chosen',
+          fn: async () => {
+            /**
+             Both contests read, so the third seat wrote twice and the rest once.
+             */
+            const summary = summariseLedger({
+              rounds: [
+                CONTEST,
+                DECLINED,
+              ],
+            },);
+
+            expect({
+              first: summary
+                .models
+                .at(0,)
+                ?.model,
+              rounds: summary.rounds,
+            },)
+              .toEqual({
+                first: THIRD,
+                rounds: 2,
+              },);
+          },
+        },),
+
+        it({
+          name: 'READS a ledger holding no contests as nothing rather than '
+            + 'refusing, since a run that judged nothing is an ordinary run',
+          fn: async () => {
+            /**
+             No contests at all.
+             */
+            const summary = summariseLedger({ rounds: [], },);
+
+            expect(summary,)
+              .toEqual({
+                models: [],
+                rounds: 0,
+                abstentions: 0,
+                namedMissing: 0,
+              },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: workOfModel.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'JOINS the stated reason of every disinterested judge to the '
+            + 'candidate it named, which is the evidence a roster question needs',
+          fn: async () => {
+            /**
+             Everything the solo seat wrote across one contest.
+             */
+            const written = workOfModel({
+              rounds: [CONTEST,],
+              model: SOLO,
+            },);
+
+            expect({
+              pieces: written.length,
+              remarks: written
+                .at(0,)
+                ?.remarks,
+            },)
+              .toEqual({
+                pieces: 1,
+                remarks: [
+                  `${OUTSIDER}: keeps the warmth of the sill, which the others drop`,
+                  `${THIRD}: plainest of the three`,
+                ],
+              },);
+          },
+        },),
+
+        it({
+          name: 'OMITS the remark an author made about its own candidate, so a '
+            + 'seat cannot supply its own evidence',
+          fn: async () => {
+            /**
+             Everything the joint candidate's first author wrote.
+             */
+            const written = workOfModel({
+              rounds: [CONTEST,],
+              model: JOINT_ONE,
+            },);
+
+            // Its own ballot is the only one naming position 2, so nothing is left.
+            expect(written
+              .at(0,)
+              ?.remarks,)
+              .toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'CARRIES the text the judges actually compared, together with what '
+            + 'they were deciding and whether it was chosen',
+          fn: async () => {
+            /**
+             Everything the solo seat wrote.
+             */
+            const written = workOfModel({
+              rounds: [CONTEST,],
+              model: SOLO,
+            },);
+
+            expect({
+              rendered: written
+                .at(0,)
+                ?.rendered,
+              won: written
+                .at(0,)
+                ?.won,
+              task: written
+                .at(0,)
+                ?.task,
+            },)
+              .toEqual({
+                rendered: 'The tabby slept on the warm windowsill.',
+                won: true,
+                task: 'render this passage',
+              },);
+          },
+        },),
+
+        it({
+          name: 'MARKS a declined contest as won by nobody, rather than reading '
+            + 'the refusal as a loss to some other seat',
+          fn: async () => {
+            /**
+             Everything the third seat wrote across both contests.
+             */
+            const written = workOfModel({
+              rounds: [
+                CONTEST,
+                DECLINED,
+              ],
+              model: THIRD,
+            },);
+
+            expect({
+              pieces: written.length,
+              declined: written
+                .at(1,)
+                ?.won,
+            },)
+              .toEqual({
+                pieces: 2,
+                declined: false,
+              },);
+          },
+        },),
+
+        it({
+          name: 'FINDS nothing for a seat that judged but never wrote, which is a '
+            + 'silent answer and not an empty candidate',
+          fn: async () => {
+            /**
+             A judge that never produced a candidate of its own.
+             */
+            const written = workOfModel({
+              rounds: [CONTEST,],
+              model: OUTSIDER,
+            },);
+
+            expect(written,)
+              .toEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: parseLedgerRound.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a contest holding every field, and reads the slate and '
+            + 'the ballots back in the order they were written',
+          fn: async () => {
+            /**
+             A contest round-tripped through the JSON a ledger file holds.
+             */
+            const round = parseLedgerRound({
+              value: asFileWould({ round: CONTEST, },),
+              from: 'ledger/000001.json',
+            },);
+
+            expect(round,)
+              .toEqual(CONTEST,);
+          },
+        },),
+
+        it({
+          name: 'READS a declined outcome as the refusal it is, rather than '
+            + 'refusing the file for holding no winning position',
+          fn: async () => {
+            /**
+             The contest whose panel chose nothing.
+             */
+            const round = parseLedgerRound({
+              value: asFileWould({ round: DECLINED, },),
+              from: 'ledger/000002.json',
+            },);
+
+            expect(round.selectedIndex,)
+              .toEqual('declined',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a file whose ballots are missing, rather than reading it '
+            + 'as a contest nobody judged',
+          fn: async () => {
+            expect(function noBallots(): void {
+              parseLedgerRound({
+                value: {
+                  task: 'render this passage',
+                  at: '2026-08-25T00:00:00.000Z',
+                  candidates: [],
+                  selectedIndex: 'declined',
+                },
+                from: 'ledger/000003.json',
+              },);
+            },)
+              .toThrow(LedgerShapeError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a candidate whose producer list holds something that is '
+            + 'not a model id, since the join reads those ids',
+          fn: async () => {
+            expect(function badProducer(): void {
+              parseLedgerRound({
+                value: {
+                  task: 'render this passage',
+                  at: '2026-08-25T00:00:00.000Z',
+                  candidates: [
+                    {
+                      index: 1,
+                      producers: [7,],
+                      rendered: 'The tabby slept.',
+                    },
+                  ],
+                  ballots: [],
+                  selectedIndex: 1,
+                },
+                from: 'ledger/000004.json',
+              },);
+            },)
+              .toThrow(LedgerShapeError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a selected position that is neither a number nor the word '
+            + 'a declining panel writes',
+          fn: async () => {
+            expect(function badOutcome(): void {
+              parseLedgerRound({
+                value: {
+                  task: 'render this passage',
+                  at: '2026-08-25T00:00:00.000Z',
+                  candidates: [],
+                  ballots: [],
+                  selectedIndex: 'maybe',
+                },
+                from: 'ledger/000005.json',
+              },);
+            },)
+              .toThrow(LedgerShapeError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a value that is not an object at all, which is what a '
+            + 'truncated write leaves behind',
+          fn: async () => {
+            expect(function notAnObject(): void {
+              parseLedgerRound({
+                value: null,
+                from: 'ledger/000006.json',
+              },);
+            },)
+              .toThrow(LedgerShapeError,);
+          },
+        },),
+
+        it({
+          name: 'NAMES the file and the field in a refusal and quotes neither the '
+            + 'passage nor the reason, since a ledger holds corpus wording',
+          fn: async () => {
+            /**
+             A contest whose ballots field is a string, carrying a passage in a
+             field beside it that the refusal must not echo.
+             */
+            const message = refusalMessageFor({
+              value: {
+                task: 'render this passage',
+                at: '2026-08-25T00:00:00.000Z',
+                candidates: [
+                  {
+                    index: 1,
+                    producers: [SOLO,],
+                    rendered: 'The tabby slept on the warm windowsill.',
+                  },
+                ],
+                selectedIndex: 1,
+              },
+              from: 'ledger/000007.json',
+            },);
+
+            expect({
+              namesFile: message.includes('ledger/000007.json',),
+              namesField: message.includes('ballots',),
+              quotesPassage: message.includes('windowsill',),
+            },)
+              .toEqual({
+                namesFile: true,
+                namesField: true,
+                quotesPassage: false,
+              },);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -11,6 +11,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -149,209 +150,214 @@ function recordedClient(
 }
 
 await describe({
-  name: createOpenRouterClient.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SENDS the chat completions body with the OpenRouter slug, the routing preferences, the '
-        + 'schema in both places, and streaming usage on, and READS the answer and its cost back',
-      fn: async () => {
-        const { client, exchanges, } = recordedClient({},);
-        /**
-         One schema'd call as a stage would make it.
-         */
-        const reply = await client.chatText({
-          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-          messages: [
-            { role: 'system', content: 'You are a careful cat.', },
-            { role: 'user', content: 'Where does the cat sleep?', },
-          ],
-          signal: SIGNAL,
-          responseFormat: {
-            type: 'json_schema',
-            json_schema: {
-              name: 'nap_spot',
-              schema: {
-                type: 'object',
-                required: ['spot',],
-                properties: { spot: { type: 'string', }, },
+    describe({
+      name: createOpenRouterClient.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SENDS the chat completions body with the OpenRouter slug, the routing preferences, the '
+            + 'schema in both places, and streaming usage on, and READS the answer and its cost back',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({},);
+            /**
+             One schema'd call as a stage would make it.
+             */
+            const reply = await client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [
+                { role: 'system', content: 'You are a careful cat.', },
+                { role: 'user', content: 'Where does the cat sleep?', },
+              ],
+              signal: SIGNAL,
+              responseFormat: {
+                type: 'json_schema',
+                json_schema: {
+                  name: 'nap_spot',
+                  schema: {
+                    type: 'object',
+                    required: ['spot',],
+                    properties: { spot: { type: 'string', }, },
+                  },
+                },
               },
-            },
-          },
-        },);
+            },);
 
-        expect(reply.text,).toBe('{"spot": "windowsill"}',);
-        expect(reply.usage,).toMatchObject({
-          prompt_tokens: 342,
-          completion_tokens: 400,
-        },);
+            expect(reply.text,).toBe('{"spot": "windowsill"}',);
+            expect(reply.usage,).toMatchObject({
+              prompt_tokens: 342,
+              completion_tokens: 400,
+            },);
 
-        /**
-         What went on the wire.
-         */
-        const [exchange,] = exchanges;
-        if (exchange === undefined)
-          throw new Error('nothing was sent',);
-        expect(exchange.url,).toBe(OPENROUTER_CHAT_URL,);
-        expect(exchange.headers.Authorization,).toBe('Bearer test-key',);
-        /**
-         Body as the gateway would parse it.
-         */
-        const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
-        expect(body,).toMatchObject({
-          model: 'deepseek/deepseek-v4.1-flash',
-          stream: true,
-          stream_options: { include_usage: true, },
-          provider: {
-            zdr: true,
-            require_parameters: true,
-            sort: 'price',
-            // DeepInfra and Wafer ignored for this seat since 2026-09-18 (XingZ607),
-            // OpenInference since 2026-09-23 (XingZ624 and XingZ625, class ninety-one),
-            // DekaLLM and Sail Research the same day (XingZ626, class ninety-three),
-            // which also named Morph ahead of the price sort.
-            ignore: [
-              'deepinfra',
-              'wafer',
-              'open-inference',
-              'dekallm',
-              'sail-research',
-            ],
-            order: ['morph',],
-          },
-          response_format: {
-            type: 'json_schema',
-            json_schema: {
-              name: 'nap_spot',
-              schema: {
-                type: 'object',
-                required: ['spot',],
-                properties: { spot: { type: 'string', }, },
+            /**
+             What went on the wire.
+             */
+            const [exchange,] = exchanges;
+            if (exchange === undefined)
+              throw new Error('nothing was sent',);
+            expect(exchange.url,).toBe(OPENROUTER_CHAT_URL,);
+            expect(exchange.headers.Authorization,).toBe('Bearer test-key',);
+            /**
+             Body as the gateway would parse it.
+             */
+            const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
+            expect(body,).toMatchObject({
+              model: 'deepseek/deepseek-v4.1-flash',
+              stream: true,
+              stream_options: { include_usage: true, },
+              provider: {
+                zdr: true,
+                require_parameters: true,
+                sort: 'price',
+                // DeepInfra and Wafer ignored for this seat since 2026-09-18 (XingZ607),
+                // OpenInference since 2026-09-23 (XingZ624 and XingZ625, class ninety-one),
+                // DekaLLM and Sail Research the same day (XingZ626, class ninety-three),
+                // which also named Morph ahead of the price sort.
+                ignore: [
+                  'deepinfra',
+                  'wafer',
+                  'open-inference',
+                  'dekallm',
+                  'sail-research',
+                ],
+                order: ['morph',],
               },
-            },
+              response_format: {
+                type: 'json_schema',
+                json_schema: {
+                  name: 'nap_spot',
+                  schema: {
+                    type: 'object',
+                    required: ['spot',],
+                    properties: { spot: { type: 'string', }, },
+                  },
+                },
+              },
+            },);
+            // The schema is restated in the system prompt as on the Synthetic
+            // path, so a model that ignores `response_format` still reads it.
+            expect(JSON.stringify(body,),).toContain('nap_spot',);
+            // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
+            // per-token provider bills an abandoned stream to its end on endpoints
+            // that do not honour a cancel, and this is the bound that holds there.
+            expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED], },);
           },
-        },);
-        // The schema is restated in the system prompt as on the Synthetic
-        // path, so a model that ignores `response_format` still reads it.
-        expect(JSON.stringify(body,),).toContain('nap_spot',);
-        // THE MEASURED CEILING RIDES ON EVERY CALL since 2026-09-09: the
-        // per-token provider bills an abandoned stream to its end on endpoints
-        // that do not honour a cancel, and this is the bound that holds there.
-        expect(body,).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED], },);
-      },
-    },),
+        },),
 
-    it({
-      name: 'LOWERS a caller\'s max_tokens to the measured ceiling and keeps a smaller one, so no call '
-        + 'asks the per-token provider for more output than a finished call has needed',
-      fn: async () => {
-        const { client, exchanges, } = recordedClient({},);
-        await client.chatText({
-          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-          signal: SIGNAL,
-          maxTokens: 1_000_000,
-        },);
-        await client.chatText({
-          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-          signal: SIGNAL,
-          maxTokens: 50,
-        },);
-        /**
-         Both bodies as the gateway would parse them.
-         */
-        const bodies = exchanges.map(function parse(exchange,): unknown {
-          return JSON.parse(exchange.bodyJson ?? '{}',);
-        },);
-        expect(bodies[0],).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED], },);
-        expect(bodies[1],).toMatchObject({ max_tokens: 50, },);
-      },
-    },),
-
-    it({
-      name: 'KEEPS MiniMax M3 off Parasail and ModelRun and asks Together then CoreWeave on the wire: the '
-        + 'body\'s provider.ignore carries the catalog row\'s slugs, so the endpoint that answers into the '
-        + 'reasoning channel and the one that times out in-stream are never routed to, and provider.order '
-        + 'names the measured endpoints ahead of the price sort (ledger H12)',
-      fn: async () => {
-        const { client, exchanges, } = recordedClient({},);
-        await client.chatText({
-          modelId: SEAT_HYPER_VISION,
-          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-          signal: SIGNAL,
-        },);
-        /**
-         What went on the wire.
-         */
-        const [exchange,] = exchanges;
-        if (exchange === undefined)
-          throw new Error('nothing was sent',);
-        /**
-         Body as the gateway would parse it.
-         */
-        const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
-        expect(body,).toMatchObject({
-          model: 'minimax/minimax-m3',
-          provider: {
-            zdr: true,
-            require_parameters: true,
-            sort: 'price',
-            ignore: [
-              'parasail',
-              'modelrun',
-            ],
-            order: ['together', 'coreweave',],
+        it({
+          name: 'LOWERS a caller\'s max_tokens to the measured ceiling and keeps a smaller one, so no call '
+            + 'asks the per-token provider for more output than a finished call has needed',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({},);
+            await client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+              signal: SIGNAL,
+              maxTokens: 1_000_000,
+            },);
+            await client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+              signal: SIGNAL,
+              maxTokens: 50,
+            },);
+            /**
+             Both bodies as the gateway would parse them.
+             */
+            const bodies = exchanges.map(function parse(exchange,): unknown {
+              return JSON.parse(exchange.bodyJson ?? '{}',);
+            },);
+            expect(bodies[0],).toMatchObject({ max_tokens: COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED], },);
+            expect(bodies[1],).toMatchObject({ max_tokens: 50, },);
           },
-        },);
-      },
-    },),
+        },),
 
-    it({
-      name: 'READS credits purchased, used and remaining off the credits endpoint',
-      fn: async () => {
-        const { client, } = recordedClient({},);
-        expect(await client.credits({ signal: SIGNAL, },),).toEqual({
-          purchasedUsd: 1_913,
-          usedUsd: 1_855.38,
-          remainingUsd: 1_913 - 1_855.38,
-        },);
-      },
-    },),
+        it({
+          name: 'KEEPS MiniMax M3 off Parasail and ModelRun and asks Together then CoreWeave on the wire: the '
+            + 'body\'s provider.ignore carries the catalog row\'s slugs, so the endpoint that answers into the '
+            + 'reasoning channel and the one that times out in-stream are never routed to, and provider.order '
+            + 'names the measured endpoints ahead of the price sort (ledger H12)',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({},);
+            await client.chatText({
+              modelId: SEAT_HYPER_VISION,
+              messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+              signal: SIGNAL,
+            },);
+            /**
+             What went on the wire.
+             */
+            const [exchange,] = exchanges;
+            if (exchange === undefined)
+              throw new Error('nothing was sent',);
+            /**
+             Body as the gateway would parse it.
+             */
+            const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
+            expect(body,).toMatchObject({
+              model: 'minimax/minimax-m3',
+              provider: {
+                zdr: true,
+                require_parameters: true,
+                sort: 'price',
+                ignore: [
+                  'parasail',
+                  'modelrun',
+                ],
+                order: ['together', 'coreweave',],
+              },
+            },);
+          },
+        },),
 
-    it({
-      name: 'REFUSES a roster model it has no slug for before touching the wire, since that is a '
-        + 'routing mistake in our own code',
-      fn: async () => {
-        const { client, exchanges, } = recordedClient({},);
-        /**
-         What a call for a name outside the catalog produces.
-         */
-        let thrown: unknown;
-        try {
-          await client.chatText({
-            // A departed identity no catalog serves, cast past the roster type
-            // the way a stale artifact could carry it.
-            modelId: 'hf:zai-org/GLM-4.7-Flash' as never,
-            messages: [{ role: 'user', content: 'meow', },],
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof OpenRouterModelNotServedError,).toBe(true,);
-        expect(exchanges,).toHaveLength(0,);
-      },
-    },),
+        it({
+          name: 'READS credits purchased, used and remaining off the credits endpoint',
+          fn: async () => {
+            const { client, } = recordedClient({},);
+            expect(await client.credits({ signal: SIGNAL, },),).toEqual({
+              purchasedUsd: 1_913,
+              usedUsd: 1_855.38,
+              remainingUsd: 1_913 - 1_855.38,
+            },);
+          },
+        },),
 
-    it({
-      name: 'NAMES AN IN-STREAM PROVIDER FAILURE by its code and endpoint when a 200 stream carries '
-        + 'the gateway\'s error chunk and no terminator, rather than calling the reply cut off: on '
-        + '2026-09-04 that misnaming hid one endpoint failing two calls in five',
-      fn: async () => {
-        const { client, } = recordedClient({
-          reply: {
-            status: 200,
-            bodyText: `: OPENROUTER PROCESSING\n\n${
+        it({
+          name: 'REFUSES a roster model it has no slug for before touching the wire, since that is a '
+            + 'routing mistake in our own code',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({},);
+            /**
+             What a call for a name outside the catalog produces.
+             */
+            let thrown: unknown;
+            try {
+              await client.chatText({
+                // A departed identity no catalog serves, cast past the roster type
+                // the way a stale artifact could carry it.
+                modelId: 'hf:zai-org/GLM-4.7-Flash' as never,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: SIGNAL,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof OpenRouterModelNotServedError,).toBe(true,);
+            expect(exchanges,).toHaveLength(0,);
+          },
+        },),
+
+        it({
+          name: 'NAMES AN IN-STREAM PROVIDER FAILURE by its code and endpoint when a 200 stream carries '
+            + 'the gateway\'s error chunk and no terminator, rather than calling the reply cut off: on '
+            + '2026-09-04 that misnaming hid one endpoint failing two calls in five',
+          fn: async () => {
+            const { client, } = recordedClient({
+              reply: {
+                status: 200,
+                bodyText: `: OPENROUTER PROCESSING\n\n${
               chunkOf({
                 delta: {},
                 rest: {
@@ -364,117 +370,120 @@ await describe({
                 },
               },)
             }`,
+              },
+            },);
+            /**
+             What the failed stream produces once the ladder (limit 0) gives up.
+             */
+            let thrown: unknown;
+            try {
+              await client.chatText({
+                modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: SIGNAL,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof InStreamProviderError,).toBe(true,);
+            expect((thrown as InStreamProviderError).code,).toBe(504,);
+            expect((thrown as InStreamProviderError).endpoint,).toBe('ModelRun',);
+            expect((thrown as InStreamProviderError).message,).toContain('served by ModelRun',);
           },
-        },);
-        /**
-         What the failed stream produces once the ladder (limit 0) gives up.
-         */
-        let thrown: unknown;
-        try {
-          await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-            messages: [{ role: 'user', content: 'meow', },],
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof InStreamProviderError,).toBe(true,);
-        expect((thrown as InStreamProviderError).code,).toBe(504,);
-        expect((thrown as InStreamProviderError).endpoint,).toBe('ModelRun',);
-        expect((thrown as InStreamProviderError).message,).toContain('served by ModelRun',);
-      },
+        },),
+
+        it({
+          name: 'THROWS the shared HTTP failure class on a non-success status, which the budget layer '
+            + 'reads for 402 and 429',
+          fn: async () => {
+            const { client, } = recordedClient({
+              reply: {
+                status: 402,
+                bodyText: '{"error":{"message":"insufficient credits"}}',
+              },
+            },);
+            /**
+             What a payment refusal produces.
+             */
+            let thrown: unknown;
+            try {
+              await client.chatText({
+                modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: SIGNAL,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof SyntheticHttpError,).toBe(true,);
+            expect((thrown as SyntheticHttpError).status,).toBe(402,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'THROWS the shared HTTP failure class on a non-success status, which the budget layer '
-        + 'reads for 402 and 429',
-      fn: async () => {
-        const { client, } = recordedClient({
-          reply: {
-            status: 402,
-            bodyText: '{"error":{"message":"insufficient credits"}}',
+    describe({
+      name: 'every billed OpenRouter attempt is reckoned (ledger P1)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RECKONS A TRUNCATED ATTEMPT THE LADDER RETRIED beside the whole one it reported: the reckoning '
+            + 'wrapped the whole ladder, so an attempt refused and retried inside it left no line',
+          fn: async () => {
+            resetRunSpend();
+            /**
+             Stream that stopped before its terminator.
+             */
+            const truncated = chunkOf({ delta: { content: '{"spot":', }, },);
+            /**
+             Exchanges the transport saw.
+             */
+            const exchanges: TransportExchange[] = [];
+            /**
+             Client whose first stream stops early and whose second is whole.
+             */
+            const client = createOpenRouterClient({
+              apiKey: 'test-key',
+              transport: async function truncatedThenWhole(exchange,) {
+                exchanges.push(exchange,);
+                return (exchanges.length === 1)
+                  ? { status: 200, bodyText: truncated, }
+                  : { status: 200, bodyText: RECORDED_STREAM, };
+              },
+              retryPolicy: {
+                limit: 1,
+                baseMs: 1,
+              },
+            },);
+            await client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [{ role: 'user', content: 'meow', },],
+              signal: SIGNAL,
+            },);
+            /**
+             Body the refused attempt sent.
+             */
+            const bodyJson = exchanges[0]?.bodyJson ?? '';
+            /**
+             Body as sent.
+             */
+            const body = JSON.parse(bodyJson,) as {
+              readonly model: Parameters<typeof estimateAbandonedSpend>[0]['servedId'];
+              readonly max_tokens: number;
+            };
+            /**
+             What the refused attempt is reckoned to have cost.
+             */
+            const reckoned = estimateAbandonedSpend({
+              servedId: body.model,
+              deliveredChars: truncated.length,
+              requestBodyBytes: Buffer.byteLength(bodyJson,),
+              maxTokens: body.max_tokens,
+            },);
+            expect(runSpendUsd({ provider: 'openrouter', },),).toBeCloseTo(RECORDED_COST_USD + reckoned.usd, 12,);
           },
-        },);
-        /**
-         What a payment refusal produces.
-         */
-        let thrown: unknown;
-        try {
-          await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-            messages: [{ role: 'user', content: 'meow', },],
-            signal: SIGNAL,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof SyntheticHttpError,).toBe(true,);
-        expect((thrown as SyntheticHttpError).status,).toBe(402,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: 'every billed OpenRouter attempt is reckoned (ledger P1)',
-  children: [
-    it({
-      name: 'RECKONS A TRUNCATED ATTEMPT THE LADDER RETRIED beside the whole one it reported: the reckoning '
-        + 'wrapped the whole ladder, so an attempt refused and retried inside it left no line',
-      fn: async () => {
-        resetRunSpend();
-        /**
-         Stream that stopped before its terminator.
-         */
-        const truncated = chunkOf({ delta: { content: '{"spot":', }, },);
-        /**
-         Exchanges the transport saw.
-         */
-        const exchanges: TransportExchange[] = [];
-        /**
-         Client whose first stream stops early and whose second is whole.
-         */
-        const client = createOpenRouterClient({
-          apiKey: 'test-key',
-          transport: async function truncatedThenWhole(exchange,) {
-            exchanges.push(exchange,);
-            return (exchanges.length === 1)
-              ? { status: 200, bodyText: truncated, }
-              : { status: 200, bodyText: RECORDED_STREAM, };
-          },
-          retryPolicy: {
-            limit: 1,
-            baseMs: 1,
-          },
-        },);
-        await client.chatText({
-          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-          messages: [{ role: 'user', content: 'meow', },],
-          signal: SIGNAL,
-        },);
-        /**
-         Body the refused attempt sent.
-         */
-        const bodyJson = exchanges[0]?.bodyJson ?? '';
-        /**
-         Body as sent.
-         */
-        const body = JSON.parse(bodyJson,) as {
-          readonly model: Parameters<typeof estimateAbandonedSpend>[0]['servedId'];
-          readonly max_tokens: number;
-        };
-        /**
-         What the refused attempt is reckoned to have cost.
-         */
-        const reckoned = estimateAbandonedSpend({
-          servedId: body.model,
-          deliveredChars: truncated.length,
-          requestBodyBytes: Buffer.byteLength(bodyJson,),
-          maxTokens: body.max_tokens,
-        },);
-        expect(runSpendUsd({ provider: 'openrouter', },),).toBeCloseTo(RECORDED_COST_USD + reckoned.usd, 12,);
-      },
+        },),
+      ],
     },),
   ],
 },);

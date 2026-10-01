@@ -18,6 +18,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -126,373 +127,381 @@ function heardFrom(modelIds: readonly RosterModelId[],): SeatAnswers {
 }
 
 await describe({
-  name: readStandingCoverage.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'splits a seated roster into judged, unvoted and silent when answers are unrecorded',
-      fn: async () => {
-        /**
-         One model of each kind, so all the reachable groups are non-empty.
-         */
-        const coverage = readStandingCoverage({
-          roster: ROSTER,
-          standings: [standingOf({ modelId: JUDGED, },),],
-          produced: [
-            JUDGED,
-            UNVOTED,
-          ],
-          answered: UNRECORDED,
-        },);
+    describe({
+      name: readStandingCoverage.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'splits a seated roster into judged, unvoted and silent when answers are unrecorded',
+          fn: async () => {
+            /**
+             One model of each kind, so all the reachable groups are non-empty.
+             */
+            const coverage = readStandingCoverage({
+              roster: ROSTER,
+              standings: [standingOf({ modelId: JUDGED, },),],
+              produced: [
+                JUDGED,
+                UNVOTED,
+              ],
+              answered: UNRECORDED,
+            },);
 
-        expect(coverage.judged,).toStrictEqual([JUDGED,],);
-        expect(coverage.wroteUnjudged,).toStrictEqual([UNVOTED,],);
-        expect(coverage.answeredUnslated,).toStrictEqual([],);
-        expect(coverage.neverWrote,).toStrictEqual([
-          ABSENT,
-          ALSO_ABSENT,
-        ],);
-        expect(coverage.answersRecorded,).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'REPORTS a seat that answered and never reached a slate as answered-but-unslated, '
-        + 'never as silent, once the seat records who answered',
-      fn: async () => {
-        /**
-         Coverage where one absent-from-the-table model was heard on every
-         ask and the other never answered, which is the live case: a SEAT
-         line at 31 of 31 beside a table calling the seat silent.
-         */
-        const coverage = readStandingCoverage({
-          roster: ROSTER,
-          standings: [standingOf({ modelId: JUDGED, },),],
-          produced: [JUDGED,],
-          answered: heardFrom([
-            JUDGED,
-            ABSENT,
-            ABSENT,
-          ],),
-        },);
-
-        expect(coverage.answeredUnslated,).toStrictEqual([ABSENT,],);
-        // The unvoted model neither wrote nor answered in this fixture, so it is silent beside the other.
-        expect(coverage.neverWrote,).toStrictEqual([
-          UNVOTED,
-          ALSO_ABSENT,
-        ],);
-        expect(coverage.answersRecorded,).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'keeps an answering model that also produced a candidate out of the unslated group',
-      fn: async () => {
-        /**
-         Coverage where the unvoted writer was also heard, which must count
-         it once, as a writer, since writing implies answering.
-         */
-        const coverage = readStandingCoverage({
-          roster: ROSTER,
-          standings: [standingOf({ modelId: JUDGED, },),],
-          produced: [UNVOTED,],
-          answered: heardFrom([
-            UNVOTED,
-            JUDGED,
-          ],),
-        },);
-
-        expect(coverage.wroteUnjudged,).toStrictEqual([UNVOTED,],);
-        expect(coverage.answeredUnslated,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'keeps roster order rather than the order evidence arrived in',
-      fn: async () => {
-        /**
-         Silent models, listed in the order the seats were filled even though
-         nothing about them was produced in that order.
-         */
-        const { neverWrote, } = readStandingCoverage({
-          roster: ROSTER,
-          standings: [standingOf({ modelId: JUDGED, },),],
-          produced: [UNVOTED,],
-          answered: UNRECORDED,
-        },);
-
-        expect(neverWrote,).toStrictEqual([
-          ABSENT,
-          ALSO_ABSENT,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'counts a model that wrote AND was judged once, as judged',
-      fn: async () => {
-        /**
-         Coverage where the same model appears in every input, which is the
-         ordinary case: everything judged was also written and answered.
-         */
-        const coverage = readStandingCoverage({
-          roster: ROSTER,
-          standings: [standingOf({ modelId: JUDGED, },),],
-          produced: [
-            JUDGED,
-            JUDGED,
-          ],
-          answered: heardFrom([JUDGED,],),
-        },);
-
-        expect(coverage.judged,).toStrictEqual([JUDGED,],);
-        expect(coverage.wroteUnjudged,).toStrictEqual([],);
-        expect(coverage.answeredUnslated,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'ACCEPTS a run where every seated model was judged',
-      fn: async () => {
-        /**
-         Coverage with nothing missing, so every silent group is empty.
-         */
-        const coverage = readStandingCoverage({
-          roster: [JUDGED,],
-          standings: [standingOf({ modelId: JUDGED, },),],
-          produced: [JUDGED,],
-          answered: heardFrom([JUDGED,],),
-        },);
-
-        expect(coverage.wroteUnjudged,).toStrictEqual([],);
-        expect(coverage.answeredUnslated,).toStrictEqual([],);
-        expect(coverage.neverWrote,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a standing naming a model the run never seated',
-      fn: async () => {
-        /**
-         What the reader threw, held so the class and the id it names can be
-         asserted apart.
-         */
-        const refusal = caught(function readsAnotherRoster() {
-          readStandingCoverage({
-            roster: ROSTER,
-            standings: [standingOf({ modelId: DEPARTED, },),],
-            produced: [],
-            answered: UNRECORDED,
-          },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(UnseatedStandingError,);
-        expect((refusal as Error).message,).toContain(DEPARTED,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a produced list naming a model the run never seated',
-      fn: async () => {
-        /**
-         Same refusal reached through the second input, since a slate naming
-         an unseated model is the same contradiction as a table doing it.
-         */
-        const refusal = caught(function readsAnotherSlate() {
-          readStandingCoverage({
-            roster: ROSTER,
-            standings: [],
-            produced: [DEPARTED,],
-            answered: UNRECORDED,
-          },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(UnseatedStandingError,);
-        expect((refusal as Error).message,).toContain(DEPARTED,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES an answer list naming a model the run never seated',
-      fn: async () => {
-        /**
-         Same refusal reached through the third input, since a seat hearing
-         from an unseated model is the same contradiction again.
-         */
-        const refusal = caught(function readsAnotherSeat() {
-          readStandingCoverage({
-            roster: ROSTER,
-            standings: [],
-            produced: [],
-            answered: heardFrom([DEPARTED,],),
-          },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(UnseatedStandingError,);
-        expect((refusal as Error).message,).toContain(DEPARTED,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: coverageGapLines.name,
-  children: [
-    it({
-      name: 'says nothing when every seated model is on the table',
-      fn: async () => {
-        /**
-         Lines for a run with no gap at all, which must be none rather than a
-         note claiming completeness.
-         */
-        const lines = coverageGapLines({
-          coverage: readStandingCoverage({
-            roster: [JUDGED,],
-            standings: [standingOf({ modelId: JUDGED, },),],
-            produced: [JUDGED,],
-            answered: heardFrom([JUDGED,],),
-          },),
-        },);
-
-        expect(lines,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'names the unvoted writers apart from the silent models',
-      fn: async () => {
-        /**
-         Lines for a run with both kinds of gap, which must be two distinct
-         lines rather than one absence.
-         */
-        const lines = coverageGapLines({
-          coverage: readStandingCoverage({
-            roster: ROSTER,
-            standings: [standingOf({ modelId: JUDGED, },),],
-            produced: [
-              JUDGED,
-              UNVOTED,
-            ],
-            answered: UNRECORDED,
-          },),
-        },);
-
-        expect(lines,).toHaveLength(2,);
-        expect(lines[0],).toContain(UNVOTED,);
-        expect(lines[0],).not.toContain(ABSENT,);
-        expect(lines[1],).toContain(ABSENT,);
-        expect(lines[1],).toContain(ALSO_ABSENT,);
-        expect(lines[1],).not.toContain(UNVOTED,);
-      },
-    },),
-
-    it({
-      name: 'names an answered-but-unslated seat on its own line, which never tells the reader '
-        + 'to re-run it and never calls it silent',
-      fn: async () => {
-        /**
-         Lines for the live case: one seat heard on every ask with nothing
-         of its reaching a slate, one seat never heard.
-         */
-        const lines = coverageGapLines({
-          coverage: readStandingCoverage({
-            roster: ROSTER,
-            standings: [standingOf({ modelId: JUDGED, },),],
-            produced: [
-              JUDGED,
-              UNVOTED,
-            ],
-            answered: heardFrom([
-              JUDGED,
-              UNVOTED,
+            expect(coverage.judged,).toStrictEqual([JUDGED,],);
+            expect(coverage.wroteUnjudged,).toStrictEqual([UNVOTED,],);
+            expect(coverage.answeredUnslated,).toStrictEqual([],);
+            expect(coverage.neverWrote,).toStrictEqual([
               ABSENT,
-            ],),
-          },),
-        },);
+              ALSO_ABSENT,
+            ],);
+            expect(coverage.answersRecorded,).toBe(false,);
+          },
+        },),
 
-        expect(lines,).toHaveLength(3,);
-        expect(lines[1],).toContain('ANSWERED AND WAS NEVER SLATED',);
-        expect(lines[1],).toContain(ABSENT,);
-        expect(lines[1],).not.toContain(ALSO_ABSENT,);
-        expect(lines[1],).not.toContain('Re-run',);
-        expect(lines[2],).toContain('ANSWERED NOTHING USABLE',);
-        expect(lines[2],).toContain(ALSO_ABSENT,);
-        expect(lines[2],).not.toContain(ABSENT,);
-      },
-    },),
+        it({
+          name: 'REPORTS a seat that answered and never reached a slate as answered-but-unslated, '
+            + 'never as silent, once the seat records who answered',
+          fn: async () => {
+            /**
+             Coverage where one absent-from-the-table model was heard on every
+             ask and the other never answered, which is the live case: a SEAT
+             line at 31 of 31 beside a table calling the seat silent.
+             */
+            const coverage = readStandingCoverage({
+              roster: ROSTER,
+              standings: [standingOf({ modelId: JUDGED, },),],
+              produced: [JUDGED,],
+              answered: heardFrom([
+                JUDGED,
+                ABSENT,
+                ABSENT,
+              ],),
+            },);
 
-    it({
-      name: 'carries both denominators over all four groups, so a narrowed table cannot read '
-        + 'as a full one',
-      fn: async () => {
-        /**
-         Line about the silent model, which has to count the unslated seat
-         among the seats filled even though it is reported on another line.
-         */
-        const lines = coverageGapLines({
-          coverage: readStandingCoverage({
-            roster: ROSTER,
-            standings: [standingOf({ modelId: JUDGED, },),],
-            produced: [JUDGED,],
-            answered: heardFrom([
-              JUDGED,
+            expect(coverage.answeredUnslated,).toStrictEqual([ABSENT,],);
+            // The unvoted model neither wrote nor answered in this fixture, so it is silent beside the other.
+            expect(coverage.neverWrote,).toStrictEqual([
               UNVOTED,
-            ],),
-          },),
-        },);
+              ALSO_ABSENT,
+            ],);
+            expect(coverage.answersRecorded,).toBe(true,);
+          },
+        },),
 
-        expect(lines,).toHaveLength(2,);
-        expect(lines[1],).toContain('covers 1 of 4 seats',);
-      },
+        it({
+          name: 'keeps an answering model that also produced a candidate out of the unslated group',
+          fn: async () => {
+            /**
+             Coverage where the unvoted writer was also heard, which must count
+             it once, as a writer, since writing implies answering.
+             */
+            const coverage = readStandingCoverage({
+              roster: ROSTER,
+              standings: [standingOf({ modelId: JUDGED, },),],
+              produced: [UNVOTED,],
+              answered: heardFrom([
+                UNVOTED,
+                JUDGED,
+              ],),
+            },);
+
+            expect(coverage.wroteUnjudged,).toStrictEqual([UNVOTED,],);
+            expect(coverage.answeredUnslated,).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'keeps roster order rather than the order evidence arrived in',
+          fn: async () => {
+            /**
+             Silent models, listed in the order the seats were filled even though
+             nothing about them was produced in that order.
+             */
+            const { neverWrote, } = readStandingCoverage({
+              roster: ROSTER,
+              standings: [standingOf({ modelId: JUDGED, },),],
+              produced: [UNVOTED,],
+              answered: UNRECORDED,
+            },);
+
+            expect(neverWrote,).toStrictEqual([
+              ABSENT,
+              ALSO_ABSENT,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'counts a model that wrote AND was judged once, as judged',
+          fn: async () => {
+            /**
+             Coverage where the same model appears in every input, which is the
+             ordinary case: everything judged was also written and answered.
+             */
+            const coverage = readStandingCoverage({
+              roster: ROSTER,
+              standings: [standingOf({ modelId: JUDGED, },),],
+              produced: [
+                JUDGED,
+                JUDGED,
+              ],
+              answered: heardFrom([JUDGED,],),
+            },);
+
+            expect(coverage.judged,).toStrictEqual([JUDGED,],);
+            expect(coverage.wroteUnjudged,).toStrictEqual([],);
+            expect(coverage.answeredUnslated,).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS a run where every seated model was judged',
+          fn: async () => {
+            /**
+             Coverage with nothing missing, so every silent group is empty.
+             */
+            const coverage = readStandingCoverage({
+              roster: [JUDGED,],
+              standings: [standingOf({ modelId: JUDGED, },),],
+              produced: [JUDGED,],
+              answered: heardFrom([JUDGED,],),
+            },);
+
+            expect(coverage.wroteUnjudged,).toStrictEqual([],);
+            expect(coverage.answeredUnslated,).toStrictEqual([],);
+            expect(coverage.neverWrote,).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a standing naming a model the run never seated',
+          fn: async () => {
+            /**
+             What the reader threw, held so the class and the id it names can be
+             asserted apart.
+             */
+            const refusal = caught(function readsAnotherRoster() {
+              readStandingCoverage({
+                roster: ROSTER,
+                standings: [standingOf({ modelId: DEPARTED, },),],
+                produced: [],
+                answered: UNRECORDED,
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(UnseatedStandingError,);
+            expect((refusal as Error).message,).toContain(DEPARTED,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a produced list naming a model the run never seated',
+          fn: async () => {
+            /**
+             Same refusal reached through the second input, since a slate naming
+             an unseated model is the same contradiction as a table doing it.
+             */
+            const refusal = caught(function readsAnotherSlate() {
+              readStandingCoverage({
+                roster: ROSTER,
+                standings: [],
+                produced: [DEPARTED,],
+                answered: UNRECORDED,
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(UnseatedStandingError,);
+            expect((refusal as Error).message,).toContain(DEPARTED,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an answer list naming a model the run never seated',
+          fn: async () => {
+            /**
+             Same refusal reached through the third input, since a seat hearing
+             from an unseated model is the same contradiction again.
+             */
+            const refusal = caught(function readsAnotherSeat() {
+              readStandingCoverage({
+                roster: ROSTER,
+                standings: [],
+                produced: [],
+                answered: heardFrom([DEPARTED,],),
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(UnseatedStandingError,);
+            expect((refusal as Error).message,).toContain(DEPARTED,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'says a seat does not record who answered instead of calling the absent silent, '
-        + 'and still points at the SEAT lines, since this line cannot tell a budget refusal '
-        + 'from a timeout from an answer dropped before judging and the seat report can '
-        + '(calibrate-1)',
-      fn: async () => {
-        /**
-         Line about the models off the table at a seat that carries no
-         answer list out, which has to say so and say where the counts are.
-         */
-        const lines = coverageGapLines({
-          coverage: readStandingCoverage({
-            roster: ROSTER,
-            standings: [standingOf({ modelId: JUDGED, },),],
-            produced: [JUDGED,],
-            answered: UNRECORDED,
-          },),
-        },);
+    describe({
+      name: coverageGapLines.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'says nothing when every seated model is on the table',
+          fn: async () => {
+            /**
+             Lines for a run with no gap at all, which must be none rather than a
+             note claiming completeness.
+             */
+            const lines = coverageGapLines({
+              coverage: readStandingCoverage({
+                roster: [JUDGED,],
+                standings: [standingOf({ modelId: JUDGED, },),],
+                produced: [JUDGED,],
+                answered: heardFrom([JUDGED,],),
+              },),
+            },);
 
-        expect(lines,).toHaveLength(1,);
-        expect(lines[0],).toContain('NO CANDIDATE OF THEIRS REACHED ANY SLATE',);
-        expect(lines[0],).toContain('does not record who answered',);
-        expect(lines[0],).not.toContain('ANSWERED NOTHING USABLE',);
-        expect(lines[0],).toContain('the SEAT lines at the end of this command',);
-      },
-    },),
+            expect(lines,).toStrictEqual([],);
+          },
+        },),
 
-    it({
-      name: 'POINTS AT THE SEAT LINES from the recorded silent-seat sentence too',
-      fn: async () => {
-        /**
-         Line about a model no usable answer came from, at a seat that does
-         record answers, which has to say where the per-seat counts are.
-         */
-        const lines = coverageGapLines({
-          coverage: readStandingCoverage({
-            roster: ROSTER,
-            standings: [standingOf({ modelId: JUDGED, },),],
-            produced: [JUDGED,],
-            answered: heardFrom([JUDGED,],),
-          },),
-        },);
+        it({
+          name: 'names the unvoted writers apart from the silent models',
+          fn: async () => {
+            /**
+             Lines for a run with both kinds of gap, which must be two distinct
+             lines rather than one absence.
+             */
+            const lines = coverageGapLines({
+              coverage: readStandingCoverage({
+                roster: ROSTER,
+                standings: [standingOf({ modelId: JUDGED, },),],
+                produced: [
+                  JUDGED,
+                  UNVOTED,
+                ],
+                answered: UNRECORDED,
+              },),
+            },);
 
-        expect(lines,).toHaveLength(1,);
-        expect(lines[0],).toContain('ANSWERED NOTHING USABLE',);
-        expect(lines[0],).toContain('the SEAT lines at the end of this command',);
-      },
+            expect(lines,).toHaveLength(2,);
+            expect(lines[0],).toContain(UNVOTED,);
+            expect(lines[0],).not.toContain(ABSENT,);
+            expect(lines[1],).toContain(ABSENT,);
+            expect(lines[1],).toContain(ALSO_ABSENT,);
+            expect(lines[1],).not.toContain(UNVOTED,);
+          },
+        },),
+
+        it({
+          name: 'names an answered-but-unslated seat on its own line, which never tells the reader '
+            + 'to re-run it and never calls it silent',
+          fn: async () => {
+            /**
+             Lines for the live case: one seat heard on every ask with nothing
+             of its reaching a slate, one seat never heard.
+             */
+            const lines = coverageGapLines({
+              coverage: readStandingCoverage({
+                roster: ROSTER,
+                standings: [standingOf({ modelId: JUDGED, },),],
+                produced: [
+                  JUDGED,
+                  UNVOTED,
+                ],
+                answered: heardFrom([
+                  JUDGED,
+                  UNVOTED,
+                  ABSENT,
+                ],),
+              },),
+            },);
+
+            expect(lines,).toHaveLength(3,);
+            expect(lines[1],).toContain('ANSWERED AND WAS NEVER SLATED',);
+            expect(lines[1],).toContain(ABSENT,);
+            expect(lines[1],).not.toContain(ALSO_ABSENT,);
+            expect(lines[1],).not.toContain('Re-run',);
+            expect(lines[2],).toContain('ANSWERED NOTHING USABLE',);
+            expect(lines[2],).toContain(ALSO_ABSENT,);
+            expect(lines[2],).not.toContain(ABSENT,);
+          },
+        },),
+
+        it({
+          name: 'carries both denominators over all four groups, so a narrowed table cannot read '
+            + 'as a full one',
+          fn: async () => {
+            /**
+             Line about the silent model, which has to count the unslated seat
+             among the seats filled even though it is reported on another line.
+             */
+            const lines = coverageGapLines({
+              coverage: readStandingCoverage({
+                roster: ROSTER,
+                standings: [standingOf({ modelId: JUDGED, },),],
+                produced: [JUDGED,],
+                answered: heardFrom([
+                  JUDGED,
+                  UNVOTED,
+                ],),
+              },),
+            },);
+
+            expect(lines,).toHaveLength(2,);
+            expect(lines[1],).toContain('covers 1 of 4 seats',);
+          },
+        },),
+
+        it({
+          name: 'says a seat does not record who answered instead of calling the absent silent, '
+            + 'and still points at the SEAT lines, since this line cannot tell a budget refusal '
+            + 'from a timeout from an answer dropped before judging and the seat report can '
+            + '(calibrate-1)',
+          fn: async () => {
+            /**
+             Line about the models off the table at a seat that carries no
+             answer list out, which has to say so and say where the counts are.
+             */
+            const lines = coverageGapLines({
+              coverage: readStandingCoverage({
+                roster: ROSTER,
+                standings: [standingOf({ modelId: JUDGED, },),],
+                produced: [JUDGED,],
+                answered: UNRECORDED,
+              },),
+            },);
+
+            expect(lines,).toHaveLength(1,);
+            expect(lines[0],).toContain('NO CANDIDATE OF THEIRS REACHED ANY SLATE',);
+            expect(lines[0],).toContain('does not record who answered',);
+            expect(lines[0],).not.toContain('ANSWERED NOTHING USABLE',);
+            expect(lines[0],).toContain('the SEAT lines at the end of this command',);
+          },
+        },),
+
+        it({
+          name: 'POINTS AT THE SEAT LINES from the recorded silent-seat sentence too',
+          fn: async () => {
+            /**
+             Line about a model no usable answer came from, at a seat that does
+             record answers, which has to say where the per-seat counts are.
+             */
+            const lines = coverageGapLines({
+              coverage: readStandingCoverage({
+                roster: ROSTER,
+                standings: [standingOf({ modelId: JUDGED, },),],
+                produced: [JUDGED,],
+                answered: heardFrom([JUDGED,],),
+              },),
+            },);
+
+            expect(lines,).toHaveLength(1,);
+            expect(lines[0],).toContain('ANSWERED NOTHING USABLE',);
+            expect(lines[0],).toContain('the SEAT lines at the end of this command',);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -16932,6 +16932,72 @@ Recurrence:
 `mistake-prevention.md`,
 "Counts in printed text".
 
+### B99: suites after a failing one in the same test file never ran
+
+Found 2026-10-01 (UTC),
+after it had hidden a case three times (M89,
+M97,
+and one of B92's red cases),
+fixed in the commit adding this entry.
+module-test's `describe` throws when a child fails,
+and the package's test files awaited each suite at the module's top,
+so the first failing suite's throw ended the module
+and no suite after it ran.
+The runner prints a line per failing case and per passing suite,
+so a suite that never ran printed nothing,
+and a file reported its first failing suite as its only one.
+A codemod scanning the package's 906 test files
+(`multi-suite/wrap-suites.mjs` in the audit's scratch folder)
+found 291 awaiting more than one suite at the top.
+
+Each now awaits one root suite,
+`describe({ name: '', concurrency: 1, children: [...] })`,
+whose children are the suites the file held, in their order:
+the root runs them one after another,
+as the top-level awaits did,
+and each child keeps the concurrency it set or takes `DEFAULT_CONCURRENCY`,
+the default it had before,
+which `module-test` now exports.
+The codemod wrapped 276 files.
+It refused 15 where a declaration sat between two suites;
+an agent hoisted each such declaration unchanged ahead of the root,
+in its order,
+after reading that no suite before it reads what it names
+and that the one with an effect (`prompt-payload-store.unit.test.ts`'s `writtenVersion()`,
+which writes a file in a directory of its own) changes nothing an earlier suite sees.
+A hoisted declaration now runs before any suite,
+so one that throws stops every suite in its file rather than only the later ones.
+Four files whose every suite already set its concurrency imported `DEFAULT_CONCURRENCY` for nothing after the codemod;
+the unused-imports scan found them in the full suite,
+and they were removed.
+
+What enforces it:
+`src/multi-suite-top-level.unit.test.ts`,
+among the source scans,
+fails on a `.test.ts` file holding more than one `await describe(...)`
+held only by top-level statement shapes,
+the shape `global-writes-sequenced.unit.test.ts` reads as a file's top-level suite;
+the two scans now share `parentsOf` and `ancestorsOf` from `source-scan.test-fixture.ts`.
+Its fixture case runs first and passed from the start.
+Its package case failed naming the 15 hand-wrapped files before they landed and passed after;
+with a second top-level suite appended to `code-points.unit.test.ts`,
+it failed naming that file alone,
+and passed once the line was removed.
+Out of its reach:
+a suite awaited inside a function the file's top calls,
+and `describe` imported under another name.
+
+Calls made here are open to veto:
+
+- the root runs its suites one at a time,
+  keeping the order the top-level awaits gave,
+  rather than side by side;
+- a declaration between two suites moves ahead of the root rather than into a case.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

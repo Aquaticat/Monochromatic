@@ -8,6 +8,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -85,355 +86,364 @@ const CAT_GENERATION = {
 } as const;
 
 await describe({
-  name: assertSheetMatchesManifest.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'reports a DIGEST binding when both sides carry the same one, '
-        + 'which is the only state that proves the grades and the manifest '
-        + 'describe the same items rather than the same file names',
-      fn: async () => {
-        /** Manifest of the draw under test. */
-        const manifest = catManifest({ issueId: 'adjudicated/nap', },);
+    describe({
+      name: assertSheetMatchesManifest.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'reports a DIGEST binding when both sides carry the same one, '
+            + 'which is the only state that proves the grades and the manifest '
+            + 'describe the same items rather than the same file names',
+          fn: async () => {
+            /** Manifest of the draw under test. */
+            const manifest = catManifest({ issueId: 'adjudicated/nap', },);
 
-        expect(assertSheetMatchesManifest({
-          identity: {
-            seed: 'cat-seed',
-            corpusSha: 'sha/1',
-            drawDigest: manifest.drawDigest ?? '',
-          },
-          manifest,
-          sheetLabel: 'repair sheet',
-        },),).toBe('digest',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a sheet whose digest differs while its seed and corpus '
-        + 'pin agree. That is exactly the case the digest exists for: the draw '
-        + 'is deterministic in its seed but not in its pool, so redrawing the '
-        + 'same seed after another entry settles names different issues at the '
-        + 'same positions, and a positional join would mislabel every verdict '
-        + 'without erroring',
-      fn: async () => {
-        /** Manifest of the draw actually taken. */
-        const manifest = catManifest({ issueId: 'adjudicated/nap', },);
-
-        /**
-         What scoresAnotherDraw raised, read for its class as well as its wording.
-         */
-        const refusalOfScoresAnotherDraw = caught(function scoresAnotherDraw() {
-          assertSheetMatchesManifest({
-            identity: {
-              seed: 'cat-seed',
-              corpusSha: 'sha/1',
-              drawDigest: computeDrawDigest({
+            expect(assertSheetMatchesManifest({
+              identity: {
                 seed: 'cat-seed',
                 corpusSha: 'sha/1',
+                drawDigest: manifest.drawDigest ?? '',
+              },
+              manifest,
+              sheetLabel: 'repair sheet',
+            },),).toBe('digest',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a sheet whose digest differs while its seed and corpus '
+            + 'pin agree. That is exactly the case the digest exists for: the draw '
+            + 'is deterministic in its seed but not in its pool, so redrawing the '
+            + 'same seed after another entry settles names different issues at the '
+            + 'same positions, and a positional join would mislabel every verdict '
+            + 'without erroring',
+          fn: async () => {
+            /** Manifest of the draw actually taken. */
+            const manifest = catManifest({ issueId: 'adjudicated/nap', },);
+
+            /**
+             What scoresAnotherDraw raised, read for its class as well as its wording.
+             */
+            const refusalOfScoresAnotherDraw = caught(function scoresAnotherDraw() {
+              assertSheetMatchesManifest({
+                identity: {
+                  seed: 'cat-seed',
+                  corpusSha: 'sha/1',
+                  drawDigest: computeDrawDigest({
+                    seed: 'cat-seed',
+                    corpusSha: 'sha/1',
+                    items: [
+                      {
+                        position: 1,
+                        entryId: 'Kitten',
+                        issueId: 'adjudicated/chase',
+                      },
+                    ],
+                  },),
+                },
+                manifest,
+                sheetLabel: 'repair sheet',
+              },);
+            },);
+
+            expect(refusalOfScoresAnotherDraw,).toBeInstanceOf(SheetBindingError,);
+            expect((refusalOfScoresAnotherDraw as Error).message,).toContain('different draw digests',);
+          },
+        },),
+
+        it({
+          name: 'reports a HEADER-ONLY binding when NEITHER side carries a digest, '
+            + 'rather than refusing it. Round three was drawn before the binding '
+            + 'existed and a final draw refuses to overwrite itself, so refusing '
+            + 'would strand hours of grading that nothing can reproduce',
+          fn: async () => {
+            expect(assertSheetMatchesManifest({
+              identity: {
+                seed: 'cat-seed',
+                corpusSha: 'sha/1',
+                drawDigest: '',
+              },
+              manifest: {
+                seed: 'cat-seed',
+                corpusSha: 'sha/1',
+                generation: CAT_GENERATION,
                 items: [
                   {
                     position: 1,
                     entryId: 'Kitten',
-                    issueId: 'adjudicated/chase',
+                    issueId: 'adjudicated/nap',
                   },
                 ],
-              },),
-            },
-            manifest,
-            sheetLabel: 'repair sheet',
-          },);
-        },);
-
-        expect(refusalOfScoresAnotherDraw,).toBeInstanceOf(SheetBindingError,);
-        expect((refusalOfScoresAnotherDraw as Error).message,).toContain('different draw digests',);
-      },
-    },),
-
-    it({
-      name: 'reports a HEADER-ONLY binding when NEITHER side carries a digest, '
-        + 'rather than refusing it. Round three was drawn before the binding '
-        + 'existed and a final draw refuses to overwrite itself, so refusing '
-        + 'would strand hours of grading that nothing can reproduce',
-      fn: async () => {
-        expect(assertSheetMatchesManifest({
-          identity: {
-            seed: 'cat-seed',
-            corpusSha: 'sha/1',
-            drawDigest: '',
-          },
-          manifest: {
-            seed: 'cat-seed',
-            corpusSha: 'sha/1',
-            generation: CAT_GENERATION,
-            items: [
-              {
-                position: 1,
-                entryId: 'Kitten',
-                issueId: 'adjudicated/nap',
               },
-            ],
+              sheetLabel: 'detection sheet',
+            },),).toBe('header-only',);
           },
-          sheetLabel: 'detection sheet',
-        },),).toBe('header-only',);
-      },
-    },),
+        },),
 
-    it({
-      name: 'REFUSES a pair where only ONE side carries a digest, in both '
-        + 'directions. One draw writes sheet and manifest in the same instant '
-        + 'and always computes a digest now, so a one-sided pair was assembled '
-        + 'from two draws or lost a digest; treating it as legacy would let '
-        + 'the older file\'s absence excuse the newer file\'s presence and '
-        + 'reopen the very join this check closes',
-      fn: async () => {
-        /** Manifest of a bound draw. */
-        const bound = catManifest({ issueId: 'adjudicated/nap', },);
+        it({
+          name: 'REFUSES a pair where only ONE side carries a digest, in both '
+            + 'directions. One draw writes sheet and manifest in the same instant '
+            + 'and always computes a digest now, so a one-sided pair was assembled '
+            + 'from two draws or lost a digest; treating it as legacy would let '
+            + 'the older file\'s absence excuse the newer file\'s presence and '
+            + 'reopen the very join this check closes',
+          fn: async () => {
+            /** Manifest of a bound draw. */
+            const bound = catManifest({ issueId: 'adjudicated/nap', },);
 
-        /** Manifest of an unbound draw carrying the same items. */
-        const unbound = {
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          generation: CAT_GENERATION,
-          items: [
-            {
-              position: 1,
-              entryId: 'Kitten',
-              issueId: 'adjudicated/nap',
-            },
-          ],
-        };
-
-        /**
-         What legacySheetWithBoundManifest raised, read for its class as well as its wording.
-         */
-        const refusalOfLegacySheetWithBoundManifest = caught(function legacySheetWithBoundManifest() {
-          assertSheetMatchesManifest({
-            identity: {
+            /** Manifest of an unbound draw carrying the same items. */
+            const unbound = {
               seed: 'cat-seed',
               corpusSha: 'sha/1',
-              drawDigest: '',
-            },
-            manifest: bound,
-            sheetLabel: 'detection sheet',
-          },);
-        },);
+              generation: CAT_GENERATION,
+              items: [
+                {
+                  position: 1,
+                  entryId: 'Kitten',
+                  issueId: 'adjudicated/nap',
+                },
+              ],
+            };
 
-        expect(refusalOfLegacySheetWithBoundManifest,).toBeInstanceOf(SheetBindingError,);
-        expect((refusalOfLegacySheetWithBoundManifest as Error).message,).toContain('disagree about whether this draw is bound',);
+            /**
+             What legacySheetWithBoundManifest raised, read for its class as well as its wording.
+             */
+            const refusalOfLegacySheetWithBoundManifest = caught(function legacySheetWithBoundManifest() {
+              assertSheetMatchesManifest({
+                identity: {
+                  seed: 'cat-seed',
+                  corpusSha: 'sha/1',
+                  drawDigest: '',
+                },
+                manifest: bound,
+                sheetLabel: 'detection sheet',
+              },);
+            },);
 
-        /**
-         What boundSheetWithLegacyManifest raised, read for its class as well as its wording.
-         */
-        const refusalOfBoundSheetWithLegacyManifest = caught(function boundSheetWithLegacyManifest() {
-          assertSheetMatchesManifest({
-            identity: {
-              seed: 'cat-seed',
-              corpusSha: 'sha/1',
-              drawDigest: bound.drawDigest ?? '',
-            },
-            manifest: unbound,
-            sheetLabel: 'detection sheet',
-          },);
-        },);
+            expect(refusalOfLegacySheetWithBoundManifest,).toBeInstanceOf(SheetBindingError,);
+            expect((refusalOfLegacySheetWithBoundManifest as Error).message,).toContain('disagree about whether this draw is bound',);
 
-        expect(refusalOfBoundSheetWithLegacyManifest,).toBeInstanceOf(SheetBindingError,);
-        expect((refusalOfBoundSheetWithLegacyManifest as Error).message,).toContain('disagree about whether this draw is bound',);
-      },
-    },),
+            /**
+             What boundSheetWithLegacyManifest raised, read for its class as well as its wording.
+             */
+            const refusalOfBoundSheetWithLegacyManifest = caught(function boundSheetWithLegacyManifest() {
+              assertSheetMatchesManifest({
+                identity: {
+                  seed: 'cat-seed',
+                  corpusSha: 'sha/1',
+                  drawDigest: bound.drawDigest ?? '',
+                },
+                manifest: unbound,
+                sheetLabel: 'detection sheet',
+              },);
+            },);
 
-    it({
-      name: 'refuses a mismatched seed and a mismatched corpus pin, since one '
-        + 'names a different draw and the other names different document text '
-        + 'under the same ids',
-      fn: async () => {
-        /** Manifest of the draw under test. */
-        const manifest = catManifest({ issueId: 'adjudicated/nap', },);
-
-        /**
-         What scoresAnotherSeed raised, read for its class as well as its wording.
-         */
-        const refusalOfScoresAnotherSeed = caught(function scoresAnotherSeed() {
-          assertSheetMatchesManifest({
-            identity: {
-              seed: 'other-seed',
-              corpusSha: 'sha/1',
-              drawDigest: '',
-            },
-            manifest,
-            sheetLabel: 'detection sheet',
-          },);
-        },);
-
-        expect(refusalOfScoresAnotherSeed,).toBeInstanceOf(SheetBindingError,);
-        expect((refusalOfScoresAnotherSeed as Error).message,).toContain('different draws',);
-
-        /**
-         What scoresAnotherPin raised, read for its class as well as its wording.
-         */
-        const refusalOfScoresAnotherPin = caught(function scoresAnotherPin() {
-          assertSheetMatchesManifest({
-            identity: {
-              seed: 'cat-seed',
-              corpusSha: 'sha/2',
-              drawDigest: '',
-            },
-            manifest,
-            sheetLabel: 'detection sheet',
-          },);
-        },);
-
-        expect(refusalOfScoresAnotherPin,).toBeInstanceOf(SheetBindingError,);
-        expect((refusalOfScoresAnotherPin as Error).message,).toContain('different corpus',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: requireSheetSeed.name,
-  children: [
-    it({
-      name: 'returns the seed a sheet declares',
-      fn: async () => {
-        expect(requireSheetSeed({
-          identity: {
-            seed: 'cat-seed',
-            corpusSha: 'sha/1',
-            drawDigest: '',
+            expect(refusalOfBoundSheetWithLegacyManifest,).toBeInstanceOf(SheetBindingError,);
+            expect((refusalOfBoundSheetWithLegacyManifest as Error).message,).toContain('disagree about whether this draw is bound',);
           },
-          sheetLabel: 'detection sheet',
-        },),).toBe('cat-seed',);
-      },
+        },),
+
+        it({
+          name: 'refuses a mismatched seed and a mismatched corpus pin, since one '
+            + 'names a different draw and the other names different document text '
+            + 'under the same ids',
+          fn: async () => {
+            /** Manifest of the draw under test. */
+            const manifest = catManifest({ issueId: 'adjudicated/nap', },);
+
+            /**
+             What scoresAnotherSeed raised, read for its class as well as its wording.
+             */
+            const refusalOfScoresAnotherSeed = caught(function scoresAnotherSeed() {
+              assertSheetMatchesManifest({
+                identity: {
+                  seed: 'other-seed',
+                  corpusSha: 'sha/1',
+                  drawDigest: '',
+                },
+                manifest,
+                sheetLabel: 'detection sheet',
+              },);
+            },);
+
+            expect(refusalOfScoresAnotherSeed,).toBeInstanceOf(SheetBindingError,);
+            expect((refusalOfScoresAnotherSeed as Error).message,).toContain('different draws',);
+
+            /**
+             What scoresAnotherPin raised, read for its class as well as its wording.
+             */
+            const refusalOfScoresAnotherPin = caught(function scoresAnotherPin() {
+              assertSheetMatchesManifest({
+                identity: {
+                  seed: 'cat-seed',
+                  corpusSha: 'sha/2',
+                  drawDigest: '',
+                },
+                manifest,
+                sheetLabel: 'detection sheet',
+              },);
+            },);
+
+            expect(refusalOfScoresAnotherPin,).toBeInstanceOf(SheetBindingError,);
+            expect((refusalOfScoresAnotherPin as Error).message,).toContain('different corpus',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'THROWS on a sheet declaring no seed, rather than falling back to '
-        + 'the current default. Every sheet the formatters write carries the '
-        + 'header, so a file without one cannot be placed, and defaulting it '
-        + 'would resolve its pre-grades and manifest under whichever round is '
-        + 'being worked on now: the mispairing the binding exists to stop, '
-        + 'arriving through the back door',
-      fn: async () => {
-        /**
-         What scoresAnUnplaceableSheet raised, read for its class as well as its wording.
-         */
-        const refusalOfScoresAnUnplaceableSheet = caught(function scoresAnUnplaceableSheet() {
-          requireSheetSeed({
-            identity: {
-              seed: '',
+    describe({
+      name: requireSheetSeed.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'returns the seed a sheet declares',
+          fn: async () => {
+            expect(requireSheetSeed({
+              identity: {
+                seed: 'cat-seed',
+                corpusSha: 'sha/1',
+                drawDigest: '',
+              },
+              sheetLabel: 'detection sheet',
+            },),).toBe('cat-seed',);
+          },
+        },),
+
+        it({
+          name: 'THROWS on a sheet declaring no seed, rather than falling back to '
+            + 'the current default. Every sheet the formatters write carries the '
+            + 'header, so a file without one cannot be placed, and defaulting it '
+            + 'would resolve its pre-grades and manifest under whichever round is '
+            + 'being worked on now: the mispairing the binding exists to stop, '
+            + 'arriving through the back door',
+          fn: async () => {
+            /**
+             What scoresAnUnplaceableSheet raised, read for its class as well as its wording.
+             */
+            const refusalOfScoresAnUnplaceableSheet = caught(function scoresAnUnplaceableSheet() {
+              requireSheetSeed({
+                identity: {
+                  seed: '',
+                  corpusSha: 'sha/1',
+                  drawDigest: '',
+                },
+                sheetLabel: 'detection sheet',
+              },);
+            },);
+
+            expect(refusalOfScoresAnUnplaceableSheet,).toBeInstanceOf(SheetBindingError,);
+            expect((refusalOfScoresAnUnplaceableSheet as Error).message,).toContain('declares no draw seed',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: computeDrawDigest.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'changes when any item identity changes, because that is the only '
+            + 'thing standing between a positional join and a silent mislabelling',
+          fn: async () => {
+            /** Digest of the draw as taken. */
+            const original = computeDrawDigest({
+              seed: 'cat-seed',
               corpusSha: 'sha/1',
-              drawDigest: '',
-            },
-            sheetLabel: 'detection sheet',
-          },);
-        },);
+              items: [
+                {
+                  position: 1,
+                  entryId: 'Kitten',
+                  issueId: 'adjudicated/nap',
+                },
+              ],
+            },);
 
-        expect(refusalOfScoresAnUnplaceableSheet,).toBeInstanceOf(SheetBindingError,);
-        expect((refusalOfScoresAnUnplaceableSheet as Error).message,).toContain('declares no draw seed',);
-      },
-    },),
-  ],
-},);
+            expect(computeDrawDigest({
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              items: [
+                {
+                  position: 1,
+                  entryId: 'Mittens',
+                  issueId: 'adjudicated/nap',
+                },
+              ],
+            },),).not.toBe(original,);
+          },
+        },),
 
-await describe({
-  name: computeDrawDigest.name,
-  children: [
-    it({
-      name: 'changes when any item identity changes, because that is the only '
-        + 'thing standing between a positional join and a silent mislabelling',
-      fn: async () => {
-        /** Digest of the draw as taken. */
-        const original = computeDrawDigest({
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          items: [
-            {
-              position: 1,
-              entryId: 'Kitten',
-              issueId: 'adjudicated/nap',
-            },
-          ],
-        },);
+        it({
+          name: 'distinguishes two draws whose fields concatenate alike, so an '
+            + 'entry id containing the separator a delimiter-joined encoding would '
+            + 'use cannot impersonate a different pair of items',
+          fn: async () => {
+            expect(computeDrawDigest({
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              items: [
+                {
+                  position: 1,
+                  entryId: 'Kitten|adjudicated',
+                  issueId: 'nap',
+                },
+              ],
+            },),).not.toBe(computeDrawDigest({
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              items: [
+                {
+                  position: 1,
+                  entryId: 'Kitten',
+                  issueId: 'adjudicated|nap',
+                },
+              ],
+            },),);
+          },
+        },),
 
-        expect(computeDrawDigest({
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          items: [
-            {
-              position: 1,
-              entryId: 'Mittens',
-              issueId: 'adjudicated/nap',
-            },
-          ],
-        },),).not.toBe(original,);
-      },
-    },),
-
-    it({
-      name: 'distinguishes two draws whose fields concatenate alike, so an '
-        + 'entry id containing the separator a delimiter-joined encoding would '
-        + 'use cannot impersonate a different pair of items',
-      fn: async () => {
-        expect(computeDrawDigest({
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          items: [
-            {
-              position: 1,
-              entryId: 'Kitten|adjudicated',
-              issueId: 'nap',
-            },
-          ],
-        },),).not.toBe(computeDrawDigest({
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          items: [
-            {
-              position: 1,
-              entryId: 'Kitten',
-              issueId: 'adjudicated|nap',
-            },
-          ],
-        },),);
-      },
-    },),
-
-    it({
-      name: 'depends on ORDER, since the sheets render items in manifest order '
-        + 'and two draws holding the same issues at swapped positions would '
-        + 'otherwise prove nothing about which grade belongs to which issue',
-      fn: async () => {
-        expect(computeDrawDigest({
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          items: [
-            {
-              position: 1,
-              entryId: 'Kitten',
-              issueId: 'adjudicated/nap',
-            },
-            {
-              position: 2,
-              entryId: 'Kitten',
-              issueId: 'adjudicated/chase',
-            },
-          ],
-        },),).not.toBe(computeDrawDigest({
-          seed: 'cat-seed',
-          corpusSha: 'sha/1',
-          items: [
-            {
-              position: 1,
-              entryId: 'Kitten',
-              issueId: 'adjudicated/chase',
-            },
-            {
-              position: 2,
-              entryId: 'Kitten',
-              issueId: 'adjudicated/nap',
-            },
-          ],
-        },),);
-      },
+        it({
+          name: 'depends on ORDER, since the sheets render items in manifest order '
+            + 'and two draws holding the same issues at swapped positions would '
+            + 'otherwise prove nothing about which grade belongs to which issue',
+          fn: async () => {
+            expect(computeDrawDigest({
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              items: [
+                {
+                  position: 1,
+                  entryId: 'Kitten',
+                  issueId: 'adjudicated/nap',
+                },
+                {
+                  position: 2,
+                  entryId: 'Kitten',
+                  issueId: 'adjudicated/chase',
+                },
+              ],
+            },),).not.toBe(computeDrawDigest({
+              seed: 'cat-seed',
+              corpusSha: 'sha/1',
+              items: [
+                {
+                  position: 1,
+                  entryId: 'Kitten',
+                  issueId: 'adjudicated/chase',
+                },
+                {
+                  position: 2,
+                  entryId: 'Kitten',
+                  issueId: 'adjudicated/nap',
+                },
+              ],
+            },),);
+          },
+        },),
+      ],
     },),
   ],
 },);

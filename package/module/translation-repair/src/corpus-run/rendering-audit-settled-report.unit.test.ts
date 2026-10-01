@@ -30,6 +30,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -435,367 +436,377 @@ async function runBuilt(
 }
 
 await describe({
-  name: readRunRows.name,
-  children: [
-    it({
-      name: 'READS the rows, the archive the run named and the roster it asked',
-      fn: async () => {
-        /**
-         One complete run.
-         */
-        const path = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({
-            rows: [rowFor({ sliceIndex: 0, },),],
-            roster: ROSTER,
-          },),
-        },);
-
-        /**
-         What the report reads off it.
-         */
-        const read = await readRunRows({ path, },);
-
-        expect(read.rows.length,).toBe(1,);
-        expect(read.archiveDir,).toBe(ARCHIVE,);
-        expect(read.roster,).toEqual(ROSTER,);
-      },
-    },),
-
-    it({
-      name: 'READS A RUN WRITTEN BEFORE THE ROSTER WAS KEPT as an empty roster, so its other '
-        + 'readings still answer and the voice rates say only what the rows say',
-      fn: async () => {
-        /**
-         One run carrying no roster field.
-         */
-        const path = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
-        },);
-
-        expect((await readRunRows({ path, },)).roster,).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'REFUSES A FILE CARRYING NO ROWS ARRAY as a stated refusal, since it is not a run of '
-        + 'this probe rather than a quiet one, and the remedy is the operator\'s',
-      fn: async () => {
-        /**
-         A file with the run's identity and nothing bought.
-         */
-        const path = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: {
-            startedAt: '2026-08-25T01:00:00.000Z',
-            subject: { archiveDir: ARCHIVE, },
-          },
-        },);
-
-        await expect(readRunRows({ path, },),).rejects.toThrow(StatedRefusalError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: newestRun.name,
-  children: [
-    it({
-      name: 'PICKS THE NEWEST RUN BY NAME, since names sort by the instant they carry and no file '
-        + 'has to be opened',
-      fn: async () => {
-        /**
-         Two runs, a day apart.
-         */
-        const runsDir = await throwawayRunsDir();
-        await writeRun({
-          runsDir,
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({ rows: [], },),
-        },);
-        /**
-         The later one, which the report should read.
-         */
-        const later = await writeRun({
-          runsDir,
-          stamp: '2026-08-26T01-00-00.000Z',
-          body: runOver({ rows: [], },),
-        },);
-
-        expect(await newestRun({ runsDir, },),).toBe(later,);
-      },
-    },),
-
-    it({
-      name: 'PICKS ONLY A FILE THE STORE FINISHED: a directory named like a later run, and a run still being '
-        + 'written under its `.partial` name, are no run (ledger B65)',
-      fn: async () => {
-        /**
-         Runs directory holding one finished run.
-         */
-        const runsDir = await throwawayRunsDir();
-
-        /**
-         The one run the store finished, which the report should read.
-         */
-        const finished = await writeRun({
-          runsDir,
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({ rows: [], },),
-        },);
-        await mkdir(join(
-          runsDir,
-          PROBE_NAME,
-          '2026-08-26T01-00-00.000Z-cafef00d.json',
-        ),);
-        await writeFile(
-          join(
-            runsDir,
-            PROBE_NAME,
-            '2026-08-27T01-00-00.000Z-cafef00d.json.4242.partial',
-          ),
-          '{"rows":',
-          'utf8',
-        );
-
-        expect(await newestRun({ runsDir, },),).toBe(finished,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES A PROBE THAT HAS NEVER RUN as a stated refusal, since reporting nothing '
-        + 'would look exactly like reporting a clean run',
-      fn: async () => {
-        /**
-         A probe directory with no run in it.
-         */
-        const runsDir = await throwawayRunsDir();
-        await mkdir(
-          join(
-            runsDir,
-            PROBE_NAME,
-          ),
-          { recursive: true, },
-        );
-
-        await expect(newestRun({ runsDir, },),).rejects.toThrow(StatedRefusalError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: printAcross.name,
-  children: [
-    it({
-      name: 'PRINTS A BAND over the subjects both runs bought on identical text, and no sentence '
-        + 'about moved or unverifiable slots',
-      fn: async () => {
-        using printed = collectingLines({ lines: [], },);
-
-        /**
-         Earlier run over the same text.
-         */
-        const against = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({
-            rows: [rowFor({
-              sliceIndex: 0,
-              texts: SAME_TEXTS,
-            },),],
-          },),
-        },);
-
-        await printAcross({
-          rows: [rowFor({
-            sliceIndex: 0,
-            texts: SAME_TEXTS,
-          },),],
-          against,
-        },);
-
-        /**
-         Everything printed, as one body to search.
-         */
-        const said = printed.lines.join('\n',);
-
-        expect(said.includes('NOTHING PAIRED',),).toBe(false,);
-        expect(said.includes('DISAGREES',),).toBe(false,);
-        expect(said.includes('cannot be checked',),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'SAYS THE TEXT DISAGREES and leaves the slot out where both runs recorded it and the '
-        + 'archive moved between them',
-      fn: async () => {
-        using printed = collectingLines({ lines: [], },);
-
-        /**
-         Earlier run over a different rendering of the slot.
-         */
-        const against = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({
-            rows: [rowFor({
-              sliceIndex: 0,
-              texts: OTHER_TEXTS,
-            },),],
-          },),
-        },);
-
-        await printAcross({
-          rows: [rowFor({
-            sliceIndex: 0,
-            texts: SAME_TEXTS,
-          },),],
-          against,
-        },);
-
-        expect(printed.lines.join('\n',)
-          .includes('the text DISAGREES',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'SAYS A SLOT CANNOT BE CHECKED where one run recorded no text identity, which is a '
-        + 'fact about the run and nothing about the archive',
-      fn: async () => {
-        using printed = collectingLines({ lines: [], },);
-
-        /**
-         Earlier run written before identities were recorded.
-         */
-        const against = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
-        },);
-
-        await printAcross({
-          rows: [rowFor({
-            sliceIndex: 0,
-            texts: SAME_TEXTS,
-          },),],
-          against,
-        },);
-
-        expect(printed.lines.join('\n',)
-          .includes('cannot be checked',),).toBe(true,);
-      },
-    },),
-  ],
+  name: '',
   concurrency: 1,
-},);
-
-await describe({
-  name: 'rendering-audit-settled-report as built',
   children: [
-    it({
-      name: 'REPORTS A NAMED RUN and exits 0, printing both halves and the archive that run read',
-      fn: async () => {
-        /**
-         One complete run to report.
-         */
-        const path = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: runOver({
-            rows: [rowFor({
-              sliceIndex: 0,
-              texts: SAME_TEXTS,
-            },),],
-            roster: ROSTER,
-          },),
-        },);
+    describe({
+      name: readRunRows.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS the rows, the archive the run named and the roster it asked',
+          fn: async () => {
+            /**
+             One complete run.
+             */
+            const path = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({
+                rows: [rowFor({ sliceIndex: 0, },),],
+                roster: ROSTER,
+              },),
+            },);
 
-        /**
-         What the command wrote.
-         */
-        const run = await runBuilt({
-          command: REPORT_COMMAND,
-          args: [
-            '--run',
-            path,
-          ],
-        },);
+            /**
+             What the report reads off it.
+             */
+            const read = await readRunRows({ path, },);
 
-        expect(run.code,).toBe(0,);
-        expect(run.stdout.includes('THE TWO HALVES, READ APART',),).toBe(true,);
-        expect(run.stdout.includes(`Archive that run read: ${ARCHIVE}`,),).toBe(true,);
-        expect(run.stdout.includes('asked=1 answered=1 lost=0',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES A FILE THAT IS NOT A RUN with its line and exit 6, no frames, which is the '
-        + 'policy rendering-7 set for the four operator refusals',
-      fn: async () => {
-        /**
-         A file with no rows.
-         */
-        const path = await writeRun({
-          runsDir: await throwawayRunsDir(),
-          stamp: '2026-08-25T01-00-00.000Z',
-          body: {
-            startedAt: '2026-08-25T01:00:00.000Z',
-            subject: { archiveDir: ARCHIVE, },
+            expect(read.rows.length,).toBe(1,);
+            expect(read.archiveDir,).toBe(ARCHIVE,);
+            expect(read.roster,).toEqual(ROSTER,);
           },
-        },);
+        },),
 
-        /**
-         What the command wrote.
-         */
-        const run = await runBuilt({
-          command: REPORT_COMMAND,
-          args: [
-            '--run',
-            path,
-          ],
-        },);
+        it({
+          name: 'READS A RUN WRITTEN BEFORE THE ROSTER WAS KEPT as an empty roster, so its other '
+            + 'readings still answer and the voice rates say only what the rows say',
+          fn: async () => {
+            /**
+             One run carrying no roster field.
+             */
+            const path = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
+            },);
 
-        expect(run.code,).toBe(REFUSED_AS_STATED,);
-        expect(run.stderr.includes('carries no rows array',),).toBe(true,);
-        expect(run.stderr.includes('    at ',),).toBe(false,);
-      },
+            expect((await readRunRows({ path, },)).roster,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FILE CARRYING NO ROWS ARRAY as a stated refusal, since it is not a run of '
+            + 'this probe rather than a quiet one, and the remedy is the operator\'s',
+          fn: async () => {
+            /**
+             A file with the run's identity and nothing bought.
+             */
+            const path = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: {
+                startedAt: '2026-08-25T01:00:00.000Z',
+                subject: { archiveDir: ARCHIVE, },
+              },
+            },);
+
+            await expect(readRunRows({ path, },),).rejects.toThrow(StatedRefusalError,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: 'rendering-audit-settled as built',
-  children: [
-    it({
-      name: 'REFUSES AN EMPTY ARCHIVE with its line and exit 6 before any roster is woken, since '
-        + 'the run was pointed somewhere wrong rather than at a clean archive',
-      fn: async () => {
-        /**
-         What the command wrote against an archive holding nothing.
-         */
-        const run = await runBuilt({
-          command: AUDIT_COMMAND,
-          args: [
-            '--archive',
-            await mkdtemp(join(
-              tmpdir(),
-              'rendering-audit-settled-empty-',
-            ),),
-            '--cap',
-            '0',
-          ],
-        },);
+    describe({
+      name: newestRun.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'PICKS THE NEWEST RUN BY NAME, since names sort by the instant they carry and no file '
+            + 'has to be opened',
+          fn: async () => {
+            /**
+             Two runs, a day apart.
+             */
+            const runsDir = await throwawayRunsDir();
+            await writeRun({
+              runsDir,
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({ rows: [], },),
+            },);
+            /**
+             The later one, which the report should read.
+             */
+            const later = await writeRun({
+              runsDir,
+              stamp: '2026-08-26T01-00-00.000Z',
+              body: runOver({ rows: [], },),
+            },);
 
-        expect(run.code,).toBe(REFUSED_AS_STATED,);
-        expect(run.stderr.includes('no artifacts under',),).toBe(true,);
-        expect(run.stderr.includes('    at ',),).toBe(false,);
-      },
+            expect(await newestRun({ runsDir, },),).toBe(later,);
+          },
+        },),
+
+        it({
+          name: 'PICKS ONLY A FILE THE STORE FINISHED: a directory named like a later run, and a run still being '
+            + 'written under its `.partial` name, are no run (ledger B65)',
+          fn: async () => {
+            /**
+             Runs directory holding one finished run.
+             */
+            const runsDir = await throwawayRunsDir();
+
+            /**
+             The one run the store finished, which the report should read.
+             */
+            const finished = await writeRun({
+              runsDir,
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({ rows: [], },),
+            },);
+            await mkdir(join(
+              runsDir,
+              PROBE_NAME,
+              '2026-08-26T01-00-00.000Z-cafef00d.json',
+            ),);
+            await writeFile(
+              join(
+                runsDir,
+                PROBE_NAME,
+                '2026-08-27T01-00-00.000Z-cafef00d.json.4242.partial',
+              ),
+              '{"rows":',
+              'utf8',
+            );
+
+            expect(await newestRun({ runsDir, },),).toBe(finished,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A PROBE THAT HAS NEVER RUN as a stated refusal, since reporting nothing '
+            + 'would look exactly like reporting a clean run',
+          fn: async () => {
+            /**
+             A probe directory with no run in it.
+             */
+            const runsDir = await throwawayRunsDir();
+            await mkdir(
+              join(
+                runsDir,
+                PROBE_NAME,
+              ),
+              { recursive: true, },
+            );
+
+            await expect(newestRun({ runsDir, },),).rejects.toThrow(StatedRefusalError,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: printAcross.name,
+      children: [
+        it({
+          name: 'PRINTS A BAND over the subjects both runs bought on identical text, and no sentence '
+            + 'about moved or unverifiable slots',
+          fn: async () => {
+            using printed = collectingLines({ lines: [], },);
+
+            /**
+             Earlier run over the same text.
+             */
+            const against = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({
+                rows: [rowFor({
+                  sliceIndex: 0,
+                  texts: SAME_TEXTS,
+                },),],
+              },),
+            },);
+
+            await printAcross({
+              rows: [rowFor({
+                sliceIndex: 0,
+                texts: SAME_TEXTS,
+              },),],
+              against,
+            },);
+
+            /**
+             Everything printed, as one body to search.
+             */
+            const said = printed.lines.join('\n',);
+
+            expect(said.includes('NOTHING PAIRED',),).toBe(false,);
+            expect(said.includes('DISAGREES',),).toBe(false,);
+            expect(said.includes('cannot be checked',),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'SAYS THE TEXT DISAGREES and leaves the slot out where both runs recorded it and the '
+            + 'archive moved between them',
+          fn: async () => {
+            using printed = collectingLines({ lines: [], },);
+
+            /**
+             Earlier run over a different rendering of the slot.
+             */
+            const against = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({
+                rows: [rowFor({
+                  sliceIndex: 0,
+                  texts: OTHER_TEXTS,
+                },),],
+              },),
+            },);
+
+            await printAcross({
+              rows: [rowFor({
+                sliceIndex: 0,
+                texts: SAME_TEXTS,
+              },),],
+              against,
+            },);
+
+            expect(printed.lines.join('\n',)
+              .includes('the text DISAGREES',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'SAYS A SLOT CANNOT BE CHECKED where one run recorded no text identity, which is a '
+            + 'fact about the run and nothing about the archive',
+          fn: async () => {
+            using printed = collectingLines({ lines: [], },);
+
+            /**
+             Earlier run written before identities were recorded.
+             */
+            const against = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
+            },);
+
+            await printAcross({
+              rows: [rowFor({
+                sliceIndex: 0,
+                texts: SAME_TEXTS,
+              },),],
+              against,
+            },);
+
+            expect(printed.lines.join('\n',)
+              .includes('cannot be checked',),).toBe(true,);
+          },
+        },),
+      ],
+      concurrency: 1,
+    },),
+
+    describe({
+      name: 'rendering-audit-settled-report as built',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REPORTS A NAMED RUN and exits 0, printing both halves and the archive that run read',
+          fn: async () => {
+            /**
+             One complete run to report.
+             */
+            const path = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({
+                rows: [rowFor({
+                  sliceIndex: 0,
+                  texts: SAME_TEXTS,
+                },),],
+                roster: ROSTER,
+              },),
+            },);
+
+            /**
+             What the command wrote.
+             */
+            const run = await runBuilt({
+              command: REPORT_COMMAND,
+              args: [
+                '--run',
+                path,
+              ],
+            },);
+
+            expect(run.code,).toBe(0,);
+            expect(run.stdout.includes('THE TWO HALVES, READ APART',),).toBe(true,);
+            expect(run.stdout.includes(`Archive that run read: ${ARCHIVE}`,),).toBe(true,);
+            expect(run.stdout.includes('asked=1 answered=1 lost=0',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FILE THAT IS NOT A RUN with its line and exit 6, no frames, which is the '
+            + 'policy rendering-7 set for the four operator refusals',
+          fn: async () => {
+            /**
+             A file with no rows.
+             */
+            const path = await writeRun({
+              runsDir: await throwawayRunsDir(),
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: {
+                startedAt: '2026-08-25T01:00:00.000Z',
+                subject: { archiveDir: ARCHIVE, },
+              },
+            },);
+
+            /**
+             What the command wrote.
+             */
+            const run = await runBuilt({
+              command: REPORT_COMMAND,
+              args: [
+                '--run',
+                path,
+              ],
+            },);
+
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stderr.includes('carries no rows array',),).toBe(true,);
+            expect(run.stderr.includes('    at ',),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'rendering-audit-settled as built',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES AN EMPTY ARCHIVE with its line and exit 6 before any roster is woken, since '
+            + 'the run was pointed somewhere wrong rather than at a clean archive',
+          fn: async () => {
+            /**
+             What the command wrote against an archive holding nothing.
+             */
+            const run = await runBuilt({
+              command: AUDIT_COMMAND,
+              args: [
+                '--archive',
+                await mkdtemp(join(
+                  tmpdir(),
+                  'rendering-audit-settled-empty-',
+                ),),
+                '--cap',
+                '0',
+              ],
+            },);
+
+            expect(run.code,).toBe(REFUSED_AS_STATED,);
+            expect(run.stderr.includes('no artifacts under',),).toBe(true,);
+            expect(run.stderr.includes('    at ',),).toBe(false,);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -11,6 +11,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -107,196 +108,205 @@ const SCRAMBLED_ROUND: RepairJudgedRound = {
 };
 
 await describe({
-  name: selectionRoundOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'orders producers by the position judges were shown, not by slate order',
-      fn: async () => {
-        /**
-         Projection of a slate recorded out of order.
-         */
-        const projected = selectionRoundOf({ round: SCRAMBLED_ROUND, },);
+    describe({
+      name: selectionRoundOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'orders producers by the position judges were shown, not by slate order',
+          fn: async () => {
+            /**
+             Projection of a slate recorded out of order.
+             */
+            const projected = selectionRoundOf({ round: SCRAMBLED_ROUND, },);
 
-        // Position 1 was Kimi, so it must land first however the slate was stored.
-        expect(projected.producers[0],).toEqual({
-          kind: 'model',
-          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-        },);
-        expect(projected.producers[1],).toEqual({
-          kind: 'model',
-          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-        },);
-      },
-    },),
-
-    it({
-      name: 'FORWARDS every ballot unchanged',
-      fn: async () => {
-        expect(selectionRoundOf({ round: SCRAMBLED_ROUND, },).ballots,)
-          .toEqual(SCRAMBLED_ROUND.ballots,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a slate whose positions are not one to its length',
-      fn: async () => {
-        /**
-         A slate that skips position two, which a ballot naming two would
-         silently misread as the third candidate.
-         */
-        const gapped: RepairJudgedRound = {
-          ...SCRAMBLED_ROUND,
-          slate: [
-            entryAt({
-              index: 1,
+            // Position 1 was Kimi, so it must land first however the slate was stored.
+            expect(projected.producers[0],).toEqual({
+              kind: 'model',
               modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-            },),
-            entryAt({
-              index: 3,
+            },);
+            expect(projected.producers[1],).toEqual({
+              kind: 'model',
               modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            },),
-          ],
-        };
-
-        expect(() => selectionRoundOf({ round: gapped, },),).toThrow(SlatePositionsError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: selectionRoundsFor.name,
-  children: [
-    it({
-      name: 'keeps only the stages the named role produced',
-      fn: async () => {
-        /**
-         One round from each stage the lane records.
-         */
-        const rounds: readonly RepairJudgedRound[] = [
-          SCRAMBLED_ROUND,
-          {
-            ...SCRAMBLED_ROUND,
-            stage: 'chunk-patch' as const,
+            },);
           },
-          {
-            ...SCRAMBLED_ROUND,
-            stage: 'refine' as const,
+        },),
+
+        it({
+          name: 'FORWARDS every ballot unchanged',
+          fn: async () => {
+            expect(selectionRoundOf({ round: SCRAMBLED_ROUND, },).ballots,)
+              .toEqual(SCRAMBLED_ROUND.ballots,);
           },
-        ];
+        },),
 
-        expect(selectionRoundsFor({
-          rounds,
-          stages: EDITOR_ROUND_STAGES,
-        },).length,).toBe(2,);
+        it({
+          name: 'REFUSES a slate whose positions are not one to its length',
+          fn: async () => {
+            /**
+             A slate that skips position two, which a ballot naming two would
+             silently misread as the third candidate.
+             */
+            const gapped: RepairJudgedRound = {
+              ...SCRAMBLED_ROUND,
+              slate: [
+                entryAt({
+                  index: 1,
+                  modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                },),
+                entryAt({
+                  index: 3,
+                  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                },),
+              ],
+            };
 
-        expect(selectionRoundsFor({
-          rounds,
-          stages: REFINER_ROUND_STAGES,
-        },).length,).toBe(1,);
-      },
+            expect(() => selectionRoundOf({ round: gapped, },),).toThrow(SlatePositionsError,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS a declined round, because its ballots are evidence too',
-      fn: async () => {
-        /**
-         A round where judges saw the slate and settled on nothing.
-         */
-        const declined: RepairJudgedRound = {
-          kind: 'declined' as const,
-          stage: 'envelope' as const,
-          envelopeId: 'env-2',
-          slate: SCRAMBLED_ROUND.slate,
-          ballots: SCRAMBLED_ROUND.ballots,
-          tally: {
-            judgesAvailable: 1,
-            ballots: 1,
-            abstentions: 0,
-            selfVotes: 0,
+    describe({
+      name: selectionRoundsFor.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'keeps only the stages the named role produced',
+          fn: async () => {
+            /**
+             One round from each stage the lane records.
+             */
+            const rounds: readonly RepairJudgedRound[] = [
+              SCRAMBLED_ROUND,
+              {
+                ...SCRAMBLED_ROUND,
+                stage: 'chunk-patch' as const,
+              },
+              {
+                ...SCRAMBLED_ROUND,
+                stage: 'refine' as const,
+              },
+            ];
+
+            expect(selectionRoundsFor({
+              rounds,
+              stages: EDITOR_ROUND_STAGES,
+            },).length,).toBe(2,);
+
+            expect(selectionRoundsFor({
+              rounds,
+              stages: REFINER_ROUND_STAGES,
+            },).length,).toBe(1,);
           },
-          perCandidate: [],
-          reason: 'no candidate drew a majority',
-          disposition: 'indecision' as const,
-        };
+        },),
 
-        expect(selectionRoundsFor({
-          rounds: [declined,],
-          stages: EDITOR_ROUND_STAGES,
-        },).length,).toBe(1,);
-      },
+        it({
+          name: 'ACCEPTS a declined round, because its ballots are evidence too',
+          fn: async () => {
+            /**
+             A round where judges saw the slate and settled on nothing.
+             */
+            const declined: RepairJudgedRound = {
+              kind: 'declined' as const,
+              stage: 'envelope' as const,
+              envelopeId: 'env-2',
+              slate: SCRAMBLED_ROUND.slate,
+              ballots: SCRAMBLED_ROUND.ballots,
+              tally: {
+                judgesAvailable: 1,
+                ballots: 1,
+                abstentions: 0,
+                selfVotes: 0,
+              },
+              perCandidate: [],
+              reason: 'no candidate drew a majority',
+              disposition: 'indecision' as const,
+            };
+
+            expect(selectionRoundsFor({
+              rounds: [declined,],
+              stages: EDITOR_ROUND_STAGES,
+            },).length,).toBe(1,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: 'editor standing over projected rounds',
-  children: [
-    it({
-      name: 'ACCEPTS real-shaped rounds and produces a standing with counts',
-      fn: async () => {
-        /**
-         A POSITIVE CONTROL FOR THE WHOLE READING CHAIN.
+    describe({
+      name: 'editor standing over projected rounds',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS real-shaped rounds and produces a standing with counts',
+          fn: async () => {
+            /**
+             A POSITIVE CONTROL FOR THE WHOLE READING CHAIN.
          
-         The first live smoke run reported zero rounds, correctly: its slice
-         carried no accepted issue, so no editor was ever asked to write. A
-         null from a probe never shown able to produce a non-null says
-         nothing, so this drives projection and tally together and checks a
-         standing actually falls out with the counts behind it.
+             The first live smoke run reported zero rounds, correctly: its slice
+             carried no accepted issue, so no editor was ever asked to write. A
+             null from a probe never shown able to produce a non-null says
+             nothing, so this drives projection and tally together and checks a
+             standing actually falls out with the counts behind it.
          
-         Kimi wrote position one and Qwen position two. Three judges hold no
-         stake in either, and all three named position one.
-         */
-        const rounds = [
-          {
-            ...SCRAMBLED_ROUND,
-            ballots: [
-              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_HYPER_OPENROUTER_UNMEASURED,
-            ].map(function ballotFor(modelId,) {
-              return {
-                modelId: modelId as RosterModelId,
-                best: 1,
-                reason: 'reads better',
-                weight: 1,
-                selfVote: false,
-              };
-            },),
+             Kimi wrote position one and Qwen position two. Three judges hold no
+             stake in either, and all three named position one.
+             */
+            const rounds = [
+              {
+                ...SCRAMBLED_ROUND,
+                ballots: [
+                  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_HYPER_OPENROUTER_UNMEASURED,
+                ].map(function ballotFor(modelId,) {
+                  return {
+                    modelId: modelId as RosterModelId,
+                    best: 1,
+                    reason: 'reads better',
+                    weight: 1,
+                    selfVote: false,
+                  };
+                },),
+              },
+            ] satisfies readonly RepairJudgedRound[];
+
+            /**
+             What the editors' rounds came to.
+             */
+            const standings = producerStandings({
+              rounds: selectionRoundsFor({
+                rounds,
+                stages: EDITOR_ROUND_STAGES,
+              },),
+            },);
+
+            /**
+             Kimi's standing, which wrote the candidate all three named.
+             */
+            const kimi = standings.find(function isKimi(standing,): boolean {
+              return standing.modelId === SEAT_SYNTHETIC_VISION_WITHHELD;
+            },);
+
+            expect(kimi?.disinterestedVotes,).toBe(3,);
+            expect(kimi?.disinterestedBallots,).toBe(3,);
+            expect(kimi?.candidates,).toBe(1,);
+
+            /**
+             Qwen's standing, which wrote the candidate none of them named.
+             */
+            const qwen = standings.find(function isQwen(standing,): boolean {
+              return standing.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
+            },);
+
+            expect(qwen?.disinterestedVotes,).toBe(0,);
+            expect(qwen?.disinterestedBallots,).toBe(3,);
           },
-        ] satisfies readonly RepairJudgedRound[];
-
-        /**
-         What the editors' rounds came to.
-         */
-        const standings = producerStandings({
-          rounds: selectionRoundsFor({
-            rounds,
-            stages: EDITOR_ROUND_STAGES,
-          },),
-        },);
-
-        /**
-         Kimi's standing, which wrote the candidate all three named.
-         */
-        const kimi = standings.find(function isKimi(standing,): boolean {
-          return standing.modelId === SEAT_SYNTHETIC_VISION_WITHHELD;
-        },);
-
-        expect(kimi?.disinterestedVotes,).toBe(3,);
-        expect(kimi?.disinterestedBallots,).toBe(3,);
-        expect(kimi?.candidates,).toBe(1,);
-
-        /**
-         Qwen's standing, which wrote the candidate none of them named.
-         */
-        const qwen = standings.find(function isQwen(standing,): boolean {
-          return standing.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
-        },);
-
-        expect(qwen?.disinterestedVotes,).toBe(0,);
-        expect(qwen?.disinterestedBallots,).toBe(3,);
-      },
+        },),
+      ],
     },),
   ],
 },);

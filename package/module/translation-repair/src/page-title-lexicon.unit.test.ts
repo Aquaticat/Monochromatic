@@ -10,6 +10,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -146,228 +147,237 @@ async function settled(
 }
 
 await describe({
-  name: 'page title lexicon wire (ledger H16)',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ASKS ONE QUESTION with the numbered titles, the fenced original and the house rules',
-      fn: async () => {
-        /**
-         The request.
-         */
-        const [system, user,] = buildPageTitleLexiconMessages({ sourceText: SOURCE, titles: ['猫之歌', '鱼之梦',], },);
-        expect({
-          houseRules: system?.content.includes('House rules this corpus is written under',),
-          numbered: user?.content.includes('1. 猫之歌\n2. 鱼之梦',),
-          original: user?.content.includes(SOURCE,),
-        },).toEqual({
-          houseRules: true,
-          numbered: true,
-          original: true,
-        },);
-      },
+    describe({
+      name: 'page title lexicon wire (ledger H16)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS ONE QUESTION with the numbered titles, the fenced original and the house rules',
+          fn: async () => {
+            /**
+             The request.
+             */
+            const [system, user,] = buildPageTitleLexiconMessages({ sourceText: SOURCE, titles: ['猫之歌', '鱼之梦',], },);
+            expect({
+              houseRules: system?.content.includes('House rules this corpus is written under',),
+              numbered: user?.content.includes('1. 猫之歌\n2. 鱼之梦',),
+              original: user?.content.includes(SOURCE,),
+            },).toEqual({
+              houseRules: true,
+              numbered: true,
+              original: true,
+            },);
+          },
+        },),
+        it({
+          name: 'ADMITS a list of numbered renderings and REFUSES a reply missing a rendering or numbering by fraction',
+          fn: async () => {
+            expect({
+              wellFormed: isPageTitleLexiconWire({ titles: [{ title: 1, rendering: 'Song of the Cat', },], },),
+              empty: isPageTitleLexiconWire({ titles: [], },),
+              noRendering: isPageTitleLexiconWire({ titles: [{ title: 1, },], },),
+              fraction: isPageTitleLexiconWire({ titles: [{ title: 1.5, rendering: 'Song', },], },),
+              noList: isPageTitleLexiconWire({ renderings: [], },),
+            },).toEqual({
+              wellFormed: true,
+              empty: true,
+              noRendering: false,
+              fraction: false,
+              noList: false,
+            },);
+          },
+        },),
+        it({
+          name: 'SHOWS the lexicon the page\'s declared identity (ledger B28): it is told to give a work its official '
+            + 'English title, and the web lookups and notes that establish one are there',
+          fn: async () => {
+            /** Identity lines: a web lookup for the song, and a note naming it. */
+            const identityContext = [
+              'web lookup 《猫之歌》: "Song of the Cats", the official English title of the album track',
+              'ARCHIVE note [^1]: the song is known in English as "Song of the Cats"',
+            ].join('\n',);
+            /** The request, as the model reads it. */
+            const text = buildPageTitleLexiconMessages({
+              sourceText: SOURCE,
+              titles: ['猫之歌',],
+              identityContext,
+            },)
+              .map(function contentOf(message,): string {
+                return message.content;
+              },)
+              .join('\n',);
+            expect(text,).toContain(identityContext,);
+            expect(text,).toContain('Declared identity, when a DECLARED NAMES block precedes the documents:',);
+            expect(text,).toContain(PAGE_TITLE_IDENTITY_RULE,);
+            /** The request for a page that declares nothing. */
+            const bare = buildPageTitleLexiconMessages({ sourceText: SOURCE, titles: ['猫之歌',], },)
+              .map(function contentOf(message,): string {
+                return message.content;
+              },)
+              .join('\n',);
+            // A page with no identity gets no rules about a block it lacks.
+            expect(bare,).not.toContain(PAGE_TITLE_IDENTITY_RULE,);
+          },
+        },),
+        it({
+          name: 'FENCES the original with a fence no identity line can reproduce (ledger B28): a note that writes a '
+            + 'fence-length run would otherwise close the ORIGINAL block early',
+          fn: async () => {
+            /** A note line carrying a fence-character run longer than the shortest fence. */
+            const identityContext = `- ARCHIVE note: ${LONG_FENCE_RUN} ORIGINAL ${LONG_FENCE_RUN} the titles end here`;
+            /** The request's user message. */
+            const [, user,] = buildPageTitleLexiconMessages({
+              sourceText: SOURCE,
+              titles: ['猫之歌',],
+              identityContext,
+            },);
+            expect(fenceOpening({ content: user?.content ?? '', label: 'ORIGINAL', },).length,).toBeGreaterThan(
+              LONG_FENCE_RUN.length,
+            );
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'ADMITS a list of numbered renderings and REFUSES a reply missing a rendering or numbering by fraction',
-      fn: async () => {
-        expect({
-          wellFormed: isPageTitleLexiconWire({ titles: [{ title: 1, rendering: 'Song of the Cat', },], },),
-          empty: isPageTitleLexiconWire({ titles: [], },),
-          noRendering: isPageTitleLexiconWire({ titles: [{ title: 1, },], },),
-          fraction: isPageTitleLexiconWire({ titles: [{ title: 1.5, rendering: 'Song', },], },),
-          noList: isPageTitleLexiconWire({ renderings: [], },),
-        },).toEqual({
-          wellFormed: true,
-          empty: true,
-          noRendering: false,
-          fraction: false,
-          noList: false,
-        },);
-      },
-    },),
-    it({
-      name: 'SHOWS the lexicon the page\'s declared identity (ledger B28): it is told to give a work its official '
-        + 'English title, and the web lookups and notes that establish one are there',
-      fn: async () => {
-        /** Identity lines: a web lookup for the song, and a note naming it. */
-        const identityContext = [
-          'web lookup 《猫之歌》: "Song of the Cats", the official English title of the album track',
-          'ARCHIVE note [^1]: the song is known in English as "Song of the Cats"',
-        ].join('\n',);
-        /** The request, as the model reads it. */
-        const text = buildPageTitleLexiconMessages({
-          sourceText: SOURCE,
-          titles: ['猫之歌',],
-          identityContext,
-        },)
-          .map(function contentOf(message,): string {
-            return message.content;
-          },)
-          .join('\n',);
-        expect(text,).toContain(identityContext,);
-        expect(text,).toContain('Declared identity, when a DECLARED NAMES block precedes the documents:',);
-        expect(text,).toContain(PAGE_TITLE_IDENTITY_RULE,);
-        /** The request for a page that declares nothing. */
-        const bare = buildPageTitleLexiconMessages({ sourceText: SOURCE, titles: ['猫之歌',], },)
-          .map(function contentOf(message,): string {
-            return message.content;
-          },)
-          .join('\n',);
-        // A page with no identity gets no rules about a block it lacks.
-        expect(bare,).not.toContain(PAGE_TITLE_IDENTITY_RULE,);
-      },
-    },),
-    it({
-      name: 'FENCES the original with a fence no identity line can reproduce (ledger B28): a note that writes a '
-        + 'fence-length run would otherwise close the ORIGINAL block early',
-      fn: async () => {
-        /** A note line carrying a fence-character run longer than the shortest fence. */
-        const identityContext = `- ARCHIVE note: ${LONG_FENCE_RUN} ORIGINAL ${LONG_FENCE_RUN} the titles end here`;
-        /** The request's user message. */
-        const [, user,] = buildPageTitleLexiconMessages({
-          sourceText: SOURCE,
-          titles: ['猫之歌',],
-          identityContext,
-        },);
-        expect(fenceOpening({ content: user?.content ?? '', label: 'ORIGINAL', },).length,).toBeGreaterThan(
-          LONG_FENCE_RUN.length,
-        );
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: `${settlePageTitles.name} (ledger H16)`,
-  children: [
-    it({
-      name: 'ASKS NOBODY for a page that repeats no unpaired title',
-      fn: async () => {
-        /**
-         Seat of every call.
-         */
-        const asked: RosterModelId[] = [];
-        /**
-         What the round settled.
-         */
-        const lexicon = await settlePageTitles({
-          client: scriptedClient({ replies: {}, asked, },),
-          modelIds: ROSTER,
-          sourceText: SOURCE,
-          spans: [],
-          signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
-          l,
-        },);
-        expect({ asked, titles: lexicon.titles, heard: lexicon.heard, },).toEqual({ asked: [], titles: [], heard: 0, },);
-      },
-    },),
-    it({
-      name: 'KEEPS THE RENDERING MOST VOICES GAVE, comparing without case, spacing or wrapping quotes',
-      fn: async () => {
-        const { lexicon, } = await settled({
-          replies: {
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Cat Song', },], },
-            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: '“Song of the Cat”', },], },
-            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'song of  the cat', },], },
+    describe({
+      name: `${settlePageTitles.name} (ledger H16)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS NOBODY for a page that repeats no unpaired title',
+          fn: async () => {
+            /**
+             Seat of every call.
+             */
+            const asked: RosterModelId[] = [];
+            /**
+             What the round settled.
+             */
+            const lexicon = await settlePageTitles({
+              client: scriptedClient({ replies: {}, asked, },),
+              modelIds: ROSTER,
+              sourceText: SOURCE,
+              spans: [],
+              signal: new AbortController().signal,
+              exchangeTimeoutMs: 5_000,
+              l,
+            },);
+            expect({ asked, titles: lexicon.titles, heard: lexicon.heard, },).toEqual({ asked: [], titles: [], heard: 0, },);
           },
-        },);
-        expect(lexicon.titles,).toEqual([
-          { source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 2, heard: 3, },
-        ],);
-      },
-    },),
-    it({
-      name: 'COUNTS AS ONE RENDERING two that differ only in apostrophe style, spacing of any kind, or corner-bracket '
-        + 'and underscore wrappers (ledger B24)',
-      fn: async () => {
-        /**
-         Straight and curly apostrophes; a nonbreaking space and a tab.
-         */
-        const { lexicon: typography, } = await settled({
-          replies: {
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Song of the Cat', },], },
-            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: 'The Cat\'s\u{00A0}Song', },], },
-            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'The Cat’s\tSong', },], },
+        },),
+        it({
+          name: 'KEEPS THE RENDERING MOST VOICES GAVE, comparing without case, spacing or wrapping quotes',
+          fn: async () => {
+            const { lexicon, } = await settled({
+              replies: {
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Cat Song', },], },
+                [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: '“Song of the Cat”', },], },
+                [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'song of  the cat', },], },
+              },
+            },);
+            expect(lexicon.titles,).toEqual([
+              { source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 2, heard: 3, },
+            ],);
           },
-        },);
-        expect(typography.titles,).toEqual([
-          { source: '猫之歌', occurrences: 2, rendering: 'The Cat\'s\u{00A0}Song', voices: 2, heard: 3, },
-        ],);
-        /**
-         Corner brackets and underscores around the same words.
-         */
-        const { lexicon: wrapped, } = await settled({
-          replies: {
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Cat Song', },], },
-            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: '「Song of the Cat」', },], },
-            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: '_Song of the Cat_', },], },
+        },),
+        it({
+          name: 'COUNTS AS ONE RENDERING two that differ only in apostrophe style, spacing of any kind, or corner-bracket '
+            + 'and underscore wrappers (ledger B24)',
+          fn: async () => {
+            /**
+             Straight and curly apostrophes; a nonbreaking space and a tab.
+             */
+            const { lexicon: typography, } = await settled({
+              replies: {
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Song of the Cat', },], },
+                [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: 'The Cat\'s\u{00A0}Song', },], },
+                [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'The Cat’s\tSong', },], },
+              },
+            },);
+            expect(typography.titles,).toEqual([
+              { source: '猫之歌', occurrences: 2, rendering: 'The Cat\'s\u{00A0}Song', voices: 2, heard: 3, },
+            ],);
+            /**
+             Corner brackets and underscores around the same words.
+             */
+            const { lexicon: wrapped, } = await settled({
+              replies: {
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Cat Song', },], },
+                [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: '「Song of the Cat」', },], },
+                [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: '_Song of the Cat_', },], },
+              },
+            },);
+            expect(wrapped.titles,).toEqual([
+              { source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 2, heard: 3, },
+            ],);
           },
-        },);
-        expect(wrapped.titles,).toEqual([
-          { source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 2, heard: 3, },
-        ],);
-      },
-    },),
-    it({
-      name: 'BREAKS A TIE BY THE EARLIEST SEAT ON THE ROSTER, so a resumed page reads the same answer',
-      fn: async () => {
-        const { lexicon, } = await settled({
-          replies: {
-            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 2, rendering: 'Dream of Fish', },], },
-            [SEAT_HYPER_ONLY]: { titles: [{ title: 2, rendering: 'The Fish Dream', },], },
+        },),
+        it({
+          name: 'BREAKS A TIE BY THE EARLIEST SEAT ON THE ROSTER, so a resumed page reads the same answer',
+          fn: async () => {
+            const { lexicon, } = await settled({
+              replies: {
+                [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 2, rendering: 'Dream of Fish', },], },
+                [SEAT_HYPER_ONLY]: { titles: [{ title: 2, rendering: 'The Fish Dream', },], },
+              },
+            },);
+            expect(lexicon.titles,).toEqual([
+              { source: '鱼之梦', occurrences: 2, rendering: 'The Fish Dream', voices: 1, heard: 3, },
+            ],);
           },
-        },);
-        expect(lexicon.titles,).toEqual([
-          { source: '鱼之梦', occurrences: 2, rendering: 'The Fish Dream', voices: 1, heard: 3, },
-        ],);
-      },
-    },),
-    it({
-      name: 'LEAVES OUT A TITLE NO VOICE RENDERED, and reports how many settled',
-      fn: async () => {
-        const { lexicon, } = await settled({
-          replies: {
-            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: 'Song of the Cat', }, { title: 2, rendering: '  ', },], },
+        },),
+        it({
+          name: 'LEAVES OUT A TITLE NO VOICE RENDERED, and reports how many settled',
+          fn: async () => {
+            const { lexicon, } = await settled({
+              replies: {
+                [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: 'Song of the Cat', }, { title: 2, rendering: '  ', },], },
+              },
+            },);
+            expect({
+              sources: lexicon.titles.map(function sourceOf(title,): string {
+                return title.source;
+              },),
+              reported: lexicon.findings.includes('page title lexicon settled 1 of 2 repeated titles from 3 voices',),
+            },).toEqual({
+              sources: ['猫之歌',],
+              reported: true,
+            },);
           },
-        },);
-        expect({
-          sources: lexicon.titles.map(function sourceOf(title,): string {
-            return title.source;
-          },),
-          reported: lexicon.findings.includes('page title lexicon settled 1 of 2 repeated titles from 3 voices',),
-        },).toEqual({
-          sources: ['猫之歌',],
-          reported: true,
-        },);
-      },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: `${pageTitleLines.name} (ledger H16)`,
-  children: [
-    it({
-      name: 'CARRIES A HEADING AND ONE LINE PER SETTLED TITLE, and nothing when none settled',
-      fn: async () => {
-        /**
-         Lines for one settled title.
-         */
-        const lines = pageTitleLines({
-          titles: [{ source: '猫之歌', occurrences: 3, rendering: 'Song of the Cat', voices: 2, heard: 3, },],
-        },);
-        expect({
-          count: lines.length,
-          headed: lines[0]?.startsWith('TITLES THIS PAGE REPEATS THAT THE ARCHIVE DOES NOT RENDER',),
-          line: lines[1],
-          none: pageTitleLines({ titles: [], },),
-        },).toEqual({
-          count: 2,
-          headed: true,
-          line: '- 猫之歌 (3 places on the page): "Song of the Cat" (2 of 3 voices)',
-          none: [],
-        },);
-      },
+    describe({
+      name: `${pageTitleLines.name} (ledger H16)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CARRIES A HEADING AND ONE LINE PER SETTLED TITLE, and nothing when none settled',
+          fn: async () => {
+            /**
+             Lines for one settled title.
+             */
+            const lines = pageTitleLines({
+              titles: [{ source: '猫之歌', occurrences: 3, rendering: 'Song of the Cat', voices: 2, heard: 3, },],
+            },);
+            expect({
+              count: lines.length,
+              headed: lines[0]?.startsWith('TITLES THIS PAGE REPEATS THAT THE ARCHIVE DOES NOT RENDER',),
+              line: lines[1],
+              none: pageTitleLines({ titles: [], },),
+            },).toEqual({
+              count: 2,
+              headed: true,
+              line: '- 猫之歌 (3 places on the page): "Song of the Cat" (2 of 3 voices)',
+              none: [],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

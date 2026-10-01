@@ -7,6 +7,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -117,140 +118,149 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 await describe({
-  name: isDerivabilityVerdict.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'accepts the closed vocabulary and rejects everything else',
-      fn: async () => {
-        expect(isDerivabilityVerdict('derivable',),).toBe(true,);
-        expect(isDerivabilityVerdict('partially-derivable',),).toBe(true,);
-        expect(isDerivabilityVerdict('not-derivable',),).toBe(true,);
-        expect(isDerivabilityVerdict('restored',),).toBe(false,);
-        expect(isDerivabilityVerdict(1,),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: resolveDerivabilityJudgment.name,
-  children: [
-    it({
-      name: 'resolves through the index map and records irregularities',
-      fn: async () => {
-        /** Report with one good, one out-of-range, one unknown verdict. */
-        const resolution = resolveDerivabilityJudgment({
-          wire: {
-            judgments: [
-              { reference: 1, verdict: 'derivable', },
-              { reference: 9, verdict: 'derivable', },
-              { reference: 2, verdict: 'restored', },
-            ],
+    describe({
+      name: isDerivabilityVerdict.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'accepts the closed vocabulary and rejects everything else',
+          fn: async () => {
+            expect(isDerivabilityVerdict('derivable',),).toBe(true,);
+            expect(isDerivabilityVerdict('partially-derivable',),).toBe(true,);
+            expect(isDerivabilityVerdict('not-derivable',),).toBe(true,);
+            expect(isDerivabilityVerdict('restored',),).toBe(false,);
+            expect(isDerivabilityVerdict(1,),).toBe(false,);
           },
-          seedIds: ['seed/omission-0', 'seed/omission-1',],
-        },);
-        expect(resolution.verdicts['seed/omission-0'],).toBe('derivable',);
-        expect(resolution.verdicts['seed/omission-1'],).toBe(undefined,);
-        expect(resolution.findings,).toContain('derivability-reference-out-of-range (9)',);
-        expect(resolution.findings,).toContain('unknown-derivability-verdict (restored)',);
-        expect(resolution.findings,).toContain('missing-derivability-judgment (2)',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: runDerivabilityProbe.name,
-  children: [
-    it({
-      name: 'takes the upper median across judges',
-      fn: async () => {
-        /** Split judgments: derivable/partially/not on seed 0, all derivable on seed 1. */
-        const derivability = await runDerivabilityProbe({
-          client: probingClient({
-            verdictsByModel: {
-              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['derivable', 'derivable',],
-              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partially-derivable', 'derivable',],
-              [SEAT_SYNTHETIC_VISION_WITHHELD]: ['not-derivable', 'derivable',],
-            },
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫猫黎明追蝴蝶。碗是满的。',
-          references: REFERENCES,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        // Odd count: the median of not<partially<derivable is partially-derivable.
-        expect(derivability['seed/omission-0']?.verdict,).toBe('partially-derivable',);
-        expect(derivability['seed/omission-0']?.judged,).toBe(true,);
-        expect(derivability['seed/omission-1']?.verdict,).toBe('derivable',);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'rounds an even split toward the more-derivable verdict',
-      fn: async () => {
-        /** Two judges heard, one derivable one not-derivable, on seed 0. */
-        const derivability = await runDerivabilityProbe({
-          client: probingClient({
-            verdictsByModel: {
-              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['derivable', 'derivable',],
-              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['not-derivable', 'derivable',],
-            },
-            silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫猫黎明追蝴蝶。碗是满的。',
-          references: REFERENCES,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        // Upper median of [not-derivable, derivable] is derivable: the
-        // excuse, not the pipeline, carries the burden of proof.
-        expect(derivability['seed/omission-0']?.judged,).toBe(true,);
-        expect(derivability['seed/omission-0']?.verdict,).toBe('derivable',);
-      },
+    describe({
+      name: resolveDerivabilityJudgment.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'resolves through the index map and records irregularities',
+          fn: async () => {
+            /** Report with one good, one out-of-range, one unknown verdict. */
+            const resolution = resolveDerivabilityJudgment({
+              wire: {
+                judgments: [
+                  { reference: 1, verdict: 'derivable', },
+                  { reference: 9, verdict: 'derivable', },
+                  { reference: 2, verdict: 'restored', },
+                ],
+              },
+              seedIds: ['seed/omission-0', 'seed/omission-1',],
+            },);
+            expect(resolution.verdicts['seed/omission-0'],).toBe('derivable',);
+            expect(resolution.verdicts['seed/omission-1'],).toBe(undefined,);
+            expect(resolution.findings,).toContain('derivability-reference-out-of-range (9)',);
+            expect(resolution.findings,).toContain('unknown-derivability-verdict (restored)',);
+            expect(resolution.findings,).toContain('missing-derivability-judgment (2)',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'marks seeds unjudged and unexcused when quorum is lost',
-      fn: async () => {
-        /** Only one of three judges answers: quorum unmet. */
-        const derivability = await runDerivabilityProbe({
-          client: probingClient({
-            verdictsByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['not-derivable', 'not-derivable',], },
-            silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫猫黎明追蝴蝶。碗是满的。',
-          references: REFERENCES,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        // Unjudged defaults to derivable so a lost probe never excuses.
-        expect(derivability['seed/omission-0']?.judged,).toBe(false,);
-        expect(derivability['seed/omission-0']?.verdict,).toBe('derivable',);
-      },
-    },),
+    describe({
+      name: runDerivabilityProbe.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'takes the upper median across judges',
+          fn: async () => {
+            /** Split judgments: derivable/partially/not on seed 0, all derivable on seed 1. */
+            const derivability = await runDerivabilityProbe({
+              client: probingClient({
+                verdictsByModel: {
+                  [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['derivable', 'derivable',],
+                  [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partially-derivable', 'derivable',],
+                  [SEAT_SYNTHETIC_VISION_WITHHELD]: ['not-derivable', 'derivable',],
+                },
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫黎明追蝴蝶。碗是满的。',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            // Odd count: the median of not<partially<derivable is partially-derivable.
+            expect(derivability['seed/omission-0']?.verdict,).toBe('partially-derivable',);
+            expect(derivability['seed/omission-0']?.judged,).toBe(true,);
+            expect(derivability['seed/omission-1']?.verdict,).toBe('derivable',);
+          },
+        },),
 
-    it({
-      name: 'returns nothing for an entry with no references',
-      fn: async () => {
-        /** Empty reference set short-circuits before any call. */
-        const derivability = await runDerivabilityProbe({
-          client: probingClient({ verdictsByModel: {}, },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫',
-          references: [],
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(Object.keys(derivability,),).toHaveLength(0,);
-      },
+        it({
+          name: 'rounds an even split toward the more-derivable verdict',
+          fn: async () => {
+            /** Two judges heard, one derivable one not-derivable, on seed 0. */
+            const derivability = await runDerivabilityProbe({
+              client: probingClient({
+                verdictsByModel: {
+                  [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['derivable', 'derivable',],
+                  [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['not-derivable', 'derivable',],
+                },
+                silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫黎明追蝴蝶。碗是满的。',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            // Upper median of [not-derivable, derivable] is derivable: the
+            // excuse, not the pipeline, carries the burden of proof.
+            expect(derivability['seed/omission-0']?.judged,).toBe(true,);
+            expect(derivability['seed/omission-0']?.verdict,).toBe('derivable',);
+          },
+        },),
+
+        it({
+          name: 'marks seeds unjudged and unexcused when quorum is lost',
+          fn: async () => {
+            /** Only one of three judges answers: quorum unmet. */
+            const derivability = await runDerivabilityProbe({
+              client: probingClient({
+                verdictsByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['not-derivable', 'not-derivable',], },
+                silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫黎明追蝴蝶。碗是满的。',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            // Unjudged defaults to derivable so a lost probe never excuses.
+            expect(derivability['seed/omission-0']?.judged,).toBe(false,);
+            expect(derivability['seed/omission-0']?.verdict,).toBe('derivable',);
+          },
+        },),
+
+        it({
+          name: 'returns nothing for an entry with no references',
+          fn: async () => {
+            /** Empty reference set short-circuits before any call. */
+            const derivability = await runDerivabilityProbe({
+              client: probingClient({ verdictsByModel: {}, },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫',
+              references: [],
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(Object.keys(derivability,),).toHaveLength(0,);
+          },
+        },),
+      ],
     },),
   ],
 },);

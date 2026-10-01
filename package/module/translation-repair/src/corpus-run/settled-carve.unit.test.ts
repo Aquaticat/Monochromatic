@@ -27,6 +27,7 @@ import { join, } from 'node:path';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -558,373 +559,383 @@ function pairedPreparation(): PreparedDocumentPair {
 }
 
 await describe({
-  name: listSettledEntryIds.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name:
-        'LISTS nothing for a runs directory no pass has settled into, since a missing artifacts '
-        + 'subdirectory is an ordinary state rather than a fault',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-        expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual([],);
-      },
-    },),
-    it({
-      name: 'LISTS entry ids off the artifact file names, sorted, ignoring anything that is not an artifact',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-
-        /**
-         Artifacts subdirectory with two artifacts and a stray note.
-         */
-        const dir = join(
-          runs.runsDir,
-          'artifacts',
-        );
-        await mkdir(
-          dir,
-          { recursive: true, },
-        );
-        await Promise.all([
-          'tabby.json',
-          'calico.json',
-          'notes.txt',
-        ].map(async function place(name,): Promise<void> {
-          await writeFile(
-            join(
-              dir,
-              name,
-            ),
-            '{}',
-            'utf8',
-          );
-        },),);
-        expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual([
-          'calico',
-          'tabby',
-        ],);
-      },
-    },),
-    it({
-      name: 'LISTS REGULAR FILES ONLY: a directory or a symlink named like an artifact is no settled entry, as the '
-        + 'census and the scheduler read the same directory (ledger B64)',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-
-        /**
-         Artifacts subdirectory with one artifact, a directory and a symlink.
-         */
-        const dir = join(
-          runs.runsDir,
-          'artifacts',
-        );
-        await mkdir(
-          join(
-            dir,
-            'persian.json',
-          ),
-          { recursive: true, },
-        );
-        await writeFile(
-          join(
-            dir,
-            'tabby.json',
-          ),
-          '{}',
-          'utf8',
-        );
-        await symlink(
-          join(
-            dir,
-            'tabby.json',
-          ),
-          join(
-            dir,
-            'siamese.json',
-          ),
-        );
-        expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual(['tabby',],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: readSettledRecipe.name,
-  children: [
-    it({
-      name: 'REPORTS an entry no artifact records as unsettled, without touching the corpus',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-        expect(await readSettledRecipe({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-        },),).toEqual({ kind: 'unsettled', },);
-      },
-    },),
-    it({
-      name:
-        'REPORTS an artifact from before the two-lane shape as legacy, since it records no preparation '
-        + 'and therefore no recipe to carve through',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-        await writeArtifactFile({
-          runsDir: runs.runsDir,
-          value: {
-            id: ENTRY_ID,
-            tip: 'tip/1',
-            corpusSha: 'sha/1',
-            status: 'repaired',
-            durationMs: 1,
-            issues: [],
+    describe({
+      name: listSettledEntryIds.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'LISTS nothing for a runs directory no pass has settled into, since a missing artifacts '
+            + 'subdirectory is an ordinary state rather than a fault',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+            expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual([],);
           },
-        },);
-        expect(await readSettledRecipe({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-        },),).toEqual({ kind: 'legacy', },);
-      },
+        },),
+        it({
+          name: 'LISTS entry ids off the artifact file names, sorted, ignoring anything that is not an artifact',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+
+            /**
+             Artifacts subdirectory with two artifacts and a stray note.
+             */
+            const dir = join(
+              runs.runsDir,
+              'artifacts',
+            );
+            await mkdir(
+              dir,
+              { recursive: true, },
+            );
+            await Promise.all([
+              'tabby.json',
+              'calico.json',
+              'notes.txt',
+            ].map(async function place(name,): Promise<void> {
+              await writeFile(
+                join(
+                  dir,
+                  name,
+                ),
+                '{}',
+                'utf8',
+              );
+            },),);
+            expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual([
+              'calico',
+              'tabby',
+            ],);
+          },
+        },),
+        it({
+          name: 'LISTS REGULAR FILES ONLY: a directory or a symlink named like an artifact is no settled entry, as the '
+            + 'census and the scheduler read the same directory (ledger B64)',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+
+            /**
+             Artifacts subdirectory with one artifact, a directory and a symlink.
+             */
+            const dir = join(
+              runs.runsDir,
+              'artifacts',
+            );
+            await mkdir(
+              join(
+                dir,
+                'persian.json',
+              ),
+              { recursive: true, },
+            );
+            await writeFile(
+              join(
+                dir,
+                'tabby.json',
+              ),
+              '{}',
+              'utf8',
+            );
+            await symlink(
+              join(
+                dir,
+                'tabby.json',
+              ),
+              join(
+                dir,
+                'siamese.json',
+              ),
+            );
+            expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual(['tabby',],);
+          },
+        },),
+      ],
     },),
-    it({
-      name:
-        'READS the recipe a two-lane artifact records, beside its commit, with the supplied section pairing '
-        + 'and the stored block pairing as preparation inputs',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-        await writeArtifact({
-          runsDir: runs.runsDir,
-          prepared: pairedPreparation(),
-          corpusSha: 'b'.repeat(40,),
-          strip: [],
-        },);
 
-        /**
-         Recipe as read back.
-         */
-        const settled = await readSettledRecipe({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-        },);
-        expect(settled.kind,).toBe('settled',);
-        if (settled.kind !== 'settled')
-          throw new Error('unreachable: the kind was checked',);
-        expect(settled.corpusSha,).toBe('b'.repeat(40,),);
-        expect(settled.recipe
-          .sectionPairing,).toEqual([{
-          source: 0,
-          target: 1,
-        },],);
-        expect(settled.recipe
-          .blockPairings,).toEqual(new Map(),);
-        expect(settled.recipe
-          .unrecorded,).toEqual([],);
-      },
-    },),
-    it({
-      name: 'NAMES the recipe halves an older two-lane artifact does not record',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-        await writeArtifact({
-          runsDir: runs.runsDir,
-          prepared: prepareDocumentPair({
-            sourceText: SOURCE_PAGE,
-            targetText: TARGET_PAGE,
-          },),
-          corpusSha: 'b'.repeat(40,),
-          strip: [
-            'sectionPairing',
-            'blockPairing',
-          ],
-        },);
+    describe({
+      name: readSettledRecipe.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REPORTS an entry no artifact records as unsettled, without touching the corpus',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+            expect(await readSettledRecipe({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+            },),).toEqual({ kind: 'unsettled', },);
+          },
+        },),
+        it({
+          name:
+            'REPORTS an artifact from before the two-lane shape as legacy, since it records no preparation '
+            + 'and therefore no recipe to carve through',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+            await writeArtifactFile({
+              runsDir: runs.runsDir,
+              value: {
+                id: ENTRY_ID,
+                tip: 'tip/1',
+                corpusSha: 'sha/1',
+                status: 'repaired',
+                durationMs: 1,
+                issues: [],
+              },
+            },);
+            expect(await readSettledRecipe({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+            },),).toEqual({ kind: 'legacy', },);
+          },
+        },),
+        it({
+          name:
+            'READS the recipe a two-lane artifact records, beside its commit, with the supplied section pairing '
+            + 'and the stored block pairing as preparation inputs',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+            await writeArtifact({
+              runsDir: runs.runsDir,
+              prepared: pairedPreparation(),
+              corpusSha: 'b'.repeat(40,),
+              strip: [],
+            },);
 
-        /**
-         Recipe as read back.
-         */
-        const settled = await readSettledRecipe({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-        },);
-        if (settled.kind !== 'settled')
-          throw new Error(`expected a settled reading, got ${settled.kind}`,);
-        expect(settled.recipe
-          .unrecorded,).toEqual([
-          'sectionPairing',
-          'blockPairing',
-        ],);
-      },
-    },),
-  ],
-},);
+            /**
+             Recipe as read back.
+             */
+            const settled = await readSettledRecipe({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+            },);
+            expect(settled.kind,).toBe('settled',);
+            if (settled.kind !== 'settled')
+              throw new Error('unreachable: the kind was checked',);
+            expect(settled.corpusSha,).toBe('b'.repeat(40,),);
+            expect(settled.recipe
+              .sectionPairing,).toEqual([{
+              source: 0,
+              target: 1,
+            },],);
+            expect(settled.recipe
+              .blockPairings,).toEqual(new Map(),);
+            expect(settled.recipe
+              .unrecorded,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'NAMES the recipe halves an older two-lane artifact does not record',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+            await writeArtifact({
+              runsDir: runs.runsDir,
+              prepared: prepareDocumentPair({
+                sourceText: SOURCE_PAGE,
+                targetText: TARGET_PAGE,
+              },),
+              corpusSha: 'b'.repeat(40,),
+              strip: [
+                'sectionPairing',
+                'blockPairing',
+              ],
+            },);
 
-await describe({
-  name: carveSettled.name,
-  children: [
-    it({
-      name:
-        'CARVES the pair at the artifact\'s own commit through its recipe, landing on the identity the '
-        + 'artifact records: the deterministic carve of the same pair lands elsewhere',
-      fn: async () => {
-        await using corpus = await throwawayCorpus();
-        await using runs = await throwawayRuns();
-
-        /**
-         How the run carved it.
-         */
-        const paired = pairedPreparation();
-
-        // POSITIVE CONTROL: the recipe has to move the slicing.
-        expect(preparationIdentity({ prepared: paired, },),).not
-          .toBe(preparationIdentity({
-            prepared: prepareDocumentPair({
-              sourceText: SOURCE_PAGE,
-              targetText: TARGET_PAGE,
-            },),
-          },),);
-        await writeArtifact({
-          runsDir: runs.runsDir,
-          prepared: paired,
-          corpusSha: corpus.commitSha,
-          strip: [],
-        },);
-
-        /**
-         Carve through the settled recipe.
-         */
-        const carve = await carveSettled({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-          cloneDir: corpus.cloneDir,
-        },);
-        expect(carve.kind,).toBe('settled',);
-        if (carve.kind !== 'settled')
-          throw new Error('unreachable: the kind was checked',);
-        expect(carve.corpusSha,).toBe(corpus.commitSha,);
-        expect(carve.sourceText,).toBe(SOURCE_PAGE,);
-        expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
-          preparationIdentity({ prepared: paired, },),
-        );
-        expect(recipeLabel({ recipe: carve.recipe, },),).toBe('complete recipe',);
-      },
-    },),
-    it({
-      name: 'FORWARDS an unsettled or legacy answer without reading the corpus',
-      fn: async () => {
-        await using runs = await throwawayRuns();
-        expect(await carveSettled({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-          cloneDir: '/nonexistent/clone',
-        },),).toEqual({ kind: 'unsettled', },);
-      },
-    },),
-    it({
-      name: 'CARVES AN ARCHIVE-AUTHORITY ENTRY AS THE RUN DID, with no metadata slice, so slice indices do not '
-        + 'shift by one (ledger F-6)',
-      fn: async () => {
-        /**
-         Original carrying visible metadata.
-         */
-        const sourcePage = `---\nname: 猫猫\n---\n\n${SOURCE_PAGE}`;
-        /**
-         Archive English carrying the same metadata.
-         */
-        const targetPage = `---\nname: Maomao\n---\n\n${TARGET_PAGE}`;
-        await using corpus = await throwawayCorpus({
-          sourcePage,
-          targetPage,
-        },);
-        await using runs = await throwawayRuns();
-        /**
-         How a current pass carves it when the archive's front matter governs.
-         */
-        const carved = prepareDocumentPair({
-          sourceText: sourcePage,
-          targetText: targetPage,
-          includeFrontMatter: true,
-          frontMatterAuthority: 'archive',
-          sealArchiveOriginal: true,
-        },);
-        await writeArtifact({
-          runsDir: runs.runsDir,
-          prepared: carved,
-          corpusSha: corpus.commitSha,
-          strip: [],
-        },);
-
-        /**
-         Carve through the settled artifact.
-         */
-        const carve = await carveSettled({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-          cloneDir: corpus.cloneDir,
-        },);
-        if (carve.kind !== 'settled')
-          throw new Error(`expected a settled carve, got ${carve.kind}`,);
-        expect(carve.prepared.slices.length,).toBe(carved.slices.length,);
-        expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
-          preparationIdentity({ prepared: carved, },),
-        );
-      },
-    },),
-    it({
-      name: 'CARVES OVER THE ARCHIVE THE ARTIFACT STORED, which the pass reshaped before carving, '
-        + 'not the corpus copy (ledger A18)',
-      fn: async () => {
-        await using corpus = await throwawayCorpus({
-          targetPage: `${TARGET_PAGE}\nA stray corpus line the run never carved.\n`,
-        },);
-        await using runs = await throwawayRuns();
-        /**
-         How the pass carved the archive it had reshaped.
-         */
-        const carved = prepareDocumentPair({
-          sourceText: SOURCE_PAGE,
-          targetText: TARGET_PAGE,
-          includeFrontMatter: true,
-          sealArchiveOriginal: true,
-        },);
-        await writeArtifact({
-          runsDir: runs.runsDir,
-          prepared: carved,
-          corpusSha: corpus.commitSha,
-          strip: [],
-        },);
-
-        /**
-         Carve through the settled artifact.
-         */
-        const carve = await carveSettled({
-          entryId: ENTRY_ID,
-          runsDir: runs.runsDir,
-          cloneDir: corpus.cloneDir,
-        },);
-        if (carve.kind !== 'settled')
-          throw new Error(`expected a settled carve, got ${carve.kind}`,);
-        expect(carve.targetText,).toBe(TARGET_PAGE,);
-        expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
-          preparationIdentity({ prepared: carved, },),
-        );
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: recipeLabel.name,
-  children: [
-    it({
-      name: 'NAMES the halves the deterministic default stood in for, in the order they are missing',
-      fn: async () => {
-        expect(recipeLabel({
-          recipe: {
-            unrecorded: [
+            /**
+             Recipe as read back.
+             */
+            const settled = await readSettledRecipe({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+            },);
+            if (settled.kind !== 'settled')
+              throw new Error(`expected a settled reading, got ${settled.kind}`,);
+            expect(settled.recipe
+              .unrecorded,).toEqual([
               'sectionPairing',
               'blockPairing',
-            ],
+            ],);
           },
-        },),).toBe('deterministic default for sectionPairing, blockPairing',);
-      },
+        },),
+      ],
+    },),
+
+    describe({
+      name: carveSettled.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'CARVES the pair at the artifact\'s own commit through its recipe, landing on the identity the '
+            + 'artifact records: the deterministic carve of the same pair lands elsewhere',
+          fn: async () => {
+            await using corpus = await throwawayCorpus();
+            await using runs = await throwawayRuns();
+
+            /**
+             How the run carved it.
+             */
+            const paired = pairedPreparation();
+
+            // POSITIVE CONTROL: the recipe has to move the slicing.
+            expect(preparationIdentity({ prepared: paired, },),).not
+              .toBe(preparationIdentity({
+                prepared: prepareDocumentPair({
+                  sourceText: SOURCE_PAGE,
+                  targetText: TARGET_PAGE,
+                },),
+              },),);
+            await writeArtifact({
+              runsDir: runs.runsDir,
+              prepared: paired,
+              corpusSha: corpus.commitSha,
+              strip: [],
+            },);
+
+            /**
+             Carve through the settled recipe.
+             */
+            const carve = await carveSettled({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+              cloneDir: corpus.cloneDir,
+            },);
+            expect(carve.kind,).toBe('settled',);
+            if (carve.kind !== 'settled')
+              throw new Error('unreachable: the kind was checked',);
+            expect(carve.corpusSha,).toBe(corpus.commitSha,);
+            expect(carve.sourceText,).toBe(SOURCE_PAGE,);
+            expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
+              preparationIdentity({ prepared: paired, },),
+            );
+            expect(recipeLabel({ recipe: carve.recipe, },),).toBe('complete recipe',);
+          },
+        },),
+        it({
+          name: 'FORWARDS an unsettled or legacy answer without reading the corpus',
+          fn: async () => {
+            await using runs = await throwawayRuns();
+            expect(await carveSettled({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+              cloneDir: '/nonexistent/clone',
+            },),).toEqual({ kind: 'unsettled', },);
+          },
+        },),
+        it({
+          name: 'CARVES AN ARCHIVE-AUTHORITY ENTRY AS THE RUN DID, with no metadata slice, so slice indices do not '
+            + 'shift by one (ledger F-6)',
+          fn: async () => {
+            /**
+             Original carrying visible metadata.
+             */
+            const sourcePage = `---\nname: 猫猫\n---\n\n${SOURCE_PAGE}`;
+            /**
+             Archive English carrying the same metadata.
+             */
+            const targetPage = `---\nname: Maomao\n---\n\n${TARGET_PAGE}`;
+            await using corpus = await throwawayCorpus({
+              sourcePage,
+              targetPage,
+            },);
+            await using runs = await throwawayRuns();
+            /**
+             How a current pass carves it when the archive's front matter governs.
+             */
+            const carved = prepareDocumentPair({
+              sourceText: sourcePage,
+              targetText: targetPage,
+              includeFrontMatter: true,
+              frontMatterAuthority: 'archive',
+              sealArchiveOriginal: true,
+            },);
+            await writeArtifact({
+              runsDir: runs.runsDir,
+              prepared: carved,
+              corpusSha: corpus.commitSha,
+              strip: [],
+            },);
+
+            /**
+             Carve through the settled artifact.
+             */
+            const carve = await carveSettled({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+              cloneDir: corpus.cloneDir,
+            },);
+            if (carve.kind !== 'settled')
+              throw new Error(`expected a settled carve, got ${carve.kind}`,);
+            expect(carve.prepared.slices.length,).toBe(carved.slices.length,);
+            expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
+              preparationIdentity({ prepared: carved, },),
+            );
+          },
+        },),
+        it({
+          name: 'CARVES OVER THE ARCHIVE THE ARTIFACT STORED, which the pass reshaped before carving, '
+            + 'not the corpus copy (ledger A18)',
+          fn: async () => {
+            await using corpus = await throwawayCorpus({
+              targetPage: `${TARGET_PAGE}\nA stray corpus line the run never carved.\n`,
+            },);
+            await using runs = await throwawayRuns();
+            /**
+             How the pass carved the archive it had reshaped.
+             */
+            const carved = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+              includeFrontMatter: true,
+              sealArchiveOriginal: true,
+            },);
+            await writeArtifact({
+              runsDir: runs.runsDir,
+              prepared: carved,
+              corpusSha: corpus.commitSha,
+              strip: [],
+            },);
+
+            /**
+             Carve through the settled artifact.
+             */
+            const carve = await carveSettled({
+              entryId: ENTRY_ID,
+              runsDir: runs.runsDir,
+              cloneDir: corpus.cloneDir,
+            },);
+            if (carve.kind !== 'settled')
+              throw new Error(`expected a settled carve, got ${carve.kind}`,);
+            expect(carve.targetText,).toBe(TARGET_PAGE,);
+            expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
+              preparationIdentity({ prepared: carved, },),
+            );
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: recipeLabel.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the halves the deterministic default stood in for, in the order they are missing',
+          fn: async () => {
+            expect(recipeLabel({
+              recipe: {
+                unrecorded: [
+                  'sectionPairing',
+                  'blockPairing',
+                ],
+              },
+            },),).toBe('deterministic default for sectionPairing, blockPairing',);
+          },
+        },),
+      ],
     },),
   ],
 },);

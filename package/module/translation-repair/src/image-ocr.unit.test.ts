@@ -42,6 +42,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -67,85 +68,93 @@ const l = tagged({ tag: 'image-ocr-test', },);
 const UNDECODABLE_BYTES = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9,],);
 
 await describe({
-  name: solidCharacters.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'COUNTS ZERO FOR AN EMPTY STRING, the base case every other whitespace rule in this '
-        + 'function has to agree with',
-      fn: async () => {
-        expect(solidCharacters({ text: '', },),).toBe(0,);
-      },
+    describe({
+      name: solidCharacters.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS ZERO FOR AN EMPTY STRING, the base case every other whitespace rule in this '
+            + 'function has to agree with',
+          fn: async () => {
+            expect(solidCharacters({ text: '', },),).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS ZERO FOR TEXT THAT IS ONLY SPACES, so a picture that yields nothing but padding '
+            + 'reads as bare rather than as a few characters of noise',
+          fn: async () => {
+            expect(solidCharacters({ text: '    ', },),).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS ZERO FOR TEXT MADE ENTIRELY OF NEWLINES AND TABS, since the reading this counts '
+            + 'comes from a raw `.txt` file read whitespace and all, and line breaks alone must never '
+            + 'register as a character of transcript',
+          fn: async () => {
+            expect(solidCharacters({ text: '\n\t\n\t', },),).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS ONLY THE NON-WHITESPACE RUN WHEN SPACES, TABS AND NEWLINES SIT BETWEEN LETTERS, '
+            + 'since the raw reading is counted whitespace and all and only the solid characters decide '
+            + 'whether a picture crosses `MIN_OCR_CHARS`',
+          fn: async () => {
+            expect(solidCharacters({ text: 'a b\tc\nd', },),).toBe(4,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS EVERY CHARACTER WHEN THE TEXT CARRIES NO WHITESPACE AT ALL, so a dense '
+            + 'transcript is never undercounted for having nothing to strip',
+          fn: async () => {
+            expect(solidCharacters({ text: 'abcdef', },),).toBe(6,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS NON-WHITESPACE CHARACTERS IN CHINESE TEXT THE SAME WAY AS LATIN, since the '
+            + 'corpus this reads is `chi_sim` and a count that only worked on Latin script would '
+            + 'silently break on every real reading',
+          fn: async () => {
+            expect(solidCharacters({ text: '喵喵 喵', },),).toBe(3,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'COUNTS ZERO FOR TEXT THAT IS ONLY SPACES, so a picture that yields nothing but padding '
-        + 'reads as bare rather than as a few characters of noise',
-      fn: async () => {
-        expect(solidCharacters({ text: '    ', },),).toBe(0,);
-      },
-    },),
+    describe({
+      name: readImageWithOcr.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES BYTES NO DECODER CAN READ RATHER THAN THROWING, returning `unavailable` with '
+            + 'reason `undecodable` so a corrupt or unrecognisable asset is a named finding instead of '
+            + 'an unhandled rejection reaching whatever called this. Neither `dwebp` nor `magick` needs '
+            + 'to succeed here, only to fail on bytes that are not a picture at all, which is what makes '
+            + 'this stable on a machine carrying neither tool, either, or both',
+          fn: async () => {
+            /**
+             What the reader made of bytes no decoder can parse.
+             */
+            const reading: OcrReading = await readImageWithOcr({
+              bytes: UNDECODABLE_BYTES,
+              assetName: 'mittens-noise.webp',
+              l,
+            },);
 
-    it({
-      name: 'COUNTS ZERO FOR TEXT MADE ENTIRELY OF NEWLINES AND TABS, since the reading this counts '
-        + 'comes from a raw `.txt` file read whitespace and all, and line breaks alone must never '
-        + 'register as a character of transcript',
-      fn: async () => {
-        expect(solidCharacters({ text: '\n\t\n\t', },),).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'COUNTS ONLY THE NON-WHITESPACE RUN WHEN SPACES, TABS AND NEWLINES SIT BETWEEN LETTERS, '
-        + 'since the raw reading is counted whitespace and all and only the solid characters decide '
-        + 'whether a picture crosses `MIN_OCR_CHARS`',
-      fn: async () => {
-        expect(solidCharacters({ text: 'a b\tc\nd', },),).toBe(4,);
-      },
-    },),
-
-    it({
-      name: 'COUNTS EVERY CHARACTER WHEN THE TEXT CARRIES NO WHITESPACE AT ALL, so a dense '
-        + 'transcript is never undercounted for having nothing to strip',
-      fn: async () => {
-        expect(solidCharacters({ text: 'abcdef', },),).toBe(6,);
-      },
-    },),
-
-    it({
-      name: 'COUNTS NON-WHITESPACE CHARACTERS IN CHINESE TEXT THE SAME WAY AS LATIN, since the '
-        + 'corpus this reads is `chi_sim` and a count that only worked on Latin script would '
-        + 'silently break on every real reading',
-      fn: async () => {
-        expect(solidCharacters({ text: '喵喵 喵', },),).toBe(3,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: readImageWithOcr.name,
-  children: [
-    it({
-      name: 'REFUSES BYTES NO DECODER CAN READ RATHER THAN THROWING, returning `unavailable` with '
-        + 'reason `undecodable` so a corrupt or unrecognisable asset is a named finding instead of '
-        + 'an unhandled rejection reaching whatever called this. Neither `dwebp` nor `magick` needs '
-        + 'to succeed here, only to fail on bytes that are not a picture at all, which is what makes '
-        + 'this stable on a machine carrying neither tool, either, or both',
-      fn: async () => {
-        /**
-         What the reader made of bytes no decoder can parse.
-         */
-        const reading: OcrReading = await readImageWithOcr({
-          bytes: UNDECODABLE_BYTES,
-          assetName: 'mittens-noise.webp',
-          l,
-        },);
-
-        expect(reading.kind,).toBe('unavailable',);
-        if (reading.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(reading.reason,).toBe('undecodable',);
-      },
+            expect(reading.kind,).toBe('unavailable',);
+            if (reading.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(reading.reason,).toBe('undecodable',);
+          },
+        },),
+      ],
     },),
   ],
 },);

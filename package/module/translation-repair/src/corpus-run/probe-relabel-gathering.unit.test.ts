@@ -698,270 +698,276 @@ function envelopesOf(
 }
 
 await describe({
-  name: gatherRelabelCases.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'GATHERS the drawn item the reader marked damaged, and only that one',
-      fn: async () => {
-        await using rig = await gatheringRig();
+    describe({
+      name: gatherRelabelCases.name,
+      children: [
+        it({
+          name: 'GATHERS the drawn item the reader marked damaged, and only that one',
+          fn: async () => {
+            await using rig = await gatheringRig();
 
-        /**
-         Damaged arm rebuilt from the fixture run.
-         */
-        const cases = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
+            /**
+             Damaged arm rebuilt from the fixture run.
+             */
+            const cases = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
 
-        // The manifest names two items and the artifact carries four edits.
-        // Only the item whose position the round-three sheet marked is a case,
-        // so a gatherer that ignored `DAMAGED_CASES` would return two.
-        expect(envelopesOf({ cases, },),).toEqual(['envelope/windowsill',],);
-      },
+            // The manifest names two items and the artifact carries four edits.
+            // Only the item whose position the round-three sheet marked is a case,
+            // so a gatherer that ignored `DAMAGED_CASES` would return two.
+            expect(envelopesOf({ cases, },),).toEqual(['envelope/windowsill',],);
+          },
+        },),
+        it({
+          name: 'RECORDS the sheet position each case came from, so a case can be traced back',
+          fn: async () => {
+            await using rig = await gatheringRig();
+
+            expect((await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },))[0]?.positions,).toEqual([DAMAGED_POSITION,],);
+          },
+        },),
+        it({
+          name: 'MERGES an edit drawn again at a second damaged position into the first draw\'s case, which carries '
+            + 'both positions, so the prober asks about one edit once',
+          fn: async () => {
+            // Positions 3 to 6 draw undamaged issues, which the gatherer skips,
+            // so the windowsill edit's second draw lands at position 7.
+            await using rig = await gatheringRig({
+              alsoDrawn: [
+                'adjudicated/purr',
+                'adjudicated/stair',
+                'adjudicated/stove',
+                'adjudicated/purr',
+                'adjudicated/windowsill',
+              ],
+            },);
+
+            /**
+             Damaged arm rebuilt from the run that drew the edit twice.
+             */
+            const cases = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
+
+            expect(cases.map(function toDraws(gathered,) {
+              return {
+                envelopeId: gathered.region
+                  .envelopeId,
+                positions: gathered.positions,
+              };
+            },),).toEqual([{
+              envelopeId: 'envelope/windowsill',
+              positions: [
+                DAMAGED_POSITION,
+                DRAWN_AGAIN_POSITION,
+              ],
+            },],);
+          },
+        },),
+        it({
+          name: 'PAIRS the replaced region with ITS OWN slice, not with the whole page',
+          fn: async () => {
+            // A prompt built from the whole document would ask the prober about a
+            // passage production never sent, and every claim it drew would describe
+            // a different prompt than the one under investigation.
+            await using rig = await gatheringRig();
+
+            /**
+             The one damaged case.
+             */
+            const [gathered,] = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
+
+            expect(gathered?.baselineText.includes(DAMAGED_BEFORE,),).toBe(true,);
+            expect(gathered?.baselineText.includes(FAR_BEFORE,),).toBe(false,);
+            expect(gathered?.sourceText.includes('窗台',),).toBe(true,);
+            expect(gathered?.sourceText.includes('呼噜',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'CARRIES the issues the region served, and names an unprobed region as unprobed',
+          fn: async () => {
+            await using rig = await gatheringRig();
+
+            /**
+             The one damaged case.
+             */
+            const [gathered,] = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
+
+            expect(gathered?.issues.map(function toId(issue,) {
+              return issue.issueId;
+            },),).toEqual(['adjudicated/windowsill',],);
+            expect(gathered?.recorded,).toBe('not probed',);
+          },
+        },),
+      ],
+      concurrency: 1,
     },),
-    it({
-      name: 'RECORDS the sheet position each case came from, so a case can be traced back',
-      fn: async () => {
-        await using rig = await gatheringRig();
 
-        expect((await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },))[0]?.positions,).toEqual([DAMAGED_POSITION,],);
-      },
-    },),
-    it({
-      name: 'MERGES an edit drawn again at a second damaged position into the first draw\'s case, which carries '
-        + 'both positions, so the prober asks about one edit once',
-      fn: async () => {
-        // Positions 3 to 6 draw undamaged issues, which the gatherer skips,
-        // so the windowsill edit's second draw lands at position 7.
-        await using rig = await gatheringRig({
-          alsoDrawn: [
-            'adjudicated/purr',
-            'adjudicated/stair',
-            'adjudicated/stove',
-            'adjudicated/purr',
-            'adjudicated/windowsill',
-          ],
-        },);
+    describe({
+      name: gatherControlCases.name,
+      children: [
+        it({
+          name: 'NEVER re-probes an envelope the damaged arm already probed',
+          fn: async () => {
+            // The control exists to say whether the damaged arm's claims are about
+            // the damage or about the prompt. Handing it the same edit would make
+            // the two arms one arm and the comparison vacuous.
+            await using rig = await gatheringRig();
 
-        /**
-         Damaged arm rebuilt from the run that drew the edit twice.
-         */
-        const cases = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
+            /**
+             Damaged arm, whose envelope the control must exclude.
+             */
+            const damaged = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
 
-        expect(cases.map(function toDraws(gathered,) {
-          return {
-            envelopeId: gathered.region
-              .envelopeId,
-            positions: gathered.positions,
-          };
-        },),).toEqual([{
-          envelopeId: 'envelope/windowsill',
-          positions: [
-            DAMAGED_POSITION,
-            DRAWN_AGAIN_POSITION,
-          ],
-        },],);
-      },
-    },),
-    it({
-      name: 'PAIRS the replaced region with ITS OWN slice, not with the whole page',
-      fn: async () => {
-        // A prompt built from the whole document would ask the prober about a
-        // passage production never sent, and every claim it drew would describe
-        // a different prompt than the one under investigation.
-        await using rig = await gatheringRig();
+            /**
+             Control arm drawn from the same entry.
+             */
+            const controls = await gatherControlCases({
+              manifestPath: rig.manifestPath,
+              damaged,
+              pin: rig.pin,
+            },);
 
-        /**
-         The one damaged case.
-         */
-        const [gathered,] = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
+            expect(envelopesOf({ cases: controls, },)
+              .includes('envelope/windowsill',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'ORDERS unflagged regions by how closely they match the damaged replaced length, '
+            + 'so the arm is not partly a statement about how much text there was to damage',
+          fn: async () => {
+            // THE DEFECT THIS GUARDS. Taking whichever regions came first would
+            // return the short one, which sits ahead of both closer regions in the
+            // page. The fixture is built so document order and length order
+            // disagree, which is the only way this case can fail.
+            await using rig = await gatheringRig();
 
-        expect(gathered?.baselineText.includes(DAMAGED_BEFORE,),).toBe(true,);
-        expect(gathered?.baselineText.includes(FAR_BEFORE,),).toBe(false,);
-        expect(gathered?.sourceText.includes('窗台',),).toBe(true,);
-        expect(gathered?.sourceText.includes('呼噜',),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'CARRIES the issues the region served, and names an unprobed region as unprobed',
-      fn: async () => {
-        await using rig = await gatheringRig();
+            /**
+             Damaged arm, whose replaced length the control matches against.
+             */
+            const damaged = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
 
-        /**
-         The one damaged case.
-         */
-        const [gathered,] = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
+            /**
+             Control arm, closest replaced length first.
+             */
+            const controls = await gatherControlCases({
+              manifestPath: rig.manifestPath,
+              damaged,
+              pin: rig.pin,
+            },);
 
-        expect(gathered?.issues.map(function toId(issue,) {
-          return issue.issueId;
-        },),).toEqual(['adjudicated/windowsill',],);
-        expect(gathered?.recorded,).toBe('not probed',);
-      },
+            expect(envelopesOf({ cases: controls, },),).toEqual([
+              'envelope/stair',
+              'envelope/stove',
+            ],);
+          },
+        },),
+        it({
+          name: 'DROPS the region furthest in length even though it comes FIRST in the page',
+          fn: async () => {
+            // The positive control for the ordering case: an implementation that
+            // sorted by length but ignored the per-entry cap would return all three
+            // and pass that one while failing this.
+            await using rig = await gatheringRig();
+
+            /**
+             Damaged arm, whose replaced length the control matches against.
+             */
+            const damaged = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
+
+            /**
+             Control arm, capped at two regions per entry.
+             */
+            const controls = await gatherControlCases({
+              manifestPath: rig.manifestPath,
+              damaged,
+              pin: rig.pin,
+            },);
+
+            expect(controls.length,).toBe(2,);
+            expect(envelopesOf({ cases: controls, },)
+              .includes('envelope/purr',),).toBe(false,);
+
+            // Spelled out so the reader can see WHY that one is dropped rather than
+            // taking the fixture's word for it.
+            expect(Math.abs(FAR_BEFORE.length - DAMAGED_BEFORE.length,),)
+              .toBeGreaterThan(Math.abs(NEXT_BEFORE.length - DAMAGED_BEFORE.length,),);
+          },
+        },),
+        it({
+          name: 'PAIRS each control region with the slice that carries it, never across two',
+          fn: async () => {
+            await using rig = await gatheringRig();
+
+            /**
+             Damaged arm, whose replaced length the control matches against.
+             */
+            const damaged = await gatherRelabelCases({
+              manifestPath: rig.manifestPath,
+              pin: rig.pin,
+            },);
+
+            /**
+             Control arm drawn from the same entry.
+             */
+            const controls = await gatherControlCases({
+              manifestPath: rig.manifestPath,
+              damaged,
+              pin: rig.pin,
+            },);
+
+            for (const control of controls) {
+              expect(control.baselineText.includes(control.region
+                .before,),).toBe(true,);
+              expect(control.baselineText.includes(DAMAGED_BEFORE,),).toBe(false,);
+              expect(control.entryId,).toBe(ENTRY_ID,);
+            }
+          },
+        },),
+        it({
+          name: 'RETURNS nothing when the damaged arm named no entry, rather than drawing at large',
+          fn: async () => {
+            // The control's entries come from the damaged cases, which is what
+            // holds prose style, translator and subject matter fixed. A control
+            // that fell back to the whole pool would vary those too, and the only
+            // thing meant to differ between the arms is whether a human saw damage.
+            await using rig = await gatheringRig();
+
+            expect(await gatherControlCases({
+              manifestPath: rig.manifestPath,
+              damaged: [],
+              pin: rig.pin,
+            },),).toEqual([],);
+          },
+        },),
+      ],
+      concurrency: 1,
     },),
   ],
-  concurrency: 1,
-},);
-
-await describe({
-  name: gatherControlCases.name,
-  children: [
-    it({
-      name: 'NEVER re-probes an envelope the damaged arm already probed',
-      fn: async () => {
-        // The control exists to say whether the damaged arm's claims are about
-        // the damage or about the prompt. Handing it the same edit would make
-        // the two arms one arm and the comparison vacuous.
-        await using rig = await gatheringRig();
-
-        /**
-         Damaged arm, whose envelope the control must exclude.
-         */
-        const damaged = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
-
-        /**
-         Control arm drawn from the same entry.
-         */
-        const controls = await gatherControlCases({
-          manifestPath: rig.manifestPath,
-          damaged,
-          pin: rig.pin,
-        },);
-
-        expect(envelopesOf({ cases: controls, },)
-          .includes('envelope/windowsill',),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'ORDERS unflagged regions by how closely they match the damaged replaced length, '
-        + 'so the arm is not partly a statement about how much text there was to damage',
-      fn: async () => {
-        // THE DEFECT THIS GUARDS. Taking whichever regions came first would
-        // return the short one, which sits ahead of both closer regions in the
-        // page. The fixture is built so document order and length order
-        // disagree, which is the only way this case can fail.
-        await using rig = await gatheringRig();
-
-        /**
-         Damaged arm, whose replaced length the control matches against.
-         */
-        const damaged = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
-
-        /**
-         Control arm, closest replaced length first.
-         */
-        const controls = await gatherControlCases({
-          manifestPath: rig.manifestPath,
-          damaged,
-          pin: rig.pin,
-        },);
-
-        expect(envelopesOf({ cases: controls, },),).toEqual([
-          'envelope/stair',
-          'envelope/stove',
-        ],);
-      },
-    },),
-    it({
-      name: 'DROPS the region furthest in length even though it comes FIRST in the page',
-      fn: async () => {
-        // The positive control for the ordering case: an implementation that
-        // sorted by length but ignored the per-entry cap would return all three
-        // and pass that one while failing this.
-        await using rig = await gatheringRig();
-
-        /**
-         Damaged arm, whose replaced length the control matches against.
-         */
-        const damaged = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
-
-        /**
-         Control arm, capped at two regions per entry.
-         */
-        const controls = await gatherControlCases({
-          manifestPath: rig.manifestPath,
-          damaged,
-          pin: rig.pin,
-        },);
-
-        expect(controls.length,).toBe(2,);
-        expect(envelopesOf({ cases: controls, },)
-          .includes('envelope/purr',),).toBe(false,);
-
-        // Spelled out so the reader can see WHY that one is dropped rather than
-        // taking the fixture's word for it.
-        expect(Math.abs(FAR_BEFORE.length - DAMAGED_BEFORE.length,),)
-          .toBeGreaterThan(Math.abs(NEXT_BEFORE.length - DAMAGED_BEFORE.length,),);
-      },
-    },),
-    it({
-      name: 'PAIRS each control region with the slice that carries it, never across two',
-      fn: async () => {
-        await using rig = await gatheringRig();
-
-        /**
-         Damaged arm, whose replaced length the control matches against.
-         */
-        const damaged = await gatherRelabelCases({
-          manifestPath: rig.manifestPath,
-          pin: rig.pin,
-        },);
-
-        /**
-         Control arm drawn from the same entry.
-         */
-        const controls = await gatherControlCases({
-          manifestPath: rig.manifestPath,
-          damaged,
-          pin: rig.pin,
-        },);
-
-        for (const control of controls) {
-          expect(control.baselineText.includes(control.region
-            .before,),).toBe(true,);
-          expect(control.baselineText.includes(DAMAGED_BEFORE,),).toBe(false,);
-          expect(control.entryId,).toBe(ENTRY_ID,);
-        }
-      },
-    },),
-    it({
-      name: 'RETURNS nothing when the damaged arm named no entry, rather than drawing at large',
-      fn: async () => {
-        // The control's entries come from the damaged cases, which is what
-        // holds prose style, translator and subject matter fixed. A control
-        // that fell back to the whole pool would vary those too, and the only
-        // thing meant to differ between the arms is whether a human saw damage.
-        await using rig = await gatheringRig();
-
-        expect(await gatherControlCases({
-          manifestPath: rig.manifestPath,
-          damaged: [],
-          pin: rig.pin,
-        },),).toEqual([],);
-      },
-    },),
-  ],
-  concurrency: 1,
 },);
 
 //endregion Probe relabel gathering tests

@@ -29,6 +29,7 @@ import { join, } from 'node:path';
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -144,299 +145,307 @@ function reportLine(
 }
 
 await describe({
-  name: readAuditArguments.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ANSWERS with the defaults for a command line that named nothing',
-      fn: async () => {
-        expect(readAuditArguments({ line: auditLine({ typed: [], },), },),).toEqual({
-          archiveDir: DEFAULT_ARCHIVE,
-          cloneDir: DEFAULT_CLONE,
-          onlyIds: [],
-          cap: EVERY_SUBJECT,
-        },);
-      },
-    },),
-    it({
-      name: 'READS every flag the operator did name, in any order',
-      fn: async () => {
-        expect(readAuditArguments({
-          line: auditLine({
-            typed: [
-              '--cap',
-              String(SMALL_BUY,),
-              '--only',
-              `${ONE_CAT},${ANOTHER_CAT}`,
-              '--clone',
-              OTHER_CLONE,
-              '--archive',
-              OTHER_ARCHIVE,
-            ],
-          },),
-        },),).toEqual({
-          archiveDir: OTHER_ARCHIVE,
-          cloneDir: OTHER_CLONE,
-          onlyIds: [
-            ONE_CAT,
-            ANOTHER_CAT,
-          ],
-          cap: SMALL_BUY,
-        },);
-      },
-    },),
-    it({
-      name: 'KEEPS a cap of zero, which reads the whole archive and buys nothing',
-      fn: async () => {
-        // Zero is not "no cap": it is the wiring check the audit exists to make
-        // cheap. A reader that treated it as absent would spend a roster.
-        expect(readAuditArguments({
-          line: auditLine({
-            typed: [
-              '--cap',
-              String(READ_ONLY_BUY,),
-            ],
-          },),
-        },).cap,).toBe(READ_ONLY_BUY,);
-      },
-    },),
-    it({
-      name: 'KEEPS a cap of zero written in the equals form, which once read as no cap and bought every subject '
-        + 'in the archive (ledger B75)',
-      fn: async () => {
-        expect(readAuditArguments({
-          line: auditLine({ typed: [`--cap=${String(READ_ONLY_BUY,)}`,], },),
-        },).cap,).toBe(READ_ONLY_BUY,);
-      },
-    },),
-    it({
-      name: 'REFUSES a mistyped flag rather than auditing as if nothing were typed (ledger B75)',
-      fn: async () => {
-        expect(function readsMistyped(): void {
-          readAuditArguments({ line: auditLine({ typed: ['--cpa', String(READ_ONLY_BUY,),], },), },);
-        },).toThrow(StatedRefusalError,);
-      },
-    },),
-    it({
-      name: 'REFUSES a fractional cap, and one written with an exponent, a radix, a sign or past the largest '
-        + 'whole number a double holds exactly, rather than auditing a number of subjects nobody typed '
-        + '(ledger B73)',
-      fn: async () => {
-        /**
-         Caps that are no whole number written in digits.
-         */
-        const caps = [
-          '4.9',
-          '1e1',
-          '0x4',
-          '+4',
-          String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,),
-        ];
-        expect(caps.map(function refusalOf(cap,): string {
-          /**
-           What the reader threw.
-           */
-          const refusal = caught(function readsCap(): void {
-            readAuditArguments({ line: auditLine({ typed: ['--cap', cap,], },), },);
-          },);
-          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-          return (refusal as Error).message;
-        },),).toEqual(caps.map(function expectedOf(cap,): string {
-          return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-            + `and ${JSON.stringify(cap,)} is not one`;
-        },),);
-      },
-    },),
-    it({
-      name: 'REFUSES a cap that is not a number, instead of auditing nothing in silence',
-      fn: async () => {
-        expect(() => {
-          readAuditArguments({
-            line: auditLine({
-              typed: [
-                '--cap',
-                'once',
-              ],
-            },),
-          },);
-        },).toThrow(StatedRefusalError,);
-      },
-    },),
-    it({
-      name: 'REPEATS what the operator typed, since the refusal is in our own words',
-      fn: async () => {
-        /**
-         What the reader threw.
-         */
-        const refusal = caught(function readsWord(): void {
-          readAuditArguments({
-            line: auditLine({
-              typed: [
-                '--cap',
-                'once',
-              ],
-            },),
-          },);
-        },);
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusal as Error).message,).toBe(
-          `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-            + 'and "once" is not one',
-        );
-      },
-    },),
-    it({
-      name: 'REFUSES a cap below zero rather than reading it as every subject, since a mistyped '
-        + 'sign would audit the whole archive in silence',
-      fn: async () => {
-        expect(() => {
-          readAuditArguments({
-            line: auditLine({
-              typed: [
-                '--cap',
-                '-3',
-              ],
-            },),
-          },);
-        },).toThrow(StatedRefusalError,);
-        expect(() => {
-          readAuditArguments({
-            line: auditLine({
-              typed: [
-                '--cap',
-                '-3',
-              ],
-            },),
-          },);
-        },).toThrow('--cap cannot be below zero, and -3 is; leave it off to audit every subject',);
-      },
-    },),
-    it({
-      name: 'REFUSES a flag written at the end of the line with no value after it',
-      fn: async () => {
-        expect(() => {
-          readAuditArguments({ line: auditLine({ typed: ['--cap',], },), },);
-        },).toThrow('--cap needs a value written after it',);
-      },
-    },),
-    it({
-      name: 'REFUSES a flag followed by the next flag rather than by its value',
-      fn: async () => {
-        // `--only` standing where the archive path should be is a typo, and
-        // reading it as a path would send the run at a directory named `--only`.
-        expect(() => {
-          readAuditArguments({
-            line: auditLine({
-              typed: [
-                '--archive',
-                '--only',
+    describe({
+      name: readAuditArguments.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ANSWERS with the defaults for a command line that named nothing',
+          fn: async () => {
+            expect(readAuditArguments({ line: auditLine({ typed: [], },), },),).toEqual({
+              archiveDir: DEFAULT_ARCHIVE,
+              cloneDir: DEFAULT_CLONE,
+              onlyIds: [],
+              cap: EVERY_SUBJECT,
+            },);
+          },
+        },),
+        it({
+          name: 'READS every flag the operator did name, in any order',
+          fn: async () => {
+            expect(readAuditArguments({
+              line: auditLine({
+                typed: [
+                  '--cap',
+                  String(SMALL_BUY,),
+                  '--only',
+                  `${ONE_CAT},${ANOTHER_CAT}`,
+                  '--clone',
+                  OTHER_CLONE,
+                  '--archive',
+                  OTHER_ARCHIVE,
+                ],
+              },),
+            },),).toEqual({
+              archiveDir: OTHER_ARCHIVE,
+              cloneDir: OTHER_CLONE,
+              onlyIds: [
                 ONE_CAT,
+                ANOTHER_CAT,
               ],
-            },),
-          },);
-        },).toThrow('--archive needs a value written after it',);
-      },
+              cap: SMALL_BUY,
+            },);
+          },
+        },),
+        it({
+          name: 'KEEPS a cap of zero, which reads the whole archive and buys nothing',
+          fn: async () => {
+            // Zero is not "no cap": it is the wiring check the audit exists to make
+            // cheap. A reader that treated it as absent would spend a roster.
+            expect(readAuditArguments({
+              line: auditLine({
+                typed: [
+                  '--cap',
+                  String(READ_ONLY_BUY,),
+                ],
+              },),
+            },).cap,).toBe(READ_ONLY_BUY,);
+          },
+        },),
+        it({
+          name: 'KEEPS a cap of zero written in the equals form, which once read as no cap and bought every subject '
+            + 'in the archive (ledger B75)',
+          fn: async () => {
+            expect(readAuditArguments({
+              line: auditLine({ typed: [`--cap=${String(READ_ONLY_BUY,)}`,], },),
+            },).cap,).toBe(READ_ONLY_BUY,);
+          },
+        },),
+        it({
+          name: 'REFUSES a mistyped flag rather than auditing as if nothing were typed (ledger B75)',
+          fn: async () => {
+            expect(function readsMistyped(): void {
+              readAuditArguments({ line: auditLine({ typed: ['--cpa', String(READ_ONLY_BUY,),], },), },);
+            },).toThrow(StatedRefusalError,);
+          },
+        },),
+        it({
+          name: 'REFUSES a fractional cap, and one written with an exponent, a radix, a sign or past the largest '
+            + 'whole number a double holds exactly, rather than auditing a number of subjects nobody typed '
+            + '(ledger B73)',
+          fn: async () => {
+            /**
+             Caps that are no whole number written in digits.
+             */
+            const caps = [
+              '4.9',
+              '1e1',
+              '0x4',
+              '+4',
+              String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,),
+            ];
+            expect(caps.map(function refusalOf(cap,): string {
+              /**
+               What the reader threw.
+               */
+              const refusal = caught(function readsCap(): void {
+                readAuditArguments({ line: auditLine({ typed: ['--cap', cap,], },), },);
+              },);
+              expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+              return (refusal as Error).message;
+            },),).toEqual(caps.map(function expectedOf(cap,): string {
+              return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
+                + `and ${JSON.stringify(cap,)} is not one`;
+            },),);
+          },
+        },),
+        it({
+          name: 'REFUSES a cap that is not a number, instead of auditing nothing in silence',
+          fn: async () => {
+            expect(() => {
+              readAuditArguments({
+                line: auditLine({
+                  typed: [
+                    '--cap',
+                    'once',
+                  ],
+                },),
+              },);
+            },).toThrow(StatedRefusalError,);
+          },
+        },),
+        it({
+          name: 'REPEATS what the operator typed, since the refusal is in our own words',
+          fn: async () => {
+            /**
+             What the reader threw.
+             */
+            const refusal = caught(function readsWord(): void {
+              readAuditArguments({
+                line: auditLine({
+                  typed: [
+                    '--cap',
+                    'once',
+                  ],
+                },),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect((refusal as Error).message,).toBe(
+              `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
+                + 'and "once" is not one',
+            );
+          },
+        },),
+        it({
+          name: 'REFUSES a cap below zero rather than reading it as every subject, since a mistyped '
+            + 'sign would audit the whole archive in silence',
+          fn: async () => {
+            expect(() => {
+              readAuditArguments({
+                line: auditLine({
+                  typed: [
+                    '--cap',
+                    '-3',
+                  ],
+                },),
+              },);
+            },).toThrow(StatedRefusalError,);
+            expect(() => {
+              readAuditArguments({
+                line: auditLine({
+                  typed: [
+                    '--cap',
+                    '-3',
+                  ],
+                },),
+              },);
+            },).toThrow('--cap cannot be below zero, and -3 is; leave it off to audit every subject',);
+          },
+        },),
+        it({
+          name: 'REFUSES a flag written at the end of the line with no value after it',
+          fn: async () => {
+            expect(() => {
+              readAuditArguments({ line: auditLine({ typed: ['--cap',], },), },);
+            },).toThrow('--cap needs a value written after it',);
+          },
+        },),
+        it({
+          name: 'REFUSES a flag followed by the next flag rather than by its value',
+          fn: async () => {
+            // `--only` standing where the archive path should be is a typo, and
+            // reading it as a path would send the run at a directory named `--only`.
+            expect(() => {
+              readAuditArguments({
+                line: auditLine({
+                  typed: [
+                    '--archive',
+                    '--only',
+                    ONE_CAT,
+                  ],
+                },),
+              },);
+            },).toThrow('--archive needs a value written after it',);
+          },
+        },),
+        it({
+          name: 'REFUSES an entry filter that names nobody, which would read as every entry',
+          fn: async () => {
+            expect(() => {
+              readAuditArguments({
+                line: auditLine({
+                  typed: [
+                    '--only',
+                    ',',
+                  ],
+                },),
+              },);
+            },).toThrow(StatedRefusalError,);
+          },
+        },),
+        it({
+          name: 'DROPS a stray separator inside a filter that still names someone',
+          fn: async () => {
+            expect(readAuditArguments({
+              line: auditLine({
+                typed: [
+                  '--only',
+                  `${ONE_CAT},,${ANOTHER_CAT}`,
+                ],
+              },),
+            },).onlyIds,).toEqual([
+              ONE_CAT,
+              ANOTHER_CAT,
+            ],);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REFUSES an entry filter that names nobody, which would read as every entry',
-      fn: async () => {
-        expect(() => {
-          readAuditArguments({
-            line: auditLine({
-              typed: [
-                '--only',
-                ',',
-              ],
-            },),
-          },);
-        },).toThrow(StatedRefusalError,);
-      },
-    },),
-    it({
-      name: 'DROPS a stray separator inside a filter that still names someone',
-      fn: async () => {
-        expect(readAuditArguments({
-          line: auditLine({
-            typed: [
-              '--only',
-              `${ONE_CAT},,${ANOTHER_CAT}`,
-            ],
-          },),
-        },).onlyIds,).toEqual([
-          ONE_CAT,
-          ANOTHER_CAT,
-        ],);
-      },
-    },),
-  ],
-},);
 
-//endregion Settled rendering audit argument tests
+    //endregion Settled rendering audit argument tests
 
-await describe({
-  name: readReportArguments.name,
-  children: [
-    it({
-      name: 'ANSWERS with two empty lists for a command line that named nothing, which is the newest '
-        + 'kept run and no across-run band',
-      fn: async () => {
-        expect(readReportArguments({ line: reportLine({ typed: [], },), },),).toEqual({
-          run: [],
-          against: [],
-        },);
-      },
-    },),
-    it({
-      name: 'READS both files the operator named, in any order',
-      fn: async () => {
-        expect(readReportArguments({
-          line: reportLine({
-            typed: [
-              '--against',
-              '/tmp/tabby-earlier.json',
-              '--run',
-              '/tmp/tabby-later.json',
-            ],
-          },),
-        },),).toEqual({
-          run: ['/tmp/tabby-later.json',],
-          against: ['/tmp/tabby-earlier.json',],
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES --run written at the end of the line with no value after it, which used to read as '
-        + 'absent and silently report the newest kept run',
-      fn: async () => {
-        expect(() => {
-          readReportArguments({ line: reportLine({ typed: ['--run',], },), },);
-        },).toThrow('--run needs a value written after it',);
-      },
-    },),
-    it({
-      name: 'REFUSES --against followed by the next flag rather than by its value, which used to read as '
-        + 'absent and silently print no across-run band',
-      fn: async () => {
-        /**
-         What the reader raised.
-         */
-        let raised: unknown;
-        try {
-          readReportArguments({
-            line: reportLine({
-              typed: [
-                '--against',
-                '--run',
-                '/tmp/tabby-later.json',
-              ],
-            },),
-          },);
-        }
-        catch (error) {
-          raised = error;
-        }
-        expect(raised,).toBeInstanceOf(StatedRefusalError,);
-        expect((raised as Error).message,).toContain('--against needs a value written after it',);
-      },
+    describe({
+      name: readReportArguments.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ANSWERS with two empty lists for a command line that named nothing, which is the newest '
+            + 'kept run and no across-run band',
+          fn: async () => {
+            expect(readReportArguments({ line: reportLine({ typed: [], },), },),).toEqual({
+              run: [],
+              against: [],
+            },);
+          },
+        },),
+        it({
+          name: 'READS both files the operator named, in any order',
+          fn: async () => {
+            expect(readReportArguments({
+              line: reportLine({
+                typed: [
+                  '--against',
+                  '/tmp/tabby-earlier.json',
+                  '--run',
+                  '/tmp/tabby-later.json',
+                ],
+              },),
+            },),).toEqual({
+              run: ['/tmp/tabby-later.json',],
+              against: ['/tmp/tabby-earlier.json',],
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES --run written at the end of the line with no value after it, which used to read as '
+            + 'absent and silently report the newest kept run',
+          fn: async () => {
+            expect(() => {
+              readReportArguments({ line: reportLine({ typed: ['--run',], },), },);
+            },).toThrow('--run needs a value written after it',);
+          },
+        },),
+        it({
+          name: 'REFUSES --against followed by the next flag rather than by its value, which used to read as '
+            + 'absent and silently print no across-run band',
+          fn: async () => {
+            /**
+             What the reader raised.
+             */
+            let raised: unknown;
+            try {
+              readReportArguments({
+                line: reportLine({
+                  typed: [
+                    '--against',
+                    '--run',
+                    '/tmp/tabby-later.json',
+                  ],
+                },),
+              },);
+            }
+            catch (error) {
+              raised = error;
+            }
+            expect(raised,).toBeInstanceOf(StatedRefusalError,);
+            expect((raised as Error).message,).toContain('--against needs a value written after it',);
+          },
+        },),
+      ],
     },),
   ],
 },);

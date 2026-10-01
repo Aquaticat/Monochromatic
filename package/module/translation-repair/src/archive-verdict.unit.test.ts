@@ -14,6 +14,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -130,144 +131,152 @@ function outcomeOf(
 }
 
 await describe({
-  name: settleArchiveBallots.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ENDORSES ON THE SAME BAR THE CHOICE USES, two voices and a strict lead, rather than on '
-        + 'a bar of its own that every stored verdict would then be recomputed against',
-      fn: async function endorsesOnQuorum() {
-        expect(settleArchiveBallots({
-          ballots: [
-            judged({ archive: 'publishable', },),
-            judged({ archive: 'publishable', },),
-          ],
-        },),).toBe('endorsed',);
-        expect(LANE_CONTEST_QUORUM,).toBe(2,);
-      },
+    describe({
+      name: settleArchiveBallots.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ENDORSES ON THE SAME BAR THE CHOICE USES, two voices and a strict lead, rather than on '
+            + 'a bar of its own that every stored verdict would then be recomputed against',
+          fn: async function endorsesOnQuorum() {
+            expect(settleArchiveBallots({
+              ballots: [
+                judged({ archive: 'publishable', },),
+                judged({ archive: 'publishable', },),
+              ],
+            },),).toBe('endorsed',);
+            expect(LANE_CONTEST_QUORUM,).toBe(2,);
+          },
+        },),
+
+        it({
+          name: 'DECLINES when the voices go the other way, because an archive most of the roster found '
+            + 'fault with is the finding this whole field exists to record',
+          fn: async function declinesOnQuorum() {
+            expect(settleArchiveBallots({
+              ballots: [
+                judged({ archive: 'flawed', },),
+                judged({ archive: 'flawed', },),
+              ],
+            },),).toBe('declined',);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A TIE UNJUDGED, since a strict lead is what the choice rule demands and shipping '
+            + 'an endorsement off an even split would be picking by which side was counted first',
+          fn: async function leavesTiesUnjudged() {
+            expect(settleArchiveBallots({
+              ballots: [
+                judged({ archive: 'publishable', },),
+                judged({ archive: 'publishable', },),
+                judged({ archive: 'flawed', },),
+                judged({ archive: 'flawed', },),
+              ],
+            },),).toBe('unjudged',);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A LONE VOICE UNJUDGED, so one judge`s opinion of the archive is not recorded as '
+            + 'the roster`s, exactly as one voice cannot win the contest',
+          fn: async function leavesOneVoiceUnjudged() {
+            expect(settleArchiveBallots({ ballots: [ judged({ archive: 'publishable', },), ], },),)
+              .toBe('unjudged',);
+          },
+        },),
+
+        it({
+          name: 'READS AN OMITTED FIELD AS A VOICE THAT DID NOT SPEAK, not as a decline, because a model '
+            + 'that ignored the field and a ballot stored before the field existed must settle alike',
+          fn: async function readsSilenceAsSilence() {
+            expect(settleArchiveBallots({
+              ballots: [
+                silent(),
+                silent(),
+                silent(),
+              ],
+            },),).toBe('unjudged',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'DECLINES when the voices go the other way, because an archive most of the roster found '
-        + 'fault with is the finding this whole field exists to record',
-      fn: async function declinesOnQuorum() {
-        expect(settleArchiveBallots({
-          ballots: [
-            judged({ archive: 'flawed', },),
-            judged({ archive: 'flawed', },),
-          ],
-        },),).toBe('declined',);
-      },
-    },),
+    describe({
+      name: describeContestSlice.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RECORDS THE VERDICT where the roster backed no candidate, which is the slice whose '
+            + 'shipped text is the archive and about which the record used to say nothing',
+          fn: async function recordsTheVerdict() {
+            expect(describeContestSlice({
+              sliceIndex: 0,
+              outcome: outcomeOf({
+                ballots: [
+                  judged({ archive: 'flawed', },),
+                  judged({ archive: 'flawed', },),
+                ],
+              },),
+            },).verdict,).toEqual({
+              kind: 'settled-neither',
+              archive: 'declined',
+            },);
+          },
+        },),
 
-    it({
-      name: 'LEAVES A TIE UNJUDGED, since a strict lead is what the choice rule demands and shipping '
-        + 'an endorsement off an even split would be picking by which side was counted first',
-      fn: async function leavesTiesUnjudged() {
-        expect(settleArchiveBallots({
-          ballots: [
-            judged({ archive: 'publishable', },),
-            judged({ archive: 'publishable', },),
-            judged({ archive: 'flawed', },),
-            judged({ archive: 'flawed', },),
-          ],
-        },),).toBe('unjudged',);
-      },
-    },),
+        it({
+          name: 'OMITS THE KEY ENTIRELY when the archive went unjudged, rather than writing "unjudged". '
+            + 'This is what keeps artifacts settled before the question existed byte-identical, and it '
+            + 'is why the exact-keys guard needs no exception for them',
+          fn: async function omitsTheUnjudgedKey() {
+            /**
+             Verdict for a slice whose judges all ignored the archive question.
+             */
+            const { verdict, } = describeContestSlice({
+              sliceIndex: 0,
+              outcome: outcomeOf({
+                ballots: [
+                  silent(),
+                  silent(),
+                ],
+              },),
+            },);
 
-    it({
-      name: 'LEAVES A LONE VOICE UNJUDGED, so one judge`s opinion of the archive is not recorded as '
-        + 'the roster`s, exactly as one voice cannot win the contest',
-      fn: async function leavesOneVoiceUnjudged() {
-        expect(settleArchiveBallots({ ballots: [ judged({ archive: 'publishable', },), ], },),)
-          .toBe('unjudged',);
-      },
-    },),
+            expect(verdict,).toEqual({ kind: 'settled-neither', },);
+            expect(Object.hasOwn(verdict, 'archive',),).toBe(false,);
+          },
+        },),
 
-    it({
-      name: 'READS AN OMITTED FIELD AS A VOICE THAT DID NOT SPEAK, not as a decline, because a model '
-        + 'that ignored the field and a ballot stored before the field existed must settle alike',
-      fn: async function readsSilenceAsSilence() {
-        expect(settleArchiveBallots({
-          ballots: [
-            silent(),
-            silent(),
-            silent(),
-          ],
-        },),).toBe('unjudged',);
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'CARRIES NO ARCHIVE KEY ON A WON SLICE even when every ballot answered the question, '
+            + 'because the archive verdict decides nothing where a candidate already beat it, and a '
+            + 'field recorded there would be read as a reason the winner won',
+          fn: async function leavesWonSlicesAlone() {
+            /**
+             Verdict for a slice the repair lane won outright.
+             */
+            const { verdict, } = describeContestSlice({
+              sliceIndex: 0,
+              outcome: outcomeOf({
+                ballots: [
+                  backsRepair({ archive: 'flawed', },),
+                  backsRepair({ archive: 'flawed', },),
+                ],
+              },),
+            },);
 
-await describe({
-  name: describeContestSlice.name,
-  children: [
-    it({
-      name: 'RECORDS THE VERDICT where the roster backed no candidate, which is the slice whose '
-        + 'shipped text is the archive and about which the record used to say nothing',
-      fn: async function recordsTheVerdict() {
-        expect(describeContestSlice({
-          sliceIndex: 0,
-          outcome: outcomeOf({
-            ballots: [
-              judged({ archive: 'flawed', },),
-              judged({ archive: 'flawed', },),
-            ],
-          },),
-        },).verdict,).toEqual({
-          kind: 'settled-neither',
-          archive: 'declined',
-        },);
-      },
-    },),
-
-    it({
-      name: 'OMITS THE KEY ENTIRELY when the archive went unjudged, rather than writing "unjudged". '
-        + 'This is what keeps artifacts settled before the question existed byte-identical, and it '
-        + 'is why the exact-keys guard needs no exception for them',
-      fn: async function omitsTheUnjudgedKey() {
-        /**
-         Verdict for a slice whose judges all ignored the archive question.
-         */
-        const { verdict, } = describeContestSlice({
-          sliceIndex: 0,
-          outcome: outcomeOf({
-            ballots: [
-              silent(),
-              silent(),
-            ],
-          },),
-        },);
-
-        expect(verdict,).toEqual({ kind: 'settled-neither', },);
-        expect(Object.hasOwn(verdict, 'archive',),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'CARRIES NO ARCHIVE KEY ON A WON SLICE even when every ballot answered the question, '
-        + 'because the archive verdict decides nothing where a candidate already beat it, and a '
-        + 'field recorded there would be read as a reason the winner won',
-      fn: async function leavesWonSlicesAlone() {
-        /**
-         Verdict for a slice the repair lane won outright.
-         */
-        const { verdict, } = describeContestSlice({
-          sliceIndex: 0,
-          outcome: outcomeOf({
-            ballots: [
-              backsRepair({ archive: 'flawed', },),
-              backsRepair({ archive: 'flawed', },),
-            ],
-          },),
-        },);
-
-        expect(verdict,).toEqual({
-          kind: 'lane-won',
-          lane: 'repair',
-        },);
-        expect(Object.hasOwn(verdict, 'archive',),).toBe(false,);
-      },
+            expect(verdict,).toEqual({
+              kind: 'lane-won',
+              lane: 'repair',
+            },);
+            expect(Object.hasOwn(verdict, 'archive',),).toBe(false,);
+          },
+        },),
+      ],
     },),
   ],
 },);

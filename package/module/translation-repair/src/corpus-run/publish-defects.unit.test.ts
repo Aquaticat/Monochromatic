@@ -13,6 +13,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -127,168 +128,177 @@ const REFUSING_FRONT_MATTER: PublishCheckStep = {
 };
 
 await describe({
-  name: publishDefects.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'COLLECTS NOTHING for checks that pass, the control the collection rests on',
-      fn: async () => {
-        expect(publishDefects({ steps: [PASSING,], },),).toStrictEqual([],);
-      },
-    },),
-    it({
-      name: 'COLLECTS A CHECK\'S OWN REFUSAL as a defect naming the check and its message',
-      fn: async () => {
-        expect(publishDefects({
-          steps: [
-            PASSING,
-            REFUSING,
-          ],
-        },),).toStrictEqual([{
-          check: 'destinations',
-          message: 'entry WhiskerCat drops 1 whisker',
-        },],);
-      },
-    },),
-    it({
-      name: 'RUNS EVERY CHECK after one fails, and keeps their order',
-      fn: async () => {
-        expect(publishDefects({
-          steps: [
-            REFUSING_FRONT_MATTER,
-            PASSING,
-            REFUSING,
-          ],
-        },),).toStrictEqual([
-          {
-            check: 'front-matter',
-            message: 'entry WhiskerCat drops 1 tail',
+    describe({
+      name: publishDefects.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COLLECTS NOTHING for checks that pass, the control the collection rests on',
+          fn: async () => {
+            expect(publishDefects({ steps: [PASSING,], },),).toStrictEqual([],);
           },
-          {
-            check: 'destinations',
-            message: 'entry WhiskerCat drops 1 whisker',
-          },
-        ],);
-      },
-    },),
-    it({
-      name: 'RETHROWS ANOTHER CHECK\'S REFUSAL, since the step owns only its own class',
-      fn: async () => {
-        expect(() => {
-          publishDefects({
-            steps: [{
-              check: 'headings',
-              refusal: WhiskerRefusalError,
-              run: function refusesWrongly(): void {
-                throw new TailRefusalError();
-              },
-            },],
-          },);
-        },).toThrow(TailRefusalError,);
-      },
-    },),
-    it({
-      name: 'RETHROWS A FAULT IN THE CODE, so a bug never ships as a content report',
-      fn: async () => {
-        expect(() => {
-          publishDefects({
-            steps: [{
-              check: 'contributor-names',
-              refusal: WhiskerRefusalError,
-              run: function faults(): void {
-                throw new TypeError('whisker is not a function',);
-              },
-            },],
-          },);
-        },).toThrow(TypeError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: defectsLine.name,
-  children: [
-    it({
-      name: 'PRINTS NOTHING for a clean page',
-      fn: async () => {
-        expect(defectsLine({
-          entryId: 'WhiskerCat',
-          defects: [],
-        },),).toBe('',);
-      },
-    },),
-    it({
-      name: 'NAMES THE ENTRY AND EVERY FAILED CHECK in the order they ran',
-      fn: async () => {
-        expect(defectsLine({
-          entryId: 'WhiskerCat',
-          defects: [
-            {
-              check: 'front-matter',
-              message: 'entry WhiskerCat drops 1 tail',
-            },
-            {
+        },),
+        it({
+          name: 'COLLECTS A CHECK\'S OWN REFUSAL as a defect naming the check and its message',
+          fn: async () => {
+            expect(publishDefects({
+              steps: [
+                PASSING,
+                REFUSING,
+              ],
+            },),).toStrictEqual([{
               check: 'destinations',
               message: 'entry WhiskerCat drops 1 whisker',
-            },
-          ],
-        },),).toBe('DEFECTS WhiskerCat checks=front-matter,destinations',);
-      },
+            },],);
+          },
+        },),
+        it({
+          name: 'RUNS EVERY CHECK after one fails, and keeps their order',
+          fn: async () => {
+            expect(publishDefects({
+              steps: [
+                REFUSING_FRONT_MATTER,
+                PASSING,
+                REFUSING,
+              ],
+            },),).toStrictEqual([
+              {
+                check: 'front-matter',
+                message: 'entry WhiskerCat drops 1 tail',
+              },
+              {
+                check: 'destinations',
+                message: 'entry WhiskerCat drops 1 whisker',
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'RETHROWS ANOTHER CHECK\'S REFUSAL, since the step owns only its own class',
+          fn: async () => {
+            expect(() => {
+              publishDefects({
+                steps: [{
+                  check: 'headings',
+                  refusal: WhiskerRefusalError,
+                  run: function refusesWrongly(): void {
+                    throw new TailRefusalError();
+                  },
+                },],
+              },);
+            },).toThrow(TailRefusalError,);
+          },
+        },),
+        it({
+          name: 'RETHROWS A FAULT IN THE CODE, so a bug never ships as a content report',
+          fn: async () => {
+            expect(() => {
+              publishDefects({
+                steps: [{
+                  check: 'contributor-names',
+                  refusal: WhiskerRefusalError,
+                  run: function faults(): void {
+                    throw new TypeError('whisker is not a function',);
+                  },
+                },],
+              },);
+            },).toThrow(TypeError,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: archiveKeptDefects.name,
-  children: [
-    it({
-      name: 'REPORTS NOTHING where the consolidation did not run or kept no archive, the control the report rests on',
-      fn: async () => {
-        expect(archiveKeptDefects({
-          entryId: 'WhiskerCat',
-          consolidation: { kind: 'not-run', } as WouldShipSource['consolidation'],
-        },),).toStrictEqual([],);
-        expect(archiveKeptDefects({
-          entryId: 'WhiskerCat',
-          consolidation: {
-            kind: 'settled',
-            slices: [sliceShipping({
-              sliceIndex: 0,
-              kind: 'unchanged',
-            },),],
-          } as unknown as WouldShipSource['consolidation'],
-        },),).toStrictEqual([],);
-      },
+    describe({
+      name: defectsLine.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'PRINTS NOTHING for a clean page',
+          fn: async () => {
+            expect(defectsLine({
+              entryId: 'WhiskerCat',
+              defects: [],
+            },),).toBe('',);
+          },
+        },),
+        it({
+          name: 'NAMES THE ENTRY AND EVERY FAILED CHECK in the order they ran',
+          fn: async () => {
+            expect(defectsLine({
+              entryId: 'WhiskerCat',
+              defects: [
+                {
+                  check: 'front-matter',
+                  message: 'entry WhiskerCat drops 1 tail',
+                },
+                {
+                  check: 'destinations',
+                  message: 'entry WhiskerCat drops 1 whisker',
+                },
+              ],
+            },),).toBe('DEFECTS WhiskerCat checks=front-matter,destinations',);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'NAMES EVERY SLICE THE ARCHIVE KEPT in one defect, since no wording there passed the rule '
-        + '(owner, 2026-09-27, "Keep archive, ship")',
-      fn: async () => {
-        expect(archiveKeptDefects({
-          entryId: 'WhiskerCat',
-          consolidation: {
-            kind: 'settled',
-            slices: [
-              sliceShipping({
-                sliceIndex: 1,
-                kind: 'archive',
-              },),
-              sliceShipping({
-                sliceIndex: 2,
-                kind: 'unchanged',
-              },),
-              sliceShipping({
-                sliceIndex: 4,
-                kind: 'archive',
-              },),
-            ],
-          } as unknown as WouldShipSource['consolidation'],
-        },),).toStrictEqual([{
-          check: 'no-valid-wording',
-          message: 'entry WhiskerCat kept the archive at slice 1, slice 4, where no wording passed the '
-            + 'deterministic publication rule',
-        },],);
-      },
+
+    describe({
+      name: archiveKeptDefects.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REPORTS NOTHING where the consolidation did not run or kept no archive, the control the report rests on',
+          fn: async () => {
+            expect(archiveKeptDefects({
+              entryId: 'WhiskerCat',
+              consolidation: { kind: 'not-run', } as WouldShipSource['consolidation'],
+            },),).toStrictEqual([],);
+            expect(archiveKeptDefects({
+              entryId: 'WhiskerCat',
+              consolidation: {
+                kind: 'settled',
+                slices: [sliceShipping({
+                  sliceIndex: 0,
+                  kind: 'unchanged',
+                },),],
+              } as unknown as WouldShipSource['consolidation'],
+            },),).toStrictEqual([],);
+          },
+        },),
+        it({
+          name: 'NAMES EVERY SLICE THE ARCHIVE KEPT in one defect, since no wording there passed the rule '
+            + '(owner, 2026-09-27, "Keep archive, ship")',
+          fn: async () => {
+            expect(archiveKeptDefects({
+              entryId: 'WhiskerCat',
+              consolidation: {
+                kind: 'settled',
+                slices: [
+                  sliceShipping({
+                    sliceIndex: 1,
+                    kind: 'archive',
+                  },),
+                  sliceShipping({
+                    sliceIndex: 2,
+                    kind: 'unchanged',
+                  },),
+                  sliceShipping({
+                    sliceIndex: 4,
+                    kind: 'archive',
+                  },),
+                ],
+              } as unknown as WouldShipSource['consolidation'],
+            },),).toStrictEqual([{
+              check: 'no-valid-wording',
+              message: 'entry WhiskerCat kept the archive at slice 1, slice 4, where no wording passed the '
+                + 'deterministic publication rule',
+            },],);
+          },
+        },),
+      ],
     },),
   ],
 },);

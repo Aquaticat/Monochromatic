@@ -17,6 +17,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -155,374 +156,385 @@ const TO_LIVE_RESULT = {
 };
 
 await describe({
-  name: workTitlesOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'FINDS every 《…》 span once, in order, marks included, and stops at an unclosed mark',
-      fn: async () => {
-        expect(workTitlesOf({ text: '她读《活着》，又读《活着》，还读《不安》。《未完', },),)
-          .toEqual(['《活着》', '《不安》',],);
-        expect(workTitlesOf({ text: '没有书名号。', },),).toEqual([],);
-        expect(lookupQueryFor({ title: '《活着》', },),).toBe('《活着》 official English title',);
-      },
-    },),
-    it({
-      name: 'READS AN OPENING MARK THAT NEVER CLOSED AS NO TITLE (ledger B38), and looks up the title after it',
-      fn: async () => {
-        expect(workTitlesOf({ text: '她读《猫，又读《猫经》。', },),).toEqual(['《猫经》',],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: lookupCacheDir.name,
-  children: [
-    it({
-      name: 'PREFERS the override, then XDG_CACHE_HOME, then the home cache directory',
-      fn: async () => {
-        expect(lookupCacheDir({
-          env: {
-            TRANSLATION_REPAIR_LOOKUP_CACHE_DIR: '/tmp/x',
-            XDG_CACHE_HOME: '/tmp/y',
+    describe({
+      name: workTitlesOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FINDS every 《…》 span once, in order, marks included, and stops at an unclosed mark',
+          fn: async () => {
+            expect(workTitlesOf({ text: '她读《活着》，又读《活着》，还读《不安》。《未完', },),)
+              .toEqual(['《活着》', '《不安》',],);
+            expect(workTitlesOf({ text: '没有书名号。', },),).toEqual([],);
+            expect(lookupQueryFor({ title: '《活着》', },),).toBe('《活着》 official English title',);
           },
-        },),).toBe('/tmp/x',);
-        expect(lookupCacheDir({ env: { XDG_CACHE_HOME: '/tmp/y', }, },),).toBe('/tmp/y/translation-repair/lookup',);
-        expect(lookupCacheDir({ env: {}, },),).toContain('/.cache/translation-repair/lookup',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: packageCacheDir.name,
-  children: [
-    it({
-      name: 'NAMES translation-repair UNDER XDG_CACHE_HOME, and under the home cache directory when it is unset or empty',
-      fn: async () => {
-        expect(packageCacheDir({ env: { XDG_CACHE_HOME: '/tmp/y', }, },),).toBe('/tmp/y/translation-repair',);
-        expect(packageCacheDir({ env: {}, },).endsWith('/.cache/translation-repair',),).toBe(true,);
-        expect(packageCacheDir({ env: { XDG_CACHE_HOME: '', }, },),).toBe(packageCacheDir({ env: {}, },),);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: lookupWorkTitle.name,
-  children: [
-    it({
-      name: 'BUYS a title once and READS IT BACK from the cache on every later ask, so a resumed run '
-        + 'sees the same lines',
-      fn: async () => {
-        /**
-         Empty cache.
-         */
-        const dir = await freshCacheDir();
-        /**
-         Transport answering one hit.
-         */
-        const { fetchFn, calls, } = stubFetch({
-          status: 200,
-          body: { results: [TO_LIVE_RESULT,], },
-        },);
-        /**
-         Shared arguments.
-         */
-        const ask = {
-          title: '《活着》',
-          apiKey: 'test-key',
-          dir,
-          signal: SIGNAL,
-          fetchFn,
-          now: () => NOW,
-        };
-        /**
-         First ask, bought.
-         */
-        const first = await lookupWorkTitle(ask,);
-        /**
-         Second ask, read back.
-         */
-        const second = await lookupWorkTitle(ask,);
-        expect(calls.length,).toBe(1,);
-        expect(first,).toEqual({
-          query: '《活着》 official English title',
-          fetchedAt: NOW.toISOString(),
-          hits: [{
-            title: TO_LIVE_RESULT.title,
-            url: TO_LIVE_RESULT.url,
-            highlight: 'To Live (活着) is a novel\nby Yu Hua.',
-          },],
-        },);
-        expect(second,).toEqual(first,);
-        expect(await readCachedLookup({
-          dir,
-          query: first.query,
-        },),).toEqual({
-          kind: 'hit',
-          record: first,
-        },);
-        expect(isLookupRecord(first,),).toBe(true,);
-        expect(isLookupRecord({ query: 1, },),).toBe(false,);
-
-        /**
-         What the transport was sent.
-         */
-        const [call,] = calls;
-        if (call === undefined)
-          throw new Error('the transport saw no call',);
-        /**
-         Headers as sent.
-         */
-        const headers = call.init.headers as Record<string, string>;
-        /**
-         Body as sent.
-         */
-        const { body, } = call.init;
-        if ((typeof body) !== 'string')
-          throw new Error('the request body was not text',);
-        expect(call.url,).toBe(EXA_SEARCH_URL,);
-        expect(headers['x-api-key'],).toBe('test-key',);
-        expect(JSON.parse(body,),).toEqual({
-          query: '《活着》 official English title',
-          type: 'auto',
-          numResults: 5,
-          contents: {
-            highlights: {
-              query: '《活着》 official English title',
-              maxCharacters: 300,
-            },
+        },),
+        it({
+          name: 'READS AN OPENING MARK THAT NEVER CLOSED AS NO TITLE (ledger B38), and looks up the title after it',
+          fn: async () => {
+            expect(workTitlesOf({ text: '她读《猫，又读《猫经》。', },),).toEqual(['《猫经》',],);
           },
-        },);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES a non-2xx answer, a body that is not an object and a body without results, naming the query '
-        + 'and never the key',
-      fn: async () => {
-        /**
-         Refusing transport.
-         */
-        const refused = stubFetch({
-          status: 401,
-          body: { error: 'bad key', },
-        },);
-        /**
-         What the refusal threw.
-         */
-        let thrown: unknown;
-        try {
-          await searchWorkTitle({
-            apiKey: 'secret-key',
-            query: '《活着》 official English title',
-            signal: SIGNAL,
-            fetchFn: refused.fetchFn,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof WorkTitleLookupError,).toBe(true,);
-        expect((thrown as Error).message,).toContain('401',);
-        expect((thrown as Error).message,).not.toContain('secret-key',);
-
-        /**
-         Shapeless transport.
-         */
-        const shapeless = stubFetch({
-          status: 200,
-          body: { nothing: true, },
-        },);
-        /**
-         What the shapeless answer threw.
-         */
-        let thrownShapeless: unknown;
-        try {
-          await searchWorkTitle({
-            apiKey: 'secret-key',
-            query: '《活着》 official English title',
-            signal: SIGNAL,
-            fetchFn: shapeless.fetchFn,
-          },);
-        } catch (error) {
-          thrownShapeless = error;
-        }
-        expect(thrownShapeless instanceof WorkTitleLookupError,).toBe(true,);
-
-        /**
-         Transport answering a JSON array, which read as no results before
-         `isJsonRecord` refused arrays (ledger B92).
-         */
-        const listed = stubFetch({
-          status: 200,
-          body: [{ title: 'Whiskers at Dusk', },],
-        },);
-        /**
-         What the array answer threw.
-         */
-        let thrownListed: unknown;
-        try {
-          await searchWorkTitle({
-            apiKey: 'secret-key',
-            query: '《活着》 official English title',
-            signal: SIGNAL,
-            fetchFn: listed.fetchFn,
-          },);
-        } catch (error) {
-          thrownListed = error;
-        }
-        expect(thrownListed instanceof WorkTitleLookupError,).toBe(true,);
-        expect((thrownListed as Error).message,).toContain('a body that is not an object',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: workTitleLookupLines.name,
-  children: [
-    it({
-      name: 'RENDERS one line per hit with the highlight folded, WARNS on a result that never names the '
-        + 'work and lists it after the ones that do (the Toka_ls rerun of 2026-09-02 renamed 《奇妙漂流》 '
-        + '"Flow" off five neighbour results), says so when nothing was found, and contributes NO LINE '
-        + 'for a failed lookup while still rendering the others',
-      fn: async () => {
-        /**
-         Empty cache.
-         */
-        const dir = await freshCacheDir();
-        /**
-         Record already cached for one title, with no hits.
-         */
-        const empty: LookupRecord = {
-          query: lookupQueryFor({ title: '《不安》', },),
-          fetchedAt: NOW.toISOString(),
-          hits: [],
-        };
-        await writeCachedLookup({
-          dir,
-          record: empty,
-        },);
-        /**
-         Transport answering the other title.
-         */
-        const { fetchFn, calls, } = stubFetch({
-          status: 200,
-          body: {
-            results: [
-              {
-                title: '喵的奇幻漂流',
-                url: 'https://example.invalid/neighbour',
-                highlights: ['A 2024 Latvian animated film.',],
+    describe({
+      name: lookupCacheDir.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'PREFERS the override, then XDG_CACHE_HOME, then the home cache directory',
+          fn: async () => {
+            expect(lookupCacheDir({
+              env: {
+                TRANSLATION_REPAIR_LOOKUP_CACHE_DIR: '/tmp/x',
+                XDG_CACHE_HOME: '/tmp/y',
               },
-              TO_LIVE_RESULT,
-              { url: 'https://example.invalid/none', },
-            ],
+            },),).toBe('/tmp/x',);
+            expect(lookupCacheDir({ env: { XDG_CACHE_HOME: '/tmp/y', }, },),).toBe('/tmp/y/translation-repair/lookup',);
+            expect(lookupCacheDir({ env: {}, },),).toContain('/.cache/translation-repair/lookup',);
           },
-        },);
-        expect(await workTitleLookupLines({
-          sourceText: '读《活着》和《不安》。',
-          apiKey: 'test-key',
-          dir,
-          signal: SIGNAL,
-          fetchFn,
-          now: () => NOW,
-          logger: l,
-        },),).toEqual([
-          '- web lookup for 《活着》: "To Live (novel) - Wikipedia" https://en.wikipedia.org/wiki/To_Live_(novel): To Live (活着) is a novel by Yu Hua.',
-          '- web lookup for 《活着》 (this result does NOT name the work asked about; it is a neighbour, not its title): "喵的奇幻漂流" https://example.invalid/neighbour: A 2024 Latvian animated film.',
-          '- web lookup for 《活着》 (this result does NOT name the work asked about; it is a neighbour, not its title): "" https://example.invalid/none',
-          '- web lookup for 《不安》: nothing found',
-        ],);
-        expect(calls.length,).toBe(1,);
-        expect(lookupLinesOf({
-          title: '《不安》',
-          record: empty,
-        },),).toEqual(['- web lookup for 《不安》: nothing found',],);
-
-        /**
-         Refusing transport over a fresh cache.
-         */
-        const refused = stubFetch({
-          status: 500,
-          body: {},
-        },);
-        expect(await workTitleLookupLines({
-          sourceText: '读《活着》。',
-          apiKey: 'test-key',
-          dir: await freshCacheDir(),
-          signal: SIGNAL,
-          fetchFn: refused.fetchFn,
-          now: () => NOW,
-          logger: l,
-        },),).toEqual([],);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'READS A LATIN TITLE AS WORDS (ledger B23): a result whose title only runs on from the work\'s is a '
-        + 'neighbour, and is warned about and listed after the one naming it',
-      fn: async () => {
-        /**
-         Record for a Latin title, a neighbour first.
-         */
-        const record: LookupRecord = {
-          query: lookupQueryFor({ title: '《Catcraft》', },),
-          fetchedAt: NOW.toISOString(),
-          hits: [
-            {
-              title: 'Catcraftopia fan wiki',
-              url: 'https://example.invalid/fan',
-              highlight: '',
-            },
-            {
-              title: 'Catcraft (game)',
-              url: 'https://example.invalid/game',
-              highlight: '',
-            },
-          ],
-        };
-        expect(lookupLinesOf({
-          title: '《Catcraft》',
-          record,
-        },),).toEqual([
-          '- web lookup for 《Catcraft》: "Catcraft (game)" https://example.invalid/game',
-          '- web lookup for 《Catcraft》 (this result does NOT name the work asked about; it is a neighbour, not its title): "Catcraftopia fan wiki" https://example.invalid/fan',
-        ],);
-      },
+    describe({
+      name: packageCacheDir.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES translation-repair UNDER XDG_CACHE_HOME, and under the home cache directory when it is unset or empty',
+          fn: async () => {
+            expect(packageCacheDir({ env: { XDG_CACHE_HOME: '/tmp/y', }, },),).toBe('/tmp/y/translation-repair',);
+            expect(packageCacheDir({ env: {}, },).endsWith('/.cache/translation-repair',),).toBe(true,);
+            expect(packageCacheDir({ env: { XDG_CACHE_HOME: '', }, },),).toBe(packageCacheDir({ env: {}, },),);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'ASKS NOTHING without a key or without a title, so a run without the secret changes nothing '
-        + 'but a log line',
-      fn: async () => {
-        /**
-         Transport that must not be called.
-         */
-        const { fetchFn, calls, } = stubFetch({
-          status: 200,
-          body: { results: [], },
-        },);
-        expect(await workTitleLookupLines({
-          sourceText: '读《活着》。',
-          apiKey: '',
-          dir: await freshCacheDir(),
-          signal: SIGNAL,
-          fetchFn,
-          now: () => NOW,
-          logger: l,
-        },),).toEqual([],);
-        expect(await workTitleLookupLines({
-          sourceText: '没有书名号。',
-          apiKey: 'test-key',
-          dir: await freshCacheDir(),
-          signal: SIGNAL,
-          fetchFn,
-          now: () => NOW,
-          logger: l,
-        },),).toEqual([],);
-        expect(calls.length,).toBe(0,);
-      },
+
+    describe({
+      name: lookupWorkTitle.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'BUYS a title once and READS IT BACK from the cache on every later ask, so a resumed run '
+            + 'sees the same lines',
+          fn: async () => {
+            /**
+             Empty cache.
+             */
+            const dir = await freshCacheDir();
+            /**
+             Transport answering one hit.
+             */
+            const { fetchFn, calls, } = stubFetch({
+              status: 200,
+              body: { results: [TO_LIVE_RESULT,], },
+            },);
+            /**
+             Shared arguments.
+             */
+            const ask = {
+              title: '《活着》',
+              apiKey: 'test-key',
+              dir,
+              signal: SIGNAL,
+              fetchFn,
+              now: () => NOW,
+            };
+            /**
+             First ask, bought.
+             */
+            const first = await lookupWorkTitle(ask,);
+            /**
+             Second ask, read back.
+             */
+            const second = await lookupWorkTitle(ask,);
+            expect(calls.length,).toBe(1,);
+            expect(first,).toEqual({
+              query: '《活着》 official English title',
+              fetchedAt: NOW.toISOString(),
+              hits: [{
+                title: TO_LIVE_RESULT.title,
+                url: TO_LIVE_RESULT.url,
+                highlight: 'To Live (活着) is a novel\nby Yu Hua.',
+              },],
+            },);
+            expect(second,).toEqual(first,);
+            expect(await readCachedLookup({
+              dir,
+              query: first.query,
+            },),).toEqual({
+              kind: 'hit',
+              record: first,
+            },);
+            expect(isLookupRecord(first,),).toBe(true,);
+            expect(isLookupRecord({ query: 1, },),).toBe(false,);
+
+            /**
+             What the transport was sent.
+             */
+            const [call,] = calls;
+            if (call === undefined)
+              throw new Error('the transport saw no call',);
+            /**
+             Headers as sent.
+             */
+            const headers = call.init.headers as Record<string, string>;
+            /**
+             Body as sent.
+             */
+            const { body, } = call.init;
+            if ((typeof body) !== 'string')
+              throw new Error('the request body was not text',);
+            expect(call.url,).toBe(EXA_SEARCH_URL,);
+            expect(headers['x-api-key'],).toBe('test-key',);
+            expect(JSON.parse(body,),).toEqual({
+              query: '《活着》 official English title',
+              type: 'auto',
+              numResults: 5,
+              contents: {
+                highlights: {
+                  query: '《活着》 official English title',
+                  maxCharacters: 300,
+                },
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a non-2xx answer, a body that is not an object and a body without results, naming the query '
+            + 'and never the key',
+          fn: async () => {
+            /**
+             Refusing transport.
+             */
+            const refused = stubFetch({
+              status: 401,
+              body: { error: 'bad key', },
+            },);
+            /**
+             What the refusal threw.
+             */
+            let thrown: unknown;
+            try {
+              await searchWorkTitle({
+                apiKey: 'secret-key',
+                query: '《活着》 official English title',
+                signal: SIGNAL,
+                fetchFn: refused.fetchFn,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof WorkTitleLookupError,).toBe(true,);
+            expect((thrown as Error).message,).toContain('401',);
+            expect((thrown as Error).message,).not.toContain('secret-key',);
+
+            /**
+             Shapeless transport.
+             */
+            const shapeless = stubFetch({
+              status: 200,
+              body: { nothing: true, },
+            },);
+            /**
+             What the shapeless answer threw.
+             */
+            let thrownShapeless: unknown;
+            try {
+              await searchWorkTitle({
+                apiKey: 'secret-key',
+                query: '《活着》 official English title',
+                signal: SIGNAL,
+                fetchFn: shapeless.fetchFn,
+              },);
+            } catch (error) {
+              thrownShapeless = error;
+            }
+            expect(thrownShapeless instanceof WorkTitleLookupError,).toBe(true,);
+
+            /**
+             Transport answering a JSON array, which read as no results before
+             `isJsonRecord` refused arrays (ledger B92).
+             */
+            const listed = stubFetch({
+              status: 200,
+              body: [{ title: 'Whiskers at Dusk', },],
+            },);
+            /**
+             What the array answer threw.
+             */
+            let thrownListed: unknown;
+            try {
+              await searchWorkTitle({
+                apiKey: 'secret-key',
+                query: '《活着》 official English title',
+                signal: SIGNAL,
+                fetchFn: listed.fetchFn,
+              },);
+            } catch (error) {
+              thrownListed = error;
+            }
+            expect(thrownListed instanceof WorkTitleLookupError,).toBe(true,);
+            expect((thrownListed as Error).message,).toContain('a body that is not an object',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: workTitleLookupLines.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RENDERS one line per hit with the highlight folded, WARNS on a result that never names the '
+            + 'work and lists it after the ones that do (the Toka_ls rerun of 2026-09-02 renamed 《奇妙漂流》 '
+            + '"Flow" off five neighbour results), says so when nothing was found, and contributes NO LINE '
+            + 'for a failed lookup while still rendering the others',
+          fn: async () => {
+            /**
+             Empty cache.
+             */
+            const dir = await freshCacheDir();
+            /**
+             Record already cached for one title, with no hits.
+             */
+            const empty: LookupRecord = {
+              query: lookupQueryFor({ title: '《不安》', },),
+              fetchedAt: NOW.toISOString(),
+              hits: [],
+            };
+            await writeCachedLookup({
+              dir,
+              record: empty,
+            },);
+            /**
+             Transport answering the other title.
+             */
+            const { fetchFn, calls, } = stubFetch({
+              status: 200,
+              body: {
+                results: [
+                  {
+                    title: '喵的奇幻漂流',
+                    url: 'https://example.invalid/neighbour',
+                    highlights: ['A 2024 Latvian animated film.',],
+                  },
+                  TO_LIVE_RESULT,
+                  { url: 'https://example.invalid/none', },
+                ],
+              },
+            },);
+            expect(await workTitleLookupLines({
+              sourceText: '读《活着》和《不安》。',
+              apiKey: 'test-key',
+              dir,
+              signal: SIGNAL,
+              fetchFn,
+              now: () => NOW,
+              logger: l,
+            },),).toEqual([
+              '- web lookup for 《活着》: "To Live (novel) - Wikipedia" https://en.wikipedia.org/wiki/To_Live_(novel): To Live (活着) is a novel by Yu Hua.',
+              '- web lookup for 《活着》 (this result does NOT name the work asked about; it is a neighbour, not its title): "喵的奇幻漂流" https://example.invalid/neighbour: A 2024 Latvian animated film.',
+              '- web lookup for 《活着》 (this result does NOT name the work asked about; it is a neighbour, not its title): "" https://example.invalid/none',
+              '- web lookup for 《不安》: nothing found',
+            ],);
+            expect(calls.length,).toBe(1,);
+            expect(lookupLinesOf({
+              title: '《不安》',
+              record: empty,
+            },),).toEqual(['- web lookup for 《不安》: nothing found',],);
+
+            /**
+             Refusing transport over a fresh cache.
+             */
+            const refused = stubFetch({
+              status: 500,
+              body: {},
+            },);
+            expect(await workTitleLookupLines({
+              sourceText: '读《活着》。',
+              apiKey: 'test-key',
+              dir: await freshCacheDir(),
+              signal: SIGNAL,
+              fetchFn: refused.fetchFn,
+              now: () => NOW,
+              logger: l,
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'READS A LATIN TITLE AS WORDS (ledger B23): a result whose title only runs on from the work\'s is a '
+            + 'neighbour, and is warned about and listed after the one naming it',
+          fn: async () => {
+            /**
+             Record for a Latin title, a neighbour first.
+             */
+            const record: LookupRecord = {
+              query: lookupQueryFor({ title: '《Catcraft》', },),
+              fetchedAt: NOW.toISOString(),
+              hits: [
+                {
+                  title: 'Catcraftopia fan wiki',
+                  url: 'https://example.invalid/fan',
+                  highlight: '',
+                },
+                {
+                  title: 'Catcraft (game)',
+                  url: 'https://example.invalid/game',
+                  highlight: '',
+                },
+              ],
+            };
+            expect(lookupLinesOf({
+              title: '《Catcraft》',
+              record,
+            },),).toEqual([
+              '- web lookup for 《Catcraft》: "Catcraft (game)" https://example.invalid/game',
+              '- web lookup for 《Catcraft》 (this result does NOT name the work asked about; it is a neighbour, not its title): "Catcraftopia fan wiki" https://example.invalid/fan',
+            ],);
+          },
+        },),
+        it({
+          name: 'ASKS NOTHING without a key or without a title, so a run without the secret changes nothing '
+            + 'but a log line',
+          fn: async () => {
+            /**
+             Transport that must not be called.
+             */
+            const { fetchFn, calls, } = stubFetch({
+              status: 200,
+              body: { results: [], },
+            },);
+            expect(await workTitleLookupLines({
+              sourceText: '读《活着》。',
+              apiKey: '',
+              dir: await freshCacheDir(),
+              signal: SIGNAL,
+              fetchFn,
+              now: () => NOW,
+              logger: l,
+            },),).toEqual([],);
+            expect(await workTitleLookupLines({
+              sourceText: '没有书名号。',
+              apiKey: 'test-key',
+              dir: await freshCacheDir(),
+              signal: SIGNAL,
+              fetchFn,
+              now: () => NOW,
+              logger: l,
+            },),).toEqual([],);
+            expect(calls.length,).toBe(0,);
+          },
+        },),
+      ],
     },),
   ],
 },);

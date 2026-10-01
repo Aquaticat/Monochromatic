@@ -19,6 +19,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -159,307 +160,316 @@ async function warningsReading(
 }
 
 await describe({
-  name: readAttemptMap.name,
-  children: [
-    it({
-      name: 'reads a well-formed map through unchanged, which is the ordinary '
-        + 'case the ordering depends on',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        expect(
-          await readWritten({
-            directory: scratch.path,
-            contents: JSON.stringify({
-              Mittens: 2,
-              Marmalade: 5,
-            },),
-          },),
-        ).toStrictEqual(new Map([
-          ['Mittens', 2,],
-          ['Marmalade', 5,],
-        ],),);
-      },
-    },),
-
-    it({
-      name: 'returns an empty map when the file is ABSENT, since a first run '
-        + 'has no attempts recorded and that is not an error',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        expect(
-          await readAttemptMap(join(
-            scratch.path,
-            'never-written.json',
-          ),),
-        ).toStrictEqual(new Map(),);
-      },
-    },),
-
-    it({
-      name: 'returns an empty map for MALFORMED JSON rather than aborting, '
-        + 'because a truncated write from an interrupted run costs an ordering '
-        + 'hint and must not cost the run itself',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        expect(
-          await readWritten({
-            directory: scratch.path,
-            contents: '{"Mittens": 2,',
-          },),
-        ).toStrictEqual(new Map(),);
-      },
-    },),
-
-    it({
-      name: 'returns an empty map for well-formed JSON that is not an object, '
-        + 'so a file holding a bare number or string cannot become an ordering '
-        + 'input',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        // Each case writes its own file, so they share no state and run
-        // concurrently rather than sequentially.
-        const maps = await Promise.all([
-          '42',
-          '"Mittens"',
-          'null',
-          'true',
-        ].map(async function toMap(contents, index,) {
-          return await readWritten({
-            directory: scratch.path,
-            contents,
-            name: `not-an-object-${String(index,)}.json`,
-          },);
-        },),);
-
-        for (const map of maps)
-          expect(map,).toStrictEqual(new Map(),);
-      },
-    },),
-
-    it({
-      name: 'returns an empty map for a well-formed JSON ARRAY rather than reading its index keys '
-        + 'as entry ids, which is read through today as counts "0" and "1" instead of starting the '
-        + 'ordering over (ledger B92)',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        expect(
-          await readWritten({
-            directory: scratch.path,
-            contents: '[2, 5]',
-          },),
-        ).toStrictEqual(new Map(),);
-      },
-    },),
-
-    it({
-      name: 'COERCES a non-numeric count to zero rather than dropping the '
-        + 'entry, keeping every recorded id in the map. Zero means fewest '
-        + 'attempts, so a corrupted count makes that entry sort first, which '
-        + 'is the tolerant direction: it retries an entry rather than starving '
-        + 'it',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        expect(
-          await readWritten({
-            directory: scratch.path,
-            contents: JSON.stringify({
-              Mittens: 'many',
-              Marmalade: 5,
-            },),
-          },),
-        ).toStrictEqual(new Map([
-          ['Mittens', 0,],
-          ['Marmalade', 5,],
-        ],),);
-      },
-    },),
-
-    it({
-      name: 'THROWS on a read fault that is neither absence nor malformed '
-        + 'JSON. Pointing the path at a directory is the shape a misconfigured '
-        + 'runs directory produces, and swallowing it would make every run '
-        + 'read "no attempts yet" forever, so the ordering would never '
-        + 'deprioritize an entry that keeps failing',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        await expect(readAttemptMap(scratch.path,),).rejects.toThrow();
-      },
-    },),
-
-    it({
-      name: 'reads an empty object as an empty map, distinguishing a run that '
-        + 'recorded nothing from a file that was never written, both of which '
-        + 'are legitimate',
-      fn: async () => {
-        await using scratch = await scratchDir();
-
-        expect(
-          await readWritten({
-            directory: scratch.path,
-            contents: '{}',
-          },),
-        ).toStrictEqual(new Map(),);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: 'readAttemptMap announcements',
-  // SEQUENTIAL: each case diverts the one global `console.warn` across an
-  // await, and concurrent cases would capture each other's lines.
+  name: '',
   concurrency: 1,
   children: [
-    it({
-      name: 'SAYS it starts the counts over for malformed JSON and for JSON that is no object, and names a '
-        + 'count it read as zero, since each silently forgets which entries kept failing (ledger A11)',
-      fn: async () => {
-        expect((await warningsReading({ contents: '{"Mittens": 2,', },)).length,).toBe(1,);
-        expect((await warningsReading({ contents: '42', },)).length,).toBe(1,);
+    describe({
+      name: readAttemptMap.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'reads a well-formed map through unchanged, which is the ordinary '
+            + 'case the ordering depends on',
+          fn: async () => {
+            await using scratch = await scratchDir();
 
-        /**
-         Warnings for a count that is no number.
-         */
-        const coerced = await warningsReading({
-          contents: JSON.stringify({
-            Mittens: 'many',
-            Marmalade: 5,
-          },),
-        },);
-        expect(coerced.length,).toBe(1,);
-        expect(coerced[0],).toContain('Mittens',);
-      },
-    },),
-    it({
-      name: 'STAYS QUIET for a well-formed map, so the warnings the "SAYS it starts the counts over" case '
-        + 'reads are worth reading',
-      fn: async () => {
-        expect(await warningsReading({ contents: '{"Mittens": 2}', },),).toStrictEqual([],);
-      },
-    },),
-  ],
-},);
+            expect(
+              await readWritten({
+                directory: scratch.path,
+                contents: JSON.stringify({
+                  Mittens: 2,
+                  Marmalade: 5,
+                },),
+              },),
+            ).toStrictEqual(new Map([
+              ['Mittens', 2,],
+              ['Marmalade', 5,],
+            ],),);
+          },
+        },),
 
-await describe({
-  name: writeAttemptMap.name,
-  children: [
-    it({
-      name: 'WRITES a map the reader reads back whole, leaving no partial file beside it',
-      fn: async () => {
-        await using scratch = await scratchDir();
-        /**
-         Path the attempts file occupies.
-         */
-        const attemptsPath = join(
-          scratch.path,
-          'attempts.json',
-        );
-        /**
-         Counts written and expected back.
-         */
-        const attempts: AttemptMap = new Map([
-          ['Mittens', 2,],
-          ['Marmalade', 5,],
-        ],);
-        await writeAttemptMap({
-          attemptsPath,
-          attempts,
-        },);
-        expect(await readAttemptMap(attemptsPath,),).toStrictEqual(attempts,);
-        expect(await readdir(scratch.path,),).toStrictEqual(['attempts.json',],);
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'returns an empty map when the file is ABSENT, since a first run '
+            + 'has no attempts recorded and that is not an error',
+          fn: async () => {
+            await using scratch = await scratchDir();
 
-await describe({
-  name: `${attemptsOf.name} and ${countAttempt.name} (ledger B77)`,
-  children: [
-    it({
-      name: 'COUNTS NO ATTEMPT for an entry whose id is a name every object inherits, where a plain-object '
-        + 'map answered with the inherited function or object as the count',
-      fn: async () => {
-        await using scratch = await scratchDir();
-        /**
-         Counts read from a file that records none.
-         */
-        const attempts = await readWritten({
-          directory: scratch.path,
-          contents: '{}',
-        },);
-        expect([
-          'constructor',
-          '__proto__',
-          'toString',
-        ].map(function countOf(id,): number {
-          return attemptsOf({
-            attempts,
-            id,
-          },);
-        },),).toStrictEqual([0, 0, 0,],);
-      },
+            expect(
+              await readAttemptMap(join(
+                scratch.path,
+                'never-written.json',
+              ),),
+            ).toStrictEqual(new Map(),);
+          },
+        },),
+
+        it({
+          name: 'returns an empty map for MALFORMED JSON rather than aborting, '
+            + 'because a truncated write from an interrupted run costs an ordering '
+            + 'hint and must not cost the run itself',
+          fn: async () => {
+            await using scratch = await scratchDir();
+
+            expect(
+              await readWritten({
+                directory: scratch.path,
+                contents: '{"Mittens": 2,',
+              },),
+            ).toStrictEqual(new Map(),);
+          },
+        },),
+
+        it({
+          name: 'returns an empty map for well-formed JSON that is not an object, '
+            + 'so a file holding a bare number or string cannot become an ordering '
+            + 'input',
+          fn: async () => {
+            await using scratch = await scratchDir();
+
+            // Each case writes its own file, so they share no state and run
+            // concurrently rather than sequentially.
+            const maps = await Promise.all([
+              '42',
+              '"Mittens"',
+              'null',
+              'true',
+            ].map(async function toMap(contents, index,) {
+              return await readWritten({
+                directory: scratch.path,
+                contents,
+                name: `not-an-object-${String(index,)}.json`,
+              },);
+            },),);
+
+            for (const map of maps)
+              expect(map,).toStrictEqual(new Map(),);
+          },
+        },),
+
+        it({
+          name: 'returns an empty map for a well-formed JSON ARRAY rather than reading its index keys '
+            + 'as entry ids, which is read through today as counts "0" and "1" instead of starting the '
+            + 'ordering over (ledger B92)',
+          fn: async () => {
+            await using scratch = await scratchDir();
+
+            expect(
+              await readWritten({
+                directory: scratch.path,
+                contents: '[2, 5]',
+              },),
+            ).toStrictEqual(new Map(),);
+          },
+        },),
+
+        it({
+          name: 'COERCES a non-numeric count to zero rather than dropping the '
+            + 'entry, keeping every recorded id in the map. Zero means fewest '
+            + 'attempts, so a corrupted count makes that entry sort first, which '
+            + 'is the tolerant direction: it retries an entry rather than starving '
+            + 'it',
+          fn: async () => {
+            await using scratch = await scratchDir();
+
+            expect(
+              await readWritten({
+                directory: scratch.path,
+                contents: JSON.stringify({
+                  Mittens: 'many',
+                  Marmalade: 5,
+                },),
+              },),
+            ).toStrictEqual(new Map([
+              ['Mittens', 0,],
+              ['Marmalade', 5,],
+            ],),);
+          },
+        },),
+
+        it({
+          name: 'THROWS on a read fault that is neither absence nor malformed '
+            + 'JSON. Pointing the path at a directory is the shape a misconfigured '
+            + 'runs directory produces, and swallowing it would make every run '
+            + 'read "no attempts yet" forever, so the ordering would never '
+            + 'deprioritize an entry that keeps failing',
+          fn: async () => {
+            await using scratch = await scratchDir();
+
+            await expect(readAttemptMap(scratch.path,),).rejects.toThrow();
+          },
+        },),
+
+        it({
+          name: 'reads an empty object as an empty map, distinguishing a run that '
+            + 'recorded nothing from a file that was never written, both of which '
+            + 'are legitimate',
+          fn: async () => {
+            await using scratch = await scratchDir();
+
+            expect(
+              await readWritten({
+                directory: scratch.path,
+                contents: '{}',
+              },),
+            ).toStrictEqual(new Map(),);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'COUNTS AND WRITES an attempt for an entry whose id is __proto__, where a plain-object map took the '
-        + 'count as setting its prototype and dropped it, so the entry sorted as never tried',
-      fn: async () => {
-        await using scratch = await scratchDir();
-        /**
-         Path the attempts file occupies.
-         */
-        const attemptsPath = join(
-          scratch.path,
-          'attempts.json',
-        );
-        await writeFile(
-          attemptsPath,
-          '{}',
-          'utf8',
-        );
-        /**
-         Counts this case adds to.
-         */
-        const attempts = await readAttemptMap(attemptsPath,);
-        countAttempt({
-          attempts,
-          id: '__proto__',
-        },);
-        expect(attemptsOf({
-          attempts,
-          id: '__proto__',
-        },),).toBe(1,);
-        await writeAttemptMap({
-          attemptsPath,
-          attempts,
-        },);
-        expect(attemptsOf({
-          attempts: await readAttemptMap(attemptsPath,),
-          id: '__proto__',
-        },),).toBe(1,);
-      },
+    describe({
+      name: 'readAttemptMap announcements',
+      // SEQUENTIAL: each case diverts the one global `console.warn` across an
+      // await, and concurrent cases would capture each other's lines.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'SAYS it starts the counts over for malformed JSON and for JSON that is no object, and names a '
+            + 'count it read as zero, since each silently forgets which entries kept failing (ledger A11)',
+          fn: async () => {
+            expect((await warningsReading({ contents: '{"Mittens": 2,', },)).length,).toBe(1,);
+            expect((await warningsReading({ contents: '42', },)).length,).toBe(1,);
+
+            /**
+             Warnings for a count that is no number.
+             */
+            const coerced = await warningsReading({
+              contents: JSON.stringify({
+                Mittens: 'many',
+                Marmalade: 5,
+              },),
+            },);
+            expect(coerced.length,).toBe(1,);
+            expect(coerced[0],).toContain('Mittens',);
+          },
+        },),
+        it({
+          name: 'STAYS QUIET for a well-formed map, so the warnings the "SAYS it starts the counts over" case '
+            + 'reads are worth reading',
+          fn: async () => {
+            expect(await warningsReading({ contents: '{"Mittens": 2}', },),).toStrictEqual([],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'READS BACK a count a file records for an entry whose id is __proto__, which the file holds as a '
-        + 'field of its own',
-      fn: async () => {
-        await using scratch = await scratchDir();
-        expect(attemptsOf({
-          attempts: await readWritten({
-            directory: scratch.path,
-            contents: '{"__proto__": 2}',
-          },),
-          id: '__proto__',
-        },),).toBe(2,);
-      },
+    describe({
+      name: writeAttemptMap.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'WRITES a map the reader reads back whole, leaving no partial file beside it',
+          fn: async () => {
+            await using scratch = await scratchDir();
+            /**
+             Path the attempts file occupies.
+             */
+            const attemptsPath = join(
+              scratch.path,
+              'attempts.json',
+            );
+            /**
+             Counts written and expected back.
+             */
+            const attempts: AttemptMap = new Map([
+              ['Mittens', 2,],
+              ['Marmalade', 5,],
+            ],);
+            await writeAttemptMap({
+              attemptsPath,
+              attempts,
+            },);
+            expect(await readAttemptMap(attemptsPath,),).toStrictEqual(attempts,);
+            expect(await readdir(scratch.path,),).toStrictEqual(['attempts.json',],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${attemptsOf.name} and ${countAttempt.name} (ledger B77)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS NO ATTEMPT for an entry whose id is a name every object inherits, where a plain-object '
+            + 'map answered with the inherited function or object as the count',
+          fn: async () => {
+            await using scratch = await scratchDir();
+            /**
+             Counts read from a file that records none.
+             */
+            const attempts = await readWritten({
+              directory: scratch.path,
+              contents: '{}',
+            },);
+            expect([
+              'constructor',
+              '__proto__',
+              'toString',
+            ].map(function countOf(id,): number {
+              return attemptsOf({
+                attempts,
+                id,
+              },);
+            },),).toStrictEqual([0, 0, 0,],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS AND WRITES an attempt for an entry whose id is __proto__, where a plain-object map took the '
+            + 'count as setting its prototype and dropped it, so the entry sorted as never tried',
+          fn: async () => {
+            await using scratch = await scratchDir();
+            /**
+             Path the attempts file occupies.
+             */
+            const attemptsPath = join(
+              scratch.path,
+              'attempts.json',
+            );
+            await writeFile(
+              attemptsPath,
+              '{}',
+              'utf8',
+            );
+            /**
+             Counts this case adds to.
+             */
+            const attempts = await readAttemptMap(attemptsPath,);
+            countAttempt({
+              attempts,
+              id: '__proto__',
+            },);
+            expect(attemptsOf({
+              attempts,
+              id: '__proto__',
+            },),).toBe(1,);
+            await writeAttemptMap({
+              attemptsPath,
+              attempts,
+            },);
+            expect(attemptsOf({
+              attempts: await readAttemptMap(attemptsPath,),
+              id: '__proto__',
+            },),).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'READS BACK a count a file records for an entry whose id is __proto__, which the file holds as a '
+            + 'field of its own',
+          fn: async () => {
+            await using scratch = await scratchDir();
+            expect(attemptsOf({
+              attempts: await readWritten({
+                directory: scratch.path,
+                contents: '{"__proto__": 2}',
+              },),
+              id: '__proto__',
+            },),).toBe(2,);
+          },
+        },),
+      ],
     },),
   ],
 },);

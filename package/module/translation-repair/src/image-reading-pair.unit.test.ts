@@ -24,6 +24,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -247,662 +248,670 @@ function failingClient(
 }
 
 await describe({
-  name: readImagePair.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'CORROBORATES TWO READINGS OF ONE PICTURE AND FORWARDS BOTH, labelled by model. '
-        + 'Agreement says the two readers describe the same picture, not the same amount of it, so '
-        + 'a stage handed only one of them loses either the vouching or the content',
-      fn: async () => {
-        const { client, asked, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+    describe({
+      name: readImagePair.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CORROBORATES TWO READINGS OF ONE PICTURE AND FORWARDS BOTH, labelled by model. '
+            + 'Agreement says the two readers describe the same picture, not the same amount of it, so '
+            + 'a stage handed only one of them loses either the vouching or the content',
+          fn: async () => {
+            const { client, asked, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+              },
+            },);
+
+            /**
+             What the roster made of the picture.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(paired.kind,).toBe('corroborated',);
+            if (paired.kind !== 'corroborated')
+              throw new Error('corroborated by construction',);
+
+            expect(asked.length,).toBe(2,);
+            expect(paired.readings
+              .length,).toBe(2,);
+            expect(paired.readings
+              .map(function toModel(reading,): RosterModelId {
+                return reading.modelId;
+              },),).toEqual([...READERS,],);
+            expect(paired.readings
+              .map(function toText(reading,): string {
+                return reading.text;
+              },),).toEqual([
+              READING,
+              AGREEING_READING,
+            ],);
+            expect(paired.overlap > 0,).toBe(true,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of the picture.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'REFUSES TWO READINGS THAT DESCRIBE DIFFERENT PICTURES, and records how far apart they '
+            + 'were. Used, a reading of the wrong picture would licence replacing a careful '
+            + 'transcription with something derived from a misreading, and no judge downstream could '
+            + 'tell, because the reading is the only evidence any of them has about the picture',
+          fn: async () => {
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: OTHER_PICTURE,
+              },
+            },);
 
-        expect(paired.kind,).toBe('corroborated',);
-        if (paired.kind !== 'corroborated')
-          throw new Error('corroborated by construction',);
+            /**
+             What the roster made of two irreconcilable readings.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-        expect(asked.length,).toBe(2,);
-        expect(paired.readings
-          .length,).toBe(2,);
-        expect(paired.readings
-          .map(function toModel(reading,): RosterModelId {
-            return reading.modelId;
-          },),).toEqual([...READERS,],);
-        expect(paired.readings
-          .map(function toText(reading,): string {
-            return reading.text;
-          },),).toEqual([
-          READING,
-          AGREEING_READING,
-        ],);
-        expect(paired.overlap > 0,).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES TWO READINGS THAT DESCRIBE DIFFERENT PICTURES, and records how far apart they '
-        + 'were. Used, a reading of the wrong picture would licence replacing a careful '
-        + 'transcription with something derived from a misreading, and no judge downstream could '
-        + 'tell, because the reading is the only evidence any of them has about the picture',
-      fn: async () => {
-        const { client, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: OTHER_PICTURE,
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(paired.reason,).toBe('readers-disagree',);
+            // Both readers answered, so the disagreement is about the picture and
+            // the roster, not the call, and it is remembered like a corroboration.
+            expect(paired.transient,).toBe(false,);
+            expect(isResumableReading({ reading: paired, },),).toBe(true,);
+            expect(paired.overlap === undefined,).toBe(false,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of two irreconcilable readings.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'REFUSES A PICTURE ONLY ONE READER CAN BE SENT, which is the cost this design accepts '
+            + 'rather than caveats. A caveat travelling downstream is a caveat somebody has to '
+            + 'remember, and the passage it would qualify is already protected by the guards that hold '
+            + 'every transcript in the corpus today',
+          fn: async () => {
+            // ONE READER SAYING NOTHING, rather than a picture only one could be
+            // sent. That used to be a size case, and size no longer separates the
+            // two readers: the per-model ceiling was measuring base64 length
+            // against a context and predicting nothing, so both now share one
+            // ceiling far above anything in the corpus.
+            const { client, } = scriptedClient({
+              byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
+            },);
 
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(paired.reason,).toBe('readers-disagree',);
-        // Both readers answered, so the disagreement is about the picture and
-        // the roster, not the call, and it is remembered like a corroboration.
-        expect(paired.transient,).toBe(false,);
-        expect(isResumableReading({ reading: paired, },),).toBe(true,);
-        expect(paired.overlap === undefined,).toBe(false,);
-      },
-    },),
+            /**
+             What the roster made of a picture only one reader answered about.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-    it({
-      name: 'REFUSES A PICTURE ONLY ONE READER CAN BE SENT, which is the cost this design accepts '
-        + 'rather than caveats. A caveat travelling downstream is a caveat somebody has to '
-        + 'remember, and the passage it would qualify is already protected by the guards that hold '
-        + 'every transcript in the corpus today',
-      fn: async () => {
-        // ONE READER SAYING NOTHING, rather than a picture only one could be
-        // sent. That used to be a size case, and size no longer separates the
-        // two readers: the per-model ceiling was measuring base64 length
-        // against a context and predicting nothing, so both now share one
-        // ceiling far above anything in the corpus.
-        const { client, } = scriptedClient({
-          byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
-        },);
-
-        /**
-         What the roster made of a picture only one reader answered about.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(paired.reason,).toBe('one-reader-only',);
-        expect(paired.overlap,).toBe(undefined,);
-      },
-    },),
-
-    it({
-      name: 'NAMES WHY EACH READER PRODUCED NOTHING, so a finding can tell a picture nobody could '
-        + 'send apart from one nobody could read. Both are silence in the artifact otherwise',
-      fn: async () => {
-        const { client, } = scriptedClient({ byModel: {}, },);
-
-        /**
-         What the roster made of a picture neither reader answered about.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(paired.reason,).toBe('no-reader-available',);
-        expect(paired.perReader
-          .length,).toBe(2,);
-        expect(paired.perReader
-          .every(function names(entry,): boolean {
-            return entry.includes('empty-reply',);
-          },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'CONFIRMS A TEXTLESS PICTURE FROM TWO ABSENCE REPORTS where the deterministic reader found '
-        + 'noise (Uekawakuyuurei IMG_1308, 2026-09-04: a painting of ships, 24 characters of canvas from '
-        + 'tesseract, every reader on both rosters saying it carries no text, and the entry stopped at the '
-        + 'completeness gate on every run), and RESUMES it',
-      fn: async () => {
-        const { client, asked, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image. It is a painting of ships at sea.',
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read any text in this image. There are no visible words.',
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(paired.reason,).toBe('one-reader-only',);
+            expect(paired.overlap,).toBe(undefined,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of a picture the deterministic reader called text.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'ships.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'NAMES WHY EACH READER PRODUCED NOTHING, so a finding can tell a picture nobody could '
+            + 'send apart from one nobody could read. Both are silence in the artifact otherwise',
+          fn: async () => {
+            const { client, } = scriptedClient({ byModel: {}, },);
 
-        expect(asked.length,).toBe(2,);
-        expect(paired.kind,).toBe('no-text',);
-        if (paired.kind !== 'no-text')
-          throw new Error('no-text by construction',);
-        expect(paired.characters,).toBe(11,);
-        expect(paired.confirmedBy,).toStrictEqual(READERS,);
-        expect(isResumableReading({ reading: paired, },),).toBe(true,);
-      },
-    },),
+            /**
+             What the roster made of a picture neither reader answered about.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-    it({
-      name: 'CONFIRMS A TEXTLESS PICTURE FROM TWO SHORT READINGS, which is what a drawing with a hull '
-        + 'number on it produces (Uekawakuyuurei img370: DE581, DE581 and D650 from the three readers)',
-      fn: async () => {
-        const { client, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'DE581',
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'D650',
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(paired.reason,).toBe('no-reader-available',);
+            expect(paired.perReader
+              .length,).toBe(2,);
+            expect(paired.perReader
+              .every(function names(entry,): boolean {
+                return entry.includes('empty-reply',);
+              },),).toBe(true,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of a picture carrying a few characters.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'destroyer.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'CONFIRMS A TEXTLESS PICTURE FROM TWO ABSENCE REPORTS where the deterministic reader found '
+            + 'noise (Uekawakuyuurei IMG_1308, 2026-09-04: a painting of ships, 24 characters of canvas from '
+            + 'tesseract, every reader on both rosters saying it carries no text, and the entry stopped at the '
+            + 'completeness gate on every run), and RESUMES it',
+          fn: async () => {
+            const { client, asked, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image. It is a painting of ships at sea.',
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read any text in this image. There are no visible words.',
+              },
+            },);
 
-        expect(paired.kind,).toBe('no-text',);
-        if (paired.kind !== 'no-text')
-          throw new Error('no-text by construction',);
-        expect(paired.confirmedBy,).toStrictEqual(READERS,);
-      },
-    },),
+            /**
+             What the roster made of a picture the deterministic reader called text.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'ships.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-    it({
-      name: 'STAYS UNAVAILABLE AND TRANSIENT with one absence report beside a decline, since one reader '
-        + 'saying nothing is there and one declining to look is not two witnesses to anything',
-      fn: async () => {
-        const { client, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image.',
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read the image.',
+            expect(asked.length,).toBe(2,);
+            expect(paired.kind,).toBe('no-text',);
+            if (paired.kind !== 'no-text')
+              throw new Error('no-text by construction',);
+            expect(paired.characters,).toBe(11,);
+            expect(paired.confirmedBy,).toStrictEqual(READERS,);
+            expect(isResumableReading({ reading: paired, },),).toBe(true,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of a picture one reader would not look at.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'ships.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'CONFIRMS A TEXTLESS PICTURE FROM TWO SHORT READINGS, which is what a drawing with a hull '
+            + 'number on it produces (Uekawakuyuurei img370: DE581, DE581 and D650 from the three readers)',
+          fn: async () => {
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'DE581',
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'D650',
+              },
+            },);
 
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(paired.reason,).toBe('no-reader-available',);
-        expect(paired.transient,).toBe(true,);
-        expect(paired.perReader,).toStrictEqual([
-          'hf:moonshotai/Kimi-K3: reports-no-text',
-          'hf:Qwen/Qwen3.8-27B: reads-as-refusal',
-        ],);
-      },
-    },),
+            /**
+             What the roster made of a picture carrying a few characters.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'destroyer.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-    it({
-      name: 'KEEPS ONE READING BESIDE ONE SHORT ONE UNCORROBORATED, naming the short one, since a reader '
-        + 'that read a passage and one that read five characters did not read the same thing',
-      fn: async () => {
-        const { client, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'DE581',
+            expect(paired.kind,).toBe('no-text',);
+            if (paired.kind !== 'no-text')
+              throw new Error('no-text by construction',);
+            expect(paired.confirmedBy,).toStrictEqual(READERS,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of a picture the readers saw differently.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'STAYS UNAVAILABLE AND TRANSIENT with one absence report beside a decline, since one reader '
+            + 'saying nothing is there and one declining to look is not two witnesses to anything',
+          fn: async () => {
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image.',
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read the image.',
+              },
+            },);
 
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(paired.reason,).toBe('one-reader-only',);
-        expect(paired.perReader,).toStrictEqual([
-          '',
-          'hf:Qwen/Qwen3.8-27B: short reading of 5 characters',
-        ],);
-      },
-    },),
+            /**
+             What the roster made of a picture one reader would not look at.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'ships.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-    it({
-      name: 'REFUSES A ROSTER OF ONE, since a sole reader has nothing to be corroborated by '
-        + 'however well it reads',
-      fn: async () => {
-        const { client, asked, } = scriptedClient({
-          byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
-        },);
-
-        /**
-         What one reader alone produced.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: [LARGER_READER,],
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(asked.length,).toBe(1,);
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(paired.reason,).toBe('one-reader-only',);
-      },
-    },),
-
-    it({
-      name: 'CONTAINS A READER THAT THROWS and keeps the other reader\'s reading, rather than '
-        + 'failing the picture. Measured on a real run before this held: one reader looped, the '
-        + 'client\'s runaway guard ended the call, the rejection reached the entry driver, and the '
-        + 'entry finished with nothing settled, so both lanes were lost to a transcription nobody '
-        + 'downstream requires',
-      fn: async () => {
-        const { client, asked, } = failingClient({
-          failing: { [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'ended a runaway call, reasoning channel repeated itself', },
-          byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
-        },);
-
-        /**
-         What the roster made of a picture one reader could not finish reading.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(asked.length,).toBe(2,);
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-
-        // The surviving reader is short of corroboration, which is a
-        // one-reader shortfall rather than a picture nobody could send.
-        expect(paired.reason,).toBe('one-reader-only',);
-        expect(paired.perReader
-          .some(function named(entry,): boolean {
-            return entry.includes('reader-failed',);
-          },),).toBe(true,);
-        // A reader that threw may read tomorrow, so this verdict describes
-        // the evening and must not be remembered.
-        expect(paired.transient,).toBe(true,);
-        expect(isResumableReading({ reading: paired, },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'CONTAINS BOTH READERS THROWING and reports a picture nobody could read, rather than '
-        + 'propagating either failure. The pipeline reads pictures to gain evidence, so the worst '
-        + 'a reading stage may cost is the evidence it failed to gather',
-      fn: async () => {
-        const { client, } = failingClient({
-          failing: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'HTTP 500 after every retry',
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'ended a runaway call',
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(paired.reason,).toBe('no-reader-available',);
+            expect(paired.transient,).toBe(true,);
+            expect(paired.perReader,).toStrictEqual([
+              'hf:moonshotai/Kimi-K3: reports-no-text',
+              'hf:Qwen/Qwen3.8-27B: reads-as-refusal',
+            ],);
           },
-          byModel: {},
-        },);
+        },),
 
-        /**
-         What the roster made of a picture neither reader could finish.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: found,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'KEEPS ONE READING BESIDE ONE SHORT ONE UNCORROBORATED, naming the short one, since a reader '
+            + 'that read a passage and one that read five characters did not read the same thing',
+          fn: async () => {
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'DE581',
+              },
+            },);
 
-        expect(paired.kind,).toBe('unavailable',);
-        if (paired.kind !== 'unavailable')
-          throw new Error('unavailable by construction',);
-        expect(paired.reason,).toBe('no-reader-available',);
-        expect(paired.perReader
-          .filter(function named(entry,): boolean {
-            return entry.includes('reader-failed',);
-          },).length,).toBe(2,);
-        expect(paired.transient,).toBe(true,);
-      },
-    },),
+            /**
+             What the roster made of a picture the readers saw differently.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-    it({
-      name: 'FORWARDS AN ABORT rather than absorbing it, even where both readings beat the stop. '
-        + 'Absorbed, a run told to halt would return two usable readings, the document would '
-        + 'settle on them, and the driver would cache a decision the run was told not to make',
-      fn: async () => {
-        const { client, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(paired.reason,).toBe('one-reader-only',);
+            expect(paired.perReader,).toStrictEqual([
+              '',
+              'hf:Qwen/Qwen3.8-27B: short reading of 5 characters',
+            ],);
           },
-        },);
+        },),
 
-        /**
-         Stop that has already arrived, standing in for one that lands while
-         the readings are in flight.
-         */
-        const stopped = new AbortController();
-        stopped.abort();
+        it({
+          name: 'REFUSES A ROSTER OF ONE, since a sole reader has nothing to be corroborated by '
+            + 'however well it reads',
+          fn: async () => {
+            const { client, asked, } = scriptedClient({
+              byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
+            },);
 
-        /**
-         Name of whatever escaped the call, or what it returned instead.
-         Recorded rather than asserted inline so a verdict slipping past the
-         stop reads as its own value rather than as a missing throw.
-         */
-        let escaped = 'nothing thrown';
-        try {
-          /**
-           What the roster made of a picture a stopped run asked about.
-           */
-          const paired = await readImagePair({
-            client,
-            readOcr: found,
-            readerModelIds: READERS,
-            bytes: bytesOf({ length: 64, },),
-            assetName: 'noticeboard.webp',
-            signal: stopped.signal,
-            perCallTimeoutMs: 30_000,
-            l,
-          },);
-          escaped = `returned ${paired.kind}`;
-        } catch (error) {
-          escaped = Error.isError(error,) ? error.name : String(error,);
-        }
+            /**
+             What one reader alone produced.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: [LARGER_READER,],
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-        expect(escaped,).toBe('AbortError',);
-      },
-    },),
-
-    it({
-      name: 'ASKS THE DETERMINISTIC READER NOTHING WHEN THE RUN HAS ALREADY STOPPED, which the '
-        + '"FORWARDS AN ABORT rather than absorbing it" case cannot show because it throws either way. The gate shells out to a '
-        + 'decoder and to tesseract per picture and consults no signal of its own, so a stopped '
-        + 'run that reached it would spend that on every remaining asset and then persist verdicts '
-        + 'that beat the stop',
-      fn: async () => {
-        /**
-         Roster that must never be reached, since the gate sits before it.
-         */
-        const { client, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+            expect(asked.length,).toBe(1,);
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(paired.reason,).toBe('one-reader-only',);
           },
-        },);
+        },),
 
-        /**
-         How many times the deterministic reader was asked. Counted rather
-         than asserted inside the stub so a call that does happen reads as a
-         number in the failure rather than as a thrown assertion from a place
-         the test does not name.
-         */
-        let asked = 0;
+        it({
+          name: 'CONTAINS A READER THAT THROWS and keeps the other reader\'s reading, rather than '
+            + 'failing the picture. Measured on a real run before this held: one reader looped, the '
+            + 'client\'s runaway guard ended the call, the rejection reached the entry driver, and the '
+            + 'entry finished with nothing settled, so both lanes were lost to a transcription nobody '
+            + 'downstream requires',
+          fn: async () => {
+            const { client, asked, } = failingClient({
+              failing: { [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'ended a runaway call, reasoning channel repeated itself', },
+              byModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: READING, },
+            },);
 
-        /**
-         Deterministic reader that records being asked, and would otherwise
-         return the verdict two thirds of this corpus reaches.
-         */
-        async function counting(): Promise<{
-          readonly kind: 'no-text';
-          readonly characters: number;
-        }> {
-          asked += 1;
-          return {
-            kind: 'no-text',
-            characters: 0,
-          };
-        }
+            /**
+             What the roster made of a picture one reader could not finish reading.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-        /**
-         Stop that arrived before the picture did.
-         */
-        const stopped = new AbortController();
-        stopped.abort();
+            expect(asked.length,).toBe(2,);
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
 
-        /**
-         Name of whatever escaped, kept so a verdict slipping past the stop
-         reads as its own value.
-         */
-        let escaped = 'nothing thrown';
-        try {
-          /**
-           What the roster made of a picture a stopped run asked about.
-           */
-          const paired = await readImagePair({
-            client,
-            readOcr: counting,
-            readerModelIds: READERS,
-            bytes: bytesOf({ length: 64, },),
-            assetName: 'noticeboard.webp',
-            signal: stopped.signal,
-            perCallTimeoutMs: 30_000,
-            l,
-          },);
-          escaped = `returned ${paired.kind}`;
-        } catch (error) {
-          escaped = Error.isError(error,) ? error.name : String(error,);
-        }
-
-        expect(escaped,).toBe('AbortError',);
-        expect(asked,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'ASKS NO MODEL ABOUT A PICTURE WITH NO TEXT, and reports that as its own verdict rather '
-        + 'than as a failure. Measured over the corpus, 119 of 191 pictures carry no text at all, '
-        + 'so this is the common case and every model call it would have spent is spent on being '
-        + 'told there is nothing there',
-      fn: async () => {
-        const { client, asked, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+            // The surviving reader is short of corroboration, which is a
+            // one-reader shortfall rather than a picture nobody could send.
+            expect(paired.reason,).toBe('one-reader-only',);
+            expect(paired.perReader
+              .some(function named(entry,): boolean {
+                return entry.includes('reader-failed',);
+              },),).toBe(true,);
+            // A reader that threw may read tomorrow, so this verdict describes
+            // the evening and must not be remembered.
+            expect(paired.transient,).toBe(true,);
+            expect(isResumableReading({ reading: paired, },),).toBe(false,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of a picture the deterministic reader found bare.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: empty,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'CONTAINS BOTH READERS THROWING and reports a picture nobody could read, rather than '
+            + 'propagating either failure. The pipeline reads pictures to gain evidence, so the worst '
+            + 'a reading stage may cost is the evidence it failed to gather',
+          fn: async () => {
+            const { client, } = failingClient({
+              failing: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'HTTP 500 after every retry',
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'ended a runaway call',
+              },
+              byModel: {},
+            },);
 
-        // The gate, which is the whole point: nothing was asked.
-        expect(asked.length,).toBe(0,);
-        expect(paired.kind,).toBe('no-text',);
-        if (paired.kind !== 'no-text')
-          throw new Error('no-text by construction',);
-        expect(paired.characters,).toBe(3,);
-      },
-    },),
+            /**
+             What the roster made of a picture neither reader could finish.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: found,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
 
-    it({
-      name: 'ASKS THE MODELS ANYWAY WHEN THE DETERMINISTIC READER CANNOT RUN, since a machine '
-        + 'without the tools installed must degrade to the behaviour it had before them rather '
-        + 'than report every picture as bare. A missing tool and an empty picture are opposite '
-        + 'facts and must not produce the same verdict',
-      fn: async () => {
-        const { client, asked, } = scriptedClient({
-          byModel: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+            expect(paired.kind,).toBe('unavailable',);
+            if (paired.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(paired.reason,).toBe('no-reader-available',);
+            expect(paired.perReader
+              .filter(function named(entry,): boolean {
+                return entry.includes('reader-failed',);
+              },).length,).toBe(2,);
+            expect(paired.transient,).toBe(true,);
           },
-        },);
+        },),
 
-        /**
-         What the roster made of a picture nothing could pre-screen.
-         */
-        const paired = await readImagePair({
-          client,
-          readOcr: missing,
-          readerModelIds: READERS,
-          bytes: bytesOf({ length: 64, },),
-          assetName: 'noticeboard.webp',
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
+        it({
+          name: 'FORWARDS AN ABORT rather than absorbing it, even where both readings beat the stop. '
+            + 'Absorbed, a run told to halt would return two usable readings, the document would '
+            + 'settle on them, and the driver would cache a decision the run was told not to make',
+          fn: async () => {
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+              },
+            },);
 
-        expect(asked.length,).toBe(2,);
-        expect(paired.kind,).toBe('corroborated',);
-      },
+            /**
+             Stop that has already arrived, standing in for one that lands while
+             the readings are in flight.
+             */
+            const stopped = new AbortController();
+            stopped.abort();
+
+            /**
+             Name of whatever escaped the call, or what it returned instead.
+             Recorded rather than asserted inline so a verdict slipping past the
+             stop reads as its own value rather than as a missing throw.
+             */
+            let escaped = 'nothing thrown';
+            try {
+              /**
+               What the roster made of a picture a stopped run asked about.
+               */
+              const paired = await readImagePair({
+                client,
+                readOcr: found,
+                readerModelIds: READERS,
+                bytes: bytesOf({ length: 64, },),
+                assetName: 'noticeboard.webp',
+                signal: stopped.signal,
+                perCallTimeoutMs: 30_000,
+                l,
+              },);
+              escaped = `returned ${paired.kind}`;
+            } catch (error) {
+              escaped = Error.isError(error,) ? error.name : String(error,);
+            }
+
+            expect(escaped,).toBe('AbortError',);
+          },
+        },),
+
+        it({
+          name: 'ASKS THE DETERMINISTIC READER NOTHING WHEN THE RUN HAS ALREADY STOPPED, which the '
+            + '"FORWARDS AN ABORT rather than absorbing it" case cannot show because it throws either way. The gate shells out to a '
+            + 'decoder and to tesseract per picture and consults no signal of its own, so a stopped '
+            + 'run that reached it would spend that on every remaining asset and then persist verdicts '
+            + 'that beat the stop',
+          fn: async () => {
+            /**
+             Roster that must never be reached, since the gate sits before it.
+             */
+            const { client, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+              },
+            },);
+
+            /**
+             How many times the deterministic reader was asked. Counted rather
+             than asserted inside the stub so a call that does happen reads as a
+             number in the failure rather than as a thrown assertion from a place
+             the test does not name.
+             */
+            let asked = 0;
+
+            /**
+             Deterministic reader that records being asked, and would otherwise
+             return the verdict two thirds of this corpus reaches.
+             */
+            async function counting(): Promise<{
+              readonly kind: 'no-text';
+              readonly characters: number;
+            }> {
+              asked += 1;
+              return {
+                kind: 'no-text',
+                characters: 0,
+              };
+            }
+
+            /**
+             Stop that arrived before the picture did.
+             */
+            const stopped = new AbortController();
+            stopped.abort();
+
+            /**
+             Name of whatever escaped, kept so a verdict slipping past the stop
+             reads as its own value.
+             */
+            let escaped = 'nothing thrown';
+            try {
+              /**
+               What the roster made of a picture a stopped run asked about.
+               */
+              const paired = await readImagePair({
+                client,
+                readOcr: counting,
+                readerModelIds: READERS,
+                bytes: bytesOf({ length: 64, },),
+                assetName: 'noticeboard.webp',
+                signal: stopped.signal,
+                perCallTimeoutMs: 30_000,
+                l,
+              },);
+              escaped = `returned ${paired.kind}`;
+            } catch (error) {
+              escaped = Error.isError(error,) ? error.name : String(error,);
+            }
+
+            expect(escaped,).toBe('AbortError',);
+            expect(asked,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'ASKS NO MODEL ABOUT A PICTURE WITH NO TEXT, and reports that as its own verdict rather '
+            + 'than as a failure. Measured over the corpus, 119 of 191 pictures carry no text at all, '
+            + 'so this is the common case and every model call it would have spent is spent on being '
+            + 'told there is nothing there',
+          fn: async () => {
+            const { client, asked, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+              },
+            },);
+
+            /**
+             What the roster made of a picture the deterministic reader found bare.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: empty,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            // The gate, which is the whole point: nothing was asked.
+            expect(asked.length,).toBe(0,);
+            expect(paired.kind,).toBe('no-text',);
+            if (paired.kind !== 'no-text')
+              throw new Error('no-text by construction',);
+            expect(paired.characters,).toBe(3,);
+          },
+        },),
+
+        it({
+          name: 'ASKS THE MODELS ANYWAY WHEN THE DETERMINISTIC READER CANNOT RUN, since a machine '
+            + 'without the tools installed must degrade to the behaviour it had before them rather '
+            + 'than report every picture as bare. A missing tool and an empty picture are opposite '
+            + 'facts and must not produce the same verdict',
+          fn: async () => {
+            const { client, asked, } = scriptedClient({
+              byModel: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: READING,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: AGREEING_READING,
+              },
+            },);
+
+            /**
+             What the roster made of a picture nothing could pre-screen.
+             */
+            const paired = await readImagePair({
+              client,
+              readOcr: missing,
+              readerModelIds: READERS,
+              bytes: bytesOf({ length: 64, },),
+              assetName: 'noticeboard.webp',
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(asked.length,).toBe(2,);
+            expect(paired.kind,).toBe('corroborated',);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: isResumableReading.name,
-  children: [
-    it({
-      name: 'RESUMES every verdict that describes the picture: a corroboration, a textless picture, and a '
-        + 'stable unavailability, and REFUSES only the unavailability that rests on a reader failing for now',
-      fn: async () => {
-        /**
-         Verdicts and whether each is worth remembering.
-         */
-        const cases: readonly (readonly [PairedReading, boolean,])[] = [
-          [
-            {
-              kind: 'corroborated',
-              readings: [],
-              overlap: 1,
-            },
-            true,
-          ],
-          [
-            {
-              kind: 'no-text',
-              characters: 0,
-            },
-            true,
-          ],
-          [
-            {
-              kind: 'unavailable',
-              reason: 'no-reader-available',
-              perReader: ['hf:cat/Tabby: model-does-not-read-images',],
-              transient: false,
-            },
-            true,
-          ],
-          [
-            {
-              kind: 'unavailable',
-              reason: 'one-reader-only',
-              perReader: ['hf:cat/Tabby: reader-failed',],
-              transient: true,
-            },
-            false,
-          ],
-        ];
-        for (const [reading, resumable,] of cases)
-          expect(`${reading.kind}: ${String(isResumableReading({ reading, },),)}`,).toBe(`${reading.kind}: ${String(resumable,)}`,);
-      },
+    describe({
+      name: isResumableReading.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RESUMES every verdict that describes the picture: a corroboration, a textless picture, and a '
+            + 'stable unavailability, and REFUSES only the unavailability that rests on a reader failing for now',
+          fn: async () => {
+            /**
+             Verdicts and whether each is worth remembering.
+             */
+            const cases: readonly (readonly [PairedReading, boolean,])[] = [
+              [
+                {
+                  kind: 'corroborated',
+                  readings: [],
+                  overlap: 1,
+                },
+                true,
+              ],
+              [
+                {
+                  kind: 'no-text',
+                  characters: 0,
+                },
+                true,
+              ],
+              [
+                {
+                  kind: 'unavailable',
+                  reason: 'no-reader-available',
+                  perReader: ['hf:cat/Tabby: model-does-not-read-images',],
+                  transient: false,
+                },
+                true,
+              ],
+              [
+                {
+                  kind: 'unavailable',
+                  reason: 'one-reader-only',
+                  perReader: ['hf:cat/Tabby: reader-failed',],
+                  transient: true,
+                },
+                false,
+              ],
+            ];
+            for (const [reading, resumable,] of cases)
+              expect(`${reading.kind}: ${String(isResumableReading({ reading, },),)}`,).toBe(`${reading.kind}: ${String(resumable,)}`,);
+          },
+        },),
+      ],
     },),
   ],
 },);

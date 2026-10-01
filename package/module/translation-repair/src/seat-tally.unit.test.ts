@@ -13,6 +13,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -147,344 +148,353 @@ function innerClient(
 //endregion Fixtures
 
 await describe({
-  name: createSeatTally.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'COUNTS asked, usable, unusable, and threw per seat, in first-asked order',
-      fn: async () => {
-        /** Tally under test. */
-        const tally = createSeatTally();
-        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
-        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
-        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'unusable', },);
-        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'usable', },);
+    describe({
+      name: createSeatTally.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS asked, usable, unusable, and threw per seat, in first-asked order',
+          fn: async () => {
+            /** Tally under test. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'unusable', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'usable', },);
 
-        expect(tally.counts(),).toStrictEqual([
-          {
-            modelId: SEAT_HYPER_TEXT_BEDROCK,
-            asked: 3,
-            usable: 1,
-            unusable: 1,
-            threw: 1,
+            expect(tally.counts(),).toStrictEqual([
+              {
+                modelId: SEAT_HYPER_TEXT_BEDROCK,
+                asked: 3,
+                usable: 1,
+                unusable: 1,
+                threw: 1,
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                asked: 1,
+                usable: 1,
+                unusable: 0,
+                threw: 0,
+              },
+            ],);
           },
-          {
-            modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-            asked: 1,
-            usable: 1,
-            unusable: 0,
-            threw: 0,
+        },),
+
+        it({
+          name: 'NAMES as dark only a seat asked at least once that never produced a usable answer, '
+            + 'so a seat that merely lost some rounds is not reported',
+          fn: async () => {
+            /** Tally with one dark seat, one mixed seat, and one clean seat. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
+            tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'unusable', },);
+            tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+
+            expect(tally.dark().map(function toId(count,): string {
+              return count.modelId;
+            },),).toStrictEqual([SEAT_HYPER_VISION,],);
           },
-        ],);
-      },
-    },),
+        },),
 
-    it({
-      name: 'NAMES as dark only a seat asked at least once that never produced a usable answer, '
-        + 'so a seat that merely lost some rounds is not reported',
-      fn: async () => {
-        /** Tally with one dark seat, one mixed seat, and one clean seat. */
-        const tally = createSeatTally();
-        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
-        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
-        tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'unusable', },);
-        tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'usable', },);
-        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+        it({
+          name: 'FORGETS every seat on reset, so a new command in the same process starts from nothing',
+          fn: async () => {
+            /** Tally under test. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.reset();
 
-        expect(tally.dark().map(function toId(count,): string {
-          return count.modelId;
-        },),).toStrictEqual([SEAT_HYPER_VISION,],);
-      },
-    },),
-
-    it({
-      name: 'FORGETS every seat on reset, so a new command in the same process starts from nothing',
-      fn: async () => {
-        /** Tally under test. */
-        const tally = createSeatTally();
-        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
-        tally.reset();
-
-        expect(tally.counts(),).toStrictEqual([],);
-        expect(tally.dark(),).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'SHARES one run-wide tally, which every client the factory builds counts into',
-      fn: async () => {
-        RUN_SEATS.reset();
-        RUN_SEATS.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
-
-        expect(RUN_SEATS.counts().length,).toBe(1,);
-
-        RUN_SEATS.reset();
-
-        expect(RUN_SEATS.counts().length,).toBe(0,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: seatTallyClient.name,
-  children: [
-    it({
-      name: 'COUNTS a text reply as usable and hands it back untouched',
-      fn: async () => {
-        /** Tally the wrapper counts into. */
-        const tally = createSeatTally();
-        /** Client under test. */
-        const client = seatTallyClient({
-          inner: innerClient({ text: '喵。', },),
-          tally,
-        },);
-
-        /** Reply as the caller sees it. */
-        const reply = await client.chatText({
-          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-          messages: MESSAGES,
-          signal: SIGNAL,
-        },);
-
-        expect(reply.text,).toBe('喵。',);
-        expect(tally.counts(),).toStrictEqual([{
-          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-          asked: 1,
-          usable: 1,
-          unusable: 0,
-          threw: 0,
-        },],);
-      },
-    },),
-
-    it({
-      name: 'COUNTS an ok JSON outcome as usable and hands it back untouched',
-      fn: async () => {
-        /** Tally the wrapper counts into. */
-        const tally = createSeatTally();
-        /** Client under test. */
-        const client = seatTallyClient({
-          inner: innerClient({ text: '{"verdict":"purr"}', },),
-          tally,
-        },);
-
-        /** Outcome as the caller sees it. */
-        const outcome = await client.chatJson({
-          modelId: SEAT_HYPER_VISION,
-          messages: MESSAGES,
-          signal: SIGNAL,
-          validate: isCatVerdict,
-        },);
-
-        expect(outcome.kind,).toBe('ok',);
-        expect((outcome.kind === 'ok') ? outcome.value.verdict : '',).toBe('purr',);
-        expect(tally.counts(),).toStrictEqual([{
-          modelId: SEAT_HYPER_VISION,
-          asked: 1,
-          usable: 1,
-          unusable: 0,
-          threw: 0,
-        },],);
-      },
-    },),
-
-    it({
-      name: 'COUNTS a JSON outcome the guard rejected as unusable, since an answer nothing can read '
-        + 'is not a voice',
-      fn: async () => {
-        /** Tally the wrapper counts into. */
-        const tally = createSeatTally();
-        /** Client under test, answering JSON of the wrong shape. */
-        const client = seatTallyClient({
-          inner: innerClient({ text: '{"nap":"spot"}', },),
-          tally,
-        },);
-
-        /** Outcome as the caller sees it. */
-        const outcome = await client.chatJson({
-          modelId: SEAT_HYPER_VISION,
-          messages: MESSAGES,
-          signal: SIGNAL,
-          validate: isCatVerdict,
-        },);
-
-        expect(outcome.kind,).toBe('refusal-shaped',);
-        expect(tally.counts(),).toStrictEqual([{
-          modelId: SEAT_HYPER_VISION,
-          asked: 1,
-          usable: 0,
-          unusable: 1,
-          threw: 0,
-        },],);
-      },
-    },),
-
-    it({
-      name: 'COUNTS a throw as threw on both surfaces and rethrows the very same value',
-      fn: async () => {
-        /** Tally the wrapper counts into. */
-        const tally = createSeatTally();
-        /** Client under test, failing every call. */
-        const client = seatTallyClient({
-          inner: innerClient({ text: '', failing: true, },),
-          tally,
-        },);
-
-        /** What the text surface threw. */
-        let fromText: unknown;
-        try {
-          await client.chatText({
-            modelId: SEAT_HYPER_TEXT_BEDROCK,
-            messages: MESSAGES,
-            signal: SIGNAL,
-          },);
-        }
-        catch (error) {
-          fromText = error;
-        }
-
-        /** What the JSON surface threw. */
-        let fromJson: unknown;
-        try {
-          await client.chatJson({
-            modelId: SEAT_HYPER_TEXT_BEDROCK,
-            messages: MESSAGES,
-            signal: SIGNAL,
-            validate: isCatVerdict,
-          },);
-        }
-        catch (error) {
-          fromJson = error;
-        }
-
-        expect(fromText,).toBe(FAILURE,);
-        expect(fromJson,).toBe(FAILURE,);
-        expect(tally.counts(),).toStrictEqual([{
-          modelId: SEAT_HYPER_TEXT_BEDROCK,
-          asked: 2,
-          usable: 0,
-          unusable: 0,
-          threw: 2,
-        },],);
-        expect(tally.dark().length,).toBe(1,);
-      },
-    },),
-
-    it({
-      name: 'FORWARDS quotas as the very same function, since the meter is not a seat',
-      fn: async () => {
-        /** Inner client whose meter identity is checked. */
-        const inner = innerClient({ text: '喵。', },);
-        /** Client under test. */
-        const client = seatTallyClient({
-          inner,
-          tally: createSeatTally(),
-        },);
-
-        expect(client.quotas,).toBe(inner.quotas,);
-      },
-    },),
-
-    it({
-      name: 'COUNTS THE TYPED DECISION EXCHANGE AS A SEAT ASKED, a reply usable and a throw rethrown, and offers it '
-        + 'only where the wrapped client does (ledger T8)',
-      fn: async () => {
-        /** Tally the wrapper counts into. */
-        const tally = createSeatTally();
-        /** Reply the answering decision seat gives. */
-        const reply = { answers: ['windowsill',], } as unknown as DecisionReply;
-        /** Decision request naming one seat, cast past what the tally never reads. */
-        const request = {
-          modelId: SEAT_HYPER_VISION,
-          signal: SIGNAL,
-        } as unknown as DecisionRequest;
-        /** Client under test, whose decision seat answers. */
-        const answering = seatTallyClient({
-          inner: {
-            ...innerClient({ text: '喵。', },),
-            decide: async function decide(): Promise<DecisionReply> {
-              return reply;
-            },
+            expect(tally.counts(),).toStrictEqual([],);
+            expect(tally.dark(),).toStrictEqual([],);
           },
-          tally,
-        },);
-        /** Client under test, whose decision seat throws. */
-        const failing = seatTallyClient({
-          inner: {
-            ...innerClient({ text: '喵。', },),
-            decide: async function decide(): Promise<never> {
-              throw FAILURE;
-            },
+        },),
+
+        it({
+          name: 'SHARES one run-wide tally, which every client the factory builds counts into',
+          fn: async () => {
+            RUN_SEATS.reset();
+            RUN_SEATS.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
+
+            expect(RUN_SEATS.counts().length,).toBe(1,);
+
+            RUN_SEATS.reset();
+
+            expect(RUN_SEATS.counts().length,).toBe(0,);
           },
-          tally,
-        },);
-
-        expect(await answering.decide?.(request,),).toBe(reply,);
-        await expect(failing.decide?.(request,),).rejects.toBe(FAILURE,);
-        expect(tally.counts(),).toStrictEqual([{
-          modelId: SEAT_HYPER_VISION,
-          asked: 2,
-          usable: 1,
-          unusable: 0,
-          threw: 1,
-        },],);
-        expect(seatTallyClient({
-          inner: innerClient({ text: '喵。', },),
-          tally,
-        },).decide,).toBeUndefined();
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: seatReportLines.name,
-  children: [
-    it({
-      name: 'PRINTS nothing when no seat was asked, so a command that never built a client says nothing extra',
-      fn: async () => {
-        expect(seatReportLines({ tally: createSeatTally(), },),).toStrictEqual([],);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'PRINTS one SEAT line per seat and no dark line when every seat answered at least once',
-      fn: async () => {
-        /** Tally in which every seat produced something usable. */
-        const tally = createSeatTally();
-        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
-        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
-        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
+    describe({
+      name: seatTallyClient.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS a text reply as usable and hands it back untouched',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test. */
+            const client = seatTallyClient({
+              inner: innerClient({ text: '喵。', },),
+              tally,
+            },);
 
-        expect(seatReportLines({ tally, },),).toStrictEqual([
-          'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0',
-          'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0',
-        ],);
-      },
+            /** Reply as the caller sees it. */
+            const reply = await client.chatText({
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              messages: MESSAGES,
+              signal: SIGNAL,
+            },);
+
+            expect(reply.text,).toBe('喵。',);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              asked: 1,
+              usable: 1,
+              unusable: 0,
+              threw: 0,
+            },],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS an ok JSON outcome as usable and hands it back untouched',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test. */
+            const client = seatTallyClient({
+              inner: innerClient({ text: '{"verdict":"purr"}', },),
+              tally,
+            },);
+
+            /** Outcome as the caller sees it. */
+            const outcome = await client.chatJson({
+              modelId: SEAT_HYPER_VISION,
+              messages: MESSAGES,
+              signal: SIGNAL,
+              validate: isCatVerdict,
+            },);
+
+            expect(outcome.kind,).toBe('ok',);
+            expect((outcome.kind === 'ok') ? outcome.value.verdict : '',).toBe('purr',);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_VISION,
+              asked: 1,
+              usable: 1,
+              unusable: 0,
+              threw: 0,
+            },],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS a JSON outcome the guard rejected as unusable, since an answer nothing can read '
+            + 'is not a voice',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test, answering JSON of the wrong shape. */
+            const client = seatTallyClient({
+              inner: innerClient({ text: '{"nap":"spot"}', },),
+              tally,
+            },);
+
+            /** Outcome as the caller sees it. */
+            const outcome = await client.chatJson({
+              modelId: SEAT_HYPER_VISION,
+              messages: MESSAGES,
+              signal: SIGNAL,
+              validate: isCatVerdict,
+            },);
+
+            expect(outcome.kind,).toBe('refusal-shaped',);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_VISION,
+              asked: 1,
+              usable: 0,
+              unusable: 1,
+              threw: 0,
+            },],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS a throw as threw on both surfaces and rethrows the very same value',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test, failing every call. */
+            const client = seatTallyClient({
+              inner: innerClient({ text: '', failing: true, },),
+              tally,
+            },);
+
+            /** What the text surface threw. */
+            let fromText: unknown;
+            try {
+              await client.chatText({
+                modelId: SEAT_HYPER_TEXT_BEDROCK,
+                messages: MESSAGES,
+                signal: SIGNAL,
+              },);
+            }
+            catch (error) {
+              fromText = error;
+            }
+
+            /** What the JSON surface threw. */
+            let fromJson: unknown;
+            try {
+              await client.chatJson({
+                modelId: SEAT_HYPER_TEXT_BEDROCK,
+                messages: MESSAGES,
+                signal: SIGNAL,
+                validate: isCatVerdict,
+              },);
+            }
+            catch (error) {
+              fromJson = error;
+            }
+
+            expect(fromText,).toBe(FAILURE,);
+            expect(fromJson,).toBe(FAILURE,);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_TEXT_BEDROCK,
+              asked: 2,
+              usable: 0,
+              unusable: 0,
+              threw: 2,
+            },],);
+            expect(tally.dark().length,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'FORWARDS quotas as the very same function, since the meter is not a seat',
+          fn: async () => {
+            /** Inner client whose meter identity is checked. */
+            const inner = innerClient({ text: '喵。', },);
+            /** Client under test. */
+            const client = seatTallyClient({
+              inner,
+              tally: createSeatTally(),
+            },);
+
+            expect(client.quotas,).toBe(inner.quotas,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS THE TYPED DECISION EXCHANGE AS A SEAT ASKED, a reply usable and a throw rethrown, and offers it '
+            + 'only where the wrapped client does (ledger T8)',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Reply the answering decision seat gives. */
+            const reply = { answers: ['windowsill',], } as unknown as DecisionReply;
+            /** Decision request naming one seat, cast past what the tally never reads. */
+            const request = {
+              modelId: SEAT_HYPER_VISION,
+              signal: SIGNAL,
+            } as unknown as DecisionRequest;
+            /** Client under test, whose decision seat answers. */
+            const answering = seatTallyClient({
+              inner: {
+                ...innerClient({ text: '喵。', },),
+                decide: async function decide(): Promise<DecisionReply> {
+                  return reply;
+                },
+              },
+              tally,
+            },);
+            /** Client under test, whose decision seat throws. */
+            const failing = seatTallyClient({
+              inner: {
+                ...innerClient({ text: '喵。', },),
+                decide: async function decide(): Promise<never> {
+                  throw FAILURE;
+                },
+              },
+              tally,
+            },);
+
+            expect(await answering.decide?.(request,),).toBe(reply,);
+            await expect(failing.decide?.(request,),).rejects.toBe(FAILURE,);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_VISION,
+              asked: 2,
+              usable: 1,
+              unusable: 0,
+              threw: 1,
+            },],);
+            expect(seatTallyClient({
+              inner: innerClient({ text: '喵。', },),
+              tally,
+            },).decide,).toBeUndefined();
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'APPENDS the SEATS DARK line naming only the dark seats with the counts that make them dark',
-      fn: async () => {
-        /** Tally with two dark seats among three. */
-        const tally = createSeatTally();
-        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
-        tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
-        tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
-        tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
+    describe({
+      name: seatReportLines.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'PRINTS nothing when no seat was asked, so a command that never built a client says nothing extra',
+          fn: async () => {
+            expect(seatReportLines({ tally: createSeatTally(), },),).toStrictEqual([],);
+          },
+        },),
 
-        /** Lines as a reader sees them. */
-        const lines = seatReportLines({ tally, },);
+        it({
+          name: 'PRINTS one SEAT line per seat and no dark line when every seat answered at least once',
+          fn: async () => {
+            /** Tally in which every seat produced something usable. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
 
-        expect(lines.length,).toBe(4,);
-        expect(lines[3],).toBe(
-          'SEATS DARK: 2 of 3 seats asked produced nothing usable this run: '
-            + 'gemma-4-26b-a4b-it (asked 2, unusable 0, threw 2); minimax-m3 (asked 1, unusable 1, threw 0). '
-            + 'A seat that fails every call is a provider that cannot serve it, a key that was never '
-            + 'injected, or a model that answers nothing readable; the run log names which. '
-            + 'Do not read this run as a comparison of the roster.',
-        );
-      },
+            expect(seatReportLines({ tally, },),).toStrictEqual([
+              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0',
+              'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'APPENDS the SEATS DARK line naming only the dark seats with the counts that make them dark',
+          fn: async () => {
+            /** Tally with two dark seats among three. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
+
+            /** Lines as a reader sees them. */
+            const lines = seatReportLines({ tally, },);
+
+            expect(lines.length,).toBe(4,);
+            expect(lines[3],).toBe(
+              'SEATS DARK: 2 of 3 seats asked produced nothing usable this run: '
+                + 'gemma-4-26b-a4b-it (asked 2, unusable 0, threw 2); minimax-m3 (asked 1, unusable 1, threw 0). '
+                + 'A seat that fails every call is a provider that cannot serve it, a key that was never '
+                + 'injected, or a model that answers nothing readable; the run log names which. '
+                + 'Do not read this run as a comparison of the roster.',
+            );
+          },
+        },),
+      ],
     },),
   ],
 },);

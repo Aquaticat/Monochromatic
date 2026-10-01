@@ -28,6 +28,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -115,106 +116,6 @@ function withoutRunsDir(): Disposable {
     },
   };
 }
-
-await describe({
-  name: resolveRunsDir.name,
-  // ONE AT A TIME: cases set and clear the one process-wide runs directory,
-  // and a restore finishing out of order could leave a sibling's value set
-  // for the suites after this one (ledger B79).
-  concurrency: 1,
-  children: [
-    it({
-      name: 'honors an explicit override exactly, so a run can be pointed at a '
-        + 'throwaway directory without touching the real one',
-      fn: async () => {
-        using _override = withRunsDir({ value: '/tmp/whiskers-runs', },);
-
-        expect(await resolveRunsDir(),).toBe('/tmp/whiskers-runs',);
-      },
-    },),
-
-    it({
-      name: 'IGNORES an empty override and falls back to the default. An '
-        + 'exported-but-empty variable is an ordinary shell accident, and '
-        + 'treating it as an override would resolve every artifact path '
-        + 'relative to the process working directory instead of the runs '
-        + 'directory, scattering a run and moving the sheet guard\'s protected '
-        + 'area with it',
-      fn: async () => {
-        using _empty = withRunsDir({ value: '', },);
-
-        /**
-         Resolved directory under an empty override.
-         */
-        const resolved = await resolveRunsDir();
-
-        expect(resolved,).not.toBe('',);
-        expect(resolved,).toContain(join(
-          'node_modules',
-          '.monochromatic',
-          'translation-repair-runs',
-        ),);
-      },
-    },),
-
-    it({
-      name: 'defaults under the worktree\'s gitignored node_modules when no '
-        + 'override is set, so artifacts are durable across runs yet can never '
-        + 'be committed: the corpus they derive from is unlicensed',
-      fn: async () => {
-        using _unset = withoutRunsDir();
-
-        /**
-         Resolved directory with no override present.
-         */
-        const resolved = await resolveRunsDir();
-
-        expect(resolved,).toContain(join(
-          'node_modules',
-          '.monochromatic',
-          'translation-repair-runs',
-        ),);
-        expect(resolved.startsWith('/',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'returns an ABSOLUTE path in both branches, since callers join '
-        + 'sheet and artifact names onto it from working directories they do '
-        + 'not control',
-      fn: async () => {
-        {
-          using _override = withRunsDir({ value: '/tmp/whiskers-runs', },);
-
-          expect((await resolveRunsDir()).startsWith('/',),).toBe(true,);
-        }
-
-        using _unset = withoutRunsDir();
-
-        expect((await resolveRunsDir()).startsWith('/',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'restores the environment after each case, so one case cannot '
-        + 'silently decide where a later one writes',
-      fn: async () => {
-        /**
-         Value outside any override scope.
-         */
-        const outside = process.env[RUNS_DIR_VAR];
-
-        {
-          using _override = withRunsDir({ value: '/tmp/whiskers-runs', },);
-
-          expect(process.env[RUNS_DIR_VAR],).toBe('/tmp/whiskers-runs',);
-        }
-
-        expect(process.env[RUNS_DIR_VAR],).toBe(outside,);
-      },
-    },),
-  ],
-},);
 
 /**
  Environment variable carrying the Synthetic API key.
@@ -310,174 +211,6 @@ function withoutProviderKeys(): Disposable {
     },
   };
 }
-
-await describe({
-  name: runClientFrom.name,
-  children: [
-    it({
-      name: 'builds a client with the chat and meter surface from the keys handed over, so every existing caller '
-        + 'and the bench recorder are untouched by routing',
-      fn: async () => {
-        /**
-         Client built from the stand-in keys.
-         */
-        const client = runClientFrom({ env: TWO_KEYS, transport: unaskedTransport, },);
-
-        // `quotas` is the first provider's meter and nothing else; the routing
-        // client does not offer one, and this wiring layer supplies it.
-        expect(typeof client.chatJson,).toBe('function',);
-        expect(typeof client.chatText,).toBe('function',);
-        expect(typeof client.quotas,).toBe('function',);
-      },
-    },),
-
-    it({
-      name: 'BUILDS with only Synthetic configured because one wet provider is normal mode',
-      fn: async () => {
-        const client = runClientFrom({
-          env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', },
-          transport: unaskedTransport,
-        },);
-        expect(typeof client.chatText,).toBe('function',);
-      },
-    },),
-
-    it({
-      name: 'BUILDS with only Hyper configured because no provider family is mandatory, and answers the '
-        + 'first provider\'s meter as exhausted rather than asking anyone (ledger T8)',
-      fn: async () => {
-        const client = runClientFrom({
-          env: { [HYPER_KEY_VAR]: 'mittens-not-a-real-key', },
-          transport: unaskedTransport,
-        },);
-        expect(await client.quotas({ signal: new AbortController().signal, },),).toEqual({
-          fiveHour: {
-            remaining: 0,
-            max: 0,
-            limited: true,
-            nextTickAt: '',
-          },
-          weekly: {
-            percentRemaining: 0,
-            nextRegenAt: '',
-          },
-        },);
-      },
-    },),
-
-    it({
-      name: 'BUILDS ON EVERY KEY, the Bedrock client reading the ledger and credit the handed environment names, '
-        + 'wet under its credit and dry at none, while the meters it cannot read stay spendable (ledger T8)',
-      fn: async () => {
-        /**
-         Directory holding this case's empty ledger.
-         */
-        const dir = await mkdtemp(join(tmpdir(), 'run-client-ledger-',),);
-        await using _cleanup = {
-          [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
-            await rm(dir, { recursive: true, force: true, },);
-          },
-        };
-        /**
-         What each provider's meter read as, on a client keyed for all four.
-
-         @param creditUsd - Bedrock credit the environment grants
-
-         @returns Dryness per provider
-         */
-        async function drynessAt(creditUsd: string,): Promise<unknown> {
-          return await runClientFrom({
-            env: {
-              ...TWO_KEYS,
-              [OPENROUTER_KEY_VAR]: 'tabby-not-a-real-key',
-              [BEDROCK_KEY_VAR]: 'calico-not-a-real-key',
-              [BEDROCK_LEDGER_PATH_VAR]: join(dir, 'bedrock-spend.jsonl',),
-              [BEDROCK_CREDIT_USD_VAR]: creditUsd,
-            },
-            transport: async function refuseEveryMeter() {
-              return { status: 400, bodyText: '{}', };
-            },
-          },).providerDryness({ signal: new AbortController().signal, },);
-        }
-        expect(await drynessAt('40',),).toEqual({
-          synthetic: false,
-          hyper: false,
-          bedrock: false,
-          openrouter: false,
-        },);
-        expect(await drynessAt('0',),).toEqual({
-          synthetic: false,
-          hyper: false,
-          bedrock: true,
-          openrouter: false,
-        },);
-      },
-    },),
-
-    it({
-      name: 'refuses with no key at all as a STATED refusal, so the CLI boundary repeats the variable name and '
-        + 'exits 6 instead of printing a fault with frames: a RunConfigError naming the variable and mise, '
-        + 'never content',
-      fn: async () => {
-        /**
-         What building with no key raised, read for its marker, class and wording.
-         */
-        const refusal = caught(function buildWithoutKey() {
-          runClientFrom({ env: {}, transport: unaskedTransport, },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusal as StatedRefusalError).messageNamesOnly,).toBe(true,);
-        expect(refusal,).toBeInstanceOf(RunConfigError,);
-        expect((refusal as Error).message,).toContain(API_KEY_VAR,);
-        expect((refusal as Error).message,).toContain('mise',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES when every provider key is empty, since an exported empty variable is no key',
-      fn: async () => {
-        /**
-         What building with four empty keys raised.
-         */
-        const refusal = caught(function buildWithEmptyKeys() {
-          runClientFrom({
-            env: Object.fromEntries(PROVIDER_KEY_VARS.map(function empty(name,) {
-              return [name, '',];
-            },),),
-            transport: unaskedTransport,
-          },);
-        },);
-
-        expect(refusal,).toBeInstanceOf(RunConfigError,);
-        expect((refusal as Error).message,).toContain(API_KEY_VAR,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: createRunClient.name,
-  children: [
-    it({
-      name: 'READS THE PROCESS ENVIRONMENT, the one place a runner hands it over, and refuses when it holds no '
-        + 'provider key (ledger T8)',
-      fn: async () => {
-        using _cleared = withoutProviderKeys();
-
-        /**
-         What building on a process holding no key raised.
-         */
-        const refusal = caught(function buildOnProcess() {
-          createRunClient();
-        },);
-
-        expect(refusal,).toBeInstanceOf(RunConfigError,);
-      },
-    },),
-  ],
-  concurrency: 1,
-},);
 
 
 
@@ -644,266 +377,6 @@ async function askSeat(
   }
 }
 
-await describe({
-  name: `${runClientFrom.name} wiring`,
-  children: [
-    it({
-      name: 'ROUTES a Charm Hyper endpoint label to the second provider and '
-        + 'never to the first, with the first provider live: serving '
-        + 'capability is a property of the pair, not of a provider\'s health',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Transport recording where the call went.
-         */
-        const { transport, urls, } = recordingTransport();
-
-        await askSeat({
-          client: runClientFrom({ env: TWO_KEYS, transport, },),
-          modelId: SECOND_ONLY_SEAT,
-        },);
-
-        expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(true,);
-        expect(urls.some(isFirstProviderChat,),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'SENDS a seat the first provider serves to the first provider, so '
-        + 'the routing does not push the whole roster onto the second',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Transport recording where the call went.
-         */
-        const { transport, urls, } = recordingTransport();
-
-        /**
-         What the shared seat answered.
-         */
-        const came = await askSeat({
-          client: runClientFrom({ env: TWO_KEYS, transport, },),
-          modelId: SHARED_SEAT,
-        },);
-
-        expect(Error.isError(came,),).toBe(false,);
-        expect(urls.some(isFirstProviderChat,),).toBe(true,);
-        expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'WRAPS ROUTED CLIENT with model-prompt payload reuse',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Transport recording provider calls.
-         */
-        const { transport, urls, } = recordingTransport();
-        /**
-         One configured client preserving prompt claims across calls.
-         */
-        const client = runClientFrom({ env: TWO_KEYS, transport, },);
-        await askSeat({ client, modelId: SHARED_SEAT, },);
-        const duplicate = await askSeat({ client, modelId: SHARED_SEAT, },);
-
-        expect(Error.isError(duplicate,),).toBe(false,);
-        expect(urls.filter(isFirstProviderChat,),).toHaveLength(1,);
-      },
-    },),
-
-    it({
-      name: 'COUNTS every call against its seat on the run-wide tally, so the '
-        + 'closing report can say which seat never answered',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Transport answering the first provider and refusing the second.
-         */
-        const { transport, } = recordingTransport();
-
-        /**
-         Client under test, built once for both seats.
-         */
-        const client = runClientFrom({ env: TWO_KEYS, transport, },);
-
-        await askSeat({ client, modelId: SHARED_SEAT, },);
-        await askSeat({ client, modelId: SECOND_ONLY_SEAT, },);
-
-        /**
-         Counts for the seat that answered.
-         */
-        const shared = RUN_SEATS.counts().find(function isShared(count,): boolean {
-          return count.modelId === SHARED_SEAT;
-        },);
-
-        /**
-         Counts for the seat that was refused.
-         */
-        const secondOnly = RUN_SEATS.counts().find(function isSecondOnly(count,): boolean {
-          return count.modelId === SECOND_ONLY_SEAT;
-        },);
-
-        expect(shared?.asked,).toBe(1,);
-        expect(shared?.usable,).toBe(1,);
-        expect(secondOnly?.asked,).toBe(1,);
-        expect(secondOnly?.threw,).toBe(1,);
-        expect(RUN_SEATS.dark().map(function toId(count,): string {
-          return count.modelId;
-        },),).toStrictEqual([SECOND_ONLY_SEAT,],);
-      },
-    },),
-
-    it({
-      name: 'COUNTS AN UNREADABLE ANSWER AS UNUSABLE on the run-wide tally (ledger P6): the tally sat inside the '
-        + 'prompt-uniqueness wrapper, which parses the reply itself, so every reply that arrived read as usable '
-        + '("SEAT inception/mercury-2.5 asked=1007 usable=1007 unusable=0" beside 40 schema losses)',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Transport answering the first provider with text no schema reads.
-         */
-        const { transport, } = recordingTransport();
-        await runClientFrom({ env: TWO_KEYS, transport, },).chatJson({
-          modelId: SHARED_SEAT,
-          messages: MESSAGES,
-          signal: new AbortController().signal,
-          responseFormat: {
-            type: 'json_schema',
-            json_schema: {
-              name: 'purr',
-              strict: true,
-              schema: {
-                type: 'object',
-                properties: { purr: { type: 'string', }, },
-                required: ['purr',],
-                additionalProperties: false,
-              },
-            },
-          },
-          validate: function isPurr(value: unknown,): value is { readonly purr: string; } {
-            return ((typeof value) === 'object') && (value !== null) && ('purr' in value);
-          },
-        },);
-
-        /**
-         Counts for the seat.
-         */
-        const counts = RUN_SEATS.counts().find(function isShared(count,): boolean {
-          return count.modelId === SHARED_SEAT;
-        },);
-        expect({
-          asked: counts?.asked,
-          usable: counts?.usable,
-          unusable: counts?.unusable,
-        },).toEqual({
-          asked: 1,
-          usable: 0,
-          unusable: 1,
-        },);
-      },
-    },),
-
-    it({
-      name: 'REFUSES A SEAT THE OWNER CULLED without calling any provider (ledger P4): the cull held on every '
-        + 'bench the run derives, and a path that named the seat itself, the recall benchmark\'s default '
-        + 'judges, would have bought it; the refusal is the one a round reads as an unreachable seat',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Transport recording where any call went.
-         */
-        const { transport, urls, } = recordingTransport();
-
-        /**
-         What the culled seat's call came to.
-         */
-        const came = await askSeat({
-          client: runClientFrom({ env: TWO_KEYS, transport, },),
-          modelId: CULLED_SEAT,
-        },);
-
-        expect({
-          culled: OWNER_CULLED.has(CULLED_SEAT,),
-          refused: came instanceof NoProviderForModelError,
-          chatted: urls.some(isFirstProviderChat,) || urls.includes(HYPER_MESSAGES_URL,),
-        },).toEqual({
-          culled: true,
-          refused: true,
-          chatted: false,
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES A SEAT WHOSE ONLY PROVIDER HAS NO KEY without asking any provider (ledger T8)',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Transport recording where any call went.
-         */
-        const { transport, urls, } = recordingTransport();
-
-        /**
-         What the second provider's seat came to on a client keyed for the first alone.
-         */
-        const came = await askSeat({
-          client: runClientFrom({ env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', }, transport, },),
-          modelId: SECOND_ONLY_SEAT,
-        },);
-
-        expect(came,).toBeInstanceOf(NoProviderForModelError,);
-        expect(urls.some(isFirstProviderChat,) || urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'KEEPS PROMPT PAYLOADS UNDER THE DIRECTORY HANDED OVER, so a second client over it answers the same '
-        + 'prompt without asking (ledger T8)',
-      fn: async () => {
-        using _fresh = withFreshRunSeats();
-
-        /**
-         Payload directory this case owns.
-         */
-        const dir = await mkdtemp(join(tmpdir(), 'run-client-payloads-',),);
-        await using _cleanup = {
-          [Symbol.asyncDispose]: async function removePayloads(): Promise<void> {
-            await rm(dir, { recursive: true, force: true, },);
-          },
-        };
-
-        /**
-         Transport recording provider calls.
-         */
-        const { transport, urls, } = recordingTransport();
-        await askSeat({
-          client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
-          modelId: SHARED_SEAT,
-        },);
-
-        /**
-         What a fresh client over the same payloads answered.
-         */
-        const replayed = await askSeat({
-          client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
-          modelId: SHARED_SEAT,
-        },);
-
-        expect(Error.isError(replayed,),).toBe(false,);
-        expect(urls.filter(isFirstProviderChat,),).toHaveLength(1,);
-      },
-    },),
-  ],
-  concurrency: 1,
-},);
-
 /**
  Moves the process working directory for the life of a scope and restores it
  on exit.
@@ -931,43 +404,578 @@ function inDirectory({ path, }: { readonly path: string; },): Disposable {
 }
 
 await describe({
-  name: readHeadSha.name,
-  // ONE AT A TIME: a case moves the process's working directory across an
-  // await, which every case beside it would run in (ledger B79).
+  name: '',
   concurrency: 1,
   children: [
-    it({
-      name: 'reads the sha of THIS repository regardless of the working '
-        + 'directory the task was invoked from. The pin is what says which '
-        + 'pipeline version produced an artifact, so resolving it against the '
-        + 'process cwd would stamp another repository\'s sha onto a run, or '
-        + 'fail outright when a task ran from a directory git does not track',
-      fn: async () => {
-        /**
-         Sha read from the ordinary working directory.
-         */
-        const fromHere = await readHeadSha();
+    describe({
+      name: resolveRunsDir.name,
+      // ONE AT A TIME: cases set and clear the one process-wide runs directory,
+      // and a restore finishing out of order could leave a sibling's value set
+      // for the suites after this one (ledger B79).
+      concurrency: 1,
+      children: [
+        it({
+          name: 'honors an explicit override exactly, so a run can be pointed at a '
+            + 'throwaway directory without touching the real one',
+          fn: async () => {
+            using _override = withRunsDir({ value: '/tmp/whiskers-runs', },);
 
-        using _elsewhere = inDirectory({ path: tmpdir(), },);
+            expect(await resolveRunsDir(),).toBe('/tmp/whiskers-runs',);
+          },
+        },),
 
-        expect(await readHeadSha(),).toBe(fromHere,);
-      },
+        it({
+          name: 'IGNORES an empty override and falls back to the default. An '
+            + 'exported-but-empty variable is an ordinary shell accident, and '
+            + 'treating it as an override would resolve every artifact path '
+            + 'relative to the process working directory instead of the runs '
+            + 'directory, scattering a run and moving the sheet guard\'s protected '
+            + 'area with it',
+          fn: async () => {
+            using _empty = withRunsDir({ value: '', },);
+
+            /**
+             Resolved directory under an empty override.
+             */
+            const resolved = await resolveRunsDir();
+
+            expect(resolved,).not.toBe('',);
+            expect(resolved,).toContain(join(
+              'node_modules',
+              '.monochromatic',
+              'translation-repair-runs',
+            ),);
+          },
+        },),
+
+        it({
+          name: 'defaults under the worktree\'s gitignored node_modules when no '
+            + 'override is set, so artifacts are durable across runs yet can never '
+            + 'be committed: the corpus they derive from is unlicensed',
+          fn: async () => {
+            using _unset = withoutRunsDir();
+
+            /**
+             Resolved directory with no override present.
+             */
+            const resolved = await resolveRunsDir();
+
+            expect(resolved,).toContain(join(
+              'node_modules',
+              '.monochromatic',
+              'translation-repair-runs',
+            ),);
+            expect(resolved.startsWith('/',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'returns an ABSOLUTE path in both branches, since callers join '
+            + 'sheet and artifact names onto it from working directories they do '
+            + 'not control',
+          fn: async () => {
+            {
+              using _override = withRunsDir({ value: '/tmp/whiskers-runs', },);
+
+              expect((await resolveRunsDir()).startsWith('/',),).toBe(true,);
+            }
+
+            using _unset = withoutRunsDir();
+
+            expect((await resolveRunsDir()).startsWith('/',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'restores the environment after each case, so one case cannot '
+            + 'silently decide where a later one writes',
+          fn: async () => {
+            /**
+             Value outside any override scope.
+             */
+            const outside = process.env[RUNS_DIR_VAR];
+
+            {
+              using _override = withRunsDir({ value: '/tmp/whiskers-runs', },);
+
+              expect(process.env[RUNS_DIR_VAR],).toBe('/tmp/whiskers-runs',);
+            }
+
+            expect(process.env[RUNS_DIR_VAR],).toBe(outside,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'returns a bare 40-character sha with no trailing newline, since '
-        + 'it is written into artifacts and a stray newline there would travel '
-        + 'into every file that records the pin',
-      fn: async () => {
-        /**
-         Sha under test.
-         */
-        const sha = await readHeadSha();
+    describe({
+      name: runClientFrom.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'builds a client with the chat and meter surface from the keys handed over, so every existing caller '
+            + 'and the bench recorder are untouched by routing',
+          fn: async () => {
+            /**
+             Client built from the stand-in keys.
+             */
+            const client = runClientFrom({ env: TWO_KEYS, transport: unaskedTransport, },);
 
-        expect(sha.length,).toBe(40,);
-        expect(sha.includes('\n',),).toBe(false,);
-        expect(sha,).toBe(sha.trim(),);
-      },
+            // `quotas` is the first provider's meter and nothing else; the routing
+            // client does not offer one, and this wiring layer supplies it.
+            expect(typeof client.chatJson,).toBe('function',);
+            expect(typeof client.chatText,).toBe('function',);
+            expect(typeof client.quotas,).toBe('function',);
+          },
+        },),
+
+        it({
+          name: 'BUILDS with only Synthetic configured because one wet provider is normal mode',
+          fn: async () => {
+            const client = runClientFrom({
+              env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', },
+              transport: unaskedTransport,
+            },);
+            expect(typeof client.chatText,).toBe('function',);
+          },
+        },),
+
+        it({
+          name: 'BUILDS with only Hyper configured because no provider family is mandatory, and answers the '
+            + 'first provider\'s meter as exhausted rather than asking anyone (ledger T8)',
+          fn: async () => {
+            const client = runClientFrom({
+              env: { [HYPER_KEY_VAR]: 'mittens-not-a-real-key', },
+              transport: unaskedTransport,
+            },);
+            expect(await client.quotas({ signal: new AbortController().signal, },),).toEqual({
+              fiveHour: {
+                remaining: 0,
+                max: 0,
+                limited: true,
+                nextTickAt: '',
+              },
+              weekly: {
+                percentRemaining: 0,
+                nextRegenAt: '',
+              },
+            },);
+          },
+        },),
+
+        it({
+          name: 'BUILDS ON EVERY KEY, the Bedrock client reading the ledger and credit the handed environment names, '
+            + 'wet under its credit and dry at none, while the meters it cannot read stay spendable (ledger T8)',
+          fn: async () => {
+            /**
+             Directory holding this case's empty ledger.
+             */
+            const dir = await mkdtemp(join(tmpdir(), 'run-client-ledger-',),);
+            await using _cleanup = {
+              [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
+                await rm(dir, { recursive: true, force: true, },);
+              },
+            };
+            /**
+             What each provider's meter read as, on a client keyed for all four.
+
+             @param creditUsd - Bedrock credit the environment grants
+
+             @returns Dryness per provider
+             */
+            async function drynessAt(creditUsd: string,): Promise<unknown> {
+              return await runClientFrom({
+                env: {
+                  ...TWO_KEYS,
+                  [OPENROUTER_KEY_VAR]: 'tabby-not-a-real-key',
+                  [BEDROCK_KEY_VAR]: 'calico-not-a-real-key',
+                  [BEDROCK_LEDGER_PATH_VAR]: join(dir, 'bedrock-spend.jsonl',),
+                  [BEDROCK_CREDIT_USD_VAR]: creditUsd,
+                },
+                transport: async function refuseEveryMeter() {
+                  return { status: 400, bodyText: '{}', };
+                },
+              },).providerDryness({ signal: new AbortController().signal, },);
+            }
+            expect(await drynessAt('40',),).toEqual({
+              synthetic: false,
+              hyper: false,
+              bedrock: false,
+              openrouter: false,
+            },);
+            expect(await drynessAt('0',),).toEqual({
+              synthetic: false,
+              hyper: false,
+              bedrock: true,
+              openrouter: false,
+            },);
+          },
+        },),
+
+        it({
+          name: 'refuses with no key at all as a STATED refusal, so the CLI boundary repeats the variable name and '
+            + 'exits 6 instead of printing a fault with frames: a RunConfigError naming the variable and mise, '
+            + 'never content',
+          fn: async () => {
+            /**
+             What building with no key raised, read for its marker, class and wording.
+             */
+            const refusal = caught(function buildWithoutKey() {
+              runClientFrom({ env: {}, transport: unaskedTransport, },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect((refusal as StatedRefusalError).messageNamesOnly,).toBe(true,);
+            expect(refusal,).toBeInstanceOf(RunConfigError,);
+            expect((refusal as Error).message,).toContain(API_KEY_VAR,);
+            expect((refusal as Error).message,).toContain('mise',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES when every provider key is empty, since an exported empty variable is no key',
+          fn: async () => {
+            /**
+             What building with four empty keys raised.
+             */
+            const refusal = caught(function buildWithEmptyKeys() {
+              runClientFrom({
+                env: Object.fromEntries(PROVIDER_KEY_VARS.map(function empty(name,) {
+                  return [name, '',];
+                },),),
+                transport: unaskedTransport,
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(RunConfigError,);
+            expect((refusal as Error).message,).toContain(API_KEY_VAR,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: createRunClient.name,
+      children: [
+        it({
+          name: 'READS THE PROCESS ENVIRONMENT, the one place a runner hands it over, and refuses when it holds no '
+            + 'provider key (ledger T8)',
+          fn: async () => {
+            using _cleared = withoutProviderKeys();
+
+            /**
+             What building on a process holding no key raised.
+             */
+            const refusal = caught(function buildOnProcess() {
+              createRunClient();
+            },);
+
+            expect(refusal,).toBeInstanceOf(RunConfigError,);
+          },
+        },),
+      ],
+      concurrency: 1,
+    },),
+
+    describe({
+      name: `${runClientFrom.name} wiring`,
+      children: [
+        it({
+          name: 'ROUTES a Charm Hyper endpoint label to the second provider and '
+            + 'never to the first, with the first provider live: serving '
+            + 'capability is a property of the pair, not of a provider\'s health',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport recording where the call went.
+             */
+            const { transport, urls, } = recordingTransport();
+
+            await askSeat({
+              client: runClientFrom({ env: TWO_KEYS, transport, },),
+              modelId: SECOND_ONLY_SEAT,
+            },);
+
+            expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(true,);
+            expect(urls.some(isFirstProviderChat,),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'SENDS a seat the first provider serves to the first provider, so '
+            + 'the routing does not push the whole roster onto the second',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport recording where the call went.
+             */
+            const { transport, urls, } = recordingTransport();
+
+            /**
+             What the shared seat answered.
+             */
+            const came = await askSeat({
+              client: runClientFrom({ env: TWO_KEYS, transport, },),
+              modelId: SHARED_SEAT,
+            },);
+
+            expect(Error.isError(came,),).toBe(false,);
+            expect(urls.some(isFirstProviderChat,),).toBe(true,);
+            expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'WRAPS ROUTED CLIENT with model-prompt payload reuse',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport recording provider calls.
+             */
+            const { transport, urls, } = recordingTransport();
+            /**
+             One configured client preserving prompt claims across calls.
+             */
+            const client = runClientFrom({ env: TWO_KEYS, transport, },);
+            await askSeat({ client, modelId: SHARED_SEAT, },);
+            const duplicate = await askSeat({ client, modelId: SHARED_SEAT, },);
+
+            expect(Error.isError(duplicate,),).toBe(false,);
+            expect(urls.filter(isFirstProviderChat,),).toHaveLength(1,);
+          },
+        },),
+
+        it({
+          name: 'COUNTS every call against its seat on the run-wide tally, so the '
+            + 'closing report can say which seat never answered',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport answering the first provider and refusing the second.
+             */
+            const { transport, } = recordingTransport();
+
+            /**
+             Client under test, built once for both seats.
+             */
+            const client = runClientFrom({ env: TWO_KEYS, transport, },);
+
+            await askSeat({ client, modelId: SHARED_SEAT, },);
+            await askSeat({ client, modelId: SECOND_ONLY_SEAT, },);
+
+            /**
+             Counts for the seat that answered.
+             */
+            const shared = RUN_SEATS.counts().find(function isShared(count,): boolean {
+              return count.modelId === SHARED_SEAT;
+            },);
+
+            /**
+             Counts for the seat that was refused.
+             */
+            const secondOnly = RUN_SEATS.counts().find(function isSecondOnly(count,): boolean {
+              return count.modelId === SECOND_ONLY_SEAT;
+            },);
+
+            expect(shared?.asked,).toBe(1,);
+            expect(shared?.usable,).toBe(1,);
+            expect(secondOnly?.asked,).toBe(1,);
+            expect(secondOnly?.threw,).toBe(1,);
+            expect(RUN_SEATS.dark().map(function toId(count,): string {
+              return count.modelId;
+            },),).toStrictEqual([SECOND_ONLY_SEAT,],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS AN UNREADABLE ANSWER AS UNUSABLE on the run-wide tally (ledger P6): the tally sat inside the '
+            + 'prompt-uniqueness wrapper, which parses the reply itself, so every reply that arrived read as usable '
+            + '("SEAT inception/mercury-2.5 asked=1007 usable=1007 unusable=0" beside 40 schema losses)',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport answering the first provider with text no schema reads.
+             */
+            const { transport, } = recordingTransport();
+            await runClientFrom({ env: TWO_KEYS, transport, },).chatJson({
+              modelId: SHARED_SEAT,
+              messages: MESSAGES,
+              signal: new AbortController().signal,
+              responseFormat: {
+                type: 'json_schema',
+                json_schema: {
+                  name: 'purr',
+                  strict: true,
+                  schema: {
+                    type: 'object',
+                    properties: { purr: { type: 'string', }, },
+                    required: ['purr',],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              validate: function isPurr(value: unknown,): value is { readonly purr: string; } {
+                return ((typeof value) === 'object') && (value !== null) && ('purr' in value);
+              },
+            },);
+
+            /**
+             Counts for the seat.
+             */
+            const counts = RUN_SEATS.counts().find(function isShared(count,): boolean {
+              return count.modelId === SHARED_SEAT;
+            },);
+            expect({
+              asked: counts?.asked,
+              usable: counts?.usable,
+              unusable: counts?.unusable,
+            },).toEqual({
+              asked: 1,
+              usable: 0,
+              unusable: 1,
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A SEAT THE OWNER CULLED without calling any provider (ledger P4): the cull held on every '
+            + 'bench the run derives, and a path that named the seat itself, the recall benchmark\'s default '
+            + 'judges, would have bought it; the refusal is the one a round reads as an unreachable seat',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport recording where any call went.
+             */
+            const { transport, urls, } = recordingTransport();
+
+            /**
+             What the culled seat's call came to.
+             */
+            const came = await askSeat({
+              client: runClientFrom({ env: TWO_KEYS, transport, },),
+              modelId: CULLED_SEAT,
+            },);
+
+            expect({
+              culled: OWNER_CULLED.has(CULLED_SEAT,),
+              refused: came instanceof NoProviderForModelError,
+              chatted: urls.some(isFirstProviderChat,) || urls.includes(HYPER_MESSAGES_URL,),
+            },).toEqual({
+              culled: true,
+              refused: true,
+              chatted: false,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES A SEAT WHOSE ONLY PROVIDER HAS NO KEY without asking any provider (ledger T8)',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport recording where any call went.
+             */
+            const { transport, urls, } = recordingTransport();
+
+            /**
+             What the second provider's seat came to on a client keyed for the first alone.
+             */
+            const came = await askSeat({
+              client: runClientFrom({ env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', }, transport, },),
+              modelId: SECOND_ONLY_SEAT,
+            },);
+
+            expect(came,).toBeInstanceOf(NoProviderForModelError,);
+            expect(urls.some(isFirstProviderChat,) || urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'KEEPS PROMPT PAYLOADS UNDER THE DIRECTORY HANDED OVER, so a second client over it answers the same '
+            + 'prompt without asking (ledger T8)',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Payload directory this case owns.
+             */
+            const dir = await mkdtemp(join(tmpdir(), 'run-client-payloads-',),);
+            await using _cleanup = {
+              [Symbol.asyncDispose]: async function removePayloads(): Promise<void> {
+                await rm(dir, { recursive: true, force: true, },);
+              },
+            };
+
+            /**
+             Transport recording provider calls.
+             */
+            const { transport, urls, } = recordingTransport();
+            await askSeat({
+              client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
+              modelId: SHARED_SEAT,
+            },);
+
+            /**
+             What a fresh client over the same payloads answered.
+             */
+            const replayed = await askSeat({
+              client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
+              modelId: SHARED_SEAT,
+            },);
+
+            expect(Error.isError(replayed,),).toBe(false,);
+            expect(urls.filter(isFirstProviderChat,),).toHaveLength(1,);
+          },
+        },),
+      ],
+      concurrency: 1,
+    },),
+
+    describe({
+      name: readHeadSha.name,
+      // ONE AT A TIME: a case moves the process's working directory across an
+      // await, which every case beside it would run in (ledger B79).
+      concurrency: 1,
+      children: [
+        it({
+          name: 'reads the sha of THIS repository regardless of the working '
+            + 'directory the task was invoked from. The pin is what says which '
+            + 'pipeline version produced an artifact, so resolving it against the '
+            + 'process cwd would stamp another repository\'s sha onto a run, or '
+            + 'fail outright when a task ran from a directory git does not track',
+          fn: async () => {
+            /**
+             Sha read from the ordinary working directory.
+             */
+            const fromHere = await readHeadSha();
+
+            using _elsewhere = inDirectory({ path: tmpdir(), },);
+
+            expect(await readHeadSha(),).toBe(fromHere,);
+          },
+        },),
+
+        it({
+          name: 'returns a bare 40-character sha with no trailing newline, since '
+            + 'it is written into artifacts and a stray newline there would travel '
+            + 'into every file that records the pin',
+          fn: async () => {
+            /**
+             Sha under test.
+             */
+            const sha = await readHeadSha();
+
+            expect(sha.length,).toBe(40,);
+            expect(sha.includes('\n',),).toBe(false,);
+            expect(sha,).toBe(sha.trim(),);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -12,6 +12,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -470,353 +471,6 @@ async function runShortBench(
   },);
 }
 
-await describe({
-  name: 'selection on a bench short of quorum',
-  children: [
-    it({
-      name: 'SEATS A WINNER BY A SHARE OF THE REACHABLE WEIGHT where the router refused most '
-        + 'of the bench, the owner\'s decision of 2026-09-09: three of eight reachable against a '
-        + 'quorum of four puts the minimum at three halves, so a producer and one disinterested '
-        + 'judge agreeing ship what the absolute 2 kept unfilled, and the finding names the bench',
-      fn: async () => {
-        /** Quorum over the seated bench. */
-        const quorum = rosterQuorumSize({ rosterSize: WIDE_BENCH.length, },);
-        /** Seats the dry day leaves reachable. */
-        const reachable = WIDE_BENCH.length - DRY_SEATS.length;
-        /** GLM-5.3-Flash backs its own text at half weight, Qwen backs it at full, gpt-oss declines. */
-        const outcome = await runShortBench({
-          ballots: {
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-          },
-        },);
-        expect(outcome.kind,).toBe('selected',);
-        if (outcome.kind !== 'selected')
-          throw new Error('unreachable',);
-        expect(outcome.voteWeight,).toBe(SELF_VOTE_WEIGHT + FULL_VOTE_WEIGHT,);
-        expect(outcome.tally.judgesAvailable,).toBe(WIDE_BENCH.length,);
-        expect(outcome.tally.ballots,).toBe(reachable,);
-        expect(outcome.findings,).toContain(
-          `select-short-bench (reachable ${String(reachable,)} of ${String(WIDE_BENCH.length,)}, minimum ${
-            ((MIN_SELECTION_WEIGHT * reachable) / quorum).toFixed(2,)
-          })`,
-        );
-        // Every dry seat is reported lost, as before; the `select-short-bench`
-        // finding is what says the losses were the bench and not the weather.
-        for (const seat of DRY_SEATS)
-          expect(outcome.findings,).toContain(`stage-voice-lost (select ${seat})`,);
-      },
-    },),
-
-    it({
-      name: 'KEEPS TWO BALLOTS AS THE FLOOR whatever the scaled weight, so one judge never '
-        + 'decides: two of eight reachable puts the minimum at one full ballot, and a lone full '
-        + 'ballot is declined as one judge alone rather than seated',
-      fn: async () => {
-        /** Quorum over the seated bench. */
-        const quorum = rosterQuorumSize({ rosterSize: WIDE_BENCH.length, },);
-        /** The dry day's seats and the GLM seat. */
-        const unreachable = [
-          ...DRY_SEATS,
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-        ];
-        /** Seats left reachable. */
-        const reachable = WIDE_BENCH.length - unreachable.length;
-        /** Only Qwen and gpt-oss reachable; Qwen names candidate 1 at full weight, gpt-oss declines. */
-        const outcome = await runShortBench({
-          ballots: {
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-          },
-          unreachable,
-        },);
-        // The scaled minimum is one full ballot, so only the two-ballot floor declines it.
-        expect((MIN_SELECTION_WEIGHT * reachable) / quorum,).toBe(FULL_VOTE_WEIGHT,);
-        expect(outcome.kind,).toBe('declined',);
-        if (outcome.kind !== 'declined')
-          throw new Error('unreachable',);
-        expect(outcome.reason,).toBe('winner named by one judge alone',);
-        expect(outcome.disposition,).toBe('indecision',);
-        expect(outcome.findings,).toContain(
-          `select-short-bench (reachable ${String(reachable,)} of ${String(WIDE_BENCH.length,)}, minimum ${
-            ((MIN_SELECTION_WEIGHT * reachable) / quorum).toFixed(2,)
-          })`,
-        );
-      },
-    },),
-
-    it({
-      name: 'LEAVES A BENCH AT QUORUM UNDER THE ABSOLUTE MINIMUM: with the dry seats served '
-        + 'again, the same producer-plus-one agreement at three halves is short of 2 and declines '
-        + 'exactly as it did before the decision',
-      fn: async () => {
-        /** The same ballots on a bench every provider serves. */
-        const outcome = await runShortBench({
-          ballots: {
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
-          },
-          unreachable: [],
-        },);
-        expect(outcome.kind,).toBe('declined',);
-        if (outcome.kind !== 'declined')
-          throw new Error('unreachable',);
-        expect(outcome.reason,).toBe('winner short of the minimum vote weight',);
-        expect(outcome.findings.some(function isShortBench(finding,): boolean {
-          return finding.startsWith('select-short-bench',);
-        },),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: selectBestCandidate.name,
-  children: [
-    it({
-      name: 'SEATS a model that produced a candidate and counts its ballot for '
-        + 'its own work at half weight, which is the whole trade the user '
-        + 'chose on 2026-08-15: these models have different blind spots, so a '
-        + 'producer reading its own text is a weaker instrument than a '
-        + 'disinterested one rather than a worthless one',
-      fn: async () => {
-        // Both producers land on their own candidate here because that is the
-        // case under test, not because it is what usually happens: the sheet
-        // is anonymized, so a judge cannot see which candidate is its own and
-        // a self-vote is a mild tilt rather than a decision to back itself.
-        // GLM-5.2 and Kimi take candidate 1, Qwen and the two remaining judges
-        // take candidate 2.
-        const { outcome, calls, } = await runSelection({
-          ballots: {
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 2,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 2,
-          },
-        },);
-        // Every judge on the roster was asked, producers included.
-        expect(calls,).toBe(5,);
-        expect(outcome.tally.judgesAvailable,).toBe(5,);
-        expect(outcome.kind,).toBe('selected',);
-        expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('second',);
-        // THE DISCOUNT IS THE ASSERTION. Three ballots named candidate 2, so a
-        // count would read 3; one of the three was its own author's, so the
-        // weight reads 2.5. Candidate 1 sits at 1.5 rather than 2 for the same
-        // reason, which is the margin the discount exists to create.
-        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,)
-          .toBe((2 * FULL_VOTE_WEIGHT) + SELF_VOTE_WEIGHT,);
-        expect(outcome.tally.abstentions,).toBe(0,);
-        // The self-vote is recorded rather than assumed away, so its rate is
-        // readable from artifacts instead of argued about.
-        expect(outcome.tally.selfVotes,).toBe(2,);
-        expect(outcome.findings,).toContain('select-self-vote (hf:zai-org/GLM-5.3-Flash)',);
-        expect(outcome.findings,).toContain('select-self-vote (hf:Qwen/Qwen3.8-27B)',);
-      },
-    },),
-
-    it({
-      name: 'SHIPS a collapsed candidate backed only by the models that wrote '
-        + 'it, once enough of them wrote it. Four models returning '
-        + 'byte-identical text merge into one candidate, so four ballots for '
-        + 'it are four SELF votes, and four halves reach the minimum with no '
-        + 'disinterested judge involved. That is deliberate: independent '
-        + 'models agreeing to the byte IS the corroboration, and it is the one '
-        + 'case where the weights do not require an outside voice',
-      fn: async () => {
-        /** Models that wrote the one collapsed candidate. */
-        const contributors = [
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_HYPER_OPENROUTER_UNMEASURED,
-        ];
-        const { outcome, } = await runCollapsedSelection({ contributors, },);
-        // Enough self votes to reach the minimum, which this case needs to mean anything.
-        expect(contributors.length * SELF_VOTE_WEIGHT,).toBeGreaterThanOrEqual(MIN_SELECTION_WEIGHT,);
-        expect(outcome.kind,).toBe('selected',);
-        expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('collapsed',);
-        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(contributors.length * SELF_VOTE_WEIGHT,);
-        expect(outcome.tally.selfVotes,).toBe(contributors.length,);
-      },
-    },),
-
-    it({
-      name: 'DECLINES the same shape one contributor short, which is what '
-        + 'keeps the previous case from being a hole: three halves fall below '
-        + 'the minimum, so a candidate three models wrote and nobody else '
-        + 'endorsed does not ship',
-      fn: async () => {
-        const { outcome, } = await runCollapsedSelection({
-          contributors: [
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            SEAT_SYNTHETIC_VISION_WITHHELD,
-          ],
-        },);
-        expect(outcome.kind,).toBe('declined',);
-        expect(outcome.tally.selfVotes,).toBe(3,);
-      },
-    },),
-
-    it({
-      name: 'ASKS a window of quorum plus one judges in production, so five healthy judges cost '
-        + 'four calls and the fifth is never asked while quorum stands',
-      fn: async () => {
-        const { outcome, calls, } = await runSelection({
-          ballots: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 1,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
-          },
-          fanOut: 'window',
-        },);
-        expect(outcome.kind,).toBe('selected',);
-        expect(calls,).toBe(4,);
-      },
-    },),
-
-    it({
-      name: 'declines when the leader draws a single vote, so a lone judge '
-        + 'cannot decide the stage by itself',
-      fn: async () => {
-        // One judge names a candidate and the other four answer that NO
-        // candidate is acceptable, which is what a zero ballot means and what
-        // the judge sheet asks for by name. A plurality of one is one model in
-        // control, which is the thing the ensemble exists to prevent.
-        const { outcome, } = await runSelection({
-          ballots: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 0,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
-          },
-        },);
-        expect(outcome.kind,).toBe('declined',);
-        expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe(
-          'winner short of the minimum vote weight',
-        );
-        expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
-        expect(outcome.tally.abstentions,).toBe(4,);
-      },
-    },),
-
-    it({
-      name: 'reads a tie as indecision, not as a verdict against the candidates',
-      fn: async () => {
-        const { outcome, } = await runSelection({
-          ballots: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-          },
-        },);
-        expect(outcome.kind,).toBe('declined',);
-        expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe('judges tied',);
-        expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
-      },
-    },),
-
-    it({
-      name: 'reads unanimous refusal as a rejection, a substantive verdict '
-        + 'rather than a failure to rank',
-      fn: async () => {
-        const { outcome, } = await runSelection({
-          ballots: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-          },
-        },);
-        expect(outcome.kind,).toBe('declined',);
-        expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe('every judge declined',);
-        expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('rejection',);
-      },
-    },),
-
-    it({
-      name: 'counts a ballot naming a candidate that does not exist as an '
-        + 'abstention rather than discarding it',
-      fn: async () => {
-        const { outcome, } = await runSelection({
-          ballots: {
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 2,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 9,
-          },
-        },);
-        expect(outcome.kind,).toBe('selected',);
-        // The out-of-range ballot, plus the two producers left unscripted.
-        expect(outcome.tally.abstentions,).toBe(3,);
-        expect(outcome.tally.ballots,).toBe(5,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a roster naming one judge twice, before spending a single '
-        + 'call. Two exchanges to one model are two ballots from one opinion, '
-        + 'which reaches the minimum weight alone, and the stage guard cannot '
-        + 'catch it because selectPerEnvelope and selectChunkPatch are '
-        + 'reachable without one',
-      fn: async () => {
-        /**
-         Calls a refused round is allowed to make.
-         */
-        const counter = { calls: 0, };
-
-        /**
-         Round over a roster naming one model twice.
-         */
-        const refused = selectBestCandidate({
-          client: scriptedJudges({
-            ballots: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 1, },
-            counter,
-          },),
-          candidates: STRING_CANDIDATES,
-          judgeModelIds: [
-            SEAT_SYNTHETIC_VISION_WITHHELD,
-            SEAT_SYNTHETIC_VISION_WITHHELD,
-          ],
-          task: 'Pick one.',
-          criteria: ['Faithful.',],
-          evidence: [
-            {
-              label: 'ORIGINAL',
-              text: SOURCE_TEXT,
-            },
-          ],
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        await expect(refused,).rejects.toBeInstanceOf(ProducerRosterError,);
-        expect(counter.calls,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'still seats a producer that judges, which is the arrangement the '
-        + 'repeat check must not break: the same model appearing once as an '
-        + 'author and once as a judge is one voice with a stake, not two voices',
-      fn: async () => {
-        const { outcome, } = await runSelection({
-          ballots: {
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
-          },
-        },);
-        expect(outcome.kind,).toBe('selected',);
-        expect(outcome.tally.selfVotes,).toBe(1,);
-      },
-    },),
-  ],
-},);
-
 /**
  Builds one editor candidate proposing a replacement for the fixture
  envelope.
@@ -859,344 +513,702 @@ function candidateFor(
 }
 
 await describe({
-  name: selectPerEnvelope.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'adopts a sole proposal without spending a judge call, since there '
-        + 'is nothing to compare it against',
-      fn: async () => {
-        /** Judge calls the pass made. */
-        const counter = { calls: 0, };
+    describe({
+      name: 'selection on a bench short of quorum',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SEATS A WINNER BY A SHARE OF THE REACHABLE WEIGHT where the router refused most '
+            + 'of the bench, the owner\'s decision of 2026-09-09: three of eight reachable against a '
+            + 'quorum of four puts the minimum at three halves, so a producer and one disinterested '
+            + 'judge agreeing ship what the absolute 2 kept unfilled, and the finding names the bench',
+          fn: async () => {
+            /** Quorum over the seated bench. */
+            const quorum = rosterQuorumSize({ rosterSize: WIDE_BENCH.length, },);
+            /** Seats the dry day leaves reachable. */
+            const reachable = WIDE_BENCH.length - DRY_SEATS.length;
+            /** GLM-5.3-Flash backs its own text at half weight, Qwen backs it at full, gpt-oss declines. */
+            const outcome = await runShortBench({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+              },
+            },);
+            expect(outcome.kind,).toBe('selected',);
+            if (outcome.kind !== 'selected')
+              throw new Error('unreachable',);
+            expect(outcome.voteWeight,).toBe(SELF_VOTE_WEIGHT + FULL_VOTE_WEIGHT,);
+            expect(outcome.tally.judgesAvailable,).toBe(WIDE_BENCH.length,);
+            expect(outcome.tally.ballots,).toBe(reachable,);
+            expect(outcome.findings,).toContain(
+              `select-short-bench (reachable ${String(reachable,)} of ${String(WIDE_BENCH.length,)}, minimum ${
+            ((MIN_SELECTION_WEIGHT * reachable) / quorum).toFixed(2,)
+          })`,
+            );
+            // Every dry seat is reported lost, as before; the `select-short-bench`
+            // finding is what says the losses were the bench and not the weather.
+            for (const seat of DRY_SEATS)
+              expect(outcome.findings,).toContain(`stage-voice-lost (select ${seat})`,);
+          },
+        },),
 
-        /** Composite over one editor's single proposal. */
-        const selection = await selectPerEnvelope({
-          client: scriptedJudges({
-            ballots: {},
-            counter,
-          },),
-          candidates: [
-            candidateFor({
-              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              newText: 'The cat chases butterflies.',
-            },),
-          ],
-          envelopes: [ENVELOPE,],
-          judgeModelIds: JUDGES,
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TEXT,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(counter.calls,).toBe(0,);
-        expect(selection.soleCount,).toBe(1,);
-        expect(selection.judgedCount,).toBe(0,);
-        expect(selection.operations.length,).toBe(1,);
-        expect([...selection.contributors,],).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
-        // Recorded as a round of its own kind, so the author survives into
-        // the attribution instead of vanishing with the vote that never was.
-        expect(selection.rounds.length,).toBe(1,);
-        expect(selection.rounds[0]?.kind,).toBe('adopted',);
-        expect(selection.rounds[0]?.envelopeId,).toBe(ENVELOPE.envelopeId,);
-        expect(selection.rounds[0]?.slate.length,).toBe(1,);
-        expect(selection.rounds[0]?.slate[0]?.producer,).toEqual({
-          kind: 'model',
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-        },);
-      },
+        it({
+          name: 'KEEPS TWO BALLOTS AS THE FLOOR whatever the scaled weight, so one judge never '
+            + 'decides: two of eight reachable puts the minimum at one full ballot, and a lone full '
+            + 'ballot is declined as one judge alone rather than seated',
+          fn: async () => {
+            /** Quorum over the seated bench. */
+            const quorum = rosterQuorumSize({ rosterSize: WIDE_BENCH.length, },);
+            /** The dry day's seats and the GLM seat. */
+            const unreachable = [
+              ...DRY_SEATS,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            ];
+            /** Seats left reachable. */
+            const reachable = WIDE_BENCH.length - unreachable.length;
+            /** Only Qwen and gpt-oss reachable; Qwen names candidate 1 at full weight, gpt-oss declines. */
+            const outcome = await runShortBench({
+              ballots: {
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+              },
+              unreachable,
+            },);
+            // The scaled minimum is one full ballot, so only the two-ballot floor declines it.
+            expect((MIN_SELECTION_WEIGHT * reachable) / quorum,).toBe(FULL_VOTE_WEIGHT,);
+            expect(outcome.kind,).toBe('declined',);
+            if (outcome.kind !== 'declined')
+              throw new Error('unreachable',);
+            expect(outcome.reason,).toBe('winner named by one judge alone',);
+            expect(outcome.disposition,).toBe('indecision',);
+            expect(outcome.findings,).toContain(
+              `select-short-bench (reachable ${String(reachable,)} of ${String(WIDE_BENCH.length,)}, minimum ${
+            ((MIN_SELECTION_WEIGHT * reachable) / quorum).toFixed(2,)
+          })`,
+            );
+          },
+        },),
+
+        it({
+          name: 'LEAVES A BENCH AT QUORUM UNDER THE ABSOLUTE MINIMUM: with the dry seats served '
+            + 'again, the same producer-plus-one agreement at three halves is short of 2 and declines '
+            + 'exactly as it did before the decision',
+          fn: async () => {
+            /** The same ballots on a bench every provider serves. */
+            const outcome = await runShortBench({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+              },
+              unreachable: [],
+            },);
+            expect(outcome.kind,).toBe('declined',);
+            if (outcome.kind !== 'declined')
+              throw new Error('unreachable',);
+            expect(outcome.reason,).toBe('winner short of the minimum vote weight',);
+            expect(outcome.findings.some(function isShortBench(finding,): boolean {
+              return finding.startsWith('select-short-bench',);
+            },),).toBe(false,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'leaves an envelope unedited when judges decline it, and credits '
-        + 'no contributor for it',
-      fn: async () => {
-        /** Judge calls the pass made. */
-        const counter = { calls: 0, };
+    describe({
+      name: selectBestCandidate.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SEATS a model that produced a candidate and counts its ballot for '
+            + 'its own work at half weight, which is the whole trade the user '
+            + 'chose on 2026-08-15: these models have different blind spots, so a '
+            + 'producer reading its own text is a weaker instrument than a '
+            + 'disinterested one rather than a worthless one',
+          fn: async () => {
+            // Both producers land on their own candidate here because that is the
+            // case under test, not because it is what usually happens: the sheet
+            // is anonymized, so a judge cannot see which candidate is its own and
+            // a self-vote is a mild tilt rather than a decision to back itself.
+            // GLM-5.2 and Kimi take candidate 1, Qwen and the two remaining judges
+            // take candidate 2.
+            const { outcome, calls, } = await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 2,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 2,
+              },
+            },);
+            // Every judge on the roster was asked, producers included.
+            expect(calls,).toBe(5,);
+            expect(outcome.tally.judgesAvailable,).toBe(5,);
+            expect(outcome.kind,).toBe('selected',);
+            expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('second',);
+            // THE DISCOUNT IS THE ASSERTION. Three ballots named candidate 2, so a
+            // count would read 3; one of the three was its own author's, so the
+            // weight reads 2.5. Candidate 1 sits at 1.5 rather than 2 for the same
+            // reason, which is the margin the discount exists to create.
+            expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,)
+              .toBe((2 * FULL_VOTE_WEIGHT) + SELF_VOTE_WEIGHT,);
+            expect(outcome.tally.abstentions,).toBe(0,);
+            // The self-vote is recorded rather than assumed away, so its rate is
+            // readable from artifacts instead of argued about.
+            expect(outcome.tally.selfVotes,).toBe(2,);
+            expect(outcome.findings,).toContain('select-self-vote (hf:zai-org/GLM-5.3-Flash)',);
+            expect(outcome.findings,).toContain('select-self-vote (hf:Qwen/Qwen3.8-27B)',);
+          },
+        },),
 
-        /** Composite over two competing proposals every judge refuses. */
-        const selection = await selectPerEnvelope({
-          client: scriptedJudges({
-            ballots: {},
-            counter,
-          },),
-          candidates: [
-            candidateFor({
+        it({
+          name: 'SHIPS a collapsed candidate backed only by the models that wrote '
+            + 'it, once enough of them wrote it. Four models returning '
+            + 'byte-identical text merge into one candidate, so four ballots for '
+            + 'it are four SELF votes, and four halves reach the minimum with no '
+            + 'disinterested judge involved. That is deliberate: independent '
+            + 'models agreeing to the byte IS the corroboration, and it is the one '
+            + 'case where the weights do not require an outside voice',
+          fn: async () => {
+            /** Models that wrote the one collapsed candidate. */
+            const contributors = [
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_HYPER_OPENROUTER_UNMEASURED,
+            ];
+            const { outcome, } = await runCollapsedSelection({ contributors, },);
+            // Enough self votes to reach the minimum, which this case needs to mean anything.
+            expect(contributors.length * SELF_VOTE_WEIGHT,).toBeGreaterThanOrEqual(MIN_SELECTION_WEIGHT,);
+            expect(outcome.kind,).toBe('selected',);
+            expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('collapsed',);
+            expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(contributors.length * SELF_VOTE_WEIGHT,);
+            expect(outcome.tally.selfVotes,).toBe(contributors.length,);
+          },
+        },),
+
+        it({
+          name: 'DECLINES the same shape one contributor short, which is what '
+            + 'keeps the previous case from being a hole: three halves fall below '
+            + 'the minimum, so a candidate three models wrote and nobody else '
+            + 'endorsed does not ship',
+          fn: async () => {
+            const { outcome, } = await runCollapsedSelection({
+              contributors: [
+                SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                SEAT_SYNTHETIC_VISION_WITHHELD,
+              ],
+            },);
+            expect(outcome.kind,).toBe('declined',);
+            expect(outcome.tally.selfVotes,).toBe(3,);
+          },
+        },),
+
+        it({
+          name: 'ASKS a window of quorum plus one judges in production, so five healthy judges cost '
+            + 'four calls and the fifth is never asked while quorum stands',
+          fn: async () => {
+            const { outcome, calls, } = await runSelection({
+              ballots: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 1,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+              },
+              fanOut: 'window',
+            },);
+            expect(outcome.kind,).toBe('selected',);
+            expect(calls,).toBe(4,);
+          },
+        },),
+
+        it({
+          name: 'declines when the leader draws a single vote, so a lone judge '
+            + 'cannot decide the stage by itself',
+          fn: async () => {
+            // One judge names a candidate and the other four answer that NO
+            // candidate is acceptable, which is what a zero ballot means and what
+            // the judge sheet asks for by name. A plurality of one is one model in
+            // control, which is the thing the ensemble exists to prevent.
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 0,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
+              },
+            },);
+            expect(outcome.kind,).toBe('declined',);
+            expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe(
+              'winner short of the minimum vote weight',
+            );
+            expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
+            expect(outcome.tally.abstentions,).toBe(4,);
+          },
+        },),
+
+        it({
+          name: 'reads a tie as indecision, not as a verdict against the candidates',
+          fn: async () => {
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+              },
+            },);
+            expect(outcome.kind,).toBe('declined',);
+            expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe('judges tied',);
+            expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
+          },
+        },),
+
+        it({
+          name: 'reads unanimous refusal as a rejection, a substantive verdict '
+            + 'rather than a failure to rank',
+          fn: async () => {
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+              },
+            },);
+            expect(outcome.kind,).toBe('declined',);
+            expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe('every judge declined',);
+            expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('rejection',);
+          },
+        },),
+
+        it({
+          name: 'counts a ballot naming a candidate that does not exist as an '
+            + 'abstention rather than discarding it',
+          fn: async () => {
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 2,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 9,
+              },
+            },);
+            expect(outcome.kind,).toBe('selected',);
+            // The out-of-range ballot, plus the two producers left unscripted.
+            expect(outcome.tally.abstentions,).toBe(3,);
+            expect(outcome.tally.ballots,).toBe(5,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a roster naming one judge twice, before spending a single '
+            + 'call. Two exchanges to one model are two ballots from one opinion, '
+            + 'which reaches the minimum weight alone, and the stage guard cannot '
+            + 'catch it because selectPerEnvelope and selectChunkPatch are '
+            + 'reachable without one',
+          fn: async () => {
+            /**
+             Calls a refused round is allowed to make.
+             */
+            const counter = { calls: 0, };
+
+            /**
+             Round over a roster naming one model twice.
+             */
+            const refused = selectBestCandidate({
+              client: scriptedJudges({
+                ballots: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 1, },
+                counter,
+              },),
+              candidates: STRING_CANDIDATES,
+              judgeModelIds: [
+                SEAT_SYNTHETIC_VISION_WITHHELD,
+                SEAT_SYNTHETIC_VISION_WITHHELD,
+              ],
+              task: 'Pick one.',
+              criteria: ['Faithful.',],
+              evidence: [
+                {
+                  label: 'ORIGINAL',
+                  text: SOURCE_TEXT,
+                },
+              ],
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            await expect(refused,).rejects.toBeInstanceOf(ProducerRosterError,);
+            expect(counter.calls,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'still seats a producer that judges, which is the arrangement the '
+            + 'repeat check must not break: the same model appearing once as an '
+            + 'author and once as a judge is one voice with a stake, not two voices',
+          fn: async () => {
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
+              },
+            },);
+            expect(outcome.kind,).toBe('selected',);
+            expect(outcome.tally.selfVotes,).toBe(1,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: selectPerEnvelope.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'adopts a sole proposal without spending a judge call, since there '
+            + 'is nothing to compare it against',
+          fn: async () => {
+            /** Judge calls the pass made. */
+            const counter = { calls: 0, };
+
+            /** Composite over one editor's single proposal. */
+            const selection = await selectPerEnvelope({
+              client: scriptedJudges({
+                ballots: {},
+                counter,
+              },),
+              candidates: [
+                candidateFor({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  newText: 'The cat chases butterflies.',
+                },),
+              ],
+              envelopes: [ENVELOPE,],
+              judgeModelIds: JUDGES,
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(counter.calls,).toBe(0,);
+            expect(selection.soleCount,).toBe(1,);
+            expect(selection.judgedCount,).toBe(0,);
+            expect(selection.operations.length,).toBe(1,);
+            expect([...selection.contributors,],).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
+            // Recorded as a round of its own kind, so the author survives into
+            // the attribution instead of vanishing with the vote that never was.
+            expect(selection.rounds.length,).toBe(1,);
+            expect(selection.rounds[0]?.kind,).toBe('adopted',);
+            expect(selection.rounds[0]?.envelopeId,).toBe(ENVELOPE.envelopeId,);
+            expect(selection.rounds[0]?.slate.length,).toBe(1,);
+            expect(selection.rounds[0]?.slate[0]?.producer,).toEqual({
+              kind: 'model',
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            },);
+          },
+        },),
+
+        it({
+          name: 'leaves an envelope unedited when judges decline it, and credits '
+            + 'no contributor for it',
+          fn: async () => {
+            /** Judge calls the pass made. */
+            const counter = { calls: 0, };
+
+            /** Composite over two competing proposals every judge refuses. */
+            const selection = await selectPerEnvelope({
+              client: scriptedJudges({
+                ballots: {},
+                counter,
+              },),
+              candidates: [
+                candidateFor({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  newText: 'The cat chases butterflies.',
+                },),
+                candidateFor({
+                  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                  newText: 'The cat loves chasing butterflies.',
+                },),
+              ],
+              envelopes: [ENVELOPE,],
+              judgeModelIds: JUDGES,
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(counter.calls,).toBeGreaterThan(0,);
+            expect(selection.declinedCount,).toBe(1,);
+            expect(selection.operations.length,).toBe(0,);
+            expect(selection.contributors.length,).toBe(0,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: selectChunkPatch.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ships the strongest repair when judges fail to rank, because a '
+            + 'disagreement about wording is not a verdict against repairing',
+          fn: async () => {
+            /** Repair kept when judges cannot converge, named for its author. */
+            const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
               modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
-            },),
-            candidateFor({
-              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-              newText: 'The cat loves chasing butterflies.',
-            },),
-          ],
-          envelopes: [ENVELOPE,],
-          judgeModelIds: JUDGES,
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TEXT,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(counter.calls,).toBeGreaterThan(0,);
-        expect(selection.declinedCount,).toBe(1,);
-        expect(selection.operations.length,).toBe(0,);
-        expect(selection.contributors.length,).toBe(0,);
-      },
+            },),);
+
+            /** Untouched chunk, reserved for an outright rejection. */
+            const rejectionFallback: PatchOutcome = {
+              patchedText: TARGET_TEXT,
+              applied: [],
+              rejected: [],
+            };
+
+            /** Judge calls the pass made. */
+            const counter = { calls: 0, };
+
+            /** Verdict over two candidates the judges tie on. */
+            const { patch, shippedProducer, } = await selectChunkPatch({
+              client: scriptedJudges({
+                ballots: {
+                  [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+                  [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
+                  [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+                },
+                counter,
+              },),
+              candidates: STRING_CANDIDATES.map(function toPatchCandidate(
+                candidate,
+                index,
+              ): Candidate<PatchOutcome> {
+                return {
+                  producer: candidate.producer,
+                  value: candidateFor({
+                    modelId: candidate.producer.kind === 'model'
+                      ? candidate.producer.modelId
+                      : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                    newText: `Replacement ${String(index + 1,)}.`,
+                  },).patch,
+                  rendered: candidate.rendered,
+                };
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: SOURCE_TEXT,
+              indecisionFallback,
+              rejectionFallback,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(patch.patchedText,).toContain('The cat chases butterflies.',);
+            expect(patch.applied.length,).toBe(1,);
+            // WHO shipped it, not just what shipped. A declined round records
+            // ballots and no winner, so this is the one path where authorship
+            // cannot be read back off the round, and leaving it unnamed lets the
+            // editor that wrote this text certify its own work at full weight.
+            expect(shippedProducer,).toEqual({
+              kind: 'model',
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            },);
+          },
+        },),
+
+        it({
+          name: 'ships no repair when every judge refuses, rather than overruling '
+            + 'a verdict that none of the candidates is good enough',
+          fn: async () => {
+            /** Repair that must NOT ship over an outright rejection. */
+            const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              newText: 'The cat chases butterflies.',
+            },),);
+
+            /** Untouched chunk. */
+            const rejectionFallback: PatchOutcome = {
+              patchedText: TARGET_TEXT,
+              applied: [],
+              rejected: [],
+            };
+
+            /** Judge calls the pass made. */
+            const counter = { calls: 0, };
+
+            /** Verdict over candidates every judge refuses. */
+            const { patch, } = await selectChunkPatch({
+              client: scriptedJudges({
+                ballots: {},
+                counter,
+              },),
+              candidates: STRING_CANDIDATES.map(function toPatchCandidate(
+                candidate,
+                index,
+              ): Candidate<PatchOutcome> {
+                return {
+                  producer: candidate.producer,
+                  value: candidateFor({
+                    modelId: candidate.producer.kind === 'model'
+                      ? candidate.producer.modelId
+                      : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                    newText: `Replacement ${String(index + 1,)}.`,
+                  },).patch,
+                  rendered: candidate.rendered,
+                };
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: SOURCE_TEXT,
+              indecisionFallback,
+              rejectionFallback,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(patch.patchedText,).toBe(TARGET_TEXT,);
+            expect(patch.applied.length,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'ships a sole surviving candidate unjudged, since deduplication '
+            + 'means every editor and the composite wrote the same text',
+          fn: async () => {
+            /** Judge calls the pass made. */
+            const counter = { calls: 0, };
+
+            /** Text every proposal agreed on. */
+            const agreed = candidateFor({
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              newText: 'The cat chases butterflies.',
+            },).patch;
+
+            /**
+             The one distinct candidate, which is also what would ship if judges
+             declined, so both roles are filled by the same object here.
+             */
+            const sole: Candidate<PatchOutcome> = {
+              producer: {
+                kind: 'composite',
+                contributors: [
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                ],
+              },
+              value: agreed,
+              rendered: agreed.patchedText,
+            };
+
+            /** Verdict over the one distinct candidate. */
+            const { patch, } = await selectChunkPatch({
+              client: scriptedJudges({
+                ballots: {},
+                counter,
+              },),
+              candidates: [sole,],
+              judgeModelIds: JUDGES,
+              sourceText: SOURCE_TEXT,
+              indecisionFallback: sole,
+              rejectionFallback: {
+                patchedText: TARGET_TEXT,
+                applied: [],
+                rejected: [],
+              },
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(counter.calls,).toBe(0,);
+            expect(patch.patchedText,).toContain('The cat chases butterflies.',);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: selectChunkPatch.name,
-  children: [
-    it({
-      name: 'ships the strongest repair when judges fail to rank, because a '
-        + 'disagreement about wording is not a verdict against repairing',
-      fn: async () => {
-        /** Repair kept when judges cannot converge, named for its author. */
-        const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          newText: 'The cat chases butterflies.',
-        },),);
-
-        /** Untouched chunk, reserved for an outright rejection. */
-        const rejectionFallback: PatchOutcome = {
-          patchedText: TARGET_TEXT,
-          applied: [],
-          rejected: [],
-        };
-
-        /** Judge calls the pass made. */
-        const counter = { calls: 0, };
-
-        /** Verdict over two candidates the judges tie on. */
-        const { patch, shippedProducer, } = await selectChunkPatch({
-          client: scriptedJudges({
-            ballots: {
+    describe({
+      name: 'a run-off over valid finalists (class seventy-three, mikaela4, 2026-09-19)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SEATS the run-off leader named by two ballots under the weight minimum, since the finalists '
+            + 'were valid and abstentions answer neither; the same ballots decline outside a run-off',
+          fn: async () => {
+            // GLM-5.3-Flash wrote candidate 1 and names it at half weight, one
+            // disinterested judge names it at full weight, one names candidate 2,
+            // two abstain: 1.5 against 1 with two ballots behind the leader, under
+            // the absolute minimum of 2. That is mikaela4's slice 28 run-off.
+            /** Ballots the run-off heard. */
+            const ballots = {
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
               [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
               [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
               [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-            },
-            counter,
-          },),
-          candidates: STRING_CANDIDATES.map(function toPatchCandidate(
-            candidate,
-            index,
-          ): Candidate<PatchOutcome> {
-            return {
-              producer: candidate.producer,
-              value: candidateFor({
-                modelId: candidate.producer.kind === 'model'
-                  ? candidate.producer.modelId
-                  : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                newText: `Replacement ${String(index + 1,)}.`,
-              },).patch,
-              rendered: candidate.rendered,
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
             };
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: SOURCE_TEXT,
-          indecisionFallback,
-          rejectionFallback,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(patch.patchedText,).toContain('The cat chases butterflies.',);
-        expect(patch.applied.length,).toBe(1,);
-        // WHO shipped it, not just what shipped. A declined round records
-        // ballots and no winner, so this is the one path where authorship
-        // cannot be read back off the round, and leaving it unnamed lets the
-        // editor that wrote this text certify its own work at full weight.
-        expect(shippedProducer,).toEqual({
-          kind: 'model',
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-        },);
-      },
-    },),
-
-    it({
-      name: 'ships no repair when every judge refuses, rather than overruling '
-        + 'a verdict that none of the candidates is good enough',
-      fn: async () => {
-        /** Repair that must NOT ship over an outright rejection. */
-        const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          newText: 'The cat chases butterflies.',
-        },),);
-
-        /** Untouched chunk. */
-        const rejectionFallback: PatchOutcome = {
-          patchedText: TARGET_TEXT,
-          applied: [],
-          rejected: [],
-        };
-
-        /** Judge calls the pass made. */
-        const counter = { calls: 0, };
-
-        /** Verdict over candidates every judge refuses. */
-        const { patch, } = await selectChunkPatch({
-          client: scriptedJudges({
-            ballots: {},
-            counter,
-          },),
-          candidates: STRING_CANDIDATES.map(function toPatchCandidate(
-            candidate,
-            index,
-          ): Candidate<PatchOutcome> {
-            return {
-              producer: candidate.producer,
-              value: candidateFor({
-                modelId: candidate.producer.kind === 'model'
-                  ? candidate.producer.modelId
-                  : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                newText: `Replacement ${String(index + 1,)}.`,
-              },).patch,
-              rendered: candidate.rendered,
-            };
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: SOURCE_TEXT,
-          indecisionFallback,
-          rejectionFallback,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(patch.patchedText,).toBe(TARGET_TEXT,);
-        expect(patch.applied.length,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'ships a sole surviving candidate unjudged, since deduplication '
-        + 'means every editor and the composite wrote the same text',
-      fn: async () => {
-        /** Judge calls the pass made. */
-        const counter = { calls: 0, };
-
-        /** Text every proposal agreed on. */
-        const agreed = candidateFor({
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          newText: 'The cat chases butterflies.',
-        },).patch;
-
-        /**
-         The one distinct candidate, which is also what would ship if judges
-         declined, so both roles are filled by the same object here.
-         */
-        const sole: Candidate<PatchOutcome> = {
-          producer: {
-            kind: 'composite',
-            contributors: [
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            ],
+            const { outcome: first, } = await runSelection({ ballots, },);
+            expect(first.kind,).toBe('declined',);
+            expect(first.kind === 'declined' ? first.reason : '',).toBe('winner short of the minimum vote weight',);
+            const { outcome, } = await runSelection({
+              ballots,
+              runoff: true,
+            },);
+            expect(outcome.kind,).toBe('selected',);
+            expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('first',);
+            expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(SELF_VOTE_WEIGHT + FULL_VOTE_WEIGHT,);
+            expect(outcome.tally.abstentions,).toBe(2,);
+            expect(outcome.findings,).toContain('select-runoff-under-minimum',);
           },
-          value: agreed,
-          rendered: agreed.patchedText,
-        };
-
-        /** Verdict over the one distinct candidate. */
-        const { patch, } = await selectChunkPatch({
-          client: scriptedJudges({
-            ballots: {},
-            counter,
-          },),
-          candidates: [sole,],
-          judgeModelIds: JUDGES,
-          sourceText: SOURCE_TEXT,
-          indecisionFallback: sole,
-          rejectionFallback: {
-            patchedText: TARGET_TEXT,
-            applied: [],
-            rejected: [],
+        },),
+        it({
+          name: 'LOGS an abstaining ballot with its reason beside the choosing ballots, since a run-off lost to two '
+            + 'abstentions whose grounds were readable only off the cached replies (mikaela4 slice 28)',
+          fn: async () => {
+            /** Every line the round logged. */
+            const messages: string[] = [];
+            await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 9,
+              },
+              logger: capturingLogger({ messages, },),
+            },);
+            expect(messages.some(function namesTheAbstention(message,): boolean {
+              return message.includes(`${SEAT_HYPER_OPENROUTER_UNMEASURED} declined every candidate: scripted`,);
+            },),).toBe(true,);
+            expect(messages.some(function namesTheStray(message,): boolean {
+              return message.includes(`${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} named candidate 9, which is not on the slate of 2: scripted`,);
+            },),).toBe(true,);
           },
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(counter.calls,).toBe(0,);
-        expect(patch.patchedText,).toContain('The cat chases butterflies.',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: 'a run-off over valid finalists (class seventy-three, mikaela4, 2026-09-19)',
-  children: [
-    it({
-      name: 'SEATS the run-off leader named by two ballots under the weight minimum, since the finalists '
-        + 'were valid and abstentions answer neither; the same ballots decline outside a run-off',
-      fn: async () => {
-        // GLM-5.3-Flash wrote candidate 1 and names it at half weight, one
-        // disinterested judge names it at full weight, one names candidate 2,
-        // two abstain: 1.5 against 1 with two ballots behind the leader, under
-        // the absolute minimum of 2. That is mikaela4's slice 28 run-off.
-        /** Ballots the run-off heard. */
-        const ballots = {
-          [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-          [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
-          [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
-          [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-          [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
-        };
-        const { outcome: first, } = await runSelection({ ballots, },);
-        expect(first.kind,).toBe('declined',);
-        expect(first.kind === 'declined' ? first.reason : '',).toBe('winner short of the minimum vote weight',);
-        const { outcome, } = await runSelection({
-          ballots,
-          runoff: true,
-        },);
-        expect(outcome.kind,).toBe('selected',);
-        expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('first',);
-        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(SELF_VOTE_WEIGHT + FULL_VOTE_WEIGHT,);
-        expect(outcome.tally.abstentions,).toBe(2,);
-        expect(outcome.findings,).toContain('select-runoff-under-minimum',);
-      },
-    },),
-    it({
-      name: 'LOGS an abstaining ballot with its reason beside the choosing ballots, since a run-off lost to two '
-        + 'abstentions whose grounds were readable only off the cached replies (mikaela4 slice 28)',
-      fn: async () => {
-        /** Every line the round logged. */
-        const messages: string[] = [];
-        await runSelection({
-          ballots: {
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 9,
+        },),
+        it({
+          name: 'still DECLINES a run-off whose leader one judge alone named, so the ballot floor holds',
+          fn: async () => {
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
+                [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
+                [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
+              },
+              runoff: true,
+            },);
+            expect(outcome.kind,).toBe('declined',);
+            expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
           },
-          logger: capturingLogger({ messages, },),
-        },);
-        expect(messages.some(function namesTheAbstention(message,): boolean {
-          return message.includes(`${SEAT_HYPER_OPENROUTER_UNMEASURED} declined every candidate: scripted`,);
-        },),).toBe(true,);
-        expect(messages.some(function namesTheStray(message,): boolean {
-          return message.includes(`${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} named candidate 9, which is not on the slate of 2: scripted`,);
-        },),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'still DECLINES a run-off whose leader one judge alone named, so the ballot floor holds',
-      fn: async () => {
-        const { outcome, } = await runSelection({
-          ballots: {
-            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
-            [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
-            [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
-            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
-          },
-          runoff: true,
-        },);
-        expect(outcome.kind,).toBe('declined',);
-        expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
-      },
+        },),
+      ],
     },),
   ],
 },);

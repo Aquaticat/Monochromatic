@@ -9,6 +9,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -57,61 +58,70 @@ const UNCASED = [
 ] as const;
 
 await describe({
-  name: isCasedLetter.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS EVERY CAPITAL AND SMALL LETTER AS CASED, and nothing else',
-      fn: async () => {
-        for (const character of [
-          ...CAPITALS,
-          ...SMALLS,
-        ]) {
-          expect(isCasedLetter({ character, },),).toBe(true,);
-        }
-        for (const character of UNCASED) {
-          expect(isCasedLetter({ character, },),).toBe(false,);
-        }
-      },
+    describe({
+      name: isCasedLetter.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS EVERY CAPITAL AND SMALL LETTER AS CASED, and nothing else',
+          fn: async () => {
+            for (const character of [
+              ...CAPITALS,
+              ...SMALLS,
+            ]) {
+              expect(isCasedLetter({ character, },),).toBe(true,);
+            }
+            for (const character of UNCASED) {
+              expect(isCasedLetter({ character, },),).toBe(false,);
+            }
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: isCapitalLetter.name,
-  children: [
-    it({
-      name: 'READS UPPER AND TITLE CASE AS CAPITAL, and a small letter or anything uncased as not',
-      fn: async () => {
-        for (const character of CAPITALS) {
-          expect(isCapitalLetter({ character, },),).toBe(true,);
-        }
-        for (const character of [
-          ...SMALLS,
-          ...UNCASED,
-        ]) {
-          expect(isCapitalLetter({ character, },),).toBe(false,);
-        }
-      },
+    describe({
+      name: isCapitalLetter.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS UPPER AND TITLE CASE AS CAPITAL, and a small letter or anything uncased as not',
+          fn: async () => {
+            for (const character of CAPITALS) {
+              expect(isCapitalLetter({ character, },),).toBe(true,);
+            }
+            for (const character of [
+              ...SMALLS,
+              ...UNCASED,
+            ]) {
+              expect(isCapitalLetter({ character, },),).toBe(false,);
+            }
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: isSmallLetter.name,
-  children: [
-    it({
-      name: 'READS LOWER CASE AS SMALL, and a capital, a title-case letter or anything uncased as not',
-      fn: async () => {
-        for (const character of SMALLS) {
-          expect(isSmallLetter({ character, },),).toBe(true,);
-        }
-        for (const character of [
-          ...CAPITALS,
-          ...UNCASED,
-        ]) {
-          expect(isSmallLetter({ character, },),).toBe(false,);
-        }
-      },
+    describe({
+      name: isSmallLetter.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS LOWER CASE AS SMALL, and a capital, a title-case letter or anything uncased as not',
+          fn: async () => {
+            for (const character of SMALLS) {
+              expect(isSmallLetter({ character, },),).toBe(true,);
+            }
+            for (const character of [
+              ...CAPITALS,
+              ...UNCASED,
+            ]) {
+              expect(isSmallLetter({ character, },),).toBe(false,);
+            }
+          },
+        },),
+      ],
     },),
   ],
 },);

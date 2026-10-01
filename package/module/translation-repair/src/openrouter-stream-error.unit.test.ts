@@ -13,6 +13,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -112,61 +113,66 @@ const ERROR_FINISH_STREAM = `${
 }data: [DONE]\n\n`;
 
 await describe({
-  name: openRouterStreamErrorOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS THE CODE, THE KIND AND THE ENDPOINT off the error chunk, which is everything an '
-        + 'operator needs to act on and nothing the upstream wrote',
-      fn: async () => {
-        expect(openRouterStreamErrorOf({ bodyText: FAILED_STREAM, },),).toEqual({
-          found: true,
-          code: 504,
-          errorType: 'timeout',
-          endpoint: 'Sill',
-        },);
-      },
-    },),
+    describe({
+      name: openRouterStreamErrorOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS THE CODE, THE KIND AND THE ENDPOINT off the error chunk, which is everything an '
+            + 'operator needs to act on and nothing the upstream wrote',
+          fn: async () => {
+            expect(openRouterStreamErrorOf({ bodyText: FAILED_STREAM, },),).toEqual({
+              found: true,
+              code: 504,
+              errorType: 'timeout',
+              endpoint: 'Sill',
+            },);
+          },
+        },),
 
-    it({
-      name: 'FINDS NOTHING IN A WHOLE STREAM, so an ordinary answer never reads as a failure',
-      fn: async () => {
-        expect(openRouterStreamErrorOf({ bodyText: WHOLE_STREAM, },),).toEqual(STREAM_ERROR_ABSENT,);
-        expect(openRouterStreamErrorOf({ bodyText: '', },),).toEqual(STREAM_ERROR_ABSENT,);
-      },
-    },),
+        it({
+          name: 'FINDS NOTHING IN A WHOLE STREAM, so an ordinary answer never reads as a failure',
+          fn: async () => {
+            expect(openRouterStreamErrorOf({ bodyText: WHOLE_STREAM, },),).toEqual(STREAM_ERROR_ABSENT,);
+            expect(openRouterStreamErrorOf({ bodyText: '', },),).toEqual(STREAM_ERROR_ABSENT,);
+          },
+        },),
 
-    it({
-      name: 'NAMES WHAT THE WIRE LEFT OUT rather than inventing it, when the error object carries no '
-        + 'code, no kind and the chunks no upstream',
-      fn: async () => {
-        /**
-         An error chunk stripped to the bare object.
-         */
-        const bare = framed({ chunk: { error: { message: 'the sill was busy', }, }, },);
+        it({
+          name: 'NAMES WHAT THE WIRE LEFT OUT rather than inventing it, when the error object carries no '
+            + 'code, no kind and the chunks no upstream',
+          fn: async () => {
+            /**
+             An error chunk stripped to the bare object.
+             */
+            const bare = framed({ chunk: { error: { message: 'the sill was busy', }, }, },);
 
-        expect(openRouterStreamErrorOf({ bodyText: bare, },),).toEqual({
-          found: true,
-          code: 'unnamed',
-          errorType: 'unnamed',
-          endpoint: 'unnamed',
-        },);
-      },
-    },),
+            expect(openRouterStreamErrorOf({ bodyText: bare, },),).toEqual({
+              found: true,
+              code: 'unnamed',
+              errorType: 'unnamed',
+              endpoint: 'unnamed',
+            },);
+          },
+        },),
 
-    it({
-      name: 'READS A CHOICE THAT STOPPED ON AN ERROR FINISH as the failure it is, the eighteenth class, '
-        + 'naming the native reason as the kind and no code, when no chunk carried an error object',
-      fn: async () => {
-        expect(openRouterStreamErrorOf({ bodyText: ERROR_FINISH_STREAM, },),).toEqual({
-          found: true,
-          code: 'unnamed',
-          errorType: 'upstream_error',
-          endpoint: 'Sill',
-        },);
-        /**
-         The same closing choice with no native reason and no upstream named.
-         */
-        const unnamed = `${
+        it({
+          name: 'READS A CHOICE THAT STOPPED ON AN ERROR FINISH as the failure it is, the eighteenth class, '
+            + 'naming the native reason as the kind and no code, when no chunk carried an error object',
+          fn: async () => {
+            expect(openRouterStreamErrorOf({ bodyText: ERROR_FINISH_STREAM, },),).toEqual({
+              found: true,
+              code: 'unnamed',
+              errorType: 'upstream_error',
+              endpoint: 'Sill',
+            },);
+            /**
+             The same closing choice with no native reason and no upstream named.
+             */
+            const unnamed = `${
           framed({
             chunk: {
               choices: [{
@@ -177,93 +183,96 @@ await describe({
             },
           },)
         }data: [DONE]\n\n`;
-        expect(openRouterStreamErrorOf({ bodyText: unnamed, },),).toEqual({
-          found: true,
-          code: 'unnamed',
-          errorType: 'error-finish',
-          endpoint: 'unnamed',
-        },);
-      },
-    },),
-
-    it({
-      name: 'TREATS AN ARRAY error FIELD AS NO ERROR AT ALL, falling through to the finish-reason '
-        + 'check rather than reporting a found failure with every field unnamed, which reading an '
-        + 'array chunk field as a record produces today (ledger B92)',
-      fn: async () => {
-        /**
-         A chunk whose error field is a bare array rather than a record.
-         */
-        const arrayErrorStream = framed({
-          chunk: {
-            provider: 'Sill',
-            choices: [],
-            error: [504,],
+            expect(openRouterStreamErrorOf({ bodyText: unnamed, },),).toEqual({
+              found: true,
+              code: 'unnamed',
+              errorType: 'error-finish',
+              endpoint: 'unnamed',
+            },);
           },
-        },);
+        },),
 
-        expect(openRouterStreamErrorOf({ bodyText: arrayErrorStream, },),).toEqual(STREAM_ERROR_ABSENT,);
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'TREATS AN ARRAY error FIELD AS NO ERROR AT ALL, falling through to the finish-reason '
+            + 'check rather than reporting a found failure with every field unnamed, which reading an '
+            + 'array chunk field as a record produces today (ledger B92)',
+          fn: async () => {
+            /**
+             A chunk whose error field is a bare array rather than a record.
+             */
+            const arrayErrorStream = framed({
+              chunk: {
+                provider: 'Sill',
+                choices: [],
+                error: [504,],
+              },
+            },);
 
-await describe({
-  name: requireNoStreamError.name,
-  children: [
-    it({
-      name: 'THROWS THE PROVIDER FAILURE CLASS on a failed stream, carrying the code and the endpoint '
-        + 'as fields a reader can act on, and a message that names them and nothing else',
-      fn: async () => {
-        /**
-         What the failed stream produces.
-         */
-        let thrown: unknown;
-        try {
-          requireNoStreamError({ bodyText: FAILED_STREAM, },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof InStreamProviderError,).toBe(true,);
-        expect((thrown as InStreamProviderError).code,).toBe(504,);
-        expect((thrown as InStreamProviderError).endpoint,).toBe('Sill',);
-        expect((thrown as InStreamProviderError).message,).toContain('code 504',);
-        expect((thrown as InStreamProviderError).message,).toContain('type timeout',);
-        expect((thrown as InStreamProviderError).message,).toContain('served by Sill',);
-        expect((thrown as InStreamProviderError).message.includes('busy',),).toBe(false,);
-      },
+            expect(openRouterStreamErrorOf({ bodyText: arrayErrorStream, },),).toEqual(STREAM_ERROR_ABSENT,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'LETS A WHOLE STREAM THROUGH, since the terminator check that follows is the one that '
-        + 'judges framing',
-      fn: async () => {
-        // A throw here fails the test on its own; the assertion records the
-        // reading the check was made from.
-        requireNoStreamError({ bodyText: WHOLE_STREAM, },);
-        expect(openRouterStreamErrorOf({ bodyText: WHOLE_STREAM, },).found,).toBe(false,);
-      },
-    },),
+    describe({
+      name: requireNoStreamError.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THROWS THE PROVIDER FAILURE CLASS on a failed stream, carrying the code and the endpoint '
+            + 'as fields a reader can act on, and a message that names them and nothing else',
+          fn: async () => {
+            /**
+             What the failed stream produces.
+             */
+            let thrown: unknown;
+            try {
+              requireNoStreamError({ bodyText: FAILED_STREAM, },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof InStreamProviderError,).toBe(true,);
+            expect((thrown as InStreamProviderError).code,).toBe(504,);
+            expect((thrown as InStreamProviderError).endpoint,).toBe('Sill',);
+            expect((thrown as InStreamProviderError).message,).toContain('code 504',);
+            expect((thrown as InStreamProviderError).message,).toContain('type timeout',);
+            expect((thrown as InStreamProviderError).message,).toContain('served by Sill',);
+            expect((thrown as InStreamProviderError).message.includes('busy',),).toBe(false,);
+          },
+        },),
 
-    it({
-      name: 'THROWS THE SAME FAILURE CLASS on an error finish, so the call rides the retry ladder '
-        + 'under its own name instead of reaching the reply ladder as an empty answer',
-      fn: async () => {
-        /**
-         What the error-finish stream produces.
-         */
-        let thrown: unknown;
-        try {
-          requireNoStreamError({ bodyText: ERROR_FINISH_STREAM, },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof InStreamProviderError,).toBe(true,);
-        expect((thrown as InStreamProviderError).code,).toBe('unnamed',);
-        expect((thrown as InStreamProviderError).endpoint,).toBe('Sill',);
-        expect((thrown as InStreamProviderError).message,).toContain('type upstream_error',);
-        expect((thrown as InStreamProviderError).message,).toContain('served by Sill',);
-      },
+        it({
+          name: 'LETS A WHOLE STREAM THROUGH, since the terminator check that follows is the one that '
+            + 'judges framing',
+          fn: async () => {
+            // A throw here fails the test on its own; the assertion records the
+            // reading the check was made from.
+            requireNoStreamError({ bodyText: WHOLE_STREAM, },);
+            expect(openRouterStreamErrorOf({ bodyText: WHOLE_STREAM, },).found,).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'THROWS THE SAME FAILURE CLASS on an error finish, so the call rides the retry ladder '
+            + 'under its own name instead of reaching the reply ladder as an empty answer',
+          fn: async () => {
+            /**
+             What the error-finish stream produces.
+             */
+            let thrown: unknown;
+            try {
+              requireNoStreamError({ bodyText: ERROR_FINISH_STREAM, },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof InStreamProviderError,).toBe(true,);
+            expect((thrown as InStreamProviderError).code,).toBe('unnamed',);
+            expect((thrown as InStreamProviderError).endpoint,).toBe('Sill',);
+            expect((thrown as InStreamProviderError).message,).toContain('type upstream_error',);
+            expect((thrown as InStreamProviderError).message,).toContain('served by Sill',);
+          },
+        },),
+      ],
     },),
   ],
 },);

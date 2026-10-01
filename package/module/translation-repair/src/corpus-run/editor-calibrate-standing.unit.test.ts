@@ -14,6 +14,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -107,152 +108,160 @@ const COMPOSITE_ROUND: SelectionRound = {
 //endregion Fixtures
 
 await describe({
-  name: standingReportLines.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'renders a heading and the no-rounds note when nothing was judged',
-      fn: async () => {
-        /**
-         Report for a seat that judged nothing on either slice.
-         */
-        const lines = standingReportLines({
-          seat: 'EDITOR',
-          roster: ROSTER,
-          perSlice: [
-            [],
-            [],
-          ],
-          produced: [],
-          answered: { kind: 'unrecorded', },
-        },);
+    describe({
+      name: standingReportLines.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'renders a heading and the no-rounds note when nothing was judged',
+          fn: async () => {
+            /**
+             Report for a seat that judged nothing on either slice.
+             */
+            const lines = standingReportLines({
+              seat: 'EDITOR',
+              roster: ROSTER,
+              perSlice: [
+                [],
+                [],
+              ],
+              produced: [],
+              answered: { kind: 'unrecorded', },
+            },);
 
-        expect(lines,).toHaveLength(2,);
-        expect(lines[0],).toBe('\nEDITOR standing over 0 judged rounds, from 0 of 2 slices',);
-        expect(lines[1],).toContain('NO ROUNDS',);
-      },
-    },),
-
-    it({
-      name: 'renders the standings, then the answered-but-unslated seat, then the silent seat, '
-        + 'each on its own line',
-      fn: async () => {
-        /**
-         Report for one voted round on the first of two slices, at a seat
-         that heard the writer and the judge and never the idle model.
-         */
-        const lines = standingReportLines({
-          seat: 'REFINER',
-          roster: ROSTER,
-          perSlice: [
-            [VOTED_ROUND,],
-            [],
-          ],
-          produced: [WRITER,],
-          answered: {
-            kind: 'recorded',
-            modelIds: [
-              WRITER,
-              JUDGE,
-            ],
+            expect(lines,).toHaveLength(2,);
+            expect(lines[0],).toBe('\nEDITOR standing over 0 judged rounds, from 0 of 2 slices',);
+            expect(lines[1],).toContain('NO ROUNDS',);
           },
-        },);
+        },),
 
-        expect(lines[0],).toBe('\nREFINER standing over 1 judged round, from 1 of 2 slices',);
-        expect(lines[1],).toContain(WRITER,);
-        expect(lines[2],).toContain('ANSWERED AND WAS NEVER SLATED',);
-        expect(lines[2],).toContain(JUDGE,);
-        expect(lines[2],).not.toContain(IDLE,);
-        expect(lines[3],).toContain('ANSWERED NOTHING USABLE',);
-        expect(lines[3],).toContain(IDLE,);
-        expect(lines[3],).not.toContain(JUDGE,);
-        expect(lines.at(-1,),).toBe(`  slice 1: 1 round; ${WRITER} 1/1 over 1`,);
-        expect(lines.slice(1, -1,).some(function isSliceLine(line,): boolean {
-          return line.startsWith('  slice ',);
-        },),).toBe(false,);
-      },
+        it({
+          name: 'renders the standings, then the answered-but-unslated seat, then the silent seat, '
+            + 'each on its own line',
+          fn: async () => {
+            /**
+             Report for one voted round on the first of two slices, at a seat
+             that heard the writer and the judge and never the idle model.
+             */
+            const lines = standingReportLines({
+              seat: 'REFINER',
+              roster: ROSTER,
+              perSlice: [
+                [VOTED_ROUND,],
+                [],
+              ],
+              produced: [WRITER,],
+              answered: {
+                kind: 'recorded',
+                modelIds: [
+                  WRITER,
+                  JUDGE,
+                ],
+              },
+            },);
+
+            expect(lines[0],).toBe('\nREFINER standing over 1 judged round, from 1 of 2 slices',);
+            expect(lines[1],).toContain(WRITER,);
+            expect(lines[2],).toContain('ANSWERED AND WAS NEVER SLATED',);
+            expect(lines[2],).toContain(JUDGE,);
+            expect(lines[2],).not.toContain(IDLE,);
+            expect(lines[3],).toContain('ANSWERED NOTHING USABLE',);
+            expect(lines[3],).toContain(IDLE,);
+            expect(lines[3],).not.toContain(JUDGE,);
+            expect(lines.at(-1,),).toBe(`  slice 1: 1 round; ${WRITER} 1/1 over 1`,);
+            expect(lines.slice(1, -1,).some(function isSliceLine(line,): boolean {
+              return line.startsWith('  slice ',);
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'ends with one counts line per slice that bought a round, in sample order, '
+            + 'crediting every author of a composite and skipping slices that bought nothing',
+          fn: async () => {
+            /**
+             Per-slice lines for a voted slice, an empty slice, and a composite
+             slice nobody voted on.
+             */
+            const lines = sliceStandingLines({
+              perSlice: [
+                [VOTED_ROUND,],
+                [],
+                [COMPOSITE_ROUND,],
+              ],
+            },);
+
+            expect(lines,).toStrictEqual([
+              `  slice 1: 1 round; ${WRITER} 1/1 over 1`,
+              `  slice 3: 1 round; ${WRITER} 0/0 over 1; ${PARTNER} 0/0 over 1; ${JUDGE} 0/0 over 1`,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'indents every line after the heading, so the report reads as one block under it',
+          fn: async () => {
+            /**
+             Report with a standing line and a coverage line to check the
+             indentation of.
+             */
+            const lines = standingReportLines({
+              seat: 'EDITOR',
+              roster: ROSTER,
+              perSlice: [[VOTED_ROUND,],],
+              produced: [WRITER,],
+              answered: { kind: 'unrecorded', },
+            },);
+
+            for (const line of lines.slice(1,)) {
+              expect(line.startsWith('  ',),).toBe(true,);
+            }
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ends with one counts line per slice that bought a round, in sample order, '
-        + 'crediting every author of a composite and skipping slices that bought nothing',
-      fn: async () => {
-        /**
-         Per-slice lines for a voted slice, an empty slice, and a composite
-         slice nobody voted on.
-         */
-        const lines = sliceStandingLines({
-          perSlice: [
-            [VOTED_ROUND,],
-            [],
-            [COMPOSITE_ROUND,],
-          ],
-        },);
+    describe({
+      name: judgedAuthors.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'names every stakeholder of every slate in slate order, composites flattened',
+          fn: async () => {
+            /**
+             Authors across two slices, the second carrying a composite.
+             */
+            const authors = judgedAuthors({
+              perSlice: [
+                [VOTED_ROUND,],
+                [COMPOSITE_ROUND,],
+              ],
+            },);
 
-        expect(lines,).toStrictEqual([
-          `  slice 1: 1 round; ${WRITER} 1/1 over 1`,
-          `  slice 3: 1 round; ${WRITER} 0/0 over 1; ${PARTNER} 0/0 over 1; ${JUDGE} 0/0 over 1`,
-        ],);
-      },
-    },),
+            expect(authors,).toStrictEqual([
+              WRITER,
+              WRITER,
+              PARTNER,
+              JUDGE,
+            ],);
+          },
+        },),
 
-    it({
-      name: 'indents every line after the heading, so the report reads as one block under it',
-      fn: async () => {
-        /**
-         Report with a standing line and a coverage line to check the
-         indentation of.
-         */
-        const lines = standingReportLines({
-          seat: 'EDITOR',
-          roster: ROSTER,
-          perSlice: [[VOTED_ROUND,],],
-          produced: [WRITER,],
-          answered: { kind: 'unrecorded', },
-        },);
-
-        for (const line of lines.slice(1,)) {
-          expect(line.startsWith('  ',),).toBe(true,);
-        }
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: judgedAuthors.name,
-  children: [
-    it({
-      name: 'names every stakeholder of every slate in slate order, composites flattened',
-      fn: async () => {
-        /**
-         Authors across two slices, the second carrying a composite.
-         */
-        const authors = judgedAuthors({
-          perSlice: [
-            [VOTED_ROUND,],
-            [COMPOSITE_ROUND,],
-          ],
-        },);
-
-        expect(authors,).toStrictEqual([
-          WRITER,
-          WRITER,
-          PARTNER,
-          JUDGE,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'names nobody for slices that bought no round',
-      fn: async () => {
-        expect(judgedAuthors({
-          perSlice: [
-            [],
-            [],
-          ],
-        },),).toStrictEqual([],);
-      },
+        it({
+          name: 'names nobody for slices that bought no round',
+          fn: async () => {
+            expect(judgedAuthors({
+              perSlice: [
+                [],
+                [],
+              ],
+            },),).toStrictEqual([],);
+          },
+        },),
+      ],
     },),
   ],
 },);

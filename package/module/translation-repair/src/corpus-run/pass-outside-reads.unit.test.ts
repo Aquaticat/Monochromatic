@@ -25,6 +25,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -285,271 +286,279 @@ async function recordStamps({ dir, }: { readonly dir: string; },): Promise<reado
 }
 
 await describe({
-  name: 'preparePassEntry reads outside the pipeline only through its readers (ledger X19)',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ASKS EACH READER ONCE ABOUT THE ORIGINAL, and carries the work-title evidence and the other '
-        + 'entry\'s name on the sheets',
-      fn: async () => {
-        /**
-         Originals each reader that reads one was asked about.
-         */
-        const askedAbout: Record<'workTitles' | 'references', string[]> = {
-          workTitles: [],
-          references: [],
-        };
-        /**
-         Reads the corpus-name reader took, which reads no original.
-         */
-        const corpusReads = { count: 0, };
-        /**
-         Readers recording what they were asked.
-         */
-        const outsideReads: PassOutsideReads = {
-          workTitles: async ({ sourceText, },) => {
-            askedAbout.workTitles.push(sourceText,);
-            return [WORK_TITLE_LINE,];
-          },
-          references: async ({ sourceText, },) => {
-            askedAbout.references.push(sourceText,);
-            return '';
-          },
-          corpusNames: async () => {
-            corpusReads.count += 1;
-            return [{ source: '猫糖', renderings: ['Cat Candy',], entryId: 'gum', },];
-          },
-        };
-        /**
-         Directory this case owns for its entry caches.
-         */
-        const dir = await mkdtemp(join(tmpdir(), 'pass-outside-reads-',),);
-        /**
-         The preparation.
-         */
-        const paired = await preparePassEntry({
-          client: pairingClient(),
-          entryId: 'CatEntry',
-          entryCacheDir: dir,
-          pipelineDigest: DIGEST,
-          modelIds: ROSTER,
-          sourceText: SOURCE,
-          targetText: 'Cat Candy fell asleep on the windowsill.',
-          signal: new AbortController().signal,
-          exchangeTimeoutMs: 5_000,
-          l,
-          outsideReads,
-        },);
-        await rm(dir, { recursive: true, force: true, },);
-        /**
-         What every slice sheet reads about the page.
-         */
-        const identityContext = paired.prepared.identityContext ?? '';
-        expect({
-          askedAbout,
-          corpusReads: corpusReads.count,
-          workTitle: identityContext.includes(WORK_TITLE_LINE,),
-          corpusName: identityContext.includes('- 猫糖 (entry gum): "Cat Candy"',),
-        },).toEqual({
-          askedAbout: {
-            workTitles: [SOURCE,],
-            references: [SOURCE,],
-          },
-          corpusReads: 1,
-          workTitle: true,
-          corpusName: true,
-        },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: outsideReadsFrom.name,
-  children: [
-    it({
-      name: 'BUYS THE WORK AND THE LINKED PAGE through the transport it is handed, with the environment\'s key, into '
-        + 'the environment\'s cache directory, stamped by the wall clock unless a clock is handed in (ledger T8)',
-      fn: async () => {
-        /**
-         Cache directory for the wall-clock reads.
-         */
-        const walled = await mkdtemp(join(tmpdir(), 'outside-reads-wall-',),);
-        /**
-         Cache directory for the fixed-clock reads.
-         */
-        const fixed = await mkdtemp(join(tmpdir(), 'outside-reads-fixed-',),);
-        await using cleanup = {
-          [Symbol.asyncDispose]: async function removeCaches(): Promise<void> {
-            await rm(walled, { recursive: true, force: true, },);
-            await rm(fixed, { recursive: true, force: true, },);
-          },
-        };
-        const { fetchFn, seen, } = exaStub();
-        /**
-         Readers over one cache directory, on the wall clock or the fixed one.
-
-         @param dir - lookup cache directory
-
-         @param clock - whether to hand over the fixed clock
-
-         @returns What each web reader answered
-         */
-        async function readAll(
-          {
-            dir,
-            clock,
-          }: {
-            readonly dir: string;
-            readonly clock: 'wall' | 'fixed';
-          },
-        ): Promise<{ readonly titles: string; readonly references: string; }> {
-          /**
-           Readers under test.
-           */
-          const reads = outsideReadsFrom({
-            env: {
-              [EXA_API_KEY_VAR]: KEY,
-              [LOOKUP_CACHE_DIR_VAR]: dir,
-            },
-            fetchFn,
-            pin: PIN,
-            listPeople: listNoPeople,
-            readFile: readNoFile,
-            ...((clock === 'fixed') ? { now: () => FIXED, } : {}),
-          },);
-          /**
-           Arguments both readers take.
-           */
-          const asked = {
-            sourceText: CITING_SOURCE,
-            signal: new AbortController().signal,
-            l,
-          };
-          return {
-            titles: (await reads.workTitles(asked,)).join('\n',),
-            references: await reads.references(asked,),
-          };
-        }
-        /**
-         Wall clock before the reads, as the stamps write it: ISO text of one
-         length sorts as the moments it names (ledger B78).
-         */
-        const before = new Date().toISOString();
-        /**
-         What the wall-clock readers answered.
-         */
-        const answered = await readAll({
-          dir: walled,
-          clock: 'wall',
-        },);
-        /**
-         Wall clock after the reads, as the stamps write it.
-         */
-        const after = new Date().toISOString();
-        await readAll({
-          dir: fixed,
-          clock: 'fixed',
-        },);
-
-        expect(answered.titles,).toContain('Song of the Cat',);
-        expect(answered.references,).toContain('Mittens slept by the stove.',);
-        expect(seen,).toEqual([
-          { url: EXA_SEARCH_URL, key: KEY, },
-          { url: EXA_CONTENTS_URL, key: KEY, },
-          { url: EXA_SEARCH_URL, key: KEY, },
-          { url: EXA_CONTENTS_URL, key: KEY, },
-        ],);
-        /**
-         Stamps of the wall-clock records, as written.
-         */
-        const wallStamps = await recordStamps({ dir: walled, },);
-        expect(wallStamps.length,).toBe(2,);
-        for (const stamp of wallStamps) {
-          expect(stamp.length,).toBe(before.length,);
-          expect((stamp >= before) && (stamp <= after),).toBe(true,);
-        }
-        expect(await recordStamps({ dir: fixed, },),).toEqual([
-          FIXED.toISOString(),
-          FIXED.toISOString(),
-        ],);
-      },
-    },),
-    it({
-      name: 'SEARCHES NO TITLE AND READS NO PAGE WITHOUT A KEY, asking the transport nothing, so a run with no key '
-        + 'buys nothing',
-      fn: async () => {
-        /**
-         Cache directory the reads would write to.
-         */
-        const dir = await mkdtemp(join(tmpdir(), 'outside-reads-keyless-',),);
-        await using cleanup = {
-          [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
+    describe({
+      name: 'preparePassEntry reads outside the pipeline only through its readers (ledger X19)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS EACH READER ONCE ABOUT THE ORIGINAL, and carries the work-title evidence and the other '
+            + 'entry\'s name on the sheets',
+          fn: async () => {
+            /**
+             Originals each reader that reads one was asked about.
+             */
+            const askedAbout: Record<'workTitles' | 'references', string[]> = {
+              workTitles: [],
+              references: [],
+            };
+            /**
+             Reads the corpus-name reader took, which reads no original.
+             */
+            const corpusReads = { count: 0, };
+            /**
+             Readers recording what they were asked.
+             */
+            const outsideReads: PassOutsideReads = {
+              workTitles: async ({ sourceText, },) => {
+                askedAbout.workTitles.push(sourceText,);
+                return [WORK_TITLE_LINE,];
+              },
+              references: async ({ sourceText, },) => {
+                askedAbout.references.push(sourceText,);
+                return '';
+              },
+              corpusNames: async () => {
+                corpusReads.count += 1;
+                return [{ source: '猫糖', renderings: ['Cat Candy',], entryId: 'gum', },];
+              },
+            };
+            /**
+             Directory this case owns for its entry caches.
+             */
+            const dir = await mkdtemp(join(tmpdir(), 'pass-outside-reads-',),);
+            /**
+             The preparation.
+             */
+            const paired = await preparePassEntry({
+              client: pairingClient(),
+              entryId: 'CatEntry',
+              entryCacheDir: dir,
+              pipelineDigest: DIGEST,
+              modelIds: ROSTER,
+              sourceText: SOURCE,
+              targetText: 'Cat Candy fell asleep on the windowsill.',
+              signal: new AbortController().signal,
+              exchangeTimeoutMs: 5_000,
+              l,
+              outsideReads,
+            },);
             await rm(dir, { recursive: true, force: true, },);
+            /**
+             What every slice sheet reads about the page.
+             */
+            const identityContext = paired.prepared.identityContext ?? '';
+            expect({
+              askedAbout,
+              corpusReads: corpusReads.count,
+              workTitle: identityContext.includes(WORK_TITLE_LINE,),
+              corpusName: identityContext.includes('- 猫糖 (entry gum): "Cat Candy"',),
+            },).toEqual({
+              askedAbout: {
+                workTitles: [SOURCE,],
+                references: [SOURCE,],
+              },
+              corpusReads: 1,
+              workTitle: true,
+              corpusName: true,
+            },);
           },
-        };
-        const { fetchFn, seen, } = exaStub();
-        /**
-         Readers over an environment with no key.
-         */
-        const reads = outsideReadsFrom({
-          env: { [LOOKUP_CACHE_DIR_VAR]: dir, },
-          fetchFn,
-          pin: PIN,
-          listPeople: listNoPeople,
-          readFile: readNoFile,
-        },);
-        /**
-         Arguments both readers take.
-         */
-        const asked = {
-          sourceText: CITING_SOURCE,
-          signal: new AbortController().signal,
-          l,
-        };
-        expect(await reads.workTitles(asked,),).toEqual([],);
-        expect(await reads.references(asked,),).toBe('',);
-        expect(seen,).toEqual([],);
-      },
+        },),
+      ],
     },),
-    it({
-      name: 'READS THE NAMES EVERY ENTRY DECLARES at the pin it is handed, through the lister and reader it is handed',
-      fn: async () => {
-        /**
-         Pins each corpus read was asked at.
-         */
-        const pins: unknown[] = [];
-        /**
-         Readers over an invented corpus of one entry.
-         */
-        const reads = outsideReadsFrom({
-          env: {},
-          fetchFn: exaStub().fetchFn,
-          pin: PIN,
-          listPeople: async function listGum({ pin, },) {
-            pins.push(pin,);
-            return ['gum',];
+
+    describe({
+      name: outsideReadsFrom.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'BUYS THE WORK AND THE LINKED PAGE through the transport it is handed, with the environment\'s key, into '
+            + 'the environment\'s cache directory, stamped by the wall clock unless a clock is handed in (ledger T8)',
+          fn: async () => {
+            /**
+             Cache directory for the wall-clock reads.
+             */
+            const walled = await mkdtemp(join(tmpdir(), 'outside-reads-wall-',),);
+            /**
+             Cache directory for the fixed-clock reads.
+             */
+            const fixed = await mkdtemp(join(tmpdir(), 'outside-reads-fixed-',),);
+            await using cleanup = {
+              [Symbol.asyncDispose]: async function removeCaches(): Promise<void> {
+                await rm(walled, { recursive: true, force: true, },);
+                await rm(fixed, { recursive: true, force: true, },);
+              },
+            };
+            const { fetchFn, seen, } = exaStub();
+            /**
+             Readers over one cache directory, on the wall clock or the fixed one.
+
+             @param dir - lookup cache directory
+
+             @param clock - whether to hand over the fixed clock
+
+             @returns What each web reader answered
+             */
+            async function readAll(
+              {
+                dir,
+                clock,
+              }: {
+                readonly dir: string;
+                readonly clock: 'wall' | 'fixed';
+              },
+            ): Promise<{ readonly titles: string; readonly references: string; }> {
+              /**
+               Readers under test.
+               */
+              const reads = outsideReadsFrom({
+                env: {
+                  [EXA_API_KEY_VAR]: KEY,
+                  [LOOKUP_CACHE_DIR_VAR]: dir,
+                },
+                fetchFn,
+                pin: PIN,
+                listPeople: listNoPeople,
+                readFile: readNoFile,
+                ...((clock === 'fixed') ? { now: () => FIXED, } : {}),
+              },);
+              /**
+               Arguments both readers take.
+               */
+              const asked = {
+                sourceText: CITING_SOURCE,
+                signal: new AbortController().signal,
+                l,
+              };
+              return {
+                titles: (await reads.workTitles(asked,)).join('\n',),
+                references: await reads.references(asked,),
+              };
+            }
+            /**
+             Wall clock before the reads, as the stamps write it: ISO text of one
+             length sorts as the moments it names (ledger B78).
+             */
+            const before = new Date().toISOString();
+            /**
+             What the wall-clock readers answered.
+             */
+            const answered = await readAll({
+              dir: walled,
+              clock: 'wall',
+            },);
+            /**
+             Wall clock after the reads, as the stamps write it.
+             */
+            const after = new Date().toISOString();
+            await readAll({
+              dir: fixed,
+              clock: 'fixed',
+            },);
+
+            expect(answered.titles,).toContain('Song of the Cat',);
+            expect(answered.references,).toContain('Mittens slept by the stove.',);
+            expect(seen,).toEqual([
+              { url: EXA_SEARCH_URL, key: KEY, },
+              { url: EXA_CONTENTS_URL, key: KEY, },
+              { url: EXA_SEARCH_URL, key: KEY, },
+              { url: EXA_CONTENTS_URL, key: KEY, },
+            ],);
+            /**
+             Stamps of the wall-clock records, as written.
+             */
+            const wallStamps = await recordStamps({ dir: walled, },);
+            expect(wallStamps.length,).toBe(2,);
+            for (const stamp of wallStamps) {
+              expect(stamp.length,).toBe(before.length,);
+              expect((stamp >= before) && (stamp <= after),).toBe(true,);
+            }
+            expect(await recordStamps({ dir: fixed, },),).toEqual([
+              FIXED.toISOString(),
+              FIXED.toISOString(),
+            ],);
           },
-          readFile: async function readGum({
-            pin,
-            relPath,
-          },) {
-            pins.push(pin,);
-            return (relPath === 'people/gum/page.md')
-              ? '---\nname: 猫糖\n---\n\n猫糖睡了。\n'
-              : '---\nname: Cat Candy\n---\n\nCat Candy slept.\n';
+        },),
+        it({
+          name: 'SEARCHES NO TITLE AND READS NO PAGE WITHOUT A KEY, asking the transport nothing, so a run with no key '
+            + 'buys nothing',
+          fn: async () => {
+            /**
+             Cache directory the reads would write to.
+             */
+            const dir = await mkdtemp(join(tmpdir(), 'outside-reads-keyless-',),);
+            await using cleanup = {
+              [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
+                await rm(dir, { recursive: true, force: true, },);
+              },
+            };
+            const { fetchFn, seen, } = exaStub();
+            /**
+             Readers over an environment with no key.
+             */
+            const reads = outsideReadsFrom({
+              env: { [LOOKUP_CACHE_DIR_VAR]: dir, },
+              fetchFn,
+              pin: PIN,
+              listPeople: listNoPeople,
+              readFile: readNoFile,
+            },);
+            /**
+             Arguments both readers take.
+             */
+            const asked = {
+              sourceText: CITING_SOURCE,
+              signal: new AbortController().signal,
+              l,
+            };
+            expect(await reads.workTitles(asked,),).toEqual([],);
+            expect(await reads.references(asked,),).toBe('',);
+            expect(seen,).toEqual([],);
           },
-        },);
-        expect(await reads.corpusNames(),).toEqual([{
-          source: '猫糖',
-          renderings: ['Cat Candy',],
-          entryId: 'gum',
-        },],);
-        expect(pins,).toEqual([
-          PIN,
-          PIN,
-          PIN,
-        ],);
-      },
+        },),
+        it({
+          name: 'READS THE NAMES EVERY ENTRY DECLARES at the pin it is handed, through the lister and reader it is handed',
+          fn: async () => {
+            /**
+             Pins each corpus read was asked at.
+             */
+            const pins: unknown[] = [];
+            /**
+             Readers over an invented corpus of one entry.
+             */
+            const reads = outsideReadsFrom({
+              env: {},
+              fetchFn: exaStub().fetchFn,
+              pin: PIN,
+              listPeople: async function listGum({ pin, },) {
+                pins.push(pin,);
+                return ['gum',];
+              },
+              readFile: async function readGum({
+                pin,
+                relPath,
+              },) {
+                pins.push(pin,);
+                return (relPath === 'people/gum/page.md')
+                  ? '---\nname: 猫糖\n---\n\n猫糖睡了。\n'
+                  : '---\nname: Cat Candy\n---\n\nCat Candy slept.\n';
+              },
+            },);
+            expect(await reads.corpusNames(),).toEqual([{
+              source: '猫糖',
+              renderings: ['Cat Candy',],
+              entryId: 'gum',
+            },],);
+            expect(pins,).toEqual([
+              PIN,
+              PIN,
+              PIN,
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

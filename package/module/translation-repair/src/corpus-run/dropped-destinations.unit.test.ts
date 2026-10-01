@@ -15,6 +15,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -51,256 +52,266 @@ const MOVED = 'https://example.net/tabby';
 //endregion Fixtures
 
 await describe({
-  name: scanUrlRuns.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ends a run at whitespace and at the Markdown delimiters around a destination',
-      fn: async () => {
-        expect(scanUrlRuns({ text: `see [her page](${HOME}) and ${ALBUM} too`, },),).toStrictEqual([
-          HOME,
-          ALBUM,
-        ],);
-      },
+    describe({
+      name: scanUrlRuns.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ends a run at whitespace and at the Markdown delimiters around a destination',
+          fn: async () => {
+            expect(scanUrlRuns({ text: `see [her page](${HOME}) and ${ALBUM} too`, },),).toStrictEqual([
+              HOME,
+              ALBUM,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'sheds the sentence punctuation that follows a bare address',
+          fn: async () => {
+            expect(scanUrlRuns({ text: `Her page: ${HOME}.`, },),).toStrictEqual([HOME,],);
+          },
+        },),
+
+        it({
+          name: 'ends a run at the full-width punctuation Chinese prose sets a link off with',
+          fn: async () => {
+            expect(scanUrlRuns({ text: `她的主页：${HOME}，相册：${ALBUM}。`, },),).toStrictEqual([
+              HOME,
+              ALBUM,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'reads both schemes and nothing without one',
+          fn: async () => {
+            expect(scanUrlRuns({ text: 'http://example.org/a and https://example.org/b', },),).toStrictEqual([
+              'http://example.org/a',
+              'https://example.org/b',
+            ],);
+            expect(scanUrlRuns({ text: 'no address here, example.org is bare', },),).toStrictEqual([],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'sheds the sentence punctuation that follows a bare address',
-      fn: async () => {
-        expect(scanUrlRuns({ text: `Her page: ${HOME}.`, },),).toStrictEqual([HOME,],);
-      },
+    describe({
+      name: markdownDestinations.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'reads link, image and definition destinations in document order',
+          fn: async () => {
+            const read = markdownDestinations({
+              text: `A [tabby](${HOME}) who kept ![the shop](${PICTURE}) company.\n\n[album]: ${ALBUM}\n`,
+            },);
+
+            expect(read,).toStrictEqual({
+              urls: [
+                HOME,
+                PICTURE,
+                ALBUM,
+              ],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'DOWNGRADES a page the strict grammar refuses to plain markdown, as the pipeline does, '
+            + 'and names the downgrade',
+          fn: async () => {
+            const read = markdownDestinations({ text: `A tabby <Unclosed who kept [her](${HOME})`, },);
+
+            expect(read.urls,).toStrictEqual([HOME,],);
+            expect(read.findings,).toStrictEqual(['destinations-mdx-downgraded',],);
+          },
+        },),
+
+        it({
+          name: 'reads a destination under the front matter and past an HTML comment, the way the page is parsed',
+          fn: async () => {
+            const read = markdownDestinations({
+              text: `---\nname: tabby\n---\n\n<!-- a note -->\n\nA [tabby](${HOME}).\n`,
+            },);
+
+            expect(read,).toStrictEqual({
+              urls: [HOME,],
+              findings: [],
+            },);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ends a run at the full-width punctuation Chinese prose sets a link off with',
-      fn: async () => {
-        expect(scanUrlRuns({ text: `她的主页：${HOME}，相册：${ALBUM}。`, },),).toStrictEqual([
-          HOME,
-          ALBUM,
-        ],);
-      },
+    describe({
+      name: collectDestinations.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'unions both readers and dedupes a destination the scanner sees again',
+          fn: async () => {
+            const { urls, findings, } = collectDestinations({
+              text: `A [tabby](${HOME}) and later ${HOME}/ again, then ${ALBUM}.`,
+              side: 'source',
+            },);
+
+            expect(urls,).toStrictEqual([
+              HOME,
+              ALBUM,
+            ],);
+            expect(findings,).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'IGNORES a destination inside an HTML comment, which no reader can follow (class forty-six)',
+          fn: async () => {
+            const { urls, findings, } = collectDestinations({
+              text: `A [tabby](${HOME}).\n\n<!-- [her keeper](${ALBUM}) -->\n\nThen ${PICTURE} again.`,
+              side: 'source',
+            },);
+
+            expect(urls,).toStrictEqual([
+              HOME,
+              PICTURE,
+            ],);
+            expect(findings,).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'still reads a bare run on a downgraded page and names the downgrade with its side',
+          fn: async () => {
+            const { urls, findings, } = collectDestinations({
+              text: `A tabby <Unclosed who kept ${HOME}`,
+              side: 'page',
+            },);
+
+            expect(urls,).toStrictEqual([HOME,],);
+            expect(findings,).toStrictEqual(['destinations-mdx-downgraded (page)',],);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'reads both schemes and nothing without one',
-      fn: async () => {
-        expect(scanUrlRuns({ text: 'http://example.org/a and https://example.org/b', },),).toStrictEqual([
-          'http://example.org/a',
-          'https://example.org/b',
-        ],);
-        expect(scanUrlRuns({ text: 'no address here, example.org is bare', },),).toStrictEqual([],);
-      },
-    },),
-  ],
-},);
+    describe({
+      name: droppedDestinations.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'names the source destination the page lacks, and nothing the page added',
+          fn: async () => {
+            const check = droppedDestinations({
+              sourceText: `她的主页：${HOME}，相册：${ALBUM}。`,
+              pageText: `Her album is at ${ALBUM}, and the shop's own site is https://example.org/shop.`,
+            },);
 
-await describe({
-  name: markdownDestinations.name,
-  children: [
-    it({
-      name: 'reads link, image and definition destinations in document order',
-      fn: async () => {
-        const read = markdownDestinations({
-          text: `A [tabby](${HOME}) who kept ![the shop](${PICTURE}) company.\n\n[album]: ${ALBUM}\n`,
-        },);
+            expect(check.source,).toStrictEqual([
+              HOME,
+              ALBUM,
+            ],);
+            expect(check.dropped,).toStrictEqual([HOME,],);
+            expect(check.page,).toHaveLength(2,);
+            expect(check.findings,).toStrictEqual([],);
+          },
+        },),
 
-        expect(read,).toStrictEqual({
-          urls: [
-            HOME,
-            PICTURE,
-            ALBUM,
-          ],
-          findings: [],
-        },);
-      },
-    },),
+        it({
+          name: 'ACCEPTS a page carrying every source destination, a trailing slash notwithstanding',
+          fn: async () => {
+            const check = droppedDestinations({
+              sourceText: `[主页](${HOME})`,
+              pageText: `[her page](${HOME}/)`,
+            },);
 
-    it({
-      name: 'DOWNGRADES a page the strict grammar refuses to plain markdown, as the pipeline does, '
-        + 'and names the downgrade',
-      fn: async () => {
-        const read = markdownDestinations({ text: `A tabby <Unclosed who kept [her](${HOME})`, },);
+            expect(check.dropped,).toStrictEqual([],);
+          },
+        },),
 
-        expect(read.urls,).toStrictEqual([HOME,],);
-        expect(read.findings,).toStrictEqual(['destinations-mdx-downgraded',],);
-      },
-    },),
+        it({
+          name: 'ACCEPTS the archive rendering of a source destination and names it, REFUSES neither',
+          fn: async () => {
+            /**
+             Source and archive, the archive linking the same reference elsewhere.
+             */
+            const sides = {
+              sourceText: `她的主页：${HOME}。`,
+              archiveText: `Her page is at ${MOVED}.`,
+            };
 
-    it({
-      name: 'reads a destination under the front matter and past an HTML comment, the way the page is parsed',
-      fn: async () => {
-        const read = markdownDestinations({
-          text: `---\nname: tabby\n---\n\n<!-- a note -->\n\nA [tabby](${HOME}).\n`,
-        },);
+            /**
+             Page keeping the archive's rendering.
+             */
+            const kept = droppedDestinations({
+              ...sides,
+              pageText: `Her page is at ${MOVED}, still.`,
+            },);
 
-        expect(read,).toStrictEqual({
-          urls: [HOME,],
-          findings: [],
-        },);
-      },
-    },),
-  ],
-},);
+            expect(kept.dropped,).toStrictEqual([],);
+            expect(kept.findings,).toStrictEqual(['destinations-archive-rendering',],);
 
-await describe({
-  name: collectDestinations.name,
-  children: [
-    it({
-      name: 'unions both readers and dedupes a destination the scanner sees again',
-      fn: async () => {
-        const { urls, findings, } = collectDestinations({
-          text: `A [tabby](${HOME}) and later ${HOME}/ again, then ${ALBUM}.`,
-          side: 'source',
-        },);
+            /**
+             Page carrying neither rendering.
+             */
+            const lost = droppedDestinations({
+              ...sides,
+              pageText: 'Her page is gone.',
+            },);
 
-        expect(urls,).toStrictEqual([
-          HOME,
-          ALBUM,
-        ],);
-        expect(findings,).toStrictEqual([],);
-      },
-    },),
+            expect(lost.dropped,).toStrictEqual([HOME,],);
+            expect(lost.findings,).toStrictEqual([],);
+          },
+        },),
 
-    it({
-      name: 'IGNORES a destination inside an HTML comment, which no reader can follow (class forty-six)',
-      fn: async () => {
-        const { urls, findings, } = collectDestinations({
-          text: `A [tabby](${HOME}).\n\n<!-- [her keeper](${ALBUM}) -->\n\nThen ${PICTURE} again.`,
-          side: 'source',
-        },);
+        it({
+          name: 'names a downgraded archive with its side',
+          fn: async () => {
+            const check = droppedDestinations({
+              sourceText: `[主页](${HOME})`,
+              pageText: `[her page](${HOME})`,
+              archiveText: `A tabby <Unclosed who kept ${HOME}`,
+            },);
 
-        expect(urls,).toStrictEqual([
-          HOME,
-          PICTURE,
-        ],);
-        expect(findings,).toStrictEqual([],);
-      },
-    },),
+            expect(check.dropped,).toStrictEqual([],);
+            expect(check.findings,).toStrictEqual(['destinations-mdx-downgraded (archive)',],);
+          },
+        },),
 
-    it({
-      name: 'still reads a bare run on a downgraded page and names the downgrade with its side',
-      fn: async () => {
-        const { urls, findings, } = collectDestinations({
-          text: `A tabby <Unclosed who kept ${HOME}`,
-          side: 'page',
-        },);
+        it({
+          name: 'OWES nothing for a source destination that sits inside an HTML comment (class forty-six, shi_Yumiaoya1)',
+          fn: async () => {
+            const check = droppedDestinations({
+              sourceText: `她的主页：${HOME}。\n\n<!-- [饲主](${ALBUM}) -->\n`,
+              pageText: `Her home page: ${HOME}.\n`,
+            },);
 
-        expect(urls,).toStrictEqual([HOME,],);
-        expect(findings,).toStrictEqual(['destinations-mdx-downgraded (page)',],);
-      },
-    },),
-  ],
-},);
+            expect(check.source,).toStrictEqual([HOME,],);
+            expect(check.dropped,).toStrictEqual([],);
+          },
+        },),
 
-await describe({
-  name: droppedDestinations.name,
-  children: [
-    it({
-      name: 'names the source destination the page lacks, and nothing the page added',
-      fn: async () => {
-        const check = droppedDestinations({
-          sourceText: `她的主页：${HOME}，相册：${ALBUM}。`,
-          pageText: `Her album is at ${ALBUM}, and the shop's own site is https://example.org/shop.`,
-        },);
+        it({
+          name: 'reports nothing dropped and nothing found when neither side links anywhere',
+          fn: async () => {
+            const check = droppedDestinations({
+              sourceText: '一只虎斑猫。',
+              pageText: 'A tabby.',
+            },);
 
-        expect(check.source,).toStrictEqual([
-          HOME,
-          ALBUM,
-        ],);
-        expect(check.dropped,).toStrictEqual([HOME,],);
-        expect(check.page,).toHaveLength(2,);
-        expect(check.findings,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'ACCEPTS a page carrying every source destination, a trailing slash notwithstanding',
-      fn: async () => {
-        const check = droppedDestinations({
-          sourceText: `[主页](${HOME})`,
-          pageText: `[her page](${HOME}/)`,
-        },);
-
-        expect(check.dropped,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'ACCEPTS the archive rendering of a source destination and names it, REFUSES neither',
-      fn: async () => {
-        /**
-         Source and archive, the archive linking the same reference elsewhere.
-         */
-        const sides = {
-          sourceText: `她的主页：${HOME}。`,
-          archiveText: `Her page is at ${MOVED}.`,
-        };
-
-        /**
-         Page keeping the archive's rendering.
-         */
-        const kept = droppedDestinations({
-          ...sides,
-          pageText: `Her page is at ${MOVED}, still.`,
-        },);
-
-        expect(kept.dropped,).toStrictEqual([],);
-        expect(kept.findings,).toStrictEqual(['destinations-archive-rendering',],);
-
-        /**
-         Page carrying neither rendering.
-         */
-        const lost = droppedDestinations({
-          ...sides,
-          pageText: 'Her page is gone.',
-        },);
-
-        expect(lost.dropped,).toStrictEqual([HOME,],);
-        expect(lost.findings,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'names a downgraded archive with its side',
-      fn: async () => {
-        const check = droppedDestinations({
-          sourceText: `[主页](${HOME})`,
-          pageText: `[her page](${HOME})`,
-          archiveText: `A tabby <Unclosed who kept ${HOME}`,
-        },);
-
-        expect(check.dropped,).toStrictEqual([],);
-        expect(check.findings,).toStrictEqual(['destinations-mdx-downgraded (archive)',],);
-      },
-    },),
-
-    it({
-      name: 'OWES nothing for a source destination that sits inside an HTML comment (class forty-six, shi_Yumiaoya1)',
-      fn: async () => {
-        const check = droppedDestinations({
-          sourceText: `她的主页：${HOME}。\n\n<!-- [饲主](${ALBUM}) -->\n`,
-          pageText: `Her home page: ${HOME}.\n`,
-        },);
-
-        expect(check.source,).toStrictEqual([HOME,],);
-        expect(check.dropped,).toStrictEqual([],);
-      },
-    },),
-
-    it({
-      name: 'reports nothing dropped and nothing found when neither side links anywhere',
-      fn: async () => {
-        const check = droppedDestinations({
-          sourceText: '一只虎斑猫。',
-          pageText: 'A tabby.',
-        },);
-
-        expect(check,).toStrictEqual({
-          source: [],
-          page: [],
-          dropped: [],
-          findings: [],
-        },);
-      },
+            expect(check,).toStrictEqual({
+              source: [],
+              page: [],
+              dropped: [],
+              findings: [],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

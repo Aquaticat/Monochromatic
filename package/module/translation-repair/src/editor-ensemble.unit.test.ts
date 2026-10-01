@@ -7,6 +7,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -105,489 +106,501 @@ const EMPTY_PATCH: PatchOutcome = {
 };
 
 await describe({
-  name: mergeProducers.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'unions the stakes of two models, keeps a single model singular, '
-        + 'and preserves first-seen order through a composite',
-      fn: async () => {
-        /** Two distinct models writing identical text. */
-        const both = mergeProducers({
-          left: {
-            kind: 'model',
-            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          },
-          right: {
-            kind: 'model',
-            modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          },
-        },);
-        expect(both.kind,).toBe('composite',);
-        expect([...producerModelIds(both,),],).toEqual([
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-        ],);
-
-        // One model named twice is still one stakeholder, not a pair.
-        /** Same model on both sides. */
-        const same = mergeProducers({
-          left: {
-            kind: 'model',
-            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          },
-          right: {
-            kind: 'model',
-            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          },
-        },);
-        expect(same.kind,).toBe('model',);
-        expect([...producerModelIds(same,),],).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
-
-        /** Composite absorbing a model already among its contributors. */
-        const widened = mergeProducers({
-          left: {
-            kind: 'composite',
-            contributors: [
+    describe({
+      name: mergeProducers.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'unions the stakes of two models, keeps a single model singular, '
+            + 'and preserves first-seen order through a composite',
+          fn: async () => {
+            /** Two distinct models writing identical text. */
+            const both = mergeProducers({
+              left: {
+                kind: 'model',
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              },
+              right: {
+                kind: 'model',
+                modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              },
+            },);
+            expect(both.kind,).toBe('composite',);
+            expect([...producerModelIds(both,),],).toEqual([
               SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            ],
+            ],);
+
+            // One model named twice is still one stakeholder, not a pair.
+            /** Same model on both sides. */
+            const same = mergeProducers({
+              left: {
+                kind: 'model',
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              },
+              right: {
+                kind: 'model',
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              },
+            },);
+            expect(same.kind,).toBe('model',);
+            expect([...producerModelIds(same,),],).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
+
+            /** Composite absorbing a model already among its contributors. */
+            const widened = mergeProducers({
+              left: {
+                kind: 'composite',
+                contributors: [
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                ],
+              },
+              right: {
+                kind: 'model',
+                modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+              },
+            },);
+            expect([...producerModelIds(widened,),],).toEqual([
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+            ],);
           },
-          right: {
-            kind: 'model',
-            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+        },),
+
+        it({
+          name: 'describes a composite by its contributors rather than one model',
+          fn: async () => {
+            /** Stitched provenance. */
+            const producer: CandidateProducer = {
+              kind: 'composite',
+              contributors: [
+                SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              ],
+            };
+            expect(describeProducer(producer,),).toBe(
+              'composite(hf:zai-org/GLM-5.3-Flash + hf:Qwen/Qwen3.8-27B)',
+            );
+            expect(
+              describeProducer({
+                kind: 'model',
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              },),
+            ).toBe(SEAT_HYPER_OPENROUTER_VISION_EDITOR,);
           },
-        },);
-        expect([...producerModelIds(widened,),],).toEqual([
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          SEAT_SYNTHETIC_VISION_WITHHELD,
-        ],);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'describes a composite by its contributors rather than one model',
-      fn: async () => {
-        /** Stitched provenance. */
-        const producer: CandidateProducer = {
-          kind: 'composite',
-          contributors: [
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          ],
-        };
-        expect(describeProducer(producer,),).toBe(
-          'composite(hf:zai-org/GLM-5.3-Flash + hf:Qwen/Qwen3.8-27B)',
-        );
-        expect(
-          describeProducer({
-            kind: 'model',
-            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          },),
-        ).toBe(SEAT_HYPER_OPENROUTER_VISION_EDITOR,);
-      },
-    },),
-  ],
-},);
+    describe({
+      name: buildChunkCandidates.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'keeps distinct proposals apart and counts no collapse',
+          fn: async () => {
+            /** Two editors disagreeing on the wording. */
+            const set = buildChunkCandidates({
+              candidates: [
+                candidateFor({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  newText: 'The cat chases butterflies.',
+                },),
+                candidateFor({
+                  modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                  newText: 'The cat loves chasing butterflies.',
+                },),
+              ],
+              composite: EMPTY_PATCH,
+              contributors: [],
+            },);
+            expect(set.candidates.length,).toBe(2,);
+            expect(set.collapsed,).toBe(0,);
+          },
+        },),
 
-await describe({
-  name: buildChunkCandidates.name,
-  children: [
-    it({
-      name: 'keeps distinct proposals apart and counts no collapse',
-      fn: async () => {
-        /** Two editors disagreeing on the wording. */
-        const set = buildChunkCandidates({
-          candidates: [
-            candidateFor({
+        it({
+          name: 'drops a composite that repairs nothing rather than offering the '
+            + 'untouched translation as a candidate',
+          fn: async () => {
+            /** Composite assembled from no winning operation. */
+            const set = buildChunkCandidates({
+              candidates: [
+                candidateFor({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  newText: 'The cat chases butterflies.',
+                },),
+              ],
+              composite: EMPTY_PATCH,
+              contributors: [],
+            },);
+            expect(set.candidates.length,).toBe(1,);
+            expect(
+              set.candidates.every(function repairsSomething(candidate,) {
+                return candidate.value
+                  .applied
+                  .length
+                  > 0;
+              },),
+            ).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'collapses identical text and unions every stake, so no producer '
+            + 'is freed to judge its own words',
+          fn: async () => {
+            /** Wording both editors and the composite arrived at. */
+            const agreed = 'The cat chases butterflies.';
+
+            /** Composite carrying only the second editor as contributor. */
+            const composite = applyPatchOperations({
+              targetText: TARGET_TEXT,
+              envelopes: [ENVELOPE,],
+              operations: [
+                {
+                  envelopeId: ENVELOPE.envelopeId,
+                  baseHash: ENVELOPE.baseHash,
+                  newText: agreed,
+                },
+              ],
+              preservation: { mode: 'skip', },
+            },);
+
+            /** One editor patch plus an identical composite from another model. */
+            const set = buildChunkCandidates({
+              candidates: [
+                candidateFor({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  newText: agreed,
+                },),
+              ],
+              composite,
+              contributors: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
+            },);
+            expect(set.candidates.length,).toBe(1,);
+            expect(set.collapsed,).toBe(1,);
+
+            /** Survivor of the collapse. */
+            const [survivor,] = set.candidates;
+            expect(survivor,).toBeDefined();
+
+            /** Everyone with a stake in the surviving text. */
+            const stakes = new Set(producerModelIds(
+              survivor?.producer ?? {
+                kind: 'composite',
+                contributors: [],
+              },
+            ));
+            // Both the editor whose candidate survived and the composite's
+            // contributor must stay barred; dropping either lets that model judge
+            // text it wrote.
+            expect(stakes.has(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(true,);
+            expect(stakes.has(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,),).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: pickFallbackCandidate.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'prefers the editor that landed more operations',
+          fn: async () => {
+            /** Editor landing nothing, because its replacement was a no-op. */
+            const idle = candidateFor({
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              newText: ENVELOPE.baseText,
+            },);
+
+            /** Editor landing a real replacement. */
+            const working = candidateFor({
+              modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              newText: 'The cat chases butterflies.',
+            },);
+            expect(idle.patch
+              .applied
+              .length,).toBe(0,);
+
+            /**
+             Editor the picker chose, read for its identity as well as its text.
+             */
+            const chosen = pickFallbackCandidate({
+              candidates: [
+                idle,
+                working,
+              ],
+            },);
+
+            expect(chosen.patch
+              .patchedText,).toContain('The cat chases butterflies.',);
+            // The identity is the point of returning a candidate rather than a
+            // patch: this exact path ships text after the judges decline, and the
+            // checker that wrote it must be discounted for judging its own work.
+            expect(chosen.modelId,).toBe(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,);
+          },
+        },),
+
+        it({
+          name: 'breaks a tie on applied count by roster order, not by wording',
+          fn: async () => {
+            /** Two editors each landing exactly one operation. */
+            const first = candidateFor({
               modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
-            },),
-            candidateFor({
+            },);
+
+            /** Later editor in roster order. */
+            const second = candidateFor({
               modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               newText: 'The cat loves chasing butterflies.',
-            },),
-          ],
-          composite: EMPTY_PATCH,
-          contributors: [],
-        },);
-        expect(set.candidates.length,).toBe(2,);
-        expect(set.collapsed,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'drops a composite that repairs nothing rather than offering the '
-        + 'untouched translation as a candidate',
-      fn: async () => {
-        /** Composite assembled from no winning operation. */
-        const set = buildChunkCandidates({
-          candidates: [
-            candidateFor({
-              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              newText: 'The cat chases butterflies.',
-            },),
-          ],
-          composite: EMPTY_PATCH,
-          contributors: [],
-        },);
-        expect(set.candidates.length,).toBe(1,);
-        expect(
-          set.candidates.every(function repairsSomething(candidate,) {
-            return candidate.value
-              .applied
-              .length
-              > 0;
-          },),
-        ).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'collapses identical text and unions every stake, so no producer '
-        + 'is freed to judge its own words',
-      fn: async () => {
-        /** Wording both editors and the composite arrived at. */
-        const agreed = 'The cat chases butterflies.';
-
-        /** Composite carrying only the second editor as contributor. */
-        const composite = applyPatchOperations({
-          targetText: TARGET_TEXT,
-          envelopes: [ENVELOPE,],
-          operations: [
-            {
-              envelopeId: ENVELOPE.envelopeId,
-              baseHash: ENVELOPE.baseHash,
-              newText: agreed,
-            },
-          ],
-          preservation: { mode: 'skip', },
-        },);
-
-        /** One editor patch plus an identical composite from another model. */
-        const set = buildChunkCandidates({
-          candidates: [
-            candidateFor({
-              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              newText: agreed,
-            },),
-          ],
-          composite,
-          contributors: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
-        },);
-        expect(set.candidates.length,).toBe(1,);
-        expect(set.collapsed,).toBe(1,);
-
-        /** Survivor of the collapse. */
-        const [survivor,] = set.candidates;
-        expect(survivor,).toBeDefined();
-
-        /** Everyone with a stake in the surviving text. */
-        const stakes = new Set(producerModelIds(
-          survivor?.producer ?? {
-            kind: 'composite',
-            contributors: [],
+            },);
+            expect(
+              pickFallbackCandidate({
+                candidates: [
+                  first,
+                  second,
+                ],
+              },).patch
+                .patchedText,
+            ).toContain('The cat chases butterflies.',);
+            // Reversing the roster reverses the winner, proving order decides
+            // rather than anything about the text.
+            expect(
+              pickFallbackCandidate({
+                candidates: [
+                  second,
+                  first,
+                ],
+              },).patch
+                .patchedText,
+            ).toContain('The cat loves chasing butterflies.',);
           },
-        ));
-        // Both the editor whose candidate survived and the composite's
-        // contributor must stay barred; dropping either lets that model judge
-        // text it wrote.
-        expect(stakes.has(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(true,);
-        expect(stakes.has(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,),).toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: pickFallbackCandidate.name,
-  children: [
-    it({
-      name: 'prefers the editor that landed more operations',
-      fn: async () => {
-        /** Editor landing nothing, because its replacement was a no-op. */
-        const idle = candidateFor({
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          newText: ENVELOPE.baseText,
-        },);
-
-        /** Editor landing a real replacement. */
-        const working = candidateFor({
-          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          newText: 'The cat chases butterflies.',
-        },);
-        expect(idle.patch
-          .applied
-          .length,).toBe(0,);
-
-        /**
-         Editor the picker chose, read for its identity as well as its text.
-         */
-        const chosen = pickFallbackCandidate({
-          candidates: [
-            idle,
-            working,
-          ],
-        },);
-
-        expect(chosen.patch
-          .patchedText,).toContain('The cat chases butterflies.',);
-        // The identity is the point of returning a candidate rather than a
-        // patch: this exact path ships text after the judges decline, and the
-        // checker that wrote it must be discounted for judging its own work.
-        expect(chosen.modelId,).toBe(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'breaks a tie on applied count by roster order, not by wording',
-      fn: async () => {
-        /** Two editors each landing exactly one operation. */
-        const first = candidateFor({
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          newText: 'The cat chases butterflies.',
-        },);
+    describe({
+      name: assertJudgeableEditorRoster.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'passes a roster with enough disinterested judges',
+          fn: async () => {
+            assertJudgeableEditorRoster({
+              editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+              judgeModelIds: [
+                SEAT_SYNTHETIC_VISION_WITHHELD,
+                SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              ],
+            },);
+          },
+        },),
 
-        /** Later editor in roster order. */
-        const second = candidateFor({
-          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          newText: 'The cat loves chasing butterflies.',
-        },);
-        expect(
-          pickFallbackCandidate({
-            candidates: [
-              first,
-              second,
-            ],
-          },).patch
-            .patchedText,
-        ).toContain('The cat chases butterflies.',);
-        // Reversing the roster reverses the winner, proving order decides
-        // rather than anything about the text.
-        expect(
-          pickFallbackCandidate({
-            candidates: [
-              second,
-              first,
-            ],
-          },).patch
-            .patchedText,
-        ).toContain('The cat loves chasing butterflies.',);
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'ACCEPTS two editors judged by themselves and one other, which the '
+            + 'old rule refused: two discounted ballots and one full one reach the '
+            + 'minimum weight, so a decision is possible and the ruling of '
+            + '2026-08-15 says a stake discounts an opinion rather than voiding it',
+          fn: async () => {
+            expect(function twoEditorsOneOutsider() {
+              assertJudgeableEditorRoster({
+                editorModelIds: [
+                  SEAT_SYNTHETIC_VISION_WITHHELD,
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                ],
+                judgeModelIds: [
+                  SEAT_SYNTHETIC_VISION_WITHHELD,
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                ],
+              },);
+            },).not.toThrow();
+          },
+        },),
 
-await describe({
-  name: assertJudgeableEditorRoster.name,
-  children: [
-    it({
-      name: 'passes a roster with enough disinterested judges',
-      fn: async () => {
-        assertJudgeableEditorRoster({
-          editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
-          judgeModelIds: [
-            SEAT_SYNTHETIC_VISION_WITHHELD,
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          ],
-        },);
-      },
-    },),
+        it({
+          name: 'refuses a roster that could never reach the minimum weight, which '
+            + 'would decline every round in silence: one editor grading itself '
+            + 'draws half a vote, and a lone judge cannot decide a stage anyway',
+          fn: async () => {
+            expect(function everyJudgeEdits() {
+              assertJudgeableEditorRoster({
+                editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+                judgeModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+              },);
+            },).toThrow(ProducerRosterError,);
 
-    it({
-      name: 'ACCEPTS two editors judged by themselves and one other, which the '
-        + 'old rule refused: two discounted ballots and one full one reach the '
-        + 'minimum weight, so a decision is possible and the ruling of '
-        + '2026-08-15 says a stake discounts an opinion rather than voiding it',
-      fn: async () => {
-        expect(function twoEditorsOneOutsider() {
-          assertJudgeableEditorRoster({
-            editorModelIds: [
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            ],
-            judgeModelIds: [
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            ],
-          },);
-        },).not.toThrow();
-      },
-    },),
+            expect(function twoEditorsJudgingThemselves() {
+              assertJudgeableEditorRoster({
+                editorModelIds: [
+                  SEAT_SYNTHETIC_VISION_WITHHELD,
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                ],
+                judgeModelIds: [
+                  SEAT_SYNTHETIC_VISION_WITHHELD,
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                ],
+              },);
+            },).toThrow(ProducerRosterError,);
+          },
+        },),
 
-    it({
-      name: 'refuses a roster that could never reach the minimum weight, which '
-        + 'would decline every round in silence: one editor grading itself '
-        + 'draws half a vote, and a lone judge cannot decide a stage anyway',
-      fn: async () => {
-        expect(function everyJudgeEdits() {
-          assertJudgeableEditorRoster({
-            editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
-            judgeModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
-          },);
-        },).toThrow(ProducerRosterError,);
+        it({
+          name: 'refuses repeated and empty editor rosters, since a repeated id is '
+            + 'one model counted twice rather than an independent voice',
+          fn: async () => {
+            expect(function repeatedEditor() {
+              assertJudgeableEditorRoster({
+                editorModelIds: [
+                  SEAT_SYNTHETIC_VISION_WITHHELD,
+                  SEAT_SYNTHETIC_VISION_WITHHELD,
+                ],
+                judgeModelIds: [
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                ],
+              },);
+            },).toThrow(ProducerRosterError,);
 
-        expect(function twoEditorsJudgingThemselves() {
-          assertJudgeableEditorRoster({
-            editorModelIds: [
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            ],
-            judgeModelIds: [
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            ],
-          },);
-        },).toThrow(ProducerRosterError,);
-      },
+            expect(function noEditor() {
+              assertJudgeableEditorRoster({
+                editorModelIds: [],
+                judgeModelIds: [
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                ],
+              },);
+            },).toThrow(ProducerRosterError,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'refuses repeated and empty editor rosters, since a repeated id is '
-        + 'one model counted twice rather than an independent voice',
-      fn: async () => {
-        expect(function repeatedEditor() {
-          assertJudgeableEditorRoster({
-            editorModelIds: [
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-            ],
-            judgeModelIds: [
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            ],
-          },);
-        },).toThrow(ProducerRosterError,);
+    describe({
+      name: assertCheckerIndependence.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'passes disjoint rosters and refuses a checker that also edits',
+          fn: async () => {
+            assertCheckerIndependence({
+              editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+              checkerModelIds: [
+                SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              ],
+            },);
 
-        expect(function noEditor() {
-          assertJudgeableEditorRoster({
-            editorModelIds: [],
-            judgeModelIds: [
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            ],
-          },);
-        },).toThrow(ProducerRosterError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: assertCheckerIndependence.name,
-  children: [
-    it({
-      name: 'passes disjoint rosters and refuses a checker that also edits',
-      fn: async () => {
-        assertCheckerIndependence({
-          editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
-          checkerModelIds: [
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          ],
-        },);
-
-        expect(function checksOwnWork() {
-          assertCheckerIndependence({
-            editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
-            checkerModelIds: [
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-            ],
-          },);
-        },).toThrow(CheckerIndependenceError,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: buildCandidateSelectMessages.name,
-  children: [
-    it({
-      name: 'fences candidates so a setext underline inside one cannot close '
-        + 'its own block',
-      fn: async () => {
-        /** Candidate whose own text carries the default fence. */
-        const messages = buildCandidateSelectMessages({
-          task: 'Pick one.',
-          criteria: ['Faithful.',],
-          evidence: [
-            {
-              label: 'ORIGINAL',
-              text: '猫猫喜欢追蝴蝶。',
-            },
-          ],
-          rendered: [
-            'A heading\n=====\nand its body.',
-            'Plain replacement.',
-          ],
-        },);
-
-        /** Judge-facing prompt. */
-        const content = messages.at(-1,)?.content ?? '';
-        // A five-character fence would be closed by the candidate's own
-        // underline, so the chosen fence has to be longer.
-        expect(content.includes('\n======\n',),).toBe(true,);
-        expect(content.split('\n======\n',).length - 1,).toBeGreaterThan(1,);
-      },
+            expect(function checksOwnWork() {
+              assertCheckerIndependence({
+                editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+                checkerModelIds: [
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_WITHHELD,
+                ],
+              },);
+            },).toThrow(CheckerIndependenceError,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'outgrows any run of the fence character the content contains',
-      fn: async () => {
-        /** Candidate carrying a long run of the fence character. */
-        const messages = buildCandidateSelectMessages({
-          task: 'Pick one.',
-          criteria: ['Faithful.',],
-          evidence: [
-            {
-              label: 'ORIGINAL',
-              text: '========== a source that also fences',
-            },
-          ],
-          rendered: ['Plain replacement.',],
-        },);
+    describe({
+      name: buildCandidateSelectMessages.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'fences candidates so a setext underline inside one cannot close '
+            + 'its own block',
+          fn: async () => {
+            /** Candidate whose own text carries the default fence. */
+            const messages = buildCandidateSelectMessages({
+              task: 'Pick one.',
+              criteria: ['Faithful.',],
+              evidence: [
+                {
+                  label: 'ORIGINAL',
+                  text: '猫猫喜欢追蝴蝶。',
+                },
+              ],
+              rendered: [
+                'A heading\n=====\nand its body.',
+                'Plain replacement.',
+              ],
+            },);
 
-        /** Judge-facing prompt. */
-        const content = messages.at(-1,)?.content ?? '';
-        expect(content.includes('\n===========\n',),).toBe(true,);
-      },
-    },),
+            /** Judge-facing prompt. */
+            const content = messages.at(-1,)?.content ?? '';
+            // A five-character fence would be closed by the candidate's own
+            // underline, so the chosen fence has to be longer.
+            expect(content.includes('\n======\n',),).toBe(true,);
+            expect(content.split('\n======\n',).length - 1,).toBeGreaterThan(1,);
+          },
+        },),
 
-    it({
-      name: 'labels every evidence block and numbers candidates from one',
-      fn: async () => {
-        /** Prompt over two evidence blocks. */
-        const messages = buildCandidateSelectMessages({
-          task: 'Pick one.',
-          criteria: ['Faithful.',],
-          evidence: [
-            {
-              label: 'ORIGINAL (Chinese)',
-              text: '猫猫喜欢追蝴蝶。',
-            },
-            {
-              label: 'PASSAGE BEING REPLACED (current English)',
-              text: 'The cat hates butterflies.',
-            },
-          ],
-          rendered: [
-            'The cat chases butterflies.',
-            'The cat loves chasing butterflies.',
-          ],
-        },);
+        it({
+          name: 'outgrows any run of the fence character the content contains',
+          fn: async () => {
+            /** Candidate carrying a long run of the fence character. */
+            const messages = buildCandidateSelectMessages({
+              task: 'Pick one.',
+              criteria: ['Faithful.',],
+              evidence: [
+                {
+                  label: 'ORIGINAL',
+                  text: '========== a source that also fences',
+                },
+              ],
+              rendered: ['Plain replacement.',],
+            },);
 
-        /** Judge-facing prompt. */
-        const content = messages.at(-1,)?.content ?? '';
-        expect(content.includes('ORIGINAL (Chinese)',),).toBe(true,);
-        expect(content.includes('PASSAGE BEING REPLACED (current English)',),).toBe(true,);
-        expect(content.includes('CANDIDATE 1',),).toBe(true,);
-        expect(content.includes('CANDIDATE 2',),).toBe(true,);
-        expect(content.includes('CANDIDATE 3',),).toBe(false,);
-      },
+            /** Judge-facing prompt. */
+            const content = messages.at(-1,)?.content ?? '';
+            expect(content.includes('\n===========\n',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'labels every evidence block and numbers candidates from one',
+          fn: async () => {
+            /** Prompt over two evidence blocks. */
+            const messages = buildCandidateSelectMessages({
+              task: 'Pick one.',
+              criteria: ['Faithful.',],
+              evidence: [
+                {
+                  label: 'ORIGINAL (Chinese)',
+                  text: '猫猫喜欢追蝴蝶。',
+                },
+                {
+                  label: 'PASSAGE BEING REPLACED (current English)',
+                  text: 'The cat hates butterflies.',
+                },
+              ],
+              rendered: [
+                'The cat chases butterflies.',
+                'The cat loves chasing butterflies.',
+              ],
+            },);
+
+            /** Judge-facing prompt. */
+            const content = messages.at(-1,)?.content ?? '';
+            expect(content.includes('ORIGINAL (Chinese)',),).toBe(true,);
+            expect(content.includes('PASSAGE BEING REPLACED (current English)',),).toBe(true,);
+            expect(content.includes('CANDIDATE 1',),).toBe(true,);
+            expect(content.includes('CANDIDATE 2',),).toBe(true,);
+            expect(content.includes('CANDIDATE 3',),).toBe(false,);
+          },
+        },),
+      ],
     },),
   ],
 },);

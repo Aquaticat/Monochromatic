@@ -10,6 +10,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -162,232 +163,6 @@ function alignedPair(
   return pair;
 }
 
-await describe({
-  name: subdivideChunkPair.name,
-  children: [
-    it({
-      name: 'keeps one slice under a generous budget',
-      fn: async () => {
-        const pair = alignedPair({
-          source: SOURCE_TEXT,
-          target: TARGET_TEXT,
-        },);
-        const slices = subdivideChunkPair({
-          pair,
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TEXT,
-          baseIndex: 0,
-          budget: 10_000,
-        },);
-        expect(slices,).toHaveLength(1,);
-        expect(slices[0]?.target
-          .startOffset,).toBe(pair.target
-          .startOffset,);
-        expect(slices[0]?.target
-          .endOffset,).toBe(pair.target
-          .endOffset,);
-      },
-    },),
-
-    it({
-      name: 'splits paragraphs into contiguous byte-exact slices under a small budget',
-      fn: async () => {
-        const pair = alignedPair({
-          source: SOURCE_TEXT,
-          target: TARGET_TEXT,
-        },);
-        const slices = subdivideChunkPair({
-          pair,
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TEXT,
-          baseIndex: 0,
-          budget: 50,
-        },);
-        expect(slices.length,).toBeGreaterThan(1,);
-
-        // Coverage opens and closes on the section's own offsets.
-        expect(slices[0]?.target
-          .startOffset,).toBe(pair.target
-          .startOffset,);
-        expect(slices.at(-1,)?.target
-          .endOffset,).toBe(pair.target
-          .endOffset,);
-        for (const [index, slice,] of slices.entries()) {
-          // Slice text is the exact document byte range it claims.
-          expect(slice.target
-            .text,).toBe(TARGET_TEXT.slice(
-            slice.target
-              .startOffset,
-            slice.target
-              .endOffset,
-          ),);
-          expect(slice.source
-            .text,).toBe(SOURCE_TEXT.slice(
-            slice.source
-              .startOffset,
-            slice.source
-              .endOffset,
-          ),);
-
-          /**
-           Preceding slice for monotone ordering.
-           */
-          const previous = slices[index - 1];
-          if (previous !== undefined) {
-            expect(slice.target
-              .startOffset,).toBeGreaterThanOrEqual(previous.target
-              .endOffset,);
-          }
-        }
-      },
-    },),
-
-    it({
-      name: 'merges the wider side monotonically on paragraph-count mismatch',
-      fn: async () => {
-        const pair = alignedPair({
-          source: SOURCE_TEXT,
-          target: TARGET_TWO_PARAGRAPHS,
-        },);
-        const slices = subdivideChunkPair({
-          pair,
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TWO_PARAGRAPHS,
-          baseIndex: 0,
-          budget: 30,
-        },);
-        expect(slices.length,).toBeGreaterThan(0,);
-        // Both sides stay fully covered despite the mismatch.
-        expect(slices[0]?.source
-          .startOffset,).toBe(pair.source
-          .startOffset,);
-        expect(slices.at(-1,)?.source
-          .endOffset,).toBe(pair.source
-          .endOffset,);
-        expect(slices[0]?.target
-          .startOffset,).toBe(pair.target
-          .startOffset,);
-        expect(slices.at(-1,)?.target
-          .endOffset,).toBe(pair.target
-          .endOffset,);
-      },
-    },),
-
-    it({
-      name: 'pairs equal node counts in lockstep without off-by-one drift (Arita regression)',
-      fn: async () => {
-        /**
-         Dense original: small adjacent nodes merge on odd boundaries.
-         */
-        const source = markedDocument({ sizes: [35, 10, 10, 35, 10, 10,], },);
-
-        /**
-         Longer translation: same paragraph count, mirrored sizes so the
-         independent-budget grouping would merge on even boundaries and
-         drift the pairing by one (the Arita non-translation false block).
-         */
-        const target = markedDocument({ sizes: [10, 10, 35, 10, 10, 35,], },);
-        const pair = alignedPair({
-          source,
-          target,
-        },);
-        // Equal paragraph counts are the lockstep precondition.
-        expect(pair.source
-          .nodes
-          .length,).toBe(pair.target
-          .nodes
-          .length,);
-
-        const slices = subdivideChunkPair({
-          pair,
-          sourceText: source,
-          targetText: target,
-          baseIndex: 0,
-          budget: 40,
-        },);
-
-        /**
-         Ordered markers gathered across every slice's original side.
-         */
-        const covered: string[] = [];
-        for (const slice of slices) {
-          // Corresponding paragraphs stay in the same slice: no drift.
-          expect(sliceMarkers({ text: slice.source
-            .text, },),).toBe(sliceMarkers({ text: slice.target
-            .text, },),);
-          covered.push(sliceMarkers({ text: slice.source
-            .text, },),);
-        }
-        // Every marker is covered exactly once, in document order.
-        expect(covered.join(',',),).toBe('M0,M1,M2,M3,M4,M5',);
-      },
-    },),
-
-    it({
-      name: 'stamps the global base index onto every slice',
-      fn: async () => {
-        const pair = alignedPair({
-          source: SOURCE_TEXT,
-          target: TARGET_TEXT,
-        },);
-        const slices = subdivideChunkPair({
-          pair,
-          sourceText: SOURCE_TEXT,
-          targetText: TARGET_TEXT,
-          baseIndex: 5,
-          budget: 50,
-        },);
-        for (const [index, slice,] of slices.entries()) {
-          expect(slice.target
-            .sliceIndex,).toBe(5 + index,);
-          expect(slice.source
-            .sliceIndex,).toBe(5 + index,);
-        }
-      },
-    },),
-
-    it({
-      name: 'stamps the base index on a section whose translation is a bare heading against an original with prose. '
-        + 'The pair arrives holding its SECTION index, and a path that returned it untouched let two slices of one '
-        + 'document share an index once any earlier section subdivided; slice identity is what the cache key and '
-        + 'the splice both rest on',
-      fn: async () => {
-        /**
-         Original whose section has prose against a translation whose
-         matching section is a bare heading, which the grouping folds into
-         one slice.
-         */
-        const onlySource = '## 猫的一天\n\n小猫早晨在窗台晒太阳。\n';
-
-        /**
-         Translation carrying the heading and nothing under it.
-         */
-        const emptyTarget = '## A cat\'s day\n';
-
-        /**
-         Slices of a section pair one side left empty.
-         */
-        const slices = subdivideChunkPair({
-          pair: alignedPair({
-            source: onlySource,
-            target: emptyTarget,
-          },),
-          sourceText: onlySource,
-          targetText: emptyTarget,
-          baseIndex: 7,
-        },);
-        expect(slices,).toHaveLength(1,);
-        for (const slice of slices) {
-          expect(slice.source
-            .sliceIndex,).toBe(7,);
-          expect(slice.target
-            .sliceIndex,).toBe(7,);
-        }
-      },
-    },),
-  ],
-},);
-
 //region Insertion subdivision
 // A section nothing rendered has no target runs to frame subdivision by, and
 // used to come back as ONE slice however long its original was.
@@ -433,119 +208,353 @@ const INSERTION_BUDGET = 120;
 //endregion Insertion subdivision
 
 await describe({
-  name: `${subdivideChunkPair.name} on a section nothing rendered`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SLICES it by the ORIGINAL, since the translation side offers no runs to frame by, and '
-        + 'a whole unrendered section asked as one unit is a translation call several times the '
-        + 'budget every other slice is held to',
-      fn: async () => {
-        /**
-         Original section as the aligner hands it over.
-         */
-        const [sourceChunk,] = chunkByHeadings({
-          document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
-        },);
-        if (sourceChunk === undefined)
-          throw new Error('the fixture should parse to one section',);
-
-        /**
-         Slices this section subdivides into.
-         */
-        const slices = subdivideChunkPair({
-          pair: {
-            source: sourceChunk,
-            target: makeInsertionChunk({
-              sliceIndex: 0,
-              offset: ANCHOR_OFFSET,
-            },),
-          },
-          sourceText: UNRENDERED_SOURCE_TEXT,
-          targetText: UNRENDERED_SOURCE_TEXT,
-          baseIndex: 0,
-          budget: INSERTION_BUDGET,
-        },);
-        expect(slices.length,).toBeGreaterThan(1,);
-
-        // NO PARAGRAPH SPLIT, so every slice stays inside the budget unless one
-        // block alone exceeds it, which this fixture has none of.
-        for (const slice of slices)
-          expect(slice.source
-            .text
-            .length,).toBeLessThanOrEqual(INSERTION_BUDGET,);
-      },
-    },),
-
-    it({
-      name: 'KEEPS every original block, in order, so slicing a section nobody translated cannot '
-        + 'lose part of the passage it exists to write',
-      fn: async () => {
-        const [sourceChunk,] = chunkByHeadings({
-          document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
-        },);
-        if (sourceChunk === undefined)
-          throw new Error('the fixture should parse to one section',);
-        const slices = subdivideChunkPair({
-          pair: {
-            source: sourceChunk,
-            target: makeInsertionChunk({
-              sliceIndex: 0,
-              offset: ANCHOR_OFFSET,
-            },),
-          },
-          sourceText: UNRENDERED_SOURCE_TEXT,
-          targetText: UNRENDERED_SOURCE_TEXT,
-          baseIndex: 0,
-          budget: INSERTION_BUDGET,
-        },);
-        expect(slices.flatMap(function toIds(slice,) {
-          return slice.source
-            .nodes
-            .map(function toId(node,) {
-              return node.id;
+    describe({
+      name: subdivideChunkPair.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'keeps one slice under a generous budget',
+          fn: async () => {
+            const pair = alignedPair({
+              source: SOURCE_TEXT,
+              target: TARGET_TEXT,
             },);
-        },),).toStrictEqual(sourceChunk.nodes
-          .map(function toId(node,) {
-            return node.id;
-          },),);
-      },
+            const slices = subdivideChunkPair({
+              pair,
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              baseIndex: 0,
+              budget: 10_000,
+            },);
+            expect(slices,).toHaveLength(1,);
+            expect(slices[0]?.target
+              .startOffset,).toBe(pair.target
+              .startOffset,);
+            expect(slices[0]?.target
+              .endOffset,).toBe(pair.target
+              .endOffset,);
+          },
+        },),
+
+        it({
+          name: 'splits paragraphs into contiguous byte-exact slices under a small budget',
+          fn: async () => {
+            const pair = alignedPair({
+              source: SOURCE_TEXT,
+              target: TARGET_TEXT,
+            },);
+            const slices = subdivideChunkPair({
+              pair,
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              baseIndex: 0,
+              budget: 50,
+            },);
+            expect(slices.length,).toBeGreaterThan(1,);
+
+            // Coverage opens and closes on the section's own offsets.
+            expect(slices[0]?.target
+              .startOffset,).toBe(pair.target
+              .startOffset,);
+            expect(slices.at(-1,)?.target
+              .endOffset,).toBe(pair.target
+              .endOffset,);
+            for (const [index, slice,] of slices.entries()) {
+              // Slice text is the exact document byte range it claims.
+              expect(slice.target
+                .text,).toBe(TARGET_TEXT.slice(
+                slice.target
+                  .startOffset,
+                slice.target
+                  .endOffset,
+              ),);
+              expect(slice.source
+                .text,).toBe(SOURCE_TEXT.slice(
+                slice.source
+                  .startOffset,
+                slice.source
+                  .endOffset,
+              ),);
+
+              /**
+               Preceding slice for monotone ordering.
+               */
+              const previous = slices[index - 1];
+              if (previous !== undefined) {
+                expect(slice.target
+                  .startOffset,).toBeGreaterThanOrEqual(previous.target
+                  .endOffset,);
+              }
+            }
+          },
+        },),
+
+        it({
+          name: 'merges the wider side monotonically on paragraph-count mismatch',
+          fn: async () => {
+            const pair = alignedPair({
+              source: SOURCE_TEXT,
+              target: TARGET_TWO_PARAGRAPHS,
+            },);
+            const slices = subdivideChunkPair({
+              pair,
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TWO_PARAGRAPHS,
+              baseIndex: 0,
+              budget: 30,
+            },);
+            expect(slices.length,).toBeGreaterThan(0,);
+            // Both sides stay fully covered despite the mismatch.
+            expect(slices[0]?.source
+              .startOffset,).toBe(pair.source
+              .startOffset,);
+            expect(slices.at(-1,)?.source
+              .endOffset,).toBe(pair.source
+              .endOffset,);
+            expect(slices[0]?.target
+              .startOffset,).toBe(pair.target
+              .startOffset,);
+            expect(slices.at(-1,)?.target
+              .endOffset,).toBe(pair.target
+              .endOffset,);
+          },
+        },),
+
+        it({
+          name: 'pairs equal node counts in lockstep without off-by-one drift (Arita regression)',
+          fn: async () => {
+            /**
+             Dense original: small adjacent nodes merge on odd boundaries.
+             */
+            const source = markedDocument({ sizes: [35, 10, 10, 35, 10, 10,], },);
+
+            /**
+             Longer translation: same paragraph count, mirrored sizes so the
+             independent-budget grouping would merge on even boundaries and
+             drift the pairing by one (the Arita non-translation false block).
+             */
+            const target = markedDocument({ sizes: [10, 10, 35, 10, 10, 35,], },);
+            const pair = alignedPair({
+              source,
+              target,
+            },);
+            // Equal paragraph counts are the lockstep precondition.
+            expect(pair.source
+              .nodes
+              .length,).toBe(pair.target
+              .nodes
+              .length,);
+
+            const slices = subdivideChunkPair({
+              pair,
+              sourceText: source,
+              targetText: target,
+              baseIndex: 0,
+              budget: 40,
+            },);
+
+            /**
+             Ordered markers gathered across every slice's original side.
+             */
+            const covered: string[] = [];
+            for (const slice of slices) {
+              // Corresponding paragraphs stay in the same slice: no drift.
+              expect(sliceMarkers({ text: slice.source
+                .text, },),).toBe(sliceMarkers({ text: slice.target
+                .text, },),);
+              covered.push(sliceMarkers({ text: slice.source
+                .text, },),);
+            }
+            // Every marker is covered exactly once, in document order.
+            expect(covered.join(',',),).toBe('M0,M1,M2,M3,M4,M5',);
+          },
+        },),
+
+        it({
+          name: 'stamps the global base index onto every slice',
+          fn: async () => {
+            const pair = alignedPair({
+              source: SOURCE_TEXT,
+              target: TARGET_TEXT,
+            },);
+            const slices = subdivideChunkPair({
+              pair,
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              baseIndex: 5,
+              budget: 50,
+            },);
+            for (const [index, slice,] of slices.entries()) {
+              expect(slice.target
+                .sliceIndex,).toBe(5 + index,);
+              expect(slice.source
+                .sliceIndex,).toBe(5 + index,);
+            }
+          },
+        },),
+
+        it({
+          name: 'stamps the base index on a section whose translation is a bare heading against an original with prose. '
+            + 'The pair arrives holding its SECTION index, and a path that returned it untouched let two slices of one '
+            + 'document share an index once any earlier section subdivided; slice identity is what the cache key and '
+            + 'the splice both rest on',
+          fn: async () => {
+            /**
+             Original whose section has prose against a translation whose
+             matching section is a bare heading, which the grouping folds into
+             one slice.
+             */
+            const onlySource = '## 猫的一天\n\n小猫早晨在窗台晒太阳。\n';
+
+            /**
+             Translation carrying the heading and nothing under it.
+             */
+            const emptyTarget = '## A cat\'s day\n';
+
+            /**
+             Slices of a section pair one side left empty.
+             */
+            const slices = subdivideChunkPair({
+              pair: alignedPair({
+                source: onlySource,
+                target: emptyTarget,
+              },),
+              sourceText: onlySource,
+              targetText: emptyTarget,
+              baseIndex: 7,
+            },);
+            expect(slices,).toHaveLength(1,);
+            for (const slice of slices) {
+              expect(slice.source
+                .sliceIndex,).toBe(7,);
+              expect(slice.target
+                .sliceIndex,).toBe(7,);
+            }
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'WRITES every slice at the SAME boundary and stamps them in order, which is the shape '
-        + '`spliceSlices` orders several insertions at one offset by. The section has one place to '
-        + 'go, and its slices go there one after another',
-      fn: async () => {
-        const [sourceChunk,] = chunkByHeadings({
-          document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
-        },);
-        if (sourceChunk === undefined)
-          throw new Error('the fixture should parse to one section',);
-        const slices = subdivideChunkPair({
-          pair: {
-            source: sourceChunk,
-            target: makeInsertionChunk({
-              sliceIndex: 0,
-              offset: ANCHOR_OFFSET,
-            },),
+    describe({
+      name: `${subdivideChunkPair.name} on a section nothing rendered`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SLICES it by the ORIGINAL, since the translation side offers no runs to frame by, and '
+            + 'a whole unrendered section asked as one unit is a translation call several times the '
+            + 'budget every other slice is held to',
+          fn: async () => {
+            /**
+             Original section as the aligner hands it over.
+             */
+            const [sourceChunk,] = chunkByHeadings({
+              document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
+            },);
+            if (sourceChunk === undefined)
+              throw new Error('the fixture should parse to one section',);
+
+            /**
+             Slices this section subdivides into.
+             */
+            const slices = subdivideChunkPair({
+              pair: {
+                source: sourceChunk,
+                target: makeInsertionChunk({
+                  sliceIndex: 0,
+                  offset: ANCHOR_OFFSET,
+                },),
+              },
+              sourceText: UNRENDERED_SOURCE_TEXT,
+              targetText: UNRENDERED_SOURCE_TEXT,
+              baseIndex: 0,
+              budget: INSERTION_BUDGET,
+            },);
+            expect(slices.length,).toBeGreaterThan(1,);
+
+            // NO PARAGRAPH SPLIT, so every slice stays inside the budget unless one
+            // block alone exceeds it, which this fixture has none of.
+            for (const slice of slices)
+              expect(slice.source
+                .text
+                .length,).toBeLessThanOrEqual(INSERTION_BUDGET,);
           },
-          sourceText: UNRENDERED_SOURCE_TEXT,
-          targetText: UNRENDERED_SOURCE_TEXT,
-          baseIndex: 7,
-          budget: INSERTION_BUDGET,
-        },);
-        for (const [at, slice,] of slices.entries()) {
-          expect(isInsertionChunk(slice.target,),).toBe(true,);
-          expect(slice.target
-            .startOffset,).toBe(ANCHOR_OFFSET,);
-          expect(slice.target
-            .endOffset,).toBe(ANCHOR_OFFSET,);
-          expect(slice.source
-            .sliceIndex,).toBe(7 + at,);
-          expect(slice.target
-            .sliceIndex,).toBe(7 + at,);
-        }
-      },
+        },),
+
+        it({
+          name: 'KEEPS every original block, in order, so slicing a section nobody translated cannot '
+            + 'lose part of the passage it exists to write',
+          fn: async () => {
+            const [sourceChunk,] = chunkByHeadings({
+              document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
+            },);
+            if (sourceChunk === undefined)
+              throw new Error('the fixture should parse to one section',);
+            const slices = subdivideChunkPair({
+              pair: {
+                source: sourceChunk,
+                target: makeInsertionChunk({
+                  sliceIndex: 0,
+                  offset: ANCHOR_OFFSET,
+                },),
+              },
+              sourceText: UNRENDERED_SOURCE_TEXT,
+              targetText: UNRENDERED_SOURCE_TEXT,
+              baseIndex: 0,
+              budget: INSERTION_BUDGET,
+            },);
+            expect(slices.flatMap(function toIds(slice,) {
+              return slice.source
+                .nodes
+                .map(function toId(node,) {
+                  return node.id;
+                },);
+            },),).toStrictEqual(sourceChunk.nodes
+              .map(function toId(node,) {
+                return node.id;
+              },),);
+          },
+        },),
+
+        it({
+          name: 'WRITES every slice at the SAME boundary and stamps them in order, which is the shape '
+            + '`spliceSlices` orders several insertions at one offset by. The section has one place to '
+            + 'go, and its slices go there one after another',
+          fn: async () => {
+            const [sourceChunk,] = chunkByHeadings({
+              document: parseDocument({ text: UNRENDERED_SOURCE_TEXT, },),
+            },);
+            if (sourceChunk === undefined)
+              throw new Error('the fixture should parse to one section',);
+            const slices = subdivideChunkPair({
+              pair: {
+                source: sourceChunk,
+                target: makeInsertionChunk({
+                  sliceIndex: 0,
+                  offset: ANCHOR_OFFSET,
+                },),
+              },
+              sourceText: UNRENDERED_SOURCE_TEXT,
+              targetText: UNRENDERED_SOURCE_TEXT,
+              baseIndex: 7,
+              budget: INSERTION_BUDGET,
+            },);
+            for (const [at, slice,] of slices.entries()) {
+              expect(isInsertionChunk(slice.target,),).toBe(true,);
+              expect(slice.target
+                .startOffset,).toBe(ANCHOR_OFFSET,);
+              expect(slice.target
+                .endOffset,).toBe(ANCHOR_OFFSET,);
+              expect(slice.source
+                .sliceIndex,).toBe(7 + at,);
+              expect(slice.target
+                .sliceIndex,).toBe(7 + at,);
+            }
+          },
+        },),
+      ],
     },),
   ],
 },);

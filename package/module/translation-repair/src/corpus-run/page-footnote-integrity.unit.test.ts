@@ -5,6 +5,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -135,100 +136,108 @@ function interruptionOf({ run, }: { readonly run: () => void; },): TranslationRe
 }
 
 await describe({
-  name: assertPageFootnotesIntact.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ACCEPTS a page whose footnote graph is as whole as the archive',
-      fn: async () => {
-        expect(() => assertPageFootnotesIntact({
-          artifact: artifactShipping({ incumbent: TARGET, text: 'The cat naps in warm sunlight.\n', },),
-          slices: slicesOver({ targetText: TARGET, },),
-          targetText: TARGET,
-        },),).not.toThrow();
-      },
+    describe({
+      name: assertPageFootnotesIntact.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a page whose footnote graph is as whole as the archive',
+          fn: async () => {
+            expect(() => assertPageFootnotesIntact({
+              artifact: artifactShipping({ incumbent: TARGET, text: 'The cat naps in warm sunlight.\n', },),
+              slices: slicesOver({ targetText: TARGET, },),
+              targetText: TARGET,
+            },),).not.toThrow();
+          },
+        },),
+        it({
+          name: 'PAUSES a page that ships a reference with no note the archive never carried (the nineteenth '
+            + 'hakureico pass of 2026-09-09 shipped “Mayday”[^1] with no [^1] definition anywhere)',
+          fn: async () => {
+            /**
+             The interruption the guard raises.
+             */
+            const error = interruptionOf({
+              run: () => assertPageFootnotesIntact({
+                artifact: artifactShipping({ incumbent: TARGET, text: DANGLING, },),
+                slices: slicesOver({ targetText: TARGET, },),
+                targetText: TARGET,
+              },),
+            },);
+            expect(error.reason,).toBe('page-footnote-integrity',);
+            expect(error.findings,).toEqual([
+              'page-footnote-integrity (count 1)',
+              'page-footnote-unresolved-reference gfm 1',
+            ],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS a page that carries the same dangling reference the archive already carried, since a '
+            + 'defect the archive brought is never blamed on the page',
+          fn: async () => {
+            expect(() => assertPageFootnotesIntact({
+              artifact: artifactShipping({ incumbent: DANGLING, text: 'The cat naps in warm sunlight[^1].\n', },),
+              slices: slicesOver({ targetText: DANGLING, },),
+              targetText: DANGLING,
+            },),).not.toThrow();
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'PAUSES a page that ships a reference with no note the archive never carried (the nineteenth '
-        + 'hakureico pass of 2026-09-09 shipped “Mayday”[^1] with no [^1] definition anywhere)',
-      fn: async () => {
-        /**
-         The interruption the guard raises.
-         */
-        const error = interruptionOf({
-          run: () => assertPageFootnotesIntact({
-            artifact: artifactShipping({ incumbent: TARGET, text: DANGLING, },),
-            slices: slicesOver({ targetText: TARGET, },),
-            targetText: TARGET,
-          },),
-        },);
-        expect(error.reason,).toBe('page-footnote-integrity',);
-        expect(error.findings,).toEqual([
-          'page-footnote-integrity (count 1)',
-          'page-footnote-unresolved-reference gfm 1',
-        ],);
-      },
-    },),
-    it({
-      name: 'ACCEPTS a page that carries the same dangling reference the archive already carried, since a '
-        + 'defect the archive brought is never blamed on the page',
-      fn: async () => {
-        expect(() => assertPageFootnotesIntact({
-          artifact: artifactShipping({ incumbent: DANGLING, text: 'The cat naps in warm sunlight[^1].\n', },),
-          slices: slicesOver({ targetText: DANGLING, },),
-          targetText: DANGLING,
-        },),).not.toThrow();
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: assertPageGuards.name,
-  children: [
-    it({
-      name: 'runs the footnote guard after the carried guard, so a page that passes the carried check still '
-        + 'pauses on a dangling reference',
-      fn: async () => {
-        /**
-         The interruption the guards raise.
-         */
-        const error = interruptionOf({
-          run: () => assertPageGuards({
-            artifact: artifactShipping({ incumbent: TARGET, text: DANGLING, },),
-            slices: slicesOver({ targetText: TARGET, },),
-            targetText: TARGET,
-            carried: [{
-              position: 1,
-              sliceIndex: 1,
-              sourceText: '猫在阳光下睡觉。',
-              evidence: ['cat sleeps in warm sunlight',],
-            },],
-          },),
-        },);
-        expect(error.reason,).toBe('page-footnote-integrity',);
-      },
-    },),
-    it({
-      name: 'raises the carried guard first when the page lost its carried region',
-      fn: async () => {
-        /**
-         The interruption the guards raise.
-         */
-        const error = interruptionOf({
-          run: () => assertPageGuards({
-            artifact: artifactShipping({ incumbent: TARGET, text: 'The cat waits by the window[^1].\n', },),
-            slices: slicesOver({ targetText: TARGET, },),
-            targetText: TARGET,
-            carried: [{
-              position: 1,
-              sliceIndex: 1,
-              sourceText: '猫在阳光下睡觉。',
-              evidence: ['cat sleeps in warm sunlight',],
-            },],
-          },),
-        },);
-        expect(error.reason,).toBe('carried-evidence-lost',);
-      },
+    describe({
+      name: assertPageGuards.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'runs the footnote guard after the carried guard, so a page that passes the carried check still '
+            + 'pauses on a dangling reference',
+          fn: async () => {
+            /**
+             The interruption the guards raise.
+             */
+            const error = interruptionOf({
+              run: () => assertPageGuards({
+                artifact: artifactShipping({ incumbent: TARGET, text: DANGLING, },),
+                slices: slicesOver({ targetText: TARGET, },),
+                targetText: TARGET,
+                carried: [{
+                  position: 1,
+                  sliceIndex: 1,
+                  sourceText: '猫在阳光下睡觉。',
+                  evidence: ['cat sleeps in warm sunlight',],
+                },],
+              },),
+            },);
+            expect(error.reason,).toBe('page-footnote-integrity',);
+          },
+        },),
+        it({
+          name: 'raises the carried guard first when the page lost its carried region',
+          fn: async () => {
+            /**
+             The interruption the guards raise.
+             */
+            const error = interruptionOf({
+              run: () => assertPageGuards({
+                artifact: artifactShipping({ incumbent: TARGET, text: 'The cat waits by the window[^1].\n', },),
+                slices: slicesOver({ targetText: TARGET, },),
+                targetText: TARGET,
+                carried: [{
+                  position: 1,
+                  sliceIndex: 1,
+                  sourceText: '猫在阳光下睡觉。',
+                  evidence: ['cat sleeps in warm sunlight',],
+                },],
+              },),
+            },);
+            expect(error.reason,).toBe('carried-evidence-lost',);
+          },
+        },),
+      ],
     },),
   ],
 },);

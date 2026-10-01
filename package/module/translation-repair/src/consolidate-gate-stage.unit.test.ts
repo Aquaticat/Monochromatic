@@ -15,6 +15,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -221,173 +222,182 @@ async function gate(
 }
 
 await describe({
-  name: 'front matter consolidation gate',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SETTLES SYNTAX-BEARING METADATA through gate stage',
-      fn: async () => {
-        const outcome = await gateConsolidatedSlice({
-          // Whole bench: this case scripts every seat and reads over the bench it wrote.
-          fanOut: 'whole-bench',
-          client: cannedClient({
-            replyByModel: [
-              ballot({ choice: 'consolidated', },),
-              ballot({ choice: 'consolidated', },),
-              ballot({ choice: 'consolidated', },),
-            ],
-          },),
-          modelIds: ROSTER,
-          subject: {
-            lineStructured: false,
-            sourceText: '---\nname: 猫猫\n---\n',
-            incumbentText: '---\nname: EntryId\n---\n',
-            consolidatedText: '---\nname: Maomao Cat\n---\n',
-            standingText: '---\nname: Maomao\n---\n',
-            syntax: 'front-matter',
+    describe({
+      name: 'front matter consolidation gate',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SETTLES SYNTAX-BEARING METADATA through gate stage',
+          fn: async () => {
+            const outcome = await gateConsolidatedSlice({
+              // Whole bench: this case scripts every seat and reads over the bench it wrote.
+              fanOut: 'whole-bench',
+              client: cannedClient({
+                replyByModel: [
+                  ballot({ choice: 'consolidated', },),
+                  ballot({ choice: 'consolidated', },),
+                  ballot({ choice: 'consolidated', },),
+                ],
+              },),
+              modelIds: ROSTER,
+              subject: {
+                lineStructured: false,
+                sourceText: '---\nname: 猫猫\n---\n',
+                incumbentText: '---\nname: EntryId\n---\n',
+                consolidatedText: '---\nname: Maomao Cat\n---\n',
+                standingText: '---\nname: Maomao\n---\n',
+                syntax: 'front-matter',
+              },
+              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              l,
+            },);
+            expect(outcome.choice,).toBe('consolidated',);
+            expect(outcome.ships,).toBe('consolidated',);
           },
-          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-          l,
-        },);
-        expect(outcome.choice,).toBe('consolidated',);
-        expect(outcome.ships,).toBe('consolidated',);
-      },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: settleGateBallots.name,
-  children: [
-    it({
-      name: 'ACCEPTS a clear win for the rendering this run wrote',
-      fn: async () => {
-        expect(settleGateBallots({
-          ballots: [
-            { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-            { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-            { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-          ],
-        },),).toBe('consolidated',);
-      },
+    describe({
+      name: settleGateBallots.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a clear win for the rendering this run wrote',
+          fn: async () => {
+            expect(settleGateBallots({
+              ballots: [
+                { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+                { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+                { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+              ],
+            },),).toBe('consolidated',);
+          },
+        },),
+        it({
+          name: 'REFUSES a one-voice majority, since one judge is an opinion',
+          fn: async () => {
+            expect(settleGateBallots({
+              ballots: [
+                { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+              ],
+            },),).toBe('neither',);
+          },
+        },),
+        it({
+          name: 'REFUSES a tie rather than picking by list order',
+          fn: async () => {
+            expect(settleGateBallots({
+              ballots: [
+                { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+                { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+                { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+                { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
+              ],
+            },),).toBe('neither',);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REFUSES a one-voice majority, since one judge is an opinion',
-      fn: async () => {
-        expect(settleGateBallots({
-          ballots: [
-            { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-          ],
-        },),).toBe('neither',);
-      },
-    },),
-    it({
-      name: 'REFUSES a tie rather than picking by list order',
-      fn: async () => {
-        expect(settleGateBallots({
-          ballots: [
-            { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-            { choice: 'consolidated', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-            { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-            { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: '', },
-          ],
-        },),).toBe('neither',);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: gateConsolidatedSlice.name,
-  children: [
-    it({
-      name: 'ACCEPTS a consolidation two voices back over one',
-      fn: async () => {
-        const outcome = await gate({
-          replyByModel: [
-            ballot({ choice: 'consolidated', },),
-            ballot({ choice: 'consolidated', },),
-            ballot({ choice: 'standing', },),
-          ],
-        },);
-        expect(outcome.choice,).toBe('consolidated',);
-        expect(outcome.ships,).toBe('consolidated',);
-        expect(outcome.usable,).toBe(3,);
-      },
-    },),
-    it({
-      name: 'KEEPS the standing text when the roster refuses',
-      fn: async () => {
-        const outcome = await gate({
-          replyByModel: [
-            ballot({ choice: 'neither', },),
-            ballot({ choice: 'neither', },),
-            ballot({ choice: 'neither', },),
-          ],
-        },);
-        expect(outcome.choice,).toBe('neither',);
-        expect(outcome.ships,).toBe('standing',);
-      },
-    },),
-    it({
-      name: 'KEEPS the standing text on a tie, rather than churning the page',
-      fn: async () => {
-        const outcome = await gate({
-          replyByModel: [
-            ballot({ choice: 'consolidated', },),
-            ballot({ choice: 'standing', },),
-            ballot({ choice: 'neither', },),
-          ],
-        },);
-        expect(outcome.ships,).toBe('standing',);
-      },
-    },),
-    it({
-      name: 'KEEPS the standing text when too few voices arrived to settle',
-      fn: async () => {
-        const outcome = await gate({
-          replyByModel: [
-            ballot({ choice: 'consolidated', },),
-            'not json at all',
-            'also not json',
-          ],
-        },);
-        expect(outcome.usable,).toBe(1,);
-        expect(outcome.ships,).toBe('standing',);
-        expect(outcome.findings.length,).toBe(1,);
-      },
-    },),
-    it({
-      name: 'SAYS THE BENCH WAS SHORT when the router refused seats (ledger X8): three of five refused, two '
-        + 'ballots settle the gate, and the finding records the reachable share the gathers already record',
-      fn: async () => {
-        const outcome = await gateConsolidatedSlice({
-          fanOut: 'whole-bench',
-          client: refusingClient({ refused: FIVE_SEATS.slice(0, 3,), },),
-          modelIds: FIVE_SEATS,
-          subject: SUBJECT,
-          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
-          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
-          l,
-        },);
-        expect(outcome.ships,).toBe('consolidated',);
-        expect(outcome.findings,).toContain('stage-short-bench (consolidate-gate reachable 2 of 5, quorum 2)',);
-      },
-    },),
-    it({
-      name: 'KEEPS every usable ballot, including the ones that ship nothing',
-      fn: async () => {
-        const outcome = await gate({
-          replyByModel: [
-            ballot({ choice: 'neither', },),
-            ballot({ choice: 'neither', },),
-            ballot({ choice: 'standing', },),
-          ],
-        },);
-        // A READER ASKING WHY A SLICE KEPT ITS TEXT looks exactly where a
-        // record without ballots would be silent.
-        expect(outcome.ballots.length,).toBe(3,);
-      },
+    describe({
+      name: gateConsolidatedSlice.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a consolidation two voices back over one',
+          fn: async () => {
+            const outcome = await gate({
+              replyByModel: [
+                ballot({ choice: 'consolidated', },),
+                ballot({ choice: 'consolidated', },),
+                ballot({ choice: 'standing', },),
+              ],
+            },);
+            expect(outcome.choice,).toBe('consolidated',);
+            expect(outcome.ships,).toBe('consolidated',);
+            expect(outcome.usable,).toBe(3,);
+          },
+        },),
+        it({
+          name: 'KEEPS the standing text when the roster refuses',
+          fn: async () => {
+            const outcome = await gate({
+              replyByModel: [
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },);
+            expect(outcome.choice,).toBe('neither',);
+            expect(outcome.ships,).toBe('standing',);
+          },
+        },),
+        it({
+          name: 'KEEPS the standing text on a tie, rather than churning the page',
+          fn: async () => {
+            const outcome = await gate({
+              replyByModel: [
+                ballot({ choice: 'consolidated', },),
+                ballot({ choice: 'standing', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },);
+            expect(outcome.ships,).toBe('standing',);
+          },
+        },),
+        it({
+          name: 'KEEPS the standing text when too few voices arrived to settle',
+          fn: async () => {
+            const outcome = await gate({
+              replyByModel: [
+                ballot({ choice: 'consolidated', },),
+                'not json at all',
+                'also not json',
+              ],
+            },);
+            expect(outcome.usable,).toBe(1,);
+            expect(outcome.ships,).toBe('standing',);
+            expect(outcome.findings.length,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'SAYS THE BENCH WAS SHORT when the router refused seats (ledger X8): three of five refused, two '
+            + 'ballots settle the gate, and the finding records the reachable share the gathers already record',
+          fn: async () => {
+            const outcome = await gateConsolidatedSlice({
+              fanOut: 'whole-bench',
+              client: refusingClient({ refused: FIVE_SEATS.slice(0, 3,), },),
+              modelIds: FIVE_SEATS,
+              subject: SUBJECT,
+              signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+              exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+              l,
+            },);
+            expect(outcome.ships,).toBe('consolidated',);
+            expect(outcome.findings,).toContain('stage-short-bench (consolidate-gate reachable 2 of 5, quorum 2)',);
+          },
+        },),
+        it({
+          name: 'KEEPS every usable ballot, including the ones that ship nothing',
+          fn: async () => {
+            const outcome = await gate({
+              replyByModel: [
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'standing', },),
+              ],
+            },);
+            // A READER ASKING WHY A SLICE KEPT ITS TEXT looks exactly where a
+            // record without ballots would be silent.
+            expect(outcome.ballots.length,).toBe(3,);
+          },
+        },),
+      ],
     },),
   ],
 },);

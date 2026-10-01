@@ -24,6 +24,7 @@ import { join, } from 'node:path';
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -240,320 +241,327 @@ async function buildRefusalOf(
 }
 
 await describe({
-  name: assertBuildGenerationResumable.name,
-  // ONE AT A TIME: a case diverts the process-wide `console.log` (ledger B79).
+  name: '',
   concurrency: 1,
   children: [
-    it({
-      name: 'passes a FRESH directory, since a first invocation has nothing to '
-        + 'disagree with and must not be made to look like a fault',
-      fn: async () => {
-        assertBuildGenerationResumable({
-          census: await censusOf({ generations: {}, },),
-          digest: DIGEST_A,
-          driftAllowed: false,
-        },);
-      },
-    },),
-
-    it({
-      name: 'passes a resume under the SAME build, which is the ordinary case '
-        + 'this guard must not make expensive: a pass stopped at its soft '
-        + 'budget and is being continued with nothing landed in between',
-      fn: async () => {
-        assertBuildGenerationResumable({
-          census: await censusOf({
-            generations: {
-              Mittens: DIGEST_A,
-              Pepper: DIGEST_A,
-            },
-          },),
-          digest: DIGEST_A,
-          driftAllowed: false,
-        },);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a resume that would stamp a second pipeline into one pool. '
-        + 'This is the whole guard: by the time a reader refuses the mixed '
-        + 'pool the budget is already spent, so the refusal has to happen '
-        + 'before any entry is settled rather than after',
-      fn: async () => {
-        /**
-         What the build check refused with, read for class as well as wording.
-         */
-        const refusal = await buildRefusalOf({
-          generations: {
-            Mittens: DIGEST_A,
-            Pepper: DIGEST_A,
+    describe({
+      name: assertBuildGenerationResumable.name,
+      // ONE AT A TIME: a case diverts the process-wide `console.log` (ledger B79).
+      concurrency: 1,
+      children: [
+        it({
+          name: 'passes a FRESH directory, since a first invocation has nothing to '
+            + 'disagree with and must not be made to look like a fault',
+          fn: async () => {
+            assertBuildGenerationResumable({
+              census: await censusOf({ generations: {}, },),
+              digest: DIGEST_A,
+              driftAllowed: false,
+            },);
           },
-          digest: DIGEST_B,
-          driftAllowed: false,
-        },);
+        },),
 
-        expect(refusal,).toBeInstanceOf(GenerationDriftError,);
-        expect((refusal as Error).message,).toContain('built by a different pipeline',);
-      },
-    },),
-
-    it({
-      name: 'names EVERY pipeline already present, not just one, so an operator '
-        + 'reading the refusal can see a directory that is already mixed '
-        + 'rather than believing it holds a single clean generation',
-      fn: async () => {
-        /**
-         What the build check refused with, read for class as well as wording.
-         */
-        const refusal = await buildRefusalOf({
-          generations: {
-            Mittens: DIGEST_A,
-            Pepper: DIGEST_B,
+        it({
+          name: 'passes a resume under the SAME build, which is the ordinary case '
+            + 'this guard must not make expensive: a pass stopped at its soft '
+            + 'budget and is being continued with nothing landed in between',
+          fn: async () => {
+            assertBuildGenerationResumable({
+              census: await censusOf({
+                generations: {
+                  Mittens: DIGEST_A,
+                  Pepper: DIGEST_A,
+                },
+              },),
+              digest: DIGEST_A,
+              driftAllowed: false,
+            },);
           },
-          digest: DIGEST_C,
-          driftAllowed: false,
-        },);
+        },),
 
-        expect(refusal,).toBeInstanceOf(GenerationDriftError,);
-        // Sixteen characters, not the full id: every digest opens with the
-        // same scheme name, so the abbreviation grows past its floor to the
-        // first character that differs. Asserting the full id would pass
-        // only if the message stopped abbreviating at all.
-        expect((refusal as Error).message,).toContain('sha256-tree-v1:a',);
-        expect((refusal as Error).message,).toContain('sha256-tree-v1:b',);
-      },
-    },),
+        it({
+          name: 'REFUSES a resume that would stamp a second pipeline into one pool. '
+            + 'This is the whole guard: by the time a reader refuses the mixed '
+            + 'pool the budget is already spent, so the refusal has to happen '
+            + 'before any entry is settled rather than after',
+          fn: async () => {
+            /**
+             What the build check refused with, read for class as well as wording.
+             */
+            const refusal = await buildRefusalOf({
+              generations: {
+                Mittens: DIGEST_A,
+                Pepper: DIGEST_A,
+              },
+              digest: DIGEST_B,
+              driftAllowed: false,
+            },);
 
-    it({
-      name: 'permits drift when asked EXPLICITLY, so an operator who wants a '
-        + 'deliberately mixed directory is not blocked',
-      fn: async () => {
-        assertBuildGenerationResumable({
-          census: await censusOf({ generations: { Mittens: DIGEST_A, }, },),
-          digest: DIGEST_B,
-          driftAllowed: true,
-        },);
-      },
-    },),
-
-    it({
-      name: 'SAYS how many foreign pipelines a permitted drift resumes across, in the number the count takes',
-      fn: async () => {
-        /**
-         What a directory under one foreign pipeline reads as.
-         */
-        const oneForeign = await censusOf({ generations: { Mittens: DIGEST_A, }, },);
-        /**
-         What a directory under two foreign pipelines reads as.
-         */
-        const twoForeign = await censusOf({
-          generations: {
-            Mittens: DIGEST_A,
-            Pepper: DIGEST_B,
+            expect(refusal,).toBeInstanceOf(GenerationDriftError,);
+            expect((refusal as Error).message,).toContain('built by a different pipeline',);
           },
-        },);
-        /**
-         Lines the build check printed.
-         */
-        const printed: string[] = [];
-        {
-          using _capture = printingInto({ lines: printed, },);
-          assertBuildGenerationResumable({
-            census: oneForeign,
-            digest: DIGEST_C,
-            driftAllowed: true,
-          },);
-          assertBuildGenerationResumable({
-            census: twoForeign,
-            digest: DIGEST_C,
-            driftAllowed: true,
-          },);
-        }
+        },),
 
-        expect(printed,).toContain(
-          `POOL resuming across 1 foreign pipeline because ${ALLOW_DRIFT_VAR}=yes; a rate over this directory must name a required commit`,
-        );
-        expect(printed,).toContain(
-          `POOL resuming across 2 foreign pipelines because ${ALLOW_DRIFT_VAR}=yes; a rate over this directory must name a required commit`,
-        );
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'names EVERY pipeline already present, not just one, so an operator '
+            + 'reading the refusal can see a directory that is already mixed '
+            + 'rather than believing it holds a single clean generation',
+          fn: async () => {
+            /**
+             What the build check refused with, read for class as well as wording.
+             */
+            const refusal = await buildRefusalOf({
+              generations: {
+                Mittens: DIGEST_A,
+                Pepper: DIGEST_B,
+              },
+              digest: DIGEST_C,
+              driftAllowed: false,
+            },);
 
-await describe({
-  name: assertArtifactsPlaceable.name,
-  children: [
-    it({
-      name: 'REFUSES to resume a directory whose artifacts predate generation '
-        + 'identity, and does NOT tell the operator to delete them. They are '
-        + 'sound results recorded under a commit, which covers any number of '
-        + 'builds, so nothing can say whether this run is the pipeline that '
-        + 'wrote them; the remedy is a fresh directory, not a smaller one',
-      fn: async () => {
-        const dir = await writeArtifacts({ generations: {}, },);
-        await writeFile(
-          join(
-            dir,
-            'Mittens.json',
-          ),
-          JSON.stringify({
-            id: 'Mittens',
-            tip: FIXED_TIP,
-            status: 'repaired',
-          },),
-          'utf8',
-        );
-
-        /**
-         What the placement census refused with, read for class as well as wording.
-         */
-        const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
-
-        await expect(refusal,).rejects.toBeInstanceOf(LegacyPipelineError,);
-        await expect(refusal,).rejects.toThrow('Deleting them is NOT the remedy',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES to resume a directory holding an UNTAGGED artifact, which '
-        + 'reading only the tip groups missed entirely: a directory of nothing '
-        + 'but unplaceable artifacts produced no groups and sailed through. Such '
-        + 'an entry is counted as settled by the scheduler so it never retries, '
-        + 'and excluded by the pool filter so it never appears in a rate; it '
-        + 'ceases to exist and no count says so',
-      fn: async () => {
-        const dir = await writeArtifacts({ generations: { Pepper: DIGEST_A, }, },);
-        await writeFile(
-          join(
-            dir,
-            'Mittens.json',
-          ),
-          JSON.stringify({ status: 'repaired', },),
-          'utf8',
-        );
-
-        /**
-         What the placement census refused with, read for class as well as wording.
-         */
-        const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
-
-        await expect(refusal,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
-        await expect(refusal,).rejects.toThrow('Mittens',);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a MALFORMED artifact for the same reason, and names it, '
-        + 'since deleting the file is the whole remedy and an operator cannot '
-        + 'delete what the refusal does not name',
-      fn: async () => {
-        const dir = await writeArtifacts({ generations: { Pepper: DIGEST_A, }, },);
-        await writeFile(
-          join(
-            dir,
-            'Biscuit.json',
-          ),
-          '{ "tip": "aaaaaaaaa", "status": "rep',
-          'utf8',
-        );
-
-        /**
-         What the placement census refused with, read for class as well as wording.
-         */
-        const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
-
-        await expect(refusal,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
-        await expect(refusal,).rejects.toThrow('Biscuit',);
-      },
-    },),
-
-    it({
-      name: 'COUNTS the entries each refusal names in the number the count takes, one artifact or several',
-      fn: async () => {
-        /**
-         The count line and the named entries opening a refusal's message.
-
-         @param error - refusal built over some entries
-
-         @param named - how many entries it names
-
-         @returns Those lines
-         */
-        function openingOf(
-          {
-            error,
-            named,
-          }: {
-            readonly error: Error;
-            readonly named: number;
+            expect(refusal,).toBeInstanceOf(GenerationDriftError,);
+            // Sixteen characters, not the full id: every digest opens with the
+            // same scheme name, so the abbreviation grows past its floor to the
+            // first character that differs. Asserting the full id would pass
+            // only if the message stopped abbreviating at all.
+            expect((refusal as Error).message,).toContain('sha256-tree-v1:a',);
+            expect((refusal as Error).message,).toContain('sha256-tree-v1:b',);
           },
-        ): readonly string[] {
-          return error.message
-            .split('\n',)
-            .slice(
-              0,
-              named + 1,
+        },),
+
+        it({
+          name: 'permits drift when asked EXPLICITLY, so an operator who wants a '
+            + 'deliberately mixed directory is not blocked',
+          fn: async () => {
+            assertBuildGenerationResumable({
+              census: await censusOf({ generations: { Mittens: DIGEST_A, }, },),
+              digest: DIGEST_B,
+              driftAllowed: true,
+            },);
+          },
+        },),
+
+        it({
+          name: 'SAYS how many foreign pipelines a permitted drift resumes across, in the number the count takes',
+          fn: async () => {
+            /**
+             What a directory under one foreign pipeline reads as.
+             */
+            const oneForeign = await censusOf({ generations: { Mittens: DIGEST_A, }, },);
+            /**
+             What a directory under two foreign pipelines reads as.
+             */
+            const twoForeign = await censusOf({
+              generations: {
+                Mittens: DIGEST_A,
+                Pepper: DIGEST_B,
+              },
+            },);
+            /**
+             Lines the build check printed.
+             */
+            const printed: string[] = [];
+            {
+              using _capture = printingInto({ lines: printed, },);
+              assertBuildGenerationResumable({
+                census: oneForeign,
+                digest: DIGEST_C,
+                driftAllowed: true,
+              },);
+              assertBuildGenerationResumable({
+                census: twoForeign,
+                digest: DIGEST_C,
+                driftAllowed: true,
+              },);
+            }
+
+            expect(printed,).toContain(
+              `POOL resuming across 1 foreign pipeline because ${ALLOW_DRIFT_VAR}=yes; a rate over this directory must name a required commit`,
             );
-        }
-
-        expect({
-          legacyOne: openingOf({
-            error: new LegacyPipelineError({ entryIds: ['Mittens',], },),
-            named: 1,
-          },),
-          legacyTwo: openingOf({
-            error: new LegacyPipelineError({ entryIds: ['Mittens', 'Pepper',], },),
-            named: 2,
-          },),
-          unplaceableOne: openingOf({
-            error: new UnplaceableArtifactError({ entryIds: ['Mittens',], },),
-            named: 1,
-          },),
-          unplaceableTwo: openingOf({
-            error: new UnplaceableArtifactError({ entryIds: ['Mittens', 'Pepper',], },),
-            named: 2,
-          },),
-        },).toEqual({
-          legacyOne: ['1 artifact here records a pipeline this build cannot name:', '  Mittens',],
-          legacyTwo: ['2 artifacts here record a pipeline this build cannot name:', '  Mittens', '  Pepper',],
-          unplaceableOne: ['1 artifact in this directory records no readable pipeline:', '  Mittens',],
-          unplaceableTwo: ['2 artifacts in this directory record no readable pipeline:', '  Mittens', '  Pepper',],
-        },);
-      },
+            expect(printed,).toContain(
+              `POOL resuming across 2 foreign pipelines because ${ALLOW_DRIFT_VAR}=yes; a rate over this directory must name a required commit`,
+            );
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: readDriftOptIn.name,
-  // ONE AT A TIME as well, so a case added beside this one cannot read the
-  // variable while it walks the values (ledger B79).
-  concurrency: 1,
-  children: [
-    it({
-      name: 'reads the exact opt-in and NOTHING ELSE, walked in one case '
-        + 'rather than one case per value. The variable is process-wide, so '
-        + 'separate cases would set it while each other read it, and the '
-        + 'suite that first found this was flaky rather than wrong',
-      fn: async () => {
-        using _unset = withDriftVar({ value: 'yes', },);
-        expect(readDriftOptIn(),).toBe(true,);
+    describe({
+      name: assertArtifactsPlaceable.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES to resume a directory whose artifacts predate generation '
+            + 'identity, and does NOT tell the operator to delete them. They are '
+            + 'sound results recorded under a commit, which covers any number of '
+            + 'builds, so nothing can say whether this run is the pipeline that '
+            + 'wrote them; the remedy is a fresh directory, not a smaller one',
+          fn: async () => {
+            const dir = await writeArtifacts({ generations: {}, },);
+            await writeFile(
+              join(
+                dir,
+                'Mittens.json',
+              ),
+              JSON.stringify({
+                id: 'Mittens',
+                tip: FIXED_TIP,
+                status: 'repaired',
+              },),
+              'utf8',
+            );
 
-        for (const value of [
-          '0',
-          '',
-          'YES',
-          'yes ',
-          'true',
-        ]) {
-          process.env[ALLOW_DRIFT_VAR] = value;
-          expect(readDriftOptIn(),).toBe(false,);
-        }
+            /**
+             What the placement census refused with, read for class as well as wording.
+             */
+            const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
 
-        Reflect.deleteProperty(process.env, ALLOW_DRIFT_VAR,);
-        expect(readDriftOptIn(),).toBe(false,);
-      },
+            await expect(refusal,).rejects.toBeInstanceOf(LegacyPipelineError,);
+            await expect(refusal,).rejects.toThrow('Deleting them is NOT the remedy',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES to resume a directory holding an UNTAGGED artifact, which '
+            + 'reading only the tip groups missed entirely: a directory of nothing '
+            + 'but unplaceable artifacts produced no groups and sailed through. Such '
+            + 'an entry is counted as settled by the scheduler so it never retries, '
+            + 'and excluded by the pool filter so it never appears in a rate; it '
+            + 'ceases to exist and no count says so',
+          fn: async () => {
+            const dir = await writeArtifacts({ generations: { Pepper: DIGEST_A, }, },);
+            await writeFile(
+              join(
+                dir,
+                'Mittens.json',
+              ),
+              JSON.stringify({ status: 'repaired', },),
+              'utf8',
+            );
+
+            /**
+             What the placement census refused with, read for class as well as wording.
+             */
+            const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
+
+            await expect(refusal,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
+            await expect(refusal,).rejects.toThrow('Mittens',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a MALFORMED artifact for the same reason, and names it, '
+            + 'since deleting the file is the whole remedy and an operator cannot '
+            + 'delete what the refusal does not name',
+          fn: async () => {
+            const dir = await writeArtifacts({ generations: { Pepper: DIGEST_A, }, },);
+            await writeFile(
+              join(
+                dir,
+                'Biscuit.json',
+              ),
+              '{ "tip": "aaaaaaaaa", "status": "rep',
+              'utf8',
+            );
+
+            /**
+             What the placement census refused with, read for class as well as wording.
+             */
+            const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
+
+            await expect(refusal,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
+            await expect(refusal,).rejects.toThrow('Biscuit',);
+          },
+        },),
+
+        it({
+          name: 'COUNTS the entries each refusal names in the number the count takes, one artifact or several',
+          fn: async () => {
+            /**
+             The count line and the named entries opening a refusal's message.
+
+             @param error - refusal built over some entries
+
+             @param named - how many entries it names
+
+             @returns Those lines
+             */
+            function openingOf(
+              {
+                error,
+                named,
+              }: {
+                readonly error: Error;
+                readonly named: number;
+              },
+            ): readonly string[] {
+              return error.message
+                .split('\n',)
+                .slice(
+                  0,
+                  named + 1,
+                );
+            }
+
+            expect({
+              legacyOne: openingOf({
+                error: new LegacyPipelineError({ entryIds: ['Mittens',], },),
+                named: 1,
+              },),
+              legacyTwo: openingOf({
+                error: new LegacyPipelineError({ entryIds: ['Mittens', 'Pepper',], },),
+                named: 2,
+              },),
+              unplaceableOne: openingOf({
+                error: new UnplaceableArtifactError({ entryIds: ['Mittens',], },),
+                named: 1,
+              },),
+              unplaceableTwo: openingOf({
+                error: new UnplaceableArtifactError({ entryIds: ['Mittens', 'Pepper',], },),
+                named: 2,
+              },),
+            },).toEqual({
+              legacyOne: ['1 artifact here records a pipeline this build cannot name:', '  Mittens',],
+              legacyTwo: ['2 artifacts here record a pipeline this build cannot name:', '  Mittens', '  Pepper',],
+              unplaceableOne: ['1 artifact in this directory records no readable pipeline:', '  Mittens',],
+              unplaceableTwo: ['2 artifacts in this directory record no readable pipeline:', '  Mittens', '  Pepper',],
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readDriftOptIn.name,
+      // ONE AT A TIME as well, so a case added beside this one cannot read the
+      // variable while it walks the values (ledger B79).
+      concurrency: 1,
+      children: [
+        it({
+          name: 'reads the exact opt-in and NOTHING ELSE, walked in one case '
+            + 'rather than one case per value. The variable is process-wide, so '
+            + 'separate cases would set it while each other read it, and the '
+            + 'suite that first found this was flaky rather than wrong',
+          fn: async () => {
+            using _unset = withDriftVar({ value: 'yes', },);
+            expect(readDriftOptIn(),).toBe(true,);
+
+            for (const value of [
+              '0',
+              '',
+              'YES',
+              'yes ',
+              'true',
+            ]) {
+              process.env[ALLOW_DRIFT_VAR] = value;
+              expect(readDriftOptIn(),).toBe(false,);
+            }
+
+            Reflect.deleteProperty(process.env, ALLOW_DRIFT_VAR,);
+            expect(readDriftOptIn(),).toBe(false,);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -16,6 +16,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -63,150 +64,158 @@ const EVERY_MODEL: readonly RosterModelId[] = [
 ];
 
 await describe({
-  name: assertCheckerIndependence.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'REFUSES a checker that also writes when nothing permits it, which is the default and '
-        + 'stays the default: an unset switch must not read as permission',
-      fn: async () => {
-        expect(function checksOwnWork() {
-          assertCheckerIndependence({
-            editorModelIds: WRITERS,
-            checkerModelIds: EVERY_MODEL,
-          },);
-        },).toThrow(CheckerIndependenceError,);
+    describe({
+      name: assertCheckerIndependence.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES a checker that also writes when nothing permits it, which is the default and '
+            + 'stays the default: an unset switch must not read as permission',
+          fn: async () => {
+            expect(function checksOwnWork() {
+              assertCheckerIndependence({
+                editorModelIds: WRITERS,
+                checkerModelIds: EVERY_MODEL,
+              },);
+            },).toThrow(CheckerIndependenceError,);
 
-        expect(function permissionOff() {
-          assertCheckerIndependence({
-            editorModelIds: WRITERS,
-            checkerModelIds: EVERY_MODEL,
-            selfCertificationPermitted: false,
-          },);
-        },).toThrow(CheckerIndependenceError,);
-      },
+            expect(function permissionOff() {
+              assertCheckerIndependence({
+                editorModelIds: WRITERS,
+                checkerModelIds: EVERY_MODEL,
+                selfCertificationPermitted: false,
+              },);
+            },).toThrow(CheckerIndependenceError,);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS the whole roster checking when self-certification is permitted, since the '
+            + 'weight of a checker on text it wrote is chosen per issue rather than the seat being '
+            + 'refused outright',
+          fn: async () => {
+            assertCheckerIndependence({
+              editorModelIds: WRITERS,
+              refinerModelIds: WRITERS,
+              checkerModelIds: EVERY_MODEL,
+              selfCertificationPermitted: true,
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a REPEATED checker id even with self-certification permitted, because a repeat '
+            + 'is a different fault: it meets quorum on fewer independent voices than the roster size '
+            + 'promises, and no per-issue weighting can undo that',
+          fn: async () => {
+            expect(function repeatsAVoice() {
+              assertCheckerIndependence({
+                editorModelIds: WRITERS,
+                checkerModelIds: [
+                  ...DISJOINT_CHECKERS,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                ],
+                selfCertificationPermitted: true,
+              },);
+            },).toThrow(CheckerIndependenceError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a REFINER among the checkers as readily as an editor, because the recheck that '
+            + 'follows a refinement asks whether the accepted issues survived it',
+          fn: async () => {
+            expect(function refinerChecks() {
+              assertCheckerIndependence({
+                editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+                refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                checkerModelIds: [
+                  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                ],
+              },);
+            },).toThrow(CheckerIndependenceError,);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS production’s disjoint rosters unchanged, so the switch landing changes '
+            + 'nothing about the arm that ships today',
+          fn: async () => {
+            assertCheckerIndependence({
+              editorModelIds: WRITERS,
+              refinerModelIds: WRITERS,
+              checkerModelIds: DISJOINT_CHECKERS,
+            },);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS the whole roster checking when self-certification is permitted, since the '
-        + 'weight of a checker on text it wrote is chosen per issue rather than the seat being '
-        + 'refused outright',
-      fn: async () => {
-        assertCheckerIndependence({
-          editorModelIds: WRITERS,
-          refinerModelIds: WRITERS,
-          checkerModelIds: EVERY_MODEL,
-          selfCertificationPermitted: true,
-        },);
-      },
-    },),
+    describe({
+      name: assertCheckerQuorumReachable.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS three checkers, which is where a two-to-one reading still resolves',
+          fn: async () => {
+            assertCheckerQuorumReachable({ checkerModelIds: DISJOINT_CHECKERS, },);
+            assertCheckerQuorumReachable({ checkerModelIds: EVERY_MODEL, },);
+          },
+        },),
 
-    it({
-      name: 'REFUSES a REPEATED checker id even with self-certification permitted, because a repeat '
-        + 'is a different fault: it meets quorum on fewer independent voices than the roster size '
-        + 'promises, and no per-issue weighting can undo that',
-      fn: async () => {
-        expect(function repeatsAVoice() {
-          assertCheckerIndependence({
-            editorModelIds: WRITERS,
-            checkerModelIds: [
-              ...DISJOINT_CHECKERS,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            ],
-            selfCertificationPermitted: true,
-          },);
-        },).toThrow(CheckerIndependenceError,);
-      },
-    },),
+        it({
+          name: 'REFUSES two checkers, which is exactly what widening the producing roles to four would '
+            + 'have left behind: one fixed against one not-fixed decides nothing, so checking would run '
+            + 'and return no verdict',
+          fn: async () => {
+            expect(function cannotDecide() {
+              assertCheckerQuorumReachable({ checkerModelIds: [
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              ], },);
+            },).toThrow(CheckerQuorumError,);
+          },
+        },),
 
-    it({
-      name: 'REFUSES a REFINER among the checkers as readily as an editor, because the recheck that '
-        + 'follows a refinement asks whether the accepted issues survived it',
-      fn: async () => {
-        expect(function refinerChecks() {
-          assertCheckerIndependence({
-            editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
-            refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-            checkerModelIds: [
+        it({
+          name: 'REFUSES one checker and an empty roster, so the floor covers the case the empty-role '
+            + 'guard already caught as well as the ones it never did',
+          fn: async () => {
+            expect(function onlyOne() {
+              assertCheckerQuorumReachable({ checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,], },);
+            },).toThrow(CheckerQuorumError,);
+            expect(function nobody() {
+              assertCheckerQuorumReachable({ checkerModelIds: [], },);
+            },).toThrow(CheckerQuorumError,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a roster of two that is ALSO permitted to self-certify, since the floor and '
+            + 'the switch answer different questions and permission to overlap is not permission to '
+            + 'shrink below a decidable panel',
+          fn: async () => {
+            /** Two writers checking their own work, which passes independence under the switch. */
+            const twoWriters: readonly RosterModelId[] = [
+              SEAT_SYNTHETIC_VISION_WITHHELD,
               SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-            ],
-          },);
-        },).toThrow(CheckerIndependenceError,);
-      },
-    },),
-
-    it({
-      name: 'ACCEPTS production’s disjoint rosters unchanged, so the switch landing changes '
-        + 'nothing about the arm that ships today',
-      fn: async () => {
-        assertCheckerIndependence({
-          editorModelIds: WRITERS,
-          refinerModelIds: WRITERS,
-          checkerModelIds: DISJOINT_CHECKERS,
-        },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: assertCheckerQuorumReachable.name,
-  children: [
-    it({
-      name: 'ACCEPTS three checkers, which is where a two-to-one reading still resolves',
-      fn: async () => {
-        assertCheckerQuorumReachable({ checkerModelIds: DISJOINT_CHECKERS, },);
-        assertCheckerQuorumReachable({ checkerModelIds: EVERY_MODEL, },);
-      },
-    },),
-
-    it({
-      name: 'REFUSES two checkers, which is exactly what widening the producing roles to four would '
-        + 'have left behind: one fixed against one not-fixed decides nothing, so checking would run '
-        + 'and return no verdict',
-      fn: async () => {
-        expect(function cannotDecide() {
-          assertCheckerQuorumReachable({ checkerModelIds: [
-            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-          ], },);
-        },).toThrow(CheckerQuorumError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES one checker and an empty roster, so the floor covers the case the empty-role '
-        + 'guard already caught as well as the ones it never did',
-      fn: async () => {
-        expect(function onlyOne() {
-          assertCheckerQuorumReachable({ checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,], },);
-        },).toThrow(CheckerQuorumError,);
-        expect(function nobody() {
-          assertCheckerQuorumReachable({ checkerModelIds: [], },);
-        },).toThrow(CheckerQuorumError,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES a roster of two that is ALSO permitted to self-certify, since the floor and '
-        + 'the switch answer different questions and permission to overlap is not permission to '
-        + 'shrink below a decidable panel',
-      fn: async () => {
-        /** Two writers checking their own work, which passes independence under the switch. */
-        const twoWriters: readonly RosterModelId[] = [
-          SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-        ];
-        assertCheckerIndependence({
-          editorModelIds: WRITERS,
-          checkerModelIds: twoWriters,
-          selfCertificationPermitted: true,
-        },);
-        expect(function stillTooFew() {
-          assertCheckerQuorumReachable({ checkerModelIds: twoWriters, },);
-        },).toThrow(CheckerQuorumError,);
-      },
+            ];
+            assertCheckerIndependence({
+              editorModelIds: WRITERS,
+              checkerModelIds: twoWriters,
+              selfCertificationPermitted: true,
+            },);
+            expect(function stillTooFew() {
+              assertCheckerQuorumReachable({ checkerModelIds: twoWriters, },);
+            },).toThrow(CheckerQuorumError,);
+          },
+        },),
+      ],
     },),
   ],
 },);

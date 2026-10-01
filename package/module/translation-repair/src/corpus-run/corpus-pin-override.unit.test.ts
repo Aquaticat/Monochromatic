@@ -112,109 +112,115 @@ function commitRefusal(
 //endregion Fixtures
 
 await describe({
-  name: readCorpusPinSetting.name,
-  // ONE AT A TIME: cases set the process-wide pin variables (ledger B79).
+  name: '',
   concurrency: 1,
   children: [
-    it({
-      name: 'returns the fallback pin with both sources named fallback when unset',
-      fn: async () => {
-        using cleanup = pinEnvironment({},);
-        expect(readCorpusPinSetting({ fallback: FALLBACK_PIN, },),).toEqual({
-          pin: FALLBACK_PIN,
-          cloneDirSource: 'fallback',
-          commitSource: 'fallback',
-        },);
-      },
-    },),
-
-    it({
-      name: 'overrides the clone dir alone and names its variable as the source',
-      fn: async () => {
-        using cleanup = pinEnvironment({ cloneDir: '/cats/fixture/clone', },);
-        expect(readCorpusPinSetting({ fallback: FALLBACK_PIN, },),).toEqual({
-          pin: {
-            cloneDir: '/cats/fixture/clone',
-            commitSha: FALLBACK_PIN.commitSha,
+    describe({
+      name: readCorpusPinSetting.name,
+      // ONE AT A TIME: cases set the process-wide pin variables (ledger B79).
+      concurrency: 1,
+      children: [
+        it({
+          name: 'returns the fallback pin with both sources named fallback when unset',
+          fn: async () => {
+            using cleanup = pinEnvironment({},);
+            expect(readCorpusPinSetting({ fallback: FALLBACK_PIN, },),).toEqual({
+              pin: FALLBACK_PIN,
+              cloneDirSource: 'fallback',
+              commitSource: 'fallback',
+            },);
           },
-          cloneDirSource: CORPUS_CLONE_DIR_VAR,
-          commitSource: 'fallback',
-        },);
-      },
-    },),
+        },),
 
-    it({
-      name: 'overrides the commit alone and names its variable as the source',
-      fn: async () => {
-        using cleanup = pinEnvironment({ commit: 'b'.repeat(40,), },);
-        expect(readCorpusPinSetting({ fallback: FALLBACK_PIN, },),).toEqual({
-          pin: {
-            cloneDir: FALLBACK_PIN.cloneDir,
-            commitSha: 'b'.repeat(40,),
+        it({
+          name: 'overrides the clone dir alone and names its variable as the source',
+          fn: async () => {
+            using cleanup = pinEnvironment({ cloneDir: '/cats/fixture/clone', },);
+            expect(readCorpusPinSetting({ fallback: FALLBACK_PIN, },),).toEqual({
+              pin: {
+                cloneDir: '/cats/fixture/clone',
+                commitSha: FALLBACK_PIN.commitSha,
+              },
+              cloneDirSource: CORPUS_CLONE_DIR_VAR,
+              commitSource: 'fallback',
+            },);
           },
-          cloneDirSource: 'fallback',
-          commitSource: CORPUS_COMMIT_VAR,
-        },);
-      },
+        },),
+
+        it({
+          name: 'overrides the commit alone and names its variable as the source',
+          fn: async () => {
+            using cleanup = pinEnvironment({ commit: 'b'.repeat(40,), },);
+            expect(readCorpusPinSetting({ fallback: FALLBACK_PIN, },),).toEqual({
+              pin: {
+                cloneDir: FALLBACK_PIN.cloneDir,
+                commitSha: 'b'.repeat(40,),
+              },
+              cloneDirSource: 'fallback',
+              commitSource: CORPUS_COMMIT_VAR,
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a relative clone dir rather than falling back',
+          fn: async () => {
+            using cleanup = pinEnvironment({ cloneDir: 'cats/relative/clone', },);
+            /**
+             Refusal thrown for a clone dir no read could pin down.
+             */
+            const thrown = caught(function readsUnderRelativeDir() {
+              readCorpusPinSetting({ fallback: FALLBACK_PIN, },);
+            },);
+            expect(thrown instanceof StatedRefusalError,).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an abbreviated or non-hexadecimal commit rather than falling back',
+          fn: async () => {
+            expect(
+              commitRefusal({ commit: 'abc123', },) instanceof StatedRefusalError,
+            ).toBe(true,);
+            expect(
+              commitRefusal({ commit: 'B'.repeat(40,), },) instanceof StatedRefusalError,
+            ).toBe(true,);
+            expect(
+              commitRefusal({ commit: 'g'.repeat(40,), },) instanceof StatedRefusalError,
+            ).toBe(true,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES a relative clone dir rather than falling back',
-      fn: async () => {
-        using cleanup = pinEnvironment({ cloneDir: 'cats/relative/clone', },);
-        /**
-         Refusal thrown for a clone dir no read could pin down.
-         */
-        const thrown = caught(function readsUnderRelativeDir() {
-          readCorpusPinSetting({ fallback: FALLBACK_PIN, },);
-        },);
-        expect(thrown instanceof StatedRefusalError,).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES an abbreviated or non-hexadecimal commit rather than falling back',
-      fn: async () => {
-        expect(
-          commitRefusal({ commit: 'abc123', },) instanceof StatedRefusalError,
-        ).toBe(true,);
-        expect(
-          commitRefusal({ commit: 'B'.repeat(40,), },) instanceof StatedRefusalError,
-        ).toBe(true,);
-        expect(
-          commitRefusal({ commit: 'g'.repeat(40,), },) instanceof StatedRefusalError,
-        ).toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: corpusPinOverrideNote.name,
-  // ONE AT A TIME: its case sets the process-wide pin variables (ledger B79).
-  concurrency: 1,
-  children: [
-    it({
-      name: 'SAYS NOTHING FOR THE BUILT-IN PIN, and names each overridden half with its source (ledger D13: the '
-        + 'setting was kept for launch logs and no launch printed it)',
-      fn: async () => {
-        /**
-         The note under each environment.
-         */
-        const notes = [
-          {},
-          { commit: 'b'.repeat(40,), },
-          { cloneDir: '/cats/fixture/clone', },
-        ].map(function noteUnder(dials,): string {
-          using cleanup = pinEnvironment(dials,);
-          return corpusPinOverrideNote({ setting: readCorpusPinSetting({ fallback: FALLBACK_PIN, },), },);
-        },);
-        expect(notes,).toEqual([
-          '',
-          `CORPUS PIN OVERRIDDEN: clone /cats/corpus/clone from fallback, commit ${'b'.repeat(40,)} from ${CORPUS_COMMIT_VAR}`,
-          `CORPUS PIN OVERRIDDEN: clone /cats/fixture/clone from ${CORPUS_CLONE_DIR_VAR}, commit ${'a'.repeat(40,)} from fallback`,
-        ],);
-      },
+    describe({
+      name: corpusPinOverrideNote.name,
+      // ONE AT A TIME: its case sets the process-wide pin variables (ledger B79).
+      concurrency: 1,
+      children: [
+        it({
+          name: 'SAYS NOTHING FOR THE BUILT-IN PIN, and names each overridden half with its source (ledger D13: the '
+            + 'setting was kept for launch logs and no launch printed it)',
+          fn: async () => {
+            /**
+             The note under each environment.
+             */
+            const notes = [
+              {},
+              { commit: 'b'.repeat(40,), },
+              { cloneDir: '/cats/fixture/clone', },
+            ].map(function noteUnder(dials,): string {
+              using cleanup = pinEnvironment(dials,);
+              return corpusPinOverrideNote({ setting: readCorpusPinSetting({ fallback: FALLBACK_PIN, },), },);
+            },);
+            expect(notes,).toEqual([
+              '',
+              `CORPUS PIN OVERRIDDEN: clone /cats/corpus/clone from fallback, commit ${'b'.repeat(40,)} from ${CORPUS_COMMIT_VAR}`,
+              `CORPUS PIN OVERRIDDEN: clone /cats/fixture/clone from ${CORPUS_CLONE_DIR_VAR}, commit ${'a'.repeat(40,)} from fallback`,
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

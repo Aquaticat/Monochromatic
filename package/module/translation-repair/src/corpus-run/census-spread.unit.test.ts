@@ -18,6 +18,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -128,121 +129,129 @@ const LONE_NAP: readonly number[] = [7,];
 const LONE_NAP_MINUTES = 7;
 
 await describe({
-  name: percentileOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS the middle at the upper of two ranks, which is this package\'s convention',
-      fn: async () => {
-        expect(percentileOf({
-          sorted: SORTED_NAPS,
-          percentile: HALF,
-        },),).toBe(MIDDLE_NAP,);
-      },
+    describe({
+      name: percentileOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS the middle at the upper of two ranks, which is this package\'s convention',
+          fn: async () => {
+            expect(percentileOf({
+              sorted: SORTED_NAPS,
+              percentile: HALF,
+            },),).toBe(MIDDLE_NAP,);
+          },
+        },),
+        it({
+          name: 'READS the first value at percentile zero',
+          fn: async () => {
+            expect(percentileOf({
+              sorted: SORTED_NAPS,
+              percentile: 0,
+            },),).toBe(SHORTEST_NAP,);
+          },
+        },),
+        it({
+          name: 'CLAMPS a far tail to the last rank instead of reading past the end',
+          fn: async () => {
+            // Both of these compute a rank at or past the end before the clamp:
+            // 0.99 * 10 floors to 9, which is the last index, and 1.00 * 10 is 10,
+            // which is not an index at all. Held together because the second is the
+            // one that would silently return zero.
+            expect(percentileOf({
+              sorted: SORTED_NAPS,
+              percentile: NINETY_NINTH,
+            },),).toBe(LONGEST_NAP,);
+            expect(percentileOf({
+              sorted: SORTED_NAPS,
+              percentile: WHOLE,
+            },),).toBe(LONGEST_NAP,);
+          },
+        },),
+        it({
+          name: 'ANSWERS zero for an empty sample rather than refusing',
+          fn: async () => {
+            expect(percentileOf({
+              sorted: [],
+              percentile: HALF,
+            },),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'LANDS every reported percentile on the one value of a sample of one',
+          fn: async () => {
+            for (const percentile of REPORTED_PERCENTILES) {
+              expect(percentileOf({
+                sorted: LONE_NAP,
+                percentile,
+              },),).toBe(LONE_NAP_MINUTES,);
+            }
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'READS the first value at percentile zero',
-      fn: async () => {
-        expect(percentileOf({
-          sorted: SORTED_NAPS,
-          percentile: 0,
-        },),).toBe(SHORTEST_NAP,);
-      },
-    },),
-    it({
-      name: 'CLAMPS a far tail to the last rank instead of reading past the end',
-      fn: async () => {
-        // Both of these compute a rank at or past the end before the clamp:
-        // 0.99 * 10 floors to 9, which is the last index, and 1.00 * 10 is 10,
-        // which is not an index at all. Held together because the second is the
-        // one that would silently return zero.
-        expect(percentileOf({
-          sorted: SORTED_NAPS,
-          percentile: NINETY_NINTH,
-        },),).toBe(LONGEST_NAP,);
-        expect(percentileOf({
-          sorted: SORTED_NAPS,
-          percentile: WHOLE,
-        },),).toBe(LONGEST_NAP,);
-      },
-    },),
-    it({
-      name: 'ANSWERS zero for an empty sample rather than refusing',
-      fn: async () => {
-        expect(percentileOf({
-          sorted: [],
-          percentile: HALF,
-        },),).toBe(0,);
-      },
-    },),
-    it({
-      name: 'LANDS every reported percentile on the one value of a sample of one',
-      fn: async () => {
-        for (const percentile of REPORTED_PERCENTILES) {
-          expect(percentileOf({
-            sorted: LONE_NAP,
-            percentile,
-          },),).toBe(LONE_NAP_MINUTES,);
-        }
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: describeSpread.name,
-  children: [
-    it({
-      name: 'SORTS what it is handed, so a caller need not',
-      fn: async () => {
-        // NAP_MINUTES is out of order and SORTED_NAPS is the same sample in
-        // order. Equal lines is the whole claim: the reader owns the sort.
-        expect(describeSpread({
-          label: 'nap minutes',
-          values: NAP_MINUTES,
-        },),).toBe(describeSpread({
-          label: 'nap minutes',
-          values: SORTED_NAPS,
-        },),);
-      },
-    },),
-    it({
-      name: 'NAMES count, every reported percentile and maximum, in that order',
-      fn: async () => {
-        expect(describeSpread({
-          label: 'nap minutes',
-          values: NAP_MINUTES,
-        },),).toBe(NAP_LINE,);
-      },
-    },),
-    it({
-      name: 'ANSWERS with zeroes for an empty sample, keeping the label',
-      fn: async () => {
-        expect(describeSpread({
-          label: 'nap minutes',
-          values: [],
-        },),).toBe(EMPTY_LINE,);
-      },
-    },),
-    it({
-      name: 'REPORTS exactly the percentiles the shared list names',
-      fn: async () => {
-        /**
-         Percentile readings the line carries, one per `p` marker.
-         */
-        const readings = NAP_LINE
-          .split(', ',)
-          .filter(function isReading(part,): boolean {
-            return part.startsWith('p',);
-          },);
+    describe({
+      name: describeSpread.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SORTS what it is handed, so a caller need not',
+          fn: async () => {
+            // NAP_MINUTES is out of order and SORTED_NAPS is the same sample in
+            // order. Equal lines is the whole claim: the reader owns the sort.
+            expect(describeSpread({
+              label: 'nap minutes',
+              values: NAP_MINUTES,
+            },),).toBe(describeSpread({
+              label: 'nap minutes',
+              values: SORTED_NAPS,
+            },),);
+          },
+        },),
+        it({
+          name: 'NAMES count, every reported percentile and maximum, in that order',
+          fn: async () => {
+            expect(describeSpread({
+              label: 'nap minutes',
+              values: NAP_MINUTES,
+            },),).toBe(NAP_LINE,);
+          },
+        },),
+        it({
+          name: 'ANSWERS with zeroes for an empty sample, keeping the label',
+          fn: async () => {
+            expect(describeSpread({
+              label: 'nap minutes',
+              values: [],
+            },),).toBe(EMPTY_LINE,);
+          },
+        },),
+        it({
+          name: 'REPORTS exactly the percentiles the shared list names',
+          fn: async () => {
+            /**
+             Percentile readings the line carries, one per `p` marker.
+             */
+            const readings = NAP_LINE
+              .split(', ',)
+              .filter(function isReading(part,): boolean {
+                return part.startsWith('p',);
+              },);
 
-        expect(REPORTED_PERCENTILES.length,).toBe(PERCENTILES_REPORTED,);
-        expect(readings.length,).toBe(PERCENTILES_REPORTED,);
-        expect(REPORTED_PERCENTILES,).toEqual([
-          HALF,
-          NINETIETH,
-          NINETY_NINTH,
-        ],);
-      },
+            expect(REPORTED_PERCENTILES.length,).toBe(PERCENTILES_REPORTED,);
+            expect(readings.length,).toBe(PERCENTILES_REPORTED,);
+            expect(REPORTED_PERCENTILES,).toEqual([
+              HALF,
+              NINETIETH,
+              NINETY_NINTH,
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

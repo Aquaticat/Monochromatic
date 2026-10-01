@@ -21,6 +21,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -404,59 +405,6 @@ async function consolidationAsked({ later, }: { readonly later: BudgetView; },):
   return asked;
 }
 
-await describe({
-  name: 'pass seams re-seat under a hold (ledger X14)',
-  children: [
-    it({
-      name: 'THE CONTEST SEAM WIRES ITS HOOK: a slice after a dry-out asks the judges the hook re-read, never '
-        + 'the seat the dry-out took, which a contest whose view never changes does ask',
-      fn: async () => {
-        /**
-         Seats asked while every provider stays wet.
-         */
-        const control = await contestAsked({ later: ALL_WET, },);
-        /**
-         Seats asked once Synthetic reads dry after the phase's own reading.
-         */
-        const moved = await contestAsked({ later: SYNTHETIC_DRY, },);
-        expect({
-          controlAskedLost: control.includes(LOST_SEAT,),
-          movedAskedAny: moved.length > 0,
-          movedAskedLost: moved.includes(LOST_SEAT,),
-        },).toEqual({
-          controlAskedLost: true,
-          movedAskedAny: true,
-          movedAskedLost: false,
-        },);
-      },
-    },),
-    it({
-      name: 'THE CONSOLIDATION SEAM WIRES ITS HOOK: a slice after a dry-out asks the writers, judges and '
-        + 'naturalness roles the hook re-read, never the seat the dry-out took, which a consolidation whose '
-        + 'view never changes does ask',
-      fn: async () => {
-        /**
-         Seats asked while every provider stays wet.
-         */
-        const control = await consolidationAsked({ later: ALL_WET, },);
-        /**
-         Seats asked once Synthetic reads dry after the phase's own reading.
-         */
-        const moved = await consolidationAsked({ later: SYNTHETIC_DRY, },);
-        expect({
-          controlAskedLost: control.includes(LOST_SEAT,),
-          movedAskedAny: moved.length > 0,
-          movedAskedLost: moved.includes(LOST_SEAT,),
-        },).toEqual({
-          controlAskedLost: true,
-          movedAskedAny: true,
-          movedAskedLost: false,
-        },);
-      },
-    },),
-  ],
-},);
-
 /**
  The one seat the roster loses when Synthetic goes dry.
  */
@@ -548,35 +496,6 @@ async function admissionAsked({ later, }: { readonly later: BudgetView; },): Pro
   return asked;
 }
 
-await describe({
-  name: 'insertion admission seam re-seats under a hold (ledger X14)',
-  children: [
-    it({
-      name: 'THE INSERTION SEAM WIRES ITS HOOK: a candidate after a dry-out is asked of the roster the hook '
-        + 're-read, never the seat the dry-out took, which an admission whose view never changes does ask',
-      fn: async () => {
-        /**
-         Seats asked while every provider stays wet.
-         */
-        const control = await admissionAsked({ later: ALL_WET, },);
-        /**
-         Seats asked once Synthetic reads dry after the lanes' reading.
-         */
-        const moved = await admissionAsked({ later: SYNTHETIC_DRY, },);
-        expect({
-          controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
-          movedAskedAny: moved.length > 0,
-          movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
-        },).toEqual({
-          controlAskedLost: true,
-          movedAskedAny: true,
-          movedAskedLost: false,
-        },);
-      },
-    },),
-  ],
-},);
-
 /**
  Runs the preparation seam over a two-paragraph page, which the pairing's
  block round asks about, every seat pairing the blocks in order.
@@ -613,35 +532,6 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
   },);
   return asked;
 }
-
-await describe({
-  name: 'preparation seam re-seats under a hold (ledger X14)',
-  children: [
-    it({
-      name: 'THE PREPARATION SEAM WIRES ITS HOOK: a pairing round after a dry-out asks the roster the hook '
-        + 're-read, never the seat the dry-out took, which a preparation whose view never changes does ask',
-      fn: async () => {
-        /**
-         Seats asked while every provider stays wet.
-         */
-        const control = await preparationAsked({ later: ALL_WET, },);
-        /**
-         Seats asked once Synthetic reads dry after the preparation's own reading.
-         */
-        const moved = await preparationAsked({ later: SYNTHETIC_DRY, },);
-        expect({
-          controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
-          movedAskedAny: moved.length > 0,
-          movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
-        },).toEqual({
-          controlAskedLost: true,
-          movedAskedAny: true,
-          movedAskedLost: false,
-        },);
-      },
-    },),
-  ],
-},);
 
 /**
  Runs the preparation seam over a page whose archive carries a paragraph the
@@ -685,35 +575,6 @@ async function archiveReviewAsked({ later, }: { readonly later: BudgetView; },):
   },);
   return reviewed;
 }
-
-await describe({
-  name: 'preparation seam re-seats the archive review under a hold (ledger X12)',
-  children: [
-    it({
-      name: 'THE PREPARATION HANDS ITS HOOK TO THE ARCHIVE REVIEW: a review after a dry-out asks the roster '
-        + 'the hook re-read, never the seat the dry-out took, which a review whose view never changes does ask',
-      fn: async () => {
-        /**
-         Review seats asked while every provider stays wet.
-         */
-        const control = await archiveReviewAsked({ later: ALL_WET, },);
-        /**
-         Review seats asked once Synthetic reads dry after the preparation's own reading.
-         */
-        const moved = await archiveReviewAsked({ later: SYNTHETIC_DRY, },);
-        expect({
-          controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
-          movedAskedAny: moved.length > 0,
-          movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
-        },).toEqual({
-          controlAskedLost: true,
-          movedAskedAny: true,
-          movedAskedLost: false,
-        },);
-      },
-    },),
-  ],
-},);
 
 /**
  Seats either lane's benches hold under a view.
@@ -830,35 +691,6 @@ function lostLaneSeatsIn({ asked, }: { readonly asked: readonly RosterModelId[];
   },);
 }
 
-await describe({
-  name: 'lanes seam re-seats under a hold (ledger X14)',
-  children: [
-    it({
-      name: 'THE LANES SEAM WIRES BOTH LANES\' HOOKS: a lane after a dry-out asks the benches the hooks re-read, '
-        + 'never a seat the dry-out took, which lanes whose view never changes do ask',
-      fn: async () => {
-        /**
-         Seats asked while every provider stays wet.
-         */
-        const control = await lanesAsked({ later: ALL_WET, },);
-        /**
-         Seats asked once Synthetic reads dry after the lanes' own reading.
-         */
-        const moved = await lanesAsked({ later: SYNTHETIC_DRY, },);
-        expect({
-          controlAskedLost: lostLaneSeatsIn({ asked: control, },).length > 0,
-          movedAskedAny: moved.length > 0,
-          movedAskedLost: lostLaneSeatsIn({ asked: moved, },),
-        },).toEqual({
-          controlAskedLost: true,
-          movedAskedAny: true,
-          movedAskedLost: [],
-        },);
-      },
-    },),
-  ],
-},);
-
 /**
  The one picture the pictures case reads.
  */
@@ -969,55 +801,236 @@ async function picturesAsked(
 }
 
 await describe({
-  name: 'pictures seam re-seats under a hold (ledger X14)',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'THE PICTURES SEAM WIRES ITS HOOK: a picture after a dry-out is read by the readers the hook re-read, '
-        + 'never the seat the dry-out took, which a reading whose view never changes does ask',
-      fn: async () => {
-        /**
-         Seats asked while every provider stays wet.
-         */
-        const control = await picturesAsked({ later: ALL_WET, held: true, },);
-        /**
-         Seats asked once Synthetic reads dry after the pictures' own reading.
-         */
-        const moved = await picturesAsked({ later: SYNTHETIC_DRY, held: true, },);
-        expect({
-          controlReadOcr: control.ocrReads > 0,
-          controlAskedLost: control.asked.includes(LOST_READER_SEAT,),
-          movedAskedAny: moved.asked.length > 0,
-          movedAskedLost: moved.asked.includes(LOST_READER_SEAT,),
-        },).toEqual({
-          controlReadOcr: true,
-          controlAskedLost: true,
-          movedAskedAny: true,
-          movedAskedLost: false,
-        },);
-      },
+    describe({
+      name: 'pass seams re-seat under a hold (ledger X14)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THE CONTEST SEAM WIRES ITS HOOK: a slice after a dry-out asks the judges the hook re-read, never '
+            + 'the seat the dry-out took, which a contest whose view never changes does ask',
+          fn: async () => {
+            /**
+             Seats asked while every provider stays wet.
+             */
+            const control = await contestAsked({ later: ALL_WET, },);
+            /**
+             Seats asked once Synthetic reads dry after the phase's own reading.
+             */
+            const moved = await contestAsked({ later: SYNTHETIC_DRY, },);
+            expect({
+              controlAskedLost: control.includes(LOST_SEAT,),
+              movedAskedAny: moved.length > 0,
+              movedAskedLost: moved.includes(LOST_SEAT,),
+            },).toEqual({
+              controlAskedLost: true,
+              movedAskedAny: true,
+              movedAskedLost: false,
+            },);
+          },
+        },),
+        it({
+          name: 'THE CONSOLIDATION SEAM WIRES ITS HOOK: a slice after a dry-out asks the writers, judges and '
+            + 'naturalness roles the hook re-read, never the seat the dry-out took, which a consolidation whose '
+            + 'view never changes does ask',
+          fn: async () => {
+            /**
+             Seats asked while every provider stays wet.
+             */
+            const control = await consolidationAsked({ later: ALL_WET, },);
+            /**
+             Seats asked once Synthetic reads dry after the phase's own reading.
+             */
+            const moved = await consolidationAsked({ later: SYNTHETIC_DRY, },);
+            expect({
+              controlAskedLost: control.includes(LOST_SEAT,),
+              movedAskedAny: moved.length > 0,
+              movedAskedLost: moved.includes(LOST_SEAT,),
+            },).toEqual({
+              controlAskedLost: true,
+              movedAskedAny: true,
+              movedAskedLost: false,
+            },);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'THE PICTURES SEAM SEATS THE READERS while nothing is held: every picture is read by the readers '
-        + 'the stage\'s own reading seated, and by no seat off that bench',
-      fn: async () => {
-        /**
-         Seats asked with no hold running, so no hook reads again.
-         */
-        const unheld = await picturesAsked({ later: SYNTHETIC_DRY, held: false, },);
-        /**
-         Readers the stage's own reading seats.
-         */
-        const readers: readonly RosterModelId[] = judgeSeatsFor({ dry: ALL_WET, },).readers;
-        expect({
-          askedAny: unheld.asked.length > 0,
-          offReaders: unheld.asked.filter(function offBench(seat,): boolean {
-            return !readers.includes(seat,);
-          },),
-        },).toEqual({
-          askedAny: true,
-          offReaders: [],
-        },);
-      },
+
+    describe({
+      name: 'insertion admission seam re-seats under a hold (ledger X14)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THE INSERTION SEAM WIRES ITS HOOK: a candidate after a dry-out is asked of the roster the hook '
+            + 're-read, never the seat the dry-out took, which an admission whose view never changes does ask',
+          fn: async () => {
+            /**
+             Seats asked while every provider stays wet.
+             */
+            const control = await admissionAsked({ later: ALL_WET, },);
+            /**
+             Seats asked once Synthetic reads dry after the lanes' reading.
+             */
+            const moved = await admissionAsked({ later: SYNTHETIC_DRY, },);
+            expect({
+              controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
+              movedAskedAny: moved.length > 0,
+              movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
+            },).toEqual({
+              controlAskedLost: true,
+              movedAskedAny: true,
+              movedAskedLost: false,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'preparation seam re-seats under a hold (ledger X14)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THE PREPARATION SEAM WIRES ITS HOOK: a pairing round after a dry-out asks the roster the hook '
+            + 're-read, never the seat the dry-out took, which a preparation whose view never changes does ask',
+          fn: async () => {
+            /**
+             Seats asked while every provider stays wet.
+             */
+            const control = await preparationAsked({ later: ALL_WET, },);
+            /**
+             Seats asked once Synthetic reads dry after the preparation's own reading.
+             */
+            const moved = await preparationAsked({ later: SYNTHETIC_DRY, },);
+            expect({
+              controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
+              movedAskedAny: moved.length > 0,
+              movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
+            },).toEqual({
+              controlAskedLost: true,
+              movedAskedAny: true,
+              movedAskedLost: false,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'preparation seam re-seats the archive review under a hold (ledger X12)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THE PREPARATION HANDS ITS HOOK TO THE ARCHIVE REVIEW: a review after a dry-out asks the roster '
+            + 'the hook re-read, never the seat the dry-out took, which a review whose view never changes does ask',
+          fn: async () => {
+            /**
+             Review seats asked while every provider stays wet.
+             */
+            const control = await archiveReviewAsked({ later: ALL_WET, },);
+            /**
+             Review seats asked once Synthetic reads dry after the preparation's own reading.
+             */
+            const moved = await archiveReviewAsked({ later: SYNTHETIC_DRY, },);
+            expect({
+              controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
+              movedAskedAny: moved.length > 0,
+              movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
+            },).toEqual({
+              controlAskedLost: true,
+              movedAskedAny: true,
+              movedAskedLost: false,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'lanes seam re-seats under a hold (ledger X14)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THE LANES SEAM WIRES BOTH LANES\' HOOKS: a lane after a dry-out asks the benches the hooks re-read, '
+            + 'never a seat the dry-out took, which lanes whose view never changes do ask',
+          fn: async () => {
+            /**
+             Seats asked while every provider stays wet.
+             */
+            const control = await lanesAsked({ later: ALL_WET, },);
+            /**
+             Seats asked once Synthetic reads dry after the lanes' own reading.
+             */
+            const moved = await lanesAsked({ later: SYNTHETIC_DRY, },);
+            expect({
+              controlAskedLost: lostLaneSeatsIn({ asked: control, },).length > 0,
+              movedAskedAny: moved.length > 0,
+              movedAskedLost: lostLaneSeatsIn({ asked: moved, },),
+            },).toEqual({
+              controlAskedLost: true,
+              movedAskedAny: true,
+              movedAskedLost: [],
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'pictures seam re-seats under a hold (ledger X14)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'THE PICTURES SEAM WIRES ITS HOOK: a picture after a dry-out is read by the readers the hook re-read, '
+            + 'never the seat the dry-out took, which a reading whose view never changes does ask',
+          fn: async () => {
+            /**
+             Seats asked while every provider stays wet.
+             */
+            const control = await picturesAsked({ later: ALL_WET, held: true, },);
+            /**
+             Seats asked once Synthetic reads dry after the pictures' own reading.
+             */
+            const moved = await picturesAsked({ later: SYNTHETIC_DRY, held: true, },);
+            expect({
+              controlReadOcr: control.ocrReads > 0,
+              controlAskedLost: control.asked.includes(LOST_READER_SEAT,),
+              movedAskedAny: moved.asked.length > 0,
+              movedAskedLost: moved.asked.includes(LOST_READER_SEAT,),
+            },).toEqual({
+              controlReadOcr: true,
+              controlAskedLost: true,
+              movedAskedAny: true,
+              movedAskedLost: false,
+            },);
+          },
+        },),
+        it({
+          name: 'THE PICTURES SEAM SEATS THE READERS while nothing is held: every picture is read by the readers '
+            + 'the stage\'s own reading seated, and by no seat off that bench',
+          fn: async () => {
+            /**
+             Seats asked with no hold running, so no hook reads again.
+             */
+            const unheld = await picturesAsked({ later: SYNTHETIC_DRY, held: false, },);
+            /**
+             Readers the stage's own reading seats.
+             */
+            const readers: readonly RosterModelId[] = judgeSeatsFor({ dry: ALL_WET, },).readers;
+            expect({
+              askedAny: unheld.asked.length > 0,
+              offReaders: unheld.asked.filter(function offBench(seat,): boolean {
+                return !readers.includes(seat,);
+              },),
+            },).toEqual({
+              askedAny: true,
+              offReaders: [],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

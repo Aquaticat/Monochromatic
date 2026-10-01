@@ -14,6 +14,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -50,178 +51,186 @@ const SHOP = 'https://example.org/shop';
 //endregion Fixtures
 
 await describe({
-  name: sameAddress.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'sheds one trailing slash and nothing else',
-      fn: async () => {
-        expect(sameAddress({ url: `${HOME}/`, },),).toBe(HOME,);
-        expect(sameAddress({ url: HOME, },),).toBe(HOME,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: judgeDestinationRenderings.name,
-  children: [
-    it({
-      name: 'ACCEPTS the archive rendering in place of the source destination, and names it',
-      fn: async () => {
-        const verdict = judgeDestinationRenderings({
-          source: [HOME,],
-          page: [HOME_MOVED,],
-          archive: [HOME_MOVED,],
-        },);
-
-        expect(verdict.dropped,).toStrictEqual([],);
-        expect(verdict.findings,).toStrictEqual([ARCHIVE_RENDERING_FINDING,],);
-      },
+    describe({
+      name: sameAddress.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'sheds one trailing slash and nothing else',
+          fn: async () => {
+            expect(sameAddress({ url: `${HOME}/`, },),).toBe(HOME,);
+            expect(sameAddress({ url: HOME, },),).toBe(HOME,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'ACCEPTS the source destination where the archive rendered it another way, with no finding',
-      fn: async () => {
-        const verdict = judgeDestinationRenderings({
-          source: [HOME,],
-          page: [HOME,],
-          archive: [HOME_MOVED,],
-        },);
+    describe({
+      name: judgeDestinationRenderings.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS the archive rendering in place of the source destination, and names it',
+          fn: async () => {
+            const verdict = judgeDestinationRenderings({
+              source: [HOME,],
+              page: [HOME_MOVED,],
+              archive: [HOME_MOVED,],
+            },);
 
-        expect(verdict,).toStrictEqual({
-          dropped: [],
-          findings: [],
-        },);
-      },
-    },),
+            expect(verdict.dropped,).toStrictEqual([],);
+            expect(verdict.findings,).toStrictEqual([ARCHIVE_RENDERING_FINDING,],);
+          },
+        },),
 
-    it({
-      name: 'DROPS the source destination when the page carries neither rendering',
-      fn: async () => {
-        const verdict = judgeDestinationRenderings({
-          source: [HOME,],
-          page: [],
-          archive: [HOME_MOVED,],
-        },);
+        it({
+          name: 'ACCEPTS the source destination where the archive rendered it another way, with no finding',
+          fn: async () => {
+            const verdict = judgeDestinationRenderings({
+              source: [HOME,],
+              page: [HOME,],
+              archive: [HOME_MOVED,],
+            },);
 
-        expect(verdict.dropped,).toStrictEqual([HOME,],);
-        expect(verdict.findings,).toStrictEqual([],);
-      },
-    },),
+            expect(verdict,).toStrictEqual({
+              dropped: [],
+              findings: [],
+            },);
+          },
+        },),
 
-    it({
-      name: 'names both renderings when the page carries the original and the archive one',
-      fn: async () => {
-        const verdict = judgeDestinationRenderings({
-          source: [HOME,],
-          page: [
-            HOME,
-            HOME_MOVED,
-          ],
-          archive: [HOME_MOVED,],
-        },);
+        it({
+          name: 'DROPS the source destination when the page carries neither rendering',
+          fn: async () => {
+            const verdict = judgeDestinationRenderings({
+              source: [HOME,],
+              page: [],
+              archive: [HOME_MOVED,],
+            },);
 
-        expect(verdict.dropped,).toStrictEqual([],);
-        expect(verdict.findings,).toStrictEqual([BOTH_RENDERINGS_FINDING,],);
-      },
-    },),
+            expect(verdict.dropped,).toStrictEqual([HOME,],);
+            expect(verdict.findings,).toStrictEqual([],);
+          },
+        },),
 
-    it({
-      name: 'still owes a destination both sides carry as written, whatever the pool says',
-      fn: async () => {
-        const verdict = judgeDestinationRenderings({
-          source: [
-            HOME,
-            ALBUM,
-          ],
-          page: [HOME_MOVED,],
-          archive: [
-            HOME_MOVED,
-            ALBUM,
-          ],
-        },);
+        it({
+          name: 'names both renderings when the page carries the original and the archive one',
+          fn: async () => {
+            const verdict = judgeDestinationRenderings({
+              source: [HOME,],
+              page: [
+                HOME,
+                HOME_MOVED,
+              ],
+              archive: [HOME_MOVED,],
+            },);
 
-        expect(verdict.dropped,).toStrictEqual([ALBUM,],);
-        expect(verdict.findings,).toStrictEqual([ARCHIVE_RENDERING_FINDING,],);
-      },
-    },),
+            expect(verdict.dropped,).toStrictEqual([],);
+            expect(verdict.findings,).toStrictEqual([BOTH_RENDERINGS_FINDING,],);
+          },
+        },),
 
-    it({
-      name: 'owes every source destination when there is no archive, a trailing slash notwithstanding',
-      fn: async () => {
-        expect(judgeDestinationRenderings({
-          source: [
-            HOME,
-            ALBUM,
-          ],
-          page: [`${ALBUM}/`,],
-          archive: [],
-        },),).toStrictEqual({
-          dropped: [HOME,],
-          findings: [],
-        },);
-        expect(judgeDestinationRenderings({
-          source: [
-            HOME,
-            ALBUM,
-          ],
-          page: [
-            ALBUM,
-            HOME,
-          ],
-          archive: [],
-        },),).toStrictEqual({
-          dropped: [],
-          findings: [],
-        },);
-      },
-    },),
+        it({
+          name: 'still owes a destination both sides carry as written, whatever the pool says',
+          fn: async () => {
+            const verdict = judgeDestinationRenderings({
+              source: [
+                HOME,
+                ALBUM,
+              ],
+              page: [HOME_MOVED,],
+              archive: [
+                HOME_MOVED,
+                ALBUM,
+              ],
+            },);
 
-    it({
-      name: 'does not report an archive addition the page lost, since it is no source destination',
-      fn: async () => {
-        const verdict = judgeDestinationRenderings({
-          source: [HOME,],
-          page: [HOME,],
-          archive: [
-            HOME,
-            SHOP,
-          ],
-        },);
+            expect(verdict.dropped,).toStrictEqual([ALBUM,],);
+            expect(verdict.findings,).toStrictEqual([ARCHIVE_RENDERING_FINDING,],);
+          },
+        },),
 
-        expect(verdict,).toStrictEqual({
-          dropped: [],
-          findings: [],
-        },);
-      },
-    },),
+        it({
+          name: 'owes every source destination when there is no archive, a trailing slash notwithstanding',
+          fn: async () => {
+            expect(judgeDestinationRenderings({
+              source: [
+                HOME,
+                ALBUM,
+              ],
+              page: [`${ALBUM}/`,],
+              archive: [],
+            },),).toStrictEqual({
+              dropped: [HOME,],
+              findings: [],
+            },);
+            expect(judgeDestinationRenderings({
+              source: [
+                HOME,
+                ALBUM,
+              ],
+              page: [
+                ALBUM,
+                HOME,
+              ],
+              archive: [],
+            },),).toStrictEqual({
+              dropped: [],
+              findings: [],
+            },);
+          },
+        },),
 
-    it({
-      name: 'owes the larger side where the archive split one reference into two',
-      fn: async () => {
-        /**
-         Pool of one source rendering and two archive renderings: two owed.
-         */
-        const ask = {
-          source: [HOME,],
-          archive: [
-            HOME_MOVED,
-            SHOP,
-          ],
-        };
+        it({
+          name: 'does not report an archive addition the page lost, since it is no source destination',
+          fn: async () => {
+            const verdict = judgeDestinationRenderings({
+              source: [HOME,],
+              page: [HOME,],
+              archive: [
+                HOME,
+                SHOP,
+              ],
+            },);
 
-        expect(judgeDestinationRenderings({
-          ...ask,
-          page: [
-            HOME_MOVED,
-            SHOP,
-          ],
-        },).dropped,).toStrictEqual([],);
-        expect(judgeDestinationRenderings({
-          ...ask,
-          page: [HOME_MOVED,],
-        },).dropped,).toStrictEqual([HOME,],);
-      },
+            expect(verdict,).toStrictEqual({
+              dropped: [],
+              findings: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'owes the larger side where the archive split one reference into two',
+          fn: async () => {
+            /**
+             Pool of one source rendering and two archive renderings: two owed.
+             */
+            const ask = {
+              source: [HOME,],
+              archive: [
+                HOME_MOVED,
+                SHOP,
+              ],
+            };
+
+            expect(judgeDestinationRenderings({
+              ...ask,
+              page: [
+                HOME_MOVED,
+                SHOP,
+              ],
+            },).dropped,).toStrictEqual([],);
+            expect(judgeDestinationRenderings({
+              ...ask,
+              page: [HOME_MOVED,],
+            },).dropped,).toStrictEqual([HOME,],);
+          },
+        },),
+      ],
     },),
   ],
 },);

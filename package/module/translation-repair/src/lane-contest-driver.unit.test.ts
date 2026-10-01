@@ -15,6 +15,7 @@
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -623,625 +624,6 @@ async function drive(
   };
 }
 
-await describe({
-  name: contestDocumentLanes.name,
-  children: [
-    it({
-      name:
-        'BUYS NOTHING where the two lanes left the same wording, which is most of most documents: a '
-        + 'contest between two identical candidates has no question to put',
-      fn: async () => {
-        /**
-         Two slices both lanes agree on.
-         */
-        const rig = await drive({
-          pairs: [
-            [
-              ARCHIVE_NAP,
-              ARCHIVE_NAP,
-            ],
-            [
-              REPAIR_NAP,
-              REPAIR_NAP,
-            ],
-          ],
-          answering: true,
-        },);
-        expect(rig.calls,).toEqual([],);
-        expect(rig.slices,).toEqual([],);
-      },
-    },),
-    it({
-      name: 'ASKS ONLY the slices that differ, leaving the agreed ones out of the record entirely',
-      fn: async () => {
-        /**
-         Three slices, of which the middle one differs.
-         */
-        const rig = await drive({
-          pairs: [
-            [
-              ARCHIVE_NAP,
-              ARCHIVE_NAP,
-            ],
-            [
-              REPAIR_NAP,
-              TRANSLATE_NAP,
-            ],
-            [
-              ARCHIVE_NAP,
-              ARCHIVE_NAP,
-            ],
-          ],
-          answering: true,
-        },);
-        expect(rig.calls
-          .length,).toBe(ROSTER.length,);
-        expect(rig.slices
-          .map(function nameSlice(slice,): number {
-            return slice.sliceIndex;
-          },),).toEqual([1,],);
-        expect(rig.slices
-          .at(0,)
-          ?.verdict,).toEqual({
-          kind: 'lane-won',
-          lane: 'translate',
-        },);
-      },
-    },),
-    it({
-      name: 'runs two contested slices at once at overlap 2, after a serial positive '
-        + 'control proves the successful-call instrument distinguishes one from two, '
-        + 'and returns records in comparison order when the second slice finishes first',
-      fn: async () => {
-        /**
-         Distinct questions preventing cache-key aliasing from affecting order.
-         */
-        const pairs = [
-          [
-            REPAIR_NAP,
-            TRANSLATE_NAP,
-          ],
-          [
-            `${REPAIR_NAP} Again.`,
-            `${TRANSLATE_NAP} Again.`,
-          ],
-        ] as const;
-
-        /**
-         Serial positive-control activity.
-         */
-        const serial: ContestConcurrency = {
-          now: 0,
-          peak: 0,
-          started: 0,
-        };
-        await drive({
-          pairs,
-          answering: true,
-          overlap: 1,
-          activity: serial,
-        },);
-
-        /**
-         Two-slice activity.
-         */
-        const overlapped: ContestConcurrency = {
-          now: 0,
-          peak: 0,
-          started: 0,
-        };
-        const rig = await drive({
-          pairs,
-          answering: true,
-          overlap: 2,
-          activity: overlapped,
-        },);
-        expect(serial.peak,).toBe(ROSTER.length,);
-        expect(overlapped.peak,).toBe(ROSTER.length * 2,);
-        expect(rig.slices.map(function toIndex(slice,) {
-          return slice.sliceIndex;
-        },),).toEqual([
-          0,
-          1,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'ASKS ONCE for two contested slices carrying the same question at overlap 1 and 2, '
-        + 'so a cold run cannot settle contradictory ballots where a warm run resumes one record',
-      fn: async () => {
-        await Promise.all(([1, 2,] as const).map(async function atOverlap(
-          overlap,
-        ): Promise<void> {
-          const rig = await drive({
-            pairs: [
-              [
-                REPAIR_NAP,
-                TRANSLATE_NAP,
-              ],
-              [
-                REPAIR_NAP,
-                TRANSLATE_NAP,
-              ],
-            ],
-            answering: true,
-            overlap,
-          },);
-          expect(rig.calls.length,).toBe(ROSTER.length,);
-          expect(rig.persisted.length,).toBe(1,);
-          expect(rig.slices.map(function toIndex(slice,) {
-            return slice.sliceIndex;
-          },),).toEqual([
-            0,
-            1,
-          ],);
-          expect(rig.slices.map(function toVerdict(slice,) {
-            return slice.verdict;
-          },),).toEqual([
-            {
-              kind: 'lane-won',
-              lane: 'translate',
-            },
-            {
-              kind: 'lane-won',
-              lane: 'translate',
-            },
-          ],);
-        },),);
-      },
-    },),
-
-    it({
-      name: 'ASKS AGAIN for a twin whose contest roster was unheard at overlap 1 and 2, '
-        + 'because the in-run memo may hold only what a warm run can resume',
-      fn: async () => {
-        await Promise.all(([1, 2,] as const).map(async function atOverlap(
-          overlap,
-        ): Promise<void> {
-          const single = await drive({
-            pairs: [
-              [
-                REPAIR_NAP,
-                TRANSLATE_NAP,
-              ],
-            ],
-            answering: false,
-            overlap,
-          },);
-          const twin = await drive({
-            pairs: [
-              [
-                REPAIR_NAP,
-                TRANSLATE_NAP,
-              ],
-              [
-                REPAIR_NAP,
-                TRANSLATE_NAP,
-              ],
-            ],
-            answering: false,
-            overlap,
-          },);
-          expect(single.admitted,).toBe(ROSTER.length,);
-          expect(twin.admitted,).toBe(single.admitted * 2,);
-          expect(twin.persisted,).toEqual([],);
-        },),);
-      },
-    },),
-
-    it({
-      name: 'REBUYS IDENTICAL FRONT MATTER winner that cannot ship instead of persisting or twin-memoizing it',
-      fn: async () => {
-        /**
-         One unsafe contest as purchase positive control.
-         */
-        const single = await drive({
-          pairs: [],
-          projected: metadataProjection({ sliceCount: 1, },),
-          frontMatterSlices: new Set([0,]),
-          answerChoice: 'repair',
-          answering: true,
-          overlap: 2,
-        },);
-        /**
-         Same unsafe question repeated at two positions.
-         */
-        const twin = await drive({
-          pairs: [],
-          projected: metadataProjection({ sliceCount: 2, },),
-          frontMatterSlices: new Set([
-            0,
-            1,
-          ],),
-          answerChoice: 'repair',
-          answering: true,
-          overlap: 2,
-        },);
-        expect(single.admitted,).toBe(ROSTER.length,);
-        expect(single.persisted,).toEqual([],);
-        expect(single.slices[0]?.verdict,).toEqual({ kind: 'settled-neither', },);
-        expect(single.slices[0]?.eligibility,).toEqual({
-          syntax: 'front-matter',
-          sourceText: METADATA_SOURCE,
-          archive: 'ineligible',
-          repair: 'ineligible',
-          translate: 'eligible',
-        },);
-        expect(twin.admitted,).toBe(single.admitted * 2,);
-        expect(twin.persisted,).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'REBUYS A WINNER MERGING THE LINES OF A GOVERNED SLICE instead of persisting it (ledger H2), '
-        + 'while the same winner persists where no line rule governs and the lane keeping the lines '
-        + 'persists where one does',
-      fn: async () => {
-        /**
-         Merged winner where the line-structure rule governs the slice.
-         */
-        const governed = await drive({
-          pairs: [],
-          projected: verseProjection(),
-          lineStructuredSlices: new Set([0,],),
-          answerChoice: 'translate',
-          answering: true,
-        },);
-
-        /**
-         Same merged winner where no line rule governs.
-         */
-        const free = await drive({
-          pairs: [],
-          projected: verseProjection(),
-          answerChoice: 'translate',
-          answering: true,
-        },);
-
-        /**
-         Line-keeping winner of the governed slice.
-         */
-        const kept = await drive({
-          pairs: [],
-          projected: verseProjection(),
-          lineStructuredSlices: new Set([0,],),
-          answerChoice: 'repair',
-          answering: true,
-        },);
-        expect(governed.admitted,).toBe(ROSTER.length,);
-        expect(governed.persisted,).toEqual([],);
-        expect(free.persisted
-          .length,).toBe(1,);
-        expect(kept.persisted
-          .length,).toBe(1,);
-      },
-    },),
-
-    it({
-      name: 'PERSISTS a settled verdict, since ballots are the purchased thing and the next resume must not re-buy them',
-      fn: async () => {
-        /**
-         One contested slice, answered.
-         */
-        const rig = await drive({
-          pairs: [
-            [
-              REPAIR_NAP,
-              TRANSLATE_NAP,
-            ],
-          ],
-          answering: true,
-        },);
-        expect(rig.persisted
-          .length,).toBe(1,);
-      },
-    },),
-    it({
-      name: 'REFUSES TO PERSIST winner that final publication cannot ship',
-      fn: async () => {
-        /**
-         Cache writes attempted by unsafe winner.
-         */
-        const persisted: string[] = [];
-        await persistLaneContestOutcome({
-          key: 'unsafe-front-matter-winner',
-          outcome: {
-            choice: 'repair',
-            ballots: [
-              {
-                choice: 'repair',
-                unsupported: [],
-                unsupportedRaw: [],
-                dropped: [],
-                droppedRaw: [],
-                reason: 'first vote',
-              },
-              {
-                choice: 'repair',
-                unsupported: [],
-                unsupportedRaw: [],
-                dropped: [],
-                droppedRaw: [],
-                reason: 'second vote',
-              },
-            ],
-            usable: 2,
-            findings: [],
-          },
-          choiceMayShip: false,
-          cache: {
-            resumed: new Map<string, LaneContestOutcome>(),
-            persist: async ({ key, },) => {
-              persisted.push(key,);
-            },
-          },
-          signal: new AbortController().signal,
-        },);
-        expect(persisted,).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'THROWS the caller abort reason while the roster is in flight, even after '
-        + 'the first voices answered',
-      fn: async () => {
-        await expect(drive({
-          pairs: [
-            [
-              REPAIR_NAP,
-              TRANSLATE_NAP,
-            ],
-          ],
-          answering: true,
-          abortOnCall: ROSTER.length,
-        },),)
-          .rejects
-          .toBe(CONTEST_ABORT,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES persistence under an already aborted caller after a quorum-complete '
-        + 'outcome returned, preserving the final pre-write defense',
-      fn: async () => {
-        /**
-         Exact caller reason helper must surface.
-         */
-        const stopped = new Error('caller abandoned completed contest',);
-        const controller = new AbortController();
-        controller.abort(stopped,);
-
-        /**
-         Writes attempted after abort.
-         */
-        const persisted: string[] = [];
-        await expect(persistLaneContestOutcome({
-          key: 'lane-contest-persistence-guard-fixture',
-          outcome: {
-            choice: 'repair',
-            ballots: [
-              {
-                choice: 'repair',
-                unsupported: [],
-                unsupportedRaw: [],
-                dropped: [],
-                droppedRaw: [],
-                reason: 'first corroborating ballot',
-              },
-              {
-                choice: 'repair',
-                unsupported: [],
-                unsupportedRaw: [],
-                dropped: [],
-                droppedRaw: [],
-                reason: 'second corroborating ballot',
-              },
-            ],
-            usable: 2,
-            findings: [],
-          },
-          cache: {
-            resumed: new Map<string, LaneContestOutcome>(),
-            persist: async ({ key, },) => {
-              persisted.push(key,);
-            },
-          },
-          signal: controller.signal,
-        },),)
-          .rejects
-          .toBe(stopped,);
-        expect(persisted,).toEqual([],);
-      },
-    },),
-
-    it({
-      name:
-        'REFUSES TO PERSIST an unheard roster, because a provider down for one night is not a property '
-        + 'of the question and caching it would freeze that night into every later resume',
-      fn: async () => {
-        /**
-         One contested slice nobody answered.
-         */
-        const rig = await drive({
-          pairs: [
-            [
-              REPAIR_NAP,
-              TRANSLATE_NAP,
-            ],
-          ],
-          answering: false,
-        },);
-        expect(rig.persisted,).toEqual([],);
-        expect(rig.slices
-          .at(0,)
-          ?.verdict,).toEqual({ kind: 'quorum-not-met', },);
-      },
-    },),
-    it({
-      name:
-        'RESUMES a slice off the cache without calling anything, and does not write back what it just '
-        + 'read: a re-persisted resume is a write per slice per run for nothing',
-      fn: async () => {
-        /**
-         Ballots an earlier run bought, under the key this run derives.
-         */
-        const bought: LaneContestOutcome = {
-          choice: 'repair',
-          ballots: [
-            {
-              choice: 'repair',
-              unsupported: [],
-              unsupportedRaw: [],
-              dropped: [],
-              droppedRaw: [],
-              reason: 'bought earlier',
-            },
-            {
-              choice: 'repair',
-              unsupported: [],
-              unsupportedRaw: [],
-              dropped: [],
-              droppedRaw: [],
-              reason: 'bought earlier',
-            },
-          ],
-          usable: 2,
-          findings: [],
-        };
-
-        // THROUGH A FRESH RUN FIRST, to learn the key rather than to spell it
-        // out here: a fixture that wrote the key itself would keep passing after
-        // the two derivations diverged, which is the defect the pinned key test
-        // exists for and the one a resumption test must not repeat.
-        const learned = await drive({
-          pairs: [
-            [
-              REPAIR_NAP,
-              TRANSLATE_NAP,
-            ],
-          ],
-          answering: true,
-        },);
-
-        /**
-         Same slice, with those ballots already on disk.
-         */
-        const rig = await drive({
-          pairs: [
-            [
-              REPAIR_NAP,
-              TRANSLATE_NAP,
-            ],
-          ],
-          answering: true,
-          resumed: new Map([
-            [
-              learned.persisted
-                .at(0,) ?? '',
-              bought,
-            ],
-          ],),
-        },);
-        expect(rig.calls,).toEqual([],);
-        expect(rig.persisted,).toEqual([],);
-        expect(rig.slices
-          .at(0,)
-          ?.verdict,).toEqual({
-          kind: 'lane-won',
-          lane: 'repair',
-        },);
-      },
-    },),
-
-    it({
-      name: 'mixes one resumed row with one fresh row at overlap 2, buying and persisting '
-        + 'only the fresh question while returning both in comparison order',
-      fn: async () => {
-        /**
-         Two distinct contest questions.
-         */
-        const pairs = [
-          [
-            REPAIR_NAP,
-            TRANSLATE_NAP,
-          ],
-          [
-            `${REPAIR_NAP} Again.`,
-            `${TRANSLATE_NAP} Again.`,
-          ],
-        ] as const;
-
-        /**
-         Fresh pass used only to derive both production keys.
-         */
-        const learned = await drive({
-          pairs,
-          answering: true,
-        },);
-
-        /**
-         Quorum-complete first-row outcome already on disk.
-         */
-        const bought: LaneContestOutcome = {
-          choice: 'repair',
-          ballots: [
-            {
-              choice: 'repair',
-              unsupported: [],
-              unsupportedRaw: [],
-              dropped: [],
-              droppedRaw: [],
-              reason: 'first stored ballot',
-            },
-            {
-              choice: 'repair',
-              unsupported: [],
-              unsupportedRaw: [],
-              dropped: [],
-              droppedRaw: [],
-              reason: 'second stored ballot',
-            },
-          ],
-          usable: 2,
-          findings: [],
-        };
-        const rig = await drive({
-          pairs,
-          answering: true,
-          overlap: 2,
-          resumed: new Map([
-            [
-              learned.persisted.at(0,) ?? '',
-              bought,
-            ],
-          ],),
-        },);
-        expect(rig.admitted,).toBe(ROSTER.length,);
-        expect(rig.persisted.length,).toBe(1,);
-        expect(rig.slices.map(function toIndex(slice,) {
-          return slice.sliceIndex;
-        },),).toEqual([
-          0,
-          1,
-        ],);
-        expect(rig.slices.map(function toVerdict(slice,) {
-          return slice.verdict;
-        },),).toEqual([
-          {
-            kind: 'lane-won',
-            lane: 'repair',
-          },
-          {
-            kind: 'lane-won',
-            lane: 'translate',
-          },
-        ],);
-      },
-    },),
-  ],
-},);
-
 /**
  Judges a hook hands back after a dry-out, none of them the driver's own.
  */
@@ -1353,83 +735,6 @@ async function contestOneSlice(
   },);
 }
 
-await describe({
-  name: `${contestDocumentLanes.name} re-seated under a hold (ledger X12)`,
-  children: [
-    it({
-      name: 'SEATS A SLICE ON THE JUDGES ITS HOOK RETURNS, as the lanes and the consolidation seat theirs, so '
-        + 'judges re-read after a provider dry-out are the ones the slice asks rather than those read before it',
-      fn: async () => {
-        /**
-         Seat of every call a driver with no hook made.
-         */
-        const control: RosterModelId[] = [];
-        await contestOneSlice({ client: judgeRecordingClient({ asked: control, },), },);
-        /**
-         Seat of every call the re-seated driver made.
-         */
-        const asked: RosterModelId[] = [];
-        await contestOneSlice({
-          client: judgeRecordingClient({ asked, },),
-          beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_JUDGES, }),
-        },);
-        expect({
-          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
-            return (ROSTER as readonly RosterModelId[]).includes(seat,);
-          },),
-          reseatedAskedAny: asked.length > 0,
-          outsideReseated: asked.filter(function outside(seat,): boolean {
-            return !RESEATED_JUDGES.includes(seat,);
-          },),
-        },).toEqual({
-          controlOnRoster: true,
-          reseatedAskedAny: true,
-          outsideReseated: [],
-        },);
-      },
-    },),
-    it({
-      name: 'KEYS A RE-SEATED SLICE BY THE JUDGES IT RUNS ON, so ballots the judges read before the dry-out '
-        + 'cast are never resumed for it, while a hook handing back the starting judges keys the slice as a '
-        + 'driver with no hook does',
-      fn: async () => {
-        /**
-         Keys a driver with no hook looks up.
-         */
-        const starting: string[] = [];
-        await contestOneSlice({ client: judgeRecordingClient({ asked: [], },), looked: starting, },);
-        /**
-         Keys looked up when the hook re-seats the slice elsewhere.
-         */
-        const moved: string[] = [];
-        await contestOneSlice({
-          client: judgeRecordingClient({ asked: [], },),
-          looked: moved,
-          beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_JUDGES, }),
-        },);
-        /**
-         Keys looked up when the hook hands back the judges the driver started on.
-         */
-        const kept: string[] = [];
-        await contestOneSlice({
-          client: judgeRecordingClient({ asked: [], },),
-          looked: kept,
-          beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: ROSTER, }),
-        },);
-        expect({
-          lookups: [starting.length, moved.length, kept.length,],
-          movedDiffers: moved[0] !== starting[0],
-          keptMatches: kept[0] === starting[0],
-        },).toEqual({
-          lookups: [1, 1, 1,],
-          movedDiffers: true,
-          keptMatches: true,
-        },);
-      },
-    },),
-  ],
-},);
-
 /**
  Claim a probe corroborated against the repair lane's wording.
  */
@@ -1441,65 +746,770 @@ const DAMAGE_CLAIM = 'the repair lane adds a second cat the original never menti
 const DISPUTE_NOTE = 'the archive adds a garden the original never mentions';
 
 await describe({
-  name: `${contestDocumentLanes.name} with evidence against a lane (T8 batch 13)`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SHOWS THE JUDGES a corroborated damage claim and a dispute note, and logs the claim count in words '
-        + 'that agree with it (ledger B66)',
-      fn: async () => {
-        /**
-         Every request the judges were sent, as text.
-         */
-        const prompts: string[] = [];
-        /**
-         Lines the driver logged.
-         */
-        const messages: string[] = [];
-        /**
-         Client casting the one ballot every judge casts, recording each request.
-         */
-        const recording = judgeRecordingClient({ asked: [], },);
-        await contestDocumentLanes({
-          client: {
-            ...recording,
-            chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
-              prompts.push(JSON.stringify(request,),);
-              return await recording.chatJson(request,);
-            },
+    describe({
+      name: contestDocumentLanes.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'BUYS NOTHING where the two lanes left the same wording, which is most of most documents: a '
+            + 'contest between two identical candidates has no question to put',
+          fn: async () => {
+            /**
+             Two slices both lanes agree on.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  ARCHIVE_NAP,
+                  ARCHIVE_NAP,
+                ],
+                [
+                  REPAIR_NAP,
+                  REPAIR_NAP,
+                ],
+              ],
+              answering: true,
+            },);
+            expect(rig.calls,).toEqual([],);
+            expect(rig.slices,).toEqual([],);
           },
-          projected: catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },),
-          modelIds: ROSTER,
-          frontMatterSlices: new Set(),
-          lineStructuredSlices: new Set(),
-          cache: {
-            resumed: new Map(),
-            persist: async function keepNothing(): Promise<void> {},
+        },),
+        it({
+          name: 'ASKS ONLY the slices that differ, leaving the agreed ones out of the record entirely',
+          fn: async () => {
+            /**
+             Three slices, of which the middle one differs.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  ARCHIVE_NAP,
+                  ARCHIVE_NAP,
+                ],
+                [
+                  REPAIR_NAP,
+                  TRANSLATE_NAP,
+                ],
+                [
+                  ARCHIVE_NAP,
+                  ARCHIVE_NAP,
+                ],
+              ],
+              answering: true,
+            },);
+            expect(rig.calls
+              .length,).toBe(ROSTER.length,);
+            expect(rig.slices
+              .map(function nameSlice(slice,): number {
+                return slice.sliceIndex;
+              },),).toEqual([1,],);
+            expect(rig.slices
+              .at(0,)
+              ?.verdict,).toEqual({
+              kind: 'lane-won',
+              lane: 'translate',
+            },);
           },
-          damageClaimsBySlice: new Map([[0, [DAMAGE_CLAIM,],],],),
-          disputeNotesBySlice: new Map([[0, DISPUTE_NOTE,],],),
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
-          l: capturingLogger({ messages, },),
-          fanOut: 'whole-bench',
-        },);
-        expect({
-          asked: prompts.length > 0,
-          everyPromptCarriesClaim: prompts.every(function carriesClaim(prompt,): boolean {
-            return prompt.includes(DAMAGE_CLAIM,);
-          },),
-          everyPromptCarriesNote: prompts.every(function carriesNote(prompt,): boolean {
-            return prompt.includes(DISPUTE_NOTE,);
-          },),
-          claimLine: messages.some(function namesClaim(line,): boolean {
-            return line.includes('slice 0: 1 corroborated damage claim shown to the judges',);
-          },),
-        },).toEqual({
-          asked: true,
-          everyPromptCarriesClaim: true,
-          everyPromptCarriesNote: true,
-          claimLine: true,
-        },);
-      },
+        },),
+        it({
+          name: 'runs two contested slices at once at overlap 2, after a serial positive '
+            + 'control proves the successful-call instrument distinguishes one from two, '
+            + 'and returns records in comparison order when the second slice finishes first',
+          fn: async () => {
+            /**
+             Distinct questions preventing cache-key aliasing from affecting order.
+             */
+            const pairs = [
+              [
+                REPAIR_NAP,
+                TRANSLATE_NAP,
+              ],
+              [
+                `${REPAIR_NAP} Again.`,
+                `${TRANSLATE_NAP} Again.`,
+              ],
+            ] as const;
+
+            /**
+             Serial positive-control activity.
+             */
+            const serial: ContestConcurrency = {
+              now: 0,
+              peak: 0,
+              started: 0,
+            };
+            await drive({
+              pairs,
+              answering: true,
+              overlap: 1,
+              activity: serial,
+            },);
+
+            /**
+             Two-slice activity.
+             */
+            const overlapped: ContestConcurrency = {
+              now: 0,
+              peak: 0,
+              started: 0,
+            };
+            const rig = await drive({
+              pairs,
+              answering: true,
+              overlap: 2,
+              activity: overlapped,
+            },);
+            expect(serial.peak,).toBe(ROSTER.length,);
+            expect(overlapped.peak,).toBe(ROSTER.length * 2,);
+            expect(rig.slices.map(function toIndex(slice,) {
+              return slice.sliceIndex;
+            },),).toEqual([
+              0,
+              1,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'ASKS ONCE for two contested slices carrying the same question at overlap 1 and 2, '
+            + 'so a cold run cannot settle contradictory ballots where a warm run resumes one record',
+          fn: async () => {
+            await Promise.all(([1, 2,] as const).map(async function atOverlap(
+              overlap,
+            ): Promise<void> {
+              const rig = await drive({
+                pairs: [
+                  [
+                    REPAIR_NAP,
+                    TRANSLATE_NAP,
+                  ],
+                  [
+                    REPAIR_NAP,
+                    TRANSLATE_NAP,
+                  ],
+                ],
+                answering: true,
+                overlap,
+              },);
+              expect(rig.calls.length,).toBe(ROSTER.length,);
+              expect(rig.persisted.length,).toBe(1,);
+              expect(rig.slices.map(function toIndex(slice,) {
+                return slice.sliceIndex;
+              },),).toEqual([
+                0,
+                1,
+              ],);
+              expect(rig.slices.map(function toVerdict(slice,) {
+                return slice.verdict;
+              },),).toEqual([
+                {
+                  kind: 'lane-won',
+                  lane: 'translate',
+                },
+                {
+                  kind: 'lane-won',
+                  lane: 'translate',
+                },
+              ],);
+            },),);
+          },
+        },),
+
+        it({
+          name: 'ASKS AGAIN for a twin whose contest roster was unheard at overlap 1 and 2, '
+            + 'because the in-run memo may hold only what a warm run can resume',
+          fn: async () => {
+            await Promise.all(([1, 2,] as const).map(async function atOverlap(
+              overlap,
+            ): Promise<void> {
+              const single = await drive({
+                pairs: [
+                  [
+                    REPAIR_NAP,
+                    TRANSLATE_NAP,
+                  ],
+                ],
+                answering: false,
+                overlap,
+              },);
+              const twin = await drive({
+                pairs: [
+                  [
+                    REPAIR_NAP,
+                    TRANSLATE_NAP,
+                  ],
+                  [
+                    REPAIR_NAP,
+                    TRANSLATE_NAP,
+                  ],
+                ],
+                answering: false,
+                overlap,
+              },);
+              expect(single.admitted,).toBe(ROSTER.length,);
+              expect(twin.admitted,).toBe(single.admitted * 2,);
+              expect(twin.persisted,).toEqual([],);
+            },),);
+          },
+        },),
+
+        it({
+          name: 'REBUYS IDENTICAL FRONT MATTER winner that cannot ship instead of persisting or twin-memoizing it',
+          fn: async () => {
+            /**
+             One unsafe contest as purchase positive control.
+             */
+            const single = await drive({
+              pairs: [],
+              projected: metadataProjection({ sliceCount: 1, },),
+              frontMatterSlices: new Set([0,]),
+              answerChoice: 'repair',
+              answering: true,
+              overlap: 2,
+            },);
+            /**
+             Same unsafe question repeated at two positions.
+             */
+            const twin = await drive({
+              pairs: [],
+              projected: metadataProjection({ sliceCount: 2, },),
+              frontMatterSlices: new Set([
+                0,
+                1,
+              ],),
+              answerChoice: 'repair',
+              answering: true,
+              overlap: 2,
+            },);
+            expect(single.admitted,).toBe(ROSTER.length,);
+            expect(single.persisted,).toEqual([],);
+            expect(single.slices[0]?.verdict,).toEqual({ kind: 'settled-neither', },);
+            expect(single.slices[0]?.eligibility,).toEqual({
+              syntax: 'front-matter',
+              sourceText: METADATA_SOURCE,
+              archive: 'ineligible',
+              repair: 'ineligible',
+              translate: 'eligible',
+            },);
+            expect(twin.admitted,).toBe(single.admitted * 2,);
+            expect(twin.persisted,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'REBUYS A WINNER MERGING THE LINES OF A GOVERNED SLICE instead of persisting it (ledger H2), '
+            + 'while the same winner persists where no line rule governs and the lane keeping the lines '
+            + 'persists where one does',
+          fn: async () => {
+            /**
+             Merged winner where the line-structure rule governs the slice.
+             */
+            const governed = await drive({
+              pairs: [],
+              projected: verseProjection(),
+              lineStructuredSlices: new Set([0,],),
+              answerChoice: 'translate',
+              answering: true,
+            },);
+
+            /**
+             Same merged winner where no line rule governs.
+             */
+            const free = await drive({
+              pairs: [],
+              projected: verseProjection(),
+              answerChoice: 'translate',
+              answering: true,
+            },);
+
+            /**
+             Line-keeping winner of the governed slice.
+             */
+            const kept = await drive({
+              pairs: [],
+              projected: verseProjection(),
+              lineStructuredSlices: new Set([0,],),
+              answerChoice: 'repair',
+              answering: true,
+            },);
+            expect(governed.admitted,).toBe(ROSTER.length,);
+            expect(governed.persisted,).toEqual([],);
+            expect(free.persisted
+              .length,).toBe(1,);
+            expect(kept.persisted
+              .length,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'PERSISTS a settled verdict, since ballots are the purchased thing and the next resume must not re-buy them',
+          fn: async () => {
+            /**
+             One contested slice, answered.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  REPAIR_NAP,
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: true,
+            },);
+            expect(rig.persisted
+              .length,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'REFUSES TO PERSIST winner that final publication cannot ship',
+          fn: async () => {
+            /**
+             Cache writes attempted by unsafe winner.
+             */
+            const persisted: string[] = [];
+            await persistLaneContestOutcome({
+              key: 'unsafe-front-matter-winner',
+              outcome: {
+                choice: 'repair',
+                ballots: [
+                  {
+                    choice: 'repair',
+                    unsupported: [],
+                    unsupportedRaw: [],
+                    dropped: [],
+                    droppedRaw: [],
+                    reason: 'first vote',
+                  },
+                  {
+                    choice: 'repair',
+                    unsupported: [],
+                    unsupportedRaw: [],
+                    dropped: [],
+                    droppedRaw: [],
+                    reason: 'second vote',
+                  },
+                ],
+                usable: 2,
+                findings: [],
+              },
+              choiceMayShip: false,
+              cache: {
+                resumed: new Map<string, LaneContestOutcome>(),
+                persist: async ({ key, },) => {
+                  persisted.push(key,);
+                },
+              },
+              signal: new AbortController().signal,
+            },);
+            expect(persisted,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'THROWS the caller abort reason while the roster is in flight, even after '
+            + 'the first voices answered',
+          fn: async () => {
+            await expect(drive({
+              pairs: [
+                [
+                  REPAIR_NAP,
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: true,
+              abortOnCall: ROSTER.length,
+            },),)
+              .rejects
+              .toBe(CONTEST_ABORT,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES persistence under an already aborted caller after a quorum-complete '
+            + 'outcome returned, preserving the final pre-write defense',
+          fn: async () => {
+            /**
+             Exact caller reason helper must surface.
+             */
+            const stopped = new Error('caller abandoned completed contest',);
+            const controller = new AbortController();
+            controller.abort(stopped,);
+
+            /**
+             Writes attempted after abort.
+             */
+            const persisted: string[] = [];
+            await expect(persistLaneContestOutcome({
+              key: 'lane-contest-persistence-guard-fixture',
+              outcome: {
+                choice: 'repair',
+                ballots: [
+                  {
+                    choice: 'repair',
+                    unsupported: [],
+                    unsupportedRaw: [],
+                    dropped: [],
+                    droppedRaw: [],
+                    reason: 'first corroborating ballot',
+                  },
+                  {
+                    choice: 'repair',
+                    unsupported: [],
+                    unsupportedRaw: [],
+                    dropped: [],
+                    droppedRaw: [],
+                    reason: 'second corroborating ballot',
+                  },
+                ],
+                usable: 2,
+                findings: [],
+              },
+              cache: {
+                resumed: new Map<string, LaneContestOutcome>(),
+                persist: async ({ key, },) => {
+                  persisted.push(key,);
+                },
+              },
+              signal: controller.signal,
+            },),)
+              .rejects
+              .toBe(stopped,);
+            expect(persisted,).toEqual([],);
+          },
+        },),
+
+        it({
+          name:
+            'REFUSES TO PERSIST an unheard roster, because a provider down for one night is not a property '
+            + 'of the question and caching it would freeze that night into every later resume',
+          fn: async () => {
+            /**
+             One contested slice nobody answered.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  REPAIR_NAP,
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: false,
+            },);
+            expect(rig.persisted,).toEqual([],);
+            expect(rig.slices
+              .at(0,)
+              ?.verdict,).toEqual({ kind: 'quorum-not-met', },);
+          },
+        },),
+        it({
+          name:
+            'RESUMES a slice off the cache without calling anything, and does not write back what it just '
+            + 'read: a re-persisted resume is a write per slice per run for nothing',
+          fn: async () => {
+            /**
+             Ballots an earlier run bought, under the key this run derives.
+             */
+            const bought: LaneContestOutcome = {
+              choice: 'repair',
+              ballots: [
+                {
+                  choice: 'repair',
+                  unsupported: [],
+                  unsupportedRaw: [],
+                  dropped: [],
+                  droppedRaw: [],
+                  reason: 'bought earlier',
+                },
+                {
+                  choice: 'repair',
+                  unsupported: [],
+                  unsupportedRaw: [],
+                  dropped: [],
+                  droppedRaw: [],
+                  reason: 'bought earlier',
+                },
+              ],
+              usable: 2,
+              findings: [],
+            };
+
+            // THROUGH A FRESH RUN FIRST, to learn the key rather than to spell it
+            // out here: a fixture that wrote the key itself would keep passing after
+            // the two derivations diverged, which is the defect the pinned key test
+            // exists for and the one a resumption test must not repeat.
+            const learned = await drive({
+              pairs: [
+                [
+                  REPAIR_NAP,
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: true,
+            },);
+
+            /**
+             Same slice, with those ballots already on disk.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  REPAIR_NAP,
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: true,
+              resumed: new Map([
+                [
+                  learned.persisted
+                    .at(0,) ?? '',
+                  bought,
+                ],
+              ],),
+            },);
+            expect(rig.calls,).toEqual([],);
+            expect(rig.persisted,).toEqual([],);
+            expect(rig.slices
+              .at(0,)
+              ?.verdict,).toEqual({
+              kind: 'lane-won',
+              lane: 'repair',
+            },);
+          },
+        },),
+
+        it({
+          name: 'mixes one resumed row with one fresh row at overlap 2, buying and persisting '
+            + 'only the fresh question while returning both in comparison order',
+          fn: async () => {
+            /**
+             Two distinct contest questions.
+             */
+            const pairs = [
+              [
+                REPAIR_NAP,
+                TRANSLATE_NAP,
+              ],
+              [
+                `${REPAIR_NAP} Again.`,
+                `${TRANSLATE_NAP} Again.`,
+              ],
+            ] as const;
+
+            /**
+             Fresh pass used only to derive both production keys.
+             */
+            const learned = await drive({
+              pairs,
+              answering: true,
+            },);
+
+            /**
+             Quorum-complete first-row outcome already on disk.
+             */
+            const bought: LaneContestOutcome = {
+              choice: 'repair',
+              ballots: [
+                {
+                  choice: 'repair',
+                  unsupported: [],
+                  unsupportedRaw: [],
+                  dropped: [],
+                  droppedRaw: [],
+                  reason: 'first stored ballot',
+                },
+                {
+                  choice: 'repair',
+                  unsupported: [],
+                  unsupportedRaw: [],
+                  dropped: [],
+                  droppedRaw: [],
+                  reason: 'second stored ballot',
+                },
+              ],
+              usable: 2,
+              findings: [],
+            };
+            const rig = await drive({
+              pairs,
+              answering: true,
+              overlap: 2,
+              resumed: new Map([
+                [
+                  learned.persisted.at(0,) ?? '',
+                  bought,
+                ],
+              ],),
+            },);
+            expect(rig.admitted,).toBe(ROSTER.length,);
+            expect(rig.persisted.length,).toBe(1,);
+            expect(rig.slices.map(function toIndex(slice,) {
+              return slice.sliceIndex;
+            },),).toEqual([
+              0,
+              1,
+            ],);
+            expect(rig.slices.map(function toVerdict(slice,) {
+              return slice.verdict;
+            },),).toEqual([
+              {
+                kind: 'lane-won',
+                lane: 'repair',
+              },
+              {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+            ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${contestDocumentLanes.name} re-seated under a hold (ledger X12)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SEATS A SLICE ON THE JUDGES ITS HOOK RETURNS, as the lanes and the consolidation seat theirs, so '
+            + 'judges re-read after a provider dry-out are the ones the slice asks rather than those read before it',
+          fn: async () => {
+            /**
+             Seat of every call a driver with no hook made.
+             */
+            const control: RosterModelId[] = [];
+            await contestOneSlice({ client: judgeRecordingClient({ asked: control, },), },);
+            /**
+             Seat of every call the re-seated driver made.
+             */
+            const asked: RosterModelId[] = [];
+            await contestOneSlice({
+              client: judgeRecordingClient({ asked, },),
+              beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_JUDGES, }),
+            },);
+            expect({
+              controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
+                return (ROSTER as readonly RosterModelId[]).includes(seat,);
+              },),
+              reseatedAskedAny: asked.length > 0,
+              outsideReseated: asked.filter(function outside(seat,): boolean {
+                return !RESEATED_JUDGES.includes(seat,);
+              },),
+            },).toEqual({
+              controlOnRoster: true,
+              reseatedAskedAny: true,
+              outsideReseated: [],
+            },);
+          },
+        },),
+        it({
+          name: 'KEYS A RE-SEATED SLICE BY THE JUDGES IT RUNS ON, so ballots the judges read before the dry-out '
+            + 'cast are never resumed for it, while a hook handing back the starting judges keys the slice as a '
+            + 'driver with no hook does',
+          fn: async () => {
+            /**
+             Keys a driver with no hook looks up.
+             */
+            const starting: string[] = [];
+            await contestOneSlice({ client: judgeRecordingClient({ asked: [], },), looked: starting, },);
+            /**
+             Keys looked up when the hook re-seats the slice elsewhere.
+             */
+            const moved: string[] = [];
+            await contestOneSlice({
+              client: judgeRecordingClient({ asked: [], },),
+              looked: moved,
+              beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_JUDGES, }),
+            },);
+            /**
+             Keys looked up when the hook hands back the judges the driver started on.
+             */
+            const kept: string[] = [];
+            await contestOneSlice({
+              client: judgeRecordingClient({ asked: [], },),
+              looked: kept,
+              beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: ROSTER, }),
+            },);
+            expect({
+              lookups: [starting.length, moved.length, kept.length,],
+              movedDiffers: moved[0] !== starting[0],
+              keptMatches: kept[0] === starting[0],
+            },).toEqual({
+              lookups: [1, 1, 1,],
+              movedDiffers: true,
+              keptMatches: true,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${contestDocumentLanes.name} with evidence against a lane (T8 batch 13)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHOWS THE JUDGES a corroborated damage claim and a dispute note, and logs the claim count in words '
+            + 'that agree with it (ledger B66)',
+          fn: async () => {
+            /**
+             Every request the judges were sent, as text.
+             */
+            const prompts: string[] = [];
+            /**
+             Lines the driver logged.
+             */
+            const messages: string[] = [];
+            /**
+             Client casting the one ballot every judge casts, recording each request.
+             */
+            const recording = judgeRecordingClient({ asked: [], },);
+            await contestDocumentLanes({
+              client: {
+                ...recording,
+                chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+                  prompts.push(JSON.stringify(request,),);
+                  return await recording.chatJson(request,);
+                },
+              },
+              projected: catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },),
+              modelIds: ROSTER,
+              frontMatterSlices: new Set(),
+              lineStructuredSlices: new Set(),
+              cache: {
+                resumed: new Map(),
+                persist: async function keepNothing(): Promise<void> {},
+              },
+              damageClaimsBySlice: new Map([[0, [DAMAGE_CLAIM,],],],),
+              disputeNotesBySlice: new Map([[0, DISPUTE_NOTE,],],),
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
+              l: capturingLogger({ messages, },),
+              fanOut: 'whole-bench',
+            },);
+            expect({
+              asked: prompts.length > 0,
+              everyPromptCarriesClaim: prompts.every(function carriesClaim(prompt,): boolean {
+                return prompt.includes(DAMAGE_CLAIM,);
+              },),
+              everyPromptCarriesNote: prompts.every(function carriesNote(prompt,): boolean {
+                return prompt.includes(DISPUTE_NOTE,);
+              },),
+              claimLine: messages.some(function namesClaim(line,): boolean {
+                return line.includes('slice 0: 1 corroborated damage claim shown to the judges',);
+              },),
+            },).toEqual({
+              asked: true,
+              everyPromptCarriesClaim: true,
+              everyPromptCarriesNote: true,
+              claimLine: true,
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

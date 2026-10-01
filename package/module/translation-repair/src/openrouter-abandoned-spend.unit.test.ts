@@ -18,6 +18,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -82,118 +83,127 @@ const ROOMY_MAX_TOKENS = 100_000;
 const MILLION = 1_000_000;
 
 await describe({
-  name: deliveredCharsOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS RAW WIRE CHARACTERS off a cut stream and off both streams this pipeline ends, never one '
-        + 'channel\'s decoded count, and answers nothing-known for any other error',
-      fn: async () => {
-        expect({
-          cut: deliveredCharsOf({ error: CUT, },),
-          overrun: deliveredCharsOf({
-            error: new StreamOverrunError({
-              label: 'minimax/minimax-m3',
-              channel: 'reasoning',
-              charsSeen: 274,
-              cap: 200,
-              rawChars: 27_400,
-            },),
-          },),
-          degenerate: deliveredCharsOf({
-            error: new StreamDegenerateError({
-              label: 'minimax/minimax-m3',
-              channel: 'content',
-              distinctRatio: 0.02,
-              charsSeen: 500,
-              rawChars: 50_000,
-            },),
-          },),
-          other: deliveredCharsOf({ error: new Error('HTTP 502',), },),
-        },).toEqual({
-          cut: TEN_TOKENS_RAW,
-          overrun: 27_400,
-          degenerate: 50_000,
-          other: 'nothing-known',
-        },);
-      },
+    describe({
+      name: deliveredCharsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS RAW WIRE CHARACTERS off a cut stream and off both streams this pipeline ends, never one '
+            + 'channel\'s decoded count, and answers nothing-known for any other error',
+          fn: async () => {
+            expect({
+              cut: deliveredCharsOf({ error: CUT, },),
+              overrun: deliveredCharsOf({
+                error: new StreamOverrunError({
+                  label: 'minimax/minimax-m3',
+                  channel: 'reasoning',
+                  charsSeen: 274,
+                  cap: 200,
+                  rawChars: 27_400,
+                },),
+              },),
+              degenerate: deliveredCharsOf({
+                error: new StreamDegenerateError({
+                  label: 'minimax/minimax-m3',
+                  channel: 'content',
+                  distinctRatio: 0.02,
+                  charsSeen: 500,
+                  rawChars: 50_000,
+                },),
+              },),
+              other: deliveredCharsOf({ error: new Error('HTTP 502',), },),
+            },).toEqual({
+              cut: TEN_TOKENS_RAW,
+              overrun: 27_400,
+              degenerate: 50_000,
+              other: 'nothing-known',
+            },);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: estimateAbandonedSpend.name,
-  children: [
-    it({
-      name: 'RECKONS completion tokens from raw characters at the measured ratio, prompt tokens from '
-        + 'body bytes, and prices both at the listing\'s rates',
-      fn: async () => {
-        /**
-         Listing prices for MiniMax M3.
-         */
-        const info = OPENROUTER_MODELS['minimax/minimax-m3'];
-        /**
-         Reckoning for ten tokens delivered on a four-thousand-byte body.
-         */
-        const estimate = estimateAbandonedSpend({
-          servedId: 'minimax/minimax-m3',
-          deliveredChars: TEN_TOKENS_RAW,
-          requestBodyBytes: 4_000,
-          maxTokens: ROOMY_MAX_TOKENS,
-        },);
-        expect(estimate.completionTokens,).toBe(10,);
-        expect(estimate.promptTokens,).toBe(1_000,);
-        expect(estimate.usd,).toBeCloseTo(
-          ((1_000 * info.promptUsdPerMillion) + (10 * info.completionUsdPerMillion)) / MILLION,
-          12,
-        );
-      },
+    describe({
+      name: estimateAbandonedSpend.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RECKONS completion tokens from raw characters at the measured ratio, prompt tokens from '
+            + 'body bytes, and prices both at the listing\'s rates',
+          fn: async () => {
+            /**
+             Listing prices for MiniMax M3.
+             */
+            const info = OPENROUTER_MODELS['minimax/minimax-m3'];
+            /**
+             Reckoning for ten tokens delivered on a four-thousand-byte body.
+             */
+            const estimate = estimateAbandonedSpend({
+              servedId: 'minimax/minimax-m3',
+              deliveredChars: TEN_TOKENS_RAW,
+              requestBodyBytes: 4_000,
+              maxTokens: ROOMY_MAX_TOKENS,
+            },);
+            expect(estimate.completionTokens,).toBe(10,);
+            expect(estimate.promptTokens,).toBe(1_000,);
+            expect(estimate.usd,).toBeCloseTo(
+              ((1_000 * info.promptUsdPerMillion) + (10 * info.completionUsdPerMillion)) / MILLION,
+              12,
+            );
+          },
+        },),
+        it({
+          name: 'NEVER RECKONS MORE COMPLETION TOKENS THAN THE CALL SENT AS max_tokens, since the endpoint '
+            + 'bills none past it',
+          fn: async () => {
+            /**
+             Ceiling the call sent, below what the delivered characters stand for.
+             */
+            const maxTokens = 4;
+            expect(estimateAbandonedSpend({
+              servedId: 'minimax/minimax-m3',
+              deliveredChars: TEN_TOKENS_RAW,
+              requestBodyBytes: 4_000,
+              maxTokens,
+            },).completionTokens,).toBe(maxTokens,);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'NEVER RECKONS MORE COMPLETION TOKENS THAN THE CALL SENT AS max_tokens, since the endpoint '
-        + 'bills none past it',
-      fn: async () => {
-        /**
-         Ceiling the call sent, below what the delivered characters stand for.
-         */
-        const maxTokens = 4;
-        expect(estimateAbandonedSpend({
-          servedId: 'minimax/minimax-m3',
-          deliveredChars: TEN_TOKENS_RAW,
-          requestBodyBytes: 4_000,
-          maxTokens,
-        },).completionTokens,).toBe(maxTokens,);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: reportAbandonedSpend.name,
-  children: [
-    it({
-      name: 'WRITES a SPEND line marked estimated=abandoned for one abandoned attempt, in the grammar the '
-        + 'reader already parses, and moves the run meter by the reckoned USD',
-      fn: async () => {
-        resetRunSpend();
-        /**
-         Line the report logged.
-         */
-        const line = reportAbandonedSpend({
-          servedId: 'minimax/minimax-m3',
-          deliveredChars: TEN_TOKENS_RAW,
-          requestBodyBytes: 4_000,
-          maxTokens: ROOMY_MAX_TOKENS,
-        },);
-        expect({
-          opens: line.startsWith('SPEND provider=openrouter model=minimax/minimax-m3 prompt=1000 completion=10 cost=',),
-          marked: line.endsWith(' estimated=abandoned',),
-          metered: runSpendUsd({ provider: 'openrouter', },) > 0,
-        },).toEqual({
-          opens: true,
-          marked: true,
-          metered: true,
-        },);
-      },
+    describe({
+      name: reportAbandonedSpend.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'WRITES a SPEND line marked estimated=abandoned for one abandoned attempt, in the grammar the '
+            + 'reader already parses, and moves the run meter by the reckoned USD',
+          fn: async () => {
+            resetRunSpend();
+            /**
+             Line the report logged.
+             */
+            const line = reportAbandonedSpend({
+              servedId: 'minimax/minimax-m3',
+              deliveredChars: TEN_TOKENS_RAW,
+              requestBodyBytes: 4_000,
+              maxTokens: ROOMY_MAX_TOKENS,
+            },);
+            expect({
+              opens: line.startsWith('SPEND provider=openrouter model=minimax/minimax-m3 prompt=1000 completion=10 cost=',),
+              marked: line.endsWith(' estimated=abandoned',),
+              metered: runSpendUsd({ provider: 'openrouter', },) > 0,
+            },).toEqual({
+              opens: true,
+              marked: true,
+              metered: true,
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -18,6 +18,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -75,110 +76,118 @@ function parseRefusal(): SyntaxError {
 }
 
 await describe({
-  name: refusalText.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'CONTROL: V8 quotes the fixture word, so absence is provable',
-      fn: async () => {
-        /**
-         V8's own message, which every absence case is measured against.
-         */
-        const raw = parseRefusal().message;
+    describe({
+      name: refusalText.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CONTROL: V8 quotes the fixture word, so absence is provable',
+          fn: async () => {
+            /**
+             V8's own message, which every absence case is measured against.
+             */
+            const raw = parseRefusal().message;
 
-        expect(raw.includes(FIXTURE_WORD,),).toBe(true,);
-      },
+            expect(raw.includes(FIXTURE_WORD,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'REFUSES to repeat a parse message, which quotes the text',
+          fn: async () => {
+            /**
+             Same refusal, rendered through the guard.
+             */
+            const rendered = refusalText({ error: parseRefusal(), },);
+
+            expect(rendered.includes(FIXTURE_WORD,),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'NAMES an unmarked class rather than saying what it said',
+          fn: async () => {
+            /**
+             Ordinary refusal carrying the fixture word in its message.
+             */
+            const plain = new SyntaxError(UNPARSEABLE,);
+
+            expect(refusalText({ error: plain, },),).toBe('refused by SyntaxError',);
+          },
+        },),
+        it({
+          name: 'FORWARDS a message from a class declaring it names rather than quotes',
+          fn: async () => {
+            /**
+             Refusal whose message is the file, the class and an offset.
+             */
+            const named = new RunJsonUnreadableError({
+              file: 'whiskerfield.json',
+              failure: 'SyntaxError',
+              at: 27,
+            },);
+
+            expect(refusalText({ error: named, },),)
+              .toBe('could not read whiskerfield.json as JSON (SyntaxError at byte 27)',);
+          },
+        },),
+        it({
+          name: 'NAMES a thrown value that is not an Error at all',
+          fn: async () => {
+            expect(refusalText({ error: UNPARSEABLE, },),)
+              .toBe('refused by a thrown value that is not an Error',);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REFUSES to repeat a parse message, which quotes the text',
-      fn: async () => {
-        /**
-         Same refusal, rendered through the guard.
-         */
-        const rendered = refusalText({ error: parseRefusal(), },);
 
-        expect(rendered.includes(FIXTURE_WORD,),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'NAMES an unmarked class rather than saying what it said',
-      fn: async () => {
-        /**
-         Ordinary refusal carrying the fixture word in its message.
-         */
-        const plain = new SyntaxError(UNPARSEABLE,);
+    describe({
+      name: namesWithoutQuoting.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS an error carrying the declaration',
+          fn: async () => {
+            /**
+             Refusal from the guarded reader, which declares the property.
+             */
+            const declared = new RunJsonUnreadableError({
+              file: 'whiskerfield.json',
+              failure: 'ENOENT',
+              at: 'unstated',
+            },);
 
-        expect(refusalText({ error: plain, },),).toBe('refused by SyntaxError',);
-      },
-    },),
-    it({
-      name: 'FORWARDS a message from a class declaring it names rather than quotes',
-      fn: async () => {
-        /**
-         Refusal whose message is the file, the class and an offset.
-         */
-        const named = new RunJsonUnreadableError({
-          file: 'whiskerfield.json',
-          failure: 'SyntaxError',
-          at: 27,
-        },);
+            expect(namesWithoutQuoting(declared,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'REFUSES a plain object shaped like one, which JSON can produce',
+          fn: async () => {
+            /**
+             Everything a forged marker would carry, and not an Error.
+             */
+            const forged = {
+              name: 'RunJsonUnreadableError',
+              message: UNPARSEABLE,
+              messageNamesOnly: true,
+            };
 
-        expect(refusalText({ error: named, },),)
-          .toBe('could not read whiskerfield.json as JSON (SyntaxError at byte 27)',);
-      },
-    },),
-    it({
-      name: 'NAMES a thrown value that is not an Error at all',
-      fn: async () => {
-        expect(refusalText({ error: UNPARSEABLE, },),)
-          .toBe('refused by a thrown value that is not an Error',);
-      },
-    },),
-  ],
-},);
+            expect(namesWithoutQuoting(forged,),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'REFUSES an ordinary Error, which declares nothing',
+          fn: async () => {
+            /**
+             Error carrying the fixture word and no declaration.
+             */
+            const undeclared = new Error(UNPARSEABLE,);
 
-await describe({
-  name: namesWithoutQuoting.name,
-  children: [
-    it({
-      name: 'ACCEPTS an error carrying the declaration',
-      fn: async () => {
-        /**
-         Refusal from the guarded reader, which declares the property.
-         */
-        const declared = new RunJsonUnreadableError({
-          file: 'whiskerfield.json',
-          failure: 'ENOENT',
-          at: 'unstated',
-        },);
-
-        expect(namesWithoutQuoting(declared,),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'REFUSES a plain object shaped like one, which JSON can produce',
-      fn: async () => {
-        /**
-         Everything a forged marker would carry, and not an Error.
-         */
-        const forged = {
-          name: 'RunJsonUnreadableError',
-          message: UNPARSEABLE,
-          messageNamesOnly: true,
-        };
-
-        expect(namesWithoutQuoting(forged,),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'REFUSES an ordinary Error, which declares nothing',
-      fn: async () => {
-        /**
-         Error carrying the fixture word and no declaration.
-         */
-        const undeclared = new Error(UNPARSEABLE,);
-
-        expect(namesWithoutQuoting(undeclared,),).toBe(false,);
-      },
+            expect(namesWithoutQuoting(undeclared,),).toBe(false,);
+          },
+        },),
+      ],
     },),
   ],
 },);

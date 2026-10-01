@@ -14,6 +14,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -126,134 +127,142 @@ function roundsOf(
 //endregion Fixtures
 
 await describe({
-  name: sliceProgressLine.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'NUMBERS the slice by its position in the sample, counted from one, and not by the '
-        + 'chunk it is or the order it finished in',
-      fn: async () => {
-        /**
-         Line for the third slice of four.
-         */
-        const line = sliceProgressLine({
-          position: 2,
-          total: 4,
-          slice: SLICE,
-          rounds: roundsOf({
-            editor: 0,
-            refiner: 0,
-            refineAsked: true,
-            shipping: 0,
-          },),
-        },);
+    describe({
+      name: sliceProgressLine.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NUMBERS the slice by its position in the sample, counted from one, and not by the '
+            + 'chunk it is or the order it finished in',
+          fn: async () => {
+            /**
+             Line for the third slice of four.
+             */
+            const line = sliceProgressLine({
+              position: 2,
+              total: 4,
+              slice: SLICE,
+              rounds: roundsOf({
+                editor: 0,
+                refiner: 0,
+                refineAsked: true,
+                shipping: 0,
+              },),
+            },);
 
-        expect(line,).toContain('slice 3 of 4',);
-        expect(line,).not.toContain('slice 7',);
-        expect(line,).not.toContain('slice 2 of',);
-      },
-    },),
-
-    it({
-      name: 'RENDERS the whole line as the report reads it: entry, chunk, both seats, shippers',
-      fn: async () => {
-        /**
-         Line for a slice that produced rounds on both seats and shipped.
-         */
-        const line = sliceProgressLine({
-          position: 0,
-          total: 4,
-          slice: SLICE,
-          rounds: roundsOf({
-            editor: 2,
-            refiner: 1,
-            refineAsked: true,
-            shipping: 2,
-          },),
-        },);
-
-        expect(line,).toBe(
-          `  slice 1 of 4 (${ENTRY_ID} chunk 7): 2 editor rounds, 1 refiner round, 2 editors shipping`,
-        );
-      },
-    },),
-
-    it({
-      name: 'SAYS nothing was eligible to rewrite only when the lane reached no rewriter, so an '
-        + 'empty refiner count can be told from a rewriter roster that answered nothing',
-      fn: async () => {
-        /**
-         Line for a slice the naturalness lane could not offer anybody.
-         */
-        const unreached = sliceProgressLine({
-          position: 1,
-          total: 2,
-          slice: SLICE,
-          rounds: roundsOf({
-            editor: 1,
-            refiner: 0,
-            refineAsked: false,
-            shipping: 1,
-          },),
-        },);
-
-        /**
-         Line for a slice the lane did offer, where nobody was judged.
-         */
-        const reached = sliceProgressLine({
-          position: 1,
-          total: 2,
-          slice: SLICE,
-          rounds: roundsOf({
-            editor: 1,
-            refiner: 0,
-            refineAsked: true,
-            shipping: 1,
-          },),
-        },);
-
-        expect(unreached,).toContain('0 refiner rounds (nothing eligible to rewrite),',);
-        expect(reached,).toContain('0 refiner rounds,',);
-        expect(reached,).not.toContain('nothing eligible',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: shippedAuthors.name,
-  children: [
-    it({
-      name: 'CREDITS both halves of the authorship once each, whole-chunk writers first, so a model '
-        + 'that wrote the chunk and served an issue inside it is one shipper rather than two',
-      fn: async () => {
-        /**
-         Authorship where one model wrote the whole chunk and also served an
-         issue, and another served an issue only.
-         */
-        const authorship: IssueAuthorship = {
-          everyIssue: [SHIPPERS[0] as RosterModelId,],
-          perIssue: {
-            'issue-1': [
-              SHIPPERS[0] as RosterModelId,
-              SHIPPERS[1] as RosterModelId,
-            ],
+            expect(line,).toContain('slice 3 of 4',);
+            expect(line,).not.toContain('slice 7',);
+            expect(line,).not.toContain('slice 2 of',);
           },
-        };
+        },),
 
-        expect(shippedAuthors({ authorship, },),).toStrictEqual(SHIPPERS,);
-      },
+        it({
+          name: 'RENDERS the whole line as the report reads it: entry, chunk, both seats, shippers',
+          fn: async () => {
+            /**
+             Line for a slice that produced rounds on both seats and shipped.
+             */
+            const line = sliceProgressLine({
+              position: 0,
+              total: 4,
+              slice: SLICE,
+              rounds: roundsOf({
+                editor: 2,
+                refiner: 1,
+                refineAsked: true,
+                shipping: 2,
+              },),
+            },);
+
+            expect(line,).toBe(
+              `  slice 1 of 4 (${ENTRY_ID} chunk 7): 2 editor rounds, 1 refiner round, 2 editors shipping`,
+            );
+          },
+        },),
+
+        it({
+          name: 'SAYS nothing was eligible to rewrite only when the lane reached no rewriter, so an '
+            + 'empty refiner count can be told from a rewriter roster that answered nothing',
+          fn: async () => {
+            /**
+             Line for a slice the naturalness lane could not offer anybody.
+             */
+            const unreached = sliceProgressLine({
+              position: 1,
+              total: 2,
+              slice: SLICE,
+              rounds: roundsOf({
+                editor: 1,
+                refiner: 0,
+                refineAsked: false,
+                shipping: 1,
+              },),
+            },);
+
+            /**
+             Line for a slice the lane did offer, where nobody was judged.
+             */
+            const reached = sliceProgressLine({
+              position: 1,
+              total: 2,
+              slice: SLICE,
+              rounds: roundsOf({
+                editor: 1,
+                refiner: 0,
+                refineAsked: true,
+                shipping: 1,
+              },),
+            },);
+
+            expect(unreached,).toContain('0 refiner rounds (nothing eligible to rewrite),',);
+            expect(reached,).toContain('0 refiner rounds,',);
+            expect(reached,).not.toContain('nothing eligible',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'CREDITS nobody on a slice that shipped no repair, so the driver counts it as unshipped',
-      fn: async () => {
-        expect(shippedAuthors({
-          authorship: {
-            everyIssue: [],
-            perIssue: {},
+    describe({
+      name: shippedAuthors.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CREDITS both halves of the authorship once each, whole-chunk writers first, so a model '
+            + 'that wrote the chunk and served an issue inside it is one shipper rather than two',
+          fn: async () => {
+            /**
+             Authorship where one model wrote the whole chunk and also served an
+             issue, and another served an issue only.
+             */
+            const authorship: IssueAuthorship = {
+              everyIssue: [SHIPPERS[0] as RosterModelId,],
+              perIssue: {
+                'issue-1': [
+                  SHIPPERS[0] as RosterModelId,
+                  SHIPPERS[1] as RosterModelId,
+                ],
+              },
+            };
+
+            expect(shippedAuthors({ authorship, },),).toStrictEqual(SHIPPERS,);
           },
-        },),).toStrictEqual([],);
-      },
+        },),
+
+        it({
+          name: 'CREDITS nobody on a slice that shipped no repair, so the driver counts it as unshipped',
+          fn: async () => {
+            expect(shippedAuthors({
+              authorship: {
+                everyIssue: [],
+                perIssue: {},
+              },
+            },),).toStrictEqual([],);
+          },
+        },),
+      ],
     },),
   ],
 },);

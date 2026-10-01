@@ -29,6 +29,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -297,198 +298,207 @@ function checking(
 }
 
 await describe({
-  name: assertLedgerDescribesPreparation.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'ACCEPTS a ledger whose rows describe this preparation, so the refusal cases in this file are '
-        + 'about what they change and not about the fixture',
-      fn: async () => {
-        expect(() => {
-          checking({},);
-        },).not.toThrow();
-      },
+    describe({
+      name: assertLedgerDescribesPreparation.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a ledger whose rows describe this preparation, so the refusal cases in this file are '
+            + 'about what they change and not about the fixture',
+          fn: async () => {
+            expect(() => {
+              checking({},);
+            },).not.toThrow();
+          },
+        },),
+        it({
+          name: 'REFUSES a ledger built over a DIFFERENT slicing, which is the check the lane '
+            + 'comparison cannot make: two ledgers over the wrong preparation agree perfectly',
+          fn: async () => {
+            expect(() => {
+              checking({ identity: OTHER_IDENTITY, },);
+            },).toThrow(ArtifactPreparationMismatchError,);
+          },
+        },),
+        it({
+          name: 'REFUSES a ledger with fewer rows than the preparation has slices',
+          fn: async () => {
+            expect(() => {
+              checking({ rows: MATCHING_ROWS.slice(0, 1,), },);
+            },).toThrow('has 1 row for a preparation of',);
+          },
+        },),
+        it({
+          name: 'REFUSES a row naming a slice the preparation does not have at that position, '
+            + 'which is the hash collision this exists to turn into a refusal',
+          fn: async () => {
+            expect(() => {
+              checking({
+                rows: [
+                  {
+                    ...ROW_ONE,
+                    sliceIndex: 7,
+                  },
+                  ROW_TWO,
+                ],
+              },);
+            },).toThrow('names slice 7 at position 0',);
+          },
+        },),
+        it({
+          name: 'REFUSES a row rendering an ORIGINAL the preparation does not carry there',
+          fn: async () => {
+            expect(() => {
+              checking({
+                rows: [
+                  {
+                    ...ROW_ONE,
+                    sourceText: '狗在门口叫。',
+                  },
+                  ROW_TWO,
+                ],
+              },);
+            },).toThrow('renders an original the preparation does not carry there',);
+          },
+        },),
+        it({
+          name: 'REFUSES a row calling the archive PRESENT where the preparation calls it absent, '
+            + 'which only an insertion slice in the fixture can reach',
+          fn: async () => {
+            // Slice 1 is an insertion: the archive never rendered it. A ledger
+            // claiming wording stands there would have the lane repairing text
+            // nobody wrote.
+            expect(() => {
+              checking({
+                rows: [
+                  ROW_ONE,
+                  {
+                    ...ROW_TWO,
+                    incumbentKind: 'present',
+                  },
+                ],
+              },);
+            },).toThrow('calls the archive wording present where the preparation calls it absent',);
+          },
+        },),
+        it({
+          name: 'REFUSES a row carrying archive WORDING the preparation does not have there',
+          fn: async () => {
+            expect(() => {
+              checking({
+                rows: [
+                  {
+                    ...ROW_ONE,
+                    incumbentText: 'The cat sat on the rug.',
+                  },
+                  ROW_TWO,
+                ],
+              },);
+            },).toThrow('carries archive wording the preparation does not have there',);
+          },
+        },),
+        it({
+          name: 'NAMES THE LANE at fault, so an operator is not left checking both sides',
+          fn: async () => {
+            expect(() => {
+              assertLedgerDescribesPreparation({
+                prepared: PREPARED,
+                expected: EXPECTED,
+                ledger: ledgerOf({
+                  rows: MATCHING_ROWS,
+                  identity: OTHER_IDENTITY,
+                },),
+                lane: 'translate',
+              },);
+            },).toThrow('translate ledger was built over',);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REFUSES a ledger built over a DIFFERENT slicing, which is the check the lane '
-        + 'comparison cannot make: two ledgers over the wrong preparation agree perfectly',
-      fn: async () => {
-        expect(() => {
-          checking({ identity: OTHER_IDENTITY, },);
-        },).toThrow(ArtifactPreparationMismatchError,);
-      },
-    },),
-    it({
-      name: 'REFUSES a ledger with fewer rows than the preparation has slices',
-      fn: async () => {
-        expect(() => {
-          checking({ rows: MATCHING_ROWS.slice(0, 1,), },);
-        },).toThrow('has 1 row for a preparation of',);
-      },
-    },),
-    it({
-      name: 'REFUSES a row naming a slice the preparation does not have at that position, '
-        + 'which is the hash collision this exists to turn into a refusal',
-      fn: async () => {
-        expect(() => {
-          checking({
-            rows: [
-              {
-                ...ROW_ONE,
-                sliceIndex: 7,
-              },
-              ROW_TWO,
-            ],
-          },);
-        },).toThrow('names slice 7 at position 0',);
-      },
-    },),
-    it({
-      name: 'REFUSES a row rendering an ORIGINAL the preparation does not carry there',
-      fn: async () => {
-        expect(() => {
-          checking({
-            rows: [
-              {
-                ...ROW_ONE,
-                sourceText: '狗在门口叫。',
-              },
-              ROW_TWO,
-            ],
-          },);
-        },).toThrow('renders an original the preparation does not carry there',);
-      },
-    },),
-    it({
-      name: 'REFUSES a row calling the archive PRESENT where the preparation calls it absent, '
-        + 'which only an insertion slice in the fixture can reach',
-      fn: async () => {
-        // Slice 1 is an insertion: the archive never rendered it. A ledger
-        // claiming wording stands there would have the lane repairing text
-        // nobody wrote.
-        expect(() => {
-          checking({
-            rows: [
-              ROW_ONE,
-              {
-                ...ROW_TWO,
-                incumbentKind: 'present',
-              },
-            ],
-          },);
-        },).toThrow('calls the archive wording present where the preparation calls it absent',);
-      },
-    },),
-    it({
-      name: 'REFUSES a row carrying archive WORDING the preparation does not have there',
-      fn: async () => {
-        expect(() => {
-          checking({
-            rows: [
-              {
-                ...ROW_ONE,
-                incumbentText: 'The cat sat on the rug.',
-              },
-              ROW_TWO,
-            ],
-          },);
-        },).toThrow('carries archive wording the preparation does not have there',);
-      },
-    },),
-    it({
-      name: 'NAMES THE LANE at fault, so an operator is not left checking both sides',
-      fn: async () => {
-        expect(() => {
-          assertLedgerDescribesPreparation({
-            prepared: PREPARED,
-            expected: EXPECTED,
-            ledger: ledgerOf({
-              rows: MATCHING_ROWS,
-              identity: OTHER_IDENTITY,
-            },),
-            lane: 'translate',
-          },);
-        },).toThrow('translate ledger was built over',);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: assertResultCountsPreparation.name,
-  children: [
-    it({
-      name: 'ACCEPTS a result counting the slices the preparation produced',
-      fn: async () => {
-        expect(() => {
-          assertResultCountsPreparation({
-            prepared: PREPARED,
-            sliceCount: PREPARED.slices.length,
-            lane: 'repair',
-          },);
-        },).not.toThrow();
-      },
+    describe({
+      name: assertResultCountsPreparation.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS a result counting the slices the preparation produced',
+          fn: async () => {
+            expect(() => {
+              assertResultCountsPreparation({
+                prepared: PREPARED,
+                sliceCount: PREPARED.slices.length,
+                lane: 'repair',
+              },);
+            },).not.toThrow();
+          },
+        },),
+        it({
+          name: 'REFUSES a result counting slices the preparation does not have, which is how a '
+            + 'result from another entry paired with this ledger is caught',
+          fn: async () => {
+            // The ledgers are checked row by row and the raw results beside them are
+            // not, so this one cheap field is what stands between a grossly
+            // mismatched pairing and an artifact that reads as sound.
+            expect(() => {
+              assertResultCountsPreparation({
+                prepared: PREPARED,
+                sliceCount: PREPARED.slices.length + 1,
+                lane: 'translate',
+              },);
+            },).toThrow('translate result counts 3 slices where the preparation has 2',);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REFUSES a result counting slices the preparation does not have, which is how a '
-        + 'result from another entry paired with this ledger is caught',
-      fn: async () => {
-        // The ledgers are checked row by row and the raw results beside them are
-        // not, so this one cheap field is what stands between a grossly
-        // mismatched pairing and an artifact that reads as sound.
-        expect(() => {
-          assertResultCountsPreparation({
-            prepared: PREPARED,
-            sliceCount: PREPARED.slices.length + 1,
-            lane: 'translate',
-          },);
-        },).toThrow('translate result counts 3 slices where the preparation has 2',);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: assertFindingsDescribePreparation.name,
-  children: [
-    it({
-      name: 'ACCEPTS findings identical to the preparation\'s own',
-      fn: async () => {
-        expect(() => {
-          assertFindingsDescribePreparation({
-            prepared: PREPARED,
-            reported: FINDINGS,
-          },);
-        },).not.toThrow();
-      },
-    },),
-    it({
-      name: 'REFUSES a run reporting a different NUMBER of alignment findings',
-      fn: async () => {
-        expect(() => {
-          assertFindingsDescribePreparation({
-            prepared: PREPARED,
-            reported: FINDINGS.slice(0, 1,),
-          },);
-        },).toThrow('reports 1 alignment finding for a preparation with 2',);
-      },
-    },),
-    it({
-      name: 'REFUSES a run reporting the same COUNT of findings with different wording, which '
-        + 'a length check alone would pass',
-      fn: async () => {
-        // Two derivations of one fact reach this boundary. Recording either
-        // silently is picking one, and the count matching is exactly the case
-        // where picking wrong is invisible.
-        expect(() => {
-          assertFindingsDescribePreparation({
-            prepared: PREPARED,
-            reported: [
-              FIRST_FINDING,
-              'sections-merged 9',
-            ],
-          },);
-        },).toThrow('alignment finding 1 is not what the preparation observed there',);
-      },
+    describe({
+      name: assertFindingsDescribePreparation.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS findings identical to the preparation\'s own',
+          fn: async () => {
+            expect(() => {
+              assertFindingsDescribePreparation({
+                prepared: PREPARED,
+                reported: FINDINGS,
+              },);
+            },).not.toThrow();
+          },
+        },),
+        it({
+          name: 'REFUSES a run reporting a different NUMBER of alignment findings',
+          fn: async () => {
+            expect(() => {
+              assertFindingsDescribePreparation({
+                prepared: PREPARED,
+                reported: FINDINGS.slice(0, 1,),
+              },);
+            },).toThrow('reports 1 alignment finding for a preparation with 2',);
+          },
+        },),
+        it({
+          name: 'REFUSES a run reporting the same COUNT of findings with different wording, which '
+            + 'a length check alone would pass',
+          fn: async () => {
+            // Two derivations of one fact reach this boundary. Recording either
+            // silently is picking one, and the count matching is exactly the case
+            // where picking wrong is invisible.
+            expect(() => {
+              assertFindingsDescribePreparation({
+                prepared: PREPARED,
+                reported: [
+                  FIRST_FINDING,
+                  'sections-merged 9',
+                ],
+              },);
+            },).toThrow('alignment finding 1 is not what the preparation observed there',);
+          },
+        },),
+      ],
     },),
   ],
 },);

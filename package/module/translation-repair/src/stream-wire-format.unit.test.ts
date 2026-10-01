@@ -15,6 +15,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -100,61 +101,69 @@ function charsSeen(
 }
 
 await describe({
-  name: scannerFor.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'OPENS a reader per grammar, and a fresh one each time, since a scanner carries the '
-        + 'state of one stream and a shared one would carry the last call into the next',
-      fn: async () => {
-        expect(scannerFor({ wireFormat: 'anthropic', },),)
-          .not.toBe(scannerFor({ wireFormat: 'anthropic', },),);
-      },
+    describe({
+      name: scannerFor.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'OPENS a reader per grammar, and a fresh one each time, since a scanner carries the '
+            + 'state of one stream and a shared one would carry the last call into the next',
+          fn: async () => {
+            expect(scannerFor({ wireFormat: 'anthropic', },),)
+              .not.toBe(scannerFor({ wireFormat: 'anthropic', },),);
+          },
+        },),
+
+        it({
+          name: 'DEFAULTS to the older grammar, so every call site that predates the choice drains '
+            + 'exactly the stream it drained before',
+          fn: async () => {
+            expect(DEFAULT_WIRE_FORMAT,).toBe('openai',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'DEFAULTS to the older grammar, so every call site that predates the choice drains '
-        + 'exactly the stream it drained before',
-      fn: async () => {
-        expect(DEFAULT_WIRE_FORMAT,).toBe('openai',);
-      },
-    },),
-  ],
-},);
+    describe({
+      name: watchRunaway.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS AN ANTHROPIC STREAM ONLY WHEN TOLD IT IS ONE. Read as the older grammar the '
+            + 'same bytes yield zero characters, which every guard downstream would take for a model '
+            + 'that answered nothing rather than for a stream nobody could parse',
+          fn: async () => {
+            expect(charsSeen({
+              wireFormat: 'anthropic',
+              stream: ANTHROPIC_STREAM,
+            },),).toBe('The cat naps on the sill.'.length,);
 
-await describe({
-  name: watchRunaway.name,
-  children: [
-    it({
-      name: 'READS AN ANTHROPIC STREAM ONLY WHEN TOLD IT IS ONE. Read as the older grammar the '
-        + 'same bytes yield zero characters, which every guard downstream would take for a model '
-        + 'that answered nothing rather than for a stream nobody could parse',
-      fn: async () => {
-        expect(charsSeen({
-          wireFormat: 'anthropic',
-          stream: ANTHROPIC_STREAM,
-        },),).toBe('The cat naps on the sill.'.length,);
+            expect(charsSeen({
+              wireFormat: 'openai',
+              stream: ANTHROPIC_STREAM,
+            },),).toBe(0,);
+          },
+        },),
 
-        expect(charsSeen({
-          wireFormat: 'openai',
-          stream: ANTHROPIC_STREAM,
-        },),).toBe(0,);
-      },
-    },),
+        it({
+          name: 'READS AN OPENAI STREAM ONLY WHEN TOLD IT IS ONE, which is the same trap facing the '
+            + 'other way and the reason the default had to stay the older grammar',
+          fn: async () => {
+            expect(charsSeen({
+              wireFormat: 'openai',
+              stream: OPENAI_STREAM,
+            },),).toBe('The cat naps on the sill.'.length,);
 
-    it({
-      name: 'READS AN OPENAI STREAM ONLY WHEN TOLD IT IS ONE, which is the same trap facing the '
-        + 'other way and the reason the default had to stay the older grammar',
-      fn: async () => {
-        expect(charsSeen({
-          wireFormat: 'openai',
-          stream: OPENAI_STREAM,
-        },),).toBe('The cat naps on the sill.'.length,);
-
-        expect(charsSeen({
-          wireFormat: 'anthropic',
-          stream: OPENAI_STREAM,
-        },),).toBe(0,);
-      },
+            expect(charsSeen({
+              wireFormat: 'anthropic',
+              stream: OPENAI_STREAM,
+            },),).toBe(0,);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -26,6 +26,7 @@ import { join, } from 'node:path';
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -133,247 +134,256 @@ function refusalMessage(
 }
 
 await describe({
-  name: digestPipeline.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'gives one digest for the same files whatever order they were '
-        + 'written in, which is what makes a digest comparable at all: a '
-        + 'directory read is not ordered, so an order-dependent digest would '
-        + 'refuse resumes at random',
-      fn: async () => {
-        const one = await writeBuild({ files: BUILT, },);
-        const two = await writeBuild({
-          files: {
-            'chunk-Whiskers.mjs': BUILT['chunk-Whiskers.mjs'],
-            'index.mjs': BUILT['index.mjs'],
+    describe({
+      name: digestPipeline.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'gives one digest for the same files whatever order they were '
+            + 'written in, which is what makes a digest comparable at all: a '
+            + 'directory read is not ordered, so an order-dependent digest would '
+            + 'refuse resumes at random',
+          fn: async () => {
+            const one = await writeBuild({ files: BUILT, },);
+            const two = await writeBuild({
+              files: {
+                'chunk-Whiskers.mjs': BUILT['chunk-Whiskers.mjs'],
+                'index.mjs': BUILT['index.mjs'],
+              },
+            },);
+
+            expect((await digestPipeline({ dir: one, },)).digest,)
+              .toBe((await digestPipeline({ dir: two, },)).digest,);
           },
-        },);
+        },),
 
-        expect((await digestPipeline({ dir: one, },)).digest,)
-          .toBe((await digestPipeline({ dir: two, },)).digest,);
-      },
-    },),
+        it({
+          name: 'MOVES when one executable byte changes, the positive control '
+            + 'every sameness claim here rests on: without it, a digest that never '
+            + 'changed would satisfy every other case in this file',
+          fn: async () => {
+            const one = await writeBuild({ files: BUILT, },);
+            const two = await writeBuild({
+              files: {
+                ...BUILT,
+                'index.mjs': 'export const mittens = 2;\n',
+              },
+            },);
 
-    it({
-      name: 'MOVES when one executable byte changes, the positive control '
-        + 'every sameness claim here rests on: without it, a digest that never '
-        + 'changed would satisfy every other case in this file',
-      fn: async () => {
-        const one = await writeBuild({ files: BUILT, },);
-        const two = await writeBuild({
-          files: {
-            ...BUILT,
-            'index.mjs': 'export const mittens = 2;\n',
+            expect((await digestPipeline({ dir: one, },)).digest,)
+              .not
+              .toBe((await digestPipeline({ dir: two, },)).digest,);
           },
-        },);
+        },),
 
-        expect((await digestPipeline({ dir: one, },)).digest,)
-          .not
-          .toBe((await digestPipeline({ dir: two, },)).digest,);
-      },
-    },),
+        it({
+          name: 'IGNORES TypeScript declarations, because they cannot execute and '
+            + 'they carry every TSDoc block verbatim while the built .mjs carries '
+            + 'no comments at all. Hashing them would make a comment-only edit a '
+            + 'new generation and force a fresh accumulation directory for a change '
+            + 'that cannot alter a single result',
+          fn: async () => {
+            const one = await writeBuild({ files: BUILT, },);
+            const two = await writeBuild({
+              files: {
+                ...BUILT,
+                'index.d.mts': '/** Whiskers. */\nexport declare const mittens: number;\n',
+              },
+            },);
 
-    it({
-      name: 'IGNORES TypeScript declarations, because they cannot execute and '
-        + 'they carry every TSDoc block verbatim while the built .mjs carries '
-        + 'no comments at all. Hashing them would make a comment-only edit a '
-        + 'new generation and force a fresh accumulation directory for a change '
-        + 'that cannot alter a single result',
-      fn: async () => {
-        const one = await writeBuild({ files: BUILT, },);
-        const two = await writeBuild({
-          files: {
-            ...BUILT,
-            'index.d.mts': '/** Whiskers. */\nexport declare const mittens: number;\n',
+            expect((await digestPipeline({ dir: one, },)).digest,)
+              .toBe((await digestPipeline({ dir: two, },)).digest,);
           },
-        },);
+        },),
 
-        expect((await digestPipeline({ dir: one, },)).digest,)
-          .toBe((await digestPipeline({ dir: two, },)).digest,);
-      },
-    },),
+        it({
+          name: 'covers files at any depth, since a build free to emit chunks into '
+            + 'a subdirectory would otherwise have half its code outside its own '
+            + 'identity',
+          fn: async () => {
+            const flat = await writeBuild({ files: BUILT, },);
+            const nested = await writeBuild({
+              files: {
+                ...BUILT,
+                'inner/deep.mjs': 'export const biscuit = 3;\n',
+              },
+            },);
 
-    it({
-      name: 'covers files at any depth, since a build free to emit chunks into '
-        + 'a subdirectory would otherwise have half its code outside its own '
-        + 'identity',
-      fn: async () => {
-        const flat = await writeBuild({ files: BUILT, },);
-        const nested = await writeBuild({
-          files: {
-            ...BUILT,
-            'inner/deep.mjs': 'export const biscuit = 3;\n',
+            expect((await digestPipeline({ dir: nested, },)).fileCount,).toBe(3,);
+            expect((await digestPipeline({ dir: flat, },)).digest,)
+              .not
+              .toBe((await digestPipeline({ dir: nested, },)).digest,);
           },
-        },);
+        },),
 
-        expect((await digestPipeline({ dir: nested, },)).fileCount,).toBe(3,);
-        expect((await digestPipeline({ dir: flat, },)).digest,)
-          .not
-          .toBe((await digestPipeline({ dir: nested, },)).digest,);
-      },
+        it({
+          name: 'REFUSES a symbolic link rather than following or skipping it. The '
+            + 'build emits none, so one being there means something else wrote into '
+            + 'the output directory, and both other answers are wrong: following it '
+            + 'digests bytes from outside the pipeline, skipping it drops code that '
+            + 'will run',
+          fn: async () => {
+            const dir = await writeBuild({ files: BUILT, },);
+            await symlink(
+              join(
+                dir,
+                'index.mjs',
+              ),
+              join(
+                dir,
+                'linked.mjs',
+              ),
+            );
+
+            /**
+             What digestPipeline refused with, read for class as well as wording.
+             */
+            const refusalOfDigestPipeline = digestPipeline({ dir, },);
+
+            await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
+            await expect(refusalOfDigestPipeline,).rejects.toHaveProperty(
+              'message',
+              refusalMessage({
+                dir,
+                reason: 'it holds 1 entry that is neither a regular file nor a directory, such as linked.mjs, which '
+                  + 'the build never emits',
+              },),
+            );
+          },
+        },),
+
+        it({
+          name: 'COUNTS every such entry and names the first by name, so a directory holding several says how '
+            + 'many and gives the same example whatever order the directory lists them in',
+          fn: async () => {
+            const dir = await writeBuild({ files: BUILT, },);
+            await symlink(
+              join(
+                dir,
+                'index.mjs',
+              ),
+              join(
+                dir,
+                'linked.mjs',
+              ),
+            );
+            await symlink(
+              join(
+                dir,
+                'index.mjs',
+              ),
+              join(
+                dir,
+                'aliased.mjs',
+              ),
+            );
+
+            /**
+             What digestPipeline refused with, read for class as well as wording.
+             */
+            const refusalOfTwoLinks = digestPipeline({ dir, },);
+
+            await expect(refusalOfTwoLinks,).rejects.toBeInstanceOf(PipelineDigestError,);
+            await expect(refusalOfTwoLinks,).rejects.toHaveProperty(
+              'message',
+              refusalMessage({
+                dir,
+                reason: 'it holds 2 entries that are neither a regular file nor a directory, such as aliased.mjs, '
+                  + 'which the build never emits',
+              },),
+            );
+          },
+        },),
+
+        it({
+          name: 'REFUSES a directory holding nothing that could execute, since a '
+            + 'digest over nothing is a constant every empty build would share, and '
+            + 'a pass stamping it would claim a pipeline that does not exist',
+          fn: async () => {
+            const dir = await writeBuild({
+              files: { 'index.d.mts': 'export declare const mittens: number;\n', },
+            },);
+
+            /**
+             What digestPipeline refused with, read for class as well as wording.
+             */
+            const refusalOfDigestPipeline = digestPipeline({ dir, },);
+
+            await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
+            await expect(refusalOfDigestPipeline,).rejects.toHaveProperty(
+              'message',
+              refusalMessage({
+                dir,
+                reason: 'it holds no file that could execute',
+              },),
+            );
+          },
+        },),
+
+        it({
+          name: 'reports the file count beside the digest, so a log line naming a '
+            + 'truncated output directory is legible as one: a digest alone is '
+            + 'unfalsifiable to a reader',
+          fn: async () => {
+            const dir = await writeBuild({ files: BUILT, },);
+
+            expect((await digestPipeline({ dir, },)).fileCount,).toBe(2,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'REFUSES a symbolic link rather than following or skipping it. The '
-        + 'build emits none, so one being there means something else wrote into '
-        + 'the output directory, and both other answers are wrong: following it '
-        + 'digests bytes from outside the pipeline, skipping it drops code that '
-        + 'will run',
-      fn: async () => {
-        const dir = await writeBuild({ files: BUILT, },);
-        await symlink(
-          join(
-            dir,
-            'index.mjs',
-          ),
-          join(
-            dir,
-            'linked.mjs',
-          ),
-        );
-
-        /**
-         What digestPipeline refused with, read for class as well as wording.
-         */
-        const refusalOfDigestPipeline = digestPipeline({ dir, },);
-
-        await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
-        await expect(refusalOfDigestPipeline,).rejects.toHaveProperty(
-          'message',
-          refusalMessage({
-            dir,
-            reason: 'it holds 1 entry that is neither a regular file nor a directory, such as linked.mjs, which '
-              + 'the build never emits',
-          },),
-        );
-      },
+    describe({
+      name: isDigestShaped.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'accepts what this module emits and refuses everything else, which '
+            + 'is what keeps a foreign value out of the field the pool partitions '
+            + 'by: uppercase is refused because one pipeline spelled two ways would '
+            + 'count as two generations',
+          fn: async () => {
+            expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(64,)}`, },),).toBe(true,);
+            expect(isDigestShaped({ value: `sha256-tree-v1:${'A'.repeat(64,)}`, },),).toBe(false,);
+            expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(63,)}`, },),).toBe(false,);
+            expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(65,)}`, },),).toBe(false,);
+            expect(isDigestShaped({ value: `sha256-tree-v2:${'a'.repeat(64,)}`, },),).toBe(false,);
+            expect(isDigestShaped({ value: 'a'.repeat(64,), },),).toBe(false,);
+            expect(isDigestShaped({ value: '', },),).toBe(false,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'COUNTS every such entry and names the first by name, so a directory holding several says how '
-        + 'many and gives the same example whatever order the directory lists them in',
-      fn: async () => {
-        const dir = await writeBuild({ files: BUILT, },);
-        await symlink(
-          join(
-            dir,
-            'index.mjs',
-          ),
-          join(
-            dir,
-            'linked.mjs',
-          ),
-        );
-        await symlink(
-          join(
-            dir,
-            'index.mjs',
-          ),
-          join(
-            dir,
-            'aliased.mjs',
-          ),
-        );
+    describe({
+      name: assertPipelineDigest.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'throws on a value no build produced, rather than narrowing it, so '
+            + 'a digest read back from an artifact cannot enter the type system '
+            + 'without passing the same test the writer passed',
+          fn: async () => {
+            /**
+             What narrows raised, read for its class as well as its wording.
+             */
+            const refusalOfNarrows = caught(function narrows() {
+              assertPipelineDigest('not-a-digest',);
+            },);
 
-        /**
-         What digestPipeline refused with, read for class as well as wording.
-         */
-        const refusalOfTwoLinks = digestPipeline({ dir, },);
-
-        await expect(refusalOfTwoLinks,).rejects.toBeInstanceOf(PipelineDigestError,);
-        await expect(refusalOfTwoLinks,).rejects.toHaveProperty(
-          'message',
-          refusalMessage({
-            dir,
-            reason: 'it holds 2 entries that are neither a regular file nor a directory, such as aliased.mjs, '
-              + 'which the build never emits',
-          },),
-        );
-      },
-    },),
-
-    it({
-      name: 'REFUSES a directory holding nothing that could execute, since a '
-        + 'digest over nothing is a constant every empty build would share, and '
-        + 'a pass stamping it would claim a pipeline that does not exist',
-      fn: async () => {
-        const dir = await writeBuild({
-          files: { 'index.d.mts': 'export declare const mittens: number;\n', },
-        },);
-
-        /**
-         What digestPipeline refused with, read for class as well as wording.
-         */
-        const refusalOfDigestPipeline = digestPipeline({ dir, },);
-
-        await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
-        await expect(refusalOfDigestPipeline,).rejects.toHaveProperty(
-          'message',
-          refusalMessage({
-            dir,
-            reason: 'it holds no file that could execute',
-          },),
-        );
-      },
-    },),
-
-    it({
-      name: 'reports the file count beside the digest, so a log line naming a '
-        + 'truncated output directory is legible as one: a digest alone is '
-        + 'unfalsifiable to a reader',
-      fn: async () => {
-        const dir = await writeBuild({ files: BUILT, },);
-
-        expect((await digestPipeline({ dir, },)).fileCount,).toBe(2,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: isDigestShaped.name,
-  children: [
-    it({
-      name: 'accepts what this module emits and refuses everything else, which '
-        + 'is what keeps a foreign value out of the field the pool partitions '
-        + 'by: uppercase is refused because one pipeline spelled two ways would '
-        + 'count as two generations',
-      fn: async () => {
-        expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(64,)}`, },),).toBe(true,);
-        expect(isDigestShaped({ value: `sha256-tree-v1:${'A'.repeat(64,)}`, },),).toBe(false,);
-        expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(63,)}`, },),).toBe(false,);
-        expect(isDigestShaped({ value: `sha256-tree-v1:${'a'.repeat(65,)}`, },),).toBe(false,);
-        expect(isDigestShaped({ value: `sha256-tree-v2:${'a'.repeat(64,)}`, },),).toBe(false,);
-        expect(isDigestShaped({ value: 'a'.repeat(64,), },),).toBe(false,);
-        expect(isDigestShaped({ value: '', },),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: assertPipelineDigest.name,
-  children: [
-    it({
-      name: 'throws on a value no build produced, rather than narrowing it, so '
-        + 'a digest read back from an artifact cannot enter the type system '
-        + 'without passing the same test the writer passed',
-      fn: async () => {
-        /**
-         What narrows raised, read for its class as well as its wording.
-         */
-        const refusalOfNarrows = caught(function narrows() {
-          assertPipelineDigest('not-a-digest',);
-        },);
-
-        expect(refusalOfNarrows,).toBeInstanceOf(TypeError,);
-        // THE WHOLE SHAPE, scheme name first: the sentence once described only
-        // the hex half, so a value missing its scheme name read as refused for
-        // its hex (ledger B34).
-        expect((refusalOfNarrows as Error).message,)
-          .toBe('A pipeline digest is "sha256-tree-v1:" followed by 64 lowercase hex characters; '
-            + 'received "not-a-digest".',);
-      },
+            expect(refusalOfNarrows,).toBeInstanceOf(TypeError,);
+            // THE WHOLE SHAPE, scheme name first: the sentence once described only
+            // the hex half, so a value missing its scheme name read as refused for
+            // its hex (ledger B34).
+            expect((refusalOfNarrows as Error).message,)
+              .toBe('A pipeline digest is "sha256-tree-v1:" followed by 64 lowercase hex characters; '
+                + 'received "not-a-digest".',);
+          },
+        },),
+      ],
     },),
   ],
 },);

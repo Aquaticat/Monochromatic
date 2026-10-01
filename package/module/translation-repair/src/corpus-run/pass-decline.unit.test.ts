@@ -25,6 +25,7 @@ import {
 } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -133,161 +134,170 @@ async function decline(
 }
 
 await describe({
-  name: entryArchiveOriginalOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS A WHOLE-PAGE NOTE as the page being the author\'s own English, and logs the note with its reading',
-      fn: async () => {
-        /**
-         Lines the reading logged.
-         */
-        const messages: string[] = [];
+    describe({
+      name: entryArchiveOriginalOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS A WHOLE-PAGE NOTE as the page being the author\'s own English, and logs the note with its reading',
+          fn: async () => {
+            /**
+             Lines the reading logged.
+             */
+            const messages: string[] = [];
 
-        expect(entryArchiveOriginalOf({
-          entry: {
-            ...ENTRY,
-            targetText: '<!-- 这只猫的原文即英文 -->\n\nThe cat wrote this herself.\n',
+            expect(entryArchiveOriginalOf({
+              entry: {
+                ...ENTRY,
+                targetText: '<!-- 这只猫的原文即英文 -->\n\nThe cat wrote this herself.\n',
+              },
+              l: capturingLogger({ messages, },),
+            },),).toEqual({
+              kind: 'whole-page',
+              note: '这只猫的原文即英文',
+            },);
+            expect(messages,).toEqual([
+              `[${entryArchiveOriginalOf.name}] ARCHIVE NOTE entry=${ENTRY.id} reading=whole-page: 这只猫的原文即英文`,
+            ],);
           },
-          l: capturingLogger({ messages, },),
-        },),).toEqual({
-          kind: 'whole-page',
-          note: '这只猫的原文即英文',
-        },);
-        expect(messages,).toEqual([
-          `[${entryArchiveOriginalOf.name}] ARCHIVE NOTE entry=${ENTRY.id} reading=whole-page: 这只猫的原文即英文`,
-        ],);
-      },
-    },),
-    it({
-      name: 'SEALS NOTHING for a note that speaks of an English original in a wording no mark reads, and WARNS so '
-        + 'a new wording is seen rather than silently unsealed (ledger E12)',
-      fn: async () => {
-        /**
-         Lines the reading logged.
-         */
-        const messages: string[] = [];
+        },),
+        it({
+          name: 'SEALS NOTHING for a note that speaks of an English original in a wording no mark reads, and WARNS so '
+            + 'a new wording is seen rather than silently unsealed (ledger E12)',
+          fn: async () => {
+            /**
+             Lines the reading logged.
+             */
+            const messages: string[] = [];
 
-        expect(entryArchiveOriginalOf({
-          entry: {
-            ...ENTRY,
-            targetText: '<!-- The cat wrote the original in English, mostly. -->\n\nThe cat wrote this herself.\n',
+            expect(entryArchiveOriginalOf({
+              entry: {
+                ...ENTRY,
+                targetText: '<!-- The cat wrote the original in English, mostly. -->\n\nThe cat wrote this herself.\n',
+              },
+              l: capturingLogger({ messages, },),
+            },),).toEqual({ kind: 'none', },);
+            expect(messages,).toEqual([
+              `[${entryArchiveOriginalOf.name}] ARCHIVE NOTE entry=${ENTRY.id} reading=unmarked-original-claim: the note `
+                + 'speaks of an English original in a wording no mark reads, so nothing is sealed; add its mark if it '
+                + 'seals (The cat wrote the original in English, mostly.)',
+            ],);
           },
-          l: capturingLogger({ messages, },),
-        },),).toEqual({ kind: 'none', },);
-        expect(messages,).toEqual([
-          `[${entryArchiveOriginalOf.name}] ARCHIVE NOTE entry=${ENTRY.id} reading=unmarked-original-claim: the note `
-            + 'speaks of an English original in a wording no mark reads, so nothing is sealed; add its mark if it '
-            + 'seals (The cat wrote the original in English, mostly.)',
-        ],);
-      },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: recordEntryDecline.name,
-  children: [
-    it({
-      name: 'RECORDS the decline where no page stands, the control the removal rests on',
-      fn: async () => {
-        const run = await runsDirectory();
+    describe({
+      name: recordEntryDecline.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RECORDS the decline where no page stands, the control the removal rests on',
+          fn: async () => {
+            const run = await runsDirectory();
 
-        await decline({ run, },);
+            await decline({ run, },);
 
-        expect(await readdir(run.declinedDir,),).toStrictEqual([`${ENTRY.id}.json`,],);
-      },
+            expect(await readdir(run.declinedDir,),).toStrictEqual([`${ENTRY.id}.json`,],);
+          },
+        },),
+        it({
+          name: 'REMOVES a page an earlier crash left for the entry, so the archive ships as its note says',
+          fn: async () => {
+            const run = await runsDirectory();
+            await mkdir(
+              run.pageDir,
+              { recursive: true, },
+            );
+            await writeFile(
+              join(
+                run.pageDir,
+                'page.en.md',
+              ),
+              'A page the run settled before a crash lost its artifact.\n',
+            );
+
+            await decline({ run, },);
+
+            expect(await readdir(run.pageDir,),).toStrictEqual([],);
+            expect(await readdir(run.declinedDir,),).toStrictEqual([`${ENTRY.id}.json`,],);
+          },
+        },),
+        it({
+          name: 'RETHROWS a removal failure other than a missing page and records nothing, so a page it could not '
+            + 'remove never stands behind a recorded decline',
+          fn: async () => {
+            const run = await runsDirectory();
+            // A FILE WHERE THE ENTRY'S PAGE DIRECTORY BELONGS: removing the page
+            // under it fails with ENOTDIR, a failure that is not the page's absence.
+            await mkdir(
+              dirname(run.pageDir,),
+              { recursive: true, },
+            );
+            await writeFile(
+              run.pageDir,
+              'A file where the cat\'s page directory belongs.\n',
+            );
+
+            await expect(decline({ run, },),).rejects.toHaveProperty(
+              'code',
+              'ENOTDIR',
+            );
+            /**
+             What the runs directory holds after the refusal: the mirrored tree,
+             and no decline record's directory.
+             */
+            const written = await readdir(dirname(run.declinedDir,),);
+            expect(written,).toStrictEqual(['fixed',],);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REMOVES a page an earlier crash left for the entry, so the archive ships as its note says',
-      fn: async () => {
-        const run = await runsDirectory();
-        await mkdir(
-          run.pageDir,
-          { recursive: true, },
-        );
-        await writeFile(
-          join(
-            run.pageDir,
-            'page.en.md',
-          ),
-          'A page the run settled before a crash lost its artifact.\n',
-        );
 
-        await decline({ run, },);
+    describe({
+      name: removeDeclinedPages.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REMOVES the page standing for an entry declined earlier, since no later pass visits it',
+          fn: async () => {
+            const run = await runsDirectory();
+            await decline({ run, },);
+            await mkdir(
+              run.pageDir,
+              { recursive: true, },
+            );
+            await writeFile(
+              join(
+                run.pageDir,
+                'page.en.md',
+              ),
+              'A page standing beside a decline record.\n',
+            );
 
-        expect(await readdir(run.pageDir,),).toStrictEqual([],);
-        expect(await readdir(run.declinedDir,),).toStrictEqual([`${ENTRY.id}.json`,],);
-      },
-    },),
-    it({
-      name: 'RETHROWS a removal failure other than a missing page and records nothing, so a page it could not '
-        + 'remove never stands behind a recorded decline',
-      fn: async () => {
-        const run = await runsDirectory();
-        // A FILE WHERE THE ENTRY'S PAGE DIRECTORY BELONGS: removing the page
-        // under it fails with ENOTDIR, a failure that is not the page's absence.
-        await mkdir(
-          dirname(run.pageDir,),
-          { recursive: true, },
-        );
-        await writeFile(
-          run.pageDir,
-          'A file where the cat\'s page directory belongs.\n',
-        );
+            expect(await removeDeclinedPages({
+              declinedDir: run.declinedDir,
+              publishDir: run.publishDir,
+            },),).toStrictEqual([ENTRY.id,],);
+            expect(await readdir(run.pageDir,),).toStrictEqual([],);
+          },
+        },),
+        it({
+          name: 'REMOVES NOTHING where no page stands, the control the removal rests on',
+          fn: async () => {
+            const run = await runsDirectory();
+            await decline({ run, },);
 
-        await expect(decline({ run, },),).rejects.toHaveProperty(
-          'code',
-          'ENOTDIR',
-        );
-        /**
-         What the runs directory holds after the refusal: the mirrored tree,
-         and no decline record's directory.
-         */
-        const written = await readdir(dirname(run.declinedDir,),);
-        expect(written,).toStrictEqual(['fixed',],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: removeDeclinedPages.name,
-  children: [
-    it({
-      name: 'REMOVES the page standing for an entry declined earlier, since no later pass visits it',
-      fn: async () => {
-        const run = await runsDirectory();
-        await decline({ run, },);
-        await mkdir(
-          run.pageDir,
-          { recursive: true, },
-        );
-        await writeFile(
-          join(
-            run.pageDir,
-            'page.en.md',
-          ),
-          'A page standing beside a decline record.\n',
-        );
-
-        expect(await removeDeclinedPages({
-          declinedDir: run.declinedDir,
-          publishDir: run.publishDir,
-        },),).toStrictEqual([ENTRY.id,],);
-        expect(await readdir(run.pageDir,),).toStrictEqual([],);
-      },
-    },),
-    it({
-      name: 'REMOVES NOTHING where no page stands, the control the removal rests on',
-      fn: async () => {
-        const run = await runsDirectory();
-        await decline({ run, },);
-
-        expect(await removeDeclinedPages({
-          declinedDir: run.declinedDir,
-          publishDir: run.publishDir,
-        },),).toStrictEqual([],);
-      },
+            expect(await removeDeclinedPages({
+              declinedDir: run.declinedDir,
+              publishDir: run.publishDir,
+            },),).toStrictEqual([],);
+          },
+        },),
+      ],
     },),
   ],
 },);

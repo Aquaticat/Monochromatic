@@ -7,6 +7,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -117,145 +118,154 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 await describe({
-  name: isRestorationJudgeWire.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'accepts well-formed reports and rejects malformed ones',
-      fn: async () => {
-        expect(isRestorationJudgeWire({
-          judgments: [{ reference: 1, verdict: 'restored', },],
-        },),).toBe(true,);
-        expect(isRestorationJudgeWire({ judgments: [], },),).toBe(true,);
-        expect(isRestorationJudgeWire({},),).toBe(false,);
-        expect(isRestorationJudgeWire({ judgments: [{ reference: 1.5, verdict: 'restored', },], },),)
-          .toBe(false,);
-        expect(isRestorationJudgeWire({ judgments: [{ reference: 1, },], },),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: resolveRestorationJudgment.name,
-  children: [
-    it({
-      name: 'resolves through the index map and records irregularities',
-      fn: async () => {
-        /** Report with one good, one out-of-range, one unknown verdict. */
-        const resolution = resolveRestorationJudgment({
-          wire: {
-            judgments: [
-              { reference: 1, verdict: 'restored', },
-              { reference: 9, verdict: 'restored', },
-              { reference: 2, verdict: 'flawless', },
-            ],
+    describe({
+      name: isRestorationJudgeWire.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'accepts well-formed reports and rejects malformed ones',
+          fn: async () => {
+            expect(isRestorationJudgeWire({
+              judgments: [{ reference: 1, verdict: 'restored', },],
+            },),).toBe(true,);
+            expect(isRestorationJudgeWire({ judgments: [], },),).toBe(true,);
+            expect(isRestorationJudgeWire({},),).toBe(false,);
+            expect(isRestorationJudgeWire({ judgments: [{ reference: 1.5, verdict: 'restored', },], },),)
+              .toBe(false,);
+            expect(isRestorationJudgeWire({ judgments: [{ reference: 1, },], },),).toBe(false,);
           },
-          seedIds: ['seed/omission-0', 'seed/omission-1',],
-        },);
-        expect(resolution.verdicts['seed/omission-0'],).toBe('restored',);
-        expect(resolution.verdicts['seed/omission-1'],).toBe(undefined,);
-        expect(resolution.findings,).toContain('judge-reference-out-of-range (9)',);
-        expect(resolution.findings,).toContain('unknown-restoration-verdict (flawless)',);
-        expect(resolution.findings,).toContain('missing-judgment (2)',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: runRestorationJudge.name,
-  children: [
-    it({
-      name: 'takes the conservative lower median across judges',
-      fn: async () => {
-        /** Split judgments: restored/partial/absent on seed 0, all restored on seed 1. */
-        const judgments = await runRestorationJudge({
-          client: judgingClient({
-            verdictsByModel: {
-              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',],
-              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partial', 'restored',],
-              [SEAT_SYNTHETIC_VISION_WITHHELD]: ['absent', 'restored',],
-            },
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫猫追蝴蝶。碗是满的。',
-          repairedText: 'The cat chases butterflies. The bowl is full.',
-          references: REFERENCES,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        // restored/partial/absent sorts to absent<partial<restored; lower median is partial.
-        expect(judgments['seed/omission-0']?.verdict,).toBe('partial',);
-        expect(judgments['seed/omission-0']?.judged,).toBe(true,);
-        expect(judgments['seed/omission-1']?.verdict,).toBe('restored',);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'rounds an even split toward the less-credited verdict',
-      fn: async () => {
-        /** Two judges heard, one restored one absent, on seed 0. */
-        const judgments = await runRestorationJudge({
-          client: judgingClient({
-            verdictsByModel: {
-              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',],
-              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['absent', 'restored',],
-            },
-            silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫猫追蝴蝶。碗是满的。',
-          repairedText: 'The cat chases butterflies. The bowl is full.',
-          references: REFERENCES,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        // Two heard is still quorum over three; lower median of [absent, restored] is absent.
-        expect(judgments['seed/omission-0']?.judged,).toBe(true,);
-        expect(judgments['seed/omission-0']?.verdict,).toBe('absent',);
-      },
+    describe({
+      name: resolveRestorationJudgment.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'resolves through the index map and records irregularities',
+          fn: async () => {
+            /** Report with one good, one out-of-range, one unknown verdict. */
+            const resolution = resolveRestorationJudgment({
+              wire: {
+                judgments: [
+                  { reference: 1, verdict: 'restored', },
+                  { reference: 9, verdict: 'restored', },
+                  { reference: 2, verdict: 'flawless', },
+                ],
+              },
+              seedIds: ['seed/omission-0', 'seed/omission-1',],
+            },);
+            expect(resolution.verdicts['seed/omission-0'],).toBe('restored',);
+            expect(resolution.verdicts['seed/omission-1'],).toBe(undefined,);
+            expect(resolution.findings,).toContain('judge-reference-out-of-range (9)',);
+            expect(resolution.findings,).toContain('unknown-restoration-verdict (flawless)',);
+            expect(resolution.findings,).toContain('missing-judgment (2)',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'marks seeds unjudged when the judge roster loses quorum',
-      fn: async () => {
-        /** Only one of three judges answers: quorum unmet. */
-        const judgments = await runRestorationJudge({
-          client: judgingClient({
-            verdictsByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',], },
-            silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
-          },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫猫追蝴蝶。碗是满的。',
-          repairedText: 'The cat chases butterflies. The bowl is full.',
-          references: REFERENCES,
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(judgments['seed/omission-0']?.judged,).toBe(false,);
-        expect(judgments['seed/omission-1']?.judged,).toBe(false,);
-      },
-    },),
+    describe({
+      name: runRestorationJudge.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'takes the conservative lower median across judges',
+          fn: async () => {
+            /** Split judgments: restored/partial/absent on seed 0, all restored on seed 1. */
+            const judgments = await runRestorationJudge({
+              client: judgingClient({
+                verdictsByModel: {
+                  [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',],
+                  [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partial', 'restored',],
+                  [SEAT_SYNTHETIC_VISION_WITHHELD]: ['absent', 'restored',],
+                },
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫追蝴蝶。碗是满的。',
+              repairedText: 'The cat chases butterflies. The bowl is full.',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            // restored/partial/absent sorts to absent<partial<restored; lower median is partial.
+            expect(judgments['seed/omission-0']?.verdict,).toBe('partial',);
+            expect(judgments['seed/omission-0']?.judged,).toBe(true,);
+            expect(judgments['seed/omission-1']?.verdict,).toBe('restored',);
+          },
+        },),
 
-    it({
-      name: 'returns nothing for an entry with no references',
-      fn: async () => {
-        /** Empty reference set short-circuits before any call. */
-        const judgments = await runRestorationJudge({
-          client: judgingClient({ verdictsByModel: {}, },),
-          judgeModelIds: JUDGES,
-          sourceText: '猫',
-          repairedText: 'cat',
-          references: [],
-          signal: new AbortController().signal,
-          perCallTimeoutMs: 1_000,
-          l,
-        },);
-        expect(Object.keys(judgments,),).toHaveLength(0,);
-      },
+        it({
+          name: 'rounds an even split toward the less-credited verdict',
+          fn: async () => {
+            /** Two judges heard, one restored one absent, on seed 0. */
+            const judgments = await runRestorationJudge({
+              client: judgingClient({
+                verdictsByModel: {
+                  [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',],
+                  [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['absent', 'restored',],
+                },
+                silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫追蝴蝶。碗是满的。',
+              repairedText: 'The cat chases butterflies. The bowl is full.',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            // Two heard is still quorum over three; lower median of [absent, restored] is absent.
+            expect(judgments['seed/omission-0']?.judged,).toBe(true,);
+            expect(judgments['seed/omission-0']?.verdict,).toBe('absent',);
+          },
+        },),
+
+        it({
+          name: 'marks seeds unjudged when the judge roster loses quorum',
+          fn: async () => {
+            /** Only one of three judges answers: quorum unmet. */
+            const judgments = await runRestorationJudge({
+              client: judgingClient({
+                verdictsByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',], },
+                silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫追蝴蝶。碗是满的。',
+              repairedText: 'The cat chases butterflies. The bowl is full.',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(judgments['seed/omission-0']?.judged,).toBe(false,);
+            expect(judgments['seed/omission-1']?.judged,).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'returns nothing for an entry with no references',
+          fn: async () => {
+            /** Empty reference set short-circuits before any call. */
+            const judgments = await runRestorationJudge({
+              client: judgingClient({ verdictsByModel: {}, },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫',
+              repairedText: 'cat',
+              references: [],
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(Object.keys(judgments,),).toHaveLength(0,);
+          },
+        },),
+      ],
     },),
   ],
 },);

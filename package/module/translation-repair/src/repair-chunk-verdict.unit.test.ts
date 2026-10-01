@@ -26,6 +26,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -141,78 +142,6 @@ function settleWith(
   },);
 }
 
-await describe({
-  name: settleChunkVerdict.name,
-  children: [
-    it({
-      name: 'POSITIVE CONTROL: ACCEPTS a winning patch that keeps every declared form, so a later '
-        + 'assertion that some settlement kept the archive text is reading a refusal rather than a '
-        + 'patch that simply lost',
-      fn: async () => {
-        const verdict = settleWith({
-          patchedText: KEEPS_EVERY_NAME,
-          declaredNames: DECLARED_NAMES,
-        },);
-        expect(verdict.repairedText,).toBe(KEEPS_EVERY_NAME,);
-        expect(verdict.patchSelected,).toBe(true,);
-        expect(verdict.changed,).toBe(true,);
-        expect(verdict.droppedDeclaredNames,).toEqual([],);
-      },
-    },),
-    it({
-      name: 'REFUSES a winning patch that drops a declared form, shipping the archive text and '
-        + 'naming what would have gone, which is the decision no judge on this roster made unaided',
-      fn: async () => {
-        const verdict = settleWith({
-          patchedText: DROPS_THE_ALIAS,
-          declaredNames: DECLARED_NAMES,
-        },);
-        expect(verdict.repairedText,).toBe(INCUMBENT_TEXT,);
-        expect(verdict.changed,).toBe(false,);
-        expect(verdict.droppedDeclaredNames,).toEqual([DECLARED_ALIAS,],);
-      },
-    },),
-    it({
-      name: 'KEEPS reporting that the patch beat the archive on the measurements, since it did and '
-        + 'a refusal nobody can see the cost of is a refusal nobody can audit',
-      fn: async () => {
-        const verdict = settleWith({
-          patchedText: DROPS_THE_ALIAS,
-          declaredNames: DECLARED_NAMES,
-        },);
-        expect(verdict.patchSelected,).toBe(true,);
-      },
-    },),
-    it({
-      name: 'ACCEPTS that same dropping patch when the archive declares nothing, so the refusal is '
-        + 'attributable to the declared list and not to anything else about that wording',
-      fn: async () => {
-        const verdict = settleWith({
-          patchedText: DROPS_THE_ALIAS,
-          declaredNames: [],
-        },);
-        expect(verdict.repairedText,).toBe(DROPS_THE_ALIAS,);
-        expect(verdict.changed,).toBe(true,);
-      },
-    },),
-    it({
-      name: 'ASKS NOTHING of a patch the archive already beat, since a slice nobody is replacing '
-        + 'needs no permission to stay as it is and a refusal there would name a protection that '
-        + 'protected nothing',
-      fn: async () => {
-        const verdict = settleWith({
-          patchedText: DROPS_THE_ALIAS,
-          declaredNames: DECLARED_NAMES,
-          measurements: LOSING_MEASUREMENTS,
-        },);
-        expect(verdict.repairedText,).toBe(INCUMBENT_TEXT,);
-        expect(verdict.patchSelected,).toBe(false,);
-        expect(verdict.droppedDeclaredNames,).toEqual([],);
-      },
-    },),
-  ],
-},);
-
 /**
  Accepted issue the checkers were asked about.
  
@@ -236,45 +165,125 @@ function acceptedIssue({ issueId, }: { readonly issueId: string; },): Adjudicate
 }
 
 await describe({
-  name: settleChunkFromChecks.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'CREDITS exactly the creditable issues the checker majority confirmed fixed, in issue order, and '
-        + 'none the tallies refuse or omit',
-      fn: async () => {
-        const settled = settleChunkFromChecks({
-          sliceIndex: CHUNK_INDEX,
-          incumbentText: INCUMBENT_TEXT,
-          patchedText: KEEPS_EVERY_NAME,
-          appliedOperations: [],
-          creditableIssues: [
-            acceptedIssue({ issueId: 'issue-1', },),
-            acceptedIssue({ issueId: 'issue-2', },),
-            acceptedIssue({ issueId: 'issue-3', },),
-          ],
-          tallies: {
-            'issue-1': {
-              fixed: 2,
-              notFixed: 0,
-              worse: 0,
-              resolved: true,
-              regressed: false,
-            },
-            'issue-2': {
-              fixed: 0,
-              notFixed: 2,
-              worse: 0,
-              resolved: false,
-              regressed: false,
-            },
+    describe({
+      name: settleChunkVerdict.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'POSITIVE CONTROL: ACCEPTS a winning patch that keeps every declared form, so a later '
+            + 'assertion that some settlement kept the archive text is reading a refusal rather than a '
+            + 'patch that simply lost',
+          fn: async () => {
+            const verdict = settleWith({
+              patchedText: KEEPS_EVERY_NAME,
+              declaredNames: DECLARED_NAMES,
+            },);
+            expect(verdict.repairedText,).toBe(KEEPS_EVERY_NAME,);
+            expect(verdict.patchSelected,).toBe(true,);
+            expect(verdict.changed,).toBe(true,);
+            expect(verdict.droppedDeclaredNames,).toEqual([],);
           },
-          envelopes: [],
-          targetDocument: parseDocument({ text: INCUMBENT_TEXT, },),
-          declaredNames: DECLARED_NAMES,
-        },);
+        },),
+        it({
+          name: 'REFUSES a winning patch that drops a declared form, shipping the archive text and '
+            + 'naming what would have gone, which is the decision no judge on this roster made unaided',
+          fn: async () => {
+            const verdict = settleWith({
+              patchedText: DROPS_THE_ALIAS,
+              declaredNames: DECLARED_NAMES,
+            },);
+            expect(verdict.repairedText,).toBe(INCUMBENT_TEXT,);
+            expect(verdict.changed,).toBe(false,);
+            expect(verdict.droppedDeclaredNames,).toEqual([DECLARED_ALIAS,],);
+          },
+        },),
+        it({
+          name: 'KEEPS reporting that the patch beat the archive on the measurements, since it did and '
+            + 'a refusal nobody can see the cost of is a refusal nobody can audit',
+          fn: async () => {
+            const verdict = settleWith({
+              patchedText: DROPS_THE_ALIAS,
+              declaredNames: DECLARED_NAMES,
+            },);
+            expect(verdict.patchSelected,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'ACCEPTS that same dropping patch when the archive declares nothing, so the refusal is '
+            + 'attributable to the declared list and not to anything else about that wording',
+          fn: async () => {
+            const verdict = settleWith({
+              patchedText: DROPS_THE_ALIAS,
+              declaredNames: [],
+            },);
+            expect(verdict.repairedText,).toBe(DROPS_THE_ALIAS,);
+            expect(verdict.changed,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'ASKS NOTHING of a patch the archive already beat, since a slice nobody is replacing '
+            + 'needs no permission to stay as it is and a refusal there would name a protection that '
+            + 'protected nothing',
+          fn: async () => {
+            const verdict = settleWith({
+              patchedText: DROPS_THE_ALIAS,
+              declaredNames: DECLARED_NAMES,
+              measurements: LOSING_MEASUREMENTS,
+            },);
+            expect(verdict.repairedText,).toBe(INCUMBENT_TEXT,);
+            expect(verdict.patchSelected,).toBe(false,);
+            expect(verdict.droppedDeclaredNames,).toEqual([],);
+          },
+        },),
+      ],
+    },),
 
-        expect(settled.resolvedIssueIds,).toEqual(['issue-1',],);
-      },
+    describe({
+      name: settleChunkFromChecks.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CREDITS exactly the creditable issues the checker majority confirmed fixed, in issue order, and '
+            + 'none the tallies refuse or omit',
+          fn: async () => {
+            const settled = settleChunkFromChecks({
+              sliceIndex: CHUNK_INDEX,
+              incumbentText: INCUMBENT_TEXT,
+              patchedText: KEEPS_EVERY_NAME,
+              appliedOperations: [],
+              creditableIssues: [
+                acceptedIssue({ issueId: 'issue-1', },),
+                acceptedIssue({ issueId: 'issue-2', },),
+                acceptedIssue({ issueId: 'issue-3', },),
+              ],
+              tallies: {
+                'issue-1': {
+                  fixed: 2,
+                  notFixed: 0,
+                  worse: 0,
+                  resolved: true,
+                  regressed: false,
+                },
+                'issue-2': {
+                  fixed: 0,
+                  notFixed: 2,
+                  worse: 0,
+                  resolved: false,
+                  regressed: false,
+                },
+              },
+              envelopes: [],
+              targetDocument: parseDocument({ text: INCUMBENT_TEXT, },),
+              declaredNames: DECLARED_NAMES,
+            },);
+
+            expect(settled.resolvedIssueIds,).toEqual(['issue-1',],);
+          },
+        },),
+      ],
     },),
   ],
 },);

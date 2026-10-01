@@ -26,6 +26,7 @@
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -795,1002 +796,6 @@ async function driveWith(
   };
 }
 
-await describe({
-  name: consolidateDocument.name,
-  children: [
-    it({
-      name: 'ASKS NOTHING WHERE THE CONTEST NEVER RAN, which is the majority of most documents: a '
-        + 'slice both lanes worded identically has nothing to consolidate, because a third rendering '
-        + 'would be competing against their agreement rather than resolving a difference',
-      fn: async () => {
-        const { slices, written, } = await driveWith({ contests: [], },);
-
-        expect(slices.length,).toBe(0,);
-        expect(written.length,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'RESUMES AUDITABLE CHANGED POLISH without rebuying any stage',
-      fn: async () => {
-        /**
-         Exact first-slice question driver derives.
-         */
-        const key = consolidateSliceKey({
-          runShape: consolidateRunShape({
-            modelIds: ROSTER,
-            declaredNamePairs: [],
-          },),
-          sourceText: '原文0',
-          incumbentText: 'archive wording for slice 0',
-          repairText: 'repair wording for slice 0',
-          translateText: 'translate wording for slice 0',
-          standingText: 'repair wording for slice 0',
-          ballots: [],
-          lineStructured: false,
-          pictureContext: '',
-          neighbouringSourceText: '',
-          neighbouringIncumbentText: '',
-        },);
-        /**
-         Cached settlement whose final polish replaced approved base.
-         */
-        const settled: ConsolidationSettlement = {
-          ...settlementReaching({ terminal: 'gate-kept-standing', },),
-          polish: {
-            kind: 'settled',
-            baseText: 'repair wording for slice 0',
-            proposedText: 'polished wording for slice 0',
-            text: 'polished wording for slice 0',
-            changed: true,
-            refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-            contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-            rounds: [],
-            review: {
-              correctionCount: 0,
-              corrections: [],
-              rounds: [],
-              confirmations: [],
-            },
-            findings: [],
-          },
-        };
-        const messages: string[] = [];
-        /**
-         How often the driver asked before a slice, which it does even for a
-         slice the cache then answers: the wait belongs to the bench, not
-         to the purchase.
-         */
-        const before = { calls: 0, };
-        const resumed = await driveWith({
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          resumed: new Map<string, ConsolidationSettlement>([[key, settled,],]),
-          messages,
-          beforeSlice: async (): Promise<ConsolidateSliceSeating> => {
-            before.calls += 1;
-            return {};
-          },
-        },);
-        expect(before.calls,).toBe(1,);
-        expect(resumed.written,).toEqual([],);
-        expect(messages.some(function started(line,): boolean {
-          return line.includes(
-            `${SLICE_START_MARKER} lane=consolidation chunk=0 sourceChars=3`,
-          );
-        },),).toBe(true,);
-        expect(messages.some(function finished(line,): boolean {
-          return line.includes(
-            `${SLICE_COST_MARKER} lane=consolidation chunk=0 sourceChars=3`,
-          ) && line.endsWith('exit=resumed',);
-        },),).toBe(true,);
-        expect(resumed.slices[0]?.polish?.kind,).toBe('settled',);
-        expect(resumed.slices[0]?.polish?.kind === 'settled'
-          ? resumed.slices[0].polish.changed
-          : false,).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REACHES THE ROSTER FOR A SLICE NOTHING HAS SETTLED, which is the positive control for '
-        + 'the "RESUMES AUDITABLE CHANGED POLISH" case. A cache test that never proves the uncached path buys anything '
-        + 'would pass just as well against a driver that had stopped calling the roster at all',
-      fn: async () => {
-        /**
-         Operational messages naming unfinished slice exit.
-         */
-        const messages: string[] = [];
-        /**
-         Roster that refuses every call and counts it.
-         */
-        const { client, calls, } = countingRefusingClient();
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          messages,
-        },);
-
-        expect(calls.count,).toBeGreaterThan(0,);
-        // BOUGHT, NOT RESUMED: every voice refused, the slice still computed.
-        expect(messages.some(function namesComputedExit(line,): boolean {
-          return line.includes(`${SLICE_COST_MARKER} lane=consolidation chunk=0`,)
-            && line.endsWith('exit=computed',);
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REACHES CONSOLIDATION AFTER CONTEST SETTLES NEITHER OR MISSES QUORUM, using archive only as comparison baseline rather than silently reviving it',
-      fn: async () => {
-        await Promise.all(([
-          { kind: 'settled-neither', },
-          { kind: 'quorum-not-met', },
-        ] as const).map(async function driveVerdict(verdict,): Promise<void> {
-          /**
-           Roster that refuses every call and counts it.
-           */
-          const { client, calls, } = countingRefusingClient();
-          /**
-           What the driver threw, if anything: a roster that answers nothing
-           interrupts the entry as an outage.
-           */
-          const raised: unknown = await (async function captureOutage(): Promise<unknown> {
-            try {
-              await driveWith({
-                client,
-                contests: [{
-                  sliceIndex: 0,
-                  verdict,
-                  ballots: [],
-                  usable: ROSTER.length,
-                },],
-              },);
-            }
-            catch (error) {
-              return error;
-            }
-            return 'no interruption';
-          })();
-          expect(calls.count,).toBeGreaterThan(0,);
-          expect(String(raised,),).toContain('provider-unavailable',);
-        },),);
-      },
-    },),
-    it({
-      name: 'SHIPS archive-declined standing after the single attempt, recording non-endorsement without a recovery round',
-      fn: async () => {
-        const {
-          client,
-          producerSheets,
-          producerPayloads,
-        } = scriptedClient();
-        const { slices, written, } = await driveWith({
-          client,
-          modelIds: WIDE_ROSTER,
-          contests: [{
-            sliceIndex: 0,
-            verdict: {
-              kind: 'settled-neither',
-              archive: 'declined',
-            },
-            ballots: [],
-            usable: ROSTER.length,
-          },],
-        },);
-
-        // One producer round (every producer read the one sheet, so no
-        // second strategy was asked for), and the honest gate-kept terminal
-        // ships with the non-endorsement recorded.
-        expect(new Set(producerSheets,).size,).toBe(1);
-        expect(new Set(producerPayloads,).size,).toBe(producerPayloads.length);
-        expect(slices[0]?.terminal,).toBe('gate-kept-standing');
-        // An unendorsed standing settlement is not worth resuming, so nothing
-        // is persisted and a warm run asks again.
-        expect(written,).toHaveLength(0);
-      },
-    },),
-    it({
-      name: 'SHIPS THE REPAIR LANE\'S TEXT AS THE STANDING at a settled-neither contest on a disputed slice, so the '
-        + 'archive rendering the adjudicators found to invent a detail never stands (class one hundred seven, '
-        + 'CuspariaKLSY10 slice 3, 2026-09-24)',
-      fn: async () => {
-        /**
-         Repair lane's text for slice 0, standing in for the archive.
-         */
-        const standIn = 'repair wording for slice 0';
-        const { client, } = scriptedClient();
-        const { slices, } = await driveWith({
-          client,
-          modelIds: WIDE_ROSTER,
-          contests: [{
-            sliceIndex: 0,
-            verdict: { kind: 'settled-neither', },
-            ballots: [],
-            usable: WIDE_ROSTER.length,
-          },],
-          archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, standInEligible: true, acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',], },],],),
-        },);
-        expect(slices[0]?.terminal,).toBe('gate-kept-standing',);
-        expect(slices[0]?.shipped,).toEqual({
-          kind: 'incumbent',
-          text: standIn,
-        },);
-      },
-    },),
-    it({
-      name: 'SHIPS unjudged settled-neither standing after the single attempt under the same recording',
-      fn: async () => {
-        const { client, } = scriptedClient();
-        const { slices, written, } = await driveWith({
-          client,
-          modelIds: WIDE_ROSTER,
-          contests: [{
-            sliceIndex: 0,
-            verdict: { kind: 'settled-neither', },
-            ballots: [],
-            usable: WIDE_ROSTER.length,
-          },],
-        },);
-
-        expect(slices[0]?.terminal,).toBe('gate-kept-standing');
-        expect(written,).toHaveLength(0);
-      },
-    },),
-    it({
-      name: 'SHIPS THE SLATE\'S VALID CHOICE when the repair-lane standing dropped a source destination and '
-        + 'the gate preferred it: the publisher refuses such a standing (DroppedDestinationError), and the '
-        + 'owner\'s 2026-09-04 rule prefers the best valid proposal, failing the slice only where there is '
-        + 'none (class one hundred eighty-five)',
-      fn: async () => {
-        const destination = 'https://example.test/cat-record';
-        const sourceText = `[猫猫的记录](${destination})。`;
-        const initialText = `[The cat record](${destination}).`;
-        const endorsedText = `[The cat's final record](${destination}).`;
-        const { client, } = scriptedClient({ initialText, endorsedText, });
-        const projected = {
-          comparison: [{
-            sliceIndex: 0,
-            incumbentKind: 'present',
-            incumbentText: 'The archive mentions the cat record.',
-            repairText: 'The repair lane mentions the cat record.',
-            translateText: initialText,
-          },],
-          delivery: {
-            repair: [{ sliceIndex: 0, sourceText, },],
-            translate: [],
-          },
-        } as unknown as ProjectedLanes;
-        const { slices, } = await driveWith({
-          client,
-          modelIds: WIDE_ROSTER,
-          projected,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
-        },);
-        expect(slices[0]?.terminal,).toBe('consolidated',);
-      },
-    },),
-    it({
-      name: 'KEEPS A VALID INCUMBENT where the repair-lane standing dropped a source destination and '
-        + 'the archive carried it: the incumbent stands in as the standing, the gate keeps it, and the '
-        + 'artifact says the incumbent ships instead of stopping the entry (owner, 2026-09-09, the '
-        + 'sixth Mio at slice 3)',
-      fn: async () => {
-        const destination = 'https://example.test/cat-record';
-        const sourceText = `[猫猫的记录](${destination})。`;
-        const incumbentText = `[The cat record](${destination}).`;
-        const initialText = `[The cat's record](${destination}).`;
-        const endorsedText = `[The cat's final record](${destination}).`;
-        const { client, } = scriptedClient({ initialText, endorsedText, });
-        const projected = {
-          comparison: [{
-            sliceIndex: 0,
-            incumbentKind: 'present',
-            incumbentText,
-            repairText: 'The repair lane mentions the cat record.',
-            translateText: initialText,
-          },],
-          delivery: {
-            repair: [{ sliceIndex: 0, sourceText, },],
-            translate: [],
-          },
-        } as unknown as ProjectedLanes;
-        const { slices, } = await driveWith({
-          client,
-          modelIds: WIDE_ROSTER,
-          projected,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
-        },);
-        expect(slices[0]?.terminal,).toBe('gate-kept-standing',);
-        // THE ARTIFACT SAYS THE INCUMBENT SHIPS. A bare "unchanged" here would
-        // have the page assembled from the lane's wording, which is the text
-        // the gate refused.
-        expect(slices[0]?.shipped,).toEqual({
-          kind: 'incumbent',
-          text: incumbentText,
-        },);
-      },
-    },),
-    it({
-      name: 'SHIPS THE ARCHIVE where the floor can compare nothing, an original the strict grammar cannot read, '
-        + 'whichever lane the contest backed: both lanes\' texts and the archive are refused alike, the archive '
-        + 'stands, and no writer, judge or gate is asked (ledger B43, B45)',
-      fn: async () => {
-        /**
-         Original with an expression the strict grammar never closes.
-         */
-        const sourceText = '猫猫在{窗台上打盹。';
-        /**
-         Every settlement, one per lane the contest backed.
-         */
-        const settled = await Promise.all((['repair', 'translate',] as const).map(async function settleFor(lane,) {
-          const {
-            client,
-            requests,
-          } = scriptedClient({
-            initialText: 'The cat dozes on the windowsill.',
-            endorsedText: 'The cat naps on the windowsill.',
-          },);
-          const messages: string[] = [];
-          const projected = {
-            comparison: [{
-              sliceIndex: 0,
-              incumbentKind: 'present',
-              incumbentText: 'The cat is doing the dozing on the windowsill.',
-              repairText: 'The cat dozed on the sill.',
-              translateText: 'The cat dozes on the windowsill.',
-            },],
-            delivery: {
-              repair: [{ sliceIndex: 0, sourceText, },],
-              translate: [],
-            },
-          } as unknown as ProjectedLanes;
-          const { slices, } = await driveWith({
-            client,
-            modelIds: WIDE_ROSTER,
-            projected,
-            contests: [contestSettling({ sliceIndex: 0, lane, }),],
-            messages,
-          },);
-          return {
-            terminal: slices[0]?.terminal,
-            shipped: slices[0]?.shipped,
-            requests: requests.length,
-            refusedBoth: messages.some(function refusesBoth(line,): boolean {
-              return line.includes('withheld from the slate: no comparison was possible: original could not be read',)
-                && line.includes('the incumbent fails it too: no comparison was possible',);
-            },),
-            askedNobody: messages.some(function namesTheReason(line,): boolean {
-              return line.includes('the floor can compare nothing here (original could not be read',)
-                && line.includes('so no writer is asked',);
-            },),
-          };
-        },),);
-        expect(settled,).toEqual([
-          {
-            terminal: 'incumbent-only',
-            shipped: { kind: 'archive', },
-            requests: 0,
-            refusedBoth: true,
-            askedNobody: true,
-          },
-          {
-            terminal: 'incumbent-only',
-            shipped: { kind: 'archive', },
-            requests: 0,
-            refusedBoth: true,
-            askedNobody: true,
-          },
-        ],);
-      },
-    },),
-    it({
-      name: 'ASKS identical unsafe twins once and ships both with the recorded non-endorsement',
-      fn: async () => {
-        const {
-          client,
-          producerPayloads,
-        } = scriptedClient();
-        const { slices, written, } = await driveWith({
-          client,
-          modelIds: WIDE_ROSTER,
-          projected: twinSliceDocument(),
-          contests: [
-            {
-              sliceIndex: 0,
-              verdict: { kind: 'settled-neither', archive: 'declined', },
-              ballots: [],
-              usable: WIDE_ROSTER.length,
-            },
-            {
-              sliceIndex: 1,
-              verdict: { kind: 'settled-neither', archive: 'declined', },
-              ballots: [],
-              usable: WIDE_ROSTER.length,
-            },
-          ],
-          overlap: 2,
-        },);
-
-        // Unsafe questions are never twin-memoized, so each twin buys its
-        // own single attempt, one window of producers, and both ship the
-        // recorded outcome.
-        expect(producerPayloads,).toHaveLength(firstRoundWindow({ benchSize: WIDE_ROSTER.length, },) * 2,);
-        expect(slices,).toHaveLength(2);
-        expect(slices.every(function keptWithRecord(slice,): boolean {
-          return slice.terminal === 'gate-kept-standing';
-        },),).toBe(true,);
-        expect(written,).toHaveLength(0);
-      },
-    },),
-    it({
-      name: 'RECORDS a declined archive that the single attempt kept, never pausing the entry',
-      fn: async () => {
-        const { client, judgeSheets, } = answeringClient();
-        const writes: string[] = [];
-        const { slices, } = await driveWith({
-          client,
-          writes,
-          contests: [{
-            sliceIndex: 0,
-            verdict: {
-              kind: 'settled-neither',
-              archive: 'declined',
-            },
-            ballots: [],
-            usable: ROSTER.length,
-          },],
-        },);
-
-        expect(slices[0]?.terminal,).toBe('slate-declined-standing');
-        expect(judgeSheets.every(function carriesArchiveBaseline(sheet,): boolean {
-          return sheet.includes('archive wording for slice 0',);
-        },),).toBe(true,);
-        expect(writes,).toEqual([]);
-      },
-    },),
-    it({
-      name: 'PAUSES provider-silent unsafe standing as unavailable without persisting it',
-      fn: async () => {
-        const { client, } = recordingClient();
-        const writes: string[] = [];
-        let thrown: unknown;
-        try {
-          await driveWith({
-            client,
-            writes,
-            contests: [{
-              sliceIndex: 0,
-              verdict: { kind: 'settled-neither', archive: 'declined', },
-              ballots: [],
-              usable: ROSTER.length,
-            },],
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
-
-        expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
-        expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
-        expect(writes,).toEqual([]);
-      },
-    },),
-    it({
-      name: 'REFUSES A CONTESTED SLICE MISSING FROM THE REPAIR LEDGER rather than consolidating '
-        + 'against no original, because the comparison and the ledger disagreeing about which slices '
-        + 'exist is a defect upstream and settling one of them anyway would hide it',
-      fn: async () => {
-        /**
-         A document whose comparison names a slice the ledger does not.
-         */
-        const gapped = {
-          ...twoSliceDocument(),
-          delivery: {
-            repair: [],
-            translate: [],
-          },
-        };
-
-        /**
-         What the driver did instead of returning.
-         */
-        let raised: unknown;
-        try {
-          await driveWith({
-            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-            projected: gapped,
-          },);
-        } catch (error: unknown) {
-          raised = error;
-        }
-
-        expect(raised,).toBeInstanceOf(Error,);
-        expect(String(raised,).includes('does not appear in the repair ledger',),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'RETURNS ONE RECORD PER CONSOLIDATED SLICE IN COMPARISON ORDER, resuming both without '
-        + 'buying, so a reader of the artifact can line records up against the comparison rows they '
-        + 'answer rather than re-deriving the order',
-      fn: async () => {
-        /**
-         Both slices settled by an earlier run, keyed by whatever the driver
-         asks for: the cache here answers every key.
-         */
-        const everyKey = {
-          get: function answerAnyKey() {
-            return settlementReaching({ terminal: 'incumbent-only', },);
-          },
-        };
-
-        const { slices, written, } = await driveWith({
-          contests: [
-            contestSettling({ sliceIndex: 0, lane: 'repair', },),
-            contestSettling({ sliceIndex: 1, lane: 'translate', },),
-          ],
-          resumed: everyKey as unknown as ReadonlyMap<string, ConsolidationSettlement>,
-        },);
-
-        expect(slices.length,).toBe(2,);
-        expect(slices[0]?.sliceIndex,).toBe(0,);
-        expect(slices[1]?.sliceIndex,).toBe(1,);
-        expect(slices[0]?.terminal,).toBe('incumbent-only',);
-        expect(slices[0]?.gate.kind,).toBe('not-asked',);
-        expect(written.length,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES persistence under an already aborted caller after a stable '
-        + 'consolidation returned, preserving the final pre-write defense',
-      fn: async () => {
-        /**
-         Exact caller reason helper must surface.
-         */
-        const stopped = new Error('caller abandoned completed consolidation',);
-        const controller = new AbortController();
-        controller.abort(stopped,);
-
-        /**
-         Writes attempted after abort.
-         */
-        const written: string[] = [];
-        await expect(persistConsolidationSettlement({
-          standingMayShip: true,
-          key: 'consolidation-persistence-guard-fixture',
-          settlement: settlementReaching({ terminal: 'incumbent-only', },),
-          cache: {
-            resumed: new Map<string, ConsolidationSettlement>(),
-            persist: async ({ key, },) => {
-              written.push(key,);
-            },
-          },
-          signal: controller.signal,
-        },),)
-          .rejects
-          .toBe(stopped,);
-        expect(written,).toEqual([],);
-      },
-    },),
-
-    it({
-      name: 'runs two consolidation slices at once at overlap 2, after a serial '
-        + 'positive control proves the successful-call instrument distinguishes one from two, '
-        + 'and returns records in comparison order when the second producer answers first',
-      fn: async () => {
-        /**
-         Serial positive-control activity.
-         */
-        const serial: ConsolidationConcurrency = {
-          now: 0,
-          peak: 0,
-          started: 0,
-          finished: [],
-        };
-        const serialClient = recordingClient();
-        await driveWith({
-          client: serialClient.client,
-          contests: [
-            contestSettling({ sliceIndex: 0, lane: 'repair', },),
-            contestSettling({ sliceIndex: 1, lane: 'translate', },),
-          ],
-          overlap: 1,
-          activity: serial,
-        },);
-
-        /**
-         Two-slice activity, gated so the second call answers first.
-         */
-        const overlapped: ConsolidationConcurrency = {
-          now: 0,
-          peak: 0,
-          started: 0,
-          finished: [],
-          secondFinished: Promise.withResolvers<undefined>(),
-        };
-        const overlapClient = recordingClient();
-        const { slices, } = await driveWith({
-          client: overlapClient.client,
-          contests: [
-            contestSettling({ sliceIndex: 0, lane: 'repair', },),
-            contestSettling({ sliceIndex: 1, lane: 'translate', },),
-          ],
-          overlap: 2,
-          activity: overlapped,
-        },);
-        expect(serial.peak,).toBe(1,);
-        expect(overlapped.peak,).toBe(2,);
-        // THE SECOND PRODUCER DID ANSWER FIRST: the call started first is not
-        // the first to finish, so the check that the slices come back in
-        // comparison order is exercised.
-        expect(overlapped.finished,).toContain(0,);
-        expect(overlapped.finished[0],).not.toBe(0,);
-        expect(slices.map(function toIndex(slice,) {
-          return slice.sliceIndex;
-        },),).toEqual([
-          0,
-          1,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'mixes one resumed row with one fresh row at overlap 2, buying and persisting '
-        + 'only the fresh consolidation while returning both in comparison order',
-      fn: async () => {
-        /**
-         Fresh pass used only to derive production keys for both rows.
-         */
-        const learningClient = recordingClient();
-        const learned = await driveWith({
-          client: learningClient.client,
-          contests: [
-            contestSettling({ sliceIndex: 0, lane: 'repair', },),
-            contestSettling({ sliceIndex: 1, lane: 'translate', },),
-          ],
-        },);
-
-        /**
-         Second pass resuming first row and buying second.
-         */
-        const freshClient = recordingClient();
-        const mixed = await driveWith({
-          client: freshClient.client,
-          contests: [
-            contestSettling({ sliceIndex: 0, lane: 'repair', },),
-            contestSettling({ sliceIndex: 1, lane: 'translate', },),
-          ],
-          resumed: new Map([
-            [
-              learned.written.at(0,) ?? '',
-              settlementReaching({ terminal: 'incumbent-only', },),
-            ],
-          ],),
-          overlap: 2,
-        },);
-        expect(freshClient.bodies.length,).toBeGreaterThan(0,);
-        expect(mixed.written.length,).toBe(1,);
-        expect(mixed.slices.map(function toIndex(slice,) {
-          return slice.sliceIndex;
-        },),).toEqual([
-          0,
-          1,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'NAMES THE SLICE on every line the settlement writes (class one hundred eighty-five: '
-        + 'TianqiChen66619 consolidated slices in parallel and its slate and gate ballots named no slice, '
-        + 'so slice 9\'s ballots could not be told from its neighbours\')',
-      fn: async () => {
-        /**
-         Operational messages of one bought slice.
-         */
-        const messages: string[] = [];
-        await driveWith({
-          client: recordingClient().client,
-          projected: twinSliceDocument(),
-          contests: [contestSettling({ sliceIndex: 1, lane: 'repair', },),],
-          messages,
-        },);
-        /**
-         Lines the slice's purchase wrote: its producers, slate, gate and
-         settlement.
-         */
-        const settling = messages.filter(function fromPurchase(line,): boolean {
-          return [
-            '[settleConsolidation]',
-            '[produceConsolidations]',
-            '[judgeTranslateSlate]',
-            '[gateConsolidatedSlice]',
-          ].some(function carries(tag,): boolean {
-            return line.includes(tag,);
-          },);
-        },);
-        expect(settling.length,).toBeGreaterThan(0,);
-        expect(settling.every(function namesSlice(line,): boolean {
-          return line.includes('[slice 1]',);
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'ASKS ONCE for two slices carrying the same consolidation question at overlap 1 and 2, '
-        + 'so cold and warm runs settle one reusable third rendering',
-      fn: async () => {
-        await Promise.all(([1, 2,] as const).map(async function atOverlap(
-          overlap,
-        ): Promise<void> {
-          /**
-           Calls one copy of this question costs, measured rather than assumed
-           because malformed structured replies are retried by transport.
-           */
-          const singleFixture = recordingClient();
-          const single = await driveWith({
-            client: singleFixture.client,
-            projected: twinSliceDocument(),
-            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-            overlap,
-          },);
-
-          /**
-           Same question stamped at both positions.
-           */
-          const twinFixture = recordingClient();
-          const messages: string[] = [];
-          const { slices, written, } = await driveWith({
-            client: twinFixture.client,
-            projected: twinSliceDocument(),
-            contests: [
-              contestSettling({ sliceIndex: 0, lane: 'repair', },),
-              contestSettling({ sliceIndex: 1, lane: 'repair', },),
-            ],
-            overlap,
-            messages,
-          },);
-          expect(singleFixture.bodies.length,).toBeGreaterThan(0,);
-          expect(twinFixture.bodies.length,).toBe(singleFixture.bodies.length,);
-          expect(single.written.length,).toBe(1,);
-          expect(written.length,).toBe(1,);
-          expect(messages.filter(function computed(line,): boolean {
-            return line.includes(`${SLICE_COST_MARKER} lane=consolidation`,)
-              && line.endsWith('exit=computed',);
-          },),).toHaveLength(1,);
-          expect(messages.filter(function reused(line,): boolean {
-            return line.includes(`${SLICE_COST_MARKER} lane=consolidation`,)
-              && line.endsWith('exit=reused',);
-          },),).toHaveLength(1,);
-          expect(slices.map(function toIndex(slice,) {
-            return slice.sliceIndex;
-          },),).toEqual([
-            0,
-            1,
-          ],);
-        },),);
-      },
-    },),
-
-    it({
-      name: 'ASKS AGAIN for a twin whose consolidation gate did not reach quorum at overlap 1 and 2, '
-        + 'because the in-run memo may hold only what a warm run can resume',
-      fn: async () => {
-        await Promise.all(([1, 2,] as const).map(async function atOverlap(
-          overlap,
-        ): Promise<void> {
-          /**
-           One unsettled consolidation as asks positive control.
-           */
-          const singleActivity: ConsolidationConcurrency = {
-            now: 0,
-            peak: 0,
-            started: 0,
-            finished: [],
-          };
-          const singleClient = answeringClient();
-          const single = await driveWith({
-            client: singleClient.client,
-            projected: twinSliceDocument(),
-            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-            overlap,
-            activity: singleActivity,
-          },);
-
-          /**
-           Same unsettled question at both positions.
-           */
-          const twinActivity: ConsolidationConcurrency = {
-            now: 0,
-            peak: 0,
-            started: 0,
-            finished: [],
-          };
-          const twinClient = answeringClient();
-          const twin = await driveWith({
-            client: twinClient.client,
-            projected: twinSliceDocument(),
-            contests: [
-              contestSettling({ sliceIndex: 0, lane: 'repair', },),
-              contestSettling({ sliceIndex: 1, lane: 'repair', },),
-            ],
-            overlap,
-            activity: twinActivity,
-          },);
-          expect(singleActivity.started,).toBeGreaterThan(0,);
-          expect(single.written,).toEqual([],);
-          expect(twinActivity.started,).toBe(singleActivity.started * 2,);
-          expect(twin.written,).toEqual([],);
-        },),);
-      },
-    },),
-
-    it({
-      name: 'SHOWS A GOVERNED SLICE\'S PRODUCERS THE RULE AGAINST MERGING LINES, which is the only '
-        + 'reason this driver is handed the governed set at all. The subject field carrying the fact '
-        + 'was born optional on 2026-08-21 and no caller ever set it, so until 2026-08-22 every '
-        + 'consolidating producer was told its passage was prose, verse included',
-      fn: async () => {
-        const { client, bodies, } = recordingClient();
-
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          lineStructuredSlices: new Set([0,],),
-        },);
-
-        expect(bodies.length,).toBeGreaterThan(0,);
-        expect(bodies.some(function carriesRule(body,): boolean {
-          return body.includes(TRANSLATE_LINE_STRUCTURE_RULE,);
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'LEAVES THE RULE OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the "SHOWS A GOVERNED '
-        + 'SLICE\'S PRODUCERS THE RULE AGAINST MERGING LINES" case evidence. A sheet carrying the rule unconditionally would satisfy that one just as well, '
-        + 'and would mean the governed set was never read',
-      fn: async () => {
-        const { client, bodies, } = recordingClient();
-
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          lineStructuredSlices: new Set(),
-        },);
-
-        expect(bodies.length,).toBeGreaterThan(0,);
-        expect(bodies.some(function carriesRule(body,): boolean {
-          return body.includes(TRANSLATE_LINE_STRUCTURE_RULE,);
-        },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'SHOWS A PRODUCER WHAT THE PICTURES NEAR ITS SLICE WERE READ TO SAY, which the sheet has '
-        + 'rendered since it was written and no caller ever supplied. A passage whose meaning leans '
-        + 'on an image was consolidated blind until 2026-08-22, while the translate lane that wrote '
-        + 'one of the candidates had been shown the same reading all along',
-      fn: async () => {
-        const { client, bodies, } = recordingClient();
-
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          pictureContextBySlice: new Map([[0, 'the photograph shows a tabby asleep on a stack of library books',],],),
-        },);
-
-        expect(bodies.length,).toBeGreaterThan(0,);
-        expect(bodies.some(function carriesReading(body,): boolean {
-          return body.includes('the photograph shows a tabby asleep on a stack of library books',);
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'LEAVES A SLICE THE MAP NEVER MENTIONS UNILLUSTRATED, which is what makes the "SHOWS A '
-        + 'PRODUCER WHAT THE PICTURES NEAR ITS SLICE WERE READ TO SAY" case evidence rather than a sheet that always carries a picture heading. It pins the lookup too, '
-        + 'which is why the map here holds a reading for a slice this contest never settles: a driver '
-        + 'reading a neighbouring slice\'s entry finds that reading and puts it on the sheet, and both '
-        + 'picture cases fail together. A slice index naming three different things is why that is '
-        + 'the defect worth pinning',
-      fn: async () => {
-        const { client, bodies, } = recordingClient();
-
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          pictureContextBySlice: new Map([[1, 'the photograph shows a tabby asleep on a stack of library books',],],),
-        },);
-
-        expect(bodies.length,).toBeGreaterThan(0,);
-        expect(bodies.some(function carriesReading(body,): boolean {
-          return body.includes('the photograph shows a tabby asleep on a stack of library books',);
-        },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY. One change gave the readings to '
-        + 'this stage\'s PRODUCERS and stopped, so for one day the judges weighed proposals written '
-        + 'against evidence they could not see, which is worse than both halves being blind: a producer '
-        + 'that used a picture correctly looked to its judge like one inventing detail. Read off the '
-        + 'judges\' own request, which is the only place the wiring is visible',
-      fn: async () => {
-        const { client, judgeSheets, } = answeringClient();
-
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          pictureContextBySlice: new Map([[0, 'The photograph shows a tortoiseshell asleep in a sunlit doorway.',],],),
-        },);
-
-        expect(judgeSheets.length,).toBeGreaterThan(0,);
-        expect(
-          judgeSheets.every(function carriesReading(sheet,): boolean {
-            return sheet.includes('tortoiseshell asleep in a sunlit doorway',);
-          },),
-        ).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'SHOWS THEM THE PASSAGES EITHER SIDE, which neither half of this stage has ever been given. '
-        + 'The translate lane\'s judges have had the window since the relocation finding, and a consolidation judge '
-        + 'without it cannot tell a passage the archive moved next door from one a candidate invented. '
-        + 'Kept apart from the "SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY" case so a '
-        + 'break in one is not read as a break in the other',
-      fn: async () => {
-        const { client, judgeSheets, } = answeringClient();
-
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          neighbourContextBySlice: new Map([[
-            0,
-            {
-              sourceText: '她把窗户推开了一条缝。',
-              incumbentText: 'She pushed the window open a crack.',
-            },
-          ],],),
-        },);
-
-        expect(judgeSheets.length,).toBeGreaterThan(0,);
-        expect(
-          judgeSheets.every(function carriesWindow(sheet,): boolean {
-            return sheet.includes('她把窗户推开了一条缝',)
-              && sheet.includes('She pushed the window open a crack',);
-          },),
-        ).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'SHOWS THEM NEITHER WHEN THE DRIVER HOLDS NEITHER, which is the control the "SHOWS THEM THE '
-        + 'PASSAGES EITHER SIDE" case needs. '
-        + 'A sheet that rendered these blocks unconditionally would satisfy that one just as well and would '
-        + 'mean the two maps were never read, and a slice near no readable picture would be shown a '
-        + 'heading promising readings it does not have',
-      fn: async () => {
-        const { client, judgeSheets, } = answeringClient();
-
-        await driveWith({
-          client,
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-        },);
-
-        expect(judgeSheets.length,).toBeGreaterThan(0,);
-        expect(
-          judgeSheets.some(function carriesEvidence(sheet,): boolean {
-            return sheet.includes('tortoiseshell',)
-              || sheet.includes('她把窗户推开了一条缝',)
-              || sheet.includes('She pushed the window open a crack',);
-          },),
-        ).toBe(false,);
-      },
-    },),
-  ],
-},);
-
 /**
  Builds a judged round that settled the way a resume case needs.
  
@@ -1894,185 +899,6 @@ function settlementFor(
     ...((decision === undefined) ? {} : { decided: judgedAs({ decision, },), }),
   } as ConsolidationSettlement;
 }
-
-await describe({
-  name: consolidationWorthResuming.name,
-  children: [
-    it({
-      name: 'REFUSES TO CACHE A GATE TOO THIN TO SETTLE, which is the whole reason this predicate '
-        + 'exists: a night when one voice of six answered is a fact about a provider, not about the '
-        + 'question, and writing it would answer every later resume of the entry with that night. The '
-        + 'gate refuses to act below its quorum, so a cache that kept the result would preserve a '
-        + 'verdict the gate itself declined to reach',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'gate-kept-standing', usable: 1, },),
-        },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'CACHES A GATE THAT REACHED ITS QUORUM, which is the positive control: a predicate that '
-        + 'refused everything would pass the "REFUSES TO CACHE A GATE TOO THIN TO SETTLE" case while making '
-        + 'every run re-buy every slice it '
-        + 'had already settled',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES TO CACHE UNCHANGED UNENDORSED BASELINE while retaining fresh consolidated result, so retry can recover instead of replaying final-selection failure',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          settlement: settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
-          standingMayShip: false,
-        },),).toBe(false,);
-        expect(consolidationWorthResuming({
-          settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
-          standingMayShip: false,
-        },),).toBe(true,);
-        expect(consolidationWorthResuming({
-          settlement: {
-            ...settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
-            polish: {
-              kind: 'settled',
-              baseText: 'The cat faced life proactively.',
-              proposedText: 'The cat maintained a positive outlook on life.',
-              text: 'The cat maintained a positive outlook on life.',
-              changed: true,
-              refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-              contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-              rounds: [],
-              review: {
-                correctionCount: 0,
-                corrections: [],
-                rounds: [],
-                confirmations: [],
-              },
-              findings: [],
-            },
-          },
-          standingMayShip: false,
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES TO CACHE A GATE\'S TERMINAL WITH NO GATE RECORDED, which the settlement type admits and no '
-        + 'settlement builder produces: without the ballots there is no quorum to trust',
-      fn: async () => {
-        expect((['consolidated', 'gate-kept-standing', 'wrap-erased-difference',] as const).map(
-          function worthResuming(terminal,): boolean {
-            return consolidationWorthResuming({
-              standingMayShip: true,
-              settlement: settlementFor({ terminal, },),
-            },);
-          },
-        ),).toEqual([false, false, false,],);
-      },
-    },),
-
-    it({
-      name: 'REFUSES TO CACHE A DECLINED SLATE WITH NO DECISION RECORDED, which the settlement type admits and no '
-        + 'settlement builder produces (the absence exit ledger B51 removed built one, marked archive-kept): '
-        + 'without the decision there is no telling a settled decline from a pending one',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'slate-declined-standing', },),
-        },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'CACHES A SLICE STOPPED BEFORE THE GATE BY THE SLATE OR THE CONTEST, because neither is a '
-        + 'fact about who answered. A floor that refused every proposal read the structural guard, and '
-        + 'a contest that named neither lane left nothing to improve on; both hold on any night',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'incumbent-only', },),
-        },),).toBe(true,);
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'no-standing-text', },),
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'NEVER CACHES A SLICE THAT KEPT THE ARCHIVE because no wording passed the rule (owner, '
-        + '2026-09-27, "Keep archive, ship"). The mark saying so lives on the settlement a run bought, so '
-        + 'a copy resumed without it would ship the lane text the rule refused. Refused even where the '
-        + 'standing claims endorsement, so this rests on no coupling two files away',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: {
-            ...settlementFor({ terminal: 'incumbent-only', },),
-            archiveKept: true,
-          },
-        },),).toBe(false,);
-        expect(consolidationWorthResuming({
-          settlement: {
-            ...settlementFor({ terminal: 'no-standing-text', },),
-            archiveKept: true,
-          },
-          standingMayShip: false,
-        },),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES TO CACHE JUDGES THAT DECLINED TO SETTLE, and caches judges that decided, which is '
-        + 'the same distinction one stage earlier: translate-retry.ts buys a second judging for '
-        + 'exactly declined-indecision and declined-rejection and records the settled decline under a '
-        + 'different name. A predicate keyed on which text won rather than on whether they settled '
-        + 'would freeze an undecided panel',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-indecision', },),
-        },),).toBe(false,);
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-rejection', },),
-        },),).toBe(false,);
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'slate-endorsed-standing', decision: 'judged', },),
-        },),).toBe(true,);
-
-        // THE SETTLED DECLINE, which is why the decision read survived the
-        // terminal split: it shares its `slate-declined-standing` terminal with
-        // the `declined-indecision` and `declined-rejection` settlements and gets
-        // the opposite answer, so the name alone cannot decide this one.
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'no-candidate-backed', },),
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'CACHES A SLATE NO JUDGE WAS ASKED ABOUT, which is the state the merged name hid '
-        + 'worst. A slate carrying one candidate measures the PRODUCING half and says nothing '
-        + 'about the roster, so counting it beside an endorsement of the archive reported a '
-        + 'working panel where no panel spoke',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: settlementFor({ terminal: 'slate-unjudged-standing', decision: 'sole-candidate', },),
-        },),).toBe(true,);
-      },
-    },),
-  ],
-},);
 
 /**
  Builds a client that records which roster seat every call asked and answers
@@ -2245,219 +1071,1404 @@ async function keysLookedUp(
 }
 
 await describe({
-  name: `${consolidateDocument.name} re-seated under a hold (ledger H5)`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SEATS A SLICE ON THE ROSTER ITS HOOK RETURNS, as both lanes seat theirs, so writers re-read '
-        + 'after a provider dry-out are the ones the slice asks rather than the roster read before it',
-      fn: async () => {
-        /**
-         Seat of every call the driver made.
-         */
-        const asked: RosterModelId[] = [];
-        await driveWith({
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          client: seatRecordingClient({ asked, },),
-          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
-            roster: {
-              modelIds: RESEATED,
-              judgeModelIds: RESEATED,
-            },
-          }),
-        },);
-        expect(asked.length,).toBeGreaterThan(0,);
-        expect(asked.filter(function outsideRoster(seat,): boolean {
-          return !RESEATED.includes(seat,);
-        },),).toEqual([],);
-      },
+    describe({
+      name: consolidateDocument.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS NOTHING WHERE THE CONTEST NEVER RAN, which is the majority of most documents: a '
+            + 'slice both lanes worded identically has nothing to consolidate, because a third rendering '
+            + 'would be competing against their agreement rather than resolving a difference',
+          fn: async () => {
+            const { slices, written, } = await driveWith({ contests: [], },);
+
+            expect(slices.length,).toBe(0,);
+            expect(written.length,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'RESUMES AUDITABLE CHANGED POLISH without rebuying any stage',
+          fn: async () => {
+            /**
+             Exact first-slice question driver derives.
+             */
+            const key = consolidateSliceKey({
+              runShape: consolidateRunShape({
+                modelIds: ROSTER,
+                declaredNamePairs: [],
+              },),
+              sourceText: '原文0',
+              incumbentText: 'archive wording for slice 0',
+              repairText: 'repair wording for slice 0',
+              translateText: 'translate wording for slice 0',
+              standingText: 'repair wording for slice 0',
+              ballots: [],
+              lineStructured: false,
+              pictureContext: '',
+              neighbouringSourceText: '',
+              neighbouringIncumbentText: '',
+            },);
+            /**
+             Cached settlement whose final polish replaced approved base.
+             */
+            const settled: ConsolidationSettlement = {
+              ...settlementReaching({ terminal: 'gate-kept-standing', },),
+              polish: {
+                kind: 'settled',
+                baseText: 'repair wording for slice 0',
+                proposedText: 'polished wording for slice 0',
+                text: 'polished wording for slice 0',
+                changed: true,
+                refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                rounds: [],
+                review: {
+                  correctionCount: 0,
+                  corrections: [],
+                  rounds: [],
+                  confirmations: [],
+                },
+                findings: [],
+              },
+            };
+            const messages: string[] = [];
+            /**
+             How often the driver asked before a slice, which it does even for a
+             slice the cache then answers: the wait belongs to the bench, not
+             to the purchase.
+             */
+            const before = { calls: 0, };
+            const resumed = await driveWith({
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              resumed: new Map<string, ConsolidationSettlement>([[key, settled,],]),
+              messages,
+              beforeSlice: async (): Promise<ConsolidateSliceSeating> => {
+                before.calls += 1;
+                return {};
+              },
+            },);
+            expect(before.calls,).toBe(1,);
+            expect(resumed.written,).toEqual([],);
+            expect(messages.some(function started(line,): boolean {
+              return line.includes(
+                `${SLICE_START_MARKER} lane=consolidation chunk=0 sourceChars=3`,
+              );
+            },),).toBe(true,);
+            expect(messages.some(function finished(line,): boolean {
+              return line.includes(
+                `${SLICE_COST_MARKER} lane=consolidation chunk=0 sourceChars=3`,
+              ) && line.endsWith('exit=resumed',);
+            },),).toBe(true,);
+            expect(resumed.slices[0]?.polish?.kind,).toBe('settled',);
+            expect(resumed.slices[0]?.polish?.kind === 'settled'
+              ? resumed.slices[0].polish.changed
+              : false,).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REACHES THE ROSTER FOR A SLICE NOTHING HAS SETTLED, which is the positive control for '
+            + 'the "RESUMES AUDITABLE CHANGED POLISH" case. A cache test that never proves the uncached path buys anything '
+            + 'would pass just as well against a driver that had stopped calling the roster at all',
+          fn: async () => {
+            /**
+             Operational messages naming unfinished slice exit.
+             */
+            const messages: string[] = [];
+            /**
+             Roster that refuses every call and counts it.
+             */
+            const { client, calls, } = countingRefusingClient();
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              messages,
+            },);
+
+            expect(calls.count,).toBeGreaterThan(0,);
+            // BOUGHT, NOT RESUMED: every voice refused, the slice still computed.
+            expect(messages.some(function namesComputedExit(line,): boolean {
+              return line.includes(`${SLICE_COST_MARKER} lane=consolidation chunk=0`,)
+                && line.endsWith('exit=computed',);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REACHES CONSOLIDATION AFTER CONTEST SETTLES NEITHER OR MISSES QUORUM, using archive only as comparison baseline rather than silently reviving it',
+          fn: async () => {
+            await Promise.all(([
+              { kind: 'settled-neither', },
+              { kind: 'quorum-not-met', },
+            ] as const).map(async function driveVerdict(verdict,): Promise<void> {
+              /**
+               Roster that refuses every call and counts it.
+               */
+              const { client, calls, } = countingRefusingClient();
+              /**
+               What the driver threw, if anything: a roster that answers nothing
+               interrupts the entry as an outage.
+               */
+              const raised: unknown = await (async function captureOutage(): Promise<unknown> {
+                try {
+                  await driveWith({
+                    client,
+                    contests: [{
+                      sliceIndex: 0,
+                      verdict,
+                      ballots: [],
+                      usable: ROSTER.length,
+                    },],
+                  },);
+                }
+                catch (error) {
+                  return error;
+                }
+                return 'no interruption';
+              })();
+              expect(calls.count,).toBeGreaterThan(0,);
+              expect(String(raised,),).toContain('provider-unavailable',);
+            },),);
+          },
+        },),
+        it({
+          name: 'SHIPS archive-declined standing after the single attempt, recording non-endorsement without a recovery round',
+          fn: async () => {
+            const {
+              client,
+              producerSheets,
+              producerPayloads,
+            } = scriptedClient();
+            const { slices, written, } = await driveWith({
+              client,
+              modelIds: WIDE_ROSTER,
+              contests: [{
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'settled-neither',
+                  archive: 'declined',
+                },
+                ballots: [],
+                usable: ROSTER.length,
+              },],
+            },);
+
+            // One producer round (every producer read the one sheet, so no
+            // second strategy was asked for), and the honest gate-kept terminal
+            // ships with the non-endorsement recorded.
+            expect(new Set(producerSheets,).size,).toBe(1);
+            expect(new Set(producerPayloads,).size,).toBe(producerPayloads.length);
+            expect(slices[0]?.terminal,).toBe('gate-kept-standing');
+            // An unendorsed standing settlement is not worth resuming, so nothing
+            // is persisted and a warm run asks again.
+            expect(written,).toHaveLength(0);
+          },
+        },),
+        it({
+          name: 'SHIPS THE REPAIR LANE\'S TEXT AS THE STANDING at a settled-neither contest on a disputed slice, so the '
+            + 'archive rendering the adjudicators found to invent a detail never stands (class one hundred seven, '
+            + 'CuspariaKLSY10 slice 3, 2026-09-24)',
+          fn: async () => {
+            /**
+             Repair lane's text for slice 0, standing in for the archive.
+             */
+            const standIn = 'repair wording for slice 0';
+            const { client, } = scriptedClient();
+            const { slices, } = await driveWith({
+              client,
+              modelIds: WIDE_ROSTER,
+              contests: [{
+                sliceIndex: 0,
+                verdict: { kind: 'settled-neither', },
+                ballots: [],
+                usable: WIDE_ROSTER.length,
+              },],
+              archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, standInEligible: true, acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',], },],],),
+            },);
+            expect(slices[0]?.terminal,).toBe('gate-kept-standing',);
+            expect(slices[0]?.shipped,).toEqual({
+              kind: 'incumbent',
+              text: standIn,
+            },);
+          },
+        },),
+        it({
+          name: 'SHIPS unjudged settled-neither standing after the single attempt under the same recording',
+          fn: async () => {
+            const { client, } = scriptedClient();
+            const { slices, written, } = await driveWith({
+              client,
+              modelIds: WIDE_ROSTER,
+              contests: [{
+                sliceIndex: 0,
+                verdict: { kind: 'settled-neither', },
+                ballots: [],
+                usable: WIDE_ROSTER.length,
+              },],
+            },);
+
+            expect(slices[0]?.terminal,).toBe('gate-kept-standing');
+            expect(written,).toHaveLength(0);
+          },
+        },),
+        it({
+          name: 'SHIPS THE SLATE\'S VALID CHOICE when the repair-lane standing dropped a source destination and '
+            + 'the gate preferred it: the publisher refuses such a standing (DroppedDestinationError), and the '
+            + 'owner\'s 2026-09-04 rule prefers the best valid proposal, failing the slice only where there is '
+            + 'none (class one hundred eighty-five)',
+          fn: async () => {
+            const destination = 'https://example.test/cat-record';
+            const sourceText = `[猫猫的记录](${destination})。`;
+            const initialText = `[The cat record](${destination}).`;
+            const endorsedText = `[The cat's final record](${destination}).`;
+            const { client, } = scriptedClient({ initialText, endorsedText, });
+            const projected = {
+              comparison: [{
+                sliceIndex: 0,
+                incumbentKind: 'present',
+                incumbentText: 'The archive mentions the cat record.',
+                repairText: 'The repair lane mentions the cat record.',
+                translateText: initialText,
+              },],
+              delivery: {
+                repair: [{ sliceIndex: 0, sourceText, },],
+                translate: [],
+              },
+            } as unknown as ProjectedLanes;
+            const { slices, } = await driveWith({
+              client,
+              modelIds: WIDE_ROSTER,
+              projected,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
+            },);
+            expect(slices[0]?.terminal,).toBe('consolidated',);
+          },
+        },),
+        it({
+          name: 'KEEPS A VALID INCUMBENT where the repair-lane standing dropped a source destination and '
+            + 'the archive carried it: the incumbent stands in as the standing, the gate keeps it, and the '
+            + 'artifact says the incumbent ships instead of stopping the entry (owner, 2026-09-09, the '
+            + 'sixth Mio at slice 3)',
+          fn: async () => {
+            const destination = 'https://example.test/cat-record';
+            const sourceText = `[猫猫的记录](${destination})。`;
+            const incumbentText = `[The cat record](${destination}).`;
+            const initialText = `[The cat's record](${destination}).`;
+            const endorsedText = `[The cat's final record](${destination}).`;
+            const { client, } = scriptedClient({ initialText, endorsedText, });
+            const projected = {
+              comparison: [{
+                sliceIndex: 0,
+                incumbentKind: 'present',
+                incumbentText,
+                repairText: 'The repair lane mentions the cat record.',
+                translateText: initialText,
+              },],
+              delivery: {
+                repair: [{ sliceIndex: 0, sourceText, },],
+                translate: [],
+              },
+            } as unknown as ProjectedLanes;
+            const { slices, } = await driveWith({
+              client,
+              modelIds: WIDE_ROSTER,
+              projected,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
+            },);
+            expect(slices[0]?.terminal,).toBe('gate-kept-standing',);
+            // THE ARTIFACT SAYS THE INCUMBENT SHIPS. A bare "unchanged" here would
+            // have the page assembled from the lane's wording, which is the text
+            // the gate refused.
+            expect(slices[0]?.shipped,).toEqual({
+              kind: 'incumbent',
+              text: incumbentText,
+            },);
+          },
+        },),
+        it({
+          name: 'SHIPS THE ARCHIVE where the floor can compare nothing, an original the strict grammar cannot read, '
+            + 'whichever lane the contest backed: both lanes\' texts and the archive are refused alike, the archive '
+            + 'stands, and no writer, judge or gate is asked (ledger B43, B45)',
+          fn: async () => {
+            /**
+             Original with an expression the strict grammar never closes.
+             */
+            const sourceText = '猫猫在{窗台上打盹。';
+            /**
+             Every settlement, one per lane the contest backed.
+             */
+            const settled = await Promise.all((['repair', 'translate',] as const).map(async function settleFor(lane,) {
+              const {
+                client,
+                requests,
+              } = scriptedClient({
+                initialText: 'The cat dozes on the windowsill.',
+                endorsedText: 'The cat naps on the windowsill.',
+              },);
+              const messages: string[] = [];
+              const projected = {
+                comparison: [{
+                  sliceIndex: 0,
+                  incumbentKind: 'present',
+                  incumbentText: 'The cat is doing the dozing on the windowsill.',
+                  repairText: 'The cat dozed on the sill.',
+                  translateText: 'The cat dozes on the windowsill.',
+                },],
+                delivery: {
+                  repair: [{ sliceIndex: 0, sourceText, },],
+                  translate: [],
+                },
+              } as unknown as ProjectedLanes;
+              const { slices, } = await driveWith({
+                client,
+                modelIds: WIDE_ROSTER,
+                projected,
+                contests: [contestSettling({ sliceIndex: 0, lane, }),],
+                messages,
+              },);
+              return {
+                terminal: slices[0]?.terminal,
+                shipped: slices[0]?.shipped,
+                requests: requests.length,
+                refusedBoth: messages.some(function refusesBoth(line,): boolean {
+                  return line.includes('withheld from the slate: no comparison was possible: original could not be read',)
+                    && line.includes('the incumbent fails it too: no comparison was possible',);
+                },),
+                askedNobody: messages.some(function namesTheReason(line,): boolean {
+                  return line.includes('the floor can compare nothing here (original could not be read',)
+                    && line.includes('so no writer is asked',);
+                },),
+              };
+            },),);
+            expect(settled,).toEqual([
+              {
+                terminal: 'incumbent-only',
+                shipped: { kind: 'archive', },
+                requests: 0,
+                refusedBoth: true,
+                askedNobody: true,
+              },
+              {
+                terminal: 'incumbent-only',
+                shipped: { kind: 'archive', },
+                requests: 0,
+                refusedBoth: true,
+                askedNobody: true,
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'ASKS identical unsafe twins once and ships both with the recorded non-endorsement',
+          fn: async () => {
+            const {
+              client,
+              producerPayloads,
+            } = scriptedClient();
+            const { slices, written, } = await driveWith({
+              client,
+              modelIds: WIDE_ROSTER,
+              projected: twinSliceDocument(),
+              contests: [
+                {
+                  sliceIndex: 0,
+                  verdict: { kind: 'settled-neither', archive: 'declined', },
+                  ballots: [],
+                  usable: WIDE_ROSTER.length,
+                },
+                {
+                  sliceIndex: 1,
+                  verdict: { kind: 'settled-neither', archive: 'declined', },
+                  ballots: [],
+                  usable: WIDE_ROSTER.length,
+                },
+              ],
+              overlap: 2,
+            },);
+
+            // Unsafe questions are never twin-memoized, so each twin buys its
+            // own single attempt, one window of producers, and both ship the
+            // recorded outcome.
+            expect(producerPayloads,).toHaveLength(firstRoundWindow({ benchSize: WIDE_ROSTER.length, },) * 2,);
+            expect(slices,).toHaveLength(2);
+            expect(slices.every(function keptWithRecord(slice,): boolean {
+              return slice.terminal === 'gate-kept-standing';
+            },),).toBe(true,);
+            expect(written,).toHaveLength(0);
+          },
+        },),
+        it({
+          name: 'RECORDS a declined archive that the single attempt kept, never pausing the entry',
+          fn: async () => {
+            const { client, judgeSheets, } = answeringClient();
+            const writes: string[] = [];
+            const { slices, } = await driveWith({
+              client,
+              writes,
+              contests: [{
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'settled-neither',
+                  archive: 'declined',
+                },
+                ballots: [],
+                usable: ROSTER.length,
+              },],
+            },);
+
+            expect(slices[0]?.terminal,).toBe('slate-declined-standing');
+            expect(judgeSheets.every(function carriesArchiveBaseline(sheet,): boolean {
+              return sheet.includes('archive wording for slice 0',);
+            },),).toBe(true,);
+            expect(writes,).toEqual([]);
+          },
+        },),
+        it({
+          name: 'PAUSES provider-silent unsafe standing as unavailable without persisting it',
+          fn: async () => {
+            const { client, } = recordingClient();
+            const writes: string[] = [];
+            let thrown: unknown;
+            try {
+              await driveWith({
+                client,
+                writes,
+                contests: [{
+                  sliceIndex: 0,
+                  verdict: { kind: 'settled-neither', archive: 'declined', },
+                  ballots: [],
+                  usable: ROSTER.length,
+                },],
+              },);
+            }
+            catch (error) {
+              thrown = error;
+            }
+
+            expect(thrown,).toBeInstanceOf(TranslationRepairInterruptedError,);
+            expect((thrown as TranslationRepairInterruptedError).reason,).toBe('provider-unavailable');
+            expect(writes,).toEqual([]);
+          },
+        },),
+        it({
+          name: 'REFUSES A CONTESTED SLICE MISSING FROM THE REPAIR LEDGER rather than consolidating '
+            + 'against no original, because the comparison and the ledger disagreeing about which slices '
+            + 'exist is a defect upstream and settling one of them anyway would hide it',
+          fn: async () => {
+            /**
+             A document whose comparison names a slice the ledger does not.
+             */
+            const gapped = {
+              ...twoSliceDocument(),
+              delivery: {
+                repair: [],
+                translate: [],
+              },
+            };
+
+            /**
+             What the driver did instead of returning.
+             */
+            let raised: unknown;
+            try {
+              await driveWith({
+                contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+                projected: gapped,
+              },);
+            } catch (error: unknown) {
+              raised = error;
+            }
+
+            expect(raised,).toBeInstanceOf(Error,);
+            expect(String(raised,).includes('does not appear in the repair ledger',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'RETURNS ONE RECORD PER CONSOLIDATED SLICE IN COMPARISON ORDER, resuming both without '
+            + 'buying, so a reader of the artifact can line records up against the comparison rows they '
+            + 'answer rather than re-deriving the order',
+          fn: async () => {
+            /**
+             Both slices settled by an earlier run, keyed by whatever the driver
+             asks for: the cache here answers every key.
+             */
+            const everyKey = {
+              get: function answerAnyKey() {
+                return settlementReaching({ terminal: 'incumbent-only', },);
+              },
+            };
+
+            const { slices, written, } = await driveWith({
+              contests: [
+                contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                contestSettling({ sliceIndex: 1, lane: 'translate', },),
+              ],
+              resumed: everyKey as unknown as ReadonlyMap<string, ConsolidationSettlement>,
+            },);
+
+            expect(slices.length,).toBe(2,);
+            expect(slices[0]?.sliceIndex,).toBe(0,);
+            expect(slices[1]?.sliceIndex,).toBe(1,);
+            expect(slices[0]?.terminal,).toBe('incumbent-only',);
+            expect(slices[0]?.gate.kind,).toBe('not-asked',);
+            expect(written.length,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES persistence under an already aborted caller after a stable '
+            + 'consolidation returned, preserving the final pre-write defense',
+          fn: async () => {
+            /**
+             Exact caller reason helper must surface.
+             */
+            const stopped = new Error('caller abandoned completed consolidation',);
+            const controller = new AbortController();
+            controller.abort(stopped,);
+
+            /**
+             Writes attempted after abort.
+             */
+            const written: string[] = [];
+            await expect(persistConsolidationSettlement({
+              standingMayShip: true,
+              key: 'consolidation-persistence-guard-fixture',
+              settlement: settlementReaching({ terminal: 'incumbent-only', },),
+              cache: {
+                resumed: new Map<string, ConsolidationSettlement>(),
+                persist: async ({ key, },) => {
+                  written.push(key,);
+                },
+              },
+              signal: controller.signal,
+            },),)
+              .rejects
+              .toBe(stopped,);
+            expect(written,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'runs two consolidation slices at once at overlap 2, after a serial '
+            + 'positive control proves the successful-call instrument distinguishes one from two, '
+            + 'and returns records in comparison order when the second producer answers first',
+          fn: async () => {
+            /**
+             Serial positive-control activity.
+             */
+            const serial: ConsolidationConcurrency = {
+              now: 0,
+              peak: 0,
+              started: 0,
+              finished: [],
+            };
+            const serialClient = recordingClient();
+            await driveWith({
+              client: serialClient.client,
+              contests: [
+                contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                contestSettling({ sliceIndex: 1, lane: 'translate', },),
+              ],
+              overlap: 1,
+              activity: serial,
+            },);
+
+            /**
+             Two-slice activity, gated so the second call answers first.
+             */
+            const overlapped: ConsolidationConcurrency = {
+              now: 0,
+              peak: 0,
+              started: 0,
+              finished: [],
+              secondFinished: Promise.withResolvers<undefined>(),
+            };
+            const overlapClient = recordingClient();
+            const { slices, } = await driveWith({
+              client: overlapClient.client,
+              contests: [
+                contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                contestSettling({ sliceIndex: 1, lane: 'translate', },),
+              ],
+              overlap: 2,
+              activity: overlapped,
+            },);
+            expect(serial.peak,).toBe(1,);
+            expect(overlapped.peak,).toBe(2,);
+            // THE SECOND PRODUCER DID ANSWER FIRST: the call started first is not
+            // the first to finish, so the check that the slices come back in
+            // comparison order is exercised.
+            expect(overlapped.finished,).toContain(0,);
+            expect(overlapped.finished[0],).not.toBe(0,);
+            expect(slices.map(function toIndex(slice,) {
+              return slice.sliceIndex;
+            },),).toEqual([
+              0,
+              1,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'mixes one resumed row with one fresh row at overlap 2, buying and persisting '
+            + 'only the fresh consolidation while returning both in comparison order',
+          fn: async () => {
+            /**
+             Fresh pass used only to derive production keys for both rows.
+             */
+            const learningClient = recordingClient();
+            const learned = await driveWith({
+              client: learningClient.client,
+              contests: [
+                contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                contestSettling({ sliceIndex: 1, lane: 'translate', },),
+              ],
+            },);
+
+            /**
+             Second pass resuming first row and buying second.
+             */
+            const freshClient = recordingClient();
+            const mixed = await driveWith({
+              client: freshClient.client,
+              contests: [
+                contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                contestSettling({ sliceIndex: 1, lane: 'translate', },),
+              ],
+              resumed: new Map([
+                [
+                  learned.written.at(0,) ?? '',
+                  settlementReaching({ terminal: 'incumbent-only', },),
+                ],
+              ],),
+              overlap: 2,
+            },);
+            expect(freshClient.bodies.length,).toBeGreaterThan(0,);
+            expect(mixed.written.length,).toBe(1,);
+            expect(mixed.slices.map(function toIndex(slice,) {
+              return slice.sliceIndex;
+            },),).toEqual([
+              0,
+              1,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'NAMES THE SLICE on every line the settlement writes (class one hundred eighty-five: '
+            + 'TianqiChen66619 consolidated slices in parallel and its slate and gate ballots named no slice, '
+            + 'so slice 9\'s ballots could not be told from its neighbours\')',
+          fn: async () => {
+            /**
+             Operational messages of one bought slice.
+             */
+            const messages: string[] = [];
+            await driveWith({
+              client: recordingClient().client,
+              projected: twinSliceDocument(),
+              contests: [contestSettling({ sliceIndex: 1, lane: 'repair', },),],
+              messages,
+            },);
+            /**
+             Lines the slice's purchase wrote: its producers, slate, gate and
+             settlement.
+             */
+            const settling = messages.filter(function fromPurchase(line,): boolean {
+              return [
+                '[settleConsolidation]',
+                '[produceConsolidations]',
+                '[judgeTranslateSlate]',
+                '[gateConsolidatedSlice]',
+              ].some(function carries(tag,): boolean {
+                return line.includes(tag,);
+              },);
+            },);
+            expect(settling.length,).toBeGreaterThan(0,);
+            expect(settling.every(function namesSlice(line,): boolean {
+              return line.includes('[slice 1]',);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'ASKS ONCE for two slices carrying the same consolidation question at overlap 1 and 2, '
+            + 'so cold and warm runs settle one reusable third rendering',
+          fn: async () => {
+            await Promise.all(([1, 2,] as const).map(async function atOverlap(
+              overlap,
+            ): Promise<void> {
+              /**
+               Calls one copy of this question costs, measured rather than assumed
+               because malformed structured replies are retried by transport.
+               */
+              const singleFixture = recordingClient();
+              const single = await driveWith({
+                client: singleFixture.client,
+                projected: twinSliceDocument(),
+                contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+                overlap,
+              },);
+
+              /**
+               Same question stamped at both positions.
+               */
+              const twinFixture = recordingClient();
+              const messages: string[] = [];
+              const { slices, written, } = await driveWith({
+                client: twinFixture.client,
+                projected: twinSliceDocument(),
+                contests: [
+                  contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                  contestSettling({ sliceIndex: 1, lane: 'repair', },),
+                ],
+                overlap,
+                messages,
+              },);
+              expect(singleFixture.bodies.length,).toBeGreaterThan(0,);
+              expect(twinFixture.bodies.length,).toBe(singleFixture.bodies.length,);
+              expect(single.written.length,).toBe(1,);
+              expect(written.length,).toBe(1,);
+              expect(messages.filter(function computed(line,): boolean {
+                return line.includes(`${SLICE_COST_MARKER} lane=consolidation`,)
+                  && line.endsWith('exit=computed',);
+              },),).toHaveLength(1,);
+              expect(messages.filter(function reused(line,): boolean {
+                return line.includes(`${SLICE_COST_MARKER} lane=consolidation`,)
+                  && line.endsWith('exit=reused',);
+              },),).toHaveLength(1,);
+              expect(slices.map(function toIndex(slice,) {
+                return slice.sliceIndex;
+              },),).toEqual([
+                0,
+                1,
+              ],);
+            },),);
+          },
+        },),
+
+        it({
+          name: 'ASKS AGAIN for a twin whose consolidation gate did not reach quorum at overlap 1 and 2, '
+            + 'because the in-run memo may hold only what a warm run can resume',
+          fn: async () => {
+            await Promise.all(([1, 2,] as const).map(async function atOverlap(
+              overlap,
+            ): Promise<void> {
+              /**
+               One unsettled consolidation as asks positive control.
+               */
+              const singleActivity: ConsolidationConcurrency = {
+                now: 0,
+                peak: 0,
+                started: 0,
+                finished: [],
+              };
+              const singleClient = answeringClient();
+              const single = await driveWith({
+                client: singleClient.client,
+                projected: twinSliceDocument(),
+                contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+                overlap,
+                activity: singleActivity,
+              },);
+
+              /**
+               Same unsettled question at both positions.
+               */
+              const twinActivity: ConsolidationConcurrency = {
+                now: 0,
+                peak: 0,
+                started: 0,
+                finished: [],
+              };
+              const twinClient = answeringClient();
+              const twin = await driveWith({
+                client: twinClient.client,
+                projected: twinSliceDocument(),
+                contests: [
+                  contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                  contestSettling({ sliceIndex: 1, lane: 'repair', },),
+                ],
+                overlap,
+                activity: twinActivity,
+              },);
+              expect(singleActivity.started,).toBeGreaterThan(0,);
+              expect(single.written,).toEqual([],);
+              expect(twinActivity.started,).toBe(singleActivity.started * 2,);
+              expect(twin.written,).toEqual([],);
+            },),);
+          },
+        },),
+
+        it({
+          name: 'SHOWS A GOVERNED SLICE\'S PRODUCERS THE RULE AGAINST MERGING LINES, which is the only '
+            + 'reason this driver is handed the governed set at all. The subject field carrying the fact '
+            + 'was born optional on 2026-08-21 and no caller ever set it, so until 2026-08-22 every '
+            + 'consolidating producer was told its passage was prose, verse included',
+          fn: async () => {
+            const { client, bodies, } = recordingClient();
+
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              lineStructuredSlices: new Set([0,],),
+            },);
+
+            expect(bodies.length,).toBeGreaterThan(0,);
+            expect(bodies.some(function carriesRule(body,): boolean {
+              return body.includes(TRANSLATE_LINE_STRUCTURE_RULE,);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'LEAVES THE RULE OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the "SHOWS A GOVERNED '
+            + 'SLICE\'S PRODUCERS THE RULE AGAINST MERGING LINES" case evidence. A sheet carrying the rule unconditionally would satisfy that one just as well, '
+            + 'and would mean the governed set was never read',
+          fn: async () => {
+            const { client, bodies, } = recordingClient();
+
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              lineStructuredSlices: new Set(),
+            },);
+
+            expect(bodies.length,).toBeGreaterThan(0,);
+            expect(bodies.some(function carriesRule(body,): boolean {
+              return body.includes(TRANSLATE_LINE_STRUCTURE_RULE,);
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'SHOWS A PRODUCER WHAT THE PICTURES NEAR ITS SLICE WERE READ TO SAY, which the sheet has '
+            + 'rendered since it was written and no caller ever supplied. A passage whose meaning leans '
+            + 'on an image was consolidated blind until 2026-08-22, while the translate lane that wrote '
+            + 'one of the candidates had been shown the same reading all along',
+          fn: async () => {
+            const { client, bodies, } = recordingClient();
+
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              pictureContextBySlice: new Map([[0, 'the photograph shows a tabby asleep on a stack of library books',],],),
+            },);
+
+            expect(bodies.length,).toBeGreaterThan(0,);
+            expect(bodies.some(function carriesReading(body,): boolean {
+              return body.includes('the photograph shows a tabby asleep on a stack of library books',);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A SLICE THE MAP NEVER MENTIONS UNILLUSTRATED, which is what makes the "SHOWS A '
+            + 'PRODUCER WHAT THE PICTURES NEAR ITS SLICE WERE READ TO SAY" case evidence rather than a sheet that always carries a picture heading. It pins the lookup too, '
+            + 'which is why the map here holds a reading for a slice this contest never settles: a driver '
+            + 'reading a neighbouring slice\'s entry finds that reading and puts it on the sheet, and both '
+            + 'picture cases fail together. A slice index naming three different things is why that is '
+            + 'the defect worth pinning',
+          fn: async () => {
+            const { client, bodies, } = recordingClient();
+
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              pictureContextBySlice: new Map([[1, 'the photograph shows a tabby asleep on a stack of library books',],],),
+            },);
+
+            expect(bodies.length,).toBeGreaterThan(0,);
+            expect(bodies.some(function carriesReading(body,): boolean {
+              return body.includes('the photograph shows a tabby asleep on a stack of library books',);
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY. One change gave the readings to '
+            + 'this stage\'s PRODUCERS and stopped, so for one day the judges weighed proposals written '
+            + 'against evidence they could not see, which is worse than both halves being blind: a producer '
+            + 'that used a picture correctly looked to its judge like one inventing detail. Read off the '
+            + 'judges\' own request, which is the only place the wiring is visible',
+          fn: async () => {
+            const { client, judgeSheets, } = answeringClient();
+
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              pictureContextBySlice: new Map([[0, 'The photograph shows a tortoiseshell asleep in a sunlit doorway.',],],),
+            },);
+
+            expect(judgeSheets.length,).toBeGreaterThan(0,);
+            expect(
+              judgeSheets.every(function carriesReading(sheet,): boolean {
+                return sheet.includes('tortoiseshell asleep in a sunlit doorway',);
+              },),
+            ).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'SHOWS THEM THE PASSAGES EITHER SIDE, which neither half of this stage has ever been given. '
+            + 'The translate lane\'s judges have had the window since the relocation finding, and a consolidation judge '
+            + 'without it cannot tell a passage the archive moved next door from one a candidate invented. '
+            + 'Kept apart from the "SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY" case so a '
+            + 'break in one is not read as a break in the other',
+          fn: async () => {
+            const { client, judgeSheets, } = answeringClient();
+
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              neighbourContextBySlice: new Map([[
+                0,
+                {
+                  sourceText: '她把窗户推开了一条缝。',
+                  incumbentText: 'She pushed the window open a crack.',
+                },
+              ],],),
+            },);
+
+            expect(judgeSheets.length,).toBeGreaterThan(0,);
+            expect(
+              judgeSheets.every(function carriesWindow(sheet,): boolean {
+                return sheet.includes('她把窗户推开了一条缝',)
+                  && sheet.includes('She pushed the window open a crack',);
+              },),
+            ).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'SHOWS THEM NEITHER WHEN THE DRIVER HOLDS NEITHER, which is the control the "SHOWS THEM THE '
+            + 'PASSAGES EITHER SIDE" case needs. '
+            + 'A sheet that rendered these blocks unconditionally would satisfy that one just as well and would '
+            + 'mean the two maps were never read, and a slice near no readable picture would be shown a '
+            + 'heading promising readings it does not have',
+          fn: async () => {
+            const { client, judgeSheets, } = answeringClient();
+
+            await driveWith({
+              client,
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+            },);
+
+            expect(judgeSheets.length,).toBeGreaterThan(0,);
+            expect(
+              judgeSheets.some(function carriesEvidence(sheet,): boolean {
+                return sheet.includes('tortoiseshell',)
+                  || sheet.includes('她把窗户推开了一条缝',)
+                  || sheet.includes('She pushed the window open a crack',);
+              },),
+            ).toBe(false,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'SEATS THE SLATE JUDGES AND NATURALNESS ROLES ITS HOOK RETURNS TOO, after a control proves a '
-        + 'slice with no hook asks the starting judges and polish roles, each on a seat no other role holds',
-      fn: async () => {
-        /**
-         Starting roster: writers, judges and polish roles each on their own seat.
-         */
-        const starting = {
-          judgeModelIds: [SEAT_HYPER_ONLY,],
-          polishConfig: polishOn({
-            seats: [
-              SEAT_OPENROUTER_ONLY,
-              SEAT_OPENROUTER_DECISIONS,
-              SEAT_OPENROUTER_ONLY_CHECKER,
-            ],
-          },),
-        };
-        /**
-         Seat of every call a driver with no hook made.
-         */
-        const control: RosterModelId[] = [];
-        await driveWith({
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          client: roleAnsweringClient({ asked: control, },),
-          ...starting,
-        },);
-        /**
-         Seat of every call the re-seated driver made.
-         */
-        const asked: RosterModelId[] = [];
-        await driveWith({
-          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-          client: roleAnsweringClient({ asked, },),
-          ...starting,
-          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
-            roster: {
-              modelIds: RESEATED,
-              judgeModelIds: RESEATED,
-              polishConfig: polishOn({ seats: RESEATED, },),
-            },
-          }),
-        },);
-        expect({
-          controlAskedJudges: control.includes(SEAT_HYPER_ONLY,),
-          controlAskedPolish: control.includes(SEAT_OPENROUTER_ONLY,),
-          reseatedAskedAny: asked.length > 0,
-          outsideRoster: asked.filter(function outsideRoster(seat,): boolean {
-            return !RESEATED.includes(seat,);
-          },),
-        },).toEqual({
-          controlAskedJudges: true,
-          controlAskedPolish: true,
-          reseatedAskedAny: true,
-          outsideRoster: [],
-        },);
-      },
+    describe({
+      name: consolidationWorthResuming.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES TO CACHE A GATE TOO THIN TO SETTLE, which is the whole reason this predicate '
+            + 'exists: a night when one voice of six answered is a fact about a provider, not about the '
+            + 'question, and writing it would answer every later resume of the entry with that night. The '
+            + 'gate refuses to act below its quorum, so a cache that kept the result would preserve a '
+            + 'verdict the gate itself declined to reach',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'gate-kept-standing', usable: 1, },),
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'CACHES A GATE THAT REACHED ITS QUORUM, which is the positive control: a predicate that '
+            + 'refused everything would pass the "REFUSES TO CACHE A GATE TOO THIN TO SETTLE" case while making '
+            + 'every run re-buy every slice it '
+            + 'had already settled',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES TO CACHE UNCHANGED UNENDORSED BASELINE while retaining fresh consolidated result, so retry can recover instead of replaying final-selection failure',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              settlement: settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
+              standingMayShip: false,
+            },),).toBe(false,);
+            expect(consolidationWorthResuming({
+              settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
+              standingMayShip: false,
+            },),).toBe(true,);
+            expect(consolidationWorthResuming({
+              settlement: {
+                ...settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
+                polish: {
+                  kind: 'settled',
+                  baseText: 'The cat faced life proactively.',
+                  proposedText: 'The cat maintained a positive outlook on life.',
+                  text: 'The cat maintained a positive outlook on life.',
+                  changed: true,
+                  refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                  contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                  rounds: [],
+                  review: {
+                    correctionCount: 0,
+                    corrections: [],
+                    rounds: [],
+                    confirmations: [],
+                  },
+                  findings: [],
+                },
+              },
+              standingMayShip: false,
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES TO CACHE A GATE\'S TERMINAL WITH NO GATE RECORDED, which the settlement type admits and no '
+            + 'settlement builder produces: without the ballots there is no quorum to trust',
+          fn: async () => {
+            expect((['consolidated', 'gate-kept-standing', 'wrap-erased-difference',] as const).map(
+              function worthResuming(terminal,): boolean {
+                return consolidationWorthResuming({
+                  standingMayShip: true,
+                  settlement: settlementFor({ terminal, },),
+                },);
+              },
+            ),).toEqual([false, false, false,],);
+          },
+        },),
+
+        it({
+          name: 'REFUSES TO CACHE A DECLINED SLATE WITH NO DECISION RECORDED, which the settlement type admits and no '
+            + 'settlement builder produces (the absence exit ledger B51 removed built one, marked archive-kept): '
+            + 'without the decision there is no telling a settled decline from a pending one',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'slate-declined-standing', },),
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'CACHES A SLICE STOPPED BEFORE THE GATE BY THE SLATE OR THE CONTEST, because neither is a '
+            + 'fact about who answered. A floor that refused every proposal read the structural guard, and '
+            + 'a contest that named neither lane left nothing to improve on; both hold on any night',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'incumbent-only', },),
+            },),).toBe(true,);
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'no-standing-text', },),
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'NEVER CACHES A SLICE THAT KEPT THE ARCHIVE because no wording passed the rule (owner, '
+            + '2026-09-27, "Keep archive, ship"). The mark saying so lives on the settlement a run bought, so '
+            + 'a copy resumed without it would ship the lane text the rule refused. Refused even where the '
+            + 'standing claims endorsement, so this rests on no coupling two files away',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: {
+                ...settlementFor({ terminal: 'incumbent-only', },),
+                archiveKept: true,
+              },
+            },),).toBe(false,);
+            expect(consolidationWorthResuming({
+              settlement: {
+                ...settlementFor({ terminal: 'no-standing-text', },),
+                archiveKept: true,
+              },
+              standingMayShip: false,
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES TO CACHE JUDGES THAT DECLINED TO SETTLE, and caches judges that decided, which is '
+            + 'the same distinction one stage earlier: translate-retry.ts buys a second judging for '
+            + 'exactly declined-indecision and declined-rejection and records the settled decline under a '
+            + 'different name. A predicate keyed on which text won rather than on whether they settled '
+            + 'would freeze an undecided panel',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-indecision', },),
+            },),).toBe(false,);
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-rejection', },),
+            },),).toBe(false,);
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'slate-endorsed-standing', decision: 'judged', },),
+            },),).toBe(true,);
+
+            // THE SETTLED DECLINE, which is why the decision read survived the
+            // terminal split: it shares its `slate-declined-standing` terminal with
+            // the `declined-indecision` and `declined-rejection` settlements and gets
+            // the opposite answer, so the name alone cannot decide this one.
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'no-candidate-backed', },),
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'CACHES A SLATE NO JUDGE WAS ASKED ABOUT, which is the state the merged name hid '
+            + 'worst. A slate carrying one candidate measures the PRODUCING half and says nothing '
+            + 'about the roster, so counting it beside an endorsement of the archive reported a '
+            + 'working panel where no panel spoke',
+          fn: async () => {
+            expect(consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal: 'slate-unjudged-standing', decision: 'sole-candidate', },),
+            },),).toBe(true,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'KEYS A RE-SEATED SLICE BY THE ROSTER IT RUNS ON, so a settlement the roster read before the '
-        + 'dry-out reached is never resumed for it, while a hook handing back the starting roster keys '
-        + 'the slice as a driver with no hook does',
-      fn: async () => {
-        /**
-         Keys a driver with no hook looks up.
-         */
-        const starting = await keysLookedUp({},);
-        /**
-         Keys looked up when the hook re-seats the slice elsewhere.
-         */
-        const moved = await keysLookedUp({
-          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
-            roster: {
-              modelIds: RESEATED,
-              judgeModelIds: RESEATED,
-            },
-          }),
-        },);
-        /**
-         Keys looked up when the hook hands back the roster the driver started on.
-         */
-        const kept = await keysLookedUp({
-          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
-            roster: {
-              modelIds: ROSTER,
-              judgeModelIds: ROSTER,
-            },
-          }),
-        },);
-        /**
-         Keys looked up when the hook keeps the writers and judges but seats
-         naturalness roles the driver started without.
-         */
-        const polished = await keysLookedUp({
-          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
-            roster: {
-              modelIds: ROSTER,
-              judgeModelIds: ROSTER,
-              polishConfig: polishOn({ seats: RESEATED, },),
-            },
-          }),
-        },);
-        expect({
-          lookups: [starting.length, moved.length, kept.length, polished.length,],
-          movedDiffers: moved[0] !== starting[0],
-          keptMatches: kept[0] === starting[0],
-          polishedDiffers: polished[0] !== starting[0],
-        },).toEqual({
-          lookups: [1, 1, 1, 1,],
-          movedDiffers: true,
-          keptMatches: true,
-          polishedDiffers: true,
-        },);
-      },
+    describe({
+      name: `${consolidateDocument.name} re-seated under a hold (ledger H5)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SEATS A SLICE ON THE ROSTER ITS HOOK RETURNS, as both lanes seat theirs, so writers re-read '
+            + 'after a provider dry-out are the ones the slice asks rather than the roster read before it',
+          fn: async () => {
+            /**
+             Seat of every call the driver made.
+             */
+            const asked: RosterModelId[] = [];
+            await driveWith({
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              client: seatRecordingClient({ asked, },),
+              beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+                roster: {
+                  modelIds: RESEATED,
+                  judgeModelIds: RESEATED,
+                },
+              }),
+            },);
+            expect(asked.length,).toBeGreaterThan(0,);
+            expect(asked.filter(function outsideRoster(seat,): boolean {
+              return !RESEATED.includes(seat,);
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'SEATS THE SLATE JUDGES AND NATURALNESS ROLES ITS HOOK RETURNS TOO, after a control proves a '
+            + 'slice with no hook asks the starting judges and polish roles, each on a seat no other role holds',
+          fn: async () => {
+            /**
+             Starting roster: writers, judges and polish roles each on their own seat.
+             */
+            const starting = {
+              judgeModelIds: [SEAT_HYPER_ONLY,],
+              polishConfig: polishOn({
+                seats: [
+                  SEAT_OPENROUTER_ONLY,
+                  SEAT_OPENROUTER_DECISIONS,
+                  SEAT_OPENROUTER_ONLY_CHECKER,
+                ],
+              },),
+            };
+            /**
+             Seat of every call a driver with no hook made.
+             */
+            const control: RosterModelId[] = [];
+            await driveWith({
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              client: roleAnsweringClient({ asked: control, },),
+              ...starting,
+            },);
+            /**
+             Seat of every call the re-seated driver made.
+             */
+            const asked: RosterModelId[] = [];
+            await driveWith({
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              client: roleAnsweringClient({ asked, },),
+              ...starting,
+              beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+                roster: {
+                  modelIds: RESEATED,
+                  judgeModelIds: RESEATED,
+                  polishConfig: polishOn({ seats: RESEATED, },),
+                },
+              }),
+            },);
+            expect({
+              controlAskedJudges: control.includes(SEAT_HYPER_ONLY,),
+              controlAskedPolish: control.includes(SEAT_OPENROUTER_ONLY,),
+              reseatedAskedAny: asked.length > 0,
+              outsideRoster: asked.filter(function outsideRoster(seat,): boolean {
+                return !RESEATED.includes(seat,);
+              },),
+            },).toEqual({
+              controlAskedJudges: true,
+              controlAskedPolish: true,
+              reseatedAskedAny: true,
+              outsideRoster: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'KEYS A RE-SEATED SLICE BY THE ROSTER IT RUNS ON, so a settlement the roster read before the '
+            + 'dry-out reached is never resumed for it, while a hook handing back the starting roster keys '
+            + 'the slice as a driver with no hook does',
+          fn: async () => {
+            /**
+             Keys a driver with no hook looks up.
+             */
+            const starting = await keysLookedUp({},);
+            /**
+             Keys looked up when the hook re-seats the slice elsewhere.
+             */
+            const moved = await keysLookedUp({
+              beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+                roster: {
+                  modelIds: RESEATED,
+                  judgeModelIds: RESEATED,
+                },
+              }),
+            },);
+            /**
+             Keys looked up when the hook hands back the roster the driver started on.
+             */
+            const kept = await keysLookedUp({
+              beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+                roster: {
+                  modelIds: ROSTER,
+                  judgeModelIds: ROSTER,
+                },
+              }),
+            },);
+            /**
+             Keys looked up when the hook keeps the writers and judges but seats
+             naturalness roles the driver started without.
+             */
+            const polished = await keysLookedUp({
+              beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+                roster: {
+                  modelIds: ROSTER,
+                  judgeModelIds: ROSTER,
+                  polishConfig: polishOn({ seats: RESEATED, },),
+                },
+              }),
+            },);
+            expect({
+              lookups: [starting.length, moved.length, kept.length, polished.length,],
+              movedDiffers: moved[0] !== starting[0],
+              keptMatches: kept[0] === starting[0],
+              polishedDiffers: polished[0] !== starting[0],
+            },).toEqual({
+              lookups: [1, 1, 1, 1,],
+              movedDiffers: true,
+              keptMatches: true,
+              polishedDiffers: true,
+            },);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: `${consolidateDocument.name} showing the cited references (class forty-one)`,
-  children: [
-    it({
-      name: 'SHOWS THE PRODUCERS AND THE SLATE JUDGES what the pages the original cites say, when the document '
-        + 'carries them; a run carrying none is the control, whose sheets never mention them (the gate, which '
-        + 'these judges never reach by keeping the standing, is pinned in consolidate-settle.unit.test.ts)',
-      fn: async () => {
-        /** What the cited page says, marked so a sheet carrying it is plain. */
-        const references = 'CITED PAGE SAYS: the cat naps in the sun every afternoon.';
-        /**
-         Every producer and slate judge sheet one run sent.
+    describe({
+      name: `${consolidateDocument.name} showing the cited references (class forty-one)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHOWS THE PRODUCERS AND THE SLATE JUDGES what the pages the original cites say, when the document '
+            + 'carries them; a run carrying none is the control, whose sheets never mention them (the gate, which '
+            + 'these judges never reach by keeping the standing, is pinned in consolidate-settle.unit.test.ts)',
+          fn: async () => {
+            /** What the cited page says, marked so a sheet carrying it is plain. */
+            const references = 'CITED PAGE SAYS: the cat naps in the sun every afternoon.';
+            /**
+             Every producer and slate judge sheet one run sent.
 
-         @param referenceContext - the document's references, none left out
+             @param referenceContext - the document's references, none left out
 
-         @returns Producer and slate judge sheets
-         */
-        async function sheetsOf(
-          { referenceContext, }: { readonly referenceContext?: string; },
-        ): Promise<{
-          readonly producers: readonly string[];
-          readonly judges: readonly string[];
-        }> {
-          /** Everything each call sent. */
-          const sheets: string[] = [];
-          await driveWith({
-            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-            client: roleAnsweringClient({ asked: [], sheets, },),
-            ...((referenceContext === undefined) ? {} : { referenceContext, }),
-          },);
-          return {
-            producers: sheets.filter(function isProducer(sheet,): boolean {
-              return sheet.includes('translation_report',);
-            },),
-            judges: sheets.filter(function isJudge(sheet,): boolean {
-              return (!sheet.includes('translation_report',)) && (!sheet.includes(GATE_MARKER,));
-            },),
-          };
-        }
-        /**
-         For each round, whether every sheet it was sent carries the
-         references, none when the round was never asked.
+             @returns Producer and slate judge sheets
+             */
+            async function sheetsOf(
+              { referenceContext, }: { readonly referenceContext?: string; },
+            ): Promise<{
+              readonly producers: readonly string[];
+              readonly judges: readonly string[];
+            }> {
+              /** Everything each call sent. */
+              const sheets: string[] = [];
+              await driveWith({
+                contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+                client: roleAnsweringClient({ asked: [], sheets, },),
+                ...((referenceContext === undefined) ? {} : { referenceContext, }),
+              },);
+              return {
+                producers: sheets.filter(function isProducer(sheet,): boolean {
+                  return sheet.includes('translation_report',);
+                },),
+                judges: sheets.filter(function isJudge(sheet,): boolean {
+                  return (!sheet.includes('translation_report',)) && (!sheet.includes(GATE_MARKER,));
+                },),
+              };
+            }
+            /**
+             For each round, whether every sheet it was sent carries the
+             references, none when the round was never asked.
 
-         @param rounds - one run's sheets by round
+             @param rounds - one run's sheets by round
 
-         @returns Producer and judge answers in that order
-         */
-        function carriedBy(
-          rounds: Awaited<ReturnType<typeof sheetsOf>>,
-        ): readonly string[] {
-          return [rounds.producers, rounds.judges,].map(function carried(sheets,): string {
-            if (sheets.length === 0)
-              return 'never asked';
-            return sheets.every(function carries(sheet,): boolean {
-              return sheet.includes(references,);
-            },)
-              ? 'all'
-              : 'not all';
-          },);
-        }
-        expect([
-          carriedBy(await sheetsOf({},),),
-          carriedBy(await sheetsOf({ referenceContext: references, },),),
-        ],).toEqual([
-          [ 'not all', 'not all', ],
-          [ 'all', 'all', ],
-        ],);
-      },
+             @returns Producer and judge answers in that order
+             */
+            function carriedBy(
+              rounds: Awaited<ReturnType<typeof sheetsOf>>,
+            ): readonly string[] {
+              return [rounds.producers, rounds.judges,].map(function carried(sheets,): string {
+                if (sheets.length === 0)
+                  return 'never asked';
+                return sheets.every(function carries(sheet,): boolean {
+                  return sheet.includes(references,);
+                },)
+                  ? 'all'
+                  : 'not all';
+              },);
+            }
+            expect([
+              carriedBy(await sheetsOf({},),),
+              carriedBy(await sheetsOf({ referenceContext: references, },),),
+            ],).toEqual([
+              [ 'not all', 'not all', ],
+              [ 'all', 'all', ],
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

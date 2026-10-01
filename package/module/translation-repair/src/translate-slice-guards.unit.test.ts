@@ -21,6 +21,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -265,262 +266,272 @@ async function settle(
 //endregion Fixtures
 
 await describe({
-  name: `${settleTranslateSlice.name} quote guard`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'REFUSES A WINNER THAT DROPS A QUOTE FROM INSIDE A CONTAINER TAG, which the floor passes because '
-        + 'the container is still there, keeping the archive and storing the counts the guard compared '
-        + '(ledger B42)',
-      fn: async () => {
-        /**
-         Archive wording, one quote inside a folded block.
-         */
-        const archive = '<details>\n\n> Feed me at noon.\n\n</details>';
+    describe({
+      name: `${settleTranslateSlice.name} quote guard`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES A WINNER THAT DROPS A QUOTE FROM INSIDE A CONTAINER TAG, which the floor passes because '
+            + 'the container is still there, keeping the archive and storing the counts the guard compared '
+            + '(ledger B42)',
+          fn: async () => {
+            /**
+             Archive wording, one quote inside a folded block.
+             */
+            const archive = '<details>\n\n> Feed me at noon.\n\n</details>';
 
-        /**
-         Winner, the same block with the quote made prose.
-         */
-        const rendering = '<details>\n\nShe asked to be fed at noon.\n\n</details>';
-        const settled = await settle({
-          sourceText: '<details>\n\n> 中午喂我。\n\n</details>',
-          targetText: archive,
-          rendering,
-        },);
-        expect(settled.unplanned,).toEqual([],);
-        expect(settled.record.stageResult.text,).toBe(rendering,);
-        expect(settled.record.disposition,).toBe('refused-quote-loss',);
-        expect(settled.record.outputText,).toBe(archive,);
-        expect(settled.record.changed,).toBe(false,);
+            /**
+             Winner, the same block with the quote made prose.
+             */
+            const rendering = '<details>\n\nShe asked to be fed at noon.\n\n</details>';
+            const settled = await settle({
+              sourceText: '<details>\n\n> 中午喂我。\n\n</details>',
+              targetText: archive,
+              rendering,
+            },);
+            expect(settled.unplanned,).toEqual([],);
+            expect(settled.record.stageResult.text,).toBe(rendering,);
+            expect(settled.record.disposition,).toBe('refused-quote-loss',);
+            expect(settled.record.outputText,).toBe(archive,);
+            expect(settled.record.changed,).toBe(false,);
 
-        /**
-         Counts the refusal stores.
-         */
-        const quotedPassages = (settled.record.disposition === 'refused-quote-loss')
-          ? settled.record.quotedPassages
-          : undefined;
-        expect(quotedPassages,).toEqual({
-          archive: 1,
-          replacement: 0,
-        },);
-        expect(settled.said,).toContain(quoteLossRefusalFinding({
-          sliceIndex: 0,
-          quotedPassages: {
-            archive: 1,
-            replacement: 0,
-          },
-        },),);
-      },
-    },),
-
-    it({
-      name: 'SHIPS A WINNER WHOSE QUOTE OPENS ON THE LINE AFTER A PARAGRAPH\'S, which the parser and the floor read '
-        + 'as the archive\'s quote and the blank-line count read as none (ledger B42, hulicaijia24 slice 2)',
-      fn: async () => {
-        /**
-         Winner, the quote kept with no blank line opening it.
-         */
-        const rendering = 'The cat left a note:\n> Feed me at noon.';
-        const settled = await settle({
-          sourceText: '猫留了一张纸条：\n\n> 中午喂我。',
-          targetText: 'The cat was leaving a note:\n\n> Feed me at noon.',
-          rendering,
-        },);
-        expect(settled.unplanned,).toEqual([],);
-        expect(settled.record.disposition,).toBe('stage-result',);
-        expect(settled.record.outputText,).toBe(rendering,);
-        expect(settled.record.changed,).toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: `${settleTranslateSlice.name} target-only transcript`,
-  children: [
-    it({
-      name: 'HOLDS THE TRANSCRIPT THE ARCHIVE CARRIES PAST ITS ORIGINAL OUT OF EVERY SHEET, says so, and splices it '
-        + 'back onto the winner, so a replacement cannot delete the accessible reading of a picture',
-      fn: async () => {
-        /**
-         Judged part of the archive, the component the original ends with
-         included.
-         */
-        const judged = `The cat slept.\n\n${PHOTO_MARKER}`;
-
-        /**
-         Archive page, the transcript past the component.
-         */
-        const archive = `${judged}\n\n${TRANSCRIPT}`;
-
-        /**
-         Winner, rendering the original alone.
-         */
-        const rendering = `The cat dozed.\n\n${PHOTO_MARKER}`;
-        const settled = await settle({
-          sourceText: `猫睡了。\n\n${PHOTO_MARKER}`,
-          targetText: archive,
-          rendering,
-        },);
-        expect(settled.unplanned,).toEqual([],);
-        expect(settled.sheets.length,).toBeGreaterThan(0,);
-        expect(settled.sheets.some(function showsTranscript(sheet,): boolean {
-          return sheet.includes('Dear cat, rest well.',);
-        },),).toBe(false,);
-        expect(settled.said,).toContain(
-          `translate slice 0: holding ${String(TRANSCRIPT.length,)} characters of target-only English out of `
-            + `translation, judging ${String(judged.length,)} of ${String(archive.length,)}`,
-        );
-        expect(settled.record.disposition,).toBe('stage-result',);
-        expect(settled.record.outputText,).toBe(`${rendering}\n\n${TRANSCRIPT}`,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: `${settleTranslateSlice.name} archive dispute`,
-  children: [
-    it({
-      name: 'SENDS NO SHEET THE REPAIR TEXT where the dispute says it may not stand in, judges the archive under the '
-        + 'dispute instead, and ships the winner over it (owner, 2026-09-27, "No eligible standing")',
-      fn: async () => {
-        /**
-         Repair lane's text, which the checkers did not confirm.
-         */
-        const standIn = 'The cat slept on the sill all afternoon.';
-
-        /**
-         Dispute over the slice.
-         */
-        const archiveDispute: ArchiveDispute = {
-          sliceIndex: 0,
-          standIn,
-          standInEligible: false,
-          standInRefusal: 'unresolved',
-          acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',],
-        };
-
-        /**
-         Winner.
-         */
-        const rendering = 'The cat napped on the windowsill.';
-        const settled = await settle({
-          sourceText: '猫猫在窗台上打盹。',
-          targetText: 'The cat is doing the sleeping on the windowsill and swallowed pills.',
-          rendering,
-          archiveDispute,
-        },);
-        expect(settled.unplanned,).toEqual([],);
-        expect(settled.sheets.length,).toBeGreaterThan(0,);
-        expect(settled.sheets.some(function showsStandIn(sheet,): boolean {
-          return sheet.includes(standIn,);
-        },),).toBe(false,);
-        expect(settled.record.findings,).toContain(describeArchiveDispute({ dispute: archiveDispute, },),);
-        expect(settled.record.outputText,).toBe(rendering,);
-      },
-    },),
-
-    it({
-      name: 'SENDS THE REPAIR TEXT AS THE INCUMBENT where the dispute says it may stand in, the positive control for '
-        + 'the case beside it',
-      fn: async () => {
-        /**
-         Repair lane's text, which the checkers confirmed.
-         */
-        const standIn = 'The cat slept on the sill all afternoon.';
-        const settled = await settle({
-          sourceText: '猫猫在窗台上打盹。',
-          targetText: 'The cat is doing the sleeping on the windowsill and swallowed pills.',
-          rendering: 'The cat napped on the windowsill.',
-          archiveDispute: {
-            sliceIndex: 0,
-            standIn,
-            standInEligible: true,
-            acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',],
-          },
-        },);
-        expect(settled.unplanned,).toEqual([],);
-        expect(settled.sheets.some(function showsStandIn(sheet,): boolean {
-          return sheet.includes(standIn,);
-        },),).toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: `${settleTranslateSlice.name} where the floor compares nothing`,
-  children: [
-    it({
-      name: 'SETTLES ON THE ARCHIVE\'S OWN BYTES with nobody asked, on a plain slice and on a disputed one whose '
-        + 'repair text may stand in, since no floor could check that text either; the record is one a slice that '
-        + 'heard nobody may keep (ledger B43)',
-      fn: async () => {
-        /**
-         Original with an expression the strict grammar never closes.
-         */
-        const sourceText = '猫猫在{窗台上打盹。';
-
-        /**
-         Archive wording of the slice.
-         */
-        const targetText = 'The cat is doing the sleeping on the windowsill.';
-
-        /**
-         Each settlement: no dispute, then a dispute whose repair text may
-         stand in.
-         */
-        const settled = await Promise.all([
-          settle({
-            sourceText,
-            targetText,
-            rendering: 'The cat dozed on the windowsill.',
-          },),
-          settle({
-            sourceText,
-            targetText,
-            rendering: 'The cat dozed on the windowsill.',
-            archiveDispute: {
+            /**
+             Counts the refusal stores.
+             */
+            const quotedPassages = (settled.record.disposition === 'refused-quote-loss')
+              ? settled.record.quotedPassages
+              : undefined;
+            expect(quotedPassages,).toEqual({
+              archive: 1,
+              replacement: 0,
+            },);
+            expect(settled.said,).toContain(quoteLossRefusalFinding({
               sliceIndex: 0,
-              standIn: 'The cat slept on the sill all afternoon.',
-              standInEligible: true,
-              acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',],
-            },
-          },),
-        ],);
+              quotedPassages: {
+                archive: 1,
+                replacement: 0,
+              },
+            },),);
+          },
+        },),
 
-        expect(settled.map(function whatSettled({
-          record,
-          sheets,
-          unplanned,
-        },) {
-          // THE CHECK THE DRIVER MAKES before it keeps a record whose stage
-          // heard nobody, which throws on anything but the archive unchanged.
-          assertUnheardKeptIncumbent({
-            sliceIndex: 0,
-            record,
-            incumbentText: targetText,
-          },);
-          return {
-            sheets: sheets.length,
-            unplanned,
-            decision: record.stageResult
-              .decision,
-            outputText: record.outputText,
-            changed: record.changed,
-            disposition: record.disposition,
-          };
-        },),).toEqual([0, 1,].map(function expected() {
-          return {
-            sheets: 0,
-            unplanned: [],
-            decision: 'unfloored',
-            outputText: targetText,
-            changed: false,
-            disposition: 'stage-result',
-          };
-        },),);
-      },
+        it({
+          name: 'SHIPS A WINNER WHOSE QUOTE OPENS ON THE LINE AFTER A PARAGRAPH\'S, which the parser and the floor read '
+            + 'as the archive\'s quote and the blank-line count read as none (ledger B42, hulicaijia24 slice 2)',
+          fn: async () => {
+            /**
+             Winner, the quote kept with no blank line opening it.
+             */
+            const rendering = 'The cat left a note:\n> Feed me at noon.';
+            const settled = await settle({
+              sourceText: '猫留了一张纸条：\n\n> 中午喂我。',
+              targetText: 'The cat was leaving a note:\n\n> Feed me at noon.',
+              rendering,
+            },);
+            expect(settled.unplanned,).toEqual([],);
+            expect(settled.record.disposition,).toBe('stage-result',);
+            expect(settled.record.outputText,).toBe(rendering,);
+            expect(settled.record.changed,).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${settleTranslateSlice.name} target-only transcript`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'HOLDS THE TRANSCRIPT THE ARCHIVE CARRIES PAST ITS ORIGINAL OUT OF EVERY SHEET, says so, and splices it '
+            + 'back onto the winner, so a replacement cannot delete the accessible reading of a picture',
+          fn: async () => {
+            /**
+             Judged part of the archive, the component the original ends with
+             included.
+             */
+            const judged = `The cat slept.\n\n${PHOTO_MARKER}`;
+
+            /**
+             Archive page, the transcript past the component.
+             */
+            const archive = `${judged}\n\n${TRANSCRIPT}`;
+
+            /**
+             Winner, rendering the original alone.
+             */
+            const rendering = `The cat dozed.\n\n${PHOTO_MARKER}`;
+            const settled = await settle({
+              sourceText: `猫睡了。\n\n${PHOTO_MARKER}`,
+              targetText: archive,
+              rendering,
+            },);
+            expect(settled.unplanned,).toEqual([],);
+            expect(settled.sheets.length,).toBeGreaterThan(0,);
+            expect(settled.sheets.some(function showsTranscript(sheet,): boolean {
+              return sheet.includes('Dear cat, rest well.',);
+            },),).toBe(false,);
+            expect(settled.said,).toContain(
+              `translate slice 0: holding ${String(TRANSCRIPT.length,)} characters of target-only English out of `
+                + `translation, judging ${String(judged.length,)} of ${String(archive.length,)}`,
+            );
+            expect(settled.record.disposition,).toBe('stage-result',);
+            expect(settled.record.outputText,).toBe(`${rendering}\n\n${TRANSCRIPT}`,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${settleTranslateSlice.name} archive dispute`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SENDS NO SHEET THE REPAIR TEXT where the dispute says it may not stand in, judges the archive under the '
+            + 'dispute instead, and ships the winner over it (owner, 2026-09-27, "No eligible standing")',
+          fn: async () => {
+            /**
+             Repair lane's text, which the checkers did not confirm.
+             */
+            const standIn = 'The cat slept on the sill all afternoon.';
+
+            /**
+             Dispute over the slice.
+             */
+            const archiveDispute: ArchiveDispute = {
+              sliceIndex: 0,
+              standIn,
+              standInEligible: false,
+              standInRefusal: 'unresolved',
+              acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',],
+            };
+
+            /**
+             Winner.
+             */
+            const rendering = 'The cat napped on the windowsill.';
+            const settled = await settle({
+              sourceText: '猫猫在窗台上打盹。',
+              targetText: 'The cat is doing the sleeping on the windowsill and swallowed pills.',
+              rendering,
+              archiveDispute,
+            },);
+            expect(settled.unplanned,).toEqual([],);
+            expect(settled.sheets.length,).toBeGreaterThan(0,);
+            expect(settled.sheets.some(function showsStandIn(sheet,): boolean {
+              return sheet.includes(standIn,);
+            },),).toBe(false,);
+            expect(settled.record.findings,).toContain(describeArchiveDispute({ dispute: archiveDispute, },),);
+            expect(settled.record.outputText,).toBe(rendering,);
+          },
+        },),
+
+        it({
+          name: 'SENDS THE REPAIR TEXT AS THE INCUMBENT where the dispute says it may stand in, the positive control for '
+            + 'the case beside it',
+          fn: async () => {
+            /**
+             Repair lane's text, which the checkers confirmed.
+             */
+            const standIn = 'The cat slept on the sill all afternoon.';
+            const settled = await settle({
+              sourceText: '猫猫在窗台上打盹。',
+              targetText: 'The cat is doing the sleeping on the windowsill and swallowed pills.',
+              rendering: 'The cat napped on the windowsill.',
+              archiveDispute: {
+                sliceIndex: 0,
+                standIn,
+                standInEligible: true,
+                acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',],
+              },
+            },);
+            expect(settled.unplanned,).toEqual([],);
+            expect(settled.sheets.some(function showsStandIn(sheet,): boolean {
+              return sheet.includes(standIn,);
+            },),).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${settleTranslateSlice.name} where the floor compares nothing`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SETTLES ON THE ARCHIVE\'S OWN BYTES with nobody asked, on a plain slice and on a disputed one whose '
+            + 'repair text may stand in, since no floor could check that text either; the record is one a slice that '
+            + 'heard nobody may keep (ledger B43)',
+          fn: async () => {
+            /**
+             Original with an expression the strict grammar never closes.
+             */
+            const sourceText = '猫猫在{窗台上打盹。';
+
+            /**
+             Archive wording of the slice.
+             */
+            const targetText = 'The cat is doing the sleeping on the windowsill.';
+
+            /**
+             Each settlement: no dispute, then a dispute whose repair text may
+             stand in.
+             */
+            const settled = await Promise.all([
+              settle({
+                sourceText,
+                targetText,
+                rendering: 'The cat dozed on the windowsill.',
+              },),
+              settle({
+                sourceText,
+                targetText,
+                rendering: 'The cat dozed on the windowsill.',
+                archiveDispute: {
+                  sliceIndex: 0,
+                  standIn: 'The cat slept on the sill all afternoon.',
+                  standInEligible: true,
+                  acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',],
+                },
+              },),
+            ],);
+
+            expect(settled.map(function whatSettled({
+              record,
+              sheets,
+              unplanned,
+            },) {
+              // THE CHECK THE DRIVER MAKES before it keeps a record whose stage
+              // heard nobody, which throws on anything but the archive unchanged.
+              assertUnheardKeptIncumbent({
+                sliceIndex: 0,
+                record,
+                incumbentText: targetText,
+              },);
+              return {
+                sheets: sheets.length,
+                unplanned,
+                decision: record.stageResult
+                  .decision,
+                outputText: record.outputText,
+                changed: record.changed,
+                disposition: record.disposition,
+              };
+            },),).toEqual([0, 1,].map(function expected() {
+              return {
+                sheets: 0,
+                unplanned: [],
+                decision: 'unfloored',
+                outputText: targetText,
+                changed: false,
+                disposition: 'stage-result',
+              };
+            },),);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -18,6 +18,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -209,55 +210,6 @@ function offRoster(
   },);
 }
 
-await describe({
-  name: `${attestPassReferences.name} re-seated under a hold (ledger X12)`,
-  children: [
-    it({
-      name: 'ASKS THE ROUND OF THE ROSTER ITS HOOK HANDS OVER, so a roster re-read after a provider dry-out '
-        + 'attests on the bench as it stands, where a hook that re-seats nothing asks the roster it started on',
-      fn: async () => {
-        /**
-         Seats asked when the hook re-seats nothing.
-         */
-        const control = await attestationAsked({ referenceLines: REFERENCE_LINES, beforeItem: keepBench, },);
-        /**
-         Seats asked when the hook re-seats the round elsewhere.
-         */
-        const moved = await attestationAsked({ referenceLines: REFERENCE_LINES, beforeItem: reseatElsewhere, },);
-        expect({
-          controlAskedAny: control.asked.length > 0,
-          controlOffRoster: offRoster({ asked: control.asked, roster: ROSTER, },),
-          movedAskedAny: moved.asked.length > 0,
-          movedOffReseated: offRoster({ asked: moved.asked, roster: RESEATED, },),
-          movedHookReads: moved.hookReads,
-        },).toEqual({
-          controlAskedAny: true,
-          controlOffRoster: [],
-          movedAskedAny: true,
-          movedOffReseated: [],
-          movedHookReads: 1,
-        },);
-      },
-    },),
-    it({
-      name: 'ASKS NOBODY AND READS NO HOOK when the original links nowhere, since that round has no bench to re-seat',
-      fn: async () => {
-        /**
-         Round over an original linking nowhere.
-         */
-        const unlinked = await attestationAsked({ referenceLines: '', beforeItem: reseatElsewhere, },);
-        expect({
-          asked: unlinked.asked,
-          hookReads: unlinked.hookReads,
-        },).toEqual({
-          asked: [],
-          hookReads: 0,
-        },);
-      },
-    },),
-  ],
-},);
-
 /**
  Cache generation the preparation's caches are stamped with.
  */
@@ -348,32 +300,89 @@ async function preparationAsked(
 }
 
 await describe({
-  name: 'preparePassEntry hands its hook to the attestation (ledger X12)',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'EVERY ROUND OF A PREPARATION ASKS THE ROSTER ITS HOOK HANDS OVER, the attestation among them, '
-        + 'where a hook that re-seats nothing leaves every round on the roster the preparation started on',
-      fn: async () => {
-        /**
-         Seats asked when the hook re-seats nothing.
-         */
-        const control = await preparationAsked({ beforeItem: keepBench, },);
-        /**
-         Seats asked when the hook re-seats every round elsewhere.
-         */
-        const moved = await preparationAsked({ beforeItem: reseatElsewhere, },);
-        expect({
-          controlAttested: control.attested.length > 0,
-          controlOffRoster: offRoster({ asked: control.asked, roster: ROSTER, },),
-          movedAttested: moved.attested.length > 0,
-          movedOffReseated: offRoster({ asked: moved.asked, roster: RESEATED, },),
-        },).toEqual({
-          controlAttested: true,
-          controlOffRoster: [],
-          movedAttested: true,
-          movedOffReseated: [],
-        },);
-      },
+    describe({
+      name: `${attestPassReferences.name} re-seated under a hold (ledger X12)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS THE ROUND OF THE ROSTER ITS HOOK HANDS OVER, so a roster re-read after a provider dry-out '
+            + 'attests on the bench as it stands, where a hook that re-seats nothing asks the roster it started on',
+          fn: async () => {
+            /**
+             Seats asked when the hook re-seats nothing.
+             */
+            const control = await attestationAsked({ referenceLines: REFERENCE_LINES, beforeItem: keepBench, },);
+            /**
+             Seats asked when the hook re-seats the round elsewhere.
+             */
+            const moved = await attestationAsked({ referenceLines: REFERENCE_LINES, beforeItem: reseatElsewhere, },);
+            expect({
+              controlAskedAny: control.asked.length > 0,
+              controlOffRoster: offRoster({ asked: control.asked, roster: ROSTER, },),
+              movedAskedAny: moved.asked.length > 0,
+              movedOffReseated: offRoster({ asked: moved.asked, roster: RESEATED, },),
+              movedHookReads: moved.hookReads,
+            },).toEqual({
+              controlAskedAny: true,
+              controlOffRoster: [],
+              movedAskedAny: true,
+              movedOffReseated: [],
+              movedHookReads: 1,
+            },);
+          },
+        },),
+        it({
+          name: 'ASKS NOBODY AND READS NO HOOK when the original links nowhere, since that round has no bench to re-seat',
+          fn: async () => {
+            /**
+             Round over an original linking nowhere.
+             */
+            const unlinked = await attestationAsked({ referenceLines: '', beforeItem: reseatElsewhere, },);
+            expect({
+              asked: unlinked.asked,
+              hookReads: unlinked.hookReads,
+            },).toEqual({
+              asked: [],
+              hookReads: 0,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'preparePassEntry hands its hook to the attestation (ledger X12)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'EVERY ROUND OF A PREPARATION ASKS THE ROSTER ITS HOOK HANDS OVER, the attestation among them, '
+            + 'where a hook that re-seats nothing leaves every round on the roster the preparation started on',
+          fn: async () => {
+            /**
+             Seats asked when the hook re-seats nothing.
+             */
+            const control = await preparationAsked({ beforeItem: keepBench, },);
+            /**
+             Seats asked when the hook re-seats every round elsewhere.
+             */
+            const moved = await preparationAsked({ beforeItem: reseatElsewhere, },);
+            expect({
+              controlAttested: control.attested.length > 0,
+              controlOffRoster: offRoster({ asked: control.asked, roster: ROSTER, },),
+              movedAttested: moved.attested.length > 0,
+              movedOffReseated: offRoster({ asked: moved.asked, roster: RESEATED, },),
+            },).toEqual({
+              controlAttested: true,
+              controlOffRoster: [],
+              movedAttested: true,
+              movedOffReseated: [],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -21,6 +21,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -323,431 +324,441 @@ function quietClient(
 }
 
 await describe({
-  name: capped.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'BUYS EVERY SUBJECT under the every-subject sentinel, which is what a run with no '
-        + '--cap asks for',
-      fn: async () => {
-        expect(capped({
-          eligible: MITTENS,
-          cap: EVERY_SUBJECT,
-        },),).toEqual(MITTENS,);
-      },
+    describe({
+      name: capped.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'BUYS EVERY SUBJECT under the every-subject sentinel, which is what a run with no '
+            + '--cap asks for',
+          fn: async () => {
+            expect(capped({
+              eligible: MITTENS,
+              cap: EVERY_SUBJECT,
+            },),).toEqual(MITTENS,);
+          },
+        },),
+
+        it({
+          name: 'BUYS NOTHING at zero, which is the wiring check that reads the archive and asks '
+            + 'nobody',
+          fn: async () => {
+            expect(capped({
+              eligible: MITTENS,
+              cap: 0,
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'BUYS THE PREFIX a positive cap allows, in the order the subjects arrived',
+          fn: async () => {
+            expect(capped({
+              eligible: [
+                ...MITTENS,
+                ...TABBY,
+              ],
+              cap: SMALL_BUY,
+            },),).toEqual(MITTENS,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'BUYS NOTHING at zero, which is the wiring check that reads the archive and asks '
-        + 'nobody',
-      fn: async () => {
-        expect(capped({
-          eligible: MITTENS,
-          cap: 0,
-        },),).toEqual([],);
-      },
+    describe({
+      name: eligibleSubjects.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'OFFERS every subject of every reading, in archive order, when no entry was named',
+          fn: async () => {
+            expect(eligibleSubjects({
+              readings: [
+                readingOf({
+                  entryId: 'mittens',
+                  subjects: MITTENS,
+                },),
+                readingOf({
+                  entryId: 'tabby',
+                  subjects: TABBY,
+                },),
+              ],
+              onlyIds: [],
+            },),).toEqual([
+              ...MITTENS,
+              ...TABBY,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'KEEPS only the named entries, so a capped buy is a fraction of what --only left '
+            + 'rather than of the whole archive',
+          fn: async () => {
+            expect(eligibleSubjects({
+              readings: [
+                readingOf({
+                  entryId: 'mittens',
+                  subjects: MITTENS,
+                },),
+                readingOf({
+                  entryId: 'tabby',
+                  subjects: TABBY,
+                },),
+              ],
+              onlyIds: ['tabby',],
+            },),).toEqual(TABBY,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES an entry the archive does not hold, beside one it does, where the audit once bought the '
+            + 'rest and named the stray nowhere (ledger B76)',
+          fn: async () => {
+            expect(function asksForAStray(): void {
+              eligibleSubjects({
+                readings: [
+                  readingOf({
+                    entryId: 'mittens',
+                    subjects: MITTENS,
+                  },),
+                  readingOf({
+                    entryId: 'tabby',
+                    subjects: TABBY,
+                  },),
+                ],
+                onlyIds: [
+                  'tabby',
+                  'tabbby',
+                ],
+              },);
+            },).toThrow('--only asks for "tabbby", which the settled archive does not hold',);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'BUYS THE PREFIX a positive cap allows, in the order the subjects arrived',
-      fn: async () => {
-        expect(capped({
-          eligible: [
-            ...MITTENS,
-            ...TABBY,
-          ],
-          cap: SMALL_BUY,
-        },),).toEqual(MITTENS,);
-      },
-    },),
-  ],
-},);
+    describe({
+      name: printPopulation.name,
+      children: [
+        it({
+          name: 'PRINTS one line per artifact with every count beside its denominator: subjects, '
+            + 'retained, replaced, displaced, undecided and the verification',
+          fn: async () => {
+            using printed = collectingLines({ lines: [], },);
 
-await describe({
-  name: eligibleSubjects.name,
-  children: [
-    it({
-      name: 'OFFERS every subject of every reading, in archive order, when no entry was named',
-      fn: async () => {
-        expect(eligibleSubjects({
-          readings: [
-            readingOf({
-              entryId: 'mittens',
-              subjects: MITTENS,
-            },),
-            readingOf({
-              entryId: 'tabby',
-              subjects: TABBY,
-            },),
-          ],
-          onlyIds: [],
-        },),).toEqual([
-          ...MITTENS,
-          ...TABBY,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'KEEPS only the named entries, so a capped buy is a fraction of what --only left '
-        + 'rather than of the whole archive',
-      fn: async () => {
-        expect(eligibleSubjects({
-          readings: [
-            readingOf({
-              entryId: 'mittens',
-              subjects: MITTENS,
-            },),
-            readingOf({
-              entryId: 'tabby',
-              subjects: TABBY,
-            },),
-          ],
-          onlyIds: ['tabby',],
-        },),).toEqual(TABBY,);
-      },
-    },),
-
-    it({
-      name: 'REFUSES an entry the archive does not hold, beside one it does, where the audit once bought the '
-        + 'rest and named the stray nowhere (ledger B76)',
-      fn: async () => {
-        expect(function asksForAStray(): void {
-          eligibleSubjects({
-            readings: [
-              readingOf({
+            printPopulation({
+              readings: [readingOf({
                 entryId: 'mittens',
                 subjects: MITTENS,
+              },),],
+            },);
+
+            expect(printed.lines,).toEqual([
+              `${RUN_SET}/mittens.json  subjects=2 retained=1 replaced=1 displaced=0 undecided=0 `
+                + 'verification=verified',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'SAYS WHAT A REFUSED VERIFICATION OBJECTED TO on its own line, since a slicing that '
+            + 'moved under a settled artifact is the loudest thing this free reading can find',
+          fn: async () => {
+            using printed = collectingLines({ lines: [], },);
+
+            printPopulation({
+              readings: [readingOf({
+                entryId: 'mittens',
+                subjects: MITTENS,
+                verification: {
+                  kind: 'refused',
+                  detail: 'the slicing moved',
+                },
+              },),],
+            },);
+
+            expect(printed.lines[0]?.endsWith('verification=refused',),).toBe(true,);
+            expect(printed.lines[1],).toBe('   REFUSED: the slicing moved',);
+          },
+        },),
+
+        it({
+          name: 'NAMES THE RECIPE HALVES an unverifiable artifact lacks, so a reader can decide '
+            + 'whether the gap explains the disagreement',
+          fn: async () => {
+            using printed = collectingLines({ lines: [], },);
+
+            printPopulation({
+              readings: [readingOf({
+                entryId: 'mittens',
+                subjects: MITTENS,
+                verification: {
+                  kind: 'unverifiable',
+                  unrecorded: [
+                    'sectionPairing',
+                    'blockPairing',
+                  ],
+                  detail: 'the rebuild guessed both halves',
+                },
+              },),],
+            },);
+
+            expect(printed.lines[0]?.endsWith('verification=unverifiable',),).toBe(true,);
+            expect(printed.lines[1],)
+              .toBe('   UNVERIFIABLE (records no sectionPairing, blockPairing): the rebuild guessed both halves',);
+          },
+        },),
+      ],
+      concurrency: 1,
+    },),
+
+    describe({
+      name: auditOne.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'BUILDS ONE ROW from the subject\'s provenance and the roster\'s answers, one voice row '
+            + 'per model the client was asked, with the texts digested rather than kept',
+          fn: async () => {
+            /**
+             Who the driver asked, and what it showed them.
+             */
+            const asked: string[] = [];
+            const shown: string[] = [];
+
+            /**
+             The row one quiet roster produces.
+             */
+            const row = await auditOne({
+              subject: subjectAt({
+                entryId: 'mittens',
+                sliceIndex: 1,
+                auditsArchiveText: false,
               },),
-              readingOf({
-                entryId: 'tabby',
-                subjects: TABBY,
+              references: { kind: 'none', },
+              client: quietClient({
+                asked,
+                shown,
               },),
-            ],
-            onlyIds: [
-              'tabby',
-              'tabbby',
-            ],
-          },);
-        },).toThrow('--only asks for "tabbby", which the settled archive does not hold',);
-      },
+            },);
+
+            expect(row.runSet,).toBe(RUN_SET,);
+            expect(row.entryId,).toBe('mittens',);
+            expect(row.sliceIndex,).toBe(1,);
+            expect(row.deliveryKind,).toBe('replacement-shipped',);
+            expect(row.auditsArchiveText,).toBe(false,);
+            expect(row.artifactDigest,).toBe(DIGEST,);
+            expect(row.corpusSha,).toBe(CORPUS_SHA,);
+            expect(row.identityKind,).toBe('none',);
+            expect(row.textIdentity.kind,).toBe('digested',);
+            expect(asked.length,).toBeGreaterThan(0,);
+            expect(row.report.rows.length,).toBe(new Set(asked,).size,);
+            expect(row.report.rows.every(function answered(voice,): boolean {
+              return asked.includes(voice.modelId,);
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'SHOWS THE ROSTER A DECLARED IDENTITY and withholds an absent one, since an auditor '
+            + 'without the names the producing judges had calls a declared name a fabrication',
+          fn: async () => {
+            /**
+             What the roster was shown with the identity declared.
+             */
+            const shownDeclared: string[] = [];
+            await auditOne({
+              subject: subjectAt({
+                entryId: 'mittens',
+                sliceIndex: 0,
+                auditsArchiveText: true,
+                identity: {
+                  kind: 'declared',
+                  context: IDENTITY_CONTEXT,
+                },
+              },),
+              references: { kind: 'none', },
+              client: quietClient({
+                asked: [],
+                shown: shownDeclared,
+              },),
+            },);
+
+            /**
+             What it was shown with none.
+             */
+            const shownNone: string[] = [];
+            await auditOne({
+              subject: subjectAt({
+                entryId: 'mittens',
+                sliceIndex: 0,
+                auditsArchiveText: true,
+              },),
+              references: { kind: 'none', },
+              client: quietClient({
+                asked: [],
+                shown: shownNone,
+              },),
+            },);
+
+            expect(shownDeclared.join('\n',)
+              .includes(IDENTITY_CONTEXT,),).toBe(true,);
+            expect(shownNone.join('\n',)
+              .includes(IDENTITY_CONTEXT,),).toBe(false,);
+          },
+        },),
+        // LEDGER B29, the rendering audit's open gap: the producing judges had
+        // the pages the original cites; an auditor without them calls a detail
+        // one states an addition.
+        it({
+          name: 'SHOWS THE ROSTER THE CITED REFERENCES, records that it did, and keys the row on them, and shows and '
+            + 'records none where the original cites nothing',
+          fn: async () => {
+            /**
+             What the roster was shown with references.
+             */
+            const shownCited: string[] = [];
+            /**
+             Row audited with references.
+             */
+            const cited = await auditOne({
+              subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+              references: { kind: 'cited', context: REFERENCE_CONTEXT, },
+              client: quietClient({ asked: [], shown: shownCited, },),
+            },);
+            /**
+             What it was shown with none.
+             */
+            const shownNone: string[] = [];
+            /**
+             Row audited with none.
+             */
+            const none = await auditOne({
+              subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+              references: { kind: 'none', },
+              client: quietClient({ asked: [], shown: shownNone, },),
+            },);
+            /**
+             What it was shown where the page links pages nobody could read.
+             */
+            const shownUnread: string[] = [];
+            /**
+             Row audited without the references its page links.
+             */
+            const unread = await auditOne({
+              subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+              references: { kind: 'unread', links: 1, },
+              client: quietClient({ asked: [], shown: shownUnread, },),
+            },);
+            expect(shownCited.join('\n',),).toContain(REFERENCE_CONTEXT,);
+            expect(shownUnread.join('\n',),).not
+              .toContain('CITED REFERENCES',);
+            expect(unread.referencesKind,).toBe('unread',);
+            // SHOWN THE SAME TEXTS as the row shown none, so a repeat; only the
+            // kind says the page linked pages the audit never read.
+            expect(sameAuditedText({ left: unread, right: none, },),).toBe(true,);
+            expect(shownNone.join('\n',),).not
+              .toContain('CITED REFERENCES',);
+            expect(cited.referencesKind,).toBe('cited',);
+            expect(none.referencesKind,).toBe('none',);
+            expect(sameAuditedText({ left: cited, right: none, },),).toBe(false,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: printPopulation.name,
-  children: [
-    it({
-      name: 'PRINTS one line per artifact with every count beside its denominator: subjects, '
-        + 'retained, replaced, displaced, undecided and the verification',
-      fn: async () => {
-        using printed = collectingLines({ lines: [], },);
-
-        printPopulation({
-          readings: [readingOf({
-            entryId: 'mittens',
-            subjects: MITTENS,
-          },),],
-        },);
-
-        expect(printed.lines,).toEqual([
-          `${RUN_SET}/mittens.json  subjects=2 retained=1 replaced=1 displaced=0 undecided=0 `
-            + 'verification=verified',
-        ],);
-      },
-    },),
-
-    it({
-      name: 'SAYS WHAT A REFUSED VERIFICATION OBJECTED TO on its own line, since a slicing that '
-        + 'moved under a settled artifact is the loudest thing this free reading can find',
-      fn: async () => {
-        using printed = collectingLines({ lines: [], },);
-
-        printPopulation({
-          readings: [readingOf({
-            entryId: 'mittens',
-            subjects: MITTENS,
-            verification: {
-              kind: 'refused',
-              detail: 'the slicing moved',
-            },
-          },),],
-        },);
-
-        expect(printed.lines[0]?.endsWith('verification=refused',),).toBe(true,);
-        expect(printed.lines[1],).toBe('   REFUSED: the slicing moved',);
-      },
-    },),
-
-    it({
-      name: 'NAMES THE RECIPE HALVES an unverifiable artifact lacks, so a reader can decide '
-        + 'whether the gap explains the disagreement',
-      fn: async () => {
-        using printed = collectingLines({ lines: [], },);
-
-        printPopulation({
-          readings: [readingOf({
-            entryId: 'mittens',
-            subjects: MITTENS,
-            verification: {
-              kind: 'unverifiable',
-              unrecorded: [
-                'sectionPairing',
-                'blockPairing',
+    describe({
+      name: withCitedReferences.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS EACH PAGE ONCE and pairs every bought subject with its own page\'s references, in buying order',
+          fn: async () => {
+            /**
+             Pages the reader was asked for, in order.
+             */
+            const read: string[] = [];
+            /**
+             Subjects bought over two pages, the linking one twice.
+             */
+            const buying = [
+              subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+              subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
+              subjectAt({ entryId: 'mittens', sliceIndex: 1, auditsArchiveText: false, },),
+            ];
+            /**
+             Each subject beside what its page cites.
+             */
+            const paired = await withCitedReferences({
+              subjects: buying,
+              reader: async function recorded({ sourceText, },) {
+                read.push(sourceText,);
+                return (sourceText === PAGE_TEXT) ? REFERENCE_CONTEXT : '';
+              },
+            },);
+            expect(read,).toStrictEqual([PAGE_TEXT, OTHER_PAGE_TEXT,],);
+            expect(paired.map(function subjectOf(pair,) {
+              return pair.subject;
+            },),).toStrictEqual(buying,);
+            expect(paired.map(function referencesOf(pair,) {
+              return pair.references;
+            },),).toStrictEqual([
+              { kind: 'cited', context: REFERENCE_CONTEXT, },
+              { kind: 'none', },
+              { kind: 'cited', context: REFERENCE_CONTEXT, },
+            ],);
+          },
+        },),
+        it({
+          name: 'RECORDS A PAGE THAT LINKS PAGES AND READ AS NOTHING AS UNREAD, never as none, since a missing key '
+            + 'reads every linked page as nothing',
+          fn: async () => {
+            /**
+             Each subject beside what its page cites, every read empty.
+             */
+            const paired = await withCitedReferences({
+              subjects: [
+                subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+                subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
               ],
-              detail: 'the rebuild guessed both halves',
-            },
-          },),],
-        },);
-
-        expect(printed.lines[0]?.endsWith('verification=unverifiable',),).toBe(true,);
-        expect(printed.lines[1],)
-          .toBe('   UNVERIFIABLE (records no sectionPairing, blockPairing): the rebuild guessed both halves',);
-      },
-    },),
-  ],
-  concurrency: 1,
-},);
-
-await describe({
-  name: auditOne.name,
-  children: [
-    it({
-      name: 'BUILDS ONE ROW from the subject\'s provenance and the roster\'s answers, one voice row '
-        + 'per model the client was asked, with the texts digested rather than kept',
-      fn: async () => {
-        /**
-         Who the driver asked, and what it showed them.
-         */
-        const asked: string[] = [];
-        const shown: string[] = [];
-
-        /**
-         The row one quiet roster produces.
-         */
-        const row = await auditOne({
-          subject: subjectAt({
-            entryId: 'mittens',
-            sliceIndex: 1,
-            auditsArchiveText: false,
-          },),
-          references: { kind: 'none', },
-          client: quietClient({
-            asked,
-            shown,
-          },),
-        },);
-
-        expect(row.runSet,).toBe(RUN_SET,);
-        expect(row.entryId,).toBe('mittens',);
-        expect(row.sliceIndex,).toBe(1,);
-        expect(row.deliveryKind,).toBe('replacement-shipped',);
-        expect(row.auditsArchiveText,).toBe(false,);
-        expect(row.artifactDigest,).toBe(DIGEST,);
-        expect(row.corpusSha,).toBe(CORPUS_SHA,);
-        expect(row.identityKind,).toBe('none',);
-        expect(row.textIdentity.kind,).toBe('digested',);
-        expect(asked.length,).toBeGreaterThan(0,);
-        expect(row.report.rows.length,).toBe(new Set(asked,).size,);
-        expect(row.report.rows.every(function answered(voice,): boolean {
-          return asked.includes(voice.modelId,);
-        },),).toBe(true,);
-      },
-    },),
-
-    it({
-      name: 'SHOWS THE ROSTER A DECLARED IDENTITY and withholds an absent one, since an auditor '
-        + 'without the names the producing judges had calls a declared name a fabrication',
-      fn: async () => {
-        /**
-         What the roster was shown with the identity declared.
-         */
-        const shownDeclared: string[] = [];
-        await auditOne({
-          subject: subjectAt({
-            entryId: 'mittens',
-            sliceIndex: 0,
-            auditsArchiveText: true,
-            identity: {
-              kind: 'declared',
-              context: IDENTITY_CONTEXT,
-            },
-          },),
-          references: { kind: 'none', },
-          client: quietClient({
-            asked: [],
-            shown: shownDeclared,
-          },),
-        },);
-
-        /**
-         What it was shown with none.
-         */
-        const shownNone: string[] = [];
-        await auditOne({
-          subject: subjectAt({
-            entryId: 'mittens',
-            sliceIndex: 0,
-            auditsArchiveText: true,
-          },),
-          references: { kind: 'none', },
-          client: quietClient({
-            asked: [],
-            shown: shownNone,
-          },),
-        },);
-
-        expect(shownDeclared.join('\n',)
-          .includes(IDENTITY_CONTEXT,),).toBe(true,);
-        expect(shownNone.join('\n',)
-          .includes(IDENTITY_CONTEXT,),).toBe(false,);
-      },
-    },),
-    // LEDGER B29, the rendering audit's open gap: the producing judges had
-    // the pages the original cites; an auditor without them calls a detail
-    // one states an addition.
-    it({
-      name: 'SHOWS THE ROSTER THE CITED REFERENCES, records that it did, and keys the row on them, and shows and '
-        + 'records none where the original cites nothing',
-      fn: async () => {
-        /**
-         What the roster was shown with references.
-         */
-        const shownCited: string[] = [];
-        /**
-         Row audited with references.
-         */
-        const cited = await auditOne({
-          subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
-          references: { kind: 'cited', context: REFERENCE_CONTEXT, },
-          client: quietClient({ asked: [], shown: shownCited, },),
-        },);
-        /**
-         What it was shown with none.
-         */
-        const shownNone: string[] = [];
-        /**
-         Row audited with none.
-         */
-        const none = await auditOne({
-          subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
-          references: { kind: 'none', },
-          client: quietClient({ asked: [], shown: shownNone, },),
-        },);
-        /**
-         What it was shown where the page links pages nobody could read.
-         */
-        const shownUnread: string[] = [];
-        /**
-         Row audited without the references its page links.
-         */
-        const unread = await auditOne({
-          subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
-          references: { kind: 'unread', links: 1, },
-          client: quietClient({ asked: [], shown: shownUnread, },),
-        },);
-        expect(shownCited.join('\n',),).toContain(REFERENCE_CONTEXT,);
-        expect(shownUnread.join('\n',),).not
-          .toContain('CITED REFERENCES',);
-        expect(unread.referencesKind,).toBe('unread',);
-        // SHOWN THE SAME TEXTS as the row shown none, so a repeat; only the
-        // kind says the page linked pages the audit never read.
-        expect(sameAuditedText({ left: unread, right: none, },),).toBe(true,);
-        expect(shownNone.join('\n',),).not
-          .toContain('CITED REFERENCES',);
-        expect(cited.referencesKind,).toBe('cited',);
-        expect(none.referencesKind,).toBe('none',);
-        expect(sameAuditedText({ left: cited, right: none, },),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: withCitedReferences.name,
-  children: [
-    it({
-      name: 'READS EACH PAGE ONCE and pairs every bought subject with its own page\'s references, in buying order',
-      fn: async () => {
-        /**
-         Pages the reader was asked for, in order.
-         */
-        const read: string[] = [];
-        /**
-         Subjects bought over two pages, the linking one twice.
-         */
-        const buying = [
-          subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
-          subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
-          subjectAt({ entryId: 'mittens', sliceIndex: 1, auditsArchiveText: false, },),
-        ];
-        /**
-         Each subject beside what its page cites.
-         */
-        const paired = await withCitedReferences({
-          subjects: buying,
-          reader: async function recorded({ sourceText, },) {
-            read.push(sourceText,);
-            return (sourceText === PAGE_TEXT) ? REFERENCE_CONTEXT : '';
+              reader: async function unkeyed() {
+                return '';
+              },
+            },);
+            expect(paired.map(function referencesOf(pair,) {
+              return pair.references;
+            },),).toStrictEqual([
+              { kind: 'unread', links: 1, },
+              { kind: 'none', },
+            ],);
           },
-        },);
-        expect(read,).toStrictEqual([PAGE_TEXT, OTHER_PAGE_TEXT,],);
-        expect(paired.map(function subjectOf(pair,) {
-          return pair.subject;
-        },),).toStrictEqual(buying,);
-        expect(paired.map(function referencesOf(pair,) {
-          return pair.references;
-        },),).toStrictEqual([
-          { kind: 'cited', context: REFERENCE_CONTEXT, },
-          { kind: 'none', },
-          { kind: 'cited', context: REFERENCE_CONTEXT, },
-        ],);
-      },
-    },),
-    it({
-      name: 'RECORDS A PAGE THAT LINKS PAGES AND READ AS NOTHING AS UNREAD, never as none, since a missing key '
-        + 'reads every linked page as nothing',
-      fn: async () => {
-        /**
-         Each subject beside what its page cites, every read empty.
-         */
-        const paired = await withCitedReferences({
-          subjects: [
-            subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
-            subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
-          ],
-          reader: async function unkeyed() {
-            return '';
+        },),
+        it({
+          name: 'READS NOTHING when nothing is bought, so the wiring check that buys nothing spends nothing',
+          fn: async () => {
+            /**
+             Pages the reader was asked for.
+             */
+            const read: string[] = [];
+            /**
+             Pairs for an empty buy.
+             */
+            const paired = await withCitedReferences({
+              subjects: [],
+              reader: async function recorded({ sourceText, },) {
+                read.push(sourceText,);
+                return REFERENCE_CONTEXT;
+              },
+            },);
+            expect(read,).toStrictEqual([],);
+            expect(paired,).toStrictEqual([],);
           },
-        },);
-        expect(paired.map(function referencesOf(pair,) {
-          return pair.references;
-        },),).toStrictEqual([
-          { kind: 'unread', links: 1, },
-          { kind: 'none', },
-        ],);
-      },
-    },),
-    it({
-      name: 'READS NOTHING when nothing is bought, so the wiring check that buys nothing spends nothing',
-      fn: async () => {
-        /**
-         Pages the reader was asked for.
-         */
-        const read: string[] = [];
-        /**
-         Pairs for an empty buy.
-         */
-        const paired = await withCitedReferences({
-          subjects: [],
-          reader: async function recorded({ sourceText, },) {
-            read.push(sourceText,);
-            return REFERENCE_CONTEXT;
-          },
-        },);
-        expect(read,).toStrictEqual([],);
-        expect(paired,).toStrictEqual([],);
-      },
+        },),
+      ],
     },),
   ],
 },);

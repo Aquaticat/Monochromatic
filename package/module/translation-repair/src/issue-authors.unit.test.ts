@@ -6,6 +6,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -242,178 +243,186 @@ const KEPT = [
 ];
 
 await describe({
-  name: appliedIssuesByEnvelope.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'NAMES ONLY THE ENVELOPES WHOSE OPERATION SURVIVED THE GATE, so an envelope the gate '
-        + 'refused puts no text into the candidate and the issues it named keep whole votes',
-      fn: async function rejectedEnvelopesAreAbsent() {
-        expect(appliedIssuesByEnvelope({
-          envelopes: [
-            envelopeOf({
-              envelopeId: 'kept',
-              issueIds: [WHISKER,],
-            },),
-            envelopeOf({
-              envelopeId: 'refused',
-              issueIds: [PAW,],
-            },),
-          ],
-          applied: [operationOf('kept',),],
-        },),).toEqual({ kept: [WHISKER,], },);
-      },
+    describe({
+      name: appliedIssuesByEnvelope.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES ONLY THE ENVELOPES WHOSE OPERATION SURVIVED THE GATE, so an envelope the gate '
+            + 'refused puts no text into the candidate and the issues it named keep whole votes',
+          fn: async function rejectedEnvelopesAreAbsent() {
+            expect(appliedIssuesByEnvelope({
+              envelopes: [
+                envelopeOf({
+                  envelopeId: 'kept',
+                  issueIds: [WHISKER,],
+                },),
+                envelopeOf({
+                  envelopeId: 'refused',
+                  issueIds: [PAW,],
+                },),
+              ],
+              applied: [operationOf('kept',),],
+            },),).toEqual({ kept: [WHISKER,], },);
+          },
+        },),
+
+        it({
+          name: 'SKIPS an operation naming an envelope the slate no longer carries, rather than '
+            + 'refusing: an unknown envelope contributes no authorship, which is the safe direction',
+          fn: async function unknownEnvelopesAreSkipped() {
+            expect(appliedIssuesByEnvelope({
+              envelopes: [],
+              applied: [operationOf('vanished',),],
+            },),).toEqual({},);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'SKIPS an operation naming an envelope the slate no longer carries, rather than '
-        + 'refusing: an unknown envelope contributes no authorship, which is the safe direction',
-      fn: async function unknownEnvelopesAreSkipped() {
-        expect(appliedIssuesByEnvelope({
-          envelopes: [],
-          applied: [operationOf('vanished',),],
-        },),).toEqual({},);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: collectIssueAuthors.name,
-  children: [
-    it({
-      name: 'NAMES THE MODEL THAT WROTE THE WHOLE SHIPPED CHUNK for every issue, because one '
-        + 'model wrote all of it and every creditable issue sits in text it produced',
-      fn: async function aLoneWinnerAnswersForEveryIssue() {
-        expect(collectIssueAuthors({
-          editor: editorOf({
-            applied: [operationOf('kept',),],
-            rounds: [],
-            shippedProducer: {
-              kind: 'model',
-              modelId: AUTHOR,
-            },
-          },),
-          envelopes: KEPT,
-        },),).toEqual({
-          perIssue: {},
-          everyIssue: [AUTHOR,],
-        },);
-      },
-    },),
-
-    it({
-      name: 'NAMES THE EDITOR WHOSE REPAIR SHIPS AFTER THE JUDGES DECLINED TO RANK ANYTHING. This '
-        + 'is the case a reader of the rounds cannot answer: the round records ballots and no '
-        + 'winner, yet a real editor wrote the text, and leaving it unnamed lets that editor '
-        + 'certify its own work at full weight',
-      fn: async function theIndecisionFallbackHasAnAuthor() {
-        expect(collectIssueAuthors({
-          editor: editorOf({
-            applied: [operationOf('kept',),],
-            rounds: [
-              declinedChunkRound([
-                slateEntryOf({
-                  index: 1,
+    describe({
+      name: collectIssueAuthors.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE MODEL THAT WROTE THE WHOLE SHIPPED CHUNK for every issue, because one '
+            + 'model wrote all of it and every creditable issue sits in text it produced',
+          fn: async function aLoneWinnerAnswersForEveryIssue() {
+            expect(collectIssueAuthors({
+              editor: editorOf({
+                applied: [operationOf('kept',),],
+                rounds: [],
+                shippedProducer: {
+                  kind: 'model',
                   modelId: AUTHOR,
-                },),
-                slateEntryOf({
-                  index: 2,
-                  modelId: HELPER,
-                },),
-              ],),
-            ],
-            shippedProducer: {
-              kind: 'model',
-              modelId: AUTHOR,
-            },
-          },),
-          envelopes: KEPT,
-        },),).toEqual({
-          perIssue: {},
-          everyIssue: [AUTHOR,],
-        },);
-      },
-    },),
+                },
+              },),
+              envelopes: KEPT,
+            },),).toEqual({
+              perIssue: {},
+              everyIssue: [AUTHOR,],
+            },);
+          },
+        },),
 
-    it({
-      name: 'IGNORES AN ENVELOPE WINNER WHOSE TEXT LOST TO A RIVAL WHOLE-CHUNK PROPOSAL, because '
-        + 'the composite it was assembled into never shipped, so it is judging someone else\'s '
-        + 'text and keeps a whole vote',
-      fn: async function envelopeWinnersThatLostAreNotAuthors() {
-        expect(collectIssueAuthors({
-          editor: editorOf({
-            applied: [operationOf('kept',),],
-            rounds: [
-              selectedRound({
-                envelopeId: 'kept',
-                slate: [
-                  slateEntryOf({
-                    index: 1,
-                    modelId: HELPER,
+        it({
+          name: 'NAMES THE EDITOR WHOSE REPAIR SHIPS AFTER THE JUDGES DECLINED TO RANK ANYTHING. This '
+            + 'is the case a reader of the rounds cannot answer: the round records ballots and no '
+            + 'winner, yet a real editor wrote the text, and leaving it unnamed lets that editor '
+            + 'certify its own work at full weight',
+          fn: async function theIndecisionFallbackHasAnAuthor() {
+            expect(collectIssueAuthors({
+              editor: editorOf({
+                applied: [operationOf('kept',),],
+                rounds: [
+                  declinedChunkRound([
+                    slateEntryOf({
+                      index: 1,
+                      modelId: AUTHOR,
+                    },),
+                    slateEntryOf({
+                      index: 2,
+                      modelId: HELPER,
+                    },),
+                  ],),
+                ],
+                shippedProducer: {
+                  kind: 'model',
+                  modelId: AUTHOR,
+                },
+              },),
+              envelopes: KEPT,
+            },),).toEqual({
+              perIssue: {},
+              everyIssue: [AUTHOR,],
+            },);
+          },
+        },),
+
+        it({
+          name: 'IGNORES AN ENVELOPE WINNER WHOSE TEXT LOST TO A RIVAL WHOLE-CHUNK PROPOSAL, because '
+            + 'the composite it was assembled into never shipped, so it is judging someone else\'s '
+            + 'text and keeps a whole vote',
+          fn: async function envelopeWinnersThatLostAreNotAuthors() {
+            expect(collectIssueAuthors({
+              editor: editorOf({
+                applied: [operationOf('kept',),],
+                rounds: [
+                  selectedRound({
+                    envelopeId: 'kept',
+                    slate: [
+                      slateEntryOf({
+                        index: 1,
+                        modelId: HELPER,
+                      },),
+                    ],
+                    selectedIndex: 1,
                   },),
                 ],
-                selectedIndex: 1,
+                shippedProducer: {
+                  kind: 'model',
+                  modelId: AUTHOR,
+                },
               },),
-            ],
-            shippedProducer: {
-              kind: 'model',
-              modelId: AUTHOR,
-            },
-          },),
-          envelopes: KEPT,
-        },),).toEqual({
-          perIssue: {},
-          everyIssue: [AUTHOR,],
-        },);
-      },
-    },),
+              envelopes: KEPT,
+            },),).toEqual({
+              perIssue: {},
+              everyIssue: [AUTHOR,],
+            },);
+          },
+        },),
 
-    it({
-      name: 'NAMES THE AUTHOR OF AN ENVELOPE ADOPTED WITHOUT A VOTE, so a checker who wrote that '
-        + 'text is discounted on it like any other winner',
-      fn: async function adoptedEnvelopesKeepTheirAuthors() {
-        expect(collectIssueAuthors({
-          editor: editorOf({
-            applied: [operationOf('kept',),],
-            rounds: [
-              adoptedRound({
-                envelopeId: 'kept',
-                slate: [
-                  slateEntryOf({
-                    index: 1,
-                    modelId: HELPER,
+        it({
+          name: 'NAMES THE AUTHOR OF AN ENVELOPE ADOPTED WITHOUT A VOTE, so a checker who wrote that '
+            + 'text is discounted on it like any other winner',
+          fn: async function adoptedEnvelopesKeepTheirAuthors() {
+            expect(collectIssueAuthors({
+              editor: editorOf({
+                applied: [operationOf('kept',),],
+                rounds: [
+                  adoptedRound({
+                    envelopeId: 'kept',
+                    slate: [
+                      slateEntryOf({
+                        index: 1,
+                        modelId: HELPER,
+                      },),
+                    ],
                   },),
                 ],
+                shippedProducer: {
+                  kind: 'composite',
+                  contributors: [HELPER,],
+                },
               },),
-            ],
-            shippedProducer: {
-              kind: 'composite',
-              contributors: [HELPER,],
-            },
-          },),
-          envelopes: KEPT,
-        },),).toEqual({
-          perIssue: { [WHISKER]: [HELPER,], },
-          everyIssue: [],
-        },);
-      },
-    },),
-    it({
-      name: 'NAMES NOBODY WHEN THE UNTOUCHED TRANSLATION SHIPS, since no model wrote it and no '
-        + 'checker can be certifying its own work',
-      fn: async function nothingShippedMeansNoAuthors() {
-        expect(collectIssueAuthors({
-          editor: editorOf({
-            applied: [],
-            rounds: [],
-            shippedProducer: NOBODY_WROTE_IT,
-          },),
-          envelopes: KEPT,
-        },),).toEqual({
-          perIssue: {},
-          everyIssue: [],
-        },);
-      },
+              envelopes: KEPT,
+            },),).toEqual({
+              perIssue: { [WHISKER]: [HELPER,], },
+              everyIssue: [],
+            },);
+          },
+        },),
+        it({
+          name: 'NAMES NOBODY WHEN THE UNTOUCHED TRANSLATION SHIPS, since no model wrote it and no '
+            + 'checker can be certifying its own work',
+          fn: async function nothingShippedMeansNoAuthors() {
+            expect(collectIssueAuthors({
+              editor: editorOf({
+                applied: [],
+                rounds: [],
+                shippedProducer: NOBODY_WROTE_IT,
+              },),
+              envelopes: KEPT,
+            },),).toEqual({
+              perIssue: {},
+              everyIssue: [],
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

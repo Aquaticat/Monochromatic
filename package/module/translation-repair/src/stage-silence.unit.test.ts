@@ -9,6 +9,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -22,61 +23,69 @@ import {
 } from '../dist/final/node/index.mjs';
 
 await describe({
-  name: stageQuorumUnmetFinding.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SPELLS the finding the way the caches read it, prefix first and shortfall closed',
-      fn: async () => {
-        /** Finding a critic stage two short of six would leave. */
-        const finding = stageQuorumUnmetFinding({ shortfall: 'critic 2/6', },);
-        expect(finding,).toBe('stage-quorum-unmet (critic 2/6)',);
-        expect(finding.startsWith(STAGE_QUORUM_UNMET_PREFIX,),).toBe(true,);
-      },
+    describe({
+      name: stageQuorumUnmetFinding.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SPELLS the finding the way the caches read it, prefix first and shortfall closed',
+          fn: async () => {
+            /** Finding a critic stage two short of six would leave. */
+            const finding = stageQuorumUnmetFinding({ shortfall: 'critic 2/6', },);
+            expect(finding,).toBe('stage-quorum-unmet (critic 2/6)',);
+            expect(finding.startsWith(STAGE_QUORUM_UNMET_PREFIX,),).toBe(true,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: everyStageHeard.name,
-  children: [
-    it({
-      name: 'ANSWERS true for findings that carry no shortfall, lost voices included',
-      fn: async () => {
-        expect(everyStageHeard({ findings: [], },),).toBe(true,);
-        expect(everyStageHeard({
-          findings: [
-            'stage-voice-lost (critic hf:zai-org/GLM-5.3-Flash)',
-            'stage-short (critic 5/6)',
-          ],
-        },),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'ANSWERS false when any stage fell short of quorum, wherever the finding sits',
-      fn: async () => {
-        expect(everyStageHeard({
-          findings: [
-            'stage-voice-lost (editor minimax-m3)',
-            stageQuorumUnmetFinding({ shortfall: 'editor 1/3', },),
-            'non-translation-dominance (0.2)',
-          ],
-        },),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'NAMES every silent stage and nothing else, in order',
-      fn: async () => {
-        expect(silentStagesOf({
-          findings: [
-            stageQuorumUnmetFinding({ shortfall: 'critic 0/6', },),
-            'stage-voice-lost (checker qwen3.8-max)',
-            stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },),
-          ],
-        },),).toStrictEqual([
-          'stage-quorum-unmet (critic 0/6)',
-          'stage-quorum-unmet (checker 1/3)',
-        ],);
-      },
+    describe({
+      name: everyStageHeard.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ANSWERS true for findings that carry no shortfall, lost voices included',
+          fn: async () => {
+            expect(everyStageHeard({ findings: [], },),).toBe(true,);
+            expect(everyStageHeard({
+              findings: [
+                'stage-voice-lost (critic hf:zai-org/GLM-5.3-Flash)',
+                'stage-short (critic 5/6)',
+              ],
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'ANSWERS false when any stage fell short of quorum, wherever the finding sits',
+          fn: async () => {
+            expect(everyStageHeard({
+              findings: [
+                'stage-voice-lost (editor minimax-m3)',
+                stageQuorumUnmetFinding({ shortfall: 'editor 1/3', },),
+                'non-translation-dominance (0.2)',
+              ],
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'NAMES every silent stage and nothing else, in order',
+          fn: async () => {
+            expect(silentStagesOf({
+              findings: [
+                stageQuorumUnmetFinding({ shortfall: 'critic 0/6', },),
+                'stage-voice-lost (checker qwen3.8-max)',
+                stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },),
+              ],
+            },),).toStrictEqual([
+              'stage-quorum-unmet (critic 0/6)',
+              'stage-quorum-unmet (checker 1/3)',
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);

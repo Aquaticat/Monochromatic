@@ -12,6 +12,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -38,84 +39,92 @@ const REPAIR = 'The cat fell asleep by the window.';
 const TRANSLATE = 'The cat had fallen asleep beside the window.';
 
 await describe({
-  name: contestStandingMayShip.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'REFUSES INVALID STANDING even when contest chose its lane',
-      fn: async () => {
-        expect(contestStandingMayShip({
-          choice: 'repair',
-          verdict: {
-            kind: 'lane-won',
-            lane: 'repair',
+    describe({
+      name: contestStandingMayShip.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES INVALID STANDING even when contest chose its lane',
+          fn: async () => {
+            expect(contestStandingMayShip({
+              choice: 'repair',
+              verdict: {
+                kind: 'lane-won',
+                lane: 'repair',
+              },
+              standingValid: false,
+            },),).toBe(false,);
           },
-          standingValid: false,
-        },),).toBe(false,);
-      },
-    },),
+        },),
 
-    it({
-      name: 'ACCEPTS VALID LANE WINNER and keeps unendorsed decline unsafe',
-      fn: async () => {
-        expect(contestStandingMayShip({
-          choice: 'translate',
-          verdict: {
-            kind: 'lane-won',
-            lane: 'translate',
+        it({
+          name: 'ACCEPTS VALID LANE WINNER and keeps unendorsed decline unsafe',
+          fn: async () => {
+            expect(contestStandingMayShip({
+              choice: 'translate',
+              verdict: {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+            },),).toBe(true,);
+            expect(contestStandingMayShip({
+              choice: 'neither',
+              verdict: { kind: 'settled-neither', },
+            },),).toBe(false,);
           },
-        },),).toBe(true,);
-        expect(contestStandingMayShip({
-          choice: 'neither',
-          verdict: { kind: 'settled-neither', },
-        },),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: standingTextFor.name,
-  children: [
-    it({
-      name: 'NAMES THE REPAIR LANE when the contest chose it',
-      fn: async () => {
-        expect(
-          standingTextFor({
-            choice: 'repair',
-            repairText: REPAIR,
-            translateText: TRANSLATE,
-            incumbentText: ARCHIVE,
-          },),
-        ).toBe(REPAIR,);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'NAMES THE TRANSLATE LANE when the contest chose it',
-      fn: async () => {
-        expect(
-          standingTextFor({
-            choice: 'translate',
-            repairText: REPAIR,
-            translateText: TRANSLATE,
-            incumbentText: ARCHIVE,
-          },),
-        ).toBe(TRANSLATE,);
-      },
-    },),
+    describe({
+      name: standingTextFor.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE REPAIR LANE when the contest chose it',
+          fn: async () => {
+            expect(
+              standingTextFor({
+                choice: 'repair',
+                repairText: REPAIR,
+                translateText: TRANSLATE,
+                incumbentText: ARCHIVE,
+              },),
+            ).toBe(REPAIR,);
+          },
+        },),
 
-    it({
-      name: 'USES ARCHIVE AS COMPARISON BASELINE ON A DECLINE without picking either lane, so third rendering can recover while final guard separately prevents unendorsed fallback',
-      fn: async () => {
-        expect(
-          standingTextFor({
-            choice: 'neither',
-            repairText: REPAIR,
-            translateText: TRANSLATE,
-            incumbentText: ARCHIVE,
-          },),
-        ).toBe(ARCHIVE,);
-      },
+        it({
+          name: 'NAMES THE TRANSLATE LANE when the contest chose it',
+          fn: async () => {
+            expect(
+              standingTextFor({
+                choice: 'translate',
+                repairText: REPAIR,
+                translateText: TRANSLATE,
+                incumbentText: ARCHIVE,
+              },),
+            ).toBe(TRANSLATE,);
+          },
+        },),
+
+        it({
+          name: 'USES ARCHIVE AS COMPARISON BASELINE ON A DECLINE without picking either lane, so third rendering can recover while final guard separately prevents unendorsed fallback',
+          fn: async () => {
+            expect(
+              standingTextFor({
+                choice: 'neither',
+                repairText: REPAIR,
+                translateText: TRANSLATE,
+                incumbentText: ARCHIVE,
+              },),
+            ).toBe(ARCHIVE,);
+          },
+        },),
+      ],
     },),
   ],
 },);

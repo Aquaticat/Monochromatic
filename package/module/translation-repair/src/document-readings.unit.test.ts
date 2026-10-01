@@ -23,6 +23,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -328,361 +329,6 @@ function disagreeingClient(): { readonly client: SyntheticClient; } {
   };
 }
 
-await describe({
-  name: readDocumentPictures.name,
-  children: [
-    it({
-      name: 'DOES NOT PERSIST A VERDICT THAT RESTS ON A READER FAILING FOR NOW, so the picture is read '
-        + 'again next run rather than served unread until a rebuild retires the cache; the same walk '
-        + 'persists a disagreement, which is a stable fact about the roster, as the positive control',
-      fn: async () => {
-        /**
-         Both readers throwing, which used to be cached as permanent.
-         */
-        const failing = failingClient();
-
-        /**
-         Cache under the failing client.
-         */
-        const transientCache = recordingCache({ resumed: new Map(), },);
-
-        /**
-         Readings under the failing client.
-         */
-        const unread = await readDocumentPictures({
-          readOcr: sawText,
-          client: failing.client,
-          slices: [sliceOf({
-            text: showing({ assetName: 'noticeboard.webp', },),
-            sliceIndex: 0,
-          },),],
-          assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
-          readerModelIds: READERS,
-          cache: transientCache.cache,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-        expect(failing.asked.length,).toBe(2,);
-        expect(unread.get('noticeboard.webp',)?.kind,).toBe('unavailable',);
-        expect(transientCache.persisted.length,).toBe(0,);
-
-        /**
-         Cache under the disagreeing client.
-         */
-        const stableCache = recordingCache({ resumed: new Map(), },);
-        const disagreed = await readDocumentPictures({
-          readOcr: sawText,
-          client: disagreeingClient().client,
-          slices: [sliceOf({
-            text: showing({ assetName: 'noticeboard.webp', },),
-            sliceIndex: 0,
-          },),],
-          assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
-          readerModelIds: READERS,
-          cache: stableCache.cache,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-        expect(disagreed.get('noticeboard.webp',)?.kind,).toBe('unavailable',);
-        expect(stableCache.persisted.length,).toBe(1,);
-      },
-    },),
-    it({
-      name: 'READS ONE PICTURE ONCE HOWEVER MANY SLICES NAME IT, which is the arithmetic that '
-        + 'makes this affordable: a picture travels to its slice and to both neighbours, so '
-        + 'gathering per slice would send the same asset three times',
-      fn: async () => {
-        const { client, asked, } = agreeingClient();
-        const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
-
-        /**
-         Three consecutive slices all showing one picture.
-         */
-        const slices: readonly ChunkPair[] = [
-          0,
-          1,
-          2,
-        ].map(function toSlice(sliceIndex,): ChunkPair {
-          return sliceOf({
-            text: showing({ assetName: 'noticeboard.webp', },),
-            sliceIndex,
-          },);
-        },);
-
-        /**
-         What the gather produced.
-         */
-        const readings = await readDocumentPictures({
-          readOcr: sawText,
-          client,
-          slices,
-          assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
-          readerModelIds: READERS,
-          cache,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(readings.size,).toBe(1,);
-        expect(asked.length,).toBe(2,);
-        expect(persisted.length,).toBe(1,);
-        expect(readings.get('noticeboard.webp',)
-          ?.kind,).toBe('corroborated',);
-      },
-    },),
-
-    it({
-      name: 'REUSES entry readings after preparation and reads only newly referenced pictures',
-      fn: async () => {
-        /** Reader calls expose every additional picture purchase. */
-        const { client, asked, } = agreeingClient();
-        /** Open cache deliberately does not update its resumed snapshot on persist. */
-        const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
-        /** Assets available to both preparations. */
-        const assets = new Map([
-          ['chat.webp', bytesOf({ seed: 1, },),],
-          ['letter.webp', bytesOf({ seed: 2, },),],
-        ],);
-        /** First preparation references only the chat. */
-        const firstSlices = [sliceOf({ text: showing({ assetName: 'chat.webp', },), sliceIndex: 0, },),];
-        /** Shared reader inputs independent of slice boundaries. */
-        const input = {
-          client, readOcr: sawText, assets, readerModelIds: READERS, cache,
-          signal: new AbortController().signal, perCallTimeoutMs: 5_000, l,
-        };
-        /** Completed evidence from the archive-review preparation. */
-        const priorReadings = await readDocumentPictures({ ...input, slices: firstSlices, },);
-        /** Calls and writes bought by the first reading, not a roster-size constant. */
-        const before = { calls: asked.length, writes: persisted.length, };
-        /** Same assets split differently after archive correction. */
-        const reused = await readDocumentPictures({ ...input, slices: firstSlices, priorReadings, },);
-        expect(asked.length,).toBe(before.calls,);
-        expect(persisted.length,).toBe(before.writes,);
-        expect(reused.get('chat.webp',),).toBe(priorReadings.get('chat.webp',),);
-        /** A newly exposed source reference shares a slice with one already read. */
-        const expanded = await readDocumentPictures({
-          ...input,
-          slices: [sliceOf({
-            text: `${showing({ assetName: 'chat.webp', },)}\n${showing({ assetName: 'letter.webp', },)}`,
-            sliceIndex: 0,
-          },),],
-          priorReadings,
-        },);
-        expect(asked.slice(before.calls,),).toEqual(asked.slice(0, before.calls,),);
-        expect(expanded.get('chat.webp',),).toBe(priorReadings.get('chat.webp',),);
-        expect(expanded.get('letter.webp',)?.kind,).toBe('corroborated',);
-      },
-    },),
-    ...(['no-text', 'unavailable',] as const).map(function priorVerdict(kind,) {
-      return it({
-        name: `REUSES only completed entry evidence when the prior reading is ${kind}`,
-        fn: async () => {
-          /** Calls distinguish reuse from a fresh reading. */
-          const { client, asked, } = agreeingClient();
-          /** Empty disk snapshot cannot hide a repeated purchase. */
-          const { cache, } = recordingCache({ resumed: new Map(), },);
-          /** Textless evidence is complete; unavailable evidence is not. */
-          const prior: PairedReading = kind === 'no-text'
-            ? { kind, characters: 0, }
-            : { kind, reason: 'one-reader-only', transient: true, perReader: [], };
-          /** One asset presented again within the same entry. */
-          const result = await readDocumentPictures({
-            client, readOcr: sawText,
-            slices: [sliceOf({ text: showing({ assetName: 'chat.webp', },), sliceIndex: 0, },),],
-            assets: new Map([['chat.webp', bytesOf({ seed: 1, },),],]),
-            readerModelIds: READERS,
-            cache,
-            priorReadings: new Map([['chat.webp', prior,],]),
-            signal: new AbortController().signal,
-            perCallTimeoutMs: 5_000,
-            l,
-          },);
-          expect(asked,).toEqual(kind === 'no-text' ? [] : READERS,);
-          expect(result.get('chat.webp',)?.kind,).toBe(kind === 'no-text' ? 'no-text' : 'corroborated',);
-        },
-      },);
-    },),
-    it({
-      name: 'RESUMES A STORED READING AND SPENDS NO CALL, which is what keeps a resumed slice key '
-        + 'equal to the key it resumes. A reading is not deterministic, so re-reading would change '
-        + 'the words in the key and re-buy every settled slice on this document',
-      fn: async () => {
-        const { client, asked, } = agreeingClient();
-
-        /**
-         Reading an earlier run settled for this picture.
-         */
-        const stored: PairedReading = {
-          kind: 'corroborated',
-          readings: [{
-            modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
-            text: READING,
-          },],
-          overlap: 1,
-        };
-
-        /**
-         First gather, whose only purpose is to learn the key this picture is
-         stored under, so the second gather stores it under the same one.
-         */
-        const learning = recordingCache({ resumed: new Map(), },);
-        await readDocumentPictures({
-          readOcr: sawText,
-          client,
-          slices: [sliceOf({
-            text: showing({ assetName: 'noticeboard.webp', },),
-            sliceIndex: 0,
-          },),],
-          assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
-          readerModelIds: READERS,
-          cache: learning.cache,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        /**
-         Key that gather wrote under.
-         */
-        const [key,] = learning.persisted;
-        if (key === undefined)
-          throw new Error('one key by construction',);
-
-        /**
-         Calls spent before the resuming gather, so the `toBe(spentBefore)`
-         assertion reads the difference rather than a total.
-         */
-        const spentBefore = asked.length;
-
-        /**
-         Resuming gather, over a store already holding that key.
-         */
-        const { cache, persisted, } = recordingCache({
-          resumed: new Map([[key, stored,],],),
-        },);
-        const readings = await readDocumentPictures({
-          readOcr: sawText,
-          client,
-          slices: [sliceOf({
-            text: showing({ assetName: 'noticeboard.webp', },),
-            sliceIndex: 0,
-          },),],
-          assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
-          readerModelIds: READERS,
-          cache,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(asked.length,).toBe(spentBefore,);
-        expect(persisted.length,).toBe(0,);
-        expect(readings.get('noticeboard.webp',),).toEqual(stored,);
-      },
-    },),
-
-    it({
-      name: 'KEYS BY THE PICTURE RATHER THAN BY ITS NAME, so two assets named alike in different '
-        + 'entries never share a reading. The bytes are what was asked about',
-      fn: async () => {
-        const { client, } = agreeingClient();
-
-        /**
-         Two gathers of one asset name over different bytes.
-         */
-        const keys = await Promise.all([
-          7,
-          9,
-        ].map(async function keyFor(seed,): Promise<string> {
-          const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
-          await readDocumentPictures({
-          readOcr: sawText,
-            client,
-            slices: [sliceOf({
-              text: showing({ assetName: 'noticeboard.webp', },),
-              sliceIndex: 0,
-            },),],
-            assets: new Map([['noticeboard.webp', bytesOf({ seed, },),],],),
-            readerModelIds: READERS,
-            cache,
-            signal: AbortSignal.timeout(30_000,),
-            perCallTimeoutMs: 30_000,
-            l,
-          },);
-          return persisted[0] ?? '';
-        },),);
-
-        expect(keys[0] === keys[1],).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'SKIPS A PICTURE NOBODY GATHERED BYTES FOR, spending nothing and recording nothing. '
-        + 'The slices showing it report it as unread, which is what actually happened, and one '
-        + 'unreadable asset must not cost an entry the other fifty slices it has to settle',
-      fn: async () => {
-        const { client, asked, } = agreeingClient();
-        const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
-
-        /**
-         Gather over a slice naming a picture the caller could not read.
-         */
-        const readings = await readDocumentPictures({
-          readOcr: sawText,
-          client,
-          slices: [sliceOf({
-            text: showing({ assetName: 'missing.webp', },),
-            sliceIndex: 0,
-          },),],
-          assets: new Map(),
-          readerModelIds: READERS,
-          cache,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(readings.size,).toBe(0,);
-        expect(asked.length,).toBe(0,);
-        expect(persisted.length,).toBe(0,);
-      },
-    },),
-
-    it({
-      name: 'ASKS NOTHING OF A DOCUMENT THAT SHOWS NO PICTURE, which is 1181 of the pinned '
-        + 'corpus\'s 1260 slices and must cost exactly nothing',
-      fn: async () => {
-        const { client, asked, } = agreeingClient();
-        const { cache, } = recordingCache({ resumed: new Map(), },);
-
-        /**
-         Gather over ordinary prose.
-         */
-        const readings = await readDocumentPictures({
-          readOcr: sawText,
-          client,
-          slices: [sliceOf({
-            text: '小猫在窗台上睡觉。\n',
-            sliceIndex: 0,
-          },),],
-          assets: new Map(),
-          readerModelIds: READERS,
-          cache,
-          signal: AbortSignal.timeout(30_000,),
-          perCallTimeoutMs: 30_000,
-          l,
-        },);
-
-        expect(readings.size,).toBe(0,);
-        expect(asked.length,).toBe(0,);
-      },
-    },),
-  ],
-},);
-
 /**
  Readers a hook hands back after a dry-out, neither of them the fixture's own.
  */
@@ -753,68 +399,431 @@ async function readOnePicture(
 }
 
 await describe({
-  name: `${readDocumentPictures.name} re-seated under a hold (ledger X12)`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'SEATS A PICTURE ON THE READERS ITS HOOK RETURNS, as every phase that buys item by item seats its '
-        + 'items, so readers re-read after a provider dry-out are the ones asked rather than those read before it',
-      fn: async () => {
-        /**
-         Models a caller with no hook asked.
-         */
-        const control = await readOnePicture({},);
-        /**
-         Models asked when the hook re-seats the picture elsewhere.
-         */
-        const moved = await readOnePicture({
-          beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: RESEATED_READERS, }),
-        },);
-        expect({
-          controlOnReaders: (control.asked.length > 0) && control.asked.every(function onReaders(seat,): boolean {
-            return READERS.includes(seat,);
-          },),
-          movedAskedAny: moved.asked.length > 0,
-          outsideReseated: moved.asked.filter(function outside(seat,): boolean {
-            return !RESEATED_READERS.includes(seat,);
-          },),
-        },).toEqual({
-          controlOnReaders: true,
-          movedAskedAny: true,
-          outsideReseated: [],
-        },);
-      },
+    describe({
+      name: readDocumentPictures.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'DOES NOT PERSIST A VERDICT THAT RESTS ON A READER FAILING FOR NOW, so the picture is read '
+            + 'again next run rather than served unread until a rebuild retires the cache; the same walk '
+            + 'persists a disagreement, which is a stable fact about the roster, as the positive control',
+          fn: async () => {
+            /**
+             Both readers throwing, which used to be cached as permanent.
+             */
+            const failing = failingClient();
+
+            /**
+             Cache under the failing client.
+             */
+            const transientCache = recordingCache({ resumed: new Map(), },);
+
+            /**
+             Readings under the failing client.
+             */
+            const unread = await readDocumentPictures({
+              readOcr: sawText,
+              client: failing.client,
+              slices: [sliceOf({
+                text: showing({ assetName: 'noticeboard.webp', },),
+                sliceIndex: 0,
+              },),],
+              assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+              readerModelIds: READERS,
+              cache: transientCache.cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+            expect(failing.asked.length,).toBe(2,);
+            expect(unread.get('noticeboard.webp',)?.kind,).toBe('unavailable',);
+            expect(transientCache.persisted.length,).toBe(0,);
+
+            /**
+             Cache under the disagreeing client.
+             */
+            const stableCache = recordingCache({ resumed: new Map(), },);
+            const disagreed = await readDocumentPictures({
+              readOcr: sawText,
+              client: disagreeingClient().client,
+              slices: [sliceOf({
+                text: showing({ assetName: 'noticeboard.webp', },),
+                sliceIndex: 0,
+              },),],
+              assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+              readerModelIds: READERS,
+              cache: stableCache.cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+            expect(disagreed.get('noticeboard.webp',)?.kind,).toBe('unavailable',);
+            expect(stableCache.persisted.length,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'READS ONE PICTURE ONCE HOWEVER MANY SLICES NAME IT, which is the arithmetic that '
+            + 'makes this affordable: a picture travels to its slice and to both neighbours, so '
+            + 'gathering per slice would send the same asset three times',
+          fn: async () => {
+            const { client, asked, } = agreeingClient();
+            const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
+
+            /**
+             Three consecutive slices all showing one picture.
+             */
+            const slices: readonly ChunkPair[] = [
+              0,
+              1,
+              2,
+            ].map(function toSlice(sliceIndex,): ChunkPair {
+              return sliceOf({
+                text: showing({ assetName: 'noticeboard.webp', },),
+                sliceIndex,
+              },);
+            },);
+
+            /**
+             What the gather produced.
+             */
+            const readings = await readDocumentPictures({
+              readOcr: sawText,
+              client,
+              slices,
+              assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+              readerModelIds: READERS,
+              cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(readings.size,).toBe(1,);
+            expect(asked.length,).toBe(2,);
+            expect(persisted.length,).toBe(1,);
+            expect(readings.get('noticeboard.webp',)
+              ?.kind,).toBe('corroborated',);
+          },
+        },),
+
+        it({
+          name: 'REUSES entry readings after preparation and reads only newly referenced pictures',
+          fn: async () => {
+            /** Reader calls expose every additional picture purchase. */
+            const { client, asked, } = agreeingClient();
+            /** Open cache deliberately does not update its resumed snapshot on persist. */
+            const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
+            /** Assets available to both preparations. */
+            const assets = new Map([
+              ['chat.webp', bytesOf({ seed: 1, },),],
+              ['letter.webp', bytesOf({ seed: 2, },),],
+            ],);
+            /** First preparation references only the chat. */
+            const firstSlices = [sliceOf({ text: showing({ assetName: 'chat.webp', },), sliceIndex: 0, },),];
+            /** Shared reader inputs independent of slice boundaries. */
+            const input = {
+              client, readOcr: sawText, assets, readerModelIds: READERS, cache,
+              signal: new AbortController().signal, perCallTimeoutMs: 5_000, l,
+            };
+            /** Completed evidence from the archive-review preparation. */
+            const priorReadings = await readDocumentPictures({ ...input, slices: firstSlices, },);
+            /** Calls and writes bought by the first reading, not a roster-size constant. */
+            const before = { calls: asked.length, writes: persisted.length, };
+            /** Same assets split differently after archive correction. */
+            const reused = await readDocumentPictures({ ...input, slices: firstSlices, priorReadings, },);
+            expect(asked.length,).toBe(before.calls,);
+            expect(persisted.length,).toBe(before.writes,);
+            expect(reused.get('chat.webp',),).toBe(priorReadings.get('chat.webp',),);
+            /** A newly exposed source reference shares a slice with one already read. */
+            const expanded = await readDocumentPictures({
+              ...input,
+              slices: [sliceOf({
+                text: `${showing({ assetName: 'chat.webp', },)}\n${showing({ assetName: 'letter.webp', },)}`,
+                sliceIndex: 0,
+              },),],
+              priorReadings,
+            },);
+            expect(asked.slice(before.calls,),).toEqual(asked.slice(0, before.calls,),);
+            expect(expanded.get('chat.webp',),).toBe(priorReadings.get('chat.webp',),);
+            expect(expanded.get('letter.webp',)?.kind,).toBe('corroborated',);
+          },
+        },),
+        ...(['no-text', 'unavailable',] as const).map(function priorVerdict(kind,) {
+          return it({
+            name: `REUSES only completed entry evidence when the prior reading is ${kind}`,
+            fn: async () => {
+              /** Calls distinguish reuse from a fresh reading. */
+              const { client, asked, } = agreeingClient();
+              /** Empty disk snapshot cannot hide a repeated purchase. */
+              const { cache, } = recordingCache({ resumed: new Map(), },);
+              /** Textless evidence is complete; unavailable evidence is not. */
+              const prior: PairedReading = kind === 'no-text'
+                ? { kind, characters: 0, }
+                : { kind, reason: 'one-reader-only', transient: true, perReader: [], };
+              /** One asset presented again within the same entry. */
+              const result = await readDocumentPictures({
+                client, readOcr: sawText,
+                slices: [sliceOf({ text: showing({ assetName: 'chat.webp', },), sliceIndex: 0, },),],
+                assets: new Map([['chat.webp', bytesOf({ seed: 1, },),],]),
+                readerModelIds: READERS,
+                cache,
+                priorReadings: new Map([['chat.webp', prior,],]),
+                signal: new AbortController().signal,
+                perCallTimeoutMs: 5_000,
+                l,
+              },);
+              expect(asked,).toEqual(kind === 'no-text' ? [] : READERS,);
+              expect(result.get('chat.webp',)?.kind,).toBe(kind === 'no-text' ? 'no-text' : 'corroborated',);
+            },
+          },);
+        },),
+        it({
+          name: 'RESUMES A STORED READING AND SPENDS NO CALL, which is what keeps a resumed slice key '
+            + 'equal to the key it resumes. A reading is not deterministic, so re-reading would change '
+            + 'the words in the key and re-buy every settled slice on this document',
+          fn: async () => {
+            const { client, asked, } = agreeingClient();
+
+            /**
+             Reading an earlier run settled for this picture.
+             */
+            const stored: PairedReading = {
+              kind: 'corroborated',
+              readings: [{
+                modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+                text: READING,
+              },],
+              overlap: 1,
+            };
+
+            /**
+             First gather, whose only purpose is to learn the key this picture is
+             stored under, so the second gather stores it under the same one.
+             */
+            const learning = recordingCache({ resumed: new Map(), },);
+            await readDocumentPictures({
+              readOcr: sawText,
+              client,
+              slices: [sliceOf({
+                text: showing({ assetName: 'noticeboard.webp', },),
+                sliceIndex: 0,
+              },),],
+              assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+              readerModelIds: READERS,
+              cache: learning.cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            /**
+             Key that gather wrote under.
+             */
+            const [key,] = learning.persisted;
+            if (key === undefined)
+              throw new Error('one key by construction',);
+
+            /**
+             Calls spent before the resuming gather, so the `toBe(spentBefore)`
+             assertion reads the difference rather than a total.
+             */
+            const spentBefore = asked.length;
+
+            /**
+             Resuming gather, over a store already holding that key.
+             */
+            const { cache, persisted, } = recordingCache({
+              resumed: new Map([[key, stored,],],),
+            },);
+            const readings = await readDocumentPictures({
+              readOcr: sawText,
+              client,
+              slices: [sliceOf({
+                text: showing({ assetName: 'noticeboard.webp', },),
+                sliceIndex: 0,
+              },),],
+              assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+              readerModelIds: READERS,
+              cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(asked.length,).toBe(spentBefore,);
+            expect(persisted.length,).toBe(0,);
+            expect(readings.get('noticeboard.webp',),).toEqual(stored,);
+          },
+        },),
+
+        it({
+          name: 'KEYS BY THE PICTURE RATHER THAN BY ITS NAME, so two assets named alike in different '
+            + 'entries never share a reading. The bytes are what was asked about',
+          fn: async () => {
+            const { client, } = agreeingClient();
+
+            /**
+             Two gathers of one asset name over different bytes.
+             */
+            const keys = await Promise.all([
+              7,
+              9,
+            ].map(async function keyFor(seed,): Promise<string> {
+              const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
+              await readDocumentPictures({
+              readOcr: sawText,
+                client,
+                slices: [sliceOf({
+                  text: showing({ assetName: 'noticeboard.webp', },),
+                  sliceIndex: 0,
+                },),],
+                assets: new Map([['noticeboard.webp', bytesOf({ seed, },),],],),
+                readerModelIds: READERS,
+                cache,
+                signal: AbortSignal.timeout(30_000,),
+                perCallTimeoutMs: 30_000,
+                l,
+              },);
+              return persisted[0] ?? '';
+            },),);
+
+            expect(keys[0] === keys[1],).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'SKIPS A PICTURE NOBODY GATHERED BYTES FOR, spending nothing and recording nothing. '
+            + 'The slices showing it report it as unread, which is what actually happened, and one '
+            + 'unreadable asset must not cost an entry the other fifty slices it has to settle',
+          fn: async () => {
+            const { client, asked, } = agreeingClient();
+            const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
+
+            /**
+             Gather over a slice naming a picture the caller could not read.
+             */
+            const readings = await readDocumentPictures({
+              readOcr: sawText,
+              client,
+              slices: [sliceOf({
+                text: showing({ assetName: 'missing.webp', },),
+                sliceIndex: 0,
+              },),],
+              assets: new Map(),
+              readerModelIds: READERS,
+              cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(readings.size,).toBe(0,);
+            expect(asked.length,).toBe(0,);
+            expect(persisted.length,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'ASKS NOTHING OF A DOCUMENT THAT SHOWS NO PICTURE, which is 1181 of the pinned '
+            + 'corpus\'s 1260 slices and must cost exactly nothing',
+          fn: async () => {
+            const { client, asked, } = agreeingClient();
+            const { cache, } = recordingCache({ resumed: new Map(), },);
+
+            /**
+             Gather over ordinary prose.
+             */
+            const readings = await readDocumentPictures({
+              readOcr: sawText,
+              client,
+              slices: [sliceOf({
+                text: '小猫在窗台上睡觉。\n',
+                sliceIndex: 0,
+              },),],
+              assets: new Map(),
+              readerModelIds: READERS,
+              cache,
+              signal: AbortSignal.timeout(30_000,),
+              perCallTimeoutMs: 30_000,
+              l,
+            },);
+
+            expect(readings.size,).toBe(0,);
+            expect(asked.length,).toBe(0,);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'KEYS A RE-SEATED PICTURE BY THE READERS IT RUNS ON, so a reading the readers before the dry-out '
-        + 'made is never resumed for it, while a hook handing back the starting readers keys it as a caller '
-        + 'with no hook does',
-      fn: async () => {
-        /**
-         Keys a caller with no hook looked up.
-         */
-        const starting = await readOnePicture({},);
-        /**
-         Keys looked up when the hook re-seats the picture elsewhere.
-         */
-        const moved = await readOnePicture({
-          beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: RESEATED_READERS, }),
-        },);
-        /**
-         Keys looked up when the hook hands back the starting readers.
-         */
-        const kept = await readOnePicture({
-          beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: READERS, }),
-        },);
-        expect({
-          lookups: [starting.looked.length, moved.looked.length, kept.looked.length,],
-          movedDiffers: moved.looked[0] !== starting.looked[0],
-          keptMatches: kept.looked[0] === starting.looked[0],
-        },).toEqual({
-          lookups: [1, 1, 1,],
-          movedDiffers: true,
-          keptMatches: true,
-        },);
-      },
+
+    describe({
+      name: `${readDocumentPictures.name} re-seated under a hold (ledger X12)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SEATS A PICTURE ON THE READERS ITS HOOK RETURNS, as every phase that buys item by item seats its '
+            + 'items, so readers re-read after a provider dry-out are the ones asked rather than those read before it',
+          fn: async () => {
+            /**
+             Models a caller with no hook asked.
+             */
+            const control = await readOnePicture({},);
+            /**
+             Models asked when the hook re-seats the picture elsewhere.
+             */
+            const moved = await readOnePicture({
+              beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: RESEATED_READERS, }),
+            },);
+            expect({
+              controlOnReaders: (control.asked.length > 0) && control.asked.every(function onReaders(seat,): boolean {
+                return READERS.includes(seat,);
+              },),
+              movedAskedAny: moved.asked.length > 0,
+              outsideReseated: moved.asked.filter(function outside(seat,): boolean {
+                return !RESEATED_READERS.includes(seat,);
+              },),
+            },).toEqual({
+              controlOnReaders: true,
+              movedAskedAny: true,
+              outsideReseated: [],
+            },);
+          },
+        },),
+        it({
+          name: 'KEYS A RE-SEATED PICTURE BY THE READERS IT RUNS ON, so a reading the readers before the dry-out '
+            + 'made is never resumed for it, while a hook handing back the starting readers keys it as a caller '
+            + 'with no hook does',
+          fn: async () => {
+            /**
+             Keys a caller with no hook looked up.
+             */
+            const starting = await readOnePicture({},);
+            /**
+             Keys looked up when the hook re-seats the picture elsewhere.
+             */
+            const moved = await readOnePicture({
+              beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: RESEATED_READERS, }),
+            },);
+            /**
+             Keys looked up when the hook hands back the starting readers.
+             */
+            const kept = await readOnePicture({
+              beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: READERS, }),
+            },);
+            expect({
+              lookups: [starting.looked.length, moved.looked.length, kept.looked.length,],
+              movedDiffers: moved.looked[0] !== starting.looked[0],
+              keptMatches: kept.looked[0] === starting.looked[0],
+            },).toEqual({
+              lookups: [1, 1, 1,],
+              movedDiffers: true,
+              keptMatches: true,
+            },);
+          },
+        },),
+      ],
     },),
   ],
 },);

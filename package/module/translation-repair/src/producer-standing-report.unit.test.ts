@@ -15,6 +15,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -102,151 +103,159 @@ const UNJUDGED = standingOf({
 },);
 
 await describe({
-  name: standingLine.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name:
-        'renders the share to one decimal AND carries the three counts behind it, since a share with '
-        + 'no denominator beside it cannot be told apart from a share one ballot wide',
-      fn: async () => {
-        expect(standingLine({ standing: LEADER, },),).toBe(
-          'hf:zai-org/GLM-5.3-Flash: 75.0% (6 of 8 disinterested ballots, over 4 candidates)',
-        );
-      },
+    describe({
+      name: standingLine.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'renders the share to one decimal AND carries the three counts behind it, since a share with '
+            + 'no denominator beside it cannot be told apart from a share one ballot wide',
+          fn: async () => {
+            expect(standingLine({ standing: LEADER, },),).toBe(
+              'hf:zai-org/GLM-5.3-Flash: 75.0% (6 of 8 disinterested ballots, over 4 candidates)',
+            );
+          },
+        },),
+
+        it({
+          name:
+            'says UNJUDGED rather than 0.0% for a model no disinterested judge voted on, which is the '
+            + 'distinction the whole report exists to keep: no evidence is not evidence of a poor showing',
+          fn: async () => {
+            expect(standingLine({ standing: UNJUDGED, },),).toBe(
+              'hf:moonshotai/Kimi-K3: UNJUDGED (0 of 0 disinterested ballots, over 2 candidates)',
+            );
+          },
+        },),
+
+        it({
+          name:
+            'renders a MEASURED zero as 0.0%, so the two zeroes a reader might confuse read differently on '
+            + 'the page rather than only in the data behind it',
+          fn: async () => {
+            expect(standingLine({ standing: MEASURED_ZERO, },),).toBe(
+              'hf:Qwen/Qwen3.8-27B: 0.0% (0 of 5 disinterested ballots, over 3 candidates)',
+            );
+            expect(standingLine({ standing: MEASURED_ZERO, },),).not.toBe(
+              standingLine({ standing: UNJUDGED, },),
+            );
+          },
+        },),
+      ],
     },),
 
-    it({
-      name:
-        'says UNJUDGED rather than 0.0% for a model no disinterested judge voted on, which is the '
-        + 'distinction the whole report exists to keep: no evidence is not evidence of a poor showing',
-      fn: async () => {
-        expect(standingLine({ standing: UNJUDGED, },),).toBe(
-          'hf:moonshotai/Kimi-K3: UNJUDGED (0 of 0 disinterested ballots, over 2 candidates)',
-        );
-      },
-    },),
+    describe({
+      name: rankStandings.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name:
+            'POSITIVE CONTROL: the input order is not already the answer, so a ranking that returned its '
+            + 'argument untouched would fail the other cases in this file rather than pass them',
+          fn: async () => {
+            expect([
+              UNJUDGED,
+              MEASURED_ZERO,
+              LEADER,
+            ].map(function idOf(standing,): string {
+              return standing.modelId;
+            },),).not.toEqual(rankStandings({
+              standings: [
+                UNJUDGED,
+                MEASURED_ZERO,
+                LEADER,
+              ],
+            },).map(function idOf(standing,): string {
+              return standing.modelId;
+            },),);
+          },
+        },),
 
-    it({
-      name:
-        'renders a MEASURED zero as 0.0%, so the two zeroes a reader might confuse read differently on '
-        + 'the page rather than only in the data behind it',
-      fn: async () => {
-        expect(standingLine({ standing: MEASURED_ZERO, },),).toBe(
-          'hf:Qwen/Qwen3.8-27B: 0.0% (0 of 5 disinterested ballots, over 3 candidates)',
-        );
-        expect(standingLine({ standing: MEASURED_ZERO, },),).not.toBe(
-          standingLine({ standing: UNJUDGED, },),
-        );
-      },
-    },),
-  ],
-},);
+        it({
+          name:
+            'orders by share, best first, and puts the UNJUDGED model behind the one measured at zero: a '
+            + 'model with no ballots sorts to the END, not to the bottom, because it wrote candidates '
+            + 'nobody disinterested ever voted on',
+          fn: async () => {
+            expect(rankStandings({
+              standings: [
+                UNJUDGED,
+                MEASURED_ZERO,
+                LEADER,
+              ],
+            },).map(function idOf(standing,): string {
+              return standing.modelId;
+            },),).toEqual([
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+            ],);
+          },
+        },),
 
-await describe({
-  name: rankStandings.name,
-  children: [
-    it({
-      name:
-        'POSITIVE CONTROL: the input order is not already the answer, so a ranking that returned its '
-        + 'argument untouched would fail the other cases in this file rather than pass them',
-      fn: async () => {
-        expect([
-          UNJUDGED,
-          MEASURED_ZERO,
-          LEADER,
-        ].map(function idOf(standing,): string {
-          return standing.modelId;
-        },),).not.toEqual(rankStandings({
-          standings: [
-            UNJUDGED,
-            MEASURED_ZERO,
-            LEADER,
-          ],
-        },).map(function idOf(standing,): string {
-          return standing.modelId;
-        },),);
-      },
-    },),
+        it({
+          name:
+            'leaves two UNJUDGED models in the order they arrived, rather than inventing a lead between '
+            + 'them: neither has any evidence, so neither can be ahead',
+          fn: async () => {
+            /**
+             Second model with no disinterested ballots at all.
+             */
+            const alsoUnjudged = standingOf({
+              modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              candidates: 7,
+              disinterestedBallots: 0,
+              disinterestedVotes: 0,
+            },);
 
-    it({
-      name:
-        'orders by share, best first, and puts the UNJUDGED model behind the one measured at zero: a '
-        + 'model with no ballots sorts to the END, not to the bottom, because it wrote candidates '
-        + 'nobody disinterested ever voted on',
-      fn: async () => {
-        expect(rankStandings({
-          standings: [
-            UNJUDGED,
-            MEASURED_ZERO,
-            LEADER,
-          ],
-        },).map(function idOf(standing,): string {
-          return standing.modelId;
-        },),).toEqual([
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          SEAT_SYNTHETIC_VISION_WITHHELD,
-        ],);
-      },
-    },),
+            expect(rankStandings({
+              standings: [
+                UNJUDGED,
+                alsoUnjudged,
+              ],
+            },).map(function idOf(standing,): string {
+              return standing.modelId;
+            },),).toEqual([
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            ],);
+          },
+        },),
 
-    it({
-      name:
-        'leaves two UNJUDGED models in the order they arrived, rather than inventing a lead between '
-        + 'them: neither has any evidence, so neither can be ahead',
-      fn: async () => {
-        /**
-         Second model with no disinterested ballots at all.
-         */
-        const alsoUnjudged = standingOf({
-          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-          candidates: 7,
-          disinterestedBallots: 0,
-          disinterestedVotes: 0,
-        },);
+        it({
+          name:
+            'returns a NEW list and leaves the caller`s alone, so a report that ranks the tally it is '
+            + 'still accumulating into does not reorder that tally underneath it',
+          fn: async () => {
+            /**
+             Caller's list, in an order the ranking must change.
+             */
+            const given: readonly ProducerStanding[] = [
+              UNJUDGED,
+              LEADER,
+            ];
 
-        expect(rankStandings({
-          standings: [
-            UNJUDGED,
-            alsoUnjudged,
-          ],
-        },).map(function idOf(standing,): string {
-          return standing.modelId;
-        },),).toEqual([
-          SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-        ],);
-      },
-    },),
+            expect(rankStandings({ standings: given, },),).not.toBe(given,);
+            expect(given.map(function idOf(standing,): string {
+              return standing.modelId;
+            },),).toEqual([
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            ],);
+          },
+        },),
 
-    it({
-      name:
-        'returns a NEW list and leaves the caller`s alone, so a report that ranks the tally it is '
-        + 'still accumulating into does not reorder that tally underneath it',
-      fn: async () => {
-        /**
-         Caller's list, in an order the ranking must change.
-         */
-        const given: readonly ProducerStanding[] = [
-          UNJUDGED,
-          LEADER,
-        ];
-
-        expect(rankStandings({ standings: given, },),).not.toBe(given,);
-        expect(given.map(function idOf(standing,): string {
-          return standing.modelId;
-        },),).toEqual([
-          SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-        ],);
-      },
-    },),
-
-    it({
-      name: 'ranks an empty tally to an empty list, rather than raising on a calibration that seated nobody',
-      fn: async () => {
-        expect(rankStandings({ standings: [], },),).toEqual([],);
-      },
+        it({
+          name: 'ranks an empty tally to an empty list, rather than raising on a calibration that seated nobody',
+          fn: async () => {
+            expect(rankStandings({ standings: [], },),).toEqual([],);
+          },
+        },),
+      ],
     },),
   ],
 },);

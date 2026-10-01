@@ -24,6 +24,7 @@ import { unified, } from 'unified';
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -114,94 +115,102 @@ function mdxRefusal(): Error {
 }
 
 await describe({
-  name: 'MdxParseError says where, never what',
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'CONTROL: the grammar itself does quote the tag, so absence is provable',
-      fn: async () => {
-        expect(rawMdxRefusal().includes(FIXTURE_TAG,),).toBe(true,);
-      },
-    },),
-    it({
-      name: 'REFUSES to repeat the markup it could not parse',
-      fn: async () => {
-        /**
-         Refusal as a reader would see it.
-         */
-        const refusal = mdxRefusal();
+    describe({
+      name: 'MdxParseError says where, never what',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CONTROL: the grammar itself does quote the tag, so absence is provable',
+          fn: async () => {
+            expect(rawMdxRefusal().includes(FIXTURE_TAG,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'REFUSES to repeat the markup it could not parse',
+          fn: async () => {
+            /**
+             Refusal as a reader would see it.
+             */
+            const refusal = mdxRefusal();
 
-        expect(refusal.message.includes(FIXTURE_TAG,),).toBe(false,);
-      },
-    },),
-    it({
-      name: 'ACCEPTS only its own class, so the wrapper is what a caller catches',
-      fn: async () => {
-        expect(mdxRefusal() instanceof MdxParseError,).toBe(true,);
-      },
-    },),
-    it({
-      name: 'STATES the position and the rule the grammar named',
-      fn: async () => {
-        /**
-         Refusal as a reader would see it.
-         */
-        const refusal = mdxRefusal();
+            expect(refusal.message.includes(FIXTURE_TAG,),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'ACCEPTS only its own class, so the wrapper is what a caller catches',
+          fn: async () => {
+            expect(mdxRefusal() instanceof MdxParseError,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'STATES the position and the rule the grammar named',
+          fn: async () => {
+            /**
+             Refusal as a reader would see it.
+             */
+            const refusal = mdxRefusal();
 
-        expect(refusal.message,).toBe(
-          'MDX body refused to parse at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch); corpus documents compile as MDX '
-            + 'upstream, so failure signals corruption or an unsupported construct.',
-        );
-      },
-    },),
-    it({
-      name: 'CARRIES NO cause, which a reporter would render whether asked to or not',
-      fn: async () => {
-        expect(mdxRefusal().cause,).toBe(undefined,);
-      },
-    },),
-    it({
-      name: 'DECLARES its message safe to forward',
-      fn: async () => {
-        /**
-         Refusal as a reader would see it.
-         */
-        const refusal = mdxRefusal();
+            expect(refusal.message,).toBe(
+              'MDX body refused to parse at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch); corpus documents compile as MDX '
+                + 'upstream, so failure signals corruption or an unsupported construct.',
+            );
+          },
+        },),
+        it({
+          name: 'CARRIES NO cause, which a reporter would render whether asked to or not',
+          fn: async () => {
+            expect(mdxRefusal().cause,).toBe(undefined,);
+          },
+        },),
+        it({
+          name: 'DECLARES its message safe to forward',
+          fn: async () => {
+            /**
+             Refusal as a reader would see it.
+             */
+            const refusal = mdxRefusal();
 
-        expect(namesWithoutQuoting(refusal,),).toBe(true,);
-      },
+            expect(namesWithoutQuoting(refusal,),).toBe(true,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: requireMdxRefusal.name,
-  children: [
-    it({
-      name: 'RETURNS the refusal a catch around the grammar holds, the same object',
-      fn: async () => {
-        /**
-         Refusal the grammar raised.
-         */
-        const refusal = mdxRefusal();
+    describe({
+      name: requireMdxRefusal.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RETURNS the refusal a catch around the grammar holds, the same object',
+          fn: async () => {
+            /**
+             Refusal the grammar raised.
+             */
+            const refusal = mdxRefusal();
 
-        expect(requireMdxRefusal({ error: refusal, },),).toBe(refusal,);
-      },
-    },),
-    it({
-      name: 'RETHROWS anything else unchanged, an error or not, since an unexpected state must keep propagating',
-      fn: async () => {
-        /**
-         A failure that is not the grammar's refusal.
-         */
-        const stray = new TypeError('the cat knocked the parser off the table',);
+            expect(requireMdxRefusal({ error: refusal, },),).toBe(refusal,);
+          },
+        },),
+        it({
+          name: 'RETHROWS anything else unchanged, an error or not, since an unexpected state must keep propagating',
+          fn: async () => {
+            /**
+             A failure that is not the grammar's refusal.
+             */
+            const stray = new TypeError('the cat knocked the parser off the table',);
 
-        expect(caught(function narrowStray(): void {
-          requireMdxRefusal({ error: stray, },);
-        },),).toBe(stray,);
-        expect(caught(function narrowString(): void {
-          requireMdxRefusal({ error: 'hairball', },);
-        },),).toBe('hairball',);
-      },
+            expect(caught(function narrowStray(): void {
+              requireMdxRefusal({ error: stray, },);
+            },),).toBe(stray,);
+            expect(caught(function narrowString(): void {
+              requireMdxRefusal({ error: 'hairball', },);
+            },),).toBe('hairball',);
+          },
+        },),
+      ],
     },),
   ],
 },);

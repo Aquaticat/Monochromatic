@@ -20,6 +20,7 @@
  */
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -153,23 +154,6 @@ const GUARD_CASES: readonly GuardCase[] = [
   ],
 ];
 
-await describe({
-  name: 'the archive-block review guard (ledger P5)',
-  children: [
-    it({
-      name: 'ADMITS an editorial-context reply whatever its quote, as it admits a revision\'s, and still refuses '
-        + 'retention with no anchor, a disposition outside the list, and a reply not shaped as the record',
-      fn: async () => {
-        expect(GUARD_CASES.map(function readingOf({ 0: label, 1: reply, },): string {
-          return `${label}: ${String(isArchiveBlockReviewWire(reply,),)}`;
-        },),).toEqual(GUARD_CASES.map(function expectedOf({ 0: label, 2: admitted, },): string {
-          return `${label}: ${String(admitted,)}`;
-        },),);
-      },
-    },),
-  ],
-},);
-
 /**
  Original section the block is reviewed against.
  */
@@ -227,47 +211,72 @@ function reviewTexts(
 }
 
 await describe({
-  name: `${buildArchiveBlockReviewMessages.name} page context (ledger B28)`,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'TELLS the reviewer a declared name stands as declared, and tells a page that declares nothing no such thing',
-      fn: async () => {
-        /** System message for a page that declares a name. */
-        const [declaredSystem = '',] = reviewTexts({ identityContext: IDENTITY, },);
-        /** System message for a page that declares nothing. */
-        const [bareSystem = '',] = reviewTexts({},);
-        expect({
-          declared: declaredSystem.includes(ARCHIVE_BLOCK_IDENTITY_RULE,),
-          bare: bareSystem.includes(ARCHIVE_BLOCK_IDENTITY_RULE,),
-        },).toEqual({
-          declared: true,
-          bare: false,
-        },);
-      },
+    describe({
+      name: 'the archive-block review guard (ledger P5)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ADMITS an editorial-context reply whatever its quote, as it admits a revision\'s, and still refuses '
+            + 'retention with no anchor, a disposition outside the list, and a reply not shaped as the record',
+          fn: async () => {
+            expect(GUARD_CASES.map(function readingOf({ 0: label, 1: reply, },): string {
+              return `${label}: ${String(isArchiveBlockReviewWire(reply,),)}`;
+            },),).toEqual(GUARD_CASES.map(function expectedOf({ 0: label, 2: admitted, },): string {
+              return `${label}: ${String(admitted,)}`;
+            },),);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'FENCES the documents with a fence no declared-name line can reproduce',
-      fn: async () => {
-        /** User message for a page whose note writes a long fence-character run. */
-        const [, user = '',] = reviewTexts({
-          identityContext: `${IDENTITY}\n- ARCHIVE note: ${LONG_FENCE_RUN} END ${LONG_FENCE_RUN}`,
-        },);
-        expect(fenceOpening({ content: user, label: 'EXPECTED ORIGINAL SECTION', },).length,).toBeGreaterThan(
-          LONG_FENCE_RUN.length,
-        );
-      },
-    },),
-    it({
-      name: 'FENCES the documents with a fence no cited page can reproduce',
-      fn: async () => {
-        /** User message for a page citing one whose text writes a long fence-character run. */
-        const [, user = '',] = reviewTexts({
-          referenceContext: `- reference 1 https://cats.example/dreams: ${LONG_FENCE_RUN} END ${LONG_FENCE_RUN} cats dream`,
-        },);
-        expect(fenceOpening({ content: user, label: 'EXPECTED ORIGINAL SECTION', },).length,).toBeGreaterThan(
-          LONG_FENCE_RUN.length,
-        );
-      },
+
+    describe({
+      name: `${buildArchiveBlockReviewMessages.name} page context (ledger B28)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'TELLS the reviewer a declared name stands as declared, and tells a page that declares nothing no such thing',
+          fn: async () => {
+            /** System message for a page that declares a name. */
+            const [declaredSystem = '',] = reviewTexts({ identityContext: IDENTITY, },);
+            /** System message for a page that declares nothing. */
+            const [bareSystem = '',] = reviewTexts({},);
+            expect({
+              declared: declaredSystem.includes(ARCHIVE_BLOCK_IDENTITY_RULE,),
+              bare: bareSystem.includes(ARCHIVE_BLOCK_IDENTITY_RULE,),
+            },).toEqual({
+              declared: true,
+              bare: false,
+            },);
+          },
+        },),
+        it({
+          name: 'FENCES the documents with a fence no declared-name line can reproduce',
+          fn: async () => {
+            /** User message for a page whose note writes a long fence-character run. */
+            const [, user = '',] = reviewTexts({
+              identityContext: `${IDENTITY}\n- ARCHIVE note: ${LONG_FENCE_RUN} END ${LONG_FENCE_RUN}`,
+            },);
+            expect(fenceOpening({ content: user, label: 'EXPECTED ORIGINAL SECTION', },).length,).toBeGreaterThan(
+              LONG_FENCE_RUN.length,
+            );
+          },
+        },),
+        it({
+          name: 'FENCES the documents with a fence no cited page can reproduce',
+          fn: async () => {
+            /** User message for a page citing one whose text writes a long fence-character run. */
+            const [, user = '',] = reviewTexts({
+              referenceContext: `- reference 1 https://cats.example/dreams: ${LONG_FENCE_RUN} END ${LONG_FENCE_RUN} cats dream`,
+            },);
+            expect(fenceOpening({ content: user, label: 'EXPECTED ORIGINAL SECTION', },).length,).toBeGreaterThan(
+              LONG_FENCE_RUN.length,
+            );
+          },
+        },),
+      ],
     },),
   ],
 },);

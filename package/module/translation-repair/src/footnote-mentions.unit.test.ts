@@ -9,6 +9,7 @@
 
 import {
   caught,
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -48,89 +49,97 @@ const PASSAGE = [
 ].join('\n',);
 
 await describe({
-  name: footnoteMentions.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'LISTS EACH MENTION WITH ITS ROLE, CONVENTION AND IDENTIFIER folded to the parser\'s spelling, the GFM '
-        + 'convention\'s first, and reads a marker as a definition only where it opens its line before its separator',
-      fn: async () => {
-        expect(footnoteMentions({ text: PASSAGE, },),).toEqual([
-          {
-            role: 'reference',
-            convention: 'gfm',
-            identifier: 'nap',
+    describe({
+      name: footnoteMentions.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'LISTS EACH MENTION WITH ITS ROLE, CONVENTION AND IDENTIFIER folded to the parser\'s spelling, the GFM '
+            + 'convention\'s first, and reads a marker as a definition only where it opens its line before its separator',
+          fn: async () => {
+            expect(footnoteMentions({ text: PASSAGE, },),).toEqual([
+              {
+                role: 'reference',
+                convention: 'gfm',
+                identifier: 'nap',
+              },
+              {
+                role: 'reference',
+                convention: 'gfm',
+                identifier: 'nap',
+              },
+              {
+                role: 'reference',
+                convention: 'gfm',
+                identifier: 'nap',
+              },
+              {
+                role: 'definition',
+                convention: 'gfm',
+                identifier: 'nap',
+              },
+              {
+                role: 'reference',
+                convention: 'fullwidth-bracket',
+                identifier: '1',
+              },
+              {
+                role: 'definition',
+                convention: 'fullwidth-bracket',
+                identifier: '1',
+              },
+            ],);
           },
-          {
-            role: 'reference',
-            convention: 'gfm',
-            identifier: 'nap',
-          },
-          {
-            role: 'reference',
-            convention: 'gfm',
-            identifier: 'nap',
-          },
-          {
-            role: 'definition',
-            convention: 'gfm',
-            identifier: 'nap',
-          },
-          {
-            role: 'reference',
-            convention: 'fullwidth-bracket',
-            identifier: '1',
-          },
-          {
-            role: 'definition',
-            convention: 'fullwidth-bracket',
-            identifier: '1',
-          },
-        ],);
-      },
-    },),
-    it({
-      name: 'REFUSES A TEXT OVER THE CAP, naming the count and the convention',
-      fn: async () => {
-        /**
-         What the reader threw over one marker too many.
-         */
-        const refusal = caught(function overCap(): void {
-          footnoteMentions({ text: markers({ count: MAX_SLICE_IDENTIFIERS + 1, },), },);
-        },);
-        expect(refusal,).toBeInstanceOf(FootnoteOverflowError,);
-        expect(refusal,).toHaveProperty(
-          'message',
-          `${String(MAX_SLICE_IDENTIFIERS + 1,)} gfm footnote markers in one text, over the ${
+        },),
+        it({
+          name: 'REFUSES A TEXT OVER THE CAP, naming the count and the convention',
+          fn: async () => {
+            /**
+             What the reader threw over one marker too many.
+             */
+            const refusal = caught(function overCap(): void {
+              footnoteMentions({ text: markers({ count: MAX_SLICE_IDENTIFIERS + 1, },), },);
+            },);
+            expect(refusal,).toBeInstanceOf(FootnoteOverflowError,);
+            expect(refusal,).toHaveProperty(
+              'message',
+              `${String(MAX_SLICE_IDENTIFIERS + 1,)} gfm footnote markers in one text, over the ${
             String(MAX_SLICE_IDENTIFIERS,)
           } this guard counts`,
-        );
-      },
+            );
+          },
+        },),
+      ],
     },),
-  ],
-},);
 
-await describe({
-  name: footnoteIdentifiers.name,
-  children: [
-    it({
-      name: 'COUNTS THE MENTIONS keyed as role, convention and identifier',
-      fn: async () => {
-        expect([...footnoteIdentifiers({ text: PASSAGE, },).entries(),],).toEqual([
-          ['reference gfm nap', 3,],
-          ['definition gfm nap', 1,],
-          ['reference fullwidth-bracket 1', 1,],
-          ['definition fullwidth-bracket 1', 1,],
-        ],);
-      },
-    },),
-    it({
-      name: 'COUNTS A TEXT AT THE CAP, and refuses one marker more as pathological',
-      fn: async () => {
-        expect(footnoteIdentifiers({ text: markers({ count: MAX_SLICE_IDENTIFIERS, },), },).size,).toBe(MAX_SLICE_IDENTIFIERS,);
-        expect(() => footnoteIdentifiers({ text: markers({ count: MAX_SLICE_IDENTIFIERS + 1, },), },),).toThrow(
-          FootnoteOverflowError,
-        );
-      },
+    describe({
+      name: footnoteIdentifiers.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'COUNTS THE MENTIONS keyed as role, convention and identifier',
+          fn: async () => {
+            expect([...footnoteIdentifiers({ text: PASSAGE, },).entries(),],).toEqual([
+              ['reference gfm nap', 3,],
+              ['definition gfm nap', 1,],
+              ['reference fullwidth-bracket 1', 1,],
+              ['definition fullwidth-bracket 1', 1,],
+            ],);
+          },
+        },),
+        it({
+          name: 'COUNTS A TEXT AT THE CAP, and refuses one marker more as pathological',
+          fn: async () => {
+            expect(footnoteIdentifiers({ text: markers({ count: MAX_SLICE_IDENTIFIERS, },), },).size,).toBe(MAX_SLICE_IDENTIFIERS,);
+            expect(() => footnoteIdentifiers({ text: markers({ count: MAX_SLICE_IDENTIFIERS + 1, },), },),).toThrow(
+              FootnoteOverflowError,
+            );
+          },
+        },),
+      ],
     },),
   ],
 },);
