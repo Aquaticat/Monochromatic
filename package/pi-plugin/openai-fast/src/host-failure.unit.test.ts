@@ -43,10 +43,9 @@ await describe({ name: registerOpenAIFast.name, children: [
       expect(assistant,).toHaveProperty('errorMessage',);
       expect(assistant?.errorMessage,).toBe('Synthetic native failure.',);
       expect(failures,).toHaveLength(1,);
-      expect(failures[0],).toMatchObject({
-        type: 'response.failed',
-        response: { error: { code, message: 'Synthetic native failure.', }, },
-      },);
+      expect(failures[0],).toHaveProperty('type', 'response.failed',);
+      expect(failures[0],).toHaveProperty('response.error.code', code,);
+      expect(failures[0],).toHaveProperty('response.error.message', 'Synthetic native failure.',);
       expect(http.requests,).toHaveLength(1,);
       expect(http.requests[0]?.payload,).toHaveProperty('service_tier', 'priority',);
     }, },);
