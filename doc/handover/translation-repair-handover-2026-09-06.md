@@ -391,12 +391,20 @@ this one says what changed after it.
   so the runner ran over nothing or over the rest;
   it now refuses the line,
   naming every stray.
+  Ledger B77 followed
+  (`f0322ce6f` to `2293b0ded`):
+  plain-object tables looked up by text from outside the package (found in B73)
+  answered the names every object inherits,
+  so a stream delta,
+  an asset name,
+  a stored status or disposition,
+  or an entry id spelled `constructor` or `__proto__` read as a prototype value;
+  every table looked up by text is now a map,
+  and `text-keyed-tables.unit.test.ts` fails on a new one.
   Open,
-  each to close before the eighteenth batch:
-  elapsed times measured on the wall clock (found in the seventeenth batch),
-  and plain-object tables looked up by text from outside the package (found in B73;
-  the fidelity probe's defect table closed by B75).
-  The census taken once they close is the eighteenth batch's baseline,
+  to close before the eighteenth batch:
+  elapsed times measured on the wall clock (found in the seventeenth batch).
+  The census taken once it closes is the eighteenth batch's baseline,
   that batch taking the archive modules
   (`archive`,
   18 stretches over 36 lines in 9 files,
