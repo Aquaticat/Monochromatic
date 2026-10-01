@@ -57,7 +57,12 @@ or batch.
 An initiated call counts even if it fails,
 is cancelled,
 or returns too late.
-A transport retry consumes one of the same three slots.
+A transport retry consumes one of the same three slots
+and requires remaining time under the original deadline.
+A missing,
+malformed,
+or uncertain semantic answer is not a transport failure.
+Cancellation does not authorize another attempt.
 The existing at-most-one automatic transport retry remains;
 the new ceiling does not silently allow a retry for every batch.
 Q11's accepted distinction between client calls and Gateway-internal attempts remains explicit.
@@ -121,8 +126,10 @@ and retrying uncertainty until it becomes approval remain excluded.
 Code may stop once unresolved relevant estimates cannot change the applicable rule outcome.
 This is deterministic partial evaluation of the governing rules,
 not a request for the model to announce confidence in its final decision.
-The rule evaluator needs dependency tracking,
+The rule evaluator needs conservative dependency tracking,
 not enumeration of every truth assignment to hundreds of questions.
+Unknown applicability or a missing dependency stays potentially outcome-changing
+unless code establishes why it cannot affect the result.
 
 An approval must still satisfy all mandatory prerequisites and finalization checks.
 A permissive relation does not permit stopping before a relevant higher-priority prohibition or approval requirement.
@@ -188,6 +195,10 @@ encoding,
 or finalization time.
 Measure the whole intended batch and total assessment;
 neither 512 questions nor three allowed calls guarantees that they fit.
+The documented endpoint returns a complete answer object,
+not a per-question stream.
+The caller's stop opportunity is after each completed batch or cancellation,
+not after an inaccessible intermediate answer inside the batch.
 
 ## Qualification implications
 
@@ -216,7 +227,8 @@ No historical threshold is adopted for the new model or format.
 
 Parallel question isolation is the supplied design premise,
 not a reason to launch a new expansive interference investigation.
-Runtime checks still need to establish exact answering model,
+Runtime checks still need to establish exact `drex-v1.5` in the answering response,
+not merely the request or model catalogue,
 complete answer-ID coverage,
 whole-batch timing,
 and semantic quality on the requested workload.
