@@ -15248,6 +15248,11 @@ then the write a helper chain reaches,
 then the write in a sequenced suite inside a concurrent one,
 12 findings for 13).
 
+The full suite on `99cf575d7`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,501 PASS lines and no FAIL line.
+
 Out of the scan's reach,
 and named in its module note:
 a write through an alias (`const env = process.env`),
