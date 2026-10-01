@@ -5215,6 +5215,57 @@ printed 1513 PASS lines and no FAIL line;
 the 13 lines holding the word are passing cases' names
 and the census runner's own case printing a failure on purpose.
 
+The twenty-third batch took `front` against `census-1B1Mb4`.
+Reading its cold stretches found the YAML refusal arms unreachable:
+yaml's `parse` throws a `YAMLError` carrying a code and a position,
+or a plain `ReferenceError` or `TypeError` for an anchor fault,
+so `dcb850374` reads refusals through yaml's own class
+and reads a position through `nonNullishOrThrow`.
+It also found B97,
+a list-shaped alias that skipped the identity rule
+(recorded in its own entry).
+The reachable arms are cased in `999aaa60a`,
+whose new cases `7254593ed` makes name their targets rather than point at them.
+The closing census,
+`census-NkULde` at `ae5be43fe`,
+read against `census-1B1Mb4`:
+ran 11,
+still cold 755,
+cold since then 0,
+not loaded 6,
+sources edited since then 71,
+the batches' fixes from B92 to B100 among them.
+Of the cluster's three sources,
+all edited since the baseline,
+`front-matter-comment-authority.ts` left no cold stretch
+and the other two left one each:
+
+- `front-matter.ts` `parseFrontMatterYaml` rethrew a caught value that is not an `Error`,
+  which yaml's `parse` never throws;
+  it now hands the caught value to `errorOrThrow` (`module-or-throw`),
+  which fails naming what arrived,
+  so no arm a case cannot reach is left
+  (issue 583 records that `errorOrThrow`'s TSDoc says `instanceof Error`
+  where its body calls `Error.isError`);
+- `front-matter-translation.ts` `visibleIdentityOf` read an alias that is neither text nor a list of text as another schema,
+  an arm B97 added after the baseline with no case;
+  `front-matter-slice.unit.test.ts` now carries one:
+  a one-item alias list holding a mapping holds no identity rule,
+  where the same list holding the name as text refuses a candidate dropping it.
+
+Library source went from 633 stretches in 249 files to 605 in 246.
+
+By the first construct
+(`t8-triage-nkulde.txt`),
+the queue for the twenty-fourth batch is 248 returns,
+109 nullish fallbacks,
+108 ternaries,
+63 throws
+and 77 others.
+`corpus-run/attribution` leads alone at 14 stretches over 17 lines in 2 files,
+so the twenty-fourth batch takes it,
+against a census taken once this batch's docs close.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

@@ -1,4 +1,7 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import {
+  errorOrThrow,
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw/ts';
 import {
   parse as parseYaml,
   YAMLError,
@@ -273,12 +276,12 @@ function parseFrontMatterYaml(
     return parseYaml(yamlSource,);
   }
   catch (error) {
-    // A REFUSAL IS AN ERROR: the parser throws nothing else, and anything
-    // else keeps propagating unchanged, as the shared narrowing does with
-    // what it does not recognise.
-    if (!Error.isError(error,))
-      throw error;
-    throw new FrontMatterParseError({ cause: error, },);
+    // A REFUSAL IS AN ERROR: the parser throws a YAMLError, or a
+    // ReferenceError or TypeError for an anchor fault, and nothing else
+    // (ledger T8, twenty-third batch). A caught value that is not an Error
+    // is an unexpected state, which `errorOrThrow` fails on loudly, naming
+    // what arrived, rather than wrapping it as a refusal.
+    throw new FrontMatterParseError({ cause: errorOrThrow(error,), },);
   }
 }
 

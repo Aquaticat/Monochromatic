@@ -298,6 +298,25 @@ await describe({
         },),
 
         it({
+          name: 'READS AN info.alias LIST HOLDING ANYTHING BUT TEXT AS ANOTHER SCHEMA, holding no identity rule over '
+            + 'it, where the same list holding the name as text refuses a candidate dropping the name',
+          fn: async () => {
+            expect(validateFrontMatterTranslation({
+              sourceText: '---\nname: 猫猫\ninfo:\n  alias:\n    - text: 猫猫\n---\n',
+              pageText: '---\nname: Maomao\ninfo:\n  alias:\n    - text: Maomao\n---\n',
+              candidateText: '---\nname: Maomao\ninfo:\n  alias:\n    - text: Kitty\n---\n',
+            },).kind,).toBe('valid',);
+            // THE CONTROL: the one item written as text makes name and alias
+            // one identity, and the candidate dropping the name is refused.
+            expect(validateFrontMatterTranslation({
+              sourceText: '---\nname: 猫猫\ninfo:\n  alias:\n    - 猫猫\n---\n',
+              pageText: '---\nname: Maomao\ninfo:\n  alias:\n    - Maomao\n---\n',
+              candidateText: '---\nname: Maomao\ninfo:\n  alias:\n    - Kitty\n---\n',
+            },).kind,).toBe('invalid',);
+          },
+        },),
+
+        it({
           name: 'REFUSES FIELD LOSS, BODY PROSE, AND MALFORMED YAML',
           fn: async () => {
             expect(validateFrontMatterTranslation({
