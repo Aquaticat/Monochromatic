@@ -168,6 +168,15 @@ const CUT_TOOL_CALL_BODY = 'data: {"type":"content_block_delta","index":0,'
   + '"delta":{"type":"input_json_delta","partial_json":"{\\"verdict\\":"}}\n\n';
 
 /**
+ Recorded reply cut inside its last frame, after the terminator's type and
+ before the brace closing it: the word is on the wire and the frame is not.
+ */
+const CUT_INSIDE_TERMINATOR_BODY = TOOL_CALL_BODY.slice(
+  0,
+  TOOL_CALL_BODY.lastIndexOf('}',),
+);
+
+/**
  Verdict shape the chatJson tests validate against.
  */
 type CatVerdict = { readonly verdict: string; };
@@ -590,6 +599,37 @@ await describe({
         expect(reply.text,).toBe('{"verdict":"pass"}',);
         // EXACTLY TWO: the cut one and the whole one. A third would say a whole
         // body is being retried too, which would double the cost of every call.
+        expect(exchanges.length,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'RETRIES a stream cut inside its terminator frame, which the ladder read as whole '
+        + 'because the frame\'s type was already on the wire: the answer then failed to parse '
+        + 'after the ladder had returned, and the voice was lost (ledger B87)',
+      fn: async () => {
+        /** Transport cutting the first stream inside `message_stop` and completing the second. */
+        const { transport, exchanges, } = recordedTransport({
+          replies: [
+            { status: 200, bodyText: CUT_INSIDE_TERMINATOR_BODY, },
+            { status: 200, bodyText: TOOL_CALL_BODY, },
+          ],
+        },);
+        /** Client under test with injected transport and no retry wait. */
+        const client = createHyperClient({
+          apiKey: 'test-key',
+          transport,
+          retryPolicy: { limit: 2, baseMs: 1, },
+        },);
+
+        /** Answer the second attempt carried. */
+        const reply = await client.chatText({
+          modelId: SEAT_HYPER_VISION,
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+        },);
+
+        expect(reply.text,).toBe('{"verdict":"pass"}',);
         expect(exchanges.length,).toBe(2,);
       },
     },),

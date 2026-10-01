@@ -273,6 +273,99 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a stream whose only "message_stop" is a value inside another frame, since the '
+        + 'terminator is a frame of that type: a tool named that way, on a stream cut before it '
+        + 'ended, read as whole and handed a validator half a JSON object (ledger B87)',
+      fn: async () => {
+        expect(function namedOnly() {
+          extractAnthropicCompletion({
+            bodyText: startOf({ inputTokens: 8, },)
+              + frameOf({
+                body: {
+                  type: 'content_block_start',
+                  index: 0,
+                  content_block: {
+                    type: 'tool_use',
+                    name: 'message_stop',
+                    input: {},
+                  },
+                },
+              },)
+              + deltaOf({
+                deltaType: 'input_json_delta',
+                field: 'partial_json',
+                text: '{"mood":"rav',
+              },),
+          },);
+        },).toThrow(MalformedCompletionError,);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE ERROR an error event reported, rather than calling the stream cut off: the '
+        + 'provider said why it stopped, and a refusal naming a dropped connection sends a reader '
+        + 'to the network instead (ledger B87)',
+      fn: async () => {
+        /**
+         Stream the provider ended with an error event, as the streaming
+         documentation shows one.
+         */
+        const bodyText = startOf({ inputTokens: 8, },)
+          + deltaOf({
+            deltaType: 'text_delta',
+            field: 'text',
+            text: 'Biscuit',
+          },)
+          + frameOf({
+            body: {
+              type: 'error',
+              error: {
+                type: 'overloaded_error',
+                message: 'Overloaded',
+              },
+            },
+          },);
+        expect(function errored() {
+          extractAnthropicCompletion({ bodyText, },);
+        },).toThrow(MalformedCompletionError,);
+        expect(function errored() {
+          extractAnthropicCompletion({ bodyText, },);
+        },).toThrow('overloaded_error',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES an answer past an error event even when message_stop follows it, since what '
+        + 'the stream carried before the provider reported a failure is not an answer it vouched '
+        + 'for (ledger B87)',
+      fn: async () => {
+        expect(function erroredThenStopped() {
+          extractAnthropicCompletion({
+            bodyText: startOf({ inputTokens: 8, },)
+              + deltaOf({
+                deltaType: 'text_delta',
+                field: 'text',
+                text: 'Biscuit',
+              },)
+              + frameOf({
+                body: {
+                  type: 'error',
+                  error: {
+                    type: 'api_error',
+                    message: 'Internal',
+                  },
+                },
+              },)
+              + endOf({
+                stopReason: 'end_turn',
+                outputTokens: 1,
+              },),
+          },);
+        },).toThrow(MalformedCompletionError,);
+      },
+    },),
+
+    it({
       name: 'REFUSES a payload that is not JSON rather than skipping it, since a frame nobody can '
         + 'read means the answer assembled from the rest is missing an unknown piece',
       fn: async () => {
