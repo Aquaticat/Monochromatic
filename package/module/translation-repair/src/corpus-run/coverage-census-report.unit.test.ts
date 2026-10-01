@@ -530,6 +530,36 @@ await describe({
             },).map((read,) => [read.stretch.source, read.status,]),).toEqual([['src/purr.ts', 'ran',],],);
           },
         },),
+        it({
+          name: 'LEAVES OUT UNMAPPED CODE, which has no lines to compare: a rebuild renames its bundle, so the '
+            + 'same stretch read as not loaded at every census (ledger B105)',
+          fn: async () => {
+            expect(baselineStatusesOf({
+              baseline: [
+                recorded({
+                  source: unmappedSourceOf({ bundle: 'nap-AAAA.mjs', },),
+                  startLine: 0,
+                  endLine: 0,
+                },),
+                recorded({
+                  source: 'src/purr.ts',
+                  startLine: 1,
+                  endLine: 2,
+                },),
+              ],
+              current: [
+                recorded({
+                  source: unmappedSourceOf({ bundle: 'nap-BBBB.mjs', },),
+                  startLine: 0,
+                  endLine: 0,
+                },),
+              ],
+              loadedSources: new Set([unmappedSourceOf({ bundle: 'nap-BBBB.mjs', },), 'src/purr.ts',],),
+              sources: new Set(),
+              edited: new Set(),
+            },).map((read,) => [read.stretch.source, read.status,]),).toEqual([['src/purr.ts', 'ran',],],);
+          },
+        },),
       ],
     },),
 
