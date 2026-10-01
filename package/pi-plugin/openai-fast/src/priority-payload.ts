@@ -57,17 +57,24 @@ export async function forcePriorityPayload({
   /**
    Function logger records callback lifecycle without logging request values.
    */
-  const innerL = tagged({ tag: forcePriorityPayload.name, l, },);
+  const innerL = tagged({
+    tag: forcePriorityPayload.name,
+    l,
+  },);
   innerL.debug(onPayload === undefined ? 'preparing native payload' : 'awaiting caller payload customization',);
   /**
    Undefined preserves the original payload; null is an invalid replacement.
    */
-  const replacement = await onPayload?.(payload, model,);
+  const replacement = await onPayload?.(
+    payload,
+    model,
+  );
   /**
    Selected request must be a record before priority can be applied.
    */
   const selected = replacement === undefined ? payload : replacement;
-  if (typeof selected !== 'object' || selected === null || Array.isArray(selected,)) {
+  if (((typeof selected) !== 'object') || (selected === null)
+    || Array.isArray(selected,)) {
     innerL.error('selected priority request payload is not an object record',);
     throw new PriorityRequestError({
       message: 'Priority request payload must be a non-null object, not an array. Return an object from onPayload, or return undefined to keep the native request.',
@@ -77,7 +84,7 @@ export async function forcePriorityPayload({
    Built-in containers and class instances cannot preserve native record replacement semantics.
    */
   const prototype: unknown = Object.getPrototypeOf(selected,);
-  if (prototype !== Object.prototype && prototype !== null) {
+  if ((prototype !== Object.prototype) && (prototype !== null)) {
     innerL.error('selected priority request payload is not a plain or null-prototype record',);
     throw new PriorityRequestError({
       message: 'Priority request payload must be a plain or null-prototype object. Return an object from onPayload, not a class instance or container, or return undefined to keep the native request.',
@@ -90,9 +97,11 @@ export async function forcePriorityPayload({
     ...selected,
     service_tier: 'priority',
   };
-  /** Root serialization customization is inspected without invoking it. */
+  /**
+   Root serialization customization is inspected without invoking it.
+   */
   const { toJSON, } = result;
-  if (typeof toJSON === 'function') {
+  if ((typeof toJSON) === 'function') {
     innerL.error('priority request payload overrides root JSON serialization',);
     throw new PriorityRequestError({
       message: 'Priority request payload must not define a callable toJSON property. Return a plain request object from onPayload so service_tier remains priority when sent.',

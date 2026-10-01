@@ -30,7 +30,10 @@ export class PriorityRequestError extends Error {
     /**
      Constructor logger records only the validation boundary.
      */
-    const innerL = tagged({ tag: PriorityRequestError.name, l, },);
+    const innerL = tagged({
+      tag: PriorityRequestError.name,
+      l,
+    },);
     innerL.debug('created priority request diagnostic',);
   }
 }

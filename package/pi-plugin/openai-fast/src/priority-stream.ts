@@ -69,13 +69,19 @@ export function streamPriority({
   /**
    Function logger records delegation without sensitive request data.
    */
-  const innerL = tagged({ tag: streamPriority.name, l, },);
+  const innerL = tagged({
+    tag: streamPriority.name,
+    l,
+  },);
   innerL.debug('delegating priority request to native Codex stream',);
   /**
    Capture caller customization when options are composed, before registry dispatch can defer it.
    */
   const onPayload = options?.onPayload;
-  return stream(model, context, {
+  return stream(
+    model,
+    context,
+    {
     ...options,
     serviceTier: 'priority',
     /**
@@ -98,7 +104,10 @@ export function streamPriority({
       /**
        Callback logger extends the stream function boundary.
        */
-      const callbackL = tagged({ tag: priorityPayload.name, l: innerL, },);
+      const callbackL = tagged({
+        tag: priorityPayload.name,
+        l: innerL,
+      },);
       callbackL.debug('composing priority payload callback',);
       return await forcePriorityPayload({
         payload,
@@ -106,7 +115,8 @@ export function streamPriority({
         onPayload,
       },);
     },
-  },);
+  },
+  );
 }
 
 //endregion Full stream
@@ -156,7 +166,10 @@ export function streamSimplePriority({
   /**
    Function logger records conversion without exposing authentication data.
    */
-  const innerL = tagged({ tag: streamSimplePriority.name, l, },);
+  const innerL = tagged({
+    tag: streamSimplePriority.name,
+    l,
+  },);
   innerL.debug('preparing native simple Codex options',);
   /**
    Direct native dispatch requires a token; injected registry dispatch resolves it later.
@@ -169,7 +182,10 @@ export function streamSimplePriority({
   /**
    Match native clamping, including conversion of unsupported reasoning to off.
    */
-  const clampedReasoning = options?.reasoning ? clampThinkingLevel(model, options.reasoning,) : undefined;
+  const clampedReasoning = options?.reasoning ? clampThinkingLevel(
+    model,
+    options.reasoning,
+  ) : undefined;
   /**
    Native off semantics omit reasoningEffort rather than sending the string off.
    */
@@ -180,7 +196,12 @@ export function streamSimplePriority({
     context,
     ...(stream === undefined ? {} : { stream, }),
     options: {
-      ...buildBaseOptions(model, context, options, apiKey,),
+      ...buildBaseOptions(
+        model,
+        context,
+        options,
+        apiKey,
+      ),
       ...(options?.toolChoice === undefined ? {} : { toolChoice: options.toolChoice, }),
       ...(reasoningEffort === undefined ? {} : { reasoningEffort, }),
       serviceTier: 'priority',
