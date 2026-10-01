@@ -24,6 +24,22 @@ import {
 // card added or removed is seen everywhere at once and nowhere by hand.
 
 /**
+ Providers a card can carry a side for, in the order `roster-card` names
+ them, and the one list its command line and refusals are written from.
+
+ @example
+ ```ts
+ CARD_PROVIDERS.join('|',); // 'synthetic|hyper|openrouter|bedrock'
+ ```
+ */
+export const CARD_PROVIDERS = [
+  'synthetic',
+  'hyper',
+  'openrouter',
+  'bedrock',
+] as const;
+
+/**
  Provider whose side of a card is being asked for.
 
  @example
@@ -31,7 +47,7 @@ import {
  const provider: CardProvider = 'hyper';
  ```
  */
-export type CardProvider = 'synthetic' | 'hyper' | 'openrouter' | 'bedrock';
+export type CardProvider = (typeof CARD_PROVIDERS)[number];
 
 /**
  A card beside the roster id it sits under.

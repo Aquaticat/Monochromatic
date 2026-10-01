@@ -1,3 +1,4 @@
+import { CARD_PROVIDERS, } from '../model-card-derive.ts';
 import { PROVIDER_ORDER, } from '../provider-name.ts';
 import type {
   CommandLineFor,
@@ -277,7 +278,7 @@ export const COMMAND_LINES: CommandLines = {
     ...NO_ARGUMENTS,
     positionals: {
       names: [
-        'synthetic|hyper|openrouter|bedrock',
+        CARD_PROVIDERS.join('|',),
         'served id',
       ],
       least: 2,

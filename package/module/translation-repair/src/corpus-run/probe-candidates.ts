@@ -83,7 +83,9 @@ export function readCandidateIds(
     },);
     if (known === undefined) {
       throw new StatedRefusalError({
-        says: `${CANDIDATES_FLAG} names ${id}, which is not seatable; the roster knows ${ROSTER_MODEL_IDS.join(',',)}`,
+        says: `${CANDIDATES_FLAG} names ${
+          JSON.stringify(id,)
+        }, which is not seatable; the roster knows ${ROSTER_MODEL_IDS.join(',',)}`,
       },);
     }
     return known;

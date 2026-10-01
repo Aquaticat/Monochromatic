@@ -113,7 +113,9 @@ export function readRequiredProviders(
       if (isProviderName(provider,))
         return provider;
       throw new StatedRefusalError({
-        says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${PROVIDER_ORDER.join(', ',)}, and ${provider} is none of them`,
+        says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${PROVIDER_ORDER.join(', ',)}, and ${
+          JSON.stringify(provider,)
+        } is none of them`,
       },);
     },);
   return parsedProviders.filter(function unique(

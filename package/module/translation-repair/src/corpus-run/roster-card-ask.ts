@@ -1,4 +1,9 @@
-import type { CardProvider, } from '../model-card-derive.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
+import {
+  CARD_PROVIDERS,
+  type CardProvider,
+} from '../model-card-derive.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 
@@ -9,16 +14,6 @@ import type { CommandLineOf, } from './command-lines.ts';
 // nothing (measured 2026-09-16 on the first build of the task).
 
 /**
- Providers as the command line may name them.
- */
-const PROVIDERS: readonly CardProvider[] = [
-  'synthetic',
-  'hyper',
-  'openrouter',
-  'bedrock',
-];
-
-/**
  Reads the provider and served id off the command line.
 
  @param line - the card's command line, read whole by `reportingRefusals`,
@@ -27,7 +22,8 @@ const PROVIDERS: readonly CardProvider[] = [
  @returns Provider and served id
 
  @throws {@link StatedRefusalError} When the provider is not one of the four
- or the served id is written empty
+ or the served id is written empty, naming each part that is wrong and
+ quoting what was typed (ledger B75)
 
  @example
  ```ts
@@ -51,21 +47,30 @@ export function readAsk(
   /**
    Provider as written, if it is one of the four.
    */
-  const provider = PROVIDERS.find(function is(candidate,): boolean {
+  const provider = CARD_PROVIDERS.find(function is(candidate,): boolean {
     return candidate === providerWritten;
   },);
+
   /**
-   Whether the ask names both parts.
+   What is wrong with each part, empty when nothing is.
    */
-  const complete = (provider !== undefined)
-    && (servedId !== '');
-  if (!complete) {
+  const problems = [
+    ...((provider === undefined)
+      ? [
+        `roster-card's provider is one of ${CARD_PROVIDERS.join(', ',)}, and ${
+          JSON.stringify(providerWritten,)
+        } is none of them`,
+      ]
+      : []),
+    ...((servedId === '') ? ['roster-card\'s served id is written empty',] : []),
+  ];
+  if (problems.length > 0) {
     throw new StatedRefusalError({
-      says: `usage: roster-card <${PROVIDERS.join('|',)}> <served id>`,
+      says: problems.join('; ',),
     },);
   }
   return {
-    provider,
+    provider: nonNullishOrThrow(provider,),
     servedId,
   };
 }
