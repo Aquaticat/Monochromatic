@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { contextRoot, } from './log-context.ts';
 import type {
   ChannelDelta,
@@ -58,20 +60,41 @@ const THINKING_BLOCK = 'thinking';
 const UNREAD = 'unread';
 
 /**
- Channel a delta routes to, or that this scanner does not read its type.
+ How this scanner reads one delta type: the channel its text belongs to and
+ the field the text rides in.
+ 
+ @example
+ ```ts
+ const reading: DeltaReading = { channel: 'content', field: 'text', };
+ ```
+ */
+type DeltaReading = {
+  /**
+   Channel the text is filed under.
+   */
+  readonly channel: StreamChannel;
+
+  /**
+   Field of the delta that carries the text.
+   */
+  readonly field: string;
+};
+
+/**
+ Reading a delta gets, or that this scanner does not read its type.
  
  A THIRD STATE RATHER THAN A NULLISH UNION, so an unread delta is a named
  reading instead of an absence a caller has to remember to check.
  
  @example
  ```ts
- const routing: DeltaRouting = 'reasoning';
+ const routing: DeltaRouting = UNREAD;
  ```
  */
-type DeltaRouting = StreamChannel | typeof UNREAD;
+type DeltaRouting = DeltaReading | typeof UNREAD;
 
 /**
- Delta types this scanner reads, mapped to the channel each belongs to.
+ Delta types this scanner reads, each with its channel and its text field.
  
  `input_json_delta` IS THE ANSWER CHANNEL, which is the one mapping here that
  is not obvious. Under forced tool use the model's whole reply is the tool
@@ -79,22 +102,38 @@ type DeltaRouting = StreamChannel | typeof UNREAD;
  for. Routing them to `reasoning` would leave every schema'd call looking
  like a model that thought at length and answered nothing.
  
+ ONE TABLE FOR BOTH (ledger B91). The channel and the field once sat in two
+ maps, on the claim that one table could not hold two types sharing a
+ channel under different fields; a table of pairs holds them. Split, a type
+ with a channel and no field was possible, and a thinking block lent its
+ channel to every type, so a type this scanner does not read was filed as
+ reasoning and its text read from the field named by the empty string.
+ 
  A MAP, since the key is the type the provider's stream names: a plain object
  answered a delta typed `constructor` or `__proto__` with what every object
  inherits, and filed its text under that as a channel (ledger B77).
  */
-const DELTA_CHANNELS: ReadonlyMap<string, StreamChannel> = new Map([
+const DELTA_READINGS: ReadonlyMap<string, DeltaReading> = new Map([
   [
     'text_delta',
-    'content',
+    {
+      channel: 'content',
+      field: 'text',
+    },
   ],
   [
     'thinking_delta',
-    'reasoning',
+    {
+      channel: 'reasoning',
+      field: 'thinking',
+    },
   ],
   [
     'input_json_delta',
-    'content',
+    {
+      channel: 'content',
+      field: 'partial_json',
+    },
   ],
 ],);
 
@@ -126,29 +165,6 @@ const DELTA_CHANNELS: ReadonlyMap<string, StreamChannel> = new Map([
  to arrive first. This holds whichever order the two declarations come in.
  */
 const ANSWER_DELTAS: ReadonlySet<string> = new Set(['input_json_delta',],);
-
-/**
- Field each delta type carries its text in.
- 
- SEPARATE FROM {@link DELTA_CHANNELS} because the two are genuinely
- independent: `text_delta` and `input_json_delta` share a channel and use
- different field names, so one table cannot express both. A map for the
- reason {@link DELTA_CHANNELS} gives.
- */
-const DELTA_TEXT_FIELDS: ReadonlyMap<string, string> = new Map([
-  [
-    'text_delta',
-    'text',
-  ],
-  [
-    'thinking_delta',
-    'thinking',
-  ],
-  [
-    'input_json_delta',
-    'partial_json',
-  ],
-],);
 
 /**
  Reads one string field off a parsed object, ignoring anything else.
@@ -235,29 +251,32 @@ function frameIndex(
 }
 
 /**
- Channel a delta belongs to, preferring what the block declared.
+ How a delta is read, preferring the channel its block declared.
  
  A `text_delta` INSIDE A THINKING BLOCK is reasoning despite its type, which
- is why the block map is consulted first. Providers have been observed to send
- plain text deltas inside a thinking block, and reading only the delta type
- would file that as the answer.
+ is why the block's declaration outranks the delta's channel. Providers have
+ been observed to send plain text deltas inside a thinking block, and reading
+ only the delta type would file that as the answer.
  
  {@link ANSWER_DELTAS} IS THE EXCEPTION, and its own note carries the wire
  capture that made it necessary: a block declaration cannot demote a tool-call
  argument fragment, because that fragment is the answer by construction.
  
+ A TYPE THIS SCANNER DOES NOT READ STAYS UNREAD, inside a thinking block too
+ (ledger B91): the block names a channel, never a field to read text from.
+ 
  @param deltaType - `type` of the delta object
  
  @param blockType - type the enclosing block declared, empty when unknown
  
- @returns Channel to file this text under, or that this type is not read
+ @returns Channel and field to read this delta by, or that this type is not read
  
  @example
  ```ts
- const channel = channelFor({ deltaType: 'text_delta', blockType: 'thinking', },);
+ const routing = routingFor({ deltaType: 'text_delta', blockType: 'thinking', },);
  ```
  */
-function channelFor(
+function routingFor(
   {
     deltaType,
     blockType,
@@ -266,9 +285,19 @@ function channelFor(
     readonly blockType: string;
   },
 ): DeltaRouting {
-  if ((blockType === THINKING_BLOCK) && (!ANSWER_DELTAS.has(deltaType,)))
-    return 'reasoning';
-  return DELTA_CHANNELS.get(deltaType,) ?? UNREAD;
+  /**
+   How this scanner reads the type, absent for a type it does not read.
+   */
+  const reading = DELTA_READINGS.get(deltaType,);
+  if (reading === undefined)
+    return UNREAD;
+  if ((blockType === THINKING_BLOCK) && (!ANSWER_DELTAS.has(deltaType,))) {
+    return {
+      channel: 'reasoning',
+      field: reading.field,
+    };
+  }
+  return reading;
 }
 
 /**
@@ -433,13 +462,13 @@ export function scanAnthropicDeltas(): DeltaScanner {
     const blockType = declared ?? '';
 
     /**
-     Channel to file this text under, or that this type is not read here.
+     Channel and field to read this delta by, or that this type is not read here.
      */
-    const channel = channelFor({
+    const routing = routingFor({
       deltaType,
       blockType,
     },);
-    if (channel === UNREAD)
+    if (routing === UNREAD)
       return [];
 
     /**
@@ -447,13 +476,13 @@ export function scanAnthropicDeltas(): DeltaScanner {
      */
     const text = stringField({
       fields: delta,
-      name: DELTA_TEXT_FIELDS.get(deltaType,) ?? '',
+      name: routing.field,
     },);
     if (text === '')
       return [];
 
     return [{
-      channel,
+      channel: routing.channel,
       text,
     },];
   }
@@ -521,7 +550,9 @@ export function scanAnthropicDeltas(): DeltaScanner {
        Lines the pending text splits into; the last is kept for next time.
        */
       const lines = pending.split('\n',);
-      state.carry = lines.pop() ?? '';
+      // A SPLIT ALWAYS YIELDS ONE PIECE AT LEAST, the empty text included, so
+      // there is always a last line to hold back.
+      state.carry = nonNullishOrThrow(lines.pop(),);
 
       return lines.flatMap(function ofLine(line,): readonly ChannelDelta[] {
         return readLine({ line, },);

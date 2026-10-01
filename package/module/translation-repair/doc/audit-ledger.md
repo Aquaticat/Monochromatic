@@ -16345,6 +16345,36 @@ taken from the thrower;
 `mistake-prevention.md`,
 "Labels a message names".
 
+### B91: a delta type the Anthropic scanner does not read, claimed as reasoning in a thinking block
+
+Found in T8's twenty-second batch,
+reading the stretch census-lxT62v lists cold at `anthropic-delta-scan.ts:450`
+(`DELTA_TEXT_FIELDS.get(deltaType) ?? ''`),
+red in `a1761139e`,
+fixed in the commit adding this entry.
+`channelFor` returned `reasoning` for every delta type inside a thinking block,
+the types the scanner does not read included,
+and the text was then read from the field the second table named,
+or from the field named by the empty string where it named none.
+A `signature_delta`,
+which the streaming documentation sends at the end of every thinking block,
+reached that fallback;
+it yields nothing only because it carries no field named by the empty string.
+The two tables were kept apart on a claim their own note made,
+that one table could not hold two types sharing a channel under different fields;
+a table of pairs holds them.
+`DELTA_READINGS` now pairs each type's channel with its field,
+and `routingFor` returns a type the scanner does not read as unread before a block can lend it a channel.
+The same commit reads the scanner's held-back line with `nonNullishOrThrow`:
+a split yields one piece at least,
+so `lines.pop() ?? ''`,
+cold at line 524 in census-lxT62v,
+named a case that cannot happen.
+
+Recurrence:
+a table split in two lets one half answer where the other has nothing;
+a note claiming a design is forced is checked against the smallest table that would hold it.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -18232,6 +18262,10 @@ with no wrong outcome landing:
 the named test run for B89's red cases ran in the batch of the edit adding them
 (rerun alone,
 the same three cases failed and their suite with them).
+Once more in that batch:
+the lint of the ledger ran in the batch of the edit to B91's entry it read
+(rerun alone,
+no finding).
 The prevention stands as written:
 the edit or write,
 then,
