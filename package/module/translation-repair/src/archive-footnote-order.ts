@@ -6,7 +6,6 @@ import {
   type FootnoteProtectedRange,
   overlapsFootnoteProtection,
 } from './footnote-protected-ranges.ts';
-import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
 import { definitionLabelsOf, } from './pair-definition-order.ts';
 import { parseDocument, } from './parse-document.ts';
 
@@ -103,9 +102,11 @@ export function definitionLabelOrder(
  
  @param protectedRanges - original-English intervals in current text coordinates
  
- @returns The text, moved or standing, and why it stands
+ @returns The text, moved or standing, and why it stands: a move that would
+ change how the page parses its definitions stands, with a note
  
- @throws FootnoteRewriteError when movement changes parsed definition contents or syntax
+ @throws FootnoteRewriteError when the moved text's markers disagree with the
+ parser's reading of them
  
  @example
  ```ts
@@ -299,6 +300,12 @@ export function reorderFootnoteDefinitions(
     .filter(function definition(node,): boolean {
     return node.zone === DEFINITION_ZONE;
   },);
+  // A MOVE THAT WOULD CHANGE THE PARSE IS REFUSED LIKE ANY OTHER (ledger T8,
+  // eighteenth batch): the definitions stand, said in a note, and the rename
+  // before it stands too. It once threw, which kept every relabel of the page
+  // back with it; a bounded probe over generated pages read 156 such moves in
+  // 2,000, one shape being a definition whose fence was written unindented,
+  // whose lines a paragraph definition moved after it takes as its own.
   if ((reparsed.length !== sorted.length) || reparsed.some(function differs(
     node,
     index,
@@ -308,7 +315,11 @@ export function reorderFootnoteDefinitions(
       ?.node
       .text;
   },))
-    throw new FootnoteRewriteError({ kind: 'graph', },);
+    return {
+      text,
+      changed: false,
+      note: 'moving the footnote definitions would change how the page parses them, so they keep their order',
+    };
   return {
     text: rewritten,
     changed: true,
