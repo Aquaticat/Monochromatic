@@ -748,11 +748,22 @@ generator,
 fixed projections,
 body gate,
 and controller source.
-It has no complete reviewed generated-source records,
-admitted executable closure,
-freeze,
-or actual SDK sensitivity dispatch.
-The SDK phase remains unadmitted.
+The separate data-only preparation `proc_7619` subsequently exited zero:
+34 current first-party/config bodies matched saved exact reviewer-submitted strings before helper imports;
+17 generated-body digests were independently recomputed;
+26 retained six-file maps and all 13 pair relationships were compared.
+No fixture or SDK import occurred.
+The preparation's printed-only namespace/mode prerequisite gap remains disclosed,
+not repaired by later successful mode checks.
+The session helper now snapshots all inherited entry IDs.
+Its completion counter is not a disposal counter.
+The builtin-only startup gate and isolated raw Mise task are separately reviewed,
+including actual stdout/stderr descriptor checks before controller import.
+`proc_2662` established only stdout binding.
+Fresh `proc_f108` established both raw-task bindings;
+the separately named normal-task negative awaits acceptance.
+No freeze or actual SDK sensitivity dispatch has occurred.
+The SDK phase remains withheld until the actual caller and every prerequisite are admitted.
 One separately admitted text-only generated preview `proc_f232` exited zero:
 26 maps,
 156 syntax parses,
@@ -778,8 +789,16 @@ receipt-based reconciliation establishes no cause,
 new authorization,
 or replay permission.
 Next:
-review the complete generated text and first-party dependency closure,
-then admit a separately frozen bounded phase with pre-call accounting and unopened-suffix stops.
+accept the fresh two-descriptor contrast,
+bind the separately reviewed startup gate and raw task to their actual bytes,
+admit canonical runtime,
+private startup output files,
+current policy,
+scoped Git state,
+and unused namespace,
+then dispatch one bounded phase with pre-call accounting and unopened-suffix stops.
+The gate itself launches that phase;
+never run it separately as a harmless preflight.
 No genuine originals,
 model calls,
 grants,
