@@ -89,6 +89,35 @@ await describe({
     },),
 
     it({
+      name: 'READS the equals form as the id it names, which the shell and every parseArgs-based command accept, '
+        + 'rather than reading no flag at all and running every entry (ledger B75)',
+      fn: async () => {
+        expect([...readOnlyIds({
+          argv: argvWith({ rest: ['--only=Tabby_01',], },),
+        },),],).toEqual(['Tabby_01',],);
+      },
+    },),
+
+    it({
+      name: 'THROWS on a mistyped flag, which once read as no flag and ran every entry (ledger B75)',
+      fn: async () => {
+        expect(function readMistypedFlag() {
+          readOnlyIds({ argv: argvWith({ rest: ['--olny', 'Tabby_01',], },), },);
+        },).toThrow(StatedRefusalError,);
+      },
+    },),
+
+    it({
+      name: 'THROWS on the flag written twice, which read the first list and dropped the second in silence '
+        + '(ledger B75)',
+      fn: async () => {
+        expect(function readRepeatedFlag() {
+          readOnlyIds({ argv: argvWith({ rest: ['--only', 'Tabby_01', '--only', 'Ginger42',], },), },);
+        },).toThrow(StatedRefusalError,);
+      },
+    },),
+
+    it({
       name: 'THROWS when the flag ends the arguments, rather than reading it as '
         + 'no restriction and running all 92 entries',
       fn: async () => {

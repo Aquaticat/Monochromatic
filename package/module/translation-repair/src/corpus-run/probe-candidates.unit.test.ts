@@ -84,6 +84,11 @@ await describe({
         expect(
           readCandidateIds({ argv: commandLine({ typed: ['--candidates', BOTH_UNMEASURED,], },), },),
         ).toEqual([...BEDROCK_ONLY_ROSTER_IDS,],);
+        // The equals form once read as no flag, so the probe ran the seated
+        // roster and measured none of the models it was started for (ledger B75).
+        expect(
+          readCandidateIds({ argv: commandLine({ typed: [`--candidates=${BOTH_UNMEASURED}`,], },), },),
+        ).toEqual([...BEDROCK_ONLY_ROSTER_IDS,],);
         for (const id of BEDROCK_ONLY_ROSTER_IDS)
           expect(ROSTER_MODEL_IDS.includes(id,),).toBe(true,);
         // The unseated size is what the flag exists for; the seated one is

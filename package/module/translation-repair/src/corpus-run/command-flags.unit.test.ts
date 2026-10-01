@@ -100,6 +100,33 @@ await describe({
       },
     },),
     it({
+      name: 'READS the equals form as the value it carries, which once read as no flag and took the default '
+        + '(ledger B75)',
+      fn: async () => {
+        expect(flagValue({
+          args: ['--naps=3',],
+          flag: '--naps',
+        },),).toEqual({
+          kind: 'written',
+          value: '3',
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES the flag written twice, which read the first value and dropped the second in silence '
+        + '(ledger B75)',
+      fn: async () => {
+        expect(refusalOf({
+          read: function readsTwice(): void {
+            flagValue({
+              args: ['--naps', '3', '--naps', '4',],
+              flag: '--naps',
+            },);
+          },
+        },),).toContain('--naps',);
+      },
+    },),
+    it({
       name: 'REFUSES a flag written last, followed by the next flag, or followed by an empty argument, each of '
         + 'which once read as unwritten and took the default nobody asked for',
       fn: async () => {

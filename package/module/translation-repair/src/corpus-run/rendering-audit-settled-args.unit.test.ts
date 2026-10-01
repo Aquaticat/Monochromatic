@@ -184,6 +184,23 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS a cap of zero written in the equals form, which once read as no cap and bought every subject '
+        + 'in the archive (ledger B75)',
+      fn: async () => {
+        expect(readAuditArguments({
+          argv: commandLine({ typed: [`--cap=${String(READ_ONLY_BUY,)}`,], },),
+        },).cap,).toBe(READ_ONLY_BUY,);
+      },
+    },),
+    it({
+      name: 'REFUSES a mistyped flag rather than auditing as if nothing were typed (ledger B75)',
+      fn: async () => {
+        expect(function readsMistyped(): void {
+          readAuditArguments({ argv: commandLine({ typed: ['--cpa', String(READ_ONLY_BUY,),], },), },);
+        },).toThrow(StatedRefusalError,);
+      },
+    },),
+    it({
       name: 'REFUSES a fractional cap, and one written with an exponent, a radix, a sign or past the largest '
         + 'whole number a double holds exactly, rather than auditing a number of subjects nobody typed '
         + '(ledger B73)',
