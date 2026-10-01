@@ -97,13 +97,17 @@ if (JSON.stringify(unrelatedBefore) !== JSON.stringify(unrelatedAfter)) {
 console.log('PASS global replacement: unrelated settings, defaults, model scope, and other packages preserved')
 '''
 
+[tasks."verify:installed"]
+description = "Verify the globally declared replacement through native package discovery in disposable state"
+run = "PI_OPENAI_FAST_VERIFY_INSTALLED=1 mise run //package/pi-plugin/openai-fast:verify:live"
+
 [tasks."verify:live"]
 description = "Verify normal and priority requests in disposable pi state using only the existing Codex access token"
 shell = "node --input-type=module-typescript -e"
 run = '''
 import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
@@ -123,9 +127,20 @@ const hostEntry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent')
 const cliPath = fileURLToPath(new URL('./cli.js', hostEntry))
 const hostRoot = fileURLToPath(new URL('../', hostEntry))
 const bundle = resolve('dist/final/node/index.mjs')
+const installedVerification = process.env.PI_OPENAI_FAST_VERIFY_INSTALLED === '1'
+const globalSettingsPath = join(homedir(), '.pi', 'agent', 'settings.json')
+const globalSettings = installedVerification ? JSON.parse(await readFile(globalSettingsPath, 'utf8')) : undefined
+const installedSource = globalSettings?.packages.find(function replacement(value) {
+  const source = typeof value === 'string' ? value : value.source
+  return typeof source === 'string' && resolve(dirname(globalSettingsPath), source) === resolve('.')
+})
+if (installedVerification && !installedSource) throw new LiveVerificationError('The replacement package is absent from global pi settings')
+const declaredSource = typeof installedSource === 'string' ? installedSource : installedSource?.source
+const installedPath = declaredSource ? resolve(dirname(globalSettingsPath), declaredSource) : undefined
+const extensionArgs = installedVerification ? [] : ['--no-extensions', '--extension', bundle]
 const root = await mkdtemp(join(homedir(), 'temp', 'agent', 'pi-openai-fast-live-'))
 try {
-  await writeFile(join(root, 'settings.json'), JSON.stringify({ packages: [], transport: 'auto', retry: { enabled: false }, compaction: { enabled: false } }))
+  await writeFile(join(root, 'settings.json'), JSON.stringify({ packages: installedPath ? [installedPath] : [], transport: 'auto', retry: { enabled: false }, compaction: { enabled: false } }))
   await writeFile(join(root, 'models.json'), JSON.stringify({ providers: { 'openai-codex': { apiKey: '$PI_OPENAI_FAST_ACCESS' } } }))
   const observer = join(root, 'observe.ts')
   await writeFile(observer, `import { appendFile } from 'node:fs/promises';
@@ -141,7 +156,7 @@ export default function observe(pi) {
   for (const [mode, slug] of [['normal', 'openai-codex/gpt-6-luna'], ['fast', 'openai-codex-fast/gpt-6-luna']]) {
     const trace = join(root, mode + '.jsonl')
     const marker = 'PI_OPENAI_FAST_LIVE_' + mode.toUpperCase()
-    const child = spawn(process.execPath, [cliPath, '--offline', '--no-approve', '--no-extensions', '--extension', bundle, '--extension', observer,
+    const child = spawn(process.execPath, [cliPath, '--offline', '--no-approve', ...extensionArgs, '--extension', observer,
       '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files', '--no-tools', '--no-session', '--print',
       '--model', slug, '--thinking', 'low', 'Reply only with ' + marker + '.'], {
       cwd: root,
@@ -181,7 +196,7 @@ export default function observe(pi) {
     if (requests.length === 0 || requests.some(function incorrect(request) {
       return request.model !== 'gpt-6-luna' || (mode === 'fast' ? request.serviceTier !== 'priority' : request.serviceTier === 'priority')
     })) { throw new LiveVerificationError(mode + ' request did not preserve the expected original model and requested tier') }
-    console.log('PASS ' + mode + ': real pi output and original-model request metadata verified')
+    console.log('PASS ' + mode + ': real pi output and original-model request metadata verified' + (installedVerification ? ' through installed package discovery' : ''))
   }
 } finally {
   await rm(root, { recursive: true, force: true })
