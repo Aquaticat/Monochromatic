@@ -17447,6 +17447,33 @@ Recurrence:
 `mistake-prevention.md`,
 "Checks on one part of a composed text".
 
+### B105: the census reading counted unmapped code as not loaded after every rebuild
+
+Found 2026-10-01 (UTC) reading the twenty-fourth batch's census,
+red in `07b5bbd49`,
+fixed in the commit adding this entry.
+The census records code no source map places as `(unmapped) <bundle>` at line 0,
+and the bundle's name carries a content hash a rebuild moves.
+`ce32e438d` left such code out of "cold since then",
+but `baselineStatusesOf` (`corpus-run/coverage-census-baseline.ts`) still read every baseline stretch,
+so the same six stretches of the `wording-key` chunk read as not loaded at every census whose chunk hash moved:
+`census-xSHq2Q` against `census-NkULde` holds them at the same bundle offsets,
+1946 to 2352,
+under `wording-key-FnMvcg3m.mjs` and `wording-key-k661Sfmz.mjs`,
+and the reading printed "not loaded 6".
+Ten passages of the T8 batch records explained those six by hand
+(`rg 'not loaded are|chunk is renamed' doc/audit-ledger.md` before this entry).
+The reading now leaves unmapped code out of every status,
+as it already did of "cold since then";
+the census's own report still counts it on its unmapped line.
+With the filter taken back out,
+the new case failed alone in its file,
+and passed once it was restored.
+
+Recurrence:
+`mistake-prevention.md`,
+"Claims without their evidence".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

@@ -320,6 +320,9 @@ the reading counted nowhere the code a run left cold that its baseline ran,
 so a change that left code cold read clean (B61);
 and it asked git about edits inside the package alone,
 though the census reads other packages' sources by line too (B62);
+it left code no source map places out of "cold since then" and still counted it as not loaded,
+so the same six stretches in a renamed bundle read as not loaded at every census,
+and each batch record explained them by hand (B105);
 a veto-open call refused an exponent in a provider's price on the ground that the fixtures write none,
 and a stored catalogue writes one (M91).
 
@@ -344,6 +347,9 @@ code the baseline ran that this run left cold.
 A comparison of two runs reads each side for what the other cannot say,
 and a question put to git covers everything its answer is read against,
 read NUL-separated.
+A kind of record a reading leaves out of one count it leaves out of every count it prints,
+and a figure a batch record keeps explaining by hand is a reading defect to fix,
+not to explain.
 A claim drawn from a census names the `census.json` field or the report line that holds it.
 A fix that gives a model context starts by rendering the sheet and searching it for that context.
 An inference is labelled as one,
@@ -358,6 +364,7 @@ habit;
 the census reading refuses a baseline taken with uncommitted changes,
 names every claimed source edited since the baseline apart from its counts,
 names every stretch cold since the baseline,
+leaves unmapped code out of every status it reads (`coverage-census-report.unit.test.ts`),
 and asks git about every file of the work tree;
 `rendered-sheets.test-fixture.ts` renders every sheet so reading one is a call away.
 

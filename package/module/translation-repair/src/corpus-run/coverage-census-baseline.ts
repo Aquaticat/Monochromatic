@@ -124,7 +124,11 @@ export type EditedClaim = {
  source; one NOT LOADED sits in a source no bundle of the later run carried,
  which proves nothing either way; the rest RAN. A source edited since the
  baseline's commit is left out, since its baseline lines name other code
- now; `editedClaimsOf` names it with this run's standing instead.
+ now; `editedClaimsOf` names it with this run's standing instead. Code no
+ source map places is left out too (ledger B105): it has no lines to
+ compare, and its source names a bundle a rebuild renames, so it read as not
+ loaded at every census whose bundle hash moved; the census's own report
+ counts it.
 
  @param baseline - stretches of the earlier census
 
@@ -165,7 +169,8 @@ export function baselineStatusesOf(
   return baseline
     .filter(function claimed(stretch,): boolean {
       return ((sources.size === 0) || sources.has(stretch.source,))
-        && (!edited.has(stretch.source,));
+        && (!edited.has(stretch.source,))
+        && (!isUnmappedSource({ source: stretch.source, },));
     },)
     .map(function statusOf(stretch,) {
       if (!loadedSources.has(stretch.source,))
