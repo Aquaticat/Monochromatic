@@ -1,4 +1,7 @@
-import { isAsciiDigits, } from '../ascii-letters.ts';
+import {
+  isWholeNumberText,
+  WHOLE_NUMBER_RULE,
+} from '../whole-number-text.ts';
 
 //region Run timing parse
 // Reads a run's own log back into the two shapes that say where its wall-clock
@@ -190,7 +193,7 @@ export type CallReading =
  
  @returns Count the field carries
  
- @throws Error when the field is empty or carries anything but digits
+ @throws Error when the field is empty, or is not digits a double holds exactly
  
  @example
  ```ts
@@ -200,8 +203,8 @@ export type CallReading =
 function countIn({ field, }: { readonly field: string; },): number {
   if (field === '')
     throw new Error('count field is empty',);
-  if (!isAsciiDigits({ text: field, },))
-    throw new Error(`count field is not a whole number: "${field}"`,);
+  if (!isWholeNumberText({ text: field, },))
+    throw new Error(`count field is not ${WHOLE_NUMBER_RULE}: "${field}"`,);
   return Number(field,);
 }
 
@@ -217,7 +220,8 @@ function countIn({ field, }: { readonly field: string; },): number {
  
  @returns Number the field opened with
  
- @throws Error when the field does not carry that unit
+ @throws Error when the field does not carry that unit, or what precedes it is
+ not a whole number of milliseconds written in digits
  
  @example
  ```ts
@@ -241,6 +245,11 @@ function durationIn(
 
   if (digits === field)
     throw new Error(`timing field carries no ${unit}unit: "${field}"`,);
+  // WHOLE MILLISECONDS IN DIGITS, as the round and stream lines write them:
+  // `Number` read nothing before the unit as no time at all, NaN out of a word,
+  // and a sign or an exponent as a time no line writes (ledger B73).
+  if (!isWholeNumberText({ text: digits, },))
+    throw new Error(`timing field's milliseconds are not ${WHOLE_NUMBER_RULE}: "${field}"`,);
   return Number(digits,);
 }
 

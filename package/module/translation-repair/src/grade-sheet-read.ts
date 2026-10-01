@@ -3,6 +3,7 @@ import {
   trimLeadingDelimiters,
 } from './verdict-letter.ts';
 import { StatedRefusalError, } from './stated-refusal.ts';
+import { isWholeNumberText, } from './whole-number-text.ts';
 
 //region Graded sheet reading
 // Reading a human's filled-in detection sheet back into verdicts.
@@ -231,6 +232,25 @@ function readAnswer({ answer, }: { readonly answer: string; },): {
 }
 
 /**
+ How a refusal names the number a sheet heading printed.
+ 
+ @param printed - heading's number as written, spaces trimmed
+ 
+ @returns Digits as written; anything else quoted, so a stray space or sign
+ shows; or that the heading carries none, where `Number` said zero
+ 
+ @example
+ ```ts
+ headedWords({ printed: '', },); // 'with no number'
+ ```
+ */
+function headedWords({ printed, }: { readonly printed: string; },): string {
+  if (printed === '')
+    return 'with no number';
+  return isWholeNumberText({ text: printed, },) ? printed : JSON.stringify(printed,);
+}
+
+/**
  Reads every graded item off a filled detection sheet.
  
  @param text - sheet as the grader left it
@@ -265,14 +285,16 @@ export function parseGradedSheet(
         .slice(ITEM_PREFIX.length,)
         .split('.',);
       /**
-       That number, as a number; NaN when the heading carries none, which the
-       `position + 1` comparison refuses like any other disagreement.
+       That number as written, without the spaces a hand edit may leave.
        */
-      const printed = Number(numberText.trim(),);
-      if (printed !== (position + 1))
+      const printed = numberText.trim();
+      // DIGITS AS THE SHEET WRITES THEM, naming the position: `Number` read
+      // a heading with no number as headed 0, and `1e0` as position 1
+      // (ledger B73).
+      if ((!isWholeNumberText({ text: printed, },)) || (Number(printed,) !== (position + 1)))
         throw new StatedRefusalError({
           says: `sheet item at position ${String(position + 1,)} is headed ${
-            String(printed,)
+            headedWords({ printed, },)
           }; a heading was added, deleted or duplicated by hand`,
         },);
 

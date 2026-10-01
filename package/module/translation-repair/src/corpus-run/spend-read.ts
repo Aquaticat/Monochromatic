@@ -3,6 +3,7 @@ import {
   SPEND_MARKER,
   type SpendReckoning,
 } from '../spend-line.ts';
+import { isWholeNumberText, } from '../whole-number-text.ts';
 
 //region Spend read
 // Reads `SPEND` lines back out of run logs and totals them per model.
@@ -190,24 +191,13 @@ function countOf(
   if (value === UNREPORTED)
     return UNREPORTED;
 
-  // A BLANK STRING READS AS ZERO THROUGH `Number`, which is why emptiness is
-  // refused here rather than trusted to the check below it.
-  if (value === '')
+  // DIGITS AS THE WRITER SPELLS A TOKEN COUNT, whole and not negative.
+  // `Number` read an empty field as zero, and a hexadecimal, an exponent or a
+  // plus sign as a count `reportSpend` never writes (ledger B73).
+  if (!isWholeNumberText({ text: value, },))
     return 'unreadable';
 
-  /**
-   Field read as a number, which is NaN for anything that is not one.
-   */
-  const parsed = Number(value,);
-
-  // WHOLE AND NOT NEGATIVE, because a token count is a count.
-  if (!Number.isSafeInteger(parsed,))
-    return 'unreadable';
-
-  if (parsed < 0)
-    return 'unreadable';
-
-  return parsed;
+  return Number(value,);
 }
 
 /**
@@ -215,6 +205,11 @@ function countOf(
  
  FRACTIONAL AND NOT NEGATIVE, unlike a token count: a call costs a fraction
  of a cent, and the wire writes it with nine decimals.
+ 
+ SPELLED AS `String` SPELLS A NUMBER, which is how `reportSpend` writes it,
+ exponent included for the smallest costs: `Number` also read a hexadecimal, a
+ trailing zero and surrounding spaces as a cost the writer never writes, so
+ only a value that reads back to its own text is a cost (ledger B73).
  
  @param value - what the field carried, empty where the line had none
  
@@ -236,7 +231,7 @@ function usdOf(
    */
   const parsed = Number(value,);
 
-  if (!Number.isFinite(parsed,))
+  if ((!Number.isFinite(parsed,)) || (String(parsed,) !== value))
     return 'unreadable';
 
   if (parsed < 0)

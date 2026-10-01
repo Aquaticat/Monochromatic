@@ -1,7 +1,5 @@
-import {
-  isAsciiAlphanumeric,
-  isAsciiDigits,
-} from '../ascii-letters.ts';
+import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
+import { isWholeNumberText, } from '../whole-number-text.ts';
 
 //region Cache account read
 // WHAT THE PRE-LAUNCH CACHE CHECK READS (ledger M28). Every stage cache is
@@ -251,7 +249,7 @@ function readDeclaration({ line, }: { readonly line: string; },): DeclarationRea
    */
   const readable = assigned.startsWith(ASSIGNMENT,)
     && assigned.endsWith(STATEMENT_END,)
-    && isAsciiDigits({ text: digits, },);
+    && isWholeNumberText({ text: digits, },);
   if (!readable)
     return { kind: 'unreadable', };
   return {

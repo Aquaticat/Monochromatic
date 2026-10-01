@@ -1,3 +1,5 @@
+import { isWholeNumberText, } from './whole-number-text.ts';
+
 //region Stage roster
 // Whether a fan-out stage ran with the roster it was configured with.
 //
@@ -112,18 +114,25 @@ function readVoices(
     return [];
 
   /**
-   Counts as written.
+   Heard count as written.
    */
-  const counts = {
-    heard: Number(pair.slice(
-      0,
-      separatorAt,
-    ),),
-    asked: Number(pair.slice(separatorAt + HEARD_SEPARATOR.length,),),
-  };
-  if ((!Number.isInteger(counts.heard,)) || (!Number.isInteger(counts.asked,)))
+  const heard = pair.slice(
+    0,
+    separatorAt,
+  );
+  /**
+   Asked count as written.
+   */
+  const asked = pair.slice(separatorAt + HEARD_SEPARATOR.length,);
+  // DIGITS AS THE STAGE WRITES THEM, or the finding is skipped like any other
+  // drifted wording: `Number` read an empty heard count as a stage that heard
+  // nobody, and took a sign, a radix or an exponent (ledger B73).
+  if ((!isWholeNumberText({ text: heard, },)) || (!isWholeNumberText({ text: asked, },)))
     return [];
-  return [counts,];
+  return [{
+    heard: Number(heard,),
+    asked: Number(asked,),
+  },];
 }
 
 /**

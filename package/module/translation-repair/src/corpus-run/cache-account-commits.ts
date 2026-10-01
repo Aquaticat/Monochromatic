@@ -1,4 +1,4 @@
-import { isAsciiDigits, } from '../ascii-letters.ts';
+import { isWholeNumberText, } from '../whole-number-text.ts';
 import {
   type CacheVersion,
   citedHash,
@@ -182,7 +182,7 @@ export function sourceCommitOf({ line, }: { readonly line: string; },): SourceCo
   /**
    Whether the time is whole seconds and a subject follows it.
    */
-  const readable = isAsciiDigits({ text: seconds, },) && (subject.length > 0);
+  const readable = isWholeNumberText({ text: seconds, },) && (subject.length > 0);
   if (!readable)
     throw new CacheAccountLogError({ line, },);
   return {

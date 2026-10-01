@@ -74,5 +74,9 @@ export {
   type WordEnd,
   wordStarts,
 } from './word-bounds.ts';
+export {
+  isWholeNumberText,
+  WHOLE_NUMBER_RULE,
+} from './whole-number-text.ts';
 
 //endregion Text barrel

@@ -1,3 +1,4 @@
+import { isWholeNumberText, } from '../whole-number-text.ts';
 import { STREAM_MARKER, } from './run-timing-parse.ts';
 import {
   readSpendLine,
@@ -158,17 +159,20 @@ function streamContentOf(
   );
 
   /**
-   The count, read whole.
+   The count as written, the last word before the unit.
    */
-  const content = Number(before.slice(before.lastIndexOf(' ',) + 1,),);
-  if (!Number.isSafeInteger(content,))
+  const contentText = before.slice(before.lastIndexOf(' ',) + 1,);
+  // DIGITS AS THE STREAM LINE WRITES THEM, or no completed stream: `Number`
+  // read an empty count (two spaces before the unit) as a stream that
+  // delivered nothing, and took a sign or an exponent (ledger B73).
+  if (!isWholeNumberText({ text: contentText, },))
     return 'other-line';
   return {
     label: payload.slice(
       0,
       labelEnd,
     ),
-    content,
+    content: Number(contentText,),
   };
 }
 

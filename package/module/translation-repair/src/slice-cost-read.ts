@@ -1,4 +1,4 @@
-import { isAsciiDigits, } from './ascii-letters.ts';
+import { isWholeNumberText, } from './whole-number-text.ts';
 import {
   SLICE_COST_EXITS,
   SLICE_COST_LANES,
@@ -252,7 +252,8 @@ function memberField<const MemberT extends string,>(
  an empty text as 0, `0x1F` as 31, `1e3` as 1000 and a leading sign, so a
  field nobody wrote as a count became one (ledger B71). A digit run past the
  largest integer a double holds exactly is refused too, since it would read as
- a neighbouring number.
+ a neighbouring number. The rule is the package's one count rule
+ (`whole-number-text.ts`, ledger B73).
  
  @param fields - pairs read off one line
  
@@ -285,11 +286,7 @@ function countField(
     };
   }
 
-  /**
-   Count those digits spell, read only once they are known to be digits.
-   */
-  const value = isAsciiDigits({ text: raw, },) ? Number(raw,) : Number.NaN;
-  if (!Number.isSafeInteger(value,)) {
+  if (!isWholeNumberText({ text: raw, },)) {
     return {
       kind: 'refused',
       reason: spelledAs({
@@ -300,7 +297,7 @@ function countField(
   }
   return {
     kind: 'read',
-    value,
+    value: Number(raw,),
   };
 }
 

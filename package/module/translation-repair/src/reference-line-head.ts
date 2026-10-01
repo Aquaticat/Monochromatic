@@ -1,4 +1,4 @@
-import { isAsciiDigits, } from './ascii-letters.ts';
+import { isWholeNumberText, } from './whole-number-text.ts';
 
 //region Reference line head
 // The head every cited-reference line opens with, written by the lookup and
@@ -170,7 +170,7 @@ export function numberedReferenceLines(
       0,
       numberEnd,
     );
-    if (!isAsciiDigits({ text: digits, },)) {
+    if (!isWholeNumberText({ text: digits, },)) {
       throw new ReferenceLineHeadError({
         position: at + 1,
         count: lines.length,

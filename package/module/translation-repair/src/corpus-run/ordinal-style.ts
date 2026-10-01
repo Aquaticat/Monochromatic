@@ -1,4 +1,5 @@
 import { isAsciiDigits, } from '../ascii-letters.ts';
+import { isWholeNumberText, } from '../whole-number-text.ts';
 
 //region Ordinal style
 // HOW A NUMBERED HEADING SPELLS ITS NUMBER. A source heading series such as
@@ -508,7 +509,11 @@ function hanValue({ text, }: { readonly text: string; },): number {
 }
 
 /**
- Reads a Han or digit numeral from one to ninety-nine.
+ Reads a Han numeral from one to ninety-nine, or a digit numeral.
+
+ A DIGIT RUN PAST THE LARGEST WHOLE NUMBER A DOUBLE HOLDS EXACTLY reads as no
+ numeral: `Number` read it as a neighbouring number, so two headings with
+ different runs counted as one (ledger B73).
 
  @param text - numeral as the original writes it
 
@@ -521,7 +526,7 @@ function hanValue({ text, }: { readonly text: string; },): number {
  */
 export function readHanNumeral({ text, }: { readonly text: string; },): number {
   if (isAsciiDigits({ text, },))
-    return Number(text,);
+    return isWholeNumberText({ text, },) ? Number(text,) : 0;
   return hanValue({ text, },);
 }
 
