@@ -499,6 +499,21 @@ await describe({
     },),
 
     it({
+      name: 'NAMES THE ANTHROPIC MESSAGES CONTRACT when the fold refuses a frame, not the '
+        + 'OpenAI-compatible one (ledger B90)',
+      fn: async () => {
+        expect(function unreadable() {
+          extractAnthropicCompletion({
+            bodyText: `${startOf({ inputTokens: 8, },)}data: {not json at all\n\n${endOf({
+              stopReason: 'end_turn',
+              outputTokens: 1,
+            },)}`,
+          },);
+        },).toThrow('Anthropic Messages contract',);
+      },
+    },),
+
+    it({
       name: 'REPORTS no usage at all rather than zeros when the provider sent none, so a reader '
         + 'can tell a call that cost nothing from one whose cost went unreported',
       fn: async () => {

@@ -111,6 +111,19 @@ await describe({
     },),
 
     it({
+      name: 'NAMES THE ANTHROPIC MESSAGES CONTRACT in its refusal, not the OpenAI-compatible one: '
+        + 'a reader holding a failed Hyper call was sent to the other wire format (ledger B90)',
+      fn: async () => {
+        /**
+         Refusal of a body that never ended.
+         */
+        const refusal = refusalOf({ bodyText: OPENING, },);
+        expect(refusal.includes('Anthropic Messages contract',),).toBe(true,);
+        expect(refusal.includes('OpenAI',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'REFUSES a body cut inside its terminator frame, after the type and before the closing '
         + 'brace, which a search for the quoted word took as whole (ledger B87)',
       fn: async () => {
