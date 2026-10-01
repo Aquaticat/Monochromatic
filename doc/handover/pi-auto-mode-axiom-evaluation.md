@@ -862,7 +862,26 @@ Next:
 freeze a separate disposable source/target/deadline/cache contract and independent controls,
 keeping current human permission and SDK-linked human ancestry as separate evidence requirements.
 Task #93 is a separately declared native SDK planned-ID and constructor-owner probe.
-Its SDK worker remains unopened.
+Its consumed SDK worker `proc_600d` exited zero with exact original source and current-policy postchecks.
+The declared literal ID was forwarded,
+the owned return was accepted,
+and duplicate construction,
+a real outside-factory same-ID manager,
+and a counterfeit object were rejected.
+The counterfeit ID reader was never called.
+Two declared SDK calls returned two distinct managers.
+The worker recorded 534 stdout bytes and zero stderr bytes;
+the controller recorded 4,460.235164999999 ms,
+excluding startup and complete handback.
+No `AgentSession`,
+genuine original,
+model,
+current permission,
+grant,
+or represented action was created.
+Constructor failure,
+returned-ID mismatch,
+and failed-construction reservation remain unexercised.
 The complete first-party closure,
 builtin startup gate,
 and source-data helpers received independent literal-source review.
@@ -877,12 +896,19 @@ Both failures and private artifacts remain preserved;
 the successful v3 preparation repairs neither history nor SDK authority.
 A seventh stale task-registry observation was reconciled from receipts,
 with no cause or new authority inferred.
-Next:
-admit the unchanged exact SDK caller,
+The single SDK caller admitted the exact reviewed source strings,
 canonical executable,
-unused private dispatch namespace,
+new private dispatch namespace,
+actual descriptors,
 current policy,
-and scoped Git state before its single permitted dispatch.
+and scoped Git state.
+The result is finite native-ID/owner evidence only,
+not global uniqueness,
+human ancestry,
+or permission-state authority.
+Next:
+finish freshly rendered result documentation and correct the mechanical dependency catalog.
+A new frozen configured-host transaction must disclose its future SDK root before construction.
 Task #92 remains pending literal-catalog corrections before implementation.
 Task #92 designs those mechanical controls using the existing collector and root snapshot owners.
 Independent review requires root-bound instances,
