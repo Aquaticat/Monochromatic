@@ -1,5 +1,5 @@
 /**
- `errorOrThrow`: assert `Error` instance, return the narrowed value or throw.
+ `errorOrThrow`: assert genuine `Error` instance, return the narrowed value or throw.
  
  @module
  */
@@ -9,14 +9,15 @@ import { formatUnknownValue, } from './format-unknown-value.ts';
 import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 
 /**
- Asserts that a value is an `Error`, returning it with non-`Error` variants
- removed from the type.
+ Asserts that a value is a genuine `Error`, returning it with non-`Error`
+ variants removed from the type.
  
- Uses `instanceof Error`, which matches `Error` and every subclass
- (`TypeError`, `RangeError`, and any user-defined `class FooError extends Error`).
- Plain objects with a `.message` property and `Error`-shaped values from
- other realms are intentionally rejected; for those, use a duck-type check
- or `errorLike` from `module-es`.
+ Uses `Error.isError`, which tests the internal error data rather than the
+ prototype chain. It matches `Error` and every subclass (`TypeError`,
+ `RangeError`, and any user-defined `class FooError extends Error`) from any
+ realm (iframe, worker, `node:vm`). Plain objects with a `.message` property,
+ `Error`-shaped fakes, and `Object.create(Error.prototype)` impostors are
+ rejected; for those, use a duck-type check or `errorLike` from `module-es`.
  
  @param value - Value to assert as an `Error`
  
