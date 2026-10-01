@@ -1,3 +1,5 @@
+import { compareCodePoints, } from '../code-points.ts';
+
 //region Attribution report
 // Reads what critic attribution recorded and turns it into rates. Built
 // alongside the writer deliberately: this pipeline's recurring failure is
@@ -148,6 +150,29 @@ export type AttributionEntry = {
    Adjudicated issues of this entry.
    */
   readonly issues: readonly AcceptedIssueView[];
+};
+
+/**
+ An entry the eligibility filter has narrowed to, carrying `sliceCritics` as a
+ required field rather than an optional one.
+ 
+ NAMED RATHER THAN INLINE, so the eligibility filter in
+ `buildAttributionReport` can state it as a type guard.
+ `Array.prototype.filter` narrows its result to this type only when the
+ predicate itself reads `entry is EligibleAttributionEntry`, and a predicate
+ typed to return plain `boolean` would leave every call downstream reading
+ `entry.sliceCritics` as possibly absent all over again.
+ 
+ @example
+ ```ts
+ const eligible: readonly EligibleAttributionEntry[] = entries.filter(carriesAttribution,);
+ ```
+ */
+type EligibleAttributionEntry = AttributionEntry & {
+  /**
+   Per-chunk calibration, always present once an entry is eligible.
+   */
+  readonly sliceCritics: readonly SliceCriticView[];
 };
 
 /**
@@ -406,8 +431,15 @@ export function buildAttributionReport(
 ): AttributionReport {
   /**
    Entries that could record attribution at all.
+   
+   TYPED AS A GUARD rather than a plain predicate, so `eligible` carries
+   `sliceCritics` as a required field for the rest of this function: every
+   `?? []` that follows would otherwise be load-bearing rather than defensive,
+   masking an entry this filter already proved cannot occur.
    */
-  const eligible = entries.filter(function carriesAttribution(entry,): boolean {
+  const eligible = entries.filter(function carriesAttribution(
+    entry,
+  ): entry is EligibleAttributionEntry {
     return entry.sliceCritics !== undefined;
   },);
 
@@ -438,15 +470,15 @@ export function buildAttributionReport(
   const chunks = eligible.reduce(
     function addChunks(
       total,
-      entry,
+      { sliceCritics, },
     ): number {
-    return total + (entry.sliceCritics ?? []).length;
+    return total + sliceCritics.length;
   },
     0,
   );
 
   for (const entry of eligible) {
-    for (const record of entry.sliceCritics ?? []) {
+    for (const record of entry.sliceCritics) {
       for (const modelId of record.heardCriticIds)
         bump({
           counter: heard,
@@ -477,7 +509,7 @@ export function buildAttributionReport(
     /**
      Proposers of this entry's claims, by claim id.
      */
-    const proposersOf = indexProposers({ sliceCritics: entry.sliceCritics ?? [], },);
+    const proposersOf = indexProposers({ sliceCritics: entry.sliceCritics, },);
 
     return entry.issues
       .filter(function isAccepted(issue,): boolean {
@@ -565,23 +597,35 @@ export function buildAttributionReport(
     .length;
 
   /**
-   Every critic seen in any role, so a critic heard but silent still gets a
-   row rather than vanishing.
+   Every critic's own heard count, in code-point order of model id, and the
+   one place `chunksHeard` is read: each row comes from one of these entries
+   directly rather than from a separately built id list looked back up in
+   `heard`.
+
+   THE WHOLE ROSTER, because `attribution-decode.ts` refuses a claim
+   attribution whose proposer its own chunk's `heardCriticIds` does not name:
+   every model id `raised` or `hits` can hold was bumped into `heard` on that
+   same chunk first. A critic heard but silent still gets a row, and no critic
+   that raised a claim can be missing one.
    */
-  const modelIds = [...new Set([
-    ...heard.keys(),
-    ...raised.keys(),
-    ...hits.keys(),
-  ],),].toSorted();
+  const heardSorted = [...heard.entries(),].toSorted(function byModelId(
+    [left,],
+    [right,],
+  ): number {
+    return compareCodePoints({
+      left,
+      right,
+    },);
+  },);
 
   return {
     eligibleEntries: eligible.length,
     ineligibleEntries: entries.length - eligible.length,
     chunks,
-    critics: modelIds.map(function toTally(modelId,): CriticTally {
+    critics: heardSorted.map(function toTally([modelId, chunksHeard,],): CriticTally {
       return {
         modelId,
-        chunksHeard: heard.get(modelId,) ?? 0,
+        chunksHeard,
         claimsRaised: raised.get(modelId,) ?? 0,
         emissions: emitted.get(modelId,) ?? 0,
         acceptedHits: hits.get(modelId,) ?? 0,

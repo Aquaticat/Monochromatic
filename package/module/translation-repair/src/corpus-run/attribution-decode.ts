@@ -132,22 +132,32 @@ export function readDistinctStrings(
  
  @param path - dotted path for the failure message
  
+ @param heard - critics this slice recorded as heard, so a proposer naming
+ anyone else is refused rather than silently credited
+ 
  @returns Validated proposers
  
- @throws ArtifactParseError When malformed or naming one critic twice
+ @throws ArtifactParseError When malformed, naming one critic twice, or naming
+ a proposer this slice did not record as heard
  
  @example
  ```ts
- const proposers = decodeProposers({ value, path: 'Kitten sliceCritics[0].claimAttributions[0].proposers', },);
+ const proposers = decodeProposers({
+   value,
+   path: 'Kitten sliceCritics[0].claimAttributions[0].proposers',
+   heard: new Set(['hf:openai/gpt-oss-120b',]),
+ },);
  ```
  */
 export function decodeProposers(
   {
     value,
     path,
+    heard,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly heard: ReadonlySet<string>;
   },
 ): readonly ProposerView[] {
   if (!isJsonArray(value,))
@@ -183,6 +193,16 @@ export function decodeProposers(
         reason: 'a string',
       },);
 
+    // A PROPOSER MUST BE A HEARD CRITIC. `heardCriticIds` is this slice's own
+    // roster of who answered at all, and a claim attributed to anyone outside
+    // it did not come from a critic this record says was there to raise it;
+    // crediting it anyway would manufacture support no critic actually gave.
+    if (!heard.has(modelId,))
+      throw new ArtifactParseError({
+        path: `${here}.modelId`,
+        reason: 'a critic named in heardCriticIds, since only heard critics raise claims',
+      },);
+
     return {
       modelId,
       // At least one: a proposer that emitted the claim zero times is not a
@@ -210,13 +230,17 @@ export function decodeProposers(
 /**
  Decodes one chunk's calibration record.
  
+ `heardCriticIds` is decoded before `claimAttributions`, because each claim's
+ proposers are checked against the heard set.
+ 
  @param value - parsed record
  
  @param path - dotted path for the failure message
  
  @returns Validated chunk view
  
- @throws ArtifactParseError When malformed or repeating a claim id
+ @throws ArtifactParseError When malformed, repeating a claim id, or naming a
+ proposer this chunk did not record as heard
  
  @example
  ```ts
@@ -237,6 +261,30 @@ export function decodeChunkRecord(
       path,
       reason: 'a record',
     },);
+
+  /**
+   Chunk position within the document.
+   */
+  const sliceIndex = readCount({
+    value: value.sliceIndex,
+    path: `${path}.sliceIndex`,
+    minimum: 0,
+  },);
+
+  /**
+   Critics that answered on this chunk, read before `claimAttributions` so
+   each proposer there can be checked against it.
+   */
+  const heardCriticIds = readDistinctStrings({
+    value: value.heardCriticIds,
+    path: `${path}.heardCriticIds`,
+  },);
+
+  /**
+   Heard critics as a set, for the membership check every proposer of this
+   chunk passes through.
+   */
+  const heard = new Set(heardCriticIds,);
 
   /**
    Recorded attributions of this chunk.
@@ -280,6 +328,7 @@ export function decodeChunkRecord(
       proposers: decodeProposers({
         value: entry.proposers,
         path: `${here}.proposers`,
+        heard,
       },),
     };
   },);
@@ -294,15 +343,8 @@ export function decodeChunkRecord(
   }
 
   return {
-    sliceIndex: readCount({
-      value: value.sliceIndex,
-      path: `${path}.sliceIndex`,
-      minimum: 0,
-    },),
-    heardCriticIds: readDistinctStrings({
-      value: value.heardCriticIds,
-      path: `${path}.heardCriticIds`,
-    },),
+    sliceIndex,
+    heardCriticIds,
     claimAttributions,
   };
 }

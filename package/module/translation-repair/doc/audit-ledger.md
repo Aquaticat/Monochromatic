@@ -16585,6 +16585,11 @@ the work-title search read an answer that is not an object as no results,
 and now refuses it,
 as the cited-reference fetch refuses one;
 its refusal case gains that answer.
+The attribution reader's part was superseded by B106:
+an issue record whose `issue` is not a record,
+read here as a view contributing nothing,
+is now refused,
+naming its path.
 
 Reach:
 not measured over stored replies or cache files.
@@ -17473,6 +17478,111 @@ and passed once it was restored.
 Recurrence:
 `mistake-prevention.md`,
 "Claims without their evidence".
+
+### B106: the attribution reader read a missing or malformed field as an empty one
+
+Found 2026-10-01 (UTC) reading the twenty-fourth T8 batch,
+the attribution reader's stretches in `census-xSHq2Q`,
+red in `48c4433d9`,
+fixed in the commit adding this entry.
+`gatherAttributionEntries` (`corpus-run/attribution-read.ts`) told absent from malformed for the critic record alone,
+which is right,
+since an artifact settled before attribution carries none.
+Every other field it read fell back to an empty reading:
+
+- `issues` absent or not an array read as no issues;
+- an issue record that is not a record,
+  or whose `issue` is not one,
+  read as a view with an empty status and no claims,
+  the reading B92's case pinned;
+- a `status` that is not a string read as empty,
+  `claims` absent or not an array as no claims,
+  and a claim member or `claimId` of the wrong shape was passed over;
+- a `lanes` key on an unversioned or version 1 artifact,
+  which keeps its records at the root,
+  was ignored;
+- a version 2 or later artifact whose `lanes`,
+  `lanes.repair` or `lanes.repair.result` is not a record read its records off the root,
+  which holds none of them;
+- a claim credited to a proposer its own chunk's `heardCriticIds` does not name was counted,
+  and the report's roster took critics from the claim maps as well as the heard counts,
+  so such a critic got a row with no chunk heard.
+
+Every one of these fields is written by every generation that has settled an artifact.
+Over the 379 stored artifacts
+(the run directory's `artifacts`,
+`round-one-archive` and `round-two-archive`,
+and every throwaway runs directory's `artifacts` under the audit's scratch folder),
+every `issues` is an array,
+all 26,544 statuses are strings,
+all 36,496 claim ids are strings,
+all 263 artifacts of version 2 or later hold `lanes.repair.result` as a record,
+no root-record artifact carries `lanes`,
+and all 23,714 proposers were heard in their own chunk's record.
+
+The reader now refuses each shape with `ArtifactParseError`,
+naming the path:
+`readIssueViews` and `readClaimIds` at every level,
+and `recordsHolderOf` by the artifact's own generation.
+`decodeChunkRecord` (`corpus-run/attribution-decode.ts`) reads `heardCriticIds` before `claimAttributions`
+and refuses a proposer the chunk did not hear.
+`buildAttributionReport` (`corpus-run/attribution-report.ts`) narrows the eligible entries by a type guard,
+so three `?? []` defaults go,
+and builds its roster from the heard counts alone,
+ordered by `compareCodePoints` (ledger B95).
+The entry reader is exported as `attributionEntryOf`,
+and holds the artifact's `id` to its file name,
+as placement does (`corpus-run/artifact-placement.ts`),
+since it reads the file a second time;
+its refusal names the field,
+`<file>.id`,
+where it named the file alone.
+Its own cases reach the two refusals the gather never feeds it,
+a body that is not a record and an `id` that is not the file's name.
+
+The red commit's cases failed at the build of `020c9bebd`:
+the rewritten B92 case,
+and the table's 16 rows,
+each of which a probe ran alone in a directory of its own
+and saw read as an entry,
+with nothing refused.
+With the `id` check weakened to a type check,
+the case naming another entry's `id` failed alone in its file,
+and passed once the check was restored.
+
+Reach:
+the built gather ran over every stored directory holding JSON
+(240 directories)
+at the build of `48c4433d9` and at this commit's.
+It read 205 entries with 42 refused before,
+and 202 entries with 45 refused after;
+the eligible entries stayed 202.
+The three newly refused are `Cat.json` files of 180 bytes,
+written 2026-09-10 in `issue-authority-cache-*` folders,
+holding only `id`,
+`tip`,
+`pipelineDigest` and `status`:
+test leftovers,
+from a prefix no current source names,
+that the gather had counted as ineligible entries.
+The 42 refused both times are B107's.
+Twelve directories the gather refuses whole,
+six for an empty pool and six for mixed generations,
+both times.
+
+Calls made here are open to veto:
+
+- a field every generation writes is refused when absent,
+  rather than read as empty;
+- the entry reader holds the file-name identity again
+  rather than trusting the pool's earlier read;
+- the roster is the heard critics alone,
+  a proposer outside them being refused upstream;
+- the three test leftovers count as refused rather than as ineligible entries.
+
+Recurrence:
+`mistake-prevention.md`,
+"Defaults that stand in for an input".
 
 ## Process mistakes in this audit
 

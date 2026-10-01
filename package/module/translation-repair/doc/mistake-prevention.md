@@ -1367,6 +1367,9 @@ one pair with one signature for two comment grammars.
 The archive revision's footnote floor passed every revision of a block the archive did not carry,
 a branch its comment kept for fixtures a caller composed,
 though production hands it an exact slice and no test reached it (T8's eighteenth batch).
+The attribution reader read every missing or malformed field but one as empty,
+though every generation that settled an artifact writes each of them,
+and credited a proposer its own chunk had not heard (ledger B106).
 
 The rule:
 a call states every input that decides what a floor refuses,
@@ -1379,6 +1382,12 @@ never as an empty value a check then passes.
 No branch is kept for a fixture production cannot build:
 an input that breaks the caller's contract is refused with a named class,
 and the fixture changes.
+A reader of stored records refuses a field every generation writes when it is absent,
+naming the path,
+and keeps an absent reading only for a field some generation never wrote,
+saying which.
+A refusal added to such a reader is run over every stored record at the builds before and after it,
+and each record whose reading moves is accounted for.
 A check re-read mid-run applies every rule the first read applied.
 A caught error is logged,
 rethrown,

@@ -12,7 +12,11 @@ import {
   CHUNK_SPELLED_KEYS,
   keyVocabularyOf,
 } from '../artifact-key-vocabulary.ts';
-import { readArtifactSchemaVersion, } from '../artifact-schema-version.ts';
+import {
+  ARTIFACT_SCHEMA_VERSION_V1,
+  readArtifactSchemaVersion,
+  type ArtifactSchemaReading,
+} from '../artifact-schema-version.ts';
 import type {
   AcceptedIssueView,
   AttributionEntry,
@@ -21,32 +25,53 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { listArtifactFiles, } from './artifact-file-name.ts';
+import {
+  entryIdOfArtifact,
+  listArtifactFiles,
+  type ArtifactFileName,
+} from './artifact-file-name.ts';
 
 //region Attribution read
-// Parses settled artifacts into the shape the attribution report needs,
-// tolerating every field being absent. An artifact settled before attribution
-// existed carries no critic record at all, and that absence is DATA rather than a
-// fault: the report counts those entries separately instead of reading them as
-// critics that raised nothing.
+// Parses settled artifacts into the shape the attribution report needs.
+//
+// ONE KEY IS TOLERANT OF ABSENCE, and only one: the critic record
+// (`sliceCritics`/`chunkCritics`), because an artifact settled before
+// attribution existed carries no such key at all, and that absence is DATA
+// rather than a fault. The report counts those entries separately instead of
+// reading them as critics that raised nothing.
+//
+// EVERY OTHER FIELD HERE IS REQUIRED, because every generation that has ever
+// settled an artifact writes it: `id`, `issues`, an issue record, its `issue`,
+// its `status`, its `claims`, a claim's `claimId`, and, from version 2 on,
+// `lanes`, `lanes.repair` and `lanes.repair.result`. For these, absence is not
+// a legacy reading, it is the same corruption a wrong shape is, and both are
+// refused the same way: `ArtifactParseError` naming the path.
 
 /**
  Reads the claim ids one adjudicated issue represents.
  
  @param issue - adjudicated issue block
  
- @returns Deterministic claim ids, empty when none parse
+ @param path - dotted path of `issue` itself, which each refusal of a field
+ inside it extends
+ 
+ @returns Deterministic claim ids this issue represents
+ 
+ @throws {@link ArtifactParseError} when `claims` is absent or not an array, a
+ member is not a record, or its `claimId` is absent or not a string
  
  @example
  ```ts
- const claimIds = readClaimIds({ issue, },);
+ const claimIds = readClaimIds({ issue, path: `${entryId}.issues[0].issue`, },);
  ```
  */
 function readClaimIds(
   {
     issue,
+    path,
   }: {
     readonly issue: Readonly<Record<string, unknown>>;
+    readonly path: string;
   },
 ): readonly string[] {
   /**
@@ -54,93 +79,168 @@ function readClaimIds(
    */
   const { claims, } = issue;
   if (!isJsonArray(claims,))
-    return [];
+    throw new ArtifactParseError({
+      path: `${path}.claims`,
+      reason: 'an array',
+    },);
 
-  return claims.flatMap(function toId(member,) {
+  return claims.map(function toId(
+    member,
+    index,
+  ): string {
+    /**
+     Path of this claim member.
+     */
+    const here = `${path}.claims[${String(index,)}]`;
     if (!isJsonRecord(member,))
-      return [];
+      throw new ArtifactParseError({
+        path: here,
+        reason: 'a record',
+      },);
 
     /**
      Deterministic identity of this claim.
      */
     const { claimId, } = member;
-    return ((typeof claimId) === 'string') ? [claimId,] : [];
+    if ((typeof claimId) !== 'string')
+      throw new ArtifactParseError({
+        path: `${here}.claimId`,
+        reason: 'a string',
+      },);
+
+    return claimId;
   },);
 }
 
 /**
  Record carrying this artifact's own attribution and issue records.
  
- TWO PATHS, AND EXACTLY ONE PER ARTIFACT. Version 1 wrote the critic record
- and `issues` at the artifact root, and the two-lane generations write them
- inside the repair lane at `lanes.repair.result`. Reading only the root did not throw and did
- not read as absent to anyone looking: it read as an artifact settled BEFORE
- attribution existed, because an omitted key is exactly what marks the
- pre-feature population.
+ TWO PATHS, AND EXACTLY ONE PER ARTIFACT, CHOSEN BY THE ARTIFACT'S OWN
+ GENERATION rather than guessed from what keys happen to be there. Version 1
+ wrote the critic record and `issues` at the artifact root and carried no
+ `lanes` key at all; version 2 onward writes them inside the repair lane at
+ `lanes.repair.result`, root-level decoys included, and a reader that still
+ asked the root would silently agree with one.
  
- Measured over the settled artifacts: 0 of 47 carry `chunkCritics` at the
- root and 47 of 47 carry it in the repair lane, so the whole population was
- filed as pre-feature and the 2479 attributions it holds reached no consumer.
- The issue read failed the same way, 0 records against 1546.
+ Measured, before this held, over the settled artifacts: 0 of 47 carried
+ `chunkCritics` at the root and 47 of 47 carried it in the repair lane, so the
+ whole population was filed as pre-feature and the 2479 attributions it held
+ reached no consumer. The issue read failed the same way, 0 records against
+ 1546.
  
  The version 1 path stays rather than being replaced, because artifacts
  outlive the pipelines that wrote them and a settled file must keep answering
- for itself.
+ for itself. A `lanes` key on a version 1 or unversioned artifact is refused
+ rather than read: that generation never wrote one, so its presence is
+ corruption rather than a two-lane artifact caught early.
  
  @param parsed - parsed artifact
  
- @returns Lane result when this artifact has one, else the artifact itself
+ @param entryId - artifact identity, which starts the path of each refusal here
+ 
+ @param reading - this artifact's own generation, already read by the caller
+ 
+ @returns Root record on a generation that keeps its records there, else the
+ repair lane's own result
+ 
+ @throws {@link ArtifactParseError} when a version 1 or unversioned artifact
+ carries a `lanes` key, or when a version 2 or later artifact's `lanes`,
+ `lanes.repair` or `lanes.repair.result` is absent or not a record
  
  @example
  ```ts
- const records = recordsHolderOf({ parsed, },);
+ const records = recordsHolderOf({ parsed, entryId, reading, },);
  ```
  */
 function recordsHolderOf(
   {
     parsed,
+    entryId,
+    reading,
   }: {
     readonly parsed: Readonly<Record<string, unknown>>;
+    readonly entryId: string;
+    readonly reading: ArtifactSchemaReading;
   },
 ): Readonly<Record<string, unknown>> {
   /**
-   Lane container, absent on anything version 1 wrote.
+   Whether this generation keeps its records at the artifact root: every
+   unversioned artifact, and version 1, which is the version that introduced
+   the field without yet moving the records it names.
+   */
+  const keepsRecordsAtRoot = (reading.kind === 'unversioned')
+    || (reading.version === ARTIFACT_SCHEMA_VERSION_V1);
+
+  if (keepsRecordsAtRoot) {
+    if (Object.hasOwn(
+      parsed,
+      'lanes',
+    ))
+      throw new ArtifactParseError({
+        path: `${entryId}.lanes`,
+        reason: 'no lanes, since this generation keeps its records at the root',
+      },);
+    return parsed;
+  }
+
+  /**
+   Lane container every two-lane generation writes.
    */
   const { lanes, } = parsed;
   if (!isJsonRecord(lanes,))
-    return parsed;
+    throw new ArtifactParseError({
+      path: `${entryId}.lanes`,
+      reason: 'a record',
+    },);
 
   /**
    Repair lane, the only one that files issues or hears critics.
    */
   const { repair, } = lanes;
   if (!isJsonRecord(repair,))
-    return parsed;
+    throw new ArtifactParseError({
+      path: `${entryId}.lanes.repair`,
+      reason: 'a record',
+    },);
 
   /**
    Lane's own result, spelled `result` on disk.
    */
   const { result, } = repair;
-  return isJsonRecord(result,) ? result : parsed;
+  if (!isJsonRecord(result,))
+    throw new ArtifactParseError({
+      path: `${entryId}.lanes.repair.result`,
+      reason: 'a record',
+    },);
+
+  return result;
 }
 
 /**
  Reads one artifact's accepted-issue views.
  
- @param raw - parsed artifact
+ @param raw - record holding this artifact's own `issues`
  
- @returns Issue views, empty when the artifact carries none
+ @param entryId - artifact identity, which starts the path of each refusal here
+ 
+ @returns Issue views this artifact's records hold
+ 
+ @throws {@link ArtifactParseError} when `issues` is absent or not an array, a
+ record is not a record, its `issue` is absent or not a record, or its
+ `status` is absent or not a string
  
  @example
  ```ts
- const issues = readIssueViews({ raw, },);
+ const issues = readIssueViews({ raw, entryId, },);
  ```
  */
 function readIssueViews(
   {
     raw,
+    entryId,
   }: {
     readonly raw: Readonly<Record<string, unknown>>;
+    readonly entryId: string;
   },
 ): readonly AcceptedIssueView[] {
   /**
@@ -148,51 +248,86 @@ function readIssueViews(
    */
   const { issues, } = raw;
   if (!isJsonArray(issues,))
-    return [];
+    throw new ArtifactParseError({
+      path: `${entryId}.issues`,
+      reason: 'an array',
+    },);
 
-  return issues.flatMap(function toView(record,) {
+  return issues.map(function toView(
+    record,
+    index,
+  ): AcceptedIssueView {
+    /**
+     Path of this issue record.
+     */
+    const here = `${entryId}.issues[${String(index,)}]`;
     if (!isJsonRecord(record,))
-      return [];
+      throw new ArtifactParseError({
+        path: here,
+        reason: 'a record',
+      },);
 
     /**
      Adjudicated issue inside the record.
      */
     const { issue, } = record;
     if (!isJsonRecord(issue,))
-      return [];
+      throw new ArtifactParseError({
+        path: `${here}.issue`,
+        reason: 'a record',
+      },);
 
     /**
      Adjudication status of the issue.
      */
     const { status, } = issue;
+    if ((typeof status) !== 'string')
+      throw new ArtifactParseError({
+        path: `${here}.issue.status`,
+        reason: 'a string',
+      },);
 
-    return [{
-      status: ((typeof status) === 'string') ? status : '',
-      claimIds: readClaimIds({ issue, },),
-    },];
+    return {
+      status,
+      claimIds: readClaimIds({
+        issue,
+        path: `${here}.issue`,
+      },),
+    };
   },);
 }
 
 /**
  Reads one artifact into the shape the report needs.
- 
- @param name - artifact file name, used as a fallback identifier
- 
+
+ EXPORTED FOR ITS OWN CASES. The gather admits only what the pool placed, and
+ placement already refuses a file that is not a record or whose `id` is not its
+ file name, so those two refusals here are reached only when the file changes
+ between the pool's read and this one. They stay because this read is the one
+ the report trusts, and a case can reach them only by calling this directly.
+
+ @param name - artifact file name, which names the failures that precede
+ reading `id` and is the identity the pool admitted the artifact under
+
  @param parsed - parsed artifact
- 
+
  @returns Entry view
- 
+
+ @throws {@link ArtifactParseError} when `parsed` is not a record, `id` is
+ not the entry id its file name keys, or any lane, issue record, status, claim
+ or claim id it holds is absent or malformed
+
  @example
  ```ts
- const entry = toEntry({ name, parsed, },);
+ const entry = attributionEntryOf({ name: 'Whiskers.json', parsed, },);
  ```
  */
-function toEntry(
+export function attributionEntryOf(
   {
     name,
     parsed,
   }: {
-    readonly name: string;
+    readonly name: ArtifactFileName;
     readonly parsed: unknown;
   },
 ): AttributionEntry {
@@ -203,20 +338,25 @@ function toEntry(
     },);
 
   /**
-   Entry identifier the artifact declares.
+   Entry id the pool admitted this artifact under, which is its file name.
    */
-  const { id, } = parsed;
+  const keyedId = entryIdOfArtifact({ name, },);
+
+  // NAMED BY THE FILE, not by itself: an artifact whose `id` is not its file
+  // name has no identity a refusal could trust, so this is the one check here
+  // that starts its path with the file's base name. The same agreement the
+  // pool's placement requires, held again because this is a second read.
+  if ((keyedId === '') || (parsed.id !== keyedId))
+    throw new ArtifactParseError({
+      path: `${name}.id`,
+      reason: 'the entry id the file is named for, since the pool admitted the artifact under that name',
+    },);
 
   /**
-   Identity used in every failure message this function throws, so a throw names the file.
+   Identity that starts the path of each refusal of a field inside this
+   artifact, equal to the `id` it records.
    */
-  const entryId = ((typeof id) === 'string') ? id : name;
-
-  /**
-   Where this artifact keeps its records, which is not the artifact itself on
-   anything version 2 wrote.
-   */
-  const records = recordsHolderOf({ parsed, },);
+  const entryId = keyedId;
 
   /**
    Generation this artifact records, or a named absence for one settled
@@ -225,6 +365,16 @@ function toEntry(
   const reading = readArtifactSchemaVersion({
     artifact: parsed,
     path: entryId,
+  },);
+
+  /**
+   Where this artifact keeps its records, which is not the artifact itself on
+   anything version 2 wrote.
+   */
+  const records = recordsHolderOf({
+    parsed,
+    entryId,
+    reading,
   },);
 
   /**
@@ -248,7 +398,10 @@ function toEntry(
     // ASKED OF THE HOLDER, NOT OF THE ARTIFACT. Asking the artifact root put
     // every version 2 artifact into the pre-feature population, which is the
     // one answer here that looks like an ordinary reading of an older corpus.
-    ...((keys.sliceCritics in records)
+    ...(Object.hasOwn(
+        records,
+        keys.sliceCritics,
+      )
       ? {
         sliceCritics: decodeSliceCritics({
           value: records[keys.sliceCritics],
@@ -257,7 +410,10 @@ function toEntry(
         },),
       }
       : {}),
-    issues: readIssueViews({ raw: records, },),
+    issues: readIssueViews({
+      raw: records,
+      entryId,
+    },),
   };
 }
 
@@ -361,7 +517,7 @@ export async function gatherAttributionEntries(
   > {
     try {
       return {
-        entry: toEntry({
+        entry: attributionEntryOf({
           name,
           // THE READ IS INSIDE THE GUARD TOO, not only the parse. Opening was a
           // bare `readFile` until 2026-08-25, so a file that would not open

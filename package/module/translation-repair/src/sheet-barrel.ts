@@ -181,6 +181,7 @@ export {
   RequiredProviderError,
 } from './corpus-run/required-providers.ts';
 export {
+  attributionEntryOf,
   type AttributionGather,
   gatherAttributionEntries,
   type MalformedArtifact,
