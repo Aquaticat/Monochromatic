@@ -932,8 +932,10 @@ await describe({
             + 'asking the root is caught rather than agreeing by coincidence',
           fn: async () => {
             /**
-             Two-lane artifact of the generation the pass writes, with a decoy
-             planted at the root where generation 1 kept these records.
+             Two-lane artifact of generation 3, the first to spell the critic
+             record `sliceCritics`, which still spelled each record's index
+             `chunkIndex`, with a decoy planted at the root where generation 1
+             kept these records.
              */
             await using scratch = await writeArtifacts({
               artifacts: {
@@ -941,7 +943,7 @@ await describe({
                   artifactSchemaVersion: 3,
                   id: 'Whiskers',
                   sliceCritics: [{
-                    sliceIndex: 9,
+                    chunkIndex: 9,
                     heardCriticIds: [TABBY,],
                     claimAttributions: [{
                       claimId: 'decoy-must-not-be-read',
@@ -953,7 +955,7 @@ await describe({
                     repair: {
                       result: {
                         sliceCritics: [{
-                          sliceIndex: 3,
+                          chunkIndex: 3,
                           heardCriticIds: [TABBY,],
                           claimAttributions: [{
                             claimId: NAP,
@@ -962,7 +964,7 @@ await describe({
                         },],
                         issues: [
                           {
-                            sliceIndex: 0,
+                            chunkIndex: 0,
                             issue: {
                               status: 'accepted',
                               claims: [{ claimId: NAP, },],
@@ -999,10 +1001,11 @@ await describe({
         },),
 
         it({
-          name: 'READS A GENERATION 2 LANE, which spells the same records chunkCritics, and lands them in '
-            + 'the same place as its generation 3 twin. Without this the rename reads as a clean cut and '
-            + 'is not: 48 settled artifacts carry the older spelling, and a reader that stopped '
-            + 'understanding them would report every one as an entry that predates attribution',
+          name: 'READS A GENERATION 2 LANE, which spells the critic record chunkCritics and each '
+            + 'record\'s index chunkIndex, into the same entry a later generation yields. Without this '
+            + 'the renames read as a clean cut and are not: stored generation 2 artifacts carry both '
+            + 'older spellings, and a reader asking for the newer index refused every one of them as '
+            + 'malformed (ledger B107)',
           fn: async () => {
             /**
              Two-lane artifact of the generation before the rename, spelled the
@@ -1018,7 +1021,7 @@ await describe({
                     repair: {
                       result: {
                         chunkCritics: [{
-                          sliceIndex: 3,
+                          chunkIndex: 3,
                           heardCriticIds: [TABBY,],
                           claimAttributions: [{
                             claimId: NAP,
@@ -1027,7 +1030,7 @@ await describe({
                         },],
                         issues: [
                           {
-                            sliceIndex: 0,
+                            chunkIndex: 0,
                             issue: {
                               status: 'accepted',
                               claims: [{ claimId: NAP, },],
@@ -1057,6 +1060,123 @@ await describe({
             expect(record?.claimAttributions[0]?.claimId,).toBe(NAP,);
             expect(entries[0]?.issues,)
               .toStrictEqual([{ status: 'accepted', claimIds: [NAP,], },],);
+          },
+        },),
+
+        it({
+          name: 'READS THE GENERATION THE PASS WRITES, which spells both the critic record and its index '
+            + 'with slice, as the control for the two older spellings: one reader, three spellings, '
+            + 'one entry shape',
+          fn: async () => {
+            /**
+             Two-lane artifact of the newest generation, spelled as it writes.
+             */
+            await using scratch = await writeArtifacts({
+              artifacts: {
+                'Whiskers.json': {
+                  artifactSchemaVersion: 14,
+                  id: 'Whiskers',
+                  lanes: {
+                    repair: {
+                      result: {
+                        sliceCritics: [{
+                          sliceIndex: 3,
+                          heardCriticIds: [TABBY,],
+                          claimAttributions: [{
+                            claimId: NAP,
+                            proposers: [{ modelId: TABBY, emissionCount: 2, },],
+                          },],
+                        },],
+                        issues: [
+                          {
+                            sliceIndex: 0,
+                            issue: {
+                              status: 'accepted',
+                              claims: [{ claimId: NAP, },],
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },);
+
+            /**
+             Entries as the CLI would gather them.
+             */
+            const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+
+            expect(malformed,).toStrictEqual([],);
+            expect(entries[0]?.sliceCritics?.[0]?.sliceIndex,).toBe(3,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A RECORD INDEX SPELLED AS ANOTHER GENERATION SPELLS IT, naming the key its own '
+            + 'generation wrote: a generation 2 record carrying sliceIndex, or a generation 14 record '
+            + 'carrying chunkIndex, was written by no writer this package has had, so reading either '
+            + 'under the other name would credit a record its own generation never produced',
+          fn: async () => {
+            /**
+             One artifact per generation, each carrying the other spelling's index.
+             */
+            await using scratch = await writeArtifacts({
+              artifacts: {
+                'Mittens.json': {
+                  artifactSchemaVersion: 2,
+                  id: 'Mittens',
+                  issues: [],
+                  lanes: {
+                    repair: {
+                      result: {
+                        chunkCritics: [{
+                          sliceIndex: 3,
+                          heardCriticIds: [TABBY,],
+                          claimAttributions: [],
+                        },],
+                        issues: [],
+                      },
+                    },
+                  },
+                },
+                'Whiskers.json': {
+                  artifactSchemaVersion: 14,
+                  id: 'Whiskers',
+                  lanes: {
+                    repair: {
+                      result: {
+                        sliceCritics: [{
+                          chunkIndex: 3,
+                          heardCriticIds: [TABBY,],
+                          claimAttributions: [],
+                        },],
+                        issues: [],
+                      },
+                    },
+                  },
+                },
+              },
+            },);
+
+            /**
+             Why each file failed, keyed by the file that failed.
+             */
+            const reasons = await refusalsByFile({ artifactsDir: scratch.dir, },);
+
+            /**
+             Refusal of the generation 2 record, absent where it was read.
+             */
+            const olderRefusal = String(reasons.get('Mittens.json',),);
+
+            /**
+             Refusal of the generation 14 record, absent where it was read.
+             */
+            const newerRefusal = String(reasons.get('Whiskers.json',),);
+
+            expect(olderRefusal,).toContain('Mittens chunkCritics[0].chunkIndex: expected',);
+            expect(newerRefusal,).toContain('Whiskers sliceCritics[0].sliceIndex: expected',);
           },
         },),
       ],
