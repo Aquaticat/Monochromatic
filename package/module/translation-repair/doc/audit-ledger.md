@@ -14707,6 +14707,10 @@ each restored with `git diff` printing nothing after
 strays let through failed both new cases;
 a stray written twice named twice failed the `askedAmong` case;
 strays named unquoted failed both.
+The full suite on `e009f5d28`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,490 PASS lines and no FAIL line.
 
 Recurrence:
 a runner that narrows its walk by id passes the ids asked for and the ids it can reach through `askedAmong`;
