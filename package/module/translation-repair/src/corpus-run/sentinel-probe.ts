@@ -1,6 +1,9 @@
 import { refusalText, } from '../refusal-text.ts';
 import { wholeOpening, } from '../code-points.ts';
-import { readCorpusFile, } from '../corpus-source.ts';
+import {
+  listCorpusPeople,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { repairTranslation, } from '../repair-entry.ts';
 import {
   createRunClient,
@@ -9,6 +12,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { askedAmong, } from './command-flags.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 
 //region Sentinel probe
@@ -34,13 +38,16 @@ const DEFAULT_SENTINELS: readonly string[] = [
 const ERROR_MESSAGE_CAP = 200;
 
 /**
- Probes each named corpus entry through the pipeline, printing a PROBE line
- per entry. With no ids named on the command line, probes
- {@link DEFAULT_SENTINELS}.
+ Probes each corpus entry asked for through the pipeline, printing a PROBE
+ line per entry, in the order the corpus lists them. With no ids named on the
+ command line, probes {@link DEFAULT_SENTINELS}.
  
  @param line - the probe's command line, read whole by `reportingRefusals`
  
  @throws {@link Error} when the API key env var is unset
+ 
+ @throws StatedRefusalError when an id to probe, named or default, is no
+ entry in the corpus at the pin, before anything is spent
  
  @example
  ```ts
@@ -55,9 +62,16 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
   const named = line.positionals;
 
   /**
-   Entries to probe: named ids, else the default sentinels.
+   Entries to probe: named ids, else the default sentinels, each held to the
+   corpus at the pin before anything is spent. An id it lacks once printed an
+   error line of its own while the probe spent on the rest (ledger B76).
    */
-  const targets = named.length > 0 ? named : DEFAULT_SENTINELS;
+  const targets = askedAmong({
+    asked: (named.length > 0) ? named : DEFAULT_SENTINELS,
+    known: await listCorpusPeople({ pin: RUN_CORPUS_PIN, },),
+    source: 'sentinel-probe',
+    within: 'the corpus at the pin',
+  },);
 
   /**
    Shared client using measured production provider concurrency.

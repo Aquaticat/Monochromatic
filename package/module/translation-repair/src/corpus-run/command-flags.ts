@@ -19,6 +19,10 @@ import type { FlagValue, } from './command-line-types.ts';
 // both as the default, truncated `4.9` to 4 and took `-3` as a cap, so a
 // mistyped flag spent trials nobody asked for and said nothing. One reader
 // now holds the refusals, and each probe names only its flags and defaults.
+//
+// `askedAmong` holds the ids a line names to what its runner can reach, so an
+// id naming nothing refuses the line rather than narrowing the run to nothing
+// (ledger B76).
 
 /**
  Separator between the ids one flag names.
@@ -174,16 +178,30 @@ export function idListFlag(
 
  ONE FILTER FOR EVERY RUNNER that narrows its walk by id. The pass, the two
  coverage probes and the settled audit each wrote their own, the same
- predicate in each.
+ predicate in each, and each dropped an id it could not reach without a
+ word: an `--only` naming only a stray ran over nothing, and a stray beside a
+ real entry ran the real one alone (ledger B76).
+
+ EVERY ID ASKED FOR MUST BE REACHABLE, so a mistyped id refuses the whole
+ line, all strays named at once, before anything is spent on the rest.
 
  @param asked - ids the line names, in the order written; empty when it
  names none, which reads as no restriction
 
  @param known - ids the runner can reach, in the order it walks them
 
+ @param source - what asked for the ids, as the person typed it: `--only`,
+ or the runner's name for ids written by position
+
+ @param within - what `known` is drawn from, completing "which ... does not
+ hold": `the corpus at the pin`, `the settled archive`
+
  @returns The known ids asked for, in `known`'s order, so a filtered run
  walks its entries as an unfiltered one does; every known id when none was
  asked
+
+ @throws StatedRefusalError naming, each once, in the order written and
+ quoted, every id asked for that `known` lacks
 
  @example
  ```ts
@@ -194,25 +212,40 @@ export function askedAmong(
   {
     asked,
     known,
+    source,
+    within,
   }: {
     readonly asked: readonly string[];
     readonly known: readonly string[];
-
-    /**
-     What asked for the ids, as the person typed it: `--only`, or the
-     runner's name for ids written by position.
-     */
     readonly source: string;
-
-    /**
-     What `known` is drawn from, completing "which ... does not hold":
-     `the corpus at the pin`, `the settled archive`.
-     */
     readonly within: string;
   },
 ): readonly string[] {
   if (asked.length === 0)
     return known;
+
+  /**
+   Ids the runner can reach, for lookup.
+   */
+  const reachable = new Set(known,);
+
+  /**
+   Ids asked for that the runner cannot reach, each once, in the order
+   written.
+   */
+  const strays = [...new Set(asked,),].filter(function isStray(id,): boolean {
+    return !reachable.has(id,);
+  },);
+  if (strays.length > 0)
+    throw new StatedRefusalError({
+      says: `${source} asks for ${
+        strays
+          .map(function quoted(id,): string {
+            return JSON.stringify(id,);
+          },)
+          .join(', ',)
+      }, which ${within} does not hold`,
+    },);
 
   /**
    Ids asked for, for lookup.
