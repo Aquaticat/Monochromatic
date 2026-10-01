@@ -282,6 +282,23 @@ await describe({
         },),
 
         it({
+          name: 'COUNTS A FENCE WITH A BLANK LINE INSIDE AS ONE BLOCK, as the parse reads it, and a '
+            + 'loose list as one, so a side does not gain blocks for spacing its own content '
+            + '(ledger B68)',
+          fn: async () => {
+            expect(sliceSizeOf({
+              sourceText: 'The cat yawns.\n\n```text\nMittens\n\nstretches\n```\n\nThe end.',
+              targetText: '- A nap.\n\n- A stretch.\n\n- A meal.',
+            },),).toStrictEqual({
+              sourceChars: 56,
+              targetChars: 33,
+              sourceBlocks: 3,
+              targetBlocks: 1,
+            },);
+          },
+        },),
+
+        it({
           name: 'READS AN EMPTY SIDE AS ZERO BLOCKS rather than as one empty block, so a section '
             + 'nobody rendered does not arrive at the predicates carrying a block to compare',
           fn: async () => {

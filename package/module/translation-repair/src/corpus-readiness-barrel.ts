@@ -43,6 +43,7 @@ export {
   canadianizePage,
   canadianizeText,
 } from './corpus-run/canadian-forms.ts';
+export { protectedRanges, } from './corpus-run/prose-ranges.ts';
 export { restoreListSpread, } from './corpus-run/list-spread-restore.ts';
 export {
   applySpanRewrites,

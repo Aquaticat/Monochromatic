@@ -281,6 +281,7 @@ export {
   photoReferences,
 } from './photo-reference.ts';
 export { topLevelBlocks, } from './markdown-blocks.ts';
+export { droppedAddressFindings, } from './translate-address-drop.ts';
 export {
   countQuotedPassages,
   dropsQuotedPassage,

@@ -184,6 +184,16 @@ await describe({
             },),).toBe(true,);
           },
         },),
+
+        it({
+          name: 'DOES NOT CALL A LOOSE LIST LINE-STRUCTURED, five short cat facts '
+            + 'written as one list block whatever its items own spacing',
+          fn: async () => {
+            expect(isLineStructured({
+              text: '- Mittens naps.\n\n- Biscuit watches.\n\n- Patches hunts.\n\n- Tom sleeps.\n\n- Jerry yawns.\n',
+            },),).toBe(false,);
+          },
+        },),
       ],
     },),
 

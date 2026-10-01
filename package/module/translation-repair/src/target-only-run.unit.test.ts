@@ -174,6 +174,32 @@ await describe({
             expect(split.protectedText,).toBe('',);
           },
         },),
+
+        it({
+          name: 'PROTECTS A TRANSCRIPT WRITTEN DIRECTLY AFTER ITS ANCHOR WITH NO BLANK LINE, a photo '
+            + 'gallery component the archive repeats followed on the next line by a quoted caption of '
+            + 'what the photos show, and keeps the archive\'s own bytes so restoring rebuilds it exactly',
+          fn: async () => {
+            /**
+             Archive wording: the anchor, one line break, the caption.
+             */
+            const incumbentText = 'Introduction of the cat.\n\n<PhotoScroll images={[1,2]} />\n'
+              + '> A photo shows the cat napping.\n> Another shows it stretching.\n';
+            const split = splitTargetOnlyRun({
+              sourceText: '猫的介绍。\n\n<PhotoScroll images={[1,2]} />\n',
+              incumbentText,
+            },);
+
+            expect(split,).toStrictEqual({
+              judgedText: 'Introduction of the cat.\n\n<PhotoScroll images={[1,2]} />',
+              protectedText: '\n> A photo shows the cat napping.\n> Another shows it stretching.\n',
+            },);
+            expect(restoreTargetOnlyRun({
+              text: split.judgedText,
+              protectedText: split.protectedText,
+            },),).toBe(incumbentText,);
+          },
+        },),
       ],
     },),
 

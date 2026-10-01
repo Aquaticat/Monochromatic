@@ -77,7 +77,7 @@ const NEVER_RESPELLED = [
 ];
 
 await describe({
-  name: 'canadianizeText spelling (ledger K3, K7, K9, K10, K11, H14)',
+  name: 'canadianizeText spelling (ledger K3, K7, K9, K10, K11, H14, B68)',
   children: [
     it({
       name: 'RESPELLS INFLECTIONS of the listed stems and the forms the house policy names (ledger K3)',
@@ -232,6 +232,22 @@ await describe({
           '{/* the cat\'s note */} Her \'favourite\' colour was grey.',
           '<Paw alt="the cat\n> favorite paw" /> Her colour.',
         ],);
+      },
+    },),
+    it({
+      name: 'RESPELLS A CAPITALISED WORD OPENING A PARAGRAPH on the line after a heading, since a '
+        + 'heading closes the paragraph it follows with no blank line between (ledger B68)',
+      fn: async () => {
+        expect(respelled({ text: 'The cat ate.\n# Loud fact\nColor stays on the tabby.', },),)
+          .toBe('The cat ate.\n# Loud fact\nColour stays on the tabby.',);
+      },
+    },),
+    it({
+      name: 'READS A STRAY BACKTICK AS LITERAL where its only partner stands past a heading, and keeps '
+        + 'the code span written there, since the heading ends the paragraph (ledger B68)',
+      fn: async () => {
+        expect(respelled({ text: 'A cat says `color\n# Loud heading\nand `not color` again.', },),)
+          .toBe('A cat says `colour\n# Loud heading\nand `not color` again.',);
       },
     },),
   ],
