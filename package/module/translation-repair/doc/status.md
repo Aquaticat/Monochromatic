@@ -365,6 +365,15 @@ The package's 29 other test files that replace process globals are open as a fam
 they change tests only,
 so the census taken next is the eighteenth batch's baseline,
 recorded under each entry it closes.
+That census (`census-dKGOhZ` at `36e3f36cc`,
+1,500 passes,
+taken clean)
+leaves library source at 730 stretches over 1,404 lines in 274 files,
+with 15 functions never called;
+of the 36 sources edited since the last baseline,
+only `corpus-run/command-line.ts` gained cold code,
+two usage-line arms no case prints,
+which join the eighteenth batch on the archive modules.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

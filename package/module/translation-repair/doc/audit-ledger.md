@@ -4706,6 +4706,46 @@ and the batch reads against the census taken once it closes.
 B78 closed it (`a3f1f2c55` to `e2b0962fd`),
 so the census taken next is the batch's baseline.
 
+That census at `36e3f36cc`
+(`census-dKGOhZ`,
+1,500 passes,
+taken clean)
+reads against `census-apleN5`:
+ran 0,
+still cold 967,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 36.
+Library source went from 746 stretches over 1,432 lines in 274 files to 730 over 1,404 in 274,
+with 15 functions never called as before.
+The 36 edited sources are B73 to B78's,
+whose baseline lines name other code,
+so the reading cannot match their stretches;
+compared file by file instead
+(`~/temp/agent/audit-glossary-fix/b78-edited-cold.mjs`,
+each file's cold stretches and lines in both censuses),
+35 hold as many cold stretches as before or fewer,
+and one holds more:
+`corpus-run/command-line.ts`,
+0 then 2,
+both arms of `usageLine` that print a position which repeats (246)
+and a single position that may be left out (248),
+code B75 added that no case prints,
+though the command table declares both shapes
+(`unit test file` and the slice counts).
+They are added to this batch.
+By the first construct
+(`t8-triage-dkgohz.txt`),
+the queue is 302 returns,
+150 nullish fallbacks,
+122 ternaries,
+76 throws
+and 80 others;
+`archive` and `corpus-run/run` still tie at 18 stretches,
+and the eighteenth batch takes `archive`,
+36 lines in 9 files to `corpus-run/run`'s 18.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
