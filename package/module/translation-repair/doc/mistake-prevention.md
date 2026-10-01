@@ -150,7 +150,10 @@ though every check in each file throws one class carrying a structured fault
 and a guard-off build put a mutant in a file's second top-level suite beside one failing its first,
 so the file stopped before the second suite and its case never ran (M89),
 and a red case sat the same way behind red cases in the file's first suite,
-so it could not be seen failing (M97).
+so it could not be seen failing (M97);
+and the attribution reader's cases for generations 2 and 3 wrote each record's index as generation 4 does,
+so they agreed with a decoder that read one spelling for every generation,
+while 42 stored artifacts those generations wrote were refused (ledger B107).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -177,6 +180,10 @@ A guard over several sites asserts that each site is reached,
 one assertion per site,
 and a hook under test hands a different answer each call.
 An order or a precedence claim is tested with a fixture mixing every source it draws from.
+A fixture standing for a stored record of one generation is spelled as that generation's writer spelled it
+(`artifact-key-vocabulary.ts` names each renamed key),
+never in the reader's own names,
+and a reader of a renamed key gets its spelling from the vocabulary.
 Every mutation run opens with a control that must survive,
 and lists every test file naming the mutated token (`rg` the tests first);
 a survivor is a guard defect until a test that can fail is added and the mutant is caught.

@@ -176,14 +176,16 @@ function artifactWith(
 ): Record<string, unknown> {
   return {
     // GENERATION 1, stated, because that is the generation that kept these
-    // records at the artifact root and spelled the key `chunkCritics`. An
-    // unversioned body would read the same way and say less.
+    // records at the artifact root and spelled the key `chunkCritics`, and each
+    // record's index `chunkIndex`, which is how every caller here spells the
+    // records it hands in. An unversioned body would read the same way and say
+    // less.
     artifactSchemaVersion: 1,
     id: 'Whiskers',
     chunkCritics: sliceCritics,
     issues: [
       {
-        sliceIndex: 0,
+        chunkIndex: 0,
         issue: {
           status: 'accepted',
           claims: [{ claimId: NAP, },],
@@ -246,7 +248,7 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [{
-                    sliceIndex: 3,
+                    chunkIndex: 3,
                     heardCriticIds: [TABBY,],
                     claimAttributions: [{
                       claimId: NAP,
@@ -321,7 +323,7 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     heardCriticIds: [TABBY,],
                     claimAttributions: [],
                   },],
@@ -329,7 +331,7 @@ await describe({
                 'Mittens.json': {
                   artifactSchemaVersion: 1,
                   id: 'Mittens',
-                  issues: [{ sliceIndex: 0, issue: ['stray',], },],
+                  issues: [{ chunkIndex: 0, issue: ['stray',], },],
                 },
               },
             },);
@@ -390,7 +392,7 @@ await describe({
                 expects: 'issues[0].issue.status: expected a string',
                 artifact: {
                   artifactSchemaVersion: 1,
-                  issues: [{ sliceIndex: 0, issue: { claims: [{ claimId: NAP, },], }, },],
+                  issues: [{ chunkIndex: 0, issue: { claims: [{ claimId: NAP, },], }, },],
                 },
               },
               {
@@ -399,7 +401,7 @@ await describe({
                 artifact: {
                   artifactSchemaVersion: 1,
                   issues: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     issue: { status: 7, claims: [{ claimId: NAP, },], },
                   },],
                 },
@@ -409,7 +411,7 @@ await describe({
                 expects: 'issues[0].issue.claims: expected an array',
                 artifact: {
                   artifactSchemaVersion: 1,
-                  issues: [{ sliceIndex: 0, issue: { status: 'accepted', }, },],
+                  issues: [{ chunkIndex: 0, issue: { status: 'accepted', }, },],
                 },
               },
               {
@@ -417,7 +419,7 @@ await describe({
                 expects: 'issues[0].issue.claims: expected an array',
                 artifact: {
                   artifactSchemaVersion: 1,
-                  issues: [{ sliceIndex: 0, issue: { status: 'accepted', claims: 'not an array', }, },],
+                  issues: [{ chunkIndex: 0, issue: { status: 'accepted', claims: 'not an array', }, },],
                 },
               },
               {
@@ -425,7 +427,7 @@ await describe({
                 expects: 'issues[0].issue.claims[0]: expected a record',
                 artifact: {
                   artifactSchemaVersion: 1,
-                  issues: [{ sliceIndex: 0, issue: { status: 'accepted', claims: ['stray',], }, },],
+                  issues: [{ chunkIndex: 0, issue: { status: 'accepted', claims: ['stray',], }, },],
                 },
               },
               {
@@ -433,7 +435,7 @@ await describe({
                 expects: 'issues[0].issue.claims[0].claimId: expected a string',
                 artifact: {
                   artifactSchemaVersion: 1,
-                  issues: [{ sliceIndex: 0, issue: { status: 'accepted', claims: [{},], }, },],
+                  issues: [{ chunkIndex: 0, issue: { status: 'accepted', claims: [{},], }, },],
                 },
               },
               {
@@ -442,7 +444,7 @@ await describe({
                 artifact: {
                   artifactSchemaVersion: 1,
                   issues: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     issue: { status: 'accepted', claims: [{ claimId: 7, },], },
                   },],
                 },
@@ -485,7 +487,7 @@ await describe({
                     repair: {
                       result: {
                         chunkCritics: [{
-                          sliceIndex: 0,
+                          chunkIndex: 0,
                           heardCriticIds: [TABBY,],
                           claimAttributions: [{
                             claimId: NAP,
@@ -509,7 +511,7 @@ await describe({
                 'Readable.json': {
                   ...artifactWith({
                     sliceCritics: [{
-                      sliceIndex: 0,
+                      chunkIndex: 0,
                       heardCriticIds: [TABBY,],
                       claimAttributions: [{
                         claimId: NAP,
@@ -560,7 +562,7 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     heardCriticIds: [TABBY,],
                     claimAttributions: [],
                   },],
@@ -618,7 +620,7 @@ await describe({
             + 'count, it silently shrinks it, and a smaller denominator raises every '
             + 'rate divided by it while looking entirely ordinary',
           fn: async () => {
-            await Promise.all(['one', -1, 1.5, undefined,].map(async function rejectsIt(sliceIndex,) {
+            await Promise.all(['one', -1, 1.5, undefined,].map(async function rejectsIt(chunkIndex,) {
               /**
                Artifact carrying one unusable chunk index.
                */
@@ -626,7 +628,7 @@ await describe({
                 artifacts: {
                   'Whiskers.json': artifactWith({
                     sliceCritics: [{
-                      sliceIndex,
+                      chunkIndex,
                       heardCriticIds: [TABBY,],
                       claimAttributions: [],
                     },],
@@ -637,7 +639,7 @@ await describe({
               expect(
                 (await gatherAttributionEntries({ artifactsDir: scratch.dir, },)).malformed[0]
                   ?.reason,
-              ).toContain('sliceIndex',);
+              ).toContain('chunkIndex',);
             },),);
           },
         },),
@@ -655,7 +657,7 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     heardCriticIds: [TABBY, TABBY,],
                     claimAttributions: [],
                   },],
@@ -674,8 +676,8 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [
-                    { sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
-                    { sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
+                    { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
+                    { chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [], },
                   ],
                 },),
               },
@@ -692,7 +694,7 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     heardCriticIds: [TABBY,],
                     claimAttributions: [{
                       claimId: NAP,
@@ -725,7 +727,7 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     heardCriticIds: [TABBY,],
                     claimAttributions: [
                       { claimId: NAP, proposers: [{ modelId: TABBY, emissionCount: 1, },], },
@@ -773,12 +775,12 @@ await describe({
               {
                 id: 'HeardNotArray',
                 expects: '.heardCriticIds: expected an array',
-                critics: [{ sliceIndex: 0, heardCriticIds: TABBY, claimAttributions: [], },],
+                critics: [{ chunkIndex: 0, heardCriticIds: TABBY, claimAttributions: [], },],
               },
               {
                 id: 'HeardMemberNotString',
                 expects: 'heardCriticIds[0]: expected a string',
-                critics: [{ sliceIndex: 0, heardCriticIds: [7,], claimAttributions: [], },],
+                critics: [{ chunkIndex: 0, heardCriticIds: [7,], claimAttributions: [], },],
               },
               {
                 id: 'RecordNotRecord',
@@ -788,18 +790,18 @@ await describe({
               {
                 id: 'AttributionsNotArray',
                 expects: '.claimAttributions: expected an array',
-                critics: [{ sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: NAP, },],
+                critics: [{ chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: NAP, },],
               },
               {
                 id: 'AttributionNotRecord',
                 expects: 'claimAttributions[0]: expected a record',
-                critics: [{ sliceIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [NAP,], },],
+                critics: [{ chunkIndex: 0, heardCriticIds: [TABBY,], claimAttributions: [NAP,], },],
               },
               {
                 id: 'ClaimIdNotString',
                 expects: 'claimAttributions[0].claimId: expected a string',
                 critics: [{
-                  sliceIndex: 0,
+                  chunkIndex: 0,
                   heardCriticIds: [TABBY,],
                   claimAttributions: [{ claimId: 7, proposers: [{ modelId: TABBY, emissionCount: 1, },], },],
                 },],
@@ -808,7 +810,7 @@ await describe({
                 id: 'ProposersNotArray',
                 expects: '.proposers: expected an array',
                 critics: [{
-                  sliceIndex: 0,
+                  chunkIndex: 0,
                   heardCriticIds: [TABBY,],
                   claimAttributions: [{ claimId: NAP, proposers: TABBY, },],
                 },],
@@ -817,7 +819,7 @@ await describe({
                 id: 'ProposerNotRecord',
                 expects: 'proposers[0]: expected a record',
                 critics: [{
-                  sliceIndex: 0,
+                  chunkIndex: 0,
                   heardCriticIds: [TABBY,],
                   claimAttributions: [{ claimId: NAP, proposers: [TABBY,], },],
                 },],
@@ -826,7 +828,7 @@ await describe({
                 id: 'ProposerModelIdNotString',
                 expects: 'proposers[0].modelId: expected a string',
                 critics: [{
-                  sliceIndex: 0,
+                  chunkIndex: 0,
                   heardCriticIds: [TABBY,],
                   claimAttributions: [{ claimId: NAP, proposers: [{ modelId: 7, emissionCount: 1, },], },],
                 },],
@@ -848,7 +850,7 @@ await describe({
                 'Readable.json': {
                   ...artifactWith({
                     sliceCritics: [{
-                      sliceIndex: 0,
+                      chunkIndex: 0,
                       heardCriticIds: [TABBY,],
                       claimAttributions: [{
                         claimId: NAP,
@@ -903,7 +905,7 @@ await describe({
               artifacts: {
                 'Whiskers.json': artifactWith({
                   sliceCritics: [{
-                    sliceIndex: 0,
+                    chunkIndex: 0,
                     heardCriticIds: [TABBY,],
                     claimAttributions: [{
                       claimId: NAP,
@@ -1198,7 +1200,7 @@ await describe({
               name: 'Whiskers.json',
               parsed: artifactWith({
                 sliceCritics: [{
-                  sliceIndex: 0,
+                  chunkIndex: 0,
                   heardCriticIds: [TABBY,],
                   claimAttributions: [{
                     claimId: NAP,

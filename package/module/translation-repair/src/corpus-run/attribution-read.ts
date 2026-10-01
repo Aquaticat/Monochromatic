@@ -406,7 +406,7 @@ export function attributionEntryOf(
         sliceCritics: decodeSliceCritics({
           value: records[keys.sliceCritics],
           entryId,
-          criticsKey: keys.sliceCritics,
+          keys,
         },),
       }
       : {}),

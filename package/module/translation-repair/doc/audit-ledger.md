@@ -17584,6 +17584,57 @@ Recurrence:
 `mistake-prevention.md`,
 "Defaults that stand in for an input".
 
+### B107: the attribution decoder read every generation's record index under one spelling
+
+Found 2026-10-01 (UTC) measuring B106 over the stored artifacts,
+red in `3410cef02`,
+fixed in the commit adding this entry.
+Generations 1 to 3 wrote each per-slice record's index as `chunkIndex`,
+and generation 4 onward writes `sliceIndex`;
+`artifact-key-vocabulary.ts` records both,
+and the attribution reader already chose the critic record's own key through it.
+`decodeChunkRecord` (`corpus-run/attribution-decode.ts`) read `value.sliceIndex` whatever the generation,
+so every generation 2 or 3 critic record read as missing its index,
+and the whole artifact was refused as malformed.
+Over the stored artifacts,
+all 246 generation 2 critic records and both generation 3 ones carry `chunkIndex`,
+and the gather refused 42 artifacts,
+41 of generation 2 and one of generation 3
+(`b24/slice-index-values.mjs` in the audit's scratch folder).
+The two cases meant to cover those generations wrote `sliceIndex` into their records,
+which no writer of those generations produced,
+so they agreed with the decoder rather than with the writers.
+A census of every reader of stored artifacts found no other reading of a renamed key outside the vocabulary:
+the two-lane readers take the vocabulary,
+the page-assembly reader reads only generations that spell the index `sliceIndex`,
+and the change-set reader refuses every generation past 1.
+
+`decodeSliceCritics` now takes the generation's vocabulary,
+and `decodeChunkRecord` the index key it names,
+so a record is read under its own generation's spelling
+and a record carrying the other spelling is refused,
+naming the key its generation wrote.
+The generation 2 and 3 cases spell their records as those generations did,
+a generation 14 case reads as the control,
+and a case refuses each spelling under the other generation;
+`artifactWith` and the explicit generation 1 and 2 fixtures spell each record's index `chunkIndex`,
+as does the sound generation 1 fixture in `corpus-run/sink-names-only.unit.test.ts`,
+which wrote `sliceIndex`,
+so the fix refused it and the full suite failed on it until it was respelled.
+The red cases failed at the build of `cd3cab768`,
+and pass here.
+
+Reach:
+the built gather over the 240 stored directories holding JSON read 202 entries with 45 refused at the build before this fix,
+and 244 entries,
+all eligible,
+with 3 refused here:
+the three `Cat.json` test leftovers B106 names.
+
+Recurrence:
+`mistake-prevention.md`,
+"Guards that cannot fail".
+
 ### B108: test helpers left their temporary directories behind
 
 Found 2026-10-01 (UTC) by a census of the package's test code,

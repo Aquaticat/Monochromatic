@@ -1,4 +1,5 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
+import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 import {
   isJsonArray,
   isJsonRecord,
@@ -234,26 +235,33 @@ export function decodeProposers(
  proposers are checked against the heard set.
  
  @param value - parsed record
- 
+
  @param path - dotted path for the failure message
- 
+
+ @param indexKey - key this artifact's own generation spelled the record's
+ index under: generations 1 to 3 wrote `chunkIndex`, generation 4 onward
+ `sliceIndex`, and a record carrying the other spelling is refused rather than
+ read under a name its writer never used
+
  @returns Validated chunk view
- 
+
  @throws ArtifactParseError When malformed, repeating a claim id, or naming a
  proposer this chunk did not record as heard
- 
+
  @example
  ```ts
- const view = decodeChunkRecord({ value, path: 'Kitten sliceCritics[0]', },);
+ const view = decodeChunkRecord({ value, path: 'Kitten sliceCritics[0]', indexKey: 'sliceIndex', },);
  ```
  */
 export function decodeChunkRecord(
   {
     value,
     path,
+    indexKey,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly indexKey: string;
   },
 ): SliceCriticView {
   if (!isJsonRecord(value,))
@@ -263,11 +271,11 @@ export function decodeChunkRecord(
     },);
 
   /**
-   Chunk position within the document.
+   Chunk position within the document, under its generation's spelling.
    */
   const sliceIndex = readCount({
-    value: value.sliceIndex,
-    path: `${path}.sliceIndex`,
+    value: value[indexKey],
+    path: `${path}.${indexKey}`,
     minimum: 0,
   },);
 
@@ -355,31 +363,36 @@ export function decodeChunkRecord(
  @param value - parsed array
  
  @param entryId - artifact identity, so a failure names the file
- 
- @param criticsKey - key this artifact's own generation spelled the array
- under, so a refusal names something a reader can find in the file rather than
- the name this package happens to use for it
- 
+
+ @param keys - spelling this artifact's own generation wrote, for both the
+ array and each record's index, so a refusal names something a reader can
+ find in the file rather than the name this package happens to use for it
+
  @returns Validated chunk views
- 
+
  @throws ArtifactParseError When malformed or repeating a chunk index
- 
+
  @example
  ```ts
- const sliceCritics = decodeSliceCritics({ value, entryId: 'Kitten', criticsKey: keys.sliceCritics, },);
+ const sliceCritics = decodeSliceCritics({ value, entryId: 'Kitten', keys, },);
  ```
  */
 export function decodeSliceCritics(
   {
     value,
     entryId,
-    criticsKey,
+    keys,
   }: {
     readonly value: unknown;
     readonly entryId: string;
-    readonly criticsKey: string;
+    readonly keys: ArtifactKeyVocabulary;
   },
 ): readonly SliceCriticView[] {
+  /**
+   Key the array sits under in this generation.
+   */
+  const criticsKey = keys.sliceCritics;
+
   if (!isJsonArray(value,)) {
     throw new ArtifactParseError({
       path: `${entryId} ${criticsKey}`,
@@ -397,6 +410,7 @@ export function decodeSliceCritics(
     return decodeChunkRecord({
       value: record,
       path: `${entryId} ${criticsKey}[${String(index,)}]`,
+      indexKey: keys.sliceIndex,
     },);
   },);
 

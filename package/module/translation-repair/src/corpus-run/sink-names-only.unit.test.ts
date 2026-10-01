@@ -203,7 +203,7 @@ const SOUND_ARTIFACT = JSON.stringify({
   id: 'Whiskers',
   chunkCritics: [
     {
-      sliceIndex: 0,
+      chunkIndex: 0,
       heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
       claimAttributions: [],
     },
