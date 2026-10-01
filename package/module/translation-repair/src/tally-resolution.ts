@@ -78,9 +78,10 @@ export function resolveResolutionChecks(
   const findings: string[] = [];
 
   /**
-   Resolved verdicts keyed by issue id; first occurrence wins.
+   Resolved verdicts keyed by issue id; first occurrence wins. A map until
+   handed back, as every record filled by a key is (ledger B77).
    */
-  const verdicts: Record<string, ResolutionVerdict> = {};
+  const verdicts = new Map<string, ResolutionVerdict>();
   for (const check of wire.checks) {
     /**
      Issue id referenced by this check's one-based number.
@@ -90,7 +91,7 @@ export function resolveResolutionChecks(
       findings.push(`check-index-out-of-range (${check.issue})`,);
       continue;
     }
-    if (verdicts[issueId] !== undefined) {
+    if (verdicts.has(issueId,)) {
       findings.push(`duplicate-check (${check.issue})`,);
       continue;
     }
@@ -98,15 +99,18 @@ export function resolveResolutionChecks(
       findings.push(`unknown-resolution-verdict (${check.verdict})`,);
       continue;
     }
-    verdicts[issueId] = check.verdict;
+    verdicts.set(
+      issueId,
+      check.verdict,
+    );
   }
   for (const [index, issueId,] of issueIds.entries()) {
-    if (verdicts[issueId] === undefined)
+    if (!verdicts.has(issueId,))
       findings.push(`missing-check (${index + 1})`,);
   }
 
   return {
-    verdicts,
+    verdicts: Object.fromEntries(verdicts,),
     findings,
   };
 }

@@ -234,9 +234,10 @@ export function resolveDerivabilityJudgment(
   const findings: string[] = [];
 
   /**
-   Resolved verdicts keyed by seed id; first occurrence wins.
+   Resolved verdicts keyed by seed id; first occurrence wins. A map until
+   handed back, as every record filled by a key is (ledger B77).
    */
-  const verdicts: Record<string, DerivabilityVerdict> = {};
+  const verdicts = new Map<string, DerivabilityVerdict>();
   for (const judgment of wire.judgments) {
     /**
      Seed id referenced by this judgment's one-based candidate number.
@@ -246,7 +247,7 @@ export function resolveDerivabilityJudgment(
       findings.push(`derivability-reference-out-of-range (${judgment.reference})`,);
       continue;
     }
-    if (verdicts[seedId] !== undefined) {
+    if (verdicts.has(seedId,)) {
       findings.push(`duplicate-derivability-judgment (${judgment.reference})`,);
       continue;
     }
@@ -254,15 +255,18 @@ export function resolveDerivabilityJudgment(
       findings.push(`unknown-derivability-verdict (${judgment.verdict})`,);
       continue;
     }
-    verdicts[seedId] = judgment.verdict;
+    verdicts.set(
+      seedId,
+      judgment.verdict,
+    );
   }
   for (const [index, seedId,] of seedIds.entries()) {
-    if (verdicts[seedId] === undefined)
+    if (!verdicts.has(seedId,))
       findings.push(`missing-derivability-judgment (${index + 1})`,);
   }
 
   return {
-    verdicts,
+    verdicts: Object.fromEntries(verdicts,),
     findings,
   };
 }

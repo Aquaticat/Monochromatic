@@ -309,9 +309,10 @@ export function resolvePanelBallot(
   const findings: string[] = [];
 
   /**
-   Resolved verdicts keyed by claim id; first occurrence wins.
+   Resolved verdicts keyed by claim id; first occurrence wins. A map until
+   handed back, as every record filled by a key is (ledger B77).
    */
-  const verdicts: Record<string, BallotVerdict> = {};
+  const verdicts = new Map<string, BallotVerdict>();
   for (const verdict of wire.verdicts) {
     /**
      Claim id referenced by this verdict's one-based number.
@@ -321,7 +322,7 @@ export function resolvePanelBallot(
       findings.push(`verdict-index-out-of-range (${verdict.claim})`,);
       continue;
     }
-    if (verdicts[claimId] !== undefined) {
+    if (verdicts.has(claimId,)) {
       findings.push(`duplicate-verdict (${verdict.claim})`,);
       continue;
     }
@@ -348,27 +349,34 @@ export function resolvePanelBallot(
     const given = reasonMissing ? {} : { reason, };
     if ((verdict.severity !== undefined) && (!isIssueSeverity(verdict.severity,))) {
       findings.push(`unknown-regrade-severity (${verdict.severity})`,);
-      verdicts[claimId] = {
-        vote: verdict.vote,
-        ...given,
-      };
+      verdicts.set(
+        claimId,
+        {
+          vote: verdict.vote,
+          ...given,
+        },
+      );
       continue;
     }
-    verdicts[claimId] = {
-      vote: verdict.vote,
-      ...(verdict.severity === undefined ? {} : { severity: verdict.severity, }),
-      ...given,
-    };
+    verdicts.set(
+      claimId,
+      {
+        vote: verdict.vote,
+        ...(verdict.severity === undefined ? {} : { severity: verdict.severity, }),
+        ...given,
+      },
+    );
   }
   for (const [index, claimId,] of claimIds.entries()) {
-    if (verdicts[claimId] === undefined)
+    if (!verdicts.has(claimId,))
       findings.push(`missing-verdict (${index + 1})`,);
   }
 
   /**
-   Resolved group opinions keyed by cluster id; first occurrence wins.
+   Resolved group opinions keyed by cluster id; first occurrence wins. A map
+   until handed back, like the verdicts.
    */
-  const mergeOpinions: Record<string, boolean> = {};
+  const mergeOpinions = new Map<string, boolean>();
   for (const group of wire.groups ?? []) {
     /**
      Cluster id referenced by this opinion's one-based number.
@@ -378,16 +386,19 @@ export function resolvePanelBallot(
       findings.push(`group-index-out-of-range (${group.group})`,);
       continue;
     }
-    if (mergeOpinions[clusterId] !== undefined) {
+    if (mergeOpinions.has(clusterId,)) {
       findings.push(`duplicate-group-opinion (${group.group})`,);
       continue;
     }
-    mergeOpinions[clusterId] = group.sameDefect;
+    mergeOpinions.set(
+      clusterId,
+      group.sameDefect,
+    );
   }
 
   return {
-    verdicts,
-    mergeOpinions,
+    verdicts: Object.fromEntries(verdicts,),
+    mergeOpinions: Object.fromEntries(mergeOpinions,),
     findings,
   };
 }

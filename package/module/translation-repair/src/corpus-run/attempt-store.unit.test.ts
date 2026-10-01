@@ -33,6 +33,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  type AttemptMap,
   attemptsOf,
   countAttempt,
   readAttemptMap,
@@ -100,7 +101,7 @@ async function readWritten(
     readonly contents: string;
     readonly name?: string;
   },
-): Promise<Record<string, number>> {
+): Promise<AttemptMap> {
   /**
    Path the attempts file occupies.
    */
@@ -174,10 +175,10 @@ await describe({
               Marmalade: 5,
             },),
           },),
-        ).toStrictEqual({
-          Mittens: 2,
-          Marmalade: 5,
-        },);
+        ).toStrictEqual(new Map([
+          ['Mittens', 2,],
+          ['Marmalade', 5,],
+        ],),);
       },
     },),
 
@@ -192,7 +193,7 @@ await describe({
             scratch.path,
             'never-written.json',
           ),),
-        ).toStrictEqual({},);
+        ).toStrictEqual(new Map(),);
       },
     },),
 
@@ -208,7 +209,7 @@ await describe({
             directory: scratch.path,
             contents: '{"Mittens": 2,',
           },),
-        ).toStrictEqual({},);
+        ).toStrictEqual(new Map(),);
       },
     },),
 
@@ -235,7 +236,7 @@ await describe({
         },),);
 
         for (const map of maps)
-          expect(map,).toStrictEqual({},);
+          expect(map,).toStrictEqual(new Map(),);
       },
     },),
 
@@ -256,10 +257,10 @@ await describe({
               Marmalade: 5,
             },),
           },),
-        ).toStrictEqual({
-          Mittens: 0,
-          Marmalade: 5,
-        },);
+        ).toStrictEqual(new Map([
+          ['Mittens', 0,],
+          ['Marmalade', 5,],
+        ],),);
       },
     },),
 
@@ -288,7 +289,7 @@ await describe({
             directory: scratch.path,
             contents: '{}',
           },),
-        ).toStrictEqual({},);
+        ).toStrictEqual(new Map(),);
       },
     },),
   ],
@@ -344,17 +345,18 @@ await describe({
           scratch.path,
           'attempts.json',
         );
+        /**
+         Counts written and expected back.
+         */
+        const attempts: AttemptMap = new Map([
+          ['Mittens', 2,],
+          ['Marmalade', 5,],
+        ],);
         await writeAttemptMap({
           attemptsPath,
-          attempts: {
-            Mittens: 2,
-            Marmalade: 5,
-          },
+          attempts,
         },);
-        expect(await readAttemptMap(attemptsPath,),).toStrictEqual({
-          Mittens: 2,
-          Marmalade: 5,
-        },);
+        expect(await readAttemptMap(attemptsPath,),).toStrictEqual(attempts,);
         expect(await readdir(scratch.path,),).toStrictEqual(['attempts.json',],);
       },
     },),

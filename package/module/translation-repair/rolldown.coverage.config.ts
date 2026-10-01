@@ -31,7 +31,7 @@ import { nodeEntries, } from './src/build-entries.ts';
  ```
  */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
-  input: nodeEntries,
+  input: Object.fromEntries(nodeEntries,),
   outputOverrides: {
     sourcemap: true,
     minify: false,

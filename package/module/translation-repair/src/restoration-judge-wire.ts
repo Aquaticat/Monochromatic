@@ -353,9 +353,10 @@ export function resolveRestorationJudgment(
   const findings: string[] = [];
 
   /**
-   Resolved verdicts keyed by seed id; first occurrence wins.
+   Resolved verdicts keyed by seed id; first occurrence wins. A map until
+   handed back, as every record filled by a key is (ledger B77).
    */
-  const verdicts: Record<string, RestorationVerdict> = {};
+  const verdicts = new Map<string, RestorationVerdict>();
   for (const judgment of wire.judgments) {
     /**
      Seed id referenced by this judgment's one-based number.
@@ -365,7 +366,7 @@ export function resolveRestorationJudgment(
       findings.push(`judge-reference-out-of-range (${judgment.reference})`,);
       continue;
     }
-    if (verdicts[seedId] !== undefined) {
+    if (verdicts.has(seedId,)) {
       findings.push(`duplicate-judgment (${judgment.reference})`,);
       continue;
     }
@@ -373,15 +374,18 @@ export function resolveRestorationJudgment(
       findings.push(`unknown-restoration-verdict (${judgment.verdict})`,);
       continue;
     }
-    verdicts[seedId] = judgment.verdict;
+    verdicts.set(
+      seedId,
+      judgment.verdict,
+    );
   }
   for (const [index, seedId,] of seedIds.entries()) {
-    if (verdicts[seedId] === undefined)
+    if (!verdicts.has(seedId,))
       findings.push(`missing-judgment (${index + 1})`,);
   }
 
   return {
-    verdicts,
+    verdicts: Object.fromEntries(verdicts,),
     findings,
   };
 }

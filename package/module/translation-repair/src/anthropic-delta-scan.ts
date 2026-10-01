@@ -78,12 +78,25 @@ type DeltaRouting = StreamChannel | typeof UNREAD;
  call's arguments, so those fragments are the content a consumer is waiting
  for. Routing them to `reasoning` would leave every schema'd call looking
  like a model that thought at length and answered nothing.
+ 
+ A MAP, since the key is the type the provider's stream names: a plain object
+ answered a delta typed `constructor` or `__proto__` with what every object
+ inherits, and filed its text under that as a channel (ledger B77).
  */
-const DELTA_CHANNELS: Readonly<Record<string, StreamChannel>> = {
-  text_delta: 'content',
-  thinking_delta: 'reasoning',
-  input_json_delta: 'content',
-};
+const DELTA_CHANNELS: ReadonlyMap<string, StreamChannel> = new Map([
+  [
+    'text_delta',
+    'content',
+  ],
+  [
+    'thinking_delta',
+    'reasoning',
+  ],
+  [
+    'input_json_delta',
+    'content',
+  ],
+],);
 
 /**
  Delta types carrying the answer itself, which no enclosing block may demote
@@ -119,13 +132,23 @@ const ANSWER_DELTAS: ReadonlySet<string> = new Set(['input_json_delta',],);
  
  SEPARATE FROM {@link DELTA_CHANNELS} because the two are genuinely
  independent: `text_delta` and `input_json_delta` share a channel and use
- different field names, so one record cannot express both.
+ different field names, so one table cannot express both. A map for the
+ reason {@link DELTA_CHANNELS} gives.
  */
-const DELTA_TEXT_FIELDS: Readonly<Record<string, string>> = {
-  text_delta: 'text',
-  thinking_delta: 'thinking',
-  input_json_delta: 'partial_json',
-};
+const DELTA_TEXT_FIELDS: ReadonlyMap<string, string> = new Map([
+  [
+    'text_delta',
+    'text',
+  ],
+  [
+    'thinking_delta',
+    'thinking',
+  ],
+  [
+    'input_json_delta',
+    'partial_json',
+  ],
+],);
 
 /**
  Reads one string field off a parsed object, ignoring anything else.
@@ -245,7 +268,7 @@ function channelFor(
 ): DeltaRouting {
   if ((blockType === THINKING_BLOCK) && (!ANSWER_DELTAS.has(deltaType,)))
     return 'reasoning';
-  return DELTA_CHANNELS[deltaType] ?? UNREAD;
+  return DELTA_CHANNELS.get(deltaType,) ?? UNREAD;
 }
 
 /**
@@ -424,7 +447,7 @@ export function scanAnthropicDeltas(): DeltaScanner {
      */
     const text = stringField({
       fields: delta,
-      name: DELTA_TEXT_FIELDS[deltaType] ?? '',
+      name: DELTA_TEXT_FIELDS.get(deltaType,) ?? '',
     },);
     if (text === '')
       return [];

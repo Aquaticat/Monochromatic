@@ -208,9 +208,10 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
   const rows: WidthRow[] = [];
 
   /**
-   Slices that carried no work, counted by the wall they hit.
+   Slices that carried no work, counted by the wall they hit; a map until
+   handed to the report, as every record filled by a key is (ledger B77).
    */
-  const skipped: Record<string, number> = {};
+  const skipped = new Map<string, number>();
 
   /**
    Pipeline commit these rows were produced by, read BEFORE the draw so the
@@ -232,7 +233,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
   async function publish(): Promise<string> {
     return await writeWidthReport({
       rows,
-      skipped,
+      skipped: Object.fromEntries(skipped,),
       headSha,
       narrowEditorIds,
       wideEditorIds,
@@ -255,7 +256,10 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
     },);
 
     if (outcome.kind === 'skipped') {
-      skipped[outcome.refusal] = (skipped[outcome.refusal] ?? 0) + 1;
+      skipped.set(
+        outcome.refusal,
+        (skipped.get(outcome.refusal,) ?? 0) + 1,
+      );
       console.log(
         `WIDTH ${outcome.entryId} slice ${String(outcome.sliceIndex,)}: ${outcome.refusal}`,
       );

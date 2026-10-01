@@ -149,15 +149,31 @@ export type CrosscheckCensus = {
 /**
  Adjudication statuses that carry a verdict a judge can be asked to confirm.
  
- A `Record` rather than a chain, so adding a status is a data edit and an
+ A table rather than a chain, so adding a status is a data edit and an
  UNKNOWN status is visibly absent rather than silently swept into a default.
+ A map rather than a plain object, since the status is the artifact's text:
+ a plain object answered a status spelled `constructor` or `__proto__` with
+ what every object inherits, and filed the claim under that as an arm
+ (ledger B77).
  */
-const ARM_OF_STATUS: Readonly<Record<string, CrosscheckArm>> = {
-  'accepted': 'accepted',
-  'rejected': 'control',
-  'source-defect': 'control',
-  'needs-human': 'undecided',
-} as const;
+const ARM_OF_STATUS: ReadonlyMap<string, CrosscheckArm> = new Map([
+  [
+    'accepted',
+    'accepted',
+  ],
+  [
+    'rejected',
+    'control',
+  ],
+  [
+    'source-defect',
+    'control',
+  ],
+  [
+    'needs-human',
+    'undecided',
+  ],
+],);
 
 /**
  Places one claim in an arm by the verdict its issue carries.
@@ -177,7 +193,7 @@ const ARM_OF_STATUS: Readonly<Record<string, CrosscheckArm>> = {
  ```
  */
 function armOf({ status, }: { readonly status: string; },): CrosscheckArm {
-  return ARM_OF_STATUS[status] ?? 'undecided';
+  return ARM_OF_STATUS.get(status,) ?? 'undecided';
 }
 
 /**
@@ -366,13 +382,17 @@ export function statusBreakdown(
   { claims, }: { readonly claims: readonly { readonly status: string; }[]; },
 ): string {
   /**
-   Count per status, in the order first met.
+   Count per status, in the order first met; a map, since the statuses are
+   the artifact's text (ledger B77).
    */
-  const byStatus: Record<string, number> = {};
-  for (const { status, } of claims)
-    byStatus[status] = (byStatus[status] ?? 0) + 1;
-  return Object
-    .entries(byStatus,)
+  const byStatus = new Map<string, number>();
+  for (const { status, } of claims) {
+    byStatus.set(
+      status,
+      (byStatus.get(status,) ?? 0) + 1,
+    );
+  }
+  return [...byStatus,]
     .map(function toPair([status, count,],): string {
       return `${status}=${String(count,)}`;
     },)

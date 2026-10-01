@@ -18,6 +18,12 @@ import { writeFileAtomic, } from './atomic-write.ts';
 // read silently, a file that never parses makes every run order as if no entry
 // had ever failed. The write is atomic, so an interrupted run can no longer
 // leave the truncated file that made the reset necessary.
+//
+// A MAP, NOT A PLAIN OBJECT (ledger B77). The counts are keyed by entry ids,
+// the corpus's own directory names, and a plain object answered an id spelled
+// `constructor` with the inherited function and took a count set for
+// `__proto__` as a new prototype, dropping it. The file keeps the plain JSON
+// object it always held.
 
 /**
  Logger root for the attempt store.
@@ -29,10 +35,10 @@ const l = contextRoot({ tag: 'translation-repair', },);
  
  @example
  ```ts
- const attempts: AttemptMap = { Kitten: 2, };
+ const attempts: AttemptMap = new Map([['Kitten', 2,],],);
  ```
  */
-export type AttemptMap = Record<string, number>;
+export type AttemptMap = Map<string, number>;
 
 /**
  Reads the persisted attempt map, tolerating a missing or malformed file so a
@@ -68,10 +74,10 @@ export async function readAttemptMap(attemptsPath: string,): Promise<AttemptMap>
     ),);
     if (!isJsonRecord(parsed,)) {
       rl.warn('attempts file holds no object; attempt counts start over, so the ordering forgets which entries kept failing',);
-      return {};
+      return new Map();
     }
 
-    return Object.fromEntries(
+    return new Map(
       Object.entries(parsed,)
         .map(function toCount(
           [
@@ -102,10 +108,10 @@ export async function readAttemptMap(attemptsPath: string,): Promise<AttemptMap>
     // Missing (ENOENT) is a first run and says nothing; malformed (SyntaxError)
     // resets to empty and says so; any other read fault is real and surfaces.
     if (isMissingPathError({ error, },))
-      return {};
+      return new Map();
     if (error instanceof SyntaxError) {
       rl.warn(`attempts file does not parse (${error.name}); attempt counts start over, so the ordering forgets which entries kept failing`,);
-      return {};
+      return new Map();
     }
     throw error;
   }
@@ -130,11 +136,11 @@ export function attemptsOf(
     attempts,
     id,
   }: {
-    readonly attempts: Readonly<AttemptMap>;
+    readonly attempts: ReadonlyMap<string, number>;
     readonly id: string;
   },
 ): number {
-  return attempts[id] ?? 0;
+  return attempts.get(id,) ?? 0;
 }
 
 /**
@@ -160,10 +166,13 @@ export function countAttempt(
     readonly id: string;
   },
 ): void {
-  attempts[id] = attemptsOf({
-    attempts,
+  attempts.set(
     id,
-  },) + 1;
+    attemptsOf({
+      attempts,
+      id,
+    },) + 1,
+  );
 }
 
 /**
@@ -184,13 +193,13 @@ export async function writeAttemptMap(
     attempts,
   }: {
     readonly attemptsPath: string;
-    readonly attempts: Readonly<AttemptMap>;
+    readonly attempts: ReadonlyMap<string, number>;
   },
 ): Promise<void> {
   await writeFileAtomic({
     path: attemptsPath,
     text: `${JSON.stringify(
-      attempts,
+      Object.fromEntries(attempts,),
       undefined,
       2,
     )}\n`,

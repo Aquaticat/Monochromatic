@@ -25,10 +25,10 @@ await describe({
       name: 'NAMES EVERY RUNNER\'S SOURCE AS THE CENSUS NAMES SOURCES, without the leading ./, and leaves the library index out',
       fn: async () => {
         const runners = runnerEntrySources();
-        expect(Object.values(nodeEntries,).every((path,) => path.startsWith('./src/',)),).toBe(true,);
+        expect([...nodeEntries.values(),].every((path,) => path.startsWith('./src/',)),).toBe(true,);
         expect(runners.has('src/index.ts',),).toBe(false,);
         expect([...runners,].toSorted(),).toEqual(
-          Object.entries(nodeEntries,)
+          [...nodeEntries,]
             .filter(([name,],) => name !== 'index')
             .map(([, path,],) => path.slice('./'.length,))
             .toSorted(),

@@ -45,7 +45,7 @@ export const CANADIAN_SPELLINGS: ReadonlyMap<string, string> = new Map([
       ];
     },);
   },),
-  ...Object.entries(CANADIAN_PAIRS,),
+  ...CANADIAN_PAIRS,
 ],);
 
 /**

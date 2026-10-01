@@ -625,7 +625,7 @@ await describe({
         /**
          Runner entry files, as the scan names paths.
          */
-        const runners = Object.entries(nodeEntries,)
+        const runners = [...nodeEntries,]
           .filter(function isRunner([name,],): boolean {
             return name !== 'index';
           },)

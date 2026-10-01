@@ -132,23 +132,23 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
           === 'accepted';
       },);
       /**
-       Accepted issues counted by what became of their repair, so a probe
-       shows whether repair provenance is actually recorded rather than only
-       whether issues were found. Sorted so two probe lines compare directly.
+       Accepted issues counted per repair disposition; a map, as every record
+       filled by a key is (ledger B77).
        */
-      const dispositions = Object.entries(
-        accepted.reduce(
-          function tally(
-            counts: Record<string, number>,
-            record,
-          ) {
-            counts[record.repairDisposition] = (counts[record.repairDisposition] ?? 0)
-              + 1;
-            return counts;
-          },
-          {},
-        ),
-      )
+      const counts = new Map<string, number>();
+      for (const record of accepted) {
+        counts.set(
+          record.repairDisposition,
+          (counts.get(record.repairDisposition,) ?? 0) + 1,
+        );
+      }
+
+      /**
+       Those counts as the PROBE line prints them, so a probe shows whether
+       repair provenance is actually recorded rather than only whether issues
+       were found. Sorted so two probe lines compare directly.
+       */
+      const dispositions = [...counts,]
         .toSorted(function byName(
           left,
           right,

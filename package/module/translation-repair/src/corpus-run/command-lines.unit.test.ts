@@ -432,7 +432,7 @@ await describe({
       name: 'DECLARES every runner the build makes and nothing else, so no runner reads a line undeclared',
       fn: async () => {
         expect(Object.keys(COMMAND_LINES,).toSorted(),).toEqual(
-          Object.keys(nodeEntries,)
+          [...nodeEntries.keys(),]
             .filter(function isRunner(name,): boolean {
               return name !== 'index';
             },)

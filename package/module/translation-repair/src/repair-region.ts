@@ -103,18 +103,25 @@ export function collectRepairRegions(
   },
 ): readonly RepairRegion[] {
   /**
-   Envelopes by identity, so attribution stays linear in the operation count.
+   Envelopes by identity, so attribution stays linear in the operation count;
+   a map, as every table filled by a key is (ledger B77).
    */
-  const byId: Record<string, EditableEnvelope> = {};
-  for (const envelope of envelopes)
-    byId[envelope.envelopeId] = envelope;
+  const byId: ReadonlyMap<string, EditableEnvelope> = new Map(envelopes.map(function keyed(envelope,): readonly [
+    string,
+    EditableEnvelope,
+  ] {
+    return [
+      envelope.envelopeId,
+      envelope,
+    ];
+  },),);
 
   return applied.map(function toRegion(operation,): RepairRegion {
     /**
      Envelope this operation targets, present because the apply gate rejects
      every operation naming an unknown envelope.
      */
-    const envelope = nonNullishOrThrow(byId[operation.envelopeId],);
+    const envelope = nonNullishOrThrow(byId.get(operation.envelopeId,),);
 
     return {
       envelopeId: envelope.envelopeId,

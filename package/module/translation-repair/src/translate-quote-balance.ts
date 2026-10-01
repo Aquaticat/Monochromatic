@@ -24,22 +24,42 @@ import { withoutHtmlComments, } from './translate-address-drop.ts';
 // neither, and any other shape is left unread.
 
 /**
- Closing mark of each quotation pair, keyed by its opening mark.
+ Closing mark of each quotation pair, keyed by its opening mark. A map, as
+ every table keyed by text is (ledger B77), though a key here is one unit and
+ no name an object inherits is.
  */
-const CLOSER_OF: Readonly<Record<string, string>> = {
-  '“': '”',
-  '「': '」',
-  '『': '』',
-};
+const CLOSER_OF: ReadonlyMap<string, string> = new Map([
+  [
+    '“',
+    '”',
+  ],
+  [
+    '「',
+    '」',
+  ],
+  [
+    '『',
+    '』',
+  ],
+],);
 
 /**
  Opening mark of each quotation pair, keyed by its closing mark.
  */
-const OPENER_OF: Readonly<Record<string, string>> = {
-  '”': '“',
-  '」': '「',
-  '』': '『',
-};
+const OPENER_OF: ReadonlyMap<string, string> = new Map([
+  [
+    '”',
+    '“',
+  ],
+  [
+    '」',
+    '「',
+  ],
+  [
+    '』',
+    '『',
+  ],
+],);
 
 /**
  Straight double quote the scan reads as a curly one by its shape.
@@ -172,7 +192,7 @@ function strayClosers({ text, }: { readonly text: string; },): readonly string[]
         index,
       },)
       : text.charAt(index,);
-    if (character in CLOSER_OF) {
+    if (CLOSER_OF.has(character,)) {
       depth.set(
         character,
         (depth.get(character,) ?? 0) + 1,
@@ -182,7 +202,7 @@ function strayClosers({ text, }: { readonly text: string; },): readonly string[]
     /**
      Opening mark this character would close.
      */
-    const opener = OPENER_OF[character];
+    const opener = OPENER_OF.get(character,);
     if (opener === undefined)
       continue;
     /**

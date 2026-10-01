@@ -74,7 +74,7 @@ const RATE_UNIT_TOKENS = 1_000_000;
  the roster does not silently drop a seat into the unpriced bucket, and so a
  reader comparing seats can see what an unseated model would have cost.
  */
-const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
+const HYPER_CREDIT_RATES = {
   'deepseek-v4.1-flash': {
     input: 6,
     output: 24,
@@ -280,7 +280,7 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
     cacheCreate: 0,
     cacheHit: 5,
   },
-};
+} satisfies Readonly<Record<string, CreditRates>>;
 
 /**
  Rates keyed for lookup by a model id that came off a log line.
@@ -289,7 +289,9 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
  about its own field table: the key arrives from a run log, and an object
  lookup would answer `__proto__` and `constructor` with something that is not
  a rate. The literal stays an object because it is written here and reads
- better as one.
+ better as one, checked rather than typed as a record of strings so its type
+ keeps the ids and a lookup on it by any other text does not compile
+ (ledger B77).
  */
 const RATES: ReadonlyMap<string, CreditRates> = new Map(Object.entries(HYPER_CREDIT_RATES,),);
 

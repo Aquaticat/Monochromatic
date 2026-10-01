@@ -14,6 +14,6 @@ import { nodeEntries, } from './src/build-entries.ts';
  // Consumed by the ordinary package build task.
  ```
  */
-const config: ReturnType<typeof nodeConfig> = nodeConfig({ input: nodeEntries, },);
+const config: ReturnType<typeof nodeConfig> = nodeConfig({ input: Object.fromEntries(nodeEntries,), },);
 
 export default config;

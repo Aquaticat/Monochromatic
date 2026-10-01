@@ -23,17 +23,34 @@
 /**
  Media type per file extension, for the extensions the corpus uses.
  
- TWO ENTRIES BECAUSE THE CORPUS HAS TWO. Of 380 references, 376 are `.webp`
- and 4 are `.jpg`. An extension not listed is refused rather than guessed at,
- since sending a picture under the wrong media type asks a model to decode
- something it was not given.
+ ONE ENTRY PER EXTENSION THE CORPUS'S PICTURES CARRY. Counted over the data
+ repository at the pin on 2026-10-01, its image files are 210 `.webp`, 91
+ `.jpg`, 6 `.png` and 1 `.jpeg`. An extension not listed is refused rather
+ than guessed at, since sending a picture under the wrong media type asks a
+ model to decode something it was not given.
+ 
+ A MAP, since the key is read off an asset's file name: a plain object
+ answered `tabby.constructor` with the inherited function and sent it as the
+ media type (ledger B77).
  */
-const MEDIA_TYPES: Readonly<Record<string, string>> = {
-  webp: 'image/webp',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-};
+const MEDIA_TYPES: ReadonlyMap<string, string> = new Map([
+  [
+    'webp',
+    'image/webp',
+  ],
+  [
+    'jpg',
+    'image/jpeg',
+  ],
+  [
+    'jpeg',
+    'image/jpeg',
+  ],
+  [
+    'png',
+    'image/png',
+  ],
+],);
 
 // THE OLD CEILING WAS DERIVED AND IT MEASURED THE WRONG THING. It took half a
 // model's context, converted tokens to characters at three each, and compared
@@ -141,7 +158,7 @@ export function encodeImageAsset(
   /**
    Media type this file name declares.
    */
-  const mediaType = MEDIA_TYPES[extensionOf({ assetName, },)];
+  const mediaType = MEDIA_TYPES.get(extensionOf({ assetName, },),);
   if (mediaType === undefined) {
     return {
       kind: 'refused',

@@ -113,7 +113,7 @@ type SeedOutcome =
   | {
     readonly kind: 'seeded';
     readonly entry: BenchmarkEntry;
-    readonly band: string;
+    readonly band: ReturnType<typeof bandOf>;
   }
   | {
     readonly kind: 'skipped';
@@ -257,9 +257,10 @@ async function runRecallBenchmark({ line, }: { readonly line: CommandLineOf<'rec
   const chosen: BenchmarkEntry[] = [];
 
   /**
-   How many entries each band has contributed so far.
+   How many entries each band has contributed so far, keyed by the band names
+   the type holds, so every band has its count (ledger B77).
    */
-  const perBand: Record<string, number> = {
+  const perBand: Record<ReturnType<typeof bandOf>, number> = {
     small: 0,
     medium: 0,
     large: 0,
@@ -278,10 +279,10 @@ async function runRecallBenchmark({ line, }: { readonly line: CommandLineOf<'rec
     },);
     if (outcome.kind === 'skipped')
       continue;
-    if ((perBand[outcome.band] ?? 0) >= ENTRIES_PER_BAND)
+    if (perBand[outcome.band] >= ENTRIES_PER_BAND)
       continue;
     chosen.push(outcome.entry,);
-    perBand[outcome.band] = (perBand[outcome.band] ?? 0) + 1;
+    perBand[outcome.band] += 1;
   }
 
   /**

@@ -280,13 +280,17 @@ export function computeRepairScorecard(
   },);
 
   /**
-   Runs per completion status.
+   Runs per completion status; a map until handed back, as every record
+   filled by a key is (ledger B77).
    */
-  const statusCounts: Record<string, number> = {};
+  const statusCounts = new Map<string, number>();
   for (const record of dispatched) {
     if (record.status === undefined)
       continue;
-    statusCounts[record.status] = (statusCounts[record.status] ?? 0) + 1;
+    statusCounts.set(
+      record.status,
+      (statusCounts.get(record.status,) ?? 0) + 1,
+    );
   }
 
   return {
@@ -311,7 +315,7 @@ export function computeRepairScorecard(
     lexicalUniverse: grades.length,
     lexicalRestoredSeeds: restored.length,
     lexicalRepairRate: grades.length === 0 ? 0 : restored.length / grades.length,
-    statusCounts,
+    statusCounts: Object.fromEntries(statusCounts,),
   };
 }
 

@@ -146,9 +146,22 @@ function parseClaimAttributions(
 }
 
 /**
- Admissibility each declared count is the tally of.
+ Counts a region tally declares, each the tally of one admissibility.
  */
-const ADMISSIBILITY_FIELDS: Readonly<Record<string, ClaimAdmissibility>> = {
+const COUNTED_FIELDS = [
+  'corroborated',
+  'removalCorroborated',
+  'contradicted',
+  'unanchored',
+  'preExisting',
+] as const;
+
+/**
+ Admissibility each declared count is the tally of, keyed by the count's own
+ name, which the type holds: a lookup by any other text does not compile, and
+ every name has its entry (ledger B77).
+ */
+const ADMISSIBILITY_FIELDS: Readonly<Record<(typeof COUNTED_FIELDS)[number], ClaimAdmissibility>> = {
   corroborated: 'corroborated',
   removalCorroborated: 'removal-corroborated',
   contradicted: 'contradicted',
@@ -244,7 +257,12 @@ export function parseRegionTally(
   // majority rule reads the claims, so a disagreement makes a region report one
   // corroboration and flag nothing, or flag a majority while reporting none.
   // Both look like ordinary output.
-  for (const [field, count,] of Object.entries(declared,)) {
+  for (const field of COUNTED_FIELDS) {
+    /**
+     The count the artifact declares for this admissibility.
+     */
+    const count = declared[field];
+
     /**
      Claims actually carrying this admissibility.
      */

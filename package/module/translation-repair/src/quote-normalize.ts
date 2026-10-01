@@ -18,6 +18,11 @@ import { proseMask, } from './typography-prose-mask.ts';
 // only, since a rendering that kept 「」 and one that wrote English quotes are
 // different renderings, one of them wrong. A comparison of a quote against its
 // source takes the first; a comparison of two renderings takes the second.
+//
+// MAPS, NOT PLAIN OBJECTS (ledger B77). Every key here is one UTF-16 unit, and
+// no name an object inherits is one unit long, so no lookup could reach one;
+// the tables are maps all the same, so every table the package keys by text
+// has one shape and `text-keyed-tables.unit.test.ts` needs no exceptions.
 
 /**
  Punctuation variants mapped onto canonical ASCII, one UTF-16 unit each.
@@ -26,29 +31,68 @@ import { proseMask, } from './typography-prose-mask.ts';
  (live: a model closing 「...。」 as ...。”), and every bracket here is a
  single UTF-16 unit, so the length guarantee holds.
  */
-const PUNCTUATION_CANON: Readonly<Record<string, string>> = {
-  '‘': "'",
-  '’': "'",
-  '“': '"',
-  '”': '"',
-  '「': '"',
-  '」': '"',
-  '『': "'",
-  '』': "'",
-  ' ': ' ',
-};
+const PUNCTUATION_CANON: ReadonlyMap<string, string> = new Map([
+  [
+    '‘',
+    "'",
+  ],
+  [
+    '’',
+    "'",
+  ],
+  [
+    '“',
+    '"',
+  ],
+  [
+    '”',
+    '"',
+  ],
+  [
+    '「',
+    '"',
+  ],
+  [
+    '」',
+    '"',
+  ],
+  [
+    '『',
+    "'",
+  ],
+  [
+    '』',
+    "'",
+  ],
+  [
+    ' ',
+    ' ',
+  ],
+],);
 
 /**
  Curly quotation marks mapped onto their straight forms, one UTF-16 unit
  each: the typography fold. The corner brackets stay as they are, since
  keeping them is a rendering choice rather than a typography one.
  */
-const TYPOGRAPHY_CANON: Readonly<Record<string, string>> = {
-  '‘': '\'',
-  '’': '\'',
-  '“': '"',
-  '”': '"',
-};
+const TYPOGRAPHY_CANON: ReadonlyMap<string, string> = new Map([
+  [
+    '‘',
+    '\'',
+  ],
+  [
+    '’',
+    '\'',
+  ],
+  [
+    '“',
+    '"',
+  ],
+  [
+    '”',
+    '"',
+  ],
+],);
 
 /**
  Line-break units a model returns as a plain space when it quotes across a
@@ -58,10 +102,16 @@ const TYPOGRAPHY_CANON: Readonly<Record<string, string>> = {
  behaviour change awaiting a decision, and only the diagnostic path may
  consult this map today.
  */
-const LINE_BREAK_CANON: Readonly<Record<string, string>> = {
-  '\n': ' ',
-  '\r': ' ',
-};
+const LINE_BREAK_CANON: ReadonlyMap<string, string> = new Map([
+  [
+    '\n',
+    ' ',
+  ],
+  [
+    '\r',
+    ' ',
+  ],
+],);
 
 /**
  Rewrites each UTF-16 unit through one canonicalization map.
@@ -85,7 +135,7 @@ function canonicalize(
     map,
   }: {
     readonly text: string;
-    readonly map: Readonly<Record<string, string>>;
+    readonly map: ReadonlyMap<string, string>;
   },
 ): string {
   /**
@@ -101,7 +151,7 @@ function canonicalize(
      Unit at this position.
      */
     const unit = text.charAt(index,);
-    units.push(map[unit] ?? unit,);
+    units.push(map.get(unit,) ?? unit,);
   }
   return units.join('',);
 }
@@ -239,7 +289,7 @@ function isLineBreakAt(
     readonly index: number;
   },
 ): boolean {
-  return LINE_BREAK_CANON[text.charAt(index,)] !== undefined;
+  return LINE_BREAK_CANON.has(text.charAt(index,),);
 }
 
 /**
@@ -289,7 +339,7 @@ export function collapseSoftLineBreaks({ text, }: { readonly text: string; },): 
     /**
      Whether this break stands alone between non-break neighbours.
      */
-    const sole = (LINE_BREAK_CANON[unit] !== undefined)
+    const sole = LINE_BREAK_CANON.has(unit,)
       && (!isLineBreakAt({
         text,
         index: index - 1,
