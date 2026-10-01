@@ -1,4 +1,8 @@
-import { readSliceSkeleton, } from './translate-skeleton.ts';
+import { wordForCount, } from './count-word.ts';
+import {
+  type BlockShape,
+  readSliceSkeleton,
+} from './translate-skeleton.ts';
 import {
   describeBlocks,
   sameShape,
@@ -21,6 +25,33 @@ import {
  Finding prefix a revision withheld on shape is recorded under.
  */
 export const REVISION_SHAPE_REFUSED = 'archive-revision-refused';
+
+/**
+ A block sequence as a refusal says it: the count, then each block's shape,
+ as the translate lanes' block floor says it (`translate-validate-blocks.ts`).
+ It once said the shapes alone, "the block is paragraph" (ledger T8,
+ eighteenth batch).
+
+ @param blocks - blocks in document order
+
+ @returns Count and shapes, or a word for none
+
+ @example
+ ```ts
+ countedBlocks({ blocks: [{ kind: 'paragraph', detail: '', },], },); // '1 block (paragraph)'
+ ```
+ */
+function countedBlocks({ blocks, }: { readonly blocks: readonly BlockShape[]; },): string {
+  if (blocks.length === 0)
+    return 'nothing';
+  return `${String(blocks.length,)} ${
+    wordForCount({
+      count: blocks.length,
+      one: 'block',
+      many: 'blocks',
+    },)
+  } (${describeBlocks({ blocks, },)})`;
+}
 
 /**
  Why a revision cannot replace the block it revises, when its shape is not
@@ -76,7 +107,7 @@ export function revisionShapeFindings(
   if (revision.kind !== 'read')
     return [
       `${REVISION_SHAPE_REFUSED} (${modelId}): the revision does not parse (${revision.detail}); the block is ${
-        describeBlocks({ blocks: blockShapes, },)
+        countedBlocks({ blocks: blockShapes, },)
       }`,
     ];
   /**
@@ -91,9 +122,9 @@ export function revisionShapeFindings(
     return [];
   return [
     `${REVISION_SHAPE_REFUSED} (${modelId}): the block is ${
-      describeBlocks({ blocks: blockShapes, },)
+      countedBlocks({ blocks: blockShapes, },)
     } and the revision is ${
-      describeBlocks({ blocks: revisionShapes, },)
+      countedBlocks({ blocks: revisionShapes, },)
     }; a revision keeps the block's own shape`,
   ];
 }
