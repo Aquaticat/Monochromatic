@@ -7,6 +7,7 @@ import type { SliceReplacement, } from '../splice-slices.ts';
 import { withoutHtmlComments, } from '../translate-address-drop.ts';
 import {
   pageTextBySlice,
+  pageTextOf,
   slicesInOrder,
   withRewrittenText,
 } from './assembly-page-text.ts';
@@ -125,7 +126,10 @@ function renderedHeadings(
     /**
      Page text of this slice, which the page text holds for every slice.
      */
-    const text = nonNullishOrThrow(pageText.get(sliceIndex,),);
+    const text = pageTextOf({
+      pageText,
+      sliceIndex,
+    },);
     /**
      Titles the page heads here.
      */
@@ -282,7 +286,10 @@ export function unifyTitleReferences(
        Page text of this slice as it stands after earlier rewrites.
        */
       const text = rewritten.get(sliceIndex,)
-        ?? nonNullishOrThrow(pageText.get(sliceIndex,),);
+        ?? pageTextOf({
+          pageText,
+          sliceIndex,
+        },);
       /**
        Where this slice renders the title.
        */
