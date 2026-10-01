@@ -526,7 +526,13 @@ export async function selectEligible(
         String(entryIds.length,)
       } of ${
         String(census.total,)
-      } settled entries eligible, spanning ${
+      } settled ${
+        wordForCount({
+          count: census.total,
+          one: 'entry',
+          many: 'entries',
+        },)
+      } eligible, spanning ${
         String(pooledCount,)
       } pipeline ${
         wordForCount({

@@ -5,6 +5,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { BenchSeating, } from '../bench-seating.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { wordForCount, } from '../count-word.ts';
 import { hashContent, } from '../document-node.ts';
 import {
   isJsonArray,
@@ -296,8 +297,16 @@ export async function passPageTitles(
   const cached = cache.resumed
     .get(key,);
   if (cached !== undefined) {
-    l.info(`PAGE TITLES resumed: ${String(cached.titles
-      .length,)} of ${String(spans.length,)} repeated titles`,);
+    l.info(
+      `PAGE TITLES resumed: ${String(cached.titles
+        .length,)} of ${String(spans.length,)} repeated ${
+        wordForCount({
+          count: spans.length,
+          one: 'title',
+          many: 'titles',
+        },)
+      }`,
+    );
     return {
       lines: pageTitleLines({ titles: cached.titles, },),
       findings: cached.findings,

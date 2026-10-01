@@ -7,6 +7,7 @@ import {
   claimFilersOf,
   describeClaimFiling,
 } from './claim-filers.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   type ClaimAttribution,
   retainAttributions,
@@ -194,7 +195,13 @@ export async function runChunkCriticPhase(
     l.warn(
       `chunk ${String(sliceIndex,)}: ${
         String(critic.nonTranslationVotes,)
-      } non-translation votes dismissed: ${screening.findings
+      } non-translation ${
+        wordForCount({
+          count: critic.nonTranslationVotes,
+          one: 'vote',
+          many: 'votes',
+        },)
+      } dismissed: ${screening.findings
         .join('; ',)}`,
     );
   }

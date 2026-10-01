@@ -326,7 +326,19 @@ export class EmptyPoolError extends Error {
           : [
             `All ${
               String(census.total,)
-            } settled entries were excluded by generation filtering.`,
+            } settled ${
+              wordForCount({
+                count: census.total,
+                one: 'entry',
+                many: 'entries',
+              },)
+            } ${
+              wordForCount({
+                count: census.total,
+                one: 'was',
+                many: 'were',
+              },)
+            } excluded by generation filtering.`,
             // Only a required commit excludes a placed entry. Without one,
             // selectEligible pools every placed entry and raises this only when
             // there is none, so a census holding entries always arrives with the

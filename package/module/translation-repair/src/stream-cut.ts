@@ -249,10 +249,34 @@ export function reportStreamProgress(
    */
   const sample = `stream ${label}: ${outcome}, elapsed ${String(progress.elapsedMs,)}ms, `
     + `firstByte ${String(progress.firstByteMs,)}ms, `
-    + `maxGap ${String(progress.maxGapMs,)}ms, ${String(progress.chars,)} raw chars, `
-    + `${String(unreadableFrames,)} unreadable frames, `
-    + `${String(generatedChars.content,)} content chars, `
-    + `${String(generatedChars.reasoning,)} reasoning chars${attribution}${excerpt}`;
+    + `maxGap ${String(progress.maxGapMs,)}ms, ${String(progress.chars,)} raw ${
+      wordForCount({
+        count: progress.chars,
+        one: 'char',
+        many: 'chars',
+      },)
+    }, `
+    + `${String(unreadableFrames,)} unreadable ${
+      wordForCount({
+        count: unreadableFrames,
+        one: 'frame',
+        many: 'frames',
+      },)
+    }, `
+    + `${String(generatedChars.content,)} content ${
+      wordForCount({
+        count: generatedChars.content,
+        one: 'char',
+        many: 'chars',
+      },)
+    }, `
+    + `${String(generatedChars.reasoning,)} reasoning ${
+      wordForCount({
+        count: generatedChars.reasoning,
+        one: 'char',
+        many: 'chars',
+      },)
+    }${attribution}${excerpt}`;
 
   /**
    Logger tagged with this report.

@@ -2297,11 +2297,26 @@ or says why one is left out.
 A division whose divisor the input can make zero is refused or guarded,
 never printed as a number.
 
+The same gap ran the other way when a writer changed:
+B109 made the stream line write "1 content char",
+and `cap-census-read.ts` found the content count by the text " content chars",
+so a one-character stream would have read as no completed stream;
+its fixtures copied the old wording and could not show it.
+
+A writer's wording change therefore checks every reader of that line first:
+search the package for the changed field's text,
+and give each reader the old and the new spelling,
+since run logs written before the change stay on disk.
+Reader fixtures are built by calling the writer,
+not by copying its template.
+
 What enforces it:
 `run-timing.unit.test.ts` holds a fixture line for each round shape and the completion line,
 and a case for each refusal.
-Nothing yet ties those fixtures to the writer's template,
-so a new shape in `stage-round.ts` or `reportStreamProgress` reaches the reader untested
+`cap-census.unit.test.ts` builds its stream lines through `reportStreamProgress`,
+so a change to that line's wording reaches the cap-census reader's cases;
+the run-timing fixtures still copy the writer's template,
+so a new shape in `stage-round.ts` or `reportStreamProgress` reaches that reader untested
 (ledger B82 records the follow-up).
 
 ## Pairing by position
@@ -2432,6 +2447,10 @@ and a test pinned one such line as correct;
 a finding the translating model reads told it "no line more than 1 times".
 The patch that chose the nouns left the verbs agreeing with them ("1 entry ... are"),
 and its calls put three files over the line cap (ledger B98).
+The scan B98 added read a noun only directly after its count,
+so 75 sites printing a count before a modifier and then a fixed plural ("1 cached slices") passed it,
+and that fix's own verbs and pronouns ("has",
+"its") again stayed plural until a reviewer read them (ledger B109).
 
 The rule:
 a noun after a count that can be one is chosen by `wordForCount`,
@@ -2444,11 +2463,15 @@ A test asserts a count line at one as well as at many.
 What enforces it:
 `src/count-nouns.unit.test.ts`,
 among the source scans,
-fails on a `String(...)` interpolation followed by a noun the package counts with `wordForCount` elsewhere,
-outside the sites it names with why;
-a verb,
-or a noun after an adjective,
-is reviewed by hand.
+fails on a `String(...)` interpolation followed,
+directly or after one or two modifier words,
+by a noun the package counts with `wordForCount` elsewhere,
+outside the sites it names with why.
+A verb or pronoun agreeing with a count,
+a noun after more than two modifiers,
+and a noun no `wordForCount` call counts yet ("frames" until B109)
+are reviewed by hand:
+read the whole printed sentence at a count of one.
 
 ## Modules without a test of their own
 

@@ -431,7 +431,15 @@ async function main({ line, }: { readonly line: CommandLineOf<'slice-cost-report
     ),
   },);
 
-  console.log(`${path}\n${String(rows.length,)} cost lines, ${String(dropped.length,)} dropped\n`,);
+  console.log(
+    `${path}\n${String(rows.length,)} cost ${
+      wordForCount({
+        count: rows.length,
+        one: 'line',
+        many: 'lines',
+      },)
+    }, ${String(dropped.length,)} dropped\n`,
+  );
   if (rows.length === 0) {
     console.log('NOTHING TO READ YET. A pass writes these as it goes, so an empty'
       + ' reading means the run has not finished a slice rather than that slices are free.',);

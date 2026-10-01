@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import spawn from 'nano-spawn';
 
+import { wordForCount, } from '../count-word.ts';
 import { contextRoot, } from '../log-context.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
@@ -195,7 +196,13 @@ async function versionSetting(
   const { commit: setAt, } = setting;
   auditLog.info(
     `${version.declaration}: set in ${citedHash({ hash: setAt.hash, },)}, `
-      + `${String(commits.length,)} pickaxe candidates`,
+      + `${String(commits.length,)} pickaxe ${
+        wordForCount({
+          count: commits.length,
+          one: 'candidate',
+          many: 'candidates',
+        },)
+      }`,
   );
   return setAt;
 }
@@ -371,7 +378,15 @@ async function auditCacheAccounts(
       text,
     },);
   },);
-  auditLog.info(`${String(files.length,)} source files under ${sources}, ${String(versions.length,)} cache versions`,);
+  auditLog.info(
+    `${String(files.length,)} source ${
+      wordForCount({
+        count: files.length,
+        one: 'file',
+        many: 'files',
+      },)
+    } under ${sources}, ${String(versions.length,)} cache versions`,
+  );
   if (versions.length === 0) {
     throw new StatedRefusalError({
       says: `no cache version is declared under ${sources}; run this from the package directory, as `

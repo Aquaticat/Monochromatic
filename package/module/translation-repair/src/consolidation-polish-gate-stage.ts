@@ -19,6 +19,7 @@ import {
   type PolishChoice,
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
+import { wordForCount, } from './count-word.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -246,7 +247,13 @@ export async function gateConsolidationPolish(
     findings: [
       ...((ballots.length < CONSOLIDATION_POLISH_GATE_QUORUM)
         ? [
-          `consolidation-polish-gate heard ${String(ballots.length,)} usable ballots, below ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
+          `consolidation-polish-gate heard ${String(ballots.length,)} usable ${
+            wordForCount({
+              count: ballots.length,
+              one: 'ballot',
+              many: 'ballots',
+            },)
+          }, below ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
         ]
         : []),
       // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).

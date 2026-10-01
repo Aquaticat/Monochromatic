@@ -16,12 +16,12 @@ import {
   reachableQuorum,
   shortBenchStageFinding,
 } from './stage-reachable-quorum.ts';
-import {
-  RECOVERY_NUDGES,
-  UNREADABLE_CAUSES,
-  type UnreadableCause,
-} from './recovery-nudge.ts';
+import type { UnreadableCause, } from './recovery-nudge.ts';
 import type { StageDecision, } from './stage-decision-call.ts';
+import {
+  runRecoveryRound,
+  type SharedRoundRequest,
+} from './stage-recovery-round.ts';
 import { runGatherRound, } from './stage-round.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -301,13 +301,15 @@ export async function gatherStageVoices<ValueT,>(
     const unreadableSeats = new Map<RosterModelId, UnreadableCause>();
 
     /**
-     Everything a round needs except who to ask and how many to wait for.
-     
-     Hoisted so the recovery round cannot drift from the quorum rounds: they
-     differ in exactly two fields, and writing the other ten twice
-     is how the two would eventually disagree about a deadline or a guard.
+     Everything a round needs except who to ask, how many to wait for and its
+     reserve.
+
+     Hoisted so the recovery round cannot drift from the quorum rounds: it
+     sends this unchanged apart from its nudge and its own logger tag, and
+     writing these fields twice is how the two would eventually disagree
+     about a deadline or a guard.
      */
-    const roundRequest = {
+    const roundRequest: SharedRoundRequest<ValueT> = {
       client,
       messages,
       signal,
@@ -355,7 +357,13 @@ export async function gatherStageVoices<ValueT,>(
         l.warn(
           `${stage}: retry round ${String(round,)} asking ${String(asking.length,)} of ${
             String(pending.length,)
-          } pending voices`,
+          } pending ${
+            wordForCount({
+              count: pending.length,
+              one: 'voice',
+              many: 'voices',
+            },)
+          }`,
         );
       }
 
@@ -443,97 +451,18 @@ export async function gatherStageVoices<ValueT,>(
       return unreadableSeats.has(modelId,);
     },);
 
-    // ONE RECOVERY ROUND, OUTSIDE THE QUORUM LOOP AND AFTER IT.
-    //
-    // The quorum loop stops the moment quorum stands, which is correct for what
-    // it is for and is why nothing it re-asks has ever been re-asked: measured
-    // over 109 rounds of a ten-model roster on 2026-08-25, the first fan-out
-    // met quorum every time, 1054 voices of 1090 were heard, 31 rounds lost at
-    // least one, and zero retry rounds ran.
-    //
-    // Thirteen of those 36 losses were the model ANSWERING in a shape nothing
-    // could read, spread over 7 distinct slices of 15 with at most 2 on any
-    // one, so no input reliably breaks a model. The other 23 were silence,
-    // which `doc/audit/where-a-round-spends-its-wall-clock.md` measures to be a
-    // model still thinking. Re-asking both would spend the expensive half to
-    // recover the cheap half, so only the answered half is re-asked here.
-    //
-    // ONE ROUND, NEVER A LADDER. A model that formats badly twice is telling us
-    // something about itself rather than about the weather, and the calibration
-    // is what answers that.
+    // ONE RECOVERY ROUND, OUTSIDE THE QUORUM LOOP AND AFTER IT, for the seats
+    // that answered and could not be read; `stage-recovery-round.ts` says why
+    // only those, and why once.
     if (unreadable.length > 0) {
       /**
-       The unreadable seats grouped by what happened to them, in
-       `UNREADABLE_CAUSES` order; a cause no seat has asks nobody.
+       Outcomes of re-asking each unreadable seat once, under its nudge.
        */
-      const byCause = UNREADABLE_CAUSES
-        .map(function seatsWith(cause,): {
-          readonly cause: UnreadableCause;
-          readonly modelIds: readonly RosterModelId[];
-        } {
-          return {
-            cause,
-            modelIds: unreadable.filter(function hasCause(modelId,): boolean {
-              return unreadableSeats.get(modelId,) === cause;
-            },),
-          };
-        },)
-        .filter(function asksSomeone(group,): boolean {
-          return group.modelIds
-            .length
-            > 0;
-        },);
-      l.warn(
-        `${stage}: recovery round for ${String(unreadable.length,)} unreadable answers (${
-          byCause
-            .map(function describe(group,): string {
-              return `${String(group.modelIds
-                .length,)} ${group.cause}`;
-            },)
-            .join(', ',)
-        })`,
-      );
-
-      /**
-       Second reading of the voices that finished but could not be read.
-
-       NEEDING NONE OF THEM IS THE BOUND. Quorum usually stands by now, and
-       where the quorum rounds ran out short the recovered voices still count
-       toward it; either way this round is entitled to no more than a
-       straggler window: `heardNeeded: 0` leaves
-       `runGatherRound` with nothing to wait for, which opens the grace window
-       at once and abandons whatever has not arrived when it closes. Asking
-       for all of them instead would let one re-ask that hangs hold the whole
-       gather for a full exchange deadline, which is six minutes in a run and
-       the opposite of what a recovery is for.
-
-       ONE ROUND PER WORDING, RUN TOGETHER (ledger P10): a round carries one
-       prompt, and each group's prompt names what happened to it; both open
-       their windows at once, so the pair costs one window, not two.
-
-       A voice that comes back promptly is still collected: the window
-       resolves as soon as every ask settles.
-       */
-      const recovered = (await Promise.all(byCause.map(async function recoverGroup(group,) {
-        return await runGatherRound<ValueT>({
-          ...roundRequest,
-          // A DIFFERENT PROMPT, OR THE ROUND BUYS NOTHING. `promptUniqueClient`
-          // serves a second call for the same model and prompt from its cache,
-          // schema mismatch included, so re-sending the same bytes came back
-          // with the same unreadable answer in 0 to 1 ms every time it was
-          // measured (five recovery rounds over two passes on
-          // 2026-09-02). The nudge tells the model what happened and makes the
-          // digest new.
-          messages: [
-            ...messages,
-            RECOVERY_NUDGES[group.cause],
-          ],
-          modelIds: group.modelIds,
-          heardNeeded: 0,
-        },);
-      },),))
-        .flat();
-
+      const recovered = await runRecoveryRound<ValueT>({
+        roundRequest,
+        unreadable,
+        causeOf: unreadableSeats,
+      },);
       for (const outcome of recovered) {
         if (outcome.voice
           .heard) {
@@ -545,21 +474,6 @@ export async function gatherStageVoices<ValueT,>(
           unreadableSeats.delete(outcome.modelId,);
         }
       }
-
-      /**
-       Re-asked voices that came back readable, counted on their own line so
-       the round's value can be read off a run log without pairing gather
-       lines by hand (the owner kept the round on 2026-09-03, and
-       this is what says whether it earns its call).
-       */
-      const recoveredHeard = recovered.filter(function heard(outcome,): boolean {
-        return outcome.voice
-          .heard;
-      },);
-      l.info(
-        `${stage}: recovery round heard ${String(recoveredHeard.length,)} of `
-          + `${String(unreadable.length,)} re-asked voices`,
-      );
     }
     return {
       collected,

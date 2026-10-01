@@ -1,4 +1,5 @@
 import { compareCodePoints, } from '../code-points.ts';
+import { wordForCount, } from '../count-word.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { MappedFunction, } from './coverage-lines.ts';
 import type { MappedStretch, } from './coverage-pieces.ts';
@@ -288,8 +289,17 @@ export function requirePlacedFunctions(
       return `${fn.bundle}:${String(fn.start,)} ${fn.name}`;
     },)
     .join(', ',);
+  /**
+   Which word names this many functions, for the refusal text.
+   */
+  const functionsWord = wordForCount({
+    count: misplaced.length,
+    one: 'function',
+    many: 'functions',
+  },);
   throw new StatedRefusalError({
-    says: `the census places ${String(misplaced.length,)} uncalled functions in no cold stretch of their own source `
+    says: `the census places ${String(misplaced.length,)} uncalled ${functionsWord} in no cold stretch of the `
+      + `source defining each `
       + `(${named}); an uncalled function is cold throughout, so the mapping is wrong and no report is written`,
   },);
 }

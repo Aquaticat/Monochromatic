@@ -19,6 +19,7 @@ import {
   type SectionPair,
 } from './pair-sections-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
+import { wordForCount, } from './count-word.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
@@ -364,7 +365,19 @@ export async function pairSectionsWithRoster(
   pl.info(
     `paired ${String(agreed.length,)} of ${String(sourceSections.length,)} original and ${
       String(targetSections.length,)
-    } translation sections, from ${String(pairings.length,)} usable voices of ${String(heard,)} heard`,
+    } translation ${
+      wordForCount({
+        count: targetSections.length,
+        one: 'section',
+        many: 'sections',
+      },)
+    }, from ${String(pairings.length,)} usable ${
+      wordForCount({
+        count: pairings.length,
+        one: 'voice',
+        many: 'voices',
+      },)
+    } of ${String(heard,)} heard`,
   );
   return {
     pairs: agreed,

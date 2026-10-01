@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 //region Sample grading model
 // The milestone-three headline gate is precision of accepted issues on a
 // human-graded sample, because a judge ensemble drawn from the same seven
@@ -359,7 +361,13 @@ export class UnmeasurableRepairError extends Error {
     super(
       `refusing a final draw: ${String(unrecorded,)} of ${
         String(sampled,)
-      } sampled issues carry no recorded repair, so repair quality cannot be `
+      } sampled ${
+        wordForCount({
+          count: sampled,
+          one: 'issue carries',
+          many: 'issues carry',
+        },)
+      } no recorded repair, so repair quality cannot be `
         + `measured over this sample. Those artifacts predate repair recording; `
         + `move them aside and rerun the pass into a fresh artifacts directory.`,
     );

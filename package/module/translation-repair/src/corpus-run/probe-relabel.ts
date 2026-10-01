@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
+import { wordForCount, } from '../count-word.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import {
   type PriorIssueDisclosure,
@@ -233,7 +234,13 @@ async function main(): Promise<void> {
     pin: RUN_CORPUS_PIN,
   },);
   console.log(
-    `RELABEL rebuilt ${String(cases.length,)} distinct damaged regions`,
+    `RELABEL rebuilt ${String(cases.length,)} distinct damaged ${
+      wordForCount({
+        count: cases.length,
+        one: 'region',
+        many: 'regions',
+      },)
+    }`,
   );
 
   /**
@@ -251,7 +258,13 @@ async function main(): Promise<void> {
     pin: RUN_CORPUS_PIN,
   },);
   console.log(
-    `RELABEL gathered ${String(controls.length,)} unflagged control regions`,
+    `RELABEL gathered ${String(controls.length,)} unflagged control ${
+      wordForCount({
+        count: controls.length,
+        one: 'region',
+        many: 'regions',
+      },)
+    }`,
   );
 
   // Sequential so this never competes with a running corpus pass for the

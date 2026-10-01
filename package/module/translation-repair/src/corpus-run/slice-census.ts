@@ -2,6 +2,7 @@ import {
   isMissingCorpusObject,
   listCorpusPeople,
 } from '../corpus-source.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   describeSpread,
   REPORTED_PERCENTILES,
@@ -220,7 +221,13 @@ async function main(): Promise<void> {
   // aligner, which is a baseline the pass no longer runs, and a reader sizing
   // a lane over these numbers needs to know how many rows are which.
   console.log(
-    `CENSUS carve: ${String(carved.complete,)} settled entries with a complete recipe, ${
+    `CENSUS carve: ${String(carved.complete,)} settled ${
+      wordForCount({
+        count: carved.complete,
+        one: 'entry',
+        many: 'entries',
+      },)
+    } with a complete recipe, ${
       String(carved.partial,)
     } settled with a defaulted half, ${String(carved.deterministic,)} deterministic baseline (${
       String(legacy.length,)

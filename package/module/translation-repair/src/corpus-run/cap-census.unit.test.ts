@@ -2,8 +2,9 @@
  Tests for the completion cap census (ledger P10): how it reads calls out of a
  pass-run log and how it applies the cap rule to them.
 
- Fixture lines are shaped like the ones `reportStreamProgress` and
- `reportSpend` write, with model ids from the roster and invented numbers.
+ Stream lines come from `reportStreamProgress` itself, and spend lines are
+ shaped like the ones `reportSpend` writes, with model ids from the roster and
+ invented numbers.
  No corpus content appears here.
 
  @module
@@ -27,6 +28,8 @@ import {
   MODEL_CARDS,
   POOLED_P90,
   readCapLog,
+  reportStreamProgress,
+  type StreamOutcome,
 } from '../../dist/final/node/index.mjs';
 import { STAMPS_NOT_WRITTEN, } from '../iso-stamp-text.test-fixture.ts';
 import {
@@ -51,7 +54,9 @@ const OPENROUTER_ID = MODEL_CARDS[SEAT].openrouter?.id ?? 'no openrouter block';
 const HYPER_ID = MODEL_CARDS[SEAT].hyper?.id ?? 'no hyper block';
 
 /**
- A stream completion line as the logger writes it.
+ A stream completion line as the logger writes it: the logger's prefix, then
+ the line `reportStreamProgress` itself returns, so the fixture follows the
+ writer's wording (a count of one takes "char") rather than a copy of it.
 
  @param stamp - ISO time of the line
 
@@ -77,13 +82,30 @@ function streamLine(
   }: {
     readonly stamp: string;
     readonly label: string;
-    readonly outcome: string;
+    readonly outcome: StreamOutcome;
     readonly content: number;
   },
 ): string {
-  return `[info] [${stamp}] [translation-repair] [reportStreamProgress] stream ${label}: ${outcome}, `
-    + `elapsed 7304ms, firstByte 3644ms, maxGap 421ms, 2977 raw chars, 0 unreadable frames, ${String(content,)} `
-    + 'content chars, 0 reasoning chars';
+  /**
+   Line the writer returns, after the logger's prefix.
+   */
+  const written = reportStreamProgress({
+    label,
+    progress: {
+      firstByteMs: 3_644,
+      maxGapMs: 421,
+      chars: 2_977,
+      elapsedMs: 7_304,
+    },
+    unreadableFrames: 0,
+    outcome,
+    openingText: '',
+    generatedChars: {
+      content,
+      reasoning: 0,
+    },
+  },);
+  return `[info] [${stamp}] [translation-repair] [reportStreamProgress] ${written}`;
 }
 
 /**
@@ -241,6 +263,35 @@ await describe({
               },],
               unstampedLines: 0,
             },);
+          },
+        },),
+        it({
+          name: 'READS A STREAM THAT DELIVERED ONE CONTENT CHARACTER, whose line says "1 content char" since the writer '
+            + 'counts its noun, and the same stream as a line logged before that said "1 content chars" (ledger B109)',
+          fn: async () => {
+            /**
+             Line the writer writes now for a one-character stream.
+             */
+            const written = streamLine({ stamp: '2026-09-28T10:00:00.000Z', label: OPENROUTER_ID, outcome: 'completed', content: 1, },);
+
+            /**
+             The same line as logged before the writer counted its noun.
+             */
+            const older = written.replace(' 1 content char,', ' 1 content chars,',);
+
+            expect(written,).toContain(' 1 content char,',);
+            expect(older,).toContain(' 1 content chars,',);
+            for (const line of [written, older,]) {
+              expect(readCapLog({
+                lines: [
+                  line,
+                  spendLine({
+                    stamp: '2026-09-28T10:00:00.020Z',
+                    tail: `provider=openrouter model=${OPENROUTER_ID} prompt=799 completion=23 cost=0.0625 endpoint=Morph`,
+                  },),
+                ],
+              },).samples[0]?.content,).toBe(1,);
+            }
           },
         },),
         it({

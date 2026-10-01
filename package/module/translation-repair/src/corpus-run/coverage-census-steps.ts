@@ -11,6 +11,7 @@ import {
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import spawn from 'nano-spawn';
 
+import { wordForCount, } from '../count-word.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { contextRoot, } from '../log-context.ts';
 import {
@@ -251,7 +252,15 @@ export async function tallyCoverage(
         name,
       );
     },);
-  stepsLog.info(`${String(paths.length,)} coverage files`,);
+  stepsLog.info(
+    `${String(paths.length,)} coverage ${
+      wordForCount({
+        count: paths.length,
+        one: 'file',
+        many: 'files',
+      },)
+    }`,
+  );
   /**
    The tally.
    */

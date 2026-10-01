@@ -189,7 +189,13 @@ export async function repairPreparedDocument(
         one: 'slice',
         many: 'slices',
       },)
-    }, ${String(alignmentFindings.length,)} alignment findings`,
+    }, ${String(alignmentFindings.length,)} alignment ${
+      wordForCount({
+        count: alignmentFindings.length,
+        one: 'finding',
+        many: 'findings',
+      },)
+    }`,
   );
 
   /**

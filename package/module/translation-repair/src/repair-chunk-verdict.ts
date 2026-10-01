@@ -1,6 +1,7 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { PatchOperation, } from './apply-patch.ts';
 import { measurePatchedCandidate, } from './chunk-measure.ts';
+import { wordForCount, } from './count-word.ts';
 import { findDroppedDeclaredNames, } from './declared-name-survival.ts';
 import {
   parseDocument,
@@ -398,7 +399,13 @@ export function describeChunkSettlement(
     refused,
   },)}, ${
     String(resolvedCount,)
-  }/${String(creditableCount,)} served accepted issues resolved (${
+  }/${String(creditableCount,)} served accepted ${
+    wordForCount({
+      count: creditableCount,
+      one: 'issue',
+      many: 'issues',
+    },)
+  } resolved (${
     String(acceptedCount,)
   } accepted, ${String(unenvelopedCount,)} unenveloped)`;
 }

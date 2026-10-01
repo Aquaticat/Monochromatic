@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   buildLicensedQuotes,
   buildRemovableQuotes,
@@ -379,13 +380,23 @@ export async function runEditorStage(
    */
   const { patch, } = chunkSelection;
 
+  /**
+   Distinct whole-chunk proposals the judges chose among.
+   */
+  const candidateCount = chunkSet.candidates
+    .length;
   l.info(
     `editor stage: ${String(patch.applied
       .length,)} applied, ${
       String(patch.rejected
         .length,)
-    } rejected across ${String(chunkSet.candidates
-      .length,)} distinct candidates`,
+    } rejected across ${String(candidateCount,)} distinct ${
+      wordForCount({
+        count: candidateCount,
+        one: 'candidate',
+        many: 'candidates',
+      },)
+    }`,
   );
 
   return {
@@ -408,8 +419,7 @@ export async function runEditorStage(
       `editor-envelope-select (${String(perEnvelope.soleCount,)} sole, ${
         String(perEnvelope.judgedCount,)
       } judged, ${String(perEnvelope.declinedCount,)} declined)`,
-      `editor-chunk-select (${String(chunkSet.candidates
-        .length,)} distinct, ${String(chunkSet.collapsed,)} collapsed)`,
+      `editor-chunk-select (${String(candidateCount,)} distinct, ${String(chunkSet.collapsed,)} collapsed)`,
       // WHY an operation was refused, not merely how many were. The count went
       // into a log line and the reasons went nowhere, so the preservation gate
       // could reject every edit in a run and the artifact would look ordinary.

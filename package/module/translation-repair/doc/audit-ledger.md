@@ -17684,6 +17684,73 @@ Recurrence:
 `mistake-prevention.md`,
 "Tests touching the real world".
 
+### B109: counts printed before a modifier and a fixed plural
+
+Found 2026-10-01 (UTC) by reading what B98's scan could not see,
+red in `07621943a`,
+fixed in the commit adding this entry.
+B98's scan read a count only where a counted plural followed it directly ("1 slices"),
+so a count before one or two modifiers and then a fixed plural passed it:
+"discarding 1 cached slices",
+"1 usable ballots".
+Widened to read up to two modifier words,
+a proper adjective among them ("Latin tokens"),
+the scan named 75 printed sites in the package's source
+(72 distinct keys,
+three printed twice),
+in log lines,
+command-line output,
+error messages
+and stored findings;
+none of them is text a model reads.
+
+Each site now chooses its noun with `wordForCount`,
+and five keep a fixed plural as exemptions,
+each a count that cannot be one,
+with why.
+A separate reviewer read the 82 changed call sites
+and found two verbs and pronouns still fixed to the plural
+(`spend-report.ts` "has",
+`score-attribution.ts` "its" and "It is");
+both now agree with their count.
+The stream line `reportStreamProgress` writes also printed "unreadable frames" after any count,
+which the scan could not name because no `wordForCount` call counted frames yet;
+it now does.
+
+The stream line's change had a reader.
+`cap-census-read.ts` found a completed stream's content count by the text " content chars",
+so a stream that delivered one content character,
+logged "1 content char" after this fix,
+would have read as no completed stream and left its `SPEND` line unpaired.
+The reader now takes the unit up to its plural ending and accepts both spellings,
+since lines logged before this fix wrote "chars" after every count,
+and the cap-census cases build their stream lines through `reportStreamProgress` rather than copying its wording,
+with a case reading a one-character stream in each spelling.
+The guard-off meant to show that case failing against the old reader was refused by the session's permission classifier,
+so that case is unmeasured against it.
+
+Counting the recovery round's nouns took `stage-quorum.ts` to 312 lines of code against the linter's 300,
+so the recovery round moved to `stage-recovery-round.ts`,
+the one self-contained step of the gather,
+with a unit test of its own;
+its two log lines now carry the tag `[runRecoveryRound]`.
+`message-names-only.unit.test.ts` names the four new `wordForCount` parts that marked error classes interpolate.
+
+No cache version moves:
+the stored findings among the changed sites differ only in a noun's number,
+and no code reads those words back
+(a search of the package's source outside tests for each changed finding's noun phrase finds only TSDoc,
+comments and prompt prose).
+
+Reach:
+`count-nouns.unit.test.ts` passes with its 16 exemptions,
+and the cases touching every changed message,
+the source scans and lint pass at this commit.
+
+Recurrence:
+`mistake-prevention.md`,
+"Counts in printed text" and "Readers of the package's own log lines".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

@@ -305,9 +305,21 @@ async function main(): Promise<void> {
      */
     const { text: sliceTarget, } = slice.target;
     console.log(
-      `\n--- slice: ${String(sliceSource.length,)} source chars, ${
+      `\n--- slice: ${String(sliceSource.length,)} source ${
+        wordForCount({
+          count: sliceSource.length,
+          one: 'char',
+          many: 'chars',
+        },)
+      }, ${
         String(sliceTarget.length,)
-      } target chars ---`,
+      } target ${
+        wordForCount({
+          count: sliceTarget.length,
+          one: 'char',
+          many: 'chars',
+        },)
+      } ---`,
     );
     console.log(`SOURCE: ${sliceSource}`,);
 

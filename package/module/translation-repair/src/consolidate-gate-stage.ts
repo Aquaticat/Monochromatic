@@ -16,6 +16,7 @@ import {
   isConsolidateGateWire,
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
+import { wordForCount, } from './count-word.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
@@ -290,7 +291,15 @@ export async function gateConsolidatedSlice(
     usable: ballots.length,
     findings: [
       ...((ballots.length < CONSOLIDATE_GATE_QUORUM)
-        ? [ `consolidate-gate heard ${String(ballots.length,)} usable ballots, below the ${String(CONSOLIDATE_GATE_QUORUM,)} needed to settle`, ]
+        ? [
+          `consolidate-gate heard ${String(ballots.length,)} usable ${
+            wordForCount({
+              count: ballots.length,
+              one: 'ballot',
+              many: 'ballots',
+            },)
+          }, below the ${String(CONSOLIDATE_GATE_QUORUM,)} needed to settle`,
+        ]
         : []),
       // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).
       ...(quorum.short

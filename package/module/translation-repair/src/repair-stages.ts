@@ -258,7 +258,13 @@ export async function runCriticStage(
         one: 'claim',
         many: 'claims',
       },)
-    }, ${String(nonTranslationVotes,)} non-translation votes`,
+    }, ${String(nonTranslationVotes,)} non-translation ${
+      wordForCount({
+        count: nonTranslationVotes,
+        one: 'vote',
+        many: 'votes',
+      },)
+    }`,
   );
 
   return {

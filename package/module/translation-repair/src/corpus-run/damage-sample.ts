@@ -282,13 +282,31 @@ async function main(): Promise<void> {
     filledWithoutIncumbent,
   } = await collectShippedRegions({ dir, },);
   console.log(
-    `DAMAGE pool ${String(pool.length,)} shipped regions across both lanes, seed ${seed}`,
+    `DAMAGE pool ${String(pool.length,)} shipped ${
+      wordForCount({
+        count: pool.length,
+        one: 'region',
+        many: 'regions',
+      },)
+    } across both lanes, seed ${seed}`,
   );
   // Reported rather than dropped: a slice filled where the archive had no
   // English replaced nothing, so no edit could have damaged anything there, and
   // the honest question about it belongs on a different sheet.
   console.log(
-    `DAMAGE ${String(filledWithoutIncumbent,)} shipped rows had no incumbent wording and are not drawn from`,
+    `DAMAGE ${String(filledWithoutIncumbent,)} shipped ${
+      wordForCount({
+        count: filledWithoutIncumbent,
+        one: 'row',
+        many: 'rows',
+      },)
+    } had no incumbent wording and ${
+      wordForCount({
+        count: filledWithoutIncumbent,
+        one: 'is',
+        many: 'are',
+      },)
+    } not drawn from`,
   );
 
   /**

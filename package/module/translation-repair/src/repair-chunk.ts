@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { recordIssuesWithFilers, } from './claim-filers.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
+import { wordForCount, } from './count-word.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { runChunkCriticPhase, } from './chunk-critic-phase.ts';
 import {
@@ -203,7 +204,13 @@ export async function repairChunk(
     l.warn(
       `chunk ${String(sliceIndex,)}: ${
         String(critic.nonTranslationVotes,)
-      } non-translation votes stand; proceeding, votes carried as evidence`,
+      } non-translation ${
+        wordForCount({
+          count: critic.nonTranslationVotes,
+          one: 'vote stands',
+          many: 'votes stand',
+        },)
+      }; proceeding, votes carried as evidence`,
     );
   }
   /**

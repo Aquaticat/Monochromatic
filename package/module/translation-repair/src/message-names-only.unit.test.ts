@@ -294,6 +294,14 @@ const NAMED_PARTS: Record<string, string> = {
     'noun agreeing with a count, both forms authored here',
   'wordForCount({ count: charsSeen, one: \'character\', many: \'characters\', },)':
     'noun agreeing with a count, both forms authored here',
+  'wordForCount({ count: seatCount, one: \'seat\', many: \'seats\', },)':
+    'noun agreeing with a count, both forms authored here',
+  'wordForCount({ count: sampled, one: \'issue carries\', many: \'issues carry\', },)':
+    'noun and verb agreeing with a count, both forms authored here',
+  'wordForCount({ count: census.total, one: \'entry\', many: \'entries\', },)':
+    'noun agreeing with a count, both forms authored here',
+  'wordForCount({ count: census.total, one: \'was\', many: \'were\', },)':
+    'verb agreeing with a count, both forms authored here',
   'failure': 'name of the failure class a JSON read raised',
   'filesystemCode': 'filesystem code a directory listing raised (ENOTDIR, EACCES), or the class name where there is none',
   'fault': 'authored phrase naming which roster rule was broken',

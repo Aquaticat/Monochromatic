@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -328,7 +329,13 @@ export async function runTranslateRepairs(
    What names the follow-up round and why it was asked, for the log and the
    record alike.
    */
-  const followupNamed = `after ${firstReason}, ${String(rejectedCount,)} rejected candidates`;
+  const followupNamed = `after ${firstReason}, ${String(rejectedCount,)} rejected ${
+    wordForCount({
+      count: rejectedCount,
+      one: 'candidate',
+      many: 'candidates',
+    },)
+  }`;
   l.info(`translate stage: one follow-up round ${followupNamed}`,);
   /**
    Single follow-up round carrying the located rejection evidence.

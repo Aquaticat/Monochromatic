@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SliceDeliveryRecord, } from './slice-delivery.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   type SliceReplacement,
   spliceSlices,
@@ -105,8 +106,19 @@ export function deliveryInvariantSentence(
   }
   return `writing the ledger's ${
     String(fault.shippedRows,)
-  } shipped rows over the archive produces a different document than the lane returned, so the rows do `
-    + 'not say what the document carries';
+  } shipped ${
+    wordForCount({
+      count: fault.shippedRows,
+      one: 'row',
+      many: 'rows',
+    },)
+  } over the archive produces a different document than the lane returned, so the ${
+    wordForCount({
+      count: fault.shippedRows,
+      one: 'row does',
+      many: 'rows do',
+    },)
+  } not say what the document carries`;
 }
 
 /**

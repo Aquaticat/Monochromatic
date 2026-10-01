@@ -295,7 +295,13 @@ export function readJsonOutcome<ValueT,>(
   }
   if (attempt.trailing > 0) {
     rl.warn(
-      `${modelId}: json trailing text: read the value before ${String(attempt.trailing,)} trailing chars (ledger P8)`,
+      `${modelId}: json trailing text: read the value before ${String(attempt.trailing,)} trailing ${
+        wordForCount({
+          count: attempt.trailing,
+          one: 'char',
+          many: 'chars',
+        },)
+      } (ledger P8)`,
     );
   }
 

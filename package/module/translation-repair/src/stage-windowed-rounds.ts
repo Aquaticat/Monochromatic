@@ -350,7 +350,13 @@ export async function runWindowedRounds<ValueT,>(
       l.warn(
         `${stage}: retry round ${String(round,)} asking ${String(asking.length,)} of ${
           String(pending.length,)
-        } pending voices`,
+        } pending ${
+          wordForCount({
+            count: pending.length,
+            one: 'voice',
+            many: 'voices',
+          },)
+        }`,
       );
     }
     /* oxlint-disable no-await-in-loop -- rounds are sequential by design: each round asks the seats the previous round left unasked or lost */

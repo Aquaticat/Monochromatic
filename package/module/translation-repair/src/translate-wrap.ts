@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
 import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 import { sameWording, } from './wording-key.ts';
@@ -154,22 +155,47 @@ export function wrapTranslateRecords(
     };
   },);
 
-  if (counted.governed > 0)
+  if (counted.governed > 0) {
     l.info(
-      `semantic wrap: skipped ${String(counted.governed,)} line-structured translated slices, whose `
-        + 'line breaks the producer was told to set',
+      `semantic wrap: skipped ${String(counted.governed,)} line-structured translated ${
+        wordForCount({
+          count: counted.governed,
+          one: 'slice',
+          many: 'slices',
+        },)
+      }, whose line breaks the producer was told to set`,
     );
+  }
 
-  if (counted.demoted > 0)
+  if (counted.demoted > 0) {
     l.info(
-      `wording: ${String(counted.demoted,)} of ${String(settled.length,)} translated slices differ from the `
-        + 'archive only in layout the page does not show, and keep the archive\'s own wording (ledger B26)',
+      `wording: ${String(counted.demoted,)} of ${String(settled.length,)} translated ${
+        wordForCount({
+          count: settled.length,
+          one: 'slice differs',
+          many: 'slices differ',
+        },)
+      } from the archive only in layout the page does not show, and ${
+        wordForCount({
+          count: settled.length,
+          one: 'keeps',
+          many: 'keep',
+        },)
+      } the archive's own wording (ledger B26)`,
     );
+  }
 
-  if (counted.rewrapped > 0)
+  if (counted.rewrapped > 0) {
     l.info(
-      `semantic wrap: rewrapped ${String(counted.rewrapped,)} of ${String(settled.length,)} translated slices`,
+      `semantic wrap: rewrapped ${String(counted.rewrapped,)} of ${String(settled.length,)} translated ${
+        wordForCount({
+          count: settled.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      }`,
     );
+  }
 
   return wrapped;
 }

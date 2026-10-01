@@ -222,7 +222,13 @@ function needlePreview(
       one: 'char',
       many: 'chars',
     },)
-  }, ${String(counted.tokens,)} Latin tokens`;
+  }, ${String(counted.tokens,)} Latin ${
+    wordForCount({
+      count: counted.tokens,
+      one: 'token',
+      many: 'tokens',
+    },)
+  }`;
 }
 
 /**

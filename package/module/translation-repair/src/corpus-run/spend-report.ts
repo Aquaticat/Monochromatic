@@ -263,8 +263,25 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
 
   if (unpricedCount > 0) {
     console.log(
-      `UNPRICED, and these are not free: ${String(unpricedCount,)} metered seats have no row in `
-        + `the price table read ${cost.pricedAsOf}. This report's total is short by whatever they cost`,
+      `UNPRICED, and not free: ${String(unpricedCount,)} metered ${
+        wordForCount({
+          count: unpricedCount,
+          one: 'seat',
+          many: 'seats',
+        },)
+      } ${
+        wordForCount({
+          count: unpricedCount,
+          one: 'has',
+          many: 'have',
+        },)
+      } no row in the price table read ${cost.pricedAsOf}. This report's total omits whatever cost ${
+        wordForCount({
+          count: unpricedCount,
+          one: 'this seat',
+          many: 'these seats',
+        },)
+      } would add`,
     );
     for (const seat of cost.unpriced) {
       console.log(tokensOnlyLine({ seat, },),);

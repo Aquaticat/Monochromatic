@@ -8,6 +8,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { contextRoot, } from '../log-context.ts';
 import type { SliceCache, } from '../slice-cache.ts';
@@ -541,7 +542,13 @@ export async function discardNamespace(
       l,
     },);
     dl.info(
-      `SLICE discarding ${String(owned.length,)} cached slices in ${dir}: `
+      `SLICE discarding ${String(owned.length,)} cached ${
+        wordForCount({
+          count: owned.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      } in ${dir}: `
         + `filled by ${cached === '' ? '(unstamped)' : cached}`,
     );
   }

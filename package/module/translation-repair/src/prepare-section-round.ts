@@ -366,9 +366,21 @@ export async function buySectionPairing(
     findings.push(
       `section-pairing paired ${String(pairs.length,)} of ${
         String(sourceChunks.length,)
-      } original and ${String(targetChunks.length,)} translation sections, from ${
+      } original and ${String(targetChunks.length,)} translation ${
+        wordForCount({
+          count: targetChunks.length,
+          one: 'section',
+          many: 'sections',
+        },)
+      }, from ${
         String(usable,)
-      } usable voices of ${String(heard,)} heard`,
+      } usable ${
+        wordForCount({
+          count: usable,
+          one: 'voice',
+          many: 'voices',
+        },)
+      } of ${String(heard,)} heard`,
     );
   if (pairs.length === 0)
     findings.push('section-pairing fell back to the deterministic aligner',);

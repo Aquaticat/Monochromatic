@@ -559,7 +559,13 @@ export async function coverageControlHolds(
       console.log(
         `COVERAGE control ${row.where}: ${row.reason} (undamaged verdict ${row.verdict}, ${
           String(row.absent,)
-        } absence votes, ${String(row.offeredSpans,)} ${
+        } absence ${
+          wordForCount({
+            count: row.absent,
+            one: 'vote',
+            many: 'votes',
+          },)
+        }, ${String(row.offeredSpans,)} ${
           wordForCount({
             count: row.offeredSpans,
             one: 'span',

@@ -32,6 +32,10 @@ export {
   unreadableCauseOf,
 } from './recovery-nudge.ts';
 export {
+  runRecoveryRound,
+  type SharedRoundRequest,
+} from './stage-recovery-round.ts';
+export {
   askingWindow,
   benchRotation,
   FANOUT_SPARE,

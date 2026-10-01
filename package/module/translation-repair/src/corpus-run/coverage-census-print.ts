@@ -119,12 +119,21 @@ export type CensusSummary = {
  */
 export function censusReportLines({ census, }: { readonly census: CensusSummary; },): readonly string[] {
   /**
+   Test files the census ran, where none means the whole unit suite.
+   */
+  const testFileCount = census.testFiles
+    .length;
+
+  /**
    Which tests ran.
    */
-  const scope = (census.testFiles
-    .length
-    === 0) ? 'the unit suite' : `${String(census.testFiles
-      .length,)} test files`;
+  const scope = (testFileCount === 0) ? 'the unit suite' : `${String(testFileCount,)} test ${
+    wordForCount({
+      count: testFileCount,
+      one: 'file',
+      many: 'files',
+    },)
+  }`;
   /**
    Uncalled functions in package source that no uncalled function holds.
    */
@@ -287,7 +296,13 @@ function standingNow(
   },
 ): string {
   return loadedNow
-    ? `this run loaded it and left ${String(coldNow,)} cold stretches`
+    ? `this run loaded it and left ${String(coldNow,)} cold ${
+      wordForCount({
+        count: coldNow,
+        one: 'stretch',
+        many: 'stretches',
+      },)
+    }`
     : 'this run did not load it';
 }
 

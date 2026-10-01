@@ -6,6 +6,7 @@ import type {
   ConsolidationTerminal,
 } from './consolidate-settle.ts';
 import { unpolishedBaseline, } from './consolidation-polish-skip.ts';
+import { wordForCount, } from './count-word.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import type { SliceValidation, } from './translate-validate.ts';
 
@@ -303,7 +304,13 @@ export function shipPastForfeitStanding(
     l.warn(
       `consolidate gate: preferred an ineligible standing, which cannot ship, so the proposal the slate chose ships (${
         String(outcome.usable,)
-      } usable ballots)`,
+      } usable ${
+        wordForCount({
+          count: outcome.usable,
+          one: 'ballot',
+          many: 'ballots',
+        },)
+      })`,
     );
     return {
       ...outcome,
@@ -330,7 +337,13 @@ export function shipPastForfeitStanding(
   l.warn(
     `consolidate gate: settled on neither over ${why}, so the proposal the slate chose ships (${
       String(outcome.usable,)
-    } usable ballots)`,
+    } usable ${
+      wordForCount({
+        count: outcome.usable,
+        one: 'ballot',
+        many: 'ballots',
+      },)
+    })`,
   );
   return {
     ...outcome,

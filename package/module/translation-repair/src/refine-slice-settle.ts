@@ -404,7 +404,13 @@ export async function settleRefinedSlice(
      The rollback, in scorecard-stable wording.
      */
     const finding = `refine-rolled-back-by-probe (${String(admitted.added,)} added-damage and `
-      + `${String(admitted.dropped,)} removal claims admitted against the rewrite)`;
+      + `${String(admitted.dropped,)} removal ${
+        wordForCount({
+          count: admitted.dropped,
+          one: 'claim',
+          many: 'claims',
+        },)
+      } admitted against the rewrite)`;
     l.warn(`slice ${String(outcome.sliceIndex,)}: ${finding}; keeping the text before the rewrite`,);
     return {
       outcome: {

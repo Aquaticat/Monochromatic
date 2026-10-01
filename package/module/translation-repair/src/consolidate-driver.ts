@@ -47,6 +47,7 @@ import type { TwinMemo, } from './twin-memo.ts';
 import { inSliceLogContext, } from './log-context.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Consolidate driver
 // THE CONSOLIDATION OVER ONE DOCUMENT: which slices get a third rendering
@@ -253,7 +254,15 @@ export async function consolidateDocument(
    */
   const twins: TwinMemo<ConsolidationSettlement> = new Map();
 
-  dl.info(`consolidation: ${String(contests.length,)} contested slices to settle`,);
+  dl.info(
+    `consolidation: ${String(contests.length,)} contested ${
+      wordForCount({
+        count: contests.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } to settle`,
+  );
   return await mapOverlapped({
     items: eligibleRows,
     overlap,

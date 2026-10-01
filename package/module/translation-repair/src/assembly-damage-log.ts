@@ -4,6 +4,7 @@ import {
   findIntroducedRepetitions,
   whitespaceTokensOf,
 } from './assembly-repetition.ts';
+import { wordForCount, } from './count-word.ts';
 import { foldedLatinWords, } from './latin-letters.ts';
 
 //region Assembly damage log
@@ -133,7 +134,13 @@ export function contentLossLogLines(
       },);
     return (held.length === 0)
       ? []
-      : [`content lost at slice ${String(slice.sliceIndex,)}: ${String(held.length,)} distinctive archive words the document no longer carries: ${
+      : [`content lost at slice ${String(slice.sliceIndex,)}: ${String(held.length,)} distinctive archive ${
+        wordForCount({
+          count: held.length,
+          one: 'word',
+          many: 'words',
+        },)
+      } the document no longer carries: ${
         held.join(', ',)
       }`,];
   },);

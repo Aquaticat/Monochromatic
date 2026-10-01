@@ -263,10 +263,17 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
     } and ${
       String(fault.distinct,)
     } of them are distinct, so it counts at least one slice twice`;
-  if (fault.kind === 'wording-count')
+  if (fault.kind === 'wording-count') {
     return `lane reported ${String(fault.wordings,)} slice wordings against ${
       String(fault.slices,)
-    } prepared slices, so the two describe different preparations`;
+    } prepared ${
+      wordForCount({
+        count: fault.slices,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, so the two describe different preparations`;
+  }
   if (fault.kind === 'both-shipped-and-withdrawn')
     return `slice ${
       String(fault.sliceIndex,)

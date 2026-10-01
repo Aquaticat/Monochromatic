@@ -222,8 +222,25 @@ async function main(): Promise<void> {
   );
   if (report.partialJoinAccepted > 0) {
     console.log(
-      `WARNING ${String(report.partialJoinAccepted,)} accepted issues joined `
-        + 'only SOME of their claims to attribution. Those are held out of every '
+      `WARNING ${String(report.partialJoinAccepted,)} accepted ${
+        wordForCount({
+          count: report.partialJoinAccepted,
+          one: 'issue',
+          many: 'issues',
+        },)
+      } joined only SOME of ${
+        wordForCount({
+          count: report.partialJoinAccepted,
+          one: 'its',
+          many: 'their',
+        },)
+      } claims to attribution. ${
+        wordForCount({
+          count: report.partialJoinAccepted,
+          one: 'It is',
+          many: 'Those are',
+        },)
+      } held out of every `
         + 'other count in this report rather than counted as support, because the unattributed '
         + 'member may have come from a critic that got no credit. A nonzero '
         + 'number here is a defect in the join, not a fact about critics.',
@@ -231,8 +248,19 @@ async function main(): Promise<void> {
   }
   if (report.unattributedAccepted > 0) {
     console.log(
-      `WARNING ${String(report.unattributedAccepted,)} accepted issues on `
-        + 'ELIGIBLE entries carry no attribution, meaning a claim id the index '
+      `WARNING ${String(report.unattributedAccepted,)} accepted ${
+        wordForCount({
+          count: report.unattributedAccepted,
+          one: 'issue',
+          many: 'issues',
+        },)
+      } on ELIGIBLE entries ${
+        wordForCount({
+          count: report.unattributedAccepted,
+          one: 'carries',
+          many: 'carry',
+        },)
+      } no attribution, meaning a claim id the index `
         + 'does not hold. That is a defect in the join, not a quiet critic.',
     );
   }

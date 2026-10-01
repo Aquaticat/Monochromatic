@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 //region Assembly contract faults
 // What an assembly's change sets or returned document contradict, as a union
 // the class words itself. Its own file because `assembly-invariant.ts` holds
@@ -150,8 +152,21 @@ export function assemblySentence({ fault, }: { readonly fault: AssemblyContractF
   }
   if (fault.kind === 'index-beyond-count')
     return `change set names slice ${String(fault.index,)} of ${String(fault.sliceCount,)} prepared`;
-  if (fault.kind === 'reassembly-differs')
-    return `returned document is not what its ${String(fault.survivors,)} surviving replacements assemble to`;
+  if (fault.kind === 'reassembly-differs') {
+    return `returned document is not what its ${String(fault.survivors,)} surviving ${
+      wordForCount({
+        count: fault.survivors,
+        one: 'replacement',
+        many: 'replacements',
+      },)
+    } ${
+      wordForCount({
+        count: fault.survivors,
+        one: 'assembles',
+        many: 'assemble',
+      },)
+    } to`;
+  }
 
   /**
    Slices named as changed.

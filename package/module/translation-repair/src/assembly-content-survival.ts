@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { foldedLatinWords, } from './latin-letters.ts';
 
 //region Assembly content survival
@@ -232,7 +233,13 @@ export function contentSurvivalFindings(
   return [
     `content-survival (${String(survival.kept,)} of ${
       String(survival.distinctive,)
-    } distinctive archive words kept, ${String(survival.lost,)} lost)`,
+    } distinctive archive ${
+      wordForCount({
+        count: survival.distinctive,
+        one: 'word',
+        many: 'words',
+      },)
+    } kept, ${String(survival.lost,)} lost)`,
   ];
 }
 

@@ -135,9 +135,19 @@ function printRefusals(
   if (refused.length === 0)
     return;
 
+  /**
+   Every ledger file this report accounts for, read or not.
+   */
+  const totalLedgerFiles = refused.length + rounds.length;
   console.log(
     `  ${String(refused.length,)} of `
-      + `${String(refused.length + rounds.length,)} ledger files could not be read. `
+      + `${String(totalLedgerFiles,)} ledger ${
+        wordForCount({
+          count: totalLedgerFiles,
+          one: 'file',
+          many: 'files',
+        },)
+      } could not be read. `
       + 'Every figure here counts only the files that could, so a seat that wrote into an '
       + 'unreadable contest is undercounted, and so is every judge who weighed it. Re-run the '
       + 'pass to rewrite them, or read the standing as a floor.',

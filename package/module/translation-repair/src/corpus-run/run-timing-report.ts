@@ -223,9 +223,20 @@ async function reportRunTiming({ line, }: { readonly line: CommandLineOf<'run-ti
 
   if (reading.callsWithoutDuration > 0) {
     console.log(
-      `${String(reading.callsWithoutDuration,)} completion lines carry no elapsed field, so they `
-        + 'predate call durations and no interval exists for them. Any concurrency this report prints '
-        + 'describes only the calls that could be timed.',
+      `${String(reading.callsWithoutDuration,)} completion ${
+        wordForCount({
+          count: reading.callsWithoutDuration,
+          one: 'line',
+          many: 'lines',
+        },)
+      } ${
+        wordForCount({
+          count: reading.callsWithoutDuration,
+          one: 'carries',
+          many: 'carry',
+        },)
+      } no elapsed field, predating call durations and leaving no interval to report. Any concurrency `
+        + 'this report prints describes only the calls that could be timed.',
     );
   }
 

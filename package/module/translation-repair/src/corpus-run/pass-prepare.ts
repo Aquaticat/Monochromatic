@@ -11,6 +11,7 @@ import {
   keepBench,
 } from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { wordForCount, } from '../count-word.ts';
 import { corpusNameLines, } from '../corpus-name-index.ts';
 import { pageIdentityLines, } from '../page-identity-lines.ts';
 import { parseDocument, } from '../parse-document.ts';
@@ -261,7 +262,13 @@ export async function preparePassEntry(
     ],
   },);
   l.debug(
-    `${preparePassEntry.name}: the title lexicon reads ${String(lexiconIdentityLines.length,)} identity lines`,
+    `${preparePassEntry.name}: the title lexicon reads ${String(lexiconIdentityLines.length,)} identity ${
+      wordForCount({
+        count: lexiconIdentityLines.length,
+        one: 'line',
+        many: 'lines',
+      },)
+    }`,
   );
   /**
    One rendering of each title the original repeats that the archive leaves

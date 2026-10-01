@@ -16,6 +16,7 @@ import {
   type LaneContestSubject,
   readLaneContestBallot,
 } from './lane-contest-wire.ts';
+import { wordForCount, } from './count-word.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
@@ -467,7 +468,15 @@ export async function contestLaneSlice(
     usable: recorded.length,
     findings: [
       ...((ballots.length < LANE_CONTEST_QUORUM)
-        ? [ `lane-contest heard ${String(ballots.length,)} usable ballots, below the ${String(LANE_CONTEST_QUORUM,)} needed to settle`, ]
+        ? [
+          `lane-contest heard ${String(ballots.length,)} usable ${
+            wordForCount({
+              count: ballots.length,
+              one: 'ballot',
+              many: 'ballots',
+            },)
+          }, below the ${String(LANE_CONTEST_QUORUM,)} needed to settle`,
+        ]
         : []),
       // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).
       ...(quorum.short

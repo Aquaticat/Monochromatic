@@ -220,7 +220,7 @@ await describe({
           ships: 'base',
           usable,
           findings: [
-            `consolidation-polish-gate heard ${String(usable,)} usable ballots, below `
+            `consolidation-polish-gate heard ${String(usable,)} usable ballot, below `
             + `${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
           ],
         },);

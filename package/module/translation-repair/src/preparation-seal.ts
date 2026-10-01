@@ -3,6 +3,7 @@ import {
   archiveOriginalReadingOf,
 } from './archive-original-note.ts';
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
 import type { RepairDocument, } from './parse-document.ts';
@@ -167,7 +168,19 @@ export function sealedFinding(
     .join(', ',);
   return `alignment archive-original (pair ${String(pairIndex,)}: ${
     String(sealedTargets.size,)
-  } translation blocks and ${String(sealedSourceIds.size,)} original blocks sealed by the archive's note, `
+  } translation ${
+    wordForCount({
+      count: sealedTargets.size,
+      one: 'block',
+      many: 'blocks',
+    },)
+  } and ${String(sealedSourceIds.size,)} original ${
+    wordForCount({
+      count: sealedSourceIds.size,
+      one: 'block',
+      many: 'blocks',
+    },)
+  } sealed by the archive's note, `
     + `shipped as the archive has them: ${ids})`;
 }
 

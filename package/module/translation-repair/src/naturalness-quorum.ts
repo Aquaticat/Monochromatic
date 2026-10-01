@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 /**
  Tests whether a recorded wider bench can contain its independently named seats.
  
@@ -54,7 +56,16 @@ export class NaturalnessQuorumError extends Error {
       readonly seatCount: number;
     },
   ) {
-    super(`Naturalness quorum basis ${String(quorumOver,)} must be a safe integer covering ${String(seatCount,)} requested seats.`,);
+    super(
+      `Naturalness quorum basis ${String(quorumOver,)} must be a safe integer covering ${String(seatCount,)} `
+        + `requested ${
+          wordForCount({
+            count: seatCount,
+            one: 'seat',
+            many: 'seats',
+          },)
+        }.`,
+    );
     this.name = 'NaturalnessQuorumError';
   }
 }

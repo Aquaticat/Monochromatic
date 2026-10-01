@@ -49,9 +49,29 @@ const PAIR_WINDOW_MS = 50;
 const COMPLETED_FIELD = ': completed, ';
 
 /**
- Field naming the content characters a stream delivered.
+ Field naming the content characters a stream delivered, up to its unit's
+ plural ending: the stream line writes "char" after a count of one and
+ "chars" after any other (ledger B109), and lines logged before that wrote
+ "chars" after every count.
  */
-const CONTENT_FIELD = ' content chars';
+const CONTENT_FIELD = ' content char';
+
+/**
+ Whether text begins where a stream line's field ends: at the separator
+ before the next field, or at the line's end.
+
+ @param text - text after a field's last word
+
+ @returns True where the field ends there
+
+ @example
+ ```ts
+ const ended = endsField({ text: ', 0 reasoning chars', },);
+ ```
+ */
+function endsField({ text, }: { readonly text: string; },): boolean {
+  return (text === '') || text.startsWith(',',);
+}
 
 /**
  When every client began sending the cap as `max_tokens` (`completion-cap.ts`,
@@ -156,6 +176,13 @@ function streamContentOf(
    */
   const contentAt = payload.indexOf(CONTENT_FIELD,);
   if ((labelEnd === NOT_FOUND) || (contentAt === NOT_FOUND))
+    return 'other-line';
+
+  /**
+   What follows the unit's stem: its plural ending, if any, then the field's end.
+   */
+  const unitTail = payload.slice(contentAt + CONTENT_FIELD.length,);
+  if (!(endsField({ text: unitTail, },) || (unitTail.startsWith('s',) && endsField({ text: unitTail.slice(1,), },))))
     return 'other-line';
 
   /**

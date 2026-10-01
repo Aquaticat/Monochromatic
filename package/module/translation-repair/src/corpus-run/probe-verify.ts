@@ -141,7 +141,13 @@ async function collectFlagged(
     console.log(
       `VERIFY ${kind} ${relabelCase.entryId} ${
         String(claims.length,)
-      } admissible claims`,
+      } admissible ${
+        wordForCount({
+          count: claims.length,
+          one: 'claim',
+          many: 'claims',
+        },)
+      }`,
     );
     if (claims.length === 0)
       continue;
@@ -196,7 +202,13 @@ async function main(): Promise<void> {
   console.log(
     `VERIFY probing ${String(damaged.length,)} damaged and ${
       String(controls.length,)
-    } control regions, issues withheld`,
+    } control ${
+      wordForCount({
+        count: controls.length,
+        one: 'region',
+        many: 'regions',
+      },)
+    }, issues withheld`,
   );
 
   /**

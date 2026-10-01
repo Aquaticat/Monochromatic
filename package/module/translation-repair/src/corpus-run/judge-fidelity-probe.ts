@@ -271,7 +271,15 @@ async function main({ line, }: { readonly line: CommandLineOf<'judge-fidelity-pr
       return result;
     },
   },);
-  log.info(`fidelity: ${String(rows.length,)} reviewed trial rows; use individual ballots for per-model calibration`,);
+  log.info(
+    `fidelity: ${String(rows.length,)} reviewed trial ${
+      wordForCount({
+        count: rows.length,
+        one: 'row',
+        many: 'rows',
+      },)
+    }; use individual ballots for per-model calibration`,
+  );
   /**
    Full reviewed provenance accompanies model outcomes without corpus passages in stdout metadata.
    */
@@ -302,7 +310,15 @@ async function main({ line, }: { readonly line: CommandLineOf<'judge-fidelity-pr
       rows,
     },
   },);
-  log.info(`kept ${String(rows.length,)} reviewed rows at ${keptAt}`,);
+  log.info(
+    `kept ${String(rows.length,)} reviewed ${
+      wordForCount({
+        count: rows.length,
+        one: 'row',
+        many: 'rows',
+      },)
+    } at ${keptAt}`,
+  );
   // Model reasons can quote source material, so operational callers redirect this output privately.
   process.stdout
     .write(`${JSON.stringify(

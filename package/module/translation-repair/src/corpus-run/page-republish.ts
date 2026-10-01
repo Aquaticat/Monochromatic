@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import { errorName, } from '../error-name.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readRunJson, } from '../run-json-read.ts';
@@ -458,7 +459,13 @@ export async function republishSettledPages(
     return outcome.kind === 'left';
   },);
   l.info(
-    `republish: ${String(rows.length,)} settled pages judged, ${String(rewritten.length,)} rewritten, ${
+    `republish: ${String(rows.length,)} settled ${
+      wordForCount({
+        count: rows.length,
+        one: 'page',
+        many: 'pages',
+      },)
+    } judged, ${String(rewritten.length,)} rewritten, ${
       String(left.length,)
     } left`,
   );

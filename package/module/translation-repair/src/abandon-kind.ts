@@ -109,8 +109,13 @@ export function describeAbandon({ error, }: { readonly error: unknown; },): stri
    How much of it there was.
    */
   const delivered = partialText.length;
-  return `cut-mid-reply after ${String(delivered,)} delivered chars, `
-    + `first byte at ${String(firstByteMs,)}ms`;
+  return `cut-mid-reply after ${String(delivered,)} delivered ${
+    wordForCount({
+      count: delivered,
+      one: 'char',
+      many: 'chars',
+    },)
+  }, first byte at ${String(firstByteMs,)}ms`;
 }
 
 //endregion Abandon kind

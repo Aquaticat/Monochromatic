@@ -344,7 +344,13 @@ export function slicePictureContexts(
         },)
       } ${
         String(contexts.size,)
-      } distinct stamped indices, so at least two name one slice and one slice's pictures were dropped`,
+      } distinct stamped ${
+        wordForCount({
+          count: contexts.size,
+          one: 'index',
+          many: 'indices',
+        },)
+      }, so at least two name one slice and one slice's pictures were dropped`,
     );
   }
 

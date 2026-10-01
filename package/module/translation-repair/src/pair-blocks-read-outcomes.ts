@@ -90,7 +90,15 @@ export function readBlockPairingOutcomes(
     tag: readBlockPairingOutcomes.name,
     l,
   },);
-  pl.debug(`reading ${String(outcomes.length,)} asked-seat outcomes over ${String(modelIds.length,)} configured seats`,);
+  pl.debug(
+    `reading ${String(outcomes.length,)} asked-seat outcomes over ${String(modelIds.length,)} configured ${
+      wordForCount({
+        count: modelIds.length,
+        one: 'seat',
+        many: 'seats',
+      },)
+    }`,
+  );
   assertPairingSeats({
     modelIds,
     askedModelIds: outcomes.map(function modelOf(outcome,): RosterModelId {

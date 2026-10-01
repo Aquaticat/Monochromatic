@@ -104,7 +104,13 @@ export function assertEvidenceMatchesLedger(
       path,
       reason: `one row per slice in both, and this lane records ${
         String(evidence.length,)
-      } raw slices against ${String(ledger.length,)} ledger ${
+      } raw ${
+        wordForCount({
+          count: evidence.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      } against ${String(ledger.length,)} ledger ${
         wordForCount({
           count: ledger.length,
           one: 'row',

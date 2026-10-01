@@ -267,7 +267,7 @@ await describe({
               caught = error;
             }
             expect(caught,).toBeInstanceOf(AssemblyContractError,);
-            expect(String(caught,),).toContain('surviving replacements assemble to',);
+            expect(String(caught,),).toContain('surviving replacement assembles to',);
           },
         },),
         it({

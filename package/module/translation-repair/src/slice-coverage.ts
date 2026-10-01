@@ -228,14 +228,26 @@ export function coverageSentence({ fault, }: { readonly fault: SliceCoverageFaul
      Ids of the declined blocks a slice placed.
      */
     const { contradicted, } = fault;
-    return `target ${String(contradicted.length,)} declined blocks reached a slice: ${contradicted.join(', ',)}`;
+    return `target ${String(contradicted.length,)} declined ${
+      wordForCount({
+        count: contradicted.length,
+        one: 'block',
+        many: 'blocks',
+      },)
+    } reached a slice: ${contradicted.join(', ',)}`;
   }
   if (fault.kind === 'sealed-reached') {
     /**
      Ids of the sealed blocks a slice placed.
      */
     const { contradicted, } = fault;
-    return `${fault.side} ${String(contradicted.length,)} sealed blocks reached a slice: ${contradicted.join(', ',)}`;
+    return `${fault.side} ${String(contradicted.length,)} sealed ${
+      wordForCount({
+        count: contradicted.length,
+        one: 'block',
+        many: 'blocks',
+      },)
+    } reached a slice: ${contradicted.join(', ',)}`;
   }
   return `${fault.side} ${blockPlacementSentence({ placement: fault.placement, },)}`;
 }
