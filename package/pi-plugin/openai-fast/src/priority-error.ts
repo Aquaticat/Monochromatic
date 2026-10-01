@@ -26,7 +26,7 @@ export class PriorityRequestError extends Error {
    */
   constructor({ message, }: { readonly message: string; },) {
     super(message,);
-    this.name = PriorityRequestError.name;
+    this.name = 'PriorityRequestError';
     /**
      Constructor logger records only the validation boundary.
      */

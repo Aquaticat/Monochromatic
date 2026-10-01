@@ -11,7 +11,10 @@ import type {
   TranscriptContext,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { KEYLESS_AUTH, noAvailableTargets, } from './keyless-auth.ts';
+import {
+  KEYLESS_AUTH,
+  noAvailableTargets,
+} from './keyless-auth.ts';
 import type {
   ForeignBorrowed,
   ForeignHostCapability,

@@ -18,16 +18,27 @@ export const STREAM_FIXTURE_TOKEN: string = `e30.${btoa(JSON.stringify({
 },),)}.stream-fixture-signature`;
 
 /**
- Create a foreign-shaped base model with fresh input and cost data for each test.
+ Test-owned model variations expose only capabilities exercised by stream tests.
+ */
+export type StreamFixtureModelOverrides = {
+  readonly id?: string;
+  readonly headers?: Readonly<Record<string, string>>;
+  readonly contextWindow?: number;
+  readonly reasoning?: boolean;
+  readonly thinkingLevelMap?: Readonly<NonNullable<Model<'openai-codex-responses'>['thinkingLevelMap']>>;
+};
 
- @param overrides - model identity and capability changes for one test
+/**
+ Create fresh foreign-shaped model data without a compatibility allowlist.
 
- @returns original Codex model to pass through the wrapper unchanged
+ @param overrides - identity and capability changes for one test
+
+ @returns original Codex model passed through the wrapper unchanged
 
  @internal
  */
 export function createStreamFixtureModel(
-  overrides: ForeignBorrowed<Partial<Model<'openai-codex-responses'>>> = {},
+  overrides: StreamFixtureModelOverrides = {},
 ): ForeignBorrowed<Model<'openai-codex-responses'>> {
   return {
     id: 'gpt-stream-fixture',
@@ -37,7 +48,12 @@ export function createStreamFixtureModel(
     baseUrl: 'https://stream-fixture.invalid/backend-api',
     reasoning: true,
     input: ['text',],
-    cost: { input: 1, output: 2, cacheRead: 0.5, cacheWrite: 1, },
+    cost: {
+      input: 1,
+      output: 2,
+      cacheRead: 0.5,
+      cacheWrite: 1,
+    },
     contextWindow: 128_000,
     maxTokens: 4_096,
     ...overrides,
@@ -45,7 +61,7 @@ export function createStreamFixtureModel(
 }
 
 /**
- Prepare a branded native transcript through the installed normalizer.
+ Prepare branded native transcript through the installed normalizer.
 
  @returns independent transcript with synthetic prompt and user content
 
@@ -54,7 +70,11 @@ export function createStreamFixtureModel(
 export function createStreamFixtureContext(): ForeignBorrowed<TranscriptContext> {
   return normalizeContext({
     systemPrompt: 'Stream fixture instructions.',
-    messages: [{ role: 'user', content: 'Stream fixture input.', timestamp: 0, },],
+    messages: [{
+      role: 'user',
+      content: 'Stream fixture input.',
+      timestamp: 0,
+    },],
   },);
 }
 
@@ -63,11 +83,11 @@ export function createStreamFixtureContext(): ForeignBorrowed<TranscriptContext>
  */
 export class StreamFixtureStopError extends Error {
   /**
-   Construct a recognizable test-only callback failure.
+   Construct recognizable test-only callback failure.
    */
   constructor() {
     super('stream fixture stopped before transport',);
-    this.name = StreamFixtureStopError.name;
+    this.name = 'StreamFixtureStopError';
   }
 }
 
@@ -76,7 +96,7 @@ export class StreamFixtureStopError extends Error {
 //region Native SSE: completed usage allows priority accounting to be observed.
 
 /**
- Create a completed SSE response with default or absent server tier.
+ Create completed SSE response with default or absent server tier.
  Native Codex should retain priority accounting intent for both responses.
 
  @param serviceTier - optional synthetic server-reported tier
@@ -106,10 +126,16 @@ export function createStreamFixtureResponse({
       },
     },
   };
-  return new Response(`data: ${JSON.stringify(event,)}\n\n`, {
-    status: 200,
-    headers: { 'content-type': 'text/event-stream', 'x-stream-fixture-response': 'observed', },
-  },);
+  return new Response(
+    `data: ${JSON.stringify(event,)}\n\n`,
+    {
+      status: 200,
+      headers: {
+        'content-type': 'text/event-stream',
+        'x-stream-fixture-response': 'observed',
+      },
+    },
+  );
 }
 
 //endregion Native SSE

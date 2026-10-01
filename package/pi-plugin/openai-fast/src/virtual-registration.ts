@@ -88,11 +88,15 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
       /**
        Only physical original models can be fast routing bases.
        */
-      const models = input.filter(function physicalModel(model,) { return model.api !== 'pi-virtual'; },);
+      const models = input.filter(function physicalModel(model,) {
+        return model.api !== 'pi-virtual';
+      },);
       /**
        Native IDs validate namespace collisions before registration changes occur.
        */
-      const ids = new Set(models.map(function modelId(model: ForeignBorrowed<Model<Api>>, ) { return model.id; },),);
+      const ids = new Set(models.map(function modelId(model: ForeignBorrowed<Model<Api>>, ) {
+        return model.id;
+      },),);
       for (const model of models) {
         if (model.id
           .startsWith(PRIORITY_TARGET_PREFIX,)

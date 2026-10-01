@@ -1,7 +1,13 @@
 /**
  Keyless readiness contract for a transport adapter that resolves original auth later. @module
  */
-import type { AuthCheck, AuthResult, Model, Api, ProviderAuth, } from '@earendil-works/pi-ai';
+import type {
+  AuthCheck,
+  AuthResult,
+  Model,
+  Api,
+  ProviderAuth,
+} from '@earendil-works/pi-ai';
 
 //region Readiness without credentials
 
@@ -11,7 +17,10 @@ import type { AuthCheck, AuthResult, Model, Api, ProviderAuth, } from '@earendil
  @returns native configured-provider metadata
  */
 function check(): Promise<AuthCheck> {
-  return Promise.resolve({ type: 'api_key' as const, source: 'routes-to-openai-codex', },);
+  return Promise.resolve({
+    type: 'api_key' as const,
+    source: 'routes-to-openai-codex',
+  },);
 }
 
 /**
@@ -20,20 +29,32 @@ function check(): Promise<AuthCheck> {
  @returns empty request authentication with explicit routing provenance
  */
 function resolve(): Promise<AuthResult> {
-  return Promise.resolve({ auth: {}, source: 'routes-to-openai-codex', },);
+  return Promise.resolve({
+    auth: {},
+    source: 'routes-to-openai-codex',
+  },);
 }
 
 /**
  Reusable native keyless auth descriptor does not offer a login implementation.
  */
 export const KEYLESS_AUTH: ProviderAuth = Object.freeze({
-  apiKey: { name: 'Routes to existing Codex login', check, resolve, },
+  apiKey: {
+    name: 'Routes to existing Codex login',
+    check,
+    resolve,
+  },
 });
 
 /**
  Exclude local physical routing targets from normal available-model lists.
 
  @returns empty physical-target availability list
+
+ @example
+ ```ts
+ const targets = noAvailableTargets();
+ ```
  */
 export function noAvailableTargets(): readonly Model<Api>[] {
   return [];
