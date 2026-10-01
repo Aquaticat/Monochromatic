@@ -31,7 +31,7 @@ export function createCatalogCredentials(): CredentialStore {
 }
 
 /**
- Load native provider metadata with global model overrides, without availability checks or network refresh.
+ Load configured Codex metadata and persisted catalogs without real credentials or network refresh.
  @param modelsPath - optional disposable model configuration for tests
  @returns effective native Codex provider whose auth resolves later in the real host
  @throws FastModelError when the model configuration or native provider is unavailable
@@ -45,6 +45,10 @@ export async function loadCodexProvider({ modelsPath, }: { readonly modelsPath?:
     allowModelNetwork: false,
     ...(modelsPath === undefined ? {} : { modelsPath, }),
   },);
+  const refresh = await catalog.refresh({ allowNetwork: false, providers: [CODEX_PROVIDER,], },);
+  const refreshError = refresh.errors.get(CODEX_PROVIDER,);
+  if (refreshError !== undefined)
+    throw new FastModelError(`Cannot restore the Codex model catalog: ${String(refreshError,)}. Correct the cached catalog or model configuration.`,);
   const problem = catalog.getError();
   if (problem !== undefined)
     throw new FastModelError(`Cannot initialize Codex fast models: ${problem}. Correct the model configuration before loading the fast extension.`,);
