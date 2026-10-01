@@ -160,7 +160,8 @@ which is not a total-memory bound.
   Replay removes synthetic task 95 and restores `nextId: 82`.
 - The initial probe assumed managed children received `PI_SESSION_FILE`.
   Node 26.10.0 emitted `AssertionError [ERR_ASSERTION]` at `probe.mjs:23:8`:
-  actual type `undefined`, expected type `string`.
+  actual type `undefined`,
+  expected type `string`.
   `proc_663c` exited 1.
   This was an owned setup error,
   not evidence about the harness's task failure.
@@ -232,17 +233,34 @@ The local diagnosis is not a request to export the session.
 
 ### Upstream filing decision
 
-- Responsibility: the composition boundary is demonstrated;
-  sole upstream ownership is not established.
-- Fixability: independent extension persistence is a possible design direction,
-  not an implemented or API-verified remedy.
-- Supported use case: rpiv-todo's README promises survival across compaction and reload;
-  support for this nested-call combination was not established.
-- Contributions: the cloned README welcomes issues and pull requests and identifies AI co-authorship.
-- Maintainer response: tracker searches were read-only;
-  no acceptance or rejection of this combination was established.
-- Prototype: only the reproduction and direct-snapshot positive control exist.
-  No upstream fix prototype was applied.
+#### Responsibility
+
+The composition boundary is demonstrated;
+sole upstream ownership is not established.
+
+#### Fixability
+
+Independent extension persistence is a possible design direction,
+not an implemented or API-verified remedy.
+
+#### Supported use case
+
+rpiv-todo's README promises survival across compaction and reload;
+support for this nested-call combination was not established.
+
+#### Contributions
+
+The cloned README welcomes issues and pull requests and identifies AI co-authorship.
+
+#### Maintainer response
+
+Tracker searches were read-only;
+no acceptance or rejection of this combination was established.
+
+#### Prototype
+
+Only the reproduction and direct-snapshot positive control exist.
+No upstream fix prototype was applied.
 
 `.out-of-scope/codex-harness.md` excludes Codex integration,
 not this Pi incident.
