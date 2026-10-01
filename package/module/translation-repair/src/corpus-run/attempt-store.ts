@@ -112,6 +112,61 @@ export async function readAttemptMap(attemptsPath: string,): Promise<AttemptMap>
 }
 
 /**
+ Attempts counted for one entry.
+ 
+ @param attempts - counts read from the attempts file and kept through this run
+ 
+ @param id - entry id as the corpus names it, which the counts are keyed by
+ 
+ @returns Its count, 0 where the counts hold none
+ 
+ @example
+ ```ts
+ const count = attemptsOf({ attempts, id: 'Kitten', },);
+ ```
+ */
+export function attemptsOf(
+  {
+    attempts,
+    id,
+  }: {
+    readonly attempts: Readonly<AttemptMap>;
+    readonly id: string;
+  },
+): number {
+  return attempts[id] ?? 0;
+}
+
+/**
+ Counts one more attempt for an entry, before the attempt runs.
+ 
+ @param attempts - counts this run keeps and persists
+ 
+ @param id - entry about to be attempted
+ 
+ @mutates attempts - sets this entry's count to one past what it held
+ 
+ @example
+ ```ts
+ countAttempt({ attempts, id: 'Kitten', },);
+ ```
+ */
+export function countAttempt(
+  {
+    attempts,
+    id,
+  }: {
+    readonly attempts: AttemptMap;
+    readonly id: string;
+  },
+): void {
+  attempts[id] = attemptsOf({
+    attempts,
+    id,
+  },) + 1;
+}
+
+/**
  Persists the attempt map so no reader sees it half-written.
  
  @param attemptsPath - location of the attempts JSON

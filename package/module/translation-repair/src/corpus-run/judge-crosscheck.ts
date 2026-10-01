@@ -347,4 +347,36 @@ export function buildCrosscheckCensus(
   };
 }
 
+/**
+ Claims counted by the status their issue carries, as the crosscheck prints
+ them beside the arms.
+ 
+ @param claims - claims outside the accepted arm, each with its issue's status
+ verbatim from the artifact
+ 
+ @returns Each status with its count, `status=count`, in the order first met,
+ joined by spaces; empty when there are no claims
+ 
+ @example
+ ```ts
+ const line = statusBreakdown({ claims: [...control, ...undecided,], },); // 'rejected=2 needs-human=1'
+ ```
+ */
+export function statusBreakdown(
+  { claims, }: { readonly claims: readonly { readonly status: string; }[]; },
+): string {
+  /**
+   Count per status, in the order first met.
+   */
+  const byStatus: Record<string, number> = {};
+  for (const { status, } of claims)
+    byStatus[status] = (byStatus[status] ?? 0) + 1;
+  return Object
+    .entries(byStatus,)
+    .map(function toPair([status, count,],): string {
+      return `${status}=${String(count,)}`;
+    },)
+    .join(' ',);
+}
+
 //endregion Judge crosscheck census

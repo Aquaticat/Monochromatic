@@ -84,6 +84,8 @@ export {
 export { formatRepairSheet, } from './repair-sheet.ts';
 export {
   type AttemptMap,
+  attemptsOf,
+  countAttempt,
   readAttemptMap,
   writeAttemptMap,
 } from './corpus-run/attempt-store.ts';
@@ -197,6 +199,7 @@ export {
   type CrosscheckArm,
   type CrosscheckCensus,
   type CrosscheckItem,
+  statusBreakdown,
 } from './corpus-run/judge-crosscheck.ts';
 export { readOnlyIds, } from './corpus-run/entry-filter.ts';
 export {

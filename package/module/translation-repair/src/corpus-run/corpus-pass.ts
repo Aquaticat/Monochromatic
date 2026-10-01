@@ -16,6 +16,8 @@ import {
 } from '../writer-grace-override.ts';
 import {
   type AttemptMap,
+  attemptsOf,
+  countAttempt,
   readAttemptMap,
   writeAttemptMap,
 } from './attempt-store.ts';
@@ -467,7 +469,13 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
       - Number(smallIds.has(b.id,),);
     if (bandDelta !== 0)
       return bandDelta;
-    return (attempts[a.id] ?? 0) - (attempts[b.id] ?? 0);
+    return attemptsOf({
+      attempts,
+      id: a.id,
+    },) - attemptsOf({
+      attempts,
+      id: b.id,
+    },);
   },);
 
   console.log(
@@ -598,7 +606,10 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     },
 
     attempt: async function attempt({ entry, },): Promise<EntryOutcome> {
-      attempts[entry.id] = (attempts[entry.id] ?? 0) + 1;
+      countAttempt({
+        attempts,
+        id: entry.id,
+      },);
       // Persisted before the attempt so a crash still records that it happened.
       await writeAttemptMap({
         attemptsPath,

@@ -3,6 +3,7 @@ import { gatherAttributionEntries, } from './attribution-read.ts';
 import {
   buildCrosscheckCensus,
   type CrosscheckItem,
+  statusBreakdown,
 } from './judge-crosscheck.ts';
 import { MIN_JUDGED_CLAIMS, } from './judge-independence.ts';
 import {
@@ -326,25 +327,16 @@ async function main(): Promise<void> {
     return;
   }
 
-  /**
-   Control-arm claims broken down by why the panel refused them.
-   */
-  const byStatus: Record<string, number> = {};
-  for (
-    const { status, } of [
-      ...control,
-      ...undecided,
-    ]
-  )
-    byStatus[status] = (byStatus[status] ?? 0) + 1;
+  // Control-arm and undecided claims broken down by why the panel did not
+  // accept them.
   console.log(
     `NON-ACCEPTED BY STATUS ${
-      Object
-        .entries(byStatus,)
-        .map(function toPair([status, count,],): string {
-          return `${status}=${String(count,)}`;
-        },)
-        .join(' ',)
+      statusBreakdown({
+        claims: [
+          ...control,
+          ...undecided,
+        ],
+      },)
     }`,
   );
 
