@@ -8,6 +8,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { isJsonRecord, } from '../json-guard.ts';
 import { contextRoot, } from '../log-context.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
@@ -260,7 +261,7 @@ function recordOfEnvelope(
     readonly key: string;
   },
 ): unknown {
-  if (((typeof parsed) !== 'object') || (parsed === null))
+  if (!isJsonRecord(parsed,))
     return undefined;
   if ((!('cacheKey' in parsed)) || (!('record' in parsed)))
     return undefined;

@@ -672,6 +672,11 @@ where a reader of structure is not looked for (M88).
 Two readers of a front matter `alias` disagreed on a list:
 one joined its items,
 the other read it as another schema and skipped the identity rule (ledger B97).
+The package's check that parsed JSON is a record admitted arrays,
+and eighteen checks in thirteen files had retyped its test inline rather than calling it,
+so the fix to the shared guard reached none of them;
+the census of the guard's callers listed none of the copies either,
+since it searched by the guard's name (ledger B92).
 
 The rule:
 before writing a helper,
@@ -703,6 +708,10 @@ with the edges no caller reaches among its cases.
 A new reader of a field another reader already reads starts from that reader's shapes,
 and where the two must differ,
 each says how and why.
+A check a shared module owns is called,
+never retyped,
+and a census of a shared check searches for its shape as well as its name,
+in every form the shape is written in (both `===` and `!==`).
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
@@ -722,6 +731,10 @@ The shared helpers (`code-points.ts`,
 `src/directory-listing-scan.unit.test.ts` (ledger B65),
 among the source scans,
 fails on any directory-listing import outside `directory-listing.ts` and the walkers it names with why.
+`src/record-checks.unit.test.ts` (ledger B92),
+among the source scans,
+fails on any `typeof` compared with `object` in the package's source outside `isJsonRecord`
+and the checks it names with why.
 Nothing yet fails on a shared module without its own test:
 a source scan over a classified list of the 167 there are is open (ledger M88).
 

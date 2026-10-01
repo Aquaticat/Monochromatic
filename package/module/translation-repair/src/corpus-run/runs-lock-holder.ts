@@ -1,5 +1,6 @@
 import { hostname, } from 'node:os';
 
+import { isJsonRecord, } from '../json-guard.ts';
 import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
@@ -321,7 +322,7 @@ export async function readHolder(
      */
     const parsed: unknown = await readRunJson({ path, },);
 
-    if (((typeof parsed) !== 'object') || (parsed === null))
+    if (!isJsonRecord(parsed,))
       return { kind: 'unreadable', };
     if ((!('pid' in parsed)) || ((typeof parsed.pid) !== 'number'))
       return { kind: 'unreadable', };

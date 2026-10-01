@@ -1,3 +1,4 @@
+import { isJsonRecord, } from './json-guard.ts';
 import type { IndexPair, } from './pair-agreement.ts';
 
 //region Index pair list
@@ -28,9 +29,7 @@ export function isIndexPairList(value: unknown,): value is readonly IndexPair[] 
   if (!Array.isArray(value,))
     return false;
   return value.every(function isPair(entry: unknown,): boolean {
-    if ((typeof entry) !== 'object')
-      return false;
-    if (entry === null)
+    if (!isJsonRecord(entry,))
       return false;
     if (!('source' in entry))
       return false;
@@ -69,9 +68,7 @@ export function isIndexPairList(value: unknown,): value is readonly IndexPair[] 
 export function isIndexPairingWire(
   value: unknown,
 ): value is { readonly pairs: readonly IndexPair[]; } {
-  if ((typeof value) !== 'object')
-    return false;
-  if (value === null)
+  if (!isJsonRecord(value,))
     return false;
   if (!('pairs' in value))
     return false;

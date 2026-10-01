@@ -305,7 +305,7 @@ function routingFor(
  
  A DISCRIMINATED RESULT rather than a nullable frame, matching `readPayload`
  in `stream-delta-scan.ts`. Returning the caught error as the value would pass
- {@link isJsonRecord}, which narrows only that a value is a non-null object,
+ {@link isJsonRecord}, which narrows only that a value is a non-null object other than an array,
  so an unreadable line would be read as an empty frame instead of counted.
  
  @param payload - one `data:` line's payload, already unwrapped

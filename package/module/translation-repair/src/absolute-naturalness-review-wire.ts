@@ -157,7 +157,7 @@ export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseForm
 export function isAbsoluteNaturalnessReviewWire(
   value: unknown,
 ): value is AbsoluteNaturalnessReviewWire {
-  if (((typeof value) !== 'object') || (value === null))
+  if (!isJsonRecord(value,))
     return false;
   if (!('acceptable' in value))
     return false;

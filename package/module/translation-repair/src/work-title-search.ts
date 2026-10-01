@@ -1,3 +1,4 @@
+import { isJsonRecord, } from './json-guard.ts';
 import type { LookupHit, } from './lookup-cache.ts';
 
 //region Work-title search
@@ -83,7 +84,7 @@ type SearchResultWire = {
 export function hitsOf(
   { value, }: { readonly value: unknown; },
 ): readonly LookupHit[] {
-  if (((typeof value) !== 'object') || (value === null))
+  if (!isJsonRecord(value,))
     return [];
   /**
    Fields read.
@@ -179,12 +180,15 @@ export async function searchWorkTitle(
    Parsed body.
    */
   const parsed: unknown = await response.json();
+  if (!isJsonRecord(parsed,)) {
+    throw new WorkTitleLookupError({
+      message: `search answered with a body that is not an object for ${query}`,
+    },);
+  }
   /**
-   Results field when the body is an object.
+   Results field.
    */
-  const results = (((typeof parsed) === 'object') && (parsed !== null))
-    ? (parsed as { readonly results?: unknown; }).results
-    : [];
+  const { results, } = parsed;
   if (!Array.isArray(results,)) {
     throw new WorkTitleLookupError({
       message: `search answered without a results array for ${query}`,

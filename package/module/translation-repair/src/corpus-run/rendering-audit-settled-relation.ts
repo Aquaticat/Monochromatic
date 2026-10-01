@@ -1,3 +1,4 @@
+import { isJsonRecord, } from '../json-guard.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import { anchoredClaims, } from './rendering-audit-settled-read.ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
@@ -157,9 +158,7 @@ export function pageRelationOf(
  ```
  */
 function isRecordedRelation(value: unknown,): value is SettledPageRelation {
-  if ((typeof value) !== 'object')
-    return false;
-  if (value === null)
+  if (!isJsonRecord(value,))
     return false;
 
   /**

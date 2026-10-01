@@ -1,3 +1,4 @@
+import { isJsonRecord, } from '../json-guard.ts';
 import { isLowerHexDigit, } from '../ascii-letters.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
@@ -212,7 +213,7 @@ export async function readPlacement(
       path: `${artifactsDir}/${name}`,
     },);
 
-    if (((typeof parsed) !== 'object') || (parsed === null))
+    if (!isJsonRecord(parsed,))
       return { kind: 'untagged', };
 
     // The file name is what the pool keys on and what the scheduler calls

@@ -1,5 +1,6 @@
 import { createHash, } from 'node:crypto';
 
+import { isJsonRecord, } from '../json-guard.ts';
 import type {
   AuditedTextIdentity,
   SettledAuditRow,
@@ -113,7 +114,7 @@ function isDigested(value: unknown,): value is {
   readonly candidate: string;
   readonly references?: string;
 } {
-  if ((value === null) || ((typeof value) !== 'object'))
+  if (!isJsonRecord(value,))
     return false;
 
   /**

@@ -1,5 +1,6 @@
 import { join, } from 'node:path';
 
+import { isJsonRecord, } from '../json-guard.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import {
@@ -333,9 +334,7 @@ function readRecordedTallies(
    Probe block, absent on a record the stage never probed.
    */
   const probe = record.introducedDefects;
-  if ((typeof probe) !== 'object')
-    return {};
-  if (probe === null)
+  if (!isJsonRecord(probe,))
     return {};
   if (!('regions' in probe))
     return {};

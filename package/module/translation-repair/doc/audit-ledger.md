@@ -16463,6 +16463,118 @@ Recurrence:
 a table split in two lets one half answer where the other has nothing;
 a note claiming a design is forced is checked against the smallest table that would hold it.
 
+### B92: a JSON array read as a record
+
+Found 2026-10-01 (UTC) by a census of `isJsonRecord`'s calls,
+red in `ee6e5b1c5`,
+fixed in the commit adding this entry.
+`isJsonRecord` (`json-guard.ts`) answered true for an array,
+and its TSDoc called that harmless:
+"numeric-keyed probes simply miss".
+The census read its 129 calls in 62 production files
+and found 38 where an array let through changed what a reader did,
+and none that needed an array to pass.
+An array where a record belonged was read as
+an Anthropic frame or delta naming no type and passed over uncounted,
+a usage-only stream event,
+a resumable slice or translate cache record and a settled consolidation round with no further check,
+an issue view with an empty status,
+decision answers keyed "0" and "1",
+attempt counts keyed by index,
+a found stream error with every field unnamed,
+or a body that reached a later,
+less precise refusal than its own.
+Three modules refused arrays on their own beside the guard:
+`artifact-guard.ts`'s `requireRecord`,
+whose TSDoc gave as its reason that nineteen other modules used the guard
+"for values where an array is legitimate",
+which the census did not bear out;
+`corpus-run/pass-schema-census.ts`;
+and `artifact-exact-guard.ts`,
+by testing for an array first.
+
+The guard now refuses arrays,
+and the three local refusals defer to it.
+The red commit's fourteen cases,
+one per kind of reader,
+pass;
+one of them never ran red,
+since its file stopped at the first failing suite
+(the multi-suite defect this audit fixes separately).
+A fifteenth case,
+for `isLookupRecord` (`lookup-cache.ts`),
+built an array carrying the record's fields with `Object.assign`;
+it was dropped,
+since `isLookupRecord` now calls the guard,
+whose own case covers it,
+and no file read through `JSON.parse` yields such a value.
+
+A second lapse sat beside the first.
+Eighteen checks in thirteen files wrote the guard's old test inline
+(`typeof value === 'object'` and `value !== null`)
+rather than calling it,
+so the fix to the guard reached none of them,
+and the census of the guard's calls,
+which searched by its name,
+listed none.
+Each now calls `isJsonRecord`,
+among them `isLookupRecord` and `isLookupHit`,
+the run lock's holder reader,
+the slice cache's namespace reader,
+the roster card's row check
+(which already refused arrays),
+and the three front matter readers in `corpus-run/directory-id-name.ts`,
+which now read fields off the narrowed record without casts.
+The first census of those inline checks searched only the `===` form,
+and an edit anchored on one check matched two in `lookup-cache.ts`
+before the `!==` form was searched.
+One reader changes what it does:
+the work-title search read an answer that is not an object as no results,
+and now refuses it,
+as the cited-reference fetch refuses one;
+its refusal case gains that answer.
+
+Reach:
+not measured over stored replies or cache files.
+The readers face provider streams,
+the package's own cache and record files,
+which it writes as objects,
+and front matter;
+an array reaches them only from a provider answering out of contract
+or a file written by something else.
+No cache version moves:
+the change refuses only records whose named fields are arrays,
+which the package's writers never produce.
+
+What enforces it:
+`src/record-checks.unit.test.ts`,
+among the source scans,
+fails on any `typeof` compared with `object` in the package's source outside `isJsonRecord`
+and the seven checks it names with why
+(a caught error read for its code,
+stderr or position,
+a member a type says cannot exist,
+a spend reading whose other members are text,
+and the shape a message names),
+and fails when a named check no longer stands.
+Its fixture case runs first;
+with one converted check in `index-pair-list.ts` written inline again,
+its package case failed,
+and passed once the check was restored.
+
+Calls made here are open to veto:
+
+- the guard itself refuses arrays,
+  rather than a second predicate beside it;
+- a work-title search answer that is not an object is refused,
+  rather than read as no results;
+- the seven exemptions;
+- the `Object.assign` case dropped for the guard's own.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
 ### B93: delta frames the Anthropic scanner could not read, passed over uncounted
 
 Found in T8's twenty-second batch,

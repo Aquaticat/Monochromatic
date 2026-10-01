@@ -148,14 +148,13 @@ export function requireBoolean(
 /**
  Reads a required record, throwing when the value is any other shape.
  
- Arrays are refused even though they satisfy `isJsonRecord`, whose test is
- `typeof value === 'object' && value !== null`. Every call site here reads a
- JSON object: a manifest, an item, a region, a claim, an artifact, an issue, a
- tally. Letting an array through would return something whose named properties
- are all `undefined`, so the failure would surface later as a confusing
- complaint about a missing field rather than here as the shape error it is.
- The check is local rather than in `isJsonRecord` because nineteen other
- modules share that guard for values where an array is legitimate.
+ Arrays are refused, as `isJsonRecord` refuses them. Every call site here
+ reads a JSON object: a manifest, an item, a region, a claim, an artifact, an
+ issue, a tally. Letting an array through would return something whose named
+ properties are all `undefined`, so the failure would surface later as a
+ confusing complaint about a missing field rather than here as the shape error
+ it is. This module refused arrays on its own until `isJsonRecord` did
+ (ledger B92).
  
  @param value - value to check
  
@@ -180,7 +179,7 @@ export function requireRecord(
     readonly path: string;
   },
 ): Record<string, unknown> {
-  if ((!isJsonRecord(value,)) || isJsonArray(value,))
+  if (!isJsonRecord(value,))
     throw new ArtifactParseError({
       path,
       reason: 'an object',

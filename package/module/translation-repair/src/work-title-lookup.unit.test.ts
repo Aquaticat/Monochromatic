@@ -299,7 +299,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a non-2xx answer and a body without results, naming the query and never the key',
+      name: 'REFUSES a non-2xx answer, a body that is not an object and a body without results, naming the query '
+        + 'and never the key',
       fn: async () => {
         /**
          Refusing transport.
@@ -348,6 +349,31 @@ await describe({
           thrownShapeless = error;
         }
         expect(thrownShapeless instanceof WorkTitleLookupError,).toBe(true,);
+
+        /**
+         Transport answering a JSON array, which read as no results before
+         `isJsonRecord` refused arrays (ledger B92).
+         */
+        const listed = stubFetch({
+          status: 200,
+          body: [{ title: 'Whiskers at Dusk', },],
+        },);
+        /**
+         What the array answer threw.
+         */
+        let thrownListed: unknown;
+        try {
+          await searchWorkTitle({
+            apiKey: 'secret-key',
+            query: '《活着》 official English title',
+            signal: SIGNAL,
+            fetchFn: listed.fetchFn,
+          },);
+        } catch (error) {
+          thrownListed = error;
+        }
+        expect(thrownListed instanceof WorkTitleLookupError,).toBe(true,);
+        expect((thrownListed as Error).message,).toContain('a body that is not an object',);
       },
     },),
   ],

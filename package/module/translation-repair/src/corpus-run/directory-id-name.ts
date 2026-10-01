@@ -1,5 +1,6 @@
 import { pinyin, } from 'pinyin-pro';
 
+import { isJsonRecord, } from '../json-guard.ts';
 import type { FrontMatterBlock, } from '../front-matter.ts';
 import { isAsciiLetter, } from '../ascii-letters.ts';
 
@@ -88,15 +89,13 @@ function nameOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): strin
    Parsed YAML, unknown until proven a record with a name.
    */
   const { data, } = metadata;
-  if (((typeof data) !== 'object') || (data === null))
-    return '';
-  if (!('name' in data))
+  if (!isJsonRecord(data,))
     return '';
 
   /**
    Whatever the YAML put under `name`.
    */
-  const { name, } = data as { readonly name: unknown; };
+  const { name, } = data;
   return ((typeof name) === 'string') ? name : '';
 }
 
@@ -144,25 +143,21 @@ function aliasesOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): re
    Parsed YAML, unknown until proven a record with an alias.
    */
   const { data, } = metadata;
-  if (((typeof data) !== 'object') || (data === null))
-    return [];
-  if (!('info' in data))
+  if (!isJsonRecord(data,))
     return [];
 
   /**
    Whatever the YAML put under `info`.
    */
-  const { info, } = data as { readonly info: unknown; };
-  if (((typeof info) !== 'object') || (info === null))
-    return [];
-  if (!('alias' in info))
+  const { info, } = data;
+  if (!isJsonRecord(info,))
     return [];
 
   /**
    Whatever the YAML put under `alias`: a string in the corpus, a list in
    principle.
    */
-  const { alias, } = info as { readonly alias: unknown; };
+  const { alias, } = info;
 
   /**
    Alias text joined on the plain comma when a list was given.

@@ -195,8 +195,8 @@ export function requireArtifactJsonValue(
     },);
   }
 
-  // AFTER the array case, since `isJsonRecord` answers true for arrays: an
-  // array read as a record would come back with numeric keys and no complaint.
+  // An array took its own case, and `isJsonRecord` refuses one in any order
+  // (ledger B92), so what reaches this case is an object.
   if (isJsonRecord(value,)) {
     return Object.fromEntries(Object.entries(value,)
       .map(function readEntry([

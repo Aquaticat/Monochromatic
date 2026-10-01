@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { isJsonRecord, } from '../json-guard.ts';
 import { wholeOpening, } from '../code-points.ts';
 import { errorName, } from '../error-name.ts';
 import {
@@ -98,8 +99,7 @@ function isHealthReply(value: unknown,): value is {
   readonly count: number;
   readonly first: string;
 } {
-  return ((typeof value) === 'object')
-    && (value !== null)
+  return isJsonRecord(value,)
     && ('count' in value)
     && ('first' in value);
 }

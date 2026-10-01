@@ -5,7 +5,6 @@ import { requireArtifactParseRefusal, } from '../artifact-guard.ts';
 import { readArtifactSchemaVersion, } from '../artifact-schema-version.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
-  isJsonArray,
   isJsonRecord,
   requireJsonSyntaxRefusal,
 } from '../json-guard.ts';
@@ -124,11 +123,11 @@ function classifyArtifact(
     readonly entryId: string;
   },
 ): SchemaClassification {
-  // AN ARRAY IS NOT A RECORD HERE, whatever `isJsonRecord` lets through for
-  // field probing. Left to the version reader it carries no version field and
-  // would be filed as an unversioned generation, which is a sound result to
-  // keep; a file that is a JSON array is a file to investigate.
-  if ((!isJsonRecord(artifact,)) || isJsonArray(artifact,)) {
+  // AN ARRAY IS NOT A RECORD HERE, and `isJsonRecord` refuses one (ledger
+  // B92). Left to the version reader it would carry no version field and be
+  // filed as an unversioned generation; a file that is a JSON array is a file
+  // to investigate.
+  if (!isJsonRecord(artifact,)) {
     return {
       kind: 'malformed',
       reason: 'a JSON object, which is what every generation of this artifact is',

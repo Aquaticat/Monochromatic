@@ -200,7 +200,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES an array, which `isJsonRecord` alone would admit: an array '
+      name: 'REFUSES an array, as `isJsonRecord` does since ledger B92: an array '
         + 'reaching a record reader returns an object whose every named field '
         + 'is undefined, so the real shape error would resurface later as a '
         + 'complaint about a missing property',

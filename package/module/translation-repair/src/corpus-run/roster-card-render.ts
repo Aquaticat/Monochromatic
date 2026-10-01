@@ -1,3 +1,4 @@
+import { isJsonRecord, } from '../json-guard.ts';
 import type { CardProvider, } from '../model-card-derive.ts';
 import { isUnsignedNumberText, } from '../whole-number-text.ts';
 
@@ -56,9 +57,7 @@ const TOKENS_PER_MILLION = 1_000_000;
  @returns Whether it can be indexed by field name
  */
 function isRow(value: unknown,): value is ListingRow {
-  return ((typeof value) === 'object')
-    && (value !== null)
-    && (!Array.isArray(value,));
+  return isJsonRecord(value,);
 }
 
 /**

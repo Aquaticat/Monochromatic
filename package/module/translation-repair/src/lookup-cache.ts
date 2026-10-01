@@ -9,6 +9,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { isJsonRecord, } from './json-guard.ts';
 import { contextRoot, } from './log-context.ts';
 
 //region Lookup cache
@@ -188,7 +189,7 @@ export function lookupCachePath(
  ```
  */
 export function isLookupHit(value: unknown,): value is LookupHit {
-  if (((typeof value) !== 'object') || (value === null))
+  if (!isJsonRecord(value,))
     return false;
   /**
    Candidate fields.
@@ -216,7 +217,7 @@ export function isLookupHit(value: unknown,): value is LookupHit {
  ```
  */
 export function isLookupRecord(value: unknown,): value is LookupRecord {
-  if (((typeof value) !== 'object') || (value === null))
+  if (!isJsonRecord(value,))
     return false;
   /**
    Candidate fields.

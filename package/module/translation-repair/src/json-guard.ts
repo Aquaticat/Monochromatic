@@ -3,8 +3,11 @@
 // protocol parsing (quotas, completions) and model-content validation build on it.
 
 /**
- Narrows unknown JSON to a plain record for field probing.
- Arrays pass too, which is harmless: numeric-keyed probes simply miss.
+ Narrows unknown JSON to a plain record for field probing. An array is
+ refused: every reader that probes named fields reads an object, and an array
+ let through read as an event naming no type, a resumable cache record, or
+ answers keyed "0" and "1" (ledger B92). The package's other checks for an
+ object call this one, which a source scan holds (`record-checks.unit.test.ts`).
  
  @param value - candidate from parsed JSON
  
@@ -16,7 +19,9 @@
  ```
  */
 export function isJsonRecord(value: unknown,): value is Record<string, unknown> {
-  return ((typeof value) === 'object') && (value !== null);
+  return ((typeof value) === 'object')
+    && (value !== null)
+    && (!Array.isArray(value,));
 }
 
 /**

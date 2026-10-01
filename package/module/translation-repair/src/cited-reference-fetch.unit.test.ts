@@ -1,12 +1,11 @@
 /**
  Tests for reading the contents endpoint's answer for one cited reference.
 
- `fetchedOf` HAD NO TEST. Its own refusal for a body that is not an object
- names itself precisely ("contents answered with a body that is not an
- object"), but an array body reaches a DIFFERENT, less precise refusal
- instead ("contents answered without a results array"), because `isJsonRecord`
- admits the array and lets the function read past its own documented check
- (ledger B92).
+ `fetchedOf` had no test before ledger B92. Its refusal of a body that is not
+ an object names that check ("contents answered with a body that is not an
+ object"); an array body reached a later, less precise refusal ("contents
+ answered without a results array") while `isJsonRecord` admitted arrays, so
+ the array case asserts the message, the only place the two differ.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
