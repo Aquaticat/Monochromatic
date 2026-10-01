@@ -129,7 +129,8 @@ export function createPriorityProvider({ provider, getProvider, lookup, dispatch
     auth: {
       apiKey: {
         name: 'Routes to existing Codex login',
-        resolve: async function resolve() { return { auth: {}, source: 'routes-to-openai-codex', }; },
+        check: function check() { return Promise.resolve({ type: 'api_key' as const, source: 'routes-to-openai-codex', },); },
+        resolve: function resolve() { return Promise.resolve({ auth: {}, source: 'routes-to-openai-codex', },); },
       },
     },
     getModels,

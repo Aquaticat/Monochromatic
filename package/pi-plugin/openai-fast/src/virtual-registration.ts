@@ -37,7 +37,7 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
     state.synchronizing = true;
     /** Reset the owned latch on every scope exit, including registration errors. */
     using guard = {
-      [Symbol.dispose]: function releaseRegistration() { state.synchronizing = false; },
+      [Symbol.dispose]: function releaseRegistration(): void { state.synchronizing = false; },
     };
       /** Only physical original models can be fast routing bases. */
       const models = input.filter(function physicalModel(model,) { return model.api !== 'pi-virtual'; },);

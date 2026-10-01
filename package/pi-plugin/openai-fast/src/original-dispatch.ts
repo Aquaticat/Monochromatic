@@ -38,7 +38,7 @@ export class OriginalDispatch {
   /**
    Bind subsequent requests to the initialized host's original model registry.
    @param registry - host model lookup and authenticated dispatch capability
-   @mutates this - replaces the session-owned registry binding
+   @remarks Replaces the receiver's session-owned registry binding.
    */
   bind(registry: ForeignHostCapability<ModelRegistry>,): void {
     this.#registry = registry;
