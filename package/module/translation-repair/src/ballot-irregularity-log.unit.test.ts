@@ -15,7 +15,6 @@
  @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -31,6 +30,7 @@ import {
   type SyntheticClient,
   UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
+import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -62,44 +62,6 @@ const VOICES = [
  The voice whose ballot repeats an entry.
  */
 const [IRREGULAR,] = VOICES;
-
-/**
- Logger that keeps every line it is given.
-
- @returns Logger beside its captured lines
-
- @example
- ```ts
- const { logger, lines, } = capturingLogger();
- ```
- */
-function capturingLogger(): { readonly logger: Logger; readonly lines: readonly string[]; } {
-  /**
-   Lines written, in order.
-   */
-  const lines: string[] = [];
-
-  /**
-   Keeps one line.
-
-   @param message - line written
-   */
-  function keep(message: string,): void {
-    lines.push(message,);
-  }
-  return {
-    lines,
-    logger: {
-      debug: keep,
-      error: keep,
-      fatal: keep,
-      flush: async () => {},
-      info: keep,
-      trace: keep,
-      warn: keep,
-    },
-  };
-}
 
 /**
  Client answering both stages, the irregular voice repeating its first entry.
@@ -191,7 +153,7 @@ await describe({
     it({
       name: 'the checker stage LOGS a duplicated check with the checker that cast it',
       fn: async () => {
-        const { logger, lines, } = capturingLogger();
+        const { logger, lines, } = capturingLoggerPair();
         await runCheckerStage({
           client: CLIENT,
           checkerModelIds: [...VOICES,].slice(0, 3,),
@@ -217,7 +179,7 @@ await describe({
     it({
       name: 'the panel stage LOGS a duplicated verdict with the panelist that cast it',
       fn: async () => {
-        const { logger, lines, } = capturingLogger();
+        const { logger, lines, } = capturingLoggerPair();
         await runPanelStage({
           client: CLIENT,
           // THREE, so every panelist sits on the packet: a packet seats three,

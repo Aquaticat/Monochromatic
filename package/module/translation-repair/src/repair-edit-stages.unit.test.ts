@@ -33,6 +33,7 @@ import {
   type SyntheticClient,
   UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
+import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -180,44 +181,6 @@ async function runStage(
   },);
 }
 
-/**
- Logger that keeps every line so a case can read what the stage published.
- 
- @returns Logger beside its captured lines
- 
- @example
- ```ts
- const { logger, lines, } = capturingLogger();
- ```
- */
-function capturingLogger() {
-  /**
-   Lines the stage emitted, in order.
-   */
-  const lines: string[] = [];
-
-  /**
-   Records one line and discards its level, which no case here asks about.
-   
-   @param message - line the stage published
-   */
-  function record(message: string,): void {
-    lines.push(message,);
-  }
-  return {
-    lines,
-    logger: {
-      debug: record,
-      error: record,
-      fatal: record,
-      flush: async () => {},
-      info: record,
-      trace: record,
-      warn: record,
-    },
-  };
-}
-
 await describe({
   name: runCheckerStage.name,
   children: [
@@ -255,7 +218,7 @@ await describe({
         const {
           lines,
           logger,
-        } = capturingLogger();
+        } = capturingLoggerPair();
 
         /**
          Authorship making the first checker an author of this issue's text
@@ -303,7 +266,7 @@ await describe({
         const {
           lines,
           logger,
-        } = capturingLogger();
+        } = capturingLoggerPair();
         await runStage({
           client: checkerClient({
             reportFor: () => ({

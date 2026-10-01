@@ -5,10 +5,7 @@
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -23,6 +20,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -71,38 +69,6 @@ const PROVIDER_GROUPED_ROSTER = [
   SEAT_HYPER_VISION,
   SEAT_HYPER_TEXT_BEDROCK,
 ] as const;
-
-/**
- Builds logger retaining operational messages for assertions.
- 
- @param messages - destination in emission order
- 
- @returns Logger appending every level to destination
- 
- @example
- ```ts
- const messages: string[] = [];
- const l = capturingLogger({ messages, },);
- ```
- */
-function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
-  /**
-   Retains one emitted message.
-   */
-  function keep(message: string,): void {
-    messages.push(message,);
-  }
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    info: keep,
-    trace: keep,
-    warn: keep,
-    flush: async function flush(): Promise<void> {},
-  };
-}
 
 /**
  Builds reviewer client from per-model status and optional delayed rejection.

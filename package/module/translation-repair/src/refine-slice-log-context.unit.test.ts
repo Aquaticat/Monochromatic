@@ -15,7 +15,6 @@
  @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -33,6 +32,7 @@ import {
   type SyntheticClient,
   UNATTRIBUTED_TEXT,
 } from '../dist/final/node/index.mjs';
+import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -201,51 +201,13 @@ const CLIENT: SyntheticClient = {
   },
 };
 
-/**
- Logger that keeps every line it is given.
-
- @returns Logger beside its captured lines
-
- @example
- ```ts
- const { logger, lines, } = capturingLogger();
- ```
- */
-function capturingLogger(): { readonly logger: Logger; readonly lines: readonly string[]; } {
-  /**
-   Lines written, in order.
-   */
-  const lines: string[] = [];
-
-  /**
-   Keeps one line.
-
-   @param message - line written
-   */
-  function keep(message: string,): void {
-    lines.push(message,);
-  }
-  return {
-    lines,
-    logger: {
-      debug: keep,
-      error: keep,
-      fatal: keep,
-      flush: async () => {},
-      info: keep,
-      trace: keep,
-      warn: keep,
-    },
-  };
-}
-
 await describe({
   name: 'refinement lines name their slice (ledger L12)',
   children: [
     it({
       name: 'EVERY round line the phase writes while refining a slice carries `[repair slice N]`',
       fn: async () => {
-        const { logger, lines, } = capturingLogger();
+        const { logger, lines, } = capturingLoggerPair();
         await runRefinePhase({
           declaredNames: [],
           client: CLIENT,

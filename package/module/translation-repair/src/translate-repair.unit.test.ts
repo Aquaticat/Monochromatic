@@ -13,10 +13,7 @@
  @module
  */
 
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -36,6 +33,7 @@ import {
   type SyntheticClient,
   type VisionMessage,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -153,39 +151,6 @@ function repairClient(
 }
 
 /**
- Logger keeping every line it is handed, so a case can read the run log a
- refused candidate leaves.
-
- @param lines - sink each emitted line is appended to
-
- @returns Logger writing only to that sink
-
- @example
- ```ts
- const said: string[] = [];
- const captured = capturingLogger({ lines: said, },);
- ```
- */
-function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
-  /**
-   Retains one emitted line.
-   */
-  function keep(line: string,): void {
-    lines.push(line,);
-  }
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    info: keep,
-    trace: keep,
-    warn: keep,
-    flush: async function flush(): Promise<void> {},
-  };
-}
-
-/**
  Runs one candidate through validation and any follow-up it earns.
  
  @param translation - what the translator returned
@@ -261,7 +226,7 @@ async function runRepair(
     priorMessages: PRIOR_MESSAGES,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
-    l: (said === undefined) ? l : capturingLogger({ lines: said, },),
+    l: (said === undefined) ? l : capturingLogger({ messages: said, },),
   },);
   return {
     repaired,

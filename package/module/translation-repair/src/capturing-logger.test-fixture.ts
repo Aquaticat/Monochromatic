@@ -4,8 +4,10 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 // A LOGGER THAT KEEPS EVERY LINE, for cases that read what the code under
 // test logged.
 //
-// TEST SUPPORT, NOT PACKAGE SOURCE. Many unit test files carry their own copy
-// of this; new cases import this one.
+// TEST SUPPORT, NOT PACKAGE SOURCE. Unit test files that kept their own copy
+// of these loggers, whatever they called the array, now import them from
+// here. Loggers that only look alike stay in their files: one pair records
+// warnings alone over its file's own tagged logger.
 
 /**
  Drains nothing: every line is kept as it is emitted, so no buffer waits.
@@ -50,6 +52,32 @@ export function capturingLogger({ messages, }: { readonly messages: string[]; },
     info: keep,
     trace: keep,
     warn: keep,
+  };
+}
+
+/**
+ Logger paired with its own backing array, for cases with no array of their
+ own to pass in.
+
+ @returns Logger plus the array every level writes into
+
+ @example
+ ```ts
+ const { logger, lines, } = capturingLoggerPair();
+ ```
+ */
+export function capturingLoggerPair(): {
+  readonly logger: Logger;
+  readonly lines: readonly string[];
+} {
+  /**
+   Lines written, in order.
+   */
+  const lines: string[] = [];
+
+  return {
+    lines,
+    logger: capturingLogger({ messages: lines, },),
   };
 }
 

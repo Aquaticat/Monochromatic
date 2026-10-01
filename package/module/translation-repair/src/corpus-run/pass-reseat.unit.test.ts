@@ -14,10 +14,7 @@
  @module
  */
 
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -37,6 +34,7 @@ import {
   preparationHooksFor,
   prepareDocumentPair,
 } from '../../dist/final/node/index.mjs';
+import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_ONLY,
@@ -91,38 +89,6 @@ const SHORT_HOLD_MS = 40;
  Logger the hooks write to.
  */
 const l = tagged({ tag: 'pass-reseat-test', },);
-
-/**
- Builds a logger keeping every message, so a case can read the line a hook
- wrote and the phase it names.
-
- @param messages - destination in emission order
-
- @returns Logger appending every level to the destination
-
- @example
- ```ts
- const lines: string[] = [];
- const hooks = contestHooksFor({ client, signal, l: capturingLogger({ messages: lines, },), },);
- ```
- */
-function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
-  /**
-   Keeps one message.
-   */
-  function keep(message: string,): void {
-    messages.push(message,);
-  }
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    info: keep,
-    trace: keep,
-    warn: keep,
-    flush: async function flush(): Promise<void> {},
-  };
-}
 
 /**
  Builds a client whose holds can change between chunks and which counts

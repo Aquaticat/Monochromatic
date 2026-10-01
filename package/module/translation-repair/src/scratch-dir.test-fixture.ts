@@ -2,9 +2,11 @@
  Throwaway directories for tests that write files, removed when their scope
  ends.
 
- ONE COPY. Eight test files each kept their own copy of this helper, with only
- the directory prefix differing; new tests import it from here, and the copies
- move here in their own change.
+ ONE COPY. Test files that kept their own copy of this helper, under names
+ such as `throwawayCacheDir` or `scratchDirectory`, with only the directory
+ prefix and the field name on the returned handle differing, now import it
+ from here. Helpers that make a directory and never remove it are a different
+ behaviour and stay in their files until they gain a disposer of their own.
 
  @module
  */

@@ -42,6 +42,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 
 /**
  Logger for the driver under test.
@@ -317,7 +318,7 @@ function replyFor(
     return { translation: renderingFor({ content, },), };
   if (schema === 'candidate_ballot') {
     return {
-      best: pickCandidate({
+      best: candidateCarrying({
         content,
         needle: FRESH,
       },),
@@ -345,49 +346,6 @@ function renderingFor({ content, }: { readonly content: string; },): string {
   if (content.includes('## 第二节',))
     return '## Section two\n\nA bird sits on the windowsill.';
   return FRESH;
-}
-
-/**
- Finds the one-based candidate index whose rendering carries a needle.
- 
- @param content - judge user message
- 
- @param needle - text the wanted candidate contains
- 
- @returns One-based index, or zero when no candidate carries it
- 
- @example
- ```ts
- const best = pickCandidate({ content, needle: FRESH, },);
- ```
- */
-function pickCandidate(
-  {
-    content,
-    needle,
-  }: {
-    readonly content: string;
-    readonly needle: string;
-  },
-): number {
-  /**
-   Sheet split at each candidate heading; the first piece is the evidence.
-   */
-  const [, ...blocks] = content.split('CANDIDATE ',);
-  for (const block of blocks) {
-    /**
-     Heading line carrying this candidate's number.
-     */
-    const [heading = '',] = block.split('\n',);
-
-    /**
-     Number the heading states.
-     */
-    const index = Math.trunc(Number(heading,),);
-    if (Number.isInteger(index,) && block.includes(needle,))
-      return index;
-  }
-  return 0;
 }
 
 /**

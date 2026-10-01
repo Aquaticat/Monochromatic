@@ -19,49 +19,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  mkdtemp,
   readdir,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { trackDrawOutputs, } from '../../dist/final/node/index.mjs';
-
-/**
- Makes a throwaway directory and removes it when the scope ends.
- 
- @returns Directory path plus its disposer
- 
- @example
- ```ts
- await using scratch = await scratchDir();
- ```
- */
-async function scratchDir(): Promise<AsyncDisposable & {
-  readonly path: string;
-}> {
-  /**
-   Throwaway directory for one case.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-draw-',
-  ),);
-  return {
-    path,
-    async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
   name: trackDrawOutputs.name,
@@ -72,7 +36,7 @@ await describe({
         + 'final path that exists, so a half-written set would block every '
         + 'later draw on files nobody had graded',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-draw-', },);
         /**
          Sheet the draw got as far as writing.
          */
@@ -100,7 +64,7 @@ await describe({
         + 'the record of one draw and the manifest inside it is the only thing '
         + 'that can ever join a human grade to a machine verdict',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-draw-', },);
 
         {
           await using outputs = trackDrawOutputs({ enabled: true, },);
@@ -142,7 +106,7 @@ await describe({
         + 'that swept the directory rather than its own list would destroy '
         + 'exactly the work the overwrite guard exists to protect',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-draw-', },);
         /**
          Graded sheet from an earlier round, untouched by this draw.
          */
@@ -182,7 +146,7 @@ await describe({
         + 'the ordinary shape of the failure: the write that threw is the one '
         + 'whose file may never have been created',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-draw-', },);
 
         await using outputs = trackDrawOutputs({ enabled: true, },);
         outputs.record({
@@ -204,7 +168,7 @@ await describe({
         + 'invocation never created; and they carry no overwrite guard, so a '
         + 'partial one is replaced by the next draw rather than blocking it',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-draw-', },);
         /**
          Preliminary sheet standing in for one an earlier draw left behind.
          */
@@ -235,7 +199,7 @@ await describe({
         + 'Recording on success alone would leave exactly that file behind, and '
         + 'it is the one the overwrite guard then refuses to replace',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-draw-', },);
         /**
          Path recorded first, then written only partially.
          */

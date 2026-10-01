@@ -27,12 +27,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   mkdir,
-  mkdtemp,
-  rm,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -44,6 +41,7 @@ import {
   stageQuorumUnmetFinding,
   TRANSLATE_SLICE_CACHE_VERSION,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -56,41 +54,6 @@ import {
  filled by another pipeline is discarded rather than resumed.
  */
 const TEST_GENERATION = `sha256-tree-v1:${'a'.repeat(64,)}`;
-
-/**
- Throwaway directory removed on scope exit.
- 
- @returns Disposable directory handle
- 
- @example
- ```ts
- await using scratch = await scratchDir();
- ```
- */
-async function scratchDir(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-slice-cache-',
-  ),);
-  return {
-    path,
-    [Symbol.asyncDispose]: async function removeScratch() {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
 
 /**
  A complete outcome, carrying every field the loader checks before trusting a
@@ -192,7 +155,7 @@ await describe({
             + 'becomes a file name, resume would never hit, every run would '
             + 'recompute every slice, and nothing would error',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory.
@@ -229,7 +192,7 @@ await describe({
           name: 'DISCARDS a persisted slice whose findings say a stage heard fewer than quorum, so an '
             + 'outage is re-asked on the next run rather than resumed as a decision',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
             /**
              Entry directory for this case.
              */
@@ -267,7 +230,7 @@ await describe({
             + 'under some other key is otherwise resumed as though it answered this one, and the driver '
             + 'splices text into a slice it was never computed for',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory.
@@ -318,7 +281,7 @@ await describe({
             + 'from cached slices and half from current code looks like ordinary '
             + 'work to every filter downstream while being internally mixed',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory.
@@ -370,7 +333,7 @@ await describe({
             + 'that cannot prove which pipeline filled it is exactly the case the '
             + 'stamp exists to remove',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory, filled by hand without a marker.
@@ -403,7 +366,7 @@ await describe({
           name: 'creates the entry directory when it is absent, so a first run '
             + 'needs no setup and resumes from nothing',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Cache over a directory nested two levels below anything existing.
@@ -428,7 +391,7 @@ await describe({
             + 'would silently mix outputs from two versions of the pipeline into '
             + 'one document',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory holding one outdated file.
@@ -470,7 +433,7 @@ await describe({
             + 'hard cap can leave one, and recomputing that slice is correct while '
             + 'aborting the resume is not',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory holding one truncated file.
@@ -500,7 +463,7 @@ await describe({
           name: 'ignores files that are not slice outcomes at all, so a stray log '
             + 'or note in the directory cannot become a resumed slice',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory holding one real slice and one stray file.
@@ -531,7 +494,7 @@ await describe({
             + 'so a slice settled under the older shape is recomputed rather than '
             + 'resumed with no ballots and no declared-name verdict on it',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory holding one outcome of the older shape.
@@ -568,7 +531,7 @@ await describe({
             + 'resuming a record with no further validation on it: the two readers that go on to spread '
             + 'authorship.everyIssue would otherwise crash on the resumed value (ledger B92)',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory for this case.
@@ -610,7 +573,7 @@ await describe({
           name: 'returns nothing for an absent cache root, since a first pass has '
             + 'no in-flight documents and that is not a fault',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             expect(
               (await listResumableEntries({
@@ -628,7 +591,7 @@ await describe({
             + 'what lets a pass finish an in-flight document before starting fresh '
             + 'ones and spending its budget on a wider front',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Cache for an entry that finished one slice.
@@ -657,7 +620,7 @@ await describe({
             + 'to resume and would otherwise be preferred forever over entries that '
             + 'could settle',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             await mkdir(
               join(
@@ -675,7 +638,7 @@ await describe({
           name: 'tolerates a plain FILE sitting under the cache root rather than '
             + 'throwing, since that child simply carries no resumable slices',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             await writeFile(
               join(
@@ -694,7 +657,7 @@ await describe({
           name: 'EXCLUDES A SYMLINK under the cache root, which no pass writes, so an entry with progress is never '
             + 'resumed a second time under another name (ledger B65)',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Cache for an entry that finished one slice.
@@ -735,7 +698,7 @@ await describe({
             + 'to documents still in flight, and the entry stops being reported as '
             + 'resumable',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry cache directory to be discarded.
@@ -767,7 +730,7 @@ await describe({
           name: 'succeeds on a cache that was never created, so a settled entry '
             + 'that resumed nothing does not fail its own cleanup',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             await discardSliceCache({
               dir: join(
@@ -791,7 +754,7 @@ await describe({
             + 'cache rests on: a persist and a loader that disagreed about file '
             + 'names would silently recompute every slice forever',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry directory both lanes share.
@@ -829,7 +792,7 @@ await describe({
           name: 'RESUMES A DECLARED-NAME REFUSAL ONLY WITH THE NAMES IT DROPPED, which the report names from the '
             + 'record; the driver always writes them, so one without them is recomputed (ledger T8, sixth batch)',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry directory both lanes share.
@@ -883,7 +846,7 @@ await describe({
             + 'both sides, which the report names from the record rather than recounting texts the guard never compared '
             + '(ledger B42)',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry directory both lanes share.
@@ -999,7 +962,7 @@ await describe({
             + 'carries neither the lane discriminator nor the schema, so the guard '
             + 'refuses it rather than reading fields that mean something else',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry directory both lanes share.
@@ -1044,7 +1007,7 @@ await describe({
             + 'replaced, means a translate change throws away every settled repair '
             + 'slice in the corpus and nothing reports the loss',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry directory both lanes share.
@@ -1103,7 +1066,7 @@ await describe({
             + 'lane owns unprefixed names and must not read a translate record, '
             + 'which would resume a translation as a repair outcome',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry directory both lanes share.
@@ -1142,7 +1105,7 @@ await describe({
             + 'rather than resuming a record that the slice-selection reader would crash on, since its '
             + 'own named fields all read as undefined off an array (ledger B92)',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-slice-cache-', },);
 
             /**
              Entry directory both lanes share.

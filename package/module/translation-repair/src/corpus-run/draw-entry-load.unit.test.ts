@@ -28,11 +28,8 @@
  */
 
 import {
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -49,6 +46,7 @@ import {
   loadEntry,
   sourceBytesOf,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Draw entry load tests
 
@@ -162,42 +160,6 @@ function pooled(
 }
 
 /**
- Opens a throwaway directory that removes itself on disposal.
- 
- @returns Disposable directory handle
- 
- @example
- ```ts
- await using scratch = await scratchDir();
- ```
- */
-async function scratchDir(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-draw-entry-',
-  ),);
-
-  return {
-    path,
-    [Symbol.asyncDispose]: async function removeScratch() {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Writes one artifact into a throwaway directory and reads it back.
  
  @param artifact - whole artifact value, valid or not
@@ -228,7 +190,7 @@ async function loadingFrom(
     readonly readSource?: Parameters<typeof loadEntry>[0]['readSource'];
   },
 ): Promise<Awaited<ReturnType<typeof loadEntry>>> {
-  await using scratch = await scratchDir();
+  await using scratch = await scratchDir({ prefix: 'whiskers-draw-entry-', },);
 
   await writeFile(
     join(

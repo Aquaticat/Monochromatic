@@ -17310,6 +17310,82 @@ Recurrence:
 `mistake-prevention.md`,
 "Modules without a test of their own".
 
+### B103: test files kept their own copies of the shared test helpers
+
+Found 2026-10-01 (UTC) by a read-only census an agent ran over every unit test and fixture,
+by each helper's name and by its body's shape under any name
+(`fixture-migrate/report.md` in the audit's scratch folder),
+fixed in the commit adding this entry.
+Three fixtures held a helper whose header said test files carry their own copies
+and new cases import the fixture's:
+`candidateCarrying` in `translate-ballot.test-fixture.ts`,
+`capturingLogger` in `capturing-logger.test-fixture.ts`
+and `scratchDir` in `scratch-dir.test-fixture.ts`.
+The copies the change removes number 42 under 13 names:
+six readings of a judge's ballot
+(five `pickCandidate` and a `correctedCandidate` with its needle fixed),
+19 throwaway directories under 10 names
+(eight `scratchDir`,
+three `throwawayCacheDir`,
+and `makeArchive`,
+`throwawayTree` and others),
+differing only in the prefix and the field naming the path,
+and 17 capturing loggers,
+13 the fixture's own under three names for the array
+and four that made the array themselves and returned it beside the logger.
+The duplicate-body scan reads production source alone,
+so none of them could fail it.
+
+Each file now imports the fixture:
+the wrapper's call passes its needle,
+callers of the four that made their own array call the new `capturingLoggerPair`,
+and handles are read through `.path`.
+The agent's patch needed more,
+none of it found by the tests it changed.
+Lint found seven files keeping an empty `import {} from 'node:fs/promises'` its import cleanup left,
+one case destructuring the old `publishDir` field
+(the type check's TS2339)
+and `capturingLoggerPair`'s return type on one line.
+The full suite's unused-imports scan found 21 imports only the deleted helpers had read
+(14 `Logger`,
+6 `join`
+and 1 `mkdtemp`),
+after lint and a run of the 41 changed test files had passed (M75);
+the full suite's background task reported exit 0,
+the status of the `|| echo` fallback its command ended with,
+and the log's `[FAIL]` markers were what showed the failure.
+Reading found that `sink-names-only.unit.test.ts` had lost the comment saying why the disposer removes a mode-000 file,
+now restored beside the `chmod`.
+The three fixture headers claimed every copy had moved;
+they now say the copies moved and name the kinds that stay.
+
+Copies that differ in behaviour stay where they are,
+each queued:
+
+- `corpus-run/pass-entry.unit.test.ts`'s `pickCandidate` matches any of several needles;
+- `consolidate-driver.unit.test.ts`'s own `candidateCarrying`
+  and the `numberedOn` inside a case in `consolidate-settle.unit.test.ts`
+  read a serialized request body,
+  where a line break is the two characters `\n`,
+  and are the same code as each other;
+- `repair-assemble-withdrawal.unit.test.ts` and `stage-call.unit.test.ts`
+  each record warnings alone over their file's tagged logger,
+  the same code twice;
+- helpers that make a directory and never remove it are a leak,
+  not a copy,
+  and get an entry of their own.
+
+Found while writing this entry:
+`mistake-prevention.md`'s "Copies of shared code" still said nothing fails on a shared module without its own test,
+a sentence the B102 scan made false;
+B102 wrote a section of its own and left that one standing.
+It now names the scan.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code"
+and "Current-state docs".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -18541,6 +18617,17 @@ Prevention:
 `src/unused-imports.unit.test.ts` now fails on an unread import,
 and it runs in `mise run source-scans`,
 which every source commit runs.
+
+Recurred 2026-10-01 (UTC) before B103's commit,
+which records it.
+An agent's patch deleted 42 test helpers and left 21 imports only they had read.
+Lint passed,
+and so did a named run whose list held the 41 changed test files without the source scans,
+against the prevention doc's rule that a source commit's named tests include them;
+the full suite's run of the scan found the imports.
+Prevention added:
+an applied patch that deletes code runs `mise run source-scans` before its named tests,
+and an agent asked to delete code is asked to count the deleted names' remaining uses.
 
 ### M74: describe blocks counted as test cases
 

@@ -36,12 +36,9 @@
 import { spawnSync, } from 'node:child_process';
 import {
   chmod,
-  mkdtemp,
   readFile,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -56,6 +53,7 @@ import {
   readPlacement,
 } from '../../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Sink naming tests
 
@@ -214,45 +212,6 @@ const SOUND_ARTIFACT = JSON.stringify({
 },);
 
 /**
- Makes a throwaway directory that removes itself, whatever a case leaves in it.
- 
- @param prefix - what to call it, so a leaked directory names its case
- 
- @returns Directory path, disposable
- 
- @example
- ```ts
- await using scratch = await throwaway({ prefix: 'sink-placement-', },);
- ```
- */
-async function throwaway(
-  { prefix, }: { readonly prefix: string; },
-): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Throwaway directory, never a real runs directory.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    prefix,
-  ),);
-
-  return {
-    dir,
-    async [Symbol.asyncDispose](): Promise<void> {
-      // Removing a file needs write permission on its DIRECTORY rather than on
-      // the file, so a mode-000 fixture comes out without being chmoded back.
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Writes a file nothing may open, and proves it cannot be opened.
  
  @param dir - directory to write into
@@ -294,6 +253,9 @@ async function unopenable(
     body,
     'utf8',
   );
+  // Removing a file needs write permission on its DIRECTORY rather than on
+  // the file, so the scratch directory's disposer takes this mode-000 file
+  // out without chmoding it back.
   await chmod(
     path,
     0o000,
@@ -394,18 +356,18 @@ await describe({
       name: 'NAMES the code where an artifact will not open, in the reason it '
         + 'hands its caller, since that reason travels into a report',
       fn: async () => {
-        await using scratch = await throwaway({ prefix: 'sink-attribution-', },);
+        await using scratch = await scratchDir({ prefix: 'sink-attribution-', },);
 
         await writeFile(
           join(
-            scratch.dir,
+            scratch.path,
             'Whiskers.json',
           ),
           SOUND_ARTIFACT,
           'utf8',
         );
         await unopenable({
-          dir: scratch.dir,
+          dir: scratch.path,
           name: UNREADABLE,
           body: SOUND_ARTIFACT,
         },);
@@ -418,7 +380,7 @@ await describe({
          What the directory yielded.
          */
         const { malformed, } = await gatherAttributionEntries({
-          artifactsDir: scratch.dir,
+          artifactsDir: scratch.path,
         },);
 
         expect(malformed,).toHaveLength(1,);
@@ -431,18 +393,18 @@ await describe({
       name: 'REFUSES to put the path in the reason, which is the whole point: a '
         + "run directory names the run and an artifact's stem is a person",
       fn: async () => {
-        await using scratch = await throwaway({ prefix: 'sink-attribution-', },);
+        await using scratch = await scratchDir({ prefix: 'sink-attribution-', },);
 
         await writeFile(
           join(
-            scratch.dir,
+            scratch.path,
             'Whiskers.json',
           ),
           SOUND_ARTIFACT,
           'utf8',
         );
         await unopenable({
-          dir: scratch.dir,
+          dir: scratch.path,
           name: UNREADABLE,
           body: SOUND_ARTIFACT,
         },);
@@ -453,7 +415,7 @@ await describe({
          What the directory yielded.
          */
         const { malformed, } = await gatherAttributionEntries({
-          artifactsDir: scratch.dir,
+          artifactsDir: scratch.path,
         },);
 
         /**
@@ -466,7 +428,7 @@ await describe({
           },),
         ].join('\n',);
 
-        expect(said.includes(scratch.dir,),).toBe(false,);
+        expect(said.includes(scratch.path,),).toBe(false,);
         expect(said.includes(LEAKED_OPENING,),).toBe(false,);
       },
     },),
@@ -474,10 +436,10 @@ await describe({
       name: 'NAMES the code on the POOL line where a placement will not open, '
         + 'rather than printing the path the filesystem error carried',
       fn: async () => {
-        await using scratch = await throwaway({ prefix: 'sink-placement-', },);
+        await using scratch = await scratchDir({ prefix: 'sink-placement-', },);
 
         await unopenable({
-          dir: scratch.dir,
+          dir: scratch.path,
           name: UNREADABLE,
           body: SOUND_ARTIFACT,
         },);
@@ -488,7 +450,7 @@ await describe({
          How the unreadable artifact placed.
          */
         const placement = await readPlacement({
-          artifactsDir: scratch.dir,
+          artifactsDir: scratch.path,
           name: UNREADABLE,
         },);
 
@@ -503,13 +465,13 @@ await describe({
       name: 'NAMES the code on the LOCK line where the lock file will not open, '
         + 'and still takes the lock over, since an unreadable lock holds nobody',
       fn: async () => {
-        await using scratch = await throwaway({ prefix: 'sink-lock-', },);
+        await using scratch = await scratchDir({ prefix: 'sink-lock-', },);
 
         /**
          Lock file naming a live holder that nothing can read.
          */
         const lockPath = await unopenable({
-          dir: scratch.dir,
+          dir: scratch.path,
           name: LOCK_FILE,
           body: JSON.stringify({
             pid: process.pid,
@@ -519,7 +481,7 @@ await describe({
 
         using printed = collectingLogs({ lines: [], },);
 
-        await using _held = await lockRunsDir({ runsDir: scratch.dir, },);
+        await using _held = await lockRunsDir({ runsDir: scratch.path, },);
 
         /**
          Everything the claim said.
@@ -536,13 +498,13 @@ await describe({
       name: 'NAMES the code where a standing artifact will not open, run as an '
         + 'operator runs it, since the module exports nothing to call directly',
       fn: async () => {
-        await using scratch = await throwaway({ prefix: 'sink-standing-', },);
+        await using scratch = await scratchDir({ prefix: 'sink-standing-', },);
 
         /**
          Artifact the command will meet and fail to open.
          */
         const path = await unopenable({
-          dir: scratch.dir,
+          dir: scratch.path,
           name: UNREADABLE,
           body: SOUND_ARTIFACT,
         },);
@@ -553,7 +515,7 @@ await describe({
         const { stderr, } = streamsOf({
           args: [
             STANDING_ENTRY,
-            scratch.dir,
+            scratch.path,
           ],
         },);
 

@@ -27,17 +27,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
 
 import {
   openPictureReadingCache,
   type PairedReading,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Pipeline identity every case writes under, since a store only resumes what
@@ -49,41 +44,6 @@ const GENERATION = 'whiskers-pipeline-1';
  Key each case persists under, shaped like the hash a real key carries.
  */
 const KEY = 'a1b2c3d4e5f60789';
-
-/**
- Throwaway directory holding one case's store, removed on scope exit.
- 
- @returns Disposable directory handle
- 
- @example
- ```ts
- await using scratch = await scratchDirectory();
- ```
- */
-async function scratchDirectory(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-readings-',
-  ),);
-  return {
-    path,
-    [Symbol.asyncDispose]: async function removeScratch() {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
 
 /**
  Persists one record and reads back whatever a second open resumes for it.
@@ -115,7 +75,7 @@ async function roundTrip(
     readonly reopenGeneration?: string;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
-  await using scratch = await scratchDirectory();
+  await using scratch = await scratchDir({ prefix: 'whiskers-readings-', },);
 
   /**
    Store as the pass that read the picture saw it.

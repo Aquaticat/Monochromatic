@@ -44,6 +44,7 @@ import {
   readArtifactSubjects,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Real git binary every fixture command runs through.
@@ -325,38 +326,6 @@ async function makeCorpus(): Promise<
 }
 
 /**
- Throwaway archive directory, removed on dispose.
- 
- @returns Archive directory and a disposer
- 
- @example
- ```ts
- await using archive = await makeArchive();
- ```
- */
-async function makeArchive(): Promise<AsyncDisposable & { readonly archiveDir: string; }> {
-  /**
-   Fresh temp directory standing in for the run archive.
-   */
-  const archiveDir = await mkdtemp(join(
-    tmpdir(),
-    'settled-audit-archive-',
-  ),);
-  return {
-    archiveDir,
-    [Symbol.asyncDispose]: async function removeArchive() {
-      await rm(
-        archiveDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Builds a ledger where the lane replaced the archive at the FIRST slice and
  kept it everywhere else.
  
@@ -617,7 +586,7 @@ await describe({
             + 'auditing re-sliced text would audit a different input than the one the judges saw',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             /**
              Preparation the fixture artifact was written over.
@@ -627,7 +596,7 @@ await describe({
               targetText: TARGET_PAGE,
             },);
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared,
               corpusSha: corpus.commitSha,
@@ -638,7 +607,7 @@ await describe({
              Artifact as the reader returns it.
              */
             const reading = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -673,10 +642,10 @@ await describe({
             + 'both in one denominator would blur its first real measurement',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared: prepareDocumentPair({
                 sourceText: SOURCE_PAGE,
@@ -690,7 +659,7 @@ await describe({
              Subjects the artifact offers.
              */
             const { subjects, } = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -721,10 +690,10 @@ await describe({
             + 'rendering whose name it cannot derive from the source and left to call it a fabrication',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared: prepareDocumentPair({
                 sourceText: SOURCE_PAGE,
@@ -738,7 +707,7 @@ await describe({
              Subjects the artifact offers.
              */
             const { subjects, } = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -760,7 +729,7 @@ await describe({
             + '"nobody recorded whether it did"',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             /**
              A second entry whose pages carry no front matter, committed after the
@@ -773,7 +742,7 @@ await describe({
               targetPage: BARE_TARGET_PAGE,
             },);
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared: prepareDocumentPair({
                 sourceText: BARE_SOURCE_PAGE,
@@ -787,7 +756,7 @@ await describe({
              Subjects that artifact offers.
              */
             const { subjects, } = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: 'tabby.json',
@@ -804,10 +773,10 @@ await describe({
             + 'points to, so a settled file keeps answering for itself after the pair is edited',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared: prepareDocumentPair({
                 sourceText: SOURCE_PAGE,
@@ -833,7 +802,7 @@ await describe({
              Artifact read after the clone moved on.
              */
             const reading = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -859,7 +828,7 @@ await describe({
             + 'reason to refuse to read the rows it settled',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             // Written over a DIFFERENT pair than the one the entry id resolves to,
             // which is what a moved slicing looks like from the reader's side.
@@ -867,7 +836,7 @@ await describe({
             // nothing, so the file records both halves and a mismatch is a
             // refusal rather than a gap.
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared: prepareDocumentPair({
                 sourceText: BARE_SOURCE_PAGE,
@@ -882,7 +851,7 @@ await describe({
              Artifact read against a preparation it does not describe.
              */
             const reading = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -901,7 +870,7 @@ await describe({
             + 'every settled artifact read REFUSED)',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             /**
              The run's carve of the pair the entry id resolves to.
@@ -911,7 +880,7 @@ await describe({
               targetText: TARGET_PAGE,
             },);
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               // The same carve, its declared names worded as an older build
               // worded them.
@@ -927,7 +896,7 @@ await describe({
              Artifact read against today's rebuild of that carve.
              */
             const reading = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -945,7 +914,7 @@ await describe({
             + 'refused, on exactly the artifacts the check exists for',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             /**
              How a roster run carved it: sections crossed, block rounds asked.
@@ -970,7 +939,7 @@ await describe({
                 },),
               },),);
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared: paired,
               corpusSha: corpus.commitSha,
@@ -981,7 +950,7 @@ await describe({
              Artifact read against the corpus with its own recipe.
              */
             const reading = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -999,11 +968,11 @@ await describe({
             + 'the recipe was recorded',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             // Written over a DIFFERENT pair, as an old file: no recipe at all.
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first',
               prepared: prepareDocumentPair({
                 sourceText: BARE_SOURCE_PAGE,
@@ -1021,7 +990,7 @@ await describe({
              Artifact read against a pair it does not describe, with no recipe.
              */
             const reading = await readArtifactSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSetDir: 'first',
               runSet: 'first',
               artifactFile: `${ENTRY_ID}.json`,
@@ -1056,7 +1025,7 @@ await describe({
             + 'two invocations can be compared row against row',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             /**
              Preparation both run sets were settled over.
@@ -1069,14 +1038,14 @@ await describe({
             // Written second-first, so a reader that trusted directory order rather
             // than sorting would return them the other way round.
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'second-run',
               prepared,
               corpusSha: corpus.commitSha,
               entryId: ENTRY_ID,
             },);
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first-run',
               prepared,
               corpusSha: corpus.commitSha,
@@ -1087,7 +1056,7 @@ await describe({
              Everything the archive holds.
              */
             const readings = await readArchiveSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
             },);
 
@@ -1106,10 +1075,10 @@ await describe({
             + 'beside its artifacts and reading one as JSON would end the census at that file',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first-run',
               prepared: prepareDocumentPair({
                 sourceText: SOURCE_PAGE,
@@ -1120,7 +1089,7 @@ await describe({
             },);
             await writeFile(
               join(
-                archive.archiveDir,
+                archive.path,
                 'first-run',
                 'run.log',
               ),
@@ -1132,7 +1101,7 @@ await describe({
              Everything the archive holds.
              */
             const readings = await readArchiveSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
             },);
 
@@ -1146,10 +1115,10 @@ await describe({
             + 'scheduler do: only a regular file is an artifact (ledger B64)',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'first-run',
               prepared: prepareDocumentPair({
                 sourceText: SOURCE_PAGE,
@@ -1160,7 +1129,7 @@ await describe({
             },);
             await mkdir(
               join(
-                archive.archiveDir,
+                archive.path,
                 'first-run',
                 'saved.json',
               ),
@@ -1171,7 +1140,7 @@ await describe({
              Everything the archive holds.
              */
             const readings = await readArchiveSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
             },);
 
@@ -1187,7 +1156,7 @@ await describe({
             + 'artifacts under", which reads like an empty pass rather than like a layout it cannot see',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             /**
              Pair both sides describe.
@@ -1200,7 +1169,7 @@ await describe({
             // Written with an EMPTY run set, which puts the file at the archive
             // root exactly as a pass writes it.
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: '',
               prepared,
               corpusSha: corpus.commitSha,
@@ -1211,7 +1180,7 @@ await describe({
              Everything the flat directory holds.
              */
             const readings = await readArchiveSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
             },);
 
@@ -1231,7 +1200,7 @@ await describe({
             + 'archive holds without saying so',
           fn: async () => {
             await using corpus = await makeCorpus();
-            await using archive = await makeArchive();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
 
             /**
              Pair both sides describe.
@@ -1242,14 +1211,14 @@ await describe({
             },);
 
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: '',
               prepared,
               corpusSha: corpus.commitSha,
               entryId: ENTRY_ID,
             },);
             await writeArtifact({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               runSet: 'nested-run',
               prepared,
               corpusSha: corpus.commitSha,
@@ -1260,7 +1229,7 @@ await describe({
              What the reader says about the mixture.
              */
             const refusal = await readArchiveSubjects({
-              archiveDir: archive.archiveDir,
+              archiveDir: archive.path,
               cloneDir: corpus.cloneDir,
             },).then(
               function unexpected(): string {

@@ -9,13 +9,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
@@ -42,6 +35,7 @@ import {
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -216,38 +210,6 @@ function offRoster(
 const DIGEST = 'pass-attest-references-test' as PipelineDigest;
 
 /**
- Directory one case owns for its entry caches, removed when the case ends.
-
- @returns Directory beside how to remove it
-
- @example
- ```ts
- await using cacheDir = await throwawayCacheDir();
- ```
- */
-async function throwawayCacheDir(): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Directory this case owns.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'pass-attest-references-',
-  ),);
-  return {
-    dir,
-    [Symbol.asyncDispose]: async () => {
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Runs a whole preparation whose original links one page, over an archive
  carrying a paragraph the original lacks, so the pairing, the attestation and
  the archive review are each asked.
@@ -275,11 +237,11 @@ async function preparationAsked(
    Seat of every attestation call.
    */
   const attested: RosterModelId[] = [];
-  await using cacheDir = await throwawayCacheDir();
+  await using cacheDir = await scratchDir({ prefix: 'pass-attest-references-', },);
   await preparePassEntry({
     client: seatRecordingClient({ asked, attested, },),
     entryId: 'CatEntry',
-    entryCacheDir: cacheDir.dir,
+    entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
     modelIds: ROSTER,
     sourceText: '猫在炉边坐着。\n\n它睡着了。',

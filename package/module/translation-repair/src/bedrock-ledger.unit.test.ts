@@ -9,12 +9,9 @@
  */
 
 import {
-  mkdtemp,
   readFile,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -39,6 +36,7 @@ import {
   defaultBedrockLedgerPath,
 } from '../dist/final/node/index.mjs';
 import { SEAT_BEDROCK_ONLY_TEXT, } from './roster-seats.test-fixture.ts';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  One priced call, cat-themed.
@@ -63,38 +61,6 @@ function callCosting({ usd, }: { readonly usd: number; },) {
 }
 
 /**
- Disposable directory a case owns, removed when its scope ends.
- 
- @returns Directory path and the disposer that removes it
- 
- @example
- ```ts
- await using scratch = await scratchDir();
- ```
- */
-async function scratchDir(): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Fresh directory under the system temp root.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'bedrock-ledger-',
-  ),);
-  return {
-    dir,
-    [Symbol.asyncDispose]: async function remove(): Promise<void> {
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Runs one case inside a disposable directory, removing it after.
  
  @param fn - case body, given the directory
@@ -108,8 +74,8 @@ async function inScratch(fn: (dir: string,) => Promise<void>,): Promise<void> {
   /**
    Directory this case owns, removed when this function returns.
    */
-  await using scratch = await scratchDir();
-  await fn(scratch.dir,);
+  await using scratch = await scratchDir({ prefix: 'bedrock-ledger-', },);
+  await fn(scratch.path,);
 }
 
 await describe({

@@ -18,14 +18,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
 
 import { openLaneContestCache, } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Built pipeline the fixtures are filled under.
@@ -50,41 +45,6 @@ const CAT_BALLOT = {
 };
 
 /**
- Throwaway directory removed on scope exit.
- 
- @returns Disposable directory handle
- 
- @example
- ```ts
- await using scratch = await scratchDir();
- ```
- */
-async function scratchDir(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-lane-contest-',
-  ),);
-  return {
-    path,
-    [Symbol.asyncDispose]: async function removeScratch() {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Writes one outcome and reads the directory back through a fresh store.
  
  @param outcome - value to persist, valid or not
@@ -99,7 +59,7 @@ async function scratchDir(): Promise<{
 async function roundTrip(
   { outcome, }: { readonly outcome: unknown; },
 ): Promise<boolean> {
-  await using scratch = await scratchDir();
+  await using scratch = await scratchDir({ prefix: 'whiskers-lane-contest-', },);
 
   /**
    Store this run persists through.

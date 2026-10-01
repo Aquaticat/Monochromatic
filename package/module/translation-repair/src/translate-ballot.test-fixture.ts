@@ -3,8 +3,12 @@
 // sheet the way a judge reads it, since the stage rotates the slate per slice
 // and a script assuming an order backs whatever lands there.
 //
-// TEST SUPPORT, NOT PACKAGE SOURCE. Several unit test files carry their own
-// copy of this reading; new cases import this one.
+// TEST SUPPORT, NOT PACKAGE SOURCE. Unit test files that kept their own copy
+// of this reading, as `pickCandidate` or as a wrapper with its needle fixed,
+// now import this one. Readings that only look alike stay in their files:
+// one matches any of several needles, and two walk a serialized request body,
+// where a line break is the two characters `\n` and splitting on a newline
+// finds no heading.
 
 /**
  Finds the one-based candidate index whose rendered text carries a needle.

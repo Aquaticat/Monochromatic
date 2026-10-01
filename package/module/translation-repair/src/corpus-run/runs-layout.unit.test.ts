@@ -17,12 +17,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-  stat,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { stat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -40,40 +35,9 @@ import {
   PROMPT_PAYLOADS_DIR,
   SLICE_CACHE_DIR,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Runs layout tests
-
-/**
- Makes one throwaway runs directory.
-
- @returns Runs directory, removed on dispose
-
- @example
- ```ts
- await using runs = await throwawayRunsDir();
- ```
- */
-async function throwawayRunsDir(): Promise<AsyncDisposable & { readonly runsDir: string; }> {
-  /**
-   Throwaway runs directory, never a real one.
-   */
-  const runsDir = await mkdtemp(join(
-    tmpdir(),
-    'runs-layout-',
-  ),);
-  return {
-    runsDir,
-    [Symbol.asyncDispose]: async function removeRunsDir() {
-      await rm(
-        runsDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
 
 /**
  Whether a path is a directory on disk now.
@@ -103,30 +67,30 @@ await describe({
     it({
       name: 'NAMES every path under the runs directory by its owner\'s constant',
       fn: async () => {
-        await using runs = await throwawayRunsDir();
-        expect(await prepareRunsLayout({ runsDir: runs.runsDir, },),).toEqual({
+        await using runs = await scratchDir({ prefix: 'runs-layout-', },);
+        expect(await prepareRunsLayout({ runsDir: runs.path, },),).toEqual({
           artifactsDir: join(
-            runs.runsDir,
+            runs.path,
             ARTIFACTS_DIR,
           ),
           publishDir: join(
-            runs.runsDir,
+            runs.path,
             FIXED_TREE_DIR,
           ),
           declinedDir: join(
-            runs.runsDir,
+            runs.path,
             DECLINED_DIR,
           ),
           sliceCacheDir: join(
-            runs.runsDir,
+            runs.path,
             SLICE_CACHE_DIR,
           ),
           promptPayloadDir: join(
-            runs.runsDir,
+            runs.path,
             PROMPT_PAYLOADS_DIR,
           ),
           attemptsPath: join(
-            runs.runsDir,
+            runs.path,
             'attempts.json',
           ),
         },);
@@ -137,8 +101,8 @@ await describe({
       name: 'CREATES the artifacts directory and the published tree, and no other, so a pass that settles '
         + 'nothing still leaves both',
       fn: async () => {
-        await using runs = await throwawayRunsDir();
-        const layout = await prepareRunsLayout({ runsDir: runs.runsDir, },);
+        await using runs = await scratchDir({ prefix: 'runs-layout-', },);
+        const layout = await prepareRunsLayout({ runsDir: runs.path, },);
         expect(await isDirectory({ path: layout.artifactsDir, },),).toBe(true,);
         expect(await isDirectory({ path: layout.publishDir, },),).toBe(true,);
         expect(await isDirectory({ path: layout.declinedDir, },),).toBe(false,);
@@ -150,9 +114,9 @@ await describe({
     it({
       name: 'ACCEPTS a runs directory laid out before, since a resumed pass prepares the same layout again',
       fn: async () => {
-        await using runs = await throwawayRunsDir();
-        const first = await prepareRunsLayout({ runsDir: runs.runsDir, },);
-        expect(await prepareRunsLayout({ runsDir: runs.runsDir, },),).toEqual(first,);
+        await using runs = await scratchDir({ prefix: 'runs-layout-', },);
+        const first = await prepareRunsLayout({ runsDir: runs.path, },);
+        expect(await prepareRunsLayout({ runsDir: runs.path, },),).toEqual(first,);
       },
     },),
   ],

@@ -41,6 +41,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_ONLY,
@@ -56,37 +57,6 @@ import {
  Logger for the stages under test.
  */
 const l = tagged({ tag: 'candidate-select-test', },);
-
-/**
- Logger that keeps every message a round emits.
-
- @param messages - list the messages land in
-
- @returns Logger whose every level appends to the list
-
- @example
- ```ts
- const messages: string[] = [];
- const logger = capturingLogger({ messages, },);
- ```
- */
-function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
-  /**
-   Retains one emitted message.
-   */
-  function keep(message: string,): void {
-    messages.push(message,);
-  }
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    info: keep,
-    trace: keep,
-    warn: keep,
-    flush: async function flush(): Promise<void> {},
-  };
-}
 
 /**
  Original the judges compare against.

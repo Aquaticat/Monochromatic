@@ -21,52 +21,18 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   floorConsolidateSlate,
   type ProposalValidity,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 
 /**
  Logger the cases that do not read the log hand to the stage.
  */
 const l = tagged({ tag: 'consolidate-floor-test', },);
-
-/**
- Logger keeping every line it is handed, for the cases that read the log.
-
- @param lines - sink each emitted line is appended to
-
- @returns Logger writing only to that sink
-
- @example
- ```ts
- const said: string[] = [];
- const captured = capturingLogger({ lines: said, },);
- ```
- */
-function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
-  /**
-   Retains one emitted line.
-   */
-  function keep(line: string,): void {
-    lines.push(line,);
-  }
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    info: keep,
-    trace: keep,
-    warn: keep,
-    flush: async function flush(): Promise<void> {},
-  };
-}
 
 /**
  Builds one checked proposal.
@@ -180,7 +146,7 @@ await describe({
             checkedAs({ modelId: 'hf:cat/Cat-B', valid: false, },),
             checkedAs({ modelId: 'hf:cat/Cat-C', valid: false, },),
           ],
-          l: capturingLogger({ lines: said, },),
+          l: capturingLogger({ messages: said, },),
         },);
 
         expect(said,).toHaveLength(1,);
@@ -198,7 +164,7 @@ await describe({
         const said: string[] = [];
         floorConsolidateSlate({
           validity: [checkedAs({ modelId: 'hf:cat/Cat-A', valid: true, },),],
-          l: capturingLogger({ lines: said, },),
+          l: capturingLogger({ messages: said, },),
         },);
 
         expect(said,).toStrictEqual([],);

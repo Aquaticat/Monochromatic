@@ -50,6 +50,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -112,54 +113,6 @@ type CallLog = {
   translate: number;
   select: number;
 };
-
-/**
- Finds the one-based candidate index whose rendered text carries a needle.
- 
- The judge sheet numbers candidates and fences their text, so this reads the
- sheet the way a judge does rather than assuming an order the stage
- deliberately varies.
- 
- @param content - judge user message
- 
- @param needle - text the wanted candidate contains
- 
- @returns One-based index, or zero when no candidate carries it, which is the
- ballot value for declining every candidate
- 
- @example
- ```ts
- const best = pickCandidate({ content, needle: 'dozing', },);
- ```
- */
-function pickCandidate(
-  {
-    content,
-    needle,
-  }: {
-    readonly content: string;
-    readonly needle: string;
-  },
-): number {
-  /**
-   Sheet split at each candidate heading; the first piece is the evidence.
-   */
-  const [, ...blocks] = content.split('CANDIDATE ',);
-  for (const block of blocks) {
-    /**
-     Heading line carrying this candidate's number.
-     */
-    const [heading = '',] = block.split('\n',);
-
-    /**
-     Number the heading states.
-     */
-    const index = Math.trunc(Number(heading,),);
-    if (Number.isInteger(index,) && block.includes(needle,))
-      return index;
-  }
-  return 0;
-}
 
 /**
  Client serving both stages of the lane from a script.
@@ -302,7 +255,7 @@ function laneClient(
        Ballot naming the candidate carrying the needle.
        */
       const ballot: unknown = {
-        best: (roundNeedle === '') ? 0 : pickCandidate({
+        best: (roundNeedle === '') ? 0 : candidateCarrying({
           content,
           needle: roundNeedle,
         },),

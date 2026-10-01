@@ -6,12 +6,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   readFile,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -31,42 +28,7 @@ import {
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
-
-/**
- Disposable temporary directory fixture.
- */
-type TemporaryDirectory = AsyncDisposable & {
-  /**
-   Absolute fixture path.
-   */
-  readonly path: string;
-};
-
-/**
- Creates disposable private prompt-store directory.
- 
- @returns Fixture removed after test scope
- 
- @example
- ```ts
- await using dir = await temporaryDirectory();
- ```
- */
-async function temporaryDirectory(): Promise<TemporaryDirectory> {
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'prompt-payload-store-',
-  ),);
-  return {
-    path,
-    async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        path,
-        { recursive: true, force: true, },
-      );
-    },
-  };
-}
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  Exact request replayed across separate client instances.
@@ -101,7 +63,7 @@ const SLEPT = 'The cat slept.';
  ```
  */
 async function writtenVersion(): Promise<number> {
-  await using dir = await temporaryDirectory();
+  await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
   await promptPayloadStore({ dir: dir.path, },).write({
     promptDigest: PROMPT_DIGEST,
     reply: { text: SLEPT, },
@@ -304,7 +266,7 @@ await describe({
         it({
           name: 'REPLAYS COMPLETED PAYLOAD across client instances without provider call',
           fn: async () => {
-            await using dir = await temporaryDirectory();
+            await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
             const store = promptPayloadStore({ dir: dir.path, },);
             /** Provider calls across both client instances. */
             let providerCalls = 0;
@@ -358,7 +320,7 @@ await describe({
           name: 'REPLAYS WHICH PROVIDER SERVED A PAYLOAD, since a resumed run that lost it could not re-ask '
             + 'elsewhere and would answer differently from the run it resumes (ledger P9)',
           fn: async () => {
-            await using dir = await temporaryDirectory();
+            await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
             const store = promptPayloadStore({ dir: dir.path, },);
             const first = promptUniqueClient({
               inner: {
@@ -400,7 +362,7 @@ await describe({
         it({
           name: 'REPLAYS A STORED REFUSAL, where the provider declined in words rather than answered',
           fn: async () => {
-            await using dir = await temporaryDirectory();
+            await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
             const store = promptPayloadStore({ dir: dir.path, },);
             const promptDigest = modelPromptDigest({ request: REQUEST, },);
             const reply = {
@@ -416,7 +378,7 @@ await describe({
         it({
           name: 'REFUSES CORRUPTED DURABLE PAYLOAD rather than recalling provider',
           fn: async () => {
-            await using dir = await temporaryDirectory();
+            await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
             const promptDigest = modelPromptDigest({ request: REQUEST, },);
             await writeFile(
               join(
@@ -466,7 +428,7 @@ await describe({
           return it({
             name: `refuses ${name}, naming it`,
             fn: async () => {
-              await using dir = await temporaryDirectory();
+              await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
               await writeFile(
                 join(
                   dir.path,
@@ -485,7 +447,7 @@ await describe({
         it({
           name: 'names the filesystem code when the record cannot be read',
           fn: async () => {
-            await using dir = await temporaryDirectory();
+            await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
             // A directory where the record belongs fails the read as a record the
             // run may not open would.
             await mkdir(join(
@@ -501,7 +463,7 @@ await describe({
         it({
           name: 'names the filesystem code when the record cannot be written',
           fn: async () => {
-            await using dir = await temporaryDirectory();
+            await using dir = await scratchDir({ prefix: 'prompt-payload-store-', },);
             /**
              Store directory path, taken by a file.
              */

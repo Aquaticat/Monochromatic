@@ -9,13 +9,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -39,6 +32,7 @@ import {
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -72,38 +66,6 @@ const DIGEST = 'pass-prepare-page-titles-test' as PipelineDigest;
  Archive rendering no heading, so the title stays unpaired.
  */
 const ARCHIVE = 'The kitten sang.\n\nShe fell asleep.\n';
-
-/**
- Directory one case owns for its entry caches, removed when the case ends.
-
- @returns Directory beside how to remove it
-
- @example
- ```ts
- await using cacheDir = await throwawayCacheDir();
- ```
- */
-async function throwawayCacheDir(): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Directory this case owns.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'pass-prepare-page-titles-',
-  ),);
-  return {
-    dir,
-    [Symbol.asyncDispose]: async () => {
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
 
 /**
  Builds a client rendering every title alike on the lexicon sheet, refusing
@@ -158,14 +120,14 @@ async function prepared({ sourceText, }: { readonly sourceText: string; },) {
    Seat of every lexicon call.
    */
   const lexiconAsked: RosterModelId[] = [];
-  await using cacheDir = await throwawayCacheDir();
+  await using cacheDir = await scratchDir({ prefix: 'pass-prepare-page-titles-', },);
   /**
    The preparation.
    */
   const paired = await preparePassEntry({
     client: lexiconClient({ lexiconAsked, },),
     entryId: 'CatEntry',
-    entryCacheDir: cacheDir.dir,
+    entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
     modelIds: ROSTER,
     sourceText,

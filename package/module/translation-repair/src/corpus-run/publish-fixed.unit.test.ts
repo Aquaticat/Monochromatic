@@ -33,11 +33,9 @@
 
 import { existsSync, } from 'node:fs';
 import {
-  mkdtemp,
   readFile,
   rm,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -62,6 +60,7 @@ import {
   wrapReplacementText,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region The archive this entry starts from
 
@@ -450,39 +449,6 @@ function artifactKeepingTheArchive(
 }
 
 /**
- Throwaway tree root for one case.
- 
- @returns Root nothing outside the case writes into, plus how to remove it
- 
- @example
- ```ts
- await using tree = await throwawayTree();
- ```
- */
-async function throwawayTree(): Promise<{ readonly publishDir: string; } & AsyncDisposable> {
-  /**
-   Directory this case owns.
-   */
-  const publishDir = await mkdtemp(join(
-    tmpdir(),
-    'publish-fixed-',
-  ),);
-
-  return {
-    publishDir,
-    [Symbol.asyncDispose]: async () => {
-      await rm(
-        publishDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Characters the disagreeing fixture claims the archive holds beyond what it
  does, chosen large enough to be unambiguous and small enough to be a
  plausible drift rather than a rewrite.
@@ -598,11 +564,11 @@ await describe({
             + 'from the pieces it knew about would pass an assertion about the replaced slice alone while '
             + 'quietly dropping everything no decider mentioned',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             const { text, } = await publishAndRead({
               artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
             },);
 
             expect(text,).toBe(`${OPENING}${DECIDED_MIDDLE}${CLOSING}`,);
@@ -618,11 +584,11 @@ await describe({
             + 'than a patch; it is also the only assertion that catches an assembler that rewrote line '
             + 'endings or trimmed an ending nobody asked it to touch',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             const { text, } = await publishAndRead({
               artifact: artifactShipping({ translateText: ARCHIVE_MIDDLE, },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
             },);
 
             expect(text,).toBe(ARCHIVE,);
@@ -638,15 +604,15 @@ await describe({
             + 'missing parent, which is a failure that looks like a broken document rather than a missing '
             + 'directory',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             const { path, } = await publishAndRead({
               artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
             },);
 
             expect(path,).toBe(join(
-              tree.publishDir,
+              tree.path,
               'people',
               'BookshopCat',
               'page.en.md',
@@ -660,10 +626,10 @@ await describe({
             + 'settles again. Refusing would make the second run of any interrupted pass fail on its own '
             + 'output, and skipping would leave a page from an older pipeline claiming to be this run\'s',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             const path = fixedPagePath({
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               entryId: 'BookshopCat',
             },);
             await rm(
@@ -673,13 +639,13 @@ await describe({
 
             const first = await publishAndRead({
               artifact: artifactShipping({ translateText: 'stale wording from an earlier pipeline\n', },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
             },);
             expect(first.text.includes('stale wording',),).toBe(true,);
 
             const second = await publishAndRead({
               artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
             },);
             expect(second.text,).toBe(`${OPENING}${DECIDED_MIDDLE}${CLOSING}`,);
             expect(second.text.includes('stale wording',),).toBe(false,);
@@ -693,14 +659,14 @@ await describe({
             + 'an absent incumbent is the empty string, which matches at every offset, so only the stored '
             + 'span can say where the rendering goes',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             const { text, } = await publishAndRead({
               artifact: artifactShipping({
                 translateText: DECIDED_MIDDLE,
                 incumbentKind: 'absent',
               },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               slices: documentSlicesWithAGap(),
             },);
 
@@ -714,7 +680,7 @@ await describe({
         it({
           name: 'PRESERVES accepted source-only hard breaks through wrapping, insertion assembly and disk publication',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
             /** Cat verse stands in for a source-only closing poem. */
             const sourceText = '> 猫醒了。  \n> 鸟唱了。';
             /** Run the real wrapper before the structural and publication boundaries. */
@@ -723,7 +689,7 @@ await describe({
             /** The artifact and assembler must agree on every render-bearing byte. */
             const { text, } = await publishAndRead({
               artifact: artifactShipping({ translateText: translated, incumbentKind: 'absent', },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               slices: documentSlicesWithAGap(),
               sourceText,
             },);
@@ -740,14 +706,14 @@ await describe({
             + 'and a retry meets the same passage and the same judges. The archive already carries this '
             + 'gap, so the page loses nothing that was ever there and keeps every slice the run did buy',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              Page the publisher wrote over an archive with an unfilled anchor in it.
              */
             const published = await publishAndRead({
               artifact: artifactWithAnUnfilledAnchor(),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               slices: documentSlicesWithAGap(),
             },);
 
@@ -787,7 +753,7 @@ await describe({
               readonly checks: readonly string[];
               readonly message: string;
             }> {
-              await using tree = await throwawayTree();
+              await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
               /**
                The publication, which ships the archive at slice 1 and reports it.
                */
@@ -797,7 +763,7 @@ await describe({
                 archiveText: ARCHIVE,
                 sourceText: SOURCE_PAGE,
                 entryId: 'BookshopCat',
-                publishDir: tree.publishDir,
+                publishDir: tree.path,
                 l: tagged({ tag: 'publish-test', },),
               },);
               return {
@@ -853,7 +819,7 @@ await describe({
           name: 'SHIPS A PAGE RENAMING A CONTRIBUTOR and reports the defect, since a settled page ships with its '
             + 'defects reported (the owner, 2026-09-27)',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
             /**
              Existing English attribution establishing chosen public handle.
              */
@@ -919,7 +885,7 @@ await describe({
               archiveText: contributorArchive,
               sourceText: '条目贡献：小雪\n',
               entryId: 'BookshopContributors',
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               l: tagged({ tag: 'publish-test', },),
             },);
             expect(published.defects.map(function checkOf({ check, },): string {
@@ -939,7 +905,7 @@ await describe({
             + 'index disagreement costs: silently dropping the reading would publish archive wording at a '
             + 'slice the deciders replaced',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              What publishAndRead refused with, held so the class and the wording
@@ -948,7 +914,7 @@ await describe({
              */
             const refusalOfPublishingPastTheSlices = publishAndRead({
               artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               slices: [documentSlices()[0] as ChunkPair,],
             },);
 
@@ -970,12 +936,12 @@ await describe({
             + 'entry, so the archive\'s page shipped in its place; the check is one-sided, so a failure is a '
             + 'defect in assembly, and it now ships on the `DEFECTS` line like the content checks',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              Where this case publishes.
              */
-            const { publishDir, } = tree;
+            const { path: publishDir, } = tree;
 
             /**
              What the publisher returned, or raised.
@@ -1029,7 +995,7 @@ await describe({
           name: 'SHIPS A PAGE DROPPING A SOURCE DESTINATION and reports the defect, since a settled page ships '
             + 'with its defects reported (the owner, 2026-09-27; ledger E1)',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              The publication, which ships the page and reports the loss.
@@ -1040,7 +1006,7 @@ await describe({
               archiveText: ARCHIVE,
               sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
               entryId: 'BookshopCat',
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               l: tagged({ tag: 'publish-test', },),
             },);
 
@@ -1056,7 +1022,7 @@ await describe({
           name: 'NAMES THE SLICE whose original carries a destination the page drops, so the reported defect can '
             + 'be traced (ledger E1: XingZ6011 lost 96 minutes to a refusal that named neither)',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
             /**
              The original's middle, linking her page.
              */
@@ -1078,7 +1044,7 @@ await describe({
               archiveText: ARCHIVE,
               sourceText: `${SOURCE_PAGE}\n${linkedSource}\n`,
               entryId: 'BookshopCat',
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               l: tagged({ tag: 'publish-test', },),
             },);
 
@@ -1090,7 +1056,7 @@ await describe({
         it({
           name: 'PUBLISHES a page keeping the archive rendering of a source destination, and names it',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              Page whose closing keeps the archive's address for the source's home link.
@@ -1101,7 +1067,7 @@ await describe({
               archiveText: ARCHIVE_LINKED,
               sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
               entryId: 'BookshopCat',
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               l: tagged({ tag: 'publish-test', },),
             },);
 
@@ -1115,14 +1081,14 @@ await describe({
         it({
           name: 'reports nothing dropped for a source that links nowhere, which is the control',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              Page published from the linkless source page.
              */
             const published = await publishAndRead({
               artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
             },);
 
             expect(published.destinations,).toStrictEqual({
@@ -1137,7 +1103,7 @@ await describe({
           name: 'REFUSES a page whose decided wording curls a JSX string literal, so the grammar floor '
             + 'sits between the would-ship reading and the disk (2026-09-06)',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              What the publisher threw for the wording no grammar reads.
@@ -1152,7 +1118,7 @@ await describe({
                   archiveText: ARCHIVE,
                   sourceText: SOURCE_PAGE,
                   entryId: 'BookshopCat',
-                  publishDir: tree.publishDir,
+                  publishDir: tree.path,
                   l: tagged({ tag: 'publish-test', },),
                 },);
                 return undefined;
@@ -1165,7 +1131,7 @@ await describe({
              Where the page would have landed.
              */
             const path = fixedPagePath({
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               entryId: 'BookshopCat',
             },);
 
@@ -1187,7 +1153,7 @@ await describe({
             + 'published with no span sealed reports nothing, the control. The pass hands the spans through '
             + 'persistSettledEntry, and this is the one place they speak',
           fn: async () => {
-            await using tree = await throwawayTree();
+            await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
             /**
              Checks the page failed with the middle paragraph sealed.
@@ -1198,7 +1164,7 @@ await describe({
               archiveText: ARCHIVE,
               sourceText: SOURCE_PAGE,
               entryId: 'BookshopCat',
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               l: tagged({ tag: 'publish-test', },),
               archiveOriginalSpans: [{
                 startOffset: MIDDLE_START,
@@ -1215,7 +1181,7 @@ await describe({
               archiveText: ARCHIVE,
               sourceText: SOURCE_PAGE,
               entryId: 'BookshopCat',
-              publishDir: tree.publishDir,
+              publishDir: tree.path,
               l: tagged({ tag: 'publish-test', },),
             },);
 

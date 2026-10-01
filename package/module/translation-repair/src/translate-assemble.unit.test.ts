@@ -12,7 +12,6 @@
  @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -26,6 +25,7 @@ import {
   prepareDocumentPair,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 
 /**
  Original with a footnote referenced in one section and defined at the end.
@@ -229,38 +229,6 @@ function recordFor(
   } as unknown as TranslateSliceRecord;
 }
 
-/**
- Logger that keeps what it is told.
- 
- @param said - lines kept
- 
- @returns Logger writing into `said`
- 
- @example
- ```ts
- const l = capturingLogger({ said: [], },);
- ```
- */
-function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
-  /**
-   Keeps one line.
-   
-   @param message - line to keep
-   */
-  const keep = (message: string,): void => {
-    said.push(message,);
-  };
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    flush: async () => undefined,
-    info: keep,
-    trace: keep,
-    warn: keep,
-  };
-}
-
 await describe({
   name: assembleTranslation.name,
   children: [
@@ -281,7 +249,7 @@ await describe({
           carriedChunkIndices: [],
           resumedSliceCount: 0,
           findings: [],
-          l: capturingLogger({ said, },),
+          l: capturingLogger({ messages: said, },),
         },);
         expect(result.withdrawnSliceIndices,).toEqual([2,],);
         expect(result.changedSliceIndices,).toEqual([],);
@@ -310,7 +278,7 @@ await describe({
           carriedChunkIndices: [],
           resumedSliceCount: 0,
           findings: [],
-          l: capturingLogger({ said, },),
+          l: capturingLogger({ messages: said, },),
         },);
         expect(result.withdrawnSliceIndices,).toEqual([1,],);
         expect(result.changedSliceIndices,).toEqual([],);
@@ -336,7 +304,7 @@ await describe({
           carriedChunkIndices: [],
           resumedSliceCount: 0,
           findings: [],
-          l: capturingLogger({ said, },),
+          l: capturingLogger({ messages: said, },),
         },);
         expect(result.withdrawnSliceIndices,).toEqual([],);
         expect(result.changedSliceIndices,).toEqual([1, 2,],);
@@ -383,7 +351,7 @@ await describe({
           unfilled: [],
           resumedSliceCount: 0,
           findings: [],
-          l: capturingLogger({ said, },),
+          l: capturingLogger({ messages: said, },),
         },);
 
         expect(result.withdrawnSliceIndices,).toEqual([referencing.target.sliceIndex,],);
@@ -426,7 +394,7 @@ await describe({
           unfilled: [],
           resumedSliceCount: 0,
           findings: [],
-          l: capturingLogger({ said, },),
+          l: capturingLogger({ messages: said, },),
         },);
 
         expect(said.some(function locates(line,): boolean {

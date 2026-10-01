@@ -29,6 +29,7 @@ import {
   type SyntheticClient,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
+import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 
 /**
  Logger for the judgings under test.
@@ -87,46 +88,6 @@ const FIRST_ROUND_NEEDLES: Readonly<Record<string, string>> = {
   'hf:cat/Judge-B': 'naps',
   'hf:cat/Judge-C': 'purrs',
 };
-
-/**
- Candidate number on a judge sheet whose block carries the needle, zero when
- none does.
-
- @param content - judge sheet as sent
-
- @param needle - text the wanted candidate carries
-
- @returns Candidate number, or zero
-
- @example
- ```ts
- const best = pickCandidate({ content, needle: 'dozes', },);
- ```
- */
-function pickCandidate(
-  {
-    content,
-    needle,
-  }: {
-    readonly content: string;
-    readonly needle: string;
-  },
-): number {
-  /**
-   Candidate blocks, each opening with its number.
-   */
-  const [, ...blocks] = content.split('CANDIDATE ',);
-  for (const block of blocks) {
-    /**
-     Number the block opens with.
-     */
-    const [heading = '',] = block.split('\n',);
-    const index = Math.trunc(Number(heading,),);
-    if (Number.isInteger(index,) && block.includes(needle,))
-      return index;
-  }
-  return 0;
-}
 
 /**
  How many candidates a judge sheet offers.
@@ -240,7 +201,7 @@ function scriptedRig(
          Ballot for this judging.
          */
         const ballot: unknown = {
-          best: pickCandidate({
+          best: candidateCarrying({
             content,
             needle,
           },),

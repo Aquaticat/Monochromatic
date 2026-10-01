@@ -15,7 +15,6 @@
  @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -27,44 +26,13 @@ import {
   readSliceCosts,
   SLICE_START_MARKER,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 
 import {
   HOUR_MS,
   stubWallClock,
   WALL_START_MS,
 } from './wall-clock-stub.test-fixture.ts';
-
-/**
- Collects what a lane logged, so a written line can be read back.
- 
- @param lines - array every message is appended to
- 
- @returns Logger writing only to that array
- 
- @example
- ```ts
- const said: string[] = [];
- const l = capturingLogger({ lines: said, },);
- ```
- */
-function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
-  /**
-   Appends one message, whatever level asked.
-   */
-  function keep(message: string,): void {
-    lines.push(message,);
-  }
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    info: keep,
-    trace: keep,
-    warn: keep,
-    flush: async function flush(): Promise<void> {},
-  };
-}
 
 /**
  Run that has not been stopped, which is every ordinary slice's condition.
@@ -228,7 +196,7 @@ await describe({
               1,
             ]) {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'repair',
                 sliceIndex,
                 sourceChars: 7,
@@ -252,7 +220,7 @@ await describe({
             const said: string[] = [];
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'translate',
                 sliceIndex: 12,
                 sourceChars: 843,
@@ -282,7 +250,7 @@ await describe({
             {
               const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'translate',
                 sliceIndex: 5,
                 sourceChars: 321,
@@ -305,7 +273,7 @@ await describe({
             const said: string[] = [];
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'consolidation',
                 sliceIndex: 2,
                 sourceChars: 73,
@@ -331,7 +299,7 @@ await describe({
             const said: string[] = [];
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'repair',
                 sliceIndex: 0,
                 sourceChars: 11,
@@ -352,7 +320,7 @@ await describe({
             const said: string[] = [];
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'translate',
                 sliceIndex: 4,
                 sourceChars: 96,
@@ -386,7 +354,7 @@ await describe({
             const cut = new Error('entry deadline',);
             try {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'repair',
                 sliceIndex: 9,
                 sourceChars: 4_096,
@@ -414,7 +382,7 @@ await describe({
             const said: string[] = [];
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'consolidation',
                 sliceIndex: 6,
                 sourceChars: 89,
@@ -436,7 +404,7 @@ await describe({
             const stopped = new AbortController();
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'consolidation',
                 sliceIndex: 8,
                 sourceChars: 144,
@@ -464,7 +432,7 @@ await describe({
             const stopped = new AbortController();
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'translate',
                 sliceIndex: 3,
                 sourceChars: 51,
@@ -486,7 +454,7 @@ await describe({
             const said: string[] = [];
             {
               using cost = armSliceCost({
-                l: capturingLogger({ lines: said, },),
+                l: capturingLogger({ messages: said, },),
                 lane: 'translate',
                 sliceIndex: 5,
                 sourceChars: 96,

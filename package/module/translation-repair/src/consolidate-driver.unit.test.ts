@@ -31,10 +31,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   consolidateDocument,
@@ -64,6 +61,7 @@ import {
   type TranslateDecision,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_ONLY,
@@ -79,38 +77,6 @@ import {
  Logger the driver writes through, whose output is not under test.
  */
 const l = tagged({ tag: 'consolidate-driver-test', },);
-
-/**
- Builds logger retaining operational messages for assertions.
- 
- @param messages - destination in emission order
- 
- @returns Logger appending every level to destination
- 
- @example
- ```ts
- const messages: string[] = [];
- const l = capturingLogger({ messages, },);
- ```
- */
-function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
-  /**
-   Retains one emitted message.
-   */
-  function keep(message: string,): void {
-    messages.push(message,);
-  }
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    info: keep,
-    trace: keep,
-    warn: keep,
-    flush: async function flush(): Promise<void> {},
-  };
-}
 
 /**
  Roster this run seats.

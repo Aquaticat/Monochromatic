@@ -12,13 +12,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
@@ -52,6 +45,7 @@ import {
   runPassLanes,
   runPassPreparation,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -270,38 +264,6 @@ const PROJECTED: ProjectedLanes = (function projected(): ProjectedLanes {
 })();
 
 /**
- Directory one case owns for its entry caches, removed when the case ends.
-
- @returns Directory beside how to remove it
-
- @example
- ```ts
- await using cacheDir = await throwawayCacheDir();
- ```
- */
-async function throwawayCacheDir(): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Directory this case owns.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'pass-seams-reseat-',
-  ),);
-  return {
-    dir,
-    [Symbol.asyncDispose]: async () => {
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
  Generation stamp the caches are opened under.
  */
 const DIGEST = 'pass-seams-reseat-test' as PipelineDigest;
@@ -324,7 +286,7 @@ async function contestAsked({ later, }: { readonly later: BudgetView; },): Promi
    Seat of every call.
    */
   const asked: RosterModelId[] = [];
-  await using cacheDir = await throwawayCacheDir();
+  await using cacheDir = await scratchDir({ prefix: 'pass-seams-reseat-', },);
   await runPassContest({
     client: viewChangingClient({
       later,
@@ -342,7 +304,7 @@ async function contestAsked({ later, }: { readonly later: BudgetView; },): Promi
     projected: PROJECTED,
     frontMatterSlices: new Set(),
     lineStructuredSlices: new Set(),
-    entryCacheDir: cacheDir.dir,
+    entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
     signal: AbortSignal.timeout(30_000,),
     overlap: 1,
@@ -381,7 +343,7 @@ async function consolidationAsked({ later, }: { readonly later: BudgetView; },):
     ballots: [],
     usable: 3,
   };
-  await using cacheDir = await throwawayCacheDir();
+  await using cacheDir = await scratchDir({ prefix: 'pass-seams-reseat-', },);
   await runPassConsolidation({
     client: viewChangingClient({
       later,
@@ -396,7 +358,7 @@ async function consolidationAsked({ later, }: { readonly later: BudgetView; },):
     contests: [contest,],
     frontMatterSlices: new Set(),
     pictureReadings: new Map(),
-    entryCacheDir: cacheDir.dir,
+    entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
     signal: AbortSignal.timeout(30_000,),
     overlap: 1,
@@ -514,7 +476,7 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
    Seat of every call.
    */
   const asked: RosterModelId[] = [];
-  await using cacheDir = await throwawayCacheDir();
+  await using cacheDir = await scratchDir({ prefix: 'pass-seams-reseat-', },);
   await runPassPreparation({
     client: viewChangingClient({
       later,
@@ -522,7 +484,7 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
       answer: JSON.stringify({ pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], },),
     },),
     entryId: 'CatEntry',
-    entryCacheDir: cacheDir.dir,
+    entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
     readPictures: async () => new Map(),
     sourceText: `${SOURCE}\n\n它梦见了鱼。`,
@@ -556,7 +518,7 @@ async function archiveReviewAsked({ later, }: { readonly later: BudgetView; },):
    Seat of every call on the archive review sheet.
    */
   const reviewed: RosterModelId[] = [];
-  await using cacheDir = await throwawayCacheDir();
+  await using cacheDir = await scratchDir({ prefix: 'pass-seams-reseat-', },);
   await runPassPreparation({
     client: viewChangingClient({
       later,
@@ -565,7 +527,7 @@ async function archiveReviewAsked({ later, }: { readonly later: BudgetView; },):
       answer: JSON.stringify({ pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], },),
     },),
     entryId: 'CatEntry',
-    entryCacheDir: cacheDir.dir,
+    entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
     readPictures: async () => new Map(),
     sourceText: `${SOURCE}\n\n它梦见了鱼。`,

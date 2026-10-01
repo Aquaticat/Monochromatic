@@ -25,12 +25,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  mkdtemp,
   readdir,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -40,41 +37,7 @@ import {
   readAttemptMap,
   writeAttemptMap,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Throwaway directory holding one case's attempts file, removed on scope exit.
- 
- @returns Disposable directory handle
- 
- @example
- ```ts
- await using scratch = await scratchDir();
- ```
- */
-async function scratchDir(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-attempts-',
-  ),);
-  return {
-    path,
-    [Symbol.asyncDispose]: async function removeScratch() {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Writes an attempts file and reads it back.
@@ -134,7 +97,7 @@ async function readWritten(
 async function warningsReading(
   { contents, }: { readonly contents: string; },
 ): Promise<readonly string[]> {
-  await using scratch = await scratchDir();
+  await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
   /**
    Warnings the read printed.
    */
@@ -171,7 +134,7 @@ await describe({
           name: 'reads a well-formed map through unchanged, which is the ordinary '
             + 'case the ordering depends on',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             expect(
               await readWritten({
@@ -192,7 +155,7 @@ await describe({
           name: 'returns an empty map when the file is ABSENT, since a first run '
             + 'has no attempts recorded and that is not an error',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             expect(
               await readAttemptMap(join(
@@ -208,7 +171,7 @@ await describe({
             + 'because a truncated write from an interrupted run costs an ordering '
             + 'hint and must not cost the run itself',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             expect(
               await readWritten({
@@ -224,7 +187,7 @@ await describe({
             + 'so a file holding a bare number or string cannot become an ordering '
             + 'input',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             // Each case writes its own file, so they share no state and run
             // concurrently rather than sequentially.
@@ -251,7 +214,7 @@ await describe({
             + 'as entry ids, which is read through today as counts "0" and "1" instead of starting the '
             + 'ordering over (ledger B92)',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             expect(
               await readWritten({
@@ -269,7 +232,7 @@ await describe({
             + 'is the tolerant direction: it retries an entry rather than starving '
             + 'it',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             expect(
               await readWritten({
@@ -293,7 +256,7 @@ await describe({
             + 'read "no attempts yet" forever, so the ordering would never '
             + 'deprioritize an entry that keeps failing',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             await expect(readAttemptMap(scratch.path,),).rejects.toThrow();
           },
@@ -304,7 +267,7 @@ await describe({
             + 'recorded nothing from a file that was never written, both of which '
             + 'are legitimate',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
 
             expect(
               await readWritten({
@@ -360,7 +323,7 @@ await describe({
         it({
           name: 'WRITES a map the reader reads back whole, leaving no partial file beside it',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
             /**
              Path the attempts file occupies.
              */
@@ -394,7 +357,7 @@ await describe({
           name: 'COUNTS NO ATTEMPT for an entry whose id is a name every object inherits, where a plain-object '
             + 'map answered with the inherited function or object as the count',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
             /**
              Counts read from a file that records none.
              */
@@ -419,7 +382,7 @@ await describe({
           name: 'COUNTS AND WRITES an attempt for an entry whose id is __proto__, where a plain-object map took the '
             + 'count as setting its prototype and dropped it, so the entry sorted as never tried',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
             /**
              Path the attempts file occupies.
              */
@@ -459,7 +422,7 @@ await describe({
           name: 'READS BACK a count a file records for an entry whose id is __proto__, which the file holds as a '
             + 'field of its own',
           fn: async () => {
-            await using scratch = await scratchDir();
+            await using scratch = await scratchDir({ prefix: 'whiskers-attempts-', },);
             expect(attemptsOf({
               attempts: await readWritten({
                 directory: scratch.path,

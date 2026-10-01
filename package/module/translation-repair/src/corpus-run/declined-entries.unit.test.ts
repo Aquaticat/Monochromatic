@@ -6,12 +6,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   readFile,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -25,38 +22,7 @@ import {
   declinedEntryIds,
   writeDeclinedEntry,
 } from '../../dist/final/node/index.mjs';
-
-/**
- A throwaway root, removed when the case ends.
- 
- @returns Root path with its disposer
- 
- @example
- ```ts
- await using root = await throwawayRoot();
- ```
- */
-async function throwawayRoot(): Promise<{ readonly path: string; } & AsyncDisposable> {
-  /**
-   Root nothing outside this case writes into.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'declined-',
-  ),);
-  return {
-    path,
-    [Symbol.asyncDispose]: async () => {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
   name: writeDeclinedEntry.name,
@@ -65,7 +31,7 @@ await describe({
       name: 'writes one JSON record per declined entry into a directory it creates, and reads the ids back '
         + 'sorted; an absent directory reads as no declines',
       fn: async () => {
-        await using root = await throwawayRoot();
+        await using root = await scratchDir({ prefix: 'declined-', },);
         /**
          Directory of records, not yet created.
          */
@@ -126,7 +92,7 @@ await describe({
     it({
       name: 'SKIPS a directory named like a record, as the artifact listing does (ledger A9b)',
       fn: async () => {
-        await using root = await throwawayRoot();
+        await using root = await scratchDir({ prefix: 'declined-', },);
         /**
          Directory of records.
          */
@@ -156,7 +122,7 @@ await describe({
     it({
       name: 'REFUSES a decline path it cannot list rather than reading it as no declines (ledger A9b)',
       fn: async () => {
-        await using root = await throwawayRoot();
+        await using root = await scratchDir({ prefix: 'declined-', },);
         /**
          A regular file standing where the directory belongs.
          */

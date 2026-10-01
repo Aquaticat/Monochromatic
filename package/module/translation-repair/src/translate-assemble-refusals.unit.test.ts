@@ -18,7 +18,6 @@
  @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -30,6 +29,7 @@ import {
   prepareDocumentPair,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 
 //region Fixtures
 
@@ -199,38 +199,6 @@ function recordFor(
 }
 
 /**
- Collects every line a driver logs, at any level.
- 
- @param said - array the lines land in
- 
- @returns Logger writing into it
- 
- @example
- ```ts
- const said: string[] = [];
- const l = capturingLogger({ said, },);
- ```
- */
-function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
-  /**
-   One level's writer, all seven sharing the same array.
-   */
-  const keep = (message: string,): void => {
-    said.push(message,);
-  };
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    flush: async () => undefined,
-    info: keep,
-    trace: keep,
-    warn: keep,
-  };
-}
-
-/**
  Runs one assembly over the fixture and returns what it said and returned.
  
  @returns Assembled result beside every logged line
@@ -277,7 +245,7 @@ async function assembledFixture(): Promise<{
       // numbers and a swap between any two of them is visible.
       resumedSliceCount: 2,
       findings: [],
-      l: capturingLogger({ said, },),
+      l: capturingLogger({ messages: said, },),
     },),
     said,
   };

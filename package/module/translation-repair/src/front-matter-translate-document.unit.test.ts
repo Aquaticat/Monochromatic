@@ -28,6 +28,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 
 /**
  Source metadata under translation.
@@ -57,30 +58,6 @@ const ROSTER: readonly RosterModelId[] = [
 ];
 
 /**
- Finds candidate containing expected corrected metadata.
- 
- @param content - complete judge sheet
- 
- @returns One-based candidate position
- */
-function correctedCandidate({ content, }: { readonly content: string; }): number {
-  const [, ...blocks] = content.split('CANDIDATE ',);
-  for (const block of blocks) {
-    /**
-     Candidate heading carrying one-based position.
-     */
-    const [heading = '',] = block.split('\n',);
-    /**
-     Parsed candidate position.
-     */
-    const position = Math.trunc(Number(heading,),);
-    if (Number.isInteger(position,) && block.includes('name: Maomao',))
-      return position;
-  }
-  return 0;
-}
-
-/**
  Client returning corrected metadata and selecting it.
  
  @param prompts - model prompts captured for rule reach assertion
@@ -105,7 +82,7 @@ function frontMatterClient({ prompts, }: { readonly prompts: string[]; }): Synth
       const value: unknown = (schema === 'translation_report')
         ? { translation: CORRECTED_TEXT, }
         : {
-          best: correctedCandidate({ content, }),
+          best: candidateCarrying({ content, needle: 'name: Maomao', },),
           reason: 'source metadata names the person',
         };
       if (!request.validate(value,))

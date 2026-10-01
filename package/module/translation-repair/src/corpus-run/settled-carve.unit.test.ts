@@ -48,6 +48,7 @@ import {
   recipeLabel,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Real git binary for fixture setup and pinned reads.
@@ -241,38 +242,6 @@ async function throwawayCorpus(
     [Symbol.asyncDispose]: async function removeClone() {
       await rm(
         cloneDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
-
-/**
- Makes a throwaway runs directory.
- 
- @returns Runs directory, removed on dispose
- 
- @example
- ```ts
- await using runs = await throwawayRuns();
- ```
- */
-async function throwawayRuns(): Promise<AsyncDisposable & { readonly runsDir: string; }> {
-  /**
-   Where the runs directory lives.
-   */
-  const runsDir = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-settled-runs-',
-  ),);
-  return {
-    runsDir,
-    [Symbol.asyncDispose]: async function removeRuns() {
-      await rm(
-        runsDir,
         {
           recursive: true,
           force: true,
@@ -571,20 +540,20 @@ await describe({
             'LISTS nothing for a runs directory no pass has settled into, since a missing artifacts '
             + 'subdirectory is an ordinary state rather than a fault',
           fn: async () => {
-            await using runs = await throwawayRuns();
-            expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual([],);
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
+            expect(await listSettledEntryIds({ runsDir: runs.path, },),).toEqual([],);
           },
         },),
         it({
           name: 'LISTS entry ids off the artifact file names, sorted, ignoring anything that is not an artifact',
           fn: async () => {
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
 
             /**
              Artifacts subdirectory with two artifacts and a stray note.
              */
             const dir = join(
-              runs.runsDir,
+              runs.path,
               'artifacts',
             );
             await mkdir(
@@ -605,7 +574,7 @@ await describe({
                 'utf8',
               );
             },),);
-            expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual([
+            expect(await listSettledEntryIds({ runsDir: runs.path, },),).toEqual([
               'calico',
               'tabby',
             ],);
@@ -615,13 +584,13 @@ await describe({
           name: 'LISTS REGULAR FILES ONLY: a directory or a symlink named like an artifact is no settled entry, as the '
             + 'census and the scheduler read the same directory (ledger B64)',
           fn: async () => {
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
 
             /**
              Artifacts subdirectory with one artifact, a directory and a symlink.
              */
             const dir = join(
-              runs.runsDir,
+              runs.path,
               'artifacts',
             );
             await mkdir(
@@ -649,7 +618,7 @@ await describe({
                 'siamese.json',
               ),
             );
-            expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual(['tabby',],);
+            expect(await listSettledEntryIds({ runsDir: runs.path, },),).toEqual(['tabby',],);
           },
         },),
       ],
@@ -662,10 +631,10 @@ await describe({
         it({
           name: 'REPORTS an entry no artifact records as unsettled, without touching the corpus',
           fn: async () => {
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             expect(await readSettledRecipe({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
             },),).toEqual({ kind: 'unsettled', },);
           },
         },),
@@ -674,9 +643,9 @@ await describe({
             'REPORTS an artifact from before the two-lane shape as legacy, since it records no preparation '
             + 'and therefore no recipe to carve through',
           fn: async () => {
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             await writeArtifactFile({
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               value: {
                 id: ENTRY_ID,
                 tip: 'tip/1',
@@ -688,7 +657,7 @@ await describe({
             },);
             expect(await readSettledRecipe({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
             },),).toEqual({ kind: 'legacy', },);
           },
         },),
@@ -697,9 +666,9 @@ await describe({
             'READS the recipe a two-lane artifact records, beside its commit, with the supplied section pairing '
             + 'and the stored block pairing as preparation inputs',
           fn: async () => {
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             await writeArtifact({
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               prepared: pairedPreparation(),
               corpusSha: 'b'.repeat(40,),
               strip: [],
@@ -710,7 +679,7 @@ await describe({
              */
             const settled = await readSettledRecipe({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
             },);
             expect(settled.kind,).toBe('settled',);
             if (settled.kind !== 'settled')
@@ -730,9 +699,9 @@ await describe({
         it({
           name: 'NAMES the recipe halves an older two-lane artifact does not record',
           fn: async () => {
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             await writeArtifact({
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               prepared: prepareDocumentPair({
                 sourceText: SOURCE_PAGE,
                 targetText: TARGET_PAGE,
@@ -749,7 +718,7 @@ await describe({
              */
             const settled = await readSettledRecipe({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
             },);
             if (settled.kind !== 'settled')
               throw new Error(`expected a settled reading, got ${settled.kind}`,);
@@ -773,7 +742,7 @@ await describe({
             + 'artifact records: the deterministic carve of the same pair lands elsewhere',
           fn: async () => {
             await using corpus = await throwawayCorpus();
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
 
             /**
              How the run carved it.
@@ -789,7 +758,7 @@ await describe({
                 },),
               },),);
             await writeArtifact({
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               prepared: paired,
               corpusSha: corpus.commitSha,
               strip: [],
@@ -800,7 +769,7 @@ await describe({
              */
             const carve = await carveSettled({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               cloneDir: corpus.cloneDir,
             },);
             expect(carve.kind,).toBe('settled',);
@@ -817,10 +786,10 @@ await describe({
         it({
           name: 'FORWARDS an unsettled or legacy answer without reading the corpus',
           fn: async () => {
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             expect(await carveSettled({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               cloneDir: '/nonexistent/clone',
             },),).toEqual({ kind: 'unsettled', },);
           },
@@ -841,7 +810,7 @@ await describe({
               sourcePage,
               targetPage,
             },);
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             /**
              How a current pass carves it when the archive's front matter governs.
              */
@@ -853,7 +822,7 @@ await describe({
               sealArchiveOriginal: true,
             },);
             await writeArtifact({
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               prepared: carved,
               corpusSha: corpus.commitSha,
               strip: [],
@@ -864,7 +833,7 @@ await describe({
              */
             const carve = await carveSettled({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               cloneDir: corpus.cloneDir,
             },);
             if (carve.kind !== 'settled')
@@ -882,7 +851,7 @@ await describe({
             await using corpus = await throwawayCorpus({
               targetPage: `${TARGET_PAGE}\nA stray corpus line the run never carved.\n`,
             },);
-            await using runs = await throwawayRuns();
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             /**
              How the pass carved the archive it had reshaped.
              */
@@ -893,7 +862,7 @@ await describe({
               sealArchiveOriginal: true,
             },);
             await writeArtifact({
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               prepared: carved,
               corpusSha: corpus.commitSha,
               strip: [],
@@ -904,7 +873,7 @@ await describe({
              */
             const carve = await carveSettled({
               entryId: ENTRY_ID,
-              runsDir: runs.runsDir,
+              runsDir: runs.path,
               cloneDir: corpus.cloneDir,
             },);
             if (carve.kind !== 'settled')

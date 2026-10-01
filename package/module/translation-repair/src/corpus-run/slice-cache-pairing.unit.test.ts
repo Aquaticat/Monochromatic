@@ -8,11 +8,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -25,6 +20,7 @@ import {
   openPairingCache,
   openSectionPairingCache,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Built pipeline the fixtures are filled under.
@@ -44,41 +40,6 @@ const OPENERS = [
     open: openSectionPairingCache,
   },
 ] as const;
-
-/**
- Throwaway directory removed on scope exit.
-
- @returns Disposable directory handle
-
- @example
- ```ts
- await using scratch = await scratchDir();
- ```
- */
-async function scratchDir(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-pairing-cache-',
-  ),);
-  return {
-    path,
-    [Symbol.asyncDispose]: async function removeScratch() {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-    },
-  };
-}
 
 /**
  Keys each cache resumes after one value is persisted under `paws` and the
@@ -132,7 +93,7 @@ await describe({
     it({
       name: 'ROUND-TRIPS a pairing record through the block and the section cache',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-pairing-cache-', },);
         expect(await resumedAfter({
           dir: scratch.path,
           serialized: JSON.stringify({
@@ -150,7 +111,7 @@ await describe({
         + 'whose pairs are not index pairs, nor a bare list, in either cache (ledger B18: the copies checked only '
         + 'that findings were a list)',
       fn: async () => {
-        await using scratch = await scratchDir();
+        await using scratch = await scratchDir({ prefix: 'whiskers-pairing-cache-', },);
         expect(await resumedAfter({
           dir: join(
             scratch.path,

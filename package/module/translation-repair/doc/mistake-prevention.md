@@ -369,6 +369,8 @@ and said no new pass was authorized while passes kept running (D28);
 the handover index put the kill-and-relaunch rule in a README section that had moved;
 and the day after TianqiChen66621's page was read,
 the current snapshot still listed reading it as a next step (M55).
+The scan B102 added gave this doc a section of its own,
+and "Copies of shared code" went on saying nothing fails on a shared module without its own test (ledger B103).
 
 The rule:
 a page read,
@@ -380,6 +382,10 @@ the map's "Current status" moves with them when what it states has changed.
 A status paragraph carries the date it was written,
 and points at a record by its name and date,
 not by its place in a file that grows.
+A change that adds a guard searches this doc for sentences calling the gap open
+(`rg --line-number 'Nothing yet|is open' doc/mistake-prevention.md`,
+and the guard's subject by name)
+and rewrites each in the same change.
 
 What enforces it:
 habit,
@@ -682,6 +688,11 @@ and eighteen checks in thirteen files had retyped its test inline rather than ca
 so the fix to the shared guard reached none of them;
 the census of the guard's callers listed none of the copies either,
 since it searched by the guard's name (ledger B92).
+Test files kept their own copies of three helpers that shared fixtures already held,
+under thirteen names,
+while each fixture's header said new cases import it;
+the duplicate-body scan reads production source alone,
+so no copy could fail it (ledger B103).
 
 The rule:
 before writing a helper,
@@ -717,6 +728,11 @@ A check a shared module owns is called,
 never retyped,
 and a census of a shared check searches for its shape as well as its name,
 in every form the shape is written in (both `===` and `!==`).
+A test helper is looked for among the `.test-fixture.ts` files,
+by its body's shape as well as its name,
+before it is written into a test file.
+A fixture's header that says copies remain names where they stand,
+and the change that writes that header moves them or queues them in the ledger.
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
@@ -740,8 +756,11 @@ fails on any directory-listing import outside `directory-listing.ts` and the wal
 among the source scans,
 fails on any `typeof` compared with `object` in the package's source outside `isJsonRecord`
 and the checks it names with why.
-Nothing yet fails on a shared module without its own test:
-a source scan over a classified list of the 167 there are is open (ledger M88).
+`src/own-unit-tests.unit.test.ts` (ledger B102),
+among the source scans,
+fails on a production module with neither a unit test of its own nor a line in its allowlist.
+Nothing yet fails on a helper copied between test files:
+the duplicate-body scan widens to them once the copies it would find there are hoisted or listed (ledger B101).
 
 ## Text by code point
 
@@ -1078,6 +1097,8 @@ since it walks from each declaration back to the nearest block (ledger B96).
 
 The rule:
 read a region with the Read tool before editing it.
+An applied patch that deletes code runs `mise run source-scans` before its named tests,
+and an agent asked to delete code is asked to count the deleted names' remaining uses (ledger M75).
 Lint,
 type check and the named tests run after the final edit of a commit,
 in that order,
@@ -1194,6 +1215,9 @@ where the census counts it (M65);
 a scratch sweep walked the package and `doc/` with a recursive `readdirSync`
 and held 6.7 GB resident after 16 minutes,
 when it was stopped (M96).
+A background suite written as `<suite> > <log> || echo "exit $?"` printed its fallback into the task output,
+not the log,
+and the task reported exit 0 while the log held a failing scan (ledger B103).
 
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
@@ -1203,6 +1227,10 @@ after `df` has shown the filesystem.
 A fixture printing a marker that tooling counts builds the marker when it runs,
 and a new test file's first run is read for markers,
 not only for its exit.
+A background run appends its exit status to its own log
+(`<suite> > <log> 2>&1 || echo "suite exit $?" >> <log>`)
+and is read by its `[FAIL]` markers and that line,
+never by the task's reported status.
 A scratch scan lists its files from git's index,
 or walks with a bound that skips `node_modules`,
 and runs with a heap cap (`node --max-old-space-size=512`);

@@ -28,6 +28,7 @@ import {
   type BudgetView,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
+import { capturingLoggerPair, } from '../capturing-logger.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '../roster-seats.test-fixture.ts';
 
 //region Seat reading tests
@@ -109,44 +110,6 @@ function viewClient(
   return {
     providerDryness,
     providerHolds,
-  };
-}
-
-/**
- Logger that keeps every line so a case can read what the reading said.
- 
- @returns Logger beside its captured lines
- 
- @example
- ```ts
- const { logger, lines, } = capturingLogger();
- ```
- */
-function capturingLogger() {
-  /**
-   Lines the reading emitted, in order.
-   */
-  const lines: string[] = [];
-
-  /**
-   Records one line and discards its level.
-   
-   @param message - line the reading published
-   */
-  function record(message: string,): void {
-    lines.push(message,);
-  }
-  return {
-    lines,
-    logger: {
-      debug: record,
-      error: record,
-      fatal: record,
-      flush: async () => {},
-      info: record,
-      trace: record,
-      warn: record,
-    },
   };
 }
 
@@ -296,7 +259,7 @@ await describe({
             + 'gpt-oss-120b on 2026-09-24)',
           fn: async () => {
             const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
-            const { logger, lines, } = capturingLogger();
+            const { logger, lines, } = capturingLoggerPair();
             const seats = await readJudgeSeats({
               client: viewClient({ providerDryness: script.read, },),
               phase: 'preparation',
@@ -320,7 +283,7 @@ await describe({
             expect(said?.includes('no provider has named its return',),).toBe(true,);
 
             const whole = scriptedViews({ views: [ALL_WET,], },);
-            const quiet = capturingLogger();
+            const quiet = capturingLoggerPair();
             await readJudgeSeats({
               client: viewClient({ providerDryness: whole.read, },),
               phase: 'pictures',
@@ -347,7 +310,7 @@ await describe({
             + 'translators at the floor)',
           fn: async () => {
             const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
-            const { logger, lines, } = capturingLogger();
+            const { logger, lines, } = capturingLoggerPair();
             await expect(readJudgeSeats({
               client: viewClient({ providerDryness: script.read, },),
               phase: 'lanes',

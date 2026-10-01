@@ -19,7 +19,6 @@
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
@@ -35,6 +34,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -122,39 +122,6 @@ const MEOW_FORMAT: JsonSchemaResponseFormat = {
     schema: { type: 'object', },
   },
 };
-
-/**
- Logger that keeps every message it was handed, so a case can assert on the
- line rather than on whatever a sink did with it.
- 
- @param said - array every level appends to, newest last
- 
- @returns Logger writing into that array
- 
- @example
- ```ts
- const said: string[] = [];
- const l = capturingLogger({ said, },);
- ```
- */
-function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
-  /**
-   One level's writer, all seven sharing the same array.
-   */
-  const keep = (message: string,): void => {
-    said.push(message,);
-  };
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    flush: async () => undefined,
-    info: keep,
-    trace: keep,
-    warn: keep,
-  };
-}
 
 /**
  Resolves when a signal aborts, and never otherwise.
@@ -384,7 +351,7 @@ await describe({
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
-              l: capturingLogger({ said, },),
+              l: capturingLogger({ messages: said, },),
               heardNeeded: 1,
               graceMs: GRACE_MS,
             },);
@@ -433,7 +400,7 @@ await describe({
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
-              l: capturingLogger({ said, },),
+              l: capturingLogger({ messages: said, },),
               heardNeeded: ROSTER.length,
               graceMs: GRACE_MS,
             },);
@@ -487,7 +454,7 @@ await describe({
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
-              l: capturingLogger({ said, },),
+              l: capturingLogger({ messages: said, },),
               heardNeeded: ROSTER.length,
               graceMs: GRACE_MS,
             },);
@@ -540,7 +507,7 @@ await describe({
               responseFormat: MEOW_FORMAT,
               validate: isMeowReply,
               stage: 'cat-stage',
-              l: capturingLogger({ said, },),
+              l: capturingLogger({ messages: said, },),
               heardNeeded: ROSTER.length,
               graceMs: GRACE_MS,
             },);

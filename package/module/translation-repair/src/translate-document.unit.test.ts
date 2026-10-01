@@ -12,10 +12,7 @@
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -42,6 +39,7 @@ import {
   type TranslateSliceRecord,
   type TranslateSliceSeating,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
@@ -50,42 +48,12 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 
 /**
  Logger for the driver under test.
  */
 const l = tagged({ tag: 'translate-document-test', },);
-
-/**
- Logger keeping every message, for the cases that read what the lane logged.
-
- @param messages - destination in emission order
-
- @returns Logger appending every level to destination
-
- @example
- ```ts
- const logger = capturingLogger({ messages, },);
- ```
- */
-function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
-  /**
-   Keeps one emitted message.
-   */
-  function keep(message: string,): void {
-    messages.push(message,);
-  }
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    flush: async function flush(): Promise<void> {},
-    info: keep,
-    trace: keep,
-    warn: keep,
-  };
-}
 
 /**
  Original document: two sections, each one paragraph.
@@ -262,51 +230,6 @@ type TranslateConcurrency = {
 };
 
 /**
- Finds the one-based candidate index whose rendered text carries a needle,
- reading the judge sheet the way a judge does rather than assuming an order the
- lane deliberately varies.
- 
- @param content - judge user message
- 
- @param needle - text the wanted candidate contains
- 
- @returns One-based index, or zero when no candidate carries it
- 
- @example
- ```ts
- const best = pickCandidate({ content, needle: FRESH, },);
- ```
- */
-function pickCandidate(
-  {
-    content,
-    needle,
-  }: {
-    readonly content: string;
-    readonly needle: string;
-  },
-): number {
-  /**
-   Sheet split at each candidate heading; the first piece is the evidence.
-   */
-  const [, ...blocks] = content.split('CANDIDATE ',);
-  for (const block of blocks) {
-    /**
-     Heading line carrying this candidate's number.
-     */
-    const [heading = '',] = block.split('\n',);
-
-    /**
-     Number the heading states.
-     */
-    const index = Math.trunc(Number(heading,),);
-    if (Number.isInteger(index,) && block.includes(needle,))
-      return index;
-  }
-  return 0;
-}
-
-/**
  Client serving both stages of the lane from one script.
  
  @param calls - shared call log the cases assert on
@@ -432,7 +355,7 @@ function laneClient(
        Ballot naming the fresh rendering.
        */
       const ballot: unknown = {
-        best: pickCandidate({
+        best: candidateCarrying({
           content,
           needle: wantedRendering,
         },),
