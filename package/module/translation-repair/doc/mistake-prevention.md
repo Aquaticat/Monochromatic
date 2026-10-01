@@ -425,6 +425,10 @@ A case is said to reach a stretch only once a census shows the stretch ran;
 until then the message names the stretch the case is written for
 (one message claimed two arms for a case that reached one,
 M102).
+A lint a message reports ran on the bytes the commit holds,
+after the last edit to each file it reads
+(one message reported a clean ledger the commit's ledger failed,
+M106).
 A constant a message or a comment names is read from its declaration first,
 and a correction is held to the same rule:
 one message quoted a quorum of 3 where both quorums were 2,
@@ -1730,6 +1734,13 @@ where nothing set it apart (ledger B72).
 The Anthropic reader took a body as whole when any payload held the word `message_stop` in quotes,
 so a stream cut inside its last frame passed the retry ladder and failed after it,
 and it never read the error event a failing stream ends with (ledger B87).
+Six more readers split on blank lines after B68 named the rule:
+the line-structure predicate called a loose list line-structured,
+the target-only run protected no transcript written on the line after its anchor,
+the size classifier and the address floor counted a fence with a blank line inside as two blocks,
+the suicide floor read a quotation written on the line after a paragraph as the paragraph's own words,
+and the page passes closed a stray backtick past a heading
+and took a capital opening a paragraph after a heading for a name (ledger B100).
 
 The rule:
 a question about what a passage's blocks are
@@ -1739,8 +1750,18 @@ what a container holds)
 is asked of the parse the floor reads
 (`readPageSkeleton` or `readSliceSkeleton`),
 never of a blank-line split or a first character.
+A reader in a page pass reads the page grammar (`proseBodyTree`);
+a reader beside the floor reads the slice grammar;
+each says what it answers for a passage its grammar refuses.
+Plain markdown refuses too,
+where nesting exhausts its stack,
+so a reader moved off a scan that read any text keeps reading any text:
+its tests carry a passage neither grammar reads
+(the page passes' code-span reader threw out of the Han residue floor on such a page,
+ledger B100).
 A split on the text stays where the question is the text itself,
-as splicing a held-out run back is.
+and a held-out run is cut at the parse's own offsets,
+so putting it back rebuilds the text byte for byte.
 A guard's tests carry a case where the split and the parse disagree:
 a block opening on the line after a paragraph's,
 and one inside a container tag.
@@ -1765,7 +1786,16 @@ never found as a word in the payload's text,
 and a reader is checked against every frame kind its protocol's current documentation lists.
 
 What enforces it:
-habit and review;
+`blank-line-splits.unit.test.ts`,
+among the source scans,
+fails on a `split`,
+`indexOf`,
+`lastIndexOf` or `includes` handed a blank line in the package's source
+(as a string,
+a constant holding one,
+or a pattern matching two line feeds);
+a reader walking lines and treating an empty one as a boundary is out of its reach,
+and is left to review.
 `quote-preservation.unit.test.ts` carries both disagreeing shapes,
 and `quoteBlockCount` no longer exists to be reached for;
 `insertion-container-deficit.unit.test.ts` carries loose against tight lists and a fenced block with a blank line;
@@ -1775,7 +1805,7 @@ a JSX comment beside one,
 a link,
 underscores
 and a span across lines.
-Three more blank-line block readers are listed under ledger B68 to be read against this rule.
+Each B100 reader's tests carry the shape its split misread and the answer for a passage its grammar refuses.
 `anthropic-completion.unit.test.ts` carries the word as a tool's name and the error event,
 and `hyper-client.unit.test.ts` a body cut inside its terminator frame.
 

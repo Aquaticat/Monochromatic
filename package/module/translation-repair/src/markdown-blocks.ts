@@ -1,50 +1,127 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { parseSliceBody, } from './parse-slice-body.ts';
+
 //region Markdown blocks
-// TOP-LEVEL BLOCKS OF A PASSAGE, split on blank lines for the target-only run,
-// which splices the archive's own text and so needs the text of each block
-// rather than a parse of it.
+// TOP-LEVEL BLOCKS OF A PASSAGE, for the target-only run, which splices the
+// archive's own text and so needs each block's exact bytes, kind and place.
 //
-// NOT A READING OF STRUCTURE. A blank-line split is not what the parser reads:
-// a blockquote may open on the line after a paragraph's, and a container tag
-// holds blocks of its own. The quote guard counted quotes on this split and
-// refused replacements that kept every quote, so it now counts off the parse
-// the floor reads (ledger B42, `quote-preservation.ts`). A question about
-// what a passage's blocks ARE belongs to the parse.
+// READ OFF THE PARSE (ledger B68), not split on blank lines. A split is not
+// what the parser reads: a blockquote may open on the line after a
+// paragraph's with no blank line between, and a fence carrying a blank line
+// between its own lines is one block to the parser and two to a split. The
+// quote guard met the same shape first and counts off the parse the floor
+// reads (ledger B42, `quote-preservation.ts`).
 //
-// CARRIAGE RETURNS ARE FOLDED FIRST, and that is a measured requirement rather
-// than defensiveness. Of the 184 markdown files in the pinned corpus, one uses
-// CRLF throughout: `people/gqt/page.md`. A splitter looking for the two-byte
-// sequence `\n\n` never finds a boundary in that file, so the whole document
-// reads as ONE block, no block of it can match the source's last one, and no
-// transcript in it is ever held out of translation.
+// NO CARRIAGE-RETURN FOLD IS NEEDED. A split looking for `\n\n` found no
+// boundary in a CRLF file (`people/gqt/page.md` is the one such file in the
+// pinned corpus) and read the whole page as one block. The slice grammar reads
+// CRLF line endings, and its offsets index the text as written, `\r` included.
 
 /**
- Separator between top-level blocks, which is a blank line.
- */
-const BLOCK_SEPARATOR = '\n\n';
-
-/**
- Splits a passage into its top-level blocks, keeping no empty ones.
-
- @param text - passage to split
-
- @returns Its blocks, in order, each trimmed
+ One top-level block as the parse reads it: its exact source bytes, its node
+ kind, and the offsets those bytes occupy in the text it was read from.
 
  @example
  ```ts
- const blocks = topLevelBlocks({ text: 'One.\n\nTwo.', },);
+ const block: ParsedBlock = { text: 'One.', kind: 'paragraph', startOffset: 0, endOffset: 4, };
  ```
  */
-export function topLevelBlocks({ text, }: { readonly text: string; },): readonly string[] {
-  return text
-    .split('\r\n',)
-    .join('\n',)
-    .split(BLOCK_SEPARATOR,)
-    .map(function trimmed(block,): string {
-      return block.trim();
-    },)
-    .filter(function present(block,): boolean {
-      return block !== '';
-    },);
+export type ParsedBlock = {
+  /**
+   Exact source bytes of this block, untrimmed.
+   */
+  readonly text: string;
+
+  /**
+   mdast node type (`paragraph`, `blockquote`, `mdxJsxFlowElement` and the
+   rest), kept as a plain string because remark plugins extend the
+   vocabulary, or `containerTag` for a container's opening or closing tag
+   standing alone in the passage, which the grammar holds aside rather than
+   parsing.
+   */
+  readonly kind: string;
+
+  /**
+   Start offset within the text this block was read from.
+   */
+  readonly startOffset: number;
+
+  /**
+   Exclusive end offset within the text this block was read from.
+   */
+  readonly endOffset: number;
+};
+
+/**
+ Splits a passage into its top-level blocks, each with its own exact bytes,
+ kind and offsets.
+
+ A CONTAINER TAG STANDING ALONE IS A BLOCK HERE. The slice grammar masks a
+ lone `<details>` or `</details>` so the rest of the passage parses, and a
+ passage cut inside a container ends on one; the target-only run anchors on
+ the source's last block, so leaving the tag out would anchor one block too
+ early and carry the tag into the protected run as well as the lane's own
+ rendering.
+
+ @param text - passage to read
+
+ @returns Its blocks, in order, untrimmed
+
+ @throws {@link import('./parse-mdx.ts').MdxParseError} when the shared slice grammar refuses this text
+
+ @example
+ ```ts
+ const blocks = parsedTopLevelBlocks({ text: 'One.\n\nTwo.', },);
+ ```
+ */
+export function parsedTopLevelBlocks({ text, }: { readonly text: string; },): readonly ParsedBlock[] {
+  /**
+   The grammar's reading and the container tags it held aside.
+   */
+  const {
+    root,
+    tags,
+  } = parseSliceBody({ text, },);
+  return [
+    ...root
+      .children
+      .map(function toBlock(node,): ParsedBlock {
+        /**
+         This node's start offset.
+         */
+        const startOffset = nonNullishOrThrow(node.position
+          ?.start
+          .offset,);
+        /**
+         This node's exclusive end offset.
+         */
+        const endOffset = nonNullishOrThrow(node.position
+          ?.end
+          .offset,);
+        return {
+          text: text.slice(
+            startOffset,
+            endOffset,
+          ),
+          kind: node.type,
+          startOffset,
+          endOffset,
+        };
+      },),
+    ...tags.map(function toTagBlock(tag,): ParsedBlock {
+      return {
+        text: tag.text,
+        kind: 'containerTag',
+        startOffset: tag.startOffset,
+        endOffset: tag.endOffset,
+      };
+    },),
+  ].toSorted(function inPassageOrder(
+    left,
+    right,
+  ): number {
+    return left.startOffset - right.startOffset;
+  },);
 }
 
 //endregion Markdown blocks

@@ -33,6 +33,7 @@ export {
   MIN_RATIO_SOURCE_CHARS,
   PLAUSIBLE_BASELINE_MAX,
   PLAUSIBLE_BASELINE_MIN,
+  SliceBlockCountRefusalError,
   type SliceRatio,
   sliceRatios,
   type SliceSize,
@@ -41,6 +42,8 @@ export {
 } from './displacement-ratio.ts';
 export {
   isPlausibleSlice,
+  type RatioImplausibility,
+  ratioImplausibility,
   type SliceImplausibility,
   sliceImplausibility,
 } from './slice-implausible.ts';

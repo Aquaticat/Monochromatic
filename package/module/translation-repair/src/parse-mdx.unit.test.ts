@@ -32,7 +32,9 @@ import {
 import {
   MdxParseError,
   namesWithoutQuoting,
+  parseMarkdownBody,
   parseMdxBody,
+  requireMarkdownRefusal,
   requireMdxRefusal,
 } from '../dist/final/node/index.mjs';
 
@@ -207,6 +209,47 @@ await describe({
             },),).toBe(stray,);
             expect(caught(function narrowString(): void {
               requireMdxRefusal({ error: 'hairball', },);
+            },),).toBe('hairball',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: requireMarkdownRefusal.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RETURNS the stack exhaustion plain markdown raises on deep nesting, the same object (ledger B100)',
+          fn: async () => {
+            /**
+             What plain markdown throws on thousands of nested quotation markers.
+             */
+            const refusal = caught(function parseDeep(): void {
+              parseMarkdownBody({ body: `${'>'.repeat(16_000,)} cat`, },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(RangeError,);
+            expect(requireMarkdownRefusal({ error: refusal, },),).toBe(refusal,);
+          },
+        },),
+        it({
+          name: 'RETHROWS anything else unchanged, the strict grammar\'s refusal included, since an unexpected '
+            + 'state must keep propagating',
+          fn: async () => {
+            /**
+             A failure that is not a stack exhaustion.
+             */
+            const stray = new TypeError('the cat knocked the parser off the table',);
+
+            expect(caught(function narrowStray(): void {
+              requireMarkdownRefusal({ error: stray, },);
+            },),).toBe(stray,);
+            expect(caught(function narrowMdx(): void {
+              requireMarkdownRefusal({ error: mdxRefusal(), },);
+            },),).toBeInstanceOf(MdxParseError,);
+            expect(caught(function narrowString(): void {
+              requireMarkdownRefusal({ error: 'hairball', },);
             },),).toBe('hairball',);
           },
         },),

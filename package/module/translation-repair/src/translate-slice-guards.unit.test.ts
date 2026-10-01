@@ -373,9 +373,13 @@ await describe({
             expect(settled.sheets.some(function showsTranscript(sheet,): boolean {
               return sheet.includes('Dear cat, rest well.',);
             },),).toBe(false,);
+            /**
+             Characters held out: the transcript and the line breaks before it.
+             */
+            const held = `\n\n${TRANSCRIPT}`.length;
             expect(settled.said,).toContain(
-              `translate slice 0: holding ${String(TRANSCRIPT.length,)} characters of target-only English out of `
-                + `translation, judging ${String(judged.length,)} of ${String(archive.length,)}`,
+              `translate slice 0: holding ${String(held,)} characters of target-only English, with the line breaks `
+                + `before it, out of translation, judging ${String(judged.length,)} of ${String(archive.length,)}`,
             );
             expect(settled.record.disposition,).toBe('stage-result',);
             expect(settled.record.outputText,).toBe(`${rendering}\n\n${TRANSCRIPT}`,);

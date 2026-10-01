@@ -79,16 +79,16 @@ export type ParseFinding = {
 
 /**
  Whether a parse finding marks an HTML comment, closed or left open.
-
+ 
  The archive-original seal, the entry's comment notes and the footnote
  protected ranges each kept their own copy of this pair of kinds (audit area
  six, 2026-09-28); a comment kind added to one would have gone unseen by the
  others.
-
+ 
  @param finding - one tolerance event from parsing
-
+ 
  @returns True for a masked comment and for one that never closed
-
+ 
  @example
  ```ts
  const comments = document.parseFindings.filter(function isComment(finding,): boolean {
@@ -169,6 +169,10 @@ export type RepairDocument = {
  
  @returns mdast root plus downgrade findings when the strict grammar failed
  
+ @throws {@link RangeError} when plain markdown refuses the body too, its
+ nesting having exhausted the parser's stack (`parse-mdx.ts`
+ `requireMarkdownRefusal`)
+ 
  @example
  ```ts
  const { root, findings, } = parseBodyTolerant({ body: masked, bodyOffset: 0, },);
@@ -225,6 +229,9 @@ export function parseBodyTolerant(
  @returns Parsed document with nodes, hashes, footnote graph, and findings
  
  @throws {@link import('./front-matter.ts').FrontMatterParseError} when fenced YAML refuses to parse
+ 
+ @throws {@link RangeError} when plain markdown refuses the body too, its
+ nesting having exhausted the parser's stack
  
  @example
  ```ts

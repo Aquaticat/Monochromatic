@@ -25,6 +25,14 @@ import {
 // names someone or a work, so it keeps its spelling (ledger K11: the first
 // pass took every capital for a name, and a title-case archive heading with an
 // American spelling shipped unconverted, `Chinatsu_Suzuki/page.en.md:29`).
+//
+// WHERE A PARAGRAPH OPENS IS READ OFF THE PARSE (ledger B68), not a `\n\n`
+// search. A heading or any other block written on the line after a
+// paragraph, with no blank line between, closes that paragraph to the
+// parser, and a listed word opening the next paragraph opens a sentence; the
+// search answered no and left the word a possible name, K11's failure again.
+// The caller reads the paragraph starts once per text (`canadian-spelling.ts`),
+// since this function runs once per word.
 
 /**
  Characters that may open a line before its first word: space, heading,
@@ -212,20 +220,26 @@ function isNoLetter(
 
  @param start - word's first offset
 
+ @param blockStarts - where each paragraph and heading the parse reads in
+ this text opens, since a paragraph can open on the line after a heading
+ with no blank line between
+
  @returns Whether the word is a sentence's first
 
  @example
  ```ts
- opensSentence({ text: 'The cat napped. Behavior was calm.', start: 16, },); // true
+ opensSentence({ text: 'The cat napped. Behavior was calm.', start: 16, blockStarts: [0,], },); // true
  ```
  */
 export function opensSentence(
   {
     text,
     start,
+    blockStarts,
   }: {
     readonly text: string;
     readonly start: number;
+    readonly blockStarts: readonly number[];
   },
 ): boolean {
   /**
@@ -283,14 +297,13 @@ export function opensSentence(
     },)
     .length;
   /**
-   Whether a blank line, or the text's start, opens the word's paragraph.
+   Whether the text's start, or a paragraph or heading the parse reads,
+   opens between the closing mark and the word.
    */
   const paragraphStart = (closeEnd === 0)
-    || text.slice(
-    closeEnd,
-    start,
-  )
-    .includes('\n\n',);
+    || blockStarts.some(function opensBetween(blockStart,): boolean {
+      return (blockStart > closeEnd) && (blockStart <= start);
+    },);
   /**
    Whether a sentence's closing mark, not a title's or an initial's period,
    stands before the word.

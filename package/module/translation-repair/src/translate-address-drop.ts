@@ -1,5 +1,8 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { howOften, } from './count-word.ts';
+import { requireMdxRefusal, } from './parse-mdx.ts';
+import { parseSliceBody, } from './parse-slice-body.ts';
+import { readSliceSkeleton, } from './translate-skeleton.ts';
 import {
   addressCount,
   hanThirdPersonCount,
@@ -121,40 +124,46 @@ export function withoutHtmlComments({ text, }: { readonly text: string; },): str
 }
 
 /**
- A passage's blocks: runs of lines between blank lines.
+ A passage's top-level blocks as the slice grammar reads them, or the whole
+ passage as one block where the grammar refuses it.
+
+ READ OFF THE PARSE (ledger B68), not split on blank lines: a fence carrying
+ a blank line between its own lines is one block, as it is to the floor, so
+ the two sides' counts do not part for spacing either side's wording never
+ chose. A passage the grammar refuses has no blocks to pair, and reading it
+ whole is what an unequal count already falls back to.
 
  @param text - passage, comments already cut
 
- @returns Blocks in order, blank runs dropped
+ @returns Blocks in order, each the exact source text of one top-level node
 
  @example
  ```ts
- blocksOf({ text: 'a\nb\n\nc', },); // ['a\nb', 'c']
+ blocksOrWholeText({ text: 'a\n\nb', },); // ['a', 'b']
  ```
  */
-export function blocksOf({ text, }: { readonly text: string; },): readonly string[] {
-  /**
-   Lines of each block so far; a blank line opens the next.
-   */
-  const blocks: string[][] = [[],];
-  for (const line of text.split('\n',)) {
-    /**
-     Block the line joins: the last one open, and one always is, since the
-     list starts with one and only grows.
-     */
-    const open = nonNullishOrThrow(blocks.at(-1,),);
-    if (line.trim() === '')
-      blocks.push([],);
-    else
-      open.push(line,);
+export function blocksOrWholeText({ text, }: { readonly text: string; },): readonly string[] {
+  try {
+    return parseSliceBody({ text, },)
+      .root
+      .children
+      .map(function blockText(node,): string {
+        return text.slice(
+          nonNullishOrThrow(node.position
+            ?.start
+            .offset,),
+          nonNullishOrThrow(node.position
+            ?.end
+            .offset,),
+        );
+      },);
   }
-  return blocks
-    .filter(function hasLines(lines: readonly string[],): boolean {
-      return lines.length > 0;
-    },)
-    .map(function joined(lines: readonly string[],): string {
-      return lines.join('\n',);
-    },);
+  catch (error) {
+    // Only the grammar's own refusal reads the passage whole; anything else
+    // is an unexpected state that must keep propagating.
+    requireMdxRefusal({ error, },);
+    return [text,];
+  }
 }
 
 /**
@@ -261,11 +270,70 @@ function switchedBlock(
 }
 
 /**
+ Pairs the original and the rendering block by block where the slice grammar
+ reads as many blocks on both sides, or the whole texts where the counts
+ differ.
+
+ @param original - original outside its comments
+
+ @param rendering - candidate outside its comments
+
+ @returns Blocks read side by side, or the two whole texts as one pair
+
+ @example
+ ```ts
+ const pairs = blockPairs({ original: '你好。', rendering: 'Hello.', },);
+ ```
+ */
+function blockPairs(
+  {
+    original,
+    rendering,
+  }: {
+    readonly original: string;
+    readonly rendering: string;
+  },
+): readonly SideBySide[] {
+  /**
+   Whole texts as one pair, named once so every fallback path reads alike.
+   */
+  const whole: readonly SideBySide[] = [{
+    original,
+    rendering,
+  },];
+  /**
+   Blocks of the original.
+   */
+  const originalBlocks = blocksOrWholeText({ text: original, },);
+  /**
+   Blocks of the candidate.
+   */
+  const renderingBlocks = blocksOrWholeText({ text: rendering, },);
+  if (originalBlocks.length !== renderingBlocks.length)
+    return whole;
+  return originalBlocks.map(function paired(
+    block,
+    index,
+  ): SideBySide {
+    return {
+      original: block,
+      rendering: nonNullishOrThrow(renderingBlocks[index],),
+    };
+  },);
+}
+
+/**
  Findings for a candidate that renders a passage the original addresses in
  the second person with a third-person pronoun and no second-person one:
  read block by block where the two texts have as many blocks, else whole, and
  refused only where the rendering's third-person pronouns outnumber the
  original's own.
+
+ A CANDIDATE THE SLICE GRAMMAR REFUSES IS LEFT TO THE PARSE FLOOR, which
+ refuses it with the parser's own account (`translate-validate.ts`). Read
+ whole here, its address would be counted across blocks the switch never
+ spanned, and this finding, which runs first, would stand in for the one
+ that names what is wrong (ledger B100).
 
  @param sourceText - original slice
 
@@ -297,34 +365,18 @@ export function droppedAddressFindings(
    */
   const rendering = withoutHtmlComments({ text: candidateText, },);
   /**
-   Blocks of the original.
+   How the slice grammar reads the candidate.
    */
-  const originalBlocks = blocksOf({ text: original, },);
+  const reading = readSliceSkeleton({ text: rendering, },);
+  if (reading.kind === 'unparseable')
+    return [];
   /**
-   Blocks of the candidate.
+   Blocks read side by side, or the whole texts as one pair.
    */
-  const renderingBlocks = blocksOf({ text: rendering, },);
-  /**
-   Blocks read side by side, or the whole texts where the counts differ; side
-   by side, every original block has its rendering block, the counts being
-   equal.
-   */
-  const pairs: readonly SideBySide[] = (originalBlocks.length === renderingBlocks.length)
-    ? originalBlocks.map(function paired(
-      block,
-      index,
-    ): SideBySide {
-      return {
-        original: block,
-        rendering: nonNullishOrThrow(renderingBlocks[index],),
-      };
-    },)
-    : [
-      {
-        original,
-        rendering,
-      },
-    ];
+  const pairs = blockPairs({
+    original,
+    rendering,
+  },);
   /**
    Blocks where the address turned into narration.
    */

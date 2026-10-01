@@ -14,6 +14,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -21,6 +22,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   isPlausibleSlice,
+  ratioImplausibility,
+  SliceBlockCountRefusalError,
   sliceImplausibility,
   sliceSizeOf,
   sliceSizesOf,
@@ -247,13 +250,39 @@ await describe({
     },),
 
     describe({
+      name: ratioImplausibility.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS EACH RATIO TAIL off character counts alone, nothing for an ordinary ratio, and '
+            + 'nothing where a side is empty, so the contest size note counts no blocks (ledger B68)',
+          fn: async () => {
+            expect([
+              ratioImplausibility({ sourceChars: 56, targetChars: 10_381, },),
+              ratioImplausibility({ sourceChars: 100, targetChars: 50, },),
+              ratioImplausibility({ sourceChars: 100, targetChars: 250, },),
+              ratioImplausibility({ sourceChars: 0, targetChars: 50, },),
+              ratioImplausibility({ sourceChars: 100, targetChars: 0, },),
+            ],).toStrictEqual([
+              ['target-far-longer',],
+              ['target-far-shorter',],
+              [],
+              [],
+              [],
+            ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: sliceSizeOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'COUNTS CHARACTERS RAW AND BLOCKS BY BLANK LINES, which is the one place blocks are '
-            + 'counted: two callers splitting them differently would run two estimators while '
-            + 'reporting one number',
+          name: 'COUNTS CHARACTERS RAW AND BLOCKS AS THE PARSE READS THEM, which is the one place '
+            + 'blocks are counted: two callers splitting them differently would run two estimators '
+            + 'while reporting one number',
           fn: async () => {
             expect(sliceSizeOf({
               sourceText: 'first\n\nsecond',
@@ -295,6 +324,29 @@ await describe({
               sourceBlocks: 3,
               targetBlocks: 1,
             },);
+          },
+        },),
+
+        it({
+          name: 'THROWS RATHER THAN GUESSES where the slice grammar refuses a side, naming the '
+            + 'refusal, since a count read some other way would be a second estimator (ledger B68)',
+          fn: async () => {
+            /**
+             What sizing a slice whose rendering opens on an unclosed component throws.
+             */
+            const refusal = caught(function sizeUnclosed(): void {
+              sliceSizeOf({
+                sourceText: '猫在睡觉。',
+                targetText: '<Cat unclosed\n\nThe cat naps.',
+              },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(SliceBlockCountRefusalError,);
+            expect((refusal as Error).message,).toBe(
+              'slice block count could not be read off the parse: MdxParseError: MDX body refused to parse at '
+              + '3:13 (micromark-extension-mdx-jsx/unexpected-character); corpus documents compile as MDX '
+              + 'upstream, so failure signals corruption or an unsupported construct.',
+            );
           },
         },),
 

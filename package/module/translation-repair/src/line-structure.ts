@@ -1,4 +1,7 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { foldCarriageReturns, } from './line-endings.ts';
+import { requireMdxRefusal, } from './parse-mdx.ts';
+import { parseSliceBody, } from './parse-slice-body.ts';
 
 //region Line structure
 // Whether a slice is line-structured, meaning each block is a unit rather than
@@ -18,6 +21,11 @@ import { foldCarriageReturns, } from './line-endings.ts';
 // The counts were 55 of 286 across 34 entries when first taken. Nothing about
 // this predicate changed; the ALIGNER did, and chunk boundaries are
 // its output. Re-measured through the shipped predicate on the forced aligner.
+//
+// BLOCKS ARE THE PARSE'S TOP-LEVEL NODES (ledger B68), not runs between blank
+// lines: a loose list was five blocks to a split and is one list to the
+// floor, and a tight list was one to both. Both counts in this header were
+// taken through the split.
 
 /**
  Blocks a slice needs before its shape means anything.
@@ -35,7 +43,42 @@ const MIN_BLOCKS = 5;
 const MAX_MEDIAN_LENGTH = 30;
 
 /**
+ Whether blocks of these lengths read as units rather than paragraphs: enough
+ of them, and a short median.
+ 
+ @param lengths - each top-level block's length
+ 
+ @returns Whether the blocks clear `MIN_BLOCKS` and their median sits at or
+ under `MAX_MEDIAN_LENGTH`
+ 
+ @example
+ ```ts
+ const short = shortBlocks({ lengths: [12, 9, 14, 11, 10,], },); // true
+ ```
+ */
+function shortBlocks({ lengths, }: { readonly lengths: readonly number[]; },): boolean {
+  if (lengths.length < MIN_BLOCKS)
+    return false;
+  /**
+   The lengths in ascending order.
+   */
+  const ascending = lengths.toSorted(function byLength(
+    left,
+    right,
+  ): number {
+    return left - right;
+  },);
+  return (ascending[Math.floor(ascending.length / 2,)] ?? 0) <= MAX_MEDIAN_LENGTH;
+}
+
+/**
  Reports whether a slice is line-structured.
+ 
+ BLOCKS ARE THE SLICE GRAMMAR'S TOP-LEVEL NODES, as the floor reads them
+ (ledger B68), each measured as its extent in UTF-16 code units, the unit
+ `MAX_MEDIAN_LENGTH` was measured in. A slice the grammar refuses is not
+ line-structured: it has no blocks to measure, as one under `MIN_BLOCKS` has
+ too few.
  
  @param text - full text of one slice
  
@@ -54,41 +97,35 @@ export function isLineStructured(
   },
 ): boolean {
   /**
-   Blank-line-separated blocks carrying content.
+   Text the slice grammar reads, with each line break one character.
    
-   FOLDED FIRST, for a caller that read the text by some other route than
-   the corpus read: a CRLF page carries no `\n\n` at all, reads as one
-   block, fails the block floor and answers false, so no addendum, no
-   inheritance and no line-count guard reach it.
+   FOLDED FIRST so a block's length counts a line break as the corpus read
+   gives it: the grammar reads `\r\n` itself, but a text read by another
+   route would otherwise add one to a block's length for each `\r` it holds.
    */
-  const blocks = foldCarriageReturns({ text, },)
-    .text
-    .split('\n\n',)
-    .map(function trim(block,): string {
-    return block.trim();
-  },)
-    .filter(function isContent(block,): boolean {
-    return block !== '';
-  },);
-
-  if (blocks.length < MIN_BLOCKS)
+  const folded = foldCarriageReturns({ text, },)
+    .text;
+  try {
+    return shortBlocks({
+      lengths: parseSliceBody({ text: folded, },)
+        .root
+        .children
+        .map(function toLength(block,): number {
+          return nonNullishOrThrow(block.position
+            ?.end
+            .offset,)
+            - nonNullishOrThrow(block.position
+              ?.start
+              .offset,);
+        },),
+    },);
+  }
+  catch (error) {
+    // Only the grammar's own refusal answers no; anything else is an
+    // unexpected state that must keep propagating.
+    requireMdxRefusal({ error, },);
     return false;
-
-  /**
-   Block lengths in ascending order.
-   */
-  const lengths = blocks
-    .map(function toLength(block,): number {
-    return block.length;
-  },)
-    .toSorted(function ascending(
-      left,
-      right,
-    ): number {
-    return left - right;
-  },);
-
-  return (lengths[Math.floor(lengths.length / 2,)] ?? 0) <= MAX_MEDIAN_LENGTH;
+  }
 }
 
 //endregion Line structure

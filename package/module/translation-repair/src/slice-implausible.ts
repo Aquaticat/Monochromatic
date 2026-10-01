@@ -63,6 +63,61 @@ export type SliceImplausibility
     | 'block-count-gap';
 
 /**
+ Evidence that a rendering is the wrong size for its original, read off
+ character counts alone.
+ */
+export type RatioImplausibility = Exclude<SliceImplausibility, 'block-count-gap'>;
+
+/**
+ Reads one slice's character counts for a ratio no translation of its
+ original plausibly produces.
+ 
+ A SIDE WITH NO CHARACTERS RAISES NOTHING, for the reason
+ {@link sliceImplausibility} gives.
+ 
+ SEPARATE FROM THE BLOCK GAP so a caller asking only whether the rendering is
+ the wrong size, as the contest size note does, counts no blocks and so
+ parses nothing (ledger B68).
+ 
+ @param sourceChars - original's characters
+ 
+ @param targetChars - rendering's characters
+ 
+ @returns Every ratio tail the counts reach, empty when they are ordinary
+ 
+ @example
+ ```ts
+ const tails = ratioImplausibility({ sourceChars: 56, targetChars: 10_381, },); // ['target-far-longer']
+ ```
+ */
+export function ratioImplausibility(
+  {
+    sourceChars,
+    targetChars,
+  }: {
+    readonly sourceChars: number;
+    readonly targetChars: number;
+  },
+): readonly RatioImplausibility[] {
+  if ((sourceChars === 0) || (targetChars === 0))
+    return [];
+
+  /**
+   Translated characters per original character.
+   */
+  const ratio = targetChars / sourceChars;
+
+  return [
+    ((ratio < IMPLAUSIBLE_MIN_RATIO) ? 'target-far-shorter' as const : undefined),
+    ((ratio > IMPLAUSIBLE_MAX_RATIO) ? 'target-far-longer' as const : undefined),
+  ].filter(function raised(
+    reason,
+  ): reason is RatioImplausibility {
+    return reason !== undefined;
+  },);
+}
+
+/**
  Reads one slice's sizes for every way they fail to be plausible.
  
  A SLICE WITH AN EMPTY SIDE RAISES NOTHING. No original means no ratio, and no
@@ -87,24 +142,17 @@ export function sliceImplausibility(
     return [];
 
   /**
-   Translated characters per original character on this slice.
-   */
-  const ratio = slice.targetChars / slice.sourceChars;
-
-  /**
    How far the two sides disagree about how many blocks they hold.
    */
   const blockGap = Math.abs(slice.sourceBlocks - slice.targetBlocks,);
 
   return [
-    ((ratio < IMPLAUSIBLE_MIN_RATIO) ? 'target-far-shorter' as const : undefined),
-    ((ratio > IMPLAUSIBLE_MAX_RATIO) ? 'target-far-longer' as const : undefined),
-    ((blockGap > MAX_BLOCK_COUNT_GAP) ? 'block-count-gap' as const : undefined),
-  ].filter(function raised(
-    reason,
-  ): reason is SliceImplausibility {
-    return reason !== undefined;
-  },);
+    ...ratioImplausibility({
+      sourceChars: slice.sourceChars,
+      targetChars: slice.targetChars,
+    },),
+    ...((blockGap > MAX_BLOCK_COUNT_GAP) ? ['block-count-gap' as const,] : []),
+  ];
 }
 
 /**

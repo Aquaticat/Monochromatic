@@ -153,6 +153,7 @@ const MARKED_CLASSES: readonly string[] = [
   'SchemaGenerationError',
   'SeedApplicationError',
   'SlatePositionsError',
+  'SliceBlockCountRefusalError',
   'SliceCoverageError',
   'SliceDeliveryError',
   'SliceIndexingError',
@@ -272,7 +273,8 @@ const NAMED_PARTS: Record<string, string> = {
   'checkerModelIds.join(\', \',)': 'model ids from the catalog',
   'detail': 'authored phrase naming which rule was broken, at every throw site; the one value read off a body '
     + 'is an Anthropic error event\'s type, lower-case letters and underscores of at most 64 characters, '
-    + 'or the word unnamed (ledger B87)',
+    + 'or the word unnamed (ledger B87); SliceBlockCountRefusalError forwards the slice grammar\'s refusal as '
+    + 'readSliceSkeleton reports it, positions and rule names only (MdxParseError, ledger B100)',
   'CONTRACT_NAMES[wireFormat]': 'contract name, one of two fixed phrases keyed by the closed wire-format union (ledger B90)',
   'measured': 'meter states and hold durations, composed by the caller from two booleans and two numbers',
   'dir': 'directory path',

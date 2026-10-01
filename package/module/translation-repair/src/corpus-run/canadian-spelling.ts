@@ -5,6 +5,9 @@ import {
   opensSentence,
   startsWithCapital,
 } from './canadian-spelling-capital.ts';
+import type { RootContent, } from 'mdast';
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { codePointAt, } from '../code-points.ts';
 import { isWordCharacter, } from './canadian-date-parts.ts';
 import {
@@ -25,6 +28,7 @@ import {
 import {
   inProse,
   type ProtectedRange,
+  proseBodyTree,
 } from './prose-ranges.ts';
 
 //region Canadian spelling
@@ -46,6 +50,11 @@ import {
 // K9). A word beside emphasis underscores or a slash between words is prose;
 // one inside an identifier, a path, a label or beside a digit is not (ledger
 // K10, H14).
+//
+// WHERE A PARAGRAPH OPENS IS READ OFF THE PARSE (ledger B68), not a `\n\n`
+// search: a heading, a blockquote or any other block written on the line
+// after a paragraph, with no blank line between, still closes that paragraph
+// to the parser, and a listed word opening the next one opens a sentence.
 
 /**
  One word respelled, with the span it covered.
@@ -183,11 +192,14 @@ function motherWord(
 
  @param canadian - Canadian form in lower case
 
+ @param blockStarts - start offsets of every top-level block the real parse
+ reads in this text, ascending
+
  @returns The respelled or the written word
 
  @example
  ```ts
- capitalWord({ text: 'Colors faded.', start: 0, end: 6, word: 'Colors', canadian: 'colours', },); // 'Colours'
+ capitalWord({ text: 'Colors faded.', start: 0, end: 6, word: 'Colors', canadian: 'colours', blockStarts: [0,], },); // 'Colours'
  ```
  */
 function capitalWord(
@@ -197,12 +209,14 @@ function capitalWord(
     end,
     word,
     canadian,
+    blockStarts,
   }: {
     readonly text: string;
     readonly start: number;
     readonly end: number;
     readonly word: string;
     readonly canadian: string;
+    readonly blockStarts: readonly number[];
   },
 ): string {
   /**
@@ -211,6 +225,7 @@ function capitalWord(
   const place = {
     text,
     start,
+    blockStarts,
   };
   /**
    Whether the capital opens a sentence rather than a name of two words.
@@ -238,11 +253,14 @@ function capitalWord(
 
  @param kept - lower-case words the original writes in English
 
+ @param blockStarts - start offsets of every top-level block the real parse
+ reads in this text, ascending
+
  @returns The Canadian form, or the word as written
 
  @example
  ```ts
- respelling({ text: 'her favorite', start: 4, end: 12, kept: new Set(), },); // 'favourite'
+ respelling({ text: 'her favorite', start: 4, end: 12, kept: new Set(), blockStarts: [0,], },); // 'favourite'
  ```
  */
 function respelling(
@@ -251,11 +269,13 @@ function respelling(
     start,
     end,
     kept,
+    blockStarts,
   }: {
     readonly text: string;
     readonly start: number;
     readonly end: number;
     readonly kept: ReadonlySet<string>;
+    readonly blockStarts: readonly number[];
   },
 ): string {
   /**
@@ -306,6 +326,53 @@ function respelling(
     end,
     word,
     canadian,
+    blockStarts,
+  },);
+}
+
+/**
+ Where each paragraph and heading in a text opens, at any depth, as the page
+ grammar reads it (ledger B68): a word there opens a sentence however the
+ block before it ended.
+
+ @param text - text under scan
+
+ @returns Offsets in the text, ascending
+
+ @example
+ ```ts
+ sentenceBlockStarts({ text: 'The cat ate.\n# Loud fact\nColour is grey.\n', },); // [0, 13, 25]
+ ```
+ */
+function sentenceBlockStarts({ text, }: { readonly text: string; },): readonly number[] {
+  /**
+   The body as the page grammar reads it.
+   */
+  const {
+    root,
+    bodyOffset,
+  } = proseBodyTree({ text, },);
+  /**
+   Offsets found so far.
+   */
+  const starts: number[] = [];
+  /**
+   Nodes still to visit, held as a stack so the walk stays iterative.
+   */
+  const pending: RootContent[] = [...root.children,];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if ((node.type === 'paragraph') || (node.type === 'heading'))
+      starts.push(bodyOffset + nonNullishOrThrow(node.position
+        ?.start
+        .offset,),);
+    if ('children' in node)
+      pending.push(...node.children,);
+  }
+  return starts.toSorted(function ascending(
+    left,
+    right,
+  ): number {
+    return left - right;
   },);
 }
 
@@ -350,6 +417,13 @@ export function canadianSpellings(
       'id',
     ],);
   /**
+   Where each paragraph and heading the parse reads in this text opens
+   (ledger B68). Read ONCE here rather than inside `opensSentence`, which
+   this function calls once per listed word: parsing for each word would
+   turn one pass over the text into one parse per word.
+   */
+  const blockStarts = sentenceBlockStarts({ text, },);
+  /**
    Rewrites found so far.
    */
   const rewrites: SpellingRewrite[] = [];
@@ -392,6 +466,7 @@ export function canadianSpellings(
       start,
       end: at,
       kept: held,
+      blockStarts,
     },);
     if ((to !== from) && inProse({
       ranges,

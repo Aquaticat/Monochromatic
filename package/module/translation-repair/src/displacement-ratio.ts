@@ -1,4 +1,5 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { readSliceSkeleton, } from './translate-skeleton.ts';
 
 //region Displacement ratio
 // Size primitives the displacement classifier reads: per-slice ratios, a
@@ -124,22 +125,67 @@ export type SliceSize = {
   readonly targetChars: number;
 
   /**
-   Blank-line-separated blocks carrying content on the original side.
+   Top-level blocks the parse reads on the original side.
    */
   readonly sourceBlocks: number;
 
   /**
-   Blank-line-separated blocks carrying content on the translated side.
+   Top-level blocks the parse reads on the translated side.
    */
   readonly targetBlocks: number;
 };
 
 /**
- Counts blank-line-separated blocks that carry content.
+ Signals that a side of a slice refused the shared slice grammar, so its
+ blocks cannot be counted off the parse.
+ 
+ THROWN RATHER THAN GUESSED AT (ledger B68): a block count read some other
+ way would be a second estimator reported as this one. Only the displacement
+ and window-trial probes count blocks; the contest size note reads character
+ counts alone, so no live gate meets this refusal.
+ 
+ @example
+ ```ts
+ throw new SliceBlockCountRefusalError({ detail: 'unexpected `{`', },);
+ ```
+ */
+export class SliceBlockCountRefusalError extends Error {
+  /**
+   Declares this message safe to forward: it repeats only the parser's own
+   account of where the grammar stopped.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds failure naming the parser's own account.
+   
+   @param detail - the grammar's refusal, as `readSliceSkeleton` reports it
+   
+   @example
+   ```ts
+   new SliceBlockCountRefusalError({ detail: 'unexpected `{`', },);
+   ```
+   */
+  constructor({ detail, }: { readonly detail: string; },) {
+    super(
+      `slice block count could not be read off the parse: ${detail}`,
+    );
+    this.name = 'SliceBlockCountRefusalError';
+  }
+}
+
+/**
+ Counts the top-level blocks the shared slice grammar reads, the same floor
+ `readSliceSkeleton` and every other block-aware reader in this package
+ measure against (ledger B68). A fenced block carrying a blank line between
+ its own lines is one block here, as it is to the parse, where a blank-line
+ split would have read it as several.
  
  @param text - one side of a slice
  
- @returns How many non-empty blocks it holds
+ @returns How many top-level blocks the parse reads
+ 
+ @throws {@link SliceBlockCountRefusalError} when the shared slice grammar refuses this side
  
  @example
  ```ts
@@ -149,13 +195,14 @@ export type SliceSize = {
 function contentBlockCount(
   { text, }: { readonly text: string; },
 ): number {
-  return text
-    .split('\n\n',)
-    .filter(function carriesContent(
-      block,
-    ): boolean {
-      return block.trim() !== '';
-    },)
+  /**
+   The shared slice grammar's reading of this side, or its refusal.
+   */
+  const read = readSliceSkeleton({ text, },);
+  if (read.kind === 'unparseable')
+    throw new SliceBlockCountRefusalError({ detail: read.detail, },);
+  return read.skeleton
+    .blocks
     .length;
 }
 
@@ -167,15 +214,20 @@ function contentBlockCount(
  would be running two different estimators while reporting one number, and the
  difference would be invisible in the output.
  
- A BLOCK IS BLANK-LINE-SEPARATED AND NON-EMPTY, matching how the line-structure
- reader counts, because a trailing separator is a formatting artifact rather
- than a block the pairing failed to match.
+ A BLOCK IS A TOP-LEVEL NODE OF THE SHARED SLICE GRAMMAR (ledger B68), matching
+ how `readSliceSkeleton` and the line-structure reader both count, because a
+ blank-line split and the parse disagree about a fenced block carrying a
+ blank line between its own lines, or a list tight on one side and loose on
+ the other, and this instrument's PAIRING decision has to agree with every
+ other reader built on the same parse.
  
  @param sourceText - original side of this slice
  
  @param targetText - translated side of this slice
  
  @returns Characters and blocks on both sides
+ 
+ @throws {@link SliceBlockCountRefusalError} when the shared slice grammar refuses either side
  
  @example
  ```ts
@@ -201,15 +253,15 @@ export function sliceSizeOf(
 
 /**
  Sizes of every slice of a preparation, in slice order.
-
+ 
  The displacement probe and the window trial each mapped their slices
  through `sliceSizeOf` with their own copy of this (audit area six,
  2026-09-28).
-
+ 
  @param slices - prepared slices, each with its two texts
-
+ 
  @returns Each slice's size
-
+ 
  @example
  ```ts
  const sizes = sliceSizesOf({ slices: prepared.slices, },);

@@ -90,6 +90,7 @@ export {
   MdxParseError,
   parseMarkdownBody,
   parseMdxBody,
+  requireMarkdownRefusal,
   requireMdxRefusal,
 } from './parse-mdx.ts';
 export { treeNodes, } from './mdast-tree-nodes.ts';

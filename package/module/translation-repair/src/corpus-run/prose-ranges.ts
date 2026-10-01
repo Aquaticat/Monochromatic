@@ -1,4 +1,14 @@
+import type {
+  Root,
+  RootContent,
+} from 'mdast';
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { maskHtmlComments, } from '../mask-html-comments.ts';
+import { maskLoneContainerTags, } from '../mask-container-tags.ts';
 import { opensMdxTag, } from '../mdx-tag-start.ts';
+import { parseBodyTolerant, } from '../parse-document.ts';
+import { requireMarkdownRefusal, } from '../parse-mdx.ts';
 
 //region Prose ranges
 // CLASS ONE HUNDRED THIRTY-FOUR (hulicaijia19, 2026-09-25): a pass that
@@ -9,6 +19,16 @@ import { opensMdxTag, } from '../mdx-tag-start.ts';
 // found by one index scan and returned as a half-open range the rewrite may
 // not touch. A tag opens where the MDX compiler reads one
 // (`mdx-tag-start.ts`), a name in any script included.
+//
+// AN INLINE CODE SPAN'S END IS READ OFF THE REAL PARSE (ledger B68), not a
+// scan for the next run of as many backticks before the next `'\n\n'`: a
+// heading or any other block-starting construct interrupting a paragraph
+// with no blank line extended the old scan's limit past the true end of the
+// paragraph the opening backtick stood in, letting it match a closing
+// backtick run belonging to a different, later span in a different block.
+// The body is parsed ONCE per `protectedRanges` call, not once per
+// backtick, since a parse per backtick would be a parse per character in the
+// worst case.
 
 /**
  One half-open range of a text the rewrite leaves alone.
@@ -97,103 +117,165 @@ function pastMarker(
 }
 
 /**
- Where a run of backticks starting at one offset ends.
+ Where a text's front matter ends, zero when it opens with none.
 
  @param text - text under scan
 
- @param from - offset of the run's first backtick
-
- @returns Offset just past the run
+ @returns Offset just past the closing fence, or the text's length when the
+ fence never closes
 
  @example
  ```ts
- backtickRunEnd({ text: '``x', from: 0, },); // 2
+ frontMatterEnd({ text: '---\nname: Mittens\n---\nNaps.', },); // 22
  ```
  */
-function backtickRunEnd(
-  {
+function frontMatterEnd({ text, }: { readonly text: string; },): number {
+  if (!text.startsWith(FRONT_MATTER_FENCE,))
+    return 0;
+  return pastMarker({
     text,
-    from,
-  }: {
-    readonly text: string;
-    readonly from: number;
-  },
-): number {
-  for (let at = from; at < text.length; at += 1) {
-    if (text.charAt(at,) !== '`')
-      return at;
-  }
-  return text.length;
+    marker: `\n${FRONT_MATTER_FENCE}`,
+    from: FRONT_MATTER_FENCE.length - 1,
+  },);
 }
 
 /**
- Where an inline code span opened by the backtick run at one offset ends: at
- the next run of exactly as many backticks inside the same paragraph
- (CommonMark). A run with no such partner is literal text (ledger K7: a stray
- backtick shielded the rest of the text, and a double-backtick span closed at
- the single backtick inside it).
+ The body past a text's front matter as the page grammar reads it, with
+ where that body starts.
 
- @param text - text under scan
+ COMMENTS AND LONE CONTAINER TAGS ARE MASKED FIRST to same-length whitespace,
+ the preprocessing `parseSliceBody` gives the strict grammar, so no offset
+ moves. An unmasked `<!--` refuses the strict grammar outright, and 17 of the
+ pinned commit's 92 Chinese pages and 22 of its 92 English pages carry one;
+ the body would then be read as plain markdown, where a tag opening an HTML
+ block swallows everything to the next blank line and no inline code inside
+ it is read at all.
 
- @param at - offset of the run's first backtick
+ TOLERANT, as `parse-document.ts` reads a page: a body the strict grammar
+ still refuses is read as plain markdown rather than thrown on, since the
+ page passes and the translate floor call this on every page and slice they
+ read, and a run ships every page. The downgrade's finding is not kept: the
+ callers ask where blocks and code spans are, which the plain reading still
+ answers.
 
- @returns Offset just past the closing run, or minus one where the run is
- literal
+ A BODY PLAIN MARKDOWN REFUSES TOO, nested deep enough to exhaust its
+ parser's stack, reads as having no blocks at all (ledger B100): no code span
+ or sentence start is read off it, so its backticks are prose to the callers,
+ and the Han residue floor, which reads every original, page and candidate
+ through this, still answers rather than throwing.
+
+ @param text - text under scan, front matter included when present
+
+ @returns Parsed body and its offset in the text
 
  @example
  ```ts
- codeSpanEnd({ text: '``a `b` c`` d', at: 0, },); // 11
+ const { root, bodyOffset, } = proseBodyTree({ text, },);
  ```
  */
-function codeSpanEnd(
-  {
-    text,
-    at,
-  }: {
-    readonly text: string;
-    readonly at: number;
-  },
-): number {
+export function proseBodyTree({ text, }: { readonly text: string; },): {
+  readonly root: Root;
+  readonly bodyOffset: number;
+} {
   /**
-   The opening run's length.
+   Where the body starts.
    */
-  const length = backtickRunEnd({
-    text,
-    from: at,
-  },) - at;
+  const bodyOffset = frontMatterEnd({ text, },);
   /**
-   Where the paragraph ends, past which no span closes.
+   Body with comments masked.
    */
-  const blankLine = text.indexOf(
-    '\n\n',
-    at,
-  );
+  const { masked: withoutComments, } = maskHtmlComments({ text: text.slice(bodyOffset,), },);
   /**
-   Offset no closing run may start at or past.
+   That body with lone container tags masked too, so a container half left
+   open by chunking does not also defeat the strict grammar.
    */
-  const limit = (blankLine === (-1)) ? text.length : blankLine;
-  for (let from = at + length; from < limit;) {
+  const { masked, } = maskLoneContainerTags({ text: withoutComments, },);
+  try {
     /**
-     Next backtick at or after the cursor.
+     That body as the strict grammar reads it, or as plain markdown where the
+     strict grammar refuses it.
      */
-    const close = text.indexOf(
-      '`',
-      from,
-    );
-    if ((close === (-1)) || (close >= limit))
-      return -1;
-    /**
-     Where that run ends.
-     */
-    const closeEnd = backtickRunEnd({
-      text,
-      from: close,
+    const { root, } = parseBodyTolerant({
+      body: masked,
+      bodyOffset,
     },);
-    if ((closeEnd - close) === length)
-      return closeEnd;
-    from = closeEnd;
+    return {
+      root,
+      bodyOffset,
+    };
   }
-  return -1;
+  catch (error) {
+    // Only the plain grammar's own refusal reads as no structure; anything
+    // else is an unexpected state that must keep propagating.
+    requireMarkdownRefusal({ error, },);
+    return {
+      root: {
+        type: 'root',
+        children: [],
+      },
+      bodyOffset,
+    };
+  }
+}
+
+/**
+ Every inline code span the real parse reads in one body, keyed by each
+ span's own opening offset.
+
+ READ OFF THE PARSE (ledger B68), replacing a scan that found a span's end
+ at the next run of exactly as many backticks before the next `'\n\n'`: a
+ heading, a blockquote, or any other block-starting construct interrupting a
+ paragraph with no blank line extended that scan's limit past the true end
+ of the paragraph the opening backtick stood in, letting it match a closing
+ backtick run that belonged to a different, later span in a different
+ block. `inlineCode` is an mdast LEAF node, so this walk never recurses into
+ one; `'children' in node` is false for it.
+
+ @param root - body parsed by the tolerant grammar
+
+ @param bodyOffset - absolute offset of the parsed body within the full text
+
+ @returns Each span's closing offset (exclusive), by its opening offset
+
+ @example
+ ```ts
+ const spans = inlineCodeSpans({ root, bodyOffset: 0, },);
+ ```
+ */
+function inlineCodeSpans(
+  {
+    root,
+    bodyOffset,
+  }: {
+    readonly root: Root;
+    readonly bodyOffset: number;
+  },
+): ReadonlyMap<number, number> {
+  /**
+   Spans found so far, by opening offset.
+   */
+  const spans = new Map<number, number>();
+  /**
+   Nodes still to visit, held as a stack so the walk stays iterative over a
+   tree of unknown depth; order does not matter to a map keyed by offset.
+   */
+  const pending: RootContent[] = [...root.children,];
+  // Next node, until the stack is empty.
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (node.type === 'inlineCode') {
+      spans.set(
+        bodyOffset + nonNullishOrThrow(node.position
+          ?.start
+          .offset,),
+        bodyOffset + nonNullishOrThrow(node.position
+          ?.end
+          .offset,),
+      );
+    }
+    if ('children' in node)
+      pending.push(...node.children,);
+  }
+  return spans;
 }
 
 /**
@@ -389,20 +471,25 @@ function pastConstruct(
 
  @param at - offset under the cursor
 
+ @param codeSpans - every inline code span the real parse reads in this
+ text, by its opening offset
+
  @returns Offset just past the construct, or minus one
 
  @example
  ```ts
- constructEnd({ text: '`x` y', at: 0, },); // 3
+ constructEnd({ text: '`x` y', at: 0, codeSpans: new Map([[0, 3,],]), },); // 3
  ```
  */
 function constructEnd(
   {
     text,
     at,
+    codeSpans,
   }: {
     readonly text: string;
     readonly at: number;
+    readonly codeSpans: ReadonlyMap<number, number>;
   },
 ): number {
   if (text.startsWith(
@@ -430,10 +517,7 @@ function constructEnd(
   if (character === '`') {
     return (text.charAt(at - 1,) === '`')
       ? -1
-      : codeSpanEnd({
-        text,
-        at,
-      },);
+      : (codeSpans.get(at,) ?? (-1));
   }
   if ((character === '<') && opensMdxTag({
     text,
@@ -496,18 +580,18 @@ export function protectedRanges(
   /**
    Where the scan resumes: past the front matter when the text opens with it.
    */
-  let at = 0;
-  if (text.startsWith(FRONT_MATTER_FENCE,)) {
-    at = pastMarker({
-      text,
-      marker: `\n${FRONT_MATTER_FENCE}`,
-      from: FRONT_MATTER_FENCE.length - 1,
-    },);
+  let at = frontMatterEnd({ text, },);
+  if (at > 0) {
     ranges.push({
       start: 0,
       end: at,
     },);
   }
+  /**
+   Every inline code span the real parse reads past the front matter,
+   computed ONCE here rather than per backtick.
+   */
+  const codeSpans = inlineCodeSpans(proseBodyTree({ text, },),);
   while (at < text.length) {
     /**
      End of a construct opening here, or minus one.
@@ -515,6 +599,7 @@ export function protectedRanges(
     const end = constructEnd({
       text,
       at,
+      codeSpans,
     },);
     if (end === (-1)) {
       at += 1;

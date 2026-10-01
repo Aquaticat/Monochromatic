@@ -38,5 +38,22 @@ await describe({
           },],);
       },
     },),
+    it({
+      name: 'READS NO CODE SPAN where neither grammar reads the text, rather than throwing, and the same '
+        + 'span one quote deep is protected, so the absence is the refusal\'s (ledger B100)',
+      fn: async () => {
+        /**
+         A line carrying one code span.
+         */
+        const line = 'The cat says `meow`.';
+        expect(protectedRanges({ text: `> ${line}`, },),).toStrictEqual([{
+          start: '> '.length + line.indexOf('`',),
+          end: '> '.length + line.lastIndexOf('`',) + 1,
+        },],);
+        // Plain markdown descends once per quotation marker, and this many
+        // exhaust its stack.
+        expect(protectedRanges({ text: `${'>'.repeat(16_000,)} ${line}`, },),).toStrictEqual([],);
+      },
+    },),
   ],
 },);

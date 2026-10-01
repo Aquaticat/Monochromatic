@@ -1,4 +1,9 @@
-import { topLevelBlocks, } from './markdown-blocks.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import {
+  type ParsedBlock,
+  parsedTopLevelBlocks,
+} from './markdown-blocks.ts';
+import { requireMdxRefusal, } from './parse-mdx.ts';
 
 //region Target-only run
 // ENGLISH THE ARCHIVE CARRIES THAT THE CHINESE NEVER SAID, held out of
@@ -34,17 +39,16 @@ import { topLevelBlocks, } from './markdown-blocks.ts';
 // re-indented it is still a copy, so runs of whitespace are folded to one space
 // on both sides before the blocks are compared. Nothing else is normalised, so
 // two different components never collide.
-
-/**
- Separator between top-level blocks, which is a blank line.
- */
-const BLOCK_SEPARATOR = '\n\n';
-
-/**
- Marker opening a blockquote, which every transcript in the measured
- population is written as.
- */
-const QUOTE_MARKER = '>';
+//
+// BLOCKS ARE READ OFF THE PARSE (ledger B68), not split on blank lines. A
+// quoted transcript written on the line after its anchor, with no blank line
+// between, joined the anchor in one block under a split; that block matched
+// no source block, nothing was protected, and the lane could rewrite the
+// transcript away from a source that never had it, the failure this module
+// exists to prevent. A transcript is a block the parse reads as a
+// blockquote, and the split cuts the ARCHIVE'S OWN BYTES at the anchor's end
+// rather than rejoining trimmed blocks with a blank line, so restoring the
+// protected run onto the judged part rebuilds the archive exactly.
 
 /**
  Characters that count as whitespace between blocks, named as a set so the
@@ -73,7 +77,9 @@ export type TargetOnlySplit = {
   readonly judgedText: string;
 
   /**
-   Archive wording the source cannot account for, empty when there is none.
+   Archive wording the source cannot account for, empty when there is none:
+   the archive's bytes from the anchor's end, the line breaks before the run
+   included.
    
    SPLICED BACK VERBATIM onto whichever wording wins, so it survives a
    replacement and a retention alike.
@@ -122,6 +128,91 @@ function collapsed({ block, }: { readonly block: string; },): string {
 }
 
 /**
+ Separates the archive's wording at the source's last block, given both
+ passages read into blocks.
+ 
+ @param source - source blocks, whose last one is the only possible anchor
+ 
+ @param archive - archive blocks, among which the anchor is looked for
+ 
+ @param incumbentText - archive wording the blocks were read from
+ 
+ @param whole - split kept when nothing is protected
+ 
+ @returns Wording to judge, and wording to protect
+ 
+ @example
+ ```ts
+ const split = splitAtAnchor({ source, archive, incumbentText, whole, },);
+ ```
+ */
+function splitAtAnchor(
+  {
+    source,
+    archive,
+    incumbentText,
+    whole,
+  }: {
+    readonly source: readonly ParsedBlock[];
+    readonly archive: readonly ParsedBlock[];
+    readonly incumbentText: string;
+    readonly whole: TargetOnlySplit;
+  },
+): TargetOnlySplit {
+  /**
+   Source's final block, which the archive must reproduce exactly for any of
+   this to apply.
+   */
+  const anchor = source.at(-1,);
+  if (anchor === undefined)
+    return whole;
+
+  /**
+   Archive blocks reduced to comparison keys, one per block.
+   */
+  const keys = archive.map(function key(block,): string {
+    return collapsed({ block: block.text, },);
+  },);
+
+  /**
+   Where the archive repeats the source's last block, searched from the end so
+   a component appearing twice in one slice anchors on its last occurrence.
+   */
+  const anchorAt = keys.lastIndexOf(collapsed({ block: anchor.text, },),);
+  if (anchorAt === (-1))
+    return whole;
+
+  /**
+   The anchor block itself, as the archive carries it.
+   */
+  const anchorBlock = nonNullishOrThrow(archive[anchorAt],);
+
+  /**
+   Archive blocks past the anchor, which no source block follows.
+   */
+  const trailing = archive.slice(anchorAt + 1,);
+  if (trailing.length === 0)
+    return whole;
+
+  // A run carrying no blockquote is ordinary trailing prose, which a
+  // translator may legitimately reword. Only a transcript is protected.
+  // Read off the block's own node kind, not whether its trimmed text starts
+  // with `>`, for the same reason every other check here reads the parse.
+  if (!trailing.some(function isQuote(block,): boolean {
+    return block.kind === 'blockquote';
+  },))
+    return whole;
+
+  return {
+    judgedText: incumbentText.slice(
+      0,
+      anchorBlock.endOffset,
+    ),
+    protectedText: incumbentText.slice(anchorBlock.endOffset,),
+  };
+}
+
+/**
  Separates the archive wording a source can account for from what follows it.
  
  REQUIRES THE ANCHOR TO BE THE SOURCE'S LAST BLOCK. An identical block in the
@@ -133,6 +224,9 @@ function collapsed({ block, }: { readonly block: string; },): string {
  population is written as one, and the requirement keeps an ordinary trailing
  sentence, which a translator may legitimately reword or drop, out of the
  protected region.
+ 
+ A PASSAGE THE SLICE GRAMMAR REFUSES IS KEPT WHOLE: a run this reader cannot
+ read into blocks cannot be shown to carry a transcript the source lacks.
  
  @param sourceText - original passage
  
@@ -161,62 +255,20 @@ export function splitTargetOnlyRun(
     judgedText: incumbentText,
     protectedText: '',
   };
-
-  /**
-   Source blocks, whose last one is the only possible anchor.
-   */
-  const source = topLevelBlocks({ text: sourceText, },);
-
-  /**
-   Archive blocks, among which the anchor is looked for.
-   */
-  const archive = topLevelBlocks({ text: incumbentText, },);
-
-  /**
-   Source's final block, which the archive must reproduce exactly for any of
-   this to apply.
-   */
-  const anchor = source.at(-1,);
-  if (anchor === undefined)
+  try {
+    return splitAtAnchor({
+      source: parsedTopLevelBlocks({ text: sourceText, },),
+      archive: parsedTopLevelBlocks({ text: incumbentText, },),
+      incumbentText,
+      whole,
+    },);
+  }
+  catch (error) {
+    // Only the grammar's own refusal keeps the passage whole; anything else
+    // is an unexpected state that must keep propagating.
+    requireMdxRefusal({ error, },);
     return whole;
-
-  /**
-   Archive blocks reduced to comparison keys, one per block.
-   */
-  const keys = archive.map(function key(block,): string {
-    return collapsed({ block, },);
-  },);
-
-  /**
-   Where the archive repeats the source's last block, searched from the end so
-   a component appearing twice in one slice anchors on its last occurrence.
-   */
-  const anchorAt = keys.lastIndexOf(collapsed({ block: anchor, },),);
-  if (anchorAt === (-1))
-    return whole;
-
-  /**
-   Archive blocks past the anchor, which no source block follows.
-   */
-  const trailing = archive.slice(anchorAt + 1,);
-  if (trailing.length === 0)
-    return whole;
-
-  // A run carrying no blockquote is ordinary trailing prose, which a translator
-  // may legitimately reword. Only a transcript is protected.
-  if (!trailing.some(function isQuote(block,): boolean {
-    return block.startsWith(QUOTE_MARKER,);
-  },))
-    return whole;
-
-  return {
-    judgedText: archive.slice(
-      0,
-      anchorAt + 1,
-    )
-      .join(BLOCK_SEPARATOR,),
-    protectedText: trailing.join(BLOCK_SEPARATOR,),
-  };
+  }
 }
 
 /**
@@ -229,7 +281,8 @@ export function splitTargetOnlyRun(
  
  @param text - wording that won
  
- @param protectedText - run held out of judging, possibly empty
+ @param protectedText - run held out of judging, its leading line breaks
+ included, possibly empty
  
  @returns Wording with the run restored
  
@@ -247,9 +300,7 @@ export function restoreTargetOnlyRun(
     readonly protectedText: string;
   },
 ): string {
-  if (protectedText === '')
-    return text;
-  return `${text}${BLOCK_SEPARATOR}${protectedText}`;
+  return `${text}${protectedText}`;
 }
 
 //endregion Target-only run

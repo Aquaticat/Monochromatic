@@ -26,6 +26,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -36,8 +37,9 @@ import {
   countQuotedPassages,
   dropsQuotedPassage,
   isQuotedPassages,
+  MdxParseError,
+  parsedTopLevelBlocks,
   quoteLossRefusalFinding,
-  topLevelBlocks,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -71,22 +73,50 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: topLevelBlocks.name,
+      name: parsedTopLevelBlocks.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'SPLITS ON BLANK LINES and keeps no empty blocks, which is the shape the target-only run splices by',
+          name: 'READS EACH TOP-LEVEL BLOCK with its bytes, kind and place, no block for a run of blank '
+            + 'lines and none for an empty text, which is what the target-only run splices by',
           fn: async () => {
-            expect(topLevelBlocks({ text: 'One.\n\nTwo.\n\n\n\nThree.', },).length,).toBe(3,);
-            expect(topLevelBlocks({ text: '', },).length,).toBe(0,);
+            expect(parsedTopLevelBlocks({ text: 'One.\n\n> Two.\n\n\n\nThree.', },),).toStrictEqual([
+              { text: 'One.', kind: 'paragraph', startOffset: 0, endOffset: 4, },
+              { text: '> Two.', kind: 'blockquote', startOffset: 6, endOffset: 12, },
+              { text: 'Three.', kind: 'paragraph', startOffset: 16, endOffset: 22, },
+            ],);
+            expect(parsedTopLevelBlocks({ text: '', },),).toStrictEqual([],);
           },
         },),
 
         it({
-          name: 'READS A CARRIAGE-RETURN FILE, which one corpus file is: a splitter looking for two bytes of '
-            + 'newline finds no boundary there and reads the document as ONE block',
+          name: 'READS A CARRIAGE-RETURN FILE block by block at offsets into the text as written, which '
+            + 'one corpus file is: a splitter looking for two bytes of newline read it as ONE block',
           fn: async () => {
-            expect(topLevelBlocks({ text: 'One.\r\n\r\nTwo.\r\n\r\nThree.', },).length,).toBe(3,);
+            expect(parsedTopLevelBlocks({ text: 'One.\r\n\r\nTwo.\r\n\r\nThree.', },),).toStrictEqual([
+              { text: 'One.', kind: 'paragraph', startOffset: 0, endOffset: 4, },
+              { text: 'Two.', kind: 'paragraph', startOffset: 8, endOffset: 12, },
+              { text: 'Three.', kind: 'paragraph', startOffset: 16, endOffset: 22, },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'THROWS THE GRAMMAR\'S REFUSAL for a text the slice grammar cannot read, which the '
+            + 'target-only run reads as nothing to protect (ledger B68)',
+          fn: async () => {
+            /**
+             What reading a text opening on an unclosed component throws.
+             */
+            const refusal = caught(function readUnclosed(): void {
+              parsedTopLevelBlocks({ text: '<Cat unclosed\n\nThe cat naps.', },);
+            },);
+
+            expect(refusal,).toBeInstanceOf(MdxParseError,);
+            expect((refusal as Error).message,).toBe(
+              'MDX body refused to parse at 3:13 (micromark-extension-mdx-jsx/unexpected-character); corpus '
+              + 'documents compile as MDX upstream, so failure signals corruption or an unsupported construct.',
+            );
           },
         },),
       ],

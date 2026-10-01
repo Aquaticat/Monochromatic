@@ -372,7 +372,7 @@ await describe({
             reason: 'the archive rendering the adjudicators disputed',
           },],
         },);
-        expect(surface.protectedText,).toBe('> Dear cat, rest well.',);
+        expect(surface.protectedText,).toBe('\n\n> Dear cat, rest well.',);
         expect((surface.stageInput.disputedWordings ?? []).some(function refusesIncumbent(wording,): boolean {
           return wording.text === surface.stageInput.incumbentText;
         },),).toBe(false,);

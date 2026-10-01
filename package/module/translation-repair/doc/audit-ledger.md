@@ -14233,18 +14233,14 @@ not loaded 6,
 and per-file counts compared between the two census files change nowhere;
 both container modules are loaded and hold no cold stretch.
 
-Open:
-three more readers count blocks by blank-line split and are to be read against the same rule:
-`displacement-ratio.ts` `contentBlockCount` (the size classifier),
-`line-structure.ts` `isLineStructured`
-and `translate-address-drop.ts` `blocksOf`.
-`markdown-blocks.ts` `topLevelBlocks` states it is not a reading of structure,
-and its one caller is open too:
-`target-only-run.ts` `splitTargetOnlyRun` finds its anchor and its quoted transcript on that split
-(a block whose trimmed text starts with `>`)
-and rejoins the blocks it keeps with one blank line,
-so the target-only run is to find its blocks off the parse
-and splice the archive's own bytes rather than rejoined blocks.
+Closed in B100:
+this entry left three readers open
+(`displacement-ratio.ts` `contentBlockCount`,
+`line-structure.ts` `isLineStructured`,
+`translate-address-drop.ts` `blocksOf`)
+and the target-only run;
+a census found two more in the page passes,
+and the fix found the suicide floor reading the same split.
 
 Recurrence:
 a count of what a passage holds reads the parse the floor reads,
@@ -16952,7 +16948,8 @@ found 291 awaiting more than one suite at the top.
 
 Each now awaits one root suite,
 `describe({ name: '', concurrency: 1, children: [...] })`,
-whose children are the suites the file held, in their order:
+whose children are the suites the file held,
+in their order:
 the root runs them one after another,
 as the top-level awaits did,
 and each child keeps the concurrency it set or takes `DEFAULT_CONCURRENCY`,
@@ -16997,6 +16994,177 @@ Calls made here are open to veto:
 Recurrence:
 `mistake-prevention.md`,
 "Guards that cannot fail".
+
+### B100: six more readers counted blocks by blank-line split
+
+Found 2026-10-01 (UTC) reading the readers B68 left open,
+a census an agent took over the package's source
+(`b68-open/report.md` in the audit's scratch folder),
+with red cases in `2ab7849c7`
+and the fix in the commit adding this entry.
+B68 named four readers that split a passage on blank lines where the floor reads the parse;
+the census found six,
+and the fix found a seventh caller:
+
+- `line-structure.ts` `isLineStructured` called five loose list items line-structured,
+  where the floor reads one list;
+- `target-only-run.ts` `splitTargetOnlyRun` protected nothing when a quoted transcript followed its anchor on the next line,
+  since the split joined anchor and quote into one block that matched no source block,
+  and it rejoined the blocks it kept with one blank line;
+- `displacement-ratio.ts` `contentBlockCount` counted a fence with a blank line inside as two blocks and a loose list as three;
+- `translate-address-drop.ts` `blocksOf` gave the two sides of a fence with a blank line inside different counts,
+  so the address floor compared the texts whole and summed an address the block that switched did not hold;
+  `translate-suicide-drop.ts` read the same split,
+  so a paragraph and the published-work quotation on the line after it were one block,
+  and the quotation's 自杀 was read as the passage's own;
+- `corpus-run/prose-ranges.ts` closed a stray backtick on a code span past a heading,
+  shielding prose and leaving the code span open to the page passes;
+- `corpus-run/canadian-spelling-capital.ts` `opensSentence` took a capital opening a paragraph on the line after a heading for a name.
+
+Each now reads the parse.
+The slice readers read `parseSliceBody`,
+the grammar the floor reads;
+a passage it refuses is read whole by the address and suicide floors (`blocksOrWholeText`),
+as an unequal count already was,
+is not line-structured,
+and has nothing protected by the target-only run.
+The page passes read the page grammar through `proseBodyTree`:
+comments and lone container tags masked,
+then the strict grammar,
+then plain markdown where it refuses,
+as `parse-document.ts` reads a page.
+Plain markdown refuses a body only where its nesting exhausts the parser's stack;
+such a body reads as having no blocks,
+so no code span or sentence start is read off it,
+and any other failure propagates.
+`splitTargetOnlyRun` now cuts the archive's own bytes at the anchor's end,
+and `restoreTargetOnlyRun` appends the protected run as the archive wrote it,
+so a retention and a restore both rebuild the archive byte for byte.
+`contentBlockCount` throws `SliceBlockCountRefusalError` on a refused side rather than counting some other way;
+only the displacement and window-trial probes count blocks,
+since the contest size note now reads its ratio tails off character counts alone (`ratioImplausibility`),
+and so parses no rendering.
+`markdown-blocks.ts` `topLevelBlocks` lost its one caller and is removed;
+`parsedTopLevelBlocks` gives each block's bytes,
+kind and offsets.
+
+A replay ran each reader's old build and new build over the same inputs
+(`b68-fix/replay/b68-replay.mjs` in the audit's scratch folder):
+the slices in 266 artifact files under 405 run directories
+(three unreadable directories skipped,
+6,037 usable rows),
+and the 92 English pages beside their 92 Chinese pages at the pinned corpus commit,
+with one synthetic control per reader,
+each of which differed as built to.
+Its first run found two faults in the fix,
+both corrected before the figures here were taken:
+
+- the parse masks a lone `<details>` or `</details>` to read the rest,
+  so the target-only run's anchor skipped one and anchored a block early
+  (`XingZ6012` slice 88);
+  `parsedTopLevelBlocks` now lists each masked tag as a block of its own,
+  in its place;
+- on a candidate the slice grammar refuses,
+  the address floor read the texts whole and its finding came before the parse floor's,
+  standing in for the one that names the fault (`BI4PBV` slice 3);
+  the address floor now leaves such a candidate to the parse floor.
+
+The corrected replay:
+
+- `isLineStructured` over 1,381 inputs:
+  five answers moved,
+  each from line-structured to not,
+  three slices of one fidelity run losing HTML comments as blocks
+  and two losing lone container tags
+  (`XingZ6010` slice 76 and `XingZ6012` slice 88);
+- `splitTargetOnlyRun` over 756 inputs:
+  four splits moved
+  (`Mio10` slices 15 and 16,
+  `Mio7` slice 13
+  and `XingZ6012` slice 88),
+  each by the two line breaks before the protected run alone,
+  and the judged part restored with the protected run rebuilt the archive in 756 of 756 inputs under both builds;
+- `contentBlockCount` through `sliceSizeOf` over 3,677 inputs:
+  183 block counts moved,
+  read by the probes alone,
+  and none threw;
+- `droppedAddressFindings` over 18,541 inputs,
+  `protectedRanges` over 3,678
+  and `canadianizeText` over 18,633:
+  no answer moved.
+
+The full suite found a third fault,
+which no replay input carried.
+The Han residue floor reads every original,
+page and candidate through `protectedRanges`,
+which the old backtick scan let read any text;
+on a page of 16,000 nested quotation markers
+(`translate-floor-ground.unit.test.ts`)
+plain markdown exhausted its stack inside `proseBodyTree`,
+and the `RangeError` left the floor.
+`parseMarkdownBody`'s TSDoc called plain markdown total;
+it now names the overflow,
+`requireMarkdownRefusal` (`parse-mdx.ts`) narrows a catch to it,
+`proseBodyTree` reads such a body as having no blocks,
+and `translate-skeleton-page.ts`,
+which read any failure of the plain grammar as a refusal,
+now reads that one alone.
+`prose-ranges.unit.test.ts` carries the page,
+beside the same code span one quote deep;
+with `proseBodyTree`'s catch made to rethrow,
+that case failed on the `RangeError`,
+and the catch was then restored.
+The suite also held three expectations the fix moved:
+the protected run's leading line breaks (`archive-dispute-standing.unit.test.ts`),
+the log line counting them
+(`translate-slice.ts` now says the count takes in the line breaks before the run)
+and the inventory of classes whose message is safe to forward,
+which gains `SliceBlockCountRefusalError`.
+
+No cache version moves:
+the cache-account audit over the worktree's runs and the main checkout's
+read 13,714 slice-cache records in 391 run directories,
+the newest written 2026-09-27T04:26Z,
+and each of the seven versions was set after it.
+
+What enforces it:
+`src/blank-line-splits.unit.test.ts`,
+among the source scans,
+fails on a production call to `split`,
+`indexOf`,
+`lastIndexOf`
+or `includes` handed a string holding a blank line,
+a constant the file declares with one,
+or a regular expression matching two line feeds.
+Its fixture case runs first.
+With `folded.split('\n\n',)` planted in `isLineStructured`,
+its package case failed naming that line alone (`line-structure.ts:108 split`),
+and the line was then removed.
+Out of its reach:
+a reader that walks lines and treats an empty one as a boundary,
+and a blank line built at run time.
+
+Calls made here are open to veto:
+
+- a passage the slice grammar refuses is read whole by the address and suicide floors,
+  not line-structured,
+  and protects nothing,
+  rather than stopping the slice;
+- the page passes read a body the strict grammar refuses as plain markdown;
+- the protected run carries the line breaks between the anchor and the run;
+- a paragraph or heading at any depth opens a sentence for the spelling pass;
+- the probes' block count throws on a refused side rather than counting it another way;
+- a candidate the slice grammar refuses is left to the parse floor by the address floor;
+- HTML comments and lone container tags no longer count as blocks for line structure;
+- lone container tags are blocks for the target-only run;
+- a body neither grammar reads has no code span or sentence start read off it,
+  its backticks prose to the page passes and the Han residue floor;
+- plain markdown's refusal is a `RangeError`,
+  and any other failure inside it propagates.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
 
 ## Process mistakes in this audit
 
@@ -18116,6 +18284,22 @@ a change across many sources runs the full suite before its commit,
 and a message names a named-file run as the files it lists,
 never as the files the change reaches.
 
+### M106: a commit message reporting a clean Markdown lint the committed ledger failed
+
+Status:
+happened 2026-10-01 (UTC) in `cd10f83f6` (B99),
+found by the Markdown lint run for B100,
+fixed in the commit adding this entry
+and corrected by a comment on `cd10f83f6`.
+The message reported that Markdown lint found nothing in the ledger,
+and the ledger it committed carries one semantic-line-breaks finding in B99's own entry
+(two clauses on the line naming the root suite's children).
+Which edit followed the lint run that came back clean was not established.
+Prevention:
+a commit message reports the lint of the bytes it commits:
+the Markdown lint runs after a doc's last edit,
+as the commit message's own check runs after the message's last write.
+
 ### M79: a coverage census measuring compressed code
 
 Status:
@@ -18958,6 +19142,12 @@ Once more in that batch:
 the lint of the ledger ran in the batch of the edit to B91's entry it read
 (rerun alone,
 no finding).
+Again during B100 on 2026-10-01 (UTC),
+once,
+with no wrong outcome landing:
+the package lint ran in the batch of the edit to `translate-slice-guards.unit.test.ts` it read
+(rerun alone,
+"Found 0 warnings and 0 errors.").
 The prevention stands as written:
 the edit or write,
 then,

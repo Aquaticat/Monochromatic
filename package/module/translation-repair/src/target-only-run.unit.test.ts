@@ -67,9 +67,11 @@ await describe({
               incumbentText,
             },);
 
-            expect(split.judgedText,).toBe(`The cat on the sill.\n\n${COMPONENT}`,);
-            expect(split.protectedText.startsWith('English transcript',),).toBe(true,);
-            expect(split.protectedText.includes('Mittens',),).toBe(true,);
+            expect(split,).toStrictEqual({
+              judgedText: `The cat on the sill.\n\n${COMPONENT}`,
+              protectedText: '\n\nEnglish transcript of the photo above:\n\n'
+                + '> Name: Mittens. Likes: sunbeams, boxes.\n> Dislikes: closed doors.',
+            },);
           },
         },),
 
@@ -89,7 +91,7 @@ await describe({
                 + 'Transcript:\n\n> Name: Mittens.',
             },);
 
-            expect(split.protectedText,).toBe('Transcript:\n\n> Name: Mittens.',);
+            expect(split.protectedText,).toBe('\n\nTranscript:\n\n> Name: Mittens.',);
           },
         },),
 
@@ -200,6 +202,40 @@ await describe({
             },),).toBe(incumbentText,);
           },
         },),
+
+        it({
+          name: 'ANCHORS ON A CONTAINER\'S CLOSING TAG THE SOURCE ENDS ON, which the slice grammar holds aside, '
+            + 'so the tag stays with the wording the lane renders and is not carried twice (ledger B100)',
+          fn: async () => {
+            expect(splitTargetOnlyRun({
+              sourceText: '猫在睡觉。\n\n</details>',
+              incumbentText: 'The cat naps.\n\n</details>\n\n> A note nobody wrote in Chinese.',
+            },),).toStrictEqual({
+              judgedText: 'The cat naps.\n\n</details>',
+              protectedText: '\n\n> A note nobody wrote in Chinese.',
+            },);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A PASSAGE THE SLICE GRAMMAR REFUSES WHOLE, since a run it cannot read into '
+            + 'blocks cannot be shown to carry a transcript the source lacks (ledger B68)',
+          fn: async () => {
+            /**
+             Archive repeating the anchor, then an unclosed component and a
+             quote.
+             */
+            const incumbentText = `The cat on the sill.\n\n${COMPONENT}\n\n<Cat unclosed\n\n> Name: Mittens.`;
+
+            expect(splitTargetOnlyRun({
+              sourceText: `窗台上的猫。\n\n${COMPONENT}`,
+              incumbentText,
+            },),).toStrictEqual({
+              judgedText: incumbentText,
+              protectedText: '',
+            },);
+          },
+        },),
       ],
     },),
 
@@ -219,12 +255,12 @@ await describe({
         },),
 
         it({
-          name: 'PUTS THE RUN AFTER A REPLACEMENT, so a slice whose wording changed still carries the '
-            + 'passage nobody could translate',
+          name: 'PUTS THE RUN AFTER A REPLACEMENT with the line breaks the archive set before it, so a '
+            + 'slice whose wording changed still carries the passage nobody could translate',
           fn: async () => {
             expect(restoreTargetOnlyRun({
               text: 'The tabby naps.',
-              protectedText: '> Name: Mittens.',
+              protectedText: '\n\n> Name: Mittens.',
             },),).toBe('The tabby naps.\n\n> Name: Mittens.',);
           },
         },),

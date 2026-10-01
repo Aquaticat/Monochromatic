@@ -41,7 +41,7 @@ await describe({
         const surface = translateSliceInput({ slice, prepared: { ...prepared, identityContext: 'declared name: Cat' },
           neighbouringSourceText: 'Source neighbor', neighbouringIncumbentText: 'Archive neighbor', pictureContext: 'Corroborated picture text' });
         expect(surface.archiveText).toBe(slice.target.text);
-        expect(surface.protectedText).toBe('> Dear cat, rest well.');
+        expect(surface.protectedText).toBe('\n\n> Dear cat, rest well.');
         expect(surface.stageInput).toEqual({
           sourceText: slice.source.text, incumbentText: `The cat slept.\n\n${marker}`, incumbentKind: 'present', lineStructured: false,
           identityContext: 'declared name: Cat', neighbouringSourceText: 'Source neighbor', neighbouringIncumbentText: 'Archive neighbor', pictureContext: 'Corroborated picture text',

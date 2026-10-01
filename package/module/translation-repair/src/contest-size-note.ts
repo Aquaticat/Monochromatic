@@ -1,10 +1,7 @@
+import { MIN_RATIO_SOURCE_CHARS, } from './displacement-ratio.ts';
 import {
-  MIN_RATIO_SOURCE_CHARS,
-  sliceSizeOf,
-} from './displacement-ratio.ts';
-import {
-  type SliceImplausibility,
-  sliceImplausibility,
+  type RatioImplausibility,
+  ratioImplausibility,
 } from './slice-implausible.ts';
 
 //region Contest size note
@@ -54,19 +51,6 @@ import {
 // as one reason. Revisit if judges are measured misreading verse ratios.
 
 /**
- Reasons that describe the RENDERING rather than the pairing.
- 
- A block-count gap says the two sides may not be the same passage, which makes
- a ratio meaningless rather than extreme, and it was the sole cause for 20 of
- 36 flagged slices while being the thing a re-pairing moves. Showing a judge a
- ratio the pairing does not support would be showing it noise.
- */
-const RATIO_TAIL_REASONS: ReadonlySet<SliceImplausibility> = new Set([
-  'target-far-shorter',
-  'target-far-longer',
-],);
-
-/**
  Reasons a short original cannot support, because over a twenty-character
  line the ratio reports rounding rather than a rendering.
  
@@ -82,7 +66,7 @@ const RATIO_TAIL_REASONS: ReadonlySet<SliceImplausibility> = new Set([
  FLOORED_REASONS.has('target-far-shorter',);
  ```
  */
-const FLOORED_REASONS: ReadonlySet<SliceImplausibility> = new Set([
+const FLOORED_REASONS: ReadonlySet<RatioImplausibility> = new Set([
   'target-far-shorter',
 ],);
 
@@ -108,13 +92,20 @@ export type ContestRendering = {
 /**
  Whether one rendering's size against its original is outside plausible range.
  
+ RATIO TAILS ONLY, read off character counts. A block-count gap says the two
+ sides may not be the same passage, which makes a ratio meaningless rather
+ than extreme, and it was the sole cause for 20 of 36 flagged slices while
+ being the thing a re-pairing moves; showing a judge a ratio the pairing does
+ not support would be showing it noise. Reading no blocks also means parsing
+ no rendering, so a rendering the slice grammar refuses still gets its note
+ (ledger B68).
+ 
  @param sourceText - original passage
  
  @param text - one rendering of it
  
- @returns Whether a ratio tail applies, ignoring pairing evidence, with the
- source-length floor applied only to the reasons {@link FLOORED_REASONS}
- names
+ @returns Whether a ratio tail applies, with the source-length floor applied
+ only to the reasons {@link FLOORED_REASONS} names
  
  @example
  ```ts
@@ -131,13 +122,11 @@ function tripsARatioTail(
   },
 ): boolean {
   /**
-   Every reason this pair's sizes are implausible, pairing evidence included.
+   Every ratio tail this pair's character counts reach.
    */
-  const reasons = sliceImplausibility({
-    slice: sliceSizeOf({
-      sourceText,
-      targetText: text,
-    },),
+  const reasons = ratioImplausibility({
+    sourceChars: sourceText.length,
+    targetChars: text.length,
   },);
 
   /**
@@ -147,10 +136,8 @@ function tripsARatioTail(
   const longEnoughToFallShortOf = sourceText.length >= MIN_RATIO_SOURCE_CHARS;
 
   return reasons.some(function describesTheRendering(
-    reason: SliceImplausibility,
+    reason: RatioImplausibility,
   ): boolean {
-    if (!RATIO_TAIL_REASONS.has(reason,))
-      return false;
     if (!FLOORED_REASONS.has(reason,))
       return true;
     return longEnoughToFallShortOf;
@@ -170,7 +157,7 @@ function tripsARatioTail(
  {@link FLOORED_REASONS} carries the measurement behind that split.
  
  A rendering of zero length raises nothing here, because
- {@link sliceImplausibility} reports no reason when either side is empty. An
+ {@link ratioImplausibility} reports no reason when either side is empty. An
  empty candidate is a different failure, and the stage guards name it.
  
  @param sourceText - original passage, which every ratio is taken against
@@ -246,7 +233,7 @@ export function contestSizeNote(
  what they ask the judge to do, which is the property that made two named
  faults attractive in the first place, and they carry it without asserting a
  fault where the existing rule says the behaviour is correct.
-
+ 
  SILENT SURPLUS IS PAGE CONTENT ONLY WHERE THE ARCHIVE CARRIES IT (ledger S7).
  The note exists for the looping candidate (10381 characters against a
  56-character original), and the sentence that called any surplus the Chinese

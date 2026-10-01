@@ -3,7 +3,10 @@ import type { Root, } from 'mdast';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 import { explicitBreakCounts, } from './source-only-breaks.ts';
 
-import { parseMarkdownBody, } from './parse-mdx.ts';
+import {
+  parseMarkdownBody,
+  requireMarkdownRefusal,
+} from './parse-mdx.ts';
 import {
   blockDetail,
   quotedPassageCount,
@@ -124,10 +127,11 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
     // stack (ledger T8, sixth batch). That is reported rather than thrown,
     // and the floor then treats the page as it treats an original no grammar
     // reads: only the floors that read text run, and a candidate none of them
-    // refuses is left unvalidated.
+    // refuses is left unvalidated. Anything else is an unexpected state that
+    // must keep propagating (ledger B100).
     return {
       kind: 'unparseable',
-      detail: `plain markdown also refused: ${String(error,)}`,
+      detail: `plain markdown also refused: ${String(requireMarkdownRefusal({ error, },),)}`,
     };
   }
 }

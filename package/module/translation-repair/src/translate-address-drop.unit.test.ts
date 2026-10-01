@@ -45,5 +45,33 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'LEAVES A CANDIDATE THE SLICE GRAMMAR REFUSES TO THE PARSE FLOOR, finding nothing, since read '
+        + 'whole its address would be counted across blocks the switch never spanned (ledger B100)',
+      fn: async () => {
+        // Read whole, the original's 你 and the closing block's "She" would
+        // make a switch the quoted block, which writes neither, never made.
+        expect(droppedAddressFindings({
+          sourceText: '<Cat />\n\n> 你是一只猫\n\n真乖\n',
+          candidateText: '<Cat unclosed\n\n> A cat indeed.\n\nShe is well-behaved.',
+        },),).toStrictEqual([],);
+      },
+    },),
+    it({
+      name: 'READS AN ORIGINAL THE SLICE GRAMMAR REFUSES WHOLE against the whole candidate, as an '
+        + 'unequal count is read, rather than throwing out of the floor (ledger B68)',
+      fn: async () => {
+        expect(droppedAddressFindings({
+          sourceText: '<Cat unclosed\n\n你很乖\n',
+          candidateText: 'The cat.\n\nShe is well-behaved.',
+        },),).toStrictEqual([
+          'Your translation drops the address in the second person the ORIGINAL carries: where the '
+          + 'ORIGINAL writes 你 or 您 once, your translation carries no "you" and more third-person '
+          + 'pronouns than the ORIGINAL writes there ("she": 1 against 0), so a pronoun stands where the '
+          + 'address stood. A pronoun the ORIGINAL writes is rendered as written where it stands: '
+          + 'address the person the ORIGINAL addresses.',
+        ],);
+      },
+    },),
   ],
 },);

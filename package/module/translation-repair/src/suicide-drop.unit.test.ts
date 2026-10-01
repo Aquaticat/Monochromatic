@@ -175,6 +175,18 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS a quotation of a published work written on the line after a paragraph, which the parse '
+        + 'reads as a block of its own, so the paragraph does not draw the quotation\'s 自杀 into the passage\'s '
+        + 'own words (ledger B68)',
+      fn: async () => {
+        expect(verdictOf({
+          sourceText: '老猫每天晒太阳。\n> 「我们应该沿着这条线索去理解自杀。」\n>\n> ——喵喵《猫的神话》',
+          candidateText: 'The old cat sunned himself every day.\n> “We must follow this thread to understand it.”\n>\n'
+            + '> — Meow Meow, *The Myth of the Cat*',
+        },),).toEqual(VALID,);
+      },
+    },),
+    it({
       name: 'STILL REFUSES a hand that only wrote, an unattributed quotation without the word, and names no '
         + 'pronoun the passage did not choose',
       fn: async () => {

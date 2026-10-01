@@ -187,10 +187,20 @@ await describe({
 
         it({
           name: 'DOES NOT CALL A LOOSE LIST LINE-STRUCTURED, five short cat facts '
-            + 'written as one list block whatever its items own spacing',
+            + 'written as one list block whatever its items own spacing (ledger B68)',
           fn: async () => {
             expect(isLineStructured({
               text: '- Mittens naps.\n\n- Biscuit watches.\n\n- Patches hunts.\n\n- Tom sleeps.\n\n- Jerry yawns.\n',
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'DOES NOT CALL A SLICE THE GRAMMAR REFUSES LINE-STRUCTURED, though six short paragraphs '
+            + 'follow its unclosed component, since the floor reads no blocks there (ledger B68)',
+          fn: async () => {
+            expect(isLineStructured({
+              text: '<Cat unclosed\n\nA nap.\n\nA stretch.\n\nA meal.\n\nA purr.\n\nA nap again.\n',
             },),).toBe(false,);
           },
         },),

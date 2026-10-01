@@ -1,6 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
-  blocksOf,
+  blocksOrWholeText,
   withoutHtmlComments,
 } from './translate-address-drop.ts';
 import { lowerCaseLatinWords, } from './latin-letters.ts';
@@ -310,7 +310,7 @@ export function droppedSuicideFindings(
   /**
    The original outside its comments and its quotations of published works.
    */
-  const original = blocksOf({ text: withoutHtmlComments({ text: sourceText, },), },)
+  const original = blocksOrWholeText({ text: withoutHtmlComments({ text: sourceText, },), },)
     .filter(function ownWords(block,): boolean {
       return !quotesPublishedWork({ block, },);
     },)
