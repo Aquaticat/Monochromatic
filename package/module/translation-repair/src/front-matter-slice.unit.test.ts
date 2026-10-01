@@ -201,6 +201,60 @@ await describe({
     },),
 
     it({
+      name: 'JUDGES A CANDIDATE BY THE ORIGINAL\'S SHAPE where the page\'s front matter holds nothing, '
+        + 'since an empty block has no established keys to keep',
+      fn: async () => {
+        /**
+         Page whose fence pair holds no metadata at all.
+         */
+        const emptyPage = '---\n---\n\nThe cat naps.\n';
+        expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
+          pageText: emptyPage,
+          candidateText: TRANSLATED,
+        },).kind,).toBe('valid',);
+        expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
+          pageText: emptyPage,
+          candidateText: '---\n---\n',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: ['Your translation changed YAML field names, nesting, container lengths, or scalar kinds.',],
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A LIST-SHAPED info.alias THAT DROPS THE NAME, as the comma-separated form is refused '
+        + '(ledger B97)',
+      fn: async () => {
+        /**
+         Original whose alias list holds only its name, so name and alias are one identity.
+         */
+        const listSource = '---\nname: 猫猫\ninfo:\n  alias:\n    - 猫猫\n---\n';
+        /**
+         Archive in the same list shape, which a candidate keeps.
+         */
+        const listPage = '---\nname: Maomao\ninfo:\n  alias:\n    - Maomao\n---\n';
+        expect(validateFrontMatterTranslation({
+          sourceText: listSource,
+          pageText: listPage,
+          candidateText: '---\nname: Maomao\ninfo:\n  alias:\n    - Kitty\n---\n',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'Your translation must carry the name among the comma-separated renderings in info.alias because ORIGINAL declares name and info.alias as the same identity.',
+          ],
+        },);
+        expect(validateFrontMatterTranslation({
+          sourceText: listSource,
+          pageText: listPage,
+          candidateText: listPage,
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
       name: 'REFUSES FIELD LOSS, BODY PROSE, AND MALFORMED YAML',
       fn: async () => {
         expect(validateFrontMatterTranslation({
