@@ -37,6 +37,12 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.virtual-registration',
  @returns synchronizer without a compatibility list or request-global fast flag
  
  @mutates pi - returned callback registers and removes native virtual selections
+
+ @example
+ ```ts
+ const synchronize = createFastModelRegistration(pi);
+ synchronize(originalModels);
+ ```
  */
 export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionAPI>,): (models: readonly Model<Api>[]) => void {
   /**
@@ -57,6 +63,8 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
 
   /**
    Register structural changes while nested catalog reads remain side-effect-free.
+
+   @param input - current original native catalog
    */
   function synchronize(input: ForeignBorrowed<readonly Model<Api>[]>,): void {
     /**

@@ -59,6 +59,11 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.index', },);
  @mutates pi - registers adapter, virtual models, and session-start callback
  
  @mutates provider - invokes original metadata accessors
+
+ @example
+ ```ts
+ registerOpenAIFast({ pi, provider });
+ ```
  */
 export function registerOpenAIFast({
   pi,
@@ -125,6 +130,11 @@ export function registerOpenAIFast({
  @param pi - native registration capability
  
  @mutates pi - delegates adapter and virtual-model registration
+
+ @example
+ ```ts
+ await openAIFast(pi);
+ ```
  */
 export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>,): Promise<void> {
   /**

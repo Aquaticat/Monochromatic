@@ -2,14 +2,14 @@
  Read-only bootstrap of the host's configured Codex catalog and native provider. @module
  */
 
-import type {
-  CredentialStore,
-  Provider,
-} from '@earendil-works/pi-ai';
+import type { Provider, } from '@earendil-works/pi-ai';
 import { ModelRuntime, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { CODEX_PROVIDER, } from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
+import { createCatalogCredentials, } from './catalog-credentials.ts';
+
+export { createCatalogCredentials, } from './catalog-credentials.ts';
 
 //region Credential-free catalog bootstrap
 
@@ -19,32 +19,6 @@ import { FastModelError, } from './fast-model-error.ts';
 const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.catalog', },);
 
 /**
- Prevent bootstrap discovery from reading or changing the user's credentials.
- 
- @returns credential store that permits only empty metadata reads
- */
-export function createCatalogCredentials(): CredentialStore {
-  /**
-   Credential-store logger records only metadata bootstrap lifecycle.
-   */
-  const l = tagged({
-    tag: createCatalogCredentials.name,
-    l: moduleLogger,
-  },);
-  l.trace('creating credential-free catalog reader',);
-  return {
-    read: async function read() { return undefined; },
-    list: async function list() { return []; },
-    modify: async function modify() {
-      throw new FastModelError('Read-only Codex catalog bootstrap attempted to change credentials.',);
-    },
-    delete: async function deleteCredential() {
-      throw new FastModelError('Read-only Codex catalog bootstrap attempted to delete credentials.',);
-    },
-  };
-}
-
-/**
  Load configured Codex metadata and persisted catalogs without real credentials or network refresh.
  
  @param modelsPath - optional disposable model configuration for tests
@@ -52,6 +26,11 @@ export function createCatalogCredentials(): CredentialStore {
  @returns effective native Codex provider whose auth resolves later in the real host
  
  @throws FastModelError when the model configuration or native provider is unavailable
+
+ @example
+ ```ts
+ const provider = await loadCodexProvider();
+ ```
  */
 export async function loadCodexProvider({ modelsPath, }: { readonly modelsPath?: string; } = {},): Promise<Provider> {
   /**
