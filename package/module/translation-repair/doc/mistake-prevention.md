@@ -68,7 +68,8 @@ heredocs and inline `python3 -c` scripts were chained to other commands;
 foreground sleeps and do-nothing calls waited on background work;
 git ran outside the repository root and cli-git refused it (M1,
 M14,
-M38);
+M38,
+M92);
 a command ran in the same batch as the write it read,
 and ran a stale file of the same name (M51).
 A transcript census found 9,324 of 22,058 calls breaking the rule after it took its current wording,
@@ -225,7 +226,9 @@ dropping every module a stretch ran on into,
 and a port control reproducing an earlier census's totals passed because that census had the same flaw (M67);
 the coverage census measured a compressed build,
 where guards folded into logical expressions had no range and read as run,
-after the ledger had inferred from the stretched spans alone that its error ran only toward cold (M79).
+after the ledger had inferred from the stretched spans alone that its error ran only toward cold (M79);
+a census of number reads counted calls and missed readers handed on as values (`.map(Number)`) and `Date.parse`,
+six reads in all (M90).
 
 The rule:
 a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
@@ -238,6 +241,13 @@ literal alphabets,
 case-fold comparisons,
 and regex classes and properties,
 each shape in its asserted and its negated spelling.
+A census of a behaviour also lists every way the language reaches it
+(a call,
+a construction,
+a value handed on,
+a coercion)
+and every function with the same behaviour on another type,
+and its guard says which it reads and which it leaves out of reach.
 A null result counts only after a positive control shows the search can match.
 A measurement that aggregates is checked against an invariant any correct output meets,
 not only against an earlier tool's totals,
@@ -287,7 +297,9 @@ fixed in `d27a89dd0`);
 the reading counted nowhere the code a run left cold that its baseline ran,
 so a change that left code cold read clean (B61);
 and it asked git about edits inside the package alone,
-though the census reads other packages' sources by line too (B62).
+though the census reads other packages' sources by line too (B62);
+a veto-open call refused an exponent in a provider's price on the ground that the fixtures write none,
+and a stored catalogue writes one (M91).
 
 The rule:
 every number,
@@ -314,6 +326,10 @@ A claim drawn from a census names the `census.json` field or the report line tha
 A fix that gives a model context starts by rendering the sheet and searching it for that context.
 An inference is labelled as one,
 or traced in the code before it is written.
+A claim about what a writer writes is measured over that writer's stored output,
+with a control the measurement must flag;
+the package's fixtures are its own copies,
+not the writer's output.
 
 What enforces it:
 habit;
@@ -1311,6 +1327,8 @@ The lone-tag mask recorded each tag's offsets and returned only its text,
 so the container deficit searched the slice for that text,
 found a whole element of the same name beside the container,
 and counted that element's blocks as the container's (ledger B67).
+The shortfall budget named each passage by its position written as text,
+and its callers read the admitted names back with `.map(Number)` (ledger B73).
 
 The rule:
 a producer hands its readers fields;
@@ -1324,6 +1342,8 @@ not the one the finder meant.
 Two strings that name one thing differently are two types
 (`ArtifactFileName` against an entry id),
 and a lookup is fed the key its builder used.
+A number handed through the package's own functions stays a number,
+never written as text for a helper to hand back.
 A fixture standing in for a lookup another module builds is paired with one case that drives that module.
 
 What enforces it:
@@ -1635,23 +1655,70 @@ and a digit run past the largest exact integer as a neighbouring number,
 though its writer only ever writes the digits of an integer (ledger B71).
 It also checked each field in one loop and read it again through helpers that threw when the loop had not,
 throws no line could reach.
+The same reading ran through the package (ledger B73):
+counts in its own log lines,
+sheets and declarations,
+the dials and flags an operator types,
+the prices and lengths providers list,
+and the stamp on every log line,
+which `Date.parse` read without its zone as local time
+and,
+cut off part way,
+as NaN that one reader kept as a call's end and another as a sample's time.
+A probe counting the family first missed readers handed on as values (`.map(Number)`) and `Date.parse`
+(ledger M90),
+and a call about what providers write was first made from the package's fixtures,
+not their stored listings (ledger M91).
 
 The rule:
-a reader of text this package wrote accepts only the spelling the writer writes:
-a count is a non-empty run of ASCII digits (`isAsciiDigits`)
-that reads as a safe integer,
-and anything else is refused by name,
-an empty value named `empty`.
+a reader of a number in text accepts only the spelling its writer writes,
+through a shared rule or a round trip through the writer:
+
+- a count is ASCII digits a double holds exactly (`isWholeNumberText`),
+  leading zeros read as written,
+  and every refusal cites `WHOLE_NUMBER_RULE`;
+- an amount an operator types is a plain decimal (`isDecimalText`),
+  then finite;
+- a number a service writes as text takes JSON's spelling (`isUnsignedNumberText`),
+  then finite and not under zero;
+- a log stamp is what `toISOString` writes (`isIsoStampText`),
+  and a line whose stamp is not is left out and counted,
+  never placed at a time nobody wrote;
+- a value the package wrote with `String` is read back only when `String` spells it again.
+
 Each field is read once,
 into its value or its refusal,
 and the record is built from those readings.
-A number an operator types is read the same way,
-since an empty variable read as 0 is a setting nobody chose.
+A number an operator types is read by the same rules,
+a blank variable reads as unset,
+a minus sign before digits is answered as a count under zero,
+and the refusal says what leaving the value off does.
+A number passed between the package's own functions stays a number:
+it is never written as text only to be read back.
+Before counting a family,
+list every way the language reaches the behaviour
+(a call,
+a construction,
+a value handed on,
+a coercion);
+before deciding what a writer writes,
+measure its stored output with a control.
 
 What enforces it:
-habit and review;
-`slice-cost-read.unit.test.ts` carries the empty,
-hexadecimal,
-exponent,
-signed and unsafe spellings.
-The package's other number reads from text are open as a family under T8's seventeenth batch.
+`number-reads.unit.test.ts`,
+which `source-scans` runs,
+fails on a call of `Number`,
+`parseInt`,
+`parseFloat`,
+`BigInt`,
+`Number.parseInt`,
+`Number.parseFloat` or `Date.parse`,
+a `new Date` given an argument,
+a unary plus on anything but a literal,
+or any of those readers handed on as a value,
+until the read is named with the rule that holds it;
+`whole-number-text.unit.test.ts` and `iso-stamp-text.unit.test.ts` hold the shared rules,
+and `iso-stamp-text.test-fixture.ts` lists the stamp spellings every stamp reader is shown refusing.
+Out of the scan's reach:
+a reader reached through `globalThis` or a renamed binding,
+and arithmetic on text.

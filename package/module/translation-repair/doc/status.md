@@ -254,9 +254,11 @@ B71 closed on the way:
 the slice-cost reader read an empty count as 0 and hexadecimal,
 exponent and signed spellings as numbers its writer never writes,
 and no stored pass log carries one.
-Two families found beside it are open:
+Two families were found beside it:
 elapsed times measured on the wall clock where a monotonic one is meant,
-and the package's other number reads from text.
+still open,
+and the package's other number reads from text,
+closed by B73.
 Its census (`census-vi1FHB`,
 1,472 passes,
 taken from a tree with nothing uncommitted)
@@ -288,6 +290,26 @@ and leaves the archive modules as they were,
 so it is the eighteenth batch's baseline.
 Readers moved into modules of their own now get unit tests of their own in the same change,
 and a scan for the 167 shared modules without one is open (ledger M88).
+B73 closed before the eighteenth batch too
+(`51dc87e82` to `93a0d06b1`):
+the package's number reads from text took spellings no writer here writes,
+an empty count as 0,
+a hexadecimal or exponent spelling,
+a sign,
+a digit run past the exact range,
+and a log stamp without its zone as local time.
+Each now reads through a rule held to its writer's spelling
+(`whole-number-text.ts`,
+`iso-stamp-text.ts`,
+or a round trip through the writer),
+an operator's dials and flags through the same rules,
+and `number-reads.unit.test.ts` fails on a new read until it names its rule.
+Measured first,
+no stored log record reads differently,
+and of the stored provider listings only OpenRouter's `-1`,
+a price it does not quote,
+now reads as not listed rather than as a negative price.
+Its census is recorded under B73.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

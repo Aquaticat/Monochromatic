@@ -4629,6 +4629,7 @@ each is to be read for an empty,
 signed,
 hexadecimal,
 exponent or unsafe value read as a number nobody wrote.
+B73 has since closed that family.
 And `coverageSentence` and `blockPlacementSentence` print a count of one before a plural noun,
 which the open family of counts before a fixed plural covers.
 
@@ -13938,7 +13939,8 @@ which a clock step can move backward mid-slice
 open in T8's seventeenth batch record).
 A negative duration is not a measurement,
 and the dropped reason names it.
-The package's other number reads from text are the same family and are open there too.
+The package's other number reads from text are the same family,
+open there and closed by B73.
 
 Recurrence:
 a reader of text it wrote itself accepts only the spelling its writer writes,
@@ -14080,6 +14082,252 @@ with comments masked as that build masks them,
 never a split of the text at a delimiter;
 and a helper moved into a module of its own gets a unit test of its own in the same change
 (ledger M88).
+
+### B73: numbers read out of text more leniently than their writers write them
+
+Found beside B71,
+which left the package's other number reads from text open as a family.
+`Number` reads an empty or blank text as 0,
+takes a hexadecimal,
+binary,
+octal or exponent spelling,
+a sign and surrounding spaces,
+and reads a digit run past `Number.MAX_SAFE_INTEGER` as a neighbouring number,
+or one past the largest double as `Infinity`.
+`Date.parse` reads a date-time without its zone as local time,
+a date alone as midnight UTC,
+and spellings outside the ISO format by a fallback each engine defines.
+Each reader here that took text through one of them
+took spellings its writer never writes.
+
+What the red commits (`51dc87e82`,
+`81f96f2a2`,
+`977724373`,
+`26d5849db`,
+`ee2d57372`,
+`a381f9da1`)
+show each reader doing:
+
+- the stage roster counted `(/2 heard`,
+  `(-1/2`,
+  `(0x1/2` and `(1e0/2` as units;
+- the cap census paired a stream whose content count was empty,
+  `-5` or `1e3` as delivering 0,
+  -5 and 1000;
+- call timing read `elapsed ms` as 0,
+  and round timing read an empty,
+  signed or exponent duration without throwing;
+- the spend line took `prompt=0x5`,
+  `5e0` and `+5`,
+  and costs its writer's `String` never spells;
+- the grade sheet called a heading with no number "headed 0";
+- numbered reference lines,
+  the cache account's source commit and version,
+  and Han numerals read a digit run two past the exact range as its neighbour;
+- the asked count and the rendering audit's arguments truncated 40.9 and 4.9;
+- the fidelity and coverage probes fell back to their default for `--cap fourty`,
+  took -3,
+  and read `--cap`,
+  `--only` and `--damage` written last as unwritten;
+- the roster card listed a blank field as 0,
+  `$0x1` as one dollar a token,
+  OpenRouter's `-1` (a price it does not quote) as a negative price,
+  and a 401-digit price as `Infinity`;
+- the two grace windows,
+  the hard cap,
+  spend ceiling,
+  Bedrock credit and request pace took a hexadecimal,
+  an exponent,
+  a sign,
+  spaces around the digits and a point with no digit on one side,
+  so `0x3E8` or `1e3` set a value the operator did not write as such;
+- the overlap dial refused a value set to blanks,
+  where every other numeric variable reads blanks as unset;
+- the meter reader,
+  call timing and the cap census read a log stamp without its zone 14,400 seconds late
+  on a machine at UTC minus four hours (`stamp-reads-probe.mjs`),
+  and a date alone at midnight UTC;
+  a stamp cut off part way became NaN,
+  which call timing kept as a call's end that `measureInFlight`'s sort cannot order,
+  and the cap census as a sample's time that pairs with nothing and counts as before the caps.
+
+Measured before fixing:
+every stored log record these readers take is spelled as its writer spells it
+(1,630 stream lines,
+551,805 `SPEND` lines,
+287,785 round lines and 1,305 stage findings;
+each scan flagged the malformed lines planted in its control),
+so the fix refuses no stored log record.
+Over the 28 stored provider listings
+(`listing-number-probe.mjs`,
+with a control file of planted values),
+the 7,870 prompt and completion values,
+four of them planted,
+hold 20 written `-1` by OpenRouter,
+10 of each,
+and 2 written `0.042e-6` in LLM Gateway's catalogue,
+the only exponent;
+the fix reads those two as before and lists the 20 as not listed,
+where the card printed a negative price.
+
+Fixed (`73984a59a`,
+`a572a1cac`,
+`65dd1e6a8`,
+`0ebf573a3`,
+`f3c4a1c59`,
+`93a0d06b1`,
+with the guard red at `6006f9816`).
+The shared rules:
+
+- `whole-number-text.ts` holds `isWholeNumberText`
+  (ASCII digits a double holds exactly,
+  leading zeros read as written),
+  cited by every refusal as `WHOLE_NUMBER_RULE`;
+  `isNegativeWholeNumberText`
+  (a minus sign before a whole number more than zero),
+  so a reader can answer a count under zero in its own words;
+  `isDecimalText`
+  (digits,
+  or digits,
+  a point and digits);
+  and `isUnsignedNumberText`
+  (a plain decimal with an optional exponent,
+  as JSON writes a number).
+- `iso-stamp-text.ts` holds `isIsoStampText`,
+  which takes a stamp only when `toISOString`,
+  the logger's writer,
+  writes the instant `Date.parse` read back as the very text read.
+- `corpus-run/command-flags.ts` holds `flagValue`,
+  `wholeNumberFlag` and `idListFlag`,
+  the probes' one reader of a flag and its value.
+
+Where each applies:
+a count the package wrote is read through `isWholeNumberText`,
+the spend line's cost by spelling back what `String` wrote,
+and a log stamp through `isIsoStampText`.
+A count or flag an operator types is digits;
+the hard cap,
+spend ceiling,
+Bedrock credit and request pace are a plain decimal,
+then finite;
+the grace windows are digits;
+and every numeric variable reads blanks as unset.
+A listing string is read through `isUnsignedNumberText`,
+then finite and not under zero,
+a listing number finite and not under zero,
+and anything else is `NOT_LISTED`,
+so the card asks for the field rather than printing a number nobody listed.
+Call timing gains an `unstamped` kind,
+counted as `callsWithoutStamp` and printed by `run-timing-report`;
+`readCapLog`
+(once `capSamplesOf`)
+returns its samples with `unstampedLines`,
+which `cap-census` prints;
+and the meter reader skips the line as it skipped an unreadable stamp before.
+`admitWithinShortfall` named each passage by its position written as text,
+and two of its three callers read the admitted names back with `.map(Number)`;
+a passage now carries its position as a number.
+
+Calls made here are open to veto:
+
+- a count is digits only,
+  and leading zeros read as written;
+- the asked count and the audit's arguments refuse 40.9,
+  reversing cases agent commit `4133bf926` pinned to truncate,
+  which no doc records as an owner ruling;
+- `-0` draws the rule's own refusal,
+  and a minus sign before digits is answered as a count under zero;
+- the overlap dial and the request pace read blanks as unset,
+  as the other dials did;
+- a listing price takes the JSON number spelling,
+  exponent included,
+  since a stored catalogue writes one,
+  and OpenRouter's `-1` reads as not listed;
+- the operator's fractional dials take a plain decimal,
+  exponent refused,
+  and the grace windows digits;
+- a log stamp is read only in `toISOString`'s spelling,
+  so one naming the right instant without milliseconds,
+  with `+00:00`,
+  or with a six-digit year before 10000 is refused too:
+  a line carrying one did not come from the logger as written;
+- a log line whose stamp the logger did not write is left out and counted,
+  not thrown on,
+  so one such line costs its call,
+  not the report.
+
+The guard is `number-reads.unit.test.ts`,
+which `source-scans` runs.
+It finds every call of `Number`,
+`parseInt`,
+`parseFloat`,
+`BigInt`,
+`Number.parseInt`,
+`Number.parseFloat` and `Date.parse`,
+with or without `new`;
+`new Date` given an argument;
+a unary plus on anything but a literal;
+and any of those readers handed on as a value.
+Each read is keyed by file,
+enclosing named function and reader,
+and the package is held to 43 keys and 48 reads,
+each naming the rule that holds it to its writer's spelling,
+or why it reads no text.
+Two kinds read outside the shared rules are named there with why:
+hexadecimal prefixes of the package's own digests
+(`translate-slate.ts`,
+`corpus-run/window-trial-order.ts`)
+and the digits opening an engine message (`run-json-read.ts`).
+Out of its reach:
+a reader reached through `globalThis` or a renamed binding,
+and arithmetic on text.
+Its first count
+(`number-reads-probe.mjs`,
+35 keys)
+missed the readers handed on as values and `Date.parse`;
+widened before it became the guard,
+the scan found the six more that `f3c4a1c59` and `93a0d06b1` fixed (ledger M90).
+
+Guard-offs ran on every fix
+(each commit message records its own).
+On the last two:
+`isIsoStampText` without its write-back check failed its refusal case,
+the stamp case of each of the three readers and call timing's count case;
+each reader's own check removed with the rule intact failed that reader's case in each file and nothing in the rule's;
+the left-out counters disabled,
+the stream line's and call timing's in one build and the `SPEND` line's in another,
+failed the cases counting them.
+The scan without its detection of readers handed on as values,
+of unary plus,
+or of a type name as no read failed its fixture case;
+without its detection of `new Date`,
+both its cases;
+and with one read unlisted,
+its package case.
+Each was restored,
+and `git diff` printed nothing after.
+
+Found on the way and open:
+a flag written twice is read at its first value;
+plain-object tables are looked up and filled by text from outside the package,
+which reaches a prototype's keys;
+the request pace's real-clock case flaked,
+18.89 and 18.99 milliseconds against a 19 millisecond bound,
+recorded with the elapsed-time family;
+`readCapLog` copies its queue of a label's streams at every stream line,
+a copy `fold-copies.unit.test.ts` does not read;
+and `run-timing-report` prints its count of completion lines without a duration before a fixed plural,
+which the open family of counts before a fixed plural covers.
+
+Recurrence:
+a reader of a number in text takes only the spelling its writer writes,
+through a shared rule
+(`whole-number-text.ts`,
+`iso-stamp-text.ts`)
+or a round trip through the writer,
+and an operator's text through the same rules,
+saying what leaving the value off does;
+`number-reads.unit.test.ts` fails on a new read until it names its rule.
 
 ## Process mistakes in this audit
 
@@ -14745,6 +14993,71 @@ Prevention:
 a guard-off build mutates cases in one top-level suite per file,
 and a mutant whose case prints no FAIL line is read as surviving
 only once that case's suite is seen to have run.
+
+### M90: a census probe narrower than the family it counted
+
+Status:
+happened 2026-10-01 (UTC) during B73,
+found the same day writing the guard from it,
+before any fix rested on its count.
+`number-reads-probe.mjs` counted calls of `Number`,
+`parseInt`,
+`parseFloat`,
+`BigInt` and the two `Number` members,
+and unary plus:
+35 keys over 1,075 production files.
+It did not look for a reader handed on as a value (`.map(Number)`),
+nor for `Date.parse` and `new Date`,
+which read numbers out of text the same way.
+A search for `Number` as an argument found two,
+`admitWithinShortfall`'s callers reading back positions written as text,
+and a search for date parsing found four,
+three of them log-stamp readers that took a stamp without its zone as local time (ledger B73).
+Prevention:
+before counting a family,
+list every way the language reaches the behaviour
+(a call,
+a construction,
+a value handed on,
+a coercion)
+and every function with the same behaviour on another type;
+the guard then says which it reads and which it leaves out of reach.
+
+### M91: a veto-open call about a writer's output made from the fixtures
+
+Status:
+happened 2026-10-01 (UTC) in `65dd1e6a8`,
+found 13 minutes later measuring the stored listings,
+and reversed in `ee2d57372` and `0ebf573a3`.
+`65dd1e6a8` refused an exponent in a listing price,
+calling it a veto-open call on the ground that the fixtures copy listings that write plain decimals.
+The fixtures are this package's copies,
+not the providers' output:
+over the 28 stored listings,
+LLM Gateway's catalogue writes `0.042e-6` twice,
+a real price the rule left unlisted (ledger B73).
+Prevention:
+a call about what a writer writes is measured over that writer's stored output before it is made,
+with a control the measurement must flag,
+and the commit cites the measurement,
+never the fixtures.
+
+### M92: commands outside the repository's shell rules
+
+Status:
+happened 2026-10-01 (UTC) during B73,
+twice,
+with no wrong outcome landing.
+A read-only listing of the package's docs ran two commands chained with `;`,
+against rule 1CB in `AGENTS.md`.
+And a commit ran from the package directory,
+which `git-policy-cli` refused (`require-root/not-at-root`);
+it was rerun from the worktree root with the same paths and message.
+Prevention:
+a shell call chains at most three steps with `&&` and reports with `||`;
+`git` runs from the worktree root,
+with paths relative to it,
+read from a list file where they are many.
 
 ### M79: a coverage census measuring compressed code
 
@@ -15490,6 +15803,15 @@ once:
 an edit to a scratch note and the `sed` inserting that note into this ledger went out in one batch;
 a search afterwards found the edited wording in the ledger,
 so the edit happened to land first.
+Again during B73 on 2026-10-01 (UTC),
+twice,
+with no wrong outcome landing:
+a commit message's check for `#` and task numbers ran in the batch of the edit to that message
+(rerun after the edit,
+no match),
+and the stamp probe ran in the batch of its own write
+(rerun alone after;
+its output is the one `a381f9da1` cites).
 The prevention stands as written:
 the edit or write,
 then,

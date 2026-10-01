@@ -357,15 +357,29 @@ this one says what changed after it.
   Its census at `3429c8229` (`census-apleN5`,
   1,475 passes)
   leaves library source at 746 stretches over 1,432 lines in 274 files,
-  with 15 functions never called,
-  and is the eighteenth batch's baseline,
+  with 15 functions never called.
+  Ledger B73 followed
+  (`51dc87e82` to `93a0d06b1`):
+  the package's number reads from text,
+  in its own records,
+  an operator's dials and flags,
+  provider listings and log stamps,
+  read spellings no writer here writes,
+  among them a log stamp without its zone read as local time;
+  each now reads through a rule held to its writer's spelling,
+  and `number-reads.unit.test.ts` fails on a new read until it names its rule.
+  The census closing B73 is the eighteenth batch's baseline,
   that batch taking the archive modules
   (`archive`,
   18 stretches over 36 lines in 9 files,
   the most cold lines of the two clusters tied at 18).
-  Two families found in the seventeenth batch are open:
-  elapsed times measured on the wall clock,
-  and the package's other number reads from text.
+  Found in the seventeenth batch and open:
+  elapsed times measured on the wall clock.
+  Found in B73 and open,
+  each to close before the eighteenth batch:
+  a flag written twice read at its first value,
+  plain-object tables looked up by text from outside the package,
+  and a cap census queue copied at every stream line.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
