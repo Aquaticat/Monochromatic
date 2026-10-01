@@ -111,6 +111,131 @@ export type InFlight = {
 };
 
 /**
+ Refusal to count calls in flight where no interval holds one: no call carried
+ a duration, or every timed call took no time at one instant.
+ 
+ ONE REFUSAL FOR BOTH, since both are a division by an empty span. A span of
+ zero once reported every call in flight on average while the sweep, which
+ takes an end ahead of a start at one instant, counted a peak of none (T8,
+ nineteenth batch).
+ 
+ @example
+ ```ts
+ throw new NothingInFlightError({ reason: 'no-span', },);
+ ```
+ */
+export class NothingInFlightError extends Error {
+  /**
+   Declares this message safe to forward: both sentences are fixed and
+   interpolate nothing.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Which empty span the calls left.
+   */
+  readonly reason: 'no-call' | 'no-span';
+
+  /**
+   Writes the refusal's sentence for the empty span the calls left.
+ 
+   @param reason - no timed call at all, or timed calls that took no time
+   */
+  constructor({ reason, }: { readonly reason: 'no-call' | 'no-span'; },) {
+    super(
+      (reason === 'no-call')
+        ? 'no call in this log carried a duration, so nothing can be counted in flight'
+        : 'every timed call in this log took no time, so no span holds a call in flight',
+    );
+    this.name = 'NothingInFlightError';
+    this.reason = reason;
+  }
+}
+
+/**
+ What a log's rounds spent, folded across every one of them.
+ 
+ @example
+ ```ts
+ const summary: RoundSummary = summariseRounds({ rounds, },);
+ ```
+ */
+export type RoundSummary = {
+  /**
+   Rounds the log reported.
+   */
+  readonly rounds: number;
+
+  /**
+   Rounds whose quorum never stood (ledger P12).
+   */
+  readonly withoutQuorum: number;
+
+  /**
+   Time every round took together.
+   */
+  readonly totalMs: number;
+
+  /**
+   Time the rounds whose quorum stood spent waiting after it, which is the
+   straggler cost; a round whose quorum never stood spent none.
+   */
+  readonly graceMs: number;
+
+  /**
+   Voices asked for and never heard, across every round of either kind.
+   */
+  readonly lost: number;
+};
+
+/**
+ Folds a log's rounds into what they spent.
+ 
+ EVERY ROUND COUNTS, whether its quorum stood or not: a round that never
+ reached quorum took its time and lost its voices like any other, and leaving
+ it out once undercounted both (T8, nineteenth batch). Only grace is summed
+ over the rounds where quorum stood, since only they spent any.
+ 
+ @param rounds - every round the log reported
+ 
+ @returns Counts, time and lost voices across the rounds
+ 
+ @example
+ ```ts
+ const summary = summariseRounds({ rounds: reading.rounds, },);
+ ```
+ */
+export function summariseRounds(
+  { rounds, }: { readonly rounds: readonly RoundTiming[]; },
+): RoundSummary {
+  /**
+   Running totals, filled by one pass.
+   */
+  const totals = {
+    withoutQuorum: 0,
+    totalMs: 0,
+    graceMs: 0,
+    lost: 0,
+  };
+  for (const round of rounds) {
+    totals.totalMs += round.totalMs;
+    totals.lost += round.asked - round.heard;
+    /**
+     Whether this round's quorum stood, and what it spent after it did.
+     */
+    const { quorum, } = round;
+    if (quorum.kind === 'stood')
+      totals.graceMs += quorum.inGraceMs;
+    else
+      totals.withoutQuorum += 1;
+  }
+  return {
+    rounds: rounds.length,
+    ...totals,
+  };
+}
+
+/**
  Reads every timing line out of a log.
  
  @param lines - log lines, in the order they were written
@@ -188,8 +313,9 @@ export function readRunTiming(
  
  @returns Span, busy time, and the mean and peak in flight
  
- @throws Error when no call can be timed, since every figure would be a
- division by an empty span
+ @throws NothingInFlightError when no call can be timed, or every timed call
+ took no time at one instant, since every figure would be a division by an
+ empty span
  
  @example
  ```ts
@@ -200,7 +326,7 @@ export function measureInFlight(
   { calls, }: { readonly calls: readonly CallTiming[]; },
 ): InFlight {
   if (calls.length === 0)
-    throw new Error('no call in this log carried a duration, so nothing can be counted in flight',);
+    throw new NothingInFlightError({ reason: 'no-call', },);
 
   /**
    One entry per endpoint: `1` where a call starts, `-1` where it ends.
@@ -241,6 +367,13 @@ export function measureInFlight(
   const closing = nonNullishOrThrow(events.at(-1,),);
 
   /**
+   First start and last end, which bound the whole run.
+   */
+  const spanMs = closing.instant - opening.instant;
+  if (spanMs === 0)
+    throw new NothingInFlightError({ reason: 'no-span', },);
+
+  /**
    Sweep state: how many are live now, the highest seen, and the running
    time-weighted total.
    */
@@ -260,11 +393,6 @@ export function measureInFlight(
   }
 
   /**
-   First start and last end, which bound the whole run.
-   */
-  const spanMs = closing.instant - opening.instant;
-
-  /**
    Summed durations, which is what the span is compared against.
    */
   const busyMs = calls.reduce(
@@ -280,7 +408,7 @@ export function measureInFlight(
   return {
     spanMs,
     busyMs,
-    meanInFlight: (spanMs === 0) ? calls.length : (sweep.weighted / spanMs),
+    meanInFlight: sweep.weighted / spanMs,
     peakInFlight: sweep.peak,
   };
 }

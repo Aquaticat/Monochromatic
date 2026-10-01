@@ -127,12 +127,16 @@ export {
   type RoundReading,
   type RoundTiming,
   STREAM_MARKER,
+  TimingFieldError,
+  TimingLineError,
 } from './corpus-run/run-timing-parse.ts';
 export {
   type InFlight,
   measureInFlight,
+  NothingInFlightError,
   readRunTiming,
   type RunTiming,
+  summariseRounds,
 } from './corpus-run/run-timing-read.ts';
 export {
   belongsToNamespace,

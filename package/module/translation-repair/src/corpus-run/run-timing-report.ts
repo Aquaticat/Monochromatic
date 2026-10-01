@@ -3,8 +3,10 @@ import { readFile, } from 'node:fs/promises';
 import {
   type InFlight,
   measureInFlight,
+  NothingInFlightError,
   readRunTiming,
   type RunTiming,
+  summariseRounds,
 } from './run-timing-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
@@ -63,26 +65,6 @@ const MEAN_PLACES = 2;
 const SHARE_PLACES = 1;
 
 /**
- Round totals folded across a whole log.
- */
-type RoundTotals = {
-  /**
-   Time every round took together.
-   */
-  readonly totalMs: number;
-
-  /**
-   Time every round spent waiting after quorum.
-   */
-  readonly graceMs: number;
-
-  /**
-   Voices asked for and never heard, across every round.
-   */
-  readonly lost: number;
-};
-
-/**
  Renders a span in the largest unit it fills.
  
  THREE UNITS RATHER THAN HOURS ALONE. The same report reads a six-hour corpus
@@ -136,43 +118,26 @@ function printRounds({ reading, }: { readonly reading: RunTiming; },): void {
   }
 
   /**
-   Totals across every round, folded in one pass.
+   Totals across every round, of either kind (T8, nineteenth batch).
    */
-  const totals = reading
-    .rounds
-    .reduce(
-      function addRound(
-        carried,
-        round,
-      ): RoundTotals {
-        return {
-          totalMs: carried.totalMs + round.totalMs,
-          graceMs: carried.graceMs + round.inGraceMs,
-          lost: carried.lost + (round.asked - round.heard),
-        };
-      },
-      {
-        totalMs: 0,
-        graceMs: 0,
-        lost: 0,
-      },
-    );
+  const summary = summariseRounds({ rounds: reading.rounds, },);
 
   console.log(
     `rounds                 ${String(roundCount,)}, `
-      + `${asSpan({ ms: totals.totalMs, },)} in total`,
+      + `${asSpan({ ms: summary.totalMs, },)} in total`,
   );
+  console.log(`  without quorum       ${String(summary.withoutQuorum,)}`,);
+  // NO SHARE OF NO TIME: rounds that all took no time leave nothing to divide
+  // the grace by, and a NaN percentage reads as a measurement.
   /**
-   Share of round time spent waiting rather than working.
+   Share of round time spent waiting rather than working, where there was any.
    */
-  const graceShare = ((totals.graceMs / totals.totalMs) * PERCENT)
-    .toFixed(SHARE_PLACES,);
+  const graceShare = (summary.totalMs === 0)
+    ? 'no round time to share'
+    : `${((summary.graceMs / summary.totalMs) * PERCENT).toFixed(SHARE_PLACES,)}% of round time`;
 
-  console.log(
-    `  waiting after quorum ${asSpan({ ms: totals.graceMs, },)}, `
-      + `${graceShare}% of round time`,
-  );
-  console.log(`  voices never heard   ${String(totals.lost,)}`,);
+  console.log(`  waiting after quorum ${asSpan({ ms: summary.graceMs, },)}, ${graceShare}`,);
+  console.log(`  voices never heard   ${String(summary.lost,)}`,);
 }
 
 /**
@@ -258,22 +223,16 @@ async function reportRunTiming({ line, }: { readonly line: CommandLineOf<'run-ti
     );
   }
 
-  /**
-   How many calls the logs left an interval for.
-   */
-  const timedCalls = reading
-    .calls
-    .length;
-
-  if (timedCalls === 0) {
-    console.log(
-      'NO TIMED CALL. Nothing here can be counted in flight, which is not the same as a run that '
-        + 'made one call at a time.',
-    );
-    return;
+  try {
+    printInFlight({ flight: measureInFlight({ calls: reading.calls, },), },);
+  } catch (error) {
+    if (!(error instanceof NothingInFlightError))
+      throw error;
+    // NO SPAN TO COUNT OVER, whether no call carried a duration or every timed
+    // call took no time: the refusal says which, and neither is a run that
+    // made one call at a time.
+    console.log(`NOTHING IN FLIGHT. ${error.message}, which is not the same as a run that made one call at a time.`,);
   }
-
-  printInFlight({ flight: measureInFlight({ calls: reading.calls, },), },);
 }
 
 if (import.meta.main)

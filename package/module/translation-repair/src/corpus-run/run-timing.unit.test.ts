@@ -23,9 +23,13 @@ import {
 import {
   type CallTiming,
   measureInFlight,
+  NothingInFlightError,
   readCallTiming,
   readRoundTiming,
   readRunTiming,
+  summariseRounds,
+  TimingFieldError,
+  TimingLineError,
 } from '../../dist/final/node/index.mjs';
 import {
   STAMPS_NOT_WRITTEN,
@@ -161,12 +165,17 @@ await describe({
             if (reading.kind !== 'round')
               throw new Error('the fixture round line was not read as a round',);
 
-            expect(reading.round.stage,).toBe('editor',);
-            expect(reading.round.heard,).toBe(6,);
-            expect(reading.round.asked,).toBe(7,);
-            expect(reading.round.totalMs,).toBe(91_402,);
-            expect(reading.round.toQuorumMs,).toBe(61_401,);
-            expect(reading.round.inGraceMs,).toBe(30_001,);
+            expect(reading.round,).toEqual({
+              stage: 'editor',
+              heard: 6,
+              asked: 7,
+              totalMs: 91_402,
+              quorum: {
+                kind: 'stood',
+                toQuorumMs: 61_401,
+                inGraceMs: 30_001,
+              },
+            },);
           },
         },),
 
@@ -275,6 +284,15 @@ await describe({
              No-quorum line whose needed count is a word.
              */
             const wordy = NO_QUORUM_LINE.replace('1 of 4 needed', '1 of four needed',);
+            /**
+             What reading the short line threw.
+             */
+            const refusal = caught(function readsShort(): void {
+              readRoundTiming({ line: short, },);
+            },);
+            // The line's refusal and the field's are named classes.
+            expect(refusal,).toBeInstanceOf(TimingLineError,);
+            expect((refusal as Error).cause,).toBeInstanceOf(TimingFieldError,);
             expect([
               short,
               disagreeing,
@@ -518,6 +536,36 @@ await describe({
     },),
 
     describe({
+      name: summariseRounds.name,
+      children: [
+        it({
+          name: 'COUNTS A ROUND WHOSE QUORUM NEVER STOOD in the time and the lost voices, and in grace only where '
+            + 'quorum stood, rather than leaving the round out of every total (T8, nineteenth batch)',
+          fn: async () => {
+            /**
+             One round of each kind, read off the lines their writer writes.
+             */
+            const { rounds, } = readRunTiming({
+              lines: [
+                ROUND_LINE,
+                NO_QUORUM_LINE,
+              ],
+            },);
+            // 91402 + 120000 total; grace only from the round whose quorum
+            // stood; (7 - 6) + (7 - 1) voices never heard.
+            expect(summariseRounds({ rounds, },),).toEqual({
+              rounds: 2,
+              withoutQuorum: 1,
+              totalMs: 211_402,
+              graceMs: 30_001,
+              lost: 7,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: measureInFlight.name,
       children: [
         it({
@@ -578,6 +626,9 @@ await describe({
                 },);
               },
             },),).toEqual(['every timed call in this log took no time, so no span holds a call in flight',],);
+            expect(caught(function measuresOneInstant(): void {
+              measureInFlight({ calls: [callRunning({ endsAtSeconds: 10, ranSeconds: 0, },),], },);
+            },),).toBeInstanceOf(NothingInFlightError,);
           },
         },),
 
@@ -585,9 +636,16 @@ await describe({
           name: 'REFUSES AN EMPTY CALL LIST rather than reporting a mean of zero in flight, which '
             + 'a log that simply predates the duration field would otherwise produce',
           fn: async () => {
-            expect(function measuresNothing(): void {
+            /**
+             What measuring no call threw.
+             */
+            const refusal = caught(function measuresNothing(): void {
               measureInFlight({ calls: [], },);
-            },).toThrow(Error,);
+            },);
+            expect(refusal,).toBeInstanceOf(NothingInFlightError,);
+            expect((refusal as Error).message,).toBe(
+              'no call in this log carried a duration, so nothing can be counted in flight',
+            );
           },
         },),
       ],

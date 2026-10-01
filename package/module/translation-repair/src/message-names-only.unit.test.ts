@@ -130,6 +130,7 @@ const MARKED_CLASSES: readonly string[] = [
   'NaturalnessQuorumError',
   'NaturalnessRepairInterruptedError',
   'NoProviderForModelError',
+  'NothingInFlightError',
   'OffRosterModelError',
   'OpenRouterCreditsShapeError',
   'OpenRouterModelNotServedError',
@@ -351,6 +352,9 @@ const WITHHELD: Record<string, string> = {
     + 'words and never text; unreachable by construction, so the boundary never has to print it',
   StreamCutShortError: 'the abort reason reaches the message through String of an unknown value',
   SyntheticHttpError: 'the message carries an excerpt of the provider response body, on purpose',
+  TimingLineError: 'quotes the whole timing line it could not read, so an operator can find it; the line was '
+    + 'chosen by the round or completion marker the run\'s own logger writes, but nothing proves a line '
+    + 'carrying that marker holds only labels, counts and durations (T8, nineteenth batch)',
 };
 
 //endregion Marked message inventory
