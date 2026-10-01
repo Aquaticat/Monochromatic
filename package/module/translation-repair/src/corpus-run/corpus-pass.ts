@@ -377,6 +377,8 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     ids: askedAmong({
       asked: [...onlyIds,],
       known: people,
+      source: '--only',
+      within: 'the corpus at the pin',
     },),
     done,
     pin: RUN_CORPUS_PIN,

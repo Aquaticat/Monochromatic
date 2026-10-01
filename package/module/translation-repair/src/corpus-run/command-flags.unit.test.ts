@@ -243,6 +243,11 @@ const LITTER: readonly string[] = [
   'Mittens',
 ];
 
+/**
+ What the litter is, completing "which ... does not hold".
+ */
+const LITTER_WITHIN = 'the litter';
+
 await describe({
   name: askedAmong.name,
   children: [
@@ -252,6 +257,8 @@ await describe({
         expect(askedAmong({
           asked: [],
           known: LITTER,
+          source: '--only',
+          within: LITTER_WITHIN,
         },),).toEqual(LITTER,);
       },
     },),
@@ -266,10 +273,47 @@ await describe({
             'Mittens',
           ],
           known: LITTER,
+          source: '--only',
+          within: LITTER_WITHIN,
         },),).toEqual([
           'Tabby_01',
           'Mittens',
         ],);
+      },
+    },),
+    it({
+      name: 'REFUSES ids the runner cannot reach, alone or among ids it can, naming each once and as typed, '
+        + 'where a runner once walked what was left, or nothing, without a word (ledger B76)',
+      fn: async () => {
+        expect(function asksForNone(): void {
+          askedAmong({
+            asked: ['Tabby_0l',],
+            known: LITTER,
+            source: '--only',
+            within: LITTER_WITHIN,
+          },);
+        },).toThrow('--only asks for "Tabby_0l", which the litter does not hold',);
+        expect(function asksForSome(): void {
+          askedAmong({
+            asked: [
+              'Gingr42',
+              'Tabby_01',
+              'Mit tens',
+              'Gingr42',
+            ],
+            known: LITTER,
+            source: 'sentinel-probe',
+            within: LITTER_WITHIN,
+          },);
+        },).toThrow('sentinel-probe asks for "Gingr42", "Mit tens", which the litter does not hold',);
+        expect(caught(function asksForNoneAgain(): unknown {
+          return askedAmong({
+            asked: ['Tabby_0l',],
+            known: LITTER,
+            source: '--only',
+            within: LITTER_WITHIN,
+          },);
+        },),).toBeInstanceOf(StatedRefusalError,);
       },
     },),
   ],

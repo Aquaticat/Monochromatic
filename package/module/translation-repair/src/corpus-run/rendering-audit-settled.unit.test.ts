@@ -406,6 +406,31 @@ await describe({
         },),).toEqual(TABBY,);
       },
     },),
+
+    it({
+      name: 'REFUSES an entry the archive does not hold, beside one it does, where the audit once bought the '
+        + 'rest and named the stray nowhere (ledger B76)',
+      fn: async () => {
+        expect(function asksForAStray(): void {
+          eligibleSubjects({
+            readings: [
+              readingOf({
+                entryId: 'mittens',
+                subjects: MITTENS,
+              },),
+              readingOf({
+                entryId: 'tabby',
+                subjects: TABBY,
+              },),
+            ],
+            onlyIds: [
+              'tabby',
+              'tabbby',
+            ],
+          },);
+        },).toThrow('--only asks for "tabbby", which the settled archive does not hold',);
+      },
+    },),
   ],
 },);
 

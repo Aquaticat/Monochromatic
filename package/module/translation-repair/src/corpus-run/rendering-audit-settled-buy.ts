@@ -349,6 +349,8 @@ export function eligibleSubjects(
     known: readings.map(function entryOf(reading,): string {
       return reading.entryId;
     },),
+    source: '--only',
+    within: 'the settled archive',
   },),);
   return readings
     .flatMap(function subjectsOf(reading,): readonly SettledAuditSubject[] {

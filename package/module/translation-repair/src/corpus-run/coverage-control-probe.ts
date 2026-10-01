@@ -76,6 +76,8 @@ async function gatherCases(
   const entryIds = askedAmong({
     asked: onlyIds,
     known: await listCorpusPeople({ pin: RUN_CORPUS_PIN, },),
+    source: '--only',
+    within: 'the corpus at the pin',
   },);
 
   for (const entryId of entryIds) {

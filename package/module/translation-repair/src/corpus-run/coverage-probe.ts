@@ -239,6 +239,8 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-probe'>;
   const entryIds = askedAmong({
     asked: onlyIds,
     known: await listCorpusPeople({ pin: RUN_CORPUS_PIN, },),
+    source: '--only',
+    within: 'the corpus at the pin',
   },);
   /* oxlint-disable no-await-in-loop -- Sequential on purpose: this probe exists
      to be read while it runs, and a fan-out over entries would interleave the

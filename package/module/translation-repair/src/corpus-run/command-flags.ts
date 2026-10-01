@@ -187,7 +187,7 @@ export function idListFlag(
 
  @example
  ```ts
- const entryIds = askedAmong({ asked: onlyIds, known: people, },);
+ const entryIds = askedAmong({ asked: onlyIds, known: people, source: '--only', within: 'the corpus at the pin', },);
  ```
  */
 export function askedAmong(
@@ -197,6 +197,18 @@ export function askedAmong(
   }: {
     readonly asked: readonly string[];
     readonly known: readonly string[];
+
+    /**
+     What asked for the ids, as the person typed it: `--only`, or the
+     runner's name for ids written by position.
+     */
+    readonly source: string;
+
+    /**
+     What `known` is drawn from, completing "which ... does not hold":
+     `the corpus at the pin`, `the settled archive`.
+     */
+    readonly within: string;
   },
 ): readonly string[] {
   if (asked.length === 0)
