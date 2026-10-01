@@ -109,9 +109,11 @@ mise run //package/config/lfs-r2-worker:deploy:dry-run
 mise run //package/config/lfs-r2-worker:secret:write-token < "${HOME}/temp/lfs-write-token.txt"
 ```
 
-`wrangler secret put` stores an **empty** secret without complaint when its stdin delivers no value,
-and an empty `LFS_WRITE_TOKEN` makes `authorized()` accept an empty Basic-auth password,
-which opens uploads to any anonymous caller.
+`wrangler secret put` stores an **empty** secret without complaint when its stdin delivers no value.
+`authorized()` refuses an absent or blank `LFS_WRITE_TOKEN`,
+so a blank secret fails closed and every push gets `401`;
+before that guard landed on 2026-10-01,
+a blank secret accepted an empty Basic-auth password and opened uploads to any anonymous caller.
 Redirect the value from a private file,
 then verify the live Worker against three credentials (correct,
  empty,

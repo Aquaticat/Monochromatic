@@ -124,11 +124,16 @@ or set it on first provisioning.
 
 `wrangler secret put` reads the value from stdin when stdin is not a terminal,
 and it stores an **empty** secret without complaint when stdin delivers nothing.
-An empty `LFS_WRITE_TOKEN` is worse than an absent one:
-`authorized()` in `package/config/lfs-r2-worker/src/authorize.ts` refuses only when the secret is `undefined`,
-so an empty secret makes the Worker accept an empty Basic-auth password and let anyone upload objects.
-Supply the value by shell redirection from a private file,
-then verify the live Worker before trusting the rotation.
+A blank `LFS_WRITE_TOKEN` used to be worse than an absent one:
+`authorized()` in `package/config/lfs-r2-worker/src/authorize.ts` refused only an `undefined` secret,
+so a blank one matched an empty Basic-auth password and let anyone upload objects.
+It now refuses absent and blank secrets alike
+(deployed 2026-10-01,
+ Worker version `b0009f5d-9b00-4719-bbb4-1b6e5902867f`),
+so a blank secret fails closed and every push gets `401`.
+That is still a silent breakage,
+so supply the value by shell redirection from a private file
+and verify the live Worker before trusting the rotation.
 The failure mode,
  its measurements,
  and its source trace are recorded in
@@ -194,8 +199,10 @@ The failure mode,
    `200`,
    `401`,
    `401`.
-   A leading `200` for the empty password means the stored secret is empty;
+   Three `401` responses mean the stored secret is blank or differs from the file;
    repeat the upload from a file that provably holds the token.
+   A `200` for the empty password means the deployed Worker predates the blank-secret guard;
+   redeploy it.
    The probe asks for an upload action but never sends a `PUT`,
    so it stores nothing.
 
@@ -368,9 +375,10 @@ TODO
 
    Expected exact output:
    `oid match: true; authenticated PUT: 200; unauthenticated PUT: 401`.
-   An authenticated `401` means the local credential no longer matches the Worker secret.
-   An unauthenticated `200` means the stored secret is empty;
-   rotate it again from a file.
+   An authenticated `401` means the local credential no longer matches the Worker secret,
+   or that the secret is blank,
+   since a blank secret fails closed;
+   the three-credential probe in "Set or rotate the upload token" tells those apart.
 
 5. A fresh clone resolves LFS from the Worker and verifies clean.
 

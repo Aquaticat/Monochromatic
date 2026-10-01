@@ -140,6 +140,11 @@ git-lfs never sends an empty password,
 so legitimate pushes fail while an attacker who sends
 `Authorization: Basic base64("anything:")` succeeds.
 
+That was the behavior at diagnosis time.
+`authorized()` now refuses a blank secret as well as an absent one,
+deployed 2026-10-01 as Worker version `b0009f5d-9b00-4719-bbb4-1b6e5902867f`,
+so the same operator mistake now fails closed instead of opening uploads.
+
 ### Step 3: why stdin was empty is unresolved
 
 Two invocations fed the value through a Node `spawnSync({ input })` pipe,
@@ -291,9 +296,18 @@ Each case was run with `spawnSync({ input: "MARK" })`:
   Tradeoff:
   it needs a Worker redeploy,
   and it does not repair a secret that is non-empty but wrong.
-  As of this writing the guard is proposed,
-  not deployed;
-  `package/config/lfs-r2-worker/src/authorize.ts` still accepts an empty value.
+  Deployed 2026-10-01 as Worker version `b0009f5d-9b00-4719-bbb4-1b6e5902867f`:
+  `package/config/lfs-r2-worker/src/authorize.ts` now refuses an absent **or**
+  blank secret.
+  Two unit cases pin it,
+  each sending a Basic password that matches the configured secret exactly,
+  so only the guard can make them pass.
+  Both were shown to fail without it:
+  reverting the guard and rebuilding produced
+  `[refuses every write while the secret is blank] [FAIL] AssertionError: expected true to equal false`
+  and the same for the whitespace case,
+  which is the vulnerability itself,
+  measured rather than argued.
 
 ## What does not work
 
