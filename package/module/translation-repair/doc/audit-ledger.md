@@ -16317,6 +16317,34 @@ a frame that parses but lacks the fragment its kind carries is refused as a fram
 `mistake-prevention.md`,
 "Provider fields read by their documentation".
 
+### B90: an Anthropic refusal that named the OpenAI-compatible contract
+
+Found in T8's twenty-second batch,
+in retry lines the unit suite logs
+(`completion body violated the OpenAI-compatible contract: anthropic stream ended without message_stop`),
+red in `0b9447b81`,
+fixed in the commit adding this entry.
+`MalformedCompletionError` worded every refusal as a breach of the OpenAI-compatible contract,
+and the Anthropic readers throw it too,
+so a failed Charm Hyper call read as a broken OpenAI-shaped body.
+The note at the head of `completion-shape.ts` records an earlier fix to the same message:
+a live log named Synthetic for a call that went to Charm Hyper,
+and that fix took the provider's name out
+but kept the contract,
+which that Hyper call did not speak either.
+The constructor now takes the wire format its reader read the body as
+(`StreamWireFormat`,
+required),
+and the message names that format's contract;
+the Anthropic details drop their own "anthropic" prefix,
+which the contract now carries.
+
+Recurrence:
+a shared error class names what its thrower knows,
+taken from the thrower;
+`mistake-prevention.md`,
+"Labels a message names".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -17356,6 +17384,10 @@ and the lint and the source scans pass either form.
 The same slip was corrected once before,
 in `d811fcf2b`,
 where the edit tool had dropped the spaces.
+It is the cause again:
+the B90 fix's TSDoc for `completion-shape.ts` was written with one-space blank lines
+and landed with 6 empty ones,
+so a line holding only a space does not survive the edit tool.
 Prevention:
 before committing a file whose TSDoc changed,
 count its blank lines inside TSDoc blocks by form and keep the one the file used.

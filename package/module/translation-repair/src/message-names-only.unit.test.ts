@@ -270,7 +270,10 @@ const NAMED_PARTS: Record<string, string> = {
   'WINDOW_LABEL': 'name of a window this package defines',
   'channel': 'stream channel name, content or reasoning',
   'checkerModelIds.join(\', \',)': 'model ids from the catalog',
-  'detail': 'authored phrase naming which rule was broken, at every throw site',
+  'detail': 'authored phrase naming which rule was broken, at every throw site; the one value read off a body '
+    + 'is an Anthropic error event\'s type, lower-case letters and underscores of at most 64 characters, '
+    + 'or the word unnamed (ledger B87)',
+  'CONTRACT_NAMES[wireFormat]': 'contract name, one of two fixed phrases keyed by the closed wire-format union (ledger B90)',
   'measured': 'meter states and hold durations, composed by the caller from two booleans and two numbers',
   'dir': 'directory path',
   'endpoint': 'upstream display name as the gateway spelled it, the same field the SPEND line prints, or the word unnamed',

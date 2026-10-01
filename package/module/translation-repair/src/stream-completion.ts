@@ -159,6 +159,7 @@ export function requireStreamTerminator(
 
   if (!sawDone) {
     throw new MalformedCompletionError({
+      wireFormat: 'openai',
       detail: 'stream ended without its [DONE] terminator; the reply was cut off',
     },);
   }
@@ -214,7 +215,10 @@ export function extractStreamedCompletion(
        */
       const chunk: unknown = JSON.parse(payload,);
       if (!isJsonRecord(chunk,))
-        throw new MalformedCompletionError({ detail: 'stream event is not a JSON object', },);
+        throw new MalformedCompletionError({
+          wireFormat: 'openai',
+          detail: 'stream event is not a JSON object',
+        },);
       foldChunk({
         fold,
         chunk,
@@ -224,6 +228,7 @@ export function extractStreamedCompletion(
       if (error instanceof MalformedCompletionError)
         throw error;
       throw new MalformedCompletionError({
+        wireFormat: 'openai',
         detail: 'stream event is not valid JSON',
         cause: error,
       },);

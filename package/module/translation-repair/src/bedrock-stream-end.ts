@@ -99,6 +99,7 @@ export function requireBedrockStreamEnd(
     .some(isUsageChunk,);
   if (!sawUsage) {
     throw new MalformedCompletionError({
+      wireFormat: 'openai',
       detail: 'stream ended without its usage chunk; the reply was cut off',
     },);
   }

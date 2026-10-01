@@ -1104,6 +1104,9 @@ Markup quoted in prose,
 a link above all,
 goes in a code span,
 or behind an escaped bracket inside a quotation that spans lines.
+The edit tool writes a line holding only a space as an empty line,
+so after an edit adds TSDoc to a file whose blank TSDoc lines hold one space,
+the blank lines are counted by form and the file's own form restored before staging (ledger M103).
 
 What enforces it:
 `mise run source-scans`,
@@ -1466,6 +1469,9 @@ it was the parser's case-folded key,
 so a label both documents spell `[^Tabby]` read `[^tabby]`;
 and "slice" named the later claim's kind of place,
 so a slice contradicting a definition pair blamed a slice (T8's eighteenth batch).
+`MalformedCompletionError` named the OpenAI-compatible contract for every body,
+though the Anthropic readers throw it too,
+so a failed Charm Hyper call read as a broken OpenAI-shaped body (ledger B90).
 
 The rule:
 a message naming a label,
@@ -1476,9 +1482,14 @@ and names the place each claim it cites was read,
 that claim's own.
 A reader keeps the claim itself beside the key it compares by,
 so the message has the spelling to say.
+An error class shared by several throwers names only what each thrower tells it,
+through a required parameter,
+never a default fixed for the thrower that came first.
 
 What enforces it:
 the relabel cases pin both conflicts whole and a case-folded spelling;
+`MalformedCompletionError` takes its wire format as a required parameter,
+and the Anthropic readers' tests pin the contract they name;
 habit and review elsewhere.
 
 ## Paired marks

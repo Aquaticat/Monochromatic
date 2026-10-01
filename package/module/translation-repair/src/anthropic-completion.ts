@@ -245,7 +245,8 @@ function answerFragmentOf(
 
   if ((typeof value) !== 'string') {
     throw new MalformedCompletionError({
-      detail: `anthropic ${kind} carries no ${field} string`,
+      wireFormat: 'anthropic',
+      detail: `${kind} carries no ${field} string`,
     },);
   }
   return value;
@@ -292,7 +293,8 @@ function foldDelta(
   const { delta, } = frame;
   if (!isJsonRecord(delta,)) {
     throw new MalformedCompletionError({
-      detail: 'anthropic content_block_delta frame carries no delta object',
+      wireFormat: 'anthropic',
+      detail: 'content_block_delta frame carries no delta object',
     },);
   }
 
@@ -529,12 +531,16 @@ export function extractAnthropicCompletion(
 
     if (reading.kind === 'not-json') {
       throw new MalformedCompletionError({
-        detail: 'anthropic stream event is not JSON',
+        wireFormat: 'anthropic',
+        detail: 'stream event is not JSON',
         cause: reading.cause,
       },);
     }
     if (reading.kind === 'not-object')
-      throw new MalformedCompletionError({ detail: 'anthropic stream event is not a JSON object', },);
+      throw new MalformedCompletionError({
+        wireFormat: 'anthropic',
+        detail: 'stream event is not a JSON object',
+      },);
 
     /**
      Parsed event payload.

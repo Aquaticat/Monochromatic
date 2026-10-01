@@ -2,6 +2,7 @@ import type { CompletionUsage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { wholeOpening, } from './code-points.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import type { StreamWireFormat, } from './stream-wire-format.ts';
 
 //region Completion shape
 // Provider protocol reading the streaming clients share. A 200 reply that fails
@@ -25,6 +26,11 @@ import { isJsonRecord, } from './json-guard.ts';
 // SO A MESSAGE HERE STATES ONLY WHAT THIS FILE KNOWS: a status, a detail, an excerpt.
 // A caller that does know which provider answered says so through `summary`, which the
 // two meter endpoints now do because each is bound to one provider by construction.
+//
+// THE CONTRACT A BODY BROKE IS THE READER'S TO NAME (ledger B90). The fix for that live
+// log took the provider's name out and kept "the OpenAI-compatible contract", which the
+// Hyper call it showed did not speak either: it was an Anthropic Messages stream. Every
+// `MalformedCompletionError` now carries the wire format its reader read the body as.
 
 /**
  Most UTF-16 units of the body excerpt embedded in thrown errors,
@@ -106,12 +112,27 @@ export class SyntheticHttpError extends Error {
 }
 
 /**
- Signals a success-status completion body that violates the OpenAI-compatible
- contract; always a provider defect, never a model-content defect.
+ Contract each wire format holds a body to, as a refusal names it.
+ 
+ NAMED BY THE READER THAT REFUSED, never assumed here (ledger B90). The
+ Anthropic readers throw this class too, and a message naming only the
+ OpenAI-compatible contract told a reader holding a failed Hyper call that
+ an OpenAI-shaped body was broken. The keys are the closed set of formats
+ the stream readers declare, never text from a body.
+ */
+const CONTRACT_NAMES: Readonly<Record<StreamWireFormat, string>> = {
+  openai: 'OpenAI-compatible',
+  anthropic: 'Anthropic Messages',
+};
+
+/**
+ Signals a success-status completion body that violates the contract of the
+ wire format it was read as; always a provider defect, never a
+ model-content defect.
  
  @example
  ```ts
- throw new MalformedCompletionError({ detail: 'choices is not an array', },);
+ throw new MalformedCompletionError({ wireFormat: 'openai', detail: 'stream event is not valid JSON', },);
  ```
  */
 export class MalformedCompletionError extends Error {
@@ -123,26 +144,30 @@ export class MalformedCompletionError extends Error {
   /**
    Builds failure naming the violated expectation.
    
+   @param wireFormat - format the refusing reader read the body as, which names the contract
+   
    @param detail - which contract expectation the body violated
    
    @param cause - underlying parse error when JSON itself failed
    
    @example
    ```ts
-   new MalformedCompletionError({ detail: 'body is not valid JSON', cause: error, },);
+   new MalformedCompletionError({ wireFormat: 'anthropic', detail: 'stream event is not JSON', cause: error, },);
    ```
    */
   public constructor(
     {
+      wireFormat,
       detail,
       cause,
     }: {
+      readonly wireFormat: StreamWireFormat;
       readonly detail: string;
       readonly cause?: unknown;
     },
   ) {
     super(
-      `completion body violated the OpenAI-compatible contract: ${detail}`,
+      `completion body violated the ${CONTRACT_NAMES[wireFormat]} contract: ${detail}`,
       // Conditional spread keeps cause absent when none was supplied.
       ...(cause === undefined
         ? []

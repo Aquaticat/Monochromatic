@@ -163,6 +163,7 @@ await describe({
           chatText: async () => {
             providerCalls += 1;
             throw new MalformedCompletionError({
+              wireFormat: 'openai',
               detail: 'completed payload lacked choices',
             },);
           },

@@ -297,12 +297,14 @@ export function requireWholeAnthropicMessage(
 
   if (failure !== undefined) {
     throw new MalformedCompletionError({
-      detail: `anthropic stream carried an error event (${errorTypeOf({ frame: failure, },)})`,
+      wireFormat: 'anthropic',
+      detail: `stream carried an error event (${errorTypeOf({ frame: failure, },)})`,
     },);
   }
   if (!kinds.includes(TERMINATOR,)) {
     throw new MalformedCompletionError({
-      detail: `anthropic stream ended without ${TERMINATOR}`,
+      wireFormat: 'anthropic',
+      detail: `stream ended without ${TERMINATOR}`,
     },);
   }
 }
