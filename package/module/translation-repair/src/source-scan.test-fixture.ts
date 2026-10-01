@@ -11,9 +11,11 @@ import { parseSync, } from 'rolldown/utils';
 //region Source scan
 // What the package-wide guards over this package's own source share (audit
 // area six, ledger B19): the package's TypeScript files as text, each parsed
-// once, and a walk over the syntax tree. `duplicate-bodies.unit.test.ts`,
-// `dead-code.unit.test.ts` and `unused-imports.unit.test.ts` read the source
-// through it.
+// once, a walk over the syntax tree, and the reading of names and wrapped
+// expressions the scans share. Every scan that parses the source parses it
+// here (scans that read the text alone, such as `log-root-scan.unit.test.ts`,
+// list the files themselves); the walk and name helpers came here with ledger
+// B77, and the scans written before it still carry copies of their own.
 
 /**
  One TypeScript file under the package's `src`.
@@ -102,6 +104,102 @@ export function childNodes({ node, }: { readonly node: TreeNode; },): readonly T
       return Array.isArray(value,) ? value : [value,];
     },)
     .filter(isTreeNode,);
+}
+
+/**
+ Every node under a root, the root included, walked with a stack.
+
+ @param root - node to walk from
+
+ @returns Nodes in no particular order
+
+ @example
+ ```ts
+ const nodes = nodesUnder({ root: program, },);
+ ```
+ */
+export function nodesUnder({ root, }: { readonly root: TreeNode; },): readonly TreeNode[] {
+  /**
+   Nodes visited.
+   */
+  const visited: TreeNode[] = [];
+
+  /**
+   Nodes still to visit.
+   */
+  const pending: TreeNode[] = [root,];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    visited.push(node,);
+    pending.push(...childNodes({ node, },),);
+  }
+  return visited;
+}
+
+/**
+ Name an identifier node carries.
+
+ @param node - node read, of any kind or none
+
+ @returns Its name, empty for any other node
+
+ @example
+ ```ts
+ const name = identifierName({ node: call.callee, },);
+ ```
+ */
+export function identifierName({ node, }: { readonly node: unknown; },): string {
+  if ((!isTreeNode(node,)) || (node.type !== 'Identifier'))
+    return '';
+  /**
+   The node's name field.
+   */
+  const { name, } = node;
+  return ((typeof name) === 'string') ? name : '';
+}
+
+/**
+ Node kinds that wrap one expression without changing the value it holds.
+ */
+const WRAPPER_KINDS: ReadonlySet<string> = new Set([
+  'ChainExpression',
+  'ParenthesizedExpression',
+  'TSAsExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+],);
+
+/**
+ The wrappers around an expression, outermost first, and what they hold.
+
+ @param node - expression read
+
+ @returns Each wrapper in turn, and the innermost expression, the node itself
+ when it is no wrapper
+
+ @example
+ ```ts
+ const { wrappers, inner, } = unwrapped({ node: declarator.init, },); // inner is the object of ({ tabby: 1 }) as const
+ ```
+ */
+export function unwrapped({ node, }: { readonly node: unknown; },): {
+  readonly wrappers: readonly TreeNode[];
+  readonly inner: unknown;
+} {
+  /**
+   Wrappers passed so far.
+   */
+  const wrappers: TreeNode[] = [];
+  for (let inner: unknown = node; ;) {
+    if ((!isTreeNode(inner,)) || (!WRAPPER_KINDS.has(inner.type,))) {
+      return {
+        wrappers,
+        inner,
+      };
+    }
+    wrappers.push(inner,);
+    inner = inner.expression;
+  }
 }
 
 /**
