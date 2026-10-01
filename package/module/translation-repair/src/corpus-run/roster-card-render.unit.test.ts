@@ -226,6 +226,32 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES NOT_LISTED a string of digits past the range a double holds, which `Number` reads as '
+        + 'Infinity though every character is a digit (ledger B73)',
+      fn: async () => {
+        expect(cardFieldsFrom({
+          provider: 'synthetic',
+          row: {
+            id: 'hf:cat/Mittens-9',
+            input_modalities: ['text',],
+            context_length: `1${'0'.repeat(400,)}`,
+            max_output_length: 8_000,
+            pricing: {
+              prompt: `$1${'0'.repeat(400,)}`,
+              completion: '$0.000015',
+            },
+          },
+        },),).toEqual({
+          readsImages: false,
+          maxOutputLength: 8_000,
+          contextLength: NOT_LISTED,
+          promptPrice: NOT_LISTED,
+          completionPrice: 0.000015,
+        },);
+      },
+    },),
+
+    it({
       name: 'READS a string field only as a decimal written in digits: a second point, a point with no digit on '
         + 'one side and an exponent stay NOT_LISTED, while whole digits and a decimal with digits on both '
         + 'sides read as written (ledger B73)',
