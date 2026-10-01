@@ -43,6 +43,49 @@ SHA-256 `de44e07774252c3268bc893c6493bf02c539ef95243255e3edb107e50c010185`.
 The local fixture and retained result live in `contract/diagnostic/parallel-tool-batch/`
 of the separate qualification repository.
 
+## Real scheduler reproduction and private fix prototype
+
+A second reproduction used installed pi-agent-core 1.0.0's actual `runAgentLoop`,
+a scripted assistant response,
+the same built auto-mode extension,
+an injected evaluator,
+and inert tools.
+`proc_2172` exited 1 at the expected assertion:
+two evaluations instead of one.
+Both low-level hook invocations had access to the complete two-call assistant manifest.
+No provider call or real read operation occurred.
+
+The private `batch-admission.mjs` prototype captures immutable member identities and serialized inputs,
+shares one in-flight assessment,
+and never waits inside the first hook for sibling hooks to arrive.
+A changed,
+unknown,
+or reused member cancels the group.
+It is not installed into production auto-mode.
+
+`proc_46b7` exited 0 after 11 controls through the real 1.0.0 scheduler,
+plus duplicate-identity rejection:
+
+- Single write and single Bash fixtures each execute their inert tool after one assessment.
+- A parallel positive group receives one assessment before both inert executions.
+- The combined write-plus-Bash fixture is blocked despite both singleton positives.
+- Whole-group denial executes no members.
+- Changed second-member input cancels the first member before it can execute.
+- Cancellation,
+  stale context,
+  assessment failure,
+  malformed decision,
+  and an unknown second member execute nothing.
+
+The tested host-loop SHA-256 is
+`65def8c7f3fa01e38fe05467520efc8673c22ea8197833a3b04b29c8a60cb1e3`.
+These controls do not qualify nested grouping,
+post-guard input mutation,
+production extension wiring,
+human approval,
+or provider calls.
+No `AgentSession` was constructed.
+
 ## Deciding source and integration gap
 
 `package/pi-plugin/auto-mode/src/index.ts:478` copies `currentTurnBatch`
@@ -104,9 +147,8 @@ The orchestration seam must supply the actual complete parallel set.
 
 ## Remaining verification
 
-- Make the callback reproduction pass with one complete batch assessment.
-- Exercise the real scheduler,
-  including its serial preparation and parallel execution.
+- Integrate the qualified batch-admission seam into the real extension rather than only the private prototype.
+- Preserve the demonstrated real-scheduler serial preparation and parallel execution behavior.
 - Verify zero execution on group denial,
   changed inputs,
   cancellation,
@@ -118,6 +160,7 @@ The orchestration seam must supply the actual complete parallel set.
   and unrelated nested groups isolated.
 - Verify one group-level prompt and shared model-call accounting.
 
-No fix is claimed yet.
+A finite private fix prototype passed;
+a deployed extension fix is not claimed.
 The native-manager qualification remains separate and has not dispatched its actual SDK run.
 The new grouping contract must be incorporated into the eventual real-consumer integration.
