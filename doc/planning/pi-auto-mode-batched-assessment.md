@@ -115,19 +115,27 @@ or grant creation to the model.
 
 Calls two and three are adaptive,
 not fixed follow-up checklists.
-Construct their question sets and wording from the actual action,
+All permitted question wordings are pre-baked.
+Select the relevant questions from that predefined library using the actual action,
 governing instructions,
 current evidence,
 and preceding answers.
+Selection is adaptive;
+wording is not generated or rewritten at runtime.
 A later batch can concern a newly identified semantic effect,
 resource,
 condition,
 or unresolved relationship.
 Different assessments should ask different follow-ups when their remaining uncertainty differs.
 
-Qualify the question-construction and selection process and the meanings of its axioms,
-not an exhaustive bank of every future literal question or a fixed answer tree.
-Dynamic questions remain narrow claims that code can consume;
+Qualify the pre-baked question library,
+its axiom meanings,
+and the adaptive selection process.
+Different rounds need not select identical subsets,
+and no exhaustive hardcoded answer tree is required.
+Where a predefined template has input-reference slots,
+code binds the declared source or effect identifiers without inventing new semantic wording.
+Questions remain narrow claims that code can consume;
 they are not disguised final-verdict requests.
 Do not send a first-round answer as an instruction telling the model what to conclude next.
 Repeated paraphrases,
@@ -196,7 +204,7 @@ or renormalize permission and prohibition into complements.
 not a requirement to fill a batch.
 Include the relevant rule dependencies and stop planning unnecessary questions.
 If they exceed a call's capacity,
-construct the remaining relevant batch dynamically while slots and time remain,
+select the remaining relevant pre-baked questions while slots and time remain,
 or defer to manual review;
 never silently drop required prohibition or coverage checks.
 
@@ -232,14 +240,17 @@ not automatically repeat the old request-versus-prose two-call layout.
 For a finite qualification experiment,
 freeze its input cases,
 independent references,
-question-construction procedure,
+complete pre-baked question library,
 selection criteria,
 bands,
 limits,
 and stop conditions before model calls.
-Generated follow-up wording and selected questions can depend on observed answers;
-retain those realized questions with their selection reasons.
-Freezing an experiment's procedure does not freeze every eventual decision's question list.
+Follow-up question selection can depend on observed answers;
+retain selected question IDs,
+library version,
+declared input bindings,
+and selection reasons.
+A frozen wording library does not require every eventual decision to ask the same questions.
 Keep completed Drex 1.0 and Jev experiments historical.
 No historical threshold is adopted for the new model or format.
 
@@ -270,7 +281,10 @@ without editing protected `AGENTS.md`:
 settled provider consent is not a recurring gate;
 batch independent work and create evidence receipts at meaningful acceptance or irreversible boundaries,
 not every intermediate edit.
-Qualify adaptive follow-up construction rather than requiring a fixed question list or exhaustive question tree.
+Keep all permitted question wordings pre-baked;
+adapt which questions are selected,
+not their semantic wording.
+Do not confuse a fixed wording library with a fixed per-call checklist.
 
 [questions]: https://drex.nace.ai/docs/guides/questions
 [models]: https://drex.nace.ai/docs/reference/models
