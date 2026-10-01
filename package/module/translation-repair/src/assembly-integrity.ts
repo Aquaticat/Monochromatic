@@ -466,10 +466,15 @@ export function guardFootnoteAssembly(
           : [];
         for (const step of advancing) {
           culprits.add(step.sliceIndex,);
+          /**
+           What reverting it does to the strict parse, offsets on the page as
+           assembled this round.
+           */
+          const effect = step.cleared
+            ? `clears the strict-parse refusal at offset ${String(step.from,)}`
+            : `moves the first strict-parse refusal from offset ${String(step.from,)} to ${String(step.to,)}`;
           findings.push(
-            `assembly-structure-advancing-withdrawal slice ${String(step.sliceIndex,)}: reverting this replacement moves the first strict-parse refusal from offset ${
-              String(step.from,)
-            } to ${String(step.to,)}`,
+            `assembly-structure-advancing-withdrawal slice ${String(step.sliceIndex,)}: reverting this replacement ${effect}`,
           );
         }
       }
