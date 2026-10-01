@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 //region Assembly repetition span
 // GROWING WINDOWS INTO THE SPAN THEY BELONG TO, which is the step
 // `assembly-repetition.ts` did not have, at a measured cost.
@@ -233,6 +235,47 @@ function accountedForBy(
 }
 
 /**
+ Every place the window at one offset sits.
+
+ AN INDEX COVERS EVERY OFFSET IT IS ASKED FOR here: it is built by
+ {@link indexWindows} over the same words and length the walk reads, which
+ indexes every offset up to the last a window fits at, and the walk never
+ passes that offset. A miss is a caller handing in another list's index,
+ never a window that occurs nowhere.
+
+ @param index - windows of one length over the walked words
+
+ @param offset - window offset, at most the last a window fits at
+
+ @returns Offsets the same phrase occupies, ascending
+
+ @example
+ ```ts
+ const places = occurrencesAt({ index, offset: 0, },);
+ ```
+ */
+function occurrencesAt(
+  {
+    index,
+    offset,
+  }: {
+    readonly index: WindowIndex;
+    readonly offset: number;
+  },
+): readonly number[] {
+  /**
+   What the window at that offset spells.
+   */
+  const phrase = nonNullishOrThrow(index.byOffset[offset],);
+  /**
+   Offsets that phrase occupies.
+   */
+  const places = index.byPhrase
+    .get(phrase,);
+  return nonNullishOrThrow(places,);
+}
+
+/**
  Grows admitted windows into the maximal passages they belong to.
  
  REPORTS NOTHING ALREADY ACCOUNTED FOR, which is one rule doing two jobs and
@@ -321,12 +364,14 @@ export function grownSpans(
     while ((end < last)
       && admitted.has(end + 1,)
       && advancesByOne({
-        earlier: index.byPhrase
-          .get(index.byOffset[end] ?? '',)
-          ?? [],
-        later: index.byPhrase
-          .get(index.byOffset[end + 1] ?? '',)
-          ?? [],
+        earlier: occurrencesAt({
+          index,
+          offset: end,
+        },),
+        later: occurrencesAt({
+          index,
+          offset: end + 1,
+        },),
       },))
       end += 1;
 
@@ -344,9 +389,10 @@ export function grownSpans(
      Every place this passage sits, which the merge test has kept equal to
      the places its first window sits.
      */
-    const occurrences = index.byPhrase
-      .get(index.byOffset[at] ?? '',)
-      ?? [];
+    const occurrences = occurrencesAt({
+      index,
+      offset: at,
+    },);
 
     /**
      Words the passage spans.

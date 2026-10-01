@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { assertReplacementsChange, } from './assembly-invariant.ts';
 import {
   advancingStructuralWithdrawal,
@@ -108,12 +110,21 @@ function suspectsFor(
 ): readonly number[] {
   return replacements
     .filter(function changedIt(replacement,): boolean {
+      // EVERY STANDING REPLACEMENT NAMES A PREPARED SLICE: the guard refuses one
+      // that does not (`assertReplacementsChange`) before building this map
+      // from the same slices, so a miss is a broken invariant, never a slice
+      // with no text.
       /**
-       Mentions counted in the archive's own text for this slice.
+       Archive's own text for this slice.
        */
-      const beforeCounts = footnoteIdentifiers({
-        text: incumbentBySlice.get(String(replacement.sliceIndex,),) ?? '',
-      },);
+      const incumbentText = nonNullishOrThrow(
+        incumbentBySlice.get(String(replacement.sliceIndex,),),
+      );
+
+      /**
+       Mentions counted in it.
+       */
+      const beforeCounts = footnoteIdentifiers({ text: incumbentText, },);
 
       /**
        Mentions counted in the accepted text.
@@ -205,8 +216,16 @@ function withoutOwners(
    Suspects whose original never defines the note.
    */
   const strangers = suspects.filter(function ownsNothing(sliceIndex,): boolean {
+    // A suspect is a standing replacement's slice, which the guard checked
+    // against the prepared slices this map was built from.
+    /**
+     Original text of the suspect's slice.
+     */
+    const sourceText = nonNullishOrThrow(
+      sourceBySlice.get(String(sliceIndex,),),
+    );
     return !definesIdentifier({
-      text: sourceBySlice.get(String(sliceIndex,),) ?? '',
+      text: sourceText,
       identifier: finding.identifier,
     },);
   },);
