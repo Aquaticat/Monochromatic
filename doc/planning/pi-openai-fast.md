@@ -97,16 +97,18 @@ The initial recommendation's word "compatible" is superseded:
 there is no manually curated priority-capability gate.
 Registering a companion does not authorize scope widening or establish backend support.
 
-### Visible selection feedback question
+### Accepted selection-feedback answer
 
-Should the fast alias name be the only additional selection indicator,
- or should a separate footer status say that priority was requested?
+The user answered Q6:
+"Don't need any."
 
-Recommendation:
-use the alias name and request diagnostics without adding a footer widget.
-A separate status can make request intent more explicit,
- but consumes footer space and does not by itself prove which tier the backend served.
-Actual served-tier visibility remains an unsettled factual prerequisite.
+Do not add selection indicators,
+ footer widgets,
+ request-status notifications,
+ or a served-tier reporting UI.
+The virtual models still need distinct selectable identities,
+ but no additional feedback feature is requested.
+Normal internal logging requirements remain in effect.
 
 ## Local selection evidence
 
