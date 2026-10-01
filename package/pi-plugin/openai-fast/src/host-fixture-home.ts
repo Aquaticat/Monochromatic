@@ -1,62 +1,113 @@
 /**
- * Disposable workspace and agent storage isolated from every real pi home.
- *
- * @module
+ Disposable workspace and agent storage isolated from every real pi home.
+ 
+ @module
  */
-import { mkdir, mkdtemp, rm, } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 //region Workspace ownership: remove only test-created storage.
 
-/** Paths and cleanup authority for one independently owned fixture home. */
-export class FixtureHome {
-  /** Root containing only files created by this fixture. */
+/**
+ Paths and cleanup authority for one independently owned fixture home.
+ */
+export type FixtureHome = {
+  /**
+   Root containing only files created by this fixture.
+   */
   readonly root: string;
-  /** Synthetic project directory given to createAgentSession. */
+  /**
+   Synthetic project directory given to createAgentSession.
+   */
   readonly cwd: string;
-  /** Disposable agent configuration directory, never the actual pi home. */
+  /**
+   Disposable agent configuration directory, never the actual pi home.
+   */
   readonly agentDir: string;
-  /** Optional synthetic models.json consumed by the real host. */
+  /**
+   Optional synthetic models.json consumed by the real host.
+   */
   readonly modelsPath: string;
-  /** Disposable cached catalog used to test cached-only discovery. */
+  /**
+   Disposable cached catalog used to test cached-only discovery.
+   */
   readonly modelsStorePath: string;
-  /** Session persistence directory for real resume and branch tests. */
+  /**
+   Session persistence directory for real resume and branch tests.
+   */
   readonly sessionDir: string;
 
   /**
-   * Derive storage paths within the owned temporary root.
-   *
-   * @param root - newly created private fixture directory
+   Delete only this fixture's temporary root after dependent sessions close.
    */
-  constructor(root: string,) {
-    this.root = root;
-    this.cwd = join(root, 'workspace',);
-    this.agentDir = join(root, 'agent',);
-    this.modelsPath = join(this.agentDir, 'models.json',);
-    this.modelsStorePath = join(this.agentDir, 'models-store.json',);
-    this.sessionDir = join(this.agentDir, 'sessions',);
-  }
-
-  /** Delete only this fixture's temporary root after dependent sessions close. */
-  async [Symbol.asyncDispose](): Promise<void> {
-    await rm(this.root, { recursive: true, force: true, },);
-  }
-}
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
+};
 
 /**
- * Create independent workspace, config, cache, and session storage paths.
- *
- * @returns asynchronously disposable home for native-host scenarios
- * @example
- * ```ts
- * await using home = await fixtureHome();
- * ```
+ Create independent workspace, config, cache, and session storage paths.
+ 
+ @returns asynchronously disposable home for native-host scenarios
+ 
+ @example
+ ```ts
+ await using home = await fixtureHome();
+ ```
  */
 export async function fixtureHome(): Promise<FixtureHome> {
-  /** Newly created storage is owned immediately, even if initialization fails. */
-  const home = new FixtureHome(await mkdtemp(join(tmpdir(), 'openai-fast-host-',),),);
-  /** Ownership transfers only after both directories initialize successfully. */
+  /**
+   Newly created storage is owned immediately, even if initialization fails.
+   */
+  const root = await mkdtemp(join(
+    tmpdir(),
+    'openai-fast-host-',
+  ),);
+  /**
+   Every derived storage path remains inside the owned temporary root.
+   */
+  const agentDir = join(
+    root,
+    'agent',
+  );
+  /**
+   Frozen resource retains cleanup authority without mutable path fields.
+   */
+  const home: FixtureHome = Object.freeze({
+    root,
+    cwd: join(
+      root,
+      'workspace',
+    ),
+    agentDir,
+    modelsPath: join(
+      agentDir,
+      'models.json',
+    ),
+    modelsStorePath: join(
+      agentDir,
+      'models-store.json',
+    ),
+    sessionDir: join(
+      agentDir,
+      'sessions',
+    ),
+    [Symbol.asyncDispose]: async function dispose(): Promise<void> {
+      await rm(
+        root,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  },);
+  /**
+   Ownership transfers only after both directories initialize successfully.
+   */
   await using initialization = {
     transferred: false,
     [Symbol.asyncDispose]: async function dispose(): Promise<void> {
@@ -64,7 +115,10 @@ export async function fixtureHome(): Promise<FixtureHome> {
         await home[Symbol.asyncDispose]();
     },
   };
-  await Promise.all([mkdir(home.cwd,), mkdir(home.agentDir,),],);
+  await Promise.all([
+    mkdir(home.cwd,),
+    mkdir(home.agentDir,),
+  ],);
   initialization.transferred = true;
   return home;
 }

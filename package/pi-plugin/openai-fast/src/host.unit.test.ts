@@ -1,7 +1,7 @@
 /**
- * Actual native host selection and pre-session dispatch controls.
- *
- * @module
+ Actual native host selection and pre-session dispatch controls.
+ 
+ @module
  */
 import type { Api, Model, } from '@earendil-works/pi-ai';
 import type { ModelRuntime, } from '@earendil-works/pi-coding-agent';
@@ -37,21 +37,50 @@ await describe({ name: registerOpenAIFast.name, children: [
     expect(host.ctx.scopedModels,).toHaveLength(1,);
     expect(host.ctx.scopedModels[0],).toMatchObject({ model: host.base, thinkingLevel: 'high', },);
     expect(host.pi.getCommands(),).toEqual([],);
-    expect(host.pi.getAllTools().filter(function nonBuiltin(tool) { return tool.sourceInfo.source !== 'builtin'; },),).toEqual([],);
-    /** Synchronous source catalog exposes only genuine virtual user selections. */
-    const virtuals = host.runtime.getModels(FAST_PROVIDER,);
-    expect(virtuals.map(function modelId(model: ForeignBorrowed<Model<Api>>) { return model.id; },),).toEqual(source.state.models.map(function sourceId(model: ForeignBorrowed<Model<Api>>) { return model.id; },),);
-    expect(virtuals.every(function virtualModel(model: ForeignBorrowed<Model<Api>>) { return model.api === 'pi-virtual'; },),).toBe(true,);
+    expect(host.pi.getAllTools().filter(function nonBuiltin(tool) {
+      return tool.sourceInfo.source !== 'builtin';
+    },),).toEqual([],);
+    /** Complete catalog contains native virtual selections and their physical routing targets. */
+    const catalog = host.runtime.getModels(FAST_PROVIDER,);
+    /** Selector entries are distinguished by the host's actual virtual API marker. */
+    const virtuals = catalog.filter(function selectedVirtual(model: ForeignBorrowed<Model<Api>>) {
+      return model.api === 'pi-virtual';
+    },);
+    /** Target inventory remains exact even though targets are hidden from filtered availability. */
+    const targets = catalog.filter(function targetModel(model: ForeignBorrowed<Model<Api>>) {
+      return isPriorityTarget(model,);
+    },);
+    expect(targets.map(function targetId(model: ForeignBorrowed<Model<Api>>) {
+      return model.id;
+    },),).toEqual(source.state.models.map(function expectedTarget(model: ForeignBorrowed<Model<Api>>) {
+      return `${PRIORITY_TARGET_PREFIX}${model.id}`;
+    },),);
+    expect(catalog,).toHaveLength(virtuals.length + targets.length,);
+    expect(virtuals.map(function modelId(model: ForeignBorrowed<Model<Api>>) {
+      return model.id;
+    },),).toEqual(source.state.models.map(function sourceId(model: ForeignBorrowed<Model<Api>>) {
+      return model.id;
+    },),);
+    expect(virtuals.every(function virtualModel(model: ForeignBorrowed<Model<Api>>) {
+      return model.api === 'pi-virtual';
+    },),).toBe(true,);
     expect(host.runtime.getProvider(CODEX_PROVIDER,),).toBe(host.original,);
     expect(host.runtime.getRegisteredNativeProvider(CODEX_PROVIDER,),).toBe(source.provider,);
     /** Native availability must include virtuals but hide every physical target. */
     const available = await host.runtime.getAvailable(FAST_PROVIDER,);
-    expect(available.some(isPriorityTarget,),).toBe(false,);
-    expect(host.ctx.modelRegistry.getAvailable().some(isPriorityTarget,),).toBe(false,);
-    expect((await host.runtime.getAllAvailable(FAST_PROVIDER,)).some(function physicalTarget(model: ForeignBorrowed<{ readonly id: string; }>) { return isPriorityTarget(model,); },),).toBe(false,);
-    for (const base of source.state.models) {
+    expect(available.some(function availableTarget(model: ForeignBorrowed<Model<Api>>) {
+      return isPriorityTarget(model,);
+    },),).toBe(false,);
+    expect(host.ctx.modelRegistry.getAvailable().some(function registryTarget(model: ForeignBorrowed<Model<Api>>) {
+      return isPriorityTarget(model,);
+    },),).toBe(false,);
+    expect((await host.runtime.getAllAvailable(FAST_PROVIDER,)).some(function physicalTarget(model: ForeignBorrowed<{
+      readonly id: string;
+    }>) { return isPriorityTarget(model,); },),).toBe(false,);
+    /** Route work retains fixture ownership until every sibling settles, even on assertion failure. */
+    const routes = source.state.models.map(async function verifyBaseRoute(base: ForeignBorrowed<Model<Api>>) {
       /** Hidden target preserves native capabilities without original model headers. */
-      const target = host.ctx.modelRegistry.find(FAST_PROVIDER, `${PRIORITY_TARGET_PREFIX}${base.id}`,);
+      const target = host.ctx.modelRegistry.getModelOfType('chat', FAST_PROVIDER, `${PRIORITY_TARGET_PREFIX}${base.id}`,);
       expect(target,).toMatchObject({ api: CODEX_API, provider: FAST_PROVIDER, contextWindow: base.contextWindow, },);
       expect(target,).not.toHaveProperty('headers',);
       /** Genuine virtual entry routes to exactly its own hidden target. */
@@ -61,6 +90,15 @@ await describe({ name: registerOpenAIFast.name, children: [
       const route = await host.runtime.resolveModel(companion, [], { reason: 'direct', thinkingLevel: 'high', },);
       expect(route.model,).toEqual(target,);
       expect(route.thinkingLevel,).toBe(base.reasoning ? 'high' : 'off',);
+    },);
+    {
+      /** Pending siblings are drained before host and home disposal if any route fails. */
+      await using routeCompletion = {
+        [Symbol.asyncDispose]: async function dispose(): Promise<void> {
+          await Promise.allSettled(routes,);
+        },
+      };
+      await Promise.all(routes,);
     }
     expect(host.source.state.calls,).toHaveLength(0,);
   }, },),

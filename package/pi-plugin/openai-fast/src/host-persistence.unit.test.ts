@@ -1,7 +1,7 @@
 /**
- * Actual JSONL resume and branch restoration retain virtual fast selection.
- *
- * @module
+ Actual JSONL resume and branch restoration retain virtual fast selection.
+ 
+ @module
  */
 import { SessionManager, } from '@earendil-works/pi-coding-agent';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -27,9 +27,11 @@ await describe({ name: registerOpenAIFast.name, children: [
     expect(host.session.model?.api,).toBe('pi-virtual',);
     /** Real JSONL file is reopened through the installed SDK, not a simulated history. */
     const file = host.manager.getSessionFile();
-    if (file === undefined || branchPoint === null)
+    if ((file === undefined) || (branchPoint === null))
       throw new Error('Actual host did not persist the disposable session.',);
-    expect(host.manager.getBranch().filter(function modelChange(entry) { return entry.type === 'model_change'; },).at(-1),).toMatchObject({ provider: FAST_PROVIDER, modelId: host.base.id, },);
+    expect(host.manager.getBranch().filter(function modelChange(entry) {
+      return entry.type === 'model_change';
+    },).at(-1),).toMatchObject({ provider: FAST_PROVIDER, modelId: host.base.id, },);
     host.session.dispose();
     /** Native restoration must resolve the persisted virtual entry without fallback. */
     const resumed = await host.resume(SessionManager.open(file, home.sessionDir,),);

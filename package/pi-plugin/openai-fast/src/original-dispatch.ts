@@ -125,7 +125,9 @@ export function createOriginalDispatch({
           id,
         );
     return provider.getModels()
-      .find(function matchingModel(model: ForeignHostCapability<Model<Api>>,) { return model.id === id; },);
+      .find(function matchingModel(model: ForeignHostCapability<Model<Api>>,) {
+        return model.id === id;
+      },);
   }
 
   /**

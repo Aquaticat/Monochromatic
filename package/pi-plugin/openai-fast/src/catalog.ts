@@ -32,7 +32,9 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.catalog', },);
  const provider = await loadCodexProvider();
  ```
  */
-export async function loadCodexProvider({ modelsPath, }: { readonly modelsPath?: string; } = {},): Promise<Provider> {
+export async function loadCodexProvider({
+  modelsPath,
+}: { readonly modelsPath?: string; } = {},): Promise<Provider> {
   /**
    Catalog logger excludes credential and header values.
    */

@@ -124,7 +124,9 @@ export function createPriorityProvider({
      Virtual routers cannot be routed to as physical bases.
      */
     const models = source.getModels()
-      .filter(function physicalModel(model: ForeignBorrowed<Model<Api>>,) { return model.api !== 'pi-virtual'; },);
+      .filter(function physicalModel(model: ForeignBorrowed<Model<Api>>,) {
+        return model.api !== 'pi-virtual';
+      },);
     onCatalog(models,);
     ml.trace(`read ${models.length} original Codex models`,);
     return models;
@@ -137,7 +139,9 @@ export function createPriorityProvider({
    */
   function getModels(): readonly Model<Api>[] {
     return originalModels()
-      .map(function createTarget(model: ForeignBorrowed<Model<Api>>,) { return priorityTarget(model,); },);
+      .map(function createTarget(model: ForeignBorrowed<Model<Api>>,) {
+        return priorityTarget(model,);
+      },);
   }
 
   l.debug('creating keyless priority adapter',);

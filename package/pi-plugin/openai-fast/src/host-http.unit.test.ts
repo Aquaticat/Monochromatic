@@ -1,7 +1,7 @@
 /**
- * Native HTTP header precedence, canonical history, and tool continuation.
- *
- * @module
+ Native HTTP header precedence, canonical history, and tool continuation.
+ 
+ @module
  */
 import { Type, } from '@earendil-works/pi-ai';
 import type { AgentSession, } from '@earendil-works/pi-coding-agent';
@@ -12,10 +12,24 @@ import { fixtureHttp, nativeResponse, } from './host-fixture-http.ts';
 import { fixtureContext, } from './host-fixture-model.ts';
 import { HOST_TOKEN, } from './host-fixture-provider.ts';
 import { fixtureHome, fixtureHost, requireCompanion, } from './host-fixture-session.ts';
+import { fixtureRuntime, } from './host-fixture-runtime.ts';
+import { fixtureProvider, } from './host-fixture-provider.ts';
 
 //region Native HTTP: original headers and history survive live registry dispatch.
 
 await describe({ name: registerOpenAIFast.name, children: [
+  it({ name: 'positive control recomposes configured provider wrappers without the fast extension', fn: async function verifyNativeWrapperIdentity() {
+    /** Control has disposable configuration and no fast registrations. */
+    await using home = await fixtureHome();
+    /** Registered native identity remains stable across host-owned composition. */
+    const source = fixtureProvider();
+    /** Native runtime alone applies provider/model configuration. */
+    const { runtime, effective, } = await fixtureRuntime({ home, source, expired: false, configured: true, },);
+    await runtime.refresh({ allowNetwork: false, },);
+    expect(runtime.getProvider(CODEX_PROVIDER,),).not.toBe(effective,);
+    expect(runtime.getRegisteredNativeProvider(CODEX_PROVIDER,),).toBe(source.provider,);
+    expect(runtime.getRegisteredNativeProvider(FAST_PROVIDER,),).toBeUndefined();
+  }, },),
   it({ name: 'leaves normal HTTP unchanged and requests priority with original ID, high/xhigh, and configured headers', fn: async function verifyNativeHttp() {
     /** Native requests use only disposable model configuration and sessions. */
     await using home = await fixtureHome();
@@ -34,7 +48,11 @@ await describe({ name: registerOpenAIFast.name, children: [
     await host.session.prompt('Fast native request with high thinking.',);
     host.session.setThinkingLevel('xhigh',);
     await host.session.prompt('Fast native request with xhigh thinking.',);
-    expect(host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) { return message.role === 'assistant'; },).map(function nativeError(message) { return message.errorMessage; },),).toEqual([undefined, undefined, undefined,],);
+    expect(host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) {
+      return message.role === 'assistant';
+    },).map(function nativeError(message) {
+      return message.errorMessage;
+    },),).toEqual([undefined, undefined, undefined,],);
     expect(http.requests,).toHaveLength(3,);
     expect(http.requests[0]?.payload,).not.toHaveProperty('service_tier',);
     expect(http.requests[0]?.payload,).toHaveProperty('model', host.base.id,);
@@ -52,11 +70,15 @@ await describe({ name: registerOpenAIFast.name, children: [
       expect(http.source.state.calls[index]?.model,).toMatchObject({ id: host.base.id, contextWindow: 333_333, maxTokens: 16_384, },);
     }
     /** Actual host history must record original native identity for every reply. */
-    const assistants = host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) { return message.role === 'assistant'; },);
+    const assistants = host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) {
+      return message.role === 'assistant';
+    },);
     expect(assistants,).toHaveLength(3,);
     for (const assistant of assistants)
       expect(assistant,).toMatchObject({ model: host.base.id, provider: CODEX_PROVIDER, api: CODEX_API, stopReason: 'stop', },);
-    expect(assistants.map(function thinkingLevel(message) { return message.thinkingLevel; },),).toEqual(['high', 'high', 'xhigh',],);
+    expect(assistants.map(function thinkingLevel(message) {
+      return message.thinkingLevel;
+    },),).toEqual(['high', 'high', 'xhigh',],);
     expect(host.session.getLastAssistantText(),).toBe('Native fixture answer.',);
     expect(host.session.model,).toMatchObject({ api: 'pi-virtual', provider: FAST_PROVIDER, id: host.base.id, },);
     expect(host.settings.getSettings(),).toEqual(before,);
@@ -69,13 +91,16 @@ await describe({ name: registerOpenAIFast.name, children: [
     expect(http.requests[3]?.headers.get('X-Shared',),).toBe('explicit-caller-value',);
     expect(http.requests[3]?.headers.get('x-config-model',),).toBe('original-model-only',);
     expect(http.requests[3]?.payload,).toMatchObject({ model: host.base.id, service_tier: 'priority', },);
-    expect(host.runtime.getProvider(CODEX_PROVIDER,),).toBe(host.original,);
+    expect(host.runtime.getRegisteredNativeProvider(CODEX_PROVIDER,),).toBe(http.source.provider,);
+    expect(host.runtime.getProvider(CODEX_PROVIDER,),).toMatchObject({ id: CODEX_PROVIDER, name: host.original.name, baseUrl: host.original.baseUrl, },);
   }, },),
   it({ name: 'routes tool followups through the same virtual selection and priority transport', fn: async function verifyToolContinuation() {
     /** Tool registration and prompts use only independently disposable host storage. */
     await using home = await fixtureHome();
     /** Native parser receives a real tool-use packet followed by a text completion. */
-    const http = fixtureHttp({ responses: [function toolResponse() { return nativeResponse({ tool: true, },); }, nativeResponse,], },);
+    const http = fixtureHttp({ responses: [function toolResponse() {
+      return nativeResponse({ tool: true, },);
+    }, nativeResponse,], },);
     /** Actual host performs the tool loop through the registered virtual selection. */
     using host = await fixtureHost({ home, source: http.source, },);
     /** Execution count belongs only to this synthetic no-side-effect tool. */
@@ -88,20 +113,28 @@ await describe({ name: registerOpenAIFast.name, children: [
     host.pi.setActiveTools(['fixture_tool',],);
     await host.session.setModel(requireCompanion({ runtime: host.runtime, id: host.base.id, },),);
     await host.session.prompt('Use the synthetic tool.',);
-    expect(host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) { return message.role === 'assistant'; },).map(function nativeError(message) { return message.errorMessage; },),).toEqual([undefined, undefined,],);
+    expect(host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) {
+      return message.role === 'assistant';
+    },).map(function nativeError(message) {
+      return message.errorMessage;
+    },),).toEqual([undefined, undefined,],);
     expect(toolState.executed,).toBe(1,);
     expect(http.requests,).toHaveLength(2,);
     for (const request of http.requests)
       expect(request.payload,).toMatchObject({ model: host.base.id, service_tier: 'priority', },);
     expect(http.requests[1]?.payload,).toHaveProperty('input',);
     expect(http.requests[1]?.payload,).toSatisfy(function includesNativeToolOutput(value) {
-      return typeof value === 'object' && value !== null && 'input' in value
+      return ((typeof value) === 'object') && (value !== null) && ('input' in value)
         && Array.isArray(value.input,) && value.input.some(function toolOutput(item: unknown) {
-          return typeof item === 'object' && item !== null && 'type' in item && 'output' in item
-            && item.type === 'function_call_output' && item.output === 'Synthetic tool output.';
+          return ((typeof item) === 'object') && (item !== null) && ('type' in item) && ('output' in item)
+            && (item.type === 'function_call_output') && (item.output === 'Synthetic tool output.');
         },);
     },);
-    expect(host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) { return message.role === 'assistant'; },).map(function stopReason(message) { return message.stopReason; },),).toEqual(['toolUse', 'stop',],);
+    expect(host.session.messages.filter(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) {
+      return message.role === 'assistant';
+    },).map(function stopReason(message) {
+      return message.stopReason;
+    },),).toEqual(['toolUse', 'stop',],);
     expect(host.session.model?.api,).toBe('pi-virtual',);
     expect(host.session.getLastAssistantText(),).toBe('Native fixture answer.',);
   }, },),

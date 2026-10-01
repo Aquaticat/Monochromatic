@@ -1,9 +1,9 @@
 /**
- * Native host failure, overflow, cancellation, and no-fallback controls.
- *
- * @module
+ Native host failure, overflow, cancellation, and no-fallback controls.
+ 
+ @module
  */
-import type { AgentSession, SessionBeforeCompactEvent, } from '@earendil-works/pi-coding-agent';
+import type { AgentSession, SessionBeforeCompactEvent, ProviderStreamEvent, } from '@earendil-works/pi-coding-agent';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { CODEX_API, CODEX_PROVIDER, registerOpenAIFast, } from '../dist/final/node/index.mjs';
@@ -21,16 +21,30 @@ await describe({ name: registerOpenAIFast.name, children: [
       /** Native failure handling runs entirely inside disposable host state. */
       await using home = await fixtureHome();
       /** Single failure packet budget detects every extra or fallback request. */
-      const http = fixtureHttp({ responses: [function failureResponse() { return nativeFailureResponse({ code, message: 'Synthetic native failure.', },); },], },);
+      const http = fixtureHttp({ responses: [function failureResponse() {
+        return nativeFailureResponse({ code, message: 'Synthetic native failure.', },);
+      },], },);
       /** Real SDK parser, history, and virtual routing handle the native failure. */
       using host = await fixtureHost({ home, source: http.source, },);
+      /** Raw event observation preserves provider error codes separately from native message formatting. */
+      const failures: unknown[] = [];
+      host.pi.on('provider_stream_event', function observeFailure(event: ForeignBorrowed<ProviderStreamEvent>) {
+        if ((typeof event.data === 'object') && (event.data !== null) && ('type' in event.data)
+          && (event.data.type === 'response.failed'))
+          failures.push(event.data,);
+      },);
       await host.session.setModel(requireCompanion({ runtime: host.runtime, id: host.base.id, },),);
       await host.session.prompt('Trigger native failure packet.',);
       /** Actual canonical history entry retains native error and original identity. */
-      const assistant = host.session.messages.findLast(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) { return message.role === 'assistant'; },);
+      const assistant = host.session.messages.findLast(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) {
+        return message.role === 'assistant';
+      },);
       expect(assistant,).toMatchObject({ stopReason: 'error', model: host.base.id, provider: CODEX_PROVIDER, api: CODEX_API, },);
       expect(assistant,).toHaveProperty('errorMessage',);
-      expect(assistant?.errorMessage,).toContain(code,);
+      expect(assistant?.errorMessage,).toBe('Synthetic native failure.',);
+      expect(failures,).toEqual([expect.objectContaining({ type: 'response.failed', response: expect.objectContaining({
+        error: { code, message: 'Synthetic native failure.', },
+      },), },),],);
       expect(http.requests,).toHaveLength(1,);
       expect(http.requests[0]?.payload,).toHaveProperty('service_tier', 'priority',);
     }, },);
@@ -63,7 +77,9 @@ await describe({ name: registerOpenAIFast.name, children: [
         await host.session.prompt('Synthetic usage exceeds original native context.',);
         expect(reasons,).toEqual(['overflow',],);
         expect(source.state.calls,).toHaveLength(1,);
-        expect(host.session.messages.findLast(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) { return message.role === 'assistant'; },),).toMatchObject({ model: host.base.id, provider: CODEX_PROVIDER, },);
+        expect(host.session.messages.findLast(function assistantMessage(message: ForeignBorrowed<AgentSession['messages'][number]>) {
+          return message.role === 'assistant';
+        },),).toMatchObject({ model: host.base.id, provider: CODEX_PROVIDER, },);
       }, },);
   },),
   ...['upstream failure', 'maximum context length exceeded',].map(function providerFailureScenario(message) {
@@ -80,7 +96,9 @@ await describe({ name: registerOpenAIFast.name, children: [
       await host.session.setModel(requireCompanion({ runtime: host.runtime, id: host.base.id, },),);
       await host.session.prompt('Trigger synthetic provider failure.',);
       /** Native history entry retains exact error text and original transport identity. */
-      const assistant = host.session.messages.findLast(function assistantMessage(entry: ForeignBorrowed<AgentSession['messages'][number]>) { return entry.role === 'assistant'; },);
+      const assistant = host.session.messages.findLast(function assistantMessage(entry: ForeignBorrowed<AgentSession['messages'][number]>) {
+        return entry.role === 'assistant';
+      },);
       expect(assistant,).toMatchObject({ stopReason: 'error', errorMessage: message, model: host.base.id, provider: CODEX_PROVIDER, api: CODEX_API, },);
       expect(source.state.calls,).toHaveLength(1,);
       expect(source.state.calls[0]?.options,).toHaveProperty('serviceTier', 'priority',);

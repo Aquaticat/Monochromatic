@@ -1,7 +1,7 @@
 /**
- * Internal routing identity and live-original lookup boundaries.
- *
- * @module
+ Internal routing identity and live-original lookup boundaries.
+ 
+ @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
@@ -72,8 +72,12 @@ await describe({ name: '', children: [
         function lookup() {
           return reason === 'missing' ? undefined : { ...base, api: 'openai-responses' as const, };
         }
-        expect(function resolveFailure() { return resolvePriorityBase({ model: priorityTarget(base,), lookup, },); },).toThrow(FastModelError,);
-        expect(function resolveFailureDiagnostic() { return resolvePriorityBase({ model: priorityTarget(base,), lookup, },); },).toThrow(base.id,);
+        expect(function resolveFailure() {
+          return resolvePriorityBase({ model: priorityTarget(base,), lookup, },);
+        },).toThrow(FastModelError,);
+        expect(function resolveFailureDiagnostic() {
+          return resolvePriorityBase({ model: priorityTarget(base,), lookup, },);
+        },).toThrow(base.id,);
         await Promise.resolve();
       }, },);
     },),

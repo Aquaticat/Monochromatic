@@ -5,7 +5,10 @@
 /**
  Invalid callback replacements include primitives, arrays, and foreign container prototypes.
  */
-export const PAYLOAD_FIXTURE_INVALID_REPLACEMENTS = [
+export const PAYLOAD_FIXTURE_INVALID_REPLACEMENTS: readonly {
+  readonly name: string;
+  readonly value: unknown;
+}[] = [
   {
     name: 'null',
     value: null,
@@ -28,7 +31,9 @@ export const PAYLOAD_FIXTURE_INVALID_REPLACEMENTS = [
   },
   {
     name: 'function',
-    value: function invalidFunctionPayload(): { readonly service_tier: 'default'; } {
+    value: function invalidFunctionPayload(): {
+      readonly service_tier: 'default';
+    } {
       return { service_tier: 'default', };
     },
   },

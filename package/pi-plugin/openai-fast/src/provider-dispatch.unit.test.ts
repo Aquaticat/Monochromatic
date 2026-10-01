@@ -1,7 +1,7 @@
 /**
- * Keyless priority adapter dispatch versus explicit ordinary delegation.
- *
- * @module
+ Keyless priority adapter dispatch versus explicit ordinary delegation.
+ 
+ @module
  */
 import type { Provider, SimpleStreamOptions, OpenAICodexResponsesOptions, } from '@earendil-works/pi-ai';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -52,7 +52,7 @@ await describe({ name: createPriorityProvider.name, children: [
       /** Injected full dispatch observes priority options without adapter credentials. */
       const { overlay, dispatched, } = fixtureOverlay(source.provider,);
       /** Current original must be resolved at dispatch time. */
-      const base = source.provider.getModels()[0];
+      const [base,] = source.provider.getModels();
       if (base === undefined)
         throw new Error('Fixture base model is absent.',);
       /** Normalized transcript retains reference identity through the adapter. */
@@ -106,10 +106,18 @@ await describe({ name: createPriorityProvider.name, children: [
     const failure = new Error('Fixture operation reached.',);
     /** Mixed native operations must remain available only on the original provider. */
     const provider: Provider = { ...source.provider,
-      generateImages: function generateImages() { return Promise.reject(failure,); },
-      classify: function classify() { return Promise.reject(failure,); },
-      fetchDeferred: function fetchDeferred() { throw failure; },
-      cancelDeferred: function cancelDeferred() { return Promise.reject(failure,); }, };
+      generateImages: function generateImages() {
+        return Promise.reject(failure,);
+      },
+      classify: function classify() {
+        return Promise.reject(failure,);
+      },
+      fetchDeferred: function fetchDeferred() {
+        throw failure;
+      },
+      cancelDeferred: function cancelDeferred() {
+        return Promise.reject(failure,);
+      }, };
     /** Keyless overlay must not inherit native ownership capabilities. */
     const { overlay, } = fixtureOverlay(provider,);
     expect(overlay.id,).toBe(FAST_PROVIDER,);
@@ -123,8 +131,12 @@ await describe({ name: createPriorityProvider.name, children: [
     }
     /** Auth resolves only routing metadata, never synthetic subscription refresh. */
     const auth = await overlay.auth.apiKey?.resolve({ ctx: {
-      env: function env() { return Promise.resolve(undefined,); },
-      fileExists: function fileExists() { return Promise.resolve(false,); },
+      env: function env() {
+        return Promise.resolve(undefined,);
+      },
+      fileExists: function fileExists() {
+        return Promise.resolve(false,);
+      },
     }, signal: new AbortController().signal, },);
     expect(auth,).toEqual({ auth: {}, source: 'routes-to-openai-codex', },);
     expect(source.state.oauthRefreshes,).toBe(0,);

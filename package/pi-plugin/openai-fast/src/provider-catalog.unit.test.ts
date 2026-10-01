@@ -1,7 +1,7 @@
 /**
- * Hidden adapter availability and live native catalog lifecycle.
- *
- * @module
+ Hidden adapter availability and live native catalog lifecycle.
+ 
+ @module
  */
 import type { Api, AnyModel, Credential, Model, Provider, } from '@earendil-works/pi-ai';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -22,7 +22,9 @@ await describe({ name: '', children: [
         /** Built overlay derives only physical routing targets. */
         const { overlay, } = fixtureOverlay(source.provider,);
         /** Expected targets preserve the complete original native chat catalog. */
-        const targets = source.provider.getModels().map(priorityTarget,);
+        const targets = source.provider.getModels().map(function targetForModel(model: ForeignBorrowed<Model<Api>>) {
+          return priorityTarget(model,);
+        },);
         expect(overlay.getModels(),).toEqual(targets,);
         expect(overlay.getAllModels?.(),).toEqual(targets,);
         expect(overlay.filterModels?.(targets, undefined,),).toEqual([],);
@@ -45,8 +47,12 @@ await describe({ name: '', children: [
       const filterState = { filtered: 0, };
       /** Source callbacks mirror the actual foreign mutable model boundaries. */
       const provider: Provider = { ...source.provider,
-        getModels: function getModels() { return [base, virtual,]; },
-        getAllModels: function getAllModels() { return [base, virtual, image, classifier,]; },
+        getModels: function getModels() {
+          return [base, virtual,];
+        },
+        getAllModels: function getAllModels() {
+          return [base, virtual, image, classifier,];
+        },
         filterModels: function filterModels(models: ForeignBorrowed<readonly Model<Api>[]>) {
           filterState.filtered += 1;
           return models;
@@ -80,13 +86,24 @@ await describe({ name: '', children: [
       const catalogState = { reads: 0, };
       /** Built adapter reads only the live source, never the whole registry. */
       const adapter = createPriorityProvider({ provider: bootstrap.provider,
-        getProvider: function getProvider() { catalogState.reads += 1; return live.provider; },
-        lookup: function lookup(id) { return live.state.models.find(function matchesModel(model: ForeignBorrowed<Model<Api>>) { return model.id === id; },); },
-        dispatch: function dispatch() { throw new Error('Catalog read must not dispatch.',); },
-        onCatalog: function onCatalog(models) { catalogs.push(models,); }, },);
-      expect(adapter.getModels(),).toEqual(live.state.models.map(priorityTarget,),);
+        getProvider: function getProvider() { catalogState.reads += 1;
+        return live.provider; },
+        lookup: function lookup(id) { return live.state.models.find(function matchesModel(model: ForeignBorrowed<Model<Api>>) {
+          return model.id === id;
+        },); },
+        dispatch: function dispatch() {
+          throw new Error('Catalog read must not dispatch.',);
+        },
+        onCatalog: function onCatalog(models) {
+          catalogs.push(models,);
+        }, },);
+      expect(adapter.getModels(),).toEqual(live.state.models.map(function currentTarget(model: ForeignBorrowed<Model<Api>>) {
+        return priorityTarget(model,);
+      },),);
       live.state.models = [fixtureModel({ id: 'new-live-model', contextWindow: 987_654, },),];
-      expect(adapter.getAllModels?.(),).toEqual(live.state.models.map(priorityTarget,),);
+      expect(adapter.getAllModels?.(),).toEqual(live.state.models.map(function refreshedTarget(model: ForeignBorrowed<Model<Api>>) {
+        return priorityTarget(model,);
+      },),);
       expect(catalogState.reads,).toBe(2,);
       expect(catalogs,).toEqual([[fixtureModel({ id: 'live-model', contextWindow: 654_321, },),], live.state.models,],);
       expect(bootstrap.state.refreshes,).toBe(0,);
@@ -128,8 +145,12 @@ await describe({ name: '', children: [
       /** Distinct failure value proves rejection identity is preserved. */
       const failure = new Error('Synthetic catalog read failure.',);
       /** Failing foreign provider accessor replaces only this fixture's source. */
-      const { overlay, catalogs, } = fixtureOverlay({ ...source.provider, getModels: function getModels() { throw failure; }, },);
-      expect(await caughtFailure(async function refreshFailedCatalog() { await overlay.refreshModels?.(fixtureRefresh(),); },),).toBe(failure,);
+      const { overlay, catalogs, } = fixtureOverlay({ ...source.provider, getModels: function getModels() {
+        throw failure;
+      }, },);
+      expect(await caughtFailure(async function refreshFailedCatalog() {
+        await overlay.refreshModels?.(fixtureRefresh(),);
+      },),).toBe(failure,);
       expect(catalogs,).toEqual([],);
       expect(source.state.calls,).toEqual([],);
     }, },),

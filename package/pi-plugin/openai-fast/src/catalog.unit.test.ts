@@ -1,7 +1,7 @@
 /**
- * Credential-free effective native Codex catalog discovery.
- *
- * @module
+ Credential-free effective native Codex catalog discovery.
+ 
+ @module
  */
 import { readFile, writeFile, } from 'node:fs/promises';
 import type { Api, Model, Credential, } from '@earendil-works/pi-ai';
@@ -44,10 +44,14 @@ await describe({ name: '', children: [
       },);
       expect(modified,).toBeInstanceOf(FastModelError,);
       expect(modified,).toHaveProperty('message',);
-      expect(modified,).toSatisfy(function modificationDiagnostic(value) { return value instanceof FastModelError && value.message.includes('change credentials',); },);
+      expect(modified,).toSatisfy(function modificationDiagnostic(value) {
+        return (value instanceof FastModelError) && value.message.includes('change credentials',);
+      },);
       expect(deleted,).toBeInstanceOf(FastModelError,);
       expect(deleted,).toHaveProperty('message',);
-      expect(deleted,).toSatisfy(function deletionDiagnostic(value) { return value instanceof FastModelError && value.message.includes('delete credentials',); },);
+      expect(deleted,).toSatisfy(function deletionDiagnostic(value) {
+        return (value instanceof FastModelError) && value.message.includes('delete credentials',);
+      },);
       expect(modificationState.invoked,).toBe(false,);
       expect(await credentials.list(),).toEqual([],);
     }, },),
@@ -68,7 +72,7 @@ await describe({ name: '', children: [
       /** Native catalog without config provides the override control. */
       const baseline = await loadCodexProvider({ modelsPath: home.modelsPath, },);
       /** Existing native entry is overridden without replacing the source catalog. */
-      const overridden = baseline.getModels()[0];
+      const [overridden,] = baseline.getModels();
       if (overridden === undefined)
         throw new Error('Installed native Codex catalog is empty.',);
       /** Exact JSON is retained to prove discovery does not mutate configuration. */
@@ -78,15 +82,25 @@ await describe({ name: '', children: [
       /** Effective provider must combine original, configured, and overridden metadata. */
       const provider = await loadCodexProvider({ modelsPath: home.modelsPath, },);
       /** Custom entry is resolved by its exact upstream identity. */
-      const model = provider.getModels().find(function matchesCustom(entry: ForeignBorrowed<Model<Api>>) { return entry.id === original.id; },);
+      const model = provider.getModels().find(function matchesCustom(entry: ForeignBorrowed<Model<Api>>) {
+        return entry.id === original.id;
+      },);
       expect(provider.id,).toBe(CODEX_PROVIDER,);
       expect(provider.auth.oauth?.isSubscription,).toBe(true,);
       expect(model,).toMatchObject({ id: original.id, name: original.name, api: CODEX_API,
         contextWindow: 654_321, maxTokens: 12_345, input: ['text',], cost: original.cost,
         thinkingLevelMap: original.thinkingLevelMap, },);
-      expect(provider.getModels().find(function matchesOverride(entry: ForeignBorrowed<Model<Api>>) { return entry.id === overridden.id; },),).toMatchObject({ name: 'Override fixture', contextWindow: 777_777, },);
-      expect(provider.getModels().map(function modelId(entry: ForeignBorrowed<Model<Api>>) { return entry.id; },).sort(),).toEqual([...baseline.getModels().map(function baselineId(entry: ForeignBorrowed<Model<Api>>) { return entry.id; },), original.id,].sort(),);
-      expect(provider.getModels().some(function internalTarget(entry: ForeignBorrowed<Model<Api>>) { return entry.id.startsWith(PRIORITY_TARGET_PREFIX,); },),).toBe(false,);
+      expect(provider.getModels().find(function matchesOverride(entry: ForeignBorrowed<Model<Api>>) {
+        return entry.id === overridden.id;
+      },),).toMatchObject({ name: 'Override fixture', contextWindow: 777_777, },);
+      expect(provider.getModels().map(function modelId(entry: ForeignBorrowed<Model<Api>>) {
+        return entry.id;
+      },).toSorted(),).toEqual([...baseline.getModels().map(function baselineId(entry: ForeignBorrowed<Model<Api>>) {
+        return entry.id;
+      },), original.id,].toSorted(),);
+      expect(provider.getModels().some(function internalTarget(entry: ForeignBorrowed<Model<Api>>) {
+        return entry.id.startsWith(PRIORITY_TARGET_PREFIX,);
+      },),).toBe(false,);
       expect(await readFile(home.modelsPath, 'utf8',),).toBe(serialized,);
       expect(fetch,).not.toHaveBeenCalled();
     }, },),
@@ -116,8 +130,12 @@ await describe({ name: '', children: [
       /** Native models remain unique and use the original Codex transport. */
       const models = provider.getModels();
       expect(models.length,).toBeGreaterThan(0,);
-      expect(models.every(function nativeModel(model: ForeignBorrowed<Model<Api>>) { return model.api === CODEX_API && model.provider === CODEX_PROVIDER; },),).toBe(true,);
-      expect(new Set(models.map(function modelId(model: ForeignBorrowed<Model<Api>>) { return model.id; },),).size,).toBe(models.length,);
+      expect(models.every(function nativeModel(model: ForeignBorrowed<Model<Api>>) {
+        return (model.api === CODEX_API) && (model.provider === CODEX_PROVIDER);
+      },),).toBe(true,);
+      expect(new Set(models.map(function modelId(model: ForeignBorrowed<Model<Api>>) {
+        return model.id;
+      },),).size,).toBe(models.length,);
     }, },),
     ...['{', JSON.stringify({ providers: { [CODEX_PROVIDER]: { models: [{ id: 'invalid-config', contextWindow: 'wrong-type', },], }, }, },),]
       .map(function invalidConfigScenario(invalid, index) {
@@ -131,7 +149,9 @@ await describe({ name: '', children: [
           },);
           expect(error,).toBeInstanceOf(FastModelError,);
           expect(error,).toHaveProperty('message',);
-          expect(error,).toSatisfy(function remediationDiagnostic(value) { return value instanceof FastModelError && value.message.includes('Correct the model configuration',); },);
+          expect(error,).toSatisfy(function remediationDiagnostic(value) {
+            return (value instanceof FastModelError) && value.message.includes('Correct the model configuration',);
+          },);
           expect(await readFile(home.modelsPath, 'utf8',),).toBe(invalid,);
         }, },);
       },),

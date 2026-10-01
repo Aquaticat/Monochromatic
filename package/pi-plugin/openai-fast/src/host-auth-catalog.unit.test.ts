@@ -1,7 +1,7 @@
 /**
- * Original native OAuth ownership and genuine virtual catalog refresh lifecycle.
- *
- * @module
+ Original native OAuth ownership and genuine virtual catalog refresh lifecycle.
+ 
+ @module
  */
 import type { Api, Model, AssistantMessage, } from '@earendil-works/pi-ai';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -48,7 +48,9 @@ await describe({ name: registerOpenAIFast.name, children: [
     }
     /** Settled native replies are inspected only after cleanup releases the gate. */
     const results = await Promise.all([first, second,],);
-    expect(results.every(function successfulReply(message: ForeignBorrowed<AssistantMessage>) { return message.stopReason === 'stop'; },),).toBe(true,);
+    expect(results.every(function successfulReply(message: ForeignBorrowed<AssistantMessage>) {
+      return message.stopReason === 'stop';
+    },),).toBe(true,);
     /** Later native request must reuse the refreshed original credential. */
     const later = await host.runtime.completeSimple(companion, fixtureContext(), { reasoning: 'high', },);
     expect(later.stopReason,).toBe('stop',);
@@ -90,8 +92,19 @@ await describe({ name: registerOpenAIFast.name, children: [
     expect(removed.errors.size,).toBe(0,);
     expect(host.runtime.getModel(FAST_PROVIDER, changed.id,),).toBeUndefined();
     expect(host.runtime.getModel(FAST_PROVIDER, `${PRIORITY_TARGET_PREFIX}${changed.id}`,),).toBeUndefined();
-    expect(host.runtime.getModels(FAST_PROVIDER,).map(function modelId(model: ForeignBorrowed<Model<Api>>) { return model.id; },),).toEqual([added.id,],);
-    expect((await host.runtime.getAvailable(FAST_PROVIDER,)).some(isPriorityTarget,),).toBe(false,);
+    /** Complete catalog retains exactly the new virtual and its local physical target. */
+    const current = host.runtime.getModels(FAST_PROVIDER,);
+    expect(current.map(function modelId(model: ForeignBorrowed<Model<Api>>) {
+      return model.id;
+    },),).toEqual([`${PRIORITY_TARGET_PREFIX}${added.id}`, added.id,],);
+    expect(current.filter(function selectedVirtual(model: ForeignBorrowed<Model<Api>>) {
+      return model.api === 'pi-virtual';
+    },).map(function virtualId(model: ForeignBorrowed<Model<Api>>) {
+      return model.id;
+    },),).toEqual([added.id,],);
+    expect((await host.runtime.getAvailable(FAST_PROVIDER,)).some(function physicalTarget(model: ForeignBorrowed<Model<Api>>) {
+      return isPriorityTarget(model,);
+    },),).toBe(false,);
   }, },),
 ], },);
 

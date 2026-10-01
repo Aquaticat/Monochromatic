@@ -1,7 +1,7 @@
 /**
- * Genuine virtual companion registration from the complete native catalog.
- *
- * @module
+ Genuine virtual companion registration from the complete native catalog.
+ 
+ @module
  */
 import { getSupportedThinkingLevels, type Api, type Model, } from '@earendil-works/pi-ai';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -33,7 +33,11 @@ await describe({ name: createFastModelRegistration.name, children: [
     /** Settings control detects any unrelated default or selector-policy change. */
     const settings = host.settings.getSettings();
     synchronize(models,);
-    expect(host.runtime.getModels(FAST_PROVIDER,).map(function modelId(model: ForeignBorrowed<Model<Api>>) { return model.id; },),).toEqual(models.map(function baseId(model: ForeignBorrowed<Model<Api>>) { return model.id; },),);
+    expect(host.runtime.getModels(FAST_PROVIDER,).map(function modelId(model: ForeignBorrowed<Model<Api>>) {
+      return model.id;
+    },),).toEqual(models.map(function baseId(model: ForeignBorrowed<Model<Api>>) {
+      return model.id;
+    },),);
     for (const base of models) {
       /** Actual companion must advertise native capabilities without becoming physical. */
       const companion = host.runtime.getModel(FAST_PROVIDER, base.id,);
@@ -92,8 +96,12 @@ await describe({ name: createFastModelRegistration.name, children: [
         const base = fixtureModel();
         /** Upstream fixture in the extension-owned namespace must never be routed. */
         const reserved = fixtureModel({ id: `${PRIORITY_TARGET_PREFIX}${base.id}`, },);
-        expect(function synchronizeCollision() { synchronize(collision ? [base, reserved,] : [reserved,],); },).toThrow(FastModelError,);
-        expect(function synchronizeCollisionDiagnostic() { synchronize(collision ? [base, reserved,] : [reserved,],); },).toThrow('internal routing namespace',);
+        expect(function synchronizeCollision() {
+          synchronize(collision ? [base, reserved,] : [reserved,],);
+        },).toThrow(FastModelError,);
+        expect(function synchronizeCollisionDiagnostic() {
+          synchronize(collision ? [base, reserved,] : [reserved,],);
+        },).toThrow('internal routing namespace',);
       }, },);
   },),
   it({ name: 'reports an absent physical route rather than falling back to an ordinary model', fn: async function verifyAbsentRoute() {
@@ -116,7 +124,9 @@ await describe({ name: createFastModelRegistration.name, children: [
     },);
     expect(error,).toBeInstanceOf(FastModelError,);
     expect(error,).toHaveProperty('message',);
-    expect(error,).toSatisfy(function missingTargetDiagnostic(value) { return value instanceof FastModelError && value.message.includes('no current priority target',); },);
+    expect(error,).toSatisfy(function missingTargetDiagnostic(value) {
+      return (value instanceof FastModelError) && value.message.includes('no current priority target',);
+    },);
     expect(host.source.state.calls,).toHaveLength(0,);
   }, },),
 ], },);
