@@ -895,9 +895,9 @@ Transport failure classification and deadline accounting still need boundary ver
 The source audit found downstream alternate-credential retries;
 the Q11 answer establishes the accepted counting boundary.
 
-### Q11: Client retry cap, gateway-internal retries permitted
+### Q11: Historical client retry cap, gateway-internal retries permitted
 
-The user selected B:
+The original Q11 selection was B:
 at most two calls from our client,
 while permitting gateway-internal retries.
 The five-second total user-visible budget remains unchanged.
@@ -906,6 +906,28 @@ Stopping our wait does not prove upstream processing or billing stops.
 No end-to-end two-attempt cap is required.
 Late results cannot authorize the pending action.
 No coding-plan fallback or model substitution is authorized.
+
+### Three-call ceiling and parallel batched axioms
+
+On 2026-10-01,
+the user allowed at most three decision-model calls per eventual decision
+and required termination as early as possible.
+This supersedes Q11's two-client-call ceiling for future assessment designs,
+not any completed experiment's frozen budget.
+The five-second total deadline and Q10b's at-most-one automatic transport retry remain;
+a retry consumes one of the same three call slots.
+Gateway-internal attempts remain separately accounted under Q11.
+
+The user clarified that questions within a Drex call run in parallel without affecting one another.
+Batch independent semantic axioms in the first request;
+subsequent calls serve qualified information dependencies or eligible transport recovery,
+not one call per source,
+voting,
+or repeated uncertainty sampling.
+The deterministic evaluator stops after any settled outcome,
+including a code-only outcome before inference.
+The [batched assessment proposal](pi-auto-mode-batched-assessment.md) records the implications and remaining qualification.
+Production adoption and thresholds remain unapproved.
 
 ### Q12: Necessity-based retention accepted
 

@@ -750,11 +750,25 @@ or unsupported evidence cannot authorize a reviewed action.
 Manual/headless behavior stays owned by `src/ask-user.ts` and the extension lifecycle.
 No UI means no automatic substitute for human approval.
 
-The total model-assessment wait is five seconds.
-Our client may make at most two calls,
-while gateway-internal retries are accepted by Q11.
+The total model-assessment wait is five seconds,
+including preparation and finalization.
+On 2026-10-01,
+the user raised the future design ceiling to three decision-model calls per eventual decision,
+with termination as early as possible.
+The counter is assessment-wide;
+transport retries consume the same slots,
+and the existing at-most-one automatic transport retry remains.
+Gateway-internal retries remain separately accepted by Q11,
+so this is not an end-to-end physical-inference cap.
+
+Batch independent semantic axioms rather than assigning one call per source or predicate.
+The user clarified that Drex questions within a call evaluate in parallel without affecting one another.
+Use later calls only for qualified dependent questions or eligible transport recovery;
+stop after any batch that settles the deterministic outcome.
+The [batched assessment proposal](pi-auto-mode-batched-assessment.md) records the scheduling implications.
 An uncertainty result is not a transport failure and does not justify resampling until it looks approvable.
 Late results are discarded even if the provider continues processing after cancellation.
+Completed studies keep their original frozen call budgets.
 
 ## Verification work required before freezing this contract
 
