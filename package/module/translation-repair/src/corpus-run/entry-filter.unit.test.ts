@@ -1,14 +1,16 @@
 /**
  Tests for the pass entry allowlist.
- 
+
  The cases that matter are the ones where a misread flag runs the WHOLE
  corpus instead of one entry. That is expensive to discover afterwards and
  looks like an ordinary long pass while it happens, so every shape that could
- parse to nothing throws instead.
- 
+ parse to nothing throws instead. Each case reads the pass's own command line
+ as `reportingRefusals` reads it (ledger B75), so a shape the line reader
+ refuses is refused here too.
+
  Entry ids are invented, since the flag reads any id the same way.
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -22,25 +24,29 @@ import {
   readOnlyIds,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
- Builds an argv with the runtime and script path a real invocation carries.
- 
- @param rest - arguments following the script path
- 
- @returns Full argv
- 
+ Entry ids the pass reads from what a person typed after it.
+
+ @param typed - arguments after the script path
+
+ @returns Ids to run, empty when unrestricted
+
+ @throws StatedRefusalError when the line or the filter is refused
+
  @example
  ```ts
- const argv = argvWith({ rest: ['--only', 'Tabby_01',], },);
+ const ids = idsOf({ typed: ['--only', 'Tabby_01',], },);
  ```
  */
-function argvWith({ rest, }: { readonly rest: readonly string[]; },): readonly string[] {
-  return [
-    '/usr/bin/node',
-    'src/corpus-run/corpus-pass.ts',
-    ...rest,
-  ];
+function idsOf({ typed, }: { readonly typed: readonly string[]; },): ReadonlySet<string> {
+  return readOnlyIds({
+    line: lineOf({
+      command: 'corpus-pass',
+      typed,
+    },),
+  },);
 }
 
 await describe({
@@ -51,8 +57,8 @@ await describe({
         + 'the ordinary pass untouched: absence and no-restriction are the same '
         + 'value, so a caller cannot forget to handle one of them',
       fn: async () => {
-        expect(readOnlyIds({ argv: argvWith({ rest: [], },), },).size,).toBe(0,);
-        expect(readOnlyIds({ argv: argvWith({ rest: ['--plan',], },), },).size,).toBe(0,);
+        expect(idsOf({ typed: [], },).size,).toBe(0,);
+        expect(idsOf({ typed: ['--plan',], },).size,).toBe(0,);
       },
     },),
 
@@ -61,9 +67,7 @@ await describe({
         + 'position 22 of 71 pending entries, about fourteen hours away, for a '
         + 'question one entry answers',
       fn: async () => {
-        expect([...readOnlyIds({
-          argv: argvWith({ rest: ['--only', 'Tabby_01',], },),
-        },),],).toEqual(['Tabby_01',],);
+        expect([...idsOf({ typed: ['--only', 'Tabby_01',], },),],).toEqual(['Tabby_01',],);
       },
     },),
 
@@ -72,9 +76,11 @@ await describe({
         + 'with spaces after the commas still names the entries it looks like '
         + 'it names',
       fn: async () => {
-        expect([...readOnlyIds({
-          argv: argvWith({ rest: ['--only', 'Tabby_01, Ginger42 ,Calico',], },),
-        },),].toSorted(),).toEqual(['Calico', 'Ginger42', 'Tabby_01',],);
+        expect([...idsOf({ typed: ['--only', 'Tabby_01, Ginger42 ,Calico',], },),].toSorted(),).toEqual([
+          'Calico',
+          'Ginger42',
+          'Tabby_01',
+        ],);
       },
     },),
 
@@ -82,9 +88,7 @@ await describe({
       name: 'reads the flag wherever it sits, since mise passes task arguments '
         + 'after its own and the position is not ours to fix',
       fn: async () => {
-        expect([...readOnlyIds({
-          argv: argvWith({ rest: ['--plan', '--only', 'Tabby_01',], },),
-        },),],).toEqual(['Tabby_01',],);
+        expect([...idsOf({ typed: ['--plan', '--only', 'Tabby_01',], },),],).toEqual(['Tabby_01',],);
       },
     },),
 
@@ -92,9 +96,7 @@ await describe({
       name: 'READS the equals form as the id it names, which the shell and every parseArgs-based command accept, '
         + 'rather than reading no flag at all and running every entry (ledger B75)',
       fn: async () => {
-        expect([...readOnlyIds({
-          argv: argvWith({ rest: ['--only=Tabby_01',], },),
-        },),],).toEqual(['Tabby_01',],);
+        expect([...idsOf({ typed: ['--only=Tabby_01',], },),],).toEqual(['Tabby_01',],);
       },
     },),
 
@@ -102,7 +104,7 @@ await describe({
       name: 'THROWS on a mistyped flag, which once read as no flag and ran every entry (ledger B75)',
       fn: async () => {
         expect(function readMistypedFlag() {
-          readOnlyIds({ argv: argvWith({ rest: ['--olny', 'Tabby_01',], },), },);
+          idsOf({ typed: ['--olny', 'Tabby_01',], },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -112,7 +114,7 @@ await describe({
         + '(ledger B75)',
       fn: async () => {
         expect(function readRepeatedFlag() {
-          readOnlyIds({ argv: argvWith({ rest: ['--only', 'Tabby_01', '--only', 'Ginger42',], },), },);
+          idsOf({ typed: ['--only', 'Tabby_01', '--only', 'Ginger42',], },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -122,7 +124,7 @@ await describe({
         + 'no restriction and running all 92 entries',
       fn: async () => {
         expect(function readTrailingFlag() {
-          readOnlyIds({ argv: argvWith({ rest: ['--only',], },), },);
+          idsOf({ typed: ['--only',], },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -133,7 +135,7 @@ await describe({
         + 'take "--plan" for an entry id and match nothing',
       fn: async () => {
         expect(function readMissingValue() {
-          readOnlyIds({ argv: argvWith({ rest: ['--only', '--plan',], },), },);
+          idsOf({ typed: ['--only', '--plan',], },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -144,7 +146,7 @@ await describe({
         + 'what was asked',
       fn: async () => {
         expect(function readEmptyList() {
-          readOnlyIds({ argv: argvWith({ rest: ['--only', ' , , ',], },), },);
+          idsOf({ typed: ['--only', ' , , ',], },);
         },).toThrow(StatedRefusalError,);
       },
     },),

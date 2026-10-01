@@ -104,7 +104,7 @@ export function wholeNumberFlag(
 
   if (!isWholeNumberText({ text: asked.value, },))
     throw new StatedRefusalError({
-      says: `${asked.flag} needs ${WHOLE_NUMBER_RULE}, and ${asked.value} is not one`,
+      says: `${asked.flag} needs ${WHOLE_NUMBER_RULE}, and ${JSON.stringify(asked.value,)} is not one`,
     },);
 
   return Number(asked.value,);
@@ -162,7 +162,7 @@ export function idListFlag(
 
   if (named.length === 0)
     throw new StatedRefusalError({
-      says: `${asked.flag} needs at least one ${naming}, and ${asked.value} names none`,
+      says: `${asked.flag} needs at least one ${naming}, and ${JSON.stringify(asked.value,)} names none`,
     },);
 
   return named;

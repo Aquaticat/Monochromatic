@@ -423,14 +423,23 @@ function countRefusals(
   const last = names.at(-1,);
 
   /**
+   The arguments past it, each quoted so a blank or spaced one shows.
+   */
+  const shownExtra = extra
+    .map(function quoted(argument,): string {
+      return JSON.stringify(argument,);
+    },)
+    .join(' ',);
+
+  /**
    Refusal of arguments past the last position, empty when there are none.
    */
   const past = (extra.length === 0)
     ? []
     : [
       (last === undefined)
-        ? `this command takes no argument but its flags, and was given ${extra.join(' ',)}`
-        : `this command takes nothing after <${last}>, and was given ${extra.join(' ',)}`,
+        ? `this command takes no argument but its flags, and was given ${shownExtra}`
+        : `this command takes nothing after <${last}>, and was given ${shownExtra}`,
     ];
 
   return [

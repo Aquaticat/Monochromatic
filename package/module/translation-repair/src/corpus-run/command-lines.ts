@@ -1,3 +1,4 @@
+import { PROVIDER_ORDER, } from '../provider-name.ts';
 import type {
   CommandLineFor,
   CommandLineSpec,
@@ -162,7 +163,7 @@ export const COMMAND_LINES: CommandLines = {
     ...NO_ARGUMENTS,
     valued: {
       only: ENTRY_IDS,
-      'require-providers': 'providers',
+      'require-providers': `providers of ${PROVIDER_ORDER.join(', ',)}`,
     },
     switches: { plan: true, },
   },

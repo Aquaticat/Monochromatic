@@ -36,6 +36,7 @@ import {
   RequiredProviderError,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
  Each provider's key environment name.
@@ -100,12 +101,13 @@ await describe({
       name: 'READS ORDERED DISTINCT PROVIDER REQUIREMENT, the third provider included',
       fn: async () => {
         expect(readRequiredProviders({
-          argv: [
-            'node',
-            'corpus-pass',
-            '--require-providers',
-            'synthetic,openrouter,hyper,synthetic',
-          ],
+          line: lineOf({
+            command: 'corpus-pass',
+            typed: [
+              '--require-providers',
+              'synthetic,openrouter,hyper,synthetic',
+            ],
+          },),
         },),).toEqual([
           'synthetic',
           'openrouter',
@@ -116,25 +118,36 @@ await describe({
     it({
       name: 'REQUIRES NOTHING when the flag is absent, which is every ordinary run (ledger T8)',
       fn: async () => {
-        expect(readRequiredProviders({ argv: ['node', 'corpus-pass',], },),).toEqual([],);
+        expect(readRequiredProviders({
+          line: lineOf({
+            command: 'corpus-pass',
+            typed: [],
+          },),
+        },),).toEqual([],);
       },
     },),
     it({
-      name: 'REFUSES the flag with no value, an empty value or a provider nobody serves, naming what it accepts '
-        + '(ledger T8)',
+      name: 'REFUSES the flag with no value, an empty value, separators naming nobody or a provider nobody '
+        + 'serves, naming what it accepts (ledger T8, B75)',
       fn: async () => {
         for (
-          const argv of [
-            ['node', 'corpus-pass', '--require-providers',],
-            ['node', 'corpus-pass', '--require-providers', '',],
-            ['node', 'corpus-pass', '--require-providers', 'synthetic,catnip',],
+          const typed of [
+            ['--require-providers',],
+            ['--require-providers', '',],
+            ['--require-providers', ',',],
+            ['--require-providers', 'synthetic,catnip',],
           ]
         ) {
           /**
            What the reader raised for these arguments.
            */
           const refusal = caught(function readFlag(): unknown {
-            return readRequiredProviders({ argv, },);
+            return readRequiredProviders({
+              line: lineOf({
+                command: 'corpus-pass',
+                typed,
+              },),
+            },);
           },);
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
           expect((refusal as Error).message,).toContain('synthetic, bedrock, hyper, openrouter',);

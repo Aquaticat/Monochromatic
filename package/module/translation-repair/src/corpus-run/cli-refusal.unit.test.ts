@@ -127,6 +127,15 @@ const LEDGER_FILE = 'ledger/000007.json';
 const LEDGER_FIELD = 'ballots';
 
 /**
+ Process arguments of a run that typed nothing after the script, which every
+ command reads (ledger B75).
+ */
+const BARE_ARGV: readonly string[] = [
+  '/usr/bin/node',
+  'dist/final/node/runner.mjs',
+];
+
+/**
  Collects what would have gone to stderr, restoring the real one on disposal.
  
  @param lines - collector the caller reads afterwards
@@ -241,6 +250,7 @@ await describe({
 
         await reportingRefusals({
           what: 'score-verify',
+          argv: BARE_ARGV,
           run: async () => {
             throw fixtureRefusal();
           },
@@ -260,6 +270,7 @@ await describe({
 
         await reportingRefusals({
           what: 'score-verify',
+          argv: BARE_ARGV,
           run: async () => {
             throw new RangeError(FAULT_MESSAGE,);
           },
@@ -278,6 +289,7 @@ await describe({
 
         await reportingRefusals({
           what: 'score-verify',
+          argv: BARE_ARGV,
           run: async () => {
             throw new RangeError(FAULT_MESSAGE,);
           },
@@ -299,6 +311,7 @@ await describe({
 
         await reportingRefusals({
           what: 'score-verify',
+          argv: BARE_ARGV,
           run: async () => {
             throw new RangeError(FAULT_MESSAGE,);
           },
@@ -320,6 +333,7 @@ await describe({
 
         await reportingRefusals({
           what: 'score-verify',
+          argv: BARE_ARGV,
           run: async () => {
             throw new StatedRefusalError({ says: STATED_MESSAGE, },);
           },
@@ -338,6 +352,7 @@ await describe({
 
         await reportingRefusals({
           what: 'ledger-report',
+          argv: BARE_ARGV,
           run: async () => {
             throw new LedgerShapeError({
               from: LEDGER_FILE,
@@ -377,6 +392,7 @@ await describe({
         process.exitCode = 0;
         await reportingRefusals({
           what: 'editor-calibrate',
+          argv: BARE_ARGV,
           run: async () => {
             // A run that finishes, which is what a half-dark calibration hid behind.
           },
@@ -417,6 +433,7 @@ await describe({
 
         await reportingRefusals({
           what: 'editor-calibrate',
+          argv: BARE_ARGV,
           run: async () => {
             throw new StatedRefusalError({ says: STATED_MESSAGE, },);
           },
@@ -442,6 +459,7 @@ await describe({
         process.exitCode = 0;
         await reportingRefusals({
           what: 'corpus-pass',
+          argv: BARE_ARGV,
           run: async () => {
             // A run that finishes.
           },
@@ -461,6 +479,7 @@ await describe({
 
         await reportingRefusals({
           what: 'editor-calibrate',
+          argv: BARE_ARGV,
           run: async () => {
             throw new RunConfigError({ variable: CONFIG_VARIABLE, },);
           },
@@ -482,6 +501,7 @@ await describe({
         process.exitCode = 0;
         await reportingRefusals({
           what: 'score-verify',
+          argv: BARE_ARGV,
           run: async () => {
             // A body that simply finishes, which is every ordinary run.
           },
@@ -490,6 +510,74 @@ await describe({
 
         expect(process.exitCode,).toBe(0,);
         expect(printed.lines.length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'REFUSES a command line the command does not read before its body runs, at the stated code, where '
+        + 'an argument once ran as if nothing had been typed (ledger B75)',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        /**
+         Whether the body ran at all.
+         */
+        let ran = false;
+        await reportingRefusals({
+          what: 'score-verify',
+          argv: [
+            ...BARE_ARGV,
+            '--only',
+            'Tabby_01',
+          ],
+          run: async () => {
+            ran = true;
+          },
+        },);
+
+        expect(ran,).toBe(false,);
+        expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
+        expect(printed.lines,).toEqual([
+          'score-verify: --only is not a flag this command reads; this command takes no argument but its '
+            + 'flags, and was given "Tabby_01". Usage: score-verify',
+        ],);
+      },
+    },),
+    it({
+      name: 'HANDS the body the command line it read, the equals form and a switch included',
+      fn: async () => {
+        using held = holdingExitCode();
+        using printed = collectingErrors({ lines: [], },);
+
+        /**
+         What the body saw of the line.
+         */
+        const seen: unknown[] = [];
+        await reportingRefusals({
+          what: 'corpus-pass',
+          argv: [
+            ...BARE_ARGV,
+            '--only=Tabby_01',
+            '--plan',
+          ],
+          run: async ({ line, },) => {
+            seen.push(
+              line.flag('only',),
+              line.switched('plan',),
+            );
+          },
+          seats: createSeatTally(),
+        },);
+
+        expect(seen,).toEqual([
+          {
+            kind: 'written',
+            flag: '--only',
+            value: 'Tabby_01',
+          },
+          true,
+        ],);
+        expect(printed.lines,).toEqual([],);
       },
     },),
   ],

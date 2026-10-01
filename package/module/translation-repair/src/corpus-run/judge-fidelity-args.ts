@@ -41,12 +41,25 @@ export const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
  unlisted spelling is refused, rather than silently running something the
  caller did not ask for; so is `--damage` written last, which read as no
  spelling and ran every defect (ledger B73).
+ 
+ A MAP RATHER THAN A PLAIN OBJECT, since the key is typed text: looked up on
+ an object, `--damage constructor` found `Object.prototype.constructor` and
+ handed a function on as the defects to build (ledger B75).
  */
-const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = {
-  deletion: ['deletion',],
-  insertion: ['insertion',],
-  alteration: ['alteration',],
-};
+const DAMAGE_BY_NAME: ReadonlyMap<string, readonly FidelityDamageKind[]> = new Map([
+  [
+    'deletion',
+    ['deletion',],
+  ],
+  [
+    'insertion',
+    ['insertion',],
+  ],
+  [
+    'alteration',
+    ['alteration',],
+  ],
+],);
 
 /**
  Reads which defects `--damage` asks for.
@@ -60,7 +73,7 @@ const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = 
  
  @example
  ```ts
- const kinds = damageKindsOf({ damage: { kind: 'written', value: 'insertion', }, },);
+ const kinds = damageKindsOf({ damage: { kind: 'written', flag: '--damage', value: 'insertion', }, },);
  ```
  */
 function damageKindsOf({ damage, }: { readonly damage: FlagValue; },): readonly FidelityDamageKind[] {
@@ -69,9 +82,11 @@ function damageKindsOf({ damage, }: { readonly damage: FlagValue; },): readonly 
   /**
    Defects that spelling asks for, absent when it names none this probe builds.
    */
-  const named = DAMAGE_BY_NAME[damage.value];
+  const named = DAMAGE_BY_NAME.get(damage.value,);
   if (named === undefined)
-    throw new StatedRefusalError({ says: `--damage takes deletion, insertion or alteration, not ${damage.value}`, },);
+    throw new StatedRefusalError({
+      says: `--damage takes deletion, insertion or alteration, not ${JSON.stringify(damage.value,)}`,
+    },);
   return named;
 }
 

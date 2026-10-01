@@ -1,7 +1,9 @@
 /**
- Tests for the one reader of `--flag value` pairs the probes and the
- rendering audit share (ledger B73): what an unwritten flag, a flag written
- with nothing after it, a whole number and an entry list each read as.
+ Tests for the readers of flag values the probes and the rendering audit
+ share (ledger B73): what a whole number, an id list and a file flag each
+ read as, given what the command-line reader handed on (ledger B75), whose
+ own refusals of a flag written with nothing after it, written twice or
+ written in a form nobody reads are tested in `command-line.unit.test.ts`.
  Fixtures are cat-themed invention only.
 
  @module
@@ -15,10 +17,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  flagValue,
+  type FlagValue,
   idListFlag,
   StatedRefusalError,
   wholeNumberFlag,
+  writtenOr,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -32,6 +35,34 @@ const LARGEST = String(Number.MAX_SAFE_INTEGER,);
 const DEFAULT_NAPS = 12;
 
 /**
+ A flag nobody wrote.
+ */
+const UNWRITTEN: FlagValue = {
+  kind: 'unwritten',
+  flag: '--naps',
+};
+
+/**
+ What a flag carried when the person wrote a value after it.
+
+ @param value - text written after the flag
+
+ @returns The flag as written with that value
+
+ @example
+ ```ts
+ const asked = written({ value: '3', },);
+ ```
+ */
+function written({ value, }: { readonly value: string; },): FlagValue {
+  return {
+    kind: 'written',
+    flag: '--naps',
+    value,
+  };
+}
+
+/**
  Message of the stated refusal a read threw.
 
  @param read - read that must refuse
@@ -40,7 +71,7 @@ const DEFAULT_NAPS = 12;
 
  @example
  ```ts
- const said = refusalOf({ read: () => napCap({ typed: ['--naps',], },), },);
+ const said = refusalOf({ read: () => napCap({ asked: written({ value: 'x', },), },), },);
  ```
  */
 function refusalOf({ read, }: { readonly read: () => void; },): string {
@@ -55,7 +86,7 @@ function refusalOf({ read, }: { readonly read: () => void; },): string {
 /**
  Reads a nap cap the way a probe reads its cap.
 
- @param typed - what the operator wrote after the script path
+ @param asked - what the flag carried
 
  @returns Naps asked for, or the default
 
@@ -63,97 +94,16 @@ function refusalOf({ read, }: { readonly read: () => void; },): string {
 
  @example
  ```ts
- const naps = napCap({ typed: ['--naps', '3',], },);
+ const naps = napCap({ asked: written({ value: '3', },), },);
  ```
  */
-function napCap({ typed, }: { readonly typed: readonly string[]; },): number {
+function napCap({ asked, }: { readonly asked: FlagValue; },): number {
   return wholeNumberFlag({
-    args: typed,
-    flag: '--naps',
+    asked,
     unwritten: DEFAULT_NAPS,
     leaveOffTo: `take the default of ${String(DEFAULT_NAPS,)} naps`,
   },);
 }
-
-await describe({
-  name: flagValue.name,
-  children: [
-    it({
-      name: 'ANSWERS that a flag nobody wrote is unwritten, which is not the answer for a flag written empty',
-      fn: async () => {
-        expect(flagValue({
-          args: ['--cats', 'tabby',],
-          flag: '--naps',
-        },),).toEqual({ kind: 'unwritten', },);
-      },
-    },),
-    it({
-      name: 'READS the value written after the flag, wherever on the line the flag stands',
-      fn: async () => {
-        expect(flagValue({
-          args: ['--cats', 'tabby', '--naps', '3',],
-          flag: '--naps',
-        },),).toEqual({
-          kind: 'written',
-          value: '3',
-        },);
-      },
-    },),
-    it({
-      name: 'READS the equals form as the value it carries, which once read as no flag and took the default '
-        + '(ledger B75)',
-      fn: async () => {
-        expect(flagValue({
-          args: ['--naps=3',],
-          flag: '--naps',
-        },),).toEqual({
-          kind: 'written',
-          value: '3',
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES the flag written twice, which read the first value and dropped the second in silence '
-        + '(ledger B75)',
-      fn: async () => {
-        expect(refusalOf({
-          read: function readsTwice(): void {
-            flagValue({
-              args: ['--naps', '3', '--naps', '4',],
-              flag: '--naps',
-            },);
-          },
-        },),).toContain('--naps',);
-      },
-    },),
-    it({
-      name: 'REFUSES a flag written last, followed by the next flag, or followed by an empty argument, each of '
-        + 'which once read as unwritten and took the default nobody asked for',
-      fn: async () => {
-        /**
-         Command lines whose flag carries nothing usable.
-         */
-        const valueless: readonly (readonly string[])[] = [
-          ['--naps',],
-          ['--naps', '--cats', 'tabby',],
-          ['--naps', '',],
-        ];
-        expect(valueless.map(function readsValueless(args,): string {
-          return refusalOf({
-            read: function read(): void {
-              flagValue({
-                args,
-                flag: '--naps',
-              },);
-            },
-          },);
-        },),).toEqual(valueless.map(function expectedOf(): string {
-          return '--naps needs a value written after it';
-        },),);
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: wholeNumberFlag.name,
@@ -162,10 +112,9 @@ await describe({
       name: 'TAKES THE CALLER\'S NUMBER when the flag is not written, a sentinel the caller reads as no limit '
         + 'among them',
       fn: async () => {
-        expect(napCap({ typed: [], },),).toBe(DEFAULT_NAPS,);
+        expect(napCap({ asked: UNWRITTEN, },),).toBe(DEFAULT_NAPS,);
         expect(wholeNumberFlag({
-          args: [],
-          flag: '--naps',
+          asked: UNWRITTEN,
           unwritten: -1,
           leaveOffTo: 'nap without limit',
         },),).toBe(-1,);
@@ -174,8 +123,8 @@ await describe({
     it({
       name: 'READS zero, a leading zero and the largest whole number a double holds exactly as the numbers written',
       fn: async () => {
-        expect(['0', '04', LARGEST,].map(function readsDigits(written,): number {
-          return napCap({ typed: ['--naps', written,], },);
+        expect(['0', '04', LARGEST,].map(function readsDigits(value,): number {
+          return napCap({ asked: written({ value, },), },);
         },),).toEqual([0, 4, Number.MAX_SAFE_INTEGER,],);
       },
     },),
@@ -184,7 +133,7 @@ await describe({
       fn: async () => {
         expect(refusalOf({
           read: function readsNegative(): void {
-            napCap({ typed: ['--naps', '-3',], },);
+            napCap({ asked: written({ value: '-3', },), },);
           },
         },),).toBe('--naps cannot be below zero, and -3 is; leave it off to take the default of 12 naps',);
       },
@@ -207,25 +156,15 @@ await describe({
           '-0',
           String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,),
         ];
-        expect(mistyped.map(function readsMistyped(written,): string {
+        expect(mistyped.map(function readsMistyped(value,): string {
           return refusalOf({
             read: function read(): void {
-              napCap({ typed: ['--naps', written,], },);
+              napCap({ asked: written({ value, },), },);
             },
           },);
-        },),).toEqual(mistyped.map(function expectedOf(written,): string {
-          return `--naps needs a whole number written in digits, at most ${LARGEST}, and ${written} is not one`;
+        },),).toEqual(mistyped.map(function expectedOf(value,): string {
+          return `--naps needs a whole number written in digits, at most ${LARGEST}, and ${JSON.stringify(value,)} is not one`;
         },),);
-      },
-    },),
-    it({
-      name: 'REFUSES the flag written with nothing after it, rather than taking the default',
-      fn: async () => {
-        expect(refusalOf({
-          read: function readsLast(): void {
-            napCap({ typed: ['--naps',], },);
-          },
-        },),).toBe('--naps needs a value written after it',);
       },
     },),
   ],
@@ -235,45 +174,59 @@ await describe({
   name: idListFlag.name,
   children: [
     it({
-      name: 'ANSWERS with no entries when the flag is not written, which callers read as every entry',
+      name: 'ANSWERS with no ids when the flag is not written, which callers read as no restriction',
       fn: async () => {
         expect(idListFlag({
-          args: [],
-          flag: '--only',
+          asked: UNWRITTEN,
+          naming: 'nap id',
         },),).toEqual([],);
       },
     },),
     it({
-      name: 'READS the entries named, dropping the gaps a stray comma leaves',
+      name: 'READS the ids named, dropping the space around each and the gaps a stray comma leaves',
       fn: async () => {
         expect(idListFlag({
-          args: ['--only', ',tabby,,ginger,',],
-          flag: '--only',
-        },),).toEqual(['tabby', 'ginger',],);
+          asked: written({ value: ',tabby, ginger ,,\tcalico,', },),
+          naming: 'nap id',
+        },),).toEqual(['tabby', 'ginger', 'calico',],);
       },
     },),
     it({
-      name: 'REFUSES separators that name no entry, which would read as every entry one line later, and the flag '
-        + 'written with nothing after it',
+      name: 'REFUSES separators and space that name no id, which would read as no restriction one line later',
       fn: async () => {
-        expect([
-          ['--only', ',',],
-          ['--only', ',,',],
-          ['--only',],
-        ].map(function readsNobody(args,): string {
+        expect([',', ', ,', ' ',].map(function readsNobody(value,): string {
           return refusalOf({
             read: function read(): void {
               idListFlag({
-                args,
-                flag: '--only',
+                asked: written({ value, },),
+                naming: 'nap id',
               },);
             },
           },);
         },),).toEqual([
-          '--only needs at least one entry id, and , names none',
-          '--only needs at least one entry id, and ,, names none',
-          '--only needs a value written after it',
+          '--naps needs at least one nap id, and "," names none',
+          '--naps needs at least one nap id, and ", ," names none',
+          '--naps needs at least one nap id, and " " names none',
         ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: writtenOr.name,
+  children: [
+    it({
+      name: 'READS the text written, and takes the default only when the flag was not written',
+      fn: async () => {
+        expect(writtenOr({
+          asked: written({ value: 'basket.md', },),
+          unwritten: 'cushion.md',
+        },),).toBe('basket.md',);
+        expect(writtenOr({
+          asked: UNWRITTEN,
+          unwritten: 'cushion.md',
+        },),).toBe('cushion.md',);
       },
     },),
   ],

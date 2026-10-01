@@ -1,7 +1,8 @@
 /**
  Tests for the coverage probe's command line: the entry filter and the
- candidate cap, read from an argument vector the way `process.argv` presents
- one. Fixtures are cat-themed invention only.
+ candidate cap, read from the probe's command line the way
+ `reportingRefusals` reads it (ledger B75). Fixtures are cat-themed invention
+ only.
 
  @module
  */
@@ -19,14 +20,12 @@ import {
   readCoverageProbeArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
- What `process.argv` carries before anything a person typed.
+ Usage line every refusal of the probe's command line ends with.
  */
-const BEFORE_FLAGS: readonly string[] = [
-  '/usr/bin/node',
-  '/somewhere/coverage-probe.mjs',
-];
+const USAGE = 'Usage: coverage-probe [--only <entry ids>] [--cap <count>]';
 
 /**
  Reads the probe's arguments off a command line carrying what was typed.
@@ -43,7 +42,12 @@ const BEFORE_FLAGS: readonly string[] = [
 function askedFrom(
   { typed, }: { readonly typed: readonly string[]; },
 ): ReturnType<typeof readCoverageProbeArguments> {
-  return readCoverageProbeArguments({ argv: [...BEFORE_FLAGS, ...typed,], },);
+  return readCoverageProbeArguments({
+    line: lineOf({
+      command: 'coverage-probe',
+      typed,
+    },),
+  },);
 }
 
 /**
@@ -60,7 +64,7 @@ function askedFrom(
  */
 function capNotDigits({ cap, }: { readonly cap: string; },): string {
   return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-    + `and ${cap} is not one`;
+    + `and ${JSON.stringify(cap,)} is not one`;
 }
 
 await describe({
@@ -100,9 +104,9 @@ await describe({
             '--cap cannot be below zero, and -3 is; leave it off to ask about the default of '
               + `${String(DEFAULT_CANDIDATE_CAP,)} candidates`,
           ],
-          [['--cap',], '--cap needs a value written after it',],
-          [['--only',], '--only needs a value written after it',],
-          [['--only', ',',], '--only needs at least one entry id, and , names none',],
+          [['--cap',], `--cap needs a value written after it. ${USAGE}`,],
+          [['--only',], `--only needs a value written after it. ${USAGE}`,],
+          [['--only', ',',], '--only needs at least one entry id, and "," names none',],
         ];
         expect(mistyped.map(function refusalOf([typed,],): string {
           /**

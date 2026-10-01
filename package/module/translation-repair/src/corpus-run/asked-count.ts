@@ -80,7 +80,7 @@ export function readAskedCount(
 
   if ((!isWholeNumberText({ text: written, },)) && (!isNegativeWholeNumberText({ text: written, },)))
     throw new StatedRefusalError({
-      says: `${asks} must be ${WHOLE_NUMBER_RULE}, and ${written} is not one`,
+      says: `${asks} must be ${WHOLE_NUMBER_RULE}, and ${JSON.stringify(written,)} is not one`,
     },);
 
   /**

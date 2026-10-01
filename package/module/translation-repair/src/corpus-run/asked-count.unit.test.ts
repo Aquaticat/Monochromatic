@@ -31,16 +31,9 @@ import {
   readAskedCount,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 //region Asked count tests
-
-/**
- What `process.argv` carries before anything a person typed.
- */
-const BEFORE_COUNT: readonly string[] = [
-  '/usr/bin/node',
-  '/somewhere/editor-calibrate.mjs',
-];
 
 /**
  Count a run does when nobody names one.
@@ -69,47 +62,38 @@ const MISTYPED = 'fourty';
 const WHOLE_NUMBER_RULE = `a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}`;
 
 /**
- Builds a command line the way `process.argv` presents one.
+ Reads a count off a bench's command line carrying only what was typed, read
+ as `reportingRefusals` reads it (ledger B75).
  
  @param typed - what the operator wrote after the script path
  
- @returns Whole argument vector, script path and all
- 
- @example
- ```ts
- const argv = commandLine({ typed: ['40',], },);
- ```
- */
-function commandLine(
-  { typed, }: { readonly typed: readonly string[]; },
-): readonly string[] {
-  return [
-    ...BEFORE_COUNT,
-    ...typed,
-  ];
-}
-
-/**
- Reads a count off a command line carrying only what was typed.
- 
- @param typed - what the operator wrote after the script path
+ @param asks - what the counted things are called
  
  @returns Count the reader settled on
  
- @throws StatedRefusalError when the reader refuses what was typed
+ @throws StatedRefusalError when the line or the reader refuses what was typed
  
  @example
  ```ts
- const wanted = countFrom({ typed: ['40',], },);
+ const wanted = countFrom({ typed: ['40',], asks: ASKS, },);
  ```
  */
 function countFrom(
-  { typed, }: { readonly typed: readonly string[]; },
+  {
+    typed,
+    asks,
+  }: {
+    readonly typed: readonly string[];
+    readonly asks: string;
+  },
 ): number {
   return readAskedCount({
-    argv: commandLine({ typed, },),
+    line: lineOf({
+      command: 'editor-calibrate',
+      typed,
+    },),
     fallback: FALLBACK,
-    asks: ASKS,
+    asks,
   },);
 }
 
@@ -119,13 +103,19 @@ await describe({
     it({
       name: 'FALLS BACK when nobody named a count',
       fn: async () => {
-        expect(countFrom({ typed: [], },),).toBe(FALLBACK,);
+        expect(countFrom({
+            typed: [],
+            asks: ASKS,
+          },),).toBe(FALLBACK,);
       },
     },),
     it({
       name: 'READS the count that was named',
       fn: async () => {
-        expect(countFrom({ typed: [String(ASKED_FOR,),], },),).toBe(ASKED_FOR,);
+        expect(countFrom({
+            typed: [String(ASKED_FOR,),],
+            asks: ASKS,
+          },),).toBe(ASKED_FOR,);
       },
     },),
     it({
@@ -147,12 +137,15 @@ await describe({
            What the reader threw.
            */
           const refusal = caught(function readsCount(): void {
-            countFrom({ typed: [count,], },);
+            countFrom({
+            typed: [count,],
+            asks: ASKS,
+          },);
           },);
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
           return (refusal as Error).message;
         },),).toEqual(counts.map(function expectedOf(count,): string {
-          return `${ASKS} must be ${WHOLE_NUMBER_RULE}, and ${count} is not one`;
+          return `${ASKS} must be ${WHOLE_NUMBER_RULE}, and ${JSON.stringify(count,)} is not one`;
         },),);
       },
     },),
@@ -160,7 +153,10 @@ await describe({
       name: 'REFUSES a count that is not a number, instead of running over nothing',
       fn: async () => {
         expect(() => {
-          countFrom({ typed: [MISTYPED,], },);
+          countFrom({
+            typed: [MISTYPED,],
+            asks: ASKS,
+          },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -171,11 +167,14 @@ await describe({
          What the reader threw.
          */
         const refusal = caught(function readsWord(): void {
-          countFrom({ typed: [MISTYPED,], },);
+          countFrom({
+            typed: [MISTYPED,],
+            asks: ASKS,
+          },);
         },);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toBe(
-          `${ASKS} must be ${WHOLE_NUMBER_RULE}, and ${MISTYPED} is not one`,
+          `${ASKS} must be ${WHOLE_NUMBER_RULE}, and ${JSON.stringify(MISTYPED,)} is not one`,
         );
       },
     },),
@@ -183,7 +182,10 @@ await describe({
       name: 'REFUSES a count of zero, which would ask nobody anything',
       fn: async () => {
         expect(() => {
-          countFrom({ typed: ['0',], },);
+          countFrom({
+            typed: ['0',],
+            asks: ASKS,
+          },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -191,7 +193,10 @@ await describe({
       name: 'REFUSES a negative count, which no sampler can take',
       fn: async () => {
         expect(() => {
-          countFrom({ typed: ['-3',], },);
+          countFrom({
+            typed: ['-3',],
+            asks: ASKS,
+          },);
         },).toThrow('slices must be at least 1, and -3 is not',);
       },
     },),
@@ -202,7 +207,10 @@ await describe({
         // word. Held separately because it is the near miss a person actually
         // types, and because a reader built on `parseInt` would accept it as 40.
         expect(() => {
-          countFrom({ typed: ['40slices',], },);
+          countFrom({
+            typed: ['40slices',],
+            asks: ASKS,
+          },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -210,14 +218,28 @@ await describe({
       name: 'REFUSES an unbounded count, which truncates to itself and never lands',
       fn: async () => {
         expect(() => {
-          countFrom({ typed: ['Infinity',], },);
+          countFrom({
+            typed: ['Infinity',],
+            asks: ASKS,
+          },);
         },).toThrow(StatedRefusalError,);
       },
     },),
     it({
-      name: 'FALLS BACK for an argument written empty, which names no count',
+      name: 'REFUSES an argument written empty, as an empty flag value is refused, rather than running the '
+        + 'default a script with an unset variable never asked for (ledger B75)',
       fn: async () => {
-        expect(countFrom({ typed: ['',], },),).toBe(FALLBACK,);
+        /**
+         What the reader threw.
+         */
+        const refusal = caught(function readsEmpty(): void {
+          countFrom({
+            typed: ['',],
+            asks: ASKS,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toBe(`${ASKS} must be ${WHOLE_NUMBER_RULE}, and "" is not one`,);
       },
     },),
     it({
@@ -227,14 +249,15 @@ await describe({
          What the reader threw.
          */
         const refusal = caught(function readsEntries(): void {
-          readAskedCount({
-            argv: commandLine({ typed: [MISTYPED,], },),
-            fallback: FALLBACK,
+          countFrom({
+            typed: [MISTYPED,],
             asks: 'entries',
           },);
         },);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusal as Error).message,).toBe(`entries must be ${WHOLE_NUMBER_RULE}, and ${MISTYPED} is not one`,);
+        expect((refusal as Error).message,).toBe(
+          `entries must be ${WHOLE_NUMBER_RULE}, and ${JSON.stringify(MISTYPED,)} is not one`,
+        );
       },
     },),
   ],

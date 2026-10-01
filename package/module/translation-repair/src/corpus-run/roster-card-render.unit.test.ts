@@ -22,6 +22,7 @@ import {
   readAsk,
   renderProviderCard,
 } from '../../dist/final/node/index.mjs';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
  A listing body in the `{ data: [...] }` shape, with one OpenRouter-shaped
@@ -384,26 +385,49 @@ await describe({
     },),
 
     it({
-      name: 'READS THE ASK off the command line and refuses a missing id or a provider that is not one of the four',
+      name: 'READS THE ASK off the command line and refuses a missing id, an empty one, or a provider that is not '
+        + 'one of the four',
       fn: async () => {
         expect(readAsk({
-          argv: [
-            'hyper',
-            'mittens-9',
-          ],
+          line: lineOf({
+            command: 'roster-card',
+            typed: [
+              'hyper',
+              'mittens-9',
+            ],
+          },),
         },),).toEqual({
           provider: 'hyper',
           servedId: 'mittens-9',
         },);
         expect(function noId(): void {
-          readAsk({ argv: ['hyper',], },);
+          readAsk({
+            line: lineOf({
+              command: 'roster-card',
+              typed: ['hyper',],
+            },),
+          },);
+        },).toThrow('this command needs <served id>',);
+        expect(function emptyId(): void {
+          readAsk({
+            line: lineOf({
+              command: 'roster-card',
+              typed: [
+                'hyper',
+                '',
+              ],
+            },),
+          },);
         },).toThrow('usage: roster-card',);
         expect(function notAProvider(): void {
           readAsk({
-            argv: [
-              'catnip',
-              'mittens-9',
-            ],
+            line: lineOf({
+              command: 'roster-card',
+              typed: [
+                'catnip',
+                'mittens-9',
+              ],
+            },),
           },);
         },).toThrow('usage: roster-card',);
       },

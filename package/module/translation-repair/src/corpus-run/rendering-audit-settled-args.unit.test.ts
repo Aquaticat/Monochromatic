@@ -35,24 +35,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type CommandLineOf,
   readAuditArguments,
   readReportArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 //region Settled rendering audit argument tests
-
-/**
- What `process.argv` carries before the arguments a person typed.
- 
- Named after what they are rather than filled with anything readable, so a
- reader that stopped skipping them would meet values that are obviously not
- flags.
- */
-const BEFORE_ARGUMENTS: readonly string[] = [
-  '/usr/bin/node',
-  '/somewhere/rendering-audit-settled.mjs',
-];
 
 /**
  Archive a run reads when nobody names one.
@@ -107,24 +97,50 @@ const SMALL_BUY = 4;
 const READ_ONLY_BUY = 0;
 
 /**
- Builds a command line the way `process.argv` presents one.
+ The settled audit's command line, read as `reportingRefusals` reads it.
  
  @param typed - what the operator wrote after the script path
  
- @returns Whole argument vector, script path and all
+ @returns The line the audit's body receives
+ 
+ @throws StatedRefusalError when the line itself is refused (ledger B75)
  
  @example
  ```ts
- const argv = commandLine({ typed: ['--cap', '4',], },);
+ const line = auditLine({ typed: ['--cap', '4',], },);
  ```
  */
-function commandLine(
+function auditLine(
   { typed, }: { readonly typed: readonly string[]; },
-): readonly string[] {
-  return [
-    ...BEFORE_ARGUMENTS,
-    ...typed,
-  ];
+): CommandLineOf<'rendering-audit-settled'> {
+  return lineOf({
+    command: 'rendering-audit-settled',
+    typed,
+  },);
+}
+
+/**
+ The settled audit report's command line, read as `reportingRefusals` reads
+ it.
+ 
+ @param typed - what the operator wrote after the script path
+ 
+ @returns The line the report's body receives
+ 
+ @throws StatedRefusalError when the line itself is refused (ledger B75)
+ 
+ @example
+ ```ts
+ const line = reportLine({ typed: ['--run', '/tmp/tabby.json',], },);
+ ```
+ */
+function reportLine(
+  { typed, }: { readonly typed: readonly string[]; },
+): CommandLineOf<'rendering-audit-settled-report'> {
+  return lineOf({
+    command: 'rendering-audit-settled-report',
+    typed,
+  },);
 }
 
 await describe({
@@ -133,7 +149,7 @@ await describe({
     it({
       name: 'ANSWERS with the defaults for a command line that named nothing',
       fn: async () => {
-        expect(readAuditArguments({ argv: commandLine({ typed: [], },), },),).toEqual({
+        expect(readAuditArguments({ line: auditLine({ typed: [], },), },),).toEqual({
           archiveDir: DEFAULT_ARCHIVE,
           cloneDir: DEFAULT_CLONE,
           onlyIds: [],
@@ -145,7 +161,7 @@ await describe({
       name: 'READS every flag the operator did name, in any order',
       fn: async () => {
         expect(readAuditArguments({
-          argv: commandLine({
+          line: auditLine({
             typed: [
               '--cap',
               String(SMALL_BUY,),
@@ -174,7 +190,7 @@ await describe({
         // Zero is not "no cap": it is the wiring check the audit exists to make
         // cheap. A reader that treated it as absent would spend a roster.
         expect(readAuditArguments({
-          argv: commandLine({
+          line: auditLine({
             typed: [
               '--cap',
               String(READ_ONLY_BUY,),
@@ -188,7 +204,7 @@ await describe({
         + 'in the archive (ledger B75)',
       fn: async () => {
         expect(readAuditArguments({
-          argv: commandLine({ typed: [`--cap=${String(READ_ONLY_BUY,)}`,], },),
+          line: auditLine({ typed: [`--cap=${String(READ_ONLY_BUY,)}`,], },),
         },).cap,).toBe(READ_ONLY_BUY,);
       },
     },),
@@ -196,7 +212,7 @@ await describe({
       name: 'REFUSES a mistyped flag rather than auditing as if nothing were typed (ledger B75)',
       fn: async () => {
         expect(function readsMistyped(): void {
-          readAuditArguments({ argv: commandLine({ typed: ['--cpa', String(READ_ONLY_BUY,),], },), },);
+          readAuditArguments({ line: auditLine({ typed: ['--cpa', String(READ_ONLY_BUY,),], },), },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -220,13 +236,13 @@ await describe({
            What the reader threw.
            */
           const refusal = caught(function readsCap(): void {
-            readAuditArguments({ argv: commandLine({ typed: ['--cap', cap,], },), },);
+            readAuditArguments({ line: auditLine({ typed: ['--cap', cap,], },), },);
           },);
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
           return (refusal as Error).message;
         },),).toEqual(caps.map(function expectedOf(cap,): string {
           return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-            + `and ${cap} is not one`;
+            + `and ${JSON.stringify(cap,)} is not one`;
         },),);
       },
     },),
@@ -235,7 +251,7 @@ await describe({
       fn: async () => {
         expect(() => {
           readAuditArguments({
-            argv: commandLine({
+            line: auditLine({
               typed: [
                 '--cap',
                 'once',
@@ -253,7 +269,7 @@ await describe({
          */
         const refusal = caught(function readsWord(): void {
           readAuditArguments({
-            argv: commandLine({
+            line: auditLine({
               typed: [
                 '--cap',
                 'once',
@@ -264,7 +280,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toBe(
           `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-            + 'and once is not one',
+            + 'and "once" is not one',
         );
       },
     },),
@@ -274,7 +290,7 @@ await describe({
       fn: async () => {
         expect(() => {
           readAuditArguments({
-            argv: commandLine({
+            line: auditLine({
               typed: [
                 '--cap',
                 '-3',
@@ -284,7 +300,7 @@ await describe({
         },).toThrow(StatedRefusalError,);
         expect(() => {
           readAuditArguments({
-            argv: commandLine({
+            line: auditLine({
               typed: [
                 '--cap',
                 '-3',
@@ -298,7 +314,7 @@ await describe({
       name: 'REFUSES a flag written at the end of the line with no value after it',
       fn: async () => {
         expect(() => {
-          readAuditArguments({ argv: commandLine({ typed: ['--cap',], },), },);
+          readAuditArguments({ line: auditLine({ typed: ['--cap',], },), },);
         },).toThrow('--cap needs a value written after it',);
       },
     },),
@@ -309,7 +325,7 @@ await describe({
         // reading it as a path would send the run at a directory named `--only`.
         expect(() => {
           readAuditArguments({
-            argv: commandLine({
+            line: auditLine({
               typed: [
                 '--archive',
                 '--only',
@@ -325,7 +341,7 @@ await describe({
       fn: async () => {
         expect(() => {
           readAuditArguments({
-            argv: commandLine({
+            line: auditLine({
               typed: [
                 '--only',
                 ',',
@@ -339,7 +355,7 @@ await describe({
       name: 'DROPS a stray separator inside a filter that still names someone',
       fn: async () => {
         expect(readAuditArguments({
-          argv: commandLine({
+          line: auditLine({
             typed: [
               '--only',
               `${ONE_CAT},,${ANOTHER_CAT}`,
@@ -363,7 +379,7 @@ await describe({
       name: 'ANSWERS with two empty lists for a command line that named nothing, which is the newest '
         + 'kept run and no across-run band',
       fn: async () => {
-        expect(readReportArguments({ argv: commandLine({ typed: [], },), },),).toEqual({
+        expect(readReportArguments({ line: reportLine({ typed: [], },), },),).toEqual({
           run: [],
           against: [],
         },);
@@ -373,7 +389,7 @@ await describe({
       name: 'READS both files the operator named, in any order',
       fn: async () => {
         expect(readReportArguments({
-          argv: commandLine({
+          line: reportLine({
             typed: [
               '--against',
               '/tmp/tabby-earlier.json',
@@ -392,7 +408,7 @@ await describe({
         + 'absent and silently report the newest kept run',
       fn: async () => {
         expect(() => {
-          readReportArguments({ argv: commandLine({ typed: ['--run',], },), },);
+          readReportArguments({ line: reportLine({ typed: ['--run',], },), },);
         },).toThrow('--run needs a value written after it',);
       },
     },),
@@ -406,7 +422,7 @@ await describe({
         let raised: unknown;
         try {
           readReportArguments({
-            argv: commandLine({
+            line: reportLine({
               typed: [
                 '--against',
                 '--run',

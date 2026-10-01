@@ -1,8 +1,8 @@
 /**
  Tests for the fidelity probe's command line: the entry filter, the trial
- cap, the defects to build and the context switch, read from an argument
- vector the way `process.argv` presents one. Fixtures are cat-themed
- invention only.
+ cap, the defects to build and the context switch, read from the probe's
+ command line the way `reportingRefusals` reads it (ledger B75). Fixtures
+ are cat-themed invention only.
 
  @module
  */
@@ -21,14 +21,13 @@ import {
   readFidelityArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
- What `process.argv` carries before anything a person typed.
+ Usage line every refusal of the probe's command line ends with.
  */
-const BEFORE_FLAGS: readonly string[] = [
-  '/usr/bin/node',
-  '/somewhere/judge-fidelity-probe.mjs',
-];
+const USAGE = 'Usage: judge-fidelity-probe [--only <entry ids>] [--cap <count>] '
+  + '[--damage <deletion|insertion|alteration>] [--candidates <seatable ids>] [--context] [--candidates-alone]';
 
 /**
  Reads the probe's arguments off a command line carrying what was typed.
@@ -47,7 +46,12 @@ const BEFORE_FLAGS: readonly string[] = [
 function askedFrom(
   { typed, }: { readonly typed: readonly string[]; },
 ): ReturnType<typeof readFidelityArguments> {
-  return readFidelityArguments({ argv: [...BEFORE_FLAGS, ...typed,], },);
+  return readFidelityArguments({
+    line: lineOf({
+      command: 'judge-fidelity-probe',
+      typed,
+    },),
+  },);
 }
 
 /**
@@ -64,7 +68,30 @@ function askedFrom(
  */
 function capNotDigits({ cap, }: { readonly cap: string; },): string {
   return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-    + `and ${cap} is not one`;
+    + `and ${JSON.stringify(cap,)} is not one`;
+}
+
+/**
+ Message of the stated refusal reading what was typed drew.
+
+ @param typed - what the operator wrote after the script path
+
+ @returns The refusal's message
+
+ @example
+ ```ts
+ const said = refusalOf({ typed: ['--damage', 'scratches',], },);
+ ```
+ */
+function refusalOf({ typed, }: { readonly typed: readonly string[]; },): string {
+  /**
+   What the reader threw.
+   */
+  const refusal = caught(function readsTyped(): void {
+    askedFrom({ typed, },);
+  },);
+  expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+  return caughtValueText(refusal,);
 }
 
 await describe({
@@ -95,16 +122,17 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES a defect this probe does not build, naming the ones it does',
+      name: 'REFUSES a defect this probe does not build, naming the ones it does, and a name that sits on '
+        + 'Object.prototype, which a plain-object table once answered with a function (ledger B75)',
       fn: async () => {
-        /**
-         What the reader threw.
-         */
-        const refusal = caught(function readUnbuilt(): void {
-          askedFrom({ typed: ['--damage', 'scratches',], },);
-        },);
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect(caughtValueText(refusal,),).toBe('--damage takes deletion, insertion or alteration, not scratches',);
+        expect(['scratches', 'constructor', '__proto__', 'toString',].map(function refusedDefect(name,): string {
+          return refusalOf({ typed: ['--damage', name,], },);
+        },),).toEqual([
+          '--damage takes deletion, insertion or alteration, not "scratches"',
+          '--damage takes deletion, insertion or alteration, not "constructor"',
+          '--damage takes deletion, insertion or alteration, not "__proto__"',
+          '--damage takes deletion, insertion or alteration, not "toString"',
+        ],);
       },
     },),
     it({
@@ -123,20 +151,14 @@ await describe({
             '--cap cannot be below zero, and -3 is; leave it off to run the default of '
               + `${String(DEFAULT_TRIAL_CAP,)} trials`,
           ],
-          [['--cap',], '--cap needs a value written after it',],
-          [['--only',], '--only needs a value written after it',],
-          [['--only', ',',], '--only needs at least one entry id, and , names none',],
-          [['--damage',], '--damage needs a value written after it',],
+          [['--cap',], `--cap needs a value written after it. ${USAGE}`,],
+          [['--only',], `--only needs a value written after it. ${USAGE}`,],
+          [['--only', ',',], '--only needs at least one entry id, and "," names none',],
+          [['--damage',], `--damage needs a value written after it. ${USAGE}`,],
+          [['--context=yes',], `--context takes no value, and --context=yes gives it one. ${USAGE}`,],
         ];
-        expect(mistyped.map(function refusalOf([typed,],): string {
-          /**
-           What the reader threw.
-           */
-          const refusal = caught(function readsTyped(): void {
-            askedFrom({ typed, },);
-          },);
-          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-          return caughtValueText(refusal,);
+        expect(mistyped.map(function refusalFor([typed,],): string {
+          return refusalOf({ typed, },);
         },),).toEqual(mistyped.map(function expectedOf([, said,],): string {
           return said;
         },),);

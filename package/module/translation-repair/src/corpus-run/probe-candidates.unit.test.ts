@@ -21,6 +21,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type CommandLineOf,
   probeRosterWith,
   readCandidateIds,
   readCandidatesAlone,
@@ -30,16 +31,9 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { SEAT_BEDROCK_ONLY_VISION_UNSEATED, } from '../roster-seats.test-fixture.ts';
 import { BEDROCK_ONLY_ROSTER_IDS, } from '../roster-buckets.test-fixture.ts';
+import { lineOf, } from './command-line.test-fixture.ts';
 
 //region Probe candidate tests
-
-/**
- What `process.argv` carries before anything a person typed.
- */
-const BEFORE_FLAGS: readonly string[] = [
-  '/usr/bin/node',
-  '/somewhere/judge-fidelity-probe.mjs',
-];
 
 /**
  Both unmeasured sizes, as typed after the flag.
@@ -53,20 +47,21 @@ const BOTH_UNMEASURED = BEDROCK_ONLY_ROSTER_IDS.join(',',);
 const SEATED = nonNullishOrThrow(RUN_ROSTER[0],);
 
 /**
- Command line with what a person typed after the script path.
+ The fidelity probe's command line, read as `reportingRefusals` reads it,
+ with what a person typed after the script path.
  
  @example
  ```ts
- const argv = commandLine({ typed: ['--candidates', SEAT_BEDROCK_ONLY_TEXT,], },);
+ const line = probeLine({ typed: ['--candidates', SEAT_BEDROCK_ONLY_TEXT,], },);
  ```
  */
-function commandLine(
+function probeLine(
   { typed, }: { readonly typed: readonly string[]; },
-): readonly string[] {
-  return [
-    ...BEFORE_FLAGS,
-    ...typed,
-  ];
+): CommandLineOf<'judge-fidelity-probe'> {
+  return lineOf({
+    command: 'judge-fidelity-probe',
+    typed,
+  },);
 }
 
 await describe({
@@ -75,19 +70,19 @@ await describe({
     it({
       name: 'READS NONE when the flag is absent, so every existing invocation runs the seated roster',
       fn: async () => {
-        expect(readCandidateIds({ argv: commandLine({ typed: ['--cap', '4',], },), },),).toEqual([],);
+        expect(readCandidateIds({ line: probeLine({ typed: ['--cap', '4',], },), },),).toEqual([],);
       },
     },),
     it({
       name: 'READS the seatable ids named, in the order written',
       fn: async () => {
         expect(
-          readCandidateIds({ argv: commandLine({ typed: ['--candidates', BOTH_UNMEASURED,], },), },),
+          readCandidateIds({ line: probeLine({ typed: ['--candidates', BOTH_UNMEASURED,], },), },),
         ).toEqual([...BEDROCK_ONLY_ROSTER_IDS,],);
         // The equals form once read as no flag, so the probe ran the seated
         // roster and measured none of the models it was started for (ledger B75).
         expect(
-          readCandidateIds({ argv: commandLine({ typed: [`--candidates=${BOTH_UNMEASURED}`,], },), },),
+          readCandidateIds({ line: probeLine({ typed: [`--candidates=${BOTH_UNMEASURED}`,], },), },),
         ).toEqual([...BEDROCK_ONLY_ROSTER_IDS,],);
         for (const id of BEDROCK_ONLY_ROSTER_IDS)
           expect(ROSTER_MODEL_IDS.includes(id,),).toBe(true,);
@@ -100,10 +95,10 @@ await describe({
       name: 'REFUSES a flag that names nothing, rather than running the seated roster under a candidate flag',
       fn: async () => {
         expect(() => {
-          readCandidateIds({ argv: commandLine({ typed: ['--candidates',], },), },);
+          readCandidateIds({ line: probeLine({ typed: ['--candidates',], },), },);
         },).toThrow(StatedRefusalError,);
         expect(() => {
-          readCandidateIds({ argv: commandLine({ typed: ['--candidates', ',',], },), },);
+          readCandidateIds({ line: probeLine({ typed: ['--candidates', ',',], },), },);
         },).toThrow(StatedRefusalError,);
       },
     },),
@@ -111,13 +106,13 @@ await describe({
       name: 'REFUSES an id the roster does not know, naming the ids it does',
       fn: async () => {
         expect(() => {
-          readCandidateIds({ argv: commandLine({ typed: ['--candidates', 'google.gemma-4-e2b,nobody/such-model',], },), },);
+          readCandidateIds({ line: probeLine({ typed: ['--candidates', 'google.gemma-4-e2b,nobody/such-model',], },), },);
         },).toThrow(StatedRefusalError,);
         expect(() => {
-          readCandidateIds({ argv: commandLine({ typed: ['--candidates', 'nobody/such-model',], },), },);
+          readCandidateIds({ line: probeLine({ typed: ['--candidates', 'nobody/such-model',], },), },);
         },).toThrow('nobody/such-model',);
         expect(() => {
-          readCandidateIds({ argv: commandLine({ typed: ['--candidates', 'nobody/such-model',], },), },);
+          readCandidateIds({ line: probeLine({ typed: ['--candidates', 'nobody/such-model',], },), },);
         },).toThrow(BEDROCK_ONLY_ROSTER_IDS[0],);
       },
     },),
@@ -192,9 +187,9 @@ await describe({
     it({
       name: 'READS the flag only when written',
       fn: async () => {
-        expect(readCandidatesAlone({ argv: commandLine({ typed: ['--candidates', BOTH_UNMEASURED,], },), },),).toBe(false,);
+        expect(readCandidatesAlone({ line: probeLine({ typed: ['--candidates', BOTH_UNMEASURED,], },), },),).toBe(false,);
         expect(
-          readCandidatesAlone({ argv: commandLine({ typed: ['--candidates', BOTH_UNMEASURED, '--candidates-alone',], },), },),
+          readCandidatesAlone({ line: probeLine({ typed: ['--candidates', BOTH_UNMEASURED, '--candidates-alone',], },), },),
         ).toBe(true,);
       },
     },),

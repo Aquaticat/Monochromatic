@@ -24,11 +24,7 @@ import {
   readCensusArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Process arguments up to the script, as Node passes them.
- */
-const SCRIPT = ['node', 'coverage-census.mjs',] as const;
+import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
  One stretch as the census writes it.
@@ -74,22 +70,29 @@ await describe({
       name: 'READS TEST FILES, A BASELINE AND EVERY SOURCE NAMED, and nothing when nothing is written',
       fn: async () => {
         expect(readCensusArguments({
-          argv: [
-            ...SCRIPT,
-            'src/nap.unit.test.ts',
-            '--baseline',
-            '/tmp/census.json',
-            '--source',
-            'src/nap.ts',
-            '--source',
-            'src/purr.ts',
-          ],
+          line: lineOf({
+            command: 'coverage-census',
+            typed: [
+              'src/nap.unit.test.ts',
+              '--baseline',
+              '/tmp/census.json',
+              '--source',
+              'src/nap.ts',
+              '--source',
+              'src/purr.ts',
+            ],
+          },),
         },),).toEqual({
           testFiles: ['src/nap.unit.test.ts',],
           baseline: ['/tmp/census.json',],
           sources: ['src/nap.ts', 'src/purr.ts',],
         },);
-        expect(readCensusArguments({ argv: [...SCRIPT,], },),).toEqual({
+        expect(readCensusArguments({
+          line: lineOf({
+            command: 'coverage-census',
+            typed: [],
+          },),
+        },),).toEqual({
           testFiles: [],
           baseline: [],
           sources: [],
@@ -99,13 +102,20 @@ await describe({
     it({
       name: 'REFUSES a flag written last, a flag followed by another flag, an unknown flag, and --source with no --baseline to read',
       fn: async () => {
-        for (const args of [
-          ['--baseline',],
-          ['--baseline', '--source', 'src/nap.ts',],
-          ['--nap',],
-          ['--source', 'src/nap.ts',],
-        ]) {
-          expect(() => readCensusArguments({ argv: [...SCRIPT, ...args,], },),).toThrow(StatedRefusalError,);
+        for (
+          const typed of [
+            ['--baseline',],
+            ['--baseline', '--source', 'src/nap.ts',],
+            ['--nap',],
+            ['--source', 'src/nap.ts',],
+          ]
+        ) {
+          expect(() => readCensusArguments({
+            line: lineOf({
+              command: 'coverage-census',
+              typed,
+            },),
+          },),).toThrow(StatedRefusalError,);
         }
       },
     },),
