@@ -19,6 +19,15 @@ extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
+[tasks."format:source"]
+description = "Apply standards fixes only to production sources, leaving concurrent test edits untouched"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', 'src/index.ts', 'src/catalog.ts', 'src/constants.ts', 'src/fast-model-error.ts', 'src/original-dispatch.ts', 'src/priority-provider.ts', 'src/virtual-registration.ts', 'src/priority-stream.ts', 'src/priority-payload.ts', 'src/priority-error.ts'])
+"""
+
 [tasks."test:unit"]
 extends = "test:unit"
 

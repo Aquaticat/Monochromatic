@@ -1,4 +1,6 @@
-/** Session-owned binding to the unchanged original Codex provider. @module */
+/**
+ Session-owned binding to the unchanged original Codex provider. @module
+ */
 
 import type {
   Api,
@@ -16,84 +18,102 @@ import { FastModelError, } from './fast-model-error.ts';
 
 //region Original host binding
 
-/** Encapsulate the mutable session binding without a request-global fast flag. */
-export class OriginalDispatch {
-  /** Bootstrap catalog provides metadata only, never real request authentication. */
-  readonly #provider: ForeignHostCapability<Provider>;
-  /** Parent logger retains module and extension registration tags. */
-  readonly #l: Logger;
-  /** Live registry becomes available when the host starts the session. */
-  #registry?: ForeignHostCapability<ModelRegistry>;
+/**
+ Encapsulate the mutable registry behind frozen request capabilities.
+
+ @param provider - bootstrap source before host binding
+
+ @param l - registration logger
+
+ @returns original-provider lookup and authenticated dispatch capabilities
+
+ @example
+ ```ts
+ const binding = createOriginalDispatch({ provider, l });
+ ```
+ */
+export function createOriginalDispatch({ provider, l, }: {
+  readonly provider: ForeignHostCapability<Provider>;
+  readonly l: Logger;
+},) {
+  /** Logger retains registration ancestry without exposing request content. */
+  const logger = tagged({ tag: createOriginalDispatch.name, l, },);
+  /** Mutable state belongs only to this factory's returned capabilities. */
+  const state: { registry?: ForeignHostCapability<ModelRegistry>; } = {};
 
   /**
-   Retain bootstrap metadata and parent logger for later session binding.
-   @param provider - original catalog source before host binding
-   @param l - registration logger
+   Bind subsequent calls to the initialized host registry.
+
+   @param registry - authenticated host request capability
+
+   @remarks Retains the registry on this factory's owned state.
    */
-  constructor({ provider, l, }: { readonly provider: ForeignHostCapability<Provider>; readonly l: Logger; },) {
-    this.#provider = provider;
-    this.#l = tagged({ tag: OriginalDispatch.name, l, },);
+  function bind(registry: ForeignHostCapability<ModelRegistry>,): void {
+    state.registry = registry;
+    logger.debug('bound original-model dispatch to the active host',);
   }
 
   /**
-   Bind subsequent requests to the initialized host's original model registry.
-   @param registry - host model lookup and authenticated dispatch capability
-   @remarks Replaces the receiver's session-owned registry binding.
-   */
-  bind(registry: ForeignHostCapability<ModelRegistry>,): void {
-    this.#registry = registry;
-    this.#l.debug('bound original-model dispatch to the active host',);
-  }
+   Read only the original provider, never the adapter's catalog.
 
-  /**
-   Read the original provider without enumerating the adapter.
    @returns bootstrap source or current original provider
+
    @throws FastModelError when the original provider was removed
    */
-  getProvider(): ForeignHostCapability<Provider> {
-    /** Function logger extends the owning registration boundary. */
-    const l = tagged({ tag: this.getProvider.name, l: this.#l, },);
-    l.trace('reading original provider metadata',);
-    if (this.#registry === undefined)
-      return this.#provider;
-    /** Current provider is looked up after each config or catalog change. */
-    const original = this.#registry.getProvider(CODEX_PROVIDER,);
+  function getProvider(): ForeignHostCapability<Provider> {
+    /** Function logger records only provider lookup lifecycle. */
+    const inner = tagged({ tag: getProvider.name, l: logger, },);
+    inner.trace('reading original provider metadata',);
+    if (state.registry === undefined)
+      return provider;
+    /** Live lookup reflects every source configuration and catalog change. */
+    const original = state.registry.getProvider(CODEX_PROVIDER,);
     if (original === undefined)
       throw new FastModelError('The original Codex provider is no longer registered. Restore it or select another provider.',);
     return original;
   }
 
   /**
-   Read the current original model without traversing the adapter.
-   @param id - upstream model identity
+   Find an original model without enumerating the adapter.
+
+   @param id - upstream identity
+
    @returns current original model or absent after removal
    */
-  lookup(id: string,): Model<Api> | undefined {
-    /** Function logger records only the public model identity. */
-    const l = tagged({ tag: this.lookup.name, l: this.#l, },);
-    l.trace(`looking up original Codex model ${id}`,);
-    if (this.#registry !== undefined)
-      return this.#registry.find(CODEX_PROVIDER, id,);
-    return this.#provider.getModels().find(function matchingModel(model,) { return model.id === id; },);
+  function lookup(id: string,): Model<Api> | undefined {
+    /** Lookup logger excludes headers and credentials. */
+    const inner = tagged({ tag: lookup.name, l: logger, },);
+    inner.trace(`looking up original Codex model ${id}`,);
+    if (state.registry !== undefined)
+      return state.registry.find(CODEX_PROVIDER, id,);
+    return provider.getModels().find(function matchingModel(model,) { return model.id === id; },);
   }
 
   /**
-   Native StreamFunction callback resolves original auth and model-specific headers through the host.
-   @param model - live original model
+   Native StreamFunction callback resolves original auth and model-specific headers.
+
+   @param model - original model
+
    @param context - normalized transcript
-   @param options - full native priority request options
+
+   @param options - native priority options
+
    @returns native stream without tier or model fallback
+
    @mutates options - native dispatch consumes cancellation and instrumentation callbacks
-   @throws FastModelError when invoked before session initialization
+
+   @throws FastModelError when invoked before initialization
    */
-  stream(model: ForeignHostCapability<Model<typeof CODEX_API>>, context: ForeignHostCapability<TranscriptContext>, options?: ForeignHostCapability<OpenAICodexResponsesOptions>,): AssistantMessageEventStream {
-    /** Function logger never receives options, headers, or authentication. */
-    const l = tagged({ tag: this.stream.name, l: this.#l, },);
-    l.debug(`dispatching priority request for ${model.id}`,);
-    if (this.#registry === undefined)
+  function stream(model: ForeignHostCapability<Model<typeof CODEX_API>>, context: ForeignHostCapability<TranscriptContext>, options?: ForeignHostCapability<OpenAICodexResponsesOptions>,): AssistantMessageEventStream {
+    /** Stream logger records identity without request options or authentication. */
+    const inner = tagged({ tag: stream.name, l: logger, },);
+    inner.debug(`dispatching priority request for ${model.id}`,);
+    if (state.registry === undefined)
       throw new FastModelError('Codex fast dispatch requires an initialized pi session. Start or reload the session before requesting a fast model.',);
-    return this.#registry.stream(model, context, options,);
+    return state.registry.stream(model, context, options,);
   }
+
+  return Object.freeze({ bind, getProvider, lookup, stream, },);
 }
 
 //endregion

@@ -5,7 +5,7 @@ import type { ExtensionAPI, SessionStartEvent, } from '@earendil-works/pi-coding
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { loadCodexProvider, } from './catalog.ts';
-import { OriginalDispatch, } from './original-dispatch.ts';
+import { createOriginalDispatch, } from './original-dispatch.ts';
 import { createPriorityProvider, } from './priority-provider.ts';
 import { createFastModelRegistration, } from './virtual-registration.ts';
 
@@ -38,14 +38,14 @@ export function registerOpenAIFast({ pi, provider, }: {
   const l = tagged({ tag: registerOpenAIFast.name, l: moduleLogger, },);
   l.debug('registering virtual priority companions',);
   /** Session binding is private state, never a global request-tier switch. */
-  const binding = new OriginalDispatch({ provider, l, },);
+  const binding = createOriginalDispatch({ provider, l, },);
   /** Structural registration guard prevents getter-triggered reentrant catalog recursion. */
   const synchronize = createFastModelRegistration(pi,);
   pi.registerProvider(createPriorityProvider({
     provider,
-    getProvider: binding.getProvider.bind(binding,),
-    lookup: binding.lookup.bind(binding,),
-    dispatch: binding.stream.bind(binding,),
+    getProvider: binding.getProvider,
+    lookup: binding.lookup,
+    dispatch: binding.stream,
     onCatalog: synchronize,
   },),);
   synchronize(provider.getModels(),);
