@@ -521,12 +521,12 @@ await describe({
         it({
           name: 'TIMES THE ROUND\'S OWN MILLISECONDS when the system clock is set forward two hours as the round '
             + 'starts, where the line said the round took two hours',
-          fn: async () => {
+          fn: async ctx => {
             /**
              Every message the round logged.
              */
             const said: string[] = [];
-            using wall = stubWallClock({ atMs: WALL_START_MS, },);
+            const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
 
             /**
              The round, its start already read: nothing in it waits before that.

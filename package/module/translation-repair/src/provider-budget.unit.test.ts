@@ -734,8 +734,8 @@ await describe({
     it({
       name: 'HOLDS A REFUSER NO LONGER THAN THE BACKOFF when the system clock is set back an hour after the '
         + 'refusal (ledger B78), where the default view, reading the wall clock, held it an hour and the backoff',
-      fn: async () => {
-        using wall = stubWallClock({ atMs: WALL_START_MS, },);
+      fn: async ctx => {
+        const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
         /** Stub providers whose meters all report budget left. */
         const { synthetic, hyper, openrouter, } = stubProviders({},);
         /** Budget view under test, on its default clock. */

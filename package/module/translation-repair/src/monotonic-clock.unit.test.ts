@@ -52,8 +52,8 @@ await describe({
     it({
       name: 'READS ON WHEN THE SYSTEM CLOCK IS SET BACK AN HOUR, where a reading of the wall clock would go back '
         + 'the hour (ledger B78)',
-      fn: async () => {
-        using wall = stubWallClock({ atMs: WALL_START_MS, },);
+      fn: async ctx => {
+        const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
 
         /**
          A reading before the clock is set back.

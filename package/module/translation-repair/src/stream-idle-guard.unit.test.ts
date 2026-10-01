@@ -255,8 +255,8 @@ await describe({
           name: 'MEASURES ON A CLOCK THE SYSTEM TIME CANNOT MOVE (ledger B78): with the system clock set back an '
             + 'hour before the first byte and forward two before the next, the first byte, the elapsed time and '
             + 'the largest gap stay the moments between, where they read an hour negative and an hour long',
-          fn: async () => {
-            using wall = stubWallClock({ atMs: WALL_START_MS, },);
+          fn: async ctx => {
+            const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
             using guard = armIdleGuard({
               label: 'hf:mittens',
               firstByteMs: ROOMY_MS,

@@ -424,8 +424,8 @@ await describe({
         it({
           name: 'ASKS NO LONGER THAN THE WINDOW when the system clock is set back an hour after a take, where the '
             + 'default pacer, reading the wall clock, made the next take wait an hour and a window',
-          fn: async () => {
-            using wall = stubWallClock({ atMs: WALL_START_MS, },);
+          fn: async ctx => {
+            const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
             const pace = createRequestPace({
               perWindow: 1,
               windowMs: WINDOW_MS,

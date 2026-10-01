@@ -279,10 +279,10 @@ await describe({
             'TIMES THE SLICE ON A CLOCK THE SYSTEM TIME CANNOT MOVE (ledger B78): with the system clock set back an '
             + 'hour mid-slice, the line still carries the slice\'s own milliseconds, where it carried a negative '
             + 'count this reader drops',
-          fn: async () => {
+          fn: async ctx => {
             const said: string[] = [];
             {
-              using wall = stubWallClock({ atMs: WALL_START_MS, },);
+              const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
               using cost = armSliceCost({
                 l: capturingLogger({ lines: said, },),
                 lane: 'translate',

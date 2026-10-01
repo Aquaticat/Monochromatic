@@ -14,8 +14,10 @@
  `Number` call on `new Date`; `performance.timeOrigin`, the wall clock at the
  process's start; and `Temporal.Now`. Reads are keyed `path#site: form`,
  where the site is the nearest enclosing named function.
- `wall-clock-stub.test-fixture.ts` is not read: it stands in for the wall
- clock in the cases that step it. Out of the scan's reach: `Date`,
+ `wall-clock-stub.test-fixture.ts`, which stands in for the wall clock in the
+ cases that step it, and `wall-clock-stub.unit.test.ts`, which reads the
+ clock to show the stub reaches only its own case, are not read (ledger M100).
+ Out of the scan's reach: `Date`,
  `performance` or `Temporal` reached through `globalThis` or another name, a
  date compared with `<` or `>`, which reads it as a number, and a duration
  taken between stamps a process wrote, as the run-timing report takes its
@@ -50,10 +52,14 @@ import {
 // that keys each read by its file and enclosing named function.
 
 /**
- The one file that reads the wall clock as a number on purpose: it replaces
- `Date.now` for the cases that step it.
+ The two files that name the wall clock on purpose: the stub, which replaces
+ `Date.now` for the cases that step it, and its own test, which reads the
+ clock in a case beside one that stepped it (ledger M100).
  */
-const STUB_PATH = 'wall-clock-stub.test-fixture.ts';
+const STUB_PATHS: ReadonlySet<string> = new Set([
+  'wall-clock-stub.test-fixture.ts',
+  'wall-clock-stub.unit.test.ts',
+],);
 
 /**
  Node kinds that open a function, which names the site of the reads inside.
@@ -257,7 +263,8 @@ function wallReadOf({ node, }: { readonly node: TreeNode; },): string {
  Every read of the wall clock as a number in the files given, keyed
  `path#site: form`, one entry per read.
 
- @param files - files read, tests among them; the wall-clock stub is skipped
+ @param files - files read, tests among them; the wall-clock stub and its
+ test are skipped
 
  @returns Keys sorted, repeated once per read
 
@@ -272,7 +279,7 @@ function wallClockReads({ files, }: { readonly files: readonly SourceText[]; },)
    */
   const found: string[] = [];
   for (const file of files) {
-    if (file.path === STUB_PATH)
+    if (STUB_PATHS.has(file.path,))
       continue;
     /**
      Nodes still to visit, each with its enclosing named function.
@@ -355,7 +362,7 @@ await describe({
     it({
       name: 'FINDS Date.now called, handed on, computed or destructured, a date read as a number by getTime, '
         + 'valueOf, unary plus or Number, performance.timeOrigin and Temporal.Now, in source and tests alike, '
-        + 'and leaves stamps, performance.now, other objects\' now and the wall-clock stub',
+        + 'and leaves stamps, performance.now, other objects\' now, and the wall-clock stub and its test',
       fn: async () => {
         expect(wallClockReads({
           files: [
@@ -387,10 +394,12 @@ await describe({
               text: 'export const began = Date.now();',
               isTest: true,
             },),
-            fixture({
-              path: STUB_PATH,
-              text: 'Date.now = () => 0;',
-              isTest: true,
+            ...[...STUB_PATHS,].map(function exempt(path,): SourceText {
+              return fixture({
+                path,
+                text: 'Date.now = () => new Date().getTime() - Date.now();',
+                isTest: true,
+              },);
             },),
           ],
         },),).toEqual([

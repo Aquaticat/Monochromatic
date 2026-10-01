@@ -1060,8 +1060,8 @@ await describe({
           name: 'RUNS THE NEXT ENTRY when the system clock is set forward two hours during the first, under a budget '
             + 'of an hour that milliseconds of real work leave almost whole, where the wall clock read the budget '
             + 'spent and skipped it',
-          fn: async () => {
-            using wall = stubWallClock({ atMs: WALL_START_MS, },);
+          fn: async ctx => {
+            const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
             /** Scripted repair that sets the clock forward, then fails as a transport would. */
             const steppingRepair: typeof repairTranslation = async () => {
               wall.step({ byMs: 2 * HOUR_MS, },);

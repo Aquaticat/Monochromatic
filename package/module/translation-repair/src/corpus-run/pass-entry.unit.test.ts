@@ -2741,9 +2741,9 @@ await describe({
     it({
       name: 'RECORDS THE ENTRY\'S OWN DURATION when the system clock is set back an hour while it settles (ledger '
         + 'B78), where the artifact carried an hour less than nothing, which the two-lane reader refuses as no count',
-      fn: async () => {
+      fn: async ctx => {
         await using dirs = await throwawayDirs();
-        using wall = stubWallClock({ atMs: WALL_START_MS, },);
+        const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
 
         /**
          Schemas the run served, in order.
