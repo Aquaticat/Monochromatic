@@ -4898,7 +4898,8 @@ Two findings are open from this batch.
 a picture or a comment,
 or any of whose lines is a contributor line,
 so prose following a label in one block passes as apparatus;
-how often the pinned archives carry such a block is to be measured before any tightening.
+how often the pinned archives carry such a block is to be measured before any tightening;
+B81 measured none and closes it.
 And `revisionFootnoteFindings` reads each revision against the archive as it came,
 while `archive-block-repair.ts` composes the revisions it accepts into one text,
 so two revisions harmless alone could together leave a footnote defect no check sees;
@@ -15568,6 +15569,101 @@ a check guarding a relation between parts of a composed text
 reads each part's change in the text the changes already accepted leave;
 `mistake-prevention.md`,
 "Checks on one part of a composed text".
+
+### B81: an apparatus check that vouched for a block on one of its lines
+
+Found by T8's eighteenth batch,
+which left it open.
+`isVerifiableEditorialArchiveBlock` (`archive-block-evidence.ts`) corroborates a reviewer's claim
+that an unclaimed archive block is translation-side apparatus:
+a contributor line,
+a citation,
+a picture,
+a comment.
+It accepted a block when any line declared contributors,
+or when the block opened with a label,
+a picture
+or a comment it closed somewhere,
+so prose beside the apparatus passed with it;
+and it matched the "translated by" and "translation by" labels as raw prefixes,
+so "Translation byproducts" passed as a label (the B23 family).
+
+Measured first,
+as the batch asked
+(`b81-editorial-census.mjs` in the audit's scratch folder,
+which prints entry ids,
+block indices,
+counts and masked shapes only):
+over the 92 pinned archives' 2,446 top-level blocks,
+the check accepted 40,
+38 by a contributor line and 2 bare `Translation:` labels,
+39 of them a single line,
+and none carried anything outside its apparatus.
+So the loose arms reached nothing in the pinned corpus.
+Its verdict also never changes the text that ships
+(inference from `archive-block-review-stage.ts`):
+it decides whether an "editorial-context" retention counts as an anchored voice,
+which moves the block's record between unresolved and retained after a naturalness review,
+and whether that review is bought;
+revisions come only from "revise" voices,
+and a block either way stands as the archive wrote it.
+The tightening is the check meaning what its TSDoc says,
+"narrow",
+for any later pin and for the record each block keeps.
+
+The red case (`060fb6bf4`) holds six blocks the check should refuse and five it should keep;
+a probe over the build (`b81-red-probe.mjs`) read all six as accepted.
+`d6d72cbcf` first moved the contributor reader's line logic into `contributorDeclarationLines`,
+so the check and the reader of declared names read the same lines,
+with a test of its own;
+exporting it took `pipeline-barrel.ts` over its line budget,
+and the identity exports moved to `identity-barrel.ts`.
+Fixed (`3a1577c42`):
+with the block's comments blanked (`maskHtmlComments`;
+one left open refuses the block),
+each line a reader sees must be a declaring line,
+a line opening with a label at word edges,
+or a line Markdown reads as pictures and nothing else visible;
+closed comments alone are still apparatus.
+The fix first bounded the label's end with a test of its own,
+against "Words inside words",
+which sends a phrase looked for in prose through `word-bounds.ts`;
+`382763ca5` reads it with `wordStarts` instead.
+On both forms the census accepted the same 40 blocks
+(a diff of each id list against the one taken before the fix printed nothing).
+
+What a label line says after its label is not read,
+and the TSDoc says so:
+whether `Translator: Mittens. The cat won an award` names a person or tells of one is the reviewers' to judge,
+and a structural reading cannot tell a sentence break from "Ms." without guessing;
+among the blocks the check accepted,
+no label line outside the contributor lines carries text after its label.
+
+Guard-offs on the fixed tree,
+one per build,
+each read with the stage test file and the build probe,
+each restored with `git diff` printing nothing after:
+the label's end left open failed the longer-word block alone,
+on the first form and again on `382763ca5`'s;
+the picture line's "nothing besides" off failed the picture-then-prose block alone;
+every line turned into any line failed the three multi-line prose blocks;
+the open-comment refusal off failed the earlier case's open comment;
+comment-only acceptance off failed the comment-only blocks in both cases;
+and the reader's continuation off failed the continuation cases in the reader's tests and the check's.
+
+Calls made here are open to veto:
+
+- the check is tightened though the pinned corpus reaches none of its loose arms,
+  since its contract says narrow and a later pin could reach them;
+- the label line's tail is left to the reviewers rather than to a sentence heuristic;
+- `rendersAsNothing` decides a line a reader sees,
+  so a line of invisible characters asks nothing of the block.
+
+Recurrence:
+a check that vouches for a whole block reads every part a reader sees,
+never one part or the block's edges;
+`mistake-prevention.md`,
+"Checks that vouch for a whole block".
 
 ## Process mistakes in this audit
 

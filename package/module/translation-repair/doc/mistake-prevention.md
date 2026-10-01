@@ -774,6 +774,9 @@ and a refusal written with a typographic apostrophe matched no marker stored wit
 An address that only began with a source link's was read as that destination kept,
 and the neutral pronoun was counted only between listed marks,
 so a dash or a slash after han hid it (ledger B23).
+The archive review's apparatus labels were matched as raw prefixes,
+so "Translation byproducts" read as the "translation by" label,
+and the first fix bounded the label with a test of its own rather than `wordStarts` (ledger B81).
 Two fixes in that pass nearly regressed:
 reading a rendering's destinations through the strict grammar alone went silent
 where the grammar refuses the rendering,
@@ -796,6 +799,9 @@ where a hyphen and an underscore join.
 A word that is never a piece of an address,
 a path,
 a handle or a compound goes through `tokenStarts` (`word-bounds.ts`).
+A label looked for at the start of a line is a start `wordStarts` returns at offset 0,
+never a `startsWith`,
+and a fix that bounds a match reaches for these readers before writing its own boundary test.
 A link destination is read as the grammar reads it,
 the skeleton's `link-url` atoms,
 never as a substring of the rendering,
@@ -1554,6 +1560,35 @@ What enforces it:
 `corpus-run/archive-block-repair.unit.test.ts` holds the two-marker case;
 habit and review elsewhere,
 since no scan tells a relation check from a check on one part.
+
+## Checks that vouch for a whole block
+
+What happened:
+the archive review's apparatus check accepted a block when any line declared contributors,
+or when the block opened with a label,
+a picture or a comment and ended with a closed one,
+so prose beside the apparatus would have passed as apparatus with it (ledger B81).
+The pinned archives held no such block,
+which a census showed before the check was tightened,
+so the looseness had decided nothing yet.
+
+The rule:
+a check that vouches for a whole block's kind
+reads every part a reader sees,
+never one part,
+the block's first characters
+or its edges.
+It reads the block as the page shows it:
+comments blanked and a comment left open refused,
+invisible lines skipped by `rendersAsNothing`,
+and markup read by the parser rather than by a leading character.
+Its case pairs each accepted shape with the same shape beside prose,
+and a census over the pinned archives counts what it accepts before and after a change,
+by block id.
+
+What enforces it:
+the stage test's apparatus case holds each shape beside prose and alone;
+habit and review elsewhere.
 
 ## Text that shows nothing
 
