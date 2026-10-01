@@ -34,6 +34,65 @@ extends = "test:unit"
 [tasks."verify:extension"]
 run = ["mise run //package/pi-plugin/openai-fast:build:js:node", "node src/host.unit.test.ts"]
 
+[tasks."package:help"]
+description = "Inspect installed pi package-manager command help"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { fileURLToPath } from 'node:url'
+const run = promisify(execFile)
+const entry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent'))
+const cli = fileURLToPath(new URL('./cli.js', entry))
+for (const command of ['install', 'remove']) {
+  const result = await run(process.execPath, [cli, command, '--help'])
+  process.stdout.write(result.stdout)
+  process.stderr.write(result.stderr)
+}
+'''
+
+[tasks."install:global"]
+description = "Replace the incumbent global fast package without changing defaults, scope, or other settings"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { execFile } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
+import { promisify } from 'node:util'
+import { resolve, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { getAgentDir } from '@earendil-works/pi-coding-agent'
+class GlobalInstallationError extends Error {
+  constructor(message) { super(message); this.name = 'GlobalInstallationError' }
+}
+const run = promisify(execFile)
+const entry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent'))
+const cli = fileURLToPath(new URL('./cli.js', entry))
+const hostRoot = fileURLToPath(new URL('../', entry))
+const settingsPath = join(getAgentDir(), 'settings.json')
+const before = JSON.parse(await readFile(settingsPath, 'utf8'))
+const packagePath = resolve('.')
+for (const args of [['remove', 'npm:pi-openai-codex-fast'], ['install', packagePath]]) {
+  const result = await run(process.execPath, [cli, ...args], { env: { ...process.env, PI_PACKAGE_DIR: hostRoot } })
+  process.stdout.write(result.stdout)
+  process.stderr.write(result.stderr)
+}
+const after = JSON.parse(await readFile(settingsPath, 'utf8'))
+const { packages: previousPackages, ...previousSettings } = before
+const { packages: installedPackages, ...installedSettings } = after
+if (JSON.stringify(previousSettings) !== JSON.stringify(installedSettings)) {
+  throw new GlobalInstallationError('Pi package installation changed non-package settings; inspect the settings diff before continuing.')
+}
+if (installedPackages.includes('npm:pi-openai-codex-fast') || !installedPackages.includes(packagePath)) {
+  throw new GlobalInstallationError('Pi global package replacement did not produce the expected package declarations.')
+}
+const unrelatedBefore = previousPackages.filter(function unrelated(value) { return value !== 'npm:pi-openai-codex-fast' && value !== packagePath })
+const unrelatedAfter = installedPackages.filter(function unrelated(value) { return value !== packagePath })
+if (JSON.stringify(unrelatedBefore) !== JSON.stringify(unrelatedAfter)) {
+  throw new GlobalInstallationError('Pi package installation changed unrelated package declarations; inspect the settings diff before continuing.')
+}
+console.log('PASS global replacement: unrelated settings, defaults, model scope, and other packages preserved')
+'''
+
 [tasks."verify:live"]
 description = "Verify normal and priority requests in disposable pi state using only the existing Codex access token"
 shell = "node --input-type=module-typescript -e"
