@@ -28,6 +28,8 @@ import {
   prepareDocumentPair,
   preparePassEntry,
   repairArchiveBlocks,
+  REVISION_SHAPE_REFUSED,
+  revisionFootnoteFindings,
   type BenchSeating,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -37,6 +39,7 @@ import {
   type SyntheticClient,
   type UnclaimedTargetBlock,
 } from '../../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_ONLY,
@@ -454,6 +457,89 @@ await describe({
             },);
 
             expect(repaired.targetText,).toBe(`${front}\n\n${kept}\n\nThe cat wakes.`);
+          },
+        },),
+        it({
+          name: 'WITHHOLDS A REVISION THAT THE REVISIONS ALREADY APPLIED MAKE A FOOTNOTE DEFECT: two blocks each '
+            + 'drop a marker of one note, either alone leaves the note referenced, and the page keeps the earlier '
+            + 'block\'s marker rather than shipping a note nothing references (ledger B80)',
+          fn: async () => {
+            /** Earlier block, reviewed after the later one. */
+            const earlier = 'Mittens[^1] naps on the sill.';
+            /** Later block, reviewed first. */
+            const later = 'Biscuit[^1] naps by the door.';
+            /** The note both blocks reference. */
+            const note = '[^1]: Both are tabbies.\n';
+            const targetText = `${earlier}\n\n${later}\n\n${note}`;
+            /** Every reviewer's revision of the earlier block. */
+            const earlierRevision = 'Mittens naps on the sill.';
+            /** Every reviewer's revision of the later block. */
+            const laterRevision = 'Biscuit naps by the door.';
+            const blocks = [
+              blockAt({ targetText, blockText: earlier, blockId: 'block/0', }),
+              blockAt({ targetText, blockText: later, blockId: 'block/1', }),
+            ];
+            const sourceContexts = new Map(blocks.map(function context(block,): readonly [string, string] {
+              return [archiveBlockIdentity({ block, targetText, }), '猫在睡觉。',] as const;
+            },),);
+            // Each revision alone leaves the note referenced, the case's premise.
+            expect([
+              revisionFootnoteFindings({ modelId: ROSTER[0], blockText: earlier, replacementText: earlierRevision, targetText, },),
+              revisionFootnoteFindings({ modelId: ROSTER[0], blockText: later, replacementText: laterRevision, targetText, },),
+            ],).toEqual([
+              [],
+              [],
+            ],);
+            /** Lines the review logged, each behind its level. */
+            const lines: string[] = [];
+            const repaired = await repairArchiveBlocks({
+              client: correctionClient({
+                // The block under review is quoted after the page, and the
+                // later block's archive wording is gone from the page once
+                // its revision stands.
+                replacementFor: function replacement(prompt,): string {
+                  return prompt.lastIndexOf(earlier,) > prompt.lastIndexOf(later,)
+                    ? earlierRevision
+                    : laterRevision;
+                },
+              },),
+              modelIds: ROSTER,
+              targetText,
+              sourceContexts,
+              blocks,
+              signal: new AbortController().signal,
+              exchangeTimeoutMs: 5_000,
+              l: levelCapturingLogger({ lines, },),
+            },);
+            /** The page as the later block's revision leaves it. */
+            const afterLater = `${earlier}\n\n${laterRevision}\n\n${note}`;
+            /** Footnote refusals the review warned of, without their tag. */
+            const withheld = lines
+              .filter(function refusal(line,): boolean {
+                return line.startsWith('warn ',) && line.includes(REVISION_SHAPE_REFUSED,);
+              },)
+              .map(function untagged(line,): string {
+                return line.slice(line.indexOf('] ',) + 2,);
+              },)
+              .toSorted();
+            expect({
+              page: repaired.targetText,
+              withheld,
+            },).toEqual({
+              page: afterLater,
+              withheld: ROSTER.flatMap(function refusedIn(modelId,): readonly string[] {
+                return revisionFootnoteFindings({
+                  modelId,
+                  blockText: earlier,
+                  replacementText: earlierRevision,
+                  targetText: afterLater,
+                },);
+              },)
+                .toSorted(),
+            },);
+            // The page the earlier revisions would join carries the defect,
+            // one refusal per reviewer.
+            expect(withheld,).toHaveLength(ROSTER.length,);
           },
         },),
         it({
