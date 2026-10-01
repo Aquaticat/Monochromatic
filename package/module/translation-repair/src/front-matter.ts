@@ -1,4 +1,8 @@
-import { parse as parseYaml, } from 'yaml';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import {
+  parse as parseYaml,
+  YAMLError,
+} from 'yaml';
 
 import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 
@@ -58,91 +62,38 @@ export type SplitMdxDocument = {
 //region Front matter splitting
 
 /**
- Names the fault code a YAML refusal assigned, or its class.
- 
- @param cause - caught value, of unknown type by construction
- 
- @returns Parser's own code where it set one, class name otherwise
- 
- @example
- ```ts
- const code = yamlFaultCode({ cause, },);
- ```
- */
-function yamlFaultCode({ cause, }: { readonly cause: unknown; },): string {
-  if (!Error.isError(cause,))
-    return NAMED_POSITION_UNSTATED;
-
-  if (('code' in cause) && ((typeof cause.code) === 'string'))
-    return cause.code;
-
-  return cause.name;
-}
-
-/**
- Reads the line and column a YAML refusal stopped at.
- 
- @param cause - caught value, of unknown type by construction
- 
- @returns Position phrase, or a stand-in where the refusal stated none
- 
- @example
- ```ts
- const at = yamlLineColumn({ cause, },);
- ```
- */
-function yamlLineColumn({ cause, }: { readonly cause: unknown; },): string {
-  if ((!Error.isError(cause,)) || (!('linePos' in cause)))
-    return NAMED_POSITION_UNSTATED;
-
-  /**
-   Start and end positions the parser recorded, when it recorded any.
-   
-   READ BY INDEX MEMBERSHIP rather than `Array.isArray`, which narrows to
-   `any[]` and hands every element out untyped.
-   */
-  const { linePos, } = cause;
-
-  if (((typeof linePos) !== 'object')
-    || (linePos === null)
-    || (!(0 in linePos)))
-    return NAMED_POSITION_UNSTATED;
-
-  /**
-   Position the refusal begins at.
-   */
-  const start: unknown = linePos[0];
-
-  if (((typeof start) !== 'object')
-    || (start === null)
-    || (!('line' in start))
-    || ((typeof start.line) !== 'number')
-    || (!('col' in start))
-    || ((typeof start.col) !== 'number'))
-    return NAMED_POSITION_UNSTATED;
-
-  return `line ${String(start.line,)} column ${String(start.col,)}`;
-}
-
-/**
  Describes where a YAML refusal stopped, quoting nothing it read.
  
- @param cause - caught value, of unknown type by construction
+ READ THROUGH THE PARSER'S OWN CLASS, whose position and code are typed.
+ `yaml` raises a syntax refusal as a `YAMLError` carrying both, its position
+ always set from the line counter `parse` creates, and an anchor fault (an
+ alias naming no anchor, an anchor holding itself) as a plain
+ `ReferenceError` or `TypeError` carrying neither. Shape checks on an
+ unknown value stood here, and their stand-ins for a value not an `Error`
+ and for a malformed position answered states the parser never produces,
+ where a changed parser should fail loudly instead (T8, twenty-third batch).
+ 
+ @param cause - the parser's refusal
  
  @returns Phrase naming position and fault code
+ 
+ @throws {@link Error} when a syntax refusal carries no position, which the
+ parser's own `parse` never leaves unset
  
  @example
  ```ts
  `refused to parse ${yamlRefusalSite({ cause, },)}`;
  ```
  */
-function yamlRefusalSite({ cause, }: { readonly cause: unknown; },): string {
-  /**
-   Where the parser stopped, or that it said.
-   */
-  const at = yamlLineColumn({ cause, },);
+function yamlRefusalSite({ cause, }: { readonly cause: Readonly<Error>; },): string {
+  if (!(cause instanceof YAMLError))
+    return `at ${NAMED_POSITION_UNSTATED} (${cause.name})`;
 
-  return `at ${at} (${yamlFaultCode({ cause, },)})`;
+  /**
+   Position the refusal begins at.
+   */
+  const [start,] = nonNullishOrThrow(cause.linePos,);
+  return `at line ${String(start.line,)} column ${String(start.col,)} (${cause.code})`;
 }
 
 /**
@@ -180,7 +131,7 @@ export class FrontMatterParseError extends Error {
    new FrontMatterParseError({ cause: error, },);
    ```
    */
-  public constructor({ cause, }: { readonly cause: unknown; },) {
+  public constructor({ cause, }: { readonly cause: Readonly<Error>; },) {
     super(
       `Front matter fence pair found but YAML inside refused to parse ${
         yamlRefusalSite({ cause, },)
@@ -322,6 +273,11 @@ function parseFrontMatterYaml(
     return parseYaml(yamlSource,);
   }
   catch (error) {
+    // A REFUSAL IS AN ERROR: the parser throws nothing else, and anything
+    // else keeps propagating unchanged, as the shared narrowing does with
+    // what it does not recognise.
+    if (!Error.isError(error,))
+      throw error;
     throw new FrontMatterParseError({ cause: error, },);
   }
 }
