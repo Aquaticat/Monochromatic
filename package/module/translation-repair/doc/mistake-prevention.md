@@ -1640,6 +1640,9 @@ so two blocks each dropping one marker of a note passed alone
 and together shipped the note with nothing referencing it (ledger B80).
 The check's own comment called a footnote a relation between blocks,
 and the check still read one block's change at a time.
+The attestation looked for a quote in a whole reference line,
+the package's own head and failure notes included,
+so a quote of a page's address verified as if the page had said it (ledger B104).
 
 The rule:
 a check guarding a relation between parts of a text
@@ -1651,9 +1654,16 @@ never in the input the composition started from,
 and the composition applies its changes in an order that keeps every later part's place.
 Its case pairs two changes each harmless alone and harmful together,
 and asserts both premises before the composed refusal.
+A check that looks for a source's words in text the package composed
+reads only the part that carries those words
+(`referenceLinePageText` for a reference line),
+never the heads,
+addresses or notes the package wrote around them,
+and every reader of that composition goes through the same cut.
 
 What enforces it:
-`corpus-run/archive-block-repair.unit.test.ts` holds the two-marker case;
+`corpus-run/archive-block-repair.unit.test.ts` holds the two-marker case,
+and `reference-attest-verdict.unit.test.ts` the address and failure-note quotes;
 habit and review elsewhere,
 since no scan tells a relation check from a check on one part.
 

@@ -6,15 +6,17 @@ import type { AttestationItemWire, } from './reference-attest-wire.ts';
 import {
   type NumberedReferenceLine,
   numberedReferenceLines,
+  referenceLinePageText,
 } from './reference-line-head.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Reference attestation verdicts
 // What the check made of each item one voice answered: kept as answered, kept
 // under the reference that states it, or dropped with the side not found
-// (ledger B25). The reference quote is looked for in one reference line at a
-// time, so the sheet line credits the page that states the detail and a quote
-// cannot run from one page's line into the next. An item naming a reference
+// (ledger B25). The reference quote is looked for in what one reference line
+// says its page states, so the sheet line credits the page that states the
+// detail, a quote cannot run from one page's line into the next, and an address
+// or a failure note verifies nothing (ledger B104). An item naming a reference
 // that does not state its quote takes the number of the first that does
 // rather than losing its vote: the quote was found word for word, and a lost
 // vote can cost the detail its quorum, which is the Mio20 loss the cited
@@ -116,12 +118,14 @@ function verdictOf(
     text: archiveText,
   },);
   /**
-   Reference lines stating the reference quote, in block order.
+   Reference lines whose page states the reference quote, in block order.
+   Read in what the page states, never the line's head or the lookup's note
+   on a page it could not fetch or read (ledger B104).
    */
   const stating = lines.filter(function states(line,): boolean {
     return quoteIsIn({
       quote: item.referenceQuote,
-      text: line.line,
+      text: referenceLinePageText({ line, },),
     },);
   },);
   /**

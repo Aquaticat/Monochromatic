@@ -184,15 +184,63 @@ export function numberedReferenceLines(
 }
 
 /**
- What each cited page says, as the lookup wrote it after the line's head:
- its title and its text, without the mark, the number or the address. Lines
- that do not open with the reference mark are skipped, since the block a
+ What one reference line says its page states: the title and the text the
+ lookup wrote after the head, without the mark, the number or the address.
+
+ READ WHERE A QUOTE IS TO BE FOUND ON A PAGE (ledger B28, B104): an address,
+ the head's number and the lookup's own note on a page it could not fetch or
+ read are no page's statement, so a page with nothing readable states nothing.
+ An address holds no space, so the first space after it ends it.
+
+ @param line - line with the number its head carries, as
+ `numberedReferenceLines` reads it
+
+ @returns What the page states, empty where it states nothing
+
+ @example
+ ```ts
+ const line = { reference: 1, line: '- reference 1 https://cats.example/a ("Naps"): Mittens naps.', };
+ referenceLinePageText({ line, },);
+ // => '("Naps"): Mittens naps.'
+ ```
+ */
+export function referenceLinePageText({ line, }: { readonly line: NumberedReferenceLine; },): string {
+  /**
+   The line as written, and the number its head carries.
+   */
+  const {
+    line: written,
+    reference,
+  } = line;
+  /**
+   Line after its number: the address, then what the page says.
+   */
+  const afterNumber = written.slice(`${REFERENCE_LINE_MARK}${String(reference,)} `.length,);
+  /**
+   Where the address ends: a space opens the title, or follows the colon
+   after an address the page gave no title.
+   */
+  const addressEnd = afterNumber.indexOf(' ',);
+  if (addressEnd === NOT_FOUND)
+    return '';
+  /**
+   What follows the address.
+   */
+  const text = afterNumber.slice(addressEnd + 1,);
+  if (text.startsWith(REFERENCE_UNFETCHED,) || (text === REFERENCE_UNREADABLE))
+    return '';
+  return text;
+}
+
+/**
+ What each cited page says, as the lookup wrote it after the line's head.
+ Lines that do not open with the reference mark are skipped, since the block a
  sheet carries puts the attestation's lines under the pages and each of those
  quotes the archive; a page the lookup could not fetch or read says nothing.
 
  READ WHERE A QUOTE IS TO BE FOUND ON A PAGE (ledger B28): the archive block
- review anchors a retention in what a cited page states, and an address, an
- attested line or the lookup's own failure note is no page's statement.
+ review anchors a retention in what a cited page states, read by
+ `referenceLinePageText` as the attestation reads it.
 
  @param referenceContext - reference lines, with any attested lines under them
 
@@ -218,28 +266,12 @@ export function referencePageTexts(
       return line.startsWith(REFERENCE_LINE_MARK,);
     },);
   return numberedReferenceLines({ referenceContext: pageLines.join(LINE_BREAK,), },)
-    .flatMap(function pageText({
-      reference,
-      line,
-    },): readonly string[] {
+    .flatMap(function pageText(line,): readonly string[] {
       /**
-       Line after its number: the address, then what the page says.
+       What this page states, empty where it states nothing.
        */
-      const afterNumber = line.slice(`${REFERENCE_LINE_MARK}${String(reference,)} `.length,);
-      /**
-       Where the address ends: a space opens the title, or follows the colon
-       after an address the page gave no title.
-       */
-      const addressEnd = afterNumber.indexOf(' ',);
-      if (addressEnd === NOT_FOUND)
-        return [];
-      /**
-       What follows the address.
-       */
-      const text = afterNumber.slice(addressEnd + 1,);
-      if (text.startsWith(REFERENCE_UNFETCHED,) || (text === REFERENCE_UNREADABLE))
-        return [];
-      return [text,];
+      const text = referenceLinePageText({ line, },);
+      return (text === '') ? [] : [text,];
     },);
 }
 

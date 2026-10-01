@@ -11250,12 +11250,17 @@ Red `44e02fcda`,
 fix `5bf2388ff`,
 sheet `f2ddc237c`.
 
-Left open:
+Left open,
+and closed by B104:
 a reference quote is looked for in the whole line,
 head included,
 so a quote of a page's address or title verifies as if the page stated it.
 The body cannot be cut from the line reliably while a title may itself contain the separator,
 so this waits on a line format that marks where the body starts.
+B104 reads the title as the page's own,
+as B28 already did,
+so only the address needs cutting,
+and an address holds no space.
 
 ### B26: wordings that differ from what stands only in layout (B21, family four)
 
@@ -17385,6 +17390,62 @@ Recurrence:
 `mistake-prevention.md`,
 "Copies of shared code"
 and "Current-state docs".
+
+### B104: an attestation quote verified against a reference line's head
+
+Found 2026-10-01 (UTC) reading B25's open item again,
+red in `2b413912f`,
+fixed in the commit adding this entry.
+`verdictOf` (`reference-attest-verdict.ts`) looked for an item's reference quote in the whole reference line,
+so a quote of the page's address,
+of the head's own "reference 1",
+or of the lookup's note on a page it could not fetch or read
+verified as if the page had stated it.
+B25 left this open because a title may hold any separator,
+so the body cannot be cut from the line;
+B28's `referencePageTexts` had since read a page's statement as everything after the address,
+title included,
+and an address holds no space,
+so the cut needs no body marker.
+
+`referenceLinePageText` (`reference-line-head.ts`) now reads one numbered line's page text,
+empty for an unfetched or unreadable page,
+and both readers go through it:
+the attestation and the archive block review's `referencePageTexts`.
+The red case builds its block with the lookup's own `referenceLineOf`
+and drops the address,
+head and both failure notes while keeping the title and the text;
+a case on `referenceLinePageText` covers a head with nothing after it,
+which the lookup never writes.
+
+Measured before the fix
+(`b25-head-only.mjs` in the audit's scratch folder,
+rebuilding each line from the lookup cache as B25 did):
+of 106 verified items the run logs record,
+25 could not be rebuilt and all 81 others quote their named page's text,
+none its head alone,
+so no stored result moves.
+With each quote replaced by its own page's address,
+the positive control,
+all 81 moved to the head alone.
+No cache version moves:
+the translate slice key folds in the attested lines
+and the repair slice key the reference context,
+so an attestation that keeps different items changes the key.
+
+Guard shown to fail:
+with `verdictOf` reading the whole line again,
+the red case failed alone in its file,
+and passed once the page text was restored.
+
+Calls made here are open to veto:
+
+- a page's title is part of what it states,
+  as B28 already read it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Checks on one part of a composed text".
 
 ## Process mistakes in this audit
 

@@ -108,6 +108,7 @@ export {
   REFERENCE_UNREADABLE,
   referenceLineHead,
   ReferenceLineHeadError,
+  referenceLinePageText,
   referencePageTexts,
 } from './reference-line-head.ts';
 export {

@@ -1,7 +1,7 @@
 /**
  Tests the reference line head (ledger B25): the lookup writes it and the
- attestation reads the number back, so a quote is looked for in the one line
- of the reference an item names.
+ attestation reads the number back, so a quote is looked for in what the one
+ line of the reference an item names says its page states (ledger B104).
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -20,6 +20,7 @@ import {
   referenceLineHead,
   ReferenceLineHeadError,
   referenceLineOf,
+  referenceLinePageText,
   referencePageTexts,
 } from '../dist/final/node/index.mjs';
 
@@ -210,6 +211,33 @@ await describe({
         expect(function read(): void {
           referencePageTexts({ referenceContext: '- reference two https://cats.example/b: Mittens purrs.', },);
         },).toThrow(ReferenceLineHeadError,);
+      },
+    },),
+    it({
+      name: 'READS one line\'s page text as the attestation does (ledger B104): the title and text after the '
+        + 'address, and nothing for a failure note, an unreadable page or a head with nothing after it',
+      fn: async () => {
+        /**
+         Page text of each line, read line by line.
+         */
+        const texts = numberedReferenceLines({
+          referenceContext: [
+            '- reference 1 https://cats.example/a ("Naps"): Mittens naps on the sill.',
+            '- reference 2 https://cats.example/b: Mittens purrs at dawn.',
+            '- reference 3 https://cats.example/c: could not be fetched (NOT FOUND)',
+            '- reference 4 https://cats.example/d: nothing readable on the page',
+            '- reference 5 https://cats.example/e',
+          ].join('\n',),
+        },).map(function pageTextOf(line,): string {
+          return referenceLinePageText({ line, },);
+        },);
+        expect(texts,).toEqual([
+          '("Naps"): Mittens naps on the sill.',
+          'Mittens purrs at dawn.',
+          '',
+          '',
+          '',
+        ],);
       },
     },),
   ],
