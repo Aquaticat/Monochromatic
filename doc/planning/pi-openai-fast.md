@@ -318,9 +318,18 @@ The subsequent type check reported test-fixture typing errors,
  not production-source errors;
  runtime tests and standards cleanup remain in progress.
 Native adapter readiness now uses an explicit side-effect-free auth check.
-Host investigation found that `ModelRuntime.getAvailable(providerId)` does not populate its auth snapshot,
- unlike the full availability refresh used by the real CLI.
-The fixture is being corrected at that boundary without weakening lifecycle assertions.
+Host investigation found that provider-scoped availability does not populate its auth snapshot,
+ and availability-only refresh can be superseded by registration-triggered cached refreshes.
+The fixture now awaits `ModelRuntime.refresh({ allowNetwork: false })`,
+ matching real CLI initialization.
+That readiness control passed and native request,
+ auth,
+ history,
+ tool,
+ and overflow-recognition scenarios reached their intended boundaries.
+Independent review corrected catalog inventories,
+ native wrapper reference identity,
+ and raw-code-versus-message assertions without weakening the request contract.
 
 The guarded `verify:live` task passed through the real pi CLI for ordinary and fast Luna selections.
 Both returned the expected marker.
@@ -331,6 +340,8 @@ The verifier used disposable settings and the existing access token through an e
 This proves live request intent and response handling,
  not acceleration or live OAuth refresh.
 The recursion-rejection control also emitted the expected `LiveVerificationError` before credential access.
+Allowed/rejected disposable fixtures and a removed-guard scratch control passed,
+ showing the guard assertion depends on the guard.
 
 No global package installation or settings change has been performed yet.
 

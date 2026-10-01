@@ -299,8 +299,9 @@ model refresh,
 canonical history,
 and OAuth lifecycle require candidate verification.
 
-The combined extension has not been implemented or verified.
-See [the design interview](../planning/pi-openai-fast.md).
+The consumer extension is implemented at `package/pi-plugin/openai-fast`.
+Its live request checks passed;
+ complete offline verification is tracked in [the design record](../planning/pi-openai-fast.md).
 
 ## What does not work
 
@@ -317,6 +318,142 @@ native fixture providers use `registerNativeProvider()`.
 The fixture also required a configured disposable auth snapshot.
 CommonJS `require.resolve()` did not satisfy the installed packages' import-only exports;
 the harnesses now use ESM imports of the repository-installed distributions.
+
+## Host verification findings
+
+### Availability queries and auth snapshots are separate surfaces
+
+Installed `coding-agent/dist/core/model-runtime.js:308` returns provider-scoped availability
+without publishing the auth snapshot used by native virtual routing.
+The no-provider query calls the snapshot refresh:
+
+```js
+// coding-agent/dist/core/model-runtime.js:308
+if (providerId) {
+  const available = await this.models.getAvailable(providerId, options);
+  return available;
+}
+await this.queueAvailabilityRefresh(options?.signal);
+```
+
+Registration also schedules cached model refreshes.
+A snapshot-only query can be superseded by that pending work.
+The real CLI's service initializer awaits full cached/availability initialization.
+A disposable readiness control reported both providers unconfigured after the earlier fixture,
+then both configured after `runtime.refresh({ allowNetwork: false })`.
+Using that same initialization boundary in the fixture produced canonical original-model responses.
+
+Complete catalogs intentionally include physical targets.
+Filtered availability excludes them.
+The inventories must be checked separately rather than calling every complete-catalog entry virtual.
+
+### Composed provider identity is not native registration ownership
+
+Installed `coding-agent/dist/core/model-runtime.js:581` reloads configuration and recomposes providers:
+
+```js
+// coding-agent/dist/core/model-runtime.js:581
+this.config = await ModelConfig.load(this.modelsPath);
+this.configureRadiusProviders();
+this.rebuildProviders();
+```
+
+The no-plugin control confirmed that configured provider wrapper references change after refresh.
+The fast extension preserves the registered native provider,
+normal request behavior,
+authentication,
+and original model header precedence.
+It does not promise wrapper-object identity across native recomposition.
+
+### Native error codes remain observable separately from formatted messages
+
+The Codex adapter has its own failure conversion before the shared Responses parser.
+Installed `ai/dist/api/openai-codex-responses.js:554` chooses the supplied message:
+
+```js
+// ai/dist/api/openai-codex-responses.js:554
+if (type === "response.failed") {
+  const code = response?.error?.code;
+  const message = response?.error?.message;
+  throw new CodexApiError(message || "Codex response failed", { code, payload: event });
+}
+```
+
+Tests assert that exact native message,
+the raw `provider_stream_event` failure code,
+original model identity,
+terminal error status,
+and no fallback request.
+They do not invent an extension-specific error formatter.
+
+## Live verification and recursion control
+
+The real pi CLI ordinary and fast Luna probes returned the expected marker.
+The captured requests used `gpt-6-luna`,
+with `service_tier: "priority"` only for fast selection.
+Disposable settings used only the existing access token through an environment override.
+No real credential store was copied or refreshed.
+This is not a live OAuth-refresh test or an acceleration measurement.
+
+The live driver's recursion guard was tested with allowed and rejected disposable fixtures.
+Removing the guard from a scratch copy made the same rejection assertion fail.
+Both controls stopped before inference at either the recursion guard or an expired synthetic-token check.
+
+```sh
+# Repository root
+node "${HOME}/temp/agent/pi-fast-live-guard.test.ts"
+```
+
+```ts
+// ~/temp/agent/pi-fast-live-guard.test.ts
+import { strict as assert } from 'node:assert';
+import { execFile } from 'node:child_process';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { promisify } from 'node:util';
+import { test } from 'node:test';
+
+const run = promisify(execFile);
+const packageRoot = resolve('package/pi-plugin/openai-fast');
+
+test('live driver rejects recursion before token access, and the same assertion fails without its guard', async function verifyGuard() {
+  const fixture = await mkdtemp(join(tmpdir(), 'pi-fast-guard-'));
+  try {
+    const authDir = join(fixture, '.pi', 'agent');
+    await mkdir(authDir, { recursive: true });
+    await writeFile(join(authDir, 'auth.json'), JSON.stringify({ 'openai-codex': { type: 'oauth', access: 'expired-synthetic-fixture', expires: 0 } }));
+    const config = await readFile(join(packageRoot, 'mise.toml'), 'utf8');
+    const taskStart = config.indexOf('[tasks."verify:live"]');
+    const bodyStart = config.indexOf("run = '''", taskStart) + "run = '''".length;
+    const bodyEnd = config.indexOf("'''", bodyStart);
+    const body = config.slice(bodyStart, bodyEnd);
+    const guard = "if (process.env.PI_OPENAI_FAST_LIVE_CHILD === '1') {\n  throw new LiveVerificationError('Live verification cannot recursively launch itself')\n}\n";
+    assert.ok(body.includes(guard));
+    async function diagnostic({ source, flag }) {
+      try {
+        await run(process.execPath, ['--input-type=module-typescript', '-e', source], {
+          cwd: packageRoot, env: { ...process.env, HOME: fixture, PI_OPENAI_FAST_LIVE_CHILD: flag },
+        });
+        throw new Error('Fixture unexpectedly passed');
+      } catch (error) {
+        assert.ok(error && typeof error === 'object' && 'stderr' in error);
+        return String(error.stderr);
+      }
+    }
+    const rejected = await diagnostic({ source: body, flag: '1' });
+    assert.ok(rejected.includes('cannot recursively launch itself'));
+    const accepted = await diagnostic({ source: body, flag: '0' });
+    assert.ok(accepted.includes('currently valid original Codex OAuth access token'));
+    const removed = await diagnostic({ source: body.replace(guard, ''), flag: '1' });
+    assert.ok(!removed.includes('cannot recursively launch itself'));
+    assert.ok(removed.includes('currently valid original Codex OAuth access token'));
+    console.log('PASS: allowed/rejected fixtures and removed-guard positive control; no real credentials or inference used');
+  } finally {
+    await rm(fixture, { recursive: true, force: true });
+  }
+});
+```
 
 ## Upstream filing artifact
 
