@@ -26,12 +26,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-  writeFile,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 
 import {
   describe,
@@ -39,6 +34,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { resolvePool, } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -170,7 +166,8 @@ await describe({
         /**
          Throwaway artifacts directory, so nothing real is read or written.
          */
-        const artifactsDir = await mkdtemp(`${tmpdir()}/pool-names-`,);
+        await using scratch = await scratchDir({ prefix: 'pool-names-', },);
+        const artifactsDir = scratch.path;
 
         await placeArtifact({ artifactsDir, entryId: ASKED, },);
         await placeArtifact({ artifactsDir, entryId: UNASKED, },);
@@ -182,14 +179,6 @@ await describe({
           artifactsDir,
           names: [`${ASKED}.json`,],
         },);
-
-        await rm(
-          artifactsDir,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
 
         // The unasked entry is on disk and would be pooled by a census that
         // listed the directory for itself. Its absence here is the forwarding.

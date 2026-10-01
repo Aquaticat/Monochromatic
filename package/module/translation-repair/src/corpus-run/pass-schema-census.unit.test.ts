@@ -14,10 +14,8 @@
 
 import {
   mkdir,
-  mkdtemp,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -30,23 +28,22 @@ import {
   censusBySchema,
   type SchemaCensusRow,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
- Directory holding one file per classification, plus a directory and a
- suffix-less file the listing skips.
- 
- @returns Directory path
- 
+ Writes one file per classification, plus a directory and a suffix-less file
+ the listing skips, into a caller-owned directory.
+
+ @param dir - case-owned directory to write into
+
+ @returns Nothing; the files are the effect
+
  @example
  ```ts
- const artifactsDir = await censusDirectory();
+ await censusDirectory({ dir: scratch.path, },);
  ```
  */
-async function censusDirectory(): Promise<string> {
-  /**
-   Disposable root, never the package's own runs directory.
-   */
-  const artifactsDir = await mkdtemp(join(tmpdir(), 'pass-schema-census-',),);
+async function censusDirectory({ dir: artifactsDir, }: { readonly dir: string; },): Promise<void> {
   await writeFile(join(artifactsDir, 'declared.json',), JSON.stringify({ artifactSchemaVersion: 4, },), 'utf8',);
   await writeFile(join(artifactsDir, 'unversioned.json',), JSON.stringify({ sliceCount: 0, },), 'utf8',);
   await writeFile(
@@ -58,7 +55,6 @@ async function censusDirectory(): Promise<string> {
   await writeFile(join(artifactsDir, 'array.json',), '[1]', 'utf8',);
   await mkdir(join(artifactsDir, 'directory.json',),);
   await writeFile(join(artifactsDir, 'notes.txt',), 'not an artifact', 'utf8',);
-  return artifactsDir;
 }
 
 /**
@@ -104,8 +100,10 @@ await describe({
       name: 'REFUSES to skip a file that is not JSON, classifying it malformed with the parser\'s reason, '
         + 'since a census that ignores part of the directory reports the directory fine',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'pass-schema-census-', },);
+        await censusDirectory({ dir: scratch.path, },);
         const row = rowFor({
-          rows: await censusBySchema({ artifactsDir: await censusDirectory(), },),
+          rows: await censusBySchema({ artifactsDir: scratch.path, },),
           entryId: 'not-json',
         },);
 
@@ -118,8 +116,10 @@ await describe({
     it({
       name: 'classifies JSON that is not a record as malformed too, apart from every generation',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'pass-schema-census-', },);
+        await censusDirectory({ dir: scratch.path, },);
         const row = rowFor({
-          rows: await censusBySchema({ artifactsDir: await censusDirectory(), },),
+          rows: await censusBySchema({ artifactsDir: scratch.path, },),
           entryId: 'array',
         },);
 
@@ -130,8 +130,10 @@ await describe({
     it({
       name: 'reads a declared generation with its number',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'pass-schema-census-', },);
+        await censusDirectory({ dir: scratch.path, },);
         const row = rowFor({
-          rows: await censusBySchema({ artifactsDir: await censusDirectory(), },),
+          rows: await censusBySchema({ artifactsDir: scratch.path, },),
           entryId: 'declared',
         },);
 
@@ -145,8 +147,10 @@ await describe({
     it({
       name: 'reads a record with no version field as unversioned',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'pass-schema-census-', },);
+        await censusDirectory({ dir: scratch.path, },);
         const row = rowFor({
-          rows: await censusBySchema({ artifactsDir: await censusDirectory(), },),
+          rows: await censusBySchema({ artifactsDir: scratch.path, },),
           entryId: 'unversioned',
         },);
 
@@ -157,8 +161,10 @@ await describe({
     it({
       name: 'classifies a version that is not a count as unreadable rather than throwing out of the census',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'pass-schema-census-', },);
+        await censusDirectory({ dir: scratch.path, },);
         const row = rowFor({
-          rows: await censusBySchema({ artifactsDir: await censusDirectory(), },),
+          rows: await censusBySchema({ artifactsDir: scratch.path, },),
           entryId: 'unreadable',
         },);
 
@@ -169,7 +175,9 @@ await describe({
     it({
       name: 'lists exactly the regular artifacts, in name order, skipping the directory and the suffix-less file',
       fn: async () => {
-        const rows = await censusBySchema({ artifactsDir: await censusDirectory(), },);
+        await using scratch = await scratchDir({ prefix: 'pass-schema-census-', },);
+        await censusDirectory({ dir: scratch.path, },);
+        const rows = await censusBySchema({ artifactsDir: scratch.path, },);
 
         expect(rows.map(function toId(row,): string {
           return row.entryId;

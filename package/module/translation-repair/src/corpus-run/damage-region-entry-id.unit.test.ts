@@ -21,12 +21,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-  writeFile,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -48,6 +43,7 @@ import {
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -348,10 +344,8 @@ async function censusOverOneEntry(): Promise<
   /**
    Throwaway pool holding exactly one artifact.
    */
-  const artifactsDir = await mkdtemp(join(
-    tmpdir(),
-    'translation-repair-regions-',
-  ),);
+  await using scratch = await scratchDir({ prefix: 'translation-repair-regions-', },);
+  const artifactsDir = scratch.path;
 
   await writeFile(
     join(
@@ -381,14 +375,6 @@ async function censusOverOneEntry(): Promise<
     artifactsDir,
     files: [`${ENTRY_ID}.json`,],
   },);
-
-  await rm(
-    artifactsDir,
-    {
-      recursive: true,
-      force: true,
-    },
-  );
 
   return census;
 }

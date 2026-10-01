@@ -7,11 +7,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  readFile,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -24,6 +20,7 @@ import {
   StatedRefusalError,
   writeSheetPair,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
   name: writeSheetPair.name,
@@ -35,7 +32,8 @@ await describe({
         /**
          Disposable directory the pair lands in.
          */
-        const dir = await mkdtemp(join(tmpdir(), 'sheet-write-',),);
+        await using scratch = await scratchDir({ prefix: 'sheet-write-', },);
+        const dir = scratch.path;
         await writeSheetPair({
           dir,
           sheetName: 'damage-sheet.md',
@@ -62,7 +60,8 @@ await describe({
         /**
          Disposable directory the pair lands in.
          */
-        const dir = await mkdtemp(join(tmpdir(), 'sheet-write-',),);
+        await using scratch = await scratchDir({ prefix: 'sheet-write-', },);
+        const dir = scratch.path;
 
         /**
          Where the sheet landed.

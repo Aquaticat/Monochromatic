@@ -37,10 +37,8 @@
 
 import {
   mkdir,
-  mkdtemp,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -54,6 +52,7 @@ import {
   type Placement,
   readPlacement,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Commit a fixture records, spelled the way git writes one.
@@ -71,29 +70,26 @@ const LONG_TIP = 'b'.repeat(64,);
 const FIXED_DIGEST = `sha256-tree-v1:${'c'.repeat(64,)}`;
 
 /**
- Writes one disposable artifacts directory holding exactly these files.
- 
+ Writes exactly these files into a caller-owned artifacts directory.
+
+ @param dir - case-owned directory to write into
+
  @param files - file name to raw contents, written verbatim so a case can
  write something that is not JSON at all
- 
- @returns Directory holding them
- 
+
+ @returns Nothing; the files are the effect
+
  @example
  ```ts
- const dir = await artifactsDirWith({ files: { 'Mittens.json': '{}', }, },);
+ await artifactsDirWith({ dir: scratch.path, files: { 'Mittens.json': '{}', }, },);
  ```
  */
 async function artifactsDirWith(
-  { files, }: { readonly files: Readonly<Record<string, string>>; },
-): Promise<string> {
-  /**
-   Disposable root for this case.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'artifact-placement-',
-  ),);
-
+  { dir, files, }: {
+    readonly dir: string;
+    readonly files: Readonly<Record<string, string>>;
+  },
+): Promise<void> {
   await Promise.all(Object.entries(files,)
     .map(async function writeOne([
       name,
@@ -108,18 +104,17 @@ async function artifactsDirWith(
         'utf8',
       );
     },),);
-  return dir;
 }
 
 /**
  Places one artifact written from a record, which is what a real one is.
- 
+
  @param body - fields this artifact records
- 
+
  @param name - file name to write it under, which the identity check reads
- 
+
  @returns How it places
- 
+
  @example
  ```ts
  const placement = await placementOf({ body: { id: 'Mittens', }, name: 'Mittens.json', },);
@@ -134,8 +129,10 @@ async function placementOf(
     readonly name?: ArtifactFileName;
   },
 ): Promise<Placement> {
+  await using scratch = await scratchDir({ prefix: 'artifact-placement-', },);
+  await artifactsDirWith({ dir: scratch.path, files: { [name]: JSON.stringify(body,), }, },);
   return await readPlacement({
-    artifactsDir: await artifactsDirWith({ files: { [name]: JSON.stringify(body,), }, },),
+    artifactsDir: scratch.path,
     name,
   },);
 }
@@ -453,8 +450,10 @@ await describe({
       name: 'REFUSES a file whose name is nothing but the suffix, since the '
         + 'id it would be keyed by is the empty string',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'artifact-placement-', },);
+        await artifactsDirWith({ dir: scratch.path, files: { '.json': '{}', }, },);
         expect(await readPlacement({
-          artifactsDir: await artifactsDirWith({ files: { '.json': '{}', }, },),
+          artifactsDir: scratch.path,
           name: '.json',
         },),)
           .toEqual({ kind: 'untagged', },);
@@ -466,10 +465,13 @@ await describe({
         + 'different finding from unplaceable: it belongs to the reader that '
         + 'reports malformed files rather than to the operator who deletes',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'artifact-placement-', },);
+        await artifactsDirWith({
+          dir: scratch.path,
+          files: { 'Mittens.json': '{ "id": "Mittens", "tip"', },
+        },);
         expect(await readPlacement({
-          artifactsDir: await artifactsDirWith({
-            files: { 'Mittens.json': '{ "id": "Mittens", "tip"', },
-          },),
+          artifactsDir: scratch.path,
           name: 'Mittens.json',
         },),)
           .toEqual({ kind: 'malformed', },);
@@ -481,8 +483,10 @@ await describe({
         + 'throw. The read used to sit outside the guard, so a vanished file '
         + 'aborted the whole census, which now runs at pass startup',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'artifact-placement-', },);
+        await artifactsDirWith({ dir: scratch.path, files: {}, },);
         expect(await readPlacement({
-          artifactsDir: await artifactsDirWith({ files: {}, },),
+          artifactsDir: scratch.path,
           name: 'Vanished.json',
         },),)
           .toEqual({ kind: 'malformed', },);
@@ -496,7 +500,9 @@ await describe({
         /**
          Disposable root holding a directory where an artifact should be.
          */
-        const dir = await artifactsDirWith({ files: {}, },);
+        await using scratch = await scratchDir({ prefix: 'artifact-placement-', },);
+        const dir = scratch.path;
+        await artifactsDirWith({ dir, files: {}, },);
         await mkdir(join(
           dir,
           'Mittens.json',

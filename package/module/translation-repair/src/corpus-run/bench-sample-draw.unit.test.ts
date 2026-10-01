@@ -33,11 +33,8 @@ import { fileURLToPath, } from 'node:url';
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import {
   dirname,
   join,
@@ -52,6 +49,7 @@ import {
   type CorpusPin,
   sampleBenchSlices,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -127,23 +125,25 @@ function git(
  
  @param files - repository-relative paths mapped to their whole contents
  
- @returns Pin naming that clone and that commit
- 
+ @returns Pin naming that clone and that commit, removed when its
+ `await using` scope ends
+
  @example
  ```ts
- const pin = await clonedCorpusHolding({ files: { 'README.md': 'nothing', }, },);
+ await using pin = await clonedCorpusHolding({ files: { 'README.md': 'nothing', }, },);
  ```
  */
 async function clonedCorpusHolding(
   { files, }: { readonly files: Readonly<Record<string, string>>; },
-): Promise<CorpusPin> {
+): Promise<CorpusPin & AsyncDisposable> {
   /**
    Throwaway clone standing in for the corpus.
    */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'translation-repair-bench-corpus-',
-  ),);
+  const scratch = await scratchDir({ prefix: 'translation-repair-bench-corpus-', },);
+  /**
+   Clone directory this case owns.
+   */
+  const cloneDir = scratch.path;
 
   git({
     cwd: cloneDir,
@@ -219,6 +219,9 @@ async function clonedCorpusHolding(
         'HEAD',
       ],
     },),
+    [Symbol.asyncDispose]: async function removeClone(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
   };
 }
 
@@ -256,13 +259,10 @@ await describe({
     it({
       name: 'pins Git after one header inspection despite later PATH drift and honors an explicit path',
       fn: async () => {
-        const pin = await clonedCorpusHolding({ files: {
+        await using pin = await clonedCorpusHolding({ files: {
           [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
           [`people/${ENTRY_ID}/page.en.md`]: TARGET_PAGE,
         } });
-        await using owned = { [Symbol.asyncDispose]: async () => {
-          await rm(pin.cloneDir, { recursive: true, force: true });
-        } };
         const gitPath = await resolveGit();
         const apiPath = fileURLToPath(new URL('../../dist/final/node/index.mjs', import.meta.url));
         // The child observes header opens and changes PATH after inspection, so resolver caching cannot hide lost pin ownership.
@@ -324,7 +324,7 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         /**
          Clone carrying a commit and no `people/` directory.
          */
-        const pin = await clonedCorpusHolding({ files: { 'README.md': 'no entries here\n', }, },);
+        await using pin = await clonedCorpusHolding({ files: { 'README.md': 'no entries here\n', }, },);
 
         /**
          What the draw said about it.
@@ -335,14 +335,6 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
             pin,
           },);
         },);
-
-        await rm(
-          pin.cloneDir,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
 
         expect(refusal,).toBeInstanceOf(Error,);
         expect((refusal as Error).message,).toContain('bench sample found no slices in the pinned corpus',);
@@ -356,7 +348,7 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         /**
          Clone carrying one entry with both sides present.
          */
-        const pin = await clonedCorpusHolding({
+        await using pin = await clonedCorpusHolding({
           files: {
             [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
             [`people/${ENTRY_ID}/page.en.md`]: TARGET_PAGE,
@@ -370,14 +362,6 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
           count: 1,
           pin,
         },);
-
-        await rm(
-          pin.cloneDir,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
 
         expect(sample.length,).toBe(1,);
         expect(sample[0]?.entryId,).toBe(ENTRY_ID,);
@@ -393,7 +377,7 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         /**
          Clone carrying one readable entry beside one missing its English side.
          */
-        const pin = await clonedCorpusHolding({
+        await using pin = await clonedCorpusHolding({
           files: {
             [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
             [`people/${ENTRY_ID}/page.en.md`]: TARGET_PAGE,
@@ -408,14 +392,6 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
           count: 2,
           pin,
         },);
-
-        await rm(
-          pin.cloneDir,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
 
         // The half entry contributed nothing and cost nothing. Anything other
         // than the readable entry's own slices here means the draw either threw

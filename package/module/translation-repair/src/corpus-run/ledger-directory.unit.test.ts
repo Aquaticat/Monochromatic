@@ -23,11 +23,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -43,6 +41,7 @@ import {
   refusalOf,
   RunJsonUnreadableError,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Ledger directory tests
 
@@ -70,31 +69,29 @@ const ONE_ROUND = JSON.stringify({
 },);
 
 /**
- Builds a disposable ledger directory holding exactly these files.
- 
+ Builds a ledger directory holding exactly these files, nested inside a
+ caller-owned directory.
+
  ON A THROWAWAY, never a run directory: these cases write malformed files on
  purpose, and a real ledger is what the reader is protecting.
- 
+
+ @param dir - case-owned directory the ledger nests under
+
  @param files - file names mapped to their exact bytes
- 
+
  @returns Ledger directory the case should read
- 
+
  @example
  ```ts
- const dir = await ledgerOf({ files: { '000001.json': ONE_ROUND, }, },);
+ const ledgerDir = await ledgerOf({ dir: scratch.path, files: { '000001.json': ONE_ROUND, }, },);
  ```
  */
 async function ledgerOf(
-  { files, }: { readonly files: Readonly<Record<string, string>>; },
+  { dir: root, files, }: {
+    readonly dir: string;
+    readonly files: Readonly<Record<string, string>>;
+  },
 ): Promise<string> {
-  /**
-   Disposable root for this case.
-   */
-  const root = await mkdtemp(join(
-    tmpdir(),
-    'ledger-directory-',
-  ),);
-
   /**
    Where the files land.
    */
@@ -130,15 +127,13 @@ await describe({
         it({
           name: 'READS an absent directory as empty rather than raising, since a run may have written none',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
             /**
              Reading of a directory that was never created.
              */
             const reading = await readLedgerDirectory({
               dir: join(
-                await mkdtemp(join(
-                  tmpdir(),
-                  'ledger-directory-',
-                ),),
+                scratch.path,
                 'ledger',
               ),
             },);
@@ -150,11 +145,13 @@ await describe({
         it({
           name: 'READS a clean directory with nothing refused',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
             /**
              Reading of two well-formed contests.
              */
             const reading = await readLedgerDirectory({
               dir: await ledgerOf({
+                dir: scratch.path,
                 files: {
                   '000001.json': ONE_ROUND,
                   '000002.json': ONE_ROUND,
@@ -169,6 +166,7 @@ await describe({
         it({
           name: 'READS EVERY FILE past a refusal, so one bad file costs only itself',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
             /**
              Reading of a good file sitting between two unreadable ones, so a
              reader that stopped at the first refusal would report zero contests
@@ -176,6 +174,7 @@ await describe({
              */
             const reading = await readLedgerDirectory({
               dir: await ledgerOf({
+                dir: scratch.path,
                 files: {
                   '000001.json': '{"task":"whiskerfield-1",',
                   '000002.json': ONE_ROUND,
@@ -196,11 +195,13 @@ await describe({
         it({
           name: 'REFUSES well-formed JSON that is not a contest, naming the field rather than the value',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
             /**
              Reading of a file that parses but holds no contest.
              */
             const reading = await readLedgerDirectory({
               dir: await ledgerOf({
+                dir: scratch.path,
                 files: { '000001.json': '{"cat":"Bixbyfluff"}', },
               },),
             },);
@@ -214,11 +215,13 @@ await describe({
         it({
           name: 'KEEPS contest order, which is the order the recorder stamped',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
             /**
              Reading whose files were written out of order on disk.
              */
             const reading = await readLedgerDirectory({
               dir: await ledgerOf({
+                dir: scratch.path,
                 files: {
                   '000003.json': ONE_ROUND.replace(
                     'whiskerfield-0',
@@ -249,12 +252,14 @@ await describe({
           name: 'LEAVES OUT A CONTEST STILL BEING WRITTEN: the recorder writes each file under a `.partial` name and '
             + 'renames it, so a partial file is a write in flight or cut short, never a contest (ledger B65)',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
             /**
              Reading of one contest beside two partial files, one whole and one
              cut short, as a report run mid-write or after a crash finds them.
              */
             const reading = await readLedgerDirectory({
               dir: await ledgerOf({
+                dir: scratch.path,
                 files: {
                   '000001.json': ONE_ROUND,
                   '000002.json.4242.partial': ONE_ROUND,
@@ -271,10 +276,11 @@ await describe({
           name: 'LEAVES OUT AN ENTRY THAT IS NOT A FILE: a directory named like a contest is no contest the run '
             + 'recorded, and a symlink to one would count that contest twice (ledger B65)',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'ledger-directory-', },);
             /**
              Ledger holding one contest the recorder wrote.
              */
-            const dir = await ledgerOf({ files: { '000001.json': ONE_ROUND, }, },);
+            const dir = await ledgerOf({ dir: scratch.path, files: { '000001.json': ONE_ROUND, }, },);
             await mkdir(join(
               dir,
               '000002.json',

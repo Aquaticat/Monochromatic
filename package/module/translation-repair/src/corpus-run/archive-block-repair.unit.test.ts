@@ -9,13 +9,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -51,6 +44,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -580,7 +574,8 @@ await describe({
         it({
           name: 'SETTLES after one correction round, recording still-unclaimed blocks as findings',
           fn: async () => {
-            const dir = await mkdtemp(join(tmpdir(), 'archive-block-cycle-',),);
+            await using scratch = await scratchDir({ prefix: 'archive-block-cycle-', },);
+            const dir = scratch.path;
             // The corrector that once alternated forever now gets exactly one
             // round: prepare, correct, re-prepare, and whatever stays unclaimed
             // becomes a finding on the returned preparation.
@@ -601,8 +596,6 @@ await describe({
               l,
               outsideReads: NO_OUTSIDE_READS,
             },);
-            await rm(dir, { recursive: true, force: true, },);
-
             expect(paired.prepared
               .targetText
               .includes('Aside B',),).toBe(true,);

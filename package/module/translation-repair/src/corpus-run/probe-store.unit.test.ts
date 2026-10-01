@@ -12,11 +12,9 @@
  */
 
 import {
-  mkdtemp,
   readdir,
   readFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -29,23 +27,7 @@ import {
   persistProbeRun,
   type ProbeRun,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Makes a throwaway runs directory for one case.
- 
- @returns Path of the directory
- 
- @example
- ```ts
- const runsDir = await scratch();
- ```
- */
-async function scratch(): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    'probe-store-',
-  ),);
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Complete run record every case starts from.
@@ -129,7 +111,8 @@ await describe({
         + 'where it went, so a caller can say where the answers are instead of '
         + 'leaving a reader to search a runs directory for them',
       fn: async () => {
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'probe-store-', },);
+        const runsDir = scratch.path;
         const at = await persistProbeRun({
           runsDir,
           probeName: 'coverage-probe',
@@ -162,7 +145,8 @@ await describe({
         + 'yet, since the first run of any probe meets exactly that and a store '
         + 'that refused it would lose the very run it was built to keep',
       fn: async () => {
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'probe-store-', },);
+        const runsDir = scratch.path;
         await persistProbeRun({
           runsDir,
           probeName: 'audit-sensitivity',
@@ -184,7 +168,8 @@ await describe({
         + 'filename would destroy the run each rerun was bought to be compared '
         + 'against',
       fn: async () => {
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'probe-store-', },);
+        const runsDir = scratch.path;
         const first = await persistProbeRun({
           runsDir,
           probeName: 'coverage-probe',
@@ -230,7 +215,8 @@ await describe({
         + 'change moved a verdict, and collapsing the before and after into one '
         + 'file answers it by deleting half the evidence',
       fn: async () => {
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'probe-store-', },);
+        const runsDir = scratch.path;
         await persistProbeRun({
           runsDir,
           probeName: 'coverage-probe',
@@ -264,7 +250,8 @@ await describe({
         + 'months later answers for itself rather than needing the transcript '
         + 'this module exists to stop depending on',
       fn: async () => {
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'probe-store-', },);
+        const runsDir = scratch.path;
         const at = await persistProbeRun({
           runsDir,
           probeName: 'coverage-probe',
@@ -288,7 +275,8 @@ await describe({
         + 'straight into a name is painful to quote, copy and complete on every '
         + 'shell a reader might reach for it from',
       fn: async () => {
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'probe-store-', },);
+        const runsDir = scratch.path;
         const at = await persistProbeRun({
           runsDir,
           probeName: 'coverage-probe',

@@ -50,6 +50,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Logger the preparation writes to, whose lines are not under test.
@@ -328,7 +329,8 @@ await describe({
             /**
              Directory this case owns for its entry caches.
              */
-            const dir = await mkdtemp(join(tmpdir(), 'pass-outside-reads-',),);
+            await using scratch = await scratchDir({ prefix: 'pass-outside-reads-', },);
+            const dir = scratch.path;
             /**
              The preparation.
              */
@@ -345,7 +347,6 @@ await describe({
               l,
               outsideReads,
             },);
-            await rm(dir, { recursive: true, force: true, },);
             /**
              What every slice sheet reads about the page.
              */

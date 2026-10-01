@@ -31,7 +31,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   mkdir,
-  mkdtemp,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -41,6 +40,7 @@ import {
   countCachedSlices,
   readAttemptOutcome,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
   name: '',
@@ -168,10 +168,8 @@ await describe({
             /**
              Throwaway cache directory standing in for one entry's.
              */
-            const dir = await mkdtemp(join(
-              tmpdir(),
-              'whiskers-cache-',
-            ),);
+            await using scratch = await scratchDir({ prefix: 'whiskers-cache-', },);
+            const dir = scratch.path;
 
             await Promise.all([
               'generation.txt',
@@ -214,10 +212,8 @@ await describe({
             /**
              Throwaway cache directory standing in for one entry's.
              */
-            const dir = await mkdtemp(join(
-              tmpdir(),
-              'whiskers-cache-',
-            ),);
+            await using scratch = await scratchDir({ prefix: 'whiskers-cache-', },);
+            const dir = scratch.path;
 
             await writeFile(
               join(

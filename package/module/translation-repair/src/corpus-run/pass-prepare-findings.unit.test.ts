@@ -15,13 +15,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -46,6 +39,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -203,7 +197,8 @@ async function prepared(
   /**
    Directory this case owns for its entry caches.
    */
-  const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-findings-',),);
+  await using scratch = await scratchDir({ prefix: 'pass-prepare-findings-', },);
+  const dir = scratch.path;
   /**
    The preparation.
    */
@@ -223,7 +218,6 @@ async function prepared(
       references: async () => REFERENCE_LINES,
     },
   },);
-  await rm(dir, { recursive: true, force: true, },);
   return {
     targetText: paired.prepared.targetText,
     findings: paired.prepared.alignmentFindings,

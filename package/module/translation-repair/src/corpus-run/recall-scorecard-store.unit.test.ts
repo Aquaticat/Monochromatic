@@ -9,11 +9,9 @@
  */
 
 import {
-  mkdtemp,
   readdir,
   readFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -27,23 +25,7 @@ import {
   RECALL_SCORECARD_DIR,
   type RecallScorecardRecord,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Fresh runs directory per case.
- 
- @returns Empty temporary directory
- 
- @example
- ```ts
- const runsDir = await scratch();
- ```
- */
-async function scratch(): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    'recall-scorecard-store-',
-  ),);
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  A scorecard as the benchmark would hand it over.
@@ -95,7 +77,8 @@ await describe({
         /**
          Fresh runs directory.
          */
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'recall-scorecard-store-', },);
+        const runsDir = scratch.path;
 
         /**
          Where the store put it.
@@ -130,7 +113,8 @@ await describe({
         /**
          Fresh runs directory.
          */
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'recall-scorecard-store-', },);
+        const runsDir = scratch.path;
 
         /**
          First run's path.
@@ -187,7 +171,8 @@ await describe({
         /**
          Fresh runs directory.
          */
-        const runsDir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'recall-scorecard-store-', },);
+        const runsDir = scratch.path;
         await persistRecallScorecard({
           runsDir,
           record: BASE_RECORD,

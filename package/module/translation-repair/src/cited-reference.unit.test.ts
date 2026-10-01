@@ -13,8 +13,7 @@
  @module
  */
 
-import { mkdtemp, writeFile, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -49,6 +48,7 @@ import {
   type ReferenceRecord,
   writeCachedReference,
 } from '../dist/final/node/index.mjs';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  Abort signal that never fires.
@@ -347,10 +347,8 @@ await describe({
             /**
              Throwaway cache home.
              */
-            const dir = await mkdtemp(join(
-              tmpdir(),
-              'reference-cache-',
-            ),);
+            await using scratch = await scratchDir({ prefix: 'reference-cache-', },);
+            const dir = scratch.path;
             expect(referenceCacheDir({ env: { [LOOKUP_CACHE_DIR_VAR]: dir, }, },),).toBe(join(
               dir,
               'reference',
@@ -399,10 +397,8 @@ await describe({
         it({
           name: 'BUYS a page once and READS IT BACK on every later ask, so a resumed run never hits the page again',
           fn: async () => {
-            const dir = await mkdtemp(join(
-              tmpdir(),
-              'reference-lookup-',
-            ),);
+            await using scratch = await scratchDir({ prefix: 'reference-lookup-', },);
+            const dir = scratch.path;
             const {
               fetchFn,
               seen,
@@ -491,10 +487,8 @@ await describe({
         it({
           name: 'ASKS NOTHING without a link or without a key, and otherwise CARRIES one line per cited page in order',
           fn: async () => {
-            const dir = await mkdtemp(join(
-              tmpdir(),
-              'reference-block-',
-            ),);
+            await using scratch = await scratchDir({ prefix: 'reference-block-', },);
+            const dir = scratch.path;
             const {
               fetchFn,
               seen,
@@ -556,10 +550,8 @@ await describe({
         it({
           name: 'NAMES a page the transport could not read instead of dropping the line',
           fn: async () => {
-            const dir = await mkdtemp(join(
-              tmpdir(),
-              'reference-block-fail-',
-            ),);
+            await using scratch = await scratchDir({ prefix: 'reference-block-fail-', },);
+            const dir = scratch.path;
             /**
              Transport that refuses everything.
 

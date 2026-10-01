@@ -12,8 +12,6 @@
 
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
-import { mkdtemp, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -21,6 +19,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Exit code `reportingRefusals` sets for a stated refusal.
@@ -82,6 +82,12 @@ async function runWithoutKeys(): Promise<CommandRun> {
   );
 
   /**
+   Throwaway runs directory the child points at, removed once this function's
+   `await using` scope ends (after the child's streams close, below).
+   */
+  await using scratch = await scratchDir({ prefix: 'window-trial-probe-', },);
+
+  /**
    Child running the command against a throwaway runs directory.
    */
   const child = spawn(
@@ -91,7 +97,7 @@ async function runWithoutKeys(): Promise<CommandRun> {
       cwd: join(import.meta.dirname, '../..',),
       env: {
         ...env,
-        TRANSLATION_REPAIR_RUNS_DIR: await mkdtemp(join(tmpdir(), 'window-trial-probe-',),),
+        TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
       },
       stdio: [
         'ignore',

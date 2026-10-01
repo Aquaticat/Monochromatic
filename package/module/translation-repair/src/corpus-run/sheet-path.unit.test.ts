@@ -13,11 +13,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  writeFile,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -31,25 +27,7 @@ import {
   resolveSheetPath,
   UnsafeSeedError,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Fresh throwaway directory standing in for a runs directory.
- 
- Never the real one: these cases plant files that would read as graded work.
- 
- @returns Directory path
- 
- @example
- ```ts
- const runsDir = await throwawayRunsDir();
- ```
- */
-async function throwawayRunsDir(): Promise<string> {
-  return mkdtemp(join(
-    tmpdir(),
-    'translation-repair-sheet-path-',
-  ),);
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
   name: resolveSheetPath.name,
@@ -58,7 +36,8 @@ await describe({
       name: 'names each draw output distinctly, and gives the manifest a json '
         + 'extension since it is data rather than a sheet anyone reads',
       fn: async () => {
-        const runsDir = await throwawayRunsDir();
+        await using scratch = await scratchDir({ prefix: 'translation-repair-sheet-path-', },);
+        const runsDir = scratch.path;
 
         expect(
           await resolveSheetPath({
@@ -99,7 +78,8 @@ await describe({
       name: 'marks a preliminary draw in the name, so a scratch draw taken '
         + 'before coverage filled can never be mistaken for the gate',
       fn: async () => {
-        const runsDir = await throwawayRunsDir();
+        await using scratch = await scratchDir({ prefix: 'translation-repair-sheet-path-', },);
+        const runsDir = scratch.path;
 
         expect(
           await resolveSheetPath({
@@ -119,7 +99,8 @@ await describe({
       name: 'refuses a final path that already exists, since the file may '
         + 'already carry hours of human grading',
       fn: async () => {
-        const runsDir = await throwawayRunsDir();
+        await using scratch = await scratchDir({ prefix: 'translation-repair-sheet-path-', },);
+        const runsDir = scratch.path;
 
         /** Path a previous draw wrote. */
         const path = await resolveSheetPath({
@@ -145,7 +126,8 @@ await describe({
         + 'overwriting graded sheets: every path is resolved before any write, '
         + 'so one existing output aborts the draw while all of them are intact',
       fn: async () => {
-        const runsDir = await throwawayRunsDir();
+        await using scratch = await scratchDir({ prefix: 'translation-repair-sheet-path-', },);
+        const runsDir = scratch.path;
 
         /** Manifest a previous draw wrote, with no sheets beside it. */
         const manifestPath = await resolveSheetPath({
@@ -172,7 +154,8 @@ await describe({
       name: 'lets a preliminary path be rewritten, because scratch draws are '
         + 'meant to be redrawn as the pool grows',
       fn: async () => {
-        const runsDir = await throwawayRunsDir();
+        await using scratch = await scratchDir({ prefix: 'translation-repair-sheet-path-', },);
+        const runsDir = scratch.path;
 
         /** Preliminary path a previous scratch draw wrote. */
         const path = await resolveSheetPath({
@@ -199,7 +182,8 @@ await describe({
       name: 'refuses a seed that would escape the runs directory, before any '
         + 'path is built from it',
       fn: async () => {
-        const runsDir = await throwawayRunsDir();
+        await using scratch = await scratchDir({ prefix: 'translation-repair-sheet-path-', },);
+        const runsDir = scratch.path;
 
         await expect(resolveSheetPath({
           runsDir,

@@ -13,8 +13,6 @@
  @module
  */
 
-import { mkdtemp, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -32,6 +30,7 @@ import {
   type RosterModelId,
   trialKey,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Logger the pick writes to.
@@ -138,21 +137,20 @@ function throwingClient(
 }
 
 /**
- Fresh throwaway ledger path.
- 
- @returns Path inside a new temporary directory
- 
+ Ledger path nested inside a case-owned directory.
+
+ @param dir - case-owned directory the ledger lives under
+
+ @returns Path inside that directory
+
  @example
  ```ts
- const path = await freshLedger();
+ const path = freshLedger({ dir: scratch.path, },);
  ```
  */
-async function freshLedger(): Promise<string> {
+function freshLedger({ dir, }: { readonly dir: string; },): string {
   return join(
-    await mkdtemp(join(
-      tmpdir(),
-      'window-pick-',
-    ),),
+    dir,
     'trial.jsonl',
   );
 }
@@ -165,6 +163,7 @@ await describe({
         + 'walk: a refusal writes no ledger row, so an aborting run would redraw the same slice, '
         + 'walk to it and die at it on every restart, never reaching the slices behind it',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-pick-', },);
         const outcome = await runPick({
           client: throwingClient({ error: new Error('unused', ), },),
           slices: LONE,
@@ -175,7 +174,7 @@ await describe({
           },
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),
@@ -190,6 +189,7 @@ await describe({
       name: 'reports a slice the ledger already holds as bought with no rows, so a resumed run '
         + 'walks past it without counting it as a refusal',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-pick-', },);
         const outcome = await runPick({
           client: throwingClient({ error: new Error('unused', ), },),
           slices: LONE,
@@ -200,7 +200,7 @@ await describe({
           },
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set(['narrow-a',
             'narrow-b',
             'wide',].map(function toKey(arm,) {

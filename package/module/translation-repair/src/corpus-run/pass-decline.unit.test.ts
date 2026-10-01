@@ -14,11 +14,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   readdir,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import {
   dirname,
   join,
@@ -40,6 +38,7 @@ import {
   removeDeclinedPages,
 } from '../../dist/final/node/index.mjs';
 import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Hex digits in a tree digest.
@@ -69,25 +68,27 @@ const ENTRY = {
 /**
  A throwaway runs directory's decline and page roots.
 
- @returns Both roots and where the entry's page would stand
+ @returns Both roots and where the entry's page would stand, removed when its
+ `await using` scope ends
 
  @example
  ```ts
- const run = await runsDirectory();
+ await using run = await runsDirectory();
  ```
  */
 async function runsDirectory(): Promise<{
   readonly declinedDir: string;
   readonly publishDir: string;
   readonly pageDir: string;
-}> {
+} & AsyncDisposable> {
+  /**
+   Runs directory this case owns.
+   */
+  const scratch = await scratchDir({ prefix: 'pass-decline-', },);
   /**
    The runs directory.
    */
-  const runsDir = await mkdtemp(join(
-    tmpdir(),
-    'pass-decline-',
-  ),);
+  const runsDir = scratch.path;
   /**
    Root of the mirrored tree.
    */
@@ -106,6 +107,9 @@ async function runsDirectory(): Promise<{
       'people',
       ENTRY.id,
     ),
+    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
   };
 }
 
@@ -197,7 +201,7 @@ await describe({
         it({
           name: 'RECORDS the decline where no page stands, the control the removal rests on',
           fn: async () => {
-            const run = await runsDirectory();
+            await using run = await runsDirectory();
 
             await decline({ run, },);
 
@@ -207,7 +211,7 @@ await describe({
         it({
           name: 'REMOVES a page an earlier crash left for the entry, so the archive ships as its note says',
           fn: async () => {
-            const run = await runsDirectory();
+            await using run = await runsDirectory();
             await mkdir(
               run.pageDir,
               { recursive: true, },
@@ -230,7 +234,7 @@ await describe({
           name: 'RETHROWS a removal failure other than a missing page and records nothing, so a page it could not '
             + 'remove never stands behind a recorded decline',
           fn: async () => {
-            const run = await runsDirectory();
+            await using run = await runsDirectory();
             // A FILE WHERE THE ENTRY'S PAGE DIRECTORY BELONGS: removing the page
             // under it fails with ENOTDIR, a failure that is not the page's absence.
             await mkdir(
@@ -264,7 +268,7 @@ await describe({
         it({
           name: 'REMOVES the page standing for an entry declined earlier, since no later pass visits it',
           fn: async () => {
-            const run = await runsDirectory();
+            await using run = await runsDirectory();
             await decline({ run, },);
             await mkdir(
               run.pageDir,
@@ -288,7 +292,7 @@ await describe({
         it({
           name: 'REMOVES NOTHING where no page stands, the control the removal rests on',
           fn: async () => {
-            const run = await runsDirectory();
+            await using run = await runsDirectory();
             await decline({ run, },);
 
             expect(await removeDeclinedPages({

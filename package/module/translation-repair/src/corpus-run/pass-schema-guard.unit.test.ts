@@ -18,11 +18,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  writeFile,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -39,6 +35,7 @@ import {
   assertResumableSchemaGeneration,
   censusBySchema,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  One built pipeline, as a digest-shaped invention.
@@ -162,30 +159,25 @@ function emptyVersionTwoArtifact(
 }
 
 /**
- Writes a throwaway artifacts directory.
- 
- Written to a fresh temporary directory every time rather than to any real runs
- directory, which holds hours of ungraded work.
- 
+ Writes artifacts into a caller-owned directory.
+
+ @param dir - case-owned directory to write into
+
  @param entries - one fixture per entry id
- 
- @returns Path of the artifacts directory
- 
+
+ @returns Nothing; the files are the effect
+
  @example
  ```ts
- const dir = await writeArtifacts({ entries: { Mittens: { version: 2, digest: DIGEST_A, }, }, },);
+ await writeArtifacts({ dir: scratch.path, entries: { Mittens: { version: 2, digest: DIGEST_A, }, }, },);
  ```
  */
 async function writeArtifacts(
-  { entries, }: { readonly entries: Readonly<Record<string, Fixture>>; },
-): Promise<string> {
-  /**
-   Disposable root for this case.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'pass-schema-guard-',
-  ),);
+  { dir, entries, }: {
+    readonly dir: string;
+    readonly entries: Readonly<Record<string, Fixture>>;
+  },
+): Promise<void> {
 
   await Promise.all(
     Object.entries(entries,)
@@ -231,8 +223,6 @@ async function writeArtifacts(
         );
       },),
   );
-
-  return dir;
 }
 
 /**
@@ -271,23 +261,27 @@ await describe({
             'ACCEPTS a fresh directory and one holding real artifacts of the generation this pass writes, '
             + 'which are the two ordinary cases and the only ones that must stay silent',
           fn: async () => {
-            await assertResumableSchemaGeneration({ artifactsDir: await writeArtifacts({ entries: {}, },), },);
-            await assertResumableSchemaGeneration({
-              artifactsDir: await writeArtifacts({
-                entries: {
-                  Mittens: {
-                    version: 5,
-                    digest: DIGEST_A,
-                    wellFormed: true,
-                  },
-                  Pouncer: {
-                    version: 5,
-                    digest: DIGEST_A,
-                    wellFormed: true,
-                  },
+            await using emptyScratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            await writeArtifacts({ dir: emptyScratch.path, entries: {}, },);
+            await assertResumableSchemaGeneration({ artifactsDir: emptyScratch.path, },);
+
+            await using filledScratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            await writeArtifacts({
+              dir: filledScratch.path,
+              entries: {
+                Mittens: {
+                  version: 5,
+                  digest: DIGEST_A,
+                  wellFormed: true,
                 },
-              },),
+                Pouncer: {
+                  version: 5,
+                  digest: DIGEST_A,
+                  wellFormed: true,
+                },
+              },
             },);
+            await assertResumableSchemaGeneration({ artifactsDir: filledScratch.path, },);
           },
         },),
         it({
@@ -297,11 +291,14 @@ await describe({
             + 'the generation this pass writes was counted as settled, never re-run, and left for whichever '
             + 'reader asked it a two-lane question first',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
             /**
              A version 1 body carrying this generation's label and nothing else
              of that generation.
              */
-            const artifactsDir = await writeArtifacts({
+            const artifactsDir = scratch.path;
+            await writeArtifacts({
+              dir: artifactsDir,
               entries: {
                 Mittens: {
                   version: 14,
@@ -329,7 +326,10 @@ await describe({
              A directory holding one artifact of each generation, both stamped with
              pipelines this invocation is not.
              */
-            const artifactsDir = await writeArtifacts({
+            await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            const artifactsDir = scratch.path;
+            await writeArtifacts({
+              dir: artifactsDir,
               entries: {
                 Mittens: {
                   version: 1,
@@ -360,22 +360,23 @@ await describe({
             'ACCEPTS a directory of several BUILDS all writing this generation, so the guard is not a second '
             + 'digest check: an operator who opted into build drift keeps exactly what they opted into',
           fn: async () => {
-            await assertResumableSchemaGeneration({
-              artifactsDir: await writeArtifacts({
-                entries: {
-                  Mittens: {
-                    version: 5,
-                    digest: DIGEST_A,
-                    wellFormed: true,
-                  },
-                  Pouncer: {
-                    version: 5,
-                    digest: DIGEST_B,
-                    wellFormed: true,
-                  },
+            await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            await writeArtifacts({
+              dir: scratch.path,
+              entries: {
+                Mittens: {
+                  version: 5,
+                  digest: DIGEST_A,
+                  wellFormed: true,
                 },
-              },),
+                Pouncer: {
+                  version: 5,
+                  digest: DIGEST_B,
+                  wellFormed: true,
+                },
+              },
             },);
+            await assertResumableSchemaGeneration({ artifactsDir: scratch.path, },);
           },
         },),
         it({
@@ -384,16 +385,17 @@ await describe({
             + 'least likely to catch: those files record a digest, so they are neither unplaceable nor '
             + 'legacy, and one written by this very build would pass every check but this one',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            await writeArtifacts({
+              dir: scratch.path,
+              entries: {
+                // No `version` key at all rather than one holding `undefined`,
+                // which is also what such an artifact looks like on disk.
+                Mittens: { digest: DIGEST_A, },
+              },
+            },);
             expect(
-              await refusalOf({
-                artifactsDir: await writeArtifacts({
-                  entries: {
-                    // No `version` key at all rather than one holding `undefined`,
-                    // which is also what such an artifact looks like on disk.
-                    Mittens: { digest: DIGEST_A, },
-                  },
-                },),
-              },),
+              await refusalOf({ artifactsDir: scratch.path, },),
             ).toContain('no schema version at all',);
           },
         },),
@@ -402,17 +404,18 @@ await describe({
             'REFUSES a generation written AFTER this build, rather than reading it as one it knows: a reader '
             + 'meeting a later shape knows only that it does not know the shape',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            await writeArtifacts({
+              dir: scratch.path,
+              entries: {
+                Mittens: {
+                  version: 99,
+                  digest: DIGEST_A,
+                },
+              },
+            },);
             expect(
-              await refusalOf({
-                artifactsDir: await writeArtifacts({
-                  entries: {
-                    Mittens: {
-                      version: 99,
-                      digest: DIGEST_A,
-                    },
-                  },
-                },),
-              },),
+              await refusalOf({ artifactsDir: scratch.path, },),
             ).toContain('a schema generation this build cannot read',);
           },
         },),
@@ -425,16 +428,17 @@ await describe({
             /**
              Whatever the refusal said.
              */
-            const said = await refusalOf({
-              artifactsDir: await writeArtifacts({
-                entries: {
-                  Mittens: {
-                    version: 1,
-                    digest: DIGEST_A,
-                  },
+            await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            await writeArtifacts({
+              dir: scratch.path,
+              entries: {
+                Mittens: {
+                  version: 1,
+                  digest: DIGEST_A,
                 },
-              },),
+              },
             },);
+            const said = await refusalOf({ artifactsDir: scratch.path, },);
             expect(said,).toContain('TRANSLATION_REPAIR_RUNS_DIR',);
             expect(said,).toContain('Restore the code those entries were settled under',);
             expect(said,).toContain('Move the incompatible artifacts to an archive directory',);
@@ -452,7 +456,10 @@ await describe({
              A directory holding a sound artifact of another generation beside
              two files that are not artifacts.
              */
-            const artifactsDir = await writeArtifacts({
+            await using scratch2 = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            const artifactsDir = scratch2.path;
+            await writeArtifacts({
+              dir: artifactsDir,
               entries: {
                 Mittens: {
                   version: 1,
@@ -497,7 +504,10 @@ await describe({
             /**
              Six entries of one foreign generation.
              */
-            const artifactsDir = await writeArtifacts({
+            await using scratch3 = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            const artifactsDir = scratch3.path;
+            await writeArtifacts({
+              dir: artifactsDir,
               entries: Object.fromEntries(
                 ['Ash', 'Biscuit', 'Clover', 'Dusty', 'Ember', 'Fig',].map(function versionOne(entryId,): [string, Fixture,] {
                   return [
@@ -532,7 +542,10 @@ await describe({
             /**
              A directory holding four different answers at once.
              */
-            const artifactsDir = await writeArtifacts({
+            await using scratch4 = await scratchDir({ prefix: 'pass-schema-guard-', },);
+            const artifactsDir = scratch4.path;
+            await writeArtifacts({
+              dir: artifactsDir,
               entries: {
                 Pouncer: {
                   version: 1,

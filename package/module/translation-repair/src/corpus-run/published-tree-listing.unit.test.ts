@@ -32,11 +32,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -54,6 +52,7 @@ import {
   settledEntryIds,
   whatThereIsToVerify,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Fixed tree directory a run publishes under, as `publish-fixed.ts` names it.
@@ -71,42 +70,31 @@ const PEOPLE = 'people';
 const ARTIFACTS = 'artifacts';
 
 /**
- Makes one disposable run directory for a case to populate.
- 
- @returns Directory that no other case shares
- 
- @example
- ```ts
- const runsDir = await disposableRun();
- ```
- */
-async function disposableRun(): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    'published-tree-listing-',
-  ),);
-}
-
-/**
  Writes a run directory holding exactly these artifact file names.
- 
+
  @param names - file names to write, verbatim, so a case can write something
  that is not an artifact at all
- 
- @returns Run directory holding them under its artifacts directory
- 
+
+ @returns Run directory holding them under its artifacts directory, removed
+ when its `await using` scope ends
+
  @example
  ```ts
- const runsDir = await runSettling({ names: ['Mittens.json',], },);
+ await using settled = await runSettling({ names: ['Mittens.json',], },);
+ const runsDir = settled.runsDir;
  ```
  */
 async function runSettling(
   { names, }: { readonly names: readonly string[]; },
-): Promise<string> {
+): Promise<{ readonly runsDir: string; } & AsyncDisposable> {
   /**
    Disposable root for this case.
    */
-  const runsDir = await disposableRun();
+  const scratch = await scratchDir({ prefix: 'published-tree-listing-', },);
+  /**
+   Run directory this case populates.
+   */
+  const runsDir = scratch.path;
 
   await mkdir(
     join(
@@ -126,7 +114,12 @@ async function runSettling(
       'utf8',
     );
   },),);
-  return runsDir;
+  return {
+    runsDir,
+    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
+  };
 }
 
 /**
@@ -210,7 +203,8 @@ await describe({
           name: 'READS a directory that is there, which is the control every '
             + 'other case departs from',
           fn: async () => {
-            const dir = await runSettling({ names: ['Mittens.json',], },);
+            await using settled = await runSettling({ names: ['Mittens.json',], },);
+            const dir = settled.runsDir;
             expect(namesOf({ reading: await namesIn({
               dir: join(
                 dir,
@@ -226,9 +220,10 @@ await describe({
           name: 'REFUSES a directory that is not there, naming ENOENT rather than '
             + 'returning an empty listing a caller reads as a clean one',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'published-tree-listing-', },);
             const reading = await namesIn({
               dir: join(
-                await disposableRun(),
+                scratch.path,
                 'nowhere',
               ),
               kind: 'directory',
@@ -242,7 +237,8 @@ await describe({
           name: 'REFUSES a path that is a file with ENOTDIR, which is a different '
             + 'operator action from ENOENT and used to read as the same Error',
           fn: async () => {
-            const dir = await disposableRun();
+            await using scratch = await scratchDir({ prefix: 'published-tree-listing-', },);
+            const dir = scratch.path;
             const file = join(
               dir,
               'not-a-directory',
@@ -302,11 +298,12 @@ await describe({
         it({
           name: 'LISTS artifact ids sorted, dropping a file that is not one',
           fn: async () => {
-            const runsDir = await runSettling({ names: [
+            await using settled = await runSettling({ names: [
               'Whiskers.json',
               'Mittens.json',
               'notes.txt',
             ], },);
+            const { runsDir, } = settled;
             expect(namesOf({ reading: await settledEntryIds({ runsDir, },), },),)
               .toEqual([
                 'Mittens',
@@ -319,7 +316,8 @@ await describe({
           name: 'SKIPS a directory and a symlink named like an artifact, which the census and the scheduler never '
             + 'count as settled either, so verifying and republishing never look for their pages (ledger B64)',
           fn: async () => {
-            const runsDir = await runSettling({ names: ['Mittens.json',], },);
+            await using settled = await runSettling({ names: ['Mittens.json',], },);
+            const { runsDir, } = settled;
             await mkdir(join(
               runsDir,
               ARTIFACTS,
@@ -342,7 +340,8 @@ await describe({
           name: 'REFUSES a run directory with no artifacts directory, rather than '
             + 'reporting a run that settled nothing',
           fn: async () => {
-            const reading = await settledEntryIds({ runsDir: await disposableRun(), },);
+            await using scratch = await scratchDir({ prefix: 'published-tree-listing-', },);
+            const reading = await settledEntryIds({ runsDir: scratch.path, },);
             expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
           },
         },),
@@ -356,7 +355,8 @@ await describe({
         it({
           name: 'LISTS published entries sorted',
           fn: async () => {
-            const runsDir = await runSettling({ names: [], },);
+            await using settled = await runSettling({ names: [], },);
+            const { runsDir, } = settled;
             await publishInto({
               runsDir,
               entryIds: [
@@ -376,7 +376,8 @@ await describe({
           name: 'SKIPS an entry directory whose page is gone, so the entry reads as unpublished rather than as '
             + 'a page that fails to read (ledger A16b)',
           fn: async () => {
-            const runsDir = await runSettling({ names: [], },);
+            await using settled = await runSettling({ names: [], },);
+            const { runsDir, } = settled;
             await publishInto({
               runsDir,
               entryIds: ['Mittens',],
@@ -399,7 +400,8 @@ await describe({
           name: 'SKIPS a file and a symlink in the people directory, which no pass writes there, rather than raising '
             + 'ENOTDIR out of the verifier or counting a page that lives under another name (ledger B65)',
           fn: async () => {
-            const runsDir = await runSettling({ names: [], },);
+            await using settled = await runSettling({ names: [], },);
+            const { runsDir, } = settled;
             await publishInto({
               runsDir,
               entryIds: [
@@ -442,7 +444,8 @@ await describe({
         it({
           name: 'REFUSES a run directory that published nothing at all',
           fn: async () => {
-            const reading = await publishedEntryIds({ runsDir: await disposableRun(), },);
+            await using scratch = await scratchDir({ prefix: 'published-tree-listing-', },);
+            const reading = await publishedEntryIds({ runsDir: scratch.path, },);
             expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
           },
         },),

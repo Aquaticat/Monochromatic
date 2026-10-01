@@ -24,10 +24,6 @@
  @module
  */
 
-import { mkdtemp, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -40,6 +36,7 @@ import {
   resolveCommit,
   tipContains,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Real git binary, the one the module under test prefers as well.
@@ -178,24 +175,26 @@ type ThrowawayHistory = Readonly<{
  Builds a three-commit history and a depth-2 clone of it, in temporary
  directories.
  
- @returns Both checkouts and the commits they share
- 
+ @returns Both checkouts and the commits they share, removed when its
+ `await using` scope ends
+
  @throws When git lists other than three commits, which means the fixture
  itself is broken and no case in this file can mean anything
- 
+
  @example
  ```ts
- const history = await throwawayHistory();
+ await using history = await throwawayHistory();
  ```
  */
-async function throwawayHistory(): Promise<ThrowawayHistory> {
+async function throwawayHistory(): Promise<ThrowawayHistory & AsyncDisposable> {
   /**
    Complete repository, written from nothing.
    */
-  const full = await mkdtemp(join(
-    tmpdir(),
-    'artifact-generation-full-',
-  ),);
+  const fullScratch = await scratchDir({ prefix: 'artifact-generation-full-', },);
+  /**
+   Directory the complete repository lives in.
+   */
+  const full = fullScratch.path;
   await git({
     repository: full,
     args: [
@@ -243,10 +242,11 @@ async function throwawayHistory(): Promise<ThrowawayHistory> {
   /**
    Shallow clone, which sees the last two commits only.
    */
-  const shallow = await mkdtemp(join(
-    tmpdir(),
-    'artifact-generation-shallow-',
-  ),);
+  const shallowScratch = await scratchDir({ prefix: 'artifact-generation-shallow-', },);
+  /**
+   Directory the shallow clone lives in.
+   */
+  const shallow = shallowScratch.path;
   await spawn(
     GIT,
     [
@@ -266,6 +266,10 @@ async function throwawayHistory(): Promise<ThrowawayHistory> {
       second,
       third,
     ],
+    [Symbol.asyncDispose]: async function removeHistory(): Promise<void> {
+      await fullScratch[Symbol.asyncDispose]();
+      await shallowScratch[Symbol.asyncDispose]();
+    },
   };
 }
 
@@ -295,9 +299,9 @@ async function refusalOf(
 
 /**
  One history for every case, built once because each case reads it and none
- writes to it.
+ writes to it, removed when this module's top-level `await using` scope ends.
  */
-const history = await throwawayHistory();
+await using history = await throwawayHistory();
 
 /**
  The three commits, named for the cases.

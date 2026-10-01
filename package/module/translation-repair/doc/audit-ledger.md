@@ -17584,6 +17584,55 @@ Recurrence:
 `mistake-prevention.md`,
 "Defaults that stand in for an input".
 
+### B108: test helpers left their temporary directories behind
+
+Found 2026-10-01 (UTC) by a census of the package's test code,
+fixed in the commit adding this entry.
+A parse of the 947 test and fixture files found 108 calls that make a temporary directory,
+in 70 files.
+43 of them,
+in 41 files,
+could leave the directory on disk:
+a helper returned the bare path with nothing to remove it,
+built a disposer no caller bound,
+removed the directory only when the case did not throw,
+or wrapped such a helper,
+and `artifact-generation-git.unit.test.ts` made two at module scope and never removed them.
+The system's temporary directory held 35,060 entries when this entry was written,
+with the leaking helpers' prefixes in the thousands
+(`artifact-placement-` 4,294,
+`artifact-generation-` 3,205,
+`runs-lock-` 2,576).
+
+Each now goes through `scratchDir` (`scratch-dir.test-fixture.ts`) bound with `await using`,
+directly,
+through a helper that returns its directory with a disposer delegating to `scratchDir`,
+or through a helper that takes the directory a caller made that way;
+`freshLedger` in the three `window-trial-*` test files no longer awaits anything and is synchronous.
+Over one run of `artifact-placement.unit.test.ts`,
+the file as it stood at `8cc9a3650` left 25 directories behind and this commit's left none;
+over one run of all 41 changed files,
+no leaking helper's prefix gained an entry,
+and the directory's total stayed at 35,060.
+All 41 changed files pass,
+and a separate reviewer read the change and found nothing in them to fix.
+The helpers that already removed their directories every time,
+65 calls,
+still make them themselves rather than through `scratchDir`.
+
+The directories already left behind are not deleted here:
+they sit in the system's temporary directory,
+outside the repository,
+and removing them is the owner's call.
+
+What enforces it:
+nothing yet.
+A scan refusing any temporary directory in test code made other than through `scratchDir` waits on moving the 65 remaining calls onto it.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

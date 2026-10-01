@@ -13,12 +13,10 @@
  */
 
 import {
-  mkdtemp,
   readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -36,23 +34,7 @@ import {
   RunsDirectoryBusyError,
   startTicksOf,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Makes a throwaway runs directory for one case.
- 
- @returns Path of the directory
- 
- @example
- ```ts
- const runsDir = await scratch();
- ```
- */
-async function scratch(): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    'runs-lock-',
-  ),);
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Process id no process can hold.
@@ -146,7 +128,8 @@ await describe({
             + 'ordinary path: a pass that ran and finished must leave nothing '
             + 'behind for the next one to reason about',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
 
             {
               await using _lock = await lockRunsDir({ runsDir, },);
@@ -163,7 +146,8 @@ await describe({
             + 'guard: the interference between two passes is invisible in the '
             + 'output, so the refusal has to come before either writes anything',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
 
             await using _lock = await lockRunsDir({ runsDir, },);
 
@@ -182,7 +166,8 @@ await describe({
             + 'has to decide whether to stop that process or point this run '
             + 'somewhere else, and cannot do either without knowing which it is',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
 
             await using _lock = await lockRunsDir({ runsDir, },);
 
@@ -197,7 +182,8 @@ await describe({
             + 'cap leaves one behind, and refusing forever would make every crash '
             + 'need manual cleanup, which is how a guard gets routed around',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
 
             await writeFile(
               join(
@@ -221,7 +207,8 @@ await describe({
             + 'nobody can respect is not a lock, and honouring it forever would '
             + 'strand the directory on a truncated write',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
 
             await writeFile(
               join(
@@ -247,7 +234,8 @@ await describe({
           name: 'EVICTS a stale lock exactly once when two starters race for it, since the eviction is a '
             + 'rename and a rename is atomic',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             /**
              Lock file both starters find stale.
              */
@@ -277,7 +265,8 @@ await describe({
           name: 'KEEPS a lock it does not own on release, so a starter that lost a takeover cannot delete '
             + 'the winner\'s lock on its way out',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             /**
              Lock file under test.
              */
@@ -311,7 +300,8 @@ await describe({
           name: 'REFUSES the loser of two concurrent takeovers, and the winner still holds the lock '
             + 'afterwards',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeFile(
               join(
                 runsDir,
@@ -363,7 +353,8 @@ await describe({
           name: 'TAKES OVER a lock whose process id now names a process that started later, since the '
             + 'holder ended and the kernel handed its id on',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeOwnLock({
               runsDir,
               identity: {
@@ -386,7 +377,8 @@ await describe({
         it({
           name: 'TAKES OVER a lock taken before this machine last booted, since no process outlives a boot',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeOwnLock({
               runsDir,
               identity: {
@@ -404,7 +396,8 @@ await describe({
           name: 'TAKES OVER a stale lock from this boot whose recorded hostname differs, since a hostname can '
             + 'change within one boot and a boot id already proves the same machine',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeOwnLock({
               runsDir,
               identity: {
@@ -422,7 +415,8 @@ await describe({
         it({
           name: 'REFUSES a lock naming this very process as it started, the control that a match still holds',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeOwnLock({
               runsDir,
               identity: await ownIdentity(),
@@ -436,7 +430,8 @@ await describe({
         it({
           name: 'REFUSES a lock from another process-id namespace, whose ids this one cannot read, and says so',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeOwnLock({
               runsDir,
               identity: {
@@ -454,7 +449,8 @@ await describe({
         it({
           name: 'REFUSES a lock from another machine, whose processes this one cannot see, and says so',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeOwnLock({
               runsDir,
               identity: {
@@ -472,7 +468,8 @@ await describe({
         it({
           name: 'REFUSES a lock recording no start time while its id is in use, and says it judged by id alone',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
             await writeOwnLock({
               runsDir,
               identity: {},
@@ -486,7 +483,8 @@ await describe({
         it({
           name: 'RECORDS its own identity in the lock it takes, so the next pass can judge it',
           fn: async () => {
-            const runsDir = await scratch();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
 
             await using _lock = await lockRunsDir({ runsDir, },);
 

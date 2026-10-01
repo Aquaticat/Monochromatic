@@ -7,12 +7,9 @@
  */
 
 import {
-  mkdtemp,
   mkdir,
   readdir,
-  rm,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -38,6 +35,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -229,7 +227,8 @@ await describe({
     it({
       name: 'REVIEWS roster-unclaimed editorial archive before lane work',
       fn: async () => {
-        const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-readiness-',),);
+        await using scratch = await scratchDir({ prefix: 'pass-prepare-readiness-', },);
+        const dir = scratch.path;
         const paired = await preparePassEntry({
           client: pairingClient(),
           entryId: 'Cat',
@@ -243,7 +242,6 @@ await describe({
           l,
           outsideReads: NO_OUTSIDE_READS,
         },);
-        await rm(dir, { recursive: true, force: true, },);
 
         expect(paired.prepared.targetText,).toContain('Translator: Cat Friend.');
         expect(paired.prepared.alignmentFindings.some(function namesRetainedBlock(finding,): boolean {
@@ -255,7 +253,8 @@ await describe({
       name: 'PRESERVES archive picture translation by supplying corroborated source before block review',
       fn: async () => {
         /** Disposable pairing stores for this preparation. */
-        const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-picture-',),);
+        await using scratch = await scratchDir({ prefix: 'pass-prepare-picture-', },);
+        const dir = scratch.path;
         /** Exact image text absent from both pages as prose. */
         const pictureSupport = '手套猫：你好，姐姐。';
         /** Sheets the archive reviewers actually received. */
@@ -290,7 +289,6 @@ await describe({
             },],]);
           },
         },);
-        await rm(dir, { recursive: true, force: true, },);
 
         expect(paired.prepared.targetText,).toContain(translation,);
         expect(sheets.length,).toBeGreaterThan(0,);
@@ -304,7 +302,8 @@ await describe({
     it({
       name: 'REFUSES body without absolute naturalness review before persistence writes page or artifact',
       fn: async () => {
-        const root = await mkdtemp(join(tmpdir(), 'pass-persist-naturalness-',),);
+        await using scratch = await scratchDir({ prefix: 'pass-persist-naturalness-', },);
+        const root = scratch.path;
         const publishDir = join(root, 'published',);
         const artifactsDir = join(root, 'artifacts',);
         await Promise.all([
@@ -350,7 +349,6 @@ await describe({
           readdir(publishDir,),
           readdir(artifactsDir,),
         ],);
-        await rm(root, { recursive: true, force: true, },);
 
         expect(thrown,).toBeInstanceOf(NaturalnessCompletenessError,);
         expect(written,).toEqual([
@@ -363,7 +361,8 @@ await describe({
     it({
       name: 'RECORDS unendorsed archive as a finding instead of refusing final selection',
       fn: async () => {
-        const root = await mkdtemp(join(tmpdir(), 'pass-persist-readiness-',),);
+        await using scratch = await scratchDir({ prefix: 'pass-persist-readiness-', },);
+        const root = scratch.path;
         const publishDir = join(root, 'published',);
         const artifactsDir = join(root, 'artifacts',);
         await Promise.all([
@@ -409,7 +408,6 @@ await describe({
           readdir(publishDir,),
           readdir(artifactsDir,),
         ],);
-        await rm(root, { recursive: true, force: true, },);
 
         // The contest non-endorsement no longer refuses the page: the next
         // boundary this minimal fixture trips is the structural naturalness

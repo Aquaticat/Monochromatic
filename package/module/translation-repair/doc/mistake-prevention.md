@@ -604,6 +604,8 @@ the real caches and the corpus clone (M68).
 The run client and the provider gate read the provider keys,
 the Bedrock ledger's place and the transport from the process by default,
 and their tests set some keys and built on the rest the suite inherits (X23).
+43 test helpers made a temporary directory and could leave it behind,
+and the system's temporary directory had gathered thousands under their prefixes (ledger B108).
 
 The rule:
 before a test drives a production entry point,
@@ -623,6 +625,10 @@ in that function (`createRunClient`,
 `RUN_OUTSIDE_READS`,
 the pass's own calls),
 and in TSDoc examples.
+A test makes a temporary directory only through `scratchDir`,
+bound with `await using` where it is made or by every caller of a helper returning it,
+so the directory goes when the case ends,
+however the case ends.
 
 What enforces it:
 the type checker:
@@ -637,6 +643,7 @@ the transport and the corpus readers;
 the five provider clients require their transport,
 and every corpus reader its pin or reader (X24).
 A seam added to make a function testable never takes the production value as its default (M70).
+Temporary directories in tests have no scan yet (ledger B108).
 
 ## Tests on the real clock
 

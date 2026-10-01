@@ -16,10 +16,8 @@
 
 import {
   mkdir,
-  mkdtemp,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import {
   dirname,
   join,
@@ -37,6 +35,7 @@ import {
   trialKey,
   type WindowTrialRow,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Protocol digest the ordinary cases buy under.
@@ -86,21 +85,21 @@ function rowFor(
 }
 
 /**
- Fresh throwaway ledger path, so no case can read another's writes.
- 
- @returns Path inside a new temporary directory
- 
+ Ledger path nested inside a case-owned directory, so no case can read
+ another's writes.
+
+ @param dir - case-owned directory the ledger nests under
+
+ @returns Path inside a fresh subdirectory
+
  @example
  ```ts
- const path = await freshLedger();
+ const path = freshLedger({ dir: scratch.path, },);
  ```
  */
-async function freshLedger(): Promise<string> {
+function freshLedger({ dir, }: { readonly dir: string; },): string {
   return join(
-    await mkdtemp(join(
-      tmpdir(),
-      'window-trial-',
-    ),),
+    dir,
     'nested',
     'trial.jsonl',
   );
@@ -113,7 +112,8 @@ await describe({
       name: 'reads back every arm it appended, in order, and CREATES THE DIRECTORY on the way, so '
         + 'a runner pointed at a fresh output path does not lose its first arm to a missing parent',
       fn: async () => {
-        const path = await freshLedger();
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        const path = freshLedger({ dir: scratch.path, },);
         for (const arm of ['narrow-a',
           'narrow-b',
           'wide',]) {
@@ -143,7 +143,8 @@ await describe({
       name: 'reports an ABSENT ledger as empty rather than throwing, since that is the ordinary '
         + 'state before the first arm is bought and a runner should not need to pre-create it',
       fn: async () => {
-        expect((await readTrialLedger({ path: await freshLedger(), },)).length,).toBe(0,);
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        expect((await readTrialLedger({ path: freshLedger({ dir: scratch.path, },), },)).length,).toBe(0,);
       },
     },),
     it({
@@ -151,7 +152,8 @@ await describe({
         + 'exists for: a process killed mid-append leaves a fragment, and losing the run rather '
         + 'than one arm would defeat the point of appending as it goes',
       fn: async () => {
-        const path = await freshLedger();
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        const path = freshLedger({ dir: scratch.path, },);
         await appendTrialRow({
           path,
           row: rowFor({
@@ -192,7 +194,8 @@ await describe({
         + 'runners interleaved rather than one being killed, and a ledger written concurrently '
         + 'cannot be trusted to say what was actually bought',
       fn: async () => {
-        const path = await freshLedger();
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        const path = freshLedger({ dir: scratch.path, },);
         // This case writes the file by hand rather than appending, so the
         // parent has to exist: only `appendTrialRow` creates it.
         await mkdir(
@@ -219,7 +222,8 @@ await describe({
       name: 'skips only arms bought under THIS protocol, so a trial re-run after the rosters or '
         + 'the corpus pin moved buys fresh rather than mixing two experiments into one tally',
       fn: async () => {
-        const path = await freshLedger();
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        const path = freshLedger({ dir: scratch.path, },);
         await appendTrialRow({
           path,
           row: rowFor({

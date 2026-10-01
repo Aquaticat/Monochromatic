@@ -32,12 +32,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   readdir,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -50,6 +47,7 @@ import {
   openNamespacedCache,
   type SliceNamespace,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -110,26 +108,28 @@ function collectingInto(
 
 /**
  Builds a throwaway cache directory holding the named files, each empty.
- 
+
  @param names - file names to create
- 
- @returns Directory holding them
- 
+
+ @returns Directory holding them, removed when its `await using` scope ends
+
  @example
  ```ts
- const dir = await cacheHolding({ names: ['mittens.a.json',], },);
+ await using cache = await cacheHolding({ names: ['mittens.a.json',], },);
+ const dir = cache.dir;
  ```
  */
 async function cacheHolding(
   { names, }: { readonly names: readonly string[]; },
-): Promise<string> {
+): Promise<{ readonly dir: string; } & AsyncDisposable> {
   /**
    Throwaway directory standing in for a shared slice cache.
    */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'translation-repair-slice-cache-',
-  ),);
+  const scratch = await scratchDir({ prefix: 'translation-repair-slice-cache-', },);
+  /**
+   Directory this case's cache files land in.
+   */
+  const dir = scratch.path;
 
   await Promise.all(names.map(async function writeOne(name,): Promise<void> {
     await writeFile(
@@ -142,7 +142,12 @@ async function cacheHolding(
     );
   },),);
 
-  return dir;
+  return {
+    dir,
+    [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
+  };
 }
 
 /**
@@ -171,7 +176,8 @@ async function discarding(
   /**
    Cache to discard from.
    */
-  const dir = await cacheHolding({ names, },);
+  await using cache = await cacheHolding({ names, },);
+  const { dir, } = cache;
 
   /**
    Lines the discard printed.
@@ -191,14 +197,6 @@ async function discarding(
    order.
    */
   const left = (await readdir(dir,)).toSorted();
-
-  await rm(
-    dir,
-    {
-      recursive: true,
-      force: true,
-    },
-  );
 
   return {
     lines: [...capture.lines,],
@@ -354,7 +352,8 @@ await describe({
              A cache holding one of this lane's slices beside a directory named
              like another.
              */
-            const dir = await cacheHolding({ names: ['mittens.a.json',], },);
+            await using cache = await cacheHolding({ names: ['mittens.a.json',], },);
+            const { dir, } = cache;
             await mkdir(join(
               dir,
               'mittens.b.json',
@@ -377,13 +376,6 @@ await describe({
              Names still on disk.
              */
             const left = (await readdir(dir,)).toSorted();
-            await rm(
-              dir,
-              {
-                recursive: true,
-                force: true,
-              },
-            );
 
             expect(left,).toStrictEqual(['mittens.b.json',],);
           },
@@ -405,7 +397,8 @@ await describe({
              Cache this lane filled under the running pipeline: one slice torn
              mid-write, one that parses but is no envelope this loader wrote.
              */
-            const dir = await cacheHolding({ names: ['mittens.b.json',], },);
+            await using holding = await cacheHolding({ names: ['mittens.b.json',], },);
+            const { dir, } = holding;
             await writeFile(
               join(
                 dir,
@@ -440,13 +433,6 @@ await describe({
               },);
               expect(cache.resumed.size,).toBe(0,);
             }
-            await rm(
-              dir,
-              {
-                recursive: true,
-                force: true,
-              },
-            );
 
             // Positive control: the refused envelope was already announced, so the
             // capture sees this loader's warnings.
@@ -473,7 +459,8 @@ await describe({
              Cache this lane filled under the running pipeline: one slice the
              loader wrote, beside a directory named like another.
              */
-            const dir = await cacheHolding({ names: [], },);
+            await using cache = await cacheHolding({ names: [], },);
+            const { dir, } = cache;
             await writeFile(
               join(
                 dir,
@@ -509,14 +496,6 @@ await describe({
                 isValue: anyRecord,
               },)).resumed.keys(),
             ];
-            await rm(
-              dir,
-              {
-                recursive: true,
-                force: true,
-              },
-            );
-
             expect(resumed,).toStrictEqual(['a',],);
           },
         },),

@@ -13,11 +13,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -31,30 +29,28 @@ import {
   artifactBackedIds,
   countSettled,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
- Fresh artifacts directory holding two regular artifacts, one directory named
- like one, one symlink named like one, and one regular file without the
- suffix.
- 
- @returns Directory path
- 
+ Writes two regular artifacts, one directory named like one, one symlink
+ named like one, and one regular file without the suffix, into a caller-owned
+ directory.
+
+ @param dir - case-owned directory to write into
+
+ @returns Nothing; the files are the effect
+
  @example
  ```ts
- const artifactsDir = await mixedDirectory();
+ await mixedDirectory({ dir: scratch.path, },);
  ```
  */
-async function mixedDirectory(): Promise<string> {
-  /**
-   Disposable root, never the package's own runs directory.
-   */
-  const artifactsDir = await mkdtemp(join(tmpdir(), 'pass-settled-',),);
+async function mixedDirectory({ dir: artifactsDir, }: { readonly dir: string; },): Promise<void> {
   await writeFile(join(artifactsDir, 'whiskers.json',), '{}', 'utf8',);
   await writeFile(join(artifactsDir, 'tabby.json',), '{}', 'utf8',);
   await mkdir(join(artifactsDir, 'mittens.json',),);
   await symlink('tabby.json', join(artifactsDir, 'ghost.json',),);
   await writeFile(join(artifactsDir, 'notes.txt',), 'not an artifact', 'utf8',);
-  return artifactsDir;
 }
 
 await describe({
@@ -69,7 +65,9 @@ await describe({
           name: 'REFUSES to count a directory named like an artifact, which once marked an entry settled without '
             + 'the entry ever having run',
           fn: async () => {
-            const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
+            await using scratch = await scratchDir({ prefix: 'pass-settled-', },);
+            await mixedDirectory({ dir: scratch.path, },);
+            const ids = await artifactBackedIds({ artifactsDir: scratch.path, },);
 
             expect(ids.has('mittens',),).toBe(false,);
           },
@@ -78,7 +76,9 @@ await describe({
         it({
           name: 'REFUSES to count a symlink named like an artifact, for the same reason',
           fn: async () => {
-            const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
+            await using scratch = await scratchDir({ prefix: 'pass-settled-', },);
+            await mixedDirectory({ dir: scratch.path, },);
+            const ids = await artifactBackedIds({ artifactsDir: scratch.path, },);
 
             expect(ids.has('ghost',),).toBe(false,);
           },
@@ -87,7 +87,9 @@ await describe({
         it({
           name: 'KEEPS every regular artifact under its id, and nothing without the suffix',
           fn: async () => {
-            const ids = await artifactBackedIds({ artifactsDir: await mixedDirectory(), },);
+            await using scratch = await scratchDir({ prefix: 'pass-settled-', },);
+            await mixedDirectory({ dir: scratch.path, },);
+            const ids = await artifactBackedIds({ artifactsDir: scratch.path, },);
 
             expect([...ids,].toSorted(),).toEqual([
               'tabby',
@@ -109,7 +111,9 @@ await describe({
             /**
              One directory read by both.
              */
-            const artifactsDir = await mixedDirectory();
+            await using scratch = await scratchDir({ prefix: 'pass-settled-', },);
+            const artifactsDir = scratch.path;
+            await mixedDirectory({ dir: artifactsDir, },);
 
             expect(await countSettled({ artifactsDir, },),).toBe(
               (await artifactBackedIds({ artifactsDir, },)).size,

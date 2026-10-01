@@ -17,11 +17,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -38,6 +36,7 @@ import {
   isDigestShaped,
   PipelineDigestError,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Contents of a minimal built output directory.
@@ -52,23 +51,25 @@ const BUILT = {
  
  @param files - file name to contents, at any depth
  
- @returns Path of the directory
- 
+ @returns Built directory, removed when its `await using` scope ends
+
  @example
  ```ts
- const dir = await writeBuild({ files: BUILT, },);
+ await using built = await writeBuild({ files: BUILT, },);
+ const dir = built.dir;
  ```
  */
 async function writeBuild(
   { files, }: { readonly files: Readonly<Record<string, string>>; },
-): Promise<string> {
+): Promise<{ readonly dir: string; } & AsyncDisposable> {
   /**
    Disposable root for this case.
    */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'pipeline-digest-',
-  ),);
+  const scratch = await scratchDir({ prefix: 'pipeline-digest-', },);
+  /**
+   Directory this case's files land in.
+   */
+  const dir = scratch.path;
 
   for (const [name, text,] of Object.entries(files,)) {
     /**
@@ -94,7 +95,12 @@ async function writeBuild(
     );
   }
 
-  return dir;
+  return {
+    dir,
+    [Symbol.asyncDispose]: async function removeBuild(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
+  };
 }
 
 /**
@@ -147,13 +153,15 @@ await describe({
             + 'directory read is not ordered, so an order-dependent digest would '
             + 'refuse resumes at random',
           fn: async () => {
-            const one = await writeBuild({ files: BUILT, },);
-            const two = await writeBuild({
+            await using builtOne = await writeBuild({ files: BUILT, },);
+            const one = builtOne.dir;
+            await using builtTwo = await writeBuild({
               files: {
                 'chunk-Whiskers.mjs': BUILT['chunk-Whiskers.mjs'],
                 'index.mjs': BUILT['index.mjs'],
               },
             },);
+            const two = builtTwo.dir;
 
             expect((await digestPipeline({ dir: one, },)).digest,)
               .toBe((await digestPipeline({ dir: two, },)).digest,);
@@ -165,13 +173,15 @@ await describe({
             + 'every sameness claim here rests on: without it, a digest that never '
             + 'changed would satisfy every other case in this file',
           fn: async () => {
-            const one = await writeBuild({ files: BUILT, },);
-            const two = await writeBuild({
+            await using builtOne = await writeBuild({ files: BUILT, },);
+            const one = builtOne.dir;
+            await using builtTwo = await writeBuild({
               files: {
                 ...BUILT,
                 'index.mjs': 'export const mittens = 2;\n',
               },
             },);
+            const two = builtTwo.dir;
 
             expect((await digestPipeline({ dir: one, },)).digest,)
               .not
@@ -186,13 +196,15 @@ await describe({
             + 'new generation and force a fresh accumulation directory for a change '
             + 'that cannot alter a single result',
           fn: async () => {
-            const one = await writeBuild({ files: BUILT, },);
-            const two = await writeBuild({
+            await using builtOne = await writeBuild({ files: BUILT, },);
+            const one = builtOne.dir;
+            await using builtTwo = await writeBuild({
               files: {
                 ...BUILT,
                 'index.d.mts': '/** Whiskers. */\nexport declare const mittens: number;\n',
               },
             },);
+            const two = builtTwo.dir;
 
             expect((await digestPipeline({ dir: one, },)).digest,)
               .toBe((await digestPipeline({ dir: two, },)).digest,);
@@ -204,13 +216,15 @@ await describe({
             + 'a subdirectory would otherwise have half its code outside its own '
             + 'identity',
           fn: async () => {
-            const flat = await writeBuild({ files: BUILT, },);
-            const nested = await writeBuild({
+            await using builtFlat = await writeBuild({ files: BUILT, },);
+            const flat = builtFlat.dir;
+            await using builtNested = await writeBuild({
               files: {
                 ...BUILT,
                 'inner/deep.mjs': 'export const biscuit = 3;\n',
               },
             },);
+            const nested = builtNested.dir;
 
             expect((await digestPipeline({ dir: nested, },)).fileCount,).toBe(3,);
             expect((await digestPipeline({ dir: flat, },)).digest,)
@@ -226,7 +240,8 @@ await describe({
             + 'digests bytes from outside the pipeline, skipping it drops code that '
             + 'will run',
           fn: async () => {
-            const dir = await writeBuild({ files: BUILT, },);
+            await using built = await writeBuild({ files: BUILT, },);
+            const { dir, } = built;
             await symlink(
               join(
                 dir,
@@ -259,7 +274,8 @@ await describe({
           name: 'COUNTS every such entry and names the first by name, so a directory holding several says how '
             + 'many and gives the same example whatever order the directory lists them in',
           fn: async () => {
-            const dir = await writeBuild({ files: BUILT, },);
+            await using built = await writeBuild({ files: BUILT, },);
+            const { dir, } = built;
             await symlink(
               join(
                 dir,
@@ -303,9 +319,10 @@ await describe({
             + 'digest over nothing is a constant every empty build would share, and '
             + 'a pass stamping it would claim a pipeline that does not exist',
           fn: async () => {
-            const dir = await writeBuild({
+            await using built = await writeBuild({
               files: { 'index.d.mts': 'export declare const mittens: number;\n', },
             },);
+            const { dir, } = built;
 
             /**
              What digestPipeline refused with, read for class as well as wording.
@@ -328,7 +345,8 @@ await describe({
             + 'truncated output directory is legible as one: a digest alone is '
             + 'unfalsifiable to a reader',
           fn: async () => {
-            const dir = await writeBuild({ files: BUILT, },);
+            await using built = await writeBuild({ files: BUILT, },);
+            const { dir, } = built;
 
             expect((await digestPipeline({ dir, },)).fileCount,).toBe(2,);
           },

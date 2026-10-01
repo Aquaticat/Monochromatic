@@ -25,10 +25,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -38,6 +34,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { resolvePool, } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -170,10 +167,8 @@ await describe({
         /**
          Throwaway artifacts directory, empty, so nothing real is read.
          */
-        const artifactsDir = await mkdtemp(join(
-          tmpdir(),
-          'translation-repair-pool-',
-        ),);
+        await using scratch = await scratchDir({ prefix: 'translation-repair-pool-', },);
+        const artifactsDir = scratch.path;
 
         using edited = environmentSaying({
           values: {
@@ -189,14 +184,6 @@ await describe({
         const refusal = await refusalOf(async function overAnEmptyPool() {
           await resolvePool({ artifactsDir, },);
         },);
-
-        await rm(
-          artifactsDir,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
 
         expect(refusal,).toBeInstanceOf(Error,);
         expect((refusal as Error).message,).not.toContain(CONFLICT_WORDING,);

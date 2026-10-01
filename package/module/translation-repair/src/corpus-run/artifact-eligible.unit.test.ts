@@ -20,10 +20,8 @@
 
 import {
   mkdir,
-  mkdtemp,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import spawn from 'nano-spawn';
@@ -41,6 +39,7 @@ import {
   MixedGenerationError,
   selectEligible,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  One built pipeline, as a digest-shaped invention.
@@ -123,11 +122,12 @@ async function gitBounds(): Promise<readonly [string, string,]> {
  carrying no provenance at all, and omitting `digest` writes one from before
  artifacts recorded which build produced them
  
- @returns Path of the artifacts directory
- 
+ @returns Artifacts directory, removed when its `await using` scope ends
+
  @example
  ```ts
- const dir = await writeArtifacts({ entries: [{ entryId: 'Mittens', tip: TIP_A, digest: DIGEST_A, },], },);
+ await using artifacts = await writeArtifacts({ entries: [{ entryId: 'Mittens', tip: TIP_A, digest: DIGEST_A, },], },);
+ const dir = artifacts.dir;
  ```
  */
 async function writeArtifacts(
@@ -138,14 +138,15 @@ async function writeArtifacts(
       digest?: string;
     }>[];
   },
-): Promise<string> {
+): Promise<{ readonly dir: string; } & AsyncDisposable> {
   /**
    Disposable root for this case.
    */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'artifact-generation-',
-  ),);
+  const scratch = await scratchDir({ prefix: 'artifact-generation-', },);
+  /**
+   Directory this case writes artifacts into.
+   */
+  const dir = scratch.path;
 
   await Promise.all(
     entries.map(async function writeOne(entry,) {
@@ -170,7 +171,12 @@ async function writeArtifacts(
     },),
   );
 
-  return dir;
+  return {
+    dir,
+    [Symbol.asyncDispose]: async function removeArtifacts(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
+  };
 }
 
 await describe({
@@ -186,7 +192,7 @@ await describe({
             + 'group first, which is the reading that was impossible before: the '
             + 'field was written into every artifact and read by nothing',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -205,6 +211,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
@@ -222,7 +229,7 @@ await describe({
             + 'documentation commit moves the tip while every byte that runs stays '
             + 'identical, and splitting those entries refuses a pool that is sound',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -236,6 +243,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
@@ -258,7 +266,7 @@ await describe({
             + 'exclusion that goes unmentioned is the silently smaller denominator '
             + 'this guard exists to prevent, so it is reported instead',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -268,6 +276,7 @@ await describe({
                 { entryId: 'Biscuit', },
               ],
             },);
+            const { dir, } = artifacts;
 
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
@@ -294,7 +303,7 @@ await describe({
             + 'whose pipeline can no longer be named, so deleting it buys nothing '
             + 'and pooling it is the silent mixing this module exists to stop',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -307,6 +316,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
@@ -336,7 +346,7 @@ await describe({
             + 'package is a sound result whose pipeline can no longer be named. '
             + 'Calling it unplaceable would tell an operator to delete good work',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -345,6 +355,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
@@ -358,7 +369,7 @@ await describe({
           name: 'CARRIES a file named nothing but the suffix by its name among the unplaceable, since its entry '
             + 'id is empty and an empty id in a report is a blank line nobody can act on',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: '',
@@ -367,6 +378,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
@@ -383,7 +395,8 @@ await describe({
             + 'check exists to refuse, since the pool would then admit it under a '
             + 'name the bytes never claimed',
           fn: async () => {
-            const dir = await writeArtifacts({ entries: [], },);
+            await using artifacts = await writeArtifacts({ entries: [], },);
+            const { dir, } = artifacts;
             await writeFile(
               join(
                 dir,
@@ -411,7 +424,7 @@ await describe({
             + 'silently answers a different question, and a branch name answers one '
             + 'whose answer changes',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -425,6 +438,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
@@ -440,7 +454,7 @@ await describe({
             + 'be false in the one case an operator most needs the truth: the files '
             + 'are there and every one was excluded, each with its own remedy',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 { entryId: 'Mittens', },
                 {
@@ -449,6 +463,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             /**
              What selectEligible refused with, read for class as well as wording.
@@ -466,7 +481,8 @@ await describe({
           name: 'reports an empty directory as zero rather than throwing, since a '
             + 'run that has settled nothing yet is an ordinary state',
           fn: async () => {
-            const dir = await writeArtifacts({ entries: [], },);
+            await using artifacts = await writeArtifacts({ entries: [], },);
+            const { dir, } = artifacts;
             const census = await censusByGeneration({ artifactsDir: dir, },);
 
             expect(census.total,).toBe(0,);
@@ -485,7 +501,7 @@ await describe({
             + 'which is the whole guard: the failure is a draw that does not know '
             + 'it spans versions, so the default has to be the loud one',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -499,6 +515,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             /**
              What selectEligible refused with, read for class as well as wording.
@@ -517,7 +534,7 @@ await describe({
             + 'guard costs nothing on a clean directory and cannot train anyone to '
             + 'route around it',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -531,6 +548,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
@@ -547,7 +565,7 @@ await describe({
             + 'the report, so a number spanning versions can never be printed '
             + 'without the line that admits it',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -561,6 +579,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
@@ -586,7 +605,7 @@ await describe({
           fn: async () => {
             const [root, head,] = await gitBounds();
 
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -600,6 +619,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
@@ -623,7 +643,7 @@ await describe({
           fn: async () => {
             const [root, head,] = await gitBounds();
 
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -637,6 +657,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
@@ -670,7 +691,7 @@ await describe({
           fn: async () => {
             const [root, head,] = await gitBounds();
 
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -684,6 +705,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             const eligible = await selectEligible({
               census: await censusByGeneration({ artifactsDir: dir, },),
@@ -710,7 +732,7 @@ await describe({
           fn: async () => {
             const [root, head,] = await gitBounds();
 
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -719,6 +741,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
 
             /**
              What selectEligible refused with, read for class as well as wording.
@@ -737,7 +760,8 @@ await describe({
           name: 'THROWS on a directory that has settled nothing, for the same '
             + 'reason: counting zero is fine, but pooling zero for a rate is not',
           fn: async () => {
-            const dir = await writeArtifacts({ entries: [], },);
+            await using artifacts = await writeArtifacts({ entries: [], },);
+            const { dir, } = artifacts;
 
             /**
              What selectEligible refused with, read for class as well as wording.
@@ -758,7 +782,7 @@ await describe({
             + 'census with EISDIR, and a copied artifact used to become a SECOND '
             + 'settled entry under a name no reader would ever ask for',
           fn: async () => {
-            const dir = await writeArtifacts({
+            await using artifacts = await writeArtifacts({
               entries: [
                 {
                   entryId: 'Mittens',
@@ -767,6 +791,7 @@ await describe({
                 },
               ],
             },);
+            const { dir, } = artifacts;
             await mkdir(join(
               dir,
               'backup.json',

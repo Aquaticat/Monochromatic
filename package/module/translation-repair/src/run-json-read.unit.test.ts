@@ -14,10 +14,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  writeFile,
-} from 'node:fs/promises';
+import { writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -31,6 +28,7 @@ import {
   readRunJson,
   RunJsonUnreadableError,
 } from '../dist/final/node/index.mjs';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 //region Run JSON read tests
 
@@ -44,39 +42,35 @@ import {
 const TRUNCATION_BYTE = 27;
 
 /**
- Writes one file into a disposable directory and returns its path.
- 
+ Writes one file into a case-owned directory and returns its path.
+
  ON A THROWAWAY, never a run directory: these cases write malformed files on
  purpose, and a real run's ledger is the thing they are protecting.
- 
- @param name - file name to write under the disposable root
- 
+
+ @param dir - disposable root the caller owns
+
+ @param name - file name to write under that root
+
  @param text - exact bytes to write, malformed on purpose in most cases
- 
+
  @returns Path the case should read
- 
+
  @example
  ```ts
- const path = await fixture({ name: 'one.json', text: '{}', },);
+ const path = await fixture({ dir: scratch.path, name: 'one.json', text: '{}', },);
  ```
  */
 async function fixture(
   {
+    dir,
     name,
     text,
   }: {
+    readonly dir: string;
     readonly name: string;
     readonly text: string;
   },
 ): Promise<string> {
-  /**
-   Disposable root for this case.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'run-json-read-',
-  ),);
-
   /**
    Where this case's file lands.
    */
@@ -132,8 +126,10 @@ await describe({
     it({
       name: 'ACCEPTS well-formed JSON and returns what it held',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
         expect(await readRunJson({
           path: await fixture({
+            dir: scratch.path,
             name: 'good.json',
             text: '{"cat":"Marmalade","naps":3}',
           },),
@@ -146,14 +142,12 @@ await describe({
     it({
       name: 'REFUSES an absent file by its filesystem code, not by its class',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
         /**
          Path inside a real directory that holds no such file.
          */
         const missing = join(
-          await mkdtemp(join(
-            tmpdir(),
-            'run-json-read-',
-          ),),
+          scratch.path,
           'nothing-here.json',
         );
 
@@ -163,11 +157,13 @@ await describe({
     it({
       name: 'REFUSES truncated JSON and keeps the byte offset, which says where it stopped',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
         /**
          Refusal from a file that is valid JSON until it simply stops.
          */
         const refusal = await refusalFrom({
           path: await fixture({
+            dir: scratch.path,
             name: 'cut.json',
             text: '{"cat":"Marmalade","naps":3',
           },),
@@ -181,11 +177,13 @@ await describe({
     it({
       name: 'REFUSES a file that is not JSON at all and states no offset, because none was given',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
         /**
          Refusal from prose, which V8 reports without a position.
          */
         const refusal = await refusalFrom({
           path: await fixture({
+            dir: scratch.path,
             name: 'prose.json',
             text: 'Marmalade the tabby dozed by the radiator all afternoon',
           },),
@@ -198,8 +196,10 @@ await describe({
     it({
       name: 'REFUSES an empty file, which states no offset either',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
         expect((await refusalFrom({
           path: await fixture({
+            dir: scratch.path,
             name: 'empty.json',
             text: '',
           },),
@@ -209,11 +209,13 @@ await describe({
     it({
       name: 'NAMES the file by base name, so a run path that could name a person stays out of it',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
         /**
          Refusal whose file sits under a directory named after a person.
          */
         const refusal = await refusalFrom({
           path: await fixture({
+            dir: scratch.path,
             name: 'contest.json',
             text: 'not json',
           },),
@@ -244,11 +246,13 @@ await describe({
          */
         const distinctive = 'Bixbyfluff';
 
+        await using scratch = await scratchDir({ prefix: 'run-json-read-', },);
         /**
          Refusal from a file whose first bytes are that wording.
          */
         const refusal = await refusalFrom({
           path: await fixture({
+            dir: scratch.path,
             name: 'leak.json',
             text: `${distinctive} dozed by the radiator, and the JSON never started`,
           },),

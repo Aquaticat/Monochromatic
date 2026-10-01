@@ -14,12 +14,10 @@
 import { spawnSync, } from 'node:child_process';
 import {
   mkdir,
-  mkdtemp,
   readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -33,6 +31,8 @@ import {
   prepareDocumentPair,
   republishSettledPages,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
 /**
@@ -67,24 +67,27 @@ const VERIFIER = join(
  A throwaway runs directory holding one settled artifact and the page a pass
  publishes from it.
 
- @returns The directory and the page path
+ @returns The directory and the page path, removed when its `await using`
+ scope ends
 
  @example
  ```ts
- const { runsDir, pagePath, } = await publishedRun();
+ await using published = await publishedRun();
+ const { runsDir, pagePath, } = published;
  ```
  */
 async function publishedRun(): Promise<{
   readonly runsDir: string;
   readonly pagePath: string;
-}> {
+} & AsyncDisposable> {
   /**
    The runs directory.
    */
-  const runsDir = await mkdtemp(join(
-    tmpdir(),
-    'verify-published-',
-  ),);
+  const scratch = await scratchDir({ prefix: 'verify-published-', },);
+  /**
+   Runs directory this case publishes into.
+   */
+  const runsDir = scratch.path;
   /**
    Where the artifact lives.
    */
@@ -135,6 +138,9 @@ async function publishedRun(): Promise<{
       ENTRY,
       'page.en.md',
     ),
+    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
   };
 }
 
@@ -186,7 +192,8 @@ await describe({
     it({
       name: 'AGREES on the page a pass publishes and exits 0, the control the findings rest on',
       fn: async () => {
-        const { runsDir, } = await publishedRun();
+        await using published = await publishedRun();
+        const { runsDir, } = published;
 
         /**
          What the verifier did.
@@ -199,10 +206,11 @@ await describe({
     it({
       name: 'PRINTS a page that disagrees with its artifact and still exits 0, since a run always ships',
       fn: async () => {
+        await using published = await publishedRun();
         const {
           runsDir,
           pagePath,
-        } = await publishedRun();
+        } = published;
         await writeFile(
           pagePath,
           (await readFile(
@@ -225,10 +233,11 @@ await describe({
     it({
       name: 'PRINTS an artifact with no page and still exits 0, naming the pass that writes it',
       fn: async () => {
+        await using published = await publishedRun();
         const {
           runsDir,
           pagePath,
-        } = await publishedRun();
+        } = published;
         await rm(pagePath,);
 
         /**
@@ -246,10 +255,8 @@ await describe({
         /**
          A runs directory holding nothing.
          */
-        const runsDir = await mkdtemp(join(
-          tmpdir(),
-          'verify-published-empty-',
-        ),);
+        await using scratch = await scratchDir({ prefix: 'verify-published-empty-', },);
+        const runsDir = scratch.path;
 
         expect(verify({ runsDir, },).status,).toBe(2,);
       },

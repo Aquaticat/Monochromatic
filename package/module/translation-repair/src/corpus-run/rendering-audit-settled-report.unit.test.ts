@@ -23,10 +23,8 @@ import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
   mkdir,
-  mkdtemp,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -44,6 +42,7 @@ import {
   type SettledAuditRow,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Directory the probe store collects this probe's runs in.
@@ -258,22 +257,6 @@ function runOver(
   };
 }
 
-/**
- Makes a throwaway runs directory.
- 
- @returns Its path
- 
- @example
- ```ts
- const runsDir = await throwawayRunsDir();
- ```
- */
-async function throwawayRunsDir(): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    'rendering-audit-settled-report-',
-  ),);
-}
 
 /**
  Captures what is printed, forwarding every line onward; the describe using
@@ -378,6 +361,12 @@ async function runBuilt(
   );
 
   /**
+   Throwaway runs directory the child points at, removed once this function's
+   `await using` scope ends (after the child's streams close, below).
+   */
+  await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
+
+  /**
    Child running the command.
    */
   const child = spawn(
@@ -393,7 +382,7 @@ async function runBuilt(
       ),
       env: {
         ...env,
-        TRANSLATION_REPAIR_RUNS_DIR: await throwawayRunsDir(),
+        TRANSLATION_REPAIR_RUNS_DIR: scratch.path,
       },
       stdio: [
         'ignore',
@@ -446,11 +435,12 @@ await describe({
         it({
           name: 'READS the rows, the archive the run named and the roster it asked',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             /**
              One complete run.
              */
             const path = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
                 rows: [rowFor({ sliceIndex: 0, },),],
@@ -473,11 +463,12 @@ await describe({
           name: 'READS A RUN WRITTEN BEFORE THE ROSTER WAS KEPT as an empty roster, so its other '
             + 'readings still answer and the voice rates say only what the rows say',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             /**
              One run carrying no roster field.
              */
             const path = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
             },);
@@ -490,11 +481,12 @@ await describe({
           name: 'REFUSES A FILE CARRYING NO ROWS ARRAY as a stated refusal, since it is not a run of '
             + 'this probe rather than a quiet one, and the remedy is the operator\'s',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             /**
              A file with the run's identity and nothing bought.
              */
             const path = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: {
                 startedAt: '2026-08-25T01:00:00.000Z',
@@ -519,7 +511,8 @@ await describe({
             /**
              Two runs, a day apart.
              */
-            const runsDir = await throwawayRunsDir();
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
+            const runsDir = scratch.path;
             await writeRun({
               runsDir,
               stamp: '2026-08-25T01-00-00.000Z',
@@ -545,7 +538,8 @@ await describe({
             /**
              Runs directory holding one finished run.
              */
-            const runsDir = await throwawayRunsDir();
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
+            const runsDir = scratch.path;
 
             /**
              The one run the store finished, which the report should read.
@@ -581,7 +575,8 @@ await describe({
             /**
              A probe directory with no run in it.
              */
-            const runsDir = await throwawayRunsDir();
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
+            const runsDir = scratch.path;
             await mkdir(
               join(
                 runsDir,
@@ -608,8 +603,9 @@ await describe({
             /**
              Earlier run over the same text.
              */
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             const against = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
                 rows: [rowFor({
@@ -647,8 +643,9 @@ await describe({
             /**
              Earlier run over a different rendering of the slot.
              */
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             const against = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
                 rows: [rowFor({
@@ -680,8 +677,9 @@ await describe({
             /**
              Earlier run written before identities were recorded.
              */
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             const against = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({ rows: [rowFor({ sliceIndex: 0, },),], },),
             },);
@@ -712,8 +710,9 @@ await describe({
             /**
              One complete run to report.
              */
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             const path = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: runOver({
                 rows: [rowFor({
@@ -749,8 +748,9 @@ await describe({
             /**
              A file with no rows.
              */
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
             const path = await writeRun({
-              runsDir: await throwawayRunsDir(),
+              runsDir: scratch.path,
               stamp: '2026-08-25T01-00-00.000Z',
               body: {
                 startedAt: '2026-08-25T01:00:00.000Z',
@@ -785,6 +785,7 @@ await describe({
           name: 'REFUSES AN EMPTY ARCHIVE with its line and exit 6 before any roster is woken, since '
             + 'the run was pointed somewhere wrong rather than at a clean archive',
           fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-empty-', },);
             /**
              What the command wrote against an archive holding nothing.
              */
@@ -792,10 +793,7 @@ await describe({
               command: AUDIT_COMMAND,
               args: [
                 '--archive',
-                await mkdtemp(join(
-                  tmpdir(),
-                  'rendering-audit-settled-empty-',
-                ),),
+                scratch.path,
                 '--cap',
                 '0',
               ],

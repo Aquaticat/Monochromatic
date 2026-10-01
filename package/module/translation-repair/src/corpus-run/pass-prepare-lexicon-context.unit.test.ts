@@ -10,13 +10,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -40,6 +33,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -139,7 +133,8 @@ await describe({
         /** Lexicon exchanges. */
         const lexicon: string[] = [];
         /** Directory this case owns for its entry caches. */
-        const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-lexicon-context-',),);
+        await using scratch = await scratchDir({ prefix: 'pass-prepare-lexicon-context-', },);
+        const dir = scratch.path;
         await preparePassEntry({
           client: lexiconClient({ lexicon, },),
           entryId: 'CatEntry',
@@ -156,7 +151,6 @@ await describe({
             workTitles: async () => [LOOKUP_LINE,],
           },
         },);
-        await rm(dir, { recursive: true, force: true, },);
         // The lexicon ran, so the case reads calls that exist.
         expect(lexicon.length,).toBeGreaterThan(0,);
         for (const text of lexicon)
@@ -170,7 +164,8 @@ await describe({
         /** Lexicon exchanges. */
         const lexicon: string[] = [];
         /** Directory this case owns for its entry caches. */
-        const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-lexicon-context-',),);
+        await using scratch = await scratchDir({ prefix: 'pass-prepare-lexicon-context-', },);
+        const dir = scratch.path;
         await preparePassEntry({
           client: lexiconClient({ lexicon, },),
           entryId: 'CatEntry',
@@ -187,7 +182,6 @@ await describe({
             corpusNames: async () => [{ source: '小猫', renderings: ['Little Cat',], entryId: 'OtherCat', },],
           },
         },);
-        await rm(dir, { recursive: true, force: true, },);
         // The lexicon ran, so the case reads calls that exist.
         expect(lexicon.length,).toBeGreaterThan(0,);
         for (const text of lexicon) {

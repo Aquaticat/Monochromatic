@@ -11,10 +11,6 @@
  @module
  */
 
-import { mkdtemp, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
@@ -39,6 +35,7 @@ import {
   WorkTitleLookupError,
   writeCachedLookup,
 } from '../dist/final/node/index.mjs';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  Abort signal that never fires.
@@ -129,23 +126,6 @@ function stubFetch(
 }
 
 /**
- Fresh cache directory for one case.
- 
- @returns Directory path
- 
- @example
- ```ts
- const dir = await freshCacheDir();
- ```
- */
-async function freshCacheDir(): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    'work-title-lookup-',
-  ),);
-}
-
-/**
  One endpoint result as the reference describes it.
  */
 const TO_LIVE_RESULT = {
@@ -227,7 +207,8 @@ await describe({
             /**
              Empty cache.
              */
-            const dir = await freshCacheDir();
+            await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
+            const dir = scratch.path;
             /**
              Transport answering one hit.
              */
@@ -401,7 +382,8 @@ await describe({
             /**
              Empty cache.
              */
-            const dir = await freshCacheDir();
+            await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
+            const dir = scratch.path;
             /**
              Record already cached for one title, with no hits.
              */
@@ -458,10 +440,11 @@ await describe({
               status: 500,
               body: {},
             },);
+            await using freshScratch = await scratchDir({ prefix: 'work-title-lookup-', },);
             expect(await workTitleLookupLines({
               sourceText: '读《活着》。',
               apiKey: 'test-key',
-              dir: await freshCacheDir(),
+              dir: freshScratch.path,
               signal: SIGNAL,
               fetchFn: refused.fetchFn,
               now: () => NOW,
@@ -513,19 +496,21 @@ await describe({
               status: 200,
               body: { results: [], },
             },);
+            await using firstScratch = await scratchDir({ prefix: 'work-title-lookup-', },);
             expect(await workTitleLookupLines({
               sourceText: '读《活着》。',
               apiKey: '',
-              dir: await freshCacheDir(),
+              dir: firstScratch.path,
               signal: SIGNAL,
               fetchFn,
               now: () => NOW,
               logger: l,
             },),).toEqual([],);
+            await using secondScratch = await scratchDir({ prefix: 'work-title-lookup-', },);
             expect(await workTitleLookupLines({
               sourceText: '没有书名号。',
               apiKey: 'test-key',
-              dir: await freshCacheDir(),
+              dir: secondScratch.path,
               signal: SIGNAL,
               fetchFn,
               now: () => NOW,

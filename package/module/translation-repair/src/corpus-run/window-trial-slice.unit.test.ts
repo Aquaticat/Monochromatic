@@ -13,8 +13,6 @@
  @module
  */
 
-import { mkdtemp, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -37,6 +35,7 @@ import {
   TRIAL_ARMS,
   trialKey,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Logger the arms write to.
@@ -225,21 +224,20 @@ function driftingClient(): {
 }
 
 /**
- Fresh throwaway ledger path.
- 
- @returns Path inside a new temporary directory
- 
+ Ledger path nested inside a case-owned directory.
+
+ @param dir - case-owned directory the ledger lives under
+
+ @returns Path inside that directory
+
  @example
  ```ts
- const path = await freshLedger();
+ const path = freshLedger({ dir: scratch.path, },);
  ```
  */
-async function freshLedger(): Promise<string> {
+function freshLedger({ dir, }: { readonly dir: string; },): string {
   return join(
-    await mkdtemp(join(
-      tmpdir(),
-      'window-slice-',
-    ),),
+    dir,
     'trial.jsonl',
   );
 }
@@ -281,6 +279,7 @@ await describe({
         + 'rests on. The translators here drift on every call, so a rebought slate would show as a '
         + 'second round of translator calls and as different candidate text between arms',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
         const rows = await runSliceArms({
           client: rig.client,
@@ -289,7 +288,7 @@ await describe({
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),
@@ -310,6 +309,7 @@ await describe({
       name: 'shows the surrounding original to the WIDE arm only, so the three arms differ in '
         + 'exactly the evidence under test and in nothing else',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
         await runSliceArms({
           client: rig.client,
@@ -318,7 +318,7 @@ await describe({
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),
@@ -340,8 +340,9 @@ await describe({
       name: 'APPENDS EACH ARM AS IT COMPLETES rather than at the end, so a kill costs one arm and '
         + 'not the slice: every row is on disk before the next arm is bought',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
-        const ledgerPath = await freshLedger();
+        const ledgerPath = freshLedger({ dir: scratch.path, },);
         await runSliceArms({
           client: rig.client,
           slices: SLICES,
@@ -371,6 +372,7 @@ await describe({
         + 'the slate: producing is the expensive half, and paying for it to throw it away would '
         + 'cost most of what resumption is meant to save',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
         const rows = await runSliceArms({
           client: rig.client,
@@ -379,7 +381,7 @@ await describe({
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           done: doneFor({
             arms: [TRIAL_ARMS.narrowFirst,
               TRIAL_ARMS.narrowSecond,
@@ -404,6 +406,7 @@ await describe({
         + 'reproduced, so finishing the remaining arms here would judge different candidates from '
         + 'the arms already on disk while the ledger showed a complete triple',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
         const rows = await runSliceArms({
           client: rig.client,
@@ -412,7 +415,7 @@ await describe({
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           // A kill after the first two arms.
           done: doneFor({
             arms: [TRIAL_ARMS.narrowFirst,
@@ -437,7 +440,8 @@ await describe({
         + 'catch the two key builders disagreeing: they did, on a NUL separator against a space, '
         + 'and every fixture that spelled the key itself passed while no live run ever resumed',
       fn: async () => {
-        const ledgerPath = await freshLedger();
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
+        const ledgerPath = freshLedger({ dir: scratch.path, },);
 
         /**
          First run, which buys all three arms and writes them.
@@ -491,6 +495,7 @@ await describe({
       name: 'records the PANEL EACH ARM DECIDED ON, since the fan-out proceeds once half the '
         + 'roster answers and an arm that lost judges is otherwise written as an ordinary keep',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
         const rows = await runSliceArms({
           client: rig.client,
@@ -499,7 +504,7 @@ await describe({
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),
@@ -517,6 +522,7 @@ await describe({
       name: 'REFUSES a slice with no neighbouring section before spending anything, since its wide '
         + 'arm would be its narrow arm and the pair would report a false null',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
         const rig = driftingClient();
 
         /**
@@ -529,7 +535,7 @@ await describe({
           sliceClass: 'relocation',
           entryId: 'Mittens',
           protocol: 'protocol-one',
-          ledgerPath: await freshLedger(),
+          ledgerPath: freshLedger({ dir: scratch.path, },),
           done: new Set<string>(),
           models: MODELS,
           signal: AbortSignal.timeout(30_000,),

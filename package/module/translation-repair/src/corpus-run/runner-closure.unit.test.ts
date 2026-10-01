@@ -12,10 +12,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  writeFile,
-} from 'node:fs/promises';
+import { writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -26,33 +23,28 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { readRunnerClosure, } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
- Writes one throwaway entry file and returns its path.
- 
+ Writes one entry file into a caller-owned directory and returns its path.
+
  ON A THROWAWAY, per `THR`: this reads files, so it gets its own directory
  rather than any path the repository cares about.
- 
+
+ @param dir - case-owned directory to write into
+
  @param text - entry contents
- 
+
  @returns Path written
- 
+
  @example
  ```ts
- const path = await entryWith({ text: 'export {};', },);
+ const path = await entryWith({ dir: scratch.path, text: 'export {};', },);
  ```
  */
 async function entryWith(
-  { text, }: { readonly text: string; },
+  { dir, text, }: { readonly dir: string; readonly text: string; },
 ): Promise<string> {
-  /**
-   Fresh directory nobody else writes to.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'runner-closure-',
-  ),);
-
   /**
    Where the fixture entry goes.
    */
@@ -76,10 +68,12 @@ await describe({
         + 'line whose imports carry no space, and a scan written for readable source reports a '
         + 'clean closure for a file full of them',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'runner-closure-', },);
         /**
          An entry shaped the way the bundler actually emits one.
          */
         const path = await entryWith({
+          dir: scratch.path,
           text: 'import{a as tagged}from"./run-config-ABC123.mjs";import{b}from"./whisker-DEF456.mjs";'
             + 'import{join}from"node:path";const x=1;export{};',
         },);
@@ -104,10 +98,12 @@ await describe({
       name: 'READS THE SPACED FORM TOO, so an unminified build is not silently reported as '
         + 'importing nothing',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'runner-closure-', },);
         /**
          Ordinary readable source.
          */
         const path = await entryWith({
+          dir: scratch.path,
           text: 'import { tagged, } from \'./run-config.mjs\';\n'
             + 'import { join, } from "node:path";\n',
         },);
@@ -126,7 +122,9 @@ await describe({
       name: 'IGNORES BARE AND NODE SPECIFIERS, since only relative chunks belong to this build: '
         + 'a package name identifies a dependency and not the code that was executed',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'runner-closure-', },);
         const path = await entryWith({
+          dir: scratch.path,
           text: 'import{a}from"node:fs";import{b}from"nano-spawn";import{c}from"@scope/pkg";',
         },);
         const closure = await readRunnerClosure({ entryPath: path, },);
@@ -140,7 +138,9 @@ await describe({
       name: 'SORTS AND DEDUPLICATES, so two runs of one build compare equal by string equality '
         + 'regardless of the order the bundler happened to emit',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'runner-closure-', },);
         const path = await entryWith({
+          dir: scratch.path,
           text: 'import{a}from"./zebra.mjs";import{b}from"./alpha.mjs";import{c}from"./zebra.mjs";',
         },);
         const closure = await readRunnerClosure({ entryPath: path, },);
@@ -159,11 +159,12 @@ await describe({
         + 'open are opposite findings, and comparing two unreadable ones would call two unknown '
         + 'builds the same',
       fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'runner-closure-', },);
         /**
          A real entry that genuinely imports nothing relative.
          */
         const inlined = await readRunnerClosure({
-          entryPath: await entryWith({ text: 'const x=1;export{};', },),
+          entryPath: await entryWith({ dir: scratch.path, text: 'const x=1;export{};', },),
         },);
         expect(inlined.kind,).toBe('read',);
         if (inlined.kind === 'read')

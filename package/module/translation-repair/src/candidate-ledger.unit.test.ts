@@ -20,12 +20,10 @@
  */
 
 import {
-  mkdtemp,
   readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -48,6 +46,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
 } from './roster-seats.test-fixture.ts';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  Variable naming the run directory, matching the module under test.
@@ -180,27 +179,6 @@ function runsDirCleared(): Disposable & { readonly cleared: boolean; } {
 }
 
 /**
- Makes a throwaway directory for one case.
- 
- @param mark - names the case, so a leftover directory says who left it
- 
- @returns Path nothing else writes to
- 
- @example
- ```ts
- const dir = await throwawayDir({ mark: 'kept', },);
- ```
- */
-async function throwawayDir(
-  { mark, }: { readonly mark: string; },
-): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    `ledger-${mark}-`,
-  ),);
-}
-
-/**
  Lists the ledger directory, reporting an absent one as empty.
  
  @param dir - run directory written into
@@ -293,7 +271,8 @@ async function recordedRounds(
   /**
    Throwaway this case writes into.
    */
-  const dir = await throwawayDir({ mark, },);
+  await using scratch = await scratchDir({ prefix: `ledger-${mark}-`, },);
+  const dir = scratch.path;
 
   using pointed = runsDirPointedAt({ dir, },);
 
@@ -403,7 +382,8 @@ await describe({
         /**
          Throwaway that must stay empty.
          */
-        const dir = await throwawayDir({ mark: 'unset', },);
+        await using scratch = await scratchDir({ prefix: 'ledger-unset-', },);
+        const dir = scratch.path;
 
         using cleared = runsDirCleared();
 
@@ -434,7 +414,8 @@ await describe({
          Throwaway with a FILE where the recorder expects a directory, so the
          write cannot succeed.
          */
-        const dir = await throwawayDir({ mark: 'blocked', },);
+        await using scratch = await scratchDir({ prefix: 'ledger-blocked-', },);
+        const dir = scratch.path;
         await writeFile(
           join(
             dir,
@@ -465,7 +446,8 @@ await describe({
         /**
          Throwaway this case writes into.
          */
-        const dir = await throwawayDir({ mark: 'context', },);
+        await using scratch = await scratchDir({ prefix: 'ledger-context-', },);
+        const dir = scratch.path;
         using pointed = runsDirPointedAt({ dir, },);
         await inEntryLogContext({
           entry: 'Tabby',

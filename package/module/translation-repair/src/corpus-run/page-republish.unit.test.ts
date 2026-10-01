@@ -13,11 +13,9 @@
 
 import {
   mkdir,
-  mkdtemp,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -35,6 +33,8 @@ import {
   republishSettledPages,
   type RepublishOutcome,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
 /**
@@ -74,11 +74,12 @@ class LitterBoxClosedError extends Error {
  @param strip - preparation keys to delete from the artifact, which is how a
  file written before those fields existed looks
 
- @returns Artifact and page roots, and the page path
+ @returns Artifact and page roots, and the page path, removed when its
+ `await using` scope ends
 
  @example
  ```ts
- const run = await settledRun({ strip: [], },);
+ await using run = await settledRun({ strip: [], },);
  ```
  */
 async function settledRun(
@@ -87,14 +88,12 @@ async function settledRun(
   readonly artifactsDir: string;
   readonly publishDir: string;
   readonly pagePath: string;
-}> {
+} & AsyncDisposable> {
   /**
    The runs directory.
    */
-  const runsDir = await mkdtemp(join(
-    tmpdir(),
-    'page-republish-',
-  ),);
+  const scratch = await scratchDir({ prefix: 'page-republish-', },);
+  const runsDir = scratch.path;
   /**
    Where the artifact lives.
    */
@@ -144,6 +143,9 @@ async function settledRun(
       ENTRY,
       'page.en.md',
     ),
+    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
+      await scratch[Symbol.asyncDispose]();
+    },
   };
 }
 
@@ -266,7 +268,7 @@ await describe({
     it({
       name: 'WRITES a missing page from its artifact, and the page then agrees with it',
       fn: async () => {
-        const run = await settledRun({ strip: [], },);
+        await using run = await settledRun({ strip: [], },);
 
         expect(await republishIn({
           run,
@@ -281,7 +283,7 @@ await describe({
     it({
       name: 'LEAVES an agreeing page as it is, the control that a rewrite is not every page\'s fate',
       fn: async () => {
-        const run = await settledRun({ strip: [], },);
+        await using run = await settledRun({ strip: [], },);
         await republishIn({
           run,
           readPair: SAME_PAIR,
@@ -307,7 +309,7 @@ await describe({
     it({
       name: 'REWRITES a page that disagrees with its artifact back to what the artifact ships',
       fn: async () => {
-        const run = await settledRun({ strip: [], },);
+        await using run = await settledRun({ strip: [], },);
         await republishIn({
           run,
           readPair: SAME_PAIR,
@@ -344,7 +346,7 @@ await describe({
     it({
       name: 'SPLICES INTO THE ARCHIVE THE ARTIFACT STORED, not the corpus copy, which the pass reshapes before it carves',
       fn: async () => {
-        const run = await settledRun({ strip: [], },);
+        await using run = await settledRun({ strip: [], },);
 
         expect(await republishIn({
           run,
@@ -366,7 +368,7 @@ await describe({
     it({
       name: 'FALLS BACK TO THE CORPUS COPY for an artifact that predates storing the archive',
       fn: async () => {
-        const run = await settledRun({ strip: ['archiveText',], },);
+        await using run = await settledRun({ strip: ['archiveText',], },);
 
         expect(await republishIn({
           run,
@@ -381,7 +383,7 @@ await describe({
     it({
       name: 'LEAVES a page whose original no longer carves as the run carved it, saying where it moved',
       fn: async () => {
-        const run = await settledRun({ strip: [], },);
+        await using run = await settledRun({ strip: [], },);
 
         /**
          What became of the page.
@@ -407,7 +409,7 @@ await describe({
     it({
       name: 'LEAVES a page when the pair cannot be read, naming the class and never its message',
       fn: async () => {
-        const run = await settledRun({ strip: [], },);
+        await using run = await settledRun({ strip: [], },);
 
         expect(await republishIn({
           run,
@@ -424,7 +426,7 @@ await describe({
     it({
       name: 'LEAVES an artifact it cannot read, and goes on',
       fn: async () => {
-        const run = await settledRun({ strip: [], },);
+        await using run = await settledRun({ strip: [], },);
         await writeFile(
           join(
             run.artifactsDir,

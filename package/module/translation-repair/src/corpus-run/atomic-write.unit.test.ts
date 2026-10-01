@@ -13,12 +13,10 @@
  */
 
 import {
-  mkdtemp,
   readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -28,23 +26,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { writeFileAtomic, } from '../../dist/final/node/index.mjs';
-
-/**
- Makes a throwaway directory for one case.
- 
- @returns Path of the directory
- 
- @example
- ```ts
- const dir = await scratch();
- ```
- */
-async function scratch(): Promise<string> {
-  return await mkdtemp(join(
-    tmpdir(),
-    'atomic-write-',
-  ),);
-}
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
   name: writeFileAtomic.name,
@@ -54,7 +36,8 @@ await describe({
         + 'contract a caller sees: the temporary name is an implementation '
         + 'detail no reader may ever meet',
       fn: async () => {
-        const dir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'atomic-write-', },);
+        const dir = scratch.path;
 
         /**
          Path the artifact takes.
@@ -81,7 +64,8 @@ await describe({
         + 'artifacts directory the readers glob and would be counted by every '
         + 'listing that keys on a name rather than on content',
       fn: async () => {
-        const dir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'atomic-write-', },);
+        const dir = scratch.path;
 
         await writeFileAtomic({
           path: join(
@@ -99,7 +83,8 @@ await describe({
       name: 'replaces an existing artifact rather than appending to it or '
         + 'refusing, which is what a re-settled entry needs',
       fn: async () => {
-        const dir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'atomic-write-', },);
+        const dir = scratch.path;
 
         /**
          Path holding an older artifact for the same entry.
@@ -131,7 +116,8 @@ await describe({
         + 'including multi-byte text, so the rename path is exercised on a '
         + 'payload of the shape it actually carries rather than on ASCII alone',
       fn: async () => {
-        const dir = await scratch();
+        await using scratch = await scratchDir({ prefix: 'atomic-write-', },);
+        const dir = scratch.path;
 
         /**
          Path the artifact takes.

@@ -18,8 +18,7 @@
  @module
  */
 
-import { mkdtemp, writeFile, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -38,6 +37,7 @@ import {
   readDriftOptIn,
   UnplaceableArtifactError,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  One built pipeline, as a digest-shaped invention.
@@ -126,34 +126,26 @@ function printingInto({ lines, }: { readonly lines: string[]; },): Disposable {
 }
 
 /**
- Writes a throwaway artifacts directory.
+ Writes artifacts into a caller-owned directory.
 
- Written to a fresh temporary directory every time rather than to any real runs
- directory, which holds hours of ungraded work.
+ @param dir - case-owned directory to write into
 
  @param generations - one artifact per entry, each recording the given built
  pipeline alongside a fixed commit
 
- @returns Path of the artifacts directory
+ @returns Nothing; the files are the effect
 
  @example
  ```ts
- const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
+ await writeArtifacts({ dir: scratch.path, generations: { Mittens: DIGEST_A, }, },);
  ```
  */
 async function writeArtifacts(
-  { generations, }: {
+  { dir, generations, }: {
+    readonly dir: string;
     readonly generations: Readonly<Record<string, string>>;
   },
-): Promise<string> {
-  /**
-   Disposable root for this case.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'pass-generation-guard-',
-  ),);
-
+): Promise<void> {
   await Promise.all(
     Object.entries(generations,)
       .map(async function writeOne([entryId, digest,],) {
@@ -172,8 +164,6 @@ async function writeArtifacts(
         );
       },),
   );
-
-  return dir;
 }
 
 /**
@@ -193,7 +183,9 @@ async function writeArtifacts(
 async function censusOf(
   { generations, }: { readonly generations: Readonly<Record<string, string>>; },
 ): Promise<Parameters<typeof assertBuildGenerationResumable>[0]['census']> {
-  return await assertArtifactsPlaceable({ artifactsDir: await writeArtifacts({ generations, },), },);
+  await using scratch = await scratchDir({ prefix: 'pass-generation-guard-', },);
+  await writeArtifacts({ dir: scratch.path, generations, },);
+  return await assertArtifactsPlaceable({ artifactsDir: scratch.path, },);
 }
 
 /**
@@ -397,7 +389,9 @@ await describe({
             + 'builds, so nothing can say whether this run is the pipeline that '
             + 'wrote them; the remedy is a fresh directory, not a smaller one',
           fn: async () => {
-            const dir = await writeArtifacts({ generations: {}, },);
+            await using scratch = await scratchDir({ prefix: 'pass-generation-guard-', },);
+            const dir = scratch.path;
+            await writeArtifacts({ dir, generations: {}, },);
             await writeFile(
               join(
                 dir,
@@ -429,7 +423,9 @@ await describe({
             + 'and excluded by the pool filter so it never appears in a rate; it '
             + 'ceases to exist and no count says so',
           fn: async () => {
-            const dir = await writeArtifacts({ generations: { Pepper: DIGEST_A, }, },);
+            await using scratch = await scratchDir({ prefix: 'pass-generation-guard-', },);
+            const dir = scratch.path;
+            await writeArtifacts({ dir, generations: { Pepper: DIGEST_A, }, },);
             await writeFile(
               join(
                 dir,
@@ -454,7 +450,9 @@ await describe({
             + 'since deleting the file is the whole remedy and an operator cannot '
             + 'delete what the refusal does not name',
           fn: async () => {
-            const dir = await writeArtifacts({ generations: { Pepper: DIGEST_A, }, },);
+            await using scratch = await scratchDir({ prefix: 'pass-generation-guard-', },);
+            const dir = scratch.path;
+            await writeArtifacts({ dir, generations: { Pepper: DIGEST_A, }, },);
             await writeFile(
               join(
                 dir,

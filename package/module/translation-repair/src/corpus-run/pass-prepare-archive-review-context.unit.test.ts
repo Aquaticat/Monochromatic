@@ -11,13 +11,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -43,6 +36,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -178,7 +172,8 @@ await describe({
         /** Correction slate exchanges. */
         const selections: string[] = [];
         /** Directory this case owns for its entry caches. */
-        const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-archive-review-context-',),);
+        await using scratch = await scratchDir({ prefix: 'pass-prepare-archive-review-context-', },);
+        const dir = scratch.path;
         const paired = await preparePassEntry({
           client: contextClient({ reviews, selections, },),
           entryId: 'CatEntry',
@@ -195,7 +190,6 @@ await describe({
             references: async () => REFERENCE_LINES,
           },
         },);
-        await rm(dir, { recursive: true, force: true, },);
         /** Declared identity preparation built, which the review is to read. */
         const identityContext = paired.prepared.identityContext ?? '';
         // The case holds only while preparation carried both and both rounds ran.
