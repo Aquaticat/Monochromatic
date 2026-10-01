@@ -750,6 +750,15 @@ or unsupported evidence cannot authorize a reviewed action.
 Manual/headless behavior stays owned by `src/ask-user.ts` and the extension lifecycle.
 No UI means no automatic substitute for human approval.
 
+Parallel tool calls form one combined judgment of the complete execution group and its interacting effects.
+No member starts before group admission.
+The [parallel batch fix](pi-auto-mode-parallel-batch.md) records the current reproduction and integration work.
+
+The target mean model cost is no greater than US$0.001 per combined judgment,
+including all calls and chargeable retries.
+This is not yet measured or guaranteed;
+report if measured costs project above it rather than weakening required evidence.
+
 The total model-assessment wait is five seconds,
 including preparation and finalization.
 On 2026-10-01,

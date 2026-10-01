@@ -22,6 +22,37 @@ or turn model estimates into authority.
 Jev input consent through the approved Gateway route remains settled.
 Drex evaluation inputs retain their public/synthetic plus verified public-policy scope.
 
+## Judgment unit and cost target
+
+Parallel tool calls are one combined judgment,
+not separately budgeted per-call approvals.
+The [parallel batch fix](pi-auto-mode-parallel-batch.md) records the reproduced bug and required admission seam.
+The complete execution group and its interacting effects must be assessed before any member starts.
+
+The user requested an average cost no greater than US$0.001 per judgment,
+and wants to be told if that appears unattainable.
+Treat this as an optimization target,
+not permission to truncate policy,
+drop required evidence,
+or change uncertainty into approval.
+
+At Drex 1.5's published US$0.05 per million input tokens,
+US$0.001 corresponds to 20,000 billed input tokens across the entire judgment.
+This arithmetic is conditional on that published rate,
+not a verified invoice or measured workload average.
+Count every model attempt and chargeable retry against the judgment's cost.
+Retain failed and abandoned-attempt costs rather than discarding them from the average.
+Report the model-using judgment mean separately from the complete guard-assessment mean;
+do not dilute the result with unrelated zero-cost actions.
+
+Favor one relevant parallel question batch and selective follow-ups.
+512 questions are available,
+not mandatory.
+Full-policy repetition across later calls can consume the cost allowance even when each call fits the context limit.
+Gateway fees and internal retry charges must remain explicit where not independently measurable.
+If actual usage projects above the target,
+report that result rather than claim a cost guarantee from token capacity or parallelism.
+
 ## Consequence: parallel breadth before additional rounds
 
 A model call is a batch of narrow questions,
