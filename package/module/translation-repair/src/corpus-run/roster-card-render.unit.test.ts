@@ -386,7 +386,7 @@ await describe({
 
     it({
       name: 'READS THE ASK off the command line and refuses a missing id, an empty one, or a provider that is not '
-        + 'one of the four',
+        + 'one of the four, saying which part is wrong and quoting what was typed (ledger B75)',
       fn: async () => {
         expect(readAsk({
           line: lineOf({
@@ -418,18 +418,34 @@ await describe({
               ],
             },),
           },);
-        },).toThrow('usage: roster-card',);
+        },).toThrow('roster-card\'s served id is written empty',);
         expect(function notAProvider(): void {
           readAsk({
             line: lineOf({
               command: 'roster-card',
               typed: [
-                'catnip',
+                'cat nip',
                 'mittens-9',
               ],
             },),
           },);
-        },).toThrow('usage: roster-card',);
+        },).toThrow(
+          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, and "cat nip" is none of them',
+        );
+        expect(function bothWrong(): void {
+          readAsk({
+            line: lineOf({
+              command: 'roster-card',
+              typed: [
+                'Hyper',
+                '',
+              ],
+            },),
+          },);
+        },).toThrow(
+          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, and "Hyper" is none of them; '
+            + 'roster-card\'s served id is written empty',
+        );
       },
     },),
   ],

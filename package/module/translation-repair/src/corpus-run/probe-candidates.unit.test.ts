@@ -116,6 +116,14 @@ await describe({
         },).toThrow(BEDROCK_ONLY_ROSTER_IDS[0],);
       },
     },),
+    it({
+      name: 'QUOTES the id it refuses, so a spaced or mistyped id shows as typed (ledger B75)',
+      fn: async () => {
+        expect(() => {
+          readCandidateIds({ line: probeLine({ typed: ['--candidates', 'nobody/such model',], },), },);
+        },).toThrow('--candidates names "nobody/such model", which is not seatable',);
+      },
+    },),
   ],
 },);
 

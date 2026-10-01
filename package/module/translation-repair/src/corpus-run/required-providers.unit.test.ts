@@ -154,6 +154,21 @@ await describe({
         }
       },
     },),
+    it({
+      name: 'QUOTES the provider it refuses, so a spaced or mistyped name shows as typed (ledger B75)',
+      fn: async () => {
+        expect((caught(function readSpaced(): unknown {
+          return readRequiredProviders({
+            line: lineOf({
+              command: 'corpus-pass',
+              typed: ['--require-providers', 'synthetic,cat nip',],
+            },),
+          },);
+        },) as Error).message,).toBe(
+          '--require-providers accepts only synthetic, bedrock, hyper, openrouter, and "cat nip" is none of them',
+        );
+      },
+    },),
   ],
 },);
 
