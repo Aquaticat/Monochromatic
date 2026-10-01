@@ -1673,6 +1673,9 @@ so a comment's or an expression's words read as a title
 and a linked or underscored one was never read,
 and it wrote a quoted title in italics inside an italic span,
 where nothing set it apart (ledger B72).
+The Anthropic reader took a body as whole when any payload held the word `message_stop` in quotes,
+so a stream cut inside its last frame passed the retry ladder and failed after it,
+and it never read the error event a failing stream ends with (ledger B87).
 
 The rule:
 a question about what a passage's blocks are
@@ -1699,6 +1702,13 @@ in bold or in a link is read off the parse
 with HTML comments first blanked to spaces of the same length,
 as `parse-slice-body.ts` does,
 so that no offset moves and no comment's words are read.
+The same holds on a provider's wire:
+which frame a payload is
+(the terminator,
+an error event)
+is read off the parsed frame's `type`,
+never found as a word in the payload's text,
+and a reader is checked against every frame kind its protocol's current documentation lists.
 
 What enforces it:
 habit and review;
@@ -1712,6 +1722,8 @@ a link,
 underscores
 and a span across lines.
 Three more blank-line block readers are listed under ledger B68 to be read against this rule.
+`anthropic-completion.unit.test.ts` carries the word as a tool's name and the error event,
+and `hyper-client.unit.test.ts` a body cut inside its terminator frame.
 
 ## What a catch charges
 

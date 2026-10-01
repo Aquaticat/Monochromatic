@@ -16164,6 +16164,77 @@ and a parser's position is where its message says it stopped;
 `mistake-prevention.md`,
 "Offsets and positions".
 
+### B87: an Anthropic stream's ending read off a word, and its error event read as a cut stream
+
+Found in T8's twenty-second batch,
+reading `anthropic-completion.ts` against the current streaming documentation
+(platform.claude.com,
+"Event types"),
+red in `57ffcf2dd`,
+fixed in the commit adding this entry.
+`requireAnthropicTerminator` counted a body as whole when any `data:` payload held the word `message_stop` in quotes.
+A body cut inside its last frame,
+after `{"type":"message_stop"` and before the closing brace,
+passed:
+the retry ladder (`wholeMessage` in `hyper-client.ts`) returned it,
+and `extractAnthropicCompletion` then refused it as a frame that is not JSON,
+after the ladder,
+so the call was lost with retries left.
+A frame holding that word as a value
+(a tool's name)
+passed too,
+and on a stream cut before its end handed the fold half an answer.
+The stream's error event,
+which the documentation shows in place of the rest of a failing message,
+was not read at all:
+with no terminator after it,
+the refusal named a cut connection;
+with one after it,
+the fold returned what came before as the answer.
+
+`requireWholeAnthropicMessage` replaces it.
+Each payload is read as a frame by `readFrame`,
+which the fold shares;
+the terminator is a frame whose `type` is `message_stop`,
+and an error event refuses the message wherever it stands.
+The refusal names the error's type when that type is a protocol word
+(lower-case ASCII letters and underscores,
+at most 64 characters),
+and "unnamed" otherwise,
+since the error class promises to quote nothing from the body.
+
+The B23 census of fixed-word searches listed this site
+(`b23-needle-census.txt`,
+`anthropic-completion.ts:428`)
+and recorded no class for it.
+Its quotes bound the word,
+so as a word search it read as bounded;
+the defect was of another kind,
+a frame's type read off its text instead of its parse.
+
+Calls made here are open to veto:
+
+- only the ending is read before the ladder returns:
+  a body whose terminator arrived was delivered whole,
+  and a frame inside it that does not parse is refused by the fold,
+  unretried,
+  read as a formatting defect a retry would repeat and pay for again
+  (an inference,
+  not measured);
+  `requireStreamTerminator`,
+  the OpenAI-shaped sibling,
+  reads the same scope;
+- an error event is retried as a cut stream is.
+
+Open:
+an error the provider calls `invalid_request_error` is retried as an overloaded one is,
+spending attempts that cannot succeed.
+
+Recurrence:
+which frame a payload is gets read off its parse;
+`mistake-prevention.md`,
+"Structure read off the parse".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

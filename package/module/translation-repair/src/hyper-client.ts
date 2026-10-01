@@ -4,7 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { contextRoot, } from './log-context.ts';
 import {
   extractAnthropicCompletion,
-  requireAnthropicTerminator,
+  requireWholeAnthropicMessage,
 } from './anthropic-completion.ts';
 import { buildAnthropicBody, } from './anthropic-request.ts';
 import { armCallDeadline, } from './call-deadline.ts';
@@ -156,7 +156,8 @@ export type HyperClient = ModelCaller & {
 };
 
 /**
- Refuses a success reply whose event stream stopped before its terminator.
+ Refuses a success reply whose event stream stopped before its terminator
+ or reported an error.
  
  MODULE SCOPE BECAUSE IT CAPTURES NOTHING. The reply handed in is its whole
  input, so nesting it at the call site would make a closure over an empty set.
@@ -168,8 +169,8 @@ export type HyperClient = ModelCaller & {
  @param attemptReply - one attempt's reply, read before the ladder returns it
  
  @throws MalformedCompletionError - when a success body stops before
- `message_stop`, which is what puts a truncated stream on the retry path
- instead of past it
+ `message_stop` or carries an error event, which is what puts a truncated
+ or failed stream on the retry path instead of past it
  
  @example
  ```ts
@@ -178,7 +179,7 @@ export type HyperClient = ModelCaller & {
  */
 function wholeMessage(attemptReply: TransportReply,): void {
   if (isSuccessStatus({ status: attemptReply.status, },))
-    requireAnthropicTerminator({ bodyText: attemptReply.bodyText, },);
+    requireWholeAnthropicMessage({ bodyText: attemptReply.bodyText, },);
 }
 
 /**
@@ -312,7 +313,7 @@ export function createHyperClient(
    
    @throws {@link SyntheticHttpError} on non-success status
    
-   @throws {@link import('./completion-shape.ts').MalformedCompletionError} on a stream that never terminated
+   @throws {@link import('./completion-shape.ts').MalformedCompletionError} on a stream that never terminated or reported an error
    
    @example
    ```ts
