@@ -15056,6 +15056,11 @@ each restored with `git diff` printing nothing after:
 - the stub replacing `Date.now` for the whole process:
   ledger M100.
 
+The full suite on `3a6f92f13`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,500 PASS lines and no FAIL line.
+
 Out of the scan's reach,
 and named in its module note:
 `Date`,
@@ -16024,6 +16029,15 @@ The package's other tests that replace process globals
 `process.exitCode`),
 in 29 files by one search,
 are queued as a family to classify against this.
+17 of those files already set `concurrency: 1` on at least one suite,
+several with a comment giving this reason
+(`cli-refusal`,
+`slice-cache-discard-log`,
+`rendering-audit-settled-print`),
+so the package knew the hazard;
+no doc stated it,
+and the stub was written without reading those files either.
+The prevention doc's "Globals a case replaces" now states it.
 
 ### M79: a coverage census measuring compressed code
 
