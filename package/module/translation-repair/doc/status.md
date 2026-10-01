@@ -383,6 +383,19 @@ two usage-line arms no case prints,
 which join the eighteenth batch on the archive modules.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
+That batch (`9a362ba09` to `f9babaec4`) found four defects behind its cold lines:
+the footnote relabel's ambiguity detail named a label by its folded key without its side,
+the revision footnote floor passed a block the archive did not carry,
+a definition move that would change the parse kept a sound rename back with it,
+and the revision shape refusals listed shapes where a count belongs.
+Its census (`census-JXU9Js` at `67f85061a`,
+1,505 passes)
+leaves library source at 711 stretches over 1,367 lines in 265 files,
+with 14 functions never called.
+The two findings it left open,
+the editorial-apparatus check accepting prose after a label
+and archive revisions checked one at a time though they compose,
+close before the nineteenth batch takes `corpus-run/run`.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,

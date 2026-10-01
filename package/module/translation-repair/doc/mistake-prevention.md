@@ -1257,6 +1257,9 @@ Each default read as "none",
 and the code compiled and ran.
 Three exported names were each declared twice,
 one pair with one signature for two comment grammars.
+The archive revision's footnote floor passed every revision of a block the archive did not carry,
+a branch its comment kept for fixtures a caller composed,
+though production hands it an exact slice and no test reached it (T8's eighteenth batch).
 
 The rule:
 a call states every input that decides what a floor refuses,
@@ -1266,6 +1269,9 @@ a call that leaves one out says why at the call or in the guard's named list.
 A gate flag never defaults to the permissive answer without every caller stating it.
 A reading that failed reaches the verdict as a failure,
 never as an empty value a check then passes.
+No branch is kept for a fixture production cannot build:
+an input that breaks the caller's contract is refused with a named class,
+and the fixture changes.
 A check re-read mid-run applies every rule the first read applied.
 A caught error is logged,
 rethrown,
@@ -1400,6 +1406,10 @@ and a repeat fault's distinct count is 1 whenever two entries share one index,
 so they read "under 1 distinct indices";
 one test asserted that wording,
 agreeing with the defect (ledger B66).
+The archive revision's shape refusals listed the blocks' shapes where a count belongs,
+"the block is paragraph and the revision is paragraph,
+paragraph",
+where the translate lanes' block floor says "1 block (paragraph)" (T8's eighteenth batch).
 
 The rule:
 a finding comparing how often two sides carry something writes one sentence per thing compared,
@@ -1413,12 +1423,41 @@ on each side) by the whole sentence.
 A count in any message takes the word `wordForCount` (`count-word.ts`) chooses,
 or `howOften` for a number of times,
 and a case pins the count of 1.
+A message saying what a text holds says how many before listing them
+(`1 block (paragraph)`),
+and says "nothing" for none.
 
 What enforces it:
 habit and review;
 the atom floor's cases pin its arms,
 and an arm no case reaches shows in the coverage census.
 The rest of the count-before-plural family is to be classified and fixed as one change (ledger B66's open list).
+
+## Labels a message names
+
+What happened:
+the footnote relabel's ambiguity detail ended "where an earlier slice mapped [^X]":
+X was an original label when one archive label met two
+and an archive label when two met one,
+and nothing said which;
+it was the parser's case-folded key,
+so a label both documents spell `[^Tabby]` read `[^tabby]`;
+and "slice" named the later claim's kind of place,
+so a slice contradicting a definition pair blamed a slice (T8's eighteenth batch).
+
+The rule:
+a message naming a label,
+an id or a place names it as its input spelled it,
+never by a key normalized for comparison,
+says which side or document it stands on,
+and names the place each claim it cites was read,
+that claim's own.
+A reader keeps the claim itself beside the key it compares by,
+so the message has the spelling to say.
+
+What enforces it:
+the relabel cases pin both conflicts whole and a case-folded spelling;
+habit and review elsewhere.
 
 ## Paired marks
 
@@ -1457,6 +1496,32 @@ What enforces it:
 habit and review;
 an exit the rule missed can show in the coverage census as a rethrow no test reaches,
 as this one did.
+
+## Refusals inside a composed operation
+
+What happened:
+the footnote relabel renames the archive's labels and then moves its definitions into the original's order.
+The move threw when the moved definitions would parse differently,
+and the pass reads every rewrite refusal as keeping the archive unchanged,
+so a sound rename was kept back with it,
+under a message blaming the rename;
+the move's other refusals (prose among the definitions,
+a container across them) leave the definitions standing with a note and the rename applied.
+A bounded probe over generated pages reached the throw 156 times in 2,000 (T8's eighteenth batch).
+
+The rule:
+a step that can refuse on input a page can carry refuses as its sibling refusals do,
+leaving the steps that held applied,
+and a throw stays only for a broken invariant.
+Before a step's throw is kept as unreachable,
+a bounded probe over generated input counts what reaches it,
+beside a count of what passed the step,
+so a null is read from a probe that exercised the path.
+
+What enforces it:
+the reorder and pass relabel cases on the unmovable definition;
+habit and review for the probe,
+whose counts the batch's ledger record states.
 
 ## Text that shows nothing
 

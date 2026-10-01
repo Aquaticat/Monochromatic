@@ -4746,6 +4746,206 @@ and 80 others;
 and the eighteenth batch takes `archive`,
 36 lines in 9 files to `corpus-run/run`'s 18.
 
+The eighteenth batch took the archive modules against `census-dKGOhZ`
+and the two `corpus-run/command-line.ts` usage-line arms added to it,
+20 stretches in 10 files,
+none of whose sources had changed since that census
+(`git diff --stat 36e3f36cc` over them printed nothing),
+in seven commits,
+`9a362ba09` to `67f85061a`,
+and no entry of its own.
+Its rows read three ways,
+and rows in four files hid defects.
+
+The defects,
+each committed red before its fix:
+
+- `archive-footnote-relabel` 206-207,
+  the ambiguity detail's `?? ''` fallback,
+  cold because no case had two archive labels meet one original label.
+  The detail ended "where an earlier slice mapped [^X]",
+  X an original label in one conflict and an archive label in the other with nothing saying which,
+  in the parser's case-folded key (`[^tabby]` for a label both documents spell `[^Tabby]`),
+  and "slice" was the later claim's kind of place,
+  so the widening test asserted "an earlier slice" for a relation a definition pair gave.
+  `mapLabels` now keeps the claim that first mapped each label and says
+  "where <place> mapped that archive label to original [^X]" or
+  "where <place> mapped archive [^W] to that original label",
+  in the claim's spelling;
+  the correspondence's `unit` field,
+  read nowhere else,
+  went (`9a362ba09`,
+  `371c49efe`).
+- `archive-revision-footnotes` 70,
+  a block the archive does not carry,
+  for which the footnote floor passed every revision unread,
+  a branch its TSDoc kept for fixtures a caller composed and no test reached;
+  production hands the floor an exact slice (`corpus-run/archive-block-repair.ts`),
+  so the floor now throws `BlockOutsideArchiveError`,
+  a marked class with one fixed sentence (`9a362ba09`,
+  `371c49efe`).
+- `archive-footnote-order` 311,
+  the throw when moved definitions reparse differently.
+  A bounded probe over the build (`b18-order-fuzz.mjs`:
+  2,000 documents from a fixed-seed grammar of definition contents,
+  indents,
+  gaps and surrounding text,
+  the reverse order asked)
+  read 1,351 moved,
+  493 left standing,
+  156 such throws and no other error,
+  and an enumeration of two-definition pages (`b18-order-minimal.mjs`) 148 of 2,312 with no empty definition among them;
+  one shape is a definition whose fence was written unindented,
+  whose lines a paragraph definition moved after it takes as a lazy continuation.
+  `relabelArchiveFootnotes` read the throw as a rewrite refusal and kept the whole archive,
+  the sound rename with it,
+  under a message blaming the rename,
+  where the move's other refusals leave the definitions standing with a note.
+  The move now refuses the same way,
+  and the pass applies the rename and says the definitions stand
+  (`bd59138ad`,
+  `837c393e2`);
+  the probe on the fixed build read 1,351 moved,
+  649 standing (406 with a note) and none thrown.
+- `archive-revision-shape` 66 and 77-81,
+  cold for want of a block or revision the slice grammar refuses.
+  Writing the cases found the refusals saying "the block is paragraph and the revision is paragraph,
+  paragraph",
+  a list where a count belongs;
+  they now say "1 block (paragraph)",
+  the translate block floor's form (`becf044c4`,
+  `67f85061a`).
+
+The unreachable ones went (`783c2f420`).
+`archive-footnote-closure` 217-223 refused the closure's own result for merging two archive labels,
+which the construction cannot do:
+the supplied relations are injective (`readFootnoteClosureInput` refuses any that are not),
+the eliminated pair joins labels no relation names,
+each displaced label takes a distinct fresh label outside both namespaces,
+and an archive label nothing moves is no relation's destination,
+or it would have been displaced;
+`footnote-rewrite-map.ts` also refuses a merging map where it is applied.
+The check went,
+the TSDoc states the proof,
+and `archive-footnote-closure-injective.unit.test.ts` closes every relation set over every pair of nonempty sets drawn from three labels
+(1,178 inputs,
+247 closed,
+42 taking the forced pair,
+24 displacing a label,
+0 merging,
+by `b18-closure-reach.mjs`)
+and asserts it reaches closed,
+forced and displaced results.
+`archive-footnote-relabel` 339,
+a hand-written throw for a position the two lists of one length cannot lack,
+is `nonNullishOrThrow`.
+`archive-dispute` 458 dropped an empty archive wording from a disputed slice's refused wordings:
+a dispute needs accepted issues,
+an anchor's repair outcome carries none (`repair-slice-settle.ts`),
+a present slice holds a parsed block's text,
+and `disputedWordingFindings` never matches an empty wording anyway.
+
+The reachable ones have cases (`becf044c4`):
+the singular contributor label and its full-width colon,
+which fit no prefix,
+a picture and a comment closed and not (`archive-block-evidence` 139,
+145 and 146);
+each naturalness responsibility starved of all but one seat's replies,
+the scripted client cutting one sheet's replies,
+with only that responsibility's quorum line recorded (`archive-block-naturalness` 131-135);
+guard rows for a reply that is no record,
+a quote that is not text,
+no replacement and no finding (`archive-block-review-wire` 198,
+202 and 204);
+`logArchiveDisputes` warning once per dispute in slice order,
+and `archiveDisputeNotesOf` keying a note to each disputed slice and no other (`archive-dispute` 517 and 634-642);
+and refusals ending with a position taken one or more times,
+any number of times,
+and one that may be left off (`command-line` 246 and 248).
+The two revision floors are exported for their own test files.
+
+Two corrections came on the way.
+Lint refused the enumeration's `slice()` copy as a spread and then the spread as a needless copy,
+two rules meeting over a loop that appends to the list it reads;
+the subset builder now maps before it appends.
+And lint asked for the new class's constructor TSDoc and for two nested calls split in the new relabel case.
+
+The batch's control copy,
+the revision-shape test with its first case expecting a finding the floor does not write,
+failed that case alone and was deleted.
+With each guard turned off,
+one per test file per build,
+exactly the case covering it failed in each file
+(build one:
+the contributor reader's branch,
+the finding type check,
+the dispute warning,
+the revision refusal of an unreadable text,
+the repeating usage arm,
+the backward relabel conflict,
+the fresh labels kept out of both namespaces,
+and the reparse refusal of a move,
+which failed the reorder case and the pass case;
+build two:
+the defect-discovery quorum line and the dispute notes),
+and `git diff` printed nothing after each restore.
+The revision floor's new refusal was not turned off:
+the session's permission classifier refused that edit,
+so its case is unmeasured against a guard-off.
+
+Two findings are open from this batch.
+`isVerifiableEditorialArchiveBlock` accepts a block whose first words are a label,
+a picture or a comment,
+or any of whose lines is a contributor line,
+so prose following a label in one block passes as apparatus;
+how often the pinned archives carry such a block is to be measured before any tightening.
+And `revisionFootnoteFindings` reads each revision against the archive as it came,
+while `archive-block-repair.ts` composes the revisions it accepts into one text,
+so two revisions harmless alone could together leave a footnote defect no check sees.
+
+Its census at `67f85061a`
+(`census-JXU9Js`,
+1,505 passes and no FAIL line,
+taken clean)
+reads against `census-dKGOhZ`:
+ran 10,
+still cold 1,067,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 6.
+The 10 that ran are the batch's stretches in the four files it left unedited
+(`archive-block-evidence` 3,
+`archive-block-naturalness` 2,
+`archive-block-review-wire` 3,
+`corpus-run/command-line.ts` 2);
+the 6 edited are its other files,
+five loaded and left with 0 cold stretches,
+and `archive-revision-shape.ts` with 1:
+the "nothing" arm of `countedBlocks` that `67f85061a` added,
+which a revision of white space alone reaches,
+since the review guard admits one and only an empty revision is a removal;
+`f9babaec4` cases it,
+and with the arm's word changed that case failed alone in its file.
+Library source went from 730 stretches over 1,404 lines in 274 files to 711 over 1,367 in 265,
+with 14 functions never called where there were 15,
+the one no longer listed being `archiveDisputeNotesOf`'s `toNote`.
+
+By the first construct
+(`t8-triage-jxu9js.txt`),
+the queue for the nineteenth batch is 293 returns,
+149 nullish fallbacks,
+117 ternaries,
+74 throws
+and 78 others.
+`corpus-run/run` leads at 18 stretches
+(2 files,
+18 lines),
+before `corpus-run/heading` at 17,
+so the nineteenth batch takes `corpus-run/run`.
+The two findings this batch left open close first,
+and the batch reads against the census taken once they close.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
