@@ -23,16 +23,48 @@ import { introducedFootnoteFindings, } from './assembly-regressions.ts';
 const NOT_FOUND = -1;
 
 /**
+ Refusal of a block the archive it was read from does not carry, so the page
+ its revision would leave cannot be built.
+
+ MARKED: its message is one sentence written here, naming nothing.
+
+ @example
+ ```ts
+ throw new BlockOutsideArchiveError();
+ ```
+ */
+export class BlockOutsideArchiveError extends Error {
+  /**
+   Declares this message safe to print whole at a boundary: a fixed sentence.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Writes the one sentence this refusal says, which takes nothing from the
+   block or the archive.
+   */
+  constructor() {
+    super(
+      'the archive block under review is not in the archive it was read from, so the page its revision would leave '
+        + 'cannot be built and its footnotes cannot be checked',
+    );
+    this.name = 'BlockOutsideArchiveError';
+  }
+}
+
+/**
  Why a revision cannot replace the block it revises, when the page it would
  leave carries a footnote defect the archive did not: a reference with no
  definition, a definition nothing references, or an identifier defined
  twice.
 
- A BLOCK THE PAGE DOES NOT CARRY VERBATIM SAYS NOTHING: the block under
- review is an exact slice of the archive, so a block text not found in it
- is a fixture the caller composed, and the revision passes as before. A
- block the page carries more than once is replaced at its first occurrence;
- the footnote graph reads the same labels whichever occurrence is replaced.
+ A BLOCK THE PAGE DOES NOT CARRY IS REFUSED (ledger T8, eighteenth batch).
+ The block under review is an exact slice of the archive
+ (`corpus-run/archive-block-repair.ts`), so one not found in it breaks the
+ caller's contract; it once passed every revision unread, a branch kept for
+ fixtures a caller composed and reached by none. A block the page carries
+ more than once is replaced at its first occurrence; the footnote graph
+ reads the same labels whichever occurrence is replaced.
 
  @param modelId - reviewer who wrote the revision, named in the finding
 
@@ -43,6 +75,8 @@ const NOT_FOUND = -1;
  @param targetText - whole archive the block stands in
 
  @returns Findings withholding the revision, empty when it may stand
+
+ @throws BlockOutsideArchiveError when the archive does not carry the block
 
  @example
  ```ts
@@ -63,11 +97,11 @@ export function revisionFootnoteFindings(
   },
 ): readonly string[] {
   /**
-   Where the block stands in the archive, -1 for a composed fixture.
+   Where the block stands in the archive.
    */
   const at = targetText.indexOf(blockText,);
   if (at === NOT_FOUND)
-    return [];
+    throw new BlockOutsideArchiveError();
   /**
    The page as the revision would leave it.
    */

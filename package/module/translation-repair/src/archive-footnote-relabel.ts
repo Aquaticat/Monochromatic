@@ -130,19 +130,23 @@ export type LabelCorrespondence = {
   readonly to: string;
 
   /**
-   Where the claim was read, for the detail.
+   Where the claim was read, for the detail: a slice or a definition pair,
+   named so a later claim contradicting this one names it too.
    */
   readonly where: string;
-
-  /**
-   What kind of place that is, for the detail's grammar.
-   */
-  readonly unit: 'slice' | 'pair';
 };
 
 /**
  Folds correspondences into one map, refusing as ambiguous the first that
  contradicts an earlier one on either side.
+ 
+ THE DETAIL NAMES THE EARLIER CLAIM AS IT WAS MADE (ledger T8, eighteenth
+ batch): its place, which side the label it names stands on, and that label
+ as the document spells it. It once ended "where an earlier slice mapped
+ [^X]": X was an original label when one archive label met two, an archive
+ label when two met one, and in either case the parser's case-folded key
+ rather than the document's spelling, and "slice" was the later claim's kind
+ of place, so a slice contradicting a definition pair blamed a slice.
  
  @param correspondences - claims in reading order
  
@@ -152,7 +156,7 @@ export type LabelCorrespondence = {
  
  @example
  ```ts
- mapLabels({ correspondences: [ { from: '1', to: '2', where: 'slice 3', unit: 'slice', }, ], skipped: [], },);
+ mapLabels({ correspondences: [ { from: '1', to: '2', where: 'slice 3', }, ], skipped: [], },);
  ```
  */
 export function mapLabels(
@@ -165,14 +169,16 @@ export function mapLabels(
   },
 ): FootnoteRelabelReading {
   /**
-   Archive label to the original's, as the claims agree so far.
+   The claim that first mapped each archive label, keyed by its
+   parser-equivalent form.
    */
-  const forward = new Map<string, string>();
+  const forward = new Map<string, LabelCorrespondence>();
 
   /**
-   Original label to the archive's, so two archive labels cannot claim one.
+   The claim that first mapped onto each original label, keyed the same way,
+   so two archive labels cannot claim one.
    */
-  const backward = new Map<string, string>();
+  const backward = new Map<string, LabelCorrespondence>();
   /**
    First supplied spelling of each distinct logical relation, including identities.
    */
@@ -187,38 +193,48 @@ export function mapLabels(
      */
     const to = normalizeFootnoteIdentifier({ identifier: claim.to, },);
     /**
-     Where an earlier claim mapped this archive label, when one did.
+     The earlier claim on this archive label, when one was made.
      */
     const forwardSeen = forward.get(from,);
     /**
-     Which archive label an earlier claim mapped onto this original label,
-     when one did.
+     The earlier claim onto this original label, when one was made.
      */
     const backwardSeen = backward.get(to,);
-    if (((forwardSeen !== undefined) && (forwardSeen !== to))
-      || ((backwardSeen !== undefined) && (backwardSeen !== from)))
+    /**
+     The claim as the detail opens with it.
+     */
+    const contradicting = `${claim.where} maps archive [^${claim.from}] to original [^${claim.to}]`;
+    if ((forwardSeen !== undefined)
+      && (normalizeFootnoteIdentifier({ identifier: forwardSeen.to, },) !== to))
       return {
         kind: 'ambiguous',
-        detail: `${claim.where} maps archive [^${claim.from}] to original [^${claim.to}] where an earlier ${
-          claim.unit
-        } mapped [^${
-          forwardSeen
-            ?? backwardSeen
-            ?? ''
+        detail: `${contradicting}, where ${forwardSeen.where} mapped that archive label to original [^${
+          forwardSeen.to
         }]`,
       };
-    if (forwardSeen === undefined)
-      distinct.push({
-        from: claim.from,
-        to: claim.to,
-      },);
+    if ((backwardSeen !== undefined)
+      && (normalizeFootnoteIdentifier({ identifier: backwardSeen.from, },) !== from))
+      return {
+        kind: 'ambiguous',
+        detail: `${contradicting}, where ${backwardSeen.where} mapped archive [^${
+          backwardSeen.from
+        }] to that original label`,
+      };
+    // A REPEAT of a relation already read adds nothing: its first claim stays
+    // the one a later contradiction names.
+    if (forwardSeen !== undefined)
+      continue;
+    distinct.push({
+      from: claim.from,
+      to: claim.to,
+    },);
     forward.set(
       from,
-      to,
+      claim,
     );
     backward.set(
       to,
-      from,
+      claim,
     );
   }
   /**
@@ -341,7 +357,6 @@ export function footnoteRelabelOf(
         from,
         to,
         where: `slice ${sliceIndex}`,
-        unit: 'slice',
       },);
     }
   }
@@ -378,7 +393,6 @@ export function footnoteRelabelOfDefinitions(
         from: pair.targetLabel,
         to: pair.sourceLabel,
         where: `definition pair ${String(at,)}`,
-        unit: 'pair',
       };
     },),
     skipped: [],

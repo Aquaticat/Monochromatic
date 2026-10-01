@@ -178,19 +178,26 @@ await describe({
         + 'label in the place where an original label stands for the other conflict, and a label the parser '
         + 'case-folds read in its folded form, which neither document spells',
       fn: async () => {
-        // Archive [^1] and [^3] both meet original [^2].
-        expect(footnoteRelabelOf(prepareDocumentPair({
+        /**
+         The reading where archive [^1] and [^3] both meet original [^2].
+         */
+        const twoOntoOne = footnoteRelabelOf(prepareDocumentPair({
           sourceText: '## 甲\n\n她[^2]。\n\n## 乙\n\n他[^2]。\n\n[^2]: 二。\n',
           targetText: '## A\n\nShe[^1].\n\n## B\n\nHe[^3].\n\n[^1]: One.\n\n[^3]: Three.\n',
-        },),),).toStrictEqual({
+        },),);
+        expect(twoOntoOne,).toStrictEqual({
           kind: 'ambiguous',
           detail: 'slice 1 maps archive [^3] to original [^2], where slice 0 mapped archive [^1] to that original label',
         },);
-        // Archive [^1] meets original [^Tabby] and then [^Ginger].
-        expect(footnoteRelabelOf(prepareDocumentPair({
+        /**
+         The reading where archive [^1] meets original [^Tabby] and then
+         [^Ginger].
+         */
+        const oneOntoTwo = footnoteRelabelOf(prepareDocumentPair({
           sourceText: '## 甲\n\n她[^Tabby]。\n\n## 乙\n\n他[^Ginger]。\n\n[^Tabby]: 虎斑。\n\n[^Ginger]: 橘猫。\n',
           targetText: '## A\n\nShe[^1].\n\n## B\n\nHe[^1].\n\n[^1]: One.\n',
-        },),),).toStrictEqual({
+        },),);
+        expect(oneOntoTwo,).toStrictEqual({
           kind: 'ambiguous',
           detail: 'slice 1 maps archive [^1] to original [^Ginger], where slice 0 mapped that archive label to '
             + 'original [^Tabby]',

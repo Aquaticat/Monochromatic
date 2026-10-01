@@ -78,6 +78,7 @@ const MARKED_CLASSES: readonly string[] = [
   'AssemblyContractError',
   'BedrockCreditOverrideError',
   'BedrockLedgerShapeError',
+  'BlockOutsideArchiveError',
   'BedrockModelNotServedError',
   'BlankSelectionError',
   'CacheAccountLogError',

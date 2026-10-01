@@ -91,6 +91,12 @@ export type ArchiveBlockReviewOutcome = {
  
  @returns Retained original or independently selected replacement
  
+ @throws TranslationRepairInterruptedError when fewer seats answered at all
+ than the quorum on the reachable bench needs
+ 
+ @throws BlockOutsideArchiveError when the archive does not carry the block,
+ which a revision's footnote check reads it in
+ 
  @example
  ```ts
  const result = await runArchiveBlockReviewStage({ ...input, priorFindings: [], });

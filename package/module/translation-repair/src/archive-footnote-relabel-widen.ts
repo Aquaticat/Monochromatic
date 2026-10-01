@@ -20,7 +20,8 @@ import {
 // the map.
 
 /**
- What a reading's relations were read off, for the ambiguity detail.
+ What a reading's relations were read off, for the ambiguity detail, which
+ names the earlier claim's place as well as the later one's.
  */
 const DEFINITION_WHERE = 'a definition the roster paired';
 
@@ -36,24 +37,20 @@ const SLICE_WHERE = 'a paired slice';
 
  @param where - what the relations were read off
 
- @param unit - what kind of place that is
-
  @returns One claim per relation, in the reading's order
 
  @example
  ```ts
- const claims = claimsOf({ reading, where: 'a paired slice', unit: 'slice', },);
+ const claims = claimsOf({ reading, where: 'a paired slice', },);
  ```
  */
 function claimsOf(
   {
     reading,
     where,
-    unit,
   }: {
     readonly reading: Exclude<FootnoteRelabelReading, { readonly kind: 'ambiguous'; }>;
     readonly where: string;
-    readonly unit: LabelCorrespondence['unit'];
   },
 ): readonly LabelCorrespondence[] {
   return reading.correspondences
@@ -62,7 +59,6 @@ function claimsOf(
         from: relation.from,
         to: relation.to,
         where,
-        unit,
       };
     },);
 }
@@ -101,12 +97,10 @@ export function widenFootnoteRelabel(
       ...claimsOf({
         reading: definitions,
         where: DEFINITION_WHERE,
-        unit: 'pair',
       },),
       ...claimsOf({
         reading: slices,
         where: SLICE_WHERE,
-        unit: 'slice',
       },),
     ],
     skipped: [

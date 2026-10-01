@@ -26,6 +26,8 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  
  @returns Distinct replacement candidates, with a finding per revision withheld
 
+ @throws BlockOutsideArchiveError when the archive does not carry the block
+
  @example
  ```ts
  const { candidates, withheld, } = replacementCandidates({ voices, blockText, targetText, },);

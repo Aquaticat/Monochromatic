@@ -21,7 +21,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { revisionFootnoteFindings, } from '../dist/final/node/index.mjs';
+import {
+  BlockOutsideArchiveError,
+  revisionFootnoteFindings,
+} from '../dist/final/node/index.mjs';
 
 /**
  Archive page whose second block defines the note its first references.
@@ -46,15 +49,11 @@ await describe({
             targetText: ARCHIVE,
           },);
         },);
-        expect(refusal,).toBeInstanceOf(Error,);
-        expect({
-          name: (refusal as Error).name,
-          message: (refusal as Error).message,
-        },).toEqual({
-          name: 'BlockOutsideArchiveError',
-          message: 'the archive block under review is not in the archive it was read from, so the page its '
-            + 'revision would leave cannot be built and its footnotes cannot be checked',
-        },);
+        expect(refusal,).toBeInstanceOf(BlockOutsideArchiveError,);
+        expect((refusal as Error).message,).toBe(
+          'the archive block under review is not in the archive it was read from, so the page its revision would '
+            + 'leave cannot be built and its footnotes cannot be checked',
+        );
       },
     },),
     it({
