@@ -475,13 +475,30 @@ this one says what changed after it.
   (666 library stretches in 260 files),
   names the twenty-first batch:
   `assembly`
-  (16 stretches over 27 lines in 8 files).
+  (16 stretches over 27 lines in 8 files),
+  taken against `census-zkJwfY` at `b9da490fb`.
+  That batch closed B85 and B86:
+  the assembly guard's advancing withdrawal compared refusal offsets on two different pages,
+  so a whole replacement that only changed the length of the text before a break read as moving it,
+  and the reader of those offsets placed a refusal at the start of what the parser left behind,
+  so a page whose remaining break was an element left open read as stopping at its first character;
+  either way the guard could withdraw every replacement
+  (`9c007f857` to `0e7353948`).
+  Its census,
+  `census-dnr81C` at `9244d67d3`
+  (650 library stretches in 251 files),
+  names the twenty-second batch:
+  `anthropic`
+  (16 stretches over 22 lines in 2 files).
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.
-  Every source commit also runs `mise run source-scans`,
-  the package-wide scans a new file can fail (ledger M59).
+  Every commit touching the package's source,
+  docs,
+  README or task file also runs `mise run source-scans`,
+  the package-wide scans a new file can fail,
+  four of which read the docs (ledger M59).
 
 ### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
 
