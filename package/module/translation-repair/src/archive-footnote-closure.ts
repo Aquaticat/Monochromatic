@@ -40,6 +40,17 @@ export function documentLabels({ text, }: { readonly text: string; },): readonly
  The existing one-remaining-label elimination is allowed. Fresh displacement is allowed only when
  every original label is accounted for and destination occupancy is the remaining obstacle.
  
+ INJECTIVE BY CONSTRUCTION, so no check of it runs here (ledger T8, eighteenth
+ batch, which removed one no input reached). The supplied relations are
+ injective (`readFootnoteClosureInput` refuses any that are not); the
+ eliminated pair joins an archive label and an original label no relation
+ names; each displaced label takes a fresh label outside both namespaces,
+ none twice; and an archive label nothing moves is no relation's destination,
+ or it would have been displaced. `archive-footnote-closure-injective.unit.test.ts`
+ closes every map over every pair of small label sets and reads each result's
+ destinations distinct, and applying a map that would merge identifiers is
+ refused where it is applied (`footnote-rewrite-map.ts`, kind `collision`).
+ 
  @param map - supplied positive correspondences, including identity relations when known
  
  @param archiveLabels - complete archive identifier universe
@@ -195,32 +206,6 @@ export function closeFootnoteRelabel(
       };
     },),
   ];
-  /**
-   Logical destinations of all actual moves.
-   */
-  const lookup = new Map(rewrites.map(function destination(move,): readonly [
-    string,
-    string
-  ] {
-    return [
-      normalizeFootnoteIdentifier({ identifier: move.from, },),
-      normalizeFootnoteIdentifier({ identifier: move.to, },),
-    ];
-  },),);
-  /**
-   Every archive identity must retain a distinct final destination, including identities that stay.
-   */
-  const destinations = new Set([...input.archive
-    .keys(),].map(function destination(key,): string {
-    return lookup.get(key,) ?? key;
-  },),);
-  if (destinations.size
-    !== input.archive
-    .size)
-    return {
-      kind: 'open',
-      detail: 'the composed footnote rewrite would merge distinct archive identifiers',
-    };
   return {
     kind: 'closed',
     map: rewrites,

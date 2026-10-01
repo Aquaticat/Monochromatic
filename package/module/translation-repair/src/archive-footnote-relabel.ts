@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from './chunk-document.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
 import { activeFootnoteMarkers, } from './active-footnote-markers.ts';
@@ -347,15 +349,11 @@ export function footnoteRelabelOf(
       continue;
     }
     for (const [at, from,] of archive.entries()) {
-      /**
-       The original's label at the same position.
-       */
-      const to = original[at];
-      if (to === undefined)
-        throw new Error('unreachable: the two label lists have one length',);
+      // The two lists have one length, checked just before, so the original
+      // carries a label at every position the archive does.
       correspondences.push({
         from,
-        to,
+        to: nonNullishOrThrow(original[at],),
         where: `slice ${sliceIndex}`,
       },);
     }

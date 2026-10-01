@@ -454,8 +454,14 @@ export function disputedWordingsOf(
       reason: `the repair lane's text for a disputed slice, ${REFUSALS[dispute.standInRefusal]
         .reason}`,
     },];
+  // THE ARCHIVE'S WORDING ALWAYS, with no arm for an empty one (ledger T8,
+  // eighteenth batch, which removed it): a dispute needs accepted issues, an
+  // anchor's repair outcome carries none (`repair-slice-settle.ts`,
+  // `notApplicableRepair`), and a present slice holds a parsed block's text;
+  // and the rule never matches an empty wording to a candidate anyway
+  // (`disputed-wording.ts`).
   return [
-    ...((archiveText.trim() === '') ? [] : [archive,]),
+    archive,
     ...repair,
   ];
 }
