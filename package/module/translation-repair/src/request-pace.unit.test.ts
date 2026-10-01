@@ -254,26 +254,41 @@ await describe({
         },),
 
         it({
-          name: 'SLEEPS ON THE REAL CLOCK WITH THE DEFAULT SLEEPER until the window has room (ledger T8)',
+          name: 'SLEEPS ON THE REAL CLOCK WITH THE DEFAULT SLEEPER until the window has room, with the '
+            + 'pacer\'s clock held still until the second take has started its sleep, so no stall can '
+            + 'empty the window first and let the case pass without sleeping (ledger T5)',
           fn: async () => {
+            /**
+             Pacer's clock: still at zero while held, then real time since its
+             release.
+             */
+            const clock = {
+              held: true,
+              releasedAt: 0,
+            };
             const pace = createRequestPace({
               perWindow: 1,
               windowMs: REAL_WINDOW_MS,
+              now: () => (clock.held ? 0 : performance.now() - clock.releasedAt),
             },);
+            await pace.take({ signal: SIGNAL, },);
+
+            // A TAKE RESERVES AND STARTS ITS SLEEP BEFORE IT FIRST AWAITS, so the
+            // second one reads the held clock, finds the window full, and is
+            // asleep on the default sleeper for the whole window before the clock
+            // moves. On the real clock alone, a run stalled past the window
+            // between the two takes found room, never slept, and still passed.
             /**
-             Real clock before the first take, which the second cannot pass the
-             window of however loaded the machine is.
+             The second take, asleep on the default sleeper.
              */
-            const startedAt = performance.now();
-            await pace.take({ signal: SIGNAL, },);
-            await pace.take({ signal: SIGNAL, },);
-            // ONE-SIDED, so load cannot fail it: the second place opens only once
-            // the first has left the window, a stall only lengthens the wait, and
-            // the millisecond allows for the pacer reading whole milliseconds: its
-            // first take is stamped at a floored reading up to a millisecond before
-            // this case's own start, and it sleeps until a floored reading passes
-            // the window (ledger B78).
-            expect(performance.now() - startedAt,).toBeGreaterThanOrEqual(REAL_WINDOW_MS - 1,);
+            const asleep = pace.take({ signal: SIGNAL, },);
+            clock.releasedAt = performance.now();
+            clock.held = false;
+            await asleep;
+
+            // ONE-SIDED, so load cannot fail it: the take returns only once the
+            // pacer's clock has passed the window, and that clock is this one.
+            expect(performance.now() - clock.releasedAt,).toBeGreaterThanOrEqual(REAL_WINDOW_MS,);
           },
         },),
 

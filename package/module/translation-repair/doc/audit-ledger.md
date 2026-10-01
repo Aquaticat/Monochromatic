@@ -2419,6 +2419,23 @@ Real sleeps:
 `stage-quorum` waits 30 s ignoring the abort signal;
 `synthetic-client` and `lane-contest-driver` run production backoff.
 
+Recurred in `request-pace.unit.test.ts`,
+found 2026-10-01 (UTC) from the coverage census:
+the default sleeper's resumption (`request-pace.ts:128`)
+ran in `census-zkJwfY` and not in `census-dnr81C`,
+the source and its test unchanged between them.
+The case "SLEEPS ON THE REAL CLOCK WITH THE DEFAULT SLEEPER" took two places on a 20 ms window on the real clock.
+A take works out its wait before it first awaits,
+so a run stalled past the window between the two takes found room,
+never slept,
+and passed its one-sided check all the same:
+its name claimed a sleep it did not make sure of (the T6 shape),
+and what it covered rode on load.
+The pacer's clock is now held still until the second take has started its sleep on the default sleeper,
+then released,
+so the sleep is the whole window on every run;
+the default clock stays covered by the B78 case on a stepped wall clock.
+
 ### T6: names claiming more than they check
 
 Status:
@@ -5186,7 +5203,17 @@ over 20 lines in 3 files and 18 lines in 2;
 the more lines decide it,
 as they did for the twenty-first batch,
 so the twenty-third batch takes `front`
-against the census taken once this batch's docs close.
+against `census-1B1Mb4`,
+taken at `06b905d3e` once this batch's docs closed
+(633 library stretches in 249 files,
+ran 0 and sources edited 0 against `census-Hq0z31`).
+
+The full suite on `06b905d3e`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1513 PASS lines and no FAIL line;
+the 13 lines holding the word are passing cases' names
+and the census runner's own case printing a failure on purpose.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
