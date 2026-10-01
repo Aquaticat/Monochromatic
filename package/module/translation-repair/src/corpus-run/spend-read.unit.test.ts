@@ -314,6 +314,31 @@ await describe({
     },),
 
     it({
+      name: 'REPORTS a count or a cost not spelled the way the writer spells a number as unreadable: a '
+        + 'hexadecimal, an exponent or a plus sign on a count, and a hexadecimal or a trailing zero on a cost '
+        + '(ledger B73)',
+      fn: async () => {
+        expect([
+          'prompt=0x5 completion=3072',
+          'prompt=5e0 completion=3072',
+          'prompt=+5 completion=3072',
+          'prompt=5 completion=3072 cost=0x1',
+          'prompt=5 completion=3072 cost=1.50',
+        ].map(function readingOf(fields,) {
+          return readSpendLine({
+            line: logged({ tail: `SPEND provider=openrouter model=minimax/minimax-m3 ${fields}`, },),
+          },);
+        },),).toEqual([
+          'unreadable',
+          'unreadable',
+          'unreadable',
+          'unreadable',
+          'unreadable',
+        ],);
+      },
+    },),
+
+    it({
       name: 'REPORTS an unknown provider as unreadable, so a third meter added '
         + 'later cannot be silently totalled against the two that are priced',
       fn: async () => {

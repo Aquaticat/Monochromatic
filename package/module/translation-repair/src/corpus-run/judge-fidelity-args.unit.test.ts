@@ -50,6 +50,23 @@ function askedFrom(
   return readFidelityArguments({ argv: [...BEFORE_FLAGS, ...typed,], },);
 }
 
+/**
+ Refusal a cap draws when it is no whole number written in digits.
+
+ @param cap - cap as typed
+
+ @returns The refusal's sentence
+
+ @example
+ ```ts
+ const said = capNotDigits({ cap: 'fourty', },);
+ ```
+ */
+function capNotDigits({ cap, }: { readonly cap: string; },): string {
+  return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
+    + `and ${cap} is not one`;
+}
+
 await describe({
   name: readFidelityArguments.name,
   children: [
@@ -88,6 +105,41 @@ await describe({
         },);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(caughtValueText(refusal,),).toBe('--damage takes deletion, insertion or alteration, not scratches',);
+      },
+    },),
+    it({
+      name: 'REFUSES a cap that is no whole number written in digits, or below zero, and a flag written last or '
+        + 'naming nobody, where each fell back to a default or to every entry in silence and spent trials nobody '
+        + 'asked for (ledger B73)',
+      fn: async () => {
+        /**
+         Command lines an operator mistyped, each with the refusal it must draw.
+         */
+        const mistyped: readonly (readonly [readonly string[], string])[] = [
+          [['--cap', 'fourty',], capNotDigits({ cap: 'fourty', },),],
+          [['--cap', '4.9',], capNotDigits({ cap: '4.9', },),],
+          [
+            ['--cap', '-3',],
+            '--cap cannot be below zero, and -3 is; leave it off to run the default of '
+              + `${String(DEFAULT_TRIAL_CAP,)} trials`,
+          ],
+          [['--cap',], '--cap needs a value written after it',],
+          [['--only',], '--only needs a value written after it',],
+          [['--only', ',',], '--only needs at least one entry id, and , names none',],
+          [['--damage',], '--damage needs a value written after it',],
+        ];
+        expect(mistyped.map(function refusalOf([typed,],): string {
+          /**
+           What the reader threw.
+           */
+          const refusal = caught(function readsTyped(): void {
+            askedFrom({ typed, },);
+          },);
+          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+          return caughtValueText(refusal,);
+        },),).toEqual(mistyped.map(function expectedOf([, said,],): string {
+          return said;
+        },),);
       },
     },),
   ],

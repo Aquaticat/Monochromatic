@@ -108,6 +108,16 @@ await describe({
     },),
 
     it({
+      name: 'READS a whole number written with a leading zero as the number it names, by the one rule every '
+        + 'count reader in the package now shares (ledger B73)',
+      fn: async () => {
+        using dial = dialSaying({ says: '04', },);
+
+        expect(readOverlap({ fallback: 1, },),).toBe(4,);
+      },
+    },),
+
+    it({
       name: 'REFUSES a value that is not a number rather than falling back to one, because a typo '
         + 'that quietly became sequential would produce a comparison of two identical runs and a '
         + 'recorded conclusion that overlapping units changes nothing',

@@ -11,6 +11,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -106,6 +107,29 @@ await describe({
             },);
           },).toThrow(CacheAccountReadError,);
         }
+      },
+    },),
+    it({
+      name: 'REFUSES A VERSION PAST THE LARGEST WHOLE NUMBER A DOUBLE HOLDS EXACTLY, which `Number` reads as a '
+        + 'neighbouring version, so two different declarations would compare equal (ledger B73)',
+      fn: async () => {
+        /**
+         Declaration whose value lies two past the exact range.
+         */
+        const line = `export const NAP_CACHE_VERSION = ${String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,)};`;
+        /**
+         What the reader threw.
+         */
+        const refusal = caught(function read(): void {
+          cacheVersionsIn({
+            path: 'src/nap-key.ts',
+            text: line,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(CacheAccountReadError,);
+        expect((refusal as Error).message,).toBe(`src/nap-key.ts declares a cache version the audit cannot read: "${
+          line
+        }". Write it as NAME = digits; so every constant is checked.`,);
       },
     },),
   ],

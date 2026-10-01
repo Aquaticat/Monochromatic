@@ -28,6 +28,7 @@ import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -183,16 +184,33 @@ await describe({
       },
     },),
     it({
-      name: 'TRUNCATES a fractional cap rather than refusing it',
+      name: 'REFUSES a fractional cap, and one written with an exponent, a radix, a sign or past the largest '
+        + 'whole number a double holds exactly, rather than auditing a number of subjects nobody typed '
+        + '(ledger B73)',
       fn: async () => {
-        expect(readAuditArguments({
-          argv: commandLine({
-            typed: [
-              '--cap',
-              '4.9',
-            ],
-          },),
-        },).cap,).toBe(SMALL_BUY,);
+        /**
+         Caps that are no whole number written in digits.
+         */
+        const caps = [
+          '4.9',
+          '1e1',
+          '0x4',
+          '+4',
+          String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,),
+        ];
+        expect(caps.map(function refusalOf(cap,): string {
+          /**
+           What the reader threw.
+           */
+          const refusal = caught(function readsCap(): void {
+            readAuditArguments({ argv: commandLine({ typed: ['--cap', cap,], },), },);
+          },);
+          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+          return (refusal as Error).message;
+        },),).toEqual(caps.map(function expectedOf(cap,): string {
+          return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
+            + `and ${cap} is not one`;
+        },),);
       },
     },),
     it({

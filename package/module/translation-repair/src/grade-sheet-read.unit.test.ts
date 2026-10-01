@@ -11,6 +11,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -61,6 +62,27 @@ function catSheet(
       ];
     },),
   ].join('\n',);
+}
+
+/**
+ Message of the stated refusal a read threw.
+ 
+ @param read - read that must refuse
+ 
+ @returns The refusal's message
+ 
+ @example
+ ```ts
+ const said = caughtRefusal({ read: () => parsePreGrades({ text: '{}', },), },);
+ ```
+ */
+function caughtRefusal({ read, }: { readonly read: () => void; },): string {
+  /**
+   What the read threw.
+   */
+  const refusal = caught(read,);
+  expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+  return (refusal as Error).message;
 }
 
 /**
@@ -294,15 +316,15 @@ await describe({
           ] as const
         ) {
           /** Failure raised by this malformed file. */
-          let caught: unknown;
+          let refusal: unknown;
           try {
             parsePreGrades({ text, },);
           }
           catch (error) {
-            caught = error;
+            refusal = error;
           }
-          expect(caught,).toBeInstanceOf(Error,);
-          expect((caught as Error).message,).toContain(expected,);
+          expect(refusal,).toBeInstanceOf(Error,);
+          expect((refusal as Error).message,).toContain(expected,);
         }
       },
     },),
@@ -351,7 +373,7 @@ await describe({
         + 'would otherwise report an agreement rate across rounds',
       fn: async () => {
         /** Failure raised by the mismatched coverage. */
-        let caught: unknown;
+        let refusal: unknown;
         try {
           scoreGradeAgreement({
             agent: catPreGrades({ verdicts: ['real-defect',], },),
@@ -366,10 +388,10 @@ await describe({
           },);
         }
         catch (error) {
-          caught = error;
+          refusal = error;
         }
-        expect(caught,).toBeInstanceOf(StatedRefusalError,);
-        expect((caught as Error).message,).toContain('not the same draw',);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toContain('not the same draw',);
       },
     },),
   ],
@@ -434,18 +456,44 @@ await describe({
         },)
           .replace('### 2.', '### 3.',);
 
+        expect(caughtRefusal({
+          read: function readsRenumbered(): void {
+            parseGradedSheet({ text: renumbered, },);
+          },
+        },),).toBe('sheet item at position 2 is headed 3; a heading was added, deleted or duplicated by hand',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a heading that carries no number, saying so rather than calling it headed zero (ledger B73)',
+      fn: async () => {
         /**
-         Failure the reader raised.
+         Sheet whose first heading carries no number.
          */
-        let caught: unknown;
-        try {
-          parseGradedSheet({ text: renumbered, },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(StatedRefusalError,);
-        expect((caught as Error).message,).toContain('is headed 3',);
+        const sheet = catSheet({ answers: ['[Y]',], },).replace('### 1.', '### .',);
+        expect(caughtRefusal({
+          read: function readsUnnumbered(): void {
+            parseGradedSheet({ text: sheet, },);
+          },
+        },),).toBe(
+          'sheet item at position 1 is headed with no number; a heading was added, deleted or duplicated by hand',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES a heading whose number is not written in digits as the sheet writes it, though `Number` '
+        + 'reads it as the right position (ledger B73)',
+      fn: async () => {
+        /**
+         Sheet whose first heading writes its number with an exponent.
+         */
+        const sheet = catSheet({ answers: ['[Y]',], },).replace('### 1.', '### 1e0.',);
+        expect(caughtRefusal({
+          read: function readsExponent(): void {
+            parseGradedSheet({ text: sheet, },);
+          },
+        },),).toBe('sheet item at position 1 is headed "1e0"; a heading was added, deleted or duplicated by hand',);
       },
     },),
   ],

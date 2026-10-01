@@ -275,6 +275,14 @@ await describe({
         },),).toEqual([true, true, true,],);
       },
     },),
+    it({
+      name: 'TAKES THE ACCOUNT LIMIT for a variable set to blanks, as the grace, cap, spend ceiling and credit '
+        + 'overrides do, where it read the blanks as a rate of zero and refused (ledger B73)',
+      fn: async () => {
+        expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: '  ', }, },),)
+          .toBe(HYPER_REQUESTS_PER_HOUR,);
+      },
+    },),
   ],
 },);
 

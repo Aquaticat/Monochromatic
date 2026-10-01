@@ -21,6 +21,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -122,9 +123,32 @@ await describe({
       },
     },),
     it({
-      name: 'TRUNCATES a fractional count rather than refusing it',
+      name: 'REFUSES a fractional count, and one written with an exponent, a radix, a sign or past the largest '
+        + 'whole number a double holds exactly, rather than running a count nobody typed (ledger B73)',
       fn: async () => {
-        expect(countFrom({ typed: ['40.9',], },),).toBe(ASKED_FOR,);
+        /**
+         Counts that are no whole number written in digits.
+         */
+        const counts = [
+          '40.9',
+          '4e1',
+          '0x28',
+          '+40',
+          String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,),
+        ];
+        expect(counts.map(function refusalOf(count,): string {
+          /**
+           What the reader threw.
+           */
+          const refusal = caught(function readsCount(): void {
+            countFrom({ typed: [count,], },);
+          },);
+          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+          return (refusal as Error).message;
+        },),).toEqual(counts.map(function expectedOf(count,): string {
+          return `${ASKS} must be a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
+            + `and ${count} is not one`;
+        },),);
       },
     },),
     it({

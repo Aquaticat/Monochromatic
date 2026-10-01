@@ -137,6 +137,17 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a reference number past the largest whole number a double holds exactly, which `Number` '
+        + 'reads as a neighbouring reference nobody wrote (ledger B73)',
+      fn: async () => {
+        expect(refusalOf({
+          referenceContext: `- reference ${String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,)} https://cats.example/a: `
+            + 'Mittens naps.',
+        },),).toBe('reference line 1 of 1 does not open with "- reference <number> ", so the reference it belongs '
+          + 'to cannot be read; the block must be one referenceLineOf line per reference',);
+      },
+    },),
+    it({
       name: 'READS what each page says without its head, and nothing from a failure note or an attested line '
         + '(ledger B28): the archive review anchors a retention only in a page\'s own words',
       fn: async () => {

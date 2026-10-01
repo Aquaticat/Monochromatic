@@ -158,6 +158,55 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES NOT_LISTED a field written blank, in a radix or below zero, which `Number` read as a free '
+        + 'model, a price of one dollar a token and a negative price (ledger B73)',
+      fn: async () => {
+        expect([
+          cardFieldsFrom({
+            provider: 'synthetic',
+            row: {
+              id: 'hf:cat/Mittens-9',
+              input_modalities: ['text',],
+              context_length: ' ',
+              max_output_length: -1,
+              pricing: {
+                prompt: '$ ',
+                completion: '$0x1',
+              },
+            },
+          },),
+          cardFieldsFrom({
+            provider: 'openrouter',
+            row: {
+              id: 'whiskers/mittens-9',
+              context_length: 200_000,
+              architecture: { input_modalities: ['text',], },
+              pricing: {
+                prompt: '-1',
+                completion: '-0.000001',
+              },
+            },
+          },),
+        ],).toEqual([
+          {
+            readsImages: false,
+            maxOutputLength: NOT_LISTED,
+            contextLength: NOT_LISTED,
+            promptPrice: NOT_LISTED,
+            completionPrice: NOT_LISTED,
+          },
+          {
+            readsImages: false,
+            maxOutputLength: 200_000,
+            contextLength: 200_000,
+            promptPrice: NOT_LISTED,
+            completionPrice: NOT_LISTED,
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'RENDERS the provider side with the listing\'s values and a question for each field it lacks',
       fn: async () => {
         /**

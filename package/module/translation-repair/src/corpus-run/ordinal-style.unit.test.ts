@@ -182,5 +182,12 @@ await describe({
         expect(readHanNumeral({ text: '', },),).toBe(0,);
       },
     },),
+    it({
+      name: 'READS ZERO from a digit run past the largest whole number a double holds exactly, which `Number` '
+        + 'reads as a neighbouring number, so two different headings would count as one (ledger B73)',
+      fn: async () => {
+        expect(readHanNumeral({ text: String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,), },),).toBe(0,);
+      },
+    },),
   ],
 },);

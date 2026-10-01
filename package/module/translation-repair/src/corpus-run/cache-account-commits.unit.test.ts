@@ -9,6 +9,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -100,6 +101,24 @@ await describe({
             sourceCommitOf({ line, },);
           },).toThrow(CacheAccountLogError,);
         }
+      },
+    },),
+    it({
+      name: 'REFUSES A TIME PAST THE LARGEST WHOLE NUMBER A DOUBLE HOLDS EXACTLY, which `Number` reads as a '
+        + 'neighbouring second nobody wrote (ledger B73)',
+      fn: async () => {
+        /**
+         Line whose time lies two past the exact range.
+         */
+        const line = `abc\t${String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,)}\tfix: nap`;
+        /**
+         What the reader threw.
+         */
+        const refusal = caught(function read(): void {
+          sourceCommitOf({ line, },);
+        },);
+        expect(refusal,).toBeInstanceOf(CacheAccountLogError,);
+        expect((refusal as Error).message,).toBe(`git log wrote a line the cache account audit cannot read: "${line}"`,);
       },
     },),
   ],

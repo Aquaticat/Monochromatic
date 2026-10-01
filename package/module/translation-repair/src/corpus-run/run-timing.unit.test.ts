@@ -14,6 +14,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -89,6 +90,45 @@ function callRunning(
     endedAt: BASE_MS + (endsAtSeconds * SECOND),
     elapsedMs: ranSeconds * SECOND,
   };
+}
+
+/**
+ How the readers name the numbers they take: whole, in digits, and no larger
+ than a double holds exactly.
+ */
+const WHOLE_NUMBER_RULE = `a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}`;
+
+/**
+ A digit run two past that limit, which `Number` reads as the limit plus one.
+ */
+const PAST_SAFE = String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,);
+
+/**
+ Messages a read threw: its own, then the one it wraps where it wraps one.
+ 
+ @param read - read that must throw
+ 
+ @returns The messages, outermost first
+ 
+ @example
+ ```ts
+ const texts = refusalTexts({ read: () => readRoundTiming({ line, },), },);
+ ```
+ */
+function refusalTexts({ read, }: { readonly read: () => void; },): readonly string[] {
+  /**
+   What the read threw.
+   */
+  const refusal = caught(read,);
+  expect(refusal,).toBeInstanceOf(Error,);
+  /**
+   The error it wraps, where it wraps one.
+   */
+  const { cause, } = refusal as Error;
+  return [
+    (refusal as Error).message,
+    ...(Error.isError(cause,) ? [cause.message,] : []),
+  ];
 }
 
 //endregion Fixtures
@@ -170,6 +210,56 @@ await describe({
             },).toThrow(Error,);
           },
         },),
+
+        it({
+          name: 'THROWS ON A DURATION NOT WRITTEN IN DIGITS rather than reading an empty one as no time at all, or a '
+            + 'signed or exponent one as a time the round line never writes (ledger B73)',
+          fn: async () => {
+            /**
+             Grace fields the round line's writer never writes.
+             */
+            const graceFields = [
+              'ms in grace',
+              '-5ms in grace',
+              '1e3ms in grace',
+            ];
+            expect(graceFields.map(function refusalsOf(field,): readonly string[] {
+              /**
+               Round line carrying that grace field.
+               */
+              const line = `${ROUND_LINE.slice(0, ROUND_LINE.lastIndexOf(', ',),)}, ${field}`;
+              return refusalTexts({
+                read: function readsGrace(): void {
+                  readRoundTiming({ line, },);
+                },
+              },);
+            },),).toEqual(graceFields.map(function expectedOf(field,): readonly string[] {
+              return [
+                `round line unreadable: ${ROUND_LINE.slice(0, ROUND_LINE.lastIndexOf(', ',),)}, ${field}`,
+                `timing field's milliseconds are not ${WHOLE_NUMBER_RULE}: "${field}"`,
+              ];
+            },),);
+          },
+        },),
+
+        it({
+          name: 'THROWS ON A COUNT PAST THE LARGEST WHOLE NUMBER A DOUBLE HOLDS EXACTLY, which `Number` reads as a '
+            + 'neighbouring number nobody wrote (ledger B73)',
+          fn: async () => {
+            /**
+             Round line whose heard and asked counts lie two past the exact range.
+             */
+            const line = ROUND_LINE.replace('6/7 heard', `${PAST_SAFE}/${PAST_SAFE} heard`,);
+            expect(refusalTexts({
+              read: function readsHuge(): void {
+                readRoundTiming({ line, },);
+              },
+            },),).toEqual([
+              `round line unreadable: ${line}`,
+              `count field is not ${WHOLE_NUMBER_RULE}: "${PAST_SAFE}"`,
+            ],);
+          },
+        },),
       ],
     },),
 
@@ -206,6 +296,18 @@ await describe({
           name: 'passes over a line that is not a completion at all',
           fn: async () => {
             expect(readCallTiming({ line: ROUND_LINE, },).kind,).toBe('other-line',);
+          },
+        },),
+
+        it({
+          name: 'THROWS ON A DURATION WITH NO DIGITS BEFORE ITS UNIT rather than reading it as a call that took no '
+            + 'time (ledger B73)',
+          fn: async () => {
+            expect(refusalTexts({
+              read: function readsUnitAlone(): void {
+                readCallTiming({ line: TIMED_CALL_LINE.replace('elapsed 10000ms', 'elapsed ms',), },);
+              },
+            },),).toEqual([`timing field's milliseconds are not ${WHOLE_NUMBER_RULE}: "ms"`,],);
           },
         },),
       ],

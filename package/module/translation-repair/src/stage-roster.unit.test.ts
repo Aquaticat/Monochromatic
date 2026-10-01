@@ -127,6 +127,30 @@ await describe({
     },),
 
     it({
+      name: 'SKIPS a finding whose counts are not written in digits as the stage writes them: an empty heard '
+        + 'count is no stage that heard nobody, and a sign, a hexadecimal or an exponent is no count it '
+        + 'writes (ledger B73)',
+      fn: async () => {
+        expect(summarizeStageRoster({
+          entries: [
+            [
+              'editor-candidates (/2 heard, 0 repairing)',
+              'editor-candidates (-1/2 heard, 0 repairing)',
+              'editor-candidates (0x1/2 heard, 1 repairing)',
+              'editor-candidates (1e0/2 heard, 1 repairing)',
+              'editor-candidates (2/2 heard, 2 repairing)',
+            ],
+          ],
+          stage: 'editor',
+        },),).toEqual({
+          offered: 1,
+          degraded: 0,
+          silent: 0,
+        },);
+      },
+    },),
+
+    it({
       name: 'counts nothing for an artifact carrying no findings of that '
         + 'stage, so a run predating the stage reads as zero offered rather '
         + 'than as a stage that failed everywhere',
