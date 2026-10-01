@@ -114,8 +114,11 @@ await describe({
         expect(widened.kind,).toBe('ambiguous',);
         if (widened.kind !== 'ambiguous')
           throw new Error('unreachable',);
+        // The earlier claim is the definition's, which this detail once called
+        // "an earlier slice".
         expect(widened.detail,).toBe(
-          'a paired slice maps archive [^3] to original [^1] where an earlier slice mapped [^2]',
+          'a paired slice maps archive [^3] to original [^1], where a definition the roster paired mapped that '
+            + 'archive label to original [^2]',
         );
       },
     },),

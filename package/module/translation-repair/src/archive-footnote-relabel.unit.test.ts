@@ -165,9 +165,36 @@ await describe({
           sourceText: '## 甲\n\n她[^2]。\n\n## 乙\n\n他[^3]。\n\n[^2]: 二。\n\n[^3]: 三。\n',
           targetText: '## A\n\nShe[^1].\n\n## B\n\nHe[^1].\n\n[^1]: One.\n',
         },),);
-        expect(reading.kind,).toBe('ambiguous',);
-        if (reading.kind === 'ambiguous')
-          expect(reading.detail,).toContain('maps archive [^1] to original [^3] where an earlier slice mapped [^2]',);
+        expect(reading,).toStrictEqual({
+          kind: 'ambiguous',
+          detail: 'slice 1 maps archive [^1] to original [^3], where slice 0 mapped that archive label to original [^2]',
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES WHICH SIDE AND WHICH SLICE an earlier claim held, in the spelling the document carries: two '
+        + 'archive labels claiming one original label once read "where an earlier slice mapped [^1]", an archive '
+        + 'label in the place where an original label stands for the other conflict, and a label the parser '
+        + 'case-folds read in its folded form, which neither document spells',
+      fn: async () => {
+        // Archive [^1] and [^3] both meet original [^2].
+        expect(footnoteRelabelOf(prepareDocumentPair({
+          sourceText: '## 甲\n\n她[^2]。\n\n## 乙\n\n他[^2]。\n\n[^2]: 二。\n',
+          targetText: '## A\n\nShe[^1].\n\n## B\n\nHe[^3].\n\n[^1]: One.\n\n[^3]: Three.\n',
+        },),),).toStrictEqual({
+          kind: 'ambiguous',
+          detail: 'slice 1 maps archive [^3] to original [^2], where slice 0 mapped archive [^1] to that original label',
+        },);
+        // Archive [^1] meets original [^Tabby] and then [^Ginger].
+        expect(footnoteRelabelOf(prepareDocumentPair({
+          sourceText: '## 甲\n\n她[^Tabby]。\n\n## 乙\n\n他[^Ginger]。\n\n[^Tabby]: 虎斑。\n\n[^Ginger]: 橘猫。\n',
+          targetText: '## A\n\nShe[^1].\n\n## B\n\nHe[^1].\n\n[^1]: One.\n',
+        },),),).toStrictEqual({
+          kind: 'ambiguous',
+          detail: 'slice 1 maps archive [^1] to original [^Ginger], where slice 0 mapped that archive label to '
+            + 'original [^Tabby]',
+        },);
       },
     },),
   ],
@@ -231,9 +258,11 @@ await describe({
             },
           ],
         },);
-        expect(reading.kind,).toBe('ambiguous',);
-        if (reading.kind === 'ambiguous')
-          expect(reading.detail,).toContain('where an earlier pair mapped [^2]',);
+        expect(reading,).toStrictEqual({
+          kind: 'ambiguous',
+          detail: 'definition pair 1 maps archive [^1] to original [^3], where definition pair 0 mapped that '
+            + 'archive label to original [^2]',
+        },);
       },
     },),
   ],

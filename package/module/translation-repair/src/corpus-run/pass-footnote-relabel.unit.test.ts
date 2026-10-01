@@ -85,14 +85,14 @@ await describe({
           changed: false,
           findings: [
             'footnotes: archive labels stand, since the definitions the roster paired disagree: definition pair 1 '
-            + 'maps archive [^1] to original [^2] where an earlier pair mapped [^1]',
+            + 'maps archive [^1] to original [^2], where definition pair 0 mapped that archive label to original [^1]',
           ],
           withheld: 'correspondence',
         },);
         expect(messages,).toContain(
           `[${relabelArchiveFootnotes.name}] FOOTNOTES entry=invented-definitions-disagree archive labels stand, `
             + 'since the definitions the roster paired disagree: definition pair 1 maps archive [^1] to original '
-            + '[^2] where an earlier pair mapped [^1]',
+            + '[^2], where definition pair 0 mapped that archive label to original [^1]',
         );
       },
     },),
@@ -121,8 +121,18 @@ await describe({
             .text
             .includes('The bird',);
         },);
+        /**
+         The slice the cat's paragraph sits in, the earlier claim the detail
+         names.
+         */
+        const catSlice = prepared.slices.findIndex(function carriesCat(slice,): boolean {
+          return slice.target
+            .text
+            .includes('The cat',);
+        },);
 
-        expect(birdSlice,).toBeGreaterThan(0,);
+        expect(catSlice,).toBeGreaterThanOrEqual(0,);
+        expect(birdSlice,).toBeGreaterThan(catSlice,);
         expect(relabelArchiveFootnotes({
           entryId: 'invented-slices-disagree',
           slices: prepared.slices,
@@ -135,7 +145,7 @@ await describe({
           changed: false,
           findings: [
             `footnotes: archive labels stand, since the paired slices disagree: slice ${String(birdSlice,)} maps `
-            + 'archive [^a] to original [^2] where an earlier slice mapped [^1]',
+            + `archive [^a] to original [^2], where slice ${String(catSlice,)} mapped that archive label to original [^1]`,
           ],
           withheld: 'correspondence',
         },);

@@ -99,6 +99,11 @@ export {
   archiveBlockSelectionEvidence,
   withArchiveOriginal,
 } from './archive-block-selection-evidence.ts';
+export { revisionFootnoteFindings, } from './archive-revision-footnotes.ts';
+export {
+  REVISION_SHAPE_REFUSED,
+  revisionShapeFindings,
+} from './archive-revision-shape.ts';
 export {
   archiveBlockIdentity,
   repairArchiveBlocks,
