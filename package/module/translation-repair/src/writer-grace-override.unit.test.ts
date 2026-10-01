@@ -218,20 +218,13 @@ await describe({
 },);
 
 /**
- Static clearer per dial, because deleting a computed key is what
- `no-dynamic-delete` refuses and each dial has exactly one spelling.
- */
-const CLEAR_DIAL: Record<string, () => void> = {
-  [STRAGGLER_GRACE_VAR]: function clearRoundDial(): void {
-    delete process.env.TRANSLATION_REPAIR_STRAGGLER_GRACE_MS;
-  },
-  [WRITER_GRACE_VAR]: function clearWriterDial(): void {
-    delete process.env.TRANSLATION_REPAIR_WRITER_GRACE_MS;
-  },
-};
-
-/**
  Clears one dial's variable.
+ 
+ ONE STATIC DELETE PER DIAL, because deleting a computed key is what
+ `no-dynamic-delete` refuses and each dial has exactly one spelling. Written
+ here rather than kept in a table of clearers, which nothing calls by name,
+ so the scan for process-global writes can follow each delete to the cases
+ that call this (ledger B79).
  
  @param variable - which dial
  
@@ -244,14 +237,15 @@ const CLEAR_DIAL: Record<string, () => void> = {
  ```
  */
 function clearDial({ variable, }: { readonly variable: string; },): void {
-  /**
-   Clearer for this dial, absent for a variable this suite does not know.
-   */
-  const clear = CLEAR_DIAL[variable];
-
-  if (clear === undefined)
-    throw new Error(`no clearer for ${variable}`,);
-  clear();
+  if (variable === STRAGGLER_GRACE_VAR) {
+    delete process.env.TRANSLATION_REPAIR_STRAGGLER_GRACE_MS;
+    return;
+  }
+  if (variable === WRITER_GRACE_VAR) {
+    delete process.env.TRANSLATION_REPAIR_WRITER_GRACE_MS;
+    return;
+  }
+  throw new Error(`no clearer for ${variable}`,);
 }
 
 /**

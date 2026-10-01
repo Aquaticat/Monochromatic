@@ -134,6 +134,8 @@ const ZERO_NOTE = 'NOTE repairShippedRecords=0';
 
 await describe({
   name: reportProbeTelemetry.name,
+  // ONE AT A TIME: cases divert the process-wide `console.log` (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name:

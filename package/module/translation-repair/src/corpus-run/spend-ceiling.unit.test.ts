@@ -32,6 +32,8 @@ const FALLBACK = 7;
 
 await describe({
   name: resolveSpendCeilingUsd.name,
+  // ONE AT A TIME: a case sets the process-wide ceiling variable (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'RETURNS the built-in for an unset or blank override, since neither is an override',

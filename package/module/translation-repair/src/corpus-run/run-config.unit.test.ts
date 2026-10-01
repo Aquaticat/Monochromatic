@@ -118,6 +118,10 @@ function withoutRunsDir(): Disposable {
 
 await describe({
   name: resolveRunsDir.name,
+  // ONE AT A TIME: cases set and clear the one process-wide runs directory,
+  // and a restore finishing out of order could leave a sibling's value set
+  // for the suites after this one (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'honors an explicit override exactly, so a run can be pointed at a '
@@ -928,6 +932,9 @@ function inDirectory({ path, }: { readonly path: string; },): Disposable {
 
 await describe({
   name: readHeadSha.name,
+  // ONE AT A TIME: a case moves the process's working directory across an
+  // await, which every case beside it would run in (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'reads the sha of THIS repository regardless of the working '

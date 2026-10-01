@@ -113,6 +113,8 @@ function commitRefusal(
 
 await describe({
   name: readCorpusPinSetting.name,
+  // ONE AT A TIME: cases set the process-wide pin variables (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'returns the fallback pin with both sources named fallback when unset',
@@ -189,6 +191,8 @@ await describe({
 
 await describe({
   name: corpusPinOverrideNote.name,
+  // ONE AT A TIME: its case sets the process-wide pin variables (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'SAYS NOTHING FOR THE BUILT-IN PIN, and names each overridden half with its source (ledger D13: the '

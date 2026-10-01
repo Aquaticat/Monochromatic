@@ -130,6 +130,10 @@ async function refusalOf(act: () => Promise<unknown>,): Promise<unknown> {
 
 await describe({
   name: resolvePool.name,
+  // ONE AT A TIME: both cases set the same process-wide pool variables, one
+  // of them after an await, and a restore finishing out of order could leave
+  // the other's value set (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'REFUSES a filtered pool and an unfiltered one asked for together, rather than picking '

@@ -156,6 +156,9 @@ function withoutPoolPolicy(): Disposable {
 
 await describe({
   name: resolvePool.name,
+  // ONE AT A TIME: its case clears the process-wide pool variables across
+  // awaits (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'POOLS ONLY THE NAMES IT WAS HANDED, so a reader that listed the directory itself and '

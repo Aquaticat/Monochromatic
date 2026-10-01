@@ -310,6 +310,10 @@ async function recordedRounds(
 
 await describe({
   name: recordContest.name,
+  // ONE AT A TIME: cases point and clear the one process-wide runs directory,
+  // and a restore finishing out of order could leave a sibling's value set
+  // (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'KEEPS the text each model wrote, which is the whole reason this '

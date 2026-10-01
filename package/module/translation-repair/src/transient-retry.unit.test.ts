@@ -894,6 +894,9 @@ await describe({
 
 await describe({
   name: 'the retry line names the call it retries (ledger P12)',
+  // ONE AT A TIME: its case diverts the process-wide `console.warn` across an
+  // await (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'NAMES THE MODEL on the retry line: 3,864 "stream ended without its [DONE] terminator ... retrying" '

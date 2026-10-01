@@ -127,6 +127,9 @@ function rowAt(
 
 await describe({
   name: summarizeBench.name,
+  // ONE AT A TIME: its case diverts the process-wide `console.log` (ledger
+  // B79).
+  concurrency: 1,
   children: [
     it({
       name: 'PUTS EACH ROW UNDER ITS OWN WIDTH AND RUN, since every number on a line is a sum over '

@@ -241,6 +241,8 @@ async function buildRefusalOf(
 
 await describe({
   name: assertBuildGenerationResumable.name,
+  // ONE AT A TIME: a case diverts the process-wide `console.log` (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'passes a FRESH directory, since a first invocation has nothing to '
@@ -525,6 +527,9 @@ await describe({
 
 await describe({
   name: readDriftOptIn.name,
+  // ONE AT A TIME as well, so a case added beside this one cannot read the
+  // variable while it walks the values (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'reads the exact opt-in and NOTHING ELSE, walked in one case '

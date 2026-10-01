@@ -141,15 +141,17 @@ async function placementOf(
 }
 
 /**
- Captures what `readPlacement` prints, forwarding every line onward so a
- concurrent case, and the runner, still see their own.
+ Captures what `readPlacement` prints, forwarding every line onward so the
+ runner still sees it.
  
- CHAINED RATHER THAN REPLACED, because the cases of one suite run at once:
+ CHAINED RATHER THAN REPLACED, from when the suite ran its cases at once:
  each capture wraps whatever reporter it finds, which may be another case's
  wrapper, and on disposal it stops recording and unwraps only if it is still
  the outermost. A capture that restored the real reporter outright would
  silently cut a sibling's capture out of the chain mid-case, which is how a
- first version of these cases captured nothing or six lines.
+ first version of these cases captured nothing or six lines. The suite now
+ runs one case at a time (ledger B79), so the chain is a second safeguard
+ rather than the only one.
  
  Callers filter by their own file name, since the chain records everything.
  
@@ -227,6 +229,9 @@ function linesAbout(
 
 await describe({
   name: readPlacement.name,
+  // ONE AT A TIME: cases divert the process-wide `console.log` across an
+  // await (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'PLACES an artifact recording its own name, a canonical commit '
