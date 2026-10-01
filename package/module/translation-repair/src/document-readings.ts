@@ -5,6 +5,7 @@ import {
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import { imageReadingKey, } from './image-reading-key.ts';
 import {
   isResumableReading,
@@ -130,7 +131,13 @@ export async function readDocumentPictures(
   if (named.size === 0)
     return readings;
 
-  rl.info(`reading ${String(named.size,)} pictures for this document`,);
+  rl.info(`reading ${String(named.size,)} ${
+    wordForCount({
+      count: named.size,
+      one: 'picture',
+      many: 'pictures',
+    },)
+  } for this document`,);
 
   for (const assetName of named) {
     /**

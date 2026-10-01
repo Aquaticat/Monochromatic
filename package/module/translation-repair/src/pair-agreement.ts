@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { wordForCount, } from './count-word.ts';
 import {
   settleContestedTarget,
   type VotedPair,
@@ -314,7 +315,13 @@ export function agreePairs<PairT extends IndexPair,>(
       pairingShape,
     },);
     if (winners.length === 0) {
-      findings.push(`contested (source ${String(source,)} named against ${String(candidates.length,)} targets)`,);
+      findings.push(`contested (source ${String(source,)} named against ${String(candidates.length,)} ${
+        wordForCount({
+          count: candidates.length,
+          one: 'target',
+          many: 'targets',
+        },)
+      })`,);
       continue;
     }
     for (const winner of winners) {

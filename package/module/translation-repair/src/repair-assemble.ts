@@ -15,6 +15,7 @@ import {
   shippedSliceTexts,
 } from './assembly-invariant.ts';
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import { buildSliceCriticRecords, } from './critic-attribution.ts';
 import { repairLaneWordings, } from './repair-lane-wordings.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
@@ -125,7 +126,14 @@ export function assembleRepair(
       `withdrew ${
         String(guarded.revertedChunkIndices
           .length,)
-      } slice repairs at assembly; the findings say why`,
+      } slice ${
+        wordForCount({
+          count: guarded.revertedChunkIndices
+            .length,
+          one: 'repair',
+          many: 'repairs',
+        },)
+      } at assembly; the findings say why`,
     );
   }
   // THE FINDINGS REACH THE LOG. An entry the pass stops before its artifact is
@@ -200,7 +208,19 @@ export function assembleRepair(
   l.info(
     `repair ${anyChanged ? 'shipped' : 'kept input'}: ${
       String(shippedSliceCount,)
-    }/${String(outcomes.length,)} slices changed, ${String(issues.length,)} issues`,
+    }/${String(outcomes.length,)} ${
+      wordForCount({
+        count: outcomes.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } changed, ${String(issues.length,)} ${
+      wordForCount({
+        count: issues.length,
+        one: 'issue',
+        many: 'issues',
+      },)
+    }`,
   );
 
   // WHERE THE DOCUMENT-SCALE DAMAGE IS (ledger L12): `repetitionFindings`

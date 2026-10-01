@@ -5,6 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import { foldedLine, } from './entry-notes.ts';
 import {
   buildPageTitleLexiconMessages,
@@ -382,9 +383,21 @@ export async function settlePageTitles(
     heard,
     findings: [
       ...gather.findings,
-      `page title lexicon settled ${String(titles.length,)} of ${String(spans.length,)} repeated titles from ${
+      `page title lexicon settled ${String(titles.length,)} of ${String(spans.length,)} repeated ${
+        wordForCount({
+          count: spans.length,
+          one: 'title',
+          many: 'titles',
+        },)
+      } from ${
         String(heard,)
-      } voices`,
+      } ${
+        wordForCount({
+          count: heard,
+          one: 'voice',
+          many: 'voices',
+        },)
+      }`,
     ],
   };
 }
@@ -410,9 +423,21 @@ export function pageTitleLines(
   return [
     HEADING,
     ...titles.map(function toLine(title,): string {
-      return `- ${title.source} (${String(title.occurrences,)} places on the page): "${title.rendering}" (${
+      return `- ${title.source} (${String(title.occurrences,)} ${
+        wordForCount({
+          count: title.occurrences,
+          one: 'place',
+          many: 'places',
+        },)
+      } on the page): "${title.rendering}" (${
         String(title.voices,)
-      } of ${String(title.heard,)} voices)`;
+      } of ${String(title.heard,)} ${
+        wordForCount({
+          count: title.heard,
+          one: 'voice',
+          many: 'voices',
+        },)
+      })`;
     },),
   ];
 }

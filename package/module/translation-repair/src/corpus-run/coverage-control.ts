@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { wordForCount, } from '../count-word.ts';
 import { runCoverageStage, } from '../coverage-stage.ts';
 import type { CoverageVerdict, } from '../coverage-verdict.ts';
 import { parseDocument, } from '../parse-document.ts';
@@ -558,7 +559,13 @@ export async function coverageControlHolds(
       console.log(
         `COVERAGE control ${row.where}: ${row.reason} (undamaged verdict ${row.verdict}, ${
           String(row.absent,)
-        } absence votes, ${String(row.offeredSpans,)} spans offered)`,
+        } absence votes, ${String(row.offeredSpans,)} ${
+          wordForCount({
+            count: row.offeredSpans,
+            one: 'span',
+            many: 'spans',
+          },)
+        } offered)`,
       );
       continue;
     }
@@ -567,9 +574,21 @@ export async function coverageControlHolds(
     console.log(
       `COVERAGE control ${row.where}: ${row.before} -> ${row.after}, absence votes ${
         String(row.absentBefore,)
-      } -> ${String(row.absentAfter,)}, cut ${String(row.removedSpans,)} spans of ${
+      } -> ${String(row.absentAfter,)}, cut ${String(row.removedSpans,)} ${
+        wordForCount({
+          count: row.removedSpans,
+          one: 'span',
+          many: 'spans',
+        },)
+      } of ${
         String(row.removedChars,)
-      } chars; DECOY of the same size at ${String(row.decoyAt,)}: ${row.decoy}, absence votes ${
+      } ${
+        wordForCount({
+          count: row.removedChars,
+          one: 'char',
+          many: 'chars',
+        },)
+      }; DECOY of the same size at ${String(row.decoyAt,)}: ${row.decoy}, absence votes ${
         String(row.absentAfterDecoy,)
       }`,
     );

@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import type {
   DocumentSide,
   SpanAnchor,
@@ -215,7 +216,13 @@ function needlePreview(
       counted.tokens += 1;
     counted.inToken = inToken;
   }
-  return ` needle=${String(flat.length,)} chars, ${String(counted.tokens,)} Latin tokens`;
+  return ` needle=${String(flat.length,)} ${
+    wordForCount({
+      count: flat.length,
+      one: 'char',
+      many: 'chars',
+    },)
+  }, ${String(counted.tokens,)} Latin tokens`;
 }
 
 /**

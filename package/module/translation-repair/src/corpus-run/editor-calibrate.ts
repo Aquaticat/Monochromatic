@@ -11,6 +11,7 @@ import {
   writerGraceOverrideNote,
 } from '../writer-grace-override.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { wordForCount, } from '../count-word.ts';
 import { repairChunk, } from '../repair-chunk.ts';
 import { settleRefinedSlice, } from '../refine-slice-settle.ts';
 import {
@@ -249,7 +250,13 @@ function reportRefineReach(
   },);
 
   console.log(
-    `  reached a rewriter on ${String(asked.length,)} of ${String(perSlice.length,)} slices; `
+    `  reached a rewriter on ${String(asked.length,)} of ${String(perSlice.length,)} ${
+      wordForCount({
+        count: perSlice.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }; `
       + 'the rest carried no paragraph over the eligibility floor, so no refiner was asked '
       + 'and their silence is not evidence about any model',
   );
@@ -299,7 +306,13 @@ function reportShipped(
   },);
 
   console.log(
-    `\nEDITORS SHIPPED on ${String(shipping.length,)} of ${String(perSlice.length,)} slices, `
+    `\nEDITORS SHIPPED on ${String(shipping.length,)} of ${String(perSlice.length,)} ${
+      wordForCount({
+        count: perSlice.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, `
       + `${String(unvoted.length,)} of them with no editor round judged at all`,
   );
 
@@ -331,7 +344,13 @@ function reportShipped(
     },)
   ) {
     console.log(
-      `  ${modelId}: wrote shipping text on ${String(count,)} of ${String(shipping.length,)} slices`,
+      `  ${modelId}: wrote shipping text on ${String(count,)} of ${String(shipping.length,)} ${
+        wordForCount({
+          count: shipping.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      }`,
     );
   }
 
@@ -383,9 +402,27 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-calibrate'
   },);
 
   console.log(
-    `editor-calibrate: ${String(sample.length,)} slices, `
-      + `${String(RUN_ROSTER.length,)} models editing and judging each, `
-      + `${String(overlap,)} slices in flight`,
+    `editor-calibrate: ${String(sample.length,)} ${
+      wordForCount({
+        count: sample.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, `
+      + `${String(RUN_ROSTER.length,)} ${
+        wordForCount({
+          count: RUN_ROSTER.length,
+          one: 'model',
+          many: 'models',
+        },)
+      } editing and judging each, `
+      + `${String(overlap,)} ${
+        wordForCount({
+          count: overlap,
+          one: 'slice',
+          many: 'slices',
+        },)
+      } in flight`,
   );
 
   /**

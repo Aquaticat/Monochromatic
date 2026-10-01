@@ -4,6 +4,7 @@ import {
   describeAlignmentAttachment,
 } from './chunk-document.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
+import { wordForCount, } from './count-word.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
 import { declaredNamePairs, } from './linked-title-declared-name.ts';
 import { extractDeclaredIdentity, } from './identity-context.ts';
@@ -390,20 +391,34 @@ export function prepareDocumentPair(
           endOffset: node.endOffset,
         };
       },),);
+      /**
+       Characters the unclaimed blocks hold.
+       */
+      const unclaimedChars = blocks.reduce(
+        function addChars(
+          sum,
+          node,
+        ): number {
+          return sum + (node.endOffset - node.startOffset);
+        },
+        0,
+      );
       declinedFindings.push(
         `alignment target-unclaimed (pair ${String(pairIndex,)}: ${
           String(blocks.length,)
-        } translation blocks no original claims, ${
-          String(blocks.reduce(
-            function addChars(
-              sum,
-              node,
-            ): number {
-            return sum + (node.endOffset - node.startOffset);
-          },
-            0,
-          ),)
-        } characters: ${blocks.map(function toId(node,): string {
+        } translation ${
+          wordForCount({
+            count: blocks.length,
+            one: 'block',
+            many: 'blocks',
+          },)
+        } no original claims, ${String(unclaimedChars,)} ${
+          wordForCount({
+            count: unclaimedChars,
+            one: 'character',
+            many: 'characters',
+          },)
+        }: ${blocks.map(function toId(node,): string {
           return node.id;
         },)
           .join(', ',)})`,

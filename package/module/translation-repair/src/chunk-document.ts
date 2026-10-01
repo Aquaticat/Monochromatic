@@ -9,6 +9,7 @@ import {
   type DocumentChunk,
   makeInsertionChunk,
 } from './chunk-placement.ts';
+import { wordForCount, } from './count-word.ts';
 import type { DocumentNode, } from './document-node.ts';
 import { sectionPairingToSteps, } from './pair-sections-steps.ts';
 import type { SectionPair, } from './pair-sections-wire.ts';
@@ -431,9 +432,21 @@ export function alignDocumentSections(
       findings: [{
         kind: 'structure-mismatch',
         attachedTo: { kind: 'whole-document', },
-        detail: `one side has no content: source ${String(sourceChunks.length,)} chunks, target ${
+        detail: `one side has no content: source ${String(sourceChunks.length,)} ${
+          wordForCount({
+            count: sourceChunks.length,
+            one: 'chunk',
+            many: 'chunks',
+          },)
+        }, target ${
           String(targetChunks.length,)
-        } chunks`,
+        } ${
+          wordForCount({
+            count: targetChunks.length,
+            one: 'chunk',
+            many: 'chunks',
+          },)
+        }`,
       },],
     };
   }

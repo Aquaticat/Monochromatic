@@ -1,6 +1,7 @@
 import type { Root, } from 'mdast';
 
 import type { ChunkPair, } from '../chunk-document.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   type SpliceEdit,
   spliceDisjointEdits,
@@ -566,7 +567,13 @@ export function restoreListSpread(
       findings.push(
         `list-spread-restored (slice ${String(sliceIndex,)}: list ${String(one.at,)} of ${
           String(one.items,)
-        } items from ${one.from} to ${one.to}; the archive writes this list ${
+        } ${
+          wordForCount({
+            count: one.items,
+            one: 'item',
+            many: 'items',
+          },)
+        } from ${one.from} to ${one.to}; the archive writes this list ${
           (one.to === 'loose') ? 'with' : 'without'
         } a blank line between its items)`,
       );

@@ -1,4 +1,5 @@
 import type { ExtractedCompletion, } from './completion-shape.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Model content handling
 // Deterministic handling of what models write: fence unwrapping, thinking-block
@@ -172,7 +173,13 @@ export function formatUsageNote(
     completion_tokens: completionTokens,
   } = extracted.usage;
 
-  return `, ${String(promptTokens,)}+${String(completionTokens,)} tokens`;
+  return `, ${String(promptTokens,)}+${String(completionTokens,)} ${
+    wordForCount({
+      count: promptTokens + completionTokens,
+      one: 'token',
+      many: 'tokens',
+    },)
+  }`;
 }
 
 //endregion Model content handling

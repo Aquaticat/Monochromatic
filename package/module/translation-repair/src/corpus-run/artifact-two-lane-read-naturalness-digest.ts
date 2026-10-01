@@ -2,6 +2,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
 import { isLowerHexDigit, } from '../ascii-letters.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   ArtifactParseError,
   requireArray,
@@ -158,7 +159,13 @@ export function parseParagraphDigests(
   if (digests.length !== paragraphCount) {
     throw new ArtifactParseError({
       path,
-      reason: `${String(paragraphCount,)} reviewed paragraph digests`,
+      reason: `${String(paragraphCount,)} reviewed paragraph ${
+        wordForCount({
+          count: paragraphCount,
+          one: 'digest',
+          many: 'digests',
+        },)
+      }`,
     },);
   }
   return digests;

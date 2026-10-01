@@ -3,6 +3,7 @@ import type {
   DocumentChunk,
 } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   composeInsertion,
   documentLineEnding,
@@ -379,7 +380,13 @@ export function spliceSlices(
     if (slice === undefined) {
       throw new SliceSpliceError({
         message: `no slice ${String(replacement.sliceIndex,)} to write into: `
-        + `the document was sliced into ${String(slices.length,)} slices`,
+        + `the document was sliced into ${String(slices.length,)} ${
+          wordForCount({
+            count: slices.length,
+            one: 'slice',
+            many: 'slices',
+          },)
+        }`,
       },);
     }
 

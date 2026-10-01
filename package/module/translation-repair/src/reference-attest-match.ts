@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { foldedLine, } from './entry-notes.ts';
 import { normalizePunctuation, } from './quote-normalize.ts';
 import type { AttestationItemWire, } from './reference-attest-wire.ts';
@@ -283,7 +284,13 @@ export function attestedDetailLines(
       String(detail.reference,)
     } ("${foldedLine({ text: detail.referenceQuote, },)}"), ${String(detail.voices,)} of ${
       String(detail.heard,)
-    } voices checked word for word`;
+    } ${
+      wordForCount({
+        count: detail.heard,
+        one: 'voice',
+        many: 'voices',
+      },)
+    } checked word for word`;
   },);
 }
 

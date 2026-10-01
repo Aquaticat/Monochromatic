@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import {
   type DocumentLanesResult,
@@ -107,7 +108,14 @@ export async function runPassLanes(
    */
   const l = tagged({ tag: entryId, },);
   l.debug(`${runPassLanes.name}: running both lanes over ${String(prepared.slices
-    .length,)} slices`,);
+    .length,)} ${
+    wordForCount({
+      count: prepared.slices
+        .length,
+      one: 'slice',
+      many: 'slices',
+    },)
+  }`,);
   return await runDocumentLanes({
     client,
     prepared,

@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { producerModelIds, } from '../candidate-select-model.ts';
+import { wordForCount, } from '../count-word.ts';
 import { errorName, } from '../error-name.ts';
 import {
   coverageGapLines,
@@ -212,7 +213,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'producer-calibrat
   const headSha = await readHeadSha();
 
   console.log(
-    `CALIBRATE ${String(sample.length,)} slices, all ${String(roster.length,)} writing`
+    `CALIBRATE ${String(sample.length,)} ${
+      wordForCount({
+        count: sample.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, all ${String(roster.length,)} writing`
       + ` and all ${String(roster.length,)} judging (${roster.join(', ',)}), at ${headSha}`,
   );
 
@@ -256,7 +263,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'producer-calibrat
     },),
   },);
 
-  console.log(`\nSTANDING over ${String(rounds.length,)} rounds, best first:`,);
+  console.log(`\nSTANDING over ${String(rounds.length,)} ${
+    wordForCount({
+      count: rounds.length,
+      one: 'round',
+      many: 'rounds',
+    },)
+  }, best first:`,);
   for (const standing of rankStandings({ standings, },)) {
     console.log(`  ${standingLine({ standing, },)}`,);
   }

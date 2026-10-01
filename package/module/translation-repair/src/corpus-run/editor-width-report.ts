@@ -2,6 +2,7 @@ import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   summarizeWidths,
   type WidthDraw,
@@ -59,7 +60,13 @@ function renderRow(row: WidthRow,): string {
     `shipped ${row.narrowShipped ? 'y' : 'n'}/${row.wideShipped ? 'y' : 'n'}`,
     row.comparison,
     `repeat ${row.narrowRepeatAgreed ? 'agreed' : 'FLIPPED'}`,
-    `${row.verdict} on ${String(row.usableBallots,)} ballots`,
+    `${row.verdict} on ${String(row.usableBallots,)} ${
+      wordForCount({
+        count: row.usableBallots,
+        one: 'ballot',
+        many: 'ballots',
+      },)
+    }`,
   ].join(', ',);
 }
 

@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 //region Non-translation finding
 // The sentence a blocked document carries, in ONE place.
 //
@@ -52,7 +54,13 @@ export function nonTranslationDominanceFinding(
 ): string {
   return `non-translation dominance (${String(standingChars,)} of ${
     String(totalChars,)
-  } chars across examined slices, which is not the whole translation)`;
+  } ${
+    wordForCount({
+      count: totalChars,
+      one: 'char',
+      many: 'chars',
+    },)
+  } across examined slices, which is not the whole translation)`;
 }
 
 //endregion Non-translation finding

@@ -320,7 +320,7 @@ export async function decideBestCandidate<ValueT,>(
     .toFixed(2,);
   if (minimum.short) {
     sl.warn(
-      `bench short of quorum: ${String(minimum.reachable,)} of ${String(judges.length,)} seats reachable against a `
+      `bench short of quorum: seats reachable ${String(minimum.reachable,)} of ${String(judges.length,)} against a `
         + `quorum of ${String(minimum.quorum,)}; the winner needs weight ${minimumLabel} from at least `
         + `${String(MIN_SELECTION_BALLOTS,)} ballots`,
     );
@@ -359,7 +359,7 @@ export async function decideBestCandidate<ValueT,>(
   const [leader,] = ranked;
   if (leader === undefined) {
     sl.info(
-      `every judge declined (${String(abstained,)} abstentions); keeping the fallback`,
+      `every judge declined (abstentions: ${String(abstained,)}); keeping the fallback`,
     );
     return {
       kind: 'declined',
@@ -421,8 +421,8 @@ export async function decideBestCandidate<ValueT,>(
     // leave a single judge as the only one who named anything, and letting
     // that judge decide would put one model back in control of the stage.
     sl.info(
-      `winner drew only weight ${String(leader[1],)} across ${String(counted.ballots,)} ballots `
-      + `(${String(counted.abstentions,)} abstentions) against a minimum of ${minimumLabel}; keeping the fallback`,
+      `winner drew only weight ${String(leader[1],)} (ballots: ${String(counted.ballots,)}, abstentions: `
+      + `${String(counted.abstentions,)}) against a minimum of ${minimumLabel}; keeping the fallback`,
     );
     return {
       kind: 'declined',
@@ -472,13 +472,13 @@ export async function decideBestCandidate<ValueT,>(
   }
   if (runoffDecides) {
     sl.info(
-      `run-off: candidate ${String(leader[0],)} named by ${String(leaderBallots,)} ballots at weight `
+      `run-off: candidate ${String(leader[0],)} (ballots naming it: ${String(leaderBallots,)}) at weight `
         + `${String(leader[1],)} under the minimum of ${minimumLabel}; the finalists were valid, so the ballots decide`,
     );
   }
   sl.info(
     `candidate ${String(leader[0],)} from ${describeProducer(winner.producer,)} won `
-    + `weight ${String(leader[1],)} across ${String(counted.ballots,)} ballots`,
+    + `weight ${String(leader[1],)} (ballots: ${String(counted.ballots,)})`,
   );
   return {
     kind: 'selected',

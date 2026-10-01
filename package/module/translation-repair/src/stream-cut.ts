@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { wholeOpening, } from './code-points.ts';
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import type { StreamProgress, } from './stream-idle-guard.ts';
 
@@ -124,7 +125,13 @@ export class StreamCutShortError extends Error {
     },
   ) {
     super(
-      `${label}: stream cut after ${String(partialText.length,)} characters (${String(cause,)})`,
+      `${label}: stream cut after ${String(partialText.length,)} ${
+        wordForCount({
+          count: partialText.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      } (${String(cause,)})`,
       { cause, },
     );
     this.name = 'StreamCutShortError';

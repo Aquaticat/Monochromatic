@@ -3,6 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { wordForCount, } from './count-word.ts';
 import { agreePairs, } from './pair-agreement.ts';
 import { countPairedBlocks, } from './pair-block-counts.ts';
 import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
@@ -170,9 +171,27 @@ export function readBlockPairingOutcomes(
   pl.info(
     `paired ${String(counts.source,)} of ${String(sourceCount,)} original and ${
       String(counts.target,)
-    } of ${String(targetCount,)} translation blocks across ${String(counts.relations,)} relations, from ${
+    } of ${String(targetCount,)} translation ${
+      wordForCount({
+        count: targetCount,
+        one: 'block',
+        many: 'blocks',
+      },)
+    } across ${String(counts.relations,)} ${
+      wordForCount({
+        count: counts.relations,
+        one: 'relation',
+        many: 'relations',
+      },)
+    }, from ${
       String(pairings.length,)
-    } usable voices of ${String(heardVoices.length,)} heard`,
+    } usable ${
+      wordForCount({
+        count: pairings.length,
+        one: 'voice',
+        many: 'voices',
+      },)
+    } of ${String(heardVoices.length,)} heard`,
   );
   return {
     pairs: agreed,

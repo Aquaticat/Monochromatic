@@ -2,6 +2,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
+import { wordForCount, } from './count-word.ts';
 import { activeFootnoteMarkers, } from './active-footnote-markers.ts';
 import {
   normalizeFootnoteIdentifier,
@@ -342,7 +343,13 @@ export function footnoteRelabelOf(
       continue;
     if (original.length !== archive.length) {
       skipped.push(
-        `slice ${sliceIndex} references ${String(original.length,)} distinct notes in the original and ${
+        `slice ${sliceIndex} references ${String(original.length,)} distinct ${
+          wordForCount({
+            count: original.length,
+            one: 'note',
+            many: 'notes',
+          },)
+        } in the original and ${
           String(archive.length,)
         } in the archive`,
       );

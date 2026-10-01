@@ -1,4 +1,5 @@
 import type { SelfPreference, } from './self-preference.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Self-preference line
 // How a self-preference result is stated to a reader.
@@ -42,7 +43,13 @@ export function describeSelfPreference(
   }
   if (preference.kind === 'no-disinterested-ballots') {
     return `self-preference unanswerable (every judge held a stake in all `
-      + `${String(preference.opportunities,)} ballots)`;
+      + `${String(preference.opportunities,)} ${
+        wordForCount({
+          count: preference.opportunities,
+          one: 'ballot',
+          many: 'ballots',
+        },)
+      })`;
   }
 
   /**

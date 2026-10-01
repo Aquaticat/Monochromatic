@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   listCorpusPeople,
   readCorpusFile,
@@ -185,7 +186,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
     },);
 
   console.log(
-    `COVERAGE control offering ${String(cases.length,)} cases to a roster of ${
+    `COVERAGE control offering ${String(cases.length,)} ${
+      wordForCount({
+        count: cases.length,
+        one: 'case',
+        many: 'cases',
+      },)
+    } to a roster of ${
       String(RUN_ROSTER.length,)
     }`,
   );
@@ -228,12 +235,36 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
   console.log(
     `COVERAGE control ${held ? 'HELD' : 'DID NOT HOLD'} over ${
       String(rows.length,)
-    } damaged cases: absence votes appeared on ${
+    } damaged ${
+      wordForCount({
+        count: rows.length,
+        one: 'case',
+        many: 'cases',
+      },)
+    }: absence votes appeared on ${
       String(sawAbsenceOnTarget,)
-    } targeted cuts and on ${String(sawAbsenceOnDecoy,)} equally large cuts taken elsewhere`,
+    } targeted ${
+      wordForCount({
+        count: sawAbsenceOnTarget,
+        one: 'cut',
+        many: 'cuts',
+      },)
+    } and on ${String(sawAbsenceOnDecoy,)} equally large ${
+      wordForCount({
+        count: sawAbsenceOnDecoy,
+        one: 'cut',
+        many: 'cuts',
+      },)
+    } taken elsewhere`,
   );
   console.log(
-    `COVERAGE control ${String(refusals.length,)} cases could not be damaged: ${
+    `COVERAGE control ${String(refusals.length,)} ${
+      wordForCount({
+        count: refusals.length,
+        one: 'case',
+        many: 'cases',
+      },)
+    } could not be damaged: ${
       String(notCarried.length,)
     } because the roster never called them covered, ${
       String(refusals.length - notCarried.length,)

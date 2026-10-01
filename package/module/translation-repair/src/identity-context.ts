@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { hanItemsClause, } from './identity-han-items.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { isLatinLetterOrMark, } from './latin-letters.ts';
@@ -530,7 +531,13 @@ export function sourcePronounLines(
    */
   const dominantLine = `- pronoun: ORIGINAL refers to this person as "${dominant.pronoun}" (${
     String(dominant.count,)
-  } times)`;
+  } ${
+    wordForCount({
+      count: dominant.count,
+      one: 'time',
+      many: 'times',
+    },)
+  })`;
 
   /**
    Other forms the original writes too, in the fixed order of the forms.
@@ -540,7 +547,13 @@ export function sourcePronounLines(
       return (candidate !== dominant) && (candidate.count > 0);
     },)
     .map(function named(candidate,): string {
-      return `"${candidate.pronoun}" (${String(candidate.count,)} times)`;
+      return `"${candidate.pronoun}" (${String(candidate.count,)} ${
+        wordForCount({
+          count: candidate.count,
+          one: 'time',
+          many: 'times',
+        },)
+      })`;
     },);
   if (others.length === 0)
     return [dominantLine,];

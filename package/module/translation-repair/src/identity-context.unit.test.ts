@@ -288,17 +288,17 @@ await describe({
             + 'corpus; one page of 2026-09-04 shipped a bare Ta the counter had not seen)',
           fn: async () => {
             expect(sourcePronounLines({ text: '他来了。他走了。她笑了。', },),)
-              .toEqual([`- pronoun: ORIGINAL refers to this person as "他" (2 times), and also writes "她" (1 times); ${
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "他" (2 times), and also writes "她" (1 time); ${
                 AS_WRITTEN
               } "他" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
             expect(sourcePronounLines({ text: '他来了。她笑了。', },),)
-              .toEqual([`- pronoun: ORIGINAL refers to this person as "她" (1 times), and also writes "他" (1 times); ${
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "她" (1 time), and also writes "他" (1 time); ${
                 AS_WRITTEN
               } "她" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
             expect(sourcePronounLines({ text: 'TA来了。TA走了。alias: catalog', },),)
               .toEqual(['- pronoun: ORIGINAL refers to this person as "TA" (2 times)',],);
             expect(sourcePronounLines({ text: 'Ta 来了。ta 走了。TA 笑了。她说。', },),)
-              .toEqual([`- pronoun: ORIGINAL refers to this person as "TA" (3 times), and also writes "她" (1 times); ${
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "TA" (3 times), and also writes "她" (1 time); ${
                 AS_WRITTEN
               } "TA" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
           },
@@ -311,7 +311,7 @@ await describe({
             + 'bench split between "she" on the line and "they" on the TA rule until the entry stopped)',
           fn: async () => {
             expect(sourcePronounLines({ text: '她来了。她笑了。她走了。\n\nTA 曾说，猫死了。TA 的遗书。他说。', },),)
-              .toEqual([`- pronoun: ORIGINAL refers to this person as "她" (3 times), and also writes "他" (1 times) and "TA" (2 times); ${
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "她" (3 times), and also writes "他" (1 time) and "TA" (2 times); ${
                 AS_WRITTEN
               } "她" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
           },
@@ -323,7 +323,7 @@ await describe({
             + 'them once still reads 她',
           fn: async () => {
             expect(sourcePronounLines({ text: '她来了。Ta 们走了。TA们笑了。', },),)
-              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 time)',],);
             expect(sourcePronounLines({ text: 'Ta 们走了。', },),).toEqual([],);
           },
         },),
@@ -333,7 +333,7 @@ await describe({
             + 'makes a longer word, which ASCII letters alone read as the pronoun (ledger B18)',
           fn: async () => {
             expect(sourcePronounLines({ text: '她来了。小猫叫 CaféTA。Ta\u{0300} 是拼音。', },),)
-              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 time)',],);
           },
         },),
 
@@ -344,7 +344,7 @@ await describe({
             + 'which 9 are 他们, 5 其他 and 3 他人',
           fn: async () => {
             expect(sourcePronounLines({ text: '她来了。他们走了。其他人笑了。他人说。她们唱歌。其他', },),)
-              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 time)',],);
             expect(sourcePronounLines({ text: '他们走了。其他人笑了。', },),).toEqual([],);
           },
         },),

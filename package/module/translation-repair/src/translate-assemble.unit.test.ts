@@ -389,7 +389,7 @@ await describe({
         expect(result.withdrawnSliceIndices,).toEqual([referencing.target.sliceIndex,],);
         expect(result.changedSliceIndices,).toEqual([],);
         expect(said.some(function mentionsWithdrawal(line,): boolean {
-          return line.includes('withdrew 1 replacements at assembly',);
+          return line.includes('withdrew 1 replacement at assembly',);
         },),).toBe(true,);
       },
     },),

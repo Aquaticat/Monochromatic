@@ -421,7 +421,7 @@ await describe({
               usable: 2,
             },
           },
-          says: '.gate.usable: expected 1 matching stored ballots',
+          says: '.gate.usable: expected 1 matching stored ballot',
         },);
       },
     },),

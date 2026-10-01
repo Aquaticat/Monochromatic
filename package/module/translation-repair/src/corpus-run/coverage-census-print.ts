@@ -1,4 +1,5 @@
 import { compareCodePoints, } from '../code-points.ts';
+import { wordForCount, } from '../count-word.ts';
 import type {
   ColdSince,
   EditedClaim,
@@ -175,16 +176,59 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
       0,
     );
   return [
-    `coverage-census at ${census.head}${census.clean ? '' : ' with uncommitted changes'}: ${scope}, ${String(census.passes,)} passes`,
+    `coverage-census at ${census.head}${census.clean ? '' : ' with uncommitted changes'}: ${scope}, ${String(census.passes,)} ${
+      wordForCount({
+        count: census.passes,
+        one: 'pass',
+        many: 'passes',
+      },)
+    }`,
     ...census.totals
       .map(function totalLine(total,): string {
-      return `${total.kind}: ${String(total.files,)} files, ${String(total.stretches,)} stretches over ${String(total.lines,)} lines, `
-        + `${String(total.uncalled,)} functions never called`;
+      return `${total.kind}: ${String(total.files,)} ${
+        wordForCount({
+          count: total.files,
+          one: 'file',
+          many: 'files',
+        },)
+      }, ${String(total.stretches,)} ${
+        wordForCount({
+          count: total.stretches,
+          one: 'stretch',
+          many: 'stretches',
+        },)
+      } over ${String(total.lines,)} ${
+        wordForCount({
+          count: total.lines,
+          one: 'line',
+          many: 'lines',
+        },)
+      }, `
+        + `${String(total.uncalled,)} ${
+          wordForCount({
+            count: total.uncalled,
+            one: 'function',
+            many: 'functions',
+          },)
+        } never called`;
     },),
     `bundles no test loaded: ${String(census.unloadedBundles
       .length,)}, carrying ${String(census.unloadedSources
-        .length,)} sources `
-    + `and ${String(unloadedLines,)} physical lines`,
+        .length,)} ${
+      wordForCount({
+        count: census.unloadedSources
+          .length,
+        one: 'source',
+        many: 'sources',
+      },)
+    } `
+    + `and ${String(unloadedLines,)} physical ${
+      wordForCount({
+        count: unloadedLines,
+        one: 'line',
+        many: 'lines',
+      },)
+    }`,
     ...census.unloadedSources
       .filter(function isLibrary(unloaded,): boolean {
         return unloaded.kind === 'library source';
@@ -198,7 +242,19 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
         return row.kind === 'library source';
       },)
       .map(function rowLine(row,): string {
-        return `  ${row.source}: ${String(row.stretches,)} stretches, ${String(row.lines,)} lines, ${String(row.uncalled,)} never called`;
+        return `  ${row.source}: ${String(row.stretches,)} ${
+          wordForCount({
+            count: row.stretches,
+            one: 'stretch',
+            many: 'stretches',
+          },)
+        }, ${String(row.lines,)} ${
+          wordForCount({
+            count: row.lines,
+            one: 'line',
+            many: 'lines',
+          },)
+        }, ${String(row.uncalled,)} never called`;
       },),
     'functions never called in package source, outermost:',
     ...outermost,

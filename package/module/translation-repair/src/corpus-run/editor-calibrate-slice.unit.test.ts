@@ -172,7 +172,7 @@ await describe({
         },);
 
         expect(line,).toBe(
-          `  slice 1 of 4 (${ENTRY_ID} chunk 7): 2 editor rounds, 1 refiner rounds, 2 editors shipping`,
+          `  slice 1 of 4 (${ENTRY_ID} chunk 7): 2 editor rounds, 1 refiner round, 2 editors shipping`,
         );
       },
     },),

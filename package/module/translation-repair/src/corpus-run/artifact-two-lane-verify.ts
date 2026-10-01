@@ -1,6 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { isInsertionChunk, } from '../chunk-placement.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import type { IdentifiedDeliveryLedger, } from '../lane-comparison.ts';
 import type { PreparationIdentity, } from '../preparation-identity.ts';
@@ -120,9 +121,21 @@ export function assertLedgerDescribesPreparation(
   const { slices, } = prepared;
   if (records.length !== slices.length) {
     throw new ArtifactPreparationMismatchError({
-      message: `${lane} ledger has ${String(records.length,)} rows for a preparation of ${
+      message: `${lane} ledger has ${String(records.length,)} ${
+        wordForCount({
+          count: records.length,
+          one: 'row',
+          many: 'rows',
+        },)
+      } for a preparation of ${
         String(slices.length,)
-      } slices, so it was built over a different slicing`,
+      } ${
+        wordForCount({
+          count: slices.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      }, so it was built over a different slicing`,
     },);
   }
   for (const [
@@ -228,7 +241,13 @@ export function assertResultCountsPreparation(
     .length;
   if (sliceCount !== preparedSliceCount) {
     throw new ArtifactPreparationMismatchError({
-      message: `${lane} result counts ${String(sliceCount,)} slices where the preparation has ${
+      message: `${lane} result counts ${String(sliceCount,)} ${
+        wordForCount({
+          count: sliceCount,
+          one: 'slice',
+          many: 'slices',
+        },)
+      } where the preparation has ${
         String(preparedSliceCount,)
       }, so the result describes a different run`,
     },);
@@ -270,7 +289,13 @@ export function assertFindingsDescribePreparation(
   const { alignmentFindings, } = prepared;
   if (reported.length !== alignmentFindings.length) {
     throw new ArtifactPreparationMismatchError({
-      message: `run reports ${String(reported.length,)} alignment findings for a preparation with ${
+      message: `run reports ${String(reported.length,)} alignment ${
+        wordForCount({
+          count: reported.length,
+          one: 'finding',
+          many: 'findings',
+        },)
+      } for a preparation with ${
         String(alignmentFindings.length,)
       }`,
     },);

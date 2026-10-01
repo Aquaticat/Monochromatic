@@ -284,7 +284,7 @@ await describe({
 
         expect(result.withdrawnSliceIndices,).toEqual([ 0, ],);
         expect(warnings,).toHaveLength(2,);
-        expect(warnings[0],).toBe('withdrew 1 slice repairs at assembly; the findings say why',);
+        expect(warnings[0],).toBe('withdrew 1 slice repair at assembly; the findings say why',);
         expect(warnings[1],).toContain('assembly-footnote-reverted',);
       },
     },),

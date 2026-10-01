@@ -14,6 +14,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { extensionOf, } from './image-asset.ts';
 import { MIN_READING_CHARS, } from './image-reading-sense.ts';
 import { isMissingPathError, } from './missing-path-error.ts';
@@ -407,14 +408,26 @@ export async function readImageWithOcr(
    */
   const characters = solidCharacters({ text, },);
   if (characters < MIN_READING_CHARS) {
-    ol.info(`${assetName}: no text (${String(characters,)} characters, under ${String(MIN_READING_CHARS,)})`,);
+    ol.info(`${assetName}: no text (${String(characters,)} ${
+      wordForCount({
+        count: characters,
+        one: 'character',
+        many: 'characters',
+      },)
+    }, under ${String(MIN_READING_CHARS,)})`,);
     return {
       kind: 'no-text',
       characters,
     };
   }
 
-  ol.info(`${assetName}: read ${String(characters,)} characters without a model`,);
+  ol.info(`${assetName}: read ${String(characters,)} ${
+    wordForCount({
+      count: characters,
+      one: 'character',
+      many: 'characters',
+    },)
+  } without a model`,);
   return {
     kind: 'read',
     text: text.trim(),

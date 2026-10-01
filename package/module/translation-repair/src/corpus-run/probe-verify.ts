@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { writeSheetPair, } from './sheet-write.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
@@ -221,7 +222,13 @@ async function main(): Promise<void> {
   },);
 
   console.log(
-    `VERIFY wrote ${String(items.length,)} items to ${dir}/probe-verify-sheet.md`,
+    `VERIFY wrote ${String(items.length,)} ${
+      wordForCount({
+        count: items.length,
+        one: 'item',
+        many: 'items',
+      },)
+    } to ${dir}/probe-verify-sheet.md`,
   );
   console.log(
     'NOTE the sheet is blind and its manifest is not. Grade the sheet without '

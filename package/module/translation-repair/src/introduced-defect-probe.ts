@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
   buildIntroducedDefectMessages,
@@ -290,7 +291,13 @@ export async function runIntroducedDefectProbe(
     `introduced-defect probe: ${String(Object.keys(ballots,)
       .length,)}/${String(proberModelIds.length,)} heard over ${
       String(regions.length,)
-    } regions, ${String(totals.corroborated,)} added-damage corroborated, ${
+    } ${
+      wordForCount({
+        count: regions.length,
+        one: 'region',
+        many: 'regions',
+      },)
+    }, ${String(totals.corroborated,)} added-damage corroborated, ${
       String(totals.removalCorroborated,)
     } dropped-content corroborated, ${
       String(totals.contradicted,)

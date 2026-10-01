@@ -5,6 +5,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { wordForCount, } from '../count-word.ts';
 import { hashContent, } from '../document-node.ts';
 import type { FidelityReferenceError, } from '../fidelity-reference-error.ts';
 import { readReviewedFidelityReferences, } from '../fidelity-reference-read.ts';
@@ -110,7 +111,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'judge-fidelity-pr
    */
   const completeRequestedMatrix = planned.length === matrix.length;
   if (!completeRequestedMatrix)
-    log.warn(`partial reviewed matrix: ${String(planned.length,)} of ${String(matrix.length,)} rows; not complete admission evidence`,);
+    log.warn(`partial reviewed matrix: ${String(planned.length,)} of ${String(matrix.length,)} ${
+      wordForCount({
+        count: matrix.length,
+        one: 'row',
+        many: 'rows',
+      },)
+    }; not complete admission evidence`,);
   /**
    Operator-selected output root; calibration callers use a disposable directory.
    */

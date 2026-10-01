@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { judgeTranslateSlate, } from './translate-judge.ts';
 import {
   requireTranslateAbsence,
@@ -376,7 +377,13 @@ export async function judgeSlateWithRetry(
         && (kept !== undefined)
         && (kept.length < offeredCount)) {
         l.info(
-          `translate stage: run-off tied again over ${String(offeredCount,)} finalists and narrowed to ${
+          `translate stage: run-off tied again over ${String(offeredCount,)} ${
+            wordForCount({
+              count: offeredCount,
+              one: 'finalist',
+              many: 'finalists',
+            },)
+          } and narrowed to ${
             String(kept.length,)
           }; asking the same panel over them`,
         );
@@ -427,7 +434,13 @@ export async function judgeSlateWithRetry(
       },);
     }
     l.info(
-      `translate stage: run-off tied again over ${String(offeredCount,)} finalists and narrowed to ${
+      `translate stage: run-off tied again over ${String(offeredCount,)} ${
+        wordForCount({
+          count: offeredCount,
+          one: 'finalist',
+          many: 'finalists',
+        },)
+      } and narrowed to ${
         String(next.length,)
       }; asking the same panel over them`,
     );

@@ -4,6 +4,7 @@ import type {
   ArtifactTranslateEvidence,
 } from './artifact-two-lane-read-contract.ts';
 import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
+import { wordForCount, } from '../count-word.ts';
 
 //region Artifact version 2 set relations
 // What has to hold between a lane's INDEX SETS, its counts, its status, and the
@@ -115,7 +116,13 @@ function assertListMatches(
   if (recorded.length !== derived.length) {
     throw new ArtifactParseError({
       path,
-      reason: `${String(derived.length,)} slices, which is what this lane's ledger rows say, rather than ${
+      reason: `${String(derived.length,)} ${
+        wordForCount({
+          count: derived.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      }, which is what this lane's ledger rows say, rather than ${
         String(recorded.length,)
       }`,
     },);
@@ -174,7 +181,13 @@ export function assertIndexSetsMatchLedger(
   if (evidence.sliceCount !== ledger.length) {
     throw new ArtifactParseError({
       path: `${path}.sliceCount`,
-      reason: `${String(ledger.length,)} slices, which is how many rows this lane's ledger holds`,
+      reason: `${String(ledger.length,)} ${
+        wordForCount({
+          count: ledger.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      }, which is how many rows this lane's ledger holds`,
     },);
   }
 }

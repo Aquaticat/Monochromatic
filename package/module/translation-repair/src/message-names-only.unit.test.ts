@@ -287,6 +287,10 @@ const NAMED_PARTS: Record<string, string> = {
     'noun and verb agreeing with a count, both forms authored here',
   'wordForCount({ count: entryIds.length, one: \'artifact in this directory records\', many: \'artifacts in this directory record\', },)':
     'noun and verb agreeing with a count, both forms authored here',
+  'wordForCount({ count: bodyBytes, one: \'byte\', many: \'bytes\', },)':
+    'noun agreeing with a count, both forms authored here',
+  'wordForCount({ count: charsSeen, one: \'character\', many: \'characters\', },)':
+    'noun agreeing with a count, both forms authored here',
   'failure': 'name of the failure class a JSON read raised',
   'filesystemCode': 'filesystem code a directory listing raised (ENOTDIR, EACCES), or the class name where there is none',
   'fault': 'authored phrase naming which roster rule was broken',

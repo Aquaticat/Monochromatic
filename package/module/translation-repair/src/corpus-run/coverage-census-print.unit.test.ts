@@ -162,8 +162,8 @@ await describe({
       fn: async () => {
         expect(censusReportLines({ census: CENSUS, },),).toEqual([
           `coverage-census at ${CENSUS.head}: the unit suite, ${String(CENSUS.passes,)} passes`,
-          'library source: 1 files, 2 stretches over 5 lines, 3 functions never called',
-          'entry file: 1 files, 1 stretches over 4 lines, 0 functions never called',
+          'library source: 1 file, 2 stretches over 5 lines, 3 functions never called',
+          'entry file: 1 file, 1 stretch over 4 lines, 0 functions never called',
           'bundles no test loaded: 1, carrying 2 sources and 60 physical lines',
           '  library source only those bundles carry: src/corpus-run/nap-layout.ts',
           'library source by cold lines:',

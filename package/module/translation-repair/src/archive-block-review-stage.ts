@@ -15,6 +15,7 @@ import {
   archiveBlockSelectionEvidence,
   withArchiveOriginal,
 } from './archive-block-selection-evidence.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   type ArchiveBlockReviewWire,
   ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
@@ -276,7 +277,13 @@ export async function runArchiveBlockReviewStage(
     reviewLog.warn(
       `archive-block-review: ${String(heard,)} heard and ${String(unread,)} answered unreadably of ${
         String(modelIds.length,)
-      } seats; the bench answered, so the block is reviewed on what was read`,
+      } ${
+        wordForCount({
+          count: modelIds.length,
+          one: 'seat',
+          many: 'seats',
+        },)
+      }; the bench answered, so the block is reviewed on what was read`,
     );
   }
   /**
@@ -335,7 +342,31 @@ export async function runArchiveBlockReviewStage(
     blockText,
   },);
   reviewLog.info(
-    `archive review: comparing ${String(revisions.length,)} admissible revisions in ${String(candidates.length,)} candidates; ${String(anchoredVoices.length,)} eligible assessments from ${String(heardCount,)} heard reviews`,
+    `archive review: comparing ${String(revisions.length,)} admissible ${
+      wordForCount({
+        count: revisions.length,
+        one: 'revision',
+        many: 'revisions',
+      },)
+    } in ${String(candidates.length,)} ${
+      wordForCount({
+        count: candidates.length,
+        one: 'candidate',
+        many: 'candidates',
+      },)
+    }; ${String(anchoredVoices.length,)} eligible ${
+      wordForCount({
+        count: anchoredVoices.length,
+        one: 'assessment',
+        many: 'assessments',
+      },)
+    } from ${String(heardCount,)} heard ${
+      wordForCount({
+        count: heardCount,
+        one: 'review',
+        many: 'reviews',
+      },)
+    }`,
   );
   /**
    Independently judged correction slate under the unchanged selector quorum.

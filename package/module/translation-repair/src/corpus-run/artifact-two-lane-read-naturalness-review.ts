@@ -7,6 +7,7 @@ import {
   requireCount,
   requireRecord,
 } from '../artifact-guard.ts';
+import { wordForCount, } from '../count-word.ts';
 import type {
   ArtifactNaturalnessReview,
   ArtifactNaturalnessReviewRound,
@@ -144,7 +145,13 @@ export function parseNaturalnessReview(
   if (rounds.length !== (correctionCount + 1)) {
     throw new ArtifactParseError({
       path: `${path}.rounds`,
-      reason: `${String(correctionCount + 1,)} rounds for correction count`,
+      reason: `${String(correctionCount + 1,)} ${
+        wordForCount({
+          count: correctionCount + 1,
+          one: 'round',
+          many: 'rounds',
+        },)
+      } for correction count`,
     },);
   }
   /**

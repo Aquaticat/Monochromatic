@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import type { IssueClaim, } from './issue-model.ts';
 
@@ -213,9 +214,21 @@ export function screenNonTranslationVotes(
         .endsWith('/non-translation',);
     },),
     findings: [
-      `non-translation votes contradicted (${String(votes,)} votes, ${
+      `non-translation votes contradicted (${String(votes,)} ${
+        wordForCount({
+          count: votes,
+          one: 'vote',
+          many: 'votes',
+        },)
+      }, ${
         String(evidence.contradictionClaimCount,)
-      } content-critique claims); votes dismissed`,
+      } content-critique ${
+        wordForCount({
+          count: evidence.contradictionClaimCount,
+          one: 'claim',
+          many: 'claims',
+        },)
+      }); votes dismissed`,
     ],
   };
 }

@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts';
+import { wordForCount, } from './count-word.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import {
   type ConsolidationPolishGateOutcome,
@@ -372,7 +373,13 @@ export async function runConsolidationPolishRound(
       .split('\n',)
       .length;
     l.info(
-      `semantic wrap: rewrapped the polish before its gate, ${String(emittedLines,)} lines as emitted `
+      `semantic wrap: rewrapped the polish before its gate, ${String(emittedLines,)} ${
+        wordForCount({
+          count: emittedLines,
+          one: 'line',
+          many: 'lines',
+        },)
+      } as emitted `
         + `against ${String(writtenLines,)} as written`,
     );
   }

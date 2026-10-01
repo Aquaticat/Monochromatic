@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 //region Lane comparison faults
 // Why two lane ledgers cannot be compared, as a union the class words itself.
 // Its own file because `lane-comparison.ts` holds the comparison and its row
@@ -146,9 +148,27 @@ export function comparisonSentence({ fault, }: { readonly fault: LaneComparisonF
   if (fault.kind === 'slice-counts-differ')
     return `lanes report ${String(fault.repair,)} and ${
       String(fault.translate,)
-    } slices, so they ran over different preparations`;
+    } ${
+      wordForCount({
+        count: fault.translate,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, so they ran over different preparations`;
   if (fault.kind === 'rows-repeat')
-    return `${fault.lane} lane reports ${String(fault.rows,)} rows over ${String(fault.distinct,)} distinct slices`;
+    return `${fault.lane} lane reports ${String(fault.rows,)} ${
+      wordForCount({
+        count: fault.rows,
+        one: 'row',
+        many: 'rows',
+      },)
+    } over ${String(fault.distinct,)} distinct ${
+      wordForCount({
+        count: fault.distinct,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }`;
   if (fault.kind === 'missing-from-translate')
     return `slice ${String(fault.sliceIndex,)} is missing from the translate lane`;
   if (fault.kind === 'position-differs')

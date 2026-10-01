@@ -1,5 +1,6 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { wordForCount, } from './count-word.ts';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -412,7 +413,13 @@ export function seatReportLines(
   /**
    The one line a reader who is not grepping must see.
    */
-  const darkLine = `SEATS DARK: ${String(dark.length,)} of ${String(counts.length,)} seats asked `
+  const darkLine = `SEATS DARK: ${String(dark.length,)} of ${String(counts.length,)} ${
+    wordForCount({
+      count: counts.length,
+      one: 'seat',
+      many: 'seats',
+    },)
+  } asked `
     + `produced nothing usable this run: ${named}. A seat that fails every call is a provider that `
     + 'cannot serve it, a key that was never injected, or a model that answers nothing readable; '
     + 'the run log names which. Do not read this run as a comparison of the roster.';

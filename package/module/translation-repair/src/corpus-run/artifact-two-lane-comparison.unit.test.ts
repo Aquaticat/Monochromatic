@@ -561,7 +561,7 @@ await describe({
 
         expect(refusalOfLengthsDiffer,).toBeInstanceOf(ArtifactComparisonError,);
         expect((refusalOfLengthsDiffer as Error).message,)
-          .toBe('version 2 derives 1 comparison rows where the pipeline derives 0, so the two no longer '
+          .toBe('version 2 derives 1 comparison row where the pipeline derives 0, so the two no longer '
             + 'describe one comparison',);
       },
     },),

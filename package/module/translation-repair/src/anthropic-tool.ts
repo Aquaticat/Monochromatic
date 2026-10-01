@@ -1,4 +1,5 @@
 import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Anthropic tool
 // THE ANSWER TOOL, described twice on purpose.
@@ -186,7 +187,13 @@ export function answerToolName(
 
   if (name.length > NAME_LIMIT)
     throw new UnnameableToolError({
-      detail: `schema name is ${String(name.length,)} characters, over the ${String(NAME_LIMIT,)} the protocol allows`,
+      detail: `schema name is ${String(name.length,)} ${
+        wordForCount({
+          count: name.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      }, over the ${String(NAME_LIMIT,)} the protocol allows`,
     },);
 
   for (const character of name) {

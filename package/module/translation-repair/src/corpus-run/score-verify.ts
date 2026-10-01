@@ -5,6 +5,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   type GradedItem,
   parseGradedSheet,
@@ -223,7 +224,13 @@ async function main(): Promise<void> {
   },);
   if (graded.length !== manifest.length) {
     throw new Error(
-      `sheet carries ${String(graded.length,)} items and manifest carries ${
+      `sheet carries ${String(graded.length,)} ${
+        wordForCount({
+          count: graded.length,
+          one: 'item',
+          many: 'items',
+        },)
+      } and manifest carries ${
         String(manifest.length,)
       }; a positional join between them would mislabel verdicts, so neither file describes the other`,
     );

@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { wordForCount, } from './count-word.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
@@ -664,7 +665,13 @@ async function retainsResolvedIssues(
   if (lost.length === 0)
     return {
       retained: true,
-      findings: [`refine-recheck-passed (${String(checked.length,)} issues)`,],
+      findings: [`refine-recheck-passed (${String(checked.length,)} ${
+        wordForCount({
+          count: checked.length,
+          one: 'issue',
+          many: 'issues',
+        },)
+      })`,],
       readings: checker.readings,
     };
   return {

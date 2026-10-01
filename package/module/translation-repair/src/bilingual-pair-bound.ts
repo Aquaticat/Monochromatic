@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import {
   carriesContent,
   pastQuoteMarkers,
@@ -424,7 +425,13 @@ export function pairBoundFindings(
       `This slice is LINE-STRUCTURED and the ORIGINAL gives the line \`${english}\` twice, `
         + `once in Chinese and once in English directly beside it; that pair is ONE line whose English is `
         + `already its rendering, and the EXISTING TRANSLATION carries the block holding it as `
-        + `${String(pageBlock.count,)} lines. Yours carries ${String(candidateBlock.count,)}. Drop the second `
+        + `${String(pageBlock.count,)} ${
+          wordForCount({
+            count: pageBlock.count,
+            one: 'line',
+            many: 'lines',
+          },)
+        }. Yours carries ${String(candidateBlock.count,)}. Drop the second `
         + `rendering of the pair (the Chinese line, or a second English wording of it), keeping the wording `
         + `you chose elsewhere.`,
     ];

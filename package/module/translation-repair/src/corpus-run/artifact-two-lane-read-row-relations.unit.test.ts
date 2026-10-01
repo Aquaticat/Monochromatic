@@ -259,7 +259,7 @@ await describe({
         for (const [evidence, says,] of [
           [
             [],
-            ': expected one row per slice in both, and this lane records 0 raw slices against 1 ledger rows.',
+            ': expected one row per slice in both, and this lane records 0 raw slices against 1 ledger row.',
           ],
           [
             [{

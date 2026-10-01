@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { readJsonBeforeTrailingText, } from './json-leading-value.ts';
 import { contextRoot, } from './log-context.ts';
 import { parseModelJson, } from './model-content.ts';
@@ -90,7 +91,13 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
        Value the remainder parses to, when it does.
        */
       const value: unknown = JSON.parse(text.slice(at,),);
-      rl.debug(`read an object past an abandoned opening of ${String(at,)} chars`,);
+      rl.debug(`read an object past an abandoned opening of ${String(at,)} ${
+        wordForCount({
+          count: at,
+          one: 'char',
+          many: 'chars',
+        },)
+      }`,);
       return {
         parsed: true,
         value,

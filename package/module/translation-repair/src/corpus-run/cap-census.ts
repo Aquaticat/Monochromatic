@@ -12,6 +12,7 @@ import {
   type CapSample,
   readCapLog,
 } from './cap-census-read.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   capCensus,
   type CapCensusRow,
@@ -290,8 +291,20 @@ function providerLine({ reading, }: { readonly reading: ProviderCapReading; },):
   const share = (reading.sinceCaps === 0)
     ? 'n/a'
     : `${((reading.atCap / reading.sinceCaps) * PERCENT).toFixed(2,)}%`;
-  return `  ${reading.provider}: ${String(reading.calls,)} calls, p99 ${String(reading.p99,)}; since the caps `
-    + `${String(reading.sinceCaps,)} calls, ${String(reading.atCap,)} at the cap (${share}): `
+  return `  ${reading.provider}: ${String(reading.calls,)} ${
+    wordForCount({
+      count: reading.calls,
+      one: 'call',
+      many: 'calls',
+    },)
+  }, p99 ${String(reading.p99,)}; since the caps `
+    + `${String(reading.sinceCaps,)} ${
+      wordForCount({
+        count: reading.sinceCaps,
+        one: 'call',
+        many: 'calls',
+      },)
+    }, ${String(reading.atCap,)} at the cap (${share}): `
     + `${String(reading.atCapWithContent,)} with content, ${String(reading.atCapNoContent,)} with none, `
     + `${String(reading.atCapUnpaired,)} unpaired`;
 }
@@ -374,9 +387,33 @@ async function reportCapCensus({ line, }: { readonly line: CommandLineOf<'cap-ce
    */
   const census = capCensus({ samples, },);
   console.log(
-    `cap-census: ${String(logs.length,)} logs, ${String(passRunLogs.length,)} pass-run logs, `
-      + `${String(samples.length,)} completed calls, ${String(census.offRoster,)} on ids no card names, `
-      + `${String(unreadable,)} paths unreadable; `
+    `cap-census: ${String(logs.length,)} ${
+      wordForCount({
+        count: logs.length,
+        one: 'log',
+        many: 'logs',
+      },)
+    }, ${String(passRunLogs.length,)} pass-run ${
+      wordForCount({
+        count: passRunLogs.length,
+        one: 'log',
+        many: 'logs',
+      },)
+    }, `
+      + `${String(samples.length,)} completed ${
+        wordForCount({
+          count: samples.length,
+          one: 'call',
+          many: 'calls',
+        },)
+      }, ${String(census.offRoster,)} on ids no card names, `
+      + `${String(unreadable,)} ${
+        wordForCount({
+          count: unreadable,
+          one: 'path',
+          many: 'paths',
+        },)
+      } unreadable; `
       + `lines left out for a stamp the logger did not write: ${String(unstamped.lines,)}`,
   );
   for (const row of census.rows) {

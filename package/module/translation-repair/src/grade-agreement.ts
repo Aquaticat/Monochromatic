@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import type {
   GradedItem,
   GradeVerdict,
@@ -263,7 +264,13 @@ export function scoreGradeAgreement(
   },),);
   if (byIndex.size !== human.length)
     throw new StatedRefusalError({
-      says: `pre-grades cover ${String(byIndex.size,)} items but the graded sheet has `
+      says: `pre-grades cover ${String(byIndex.size,)} ${
+        wordForCount({
+          count: byIndex.size,
+          one: 'item',
+          many: 'items',
+        },)
+      } but the graded sheet has `
         + `${String(human.length,)}; they are not the same draw`,
     },);
 

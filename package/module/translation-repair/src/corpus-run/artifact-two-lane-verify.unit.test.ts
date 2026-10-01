@@ -322,7 +322,7 @@ await describe({
       fn: async () => {
         expect(() => {
           checking({ rows: MATCHING_ROWS.slice(0, 1,), },);
-        },).toThrow('rows for a preparation of',);
+        },).toThrow('has 1 row for a preparation of',);
       },
     },),
     it({
@@ -469,7 +469,7 @@ await describe({
             prepared: PREPARED,
             reported: FINDINGS.slice(0, 1,),
           },);
-        },).toThrow('reports 1 alignment findings for a preparation with 2',);
+        },).toThrow('reports 1 alignment finding for a preparation with 2',);
       },
     },),
     it({

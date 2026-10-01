@@ -3,6 +3,7 @@ import {
   grownSpans,
   indexWindows,
 } from './assembly-repetition-span.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Assembly repetition
 // DAMAGE THAT IS ONLY VISIBLE IN THE WHOLE DOCUMENT, which every per-slice
@@ -523,7 +524,15 @@ export function repetitionFindings(
         String(found.phrase
           .split(' ',)
           .length,)
-      } words, archive ${String(found.archiveCount,)}, shipped ${String(found.shippedCount,)})`;
+      } ${
+        wordForCount({
+          count: found.phrase
+            .split(' ',)
+            .length,
+          one: 'word',
+          many: 'words',
+        },)
+      }, archive ${String(found.archiveCount,)}, shipped ${String(found.shippedCount,)})`;
     },);
 }
 

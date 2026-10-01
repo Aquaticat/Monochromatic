@@ -443,7 +443,7 @@ await describe({
         expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
         expect(printed.lines[0],).toBe(`editor-calibrate: ${STATED_MESSAGE}`,);
         expect(printed.lines[1],).toBe('SEAT minimax-m3 asked=1 usable=0 unusable=1 threw=0',);
-        expect((printed.lines[2] ?? '').startsWith('SEATS DARK: 1 of 1 seats asked',),).toBe(true,);
+        expect((printed.lines[2] ?? '').startsWith('SEATS DARK: 1 of 1 seat asked',),).toBe(true,);
       },
     },),
     it({

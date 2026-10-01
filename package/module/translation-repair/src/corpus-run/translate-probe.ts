@@ -6,6 +6,7 @@ import {
 } from '../chunk-document.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   type ChunkSlice,
   governedSliceIndices,
@@ -212,9 +213,33 @@ async function main(): Promise<void> {
   console.log(
     `TRANSLATE ${PROBE_ENTRY}: source ${
       String(sourceBlocks,)
-    } blocks / ${String(sourceChars,)} chars, target ${
+    } ${
+      wordForCount({
+        count: sourceBlocks,
+        one: 'block',
+        many: 'blocks',
+      },)
+    } / ${String(sourceChars,)} ${
+      wordForCount({
+        count: sourceChars,
+        one: 'char',
+        many: 'chars',
+      },)
+    }, target ${
       String(targetBlocks,)
-    } blocks / ${String(targetChars,)} chars, coverage ${
+    } ${
+      wordForCount({
+        count: targetBlocks,
+        one: 'block',
+        many: 'blocks',
+      },)
+    } / ${String(targetChars,)} ${
+      wordForCount({
+        count: targetChars,
+        one: 'char',
+        many: 'chars',
+      },)
+    }, coverage ${
       ratio.toFixed(RATIO_DIGITS,)
     }${ratio < SPARSE_RATIO ? ' (barely translated)' : ''}`,
   );
@@ -235,7 +260,13 @@ async function main(): Promise<void> {
     budget: SLICE_CHAR_BUDGET,
   },);
   console.log(
-    `TRANSLATE section subdivides into ${String(slices.length,)} slices; probing the first ${String(PROBE_SLICES,)}`,
+    `TRANSLATE section subdivides into ${String(slices.length,)} ${
+      wordForCount({
+        count: slices.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }; probing the first ${String(PROBE_SLICES,)}`,
   );
 
   /**

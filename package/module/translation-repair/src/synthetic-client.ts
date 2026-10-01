@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import type {
   ChatTextReply,
@@ -243,7 +244,13 @@ export function createSyntheticClient(
         throw new SyntheticModelNotServedError({ modelId: request.modelId, },);
 
       rl.debug(
-        `-> ${request.modelId}: ${String(messageCount,)} messages`,
+        `-> ${request.modelId}: ${String(messageCount,)} ${
+          wordForCount({
+            count: messageCount,
+            one: 'message',
+            many: 'messages',
+          },)
+        }`,
       );
 
       /**
@@ -371,7 +378,13 @@ export function createSyntheticClient(
         .text
         .length;
       rl.debug(
-        `<- ${request.modelId}: ${String(textLength,)} chars${formatUsageNote({ extracted, },)}`,
+        `<- ${request.modelId}: ${String(textLength,)} ${
+          wordForCount({
+            count: textLength,
+            one: 'char',
+            many: 'chars',
+          },)
+        }${formatUsageNote({ extracted, },)}`,
       );
       reportSpend({
         provider: 'synthetic',

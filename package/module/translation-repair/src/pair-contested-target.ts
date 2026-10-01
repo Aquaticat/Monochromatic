@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 //region Contested target
 // ONE TARGET NAMED BY TWO SOURCES that no voice named together. The first
 // `noname` pass of 2026-09-09 paired the original's `## 简介` heading with the
@@ -122,7 +124,13 @@ export function settleContestedTarget<PairT extends PositionPair,>(
     keep: 'neither',
     finding: `contested target (target ${target}: sources ${earlierSource} and ${laterSource} tie at ${
       String(later.votes,)
-    } votes)`,
+    } ${
+      wordForCount({
+        count: later.votes,
+        one: 'vote',
+        many: 'votes',
+      },)
+    })`,
   };
 }
 

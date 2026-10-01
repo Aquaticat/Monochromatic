@@ -5,6 +5,7 @@ import {
   type CorpusPin,
   readCorpusFile,
 } from '../corpus-source.ts';
+import { wordForCount, } from '../count-word.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
@@ -215,7 +216,13 @@ export function locateSlice(
     // which lookup failed and how big the missing text was, and the artifact
     // holds the text for anyone who needs to read it.
     throw new ArtifactParseError({
-      path: `slice holding the replaced text of ${String(before.length,)} characters`,
+      path: `slice holding the replaced text of ${String(before.length,)} ${
+        wordForCount({
+          count: before.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      }`,
       reason:
         'present in one slice; absence means slicing no longer reproduces the run, so any comparison would use a different prompt than production sent',
     },);

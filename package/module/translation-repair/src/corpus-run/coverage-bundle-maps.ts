@@ -1,4 +1,5 @@
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import { wordForCount, } from '../count-word.ts';
 
 //region Coverage bundle maps
 // Ledger T8: which of the build's bundles carry a source map. The coverage
@@ -94,7 +95,13 @@ export function bundleMapsOf(
   }
   if (mapped.length === 0) {
     throw new StatedRefusalError({
-      says: `${distDirectory} holds ${String(bundles.length,)} bundles and no source map beside any of them, `
+      says: `${distDirectory} holds ${String(bundles.length,)} ${
+        wordForCount({
+          count: bundles.length,
+          one: 'bundle',
+          many: 'bundles',
+        },)
+      } and no source map beside any of them, `
         + 'so it is the normal build; run the census through '
         + 'mise run //package/module/translation-repair:coverage-census, which builds with maps first',
     },);
@@ -229,7 +236,13 @@ export function requireUnminifiedBuild(
   if (texts.some(carriesModuleRegion,))
     return;
   throw new StatedRefusalError({
-    says: `${distDirectory} holds ${String(texts.length,)} bundles with a source map and no module region `
+    says: `${distDirectory} holds ${String(texts.length,)} ${
+      wordForCount({
+        count: texts.length,
+        one: 'bundle',
+        many: 'bundles',
+      },)
+    } with a source map and no module region `
       + 'comment in any of them, so the build was minified, and minification folds guards into expressions '
       + 'the coverage gives no range, which would read as run (ledger M79): run the census through '
       + 'mise run //package/module/translation-repair:coverage-census, whose build keeps the code as written, '

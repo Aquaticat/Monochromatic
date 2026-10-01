@@ -192,7 +192,7 @@ await describe({
          What the verifier did.
          */
         const { status, stdout, } = verify({ runsDir, },);
-        expect(stdout.includes('1 of 1 pages carry every wording',),).toBe(true,);
+        expect(stdout.includes('1 of 1 page carries every wording its artifact promised',),).toBe(true,);
         expect(status,).toBe(0,);
       },
     },),
@@ -218,7 +218,7 @@ await describe({
          What the verifier did.
          */
         const { status, stdout, } = verify({ runsDir, },);
-        expect(stdout.includes('0 of 1 pages carry every wording',),).toBe(true,);
+        expect(stdout.includes('0 of 1 page carry every wording their artifacts promised',),).toBe(true,);
         expect(status,).toBe(0,);
       },
     },),

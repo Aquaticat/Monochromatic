@@ -10,6 +10,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import { fetchCitedReference, } from './cited-reference-fetch.ts';
 import { citedReferenceUrlsOf, } from './cited-reference-scan.ts';
@@ -216,7 +217,19 @@ export async function citedReferenceBlock(
   if (urls.length === 0)
     return '';
   if (apiKey === '') {
-    rl.warn(`${EXA_API_KEY_VAR} is not set; ${String(urls.length,)} cited references go unread`,);
+    rl.warn(`${EXA_API_KEY_VAR} is not set; ${String(urls.length,)} cited ${
+      wordForCount({
+        count: urls.length,
+        one: 'reference',
+        many: 'references',
+      },)
+    } ${
+      wordForCount({
+        count: urls.length,
+        one: 'goes',
+        many: 'go',
+      },)
+    } unread`,);
     return '';
   }
   /**
@@ -276,7 +289,13 @@ export async function citedReferenceBlock(
        */
       const { text, } = record;
       rl.info(
-        `REFERENCE ${String(index,)} ${url}: ${record.status}, ${String(text.length,)} chars${
+        `REFERENCE ${String(index,)} ${url}: ${record.status}, ${String(text.length,)} ${
+          wordForCount({
+            count: text.length,
+            one: 'char',
+            many: 'chars',
+          },)
+        }${
           wasHeld ? ', cached' : ', bought'
         }`,
       );

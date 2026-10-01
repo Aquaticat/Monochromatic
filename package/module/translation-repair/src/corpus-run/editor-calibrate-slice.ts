@@ -1,3 +1,4 @@
+import { wordForCount, } from '../count-word.ts';
 import type { IssueAuthorship, } from '../resolution-authorship.ts';
 import type { BenchSlice, } from './bench-sample.ts';
 import type { RosterModelId, } from '../roster-id.ts';
@@ -138,9 +139,27 @@ export function sliceProgressLine(
 
   return `  slice ${String(position + 1,)} of ${String(total,)} `
     + `(${slice.entryId} chunk ${String(slice.index,)}): `
-    + `${String(editorCount,)} editor rounds, `
-    + `${String(refinerCount,)} refiner rounds${reachNote}, `
-    + `${String(shipping,)} editors shipping`;
+    + `${String(editorCount,)} editor ${
+      wordForCount({
+        count: editorCount,
+        one: 'round',
+        many: 'rounds',
+      },)
+    }, `
+    + `${String(refinerCount,)} refiner ${
+      wordForCount({
+        count: refinerCount,
+        one: 'round',
+        many: 'rounds',
+      },)
+    }${reachNote}, `
+    + `${String(shipping,)} ${
+      wordForCount({
+        count: shipping,
+        one: 'editor',
+        many: 'editors',
+      },)
+    } shipping`;
 }
 
 /**

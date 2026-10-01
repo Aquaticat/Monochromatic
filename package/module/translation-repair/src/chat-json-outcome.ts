@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import { stripChannelMarker, } from './channel-marker.ts';
 import type {
@@ -283,7 +284,13 @@ export function readJsonOutcome<ValueT,>(
     rl.warn(
       `${modelId}: json false start: read the object past an abandoned opening of ${
         String(attempt.abandoned,)
-      } chars`,
+      } ${
+        wordForCount({
+          count: attempt.abandoned,
+          one: 'char',
+          many: 'chars',
+        },)
+      }`,
     );
   }
   if (attempt.trailing > 0) {

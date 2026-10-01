@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { compareCodePoints, } from './code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
@@ -336,7 +337,13 @@ export function selectRepairCandidate(
     throw new CandidateSlateError({
       message: `candidate slate holds ${
         String(claimingUnchanged.length,)
-      } candidates under the unchanged identifier, so winning it would say nothing`,
+      } ${
+        wordForCount({
+          count: claimingUnchanged.length,
+          one: 'candidate',
+          many: 'candidates',
+        },)
+      } under the unchanged identifier, so winning it would say nothing`,
     },);
   }
 

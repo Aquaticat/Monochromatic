@@ -2,7 +2,10 @@ import {
   type BilingualPair,
   pairBoundFindings,
 } from './bilingual-pair-bound.ts';
-import { wordForCount, } from './count-word.ts';
+import {
+  howOften,
+  wordForCount,
+} from './count-word.ts';
 import { isLatinLetter, } from './latin-letters.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 import {
@@ -256,7 +259,8 @@ function repeatedLines(
       return [];
     return [
       `This slice is LINE-STRUCTURED and your rendering repeats the line \`${wording}\` `
-        + `${String(times,)} times where the ORIGINAL repeats no line more than ${String(allowed,)} times. A Chinese line `
+        + `${howOften({ count: times, },)} where the ORIGINAL repeats no line more than ${howOften({ count: allowed, },)}. `
+        + 'A Chinese line '
         + `and its own English beside it are one line to render, not two. Drop the repeat, keeping `
         + `the wording you chose.`,
     ];

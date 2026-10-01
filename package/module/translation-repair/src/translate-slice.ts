@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   declaredNameRefusalFinding,
   findDroppedDeclaredNames,
@@ -197,7 +198,13 @@ export async function settleTranslateSlice(
     l.info(
       `translate slice ${String(sliceIndex,)}: holding ${
         String(protectedText.length,)
-      } characters of target-only English out of translation, `
+      } ${
+        wordForCount({
+          count: protectedText.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      } of target-only English out of translation, `
       + `judging ${String(incumbentText.length,)} of ${String(archiveText.length,)}`,
     );
 

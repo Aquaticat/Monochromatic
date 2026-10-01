@@ -192,9 +192,9 @@ async function main(): Promise<void> {
     return [...row.sliceTargetChars,];
   },);
   console.log(
-    `CENSUS ${String(rows.length,)} complete pairs, ${
+    `CENSUS complete pairs: ${String(rows.length,)}, incomplete: ${
       String(incomplete.length,)
-    } incomplete, ${String(sourceChars.length,)} slices`,
+    }, slices: ${String(sourceChars.length,)}`,
   );
 
   /**
@@ -243,7 +243,7 @@ async function main(): Promise<void> {
       || (row.unpairedTargetSections > 0);
   },);
   console.log(
-    `CENSUS unpaired sections: ${
+    `CENSUS unpaired sections reaching no slice: source ${
       String(unpaired.reduce(
         function addSourceSections(
         sum,
@@ -253,7 +253,7 @@ async function main(): Promise<void> {
       },
         0,
       ),)
-    } source and ${
+    }, target ${
       String(unpaired.reduce(
         function addTargetSections(
         sum,
@@ -263,7 +263,7 @@ async function main(): Promise<void> {
       },
         0,
       ),)
-    } target, across ${String(unpaired.length,)} entries, ${
+    }; entries: ${String(unpaired.length,)}; chars: source ${
       String(unpaired.reduce(
         function addSourceChars(
         sum,
@@ -273,7 +273,7 @@ async function main(): Promise<void> {
       },
         0,
       ),)
-    } source chars and ${
+    }, target ${
       String(unpaired.reduce(
         function addTargetChars(
         sum,
@@ -283,7 +283,7 @@ async function main(): Promise<void> {
       },
         0,
       ),)
-    } target chars, reaching no slice`,
+    }`,
   );
   for (
     const row of unpaired
@@ -299,11 +299,11 @@ async function main(): Promise<void> {
       )
   ) {
     console.log(
-      `CENSUS   ${row.entryId}: ${
+      `CENSUS   ${row.entryId}: source sections ${
         String(row.unpairedSourceSections,)
-      } source sections (${String(row.unpairedSourceChars,)} chars), ${
+      } (chars: ${String(row.unpairedSourceChars,)}), target sections ${
         String(row.unpairedTargetSections,)
-      } target sections (${String(row.unpairedTargetChars,)} chars)`,
+      } (chars: ${String(row.unpairedTargetChars,)})`,
     );
   }
 
@@ -331,7 +331,7 @@ async function main(): Promise<void> {
       },
         0,
       ),)
-    } across ${String(targetOnly.length,)} entries, ${
+    }; entries: ${String(targetOnly.length,)}; chars: ${
       String(targetOnly.reduce(
         function addChars(
         sum,
@@ -341,16 +341,14 @@ async function main(): Promise<void> {
       },
         0,
       ),)
-    } chars`,
+    }`,
   );
   for (const row of targetOnly.slice(
     0,
     REPORTED_PERCENTILES.length,
   )) {
     console.log(
-      `CENSUS   ${row.entryId}: ${String(row.targetOnlyBlocks,)} blocks, ${
-        String(row.targetOnlyChars,)
-      } chars`,
+      `CENSUS   ${row.entryId}: blocks ${String(row.targetOnlyBlocks,)}, chars ${String(row.targetOnlyChars,)}`,
     );
   }
   console.log(describeSpread({
@@ -402,7 +400,7 @@ async function main(): Promise<void> {
     REPORTED_PERCENTILES.length,
   )) {
     console.log(
-      `CENSUS   widest ${row.entryId}: ${String(row.largest,)} chars in one slice`,
+      `CENSUS   widest ${row.entryId}: chars in one slice: ${String(row.largest,)}`,
     );
   }
 }

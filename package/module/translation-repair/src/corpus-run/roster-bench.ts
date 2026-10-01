@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import { runTranslateStage, } from '../translate-stage.ts';
 import type { SelectionRound, } from '../self-preference.ts';
 import {
@@ -313,7 +314,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; }
     pin: RUN_CORPUS_PIN,
   },);
   console.log(
-    `BENCH ${String(sample.length,)} slices, widths ${
+    `BENCH ${String(sample.length,)} ${
+      wordForCount({
+        count: sample.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, widths ${
       widths.join(', ',)
     }, width ${String(repeated,)} run twice, roster of ${
       String(RUN_ROSTER.length,)
@@ -366,7 +373,14 @@ async function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; }
       }, weight ${String(row.voteWeight,)}, ${
         String(row.calls
           .length,)
-      } calls, ${String(Math.round(row.ms,),)}ms`,
+      } ${
+        wordForCount({
+          count: row.calls
+            .length,
+          one: 'call',
+          many: 'calls',
+        },)
+      }, ${String(Math.round(row.ms,),)}ms`,
     );
     await writeBenchReport({
       rows,

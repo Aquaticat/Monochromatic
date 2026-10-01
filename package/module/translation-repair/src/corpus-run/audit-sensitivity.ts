@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   type AuditVoiceRow,
   type RenderingAuditReport,
@@ -500,7 +501,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'audit-sensitivity
       rows,
     },
   },);
-  console.log(`SENSITIVITY kept ${String(rows.length,)} arms at ${keptAt}`,);
+  console.log(`SENSITIVITY kept ${String(rows.length,)} ${
+    wordForCount({
+      count: rows.length,
+      one: 'arm',
+      many: 'arms',
+    },)
+  } at ${keptAt}`,);
 }
 
 // Guarded so this runs only when INVOKED, never as an import side effect: for a

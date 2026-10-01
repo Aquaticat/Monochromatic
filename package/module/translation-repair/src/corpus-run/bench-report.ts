@@ -7,6 +7,7 @@ import type {
   CallTokens,
 } from './bench-record.ts';
 import { resolveRunsDir, } from './run-config.ts';
+import { wordForCount, } from '../count-word.ts';
 import { describeSelfPreference, } from '../self-preference-line.ts';
 import {
   type SelectionRound,
@@ -347,7 +348,13 @@ function describeRows(
   },), },);
 
   return [
-    `${String(rows.length,)} slices (${String(withIncumbent.length,)} with an incumbent)`,
+    `${String(rows.length,)} ${
+      wordForCount({
+        count: rows.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } (${String(withIncumbent.length,)} with an incumbent)`,
     `declined ${String(declined.length,)}`,
     `kept ${String(kept.length,)}`,
     `self-votes ${String(selfVotes,)}`,

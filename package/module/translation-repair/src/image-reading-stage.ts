@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import { wholeOpening, } from './code-points.ts';
 import { encodeImageAsset, } from './image-asset.ts';
 import { readingMakesSense, } from './image-reading-sense.ts';
@@ -377,7 +378,13 @@ export async function readImageAsset(
     };
   }
   if (verdict.kind === 'short') {
-    rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} characters, fewer than a transcript`,);
+    rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} ${
+      wordForCount({
+        count: trimmed.length,
+        one: 'character',
+        many: 'characters',
+      },)
+    }, fewer than a transcript`,);
     return {
       kind: 'short',
       text: trimmed,
@@ -387,7 +394,13 @@ export async function readImageAsset(
   // TRIMMED, AS THE SHORT BRANCH IS. Xu_Yushu1 (2026-09-26): a reader padded
   // 27 characters with about 2,700 ideographic spaces, and the untrimmed
   // length logged "2753 characters" for what the verdict had judged as 28.
-  rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} characters`,);
+  rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} ${
+    wordForCount({
+      count: trimmed.length,
+      one: 'character',
+      many: 'characters',
+    },)
+  }`,);
   return {
     kind: 'read',
     text: trimmed,

@@ -168,7 +168,8 @@ await describe({
       name:
         'REFUSES A RENDERING THAT REPEATS A LINE the original carries once, and accepts a refrain the '
         + 'original itself repeats (class seventy-four, 2026-09-21): a bilingual attribution '
-        + 'rendered once from its Chinese and once from its own English is the same line twice',
+        + 'rendered once from its Chinese and once from its own English is the same line twice; the finding '
+        + 'says "once" for an original that repeats no line, not "1 times" (ledger B98)',
       fn: async () => {
         /** Original quoting a film line in Chinese with its English beside it, attribution likewise. */
         const bilingual = '> 愿每只猫都能找到属于它的阳光。\n>\n> May every cat find a sunbeam that’s all its own.\n>\n'
@@ -183,6 +184,7 @@ await describe({
         expect(doubled.length,).toBe(1,);
         expect(doubled[0],).toContain('repeats the line',);
         expect(doubled[0],).toContain('From *The Cat Show*',);
+        expect(doubled[0],).toContain('2 times where the ORIGINAL repeats no line more than once.',);
         expect(compareLineCounts({
           lineStructured: true,
           sourceText: '猫醒了。\n太阳很暖。\n猫醒了。',

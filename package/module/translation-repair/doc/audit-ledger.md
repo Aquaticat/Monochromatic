@@ -16847,6 +16847,91 @@ Recurrence:
 `mistake-prevention.md`,
 "Copies of shared code".
 
+### B98: counts printed before a fixed plural
+
+Found 2026-10-01 (UTC) by a census of every count printed before a noun in the package's source
+(`plural-census-report.md` in the audit's scratch folder),
+fixed in the commit adding this entry.
+Report lines,
+log lines,
+refusals and findings wrote a count before a fixed plural,
+so a count of one printed "1 slices";
+the census read about 230 such sites across 58 nouns,
+at least five of them in findings the translating model reads on a retry.
+One had shipped and was pinned:
+`corpus-run/editor-calibrate-standing.ts` printed "1 rounds",
+and its test asserted the line as written.
+
+Each noun after a count that can be one is now chosen by `wordForCount` (`count-word.ts`),
+across 139 source files,
+from a patch an agent prepared and the session applied,
+its two conflicting hunks (an import each) added by hand.
+The patch chose nouns and left the verbs that agree with them,
+so twelve sites then read "1 entry ... are" or "1 reference go";
+each now chooses its verb by the same count,
+or reads without one.
+The patch's seven-line calls put three files over the line cap
+(`candidate-select.ts`,
+`lane-contest-driver.ts`,
+`corpus-run/slice-census.ts`);
+their log lines now print each count as a label (`ballots: 3`),
+which no count can make wrong,
+and eleven calls whose count is a member chain put each step on its own line.
+
+The count-noun scan written after the patch (`count-nouns.unit.test.ts`) found three more sites it had left:
+the line-structure finding told the translating model a rendering repeated a line
+"N times where the ORIGINAL repeats no line more than 1 times",
+since the bound is 1 for every original that repeats no line,
+and now says "more than once" through `howOften`,
+with a case;
+the window trial's "1 of 3 arms survive" chooses its verb;
+and the target-unclaimed alignment finding counts its characters.
+Two tests that pinned the old wording now read the new:
+`verify-published.unit.test.ts` ("1 of 1 page carries every wording its artifact promised")
+and `artifact-two-lane-verify.unit.test.ts` ("has 1 row for a preparation of").
+
+Model-facing text changes only at a count of one,
+in the translate stage's validation findings
+(`translate-validate-blocks.ts`,
+`bilingual-pair-bound.ts`,
+`line-structure-guard.ts`);
+the archive source context's reader count is two or more wherever it is printed,
+so its text is unchanged.
+No cache version moves:
+`TRANSLATE_SLICE_CACHE_VERSION` 15 was set after the newest slice-cache record any run wrote
+(the cache-account audit of 2026-10-01 UTC:
+newest record 2026-09-27T04:26Z,
+every version set after it),
+so no answer cached under the old wording can be served.
+
+What enforces it:
+`src/count-nouns.unit.test.ts`,
+among the source scans,
+fails on a `String(...)` interpolation followed by a noun the package counts with `wordForCount` somewhere,
+so its noun list grows as nouns are counted,
+outside the eleven sites it names with why
+(counts that cannot be one,
+and verbs after an index such as "slice 3 claims"),
+and fails when a named site no longer stands.
+A word followed by `=` is a log field's name and is passed over.
+Its fixture case runs first;
+with `document-preparation.ts`'s character count written back as a fixed plural,
+its package case failed,
+and passed once the site was restored.
+Out of its reach:
+a noun after an adjective ("3 source chars"),
+a noun split from its count across a `+` between literals,
+and a noun no `wordForCount` call names yet.
+
+Calls made here are open to veto:
+
+- log lines in the three files over the line cap print counts as labels rather than sentences;
+- verbs agree through a second `wordForCount` call rather than a rewording.
+
+Recurrence:
+`mistake-prevention.md`,
+"Counts in printed text".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

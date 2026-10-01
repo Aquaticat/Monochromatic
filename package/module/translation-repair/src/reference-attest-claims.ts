@@ -1,5 +1,6 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { hashContent, } from './document-node.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   computeIssueClaimId,
   type IssueClaim,
@@ -176,7 +177,13 @@ export function screenAttestedAdditions(
     findings.push(
       `addition claim rejected before the panel, reference-attested: "${claim.summary}" is on "${detail.archiveQuote}", which reference ${
         String(detail.reference,)
-      } states (${String(detail.voices,)} of ${String(detail.heard,)} voices)`,
+      } states (${String(detail.voices,)} of ${String(detail.heard,)} ${
+        wordForCount({
+          count: detail.heard,
+          one: 'voice',
+          many: 'voices',
+        },)
+      })`,
     );
   }
   return {

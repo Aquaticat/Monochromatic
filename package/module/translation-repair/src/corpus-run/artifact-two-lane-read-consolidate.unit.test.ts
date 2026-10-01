@@ -470,7 +470,7 @@ await describe({
           },
         },);
 
-        expect(read.reason,).toBe(`${REFUSED_AT}.slices[0].gate.usable: expected 1 matching stored ballots.`,);
+        expect(read.reason,).toBe(`${REFUSED_AT}.slices[0].gate.usable: expected 1 matching stored ballot.`,);
       },
     },),
 

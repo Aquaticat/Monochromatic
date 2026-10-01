@@ -1,4 +1,5 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
+import { wordForCount, } from '../count-word.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
@@ -103,7 +104,13 @@ export function assertEvidenceMatchesLedger(
       path,
       reason: `one row per slice in both, and this lane records ${
         String(evidence.length,)
-      } raw slices against ${String(ledger.length,)} ledger rows`,
+      } raw slices against ${String(ledger.length,)} ledger ${
+        wordForCount({
+          count: ledger.length,
+          one: 'row',
+          many: 'rows',
+        },)
+      }`,
     },);
   }
   for (const [

@@ -9,6 +9,7 @@ import {
   stringField,
 } from './anthropic-whole-message.ts';
 import { contextRoot, } from './log-context.ts';
+import { wordForCount, } from './count-word.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import {
   type ExtractedCompletion,
@@ -637,7 +638,13 @@ export function extractAnthropicCompletion(
   // content.
   if ((toolAnswer !== '') && (prose !== ''))
     rl.info(
-      `tool answer kept, ${String(prose.length,)} characters of prose set aside`,
+      `tool answer kept, ${String(prose.length,)} ${
+        wordForCount({
+          count: prose.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      } of prose set aside`,
     );
 
   return {

@@ -50,7 +50,7 @@ await describe({
                 to: '1',
               },
             ],
-            skipped: [ 'slice 2 references 1 distinct notes in the original and 2 in the archive', ],
+            skipped: [ 'slice 2 references 1 distinct note in the original and 2 in the archive', ],
           },
         },),).toStrictEqual({
           kind: 'relabel',
@@ -74,7 +74,7 @@ await describe({
               to: '1',
             },
           ],
-          skipped: [ 'slice 2 references 1 distinct notes in the original and 2 in the archive', ],
+          skipped: [ 'slice 2 references 1 distinct note in the original and 2 in the archive', ],
         },);
       },
     },),

@@ -2,6 +2,7 @@ import { join, } from 'node:path';
 
 import { LEDGER_DIR, } from '../candidate-ledger.ts';
 import { wholeOpening, } from '../code-points.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   type LedgerReading,
   readLedgerDirectory,
@@ -162,7 +163,13 @@ function printSummary(
   const summary = summariseLedger({ rounds: reading.rounds, },);
 
   console.log(
-    `${String(summary.abstentions,)} ballots named nothing, `
+    `${String(summary.abstentions,)} ${
+      wordForCount({
+        count: summary.abstentions,
+        one: 'ballot',
+        many: 'ballots',
+      },)
+    } named nothing, `
       + `${String(summary.namedMissing,)} named a candidate the slate did not have`,
   );
   for (const work of summary.models) {
@@ -174,9 +181,27 @@ function printSummary(
       : `${((work.votes / work.ballots) * PERCENT).toFixed(1,)}%`;
 
     console.log(
-      `  ${work.model}: ${String(work.candidates,)} candidates, ${String(work.wins,)} chosen, `
-        + `${share} of ${String(work.ballots,)} disinterested ballots, `
-        + `${String(work.selfVotes,)} self-votes`,
+      `  ${work.model}: ${String(work.candidates,)} ${
+        wordForCount({
+          count: work.candidates,
+          one: 'candidate',
+          many: 'candidates',
+        },)
+      }, ${String(work.wins,)} chosen, `
+        + `${share} of ${String(work.ballots,)} disinterested ${
+          wordForCount({
+            count: work.ballots,
+            one: 'ballot',
+            many: 'ballots',
+          },)
+        }, `
+        + `${String(work.selfVotes,)} ${
+          wordForCount({
+            count: work.selfVotes,
+            one: 'self-vote',
+            many: 'self-votes',
+          },)
+        }`,
     );
   }
   console.log(
@@ -222,7 +247,13 @@ function printSeat(
   },);
 
   console.log(
-    `${wanted} wrote ${String(written.length,)} candidates, `
+    `${wanted} wrote ${String(written.length,)} ${
+      wordForCount({
+        count: written.length,
+        one: 'candidate',
+        many: 'candidates',
+      },)
+    }, `
       + `${String(chosen.length,)} chosen`,
   );
   written.forEach(function show(
@@ -283,7 +314,13 @@ async function reportLedger({ line, }: { readonly line: CommandLineOf<'ledger-re
     rounds,
   } = reading;
 
-  console.log(`ledger-report: ${String(rounds.length,)} contests under ${runsDir}`,);
+  console.log(`ledger-report: ${String(rounds.length,)} ${
+    wordForCount({
+      count: rounds.length,
+      one: 'contest',
+      many: 'contests',
+    },)
+  } under ${runsDir}`,);
   printRefusals({ reading, },);
 
   if (refused.length > 0)

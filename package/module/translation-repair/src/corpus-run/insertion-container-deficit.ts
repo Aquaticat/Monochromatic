@@ -1,6 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { ChunkPair, } from '../chunk-document.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   type CarriedContainer,
   type ContainerReading,
@@ -219,7 +220,13 @@ function spendDeficit(
         ...splitFinding({ row, },),
         `${CONTAINER_DEFICIT_ADMITTED_FINDING} (slice ${String(row.sliceIndex,)} inside ${open.name} of slices ${
           String(open.sliceIndex,)
-        } to ${String(close.sliceIndex,)}: the original writes ${String(container.sourceBlocks,)} blocks there, `
+        } to ${String(close.sliceIndex,)}: the original writes ${String(container.sourceBlocks,)} ${
+          wordForCount({
+            count: container.sourceBlocks,
+            one: 'block',
+            many: 'blocks',
+          },)
+        } there, `
           + `the archive ${String(container.targetBlocks,)})`,
       ],
     );

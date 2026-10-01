@@ -1,6 +1,7 @@
 import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   isMissingCorpusObject,
   listCorpusPeople,
@@ -365,9 +366,21 @@ async function runRecallBenchmark({ line, }: { readonly line: CommandLineOf<'rec
   // already kept and the run refuses here rather than print such a line.
   if ((scorecard.dispatchedEntries === 0) || (scorecard.plantedSeeds === 0))
     throw new StatedRefusalError({
-      says: `the bench dispatched ${String(scorecard.dispatchedEntries,)} entries and planted ${
+      says: `the bench dispatched ${String(scorecard.dispatchedEntries,)} ${
+        wordForCount({
+          count: scorecard.dispatchedEntries,
+          one: 'entry',
+          many: 'entries',
+        },)
+      } and planted ${
         String(scorecard.plantedSeeds,)
-      } seeds, so none of its rates measures anything; the scorecard is kept at ${keptAt}`,
+      } ${
+        wordForCount({
+          count: scorecard.plantedSeeds,
+          one: 'seed',
+          many: 'seeds',
+        },)
+      }, so none of its rates measures anything; the scorecard is kept at ${keptAt}`,
     },);
 
   console.log(

@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { alignHeadingsForced, } from './align-headings-forced.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   chunkByHeadings,
   chunkLabel,
@@ -297,7 +298,13 @@ export async function buySectionPairing(
       pairs: cachedPairs,
       findings: cachedFindings,
     } = cached;
-    l.info(`section pairing resumed: ${String(cachedPairs.length,)} correspondences`,);
+    l.info(`section pairing resumed: ${String(cachedPairs.length,)} ${
+      wordForCount({
+        count: cachedPairs.length,
+        one: 'correspondence',
+        many: 'correspondences',
+      },)
+    }`,);
     return {
       pairing: cachedPairs,
       findings: cachedFindings,
@@ -305,10 +312,28 @@ export async function buySectionPairing(
   }
 
   l.warn(
-    `the aligner refused sections on this document: asking ${String(modelIds.length,)} voices `
-      + `which of ${String(sourceChunks.length,)} original sections render as which of ${
+    `the aligner refused sections on this document: asking ${String(modelIds.length,)} ${
+      wordForCount({
+        count: modelIds.length,
+        one: 'voice',
+        many: 'voices',
+      },)
+    } `
+      + `which of ${String(sourceChunks.length,)} original ${
+        wordForCount({
+          count: sourceChunks.length,
+          one: 'section',
+          many: 'sections',
+        },)
+      } render as which of ${
         String(targetChunks.length,)
-      } translation sections`,
+      } translation ${
+        wordForCount({
+          count: targetChunks.length,
+          one: 'section',
+          many: 'sections',
+        },)
+      }`,
   );
 
   /**

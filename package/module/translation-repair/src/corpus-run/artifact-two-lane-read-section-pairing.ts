@@ -7,6 +7,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { ArtifactSectionCorrespondence, } from './artifact-two-lane-contract.ts';
 
 //region Artifact version 2 section pairing read
@@ -196,7 +197,13 @@ export function parseSectionPairing(
   if (pairs.length > alignmentPairCount)
     throw new ArtifactParseError({
       path: `${path}.pairs`,
-      reason: `at most ${String(alignmentPairCount,)} pairs, which is how many sections this preparation aligned`,
+      reason: `at most ${String(alignmentPairCount,)} ${
+        wordForCount({
+          count: alignmentPairCount,
+          one: 'pair',
+          many: 'pairs',
+        },)
+      }, which is how many sections this preparation aligned`,
     },);
   assertPairsClimb({
     pairs,

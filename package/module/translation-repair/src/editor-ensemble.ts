@@ -10,6 +10,7 @@ import {
   type PatchOperation,
   type PatchOutcome,
 } from './apply-patch.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   type Candidate,
   describeProducer,
@@ -469,7 +470,14 @@ export async function selectChunkPatch(
     `chunk patch from ${describeProducer(outcome.producer,)} won weight ${String(outcome.voteWeight,)} of ${
       String(outcome.tally
         .ballots,)
-    } ballots`,
+    } ${
+      wordForCount({
+        count: outcome.tally
+          .ballots,
+        one: 'ballot',
+        many: 'ballots',
+      },)
+    }`,
   );
   return {
     patch: outcome.value,

@@ -2,6 +2,7 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { errorName, } from '../error-name.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   artifactFileNameOf,
   artifactsDirOf,
@@ -247,12 +248,24 @@ async function reportEntry(
   );
   if (wrongLength && (weight.kind === 'weighed'))
     console.log(
-      `  WRONG LENGTH: page is ${String(weight.actual - weight.expected,)} characters off what the `
+      `  WRONG LENGTH: page is ${String(weight.actual - weight.expected,)} ${
+        wordForCount({
+          count: weight.actual - weight.expected,
+          one: 'character',
+          many: 'characters',
+        },)
+      } off what the `
         + 'archive plus every slice change comes to. Text no slice decided on was lost or added',
     );
   for (const gone of missing) {
     console.log(
-      `  MISSING slice ${String(gone.sliceIndex,)}, ${String(gone.characters,)} characters the page `
+      `  MISSING slice ${String(gone.sliceIndex,)}, ${String(gone.characters,)} ${
+        wordForCount({
+          count: gone.characters,
+          one: 'character',
+          many: 'characters',
+        },)
+      } the page `
         + 'does not carry in order',
     );
   }
@@ -331,8 +344,20 @@ async function verifyPublished(): Promise<void> {
 
   if (published.kind === 'unreadable')
     console.log(
-      `verify-published: NO PUBLISHED TREE (${published.reason}). All `
-        + `${String(settledCount,)} entries the run settled are unpublished, and the next pass `
+      `verify-published: NO PUBLISHED TREE (${published.reason}). `
+        + `${String(settledCount,)} settled ${
+          wordForCount({
+            count: settledCount,
+            one: 'entry',
+            many: 'entries',
+          },)
+        } ${
+          wordForCount({
+            count: settledCount,
+            one: 'is',
+            many: 'are',
+          },)
+        } unpublished, and the next pass `
         + 'started in this runs directory writes each from its artifact',
     );
 
@@ -436,7 +461,19 @@ async function verifyPublished(): Promise<void> {
 
   console.log(
     `verify-published: ${String(agreed,)} of ${String(agreements.length,)} `
-      + `pages carry every wording their artifact promised; ${String(weighed,)} of those at the length `
+      + `${
+        wordForCount({
+          count: agreements.length,
+          one: 'page',
+          many: 'pages',
+        },)
+      } ${
+        wordForCount({
+          count: agreed,
+          one: 'carries every wording its artifact promised',
+          many: 'carry every wording their artifacts promised',
+        },)
+      }; ${String(weighed,)} of those at the length `
       + `it implies, ${String(unweighed,)} UNWEIGHED because the artifact predates the stored archive text`,
   );
 }

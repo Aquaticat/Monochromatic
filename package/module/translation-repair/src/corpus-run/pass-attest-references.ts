@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { BenchSeating, } from '../bench-seating.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   attestCitedReferences,
   type ReferenceAttestation,
@@ -95,7 +96,13 @@ export async function attestPassReferences(
    Roster the round is asked of.
    */
   const roster = seating.modelIds ?? modelIds;
-  l.debug(`${attestPassReferences.name}: attesting on ${String(roster.length,)} seats`,);
+  l.debug(`${attestPassReferences.name}: attesting on ${String(roster.length,)} ${
+    wordForCount({
+      count: roster.length,
+      one: 'seat',
+      many: 'seats',
+    },)
+  }`,);
   return await attestCitedReferences({
     client,
     modelIds: roster,

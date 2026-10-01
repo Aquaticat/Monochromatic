@@ -2322,3 +2322,31 @@ a tool fragment with no `partial_json`,
 and the deltas still passed over;
 `anthropic-delta-scan.unit.test.ts` holds the frames the scanner counts as unreadable
 beside the ones it reads or passes over.
+
+## Counts in printed text
+
+What happened:
+report lines,
+log lines and findings printed a count before a fixed plural,
+so a count of one read "1 slices",
+and a test pinned one such line as correct;
+a finding the translating model reads told it "no line more than 1 times".
+The patch that chose the nouns left the verbs agreeing with them ("1 entry ... are"),
+and its calls put three files over the line cap (ledger B98).
+
+The rule:
+a noun after a count that can be one is chosen by `wordForCount`,
+a verb agreeing with that count by the same count,
+and a count of occurrences by `howOften` (`count-word.ts`);
+a log line may instead print the count as a label (`ballots: 3`),
+which no count can make wrong.
+A test asserts a count line at one as well as at many.
+
+What enforces it:
+`src/count-nouns.unit.test.ts`,
+among the source scans,
+fails on a `String(...)` interpolation followed by a noun the package counts with `wordForCount` elsewhere,
+outside the sites it names with why;
+a verb,
+or a noun after an adjective,
+is reviewed by hand.

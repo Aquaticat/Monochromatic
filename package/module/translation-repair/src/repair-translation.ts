@@ -10,6 +10,7 @@ import {
   sliceTagged,
 } from './log-context.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import {
   assessNonTranslationDominance,
@@ -182,7 +183,13 @@ export async function repairPreparedDocument(
   rl.info(
     `${String(prepared.alignmentPairCount,)} aligned units, ${
       String(slices.length,)
-    } slices, ${String(alignmentFindings.length,)} alignment findings`,
+    } ${
+      wordForCount({
+        count: slices.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, ${String(alignmentFindings.length,)} alignment findings`,
   );
 
   /**

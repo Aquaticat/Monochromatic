@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
+import { wordForCount, } from '../count-word.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { readArtifactProbe, } from '../artifact-probe-read.ts';
 import {
@@ -303,7 +304,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'score-probe'>; },
     throw new Error(
       `sheet and manifest disagree about the draw: sheet has ${
         String(graded.length,)
-      } items, manifest has ${String(manifest.items
+      } ${
+        wordForCount({
+          count: graded.length,
+          one: 'item',
+          many: 'items',
+        },)
+      }, manifest has ${String(manifest.items
         .length,)}. Joining them by position would mislabel every verdict after `
         + `the first divergence.`,
     );

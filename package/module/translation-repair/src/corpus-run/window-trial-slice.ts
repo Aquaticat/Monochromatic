@@ -18,6 +18,7 @@ import {
   TRIAL_ARM_SET,
 } from './window-trial-order.ts';
 import { TRIAL_ARMS, } from './window-trial-report.ts';
+import { wordForCount, } from '../count-word.ts';
 
 //region Window trial slice
 // One slice's three arms, over ONE slate.
@@ -145,7 +146,13 @@ export async function runSliceArms(
     l.warn(
       `${entryId}/${String(sliceIndex,)}: ${
         String(TRIAL_ARM_SET.length - owed.length,)
-      } of ${String(TRIAL_ARM_SET.length,)} arms survive from an interrupted run; `
+      } of ${String(TRIAL_ARM_SET.length,)} arms ${
+        wordForCount({
+          count: TRIAL_ARM_SET.length - owed.length,
+          one: 'survives',
+          many: 'survive',
+        },)
+      } from an interrupted run; `
         + `skipping rather than finishing them over a slate the earlier arms `
         + `never saw`,
     );

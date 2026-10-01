@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import { isDecisionStateOverContext, } from './decision-context-refusal.ts';
 import type {
   DecisionAnswer,
@@ -176,7 +177,13 @@ export async function attemptDecisionCall<ValueT,>(
        */
       const { contextLength, } = decisionsCardOf({ modelId, },);
       l.warn(
-        `${stage} ${modelId}: the endpoint refused a state of ${String(stateJson.length,)} characters as past `
+        `${stage} ${modelId}: the endpoint refused a state of ${String(stateJson.length,)} ${
+          wordForCount({
+            count: stateJson.length,
+            one: 'character',
+            many: 'characters',
+          },)
+        } as past `
           + `the seat's ${String(contextLength,)}-token context, seat out of reach for this ballot`,
       );
       return {

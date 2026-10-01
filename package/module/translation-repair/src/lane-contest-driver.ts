@@ -354,7 +354,7 @@ export async function contestDocumentLanes(
    */
   const compared = projected.comparison
     .length;
-  dl.info(`lane contest: ${String(eligible.size,)}/${String(compared,)} slices differ`,);
+  dl.info(`lane contest: slices that differ: ${String(eligible.size,)} of ${String(compared,)}`,);
 
   /**
    Cache-eligible purchases in this document, shared by every contested row.

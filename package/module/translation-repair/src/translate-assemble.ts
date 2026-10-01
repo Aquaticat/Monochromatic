@@ -11,6 +11,7 @@ import {
   orderedChangeSets,
   shippedSliceTexts,
 } from './assembly-invariant.ts';
+import { wordForCount, } from './count-word.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { buildSliceSelections, } from './slice-selection.ts';
 import { alignmentRefusals, } from './translate-alignment-refusals.ts';
@@ -114,7 +115,13 @@ export function assembleTranslation(
     return heardNobody({ record, },);
   },);
   l.info(
-    `translated ${String(settled.length,)} slices (${String(resumedSliceCount,)} resumed): `
+    `translated ${String(settled.length,)} ${
+      wordForCount({
+        count: settled.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } (${String(resumedSliceCount,)} resumed): `
     // A GUARD rather than ALIGNMENT, which is the name of one of the three
     // dispositions this count covers and sent a reader looking for an alignment
     // finding the other two never wrote. Which guard refused which slice is in
@@ -183,7 +190,14 @@ export function assembleTranslation(
       `withdrew ${
         String(guarded.revertedChunkIndices
           .length,)
-      } replacements at assembly; the findings say why`,
+      } ${
+        wordForCount({
+          count: guarded.revertedChunkIndices
+            .length,
+          one: 'replacement',
+          many: 'replacements',
+        },)
+      } at assembly; the findings say why`,
     );
   }
   // THE FINDINGS REACH THE LOG. An entry the pass stops before its artifact is

@@ -1,4 +1,5 @@
 import { alignDocumentSections, } from '../chunk-document.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
@@ -100,7 +101,13 @@ export function archiveBlockSourceContexts(
       return [
         `CORROBORATED PICTURE SOURCE SUPPORT ${assetName} (${
           String(readerCount,)
-        } readers agree; the transcript the others carry most)\n${chosen.text}`,
+        } ${
+          wordForCount({
+            count: readerCount,
+            one: 'reader',
+            many: 'readers',
+          },)
+        } agree; the transcript the others carry most)\n${chosen.text}`,
       ];
     },);
     return [

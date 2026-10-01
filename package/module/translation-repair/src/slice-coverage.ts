@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import type { DocumentNode, } from './document-node.ts';
 
 //region Slice coverage
@@ -174,14 +175,32 @@ export function blockPlacementSentence(
       missing,
       expected,
     } = placement;
-    return `${String(missing.length,)} of ${String(expected,)} blocks reached no slice: ${missing.join(', ',)}`;
+    return `${String(missing.length,)} of ${String(expected,)} ${
+      wordForCount({
+        count: expected,
+        one: 'block',
+        many: 'blocks',
+      },)
+    } reached no slice: ${missing.join(', ',)}`;
   }
   if (placement.kind === 'repeated') {
     /**
      Ids placed more than once.
      */
     const { repeated, } = placement;
-    return `${String(repeated.length,)} blocks were placed more than once: ${repeated.join(', ',)}`;
+    return `${String(repeated.length,)} ${
+      wordForCount({
+        count: repeated.length,
+        one: 'block',
+        many: 'blocks',
+      },)
+    } ${
+      wordForCount({
+        count: repeated.length,
+        one: 'was',
+        many: 'were',
+      },)
+    } placed more than once: ${repeated.join(', ',)}`;
   }
 
   /**

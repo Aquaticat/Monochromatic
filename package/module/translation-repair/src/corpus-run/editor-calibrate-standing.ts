@@ -1,4 +1,5 @@
 import { producerModelIds, } from '../candidate-select-model.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   coverageGapLines,
   readStandingCoverage,
@@ -92,7 +93,13 @@ export function sliceStandingLines(
       },);
 
     return [
-      `  slice ${String(index + 1,)}: ${String(rounds.length,)} rounds; ${cells.join('; ',)}`,
+      `  slice ${String(index + 1,)}: ${String(rounds.length,)} ${
+        wordForCount({
+          count: rounds.length,
+          one: 'round',
+          many: 'rounds',
+        },)
+      }; ${cells.join('; ',)}`,
     ];
   },);
 }
@@ -151,8 +158,20 @@ export function standingReportLines(
   /**
    Heading every report starts with.
    */
-  const heading = `\n${seat} standing over ${String(rounds.length,)} judged rounds, `
-    + `from ${String(contributed.length,)} of ${String(perSlice.length,)} slices`;
+  const heading = `\n${seat} standing over ${String(rounds.length,)} judged ${
+    wordForCount({
+      count: rounds.length,
+      one: 'round',
+      many: 'rounds',
+    },)
+  }, `
+    + `from ${String(contributed.length,)} of ${String(perSlice.length,)} ${
+      wordForCount({
+        count: perSlice.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }`;
 
   if (rounds.length === 0) {
     return [

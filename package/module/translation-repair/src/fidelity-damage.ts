@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { deriveOmissionSeeds, } from './derive-seeds.ts';
 import {
   sharedNumber,
@@ -185,7 +186,13 @@ export function deleteOneSentence(
     damageKind: 'deletion',
     damagedText,
     changedChars: needle.length,
-    damageDetail: `removed a sentence of ${String(needle.length,)} characters`,
+    damageDetail: `removed a sentence of ${String(needle.length,)} ${
+      wordForCount({
+        count: needle.length,
+        one: 'character',
+        many: 'characters',
+      },)
+    }`,
   };
 }
 
@@ -291,7 +298,13 @@ export function insertBorrowedSentence(
     damageKind: 'insertion',
     damagedText: seeded.seededText,
     changedChars: borrowed.length,
-    damageDetail: `inserted a borrowed sentence of ${String(borrowed.length,)} characters`,
+    damageDetail: `inserted a borrowed sentence of ${String(borrowed.length,)} ${
+      wordForCount({
+        count: borrowed.length,
+        one: 'character',
+        many: 'characters',
+      },)
+    }`,
   };
 }
 

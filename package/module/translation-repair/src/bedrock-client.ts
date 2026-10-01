@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import {
   BEDROCK_AUTH_HEADER,
@@ -306,7 +307,13 @@ export function createBedrockClient(
         .messages
         .length;
 
-      rl.debug(`-> ${servedId}: ${String(messageCount,)} messages`,);
+      rl.debug(`-> ${servedId}: ${String(messageCount,)} ${
+        wordForCount({
+          count: messageCount,
+          one: 'message',
+          many: 'messages',
+        },)
+      }`,);
 
       /**
        Per-exchange deadline armed inside the slot so local queue wait
@@ -481,7 +488,13 @@ export function createBedrockClient(
         .length;
 
       rl.debug(
-        `<- ${servedId}: ${String(textLength,)} chars${formatUsageNote({ extracted, },)}`,
+        `<- ${servedId}: ${String(textLength,)} ${
+          wordForCount({
+            count: textLength,
+            one: 'char',
+            many: 'chars',
+          },)
+        }${formatUsageNote({ extracted, },)}`,
       );
       /**
        Usage the provider reported, absent where it did not.

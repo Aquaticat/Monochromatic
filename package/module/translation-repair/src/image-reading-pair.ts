@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   type OcrReading,
   solidCharacters,
@@ -353,7 +354,13 @@ export async function readImagePair(
     rl.info(
       `${assetName}: no text to read, so no model was asked (${
         String(ocr.characters,)
-      } characters from the deterministic reader)`,
+      } ${
+        wordForCount({
+          count: ocr.characters,
+          one: 'character',
+          many: 'characters',
+        },)
+      } from the deterministic reader)`,
     );
     return {
       kind: 'no-text',
@@ -429,7 +436,13 @@ export async function readImagePair(
     const modelId = readerModelIds[index];
     if (modelId === undefined) {
       throw new Error(
-        `readImagePair settled ${String(settled.length,)} readers for ${assetName} `
+        `readImagePair settled ${String(settled.length,)} ${
+          wordForCount({
+            count: settled.length,
+            one: 'reader',
+            many: 'readers',
+          },)
+        } for ${assetName} `
           + `and then could not name the one at index ${String(index,)}`,
       );
     }
@@ -496,9 +509,27 @@ export async function readImagePair(
      */
     const characters = (ocr.kind === 'read') ? solidCharacters({ text: ocr.text, },) : 0;
     rl.info(
-      `${assetName}: ${String(littleText.length,)} of ${String(readerModelIds.length,)} readers report little or `
+      `${assetName}: ${String(littleText.length,)} of ${String(readerModelIds.length,)} ${
+        wordForCount({
+          count: readerModelIds.length,
+          one: 'reader',
+          many: 'readers',
+        },)
+      } ${
+        wordForCount({
+          count: littleText.length,
+          one: 'reports',
+          many: 'report',
+        },)
+      } little or `
         + `no text (${littleText.join(', ',)}), so the picture is confirmed textless past the deterministic `
-        + `reader's ${String(characters,)} characters`,
+        + `reader's ${String(characters,)} ${
+          wordForCount({
+            count: characters,
+            one: 'character',
+            many: 'characters',
+          },)
+        }`,
     );
     return {
       kind: 'no-text',
@@ -523,7 +554,13 @@ export async function readImagePair(
        The few characters it read.
        */
       const { text, } = reading;
-      return `${modelId}: short reading of ${String(text.length,)} characters`;
+      return `${modelId}: short reading of ${String(text.length,)} ${
+        wordForCount({
+          count: text.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      }`;
     }
     return '';
   },);
@@ -537,7 +574,13 @@ export async function readImagePair(
     rl.warn(
       `${assetName}: ${String(readings.length,)} of ${
         String(readerModelIds.length,)
-      } readers produced a reading, so nothing is corroborated (${
+      } ${
+        wordForCount({
+          count: readerModelIds.length,
+          one: 'reader',
+          many: 'readers',
+        },)
+      } produced a reading, so nothing is corroborated (${
         perReader.filter(function stated(entry,): boolean {
           return entry !== '';
         },)
@@ -575,7 +618,13 @@ export async function readImagePair(
   } = closest;
   if (vouched.length < 2) {
     rl.warn(
-      `${assetName}: no two of ${String(readings.length,)} readers agree about what it says, `
+      `${assetName}: no two of ${String(readings.length,)} ${
+        wordForCount({
+          count: readings.length,
+          one: 'reader',
+          many: 'readers',
+        },)
+      } agree about what it says, `
         + `closest ${closestLeft.modelId} and ${closestRight.modelId} at overlap ${closest
           .overlap
           .toFixed(LOGGED_OVERLAP_PLACES,)}`,
@@ -595,7 +644,13 @@ export async function readImagePair(
   rl.info(
     `${assetName}: corroborated by ${String(vouched.length,)} of ${
       String(readings.length,)
-    } readers at overlap ${closest
+    } ${
+      wordForCount({
+        count: readings.length,
+        one: 'reader',
+        many: 'readers',
+      },)
+    } at overlap ${closest
       .overlap
       .toFixed(LOGGED_OVERLAP_PLACES,)}`,
   );

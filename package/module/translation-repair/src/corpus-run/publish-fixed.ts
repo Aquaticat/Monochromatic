@@ -15,6 +15,7 @@ import type {
 import type {
   ChunkPair,
 } from '../chunk-document.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   type SliceReplacement,
   spliceSlices,
@@ -453,8 +454,20 @@ export async function publishFixedPage(
     text: pageText,
   },);
   l.info(
-    `publish: wrote ${String(replacements.length,)} slices into a page of `
-      + `${String(pageText.length,)} characters`,
+    `publish: wrote ${String(replacements.length,)} ${
+      wordForCount({
+        count: replacements.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } into a page of `
+      + `${String(pageText.length,)} ${
+        wordForCount({
+          count: pageText.length,
+          one: 'character',
+          many: 'characters',
+        },)
+      }`,
   );
   for (const finding of destinations.findings)
     l.warn(`publish: ${finding}`,);

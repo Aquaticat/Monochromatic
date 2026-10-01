@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   type ClaimAttribution,
   type ClaimEmission,
@@ -251,7 +252,13 @@ export async function runCriticStage(
   l.info(
     `critic stage: ${String(reports.length,)}/${String(criticModelIds.length,)} heard, ${
       String(claims.length,)
-    } claims, ${String(nonTranslationVotes,)} non-translation votes`,
+    } ${
+      wordForCount({
+        count: claims.length,
+        one: 'claim',
+        many: 'claims',
+      },)
+    }, ${String(nonTranslationVotes,)} non-translation votes`,
   );
 
   return {

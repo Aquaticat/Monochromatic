@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Placement layout
 // Whether a preparation's target spans can be written back into the document
@@ -174,9 +175,21 @@ function placementSentence({ fault, }: { readonly fault: PlacementFault; },): st
       + 'reads as an empty span rather than as the mistake it is';
   }
   if (fault.kind === 'fat-anchor') {
-    return `says it is an insertion while covering ${String(fault.covered,)} characters, ${
+    return `says it is an insertion while covering ${String(fault.covered,)} ${
+      wordForCount({
+        count: fault.covered,
+        one: 'character',
+        many: 'characters',
+      },)
+    }, ${
       String(fault.wordingLength,)
-    } of wording and ${String(fault.nodeCount,)} nodes; a place covers none of the three`;
+    } of wording and ${String(fault.nodeCount,)} ${
+      wordForCount({
+        count: fault.nodeCount,
+        one: 'node',
+        many: 'nodes',
+      },)
+    }; a place covers none of the three`;
   }
   if (fault.kind === 'foreign-text') {
     return `carries text the document does not hold between ${String(fault.startOffset,)} and ${

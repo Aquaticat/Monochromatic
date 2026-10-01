@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import { runIntroducedDefectProbe, } from '../introduced-defect-probe.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
@@ -123,7 +124,19 @@ async function main(): Promise<void> {
   console.log(
     `SENSITIVITY production sends list=${PRODUCTION_LIST}; ${
       String(SENSITIVITY_ARMS.length,)
-    } arms follow`,
+    } ${
+      wordForCount({
+        count: SENSITIVITY_ARMS.length,
+        one: 'arm',
+        many: 'arms',
+      },)
+    } ${
+      wordForCount({
+        count: SENSITIVITY_ARMS.length,
+        one: 'follows',
+        many: 'follow',
+      },)
+    }`,
   );
 
   // Sequential so this never competes with a running corpus pass for the

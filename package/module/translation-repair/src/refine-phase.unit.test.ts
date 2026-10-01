@@ -692,7 +692,7 @@ await describe({
           checkerVerdict: 'not-fixed',
         },);
         expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
-        expect(phase.findings,).toContain('refine-recheck-passed (1 issues)',);
+        expect(phase.findings,).toContain('refine-recheck-passed (1 issue)',);
         const reading = phase.outcomes[0]?.recheckReadings['adjudicated/open'];
         expect(reading?.ballots.length,).toBe(MODELS.checkerModelIds.length,);
       },

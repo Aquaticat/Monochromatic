@@ -8,6 +8,7 @@ import {
   listCorpusPeople,
   readCorpusFile,
 } from '../corpus-source.ts';
+import { wordForCount, } from '../count-word.ts';
 import { classifyDisplacement, } from '../displacement-class.ts';
 import { sliceSizesOf, } from '../displacement-ratio.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
@@ -275,7 +276,13 @@ async function main(): Promise<void> {
         0,
         PROTOCOL_LOG_CHARS,
       )
-    }; ${String(done.size,)} arms already bought`,
+    }; ${String(done.size,)} ${
+      wordForCount({
+        count: done.size,
+        one: 'arm',
+        many: 'arms',
+      },)
+    } already bought`,
   );
 
   /**
@@ -362,7 +369,13 @@ async function main(): Promise<void> {
         // them says the fault is the run's rather than the slices'.
         if (bought.refusedInARow >= REFUSALS_BEFORE_STOPPING)
           throw new StatedRefusalError({
-            says: `${String(bought.refusedInARow,)} slices refused in a row, which is `
+            says: `${String(bought.refusedInARow,)} ${
+              wordForCount({
+                count: bought.refusedInARow,
+                one: 'slice',
+                many: 'slices',
+              },)
+            } refused in a row, which is `
               + `a fault in the run rather than in the slices; stopping before `
               + `the rest of the draw is spent producing slates nobody judges`,
           },);
@@ -412,7 +425,13 @@ async function main(): Promise<void> {
   }
 
   l.info(
-    `bought ${String(bought.count,)} slices this run; ${
+    `bought ${String(bought.count,)} ${
+      wordForCount({
+        count: bought.count,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } this run; ${
       String(bought.refused,)
     } refused`,
   );
@@ -424,7 +443,13 @@ async function main(): Promise<void> {
       `${report.sliceClass}: window moved replacement by ${
         report.pairedExcess
           .toFixed(EXCESS_DIGITS,)
-      } over ${String(report.entries,)} entries; ${
+      } over ${String(report.entries,)} ${
+        wordForCount({
+          count: report.entries,
+          one: 'entry',
+          many: 'entries',
+        },)
+      }; ${
         report.arms
           .map(function toRate(rate,) {
             return `${rate.arm} ${String(rate.replaced,)}/${String(rate.trials,)}`;

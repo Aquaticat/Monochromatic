@@ -466,7 +466,7 @@ export function collectDestinations(
  @example
  ```ts
  const check = droppedDestinations({ sourceText, pageText, archiveText, },);
- if (check.dropped.length > 0) l.warn(`${String(check.dropped.length,)} destinations dropped`,);
+ if (check.dropped.length > 0) l.warn(`dropped destinations: ${check.dropped.join(', ',)}`,);
  ```
  */
 export function droppedDestinations(

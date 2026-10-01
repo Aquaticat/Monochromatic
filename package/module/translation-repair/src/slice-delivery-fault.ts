@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 //region Slice delivery faults
 // What a lane's slice reports say that cannot both be true, as a union the
 // class words itself. Its own file because `slice-delivery.ts` holds the
@@ -252,7 +254,13 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
     } carries a trimmed replacement and is not named as shipped, so the trim describes text the document `
       + 'does not carry';
   if (fault.kind === 'set-repeats')
-    return `the ${fault.set} set names ${String(fault.named,)} slices and ${
+    return `the ${fault.set} set names ${String(fault.named,)} ${
+      wordForCount({
+        count: fault.named,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } and ${
       String(fault.distinct,)
     } of them are distinct, so it counts at least one slice twice`;
   if (fault.kind === 'wording-count')
@@ -267,7 +275,13 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
   if (fault.kind === 'set-names-unproduced')
     return `an index set names slice ${String(fault.sliceIndex,)}, which this preparation of ${
       String(fault.sliceCount,)
-    } slices never produced`;
+    } ${
+      wordForCount({
+        count: fault.sliceCount,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } never produced`;
   if (fault.kind === 'wording-index-differs')
     return `slice at position ${String(fault.position,)} is indexed ${
       String(fault.sliceIndex,)

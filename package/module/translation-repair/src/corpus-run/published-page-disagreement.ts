@@ -1,4 +1,5 @@
 import type { MissingWording, } from './published-page-check.ts';
+import { wordForCount, } from '../count-word.ts';
 
 //region Published page disagreement
 // The refusal a page earns when it does not carry what its artifact says would
@@ -78,7 +79,13 @@ function disagreementSentence(
       + `the page in slice order, at slices ${
         missing
           .map(function named(gone,): string {
-            return `${String(gone.sliceIndex,)} (${String(gone.characters,)} characters)`;
+            return `${String(gone.sliceIndex,)} (${String(gone.characters,)} ${
+              wordForCount({
+                count: gone.characters,
+                one: 'character',
+                many: 'characters',
+              },)
+            })`;
           },)
           .join(', ',)
       }`;
@@ -92,7 +99,13 @@ function disagreementSentence(
     ? ''
     : ', which a filled anchor makes a floor rather than an equality';
 
-  return `page is ${String(disagreement.actual - disagreement.expected,)} characters off the `
+  return `page is ${String(disagreement.actual - disagreement.expected,)} ${
+    wordForCount({
+      count: disagreement.actual - disagreement.expected,
+      one: 'character',
+      many: 'characters',
+    },)
+  } off the `
     + `${String(disagreement.expected,)} the archive plus every slice change comes to${caveat}`
     + '. Text no slice decided on was lost or added';
 }

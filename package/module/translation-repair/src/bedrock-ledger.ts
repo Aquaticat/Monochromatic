@@ -10,6 +10,7 @@ import {
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
@@ -563,7 +564,13 @@ export function createBedrockLedger(
     const remainingUsd = creditUsd - spentUsd;
 
     rl.debug(
-      `${path}: ${String(entries.length,)} calls, ${spentUsd.toFixed(SPENT_LOG_DECIMALS,)} USD spent of ${
+      `${path}: ${String(entries.length,)} ${
+        wordForCount({
+          count: entries.length,
+          one: 'call',
+          many: 'calls',
+        },)
+      }, ${spentUsd.toFixed(SPENT_LOG_DECIMALS,)} USD spent of ${
         String(creditUsd,)
       } (${reckonedUsd.toFixed(SPENT_LOG_DECIMALS,)} of it reckoned), ${remainingUsd.toFixed(2,)} USD left`,
     );

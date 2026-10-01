@@ -1,4 +1,5 @@
 import type { SampleGeneration, } from '../sample-manifest.ts';
+import { wordForCount, } from '../count-word.ts';
 
 import type { EligibleEntries, } from './artifact-eligible.ts';
 import {
@@ -84,7 +85,13 @@ export function poolGeneration(
   if (digests.length > 1)
     return {
       kind: 'unrecorded',
-      reason: `pool holds ${String(digests.length,)} generations, which the pool guard should have refused`,
+      reason: `pool holds ${String(digests.length,)} ${
+        wordForCount({
+          count: digests.length,
+          one: 'generation',
+          many: 'generations',
+        },)
+      }, which the pool guard should have refused`,
     };
 
   return {

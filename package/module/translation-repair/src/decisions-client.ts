@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
@@ -158,7 +159,13 @@ export function createDecisionsClient(
      */
     const questionCount = Object.keys(request.questions,)
       .length;
-    rl.debug(`-> ${servedId}: ${String(questionCount,)} questions`,);
+    rl.debug(`-> ${servedId}: ${String(questionCount,)} ${
+      wordForCount({
+        count: questionCount,
+        one: 'question',
+        many: 'questions',
+      },)
+    }`,);
 
     /**
      Raw reply, retried on transient statuses.
@@ -192,7 +199,13 @@ export function createDecisionsClient(
      */
     const answerCount = Object.keys(read.answers,)
       .length;
-    rl.debug(`<- ${servedId}: ${String(answerCount,)} answers`,);
+    rl.debug(`<- ${servedId}: ${String(answerCount,)} ${
+      wordForCount({
+        count: answerCount,
+        one: 'answer',
+        many: 'answers',
+      },)
+    }`,);
     reportSpend({
       provider: 'openrouter',
       label: servedId,

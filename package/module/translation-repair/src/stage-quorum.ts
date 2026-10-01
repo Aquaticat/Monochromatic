@@ -6,6 +6,7 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   askingWindow,
   type FanOutMode,
@@ -609,7 +610,13 @@ export async function gatherStageVoices<ValueT,>(
     l.warn(
       `${stage}: bench short of quorum, reachable ${String(quorum.reachable,)} of ${
         String(modelIds.length,)
-      }; closing on ${String(quorum.needed,)} voices`,
+      }; closing on ${String(quorum.needed,)} ${
+        wordForCount({
+          count: quorum.needed,
+          one: 'voice',
+          many: 'voices',
+        },)
+      }`,
     );
   }
 

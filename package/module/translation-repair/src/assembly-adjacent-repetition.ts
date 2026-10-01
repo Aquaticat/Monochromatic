@@ -1,3 +1,5 @@
+import { wordForCount, } from './count-word.ts';
+
 //region Assembly adjacent repetition
 // THE DOCUMENT-SCALE CHECK CANNOT SEE THE DAMAGE IT WAS BUILT FOR, which is why
 // this file exists beside it rather than inside it.
@@ -383,7 +385,19 @@ export function adjacentRepetitionFindings(
     .map(function toFinding(found,): string {
       return `adjacent-repetition (slices ${String(found.earlierSliceIndex,)} and ${
         String(found.laterSliceIndex,)
-      }, ${String(found.words,)} words, ${String(found.characters,)} characters, archive ${
+      }, ${String(found.words,)} ${
+        wordForCount({
+          count: found.words,
+          one: 'word',
+          many: 'words',
+        },)
+      }, ${String(found.characters,)} ${
+        wordForCount({
+          count: found.characters,
+          one: 'character',
+          many: 'characters',
+        },)
+      }, archive ${
         String(found.archiveOccurrences,)
       })`;
     },);

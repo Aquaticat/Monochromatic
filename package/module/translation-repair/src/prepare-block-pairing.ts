@@ -8,6 +8,7 @@ import type { PairedReading, } from './image-reading-pair.ts';
 import { pairingPictureContext, } from './pairing-pictures.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   pairBlocksWithRoster,
   type PairedSectionRecord,
@@ -124,7 +125,13 @@ export async function prepareBlockPairing(
       pictureReadings,
     },);
   if (pictureContext !== '')
-    pl.info(`section ${String(pairIndex,)} pairs with ${String(pictureContext.length,)} characters of picture transcript in the sheet`,);
+    pl.info(`section ${String(pairIndex,)} pairs with ${String(pictureContext.length,)} ${
+      wordForCount({
+        count: pictureContext.length,
+        one: 'character',
+        many: 'characters',
+      },)
+    } of picture transcript in the sheet`,);
   /**
    Shared current numbering, definition exemptions and unchanged cache identity.
    */

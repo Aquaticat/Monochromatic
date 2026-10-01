@@ -3,6 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { wholeOpening, } from '../code-points.ts';
 import { errorName, } from '../error-name.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   createRunClient,
   RUN_PER_CALL_TIMEOUT_MS,
@@ -191,7 +192,13 @@ async function reportModelHealth(): Promise<void> {
 
   l.info(
     `ROSTER ${String(RUN_ROSTER.length - unreachable.length,)} of `
-      + `${String(RUN_ROSTER.length,)} models answered${
+      + `${String(RUN_ROSTER.length,)} ${
+        wordForCount({
+          count: RUN_ROSTER.length,
+          one: 'model',
+          many: 'models',
+        },)
+      } answered${
         (unreachable.length === 0)
           ? ''
           : `; unreachable: ${unreachable.join(', ',)}`

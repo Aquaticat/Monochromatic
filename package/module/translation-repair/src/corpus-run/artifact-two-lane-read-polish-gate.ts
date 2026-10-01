@@ -7,6 +7,7 @@ import {
   requireString,
   requireStringList,
 } from '../artifact-guard.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { ConsolidationPolishGateOutcome, } from '../consolidation-polish-gate-stage.ts';
 import type {
   ConsolidationPolishBallot,
@@ -248,7 +249,13 @@ export function parsePolishGate(
   if (usable !== ballots.length) {
     throw new ArtifactParseError({
       path: `${path}.usable`,
-      reason: `${String(ballots.length,)} matching stored ballots`,
+      reason: `${String(ballots.length,)} matching stored ${
+        wordForCount({
+          count: ballots.length,
+          one: 'ballot',
+          many: 'ballots',
+        },)
+      }`,
     },);
   }
   return {

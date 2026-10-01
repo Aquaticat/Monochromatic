@@ -1,4 +1,5 @@
 import { artifactsDirOf, } from './artifact-file-name.ts';
+import { wordForCount, } from '../count-word.ts';
 import { gatherAttributionEntries, } from './attribution-read.ts';
 import {
   buildAttributionReport,
@@ -172,7 +173,13 @@ async function main(): Promise<void> {
 
   if (malformed.length > 0) {
     console.log(
-      `WARNING ${String(malformed.length,)} artifacts could not be read and are `
+      `WARNING ${String(malformed.length,)} ${
+        wordForCount({
+          count: malformed.length,
+          one: 'artifact',
+          many: 'artifacts',
+        },)
+      } could not be read and are `
         + 'in NEITHER population this report counts, so every count is over the rest. Named '
         + 'rather than summarized, because a truncated artifact is a different '
         + 'problem from a malformed one:',

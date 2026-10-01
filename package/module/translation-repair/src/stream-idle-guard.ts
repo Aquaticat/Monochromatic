@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import { monotonicMs, } from './monotonic-clock.ts';
 
@@ -270,7 +271,13 @@ export function armIdleGuard(
     },)
       .warn(
         `${label}: no bytes for ${String(expiredMs,)}ms during ${phase}`
-        + ` after ${String(state.chars,)} chars; aborting for retry`,
+        + ` after ${String(state.chars,)} ${
+          wordForCount({
+            count: state.chars,
+            one: 'char',
+            many: 'chars',
+          },)
+        }; aborting for retry`,
       );
     controller.abort(new StreamStalledError({
       label,

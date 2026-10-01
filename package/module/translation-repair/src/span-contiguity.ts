@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import { wordForCount, } from './count-word.ts';
 import type { DocumentNode, } from './document-node.ts';
 
 //region Span contiguity
@@ -197,7 +198,13 @@ export function assertSpanContiguity(
       throw new SpanContiguityError({
         message: `slice ${String(span.sliceIndex,)} spans ${
           String(covered.length,)
-        } blocks of the translation and carries ${String(carriedCount,)}: a block inside the range `
+        } ${
+          wordForCount({
+            count: covered.length,
+            one: 'block',
+            many: 'blocks',
+          },)
+        } of the translation and carries ${String(carriedCount,)}: a block inside the range `
           + 'that the slice never saw is replaced anyway, because assembly writes over the range '
           + 'rather than over the nodes',
       },);

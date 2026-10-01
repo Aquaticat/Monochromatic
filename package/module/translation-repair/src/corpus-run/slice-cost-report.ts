@@ -1,5 +1,6 @@
 import { readFile, } from 'node:fs/promises';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   readSliceCosts,
   type SliceCostRow,
@@ -369,11 +370,23 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
 
   console.log('\nSPREAD, WHICH THE BANDS AVERAGE AWAY',);
   console.log(
-    `  cheapest  ${cheapChars.padStart(COUNT_WIDTH,)} chars`
+    `  cheapest  ${cheapChars.padStart(COUNT_WIDTH,)} ${
+      wordForCount({
+        count: cheapest.sourceChars,
+        one: 'char',
+        many: 'chars',
+      },)
+    }`
       + `  ${cheapText.padStart(MINUTES_WIDTH,)} min  ${cheapest.lane}`,
   );
   console.log(
-    `  dearest   ${dearChars.padStart(COUNT_WIDTH,)} chars`
+    `  dearest   ${dearChars.padStart(COUNT_WIDTH,)} ${
+      wordForCount({
+        count: dearest.sourceChars,
+        one: 'char',
+        many: 'chars',
+      },)
+    }`
       + `  ${dearText.padStart(MINUTES_WIDTH,)} min  ${dearest.lane}`,
   );
   console.log(`  ratio     ${ratio}x`,);

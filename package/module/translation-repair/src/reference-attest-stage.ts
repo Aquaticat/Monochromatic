@@ -5,6 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   buildReferenceAttestConfirmMessages,
   confirmedDetails,
@@ -254,9 +255,21 @@ async function confirmCandidates(
     details,
     confirmFindings: [
       ...gather.findings,
-      `reference attestation confirmed ${String(details.length,)} of ${String(candidates.length,)} candidates by ${
+      `reference attestation confirmed ${String(details.length,)} of ${String(candidates.length,)} ${
+        wordForCount({
+          count: candidates.length,
+          one: 'candidate',
+          many: 'candidates',
+        },)
+      } by ${
         String(heard,)
-      } voices`,
+      } ${
+        wordForCount({
+          count: heard,
+          one: 'voice',
+          many: 'voices',
+        },)
+      }`,
     ],
   };
 }
@@ -447,7 +460,13 @@ export async function attestCitedReferences(
         ? []
         : [`reference attestation discarded ${String(answered - verified.length,)} of ${
           String(answered,)
-        } items whose quotes were not found word for word`,]),
+        } ${
+          wordForCount({
+            count: answered,
+            one: 'item',
+            many: 'items',
+          },)
+        } whose quotes were not found word for word`,]),
     ],
   };
 }

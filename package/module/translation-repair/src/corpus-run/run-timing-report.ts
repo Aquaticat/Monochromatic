@@ -8,6 +8,7 @@ import {
   type RunTiming,
   summariseRounds,
 } from './run-timing-read.ts';
+import { wordForCount, } from '../count-word.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 
@@ -204,7 +205,19 @@ async function reportRunTiming({ line, }: { readonly line: CommandLineOf<'run-ti
   const reading = readRunTiming({ lines, },);
 
   console.log(
-    `run-timing-report: ${String(paths.length,)} logs, ${String(lines.length,)} lines`,
+    `run-timing-report: ${String(paths.length,)} ${
+      wordForCount({
+        count: paths.length,
+        one: 'log',
+        many: 'logs',
+      },)
+    }, ${String(lines.length,)} ${
+      wordForCount({
+        count: lines.length,
+        one: 'line',
+        many: 'lines',
+      },)
+    }`,
   );
   printRounds({ reading, },);
 

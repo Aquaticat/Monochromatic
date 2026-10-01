@@ -266,7 +266,7 @@ await describe({
           },);
         },);
         expect(refusalOfOverlongPairing,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfOverlongPairing as Error).message,).toContain('at most 1 pairs',);
+        expect((refusalOfOverlongPairing as Error).message,).toContain('at most 1 pair',);
       },
     },),
     it({

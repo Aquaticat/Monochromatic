@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { wordForCount, } from './count-word.ts';
 import { extractAnthropicCompletion, } from './anthropic-completion.ts';
 import { requireWholeAnthropicMessage, } from './anthropic-whole-message.ts';
 import { buildAnthropicBody, } from './anthropic-request.ts';
@@ -346,7 +347,13 @@ export function createHyperClient(
         .messages
         .length;
 
-      rl.debug(`-> ${servedId}: ${String(messageCount,)} messages`,);
+      rl.debug(`-> ${servedId}: ${String(messageCount,)} ${
+        wordForCount({
+          count: messageCount,
+          one: 'message',
+          many: 'messages',
+        },)
+      }`,);
 
       /**
        Per-exchange deadline armed inside the slot so local queue wait
@@ -446,7 +453,13 @@ export function createHyperClient(
         .length;
 
       rl.debug(
-        `<- ${servedId}: ${String(textLength,)} chars${formatUsageNote({ extracted, },)}`,
+        `<- ${servedId}: ${String(textLength,)} ${
+          wordForCount({
+            count: textLength,
+            one: 'char',
+            many: 'chars',
+          },)
+        }${formatUsageNote({ extracted, },)}`,
       );
       reportSpend({
         provider: 'hyper',

@@ -9,6 +9,7 @@ import {
   isMissingCorpusObject,
   readCorpusBytes,
 } from '../corpus-source.ts';
+import { wordForCount, } from '../count-word.ts';
 import {
   photoPath,
   photoReferences,
@@ -117,7 +118,13 @@ export async function gatherEntryPictures(
     }
   },),);
 
-  gl.info(`gathered ${String(gathered.size,)} of ${String(named.size,)} pictures for ${entryId}`,);
+  gl.info(`gathered ${String(gathered.size,)} of ${String(named.size,)} ${
+    wordForCount({
+      count: named.size,
+      one: 'picture',
+      many: 'pictures',
+    },)
+  } for ${entryId}`,);
   return gathered;
 }
 

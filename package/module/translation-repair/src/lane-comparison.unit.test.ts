@@ -593,7 +593,7 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect((caught as Error).message,).toBe('repair lane reports 2 rows over 1 distinct slices',);
+        expect((caught as Error).message,).toBe('repair lane reports 2 rows over 1 distinct slice',);
       },
     },),
     it({
@@ -625,7 +625,7 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect((caught as Error).message,).toBe('translate lane reports 2 rows over 1 distinct slices',);
+        expect((caught as Error).message,).toBe('translate lane reports 2 rows over 1 distinct slice',);
       },
     },),
     it({

@@ -7,6 +7,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { wordForCount, } from '../count-word.ts';
 import type {
   ArtifactNaturalnessFinding,
   ArtifactNaturalnessReviewRound,
@@ -225,7 +226,13 @@ export function parseNaturalnessReviewRound(
   if (unreachable > quorumOver) {
     throw new ArtifactParseError({
       path: `${path}.unreachable`,
-      reason: `at most the ${String(quorumOver,)} seats of the bench`,
+      reason: `at most the ${String(quorumOver,)} ${
+        wordForCount({
+          count: quorumOver,
+          one: 'seat',
+          many: 'seats',
+        },)
+      } of the bench`,
     },);
   }
   /**

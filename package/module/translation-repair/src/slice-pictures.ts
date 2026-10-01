@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import type { PairedReading, } from './image-reading-pair.ts';
 import { photoReferences, } from './photo-reference.ts';
 
@@ -329,7 +330,19 @@ export function slicePictureContexts(
   // is the quietest possible way to be wrong about what a passage depicts.
   if (contexts.size !== entries.length) {
     throw new Error(
-      `slice pictures: ${String(entries.length,)} slices carry ${
+      `slice pictures: ${String(entries.length,)} ${
+        wordForCount({
+          count: entries.length,
+          one: 'slice',
+          many: 'slices',
+        },)
+      } ${
+        wordForCount({
+          count: entries.length,
+          one: 'carries',
+          many: 'carry',
+        },)
+      } ${
         String(contexts.size,)
       } distinct stamped indices, so at least two name one slice and one slice's pictures were dropped`,
     );

@@ -4,6 +4,7 @@ import type {
   ConsolidateGateOutcome,
   GateShipped,
 } from './consolidate-gate-stage.ts';
+import { wordForCount, } from './count-word.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
@@ -166,7 +167,13 @@ export function wrapConsolidation(
     l.info(
       `semantic wrap: skipped on a line-structured slice, shipping ${
         String(producedLines,)
-      } lines as the producer wrote them`,
+      } ${
+        wordForCount({
+          count: producedLines,
+          one: 'line',
+          many: 'lines',
+        },)
+      } as the producer wrote them`,
     );
     return {
       ships: 'consolidated',
@@ -232,7 +239,13 @@ export function wrapConsolidation(
 
   if (rewrapped)
     l.info(
-      `semantic wrap: rewrapped a shipped consolidation, ${String(emittedLines,)} lines as emitted `
+      `semantic wrap: rewrapped a shipped consolidation, ${String(emittedLines,)} ${
+        wordForCount({
+          count: emittedLines,
+          one: 'line',
+          many: 'lines',
+        },)
+      } as emitted `
         + `against ${String(writtenLines,)} as written`,
     );
 

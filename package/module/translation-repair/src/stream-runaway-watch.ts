@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import type {
   ChannelDelta,
   StreamChannel,
@@ -497,7 +498,13 @@ export class StreamDegenerateError extends Error {
   ) {
     super(
       `${label}: ended a runaway call, ${channel} channel repeated itself at `
-        + `${distinctRatio.toFixed(RATIO_DIGITS,)} distinct over ${String(charsSeen,)} characters`,
+        + `${distinctRatio.toFixed(RATIO_DIGITS,)} distinct over ${String(charsSeen,)} ${
+          wordForCount({
+            count: charsSeen,
+            one: 'character',
+            many: 'characters',
+          },)
+        }`,
     );
     this.name = 'StreamDegenerateError';
     this.label = label;

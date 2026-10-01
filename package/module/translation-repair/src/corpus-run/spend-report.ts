@@ -1,5 +1,6 @@
 import { readFile, } from 'node:fs/promises';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   priceTally,
   type PricedSeat,
@@ -96,7 +97,13 @@ function pricedLine(
     : `${((seat.totalCredits / totalCredits) * PERCENT).toFixed(1,)}%`;
 
   return `  ${seat.model}: ${asCredits({ credits: seat.totalCredits, },)} credits (${share}) `
-    + `over ${String(seat.calls,)} calls, `
+    + `over ${String(seat.calls,)} ${
+      wordForCount({
+        count: seat.calls,
+        one: 'call',
+        many: 'calls',
+      },)
+    }, `
     + `in ${String(seat.promptTokens,)}=${asCredits({ credits: seat.inputCredits, },)} `
     + `out ${String(seat.completionTokens,)}=${asCredits({ credits: seat.outputCredits, },)}${
      reckonedNote({ seat, },)}`;
@@ -166,10 +173,22 @@ function usdLine(
    */
   const floor = (uncosted === 0)
     ? ''
-    : `, a floor: ${String(uncosted,)} calls carried no cost`;
+    : `, a floor: ${String(uncosted,)} ${
+      wordForCount({
+        count: uncosted,
+        one: 'call',
+        many: 'calls',
+      },)
+    } carried no cost`;
 
   return `  ${seat.model}: ${asUsd({ usd: seat.costUsd, },)} USD (${share}) `
-    + `over ${String(seat.calls,)} calls, `
+    + `over ${String(seat.calls,)} ${
+      wordForCount({
+        count: seat.calls,
+        one: 'call',
+        many: 'calls',
+      },)
+    }, `
     + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}${floor}${
      reckonedNote({ seat, },)}`;
 }
@@ -187,7 +206,13 @@ function usdLine(
  ```
  */
 function tokensOnlyLine({ seat, }: { readonly seat: SeatSpend; },): string {
-  return `  ${seat.model}: ${String(seat.calls,)} calls, `
+  return `  ${seat.model}: ${String(seat.calls,)} ${
+    wordForCount({
+      count: seat.calls,
+      one: 'call',
+      many: 'calls',
+    },)
+  }, `
     + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}${
      reckonedNote({ seat, },)}`;
 }
@@ -276,7 +301,13 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
 
   if (cost.unreportedCalls > 0) {
     console.log(
-      `FLOOR, NOT A TOTAL: ${String(cost.unreportedCalls,)} calls reported no usage block, so their `
+      `FLOOR, NOT A TOTAL: ${String(cost.unreportedCalls,)} ${
+        wordForCount({
+          count: cost.unreportedCalls,
+          one: 'call',
+          many: 'calls',
+        },)
+      } reported no usage block, so their `
         + 'tokens are in no figure of this report',
     );
   }
@@ -325,8 +356,26 @@ async function reportSpendCost({ line, }: { readonly line: CommandLineOf<'spend-
     .length;
 
   console.log(
-    `spend-report: ${String(paths.length,)} logs, ${String(lines.length,)} lines, `
-      + `${String(seatCount,)} seats`,
+    `spend-report: ${String(paths.length,)} ${
+      wordForCount({
+        count: paths.length,
+        one: 'log',
+        many: 'logs',
+      },)
+    }, ${String(lines.length,)} ${
+      wordForCount({
+        count: lines.length,
+        one: 'line',
+        many: 'lines',
+      },)
+    }, `
+      + `${String(seatCount,)} ${
+        wordForCount({
+          count: seatCount,
+          one: 'seat',
+          many: 'seats',
+        },)
+      }`,
   );
 
   if (seatCount === 0) {
@@ -339,7 +388,13 @@ async function reportSpendCost({ line, }: { readonly line: CommandLineOf<'spend-
 
   if (tally.unreadableLines > 0) {
     console.log(
-      `${String(tally.unreadableLines,)} lines carried the marker and would not parse, so this report's totals `
+      `${String(tally.unreadableLines,)} ${
+        wordForCount({
+          count: tally.unreadableLines,
+          one: 'line',
+          many: 'lines',
+        },)
+      } carried the marker and would not parse, so this report's totals `
         + 'are short by whatever those calls cost',
     );
   }
@@ -362,9 +417,21 @@ async function reportSpendCost({ line, }: { readonly line: CommandLineOf<'spend-
 
   if (reckonedCalls > 0) {
     console.log(
-      `RECKONED, NOT REPORTED: ${String(reckonedCalls,)} calls were written as reckonings, an attempt `
-        + 'abandoned before it finished or a Bedrock attempt at its bound, so their tokens and cost in the '
-        + 'figures of this report are estimates or bounds rather than what the wire said (ledger P14)',
+      `RECKONED, NOT REPORTED: ${String(reckonedCalls,)} ${
+        wordForCount({
+          count: reckonedCalls,
+          one: 'call',
+          many: 'calls',
+        },)
+      } ${
+        wordForCount({
+          count: reckonedCalls,
+          one: 'was',
+          many: 'were',
+        },)
+      } written as reckonings, an attempt `
+        + 'abandoned before it finished or a Bedrock attempt at its bound, so the tokens and cost this report '
+        + 'shows for such calls are estimates or bounds rather than what the wire said (ledger P14)',
     );
   }
 }

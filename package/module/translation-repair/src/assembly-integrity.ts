@@ -23,6 +23,7 @@ import {
   type SliceReplacement,
   spliceSlices,
 } from './splice-slices.ts';
+import { wordForCount, } from './count-word.ts';
 
 export {
   introducedFootnoteFindings,
@@ -391,7 +392,13 @@ export function guardFootnoteAssembly(
         findings.push(
           `assembly-net-zero-canonicalized (${
             String(standing.length,)
-          } slices), since their replacements reassemble to the archive text`,
+          } ${
+            wordForCount({
+              count: standing.length,
+              one: 'slice',
+              many: 'slices',
+            },)
+          }), since their replacements reassemble to the archive text`,
         );
         withdrawn.push(...standing.map(function toIndex(replacement,): number {
           return replacement.sliceIndex;
@@ -522,7 +529,13 @@ export function guardFootnoteAssembly(
         findings.push(
           `assembly-withdrew-every-replacement (${
             String(standing.length,)
-          } slices), since no slice could be blamed for the defect`,
+          } ${
+            wordForCount({
+              count: standing.length,
+              one: 'slice',
+              many: 'slices',
+            },)
+          }), since no slice could be blamed for the defect`,
         );
         withdrawn.push(...standing.map(function toIndex(replacement,): number {
           return replacement.sliceIndex;
@@ -560,7 +573,13 @@ export function guardFootnoteAssembly(
       },);
     }
     throw new Error(
-      `footnote assembly guard ran ${String(rounds + 1,)} rounds `
+      `footnote assembly guard ran ${String(rounds + 1,)} ${
+        wordForCount({
+          count: rounds + 1,
+          one: 'round',
+          many: 'rounds',
+        },)
+      } `
         + 'without settling, which its own bound makes impossible: every round '
         + 'withdraws at least one replacement or trims one definition block',
     );

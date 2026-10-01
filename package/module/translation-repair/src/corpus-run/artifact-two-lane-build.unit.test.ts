@@ -466,7 +466,7 @@ await describe({
         },);
 
         expect(refusalOfBothLedgersAreShort,).toBeInstanceOf(ArtifactPreparationMismatchError,);
-        expect((refusalOfBothLedgersAreShort as Error).message,).toContain('1 rows for a preparation of 2 slices',);
+        expect((refusalOfBothLedgersAreShort as Error).message,).toContain('1 row for a preparation of 2 slices',);
       },
     },),
     it({

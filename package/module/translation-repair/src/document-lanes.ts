@@ -10,6 +10,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import { assertDeliveryAgreesWithDocument, } from './delivery-invariants.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import type { PairedReading, } from './image-reading-pair.ts';
@@ -350,7 +351,14 @@ export async function runDocumentLanes(
   },);
   dl.info(
     `both lanes over ${String(prepared.slices
-      .length,)} slices, repair first`,
+      .length,)} ${
+      wordForCount({
+        count: prepared.slices
+          .length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }, repair first`,
   );
 
   /**
@@ -448,7 +456,14 @@ export async function runDocumentLanes(
     `repair ${repair.status}, translate changed ${
       String(translate.changedSliceCount,)
     }/${String(prepared.slices
-      .length,)} slices; neither was chosen over the other`,
+      .length,)} ${
+      wordForCount({
+        count: prepared.slices
+          .length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }; neither was chosen over the other`,
   );
 
   /**

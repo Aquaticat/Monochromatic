@@ -1,5 +1,6 @@
 import type { ProducerStanding, } from './producer-standing.ts';
 import type { RosterModelId, } from './roster-id.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Producer silence
 // WHO IS MISSING FROM A STANDING TABLE, and which of the reasons it is.
@@ -264,7 +265,13 @@ function silentSeatLine(
   /**
    Fraction of the roster the table describes, shared by both wordings.
    */
-  const covers = `covers ${String(described,)} of ${String(seats,)} seats`;
+  const covers = `covers ${String(described,)} of ${String(seats,)} ${
+    wordForCount({
+      count: seats,
+      one: 'seat',
+      many: 'seats',
+    },)
+  }`;
 
   /**
    Where the counts are, shared by both wordings and pinned by a test.

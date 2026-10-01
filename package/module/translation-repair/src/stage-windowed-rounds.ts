@@ -6,6 +6,7 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   askingWindow,
   type FanOutMode,
@@ -131,7 +132,13 @@ function closedOn(
   const { quorum, } = closing;
   if (quorum.short) {
     l.warn(
-      `${stage}: closed on a short bench, ${String(quorum.reachable,)} of ${String(quorumOver,)} seats `
+      `${stage}: closed on a short bench, ${String(quorum.reachable,)} of ${String(quorumOver,)} ${
+        wordForCount({
+          count: quorumOver,
+          one: 'seat',
+          many: 'seats',
+        },)
+      } `
         + `within reach, quorum ${String(quorum.needed,)} of ${String(quorum.benchQuorum,)}`,
     );
   }

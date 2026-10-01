@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { StreamCutShortError, } from './stream-cut.ts';
 import { StreamDegenerateError, } from './stream-runaway-watch.ts';
 import { StreamOverrunError, } from './stream-overrun.ts';
@@ -57,7 +58,13 @@ const RATIO_DIGITS = 4;
  */
 export function describeAbandon({ error, }: { readonly error: unknown; },): string {
   if (error instanceof StreamOverrunError)
-    return `overran ${error.channel} at ${String(error.charsSeen,)} chars `
+    return `overran ${error.channel} at ${String(error.charsSeen,)} ${
+      wordForCount({
+        count: error.charsSeen,
+        one: 'char',
+        many: 'chars',
+      },)
+    } `
       + `against a bound of ${String(error.cap,)}`;
 
   if (error instanceof StreamDegenerateError) {
@@ -71,7 +78,13 @@ export function describeAbandon({ error, }: { readonly error: unknown; },): stri
      */
     const ratio = distinctRatio.toFixed(RATIO_DIGITS,);
     return `degenerate in ${error.channel} at ${ratio} distinct over `
-      + `${String(error.charsSeen,)} chars`;
+      + `${String(error.charsSeen,)} ${
+        wordForCount({
+          count: error.charsSeen,
+          one: 'char',
+          many: 'chars',
+        },)
+      }`;
   }
 
   // Any class this does not recognise is named rather than rendered: a

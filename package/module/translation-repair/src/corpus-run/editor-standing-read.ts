@@ -1,5 +1,6 @@
 import { join, } from 'node:path';
 
+import { wordForCount, } from '../count-word.ts';
 import { producerStandings, } from '../producer-standing.ts';
 import {
   rankStandings,
@@ -302,8 +303,20 @@ function reportSeat(
   },);
 
   console.log(
-    `  ${seat}: ${String(rounds.length,)} judged rounds from ${String(paid.length,)} `
-      + `of ${String(perChunk.length,)} chunks`,
+    `  ${seat}: ${String(rounds.length,)} judged ${
+      wordForCount({
+        count: rounds.length,
+        one: 'round',
+        many: 'rounds',
+      },)
+    } from ${String(paid.length,)} `
+      + `of ${String(perChunk.length,)} ${
+        wordForCount({
+          count: perChunk.length,
+          one: 'chunk',
+          many: 'chunks',
+        },)
+      }`,
   );
 
   if (rounds.length === 0)
@@ -329,7 +342,14 @@ function reportGroup(
 ): void {
   console.log(
     `\n${group.digest} over ${String(group.readings
-      .length,)} entries`,
+      .length,)} ${
+      wordForCount({
+        count: group.readings
+          .length,
+        one: 'entry',
+        many: 'entries',
+      },)
+    }`,
   );
 
   for (

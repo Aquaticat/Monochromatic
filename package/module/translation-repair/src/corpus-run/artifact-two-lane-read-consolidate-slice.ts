@@ -6,6 +6,7 @@ import {
   requireCount,
   requireRecord,
 } from '../artifact-guard.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 import type {
   ArtifactConsolidateSlice,
@@ -117,7 +118,13 @@ function parseGate(
   if (usable !== ballots.length) {
     throw new ArtifactParseError({
       path: `${path}.usable`,
-      reason: `${String(ballots.length,)} matching stored ballots`,
+      reason: `${String(ballots.length,)} matching stored ${
+        wordForCount({
+          count: ballots.length,
+          one: 'ballot',
+          many: 'ballots',
+        },)
+      }`,
     },);
   }
   return {

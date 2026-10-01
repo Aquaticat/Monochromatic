@@ -1,4 +1,5 @@
 import type { ComparisonRowField, } from './artifact-two-lane-row-equality.ts';
+import { wordForCount, } from '../count-word.ts';
 
 //region Artifact version 2 comparison refusals
 // Why two version 2 ledgers, or two derivations of one comparison, cannot be
@@ -152,7 +153,13 @@ function comparisonFaultSentence(
   { fault, }: { readonly fault: ArtifactComparisonFault; },
 ): string {
   if (fault.kind === 'ledger-lengths')
-    return `the repair ledger covers ${String(fault.repairRows,)} slices and the translate ledger ${
+    return `the repair ledger covers ${String(fault.repairRows,)} ${
+      wordForCount({
+        count: fault.repairRows,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } and the translate ledger ${
       String(fault.translateRows,)
     }, so they describe different preparations`;
   if (fault.kind === 'slice-positions')
@@ -170,7 +177,13 @@ function comparisonFaultSentence(
       fault.repairKind
     } in the repair ledger and ${fault.translateKind} in the translate ledger`;
   if (fault.kind === 'derivation-lengths')
-    return `version 2 derives ${String(fault.frozenRows,)} comparison rows where the pipeline derives ${
+    return `version 2 derives ${String(fault.frozenRows,)} comparison ${
+      wordForCount({
+        count: fault.frozenRows,
+        one: 'row',
+        many: 'rows',
+      },)
+    } where the pipeline derives ${
       String(fault.liveRows,)
     }, so the two no longer describe one comparison`;
   return `version 2 and the pipeline disagree about slice ${String(fault.sliceIndex,)} on ${

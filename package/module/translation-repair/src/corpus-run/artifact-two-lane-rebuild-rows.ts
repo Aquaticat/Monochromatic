@@ -2,6 +2,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import { wordForCount, } from '../count-word.ts';
 import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 
 //region Rebuild rows
@@ -82,7 +83,13 @@ export function carveDivergence(
   },
 ): string {
   if (rows.length !== slices.length)
-    return `${String(slices.length,)} slices rebuilt where the run recorded ${String(rows.length,)}`;
+    return `${String(slices.length,)} ${
+      wordForCount({
+        count: slices.length,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } rebuilt where the run recorded ${String(rows.length,)}`;
   // The two lists are one length here, so every position has a row and a slice.
   // Read as pairs and stopped at the first departure, which retires a "no
   // recorded row" arm and a fallback for a found departure's text that no

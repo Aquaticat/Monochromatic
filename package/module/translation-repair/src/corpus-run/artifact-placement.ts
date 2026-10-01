@@ -1,5 +1,6 @@
 import { isJsonRecord, } from '../json-guard.ts';
 import { isLowerHexDigit, } from '../ascii-letters.ts';
+import { wordForCount, } from '../count-word.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import {
@@ -90,7 +91,13 @@ function shapeOf({ value, }: { readonly value: unknown; },): string {
   if (value === null)
     return 'null';
   if ((typeof value) === 'string')
-    return `a string of ${String(value.length,)} characters`;
+    return `a string of ${String(value.length,)} ${
+      wordForCount({
+        count: value.length,
+        one: 'character',
+        many: 'characters',
+      },)
+    }`;
   if (Array.isArray(value,))
     return 'an array';
   if ((typeof value) === 'object')

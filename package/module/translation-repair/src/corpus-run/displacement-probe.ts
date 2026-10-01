@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   classifyDisplacement,
   type DocumentDisplacement,
@@ -489,7 +490,13 @@ async function main(): Promise<void> {
    Counts across every settled entry.
    */
   const totals = corpusTotals({ rows, },);
-  log.info(`settled entries carved: ${String(rows.length,)} of ${String(entryIds.length,)} artifacts`,);
+  log.info(`settled entries carved: ${String(rows.length,)} of ${String(entryIds.length,)} ${
+    wordForCount({
+      count: entryIds.length,
+      one: 'artifact',
+      many: 'artifacts',
+    },)
+  }`,);
   log.info(`  with a defaulted recipe half: ${String(defaulted.length,)}`,);
   for (
     const {

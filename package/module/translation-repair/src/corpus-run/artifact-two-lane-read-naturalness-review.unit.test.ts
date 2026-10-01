@@ -500,7 +500,7 @@ await describe({
           ],
           [
             chainWithFirstRound({ paragraphDigests: [], },),
-            '.rounds[0].paragraphDigests: expected 1 reviewed paragraph digests',
+            '.rounds[0].paragraphDigests: expected 1 reviewed paragraph digest',
           ],
           [
             chainWithFirstRound({

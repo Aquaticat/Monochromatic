@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import type { DocumentLanesResult, } from '../document-lanes.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
@@ -108,7 +109,13 @@ export function settledPageArtifact(
     .length;
   if ((trimmedCount > 0) || (withdrawnCount > 0)) {
     l.warn(
-      `page assembly rewrote ${String(trimmedCount,)} slices and withdrew ${
+      `page assembly rewrote ${String(trimmedCount,)} ${
+        wordForCount({
+          count: trimmedCount,
+          one: 'slice',
+          many: 'slices',
+        },)
+      } and withdrew ${
         String(withdrawnCount,)
       }; the findings say why`,
     );

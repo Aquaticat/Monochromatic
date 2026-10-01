@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   listCorpusPeople,
   readCorpusFile,
@@ -403,7 +404,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-probe'>;
       rows,
     },
   },);
-  log.info(`kept ${String(rows.length,)} rows at ${keptAt}`,);
+  log.info(`kept ${String(rows.length,)} ${
+    wordForCount({
+      count: rows.length,
+      one: 'row',
+      many: 'rows',
+    },)
+  } at ${keptAt}`,);
 
   // STANDARD OUTPUT STAYS. Redirecting it is the workflow this probe shipped
   // with, and removing it would trade one lost measurement for another.

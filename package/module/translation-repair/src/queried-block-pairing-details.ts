@@ -1,4 +1,5 @@
 import type { ChunkPair, } from './chunk-document.ts';
+import { wordForCount, } from './count-word.ts';
 import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
 import { countPairedBlocks, } from './pair-block-counts.ts';
 import type { BlockPairingOutcome, } from './pair-blocks-stage.ts';
@@ -110,7 +111,25 @@ export function queriedBlockPairingDetails({
      */
     const counts = countPairedBlocks({ pairs: outcome.pairs, },);
     findings.push(
-      `block-pairing section ${String(pairIndex,)} paired ${String(counts.source,)} of ${String(sourceNodes.length,)} original and ${String(counts.target,)} of ${String(targetNodes.length,)} translation blocks across ${String(counts.relations,)} relations, from ${String(outcome.usable,)} usable voices of ${String(outcome.heard,)} heard`,
+      `block-pairing section ${String(pairIndex,)} paired ${String(counts.source,)} of ${String(sourceNodes.length,)} original and ${String(counts.target,)} of ${String(targetNodes.length,)} translation ${
+        wordForCount({
+          count: targetNodes.length,
+          one: 'block',
+          many: 'blocks',
+        },)
+      } across ${String(counts.relations,)} ${
+        wordForCount({
+          count: counts.relations,
+          one: 'relation',
+          many: 'relations',
+        },)
+      }, from ${String(outcome.usable,)} usable ${
+        wordForCount({
+          count: outcome.usable,
+          one: 'voice',
+          many: 'voices',
+        },)
+      } of ${String(outcome.heard,)} heard`,
     );
   }
   /**

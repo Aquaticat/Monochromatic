@@ -1,4 +1,5 @@
 import { SyntheticHttpError, } from './completion-shape.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Request size refusal
 // The gateway caps request bodies and reports a body over that cap as a JSON
@@ -109,7 +110,13 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
       // stay on `bodyExcerpt` for the log, where the searchable byte position
       // still is.
       excerpt: 'withheld',
-      summary: `Synthetic API refused a request body of ${String(bodyBytes,)} bytes, `
+      summary: `Synthetic API refused a request body of ${String(bodyBytes,)} ${
+        wordForCount({
+          count: bodyBytes,
+          one: 'byte',
+          many: 'bytes',
+        },)
+      }, `
         + `${String(bodyBytes - PASSING_BODY_BYTES,)} above the ${String(PASSING_BODY_BYTES,)} `
         + `measured to pass. It answered HTTP ${String(status,)} naming a JSON parse failure, `
         + `which describes the body we serialised rather than its size, and that body is `

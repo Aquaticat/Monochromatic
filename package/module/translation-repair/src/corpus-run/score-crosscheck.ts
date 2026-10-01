@@ -1,4 +1,5 @@
 import { artifactsDirOf, } from './artifact-file-name.ts';
+import { wordForCount, } from '../count-word.ts';
 import { gatherAttributionEntries, } from './attribution-read.ts';
 import {
   buildCrosscheckCensus,
@@ -235,7 +236,13 @@ async function main(): Promise<void> {
 
   if (malformed.length > 0) {
     console.log(
-      `WARNING ${String(malformed.length,)} artifacts could not be read and are `
+      `WARNING ${String(malformed.length,)} ${
+        wordForCount({
+          count: malformed.length,
+          one: 'artifact',
+          many: 'artifacts',
+        },)
+      } could not be read and are `
         + 'in NEITHER population this report counts, so every count is over the rest:',
     );
     for (const failure of malformed)
@@ -293,7 +300,19 @@ async function main(): Promise<void> {
   );
   if (census.unattributedJoinFailures > 0) {
     console.log(
-      `WARNING ${String(census.unattributedJoinFailures,)} claims sit on `
+      `WARNING ${String(census.unattributedJoinFailures,)} ${
+        wordForCount({
+          count: census.unattributedJoinFailures,
+          one: 'claim',
+          many: 'claims',
+        },)
+      } ${
+        wordForCount({
+          count: census.unattributedJoinFailures,
+          one: 'sits',
+          many: 'sit',
+        },)
+      } on `
         + 'entries that DO carry attribution yet have no proposer recorded. '
         + 'That is the two records disagreeing about claim identity, not a '
         + 'quiet critic, and it is reported apart from the legacy count so it '
@@ -360,8 +379,20 @@ async function main(): Promise<void> {
   );
   if (unjudgeable.length > 0) {
     console.log(
-      `WARNING ${String(unjudgeable.length,)} claims were proposed by `
-        + 'the WHOLE roster, so nobody may judge them. They are reported here '
+      `WARNING ${String(unjudgeable.length,)} ${
+        wordForCount({
+          count: unjudgeable.length,
+          one: 'claim',
+          many: 'claims',
+        },)
+      } ${
+        wordForCount({
+          count: unjudgeable.length,
+          one: 'was',
+          many: 'were',
+        },)
+      } proposed by `
+        + 'the WHOLE roster, leaving no seat to judge. Such claims are reported here '
         + 'rather than dropped: they are the most corroborated claims in the '
         + 'run, and removing them would lift every rate by hiding exactly the '
         + 'strongest agreement in the population.',

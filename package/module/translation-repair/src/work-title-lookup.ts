@@ -3,6 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { wordForCount, } from './count-word.ts';
 import { contextRoot, } from './log-context.ts';
 import {
   type LookupHit,
@@ -330,7 +331,19 @@ export async function workTitleLookupLines(
   if (titles.length === 0)
     return [];
   if (apiKey === '') {
-    wl.warn(`${EXA_API_KEY_VAR} is not set; ${String(titles.length,)} work titles go unlooked-up`,);
+    wl.warn(`${EXA_API_KEY_VAR} is not set; ${String(titles.length,)} work ${
+      wordForCount({
+        count: titles.length,
+        one: 'title',
+        many: 'titles',
+      },)
+    } ${
+      wordForCount({
+        count: titles.length,
+        one: 'goes',
+        many: 'go',
+      },)
+    } unlooked-up`,);
     return [];
   }
   /**
@@ -362,7 +375,19 @@ export async function workTitleLookupLines(
    Every line, in title order.
    */
   const lines = perTitle.flat();
-  wl.info(`${String(titles.length,)} work titles looked up, ${String(lines.length,)} lines`,);
+  wl.info(`${String(titles.length,)} work ${
+    wordForCount({
+      count: titles.length,
+      one: 'title',
+      many: 'titles',
+    },)
+  } looked up, ${String(lines.length,)} ${
+    wordForCount({
+      count: lines.length,
+      one: 'line',
+      many: 'lines',
+    },)
+  }`,);
   return lines;
 }
 

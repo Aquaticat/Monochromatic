@@ -1,4 +1,5 @@
 import type { CandidateProducer, } from './candidate-select-model.ts';
+import { wordForCount, } from './count-word.ts';
 import type {
   RepairJudgedRound,
   RepairRoundStage,
@@ -128,7 +129,13 @@ export function selectionRoundOf(
 
   if (positions.join(',',) !== expected.join(',',)) {
     throw new SlatePositionsError({
-      detail: `slate of ${String(ordered.length,)} candidates carries positions `
+      detail: `slate of ${String(ordered.length,)} ${
+        wordForCount({
+          count: ordered.length,
+          one: 'candidate',
+          many: 'candidates',
+        },)
+      } carries positions `
         + `${positions.join(',',)}, and a ballot names a position by number, so a `
         + 'standing read off it would credit the wrong model',
     },);

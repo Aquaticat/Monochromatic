@@ -306,7 +306,13 @@ export function compareBlocks(
   const surplus = (candidate.length <= ceiling)
     ? []
     : [
-      `Your translation is ${String(candidate.length,)} blocks (${
+      `Your translation is ${String(candidate.length,)} ${
+        wordForCount({
+          count: candidate.length,
+          one: 'block',
+          many: 'blocks',
+        },)
+      } (${
         describeBlocks({ blocks: candidate, },)
       }) and the ${floorName} is ${String(floor.length,)}. Add a block only to `
         + 'carry something the ORIGINAL has and the text you are replacing left out.',

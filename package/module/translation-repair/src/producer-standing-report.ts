@@ -2,6 +2,7 @@ import {
   preferenceRate,
   type ProducerStanding,
 } from './producer-standing.ts';
+import { wordForCount, } from './count-word.ts';
 
 //region Producer standing report
 // Renders and orders standings, shared by every calibration that produces one.
@@ -54,8 +55,20 @@ export function standingLine(
     : 'UNJUDGED';
 
   return `${standing.modelId}: ${share} (${String(standing.disinterestedVotes,)}`
-    + ` of ${String(standing.disinterestedBallots,)} disinterested ballots,`
-    + ` over ${String(standing.candidates,)} candidates)`;
+    + ` of ${String(standing.disinterestedBallots,)} disinterested ${
+      wordForCount({
+        count: standing.disinterestedBallots,
+        one: 'ballot',
+        many: 'ballots',
+      },)
+    },`
+    + ` over ${String(standing.candidates,)} ${
+      wordForCount({
+        count: standing.candidates,
+        one: 'candidate',
+        many: 'candidates',
+      },)
+    })`;
 }
 
 /**

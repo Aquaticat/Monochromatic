@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import { isIsoStampText, } from '../iso-stamp-text.ts';
 import {
   isWholeNumberText,
@@ -576,7 +577,13 @@ export function readRoundTiming(
   try {
     if (fields.length !== ROUND_FIELDS) {
       throw new TimingFieldError({
-        reason: `round payload has ${String(fields.length,)} fields where its writer writes ${String(ROUND_FIELDS,)}`,
+        reason: `round payload has ${String(fields.length,)} ${
+          wordForCount({
+            count: fields.length,
+            one: 'field',
+            many: 'fields',
+          },)
+        } where its writer writes ${String(ROUND_FIELDS,)}`,
       },);
     }
     /**
