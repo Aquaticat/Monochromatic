@@ -6,10 +6,8 @@ import {
   type Api,
   type ApiStreamOptions,
   type AnyModel,
-  type Credential,
   type Model,
   type Provider,
-  type SimpleStreamOptions,
   type StreamFunction,
   type TranscriptContext,
   type OpenAICodexResponsesOptions,
@@ -122,12 +120,12 @@ export function createPriorityProvider({ provider, lookup, dispatch, onCatalog, 
     stream: function stream<TApi extends Api>(model: Model<TApi>, context: TranscriptContext, options?: ApiStreamOptions<TApi>,) {
       if (!isPriorityTarget(model,))
         return provider.stream(model, context, options,);
-      return streamPriority({ model: resolvePriorityBase({ model, lookup, },), context, options, stream: dispatch, },);
+      return streamPriority({ model: resolvePriorityBase({ model, lookup, },), context, ...(options === undefined ? {} : { options, }), stream: dispatch, },);
     },
     streamSimple: function streamSimple(model, context, options,) {
       if (!isPriorityTarget(model,))
         return provider.streamSimple(model, context, options,);
-      return streamSimplePriority({ model: resolvePriorityBase({ model, lookup, },), context, options, stream: dispatch, },);
+      return streamSimplePriority({ model: resolvePriorityBase({ model, lookup, },), context, ...(options === undefined ? {} : { options, }), stream: dispatch, },);
     },
     ...(provider.refreshModels === undefined ? {} : {
       refreshModels: async function refreshModels(context,) {
