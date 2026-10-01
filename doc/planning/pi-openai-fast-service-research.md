@@ -20,9 +20,10 @@ Whether Codex can reveal or prevent such downgrade remains unverified.
 ## Installed incumbent: verified source evidence
 
 `~/.pi/agent/npm/node_modules/pi-openai-codex-fast/package.json:3` identifies version `0.0.17`.
-Its [source][incumbent-source] already provides virtual selections:
+Its [source][incumbent-source] provides physical companion selections:
 `openai-codex-fast/<original-model-id>` delegates to built-in `openai-codex`.
-`index.ts:266` registers the separate provider.
+`index.ts:266` registers a separate physical provider with `pi.registerProvider()`.
+It does not use pi's native `pi.registerVirtualModel()` API.
 
 Unlike the settled design, `index.ts:26` maintains a compatibility allowlist.
 It includes the currently scoped `gpt-6-sol`, `gpt-6-luna`, and `gpt-6-astra`,
