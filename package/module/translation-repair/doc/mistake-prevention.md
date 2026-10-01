@@ -1767,6 +1767,9 @@ written by hand,
 had drifted from what five runners read,
 and three refusals did not show what was typed,
 one of them not even which part of the line was wrong.
+An `--only` naming an entry a runner could not reach was dropped without a word,
+so the runner ran over nothing,
+or over the rest when the stray stood beside real entries (ledger B76).
 
 The rule:
 a runner declares what it reads in `corpus-run/command-lines.ts`
@@ -1787,6 +1790,10 @@ is written once and read by both the declaration and the reader.
 A task description,
 and every invocation in the living docs,
 names only flags the runner reads.
+Ids a line names are held to what the runner can reach through `askedAmong`,
+which refuses the line,
+naming every stray,
+before anything is spent.
 
 What enforces it:
 `command-lines.unit.test.ts` fails on a runner the build makes that the table does not declare,
@@ -1798,7 +1805,9 @@ which `source-scans` runs,
 fails on a read of `process.argv`,
 an import of `parseArgs`,
 or a dynamic import of `node:process` or `node:util` anywhere but a runner's own hand-off and the one reader;
-`command-line.unit.test.ts` holds the reader's readings and refusals.
+`command-line.unit.test.ts` holds the reader's readings and refusals,
+and `command-flags.unit.test.ts` the refusal of ids a runner cannot reach.
+Habit holds a new runner that narrows its walk by id to `askedAmong`.
 Out of the scan's reach:
 `process` reached through `globalThis` or handed on whole,
 and a property name built at run time.

@@ -4695,8 +4695,8 @@ and three findings were to close first (the elapsed-time family,
 a flag written twice and prototype keys).
 B75 closed the repeated flag and found a fourth,
 an `--only` naming no entry,
-so the elapsed-time family,
-prototype keys and that one close first,
+which B76 closed,
+so the elapsed-time family and prototype keys close first,
 and the batch reads against the census taken once they close.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
@@ -14623,10 +14623,17 @@ and reported both invocations planted in a control file.
 The full suite on `3d8776f9f`
 (`mise run //package/module/translation-repair:buildAndTest`)
 printed 1,489 PASS lines and no FAIL line.
+Later,
+with `reportingRefusals` running the body once on a placeholder line before reading the real one,
+`cli-refusal`'s refused-line case failed on `ran`
+(`expected true to equal false`),
+so its check that the body never starts carries weight of its own;
+restored,
+with `git diff` printing nothing after.
 
 Found on the way and open:
 an `--only` naming no entry runs over none without a word
-(the open family of entry ids that name nothing);
+(closed by B76);
 and the package's other plain-object tables looked up or filled by text from outside it
 (the open family of prototype keys;
 the defect table is closed here).
@@ -14638,6 +14645,72 @@ and reads a flag's value through `corpus-run/command-flags.ts`;
 `command-lines.unit.test.ts` fails on a runner,
 description or documented invocation out of step with the table,
 and `command-line-reads.unit.test.ts` on a read of the line anywhere else.
+
+### B76: ids a line names that its runner cannot reach, dropped without a word
+
+Found closing B75.
+`corpus-pass`,
+`coverage-probe`,
+`coverage-control-probe` and the settled rendering audit each kept the entries `--only` names with the same predicate,
+and dropped any it could not reach:
+an `--only` naming only a stray ran over nothing,
+the settled audit printing `BUYING 0 of 0 selectable subjects`
+and `coverage-control-probe` refusing as though no entry had offered a passage,
+and a stray beside a real entry ran the real one alone.
+`sentinel-probe` read its entry ids by position without a check,
+so an unknown one printed an error line of its own while the probe spent on the rest.
+`judge-fidelity-probe` already refused an entry its reviewed manifest lacks
+(`selectReviewedFidelitySpecs`),
+the first one only.
+
+`28cbadd6a` moved the four predicates into one,
+`askedAmong` in `corpus-run/command-flags.ts`,
+with no change in what it keeps
+(cases pin both readings).
+The red commit (`31021fe29`) added what each refusal names to its parameters,
+which every site passes,
+and cases for a stray alone,
+two strays beside a real id with one written twice and one spaced,
+and the settled audit given `tabbby` beside `tabby`;
+the named run printed exit 1 for both files,
+the new case the only failing one in each.
+
+Fixed (`4f9b79155`):
+`askedAmong` refuses the line when any id asked for is missing from what the runner can reach,
+naming every stray once,
+in the order written and quoted:
+`--only asks for "Tabby_0l", which the corpus at the pin does not hold`.
+The four sites refuse before anything is spent,
+and `sentinel-probe` holds its ids,
+named or default,
+to the corpus at the pin before it probes any.
+
+Calls made here are open to veto:
+
+- one stray refuses the whole line,
+  where running the reachable ids and naming the strays would also have been possible;
+  the line is refused because a mistyped id is a line the person did not mean;
+- `sentinel-probe` probes in corpus order,
+  as the other runners walk,
+  where it probed in the order written;
+- the settled audit's reachable entries are those the archive holds a reading for,
+  so an entry with a reading and nothing to buy still runs,
+  and reports `BUYING 0 of 0`;
+- `judge-fidelity-probe` keeps its own refusal,
+  which names the first stray only,
+  since its reachable entries are a reviewed manifest's and its error class reports them.
+
+Guard-offs,
+one mutation per build,
+each restored with `git diff` printing nothing after
+(`~/temp/agent/audit-glossary-fix/b489-guard-offs.ts`):
+strays let through failed both new cases;
+a stray written twice named twice failed the `askedAmong` case;
+strays named unquoted failed both.
+
+Recurrence:
+a runner that narrows its walk by id passes the ids asked for and the ids it can reach through `askedAmong`;
+`command-flags.unit.test.ts` holds the refusal.
 
 ## Process mistakes in this audit
 
@@ -14804,6 +14877,11 @@ One more during B70 on 2026-09-30:
 a call that read a background suite's output while it ran,
 against the rule that a background task is left to report when it ends;
 it changed nothing committed.
+One more during B76 on 2026-10-01 (UTC):
+the scratch lint-findings reader chained with `;` to the lint summary check,
+so the second ran whatever the first did;
+both outputs were read,
+and it changed nothing committed.
 
 ### M19: a suite run against a stale build after a mutation was restored
 

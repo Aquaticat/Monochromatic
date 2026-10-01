@@ -327,12 +327,19 @@ refusing every problem at once with a usage line;
 the table,
 the task descriptions and the living docs' invocations are held to each other,
 and `command-line-reads.unit.test.ts` fails on a read of the line anywhere else.
+B76 followed
+(`28cbadd6a` to `4f9b79155`):
+an `--only` naming an entry a runner cannot reach,
+alone or beside real ones,
+was dropped without a word,
+so the runner ran over nothing or over the rest;
+`askedAmong` now refuses the line,
+naming every stray,
+and `sentinel-probe` holds its ids to the corpus too.
 Open before the eighteenth batch:
 elapsed times on the wall clock,
-plain-object tables looked up by text from outside the package
-(the fidelity probe's defect table closed by B75),
-and an `--only` naming no entry,
-which runs over none without a word;
+and plain-object tables looked up by text from outside the package
+(the fidelity probe's defect table closed by B75);
 the census taken once they close is that batch's baseline,
 recorded under each entry it closes.
 Each throw and fallback is read for reachability first,
