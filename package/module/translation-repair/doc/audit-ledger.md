@@ -17258,6 +17258,58 @@ Recurrence:
 `mistake-prevention.md`,
 "Copies of shared code".
 
+### B102: 300 production modules with no unit test of their own
+
+Found 2026-10-01 (UTC) by a read-only census an agent ran over the package's tracked source
+(`own-tests/census.mjs` in the audit's scratch folder),
+guarded in the commit adding this entry.
+Of 1,086 production modules,
+669 have a `<stem>.unit.test.ts` beside them and 417 do not.
+Of the 417,
+44 are barrels,
+38 hold only types and literal constants,
+and 35 are runner entries `src/build-entries.ts` lists;
+the other 300 are logic,
+139 of them named by some other module's test
+and 161 named by no test at all,
+reached only through whatever imports them.
+A module tested only through its importers loses that coverage without a word when an importer changes,
+and nothing stopped a new module from joining them.
+
+What enforces it:
+`src/own-unit-tests.unit.test.ts`,
+among the source scans,
+holds the 300 in a sorted `ALLOWLIST`.
+It fails on a production module with no own test,
+no exemption by shape
+and no line there,
+and on a line whose module gained an own test,
+turned out exempt
+or is gone,
+so the list only shrinks.
+The exemptions are read off each module's own syntax tree:
+a barrel,
+a module of types and literal constants,
+or a runner entry named among `src/build-entries.ts`'s string literals.
+Its fixture case runs first and passed from the start;
+with `src/active-footnote-markers.ts` taken out of `ALLOWLIST`,
+its package case failed naming that module alone as unlisted,
+and the line was then put back (300 lines again).
+Out of its reach:
+whether a module's tests exercise every branch,
+which the coverage census measures,
+and a runner entry known only by a top-level `await` or a `process.argv` read.
+
+Calls made here are open to veto:
+
+- an own test is the exact `<stem>.unit.test.ts` beside the module;
+- the 300 stand listed rather than each getting a test first,
+  so they are worked down by the coverage batches and the list shrinks as they go.
+
+Recurrence:
+`mistake-prevention.md`,
+"Modules without a test of their own".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -19245,6 +19297,12 @@ once:
 the ledger's Markdown lint ran in the batch of the edit to B101's entry it read
 (rerun alone,
 no findings).
+Again during B102,
+once:
+the named run of the new scan and its lint went out in the batch of the edit to its fixture case's name
+(rerun alone,
+every file exit 0 with no FAIL line,
+and "Found 0 warnings and 0 errors.").
 The prevention stands as written:
 the edit or write,
 then,

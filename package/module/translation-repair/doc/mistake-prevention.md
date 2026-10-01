@@ -2381,3 +2381,25 @@ outside the sites it names with why;
 a verb,
 or a noun after an adjective,
 is reviewed by hand.
+
+## Modules without a test of their own
+
+What happened:
+a census of the package's 1,086 production modules found 417 with no `<stem>.unit.test.ts` beside them;
+117 of those are barrels,
+modules of types and literal constants,
+or runner entries,
+and 300 are logic that another module's test reaches or no test names at all (ledger B102).
+A module tested only through its importers loses that coverage when an importer changes,
+and nothing stopped a new one from joining them.
+
+The rule:
+a new production module ships with `<stem>.unit.test.ts` beside it,
+unless it is a barrel,
+holds only types and literal constants,
+or is a runner entry `src/build-entries.ts` lists.
+A module on the list leaves it when it gains a test.
+
+What enforces it:
+`own-unit-tests.unit.test.ts`,
+among the source scans.
