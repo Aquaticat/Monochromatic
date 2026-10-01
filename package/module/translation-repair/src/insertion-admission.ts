@@ -155,7 +155,7 @@ export function admitInsertions(
   ) {
     return isInsertionChunk(slice.target,)
       ? [{
-        where: String(at,),
+        position: at,
         sourceText: slice.source
           .text,
       },]
@@ -163,7 +163,7 @@ export function admitInsertions(
   },);
 
   /**
-   Those the page has room for, named by the position strings handed in.
+   Positions of those the page has room for.
    */
   const admitted = admitWithinShortfall({
     sourceText,
@@ -171,7 +171,7 @@ export function admitInsertions(
     passages: proposed,
   },);
 
-  return new Set(admitted.map(Number,),);
+  return new Set(admitted,);
 }
 
 //endregion Insertion admission

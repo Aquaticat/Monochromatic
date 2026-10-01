@@ -224,7 +224,7 @@ export function classifyInsertionCoverage(
     },)
     .map(function toPassage(row,) {
       return {
-        where: String(row.position,),
+        position: row.position,
         sourceText: row.sourceText,
       };
     },);
@@ -240,8 +240,7 @@ export function classifyInsertionCoverage(
       targetText,
       tail,
     },),
-  },)
-    .map(Number,),);
+  },),);
   /**
    Positions backed by semantic absence and independent signal.
    */

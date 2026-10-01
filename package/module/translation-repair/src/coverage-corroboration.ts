@@ -44,10 +44,10 @@ export const CORPUS_EXPANSION = 2.65;
  */
 export type CandidatePassage = {
   /**
-   How this passage is named in reports, carried through so the caller can
-   match an admission back to its candidate.
+   Where the passage stands in the caller's numbering, handed back for each
+   passage admitted so the caller can match an admission to its candidate.
    */
-  readonly where: string;
+  readonly position: number;
 
   /**
    Original-side text whose absence is in question.
@@ -141,7 +141,7 @@ export function pageShortfall(
  off more than the whole page (the untranslated tail's own budget,
  `coverage-tail.ts`); the whole-page shortfall otherwise
  
- @returns Names of the passages the shortfall has room for, in the order given
+ @returns Positions of the passages the shortfall has room for, in the order given
  
  @example
  ```ts
@@ -163,15 +163,15 @@ export function admitWithinShortfall(
     readonly passages: readonly CandidatePassage[];
     readonly shortfall?: number;
   },
-): readonly string[] {
+): readonly number[] {
 
   // ONE PASS IN DOCUMENT ORDER THAT APPENDS, so each decision reads the total
-  // the passages before it committed, and copying the names admitted so far
-  // at every passage costs nothing it buys (ledger B70).
+  // the passages before it committed, and copying the positions admitted so
+  // far at every passage costs nothing it buys (ledger B70).
   /**
-   Names of the passages admitted so far, in the order they were weighed.
+   Positions of the passages admitted so far, in the order they were weighed.
    */
-  const admitted: string[] = [];
+  const admitted: number[] = [];
   /**
    Expected code points already promised to admitted passages.
    */
@@ -184,7 +184,7 @@ export function admitWithinShortfall(
     if ((spent.points + wants) > shortfall)
       continue;
     spent.points += wants;
-    admitted.push(passage.where,);
+    admitted.push(passage.position,);
   }
   return admitted;
 }

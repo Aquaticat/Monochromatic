@@ -50,11 +50,11 @@ const WHOLE = SOURCE.length * CORPUS_EXPANSION;
  */
 const PASSAGES = [
   {
-    where: 'block-1',
+    position: 1,
     sourceText: '第一只猫。',
   },
   {
-    where: 'block-2',
+    position: 2,
     sourceText: '第二只猫。',
   },
 ] as const;
@@ -173,8 +173,8 @@ await describe({
           passages: PASSAGES,
         },),)
           .toStrictEqual([
-            'block-1',
-            'block-2',
+            1,
+            2,
           ],);
       },
     },),
@@ -199,7 +199,7 @@ await describe({
           passages: PASSAGES,
         },),)
           .toStrictEqual([
-            'block-1',
+            1,
           ],);
       },
     },),
@@ -213,7 +213,7 @@ await describe({
           targetText: '',
           passages: [
             {
-              where: 'huge',
+              position: 0,
               // TWICE the page's own source, so its rendering cannot fit a
               // budget that is only the page's whole expected size. At exactly
               // the source length it FITS, which is correct and was what this
@@ -221,13 +221,13 @@ await describe({
               sourceText: '猫'.repeat(SOURCE.length * 2,),
             },
             {
-              where: 'small',
+              position: 1,
               sourceText: '猫',
             },
           ],
         },),)
           .toStrictEqual([
-            'small',
+            1,
           ],);
       },
     },),

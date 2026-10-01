@@ -200,15 +200,14 @@ export function placeInsertions(
   },);
 
   /**
-   Which of them the page has room to be missing, by source index rendered as
-   text so the admission can be matched back.
+   Which of them the page has room to be missing, by source index.
    */
   const admitted = new Set(admitWithinShortfall({
     sourceText,
     targetText,
     passages: anchored.map(function toPassage(step,) {
       return {
-        where: String(step.sourceIndex,),
+        position: step.sourceIndex,
         // A step names a chunk that exists, by construction; an absent one is
         // a fault to raise, not a passage to read as empty.
         sourceText: nonNullishOrThrow(sourceChunks[step.sourceIndex],)
@@ -245,7 +244,7 @@ export function placeInsertions(
         refusal: anchor.kind,
       };
 
-    if (!admitted.has(String(step.sourceIndex,),))
+    if (!admitted.has(step.sourceIndex,))
       return {
         kind: 'unplaced',
         sourceIndex: step.sourceIndex,
