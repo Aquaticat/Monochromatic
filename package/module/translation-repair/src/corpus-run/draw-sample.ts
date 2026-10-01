@@ -3,6 +3,7 @@ import { writeFile, } from 'node:fs/promises';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { formatGradingSheet, } from '../grading-sheet.ts';
 import { formatRepairSheet, } from '../repair-sheet.ts';
@@ -56,17 +57,18 @@ import {
  the repo. Reads config and artifacts from the environment; `--final` writes
  the gate sheet, otherwise a labelled preliminary sheet.
  
+ @param line - the draw's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await drawGradingSample();
+ await drawGradingSample({ line, },);
  ```
  */
-async function drawGradingSample(): Promise<void> {
+async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw-sample'>; },): Promise<void> {
   /**
    Whether this run writes the final gate sheet rather than a preliminary one.
    */
-  const isFinal = process.argv
-    .includes('--final',);
+  const isFinal = line.switched('final',);
 
   /**
    Seed the DRAW uses, which is deliberately NOT the gate seed on a
@@ -422,6 +424,7 @@ async function drawGradingSample(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'draw-sample',
+    argv: process.argv,
     run: drawGradingSample,
   },);
 

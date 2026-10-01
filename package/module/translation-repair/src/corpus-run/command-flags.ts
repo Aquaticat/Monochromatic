@@ -4,10 +4,15 @@ import {
   isWholeNumberText,
   WHOLE_NUMBER_RULE,
 } from '../whole-number-text.ts';
+import type { FlagValue, } from './command-line.ts';
 
 //region Command flags
-// The one reader of `--flag value` pairs on the package's command lines, so
-// every probe and audit answers a mistyped flag the same way (ledger B73).
+// The readers of flag VALUES the package's command lines share, so every
+// probe and audit answers a mistyped value the same way (ledger B73). Which
+// flags a command reads, and whether each was written once with a value, is
+// read before any of these runs (`command-line.ts`, ledger B75), so each
+// reader here is handed a value already known to be written and not empty,
+// or that the flag was not written at all.
 //
 // THE PROBES EACH HAD THEIR OWN. The rendering audit's refused a flag written
 // last and a cap that was no number; the fidelity and coverage probes read
@@ -16,100 +21,43 @@ import {
 // now holds the refusals, and each probe names only its flags and defaults.
 
 /**
- What `indexOf` returns for a flag nobody wrote.
- */
-const FLAG_ABSENT = -1;
-
-/**
- Marker every flag here starts with, so a missing value is distinguishable
- from the next flag standing where a value should be.
- */
-const FLAG_PREFIX = '--';
-
-/**
- Separator between the entry ids one flag names.
+ Separator between the ids one flag names.
  */
 const ID_SEPARATOR = ',';
 
 /**
- What a flag carried, or that nobody wrote it.
+ Reads the text written after a flag, or a default when it was not written.
 
- NAMED RATHER THAN LEFT NULLISH because the two answers lead to opposite
- behaviour one line later: an unwritten flag takes a default, and a written
- one that carries nothing is a typo this refuses. A nullish union puts both
- behind the same check and invites the collapse that was the defect here.
+ ONLY AN UNWRITTEN FLAG TAKES THE DEFAULT. Two score reports read a flag
+ written last, or followed by an empty argument, as not written and scored
+ the default sheet, which is the file the override was typed to replace;
+ the command-line reader now refuses those before this runs (ledger B75).
 
- @example
- ```ts
- const asked: FlagValue = { kind: 'written', value: '4', };
- ```
- */
-export type FlagValue = {
-  readonly kind: 'written';
+ @param asked - what the flag carried, or that nobody wrote it
 
-  /**
-   What was written after the flag.
-   */
-  readonly value: string;
-} | { readonly kind: 'unwritten'; };
+ @param unwritten - text to use when the flag was not written
 
-/**
- Reads the value written after a named flag.
-
- ABSENT AND EMPTY ARE DIFFERENT ANSWERS. Both once came back as the empty
- string, which every caller then read as "not asked for", so `--cap` written
- at the end of the line bought everything and `--only` written at the end
- audited everything: the opposite of what the person typing them asked for,
- and neither said a word about it.
-
- @param args - arguments after the script path
-
- @param flag - flag to look for
-
- @returns Value written after it, or that the flag itself was not written
-
- @throws StatedRefusalError when the flag was written with nothing usable
- after it
+ @returns Text written, or `unwritten`
 
  @example
  ```ts
- const asked = flagValue({ args: ['--cap', '4',], flag: '--cap', },);
+ const sheet = writtenOr({ asked: line.flag('sheet',), unwritten: defaultSheet, },);
  ```
  */
-export function flagValue(
+export function writtenOr(
   {
-    args,
-    flag,
+    asked,
+    unwritten,
   }: {
-    readonly args: readonly string[];
-    readonly flag: string;
+    readonly asked: FlagValue;
+    readonly unwritten: string;
   },
-): FlagValue {
-  /**
-   Where the flag was written.
-   */
-  const at = args.indexOf(flag,);
-  if (at === FLAG_ABSENT)
-    return { kind: 'unwritten', };
-
-  /**
-   What was written after it, empty when the flag ended the line.
-   */
-  const written = args[at + 1] ?? '';
-
-  if ((written === '') || written.startsWith(FLAG_PREFIX,))
-    throw new StatedRefusalError({
-      says: `${flag} needs a value written after it`,
-    },);
-
-  return {
-    kind: 'written',
-    value: written,
-  };
+): string {
+  return (asked.kind === 'written') ? asked.value : unwritten;
 }
 
 /**
- Reads a whole number written after a named flag, zero included.
+ Reads a whole number written after a flag, zero included.
 
  DIGITS ONLY, by the package's one count rule: `Number` read `fourty` as no
  number, which two probes then replaced with their default, and `4.9`,
@@ -117,9 +65,7 @@ export function flagValue(
  BEFORE DIGITS is answered as a number below zero, since that is what the
  person typed, and the refusal says what leaving the flag off would do.
 
- @param args - arguments after the script path
-
- @param flag - flag to look for
+ @param asked - what the flag carried, or that nobody wrote it
 
  @param unwritten - number to use when the flag was not written, which may be
  a sentinel the caller reads as "no limit"
@@ -129,101 +75,94 @@ export function flagValue(
 
  @returns Number written, or `unwritten` when the flag was not
 
- @throws StatedRefusalError when the flag was written with nothing after it,
- with a number below zero, or with anything that is not a whole number
- written in digits
+ @throws StatedRefusalError when the flag was written with a number below
+ zero, or with anything that is not a whole number written in digits
 
  @example
  ```ts
- const cap = wholeNumberFlag({ args, flag: '--cap', unwritten: 16, leaveOffTo: 'run the default of 16 trials', },);
+ const cap = wholeNumberFlag({ asked: line.flag('cap',), unwritten: 16, leaveOffTo: 'run the default of 16 trials', },);
  ```
  */
 export function wholeNumberFlag(
   {
-    args,
-    flag,
+    asked,
     unwritten,
     leaveOffTo,
   }: {
-    readonly args: readonly string[];
-    readonly flag: string;
+    readonly asked: FlagValue;
     readonly unwritten: number;
     readonly leaveOffTo: string;
   },
 ): number {
-  /**
-   Number as written, absent when the flag was not.
-   */
-  const asked = flagValue({
-    args,
-    flag,
-  },);
   if (asked.kind === 'unwritten')
     return unwritten;
 
   if (isNegativeWholeNumberText({ text: asked.value, },))
     throw new StatedRefusalError({
-      says: `${flag} cannot be below zero, and ${asked.value} is; leave it off to ${leaveOffTo}`,
+      says: `${asked.flag} cannot be below zero, and ${asked.value} is; leave it off to ${leaveOffTo}`,
     },);
 
   if (!isWholeNumberText({ text: asked.value, },))
     throw new StatedRefusalError({
-      says: `${flag} needs ${WHOLE_NUMBER_RULE}, and ${asked.value} is not one`,
+      says: `${asked.flag} needs ${WHOLE_NUMBER_RULE}, and ${asked.value} is not one`,
     },);
 
   return Number(asked.value,);
 }
 
 /**
- Reads the entry ids written after a named flag, comma separated.
+ Reads the ids written after a flag, comma separated.
 
- @param args - arguments after the script path
+ SPACE AROUND AN ID IS DROPPED, and so is the gap a stray comma leaves: no id
+ any of these flags names holds either, so `tabby, ginger` can only mean the
+ two ids it shows. The entry filter trimmed and the candidate and provider
+ readers did not, so one spelling named two entries to the pass and an
+ unknown model to the probes (ledger B75).
 
- @param flag - flag to look for
+ @param asked - what the flag carried, or that nobody wrote it
 
- @returns Entry ids named, dropping the gaps a stray comma leaves; empty when
- the flag was not written, which callers read as every entry
+ @param naming - what one id names, for the refusal: `entry id`,
+ `seatable id`, `provider`
 
- @throws StatedRefusalError when the flag was written with nothing after it,
- or with separators naming no entry, which would otherwise read as every
- entry one line later
+ @returns Ids named, in the order written; empty when the flag was not
+ written, which callers read as no restriction
+
+ @throws StatedRefusalError when the flag was written with separators and
+ space naming no id, which would otherwise read as no restriction one line
+ later
 
  @example
  ```ts
- const onlyIds = idListFlag({ args: ['--only', 'tabby,ginger',], flag: '--only', },);
+ const onlyIds = idListFlag({ asked: line.flag('only',), naming: 'entry id', },);
  ```
  */
 export function idListFlag(
   {
-    args,
-    flag,
+    asked,
+    naming,
   }: {
-    readonly args: readonly string[];
-    readonly flag: string;
+    readonly asked: FlagValue;
+    readonly naming: string;
   },
 ): readonly string[] {
-  /**
-   Entries as written, absent when the flag was not.
-   */
-  const asked = flagValue({
-    args,
-    flag,
-  },);
   if (asked.kind === 'unwritten')
     return [];
 
   /**
-   Entries the text actually names.
+   Ids the text actually names.
    */
   const named = asked.value
     .split(ID_SEPARATOR,)
+    .map(function trimmed(id,): string {
+      return id.trim();
+    },)
     .filter(function isNamed(id,): boolean {
       return id !== '';
     },);
 
   if (named.length === 0)
     throw new StatedRefusalError({
-      says: `${flag} needs at least one entry id, and ${asked.value} names none`,
+      says: `${asked.flag} needs at least one ${naming}, and ${asked.value} names none`,
     },);
 
   return named;

@@ -24,6 +24,7 @@ import {
   readCandidatesAlone,
 } from './probe-candidates.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
 import { readRunnerClosure, } from './runner-closure.ts';
@@ -39,12 +40,14 @@ import { readFidelityArguments, } from './judge-fidelity-args.ts';
  
  @throws {@link FidelityReferenceError} for unreviewed requests or reference drift
  
+ @param line - the probe's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'judge-fidelity-probe'>; },): Promise<void> {
   /**
    CLI-scoped progress and diagnostic logger.
    */
@@ -57,13 +60,13 @@ async function main(): Promise<void> {
     cap,
     damageKinds,
     withContext,
-  } = readFidelityArguments({ argv: process.argv, },);
+  } = readFidelityArguments({ line, },);
   /**
    Approved candidates can be measured without acquiring a production seat.
    */
   const judgeModelIds = probeRosterWith({
-    candidates: readCandidateIds({ argv: process.argv, },),
-    alone: readCandidatesAlone({ argv: process.argv, },),
+    candidates: readCandidateIds({ line, },),
+    alone: readCandidatesAlone({ line, },),
   },);
   /**
    Request and authorship checks precede all corpus and provider activity.
@@ -148,7 +151,7 @@ async function main(): Promise<void> {
   /**
    Exact entry closure used by this invocation.
    */
-  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+  const runnerClosure = await readRunnerClosure({ entryPath: line.script, },);
   /**
    Byte identity of the exact reviewed manifest used by this invocation.
    */
@@ -305,6 +308,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'judge-fidelity-probe',
+    argv: process.argv,
     run: main,
   },);
 

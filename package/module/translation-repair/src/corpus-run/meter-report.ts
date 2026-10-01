@@ -17,7 +17,7 @@ import {
   type MeterSample,
 } from './meter-sample-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Meter report
 // Reads run logs and says how much of the time each provider could be spent
@@ -373,27 +373,20 @@ function reportProvider(
  
  Returns nothing: the report on stdout and the exit code ARE the output.
  
- @throws {@link Error} when no log path was named
+ @param line - the report's command line, read whole by `reportingRefusals`,
+ which refuses it when no log is named: any log a pass, probe or sample wrote
+ will do, and passing several merges them into one record
  
  @example
  ```ts
- await reportMeters();
+ await reportMeters({ line, },);
  ```
  */
-async function reportMeters(): Promise<void> {
+async function reportMeters({ line, }: { readonly line: CommandLineOf<'meter-report'>; },): Promise<void> {
   /**
    Logs to read, named on the command line.
    */
-  const paths = process
-    .argv
-    .slice(2,);
-
-  if (paths.length === 0) {
-    throw new StatedRefusalError({
-      says: 'name at least one log file: meter-report <path> [<path> ...]. Any log a pass, '
-        + 'probe or sample wrote will do, and passing several merges them into one record.',
-    },);
-  }
+  const paths = line.positionals;
 
   /**
    Everything every named log held.
@@ -496,6 +489,7 @@ async function reportMeters(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'meter-report',
+    argv: process.argv,
     run: reportMeters,
   },);
 

@@ -24,6 +24,7 @@ import {
 } from './run-config.ts';
 import { readAskedCount, } from './asked-count.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Roster bench
 // Runs the SAME slices at several producer-roster widths, to answer the one
@@ -279,17 +280,19 @@ async function runOne(
 /**
  Runs the whole bench and writes its report.
  
+ @param line - the bench's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'roster-bench'>; },): Promise<void> {
   /**
    Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
-    argv: process.argv,
+    line,
     fallback: DEFAULT_SLICES,
     asks: 'slices',
   },);
@@ -381,6 +384,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'roster-bench',
+    argv: process.argv,
     run: main,
   },);
 

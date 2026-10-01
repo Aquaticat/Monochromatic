@@ -31,6 +31,7 @@ import {
   readCandidatesAlone,
 } from './probe-candidates.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Producer calibrate
 // WHICH OF THE ROSTER SHOULD WRITE, measured rather than assumed.
@@ -170,17 +171,19 @@ async function runOne(
  
  Returns nothing: the report on stdout IS the output.
  
+ @param line - the calibration's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'producer-calibrate'>; },): Promise<void> {
   /**
    Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
-    argv: process.argv,
+    line,
     fallback: DEFAULT_SLICES,
     asks: 'slices',
   },);
@@ -191,8 +194,8 @@ async function main(): Promise<void> {
    or the candidates alone under `--candidates-alone`.
    */
   const roster = probeRosterWith({
-    candidates: readCandidateIds({ argv: process.argv, },),
-    alone: readCandidatesAlone({ argv: process.argv, },),
+    candidates: readCandidateIds({ line, },),
+    alone: readCandidatesAlone({ line, },),
   },);
 
   /**
@@ -292,6 +295,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'producer-calibrate',
+    argv: process.argv,
     run: main,
   },);
 

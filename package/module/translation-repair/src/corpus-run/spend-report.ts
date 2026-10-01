@@ -10,7 +10,7 @@ import {
   type SeatSpend,
 } from './spend-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Spend report
 // WHAT A RUN COST, read back off its own log. Spends no quota and touches no
@@ -287,27 +287,20 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
  
  Returns nothing: the report on stdout IS the output.
  
- @throws {@link Error} when no log path was named
+ @param line - the report's command line, read whole by `reportingRefusals`,
+ which refuses it when no log is named: any log a pass, probe or calibration
+ wrote will do, and passing several totals them as one run
  
  @example
  ```ts
- await reportSpendCost();
+ await reportSpendCost({ line, },);
  ```
  */
-async function reportSpendCost(): Promise<void> {
+async function reportSpendCost({ line, }: { readonly line: CommandLineOf<'spend-report'>; },): Promise<void> {
   /**
    Logs to read, named on the command line.
    */
-  const paths = process
-    .argv
-    .slice(2,);
-
-  if (paths.length === 0) {
-    throw new StatedRefusalError({
-      says: 'name at least one log file: spend-report <path> [<path> ...]. Any log a pass, probe or '
-        + 'calibration wrote will do, and passing several totals them as one run.',
-    },);
-  }
+  const paths = line.positionals;
 
   /**
    Every line of every named log, in one list.
@@ -379,6 +372,7 @@ async function reportSpendCost(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'spend-report',
+    argv: process.argv,
     run: reportSpendCost,
   },);
 

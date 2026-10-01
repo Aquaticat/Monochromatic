@@ -1,12 +1,9 @@
-import { parseArgs, } from 'node:util';
-
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-
 import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import type { BaselineCensus, } from './coverage-census-baseline.ts';
 import type { CensusStretch, } from './coverage-census-report.ts';
 
@@ -17,8 +14,9 @@ import type { CensusStretch, } from './coverage-census-report.ts';
 //
 // A FLAG WRITTEN WITHOUT ITS VALUE IS REFUSED, not read as absent: the
 // settled-audit report once read `--run` written last as "the newest run" in
-// silence (`rendering-audit-settled-args.ts`). `parseArgs` in strict mode
-// refuses that shape, and an unknown flag, itself.
+// silence (`rendering-audit-settled-args.ts`). This census had its own strict
+// `parseArgs` call for that; the package's one command-line reader now
+// refuses that shape and an unknown flag for every runner (ledger B75).
 
 /**
  Marker the test runner prints for a passing test.
@@ -87,85 +85,37 @@ export type CensusArguments = {
 };
 
 /**
- The census's flags and positionals, as strict `parseArgs` reads them.
-
- @param args - arguments after the script path
-
- @returns Flag values and test files
-
- @throws StatedRefusalError where a flag is unknown or written without its value
-
- @example
- ```ts
- const { values, positionals, } = parsedCommandLine({ args: ['src/nap.unit.test.ts',], },);
- ```
- */
-function parsedCommandLine({ args, }: { readonly args: readonly string[]; },): {
-  readonly values: {
-    readonly baseline?: string;
-    readonly source?: readonly string[];
-  };
-  readonly positionals: readonly string[];
-} {
-  try {
-    return parseArgs({
-      args: [...args,],
-      options: {
-        baseline: { type: 'string', },
-        source: {
-          type: 'string',
-          multiple: true,
-        },
-      },
-      allowPositionals: true,
-      strict: true,
-    },);
-  }
-  catch (error) {
-    throw new StatedRefusalError({
-      says: `coverage-census cannot read its arguments (${caughtValueText(error,)}); `
-        + 'write unit test files, then --baseline <census.json> and --source <src/file.ts> as needed',
-    },);
-  }
-}
-
-/**
  Reads the census's command line.
 
- @param argv - process arguments
+ @param line - the census's command line, read whole by `reportingRefusals`,
+ which refuses an unknown flag or a flag written without its value
 
  @returns Test files, baseline and sources asked for
 
- @throws StatedRefusalError where a flag is unknown, a flag is written
- without its value, or `--source` is named with no `--baseline` to read
+ @throws StatedRefusalError where `--source` is named with no `--baseline` to
+ read
 
  @example
  ```ts
- const asked = readCensusArguments({ argv: process.argv, },);
+ const asked = readCensusArguments({ line, },);
  ```
  */
-export function readCensusArguments({ argv, }: { readonly argv: readonly string[]; },): CensusArguments {
-  /**
-   The command line as `parseArgs` reads it.
-   */
-  const parsed = parsedCommandLine({ args: argv.slice(2,), },);
+export function readCensusArguments({ line, }: { readonly line: CommandLineOf<'coverage-census'>; },): CensusArguments {
   /**
    Sources named.
    */
-  const sources = parsed.values
-    .source
-    ?? [];
+  const sources = line.list('source',);
   /**
    Baseline named.
    */
-  const { baseline, } = parsed.values;
-  if ((sources.length > 0) && (baseline === undefined))
+  const baseline = line.flag('baseline',);
+  if ((sources.length > 0) && (baseline.kind === 'unwritten'))
     throw new StatedRefusalError({
       says: '--source picks the baseline stretches to read, so it needs --baseline <census.json> beside it',
     },);
   return {
-    testFiles: parsed.positionals,
-    baseline: (baseline === undefined) ? [] : [baseline,],
+    testFiles: line.positionals,
+    baseline: (baseline.kind === 'written') ? [baseline.value,] : [],
     sources,
   };
 }

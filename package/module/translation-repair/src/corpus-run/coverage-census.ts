@@ -13,6 +13,7 @@ import { contextRoot, } from '../log-context.ts';
 import { packageCacheDir, } from '../lookup-cache.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import {
   CENSUS_FORMAT,
   type CensusArguments,
@@ -317,19 +318,21 @@ async function reportCensus(
  Returns nothing: the report on stdout IS the output, and the census file it
  names is the record.
 
+ @param line - the census's command line, read whole by `reportingRefusals`
+
  @throws StatedRefusalError where the build carries no source maps, or the
  suite failed
 
  @example
  ```ts
- await runCoverageCensus();
+ await runCoverageCensus({ line, },);
  ```
  */
-async function runCoverageCensus(): Promise<void> {
+async function runCoverageCensus({ line, }: { readonly line: CommandLineOf<'coverage-census'>; },): Promise<void> {
   /**
    What was asked.
    */
-  const asked = readCensusArguments({ argv: process.argv, },);
+  const asked = readCensusArguments({ line, },);
   /**
    Each earlier census named, read before the suite runs, so a file that
    does not read as one refuses at once rather than after the whole suite
@@ -473,6 +476,7 @@ async function runCoverageCensus(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'coverage-census',
+    argv: process.argv,
     run: runCoverageCensus,
   },);
 

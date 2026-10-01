@@ -1,5 +1,6 @@
 import type { CardProvider, } from '../model-card-derive.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Roster card ask
 // THE COMMAND LINE OF `roster-card`, kept apart from the entry so the entry
@@ -20,31 +21,33 @@ const PROVIDERS: readonly CardProvider[] = [
 /**
  Reads the provider and served id off the command line.
 
- @param argv - arguments after the script
+ @param line - the card's command line, read whole by `reportingRefusals`,
+ which refuses it when either position is left out (ledger B75)
 
  @returns Provider and served id
 
- @throws {@link StatedRefusalError} When either is missing or the provider
- is not one of the four
+ @throws {@link StatedRefusalError} When the provider is not one of the four
+ or the served id is written empty
 
  @example
  ```ts
- const asked = readAsk({ argv: process.argv.slice(2,), },);
+ const asked = readAsk({ line, },);
  ```
  */
 export function readAsk(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: CommandLineOf<'roster-card'>; },
 ): {
   readonly provider: CardProvider;
   readonly servedId: string;
 } {
   /**
-   Provider and served id as written.
+   Provider and served id as written; both are always written, since the
+   line is refused without them, and an empty one is refused here.
    */
   const [
-    providerWritten,
-    servedId,
-  ] = argv;
+    providerWritten = '',
+    servedId = '',
+  ] = line.positionals;
   /**
    Provider as written, if it is one of the four.
    */
@@ -55,7 +58,6 @@ export function readAsk(
    Whether the ask names both parts.
    */
   const complete = (provider !== undefined)
-    && (servedId !== undefined)
     && (servedId !== '');
   if (!complete) {
     throw new StatedRefusalError({

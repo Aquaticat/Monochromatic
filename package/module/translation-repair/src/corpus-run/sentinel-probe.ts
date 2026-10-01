@@ -9,6 +9,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Sentinel probe
 // Runs a set of named, known-behavior corpus entries through the pipeline and
@@ -19,7 +20,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // it with `mise run //package/module/translation-repair:sentinel-probe -- Anilovr Aniloviraw`.
 
 /**
- Sentinel set probed when no ids are named on argv.
+ Sentinel set probed when no ids are named on the command line.
  */
 const DEFAULT_SENTINELS: readonly string[] = [
   'Anilovr',
@@ -34,24 +35,24 @@ const ERROR_MESSAGE_CAP = 200;
 
 /**
  Probes each named corpus entry through the pipeline, printing a PROBE line
- per entry. With no argv ids, probes {@link DEFAULT_SENTINELS}.
+ per entry. With no ids named on the command line, probes
+ {@link DEFAULT_SENTINELS}.
+ 
+ @param line - the probe's command line, read whole by `reportingRefusals`
  
  @throws {@link Error} when the API key env var is unset
  
  @example
  ```ts
- await probeCorpusEntries();
+ await probeCorpusEntries({ line, },);
  ```
  */
-async function probeCorpusEntries(): Promise<void> {
+async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sentinel-probe'>; },): Promise<void> {
   /**
-   Ids from argv, dropping flags.
+   Ids named on the command line. A flag is refused before this runs, where it
+   was once dropped and the argument after it probed as an entry (ledger B75).
    */
-  const named = process.argv
-    .slice(2,)
-    .filter(function notFlag(arg,) {
-      return !arg.startsWith('--',);
-    },);
+  const named = line.positionals;
 
   /**
    Entries to probe: named ids, else the default sentinels.
@@ -181,6 +182,7 @@ async function probeCorpusEntries(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'sentinel-probe',
+    argv: process.argv,
     run: probeCorpusEntries,
   },);
 

@@ -22,6 +22,7 @@ import {
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { persistRecallScorecard, } from './recall-scorecard-store.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
@@ -210,14 +211,16 @@ async function buildEntry(
  Runs the recall benchmark over a band-stratified corpus sample and writes its
  scorecard beside the other run artifacts.
  
+ @param line - the benchmark's command line, read whole by `reportingRefusals`
+ 
  @throws {@link Error} when the API key env var is unset
  
  @example
  ```ts
- await runRecallBenchmark();
+ await runRecallBenchmark({ line, },);
  ```
  */
-async function runRecallBenchmark(): Promise<void> {
+async function runRecallBenchmark({ line, }: { readonly line: CommandLineOf<'recall-benchmark'>; },): Promise<void> {
   /**
    When this run began, which names its scorecard file.
    */
@@ -305,8 +308,7 @@ async function runRecallBenchmark(): Promise<void> {
    */
   const client = createRunClient();
 
-  if (process.argv
-    .includes('--plan',)) {
+  if (line.switched('plan',)) {
     console.log(
       `PLAN ok tip=${tip} client=constructed entries=${
         chosen
@@ -422,6 +424,7 @@ async function runRecallBenchmark(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'recall-benchmark',
+    argv: process.argv,
     run: runRecallBenchmark,
   },);
 

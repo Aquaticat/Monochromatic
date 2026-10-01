@@ -18,6 +18,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { readCoverageProbeArguments, } from './coverage-probe-args.ts';
 
 //region Coverage probe
@@ -167,12 +168,14 @@ type ProbeRow = {
  with only one side is an ordinary state of this corpus. That also swallows an
  unreadable clone, which shows up as every entry skipping.
  
+ @param line - the probe's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'coverage-probe'>; },): Promise<void> {
   /**
    Logger tagged for this probe.
    */
@@ -202,7 +205,7 @@ async function main(): Promise<void> {
    the same reason the digest is: a rebuild mid-run would otherwise stamp a
    build that never ran.
    */
-  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+  const runnerClosure = await readRunnerClosure({ entryPath: line.script, },);
 
   /**
    Entry filter and candidate cap.
@@ -210,7 +213,7 @@ async function main(): Promise<void> {
   const {
     onlyIds,
     cap,
-  } = readCoverageProbeArguments({ argv: process.argv, },);
+  } = readCoverageProbeArguments({ line, },);
 
   /**
    Client for every exchange.
@@ -413,6 +416,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'coverage-probe',
+    argv: process.argv,
     run: main,
   },);
 

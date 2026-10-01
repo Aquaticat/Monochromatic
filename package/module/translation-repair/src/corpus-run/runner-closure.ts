@@ -184,13 +184,13 @@ async function readEntryText(
  states directly and a pattern would only obscure.
  
  @param entryPath - built entry the run is executing, ordinarily
- `process.argv[1]`
+ the script the runtime ran, as the command line reader hands it on (`line.script`)
  
  @returns Its closure, or why it could not be read
  
  @example
  ```ts
- const closure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+ const closure = await readRunnerClosure({ entryPath: line.script, },);
  ```
  */
 export async function readRunnerClosure(

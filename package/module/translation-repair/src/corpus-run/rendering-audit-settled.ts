@@ -1,4 +1,5 @@
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import { persistProbeRun, } from './probe-store.ts';
@@ -150,12 +151,14 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
  which means the run was pointed somewhere wrong rather than that everything
  is clean
  
+ @param line - the audit's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-settled'>; },): Promise<void> {
   /**
    When this invocation began, read before any call so the record dates the
    run rather than the moment it happened to finish.
@@ -180,12 +183,12 @@ async function main(): Promise<void> {
    the same reason the digest is: a rebuild mid-run would otherwise stamp a
    build that never ran.
    */
-  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+  const runnerClosure = await readRunnerClosure({ entryPath: line.script, },);
 
   /**
    What the command line asked for.
    */
-  const asked = readAuditArguments({ argv: process.argv, },);
+  const asked = readAuditArguments({ line, },);
 
   /**
    Every artifact the archive holds, parsed, re-prepared and verified. Free.
@@ -317,6 +320,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'rendering-audit-settled',
+    argv: process.argv,
     run: main,
   },);
 

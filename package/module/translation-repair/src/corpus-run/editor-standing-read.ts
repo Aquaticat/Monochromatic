@@ -31,6 +31,7 @@ import {
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Editor standing read
 // THE EDITOR STANDING THAT COSTS NOTHING, read off work already paid for.
@@ -361,18 +362,18 @@ function reportGroup(
  
  Returns nothing: the report on stdout and the exit code ARE the output.
  
+ @param line - the report's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await reportStandings();
+ await reportStandings({ line, },);
  ```
  */
-async function reportStandings(): Promise<void> {
+async function reportStandings({ line, }: { readonly line: CommandLineOf<'editor-standing-read'>; },): Promise<void> {
   /**
    Directories to read, named on the command line or defaulted to this run.
    */
-  const roots = process
-    .argv
-    .slice(2,);
+  const roots = line.positionals;
 
   /**
    Every artifact path under every named directory.
@@ -470,6 +471,7 @@ async function reportStandings(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'editor-standing-read',
+    argv: process.argv,
     run: reportStandings,
   },);
 

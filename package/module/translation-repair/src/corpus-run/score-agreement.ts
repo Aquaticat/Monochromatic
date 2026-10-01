@@ -9,6 +9,8 @@ import {
   scoreGradedPrecision,
 } from '../grade-agreement.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { writtenOr, } from './command-flags.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { parseRunJson, } from '../run-json-read.ts';
 import { parseGradedSheet, } from '../grade-sheet-read.ts';
@@ -48,32 +50,6 @@ import { resolveRunsDir, } from './run-config.ts';
  */
 function preGradeName({ seed, }: { readonly seed: string; },): string {
   return `pre-grades-${seed}.json`;
-}
-
-/**
- Reads one command-line option's value.
- 
- @param flag - long-form flag, including leading dashes
- 
- @returns Value following the flag; empty when the flag was not passed, which
- is also how an override left blank is treated, since neither names a file
- 
- @example
- ```ts
- const sheet = optionValue({ flag: '--sheet', },);
- ```
- */
-function optionValue({ flag, }: { readonly flag: string; },): string {
-  /**
-   Where the flag sits among the arguments.
-   */
-  const at = process.argv
-    .indexOf(flag,);
-  if (at === (-1))
-    return '';
-  return process.argv
-    .at(at + 1,)
-    ?? '';
 }
 
 /**
@@ -179,12 +155,14 @@ function rate(
 /**
  Prints precision and, when pre-grades exist, agreement against them.
  
+ @param line - the report's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await reportGrades();
+ await reportGrades({ line, },);
  ```
  */
-async function reportGrades(): Promise<void> {
+async function reportGrades({ line, }: { readonly line: CommandLineOf<'score-agreement'>; },): Promise<void> {
   /**
    Durable, gitignored output root.
    */
@@ -193,11 +171,13 @@ async function reportGrades(): Promise<void> {
   /**
    Graded sheet path, defaulting to this seed's final sheet.
    */
-  const sheetPath = optionValue({ flag: '--sheet', },)
-    || join(
+  const sheetPath = writtenOr({
+    asked: line.flag('sheet',),
+    unwritten: join(
       runsDir,
       `grading-sheet-${DEFAULT_SAMPLE_SEED}.md`,
-    );
+    ),
+  },);
 
   /**
    Sheet contents, read once and used for both identity and verdicts.
@@ -235,11 +215,13 @@ async function reportGrades(): Promise<void> {
    Manifest of the draw this sheet came from, when one sits beside it.
    */
   const manifest = await readOptional({
-    path: optionValue({ flag: '--manifest', },)
-      || join(
+    path: writtenOr({
+      asked: line.flag('manifest',),
+      unwritten: join(
         runsDir,
         `sample-manifest-${seed}.json`,
       ),
+    },),
   },);
   if (manifest.found) {
     /**
@@ -322,11 +304,13 @@ async function reportGrades(): Promise<void> {
    Blind pre-grades, when calibration recorded any for this draw.
    */
   const preGrades = await readOptional({
-    path: optionValue({ flag: '--pre-grades', },)
-      || join(
+    path: writtenOr({
+      asked: line.flag('pre-grades',),
+      unwritten: join(
         runsDir,
         preGradeName({ seed, },),
       ),
+    },),
   },);
   if (!preGrades.found) {
     console.log('AGREEMENT none: no pre-grades recorded for this draw',);
@@ -362,6 +346,7 @@ async function reportGrades(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'score-agreement',
+    argv: process.argv,
     run: reportGrades,
   },);
 

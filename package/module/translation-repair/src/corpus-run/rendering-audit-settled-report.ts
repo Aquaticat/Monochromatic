@@ -1,4 +1,5 @@
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { readReportArguments, } from './rendering-audit-settled-args.ts';
 import { repeatBandOf, } from './rendering-audit-settled-band.ts';
 import {
@@ -41,18 +42,20 @@ import { resolveRunsDir, } from './run-config.ts';
 /**
  Reads a persisted run and prints what it amounts to.
  
+ @param line - the report's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-settled-report'>; },): Promise<void> {
   /**
    What the command line named, with a valueless flag refused rather than
    read as absent: `--run` written last used to report the newest run and
    `--against` written last used to print no across-run band, in silence.
    */
-  const asked = readReportArguments({ argv: process.argv, },);
+  const asked = readReportArguments({ line, },);
 
   /**
    Run named with `--run`, absent when the newest kept run is meant.
@@ -123,6 +126,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'rendering-audit-settled-report',
+    argv: process.argv,
     run: main,
   },);
 

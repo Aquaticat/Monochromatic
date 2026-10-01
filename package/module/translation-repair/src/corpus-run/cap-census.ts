@@ -20,11 +20,11 @@ import {
   type ProviderCapReading,
 } from './cap-census-rule.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import {
   PROMPT_PAYLOADS_DIR,
   SLICE_CACHE_DIR,
 } from './runs-layout.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Cap census
 // THE PRE-LAUNCH READING OF THE COMPLETION CAPS (ledger P10). Reads pass-run
@@ -316,26 +316,19 @@ const FLAG_TEXT: Readonly<Record<CapFlag, (row: CapCensusRow,) => string>> = {
 
  Returns nothing: the report on stdout IS the output.
 
- @throws {@link StatedRefusalError} when no path was named
+ @param line - the census's command line, read whole by `reportingRefusals`,
+ which refuses it when no path is named
 
  @example
  ```ts
- await reportCapCensus();
+ await reportCapCensus({ line, },);
  ```
  */
-async function reportCapCensus(): Promise<void> {
+async function reportCapCensus({ line, }: { readonly line: CommandLineOf<'cap-census'>; },): Promise<void> {
   /**
    Files or directories named on the command line.
    */
-  const roots = process
-    .argv
-    .slice(2,);
-  if (roots.length === 0) {
-    throw new StatedRefusalError({
-      says: 'name at least one log file or directory: cap-census <path> [<path> ...]. Directories are walked '
-        + `${String(MAX_DEPTH,)} levels down, and only pass-run logs (opening ${PASS_RUN_MARKER}) are read.`,
-    },);
-  }
+  const roots = line.positionals;
 
   /**
    Every log under the roots.
@@ -406,6 +399,7 @@ async function reportCapCensus(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'cap-census',
+    argv: process.argv,
     run: reportCapCensus,
   },);
 

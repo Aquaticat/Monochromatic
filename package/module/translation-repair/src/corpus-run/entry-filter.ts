@@ -1,4 +1,5 @@
-import { StatedRefusalError, } from '../stated-refusal.ts';
+import { idListFlag, } from './command-flags.ts';
+import type { ReadsFlag, } from './command-line.ts';
 
 //region Entry filter
 // Restricts a pass to named corpus entries.
@@ -16,16 +17,6 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // and the accumulation stays honest.
 
 /**
- Separator between ids in the flag value.
- */
-const ID_SEPARATOR = ',';
-
-/**
- Flag introducing the id list.
- */
-const ONLY_FLAG = '--only';
-
-/**
  Reads the entry allowlist from command-line arguments.
  
  An EMPTY SET MEANS EVERY ENTRY, which keeps the ordinary pass untouched: the
@@ -33,53 +24,26 @@ const ONLY_FLAG = '--only';
  returns a set rather than an optional list; a caller cannot forget to handle
  absence, because absence and "no restriction" are the same value.
  
- @param argv - process arguments, including the runtime and script paths
+ @param line - the pass's command line, read whole by `reportingRefusals`,
+ which refuses `--only` written with nothing after it (ledger B75)
  
  @returns Ids to run, empty when unrestricted
  
  @example
  ```ts
- const onlyIds = readOnlyIds({ argv: process.argv, },);
+ const onlyIds = readOnlyIds({ line, },);
  ```
  */
 export function readOnlyIds(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: ReadsFlag<'only'>; },
 ): ReadonlySet<string> {
-  /**
-   Position of the flag, or -1 when it is absent.
-   */
-  const flagIndex = argv.indexOf(ONLY_FLAG,);
-  if (flagIndex === (-1))
-    return new Set();
-
-  /**
-   Value following the flag, absent when the flag ends the arguments.
-   */
-  const value = argv[flagIndex + 1];
-  if ((value === undefined) || value.startsWith('--',)) {
-    throw new StatedRefusalError({
-      says: `${ONLY_FLAG} needs a comma-separated entry id list, for example ${ONLY_FLAG} Toka_ls`,
-    },);
-  }
-
-  /**
-   Requested ids with surrounding whitespace and empty members removed.
-   */
-  const ids = value
-    .split(ID_SEPARATOR,)
-    .map(function trim(id,): string {
-      return id.trim();
-    },)
-    .filter(function isPresent(id,): boolean {
-      return id !== '';
-    },);
-
   // A flag that parsed to nothing would silently run the WHOLE corpus, which is
-  // the opposite of what was asked and expensive to discover afterwards.
-  if (ids.length === 0)
-    throw new StatedRefusalError({ says: `${ONLY_FLAG} matched no entry id in ${JSON.stringify(value,)}`, },);
-
-  return new Set(ids,);
+  // the opposite of what was asked and expensive to discover afterwards, so
+  // the shared reader refuses it.
+  return new Set(idListFlag({
+    asked: line.flag('only',),
+    naming: 'entry id',
+  },),);
 }
 
 //endregion Entry filter

@@ -2,10 +2,10 @@ import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
-  flagValue,
   idListFlag,
   wholeNumberFlag,
 } from './command-flags.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Settled rendering audit arguments
@@ -35,7 +35,7 @@ const NO_CAP = -1;
  
  @example
  ```ts
- const { archiveDir, cloneDir, onlyIds, cap, } = readAuditArguments();
+ const { archiveDir, cloneDir, onlyIds, cap, } = readAuditArguments({ line, },);
  ```
  */
 export type AuditArguments = {
@@ -70,7 +70,7 @@ export type AuditArguments = {
  
  @example
  ```ts
- const { run, against, } = readReportArguments({ argv: process.argv, },);
+ const { run, against, } = readReportArguments({ line, },);
  ```
  */
 export type ReportArguments = {
@@ -96,41 +96,28 @@ export type ReportArguments = {
  written last reported the newest run, and `--against` written last printed
  no across-run band, and neither said a word.
  
- @param argv - process arguments
+ @param line - the report's command line, read whole by `reportingRefusals`
  
  @returns Named files, each in a one-element list when written
  
- @throws StatedRefusalError when either flag was written with nothing usable
- after it
  
  @example
  ```ts
- const { run, } = readReportArguments({ argv: process.argv, },);
+ const { run, } = readReportArguments({ line, },);
  ```
  */
 export function readReportArguments(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: CommandLineOf<'rendering-audit-settled-report'>; },
 ): ReportArguments {
-  /**
-   Arguments after the script path.
-   */
-  const args = argv.slice(2,);
-
   /**
    What `--run` named.
    */
-  const run = flagValue({
-    args,
-    flag: '--run',
-  },);
+  const run = line.flag('run',);
 
   /**
    What `--against` named.
    */
-  const against = flagValue({
-    args,
-    flag: '--against',
-  },);
+  const against = line.flag('against',);
   return {
     run: (run.kind === 'written') ? [run.value,] : [],
     against: (against.kind === 'written') ? [against.value,] : [],
@@ -140,50 +127,38 @@ export function readReportArguments(
 /**
  Reads what the command line asked for.
  
- @param argv - process arguments, passed rather than read so this is testable
- without a subprocess
+ @param line - the audit's command line, read whole by `reportingRefusals`
+ and passed in so this is testable without a subprocess
  
  @returns Archive, clone, entry filter and cap
  
- @throws StatedRefusalError when a flag was written without a usable value:
- nothing after it, a cap that is not a whole number written in digits or is
- below zero, or an entry filter naming no entry
+ @throws StatedRefusalError when a cap is not a whole number written in
+ digits or is below zero, or an entry filter names no entry
  
  @example
  ```ts
- const asked = readAuditArguments({ argv: process.argv, },);
+ const asked = readAuditArguments({ line, },);
  ```
  */
 export function readAuditArguments(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: CommandLineOf<'rendering-audit-settled'>; },
 ): AuditArguments {
-  /**
-   Arguments after the script path.
-   */
-  const args = argv.slice(2,);
-
   /**
    Archive as written, absent when none was named.
    */
-  const archiveText = flagValue({
-    args,
-    flag: '--archive',
-  },);
+  const archiveText = line.flag('archive',);
 
   /**
    Clone as written, absent when none was named.
    */
-  const cloneText = flagValue({
-    args,
-    flag: '--clone',
-  },);
+  const cloneText = line.flag('clone',);
 
   return {
     archiveDir: (archiveText.kind === 'written') ? archiveText.value : DEFAULT_ARCHIVE_DIR,
     cloneDir: (cloneText.kind === 'written') ? cloneText.value : RUN_CORPUS_PIN.cloneDir,
     onlyIds: idListFlag({
-      args,
-      flag: '--only',
+      asked: line.flag('only',),
+      naming: 'entry id',
     },),
     // A CAP THAT IS NOT A NUMBER USED TO BUY NOTHING IN SILENCE: `capped` in
     // `rendering-audit-settled.ts` returns every subject for a negative cap
@@ -192,8 +167,7 @@ export function readAuditArguments(
     // sign is refused too, rather than reaching the `NO_CAP` sentinel and
     // auditing the whole archive.
     cap: wholeNumberFlag({
-      args,
-      flag: '--cap',
+      asked: line.flag('cap',),
       unwritten: NO_CAP,
       leaveOffTo: 'audit every subject',
     },),

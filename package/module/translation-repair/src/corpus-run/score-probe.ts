@@ -2,6 +2,7 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { readArtifactProbe, } from '../artifact-probe-read.ts';
 import {
@@ -19,6 +20,7 @@ import {
   readSheetIdentity,
 } from '../repair-grade-read.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   assertSheetMatchesManifest,
   HEADER_ONLY_BINDING_NOTE,
@@ -198,38 +200,37 @@ async function gatherReadings(
 }
 
 /**
- Reads one command-line option's value.
- 
- @param flag - long-form flag, including leading dashes
- 
- @returns Value following the flag; empty when absent, which is also how a
- flag left blank is treated, since neither names a file
- 
- @example
- ```ts
- const sheet = optionValue({ flag: '--repair-sheet', },);
- ```
- */
-function optionValue({ flag, }: { readonly flag: string; },): string {
-  /**
-   Where the flag sits among the arguments.
-   */
-  const at = process.argv
-    .indexOf(flag,);
-  if (at === (-1))
-    return '';
-  return process.argv[at + 1] ?? '';
-}
-
-/**
  Reads a run's artifacts and prints the probe summary.
  
+ @param line - the probe's command line, read whole by `reportingRefusals`
+ 
+ @throws StatedRefusalError when only one of `--repair-sheet` and `--manifest`
+ is named
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'score-probe'>; },): Promise<void> {
+  /**
+   Graded repair sheet named, if any.
+   */
+  const sheet = line.flag('repair-sheet',);
+
+  /**
+   Its draw manifest named, if any.
+   */
+  const manifestFile = line.flag('manifest',);
+
+  // ONE WITHOUT THE OTHER IS REFUSED before anything is read: the report used
+  // to print its unscored note and drop the file that was named (ledger B75).
+  if ((sheet.kind === 'written') !== (manifestFile.kind === 'written'))
+    throw new StatedRefusalError({
+      says: '--repair-sheet and --manifest score the probe against the human grades together; name both, or '
+        + 'neither for the telemetry alone',
+    },);
+
   /**
    Directory this run wrote artifacts into.
    */
@@ -249,14 +250,7 @@ async function main(): Promise<void> {
   const gathered = await gatherReadings({ artifactsDir, },);
 
   reportProbeTelemetry({ gathered, },);
-  /**
-   Graded repair sheet and its draw manifest, when both were passed.
-   */
-  const joinPaths = {
-    sheet: optionValue({ flag: '--repair-sheet', },),
-    manifest: optionValue({ flag: '--manifest', },),
-  };
-  if ((joinPaths.sheet === '') || (joinPaths.manifest === '')) {
+  if ((sheet.kind === 'unwritten') || (manifestFile.kind === 'unwritten')) {
     console.log(
       'NOTE majorityIntroduced counts regions a gate WOULD have blocked, not '
         + 'regions that were damaged. Pass --repair-sheet PATH --manifest PATH '
@@ -264,6 +258,14 @@ async function main(): Promise<void> {
     );
     return;
   }
+
+  /**
+   Graded repair sheet and its draw manifest, both named.
+   */
+  const joinPaths = {
+    sheet: sheet.value,
+    manifest: manifestFile.value,
+  };
 
   /**
    Draw manifest, the only record of which issue sat at which position.
@@ -384,6 +386,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'score-probe',
+    argv: process.argv,
     run: main,
   },);
 

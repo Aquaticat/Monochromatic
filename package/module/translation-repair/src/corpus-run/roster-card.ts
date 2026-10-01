@@ -3,6 +3,7 @@ import type { CardProvider, } from '../model-card-derive.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { SYNTHETIC_CHAT_BASE_URL, } from '../synthetic-catalog.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { readAsk, } from './roster-card-ask.ts';
 import {
   cardFieldsFrom,
@@ -55,11 +56,6 @@ const SERVED_LIST: Readonly<Record<CardProvider, string>> = {
 };
 
 /**
- Leading entries of process.argv that name the runtime and the script.
- */
-const SCRIPT_ARGS = 2;
-
-/**
  Characters of an ISO timestamp that spell the date.
  */
 const DATE_CHARS = 10;
@@ -107,30 +103,24 @@ async function fetchListing(
 /**
  Prints the card fragment for the asked model.
 
+ @param line - the card's command line, read whole by `reportingRefusals`
+
  @throws {@link StatedRefusalError} When the listing does not name the
  served id, which is the answer a typo or a retired model gets
 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
-  /**
-   The whole command line.
-   */
-  const { argv: everyArg, } = process;
-  /**
-   Arguments after the script name, the runtime and the script itself dropped.
-   */
-  const argv = everyArg.slice(SCRIPT_ARGS,);
+async function main({ line, }: { readonly line: CommandLineOf<'roster-card'>; },): Promise<void> {
   /**
    Provider and served id asked for.
    */
   const {
     provider,
     servedId,
-  } = readAsk({ argv, },);
+  } = readAsk({ line, },);
   /**
    Row the listing carries for this id.
    */
@@ -182,6 +172,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'roster-card',
+    argv: process.argv,
     run: main,
   },);
 

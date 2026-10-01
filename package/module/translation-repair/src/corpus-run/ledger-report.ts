@@ -13,6 +13,7 @@ import {
 } from './ledger-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Ledger report
 // WHAT EACH MODEL WROTE, AND WHAT THE JUDGES SAID ABOUT IT. Spends no quota and
@@ -47,26 +48,6 @@ const NOTHING_TO_READ = 1;
  them alike either trusts a partial standing or discards a whole one.
  */
 const LEDGER_INCOMPLETE = 2;
-
-/**
- Exit code left behind when the seat flag arrived with no seat after it.
- */
-const ASKED_WITHOUT_A_SEAT = 3;
-
-/**
- Flag naming a single seat to read in full.
- */
-const MODEL_FLAG = '--model';
-
-/**
- Answer `indexOf` gives for a flag that was never passed.
- */
-const NO_FLAG = -1;
-
-/**
- First argument that is not the runtime or the script path.
- */
-const FLAGS_START = 2;
 
 /**
  Most UTF-16 units of a candidate shown before it is cut, ending on a whole
@@ -260,46 +241,29 @@ function printSeat(
  
  Returns nothing: the report on stdout and the exit code ARE the output.
  
+ @param line - the report's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await reportLedger();
+ await reportLedger({ line, },);
  ```
  */
-async function reportLedger(): Promise<void> {
-  /**
-   Arguments after the runtime and script paths.
-   */
-  const args = process
-    .argv
-    .slice(FLAGS_START,);
-
+async function reportLedger({ line, }: { readonly line: CommandLineOf<'ledger-report'>; },): Promise<void> {
   /**
    Run directory to read, from the environment or the house default, which is
    the same resolution every other reader in this family uses.
    */
   const runsDir = await resolveRunsDir();
 
+  // A FLAG WITH NOTHING AFTER IT IS REFUSED rather than ignored, before this
+  // runs. Falling through to the summary would answer a question nobody asked,
+  // and the summary looks exactly like a successful run to anything reading the
+  // exit code. So is a seat flag followed by the next flag, which this once
+  // read as the seat to report (ledger B75).
   /**
-   Position of the seat flag, absent when the whole ledger was asked for.
+   Seat to read in full, unwritten when the whole ledger was asked for.
    */
-  const flagAt = args.indexOf(MODEL_FLAG,);
-
-  /**
-   Seat to read in full, absent when no flag was passed.
-   */
-  const wanted = (flagAt === NO_FLAG) ? undefined : args[flagAt + 1];
-
-  // A FLAG WITH NOTHING AFTER IT IS REFUSED rather than ignored. Falling through
-  // to the summary would answer a question nobody asked, and the summary looks
-  // exactly like a successful run to anything reading the exit code.
-  if ((flagAt !== NO_FLAG) && (wanted === undefined)) {
-    console.log(
-      `ledger-report: ${MODEL_FLAG} arrived with no seat after it. Pass ${MODEL_FLAG} <id> to read `
-        + 'one seat, or drop the flag to summarise every seat.',
-    );
-    process.exitCode = ASKED_WITHOUT_A_SEAT;
-    return;
-  }
+  const seat = line.flag('model',);
 
   /**
    Every contest the ledger holds, beside the files that would not read.
@@ -341,10 +305,10 @@ async function reportLedger(): Promise<void> {
     return;
   }
 
-  if (wanted !== undefined) {
+  if (seat.kind === 'written') {
     printSeat({
       reading,
-      wanted,
+      wanted: seat.value,
     },);
     return;
   }
@@ -360,6 +324,7 @@ async function reportLedger(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'ledger-report',
+    argv: process.argv,
     run: reportLedger,
   },);
 

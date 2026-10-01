@@ -5,6 +5,7 @@ import {
   type SliceCostRow,
 } from '../slice-cost-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Slice cost report
@@ -386,18 +387,23 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
 /**
  Reads a pass log and reports what its slices cost.
  
+ @param line - the report's command line, read whole by `reportingRefusals`,
+ which refuses it when no log is named
+ 
+ @throws StatedRefusalError when the log is named as an empty argument
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'slice-cost-report'>; },): Promise<void> {
   /**
    Log to read, named on the command line.
    */
-  const path = process.argv[2] ?? '';
+  const [path = '',] = line.positionals;
   if (path === '')
-    throw new StatedRefusalError({ says: 'name a log file: slice-cost-report <path>', },);
+    throw new StatedRefusalError({ says: 'name a log file, not an empty argument: slice-cost-report <log file>', },);
 
   /**
    Everything its cost lines said.
@@ -480,6 +486,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'slice-cost-report',
+    argv: process.argv,
     run: main,
   },);
 

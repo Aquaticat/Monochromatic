@@ -448,6 +448,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'window-trial-probe',
+    argv: process.argv,
     run: main,
   },);
 

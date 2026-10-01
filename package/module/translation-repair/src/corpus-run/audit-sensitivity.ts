@@ -26,6 +26,7 @@ import {
   RUN_MODELS,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Audit sensitivity
 // Asks whether the rendering audit can detect a planted defect at all, and
@@ -420,12 +421,15 @@ async function auditOne(
 /**
  Runs both arms and keeps what they said.
  
+ @param line - the probe's command line, read whole by `reportingRefusals`, which
+ refuses any argument, since this probe reads none; it names the script run
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'audit-sensitivity'>; },): Promise<void> {
   /**
    When this invocation began, read before any call so the record dates the
    run rather than the moment it happened to finish.
@@ -450,7 +454,7 @@ async function main(): Promise<void> {
    the same reason the digest is: a rebuild mid-run would otherwise stamp a
    build that never ran.
    */
-  const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
+  const runnerClosure = await readRunnerClosure({ entryPath: line.script, },);
 
   /**
    Both arms, in the order they ran.
@@ -505,6 +509,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'audit-sensitivity',
+    argv: process.argv,
     run: main,
   },);
 

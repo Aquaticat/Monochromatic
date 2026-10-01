@@ -17,6 +17,8 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { idListFlag, } from './command-flags.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Coverage control probe
@@ -44,38 +46,6 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
  Offering spares keeps a run from ending with nothing measured.
  */
 const CASES_OFFERED = 8;
-
-/**
- Entry ids named on the command line, empty when none were.
- 
- @returns Ids to restrict the walk to
- 
- @example
- ```ts
- const onlyIds = readOnlyIds();
- ```
- */
-function readOnlyIds(): readonly string[] {
-  /**
-   Arguments after the runner path.
-   */
-  const args = process.argv
-    .slice(2,);
-
-  /**
-   Where the flag sits, or absent.
-   */
-  const onlyAt = args.indexOf('--only',);
-
-  if (onlyAt === (-1))
-    return [];
-
-  return (args[onlyAt + 1] ?? '')
-    .split(',',)
-    .filter(function isNamed(id,): boolean {
-      return id !== '';
-    },);
-}
 
 /**
  Collects passages to try, walking entries until enough are gathered.
@@ -162,15 +132,17 @@ async function gatherCases(
 /**
  Runs the control and reports what it found.
  
+ @param line - the control's command line, read whole by `reportingRefusals`
+ 
  @throws Error when no entry offered a single passage to ask about, since a
  run that measured nothing must not be reported as one that measured a null
  
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-probe'>; },): Promise<void> {
   /**
    Logger for the run.
    */
@@ -189,7 +161,10 @@ async function main(): Promise<void> {
   /**
    Entries the caller named.
    */
-  const onlyIds = readOnlyIds();
+  const onlyIds = idListFlag({
+    asked: line.flag('only',),
+    naming: 'entry id',
+  },);
 
   /**
    Passages to try.
@@ -291,6 +266,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'coverage-control-probe',
+    argv: process.argv,
     run: main,
   },);
 

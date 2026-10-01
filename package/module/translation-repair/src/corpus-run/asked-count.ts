@@ -32,11 +32,6 @@ import {
 // answered as a count below one, since that is what was typed.
 
 /**
- Position a bare count is written at, after the runtime and the script.
- */
-const COUNT_ARGV_INDEX = 2;
-
-/**
  Smallest count worth running, since a bench over none measures nothing.
  */
 const AT_LEAST = 1;
@@ -44,8 +39,9 @@ const AT_LEAST = 1;
 /**
  Reads how many units a run was asked for.
  
- @param argv - process arguments, passed rather than read so this is testable
- without a subprocess
+ @param line - the bench's command line, read whole by `reportingRefusals`,
+ whose first position is the count; passed in so this is testable without a
+ subprocess
  
  @param fallback - count to run when the person named none
  
@@ -59,25 +55,27 @@ const AT_LEAST = 1;
  
  @example
  ```ts
- const wanted = readAskedCount({ argv: process.argv, fallback: 6, asks: 'slices', },);
+ const wanted = readAskedCount({ line, fallback: 6, asks: 'slices', },);
  ```
  */
 export function readAskedCount(
   {
-    argv,
+    line,
     fallback,
     asks,
   }: {
-    readonly argv: readonly string[];
+    readonly line: { readonly positionals: readonly string[]; };
     readonly fallback: number;
     readonly asks: string;
   },
 ): number {
   /**
-   Count as written, empty when the person named none.
+   Count as written, absent when the person named none. AN EMPTY ARGUMENT IS
+   NAMED, and refused like any other count that is no number: it once read
+   as no count and ran the default (ledger B75).
    */
-  const written = argv[COUNT_ARGV_INDEX] ?? '';
-  if (written === '')
+  const [written,] = line.positionals;
+  if (written === undefined)
     return fallback;
 
   if ((!isWholeNumberText({ text: written, },)) && (!isNegativeWholeNumberText({ text: written, },)))

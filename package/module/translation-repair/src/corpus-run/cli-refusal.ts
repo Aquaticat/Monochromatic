@@ -6,6 +6,12 @@ import {
   seatReportLines,
   type SeatTally,
 } from '../seat-tally.ts';
+import { readCommandLine, } from './command-line.ts';
+import {
+  COMMAND_LINES,
+  type CommandLineOf,
+  type CommandName,
+} from './command-lines.ts';
 
 //region CLI refusal
 // Turns ANY failure out of a CLI body into a report that quotes nothing.
@@ -156,9 +162,15 @@ function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Dispos
 /**
  Runs a CLI body, reporting a refusal this package wrote rather than crashing.
  
- @param what - command name as an operator would type it, which starts the line
+ @param what - command name as an operator would type it, which starts the
+ line and names the declaration its command line is read against
+ (`command-lines.ts`)
  
- @param run - CLI body to run
+ @param argv - process arguments, read whole before the body starts, so an
+ argument the command does not read is refused rather than ignored (ledger
+ B75)
+ 
+ @param run - CLI body to run, given the command line read
  
  @param seats - tally to print when the command ends; defaults to the
  run-wide one `createRunClient` counts into, and tests pass their own
@@ -166,17 +178,19 @@ function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Dispos
  @example
  ```ts
  if (import.meta.main)
-   await reportingRefusals({ what: 'score-verify', run: main, },);
+   await reportingRefusals({ what: 'score-verify', argv: process.argv, run: main, },);
  ```
  */
-export async function reportingRefusals(
+export async function reportingRefusals<const Command extends CommandName>(
   {
     what,
+    argv,
     run,
     seats = RUN_SEATS,
   }: {
-    readonly what: string;
-    readonly run: () => Promise<void>;
+    readonly what: Command;
+    readonly argv: readonly string[];
+    readonly run: (input: { readonly line: CommandLineOf<Command>; },) => Promise<void>;
     readonly seats?: SeatTally;
   },
 ): Promise<void> {
@@ -188,7 +202,13 @@ export async function reportingRefusals(
   using _report = printingSeatReport({ seats, },);
 
   try {
-    await run();
+    await run({
+      line: readCommandLine({
+        command: what,
+        spec: COMMAND_LINES[what],
+        argv,
+      },),
+    },);
   } catch (error) {
     // TO STDERR, unlike the reports these commands normally print. A reader
     // piping stdout to a file is collecting a report, and this says there is no

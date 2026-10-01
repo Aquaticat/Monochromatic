@@ -170,6 +170,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'probe-sensitivity',
+    argv: process.argv,
     run: main,
   },);
 

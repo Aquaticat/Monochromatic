@@ -356,6 +356,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'checker-sensitivity',
+    argv: process.argv,
     run: main,
   },);
 

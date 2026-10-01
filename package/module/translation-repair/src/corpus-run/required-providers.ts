@@ -19,6 +19,8 @@ import {
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
+import { idListFlag, } from './command-flags.ts';
+import type { ReadsFlag, } from './command-line.ts';
 
 //region Required providers for measured arms
 
@@ -31,11 +33,6 @@ export type RequiredProvider = ProviderName;
  CLI token selecting required provider set.
  */
 const REQUIRED_PROVIDERS_FLAG = '--require-providers';
-
-/**
- Array index result when flag is absent.
- */
-const FLAG_NOT_FOUND = -1;
 
 /**
  Environment variable carrying each provider's key.
@@ -90,44 +87,33 @@ export class RequiredProviderError extends StatedRefusalError {
 /**
  Parses measured-arm provider requirement from CLI.
  
- @param argv - process arguments after executable and entrypoint included
+ @param line - the pass's command line, read whole by `reportingRefusals`
  
  @returns Required providers in caller order without duplicates
  
- @throws {@link StatedRefusalError} when flag value is missing or unknown
+ @throws {@link StatedRefusalError} when flag value names no provider or an
+ unknown one
  
  @example
  ```ts
- const required = readRequiredProviders({ argv: ['node', 'pass', '--require-providers', 'synthetic,hyper'], });
+ const required = readRequiredProviders({ line, },);
  ```
  */
 export function readRequiredProviders(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: ReadsFlag<'require-providers'>; },
 ): readonly RequiredProvider[] {
-  /**
-   Flag position in argument list.
-   */
-  const at = argv.indexOf(REQUIRED_PROVIDERS_FLAG,);
-  if (at === FLAG_NOT_FOUND)
-    return [];
-  /**
-   Comma-separated provider value after flag.
-   */
-  const value = argv.at(at + 1,);
-  if ((value === undefined) || (value === ''))
-    throw new StatedRefusalError({
-      says: `${REQUIRED_PROVIDERS_FLAG} needs one or more of ${PROVIDER_ORDER.join(', ',)}`,
-    },);
   /**
    Parsed provider names before stable deduplication.
    */
-  const parsedProviders = value
-    .split(',',)
+  const parsedProviders = idListFlag({
+    asked: line.flag('require-providers',),
+    naming: `provider of ${PROVIDER_ORDER.join(', ',)}`,
+  },)
     .map(function parseProvider(provider,): RequiredProvider {
       if (isProviderName(provider,))
         return provider;
       throw new StatedRefusalError({
-        says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${PROVIDER_ORDER.join(', ',)}`,
+        says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${PROVIDER_ORDER.join(', ',)}, and ${provider} is none of them`,
       },);
     },);
   return parsedProviders.filter(function unique(

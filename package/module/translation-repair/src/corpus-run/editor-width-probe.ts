@@ -18,6 +18,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Editor width probe
@@ -51,12 +52,11 @@ const DEFAULT_SLICES = 18;
 const DEFAULT_DRAW: WidthDraw = 'a';
 
 /**
- Command-line position the draw name is read from.
+ Position the draw name is read from among the arguments after the flags.
  
- Second argument after the slice count, which itself sits at the position
- every entry point in this family reads its first argument from.
+ Second, after the slice count (`command-lines.ts`).
  */
-const DRAW_ARGV_INDEX = 3;
+const DRAW_POSITION = 1;
 
 /**
  Position within the sample each draw takes.
@@ -78,12 +78,14 @@ const DRAW_POSITIONS: Readonly<Record<WidthDraw, number>> = {
  @throws Error when the named draw is neither half, rather than quietly
  spending draw A and reporting it under whatever was asked for
  
+ @param line - the probe's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'editor-width-probe'>; },): Promise<void> {
   /**
    Logger for the probe.
    */
@@ -120,7 +122,7 @@ async function main(): Promise<void> {
    Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
-    argv: process.argv,
+    line,
     fallback: DEFAULT_SLICES,
     asks: 'slices',
   },);
@@ -134,7 +136,7 @@ async function main(): Promise<void> {
   /**
    Half of the sample this run spends, named on the command line.
    */
-  const asked = process.argv[DRAW_ARGV_INDEX] ?? DEFAULT_DRAW;
+  const asked = line.positionals[DRAW_POSITION] ?? DEFAULT_DRAW;
 
   if ((asked !== 'a') && (asked !== 'b'))
     throw new StatedRefusalError({
@@ -297,6 +299,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'editor-width-probe',
+    argv: process.argv,
     run: main,
   },);
 

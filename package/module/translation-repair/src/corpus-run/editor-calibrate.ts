@@ -45,6 +45,7 @@ import {
   readOverlap,
 } from './slice-overlap.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Editor calibrate
 // WHICH OF THE ROSTER SHOULD EDIT, measured on the editor's own job.
@@ -345,17 +346,19 @@ function reportShipped(
  
  Returns nothing: the report on stdout IS the output.
  
+ @param line - the calibration's command line, read whole by `reportingRefusals`
+ 
  @example
  ```ts
- await main();
+ await main({ line, },);
  ```
  */
-async function main(): Promise<void> {
+async function main({ line, }: { readonly line: CommandLineOf<'editor-calibrate'>; },): Promise<void> {
   /**
    Slices asked for on the command line, or the default.
    */
   const wanted = readAskedCount({
-    argv: process.argv,
+    line,
     fallback: DEFAULT_SLICES,
     asks: 'slices',
   },);
@@ -549,6 +552,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'editor-calibrate',
+    argv: process.argv,
     run: main,
   },);
 

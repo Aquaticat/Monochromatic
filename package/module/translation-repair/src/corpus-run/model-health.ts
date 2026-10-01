@@ -204,6 +204,7 @@ async function reportModelHealth(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'model-health',
+    argv: process.argv,
     run: reportModelHealth,
   },);
 

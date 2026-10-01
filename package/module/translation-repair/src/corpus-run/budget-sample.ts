@@ -167,6 +167,7 @@ async function sampleBudgets(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'budget-sample',
+    argv: process.argv,
     run: sampleBudgets,
   },);
 

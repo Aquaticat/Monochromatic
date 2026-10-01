@@ -384,6 +384,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'score-crosscheck',
+    argv: process.argv,
     run: main,
   },);
 

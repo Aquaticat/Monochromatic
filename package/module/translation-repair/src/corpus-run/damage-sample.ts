@@ -376,6 +376,7 @@ async function main(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'damage-sample',
+    argv: process.argv,
     run: main,
   },);
 

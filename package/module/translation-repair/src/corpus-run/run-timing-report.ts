@@ -7,7 +7,7 @@ import {
   type RunTiming,
 } from './run-timing-read.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { StatedRefusalError, } from '../stated-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Run timing report
 // WHERE A RUN'S WALL-CLOCK WENT, read back off its own log. Spends no quota and
@@ -208,27 +208,20 @@ function printInFlight({ flight, }: { readonly flight: InFlight; },): void {
  
  Returns nothing: the report on stdout IS the output.
  
- @throws Error when no log is named
+ @param line - the report's command line, read whole by `reportingRefusals`,
+ which refuses it when no log is named: any log a pass, probe or calibration
+ wrote will do, and passing several reads them as one run
  
  @example
  ```ts
- await reportRunTiming();
+ await reportRunTiming({ line, },);
  ```
  */
-async function reportRunTiming(): Promise<void> {
+async function reportRunTiming({ line, }: { readonly line: CommandLineOf<'run-timing-report'>; },): Promise<void> {
   /**
    Logs to read, named on the command line.
    */
-  const paths = process
-    .argv
-    .slice(2,);
-
-  if (paths.length === 0) {
-    throw new StatedRefusalError({
-      says: 'name at least one log file: run-timing-report <path> [<path> ...]. Any log a pass, probe or '
-        + 'calibration wrote will do, and passing several reads them as one run.',
-    },);
-  }
+  const paths = line.positionals;
 
   /**
    Every line of every named log, in one list.
@@ -286,6 +279,7 @@ async function reportRunTiming(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'run-timing-report',
+    argv: process.argv,
     run: reportRunTiming,
   },);
 

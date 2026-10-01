@@ -1,6 +1,11 @@
 import type { RosterModelId, } from '../roster-id.ts';
 import { ROSTER_MODEL_IDS, } from '../roster-reach.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import { idListFlag, } from './command-flags.ts';
+import type {
+  ReadsFlag,
+  ReadsSwitch,
+} from './command-line.ts';
 import { RUN_ROSTER, } from './run-config.ts';
 
 //region Probe candidates
@@ -45,8 +50,8 @@ const ALONE_FLAG = '--candidates-alone';
 /**
  Reads seatable ids named after `--candidates`.
  
- @param argv - process arguments, passed rather than read so this is testable
- without a subprocess
+ @param line - the probe's command line, read whole by `reportingRefusals`
+ and passed in so this is testable without a subprocess
  
  @returns Candidate ids in the order written, none when the flag is absent
  
@@ -55,32 +60,19 @@ const ALONE_FLAG = '--candidates-alone';
  
  @example
  ```ts
- const candidates = readCandidateIds({ argv: process.argv, },);
+ const candidates = readCandidateIds({ line, },);
  ```
  */
 export function readCandidateIds(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: ReadsFlag<'candidates'>; },
 ): readonly RosterModelId[] {
   /**
-   Where the flag was written, absent when it was not.
+   Ids as written after the flag, split on commas, space and blanks dropped.
    */
-  const flagAt = argv.indexOf(CANDIDATES_FLAG,);
-  if (flagAt === (-1))
-    return [];
-
-  /**
-   Ids as written after the flag, split on commas, blanks dropped.
-   */
-  const written = (argv[flagAt + 1] ?? '')
-    .split(',',)
-    .filter(function isNamed(id,): boolean {
-      return id !== '';
-    },);
-  if (written.length === 0) {
-    throw new StatedRefusalError({
-      says: `${CANDIDATES_FLAG} takes seatable ids, comma separated: ${ROSTER_MODEL_IDS.join(',',)}`,
-    },);
-  }
+  const written = idListFlag({
+    asked: line.flag('candidates',),
+    naming: `seatable id of ${ROSTER_MODEL_IDS.join(',',)}`,
+  },);
 
   return written.map(function seatable(id,): RosterModelId {
     /**
@@ -101,20 +93,20 @@ export function readCandidateIds(
 /**
  Reads whether `--candidates-alone` was written.
  
- @param argv - process arguments, passed rather than read so this is testable
- without a subprocess
+ @param line - the probe's command line, read whole by `reportingRefusals`
+ and passed in so this is testable without a subprocess
  
  @returns Whether the candidates run without the seated roster
  
  @example
  ```ts
- const alone = readCandidatesAlone({ argv: process.argv, },);
+ const alone = readCandidatesAlone({ line, },);
  ```
  */
 export function readCandidatesAlone(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: ReadsSwitch<'candidates-alone'>; },
 ): boolean {
-  return argv.includes(ALONE_FLAG,);
+  return line.switched('candidates-alone',);
 }
 
 /**
@@ -136,8 +128,8 @@ export function readCandidatesAlone(
  @example
  ```ts
  const roster = probeRosterWith({
-   candidates: readCandidateIds({ argv: process.argv, },),
-   alone: readCandidatesAlone({ argv: process.argv, },),
+   candidates: readCandidateIds({ line, },),
+   alone: readCandidatesAlone({ line, },),
  },);
  ```
  */

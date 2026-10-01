@@ -1,11 +1,11 @@
 import type { FidelityDamageKind, } from '../fidelity-damage.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
-  flagValue,
-  type FlagValue,
   idListFlag,
   wholeNumberFlag,
 } from './command-flags.ts';
+import type { FlagValue, } from './command-line.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 
 //region Judge fidelity arguments
 // What the fidelity probe is asked on its command line, kept beside the probe
@@ -76,28 +76,27 @@ function damageKindsOf({ damage, }: { readonly damage: FlagValue; },): readonly 
 }
 
 /**
- Reads `--only`, `--cap` and `--damage` from the command line.
+ Reads `--only`, `--cap`, `--damage` and `--context` from the command line.
  
  @internal
  
- @param argv - process arguments, passed rather than read so this is testable
- without a subprocess
+ @param line - the probe's command line, read whole by `reportingRefusals`
+ and passed in so this is testable without a subprocess
  
  @returns Entry ids to trial, empty for every entry, the trial cap, and which
  defects to build
  
- @throws StatedRefusalError when a flag was written without a usable value:
- nothing after it, a cap that is not a whole number written in digits or is
- below zero, an entry filter naming no entry, or a defect this probe does
- not build
+ @throws StatedRefusalError when a cap is not a whole number written in
+ digits or is below zero, an entry filter names no entry, or a defect is one
+ this probe does not build
  
  @example
  ```ts
- const { onlyIds, cap, damageKinds, } = readFidelityArguments({ argv: process.argv, },);
+ const { onlyIds, cap, damageKinds, } = readFidelityArguments({ line, },);
  ```
  */
 export function readFidelityArguments(
-  { argv, }: { readonly argv: readonly string[]; },
+  { line, }: { readonly line: CommandLineOf<'judge-fidelity-probe'>; },
 ): {
   readonly onlyIds: readonly string[];
   readonly cap: number;
@@ -105,33 +104,21 @@ export function readFidelityArguments(
   readonly withContext: boolean;
 } {
   /**
-   Arguments after the script path.
-   */
-  const args = argv
-    .slice(2,);
-
-  /**
    Defects to build, read before the other flags so a bad one is refused
    first.
    */
-  const damageKinds = damageKindsOf({
-    damage: flagValue({
-      args,
-      flag: '--damage',
-    },),
-  },);
+  const damageKinds = damageKindsOf({ damage: line.flag('damage',), },);
   return {
     // Whether the sheet also carries the neighbouring sections' original,
     // which is the one thing that differs between a narrow run and a wide one.
-    withContext: args.includes('--context',),
+    withContext: line.switched('context',),
     damageKinds,
     onlyIds: idListFlag({
-      args,
-      flag: '--only',
+      asked: line.flag('only',),
+      naming: 'entry id',
     },),
     cap: wholeNumberFlag({
-      args,
-      flag: '--cap',
+      asked: line.flag('cap',),
       unwritten: DEFAULT_TRIAL_CAP,
       leaveOffTo: `run the default of ${String(DEFAULT_TRIAL_CAP,)} trials`,
     },),

@@ -72,6 +72,7 @@ import {
 } from './run-config.ts';
 import { corpusPinOverrideNote, } from './corpus-pin-override.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import {
   assertRequiredProvidersReady,
   readRequiredProviders,
@@ -216,14 +217,16 @@ const PLAN_PREVIEW_COUNT = 5;
  Reads config and the API key from the environment; performs model calls unless
  `--plan` is passed, which verifies setup at zero quota and returns.
  
+ @param line - the pass's command line, read whole by `reportingRefusals`
+ 
  @throws {@link Error} when the API key env var is unset
  
  @example
  ```ts
- await runCorpusPass();
+ await runCorpusPass({ line, },);
  ```
  */
-async function runCorpusPass(): Promise<void> {
+async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-pass'>; },): Promise<void> {
   /**
    Note naming the straggler window when it is not the built-in one.
    
@@ -333,7 +336,7 @@ async function runCorpusPass(): Promise<void> {
   /**
    Entry ids this invocation is restricted to, empty when unrestricted.
    */
-  const onlyIds = readOnlyIds({ argv: process.argv, },);
+  const onlyIds = readOnlyIds({ line, },);
   if (onlyIds.size > 0) {
     /**
      Chosen ids in a stable order, so two runs of one selection log alike.
@@ -516,7 +519,7 @@ async function runCorpusPass(): Promise<void> {
   /**
    Providers validation or performance arm explicitly requires wet.
    */
-  const requiredProviders = readRequiredProviders({ argv: process.argv, },);
+  const requiredProviders = readRequiredProviders({ line, },);
   await assertRequiredProvidersReady({
     required: requiredProviders,
     env: process.env,
@@ -532,8 +535,7 @@ async function runCorpusPass(): Promise<void> {
    */
   const client = createRunClient({ promptPayloadDir, },);
 
-  if (process.argv
-    .includes('--plan',)) {
+  if (line.switched('plan',)) {
     console.log(
       `PLAN ok tip=${tip} pipeline=${pipelineDigest} client=constructed pending=${String(pending.length,)} first=${
         pending
@@ -645,6 +647,7 @@ async function runCorpusPass(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'corpus-pass',
+    argv: process.argv,
     run: runCorpusPass,
   },);
 

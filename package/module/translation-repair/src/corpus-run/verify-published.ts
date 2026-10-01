@@ -444,6 +444,7 @@ async function verifyPublished(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'verify-published',
+    argv: process.argv,
     run: verifyPublished,
   },);
 

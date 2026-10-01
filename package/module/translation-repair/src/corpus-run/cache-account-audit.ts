@@ -456,6 +456,7 @@ async function auditCacheAccounts(): Promise<void> {
 if (import.meta.main)
   await reportingRefusals({
     what: 'cache-account-audit',
+    argv: process.argv,
     run: auditCacheAccounts,
   },);
 
