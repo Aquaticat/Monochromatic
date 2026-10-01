@@ -24,3 +24,94 @@ extends = "test:unit"
 
 [tasks."verify:extension"]
 run = ["mise run //package/pi-plugin/openai-fast:build:js:node", "node src/host.unit.test.ts"]
+
+[tasks."verify:live"]
+description = "Verify normal and priority requests in disposable pi state using only the existing Codex access token"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises'
+import { homedir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { spawn } from 'node:child_process'
+import { once } from 'node:events'
+class LiveVerificationError extends Error {
+  constructor(message) { super(message); this.name = LiveVerificationError.name }
+}
+if (process.env.PI_OPENAI_FAST_LIVE_CHILD === '1') {
+  throw new LiveVerificationError('Live verification cannot recursively launch itself')
+}
+const authPath = join(homedir(), '.pi', 'agent', 'auth.json')
+const stored = JSON.parse(await readFile(authPath, 'utf8'))
+const credential = stored['openai-codex']
+if (credential?.type !== 'oauth' || typeof credential.access !== 'string' || credential.expires <= Date.now()) {
+  throw new LiveVerificationError('A currently valid original Codex OAuth access token is required. Refresh the original login before live verification.')
+}
+const hostEntry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent'))
+const cliPath = fileURLToPath(new URL('./cli.js', hostEntry))
+const hostRoot = fileURLToPath(new URL('../', hostEntry))
+const bundle = resolve('dist/final/node/index.mjs')
+const root = await mkdtemp(join(homedir(), 'temp', 'agent', 'pi-openai-fast-live-'))
+try {
+  await writeFile(join(root, 'settings.json'), JSON.stringify({ packages: [], transport: 'auto', retry: { enabled: false }, compaction: { enabled: false } }))
+  await writeFile(join(root, 'models.json'), JSON.stringify({ providers: { 'openai-codex': { apiKey: '$PI_OPENAI_FAST_ACCESS' } } }))
+  const observer = join(root, 'observe.ts')
+  await writeFile(observer, `import { appendFile } from 'node:fs/promises';
+export default function observe(pi) {
+  if (process.env.PI_OPENAI_FAST_LIVE_CHILD !== '1') throw new Error('Disposable live observer requires its recursion guard');
+  pi.on('before_provider_request', async function request(event) {
+    const body = event.payload;
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      await appendFile(process.env.PI_OPENAI_FAST_TRACE, JSON.stringify({ model: body.model, serviceTier: body.service_tier }) + '\\n');
+    }
+  });
+}`)
+  for (const [mode, slug] of [['normal', 'openai-codex/gpt-6-luna'], ['fast', 'openai-codex-fast/gpt-6-luna']]) {
+    const trace = join(root, mode + '.jsonl')
+    const marker = 'PI_OPENAI_FAST_LIVE_' + mode.toUpperCase()
+    const child = spawn(process.execPath, [cliPath, '--offline', '--no-approve', '--no-extensions', '--extension', bundle, '--extension', observer,
+      '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files', '--no-tools', '--no-session', '--print',
+      '--model', slug, '--thinking', 'low', 'Reply only with ' + marker + '.'], {
+      cwd: root,
+      env: { ...process.env, HOME: root, PI_CODING_AGENT_DIR: root, PI_PACKAGE_DIR: hostRoot, PI_OFFLINE: '1',
+        PI_OPENAI_FAST_LIVE_CHILD: '1', PI_OPENAI_FAST_ACCESS: credential.access, PI_OPENAI_FAST_TRACE: trace },
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
+    const output = []
+    const errors = []
+    let captured = 0
+    let outputExceeded = false
+    function capture({ chunks, value }) {
+      captured += value.length
+      if (captured > 1048576) { outputExceeded = true; child.kill('SIGTERM'); return }
+      chunks.push(value)
+    }
+    child.stdout.on('data', function stdout(value) { capture({ chunks: output, value }) })
+    child.stderr.on('data', function stderr(value) { capture({ chunks: errors, value }) })
+    const deadline = AbortSignal.timeout(120000)
+    function terminate() {
+      child.kill('SIGTERM')
+      const escalation = AbortSignal.timeout(5000)
+      escalation.addEventListener('abort', function killStaleChild() {
+        if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
+      }, { once: true })
+    }
+    deadline.addEventListener('abort', terminate, { once: true })
+    const [code] = await once(child, 'close')
+    deadline.removeEventListener('abort', terminate)
+    if (deadline.aborted || outputExceeded) throw new LiveVerificationError(mode + ' live pi verification exceeded its deadline or output limit')
+    const text = Buffer.concat(output).toString('utf8')
+    const diagnostic = Buffer.concat(errors).toString('utf8')
+    if (code !== 0 || !text.includes(marker) || diagnostic.includes('context canceled')) {
+      throw new LiveVerificationError(mode + ' live pi verification failed: ' + diagnostic + '\\n' + text)
+    }
+    const requests = (await readFile(trace, 'utf8')).trim().split('\n').map(function parse(line) { return JSON.parse(line) })
+    if (requests.length === 0 || requests.some(function incorrect(request) {
+      return request.model !== 'gpt-6-luna' || (mode === 'fast' ? request.serviceTier !== 'priority' : request.serviceTier === 'priority')
+    })) { throw new LiveVerificationError(mode + ' request did not preserve the expected original model and requested tier') }
+    console.log('PASS ' + mode + ': real pi output and original-model request metadata verified')
+  }
+} finally {
+  await rm(root, { recursive: true, force: true })
+}
+'''
