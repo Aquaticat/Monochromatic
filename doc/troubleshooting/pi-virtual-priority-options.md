@@ -589,7 +589,7 @@ try {
   await writeFile(join(root, 'settings.json'), JSON.stringify(before));
   const result = await run('mise', ['run', '//package/pi-plugin/openai-fast:install:global'], {
     cwd: process.cwd(),
-    env: { ...process.env, HOME: root, PI_CODING_AGENT_DIR: root, PI_OFFLINE: '1' },
+    env: { ...process.env, PI_CODING_AGENT_DIR: root, PI_OFFLINE: '1' },
   });
   assert.match(result.stdout, /PASS global replacement/u);
   const after = JSON.parse(await readFile(join(root, 'settings.json'), 'utf8'));
