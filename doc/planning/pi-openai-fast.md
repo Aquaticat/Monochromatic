@@ -444,7 +444,7 @@ Build,
  live ordinary/priority probes,
  and disposable installation/discovery controls passed.
 Rendered documentation and the exact embedded installation reproduction also passed.
-The final Markdown check is being rerun after semantic line-wrap corrections.
+The scoped Markdown check passed after semantic line-wrap corrections.
 
 Restart pi to load the replacement,
  then select `openai-codex-fast/<model-id>` in its normal model picker.
