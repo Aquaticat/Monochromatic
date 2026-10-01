@@ -88,10 +88,48 @@ type RefusalPlace = {
 };
 
 /**
- Reads the line and column a parser message names, when it names them.
+ What a parser message says the grammar stopped at: the end of the span it
+ names, or the point it names, or the message itself when it names neither.
 
- A micromark message carries `line` and `column` as numbers; anything else
- names no place.
+ THE END OF A SPAN, NOT ITS START (ledger B86). `mdast-util-mdx-jsx` raises
+ its refusals on leaving the span it names (`onErrorRightIsTag`,
+ `exitMdxJsxTag` in 3.2.0), so an element left open in a paragraph stops the
+ grammar where the paragraph ends. A `VFileMessage` copies its own `line` and
+ `column` from the span's start, which read that refusal at the paragraph's
+ first character. Micromark's own refusals name a point.
+
+ @param cause - caught error, of unknown shape beyond being an object
+
+ @returns Object whose `line` and `column`, when numeric, name the stop
+
+ @example
+ ```ts
+ const stop = stopPointOf({ cause, },);
+ ```
+ */
+function stopPointOf({ cause, }: { readonly cause: object; },): object {
+  if ((!('place' in cause))
+    || ((typeof cause.place) !== 'object')
+    || (cause.place === null))
+    return cause;
+  /**
+   Point or span the message names.
+   */
+  const { place, } = cause;
+  if (('end' in place)
+    && ((typeof place.end) === 'object')
+    && (place.end !== null))
+    return place.end;
+  return place;
+}
+
+/**
+ Reads the line and column a parser message says the grammar stopped at,
+ when it names them.
+
+ A micromark message carries the place as numbers; anything else names no
+ place. An element still open when the document ends is refused with no
+ place at all, since the parser stopped at the end of the document.
 
  @param cause - caught value, of unknown type by construction
 
@@ -108,16 +146,20 @@ function refusalPlace(
   if (!Error.isError(cause,))
     return {};
   /**
-   Line the message names, when numeric.
+   Where the message says the grammar stopped.
    */
-  const line: RefusalPlace = (('line' in cause) && ((typeof cause.line) === 'number'))
-    ? { line: cause.line, }
+  const stop = stopPointOf({ cause, },);
+  /**
+   Line it names, when numeric.
+   */
+  const line: RefusalPlace = (('line' in stop) && ((typeof stop.line) === 'number'))
+    ? { line: stop.line, }
     : {};
   /**
-   Column the message names, when numeric.
+   Column it names, when numeric.
    */
-  const column: RefusalPlace = (('column' in cause) && ((typeof cause.column) === 'number'))
-    ? { column: cause.column, }
+  const column: RefusalPlace = (('column' in stop) && ((typeof stop.column) === 'number'))
+    ? { column: stop.column, }
     : {};
   return {
     ...line,

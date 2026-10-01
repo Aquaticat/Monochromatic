@@ -145,10 +145,15 @@ export function strictRefusalOffset(
      The grammar's refusal, which names where it stopped when the parser did.
      */
     const refusal = requireMdxRefusal({ error, },);
+    // NO PLACE MEANS THE END OF THE BODY (ledger B86): the one refusal the
+    // parser names no place for is an element still open when the document
+    // ended (`mdast-util-mdx-jsx` `onErrorRightIsTag` with nothing left to
+    // close), so the grammar read the whole body before it stopped. Read as the
+    // body's start, it ranked before every other break on the page.
     if ((refusal.line === undefined) || (refusal.column === undefined))
       return {
         refused: true,
-        offset: split.bodyOffset,
+        offset: split.bodyOffset + masked.length,
       };
     return {
       refused: true,
