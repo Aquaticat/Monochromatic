@@ -209,6 +209,33 @@ await describe({
       },
     },),
     it({
+      name: 'PAIRS EACH SPEND LINE WITH THE LATEST STREAM STILL WAITING when several of one label wait, and takes '
+        + 'each stream once',
+      fn: async () => {
+        expect(readCapLog({
+          lines: [
+            streamLine({ stamp: '2026-09-28T10:00:00.000Z', label: HYPER_ID, outcome: 'completed', content: 11, },),
+            streamLine({ stamp: '2026-09-28T10:00:00.010Z', label: HYPER_ID, outcome: 'completed', content: 22, },),
+            spendLine({
+              stamp: '2026-09-28T10:00:00.020Z',
+              tail: `provider=hyper model=${HYPER_ID} prompt=10 completion=13`,
+            },),
+            spendLine({
+              stamp: '2026-09-28T10:00:00.030Z',
+              tail: `provider=hyper model=${HYPER_ID} prompt=10 completion=14`,
+            },),
+          ],
+        },)
+          .samples
+          .map(function contentOf(sample,) {
+            return sample.content;
+          },),).toEqual([
+          22,
+          11,
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES A SPEND LINE UNPAIRED when its stream\'s content count is not written in digits: an empty count '
         + 'is no stream that delivered nothing, and a sign or an exponent is no count the stream line writes '
         + '(ledger B73)',

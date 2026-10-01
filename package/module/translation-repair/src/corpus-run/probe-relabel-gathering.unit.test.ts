@@ -88,6 +88,12 @@ const DAMAGED_POSITION = 2;
 const UNDAMAGED_POSITION = 1;
 
 /**
+ Sheet position `DAMAGED_CASES` records as the same edit drawn again under a
+ second accepted issue, which the gatherer merges into the first draw's case.
+ */
+const DRAWN_AGAIN_POSITION = 7;
+
+/**
  Wording an edit replaced in the section the reader read as damaged.
  */
 const DAMAGED_BEFORE = 'The cat sat on the warm windowsill mat.';
@@ -433,14 +439,17 @@ function settledArtifact(): Record<string, unknown> {
  {@link DAMAGED_POSITION}, which is what the sheet marked and what the parser
  requires to match where the item sits.
  
+ @param alsoDrawn - issues drawn after those two, at the positions that
+ follow, so a case can draw one edit again
+ 
  @returns Manifest value, as a draw writes one
  
  @example
  ```ts
- const manifest = drawnManifest();
+ const manifest = drawnManifest({ alsoDrawn: [], },);
  ```
  */
-function drawnManifest(): Record<string, unknown> {
+function drawnManifest({ alsoDrawn, }: { readonly alsoDrawn: readonly string[]; },): Record<string, unknown> {
   return {
     seed: 'whiskers-seed',
     corpusSha: 'b'.repeat(40,),
@@ -455,6 +464,16 @@ function drawnManifest(): Record<string, unknown> {
         entryId: ENTRY_ID,
         issueId: 'adjudicated/windowsill',
       },
+      ...alsoDrawn.map(function toItem(
+        issueId,
+        index,
+      ) {
+        return {
+          position: DAMAGED_POSITION + index + 1,
+          entryId: ENTRY_ID,
+          issueId,
+        };
+      },),
     ],
   };
 }
@@ -485,6 +504,9 @@ type Rig = AsyncDisposable & {
  process-wide, so every case here runs at `concurrency: 1` and the disposer
  puts the variable back however the case ends.
  
+ @param alsoDrawn - issues the manifest draws after its two items, none by
+ default
+ 
  @returns Rig carrying the pin and the manifest path
  
  @example
@@ -492,7 +514,9 @@ type Rig = AsyncDisposable & {
  await using rig = await gatheringRig();
  ```
  */
-async function gatheringRig(): Promise<Rig> {
+async function gatheringRig(
+  { alsoDrawn = [], }: { readonly alsoDrawn?: readonly string[]; } = {},
+): Promise<Rig> {
   /**
    Runs directory standing before this case ran.
    */
@@ -619,7 +643,7 @@ async function gatheringRig(): Promise<Rig> {
 
   await writeFile(
     manifestPath,
-    JSON.stringify(drawnManifest(),),
+    JSON.stringify(drawnManifest({ alsoDrawn, },),),
     'utf8',
   );
 
@@ -704,6 +728,45 @@ await describe({
           manifestPath: rig.manifestPath,
           pin: rig.pin,
         },))[0]?.positions,).toEqual([DAMAGED_POSITION,],);
+      },
+    },),
+    it({
+      name: 'MERGES an edit drawn again at a second damaged position into the first draw\'s case, which carries '
+        + 'both positions, so the prober asks about one edit once',
+      fn: async () => {
+        // Positions 3 to 6 draw undamaged issues, which the gatherer skips,
+        // so the windowsill edit's second draw lands at position 7.
+        await using rig = await gatheringRig({
+          alsoDrawn: [
+            'adjudicated/purr',
+            'adjudicated/stair',
+            'adjudicated/stove',
+            'adjudicated/purr',
+            'adjudicated/windowsill',
+          ],
+        },);
+
+        /**
+         Damaged arm rebuilt from the run that drew the edit twice.
+         */
+        const cases = await gatherRelabelCases({
+          manifestPath: rig.manifestPath,
+          pin: rig.pin,
+        },);
+
+        expect(cases.map(function toDraws(gathered,) {
+          return {
+            envelopeId: gathered.region
+              .envelopeId,
+            positions: gathered.positions,
+          };
+        },),).toEqual([{
+          envelopeId: 'envelope/windowsill',
+          positions: [
+            DAMAGED_POSITION,
+            DRAWN_AGAIN_POSITION,
+          ],
+        },],);
       },
     },),
     it({
