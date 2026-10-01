@@ -28,6 +28,12 @@ import {
   SLICE_START_MARKER,
 } from '../dist/final/node/index.mjs';
 
+import {
+  HOUR_MS,
+  stubWallClock,
+  WALL_START_MS,
+} from './wall-clock-stub.test-fixture.ts';
+
 /**
  Collects what a lane logged, so a written line can be read back.
  
@@ -78,395 +84,426 @@ const TWO_LANE_LOG = [
 ].join('\n',);
 
 await describe({
-  name: readSliceCosts.name,
+  name: '',
   children: [
-    it({
-      name:
-        'ACCEPTS repair and translate cost lines and ignores every line that carries no marker, so a pass '
-        + 'log can be read without being filtered first',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({ log: TWO_LANE_LOG, },);
-        expect(dropped,).toHaveLength(0,);
-        expect(rows,).toHaveLength(2,);
-        expect(rows[0],).toEqual({
-          lane: 'repair',
-          sliceIndex: 0,
-          sourceChars: 812,
-          elapsedMs: 45_210,
-          exit: 'computed',
-        },);
-        expect(rows[1]
-          ?.lane,).toBe('translate',);
-        expect(rows[1]
-          ?.elapsedMs,).toBe(88_130,);
-        expect(rows[1]
-          ?.exit,).toBe('resumed',);
-      },
+    describe({
+      name: readSliceCosts.name,
+      children: [
+        it({
+          name:
+            'ACCEPTS repair and translate cost lines and ignores every line that carries no marker, so a pass '
+            + 'log can be read without being filtered first',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({ log: TWO_LANE_LOG, },);
+            expect(dropped,).toHaveLength(0,);
+            expect(rows,).toHaveLength(2,);
+            expect(rows[0],).toEqual({
+              lane: 'repair',
+              sliceIndex: 0,
+              sourceChars: 812,
+              elapsedMs: 45_210,
+              exit: 'computed',
+            },);
+            expect(rows[1]
+              ?.lane,).toBe('translate',);
+            expect(rows[1]
+              ?.elapsedMs,).toBe(88_130,);
+            expect(rows[1]
+              ?.exit,).toBe('resumed',);
+          },
+        },),
+        it({
+          name:
+            'REFUSES a half-written line and names every field it lacks, because a log is written while a '
+            + 'pass runs and its last line can be cut mid-word',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({
+              log: 'SLICE-COST lane=repair chunk=4 sourceCh',
+            },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped,).toHaveLength(1,);
+            expect(dropped[0],).toBe('sourceChars missing, ms missing, exit missing',);
+          },
+        },),
+        it({
+          name: 'REFUSES a lane it does not know, rather than counting it under one it does',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({
+              log: 'SLICE-COST lane=refine chunk=4 sourceChars=10 ms=20 exit=computed',
+            },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped[0],).toBe('lane refine',);
+          },
+        },),
+        it({
+          name:
+            'REFUSES an exit it does not know, so a path added to a lane without being added here cannot '
+            + 'be silently counted as ordinary work',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({
+              log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20 exit=abandoned',
+            },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped[0],).toBe('exit abandoned',);
+          },
+        },),
+        it({
+          name:
+            'REFUSES a line carrying no exit at all, which is the shape written before exits were '
+            + 'recorded and prices a cache hit the same as a full roster',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({
+              log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20',
+            },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped[0],).toBe('exit missing',);
+          },
+        },),
+        it({
+          name:
+            'REFUSES a measurement that is not a whole number, which is what a truncated or garbled '
+            + 'duration looks like',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({
+              log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=45e exit=computed',
+            },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped[0],).toBe('ms 45e',);
+          },
+        },),
+        it({
+          name:
+            'REFUSES an empty, hexadecimal, exponent or signed measurement, and names each, since the writer '
+            + 'writes plain decimal digits and reading any other spelling as a number invents one: an empty '
+            + 'field read as 0 and `0x1F` as 31 (ledger B71)',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({
+              log: 'SLICE-COST lane=repair chunk= sourceChars=0x1F ms=1e3 exit=computed\n'
+                + 'SLICE-COST lane=translate chunk=+2 sourceChars=10 ms=-3 exit=computed',
+            },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped,).toEqual([
+              'chunk empty, sourceChars 0x1F, ms 1e3',
+              'chunk +2, ms -3',
+            ],);
+          },
+        },),
+        it({
+          name:
+            'REFUSES a digit run past the largest integer a double holds exactly, since `9007199254740993` '
+            + 'reads back as 9007199254740992 and the row would carry a count nobody wrote',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({
+              log: 'SLICE-COST lane=repair chunk=9007199254740993 sourceChars=10 ms=5 exit=computed',
+            },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped,).toEqual(['chunk 9007199254740993',],);
+          },
+        },),
+        it({
+          name: 'reports nothing at all, not even a refusal, for a log that mentions no cost',
+          fn: async () => {
+            const { rows, dropped, } = readSliceCosts({ log: 'three cats, no costs\nnor here', },);
+            expect(rows,).toHaveLength(0,);
+            expect(dropped,).toHaveLength(0,);
+          },
+        },),
+      ],
     },),
-    it({
-      name:
-        'REFUSES a half-written line and names every field it lacks, because a log is written while a '
-        + 'pass runs and its last line can be cut mid-word',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=repair chunk=4 sourceCh',
-        },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped,).toHaveLength(1,);
-        expect(dropped[0],).toBe('sourceChars missing, ms missing, exit missing',);
-      },
-    },),
-    it({
-      name: 'REFUSES a lane it does not know, rather than counting it under one it does',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=refine chunk=4 sourceChars=10 ms=20 exit=computed',
-        },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped[0],).toBe('lane refine',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES an exit it does not know, so a path added to a lane without being added here cannot '
-        + 'be silently counted as ordinary work',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20 exit=abandoned',
-        },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped[0],).toBe('exit abandoned',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a line carrying no exit at all, which is the shape written before exits were '
-        + 'recorded and prices a cache hit the same as a full roster',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20',
-        },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped[0],).toBe('exit missing',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a measurement that is not a whole number, which is what a truncated or garbled '
-        + 'duration looks like',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=45e exit=computed',
-        },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped[0],).toBe('ms 45e',);
-      },
-    },),
-    it({
-      name:
-        'REFUSES an empty, hexadecimal, exponent or signed measurement, and names each, since the writer '
-        + 'writes plain decimal digits and reading any other spelling as a number invents one: an empty '
-        + 'field read as 0 and `0x1F` as 31 (ledger B71)',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=repair chunk= sourceChars=0x1F ms=1e3 exit=computed\n'
-            + 'SLICE-COST lane=translate chunk=+2 sourceChars=10 ms=-3 exit=computed',
-        },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped,).toEqual([
-          'chunk empty, sourceChars 0x1F, ms 1e3',
-          'chunk +2, ms -3',
-        ],);
-      },
-    },),
-    it({
-      name:
-        'REFUSES a digit run past the largest integer a double holds exactly, since `9007199254740993` '
-        + 'reads back as 9007199254740992 and the row would carry a count nobody wrote',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({
-          log: 'SLICE-COST lane=repair chunk=9007199254740993 sourceChars=10 ms=5 exit=computed',
-        },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped,).toEqual(['chunk 9007199254740993',],);
-      },
-    },),
-    it({
-      name: 'reports nothing at all, not even a refusal, for a log that mentions no cost',
-      fn: async () => {
-        const { rows, dropped, } = readSliceCosts({ log: 'three cats, no costs\nnor here', },);
-        expect(rows,).toHaveLength(0,);
-        expect(dropped,).toHaveLength(0,);
-      },
-    },),
-  ],
-},);
 
-await describe({
-  name: armSliceCost.name,
-  children: [
-    it({
-      name:
-        'REPORTS a slice that was left EARLY, which is the case a closing call would miss: slice stages '
-        + 'leave their loop body by more than one path',
-      fn: async () => {
-        const said: string[] = [];
+    describe({
+      name: armSliceCost.name,
+      children: [
+        it({
+          name:
+            'REPORTS a slice that was left EARLY, which is the case a closing call would miss: slice stages '
+            + 'leave their loop body by more than one path',
+          fn: async () => {
+            const said: string[] = [];
 
-        /**
-         Loop that leaves its body early for every slice, as a lane does for a
-         slice it has nothing to do with.
-         */
-        for (const sliceIndex of [
-          0,
-          1,
-        ]) {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'repair',
-            sliceIndex,
-            sourceChars: 7,
-            signal: LIVE_RUN.signal,
-          },);
+            /**
+             Loop that leaves its body early for every slice, as a lane does for a
+             slice it has nothing to do with.
+             */
+            for (const sliceIndex of [
+              0,
+              1,
+            ]) {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'repair',
+                sliceIndex,
+                sourceChars: 7,
+                signal: LIVE_RUN.signal,
+              },);
 
-          continue;
-        }
+              continue;
+            }
 
-        expect(said,).toHaveLength(4,);
-        expect(said.filter(function isStart(line,): boolean {
-          return line.startsWith(SLICE_START_MARKER,);
-        },),).toHaveLength(2,);
-      },
-    },),
-    it({
-      name:
-        'writes a line THIS READER can read, which is the only thing keeping the two files agreed '
-        + 'about a shape neither one owns',
-      fn: async () => {
-        const said: string[] = [];
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'translate',
-            sliceIndex: 12,
-            sourceChars: 843,
-            signal: LIVE_RUN.signal,
-          },);
-        }
+            expect(said,).toHaveLength(4,);
+            expect(said.filter(function isStart(line,): boolean {
+              return line.startsWith(SLICE_START_MARKER,);
+            },),).toHaveLength(2,);
+          },
+        },),
+        it({
+          name:
+            'writes a line THIS READER can read, which is the only thing keeping the two files agreed '
+            + 'about a shape neither one owns',
+          fn: async () => {
+            const said: string[] = [];
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'translate',
+                sliceIndex: 12,
+                sourceChars: 843,
+                signal: LIVE_RUN.signal,
+              },);
+            }
 
-        const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(dropped,).toHaveLength(0,);
-        expect(rows,).toHaveLength(1,);
-        expect(rows[0]
-          ?.lane,).toBe('translate',);
-        expect(rows[0]
-          ?.sliceIndex,).toBe(12,);
-        expect(rows[0]
-          ?.sourceChars,).toBe(843,);
-        expect(said[0],).toBe('SLICE-START lane=translate chunk=12 sourceChars=843',);
-      },
-    },),
-    it({
-      name:
-        'REPORTS consolidation before it finishes and keeps an unsettled exit distinct from completed work',
-      fn: async () => {
-        const said: string[] = [];
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'consolidation',
-            sliceIndex: 2,
-            sourceChars: 73,
-            signal: LIVE_RUN.signal,
-          },);
-          cost.left({ exit: 'unsettled', },);
-        }
+            const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(dropped,).toHaveLength(0,);
+            expect(rows,).toHaveLength(1,);
+            expect(rows[0]
+              ?.lane,).toBe('translate',);
+            expect(rows[0]
+              ?.sliceIndex,).toBe(12,);
+            expect(rows[0]
+              ?.sourceChars,).toBe(843,);
+            expect(said[0],).toBe('SLICE-START lane=translate chunk=12 sourceChars=843',);
+          },
+        },),
+        it({
+          name:
+            'TIMES THE SLICE ON A CLOCK THE SYSTEM TIME CANNOT MOVE (ledger B78): with the system clock set back an '
+            + 'hour mid-slice, the line still carries the slice\'s own milliseconds, where it carried a negative '
+            + 'count this reader drops',
+          fn: async () => {
+            const said: string[] = [];
+            {
+              using wall = stubWallClock({ atMs: WALL_START_MS, },);
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'translate',
+                sliceIndex: 5,
+                sourceChars: 321,
+                signal: LIVE_RUN.signal,
+              },);
+              wall.step({ byMs: -HOUR_MS, },);
+            }
 
-        const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(dropped,).toHaveLength(0,);
-        expect(said[0],).toBe('SLICE-START lane=consolidation chunk=2 sourceChars=73',);
-        expect(rows[0]
-          ?.lane,).toBe('consolidation',);
-        expect(rows[0]
-          ?.exit,).toBe('unsettled',);
-      },
-    },),
-    it({
-      name:
-        'reports the ordinary exit for a slice that names none, so the common path needs no call and '
-        + 'cannot be forgotten',
-      fn: async () => {
-        const said: string[] = [];
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'repair',
-            sliceIndex: 0,
-            sourceChars: 11,
-            signal: LIVE_RUN.signal,
-          },);
-        }
+            const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(dropped,).toHaveLength(0,);
+            expect(rows,).toHaveLength(1,);
+            expect(rows[0]
+              ?.elapsedMs,).toBeLessThan(HOUR_MS,);
+          },
+        },),
+        it({
+          name:
+            'REPORTS consolidation before it finishes and keeps an unsettled exit distinct from completed work',
+          fn: async () => {
+            const said: string[] = [];
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'consolidation',
+                sliceIndex: 2,
+                sourceChars: 73,
+                signal: LIVE_RUN.signal,
+              },);
+              cost.left({ exit: 'unsettled', },);
+            }
 
-        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(rows[0]
-          ?.exit,).toBe('computed',);
-      },
-    },),
-    it({
-      name:
-        'REPORTS the exit a lane named rather than the ordinary one, which is what separates a cache '
-        + 'hit costing nothing from a slice that bought a full roster',
-      fn: async () => {
-        const said: string[] = [];
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'translate',
-            sliceIndex: 4,
-            sourceChars: 96,
-            signal: LIVE_RUN.signal,
-          },);
-          cost.left({ exit: 'resumed', },);
-        }
+            const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(dropped,).toHaveLength(0,);
+            expect(said[0],).toBe('SLICE-START lane=consolidation chunk=2 sourceChars=73',);
+            expect(rows[0]
+              ?.lane,).toBe('consolidation',);
+            expect(rows[0]
+              ?.exit,).toBe('unsettled',);
+          },
+        },),
+        it({
+          name:
+            'reports the ordinary exit for a slice that names none, so the common path needs no call and '
+            + 'cannot be forgotten',
+          fn: async () => {
+            const said: string[] = [];
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'repair',
+                sliceIndex: 0,
+                sourceChars: 11,
+                signal: LIVE_RUN.signal,
+              },);
+            }
 
-        const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(dropped,).toHaveLength(0,);
-        expect(rows[0]
-          ?.exit,).toBe('resumed',);
-      },
-    },),
-    it({
-      name:
-        'REPORTS a slice cut mid-flight as aborted rather than as ordinary work, which is the case '
-        + 'that would otherwise put one near-cap row per aborted entry inside the computed population',
-      fn: async () => {
-        const said: string[] = [];
+            const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(rows[0]
+              ?.exit,).toBe('computed',);
+          },
+        },),
+        it({
+          name:
+            'REPORTS the exit a lane named rather than the ordinary one, which is what separates a cache '
+            + 'hit costing nothing from a slice that bought a full roster',
+          fn: async () => {
+            const said: string[] = [];
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'translate',
+                sliceIndex: 4,
+                sourceChars: 96,
+                signal: LIVE_RUN.signal,
+              },);
+              cost.left({ exit: 'resumed', },);
+            }
 
-        /**
-         Run stopped while this slice was in flight, as an entry deadline does.
-         */
-        const stopped = new AbortController();
+            const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(dropped,).toHaveLength(0,);
+            expect(rows[0]
+              ?.exit,).toBe('resumed',);
+          },
+        },),
+        it({
+          name:
+            'REPORTS a slice cut mid-flight as aborted rather than as ordinary work, which is the case '
+            + 'that would otherwise put one near-cap row per aborted entry inside the computed population',
+          fn: async () => {
+            const said: string[] = [];
 
-        /**
-         Thrown out of the slice body, so the measurement leaves scope the way
-         a real abort takes it: by exception, naming no exit.
-         */
-        const cut = new Error('entry deadline',);
-        try {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'repair',
-            sliceIndex: 9,
-            sourceChars: 4_096,
-            signal: stopped.signal,
-          },);
+            /**
+             Run stopped while this slice was in flight, as an entry deadline does.
+             */
+            const stopped = new AbortController();
 
-          stopped.abort(cut,);
-          throw cut;
-        }
-        catch (error) {
-          // Expected: this test drives the throwing path deliberately.
-          if (error !== cut)
-            throw error;
-        }
+            /**
+             Thrown out of the slice body, so the measurement leaves scope the way
+             a real abort takes it: by exception, naming no exit.
+             */
+            const cut = new Error('entry deadline',);
+            try {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'repair',
+                sliceIndex: 9,
+                sourceChars: 4_096,
+                signal: stopped.signal,
+              },);
 
-        const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(dropped,).toHaveLength(0,);
-        expect(rows[0]
-          ?.exit,).toBe('aborted',);
-      },
-    },),
-    it({
-      name: 'REPORTS non-abort consolidation failure distinctly from completed work',
-      fn: async () => {
-        const said: string[] = [];
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'consolidation',
-            sliceIndex: 6,
-            sourceChars: 89,
-            signal: LIVE_RUN.signal,
-          },);
-          cost.left({ exit: 'failed', },);
-        }
+              stopped.abort(cut,);
+              throw cut;
+            }
+            catch (error) {
+              // Expected: this test drives the throwing path deliberately.
+              if (error !== cut)
+                throw error;
+            }
 
-        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(rows[0]
-          ?.exit,).toBe('failed',);
-      },
-    },),
-    it({
-      name:
-        'REPORTS provisional failure as aborted when caller signal stopped active slice',
-      fn: async () => {
-        const said: string[] = [];
-        const stopped = new AbortController();
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'consolidation',
-            sliceIndex: 8,
-            sourceChars: 144,
-            signal: stopped.signal,
-          },);
-          cost.left({ exit: 'failed', },);
-          stopped.abort(new Error('caller stopped active consolidation',),);
-        }
+            const { rows, dropped, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(dropped,).toHaveLength(0,);
+            expect(rows[0]
+              ?.exit,).toBe('aborted',);
+          },
+        },),
+        it({
+          name: 'REPORTS non-abort consolidation failure distinctly from completed work',
+          fn: async () => {
+            const said: string[] = [];
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'consolidation',
+                sliceIndex: 6,
+                sourceChars: 89,
+                signal: LIVE_RUN.signal,
+              },);
+              cost.left({ exit: 'failed', },);
+            }
 
-        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(rows[0]
-          ?.exit,).toBe('aborted',);
-      },
-    },),
-    it({
-      name:
-        'keeps a NAMED exit even once the run is stopped, because a slice that bought nothing bought '
-        + 'nothing whether the run was later torn down or not',
-      fn: async () => {
-        const said: string[] = [];
+            const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(rows[0]
+              ?.exit,).toBe('failed',);
+          },
+        },),
+        it({
+          name:
+            'REPORTS provisional failure as aborted when caller signal stopped active slice',
+          fn: async () => {
+            const said: string[] = [];
+            const stopped = new AbortController();
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'consolidation',
+                sliceIndex: 8,
+                sourceChars: 144,
+                signal: stopped.signal,
+              },);
+              cost.left({ exit: 'failed', },);
+              stopped.abort(new Error('caller stopped active consolidation',),);
+            }
 
-        /**
-         Run stopped after this slice had already answered from cache.
-         */
-        const stopped = new AbortController();
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'translate',
-            sliceIndex: 3,
-            sourceChars: 51,
-            signal: stopped.signal,
-          },);
+            const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(rows[0]
+              ?.exit,).toBe('aborted',);
+          },
+        },),
+        it({
+          name:
+            'keeps a NAMED exit even once the run is stopped, because a slice that bought nothing bought '
+            + 'nothing whether the run was later torn down or not',
+          fn: async () => {
+            const said: string[] = [];
 
-          cost.left({ exit: 'resumed', },);
-          stopped.abort(new Error('entry deadline',),);
-        }
+            /**
+             Run stopped after this slice had already answered from cache.
+             */
+            const stopped = new AbortController();
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'translate',
+                sliceIndex: 3,
+                sourceChars: 51,
+                signal: stopped.signal,
+              },);
 
-        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(rows[0]
-          ?.exit,).toBe('resumed',);
-      },
-    },),
-    it({
-      name: 'keeps the LAST exit named, so a path that refines its own answer reports the refined one',
-      fn: async () => {
-        const said: string[] = [];
-        {
-          using cost = armSliceCost({
-            l: capturingLogger({ lines: said, },),
-            lane: 'translate',
-            sliceIndex: 5,
-            sourceChars: 96,
-            signal: LIVE_RUN.signal,
-          },);
-          cost.left({ exit: 'resumed', },);
-          cost.left({ exit: 'unfilled', },);
-        }
+              cost.left({ exit: 'resumed', },);
+              stopped.abort(new Error('entry deadline',),);
+            }
 
-        const { rows, } = readSliceCosts({ log: said.join('\n',), },);
-        expect(rows[0]
-          ?.exit,).toBe('unfilled',);
-      },
+            const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(rows[0]
+              ?.exit,).toBe('resumed',);
+          },
+        },),
+        it({
+          name: 'keeps the LAST exit named, so a path that refines its own answer reports the refined one',
+          fn: async () => {
+            const said: string[] = [];
+            {
+              using cost = armSliceCost({
+                l: capturingLogger({ lines: said, },),
+                lane: 'translate',
+                sliceIndex: 5,
+                sourceChars: 96,
+                signal: LIVE_RUN.signal,
+              },);
+              cost.left({ exit: 'resumed', },);
+              cost.left({ exit: 'unfilled', },);
+            }
+
+            const { rows, } = readSliceCosts({ log: said.join('\n',), },);
+            expect(rows[0]
+              ?.exit,).toBe('unfilled',);
+          },
+        },),
+      ],
     },),
   ],
 },);

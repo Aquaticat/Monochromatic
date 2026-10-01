@@ -49,6 +49,11 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import {
+  HOUR_MS,
+  stubWallClock,
+  WALL_START_MS,
+} from '../wall-clock-stub.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -2730,6 +2735,66 @@ await describe({
         // entry on its artifact.
         expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([`${CLEANUP_ENTRY.id}.json`,],);
         expect(await artifactNames({ artifactsDir: dirs.sliceCacheDir, },),).toEqual([CLEANUP_ENTRY.id,],);
+      },
+    },),
+
+    it({
+      name: 'RECORDS THE ENTRY\'S OWN DURATION when the system clock is set back an hour while it settles (ledger '
+        + 'B78), where the artifact carried an hour less than nothing, which the two-lane reader refuses as no count',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        using wall = stubWallClock({ atMs: WALL_START_MS, },);
+
+        /**
+         Schemas the run served, in order.
+         */
+        const served: string[] = [];
+
+        /**
+         The scripted client, whose first answer comes after the clock is set back.
+         */
+        const scripted = entryClient({ served, },);
+
+        /**
+         Whether the clock has been set back yet.
+         */
+        const stepped = { done: false, };
+        await settleEntry({
+          client: {
+            ...scripted,
+            chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+              if (!stepped.done) {
+                stepped.done = true;
+                wall.step({ byMs: -HOUR_MS, },);
+              }
+              return await scripted.chatJson(request,);
+            },
+          },
+          entry: ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        /**
+         What reached disk.
+         */
+        const artifact: unknown = JSON.parse(await readFile(
+          join(
+            dirs.artifactsDir,
+            'CatEntry1.json',
+          ),
+          'utf8',
+        ),);
+        expect(stepped.done,).toBe(true,);
+        expect((artifact as { durationMs: number; }).durationMs,).toBeGreaterThanOrEqual(0,);
+        expect((artifact as { durationMs: number; }).durationMs,).toBeLessThan(HOUR_MS,);
       },
     },),
   ],

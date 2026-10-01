@@ -14,6 +14,12 @@ import {
   StreamStalledError,
 } from '../dist/final/node/index.mjs';
 
+import {
+  HOUR_MS,
+  stubWallClock,
+  WALL_START_MS,
+} from './wall-clock-stub.test-fixture.ts';
+
 //region Fixtures
 // Cat-themed invention throughout: no corpus text ever reaches a committed
 // fixture, because the corpus is unlicensed.
@@ -242,6 +248,38 @@ await describe({
             // The call cannot be shorter than the wait for its own first byte.
             expect(progress.elapsedMs,).toBeGreaterThanOrEqual(progress.firstByteMs,);
             expect(Number.isFinite(progress.elapsedMs,),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'MEASURES ON A CLOCK THE SYSTEM TIME CANNOT MOVE (ledger B78): with the system clock set back an '
+            + 'hour before the first byte and forward two before the next, the first byte, the elapsed time and '
+            + 'the largest gap stay the moments between, where they read an hour negative and an hour long',
+          fn: async () => {
+            using wall = stubWallClock({ atMs: WALL_START_MS, },);
+            using guard = armIdleGuard({
+              label: 'hf:mittens',
+              firstByteMs: ROOMY_MS,
+              idleMs: ROOMY_MS,
+            },);
+            wall.step({ byMs: -HOUR_MS, },);
+            guard.notify(3,);
+
+            /**
+             What the guard measured at the first byte.
+             */
+            const early = guard.progress();
+            wall.step({ byMs: 2 * HOUR_MS, },);
+            guard.notify(4,);
+
+            /**
+             What it measured at the second chunk.
+             */
+            const late = guard.progress();
+            expect(early.firstByteMs,).toBeGreaterThanOrEqual(0,);
+            expect(early.elapsedMs,).toBeGreaterThanOrEqual(0,);
+            expect(late.maxGapMs,).toBeLessThan(HOUR_MS,);
+            expect(late.elapsedMs,).toBeLessThan(HOUR_MS,);
           },
         },),
 

@@ -13,6 +13,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { createProviderBudgets, } from '../dist/final/node/index.mjs';
 
+import {
+  HOUR_MS,
+  stubWallClock,
+  WALL_START_MS,
+} from './wall-clock-stub.test-fixture.ts';
+
 /**
  Quota snapshot of a provider with budget left.
  */
@@ -722,6 +728,54 @@ await describe({
           bedrock: 0,
           openrouter: 0,
         },);
+      },
+    },),
+
+    it({
+      name: 'HOLDS A REFUSER NO LONGER THAN THE BACKOFF when the system clock is set back an hour after the '
+        + 'refusal (ledger B78), where the default view, reading the wall clock, held it an hour and the backoff',
+      fn: async () => {
+        using wall = stubWallClock({ atMs: WALL_START_MS, },);
+        /** Stub providers whose meters all report budget left. */
+        const { synthetic, hyper, openrouter, } = stubProviders({},);
+        /** Budget view under test, on its default clock. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter,
+          cooldownMs: 10_000,
+          rateLimitBackoffMs: 300,
+        },);
+
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.markRefused({
+          provider: 'hyper',
+          signal: SIGNAL,
+        },);
+        wall.step({ byMs: -HOUR_MS, },);
+        expect(budgets.holds().hyper,).toBeLessThanOrEqual(300,);
+      },
+    },),
+
+    it({
+      name: 'READS THE METERS ONCE for two reads inside the window when the clock read zero at the first '
+        + '(ledger B78): a reading stamped 0 was taken for no reading at all and the meters were read again, '
+        + 'which a clock counting from the process\'s start reads in its first millisecond',
+      fn: async () => {
+        /** Stub providers with budget everywhere. */
+        const { synthetic, hyper, openrouter, reads, } = stubProviders({},);
+        /** Budget view under test, on a clock still at its origin. */
+        const budgets = createProviderBudgets({
+          synthetic,
+          hyper,
+          openrouter,
+          freshForMs: 500,
+          now: () => 0,
+        },);
+
+        await budgets.read({ signal: SIGNAL, },);
+        await budgets.read({ signal: SIGNAL, },);
+        expect(reads,).toEqual({ quota: 1, credits: 1, openrouter: 1, },);
       },
     },),
   ],
