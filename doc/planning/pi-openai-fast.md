@@ -345,13 +345,29 @@ Allowed/rejected disposable fixtures and a removed-guard scratch control passed,
 
 No global package installation or settings change has been performed yet.
 
+## Pi 1.0 target update
+
+The user reported that pi updated to `1.0` before global installation.
+Installed package probes found coding-agent and pi-ai `1.0.0`,
+ and the new package's peer links now point to those versions.
+The native virtual routing,
+ custom-provider,
+ and extension contracts remain present in the installed 1.0 documentation and declarations.
+The current package build,
+ type check,
+ full tests,
+ lint,
+ and live request probes must be rerun on this target.
+Earlier `0.99.2` evidence is historical,
+ not proof for the updated host.
+
+A fresh `pnpm-lock.yaml` modification appeared with the upgrade and is concurrent work.
+Do not stage it as an extension source change.
+
 ## Next action
 
-Finish source and tests,
- build the repository package,
- and verify the required host behavior.
-Replace the incumbent globally only after verification,
- preserving defaults and `enabledModels`.
+Complete pi `1.0.0` verification,
+ then replace the incumbent globally while preserving defaults and `enabledModels`.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
