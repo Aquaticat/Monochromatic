@@ -179,8 +179,8 @@ await describe({
 
     it({
       name: 'CALLS AN ERROR UNNAMED rather than repeat a type that is not a protocol word: the '
-        + 'refusal promises to quote nothing from the body, and an absent, empty, spaced or '
-        + 'overlong type is text, not a name',
+        + 'refusal promises to quote nothing from the body, and an absent, empty, spaced, '
+        + 'overlong or non-string type is not a name',
       fn: async () => {
         /**
          Error descriptors whose type a refusal may not repeat, each with
@@ -211,6 +211,13 @@ await describe({
           {
             error: 'napping',
             withheld: 'napping',
+          },
+          {
+            error: {
+              type: 7,
+              message: 'Napping',
+            },
+            withheld: '(7)',
           },
         ];
         for (const { error, withheld, } of unnamed) {

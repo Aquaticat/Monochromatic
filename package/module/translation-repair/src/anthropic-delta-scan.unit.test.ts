@@ -459,6 +459,123 @@ await describe({
     },),
 
     it({
+      name: 'COUNTS a payload that parses to a number as unreadable, as the completion reader '
+        + 'refuses one: every Anthropic frame is an object',
+      fn: async () => {
+        /**
+         Scanner fed a JSON number where a frame belongs.
+         */
+        const scanner = scanAnthropicDeltas();
+        scanner.feed({ chunk: 'data: 7\n\n', },);
+        expect(scanner.unreadableFrames(),).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'READS a delta by its own type when its frame names no block, or a block that never '
+        + 'opened: without a declaration there is nothing to outrank the type',
+      fn: async () => {
+        /**
+         Text delta with no index, then one at an index no start frame opened,
+         after a thinking block at index 0.
+         */
+        const deltas = scanAll({
+          raw: blockStart({
+            index: 0,
+            type: 'thinking',
+          },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                delta: {
+                  type: 'text_delta',
+                  text: 'Biscuit ',
+                },
+              },
+            },)
+            + blockDelta({
+              index: 3,
+              deltaType: 'text_delta',
+              field: 'text',
+              text: 'naps.',
+            },),
+        },);
+
+        expect(deltas,).toEqual([
+          {
+            channel: 'content',
+            text: 'Biscuit ',
+          },
+          {
+            channel: 'content',
+            text: 'naps.',
+          },
+        ],);
+      },
+    },),
+
+    it({
+      name: 'DECLARES nothing for a block start that names no index or carries no block, so its '
+        + 'type cannot claim a later delta',
+      fn: async () => {
+        /**
+         Two thinking starts the scanner cannot place, then a text delta at
+         index 0.
+         */
+        const deltas = scanAll({
+          raw: frameOf({
+            body: {
+              type: 'content_block_start',
+              content_block: { type: 'thinking', },
+            },
+          },)
+            + frameOf({
+              body: {
+                type: 'content_block_start',
+                index: 0,
+              },
+            },)
+            + blockDelta({
+              index: 0,
+              deltaType: 'text_delta',
+              field: 'text',
+              text: 'Smug.',
+            },),
+        },);
+
+        expect(deltas,).toEqual([{
+          channel: 'content',
+          text: 'Smug.',
+        },],);
+      },
+    },),
+
+    it({
+      name: 'EMITS nothing for a delta frame with no delta, or a delta whose text is empty, as the '
+        + 'first tool-argument fragment the documentation shows is',
+      fn: async () => {
+        expect(scanAll({
+          raw: blockStart({
+            index: 0,
+            type: 'tool_use',
+          },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 0,
+              },
+            },)
+            + blockDelta({
+              index: 0,
+              deltaType: 'input_json_delta',
+              field: 'partial_json',
+              text: '',
+            },),
+        },).length,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'REFUSES to count an empty keep-alive payload as unreadable, since inflating that '
         + 'tally would hide the changed wire format it exists to make visible',
       fn: async () => {

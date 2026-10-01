@@ -580,6 +580,58 @@ await describe({
         },).finishReason,).toBe(undefined,);
       },
     },),
+
+    it({
+      name: 'FOLDS NOTHING from a message_start with no message or a message with no usage, or '
+        + 'from a message_delta with no delta, while keeping the counts and answer the rest carry: '
+        + 'usage and the stop reason are reported by their absence',
+      fn: async () => {
+        expect(extractAnthropicCompletion({
+          bodyText: frameOf({ body: { type: 'message_start', }, },)
+            + frameOf({
+              body: {
+                type: 'message_start',
+                message: { id: 'msg_tabby', },
+              },
+            },)
+            + deltaOf({
+              deltaType: 'text_delta',
+              field: 'text',
+              text: 'Pleased.',
+            },)
+            + frameOf({
+              body: {
+                type: 'message_delta',
+                usage: { output_tokens: 2, },
+              },
+            },)
+            + frameOf({ body: { type: 'message_stop', }, },),
+        },),).toEqual({
+          text: 'Pleased.',
+          usage: {
+            prompt_tokens: 0,
+            completion_tokens: 2,
+            total_tokens: 2,
+          },
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a payload that parses to a number, since every Anthropic frame is an object '
+        + 'and the answer assembled from the rest would be missing a piece',
+      fn: async () => {
+        expect(function numbered() {
+          extractAnthropicCompletion({
+            bodyText: `${startOf({ inputTokens: 8, },)}data: 7\n\n${endOf({
+              stopReason: 'end_turn',
+              outputTokens: 1,
+            },)}`,
+          },);
+        },).toThrow('stream event is not a JSON object',);
+      },
+    },),
+
     it({
       name: 'READS THE EXACT STREAM THIS PROVIDER SENT ON 2026-08-24, keep-alive ping and all, '
         + 'which is the only case here taken off the wire rather than written by hand',
