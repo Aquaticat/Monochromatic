@@ -284,12 +284,27 @@ Implementation began only after Q7 confirmation.
 - Package metadata,
    catalog bootstrap,
    genuine virtual registration,
-   and native priority-provider overlay have been committed.
-- Catalog bootstrap uses an empty read-only credential capability and disables availability/network refresh,
-   preserving configured model metadata without reading real credentials.
+   and native priority transport have been committed.
+- Independent review identified double-configuration and header-precedence risks in an original-provider overlay.
+   That implementation was replaced with a keyless adapter under `openai-codex-fast`.
+   The original `openai-codex` provider is never replaced.
+- Internal target metadata omits request-auth headers;
+   injected original-registry dispatch receives caller overrides without inherited adapter auth headers.
+- The adapter reads only the live original provider's catalog,
+   never recursively enumerating itself.
+   Structural registration uses an owned reentrancy latch and scope disposal.
+- `OriginalDispatch` privately owns the session registry binding,
+   and actual inference before `session_start` is explicitly rejected.
+- Catalog bootstrap uses an empty read-only credential capability and cached-only refresh for the original provider.
+   Native cache restoration precedes auth/network phases.
+   No real stored credentials or network refresh are used.
 - Priority dispatch is bound to the live host's original-model registry path,
    so model-specific headers and native OAuth resolution remain at the original identity.
-- Native streaming/payload modules and host lifecycle tests are being implemented independently.
+- Native streaming/payload modules and host lifecycle tests have been captured and committed.
+   Test fixture cleanup is being handled independently for host and stream tests.
+- The keyless adapter exposed an incorrect early token requirement in the simple-stream bridge.
+   Injected registry dispatch now resolves auth later;
+   direct native dispatch retains the missing-token error.
 - The initial type check identified exact optional-property omissions;
    absent options are now omitted rather than supplied as `undefined`.
    Built-artifact imports require the first package build before final type verification.
@@ -297,6 +312,17 @@ Implementation began only after Q7 confirmation.
    leaving the pre-existing lockfile update unchanged.
 - The user selected option A to authorize committing that pre-existing update with the generated importer.
    Commit `a2b216772` records that dependency prerequisite and the authorization.
+
+The package build passed after the current source changes.
+The subsequent type check reported test-fixture typing errors,
+ not production-source errors;
+ runtime tests and standards cleanup remain in progress.
+
+A guarded `verify:live` task has been added but not run.
+It uses disposable settings and the existing access token through an environment override,
+ without copying or refreshing the real credential store.
+It proves live request intent and response handling,
+ not acceleration or live OAuth refresh.
 
 No global package installation or settings change has been performed yet.
 

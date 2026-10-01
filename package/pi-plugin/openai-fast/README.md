@@ -24,7 +24,8 @@ Assistant history retains the original Codex model identity;
  pi keeps the virtual selection separately.
 
 Defaults and `enabledModels` are not changed.
-Fast companions therefore do not automatically enter your existing cycle or auxiliary-model scope.
+Fast companions do not enter exact ordinary-model scopes.
+Existing wildcards that already match the fast namespace can include them.
 There are no added commands,
  footer widgets,
  badges,
@@ -52,7 +53,8 @@ Priority requests use the native Codex stream implementation,
  headers,
  and request instrumentation.
 
-Priority targets are local physical routing entries excluded from availability lists.
+Priority targets are local physical entries under the fast adapter provider,
+ excluded from normal filtered availability lists.
 Their IDs start with `__pi_openai_fast__/` and are never sent upstream.
 Do not use that reserved prefix for configured Codex models.
 The complete registry and pi's own routing display can still expose physical target identities.
@@ -100,12 +102,13 @@ Live validation must use isolated pi settings and synthetic prompts,
 
 ## Source boundaries
 
-- `catalog.ts` loads configured native model metadata without credential resolution or network refresh.
+- `catalog.ts` restores configured and cached native metadata using empty read-only credentials and no network.
 - `virtual-registration.ts` derives native virtual definitions and synchronizes catalog changes.
-- `priority-provider.ts` retains the native provider and isolates priority by routing identity.
+- `priority-provider.ts` creates keyless targets while leaving the original native provider untouched.
 - `priority-stream.ts` reuses native option conversion and full streaming.
 - `priority-payload.ts` composes payload callbacks while preserving the priority request.
-- `index.ts` registers the extension and binds original-model dispatch to the live host.
+- `original-dispatch.ts` owns the live registry binding and resolves original-model authentication and headers.
+- `index.ts` registers the adapter and virtual entries without another request-mode switch.
 
 Small named helpers are exported so artifact tests can exercise these boundaries.
 The default export is the pi extension factory.
