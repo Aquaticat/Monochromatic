@@ -36,7 +36,7 @@ description = "Build the node bundle, then run unit tests against the built dist
 run = ["mise run build", "mise run test:unit"]
 
 [tasks."corpus-pass"]
-description = "Run the pipeline over every complete corpus pair; artifacts land in node_modules/.monochromatic (append -- --plan for a zero-quota setup check, or -- --only Id1,Id2 to target named entries, which wants a throwaway TRANSLATION_REPAIR_RUNS_DIR)"
+description = "Run the pipeline over every complete corpus pair; artifacts land in node_modules/.monochromatic (append -- --plan for a zero-quota setup check, or -- --only Id1,Id2 to target named entries, which wants a throwaway TRANSLATION_REPAIR_RUNS_DIR, or -- --require-providers synthetic,hyper to refuse the run unless those providers' keys are set and their meters read wet)"
 depends = ["build"]
 run = "node dist/final/node/corpus-pass.mjs"
 
@@ -56,7 +56,7 @@ depends = ["build"]
 run = "node dist/final/node/score-attribution.mjs"
 
 [tasks."score-agreement"]
-description = "Report precision off a graded sheet, plus agreement against blind pre-grades when they exist (override with -- --sheet PATH --pre-grades PATH)"
+description = "Report precision off a graded sheet, plus agreement against blind pre-grades when they exist (override with -- --sheet PATH --manifest PATH --pre-grades PATH)"
 depends = ["build"]
 run = "node dist/final/node/score-agreement.mjs"
 
@@ -66,7 +66,7 @@ depends = ["build"]
 run = "node dist/final/node/score-crosscheck.mjs"
 
 [tasks."score-probe"]
-description = "Report what the shadow-mode introduced-defect probe found across a run's settled artifacts, over distinct shipped regions"
+description = "Report what the shadow-mode introduced-defect probe found across a run's settled artifacts, over distinct shipped regions (pass --repair-sheet PATH --manifest PATH after -- to score it against the human grades; both or neither)"
 depends = ["build"]
 run = "node dist/final/node/score-probe.mjs"
 
@@ -91,7 +91,7 @@ depends = ["build"]
 run = "node dist/final/node/rendering-audit-settled.mjs"
 
 [tasks."rendering-audit-settled-report"]
-description = "Read a persisted settled-audit run: the archive and fresh halves apart, what each auditor thought was worth a claim, and the relocation candidates; SPENDS NO QUOTA (pass --run path after -- to read a run other than the newest)"
+description = "Read a persisted settled-audit run: the archive and fresh halves apart, what each auditor thought was worth a claim, and the relocation candidates; SPENDS NO QUOTA (pass --run path after -- to read a run other than the newest, and --against path to print the across-run band against an earlier run)"
 depends = ["build"]
 run = "node dist/final/node/rendering-audit-settled-report.mjs"
 
@@ -169,7 +169,7 @@ depends = ["build"]
 run = "node dist/final/node/editor-width-probe.mjs"
 
 [tasks."judge-fidelity-probe"]
-description = "Judge fixed source-reviewed references against hash-verified damage; SPENDS QUOTA (pass --only reviewed-entry-ids, --cap n, --damage deletion|insertion|alteration, --candidates seatable,ids, --candidates-alone after --; --cap 0 is metadata-only preflight)"
+description = "Judge fixed source-reviewed references against hash-verified damage; SPENDS QUOTA (pass --only reviewed-entry-ids, --cap n, --damage deletion|insertion|alteration, --candidates seatable,ids, --candidates-alone, --context to show judges the neighbouring sections' original, after --; --cap 0 is metadata-only preflight)"
 depends = ["build"]
 run = "node dist/final/node/judge-fidelity-probe.mjs"
 
