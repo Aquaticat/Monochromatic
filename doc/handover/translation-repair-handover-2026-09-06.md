@@ -385,13 +385,17 @@ this one says what changed after it.
   each runner now declares its line in `corpus-run/command-lines.ts`,
   `reportingRefusals` reads the whole line against it before the runner starts,
   and the task descriptions and the living docs' invocations are held to the declarations.
+  Ledger B76 followed
+  (`28cbadd6a` to `4f9b79155`):
+  an `--only` naming an entry a runner cannot reach was dropped without a word,
+  so the runner ran over nothing or over the rest;
+  it now refuses the line,
+  naming every stray.
   Open,
   each to close before the eighteenth batch:
   elapsed times measured on the wall clock (found in the seventeenth batch),
-  plain-object tables looked up by text from outside the package (found in B73;
-  the fidelity probe's defect table closed by B75),
-  and an `--only` naming no entry,
-  which runs over none without a word.
+  and plain-object tables looked up by text from outside the package (found in B73;
+  the fidelity probe's defect table closed by B75).
   The census taken once they close is the eighteenth batch's baseline,
   that batch taking the archive modules
   (`archive`,
