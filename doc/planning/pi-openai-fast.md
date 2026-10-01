@@ -97,6 +97,17 @@ The initial recommendation's word "compatible" is superseded:
 there is no manually curated priority-capability gate.
 Registering a companion does not authorize scope widening or establish backend support.
 
+### Visible selection feedback question
+
+Should the fast alias name be the only additional selection indicator,
+ or should a separate footer status say that priority was requested?
+
+Recommendation:
+use the alias name and request diagnostics without adding a footer widget.
+A separate status can make request intent more explicit,
+ but consumes footer space and does not by itself prove which tier the backend served.
+Actual served-tier visibility remains an unsettled factual prerequisite.
+
 ## Local selection evidence
 
 `package/pi-shared/model-selection/src/scope-patterns.ts` resolves scope by model identity.
