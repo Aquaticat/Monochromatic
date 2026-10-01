@@ -1205,6 +1205,89 @@ Nothing to file or draft.
   unnecessary;
   no public issue or vendor contact follows.
 
+## Installed pi-processes 0.12.0 write receipts are not consumer EOF evidence
+
+### Symptom and deciding source
+
+An owned orchestration asserted `EOFDelivered: true` after awaiting the write tool.
+That assertion was withdrawn before the synthetic dependency run.
+A tool receipt is not evidence that the child consumed all bytes or observed EOF.
+
+Read-only source clone `pi-processes-write-source.nHfffTGG` is pinned at
+`510e9bc6e5d01b42e8175c2b664295fe1645fec0`.
+Its decisive files match installed source:
+`extensions/processes/tools/write/index.ts` SHA-256
+`cf1c0bf2f6b4158657521eae08ce578d40f03bed476e61fe1f2501a17d2a1d78`;
+`src/manager/process-runtime-controller.ts` SHA-256
+`ad66b76a9920c5a148ea5839eaa3b648fd5cc0c5a2fd473974f5c9979a5904aa`.
+
+`src/manager/process-runtime-controller.ts:361` calls the stream synchronously:
+
+```typescript
+// pi-processes/src/manager/process-runtime-controller.ts
+managed.stdin.write(data);
+if (opts?.end) {
+  managed.stdin.end();
+  managed.stdinClosed = true;
+}
+return { ok: true };
+```
+
+`extensions/processes/tools/write/index.ts:49` reports the encoded input length,
+not independently measured child consumption:
+
+```typescript
+// pi-processes/extensions/processes/tools/write/index.ts
+bytes: Buffer.byteLength(input, "utf-8"),
+end,
+ok: true,
+```
+
+`extensions/processes/tools/write/index.ts:74` formats successful output as
+`Wrote <bytes> bytes to "<name>" (<id>) and closed stdin.`
+The failed variant at line 70 begins `Failed to write to stdin for`.
+Neither formatter waits for the child's input parser.
+
+### Verification and consumer boundary
+
+Historical positive `proc_53ff` exited zero and saved a byte-identical 17,974-byte original record.
+Historical negative `proc_1e6f` received empty input and exited one with
+`SyntaxError: Unexpected end of JSON input`.
+Their consumed namespaces remain preserved;
+neither is replayed.
+
+The new dependency caller compares and retains the installed tool's exact receipt.
+It reports only queued-input length and end invocation.
+Consumer admission still requires the child's complete saved original,
+literal body equality,
+applicable complete output checks,
+and terminal zero.
+The version-bound receipt comparison deliberately stops on changed or ambiguous formatting.
+These new caller checks remain source-qualified,
+not a completed-runtime claim.
+
+Ignoring the receipt or treating fulfilled tool delivery as successful EOF does not establish that boundary.
+
+### Upstream filing decision
+
+Nothing to file or draft:
+this was an owned overclaim,
+not a demonstrated upstream defect.
+
+- Upstream fault:
+  not established.
+- Fixability:
+  correct the consumer assertion and admission checks.
+- Supported use case:
+  stdin writing is documented;
+  child-consumption attestation was not established.
+- Contribution acceptance:
+  not investigated because no upstream change is proposed.
+- Maintainer willingness:
+  not investigated because no upstream defect is claimed.
+- Compatible upstream patch:
+  unnecessary for the owned correction.
+
 ## Owned empty stdin stopped Node 26.10.0 source-data admission
 
 ### Symptom and root cause
