@@ -47,6 +47,11 @@ export { unifyQuoteStyle, } from './corpus-run/quote-style-unify.ts';
 export { unwrapBlockquoteQuotes, } from './corpus-run/blockquote-quote-unify.ts';
 export { restoreArchiveItalicTitles, } from './corpus-run/archive-italic-title-restore.ts';
 export {
+  type EmphasisSpan,
+  emphasisSpans,
+  oneLine,
+} from './corpus-run/emphasis-spans.ts';
+export {
   replacedDestinations,
   restoreArchiveDestinations,
 } from './corpus-run/archive-destination-restore.ts';

@@ -92,6 +92,7 @@ export {
   parseMdxBody,
   requireMdxRefusal,
 } from './parse-mdx.ts';
+export { treeNodes, } from './mdast-tree-nodes.ts';
 export {
   parseDocument,
   type ParseFinding,

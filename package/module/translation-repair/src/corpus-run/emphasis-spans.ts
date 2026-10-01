@@ -38,13 +38,22 @@ export type EmphasisSpan = {
   readonly end: number;
 
   /**
-   Words it sets in italics, every whitespace run read as one space.
+   Words it sets in italics, every run of spaces and line feeds read as one
+   space.
    */
   readonly words: string;
 };
 
 /**
- Words with every whitespace run read as one space.
+ Words with every run of spaces and line feeds read as one space, and none at
+ either end.
+
+ FOLDS ONLY THE SPACE AND THE LINE FEED, what a page's line wrapping puts
+ inside a quoted title. A no-break space or a tab stays, since the italic-title
+ pass writes the page's own words back in italics and has no call to change
+ the page's spacing; at the pin no quoted span of an archive or settled page,
+ and no emphasis span of a settled page the site's compiler parses, holds
+ either (ledger B72).
 
  @param text - words as written
 

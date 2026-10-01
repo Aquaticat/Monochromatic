@@ -39,7 +39,8 @@ function titleLike({ span, }: { readonly span: string; },): boolean {
 
  @param slices - prepared pairs, whose target text is the archive's
 
- @returns Italic spans, once each, every whitespace run read as one space
+ @returns Italic spans, once each, every run of spaces and line feeds read as
+ one space
 
  @example
  ```ts
