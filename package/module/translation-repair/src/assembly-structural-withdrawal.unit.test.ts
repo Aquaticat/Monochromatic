@@ -283,6 +283,30 @@ await describe({
       },
     },),
     it({
+      name: 'READS A BREAK AFTER A SECTION THAT ONLY GAINED A SENTENCE AS UNMOVED: the withdrawn page is the '
+        + 'assembled one less that sentence, every other character shared',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** The opening section's archive text with a sentence added, and the bird's break after it. */
+        const replacements = [
+          {
+            sliceIndex: 0,
+            replacementText: '## The cat\n\nThe cat is doing the sleeping on the windowsill[^1]. She dreams of fish.',
+          },
+          ...SHIFTING.slice(1, 2,),
+        ];
+        /** Page as assembled. */
+        const standing = spliceSlices({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },);
+        /** Where the grammar stops on it. */
+        const first = strictRefusalOffset({ text: standing, },);
+        if (!first.refused)
+          throw new Error('the break is on the page',);
+        expect(advancingStructuralWithdrawal({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },),)
+          .toEqual([{ sliceIndex: 1, from: first.offset, to: standing.length, cleared: true, },],);
+      },
+    },),
+    it({
       name: 'PLACES A REFUSAL IN THE WITHDRAWN SLICE\'S OWN ARCHIVE TEXT where that slice begins, so restoring an '
         + 'archive section that breaks earlier than the page does is never chosen',
       fn: async () => {
