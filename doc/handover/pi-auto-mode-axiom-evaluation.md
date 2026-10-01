@@ -906,18 +906,46 @@ The result is finite native-ID/owner evidence only,
 not global uniqueness,
 human ancestry,
 or permission-state authority.
-Next:
-finish freshly rendered result documentation and correct the mechanical dependency catalog.
+Task #93 result documentation passed the separately named `proc_747f` checkpoint;
+later changed bytes require another named checkpoint.
 A new frozen configured-host transaction must disclose its future SDK root before construction.
-Task #92 remains pending literal-catalog corrections before implementation.
-Task #92 designs those mechanical controls using the existing collector and root snapshot owners.
-Independent review requires root-bound instances,
-fixed monotonic deadlines,
-original cancellation retention,
-descriptor-bound file observations,
-isolated literal controls,
-and explicit non-atomicity limits before source freeze.
-No implementation or dispatch of that phase has started.
+Task #92 is in progress.
+Its corrected 31-case reference catalog received source-only collector-bound review
+with no remaining catalog-level hold.
+That review does not clear an executable freeze or dispatch.
+Private source-only implementation has begun in `contract/lifecycle/external-dependency-controls/`:
+error classes,
+descriptor-bound file observer,
+root/deadline-bound facade,
+synchronous controlled wait,
+owned mock root,
+independent fixture environments,
+and whole-trace/error validation.
+No draft module has been invoked.
+Early core review required explicit bootstrap file-profile whitelisting,
+a final cancellation/deadline check after success tracing,
+sampling immediately before native controlled waiting,
+and separate initial-missing/during-read instability classifications.
+Those changes remain source-only and require complete closure review.
+The controller,
+startup gate,
+exact caller,
+source-data admission,
+executable freeze,
+and runtime qualification remain absent.
+Current permission,
+actual SDK-root integration,
+human evidence,
+grants,
+and represented actions remain unestablished.
+An eighth stale task-registry observation again ended at #81 and could not retrieve #92;
+receipt-backed restoration changes bookkeeping only,
+with cause unknown.
+Next:
+finish the private executable closure,
+bind original review inputs,
+independently review every literal source and caller,
+and admit the declared one-shot prerequisites before any dispatch.
 The visible task registry again ended at #81;
 `task-registry-reconciliation-sixth.json` restores receipt-backed states as bookkeeping only,
 with cause unknown and no new authority or test outcome inferred.
