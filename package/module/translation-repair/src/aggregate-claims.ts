@@ -356,22 +356,19 @@ export function aggregateClaims(
   }
 
   /**
-   Members grouped by component seed.
+   Members grouped by component seed, each group in member order and the
+   groups in the order their first members come.
    */
-  const byComponent = new Map<number, AggregatedClaim[]>();
-  for (const [index, member,] of members.entries()) {
-    /**
-     Component seed of this member, assigned by the walk over every index.
-     */
-    const label = nonNullishOrThrow(componentOf.get(index,),);
-    byComponent.set(
-      label,
-      [
-        ...(byComponent.get(label,) ?? []),
-        member,
-      ],
-    );
-  }
+  const byComponent = Map.groupBy(
+    members,
+    function seedOf(
+      _member,
+      index,
+    ): number {
+      // Every index has a seed: the walk over every index assigned one.
+      return nonNullishOrThrow(componentOf.get(index,),);
+    },
+  );
 
   /**
    Clusters with deterministic identity and document position.

@@ -127,6 +127,17 @@ export type RelabelCase = {
 };
 
 /**
+ A case while the sample positions drawing its region are still being
+ gathered, so a later position joins the list in place (ledger B74).
+ */
+type GatheringCase = Omit<RelabelCase, 'positions'> & {
+  /**
+   Sample positions that drew this region so far.
+   */
+  readonly positions: number[];
+};
+
+/**
  Finds the slice whose translation contains a region's replaced text.
  
  Located by CONTENT rather than by the recorded chunk index, because an index
@@ -264,7 +275,7 @@ export async function gatherRelabelCases(
   /**
    Cases keyed by entry and envelope, so one edit drawn twice is probed once.
    */
-  const byRegion = new Map<string, RelabelCase>();
+  const byRegion = new Map<string, GatheringCase>();
   /* oxlint-disable no-await-in-loop -- sequential on purpose: each iteration reads one artifact and two git blobs, and running them together would multiply peak memory by the entry count for no wall-clock gain on a diagnostic */
   for (const item of wanted) {
     /**
@@ -315,16 +326,9 @@ export async function gatherRelabelCases(
        */
       const seen = byRegion.get(key,);
       if (seen !== undefined) {
-        byRegion.set(
-          key,
-          {
-            ...seen,
-            positions: [
-              ...seen.positions,
-              item.position,
-            ],
-          },
-        );
+        seen
+          .positions
+          .push(item.position,);
         continue;
       }
 

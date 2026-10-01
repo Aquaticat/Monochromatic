@@ -226,9 +226,10 @@ export function readCapLog(
   { lines, }: { readonly lines: readonly string[]; },
 ): CapLogReading {
   /**
-   Completed streams not yet paired, by label, oldest first.
+   Completed streams not yet paired, by label, oldest first. Each queue grows
+   and shrinks in place, so no line copies it (ledger B74).
    */
-  const waiting = new Map<string, readonly {
+  const waiting = new Map<string, {
     readonly at: number;
     readonly content: number
   }[]>();
@@ -256,16 +257,25 @@ export function readCapLog(
         unstamped.lines += 1;
         continue;
       }
-      waiting.set(
-        stream.label,
-        [
-          ...(waiting.get(stream.label,) ?? []),
-          {
-            at: streamAt,
-            content: stream.content,
-          },
-        ],
-      );
+      /**
+       The stream, as its label's queue holds it.
+       */
+      const entry = {
+        at: streamAt,
+        content: stream.content,
+      };
+      /**
+       Streams of this label already waiting, which this one joins.
+       */
+      const labelQueue = waiting.get(stream.label,);
+      if (labelQueue === undefined) {
+        waiting.set(
+          stream.label,
+          [entry,],
+        );
+      }
+      else
+        labelQueue.push(entry,);
       continue;
     }
 
@@ -305,12 +315,9 @@ export function readCapLog(
       ?.content
       ?? 'unpaired');
     if (index !== NOT_FOUND) {
-      waiting.set(
-        record.model,
-        queue.toSpliced(
-          index,
-          1,
-        ),
+      queue.splice(
+        index,
+        1,
       );
     }
     samples.push({

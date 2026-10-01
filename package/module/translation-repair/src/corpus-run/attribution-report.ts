@@ -274,21 +274,27 @@ function indexProposers(
   /**
    Proposers per claim across every chunk of one entry.
    */
-  const index = new Map<string, readonly ProposerView[]>();
+  const index = new Map<string, ProposerView[]>();
   for (const record of sliceCritics) {
     for (const attribution of record.claimAttributions) {
       // MERGED rather than overwritten. Two chunks can carry the same claim id,
       // and the writer deliberately keeps their proposers apart so neither
       // chunk inflates the other; overwriting here would make the last chunk
       // win and silently DELETE the earlier chunk's critics from every rate.
-      // Deflating is no more correct than inflating.
-      index.set(
-        attribution.claimId,
-        [
-          ...(index.get(attribution.claimId,) ?? []),
-          ...attribution.proposers,
-        ],
-      );
+      // Deflating is no more correct than inflating. Appended in place, so a
+      // claim's list is not copied at each chunk that names it (ledger B74).
+      /**
+       Proposers earlier chunks gave this claim, which this chunk's proposers join.
+       */
+      const merged = index.get(attribution.claimId,);
+      if (merged === undefined) {
+        index.set(
+          attribution.claimId,
+          [...attribution.proposers,],
+        );
+      }
+      else
+        merged.push(...attribution.proposers,);
     }
   }
   return index;

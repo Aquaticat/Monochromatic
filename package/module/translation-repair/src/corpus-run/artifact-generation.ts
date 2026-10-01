@@ -239,13 +239,18 @@ export async function censusByGeneration(
       entryId,
       placement.tip,
     );
-    byDigest.set(
-      placement.digest,
-      [
-        ...(byDigest.get(placement.digest,) ?? []),
-        entryId,
-      ],
-    );
+    /**
+     Entries already placed on this build, which this one joins.
+     */
+    const sameBuild = byDigest.get(placement.digest,);
+    if (sameBuild === undefined) {
+      byDigest.set(
+        placement.digest,
+        [entryId,],
+      );
+    }
+    else
+      sameBuild.push(entryId,);
   }
   /* oxlint-enable no-await-in-loop */
 
