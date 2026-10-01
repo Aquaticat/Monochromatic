@@ -377,6 +377,16 @@ export function scanAnthropicDeltas(): DeltaScanner {
   /**
    Records what an opening block declared, so its deltas can be attributed.
    
+   A START THIS SCANNER CANNOT READ IS COUNTED (ledger B93): one naming no
+   index, carrying no block, or whose block names no type string. A start
+   is read for its declaration alone, so such a frame yields nothing it was
+   read for.
+   
+   A START AT AN INDEX SUPERSEDES WHAT WAS DECLARED THERE, readable or not.
+   The block there is now this one, so an unreadable start leaves its index
+   with no known type, and the deltas that follow are read by their own
+   type rather than under the block before it.
+   
    @param frame - parsed `content_block_start` frame
    
    @example
@@ -391,29 +401,56 @@ export function scanAnthropicDeltas(): DeltaScanner {
      Position this block occupies in the message.
      */
     const at = frameIndex({ fields: frame, },);
-    if (!at.present)
+    if (!at.present) {
+      l.debug('anthropic stream content_block_start frame names no index',);
+      state.unreadable += 1;
       return;
+    }
 
     /**
      Block descriptor the frame carried.
      */
     const { content_block: block, } = frame;
-    if (!isJsonRecord(block,))
+    if (!isJsonRecord(block,)) {
+      l.debug('anthropic stream content_block_start frame carries no block object',);
+      state.unreadable += 1;
+      state
+        .blockTypes
+        .delete(at.index,);
       return;
+    }
+
+    /**
+     Type the block declared, of unknown type until checked.
+     */
+    const { type: blockType, } = block;
+    if ((typeof blockType) !== 'string') {
+      l.debug('anthropic stream content_block_start block names no type string',);
+      state.unreadable += 1;
+      state
+        .blockTypes
+        .delete(at.index,);
+      return;
+    }
 
     state
       .blockTypes
       .set(
         at.index,
-        stringField({
-          fields: block,
-          name: 'type',
-        },),
+        blockType,
       );
   }
 
   /**
    Reads one delta frame into whatever generated text it carried.
+   
+   A DELTA FRAME THIS SCANNER IS MEANT TO READ AND CANNOT IS COUNTED
+   (ledger B93): one with no delta object, and a delta of a type it reads
+   whose text field is absent or not a string. Passing those over left the
+   tally at zero for frames the completion reader refuses. An empty
+   fragment is read, not unreadable, and a type this scanner does not read
+   is passed over whatever it holds, as the streaming documentation asks
+   of types added later.
    
    @param frame - parsed `content_block_delta` frame
    
@@ -431,8 +468,11 @@ export function scanAnthropicDeltas(): DeltaScanner {
      Delta descriptor the frame carried.
      */
     const { delta, } = frame;
-    if (!isJsonRecord(delta,))
+    if (!isJsonRecord(delta,)) {
+      l.debug('anthropic stream content_block_delta frame carries no delta object',);
+      state.unreadable += 1;
       return [];
+    }
 
     /**
      Kind of delta this is, which names both channel and text field.
@@ -472,12 +512,14 @@ export function scanAnthropicDeltas(): DeltaScanner {
       return [];
 
     /**
-     Text this delta carried, empty when the field was absent.
+     Text this delta carried, of unknown type until checked.
      */
-    const text = stringField({
-      fields: delta,
-      name: routing.field,
-    },);
+    const text = delta[routing.field];
+    if ((typeof text) !== 'string') {
+      l.debug(`anthropic stream ${deltaType} carries no ${routing.field} string`,);
+      state.unreadable += 1;
+      return [];
+    }
     if (text === '')
       return [];
 

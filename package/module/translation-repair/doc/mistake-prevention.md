@@ -2240,6 +2240,10 @@ so a cached call read as a short one (ledger B88).
 The same reader read a `text` or `partial_json` that was not a string as empty,
 and passed over a delta frame with no delta,
 so an answer came back with a piece missing and nothing said (ledger B89).
+The scanner reading the same stream for the stream guards passed those frames over uncounted,
+and block starts it could not read too,
+so the tally its contract says should stay at zero
+read zero for a body the reader then refused (ledger B93).
 
 The rule:
 a field on a provider's wire is read as the provider's current documentation defines it,
@@ -2256,6 +2260,10 @@ as a frame that does not parse is refused;
 an empty string stands only for an empty fragment the provider sent.
 A frame of a kind the reader does not read is passed over,
 since the protocol may add kinds.
+Where two readers walk one wire,
+each counts or refuses a frame it reads and cannot,
+judged by what that reader reads the frame for,
+so neither reports a clean stream the other refused.
 
 What enforces it:
 habit and review;
@@ -2263,4 +2271,6 @@ habit and review;
 a delta frame with no delta,
 a text that is a number,
 a tool fragment with no `partial_json`,
-and the deltas still passed over.
+and the deltas still passed over;
+`anthropic-delta-scan.unit.test.ts` holds the frames the scanner counts as unreadable
+beside the ones it reads or passes over.

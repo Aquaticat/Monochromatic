@@ -16375,6 +16375,60 @@ Recurrence:
 a table split in two lets one half answer where the other has nothing;
 a note claiming a design is forced is checked against the smallest table that would hold it.
 
+### B93: delta frames the Anthropic scanner could not read, passed over uncounted
+
+Found in T8's twenty-second batch,
+writing a case for the stretch census-lxT62v lists cold at `anthropic-delta-scan.ts:406`
+(a `content_block_delta` frame with no delta returned nothing),
+red in `ac4980b81`,
+`840a41698` and `5a28319ed`,
+fixed in the commit adding this entry.
+The `DeltaScanner` contract in `stream-delta-scan.ts` describes `unreadableFrames` as payload lines that could not be read,
+which should stay at zero.
+The Anthropic scanner counted only a payload that did not parse
+or parsed to something other than an object.
+A delta frame with no delta object returned nothing,
+and a delta of a type the scanner reads whose text field was absent or not a string
+was read through `stringField` as empty and dropped,
+so the tally stayed at zero for frames the completion reader refuses (B89).
+`stream-drain.ts` writes that tally into the progress line it logs when a stream completes,
+and calls no completion reader
+(a search of it for the reader names exits 1);
+`hyper-client.ts` reads the body with `extractAnthropicCompletion` after the retry ladder returns,
+so a body the reader then refused was logged with no unreadable frame.
+Now `readDelta` counts both,
+reading the routed field's raw value with a type check
+in place of `stringField`,
+which cannot tell an absent field from an empty one.
+The count follows what the scanner reads,
+not what the reader refuses:
+a `thinking_delta` with no `thinking` string is counted,
+since the scanner files that channel,
+although the reader passes thinking over.
+A block start is read for its declaration alone,
+so one naming no index,
+carrying no block,
+or whose block names no type string
+yielded nothing it was read for and is counted too;
+the reader folding no block start has no bearing on this tally.
+The same red cases found that such a start at an index already declared
+kept the earlier declaration when it carried no block,
+and forgot it when its type was not a string:
+the later block's deltas were read under the block before it in the first case.
+A start at an index now supersedes the declaration there whether or not it can be read,
+as a readable restart already did
+(the 2026-08-25 capture noted at `ANSWER_DELTAS`).
+An empty fragment is read,
+not unreadable,
+a delta frame naming no index is read by its own type,
+and a type the scanner does not read is passed over whatever it holds,
+as the streaming documentation asks of types added later.
+
+Recurrence:
+two readers of one wire count the same frames as unreadable;
+`mistake-prevention.md`,
+"Provider fields read by their documentation".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
