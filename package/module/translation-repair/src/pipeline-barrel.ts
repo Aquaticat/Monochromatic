@@ -216,19 +216,6 @@ export {
   fenceForMarkdown,
   longestBacktickRun,
 } from './markdown-fence.ts';
-export { archiveContributorNameForms, } from './contributor-name-authority.ts';
-export {
-  declaredNameForms,
-  type DeclaredNameRefusalReport,
-  declaredNameRefusalReport,
-  findDroppedDeclaredNames,
-} from './declared-name-survival.ts';
-export {
-  collectIdentityLines,
-  type DeclaredIdentity,
-  extractDeclaredIdentity,
-  sourcePronounLines,
-} from './identity-context.ts';
 export {
   SLICE_CHAR_BUDGET,
   subdivideChunkPair,

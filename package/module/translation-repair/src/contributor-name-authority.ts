@@ -118,6 +118,105 @@ function contributorForm({ token, }: { readonly token: string; },): string {
 }
 
 /**
+ One archive line the contributor reader takes as a declaration: a line that
+ opens with a contributor label, or a line continuing one whose label stands
+ alone.
+ 
+ @example
+ ```ts
+ const declaration: ContributorDeclarationLine = { line: 0, names: 'Mika', };
+ ```
+ */
+export type ContributorDeclarationLine = {
+  /**
+   Index of the line in the text split at line feeds.
+   */
+  readonly line: number;
+  /**
+   Names the line carries, trimmed: what follows the label on a label line,
+   the whole line on a continuation; empty for a label line whose names
+   follow on the lines after it.
+   */
+  readonly names: string;
+};
+
+/**
+ Lines the contributor reader takes as declarations, in order.
+ 
+ ONE READING FOR EVERY QUESTION ASKED OF A DECLARATION (T8's eighteenth
+ batch, ledger B81): which names a block declares, and whether a block is
+ declarations and nothing else, read the same lines. A label line declares
+ the names after its label; a label standing alone declares the nonblank
+ lines that follow it, up to the first blank one. Only a line that opens
+ with a label counts, so the same words inside a sentence declare nothing.
+ 
+ @param text - archive text, a page or one block
+ 
+ @returns Each declaring line with the names it carries
+ 
+ @example
+ ```ts
+ contributorDeclarationLines({ text: 'Contributor for this entry:\nMika', },); // [{ line: 0, names: '' }, { line: 1, names: 'Mika' }]
+ ```
+ */
+export function contributorDeclarationLines(
+  { text, }: { readonly text: string; },
+): readonly ContributorDeclarationLine[] {
+  /**
+   Archive lines, kept whole because a label standing alone hands its names
+   to the lines after it.
+   */
+  const lines = text.split('\n',);
+  /**
+   Declaring lines found so far.
+   */
+  const declarations: ContributorDeclarationLine[] = [];
+  for (const [at, line,] of lines.entries()) {
+    /**
+     Contributor label this line begins with.
+     */
+    const label = CONTRIBUTOR_LABELS.find(function begins(candidate,): boolean {
+      return line.startsWith(candidate,);
+    },);
+    if (label === undefined)
+      continue;
+    /**
+     Names carried beside the label.
+     */
+    const sameLine = line
+      .slice(label.length,)
+      .trim();
+    declarations.push({
+      line: at,
+      names: sameLine,
+    },);
+    if (sameLine !== '')
+      continue;
+    /**
+     Index of the first line that may continue the label.
+     */
+    const start = at + 1;
+    /**
+     Lines after the label, which continue it up to the first blank one.
+     */
+    const following = lines.slice(start,);
+    for (const [offset, next,] of following.entries()) {
+      /**
+       Names a continuation line carries.
+       */
+      const continuation = next.trim();
+      if (continuation === '')
+        break;
+      declarations.push({
+        line: start + offset,
+        names: continuation,
+      },);
+    }
+  }
+  return declarations;
+}
+
+/**
  Reads target-authoritative contributor names from archive attribution lines.
  
  The source can identify same contributor under another script or handle.
@@ -138,47 +237,16 @@ export function archiveContributorNameForms(
   { text, }: { readonly text: string; },
 ): readonly string[] {
   /**
-   Archive lines retained because continuation attribution can occupy next
-   nonblank line.
+   Raw contributor suffixes the declaring lines carry, a label standing
+   alone carrying none of its own.
    */
-  const lines = text.split('\n',);
-  /**
-   Raw contributor suffixes found after canonical archive label.
-   */
-  const suffixes: string[] = [];
-  for (let at = 0; at < lines.length; at += 1) {
-    /**
-     Current archive line.
-     */
-    const line = lines[at] ?? '';
-    /**
-     Contributor label this line begins with.
-     */
-    const label = CONTRIBUTOR_LABELS.find(function begins(candidate,): boolean {
-      return line.startsWith(candidate,);
+  const suffixes = contributorDeclarationLines({ text, },)
+    .map(function namesOf(declaration,): string {
+      return declaration.names;
+    },)
+    .filter(function carriesNames(names,): boolean {
+      return names !== '';
     },);
-    if (label === undefined)
-      continue;
-    /**
-     Names carried beside label, or on immediate continuation lines.
-     */
-    const sameLine = line
-      .slice(label.length,)
-      .trim();
-    if (sameLine !== '') {
-      suffixes.push(sameLine,);
-      continue;
-    }
-    for (let next = at + 1; next < lines.length; next += 1) {
-      /**
-       Potential continuation line.
-       */
-      const continuation = (lines[next] ?? '').trim();
-      if (continuation === '')
-        break;
-      suffixes.push(continuation,);
-    }
-  }
   /**
    Visible identities without repeated declarations.
    */

@@ -257,6 +257,7 @@ export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';
 export * from './editor-barrel.ts';
 export * from './pipeline-barrel.ts';
+export * from './identity-barrel.ts';
 export * from './probe-barrel.ts';
 export * from './probe-args-barrel.ts';
 export * from './recall-barrel.ts';
