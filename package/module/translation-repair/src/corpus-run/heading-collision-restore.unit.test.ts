@@ -346,6 +346,19 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES THE PAGE ALONE where the original and the archive each head a section no slice covers, so the '
+        + 'page\'s headings stop short of theirs and no position pairs them (T8, twentieth batch)',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: settledOn({ second: '## Kitten\n\nIt wakes.', },),
+          slices: SLICES,
+          sourceText: `${SOURCE_TEXT}\n## 小小猫\n\n它飞了。\n`,
+          targetText: `${TARGET}\n## Kitty\n\nIt flies.\n`,
+        },);
+        expect(assembly,).toEqual({ trimmed: [], withdrawn: [], findings: [], },);
+      },
+    },),
+    it({
       name: 'LEAVES A SECTION THE PAGE DOES NOT REPLACE AS THE ARCHIVE HAS IT where one replaced slice dropped its '
         + 'heading and another carries two: the totals still match, but every heading between them sits one '
         + 'position off, and pairing by position once shipped the untouched section as empty text (ledger B83)',
