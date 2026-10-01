@@ -464,6 +464,18 @@ this one says what changed after it.
   names the twentieth batch:
   `corpus-run/heading`
   (17 stretches over 25 lines in 3 files).
+  That batch closed B83 and B84:
+  page-assembly passes paired headings by position without checking the count,
+  so a page slice that dropped or gained a heading could ship an untouched section as empty text,
+  give a section the wrong number,
+  or write a signer's name over another section's title
+  (`66927af39` to `c6464ab59`).
+  Its census,
+  `census-STKkse` at `4c0039a57`
+  (666 library stretches in 260 files),
+  names the twenty-first batch:
+  `assembly`
+  (16 stretches over 27 lines in 8 files).
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
