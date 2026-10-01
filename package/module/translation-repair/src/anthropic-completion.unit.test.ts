@@ -432,6 +432,93 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a content_block_delta frame that carries no delta, since the documentation '
+        + 'gives every such frame one, and folding past it returned the answer with a piece '
+        + 'missing and nothing said (ledger B89)',
+      fn: async () => {
+        expect(function deltaless() {
+          extractAnthropicCompletion({
+            bodyText: startOf({ inputTokens: 8, },)
+              + deltaOf({
+                deltaType: 'text_delta',
+                field: 'text',
+                text: 'Biscuit ',
+              },)
+              + frameOf({
+                body: {
+                  type: 'content_block_delta',
+                  index: 0,
+                },
+              },)
+              + deltaOf({
+                deltaType: 'text_delta',
+                field: 'text',
+                text: 'is smug.',
+              },)
+              + endOf({
+                stopReason: 'end_turn',
+                outputTokens: 3,
+              },),
+          },);
+        },).toThrow(MalformedCompletionError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a text_delta whose text is not a string, since reading it as empty dropped '
+        + 'words from a prose answer that then shipped as whole (ledger B89)',
+      fn: async () => {
+        expect(function textless() {
+          extractAnthropicCompletion({
+            bodyText: startOf({ inputTokens: 8, },)
+              + frameOf({
+                body: {
+                  type: 'content_block_delta',
+                  index: 0,
+                  delta: {
+                    type: 'text_delta',
+                    text: 7,
+                  },
+                },
+              },)
+              + endOf({
+                stopReason: 'end_turn',
+                outputTokens: 1,
+              },),
+          },);
+        },).toThrow(MalformedCompletionError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES an input_json_delta with no partial_json, since reading it as empty handed '
+        + 'the validator tool arguments with a hole in them (ledger B89)',
+      fn: async () => {
+        expect(function argumentless() {
+          extractAnthropicCompletion({
+            bodyText: startOf({ inputTokens: 8, },)
+              + deltaOf({
+                deltaType: 'input_json_delta',
+                field: 'partial_json',
+                text: '{"mood":',
+              },)
+              + frameOf({
+                body: {
+                  type: 'content_block_delta',
+                  index: 0,
+                  delta: { type: 'input_json_delta', },
+                },
+              },)
+              + endOf({
+                stopReason: 'tool_use',
+                outputTokens: 2,
+              },),
+          },);
+        },).toThrow(MalformedCompletionError,);
+      },
+    },),
+
+    it({
       name: 'REFUSES a payload that is not JSON rather than skipping it, since a frame nobody can '
         + 'read means the answer assembled from the rest is missing an unknown piece',
       fn: async () => {
