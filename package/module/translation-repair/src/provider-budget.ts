@@ -316,7 +316,10 @@ export function createProviderBudgets(
    NOT ZERO. The stamp was zero for never, which an epoch clock never reads;
    `monotonicMs` counts from near the process's start and reads zero in its
    first millisecond, so a reading taken then passed for no reading and every
-   meter was read again inside the window (ledger B78).
+   meter was read again inside the window (ledger B78). Nor can zero stand as
+   an ordinary stamp: on this clock it is the process's start, so every call
+   in the first `freshForMs` would take the pre-read view as fresh and read no
+   meter, which failed nine of this file's cases when tried.
    */
   const cache: {
     startedAt: number;
