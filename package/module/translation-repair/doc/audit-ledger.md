@@ -15650,6 +15650,10 @@ every line turned into any line failed the three multi-line prose blocks;
 the open-comment refusal off failed the earlier case's open comment;
 comment-only acceptance off failed the comment-only blocks in both cases;
 and the reader's continuation off failed the continuation cases in the reader's tests and the check's.
+The full suite on `3788e8223`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,508 PASS lines and no FAIL line.
 
 Calls made here are open to veto:
 
