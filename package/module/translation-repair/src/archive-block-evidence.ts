@@ -1,7 +1,14 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { PhrasingContent, } from 'mdast';
+
 import { codePointCount, } from './code-points.ts';
-import { archiveContributorNameForms, } from './contributor-name-authority.ts';
+import { contributorDeclarationLines, } from './contributor-name-authority.ts';
+import { continuesLatinWord, } from './latin-letters.ts';
+import { maskHtmlComments, } from './mask-html-comments.ts';
+import { parseMarkdownBody, } from './parse-mdx.ts';
 import { normalizePunctuation, } from './quote-normalize.ts';
 import { referencePageTexts, } from './reference-line-head.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Archive block evidence
 
@@ -29,7 +36,7 @@ const EDITORIAL_PREFIXES: readonly string[] = [
 
 /**
  Checks exact source support is substantive and inside expected aligned section.
-
+ 
  READ THROUGH THE EVIDENCE FOLD (`normalizePunctuation`, ledger B24): a
  reviewer quoting the original writes its 「」 as English quotes as often as
  not, and the words are what the anchor asks about. The minimum is counted in
@@ -114,11 +121,95 @@ export function isArchiveReferenceQuoteAnchored(
 }
 
 /**
+ Whether a line opens with an apparatus label as a word of its own, so
+ "Translation byproducts" is no "translation by" label.
+ 
+ @param line - one line of a block, its comments blanked
+ 
+ @returns Whether the line, case-folded, opens with a label ending a word
+ 
+ @example
+ ```ts
+ isLabelLine({ line: 'Translated by Mittens', },); // true
+ ```
+ */
+function isLabelLine({ line, }: { readonly line: string; },): boolean {
+  /**
+   Case-folded line, as the fixed labels are written.
+   */
+  const normalized = line.trim()
+    .toLowerCase();
+  return EDITORIAL_PREFIXES.some(function opensWith(prefix,): boolean {
+    if (!normalized.startsWith(prefix,))
+      return false;
+    /**
+     Whether a word runs on through the label's last character, which a
+     colon ends.
+     */
+    const labelRunsOn = continuesLatinWord({ character: prefix.slice(-1,), },);
+    /**
+     Whether a word runs on through the character after the label.
+     */
+    const lineRunsOn = continuesLatinWord({ character: normalized.charAt(prefix.length,), },);
+    return !(labelRunsOn && lineRunsOn);
+  },);
+}
+
+/**
+ Whether a line holds pictures and nothing else a reader sees.
+ 
+ @param line - one line of a block, its comments blanked
+ 
+ @returns Whether Markdown reads the line as one paragraph of images alone
+ 
+ @example
+ ```ts
+ isPictureLine({ line: '![A tabby asleep](tabby.png)', },); // true
+ ```
+ */
+function isPictureLine({ line, }: { readonly line: string; },): boolean {
+  /**
+   The line as Markdown reads it on its own.
+   */
+  const [block, ...rest] = parseMarkdownBody({ body: line, },)
+    .children;
+  if ((block?.type !== 'paragraph') || (rest.length > 0))
+    return false;
+  /**
+   Everything the paragraph holds.
+   */
+  const { children, } = block;
+  /**
+   What the paragraph holds besides its pictures.
+   */
+  const besides = children.filter(function notPicture(child: ForeignBorrowed<PhrasingContent>,): boolean {
+    return child.type !== 'image';
+  },);
+  return (besides.length < children.length)
+    && besides.every(function showsNothing(child: ForeignBorrowed<PhrasingContent>,): boolean {
+      return (child.type === 'text') && rendersAsNothing({ text: child.value, },);
+    },);
+}
+
+/**
  Deterministically corroborates narrow translation-side apparatus category.
+ 
+ EVERY LINE A READER SEES IS APPARATUS (ledger B81). With the block's
+ comments blanked, each line it shows is one the contributor reader takes
+ as a declaration, one opening with an apparatus label, or one of pictures
+ alone; a block of closed comments and nothing else is apparatus too, and
+ a comment left open is not. The check once accepted a block when any line
+ declared contributors, or when it opened with a label, a picture or a
+ comment and ended with a closed one, so prose beside them passed with
+ them, and a label's words opening a longer word passed as the label.
+ 
+ What a label line says after its label is not read: whether it names a
+ person or tells of one is the reviewers' to judge.
  
  @param blockText - exact unclaimed archive block
  
- @returns Whether block has contributor, citation, media, or comment shape
+ @returns Whether every line the block shows is contributor, citation, or
+ picture apparatus, or the block is closed comments alone
  
  @example
  ```ts
@@ -129,21 +220,40 @@ export function isVerifiableEditorialArchiveBlock(
   { blockText, }: { readonly blockText: string; },
 ): boolean {
   /**
-   Case-folded visible block used only for fixed apparatus labels.
+   The block with each comment blanked to spaces and its line breaks kept,
+   so a line's index is the same in both.
    */
-  const normalized = blockText.trim()
-    .toLowerCase();
-  if (archiveContributorNameForms({ text: blockText, })
-    .length
-    > 0)
-    return true;
-  if (EDITORIAL_PREFIXES.some(function hasPrefix(prefix,): boolean {
-    return normalized.startsWith(prefix,);
+  const {
+    masked,
+    regions,
+  } = maskHtmlComments({ text: blockText, },);
+  // A COMMENT LEFT OPEN runs to the end of the page, so the block vouches
+  // for nothing after it.
+  if (regions.some(function leftOpen(region,): boolean {
+    return !region.terminated;
   },))
-    return true;
-  if (normalized.startsWith('![',))
-    return true;
-  return normalized.startsWith('<!--') && normalized.endsWith('-->');
+    return false;
+  /**
+   Lines the contributor reader takes as declarations.
+   */
+  const declaring = new Set(contributorDeclarationLines({ text: masked, },)
+    .map(function lineOf(declaration,): number {
+      return declaration.line;
+    },),);
+  /**
+   Lines a reader sees, each with its index.
+   */
+  const shown = [...masked.split('\n',)
+    .entries(),].filter(function seen([, line,],): boolean {
+    return !rendersAsNothing({ text: line, },);
+  },);
+  if (shown.length === 0)
+    return regions.length > 0;
+  return shown.every(function isApparatus([at, line,],): boolean {
+    return declaring.has(at,)
+      || isLabelLine({ line, },)
+      || isPictureLine({ line, },);
+  },);
 }
 
 //endregion Archive block evidence
