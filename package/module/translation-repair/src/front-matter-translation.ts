@@ -28,6 +28,11 @@ export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete Y
  
  MEASURED 2026-09-04 over the pinned archives: 70 alias values carry a
  comma, one a slash, none a Chinese comma or an enumeration mark.
+ 
+ THE COMMA ALONE, where `ALIAS_SEPARATORS` (`corpus-run/directory-id-name.ts`)
+ also splits on the full-width comma and the enumeration mark: that reader
+ takes originals, which write both, and this one takes a translation, whose
+ rule tells a model to separate renderings with commas (ledger B97).
  */
 const ALIAS_SEPARATOR = ',';
 
@@ -89,7 +94,8 @@ type VisibleIdentityReading =
     readonly name: string;
 
     /**
-     Alias nested under metadata info.
+     Alias nested under metadata info, a list's items joined on the
+     separator.
      */
     readonly alias: string;
   }
@@ -101,7 +107,8 @@ type VisibleIdentityReading =
   };
 
 /**
- Reads standard visible identity fields from parsed metadata.
+ Reads standard visible identity fields from parsed metadata, taking an alias
+ written as a string or as a list of strings.
  
  @param value - parsed YAML document
  
@@ -131,13 +138,27 @@ function visibleIdentityOf({ value, }: { readonly value: unknown; },): VisibleId
   const { alias, } = info;
   if ((typeof name) !== 'string')
     return { kind: 'other-schema', };
-  if ((typeof alias) !== 'string')
-    return { kind: 'other-schema', };
-  return {
-    kind: 'present',
-    name,
-    alias,
-  };
+  if ((typeof alias) === 'string') {
+    return {
+      kind: 'present',
+      name,
+      alias,
+    };
+  }
+  // A LIST READS AS ITS ITEMS JOINED ON THE SEPARATOR, as `aliasesOf`
+  // (`corpus-run/directory-id-name.ts`) reads one: read as another schema,
+  // a list-shaped alias silently skipped the rule that the name appear among
+  // the alias renderings (ledger B97).
+  if (Array.isArray(alias,) && alias.every(function isText(item,): item is string {
+    return (typeof item) === 'string';
+  },)) {
+    return {
+      kind: 'present',
+      name,
+      alias: alias.join(ALIAS_SEPARATOR,),
+    };
+  }
+  return { kind: 'other-schema', };
 }
 
 /**
@@ -264,8 +285,11 @@ export function validateFrontMatterTranslation(
     const { page: pageFrontMatter, } = ground;
     /**
      Structural authority:
-     archive metadata when present,
-     otherwise source shape for new insertion.
+     archive metadata when it holds any,
+     otherwise the original's shape:
+     for a new insertion,
+     and for an archive whose fence pair holds nothing (parsed as null),
+     since an empty block has no established keys to keep.
      */
     const pageData = pageFrontMatter?.data ?? sourceData;
     if (yamlShape({ value: candidateData, }) !== yamlShape({ value: pageData, })) {

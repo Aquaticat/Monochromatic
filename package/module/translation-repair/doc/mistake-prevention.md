@@ -669,6 +669,9 @@ meanwhile B64's own listing result was a copy of one `directory-listing.ts` alre
 Two readers moved into modules of their own for the italic-title pass shipped tested only through their callers,
 since the rule asking for their own tests stood under "Text by code point",
 where a reader of structure is not looked for (M88).
+Two readers of a front matter `alias` disagreed on a list:
+one joined its items,
+the other read it as another schema and skipped the identity rule (ledger B97).
 
 The rule:
 before writing a helper,
@@ -697,6 +700,9 @@ A helper moved into a module of its own,
 or given a second caller,
 gets a unit test file of its own in the same change,
 with the edges no caller reaches among its cases.
+A new reader of a field another reader already reads starts from that reader's shapes,
+and where the two must differ,
+each says how and why.
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,

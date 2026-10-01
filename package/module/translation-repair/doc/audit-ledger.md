@@ -16661,6 +16661,63 @@ Recurrence:
 `mistake-prevention.md`,
 "Lint and edits".
 
+### B97: a list-shaped alias skipped the identity rule
+
+Found 2026-10-01 (UTC) in T8's twenty-third batch,
+red in `7088bf67d`,
+fixed in the commit adding this entry.
+Where an original's `name` and `info.alias` are one identity,
+a translation must carry its name among its alias renderings.
+`visibleIdentityOf` (`front-matter-translation.ts`) read `info.alias` only as a string,
+and took any other shape for another schema,
+so where the original wrote its alias as a YAML list holding just its name,
+the rule never ran,
+and a candidate whose list dropped the name passed.
+The package's other alias reader,
+`aliasesOf` (`corpus-run/directory-id-name.ts`),
+already read a list by joining its items on the comma;
+`visibleIdentityOf` now reads a list of strings the same way.
+
+Reach:
+none today.
+No pinned page or `info.yml` writes `alias` as a list
+(`b23-front-shapes.mjs` in the audit's scratch folder:
+92 entries,
+254 `alias` keys across their pages,
+none list-shaped),
+and the site's build shows each `info` field as one value
+(`scripts/build.ts`,
+line 205,
+in the data repository),
+so a list is a shape the site does not expect either.
+The refusal's wording still says "comma-separated" for a list.
+The two readers still split on different separators:
+the candidate side on the comma its sheet tells a model to use,
+`aliasesOf` on the three the originals use;
+each separator constant now says so and names the other.
+
+The same batch found a second reading,
+which stands:
+a page whose front matter fence pair holds nothing parses to null,
+and `pageFrontMatter?.data ?? sourceData` then judges a candidate by the original's shape,
+as for an insertion.
+The audit's reader called that conflating an empty archive with none;
+an empty block has no established keys to keep,
+and judging by the empty shape would refuse every candidate that translates the original's metadata,
+so the behaviour stays,
+its comment now says so,
+and a case pins it.
+
+Calls made here are open to veto:
+
+- a list alias read as its items joined on the comma,
+  rather than left as another schema;
+- the original's shape governing a page whose front matter holds nothing.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

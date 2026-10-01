@@ -24,6 +24,10 @@ import { isAsciiLetter, } from '../ascii-letters.ts';
 /**
  Separators an alias list is written with in the corpus: the comma, the
  full-width comma and the enumeration comma.
+ 
+ MORE THAN `ALIAS_SEPARATOR` (`front-matter-translation.ts`) splits a
+ translation's alias on, the comma alone: this reads originals too, which
+ write the other two (ledger B97).
  */
 const ALIAS_SEPARATORS = [
   ',',
