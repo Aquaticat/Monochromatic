@@ -10,10 +10,9 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { CODEX_API, CODEX_PROVIDER, FAST_PROVIDER, registerOpenAIFast, } from '../dist/final/node/index.mjs';
 import { fixtureHttp, nativeResponse, } from './host-fixture-http.ts';
 import { fixtureContext, } from './host-fixture-model.ts';
-import { HOST_TOKEN, } from './host-fixture-provider.ts';
+import { HOST_TOKEN, fixtureProvider, } from './host-fixture-provider.ts';
 import { fixtureHome, fixtureHost, requireCompanion, } from './host-fixture-session.ts';
 import { fixtureRuntime, } from './host-fixture-runtime.ts';
-import { fixtureProvider, } from './host-fixture-provider.ts';
 
 //region Native HTTP: original headers and history survive live registry dispatch.
 

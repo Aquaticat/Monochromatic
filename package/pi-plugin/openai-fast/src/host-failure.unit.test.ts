@@ -29,7 +29,7 @@ await describe({ name: registerOpenAIFast.name, children: [
       /** Raw event observation preserves provider error codes separately from native message formatting. */
       const failures: unknown[] = [];
       host.pi.on('provider_stream_event', function observeFailure(event: ForeignBorrowed<ProviderStreamEvent>) {
-        if ((typeof event.data === 'object') && (event.data !== null) && ('type' in event.data)
+        if (((typeof event.data) === 'object') && (event.data !== null) && ('type' in event.data)
           && (event.data.type === 'response.failed'))
           failures.push(event.data,);
       },);
@@ -42,9 +42,11 @@ await describe({ name: registerOpenAIFast.name, children: [
       expect(assistant,).toMatchObject({ stopReason: 'error', model: host.base.id, provider: CODEX_PROVIDER, api: CODEX_API, },);
       expect(assistant,).toHaveProperty('errorMessage',);
       expect(assistant?.errorMessage,).toBe('Synthetic native failure.',);
-      expect(failures,).toEqual([expect.objectContaining({ type: 'response.failed', response: expect.objectContaining({
-        error: { code, message: 'Synthetic native failure.', },
-      },), },),],);
+      expect(failures,).toHaveLength(1,);
+      expect(failures[0],).toMatchObject({
+        type: 'response.failed',
+        response: { error: { code, message: 'Synthetic native failure.', }, },
+      },);
       expect(http.requests,).toHaveLength(1,);
       expect(http.requests[0]?.payload,).toHaveProperty('service_tier', 'priority',);
     }, },);
