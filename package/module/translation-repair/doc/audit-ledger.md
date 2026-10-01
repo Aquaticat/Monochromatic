@@ -4623,6 +4623,10 @@ and the package does so for most of its elapsed times
 each site is to be read for whether it measures work,
 which wants a monotonic clock,
 or a budget the owner reads in wall time.
+B78 has since closed that family,
+reading every duration inside a process on a monotonic clock,
+the budgets among them,
+a call recorded there open to veto.
 The package has about fifty number reads from text in 32 production files,
 several on operator-typed variables;
 each is to be read for an empty,
@@ -4699,6 +4703,8 @@ which B76 closed,
 and B77 closed the prototype keys,
 so the elapsed-time family closes first,
 and the batch reads against the census taken once it closes.
+B78 closed it (`a3f1f2c55` to `e2b0962fd`),
+so the census taken next is the batch's baseline.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -13945,7 +13951,8 @@ it measures the slice as a difference of `Date.now()` readings,
 the wall clock,
 which a clock step can move backward mid-slice
 (the elapsed-time family,
-open in T8's seventeenth batch record).
+found in T8's seventeenth batch record and closed by B78,
+after which the meter reads a clock no step moves).
 A negative duration is not a measurement,
 and the dropped reason names it.
 The package's other number reads from text are the same family,
@@ -14324,7 +14331,7 @@ which reaches a prototype's keys
 the rest by B77);
 the request pace's real-clock case flaked,
 18.89 and 18.99 milliseconds against a 19 millisecond bound,
-recorded with the elapsed-time family;
+recorded with the elapsed-time family (B78);
 `readCapLog` copied its queue of a label's streams at every stream line,
 a copy `fold-copies.unit.test.ts` did not read (closed by B74);
 and `run-timing-report` prints its count of completion lines without a duration before a fixed plural,
@@ -14884,6 +14891,192 @@ a class field,
 a parameter destructured from an object an alias types,
 a key typed by a template literal,
 and a cast of text to a table's literal keys.
+
+### B78: durations, holds, paces and budgets measured on the system clock
+
+Found in T8's seventeenth batch,
+beside B71,
+and left open there.
+The system clock is the time of day,
+which a person or a time daemon can set,
+and the package took its durations,
+deadlines,
+holds,
+paces and budgets as differences of `Date.now()` readings.
+Set back an hour mid-call,
+a duration read negative,
+a hold or a pace waited an hour longer than asked,
+and a budget lasted an hour more;
+set forward,
+holds ended early and budgets ran out at once.
+Found by reading the code;
+no stored log was searched for a run during which the system clock was set.
+
+The scan committed red (`a3f1f2c55`) read 36 reads of the wall clock as a number:
+23 in production,
+in `corpus-pass.ts`,
+`pass-decline.ts`,
+`pass-entry.ts`,
+`sentinel-probe.ts`,
+`provider-budget.ts`,
+`provider-router.ts`,
+`repair-benchmark.ts`,
+`request-pace.ts`,
+`slice-cost-log.ts`,
+`stage-round.ts` and `stream-idle-guard.ts`,
+and 13 in tests,
+in `budget-hold-wait`,
+`pass-decline`,
+`pass-outside-reads`,
+`stage-quorum`,
+`stage-round` and `transient-retry`.
+
+Each red case (`29608a23b`) failed on its assertion against the unfixed code,
+with `wall-clock-stub.test-fixture.ts` holding `Date.now` at a reading the case moved:
+
+- the pacer on its default clock,
+  set back an hour after a take,
+  asked the next take to wait 3,600,000 ms more than the window;
+- a take whose sleep ended a millisecond before its reserved start returned there
+  (1,059,999 for 1,060,000):
+  the pacer slept once and never read the clock again;
+- the idle guard,
+  set back an hour before the first byte,
+  reported that byte at -3,600,000 ms;
+- the slice cost meter,
+  set back mid-slice,
+  wrote `ms=-3600000`,
+  a line `slice-cost-read` drops;
+- the gather round,
+  set forward two hours as it started,
+  logged a round of 7,200,000 ms;
+- the default budget view,
+  set back an hour after a refusal,
+  held the refuser 3,600,300 ms on a 300 ms backoff;
+- a budget view whose clock read 0 at its first reading took that reading for none
+  and read every meter again inside the window;
+- the repair benchmark,
+  set forward two hours during its first entry,
+  skipped the second on an hour's budget;
+- `settleEntry`,
+  set back an hour while it settled,
+  wrote a `durationMs` of -3600000 into the artifact,
+  which the two-lane reader refuses.
+
+Fixed (`8204394fc`):
+every difference between two readings in one process reads `monotonicMs` (`monotonic-clock.ts`),
+which is `Math.floor(performance.now())`.
+Node reads `performance.now` through `uv_hrtime` (`src/node_perf.cc` in v26.10.0),
+which on Linux reads `CLOCK_MONOTONIC` (libuv `src/unix/linux.c`);
+clock_gettime(2) says that clock is unaffected by jumps in the system time and does not count suspend,
+and libuv's timers already run on a monotonic loop clock.
+Floored,
+every printed and stored duration stays a whole number of milliseconds,
+the form the slice-cost reader and the artifact require.
+Converted:
+the stream idle guard,
+the slice-cost log and reader,
+the stage round's three marks,
+the repair benchmark's run budget,
+the corpus pass's soft budget,
+stop-before-next check and closing line,
+the pass entry and its decline line,
+the sentinel probe,
+and the default clocks of the provider router,
+the provider budget and the request pace,
+which the two hold modules' examples name too.
+Two behaviours changed beyond the clock:
+the pacer sleeps again for what is left whenever a sleep ends before its reserved start,
+and the budget's stamp for a view never read is negative infinity rather than zero.
+The first is also the likely cause of the request pace's real-clock case
+falling short of its 19 ms bound at 18.89 and 18.99 ms (recorded with B73):
+a take now returns only once a floored reading has passed its reserved start,
+more than 19 ms after the case's own first reading,
+an inference from the code,
+since the short reads were never reproduced on demand.
+`e2b0962fd` added to that stamp's TSDoc the second way zero fails on this clock,
+which a guard-off found.
+Docs that said "wall time" for these durations say time,
+read on `monotonicMs`,
+and tests that measured elapsed time with `Date.now` read `performance.now`.
+
+Kept on the system clock,
+since each outlives the process that wrote it:
+ISO stamps (`new Date().toISOString()`),
+the runs lock,
+the lookup caches' `fetchedAt`,
+`wallClock()` in `corpus-run/pass-outside-reads.ts`,
+and `LAUNCH_STAMP`.
+`corpus-run/run-timing-read.ts` takes its durations between the logger's stamps,
+which are all a stored log keeps,
+so a run during which the clock was set still reads wrong there.
+
+Calls made here are open to veto:
+
+- every duration inside one process is read on `monotonicMs`,
+  the soft budget and the repair budget among them,
+  so both now count only time the machine is awake,
+  as the hard cap's timer already did;
+- readings are floored to whole milliseconds rather than kept fractional,
+  so no log or artifact format changes;
+- the pacer sleeps again until its reserved start rather than trusting a timer's early end;
+- the budget's never-read stamp is negative infinity rather than zero or an absent value;
+- the scan reads tests as well as source,
+  with the stub and its own test the two files it skips;
+- docs keep "wall clock" for the system clock,
+  while idiomatic speed phrases and the file name `where-a-round-spends-its-wall-clock.md` stay.
+
+Guard-offs on the fixed tree,
+each restored with `git diff` printing nothing after:
+
+- `monotonicMs` reading `Date.now`:
+  the first run hung `request-pace.unit.test.ts` after its FAIL line (ledger M100);
+  after the stub was scoped to its case (`b1604a2f8`),
+  all eight files exited 1,
+  each failing only its B78 case,
+  with the red values
+  (1790809200000,
+  3660000,
+  -3600000,
+  `'ms -3600000'`,
+  7200000,
+  3600300,
+  `[ 'error', 'skipped' ]` and -3600000);
+- the pacer's loop cut to one sleep:
+  the sleeps-again case failed (1059999 for 1060000);
+- the budget stamp's exact revert,
+  zero plus the check reading zero as never:
+  only the reads-once case failed,
+  with two reads of each meter;
+  zero without that check failed nine of the file's cases,
+  since on this clock zero is the process's start
+  and every call in the first freshness window took the pre-read view as fresh;
+- the scan with `Temporal.Now` unrecognised:
+  its fixture case failed;
+- the stub replacing `Date.now` for the whole process:
+  ledger M100.
+
+Out of the scan's reach,
+and named in its module note:
+`Date`,
+`performance` or `Temporal` reached through `globalThis` or another name,
+a date compared with `<` or `>`,
+and a duration taken between stamps a process wrote.
+TSDoc examples are comments,
+which the scan does not read,
+and were fixed by hand.
+
+Recurrence:
+a difference of two readings in one process reads `monotonicMs`,
+and the system clock is read only as a stamp;
+`wall-clock-reads.unit.test.ts`,
+which `source-scans` runs,
+fails on `Date.now` called,
+handed on or destructured,
+`getTime` or `valueOf` called,
+a unary plus or `Number` on a date,
+`performance.timeOrigin` and `Temporal.Now`,
+in source and tests alike.
 
 ## Process mistakes in this audit
 
@@ -15767,6 +15960,71 @@ a fallback report names the exit status (`|| echo "exit $?"`),
 since `rg` exits 1 for no match and 2 for an error,
 and a null is read only with the command's error output in view.
 
+### M100: a test fixture that replaced a process global while the runner ran cases side by side
+
+Status:
+happened 2026-10-01 (UTC) during B78,
+found by B78's first guard-off,
+and fixed in `b1604a2f8`.
+`wall-clock-stub.test-fixture.ts`,
+as B78's red commit wrote it,
+replaced `Date.now` for the whole process while a case held it.
+It was written without reading how module-test schedules cases:
+a suite runs its children side by side,
+sixteen at a time by default (`package/module/test/src/describe.ts`).
+The fix commit's checks passed,
+since on the fixed tree no package code reads `Date.now`;
+the logger does,
+for its stamps (`package/module/logger/src/create-logger.ts`),
+so a sibling's log lines during a stub window carried the stepped time,
+as the FAIL lines of the fixture's own guard-offs show (`2026-09-30T23:00:00.000Z`).
+The first guard-off of B78 (`monotonicMs` reading `Date.now`) showed the cost:
+`request-pace.unit.test.ts` printed its B78 case's FAIL line and then did not exit;
+the guard runner waited on it for eleven minutes until it was killed by hand,
+and run alone it stalled again after three PASS lines.
+The mechanism is an inference,
+not confirmed:
+a real-clock pacer case beside the stepped one read the stubbed clock,
+about eight hours behind the real one,
+and its pace loop slept toward that.
+A regression back to the system clock would have hung the whole suite rather than failed it.
+
+The stub now goes through the case's own sandbox,
+`ctx.sinon.stub(Date, 'now')`,
+which module-test answers only to code running in the owning case's async context
+and restores when the case ends (`sandbox-slot.ts`,
+`execution-node.ts`).
+`wall-clock-stub.unit.test.ts` holds a stepping case and a sibling that waits for it,
+and the sibling,
+bracketing its read with `new Date()` stamps,
+reads the real clock.
+Guard-offs on the fixed fixture,
+restored with `git diff` printing nothing after:
+an added process-wide assignment beside the sandbox stub was refused by the sandbox once another case's stub was live
+(`SandboxOwnershipError`),
+so the stepping case failed and its sibling timed out,
+the wrong route;
+with the sandbox stub replaced by the plain assignment,
+the sibling failed its own assertion,
+its read sorting as `2026-09-30T23:00:00.000Z` ahead of the real stamps.
+With the stub scoped,
+the first guard-off of B78 rerun exited every file with its FAIL lines.
+The scratch guard runner (`~/temp/agent/audit-glossary-fix/run-guards-named.ts`) now ends a file after 300 s and prints that it did.
+
+Prevention:
+before a fixture replaces a global,
+read how the runner schedules cases,
+and scope the replacement to its case (module-test's `ctx.sinon` for a method)
+or sequence the cases that share it;
+a guard-off whose process does not exit is a finding of its own,
+and a guard runner bounds each file.
+The package's other tests that replace process globals
+(`process.env` variables,
+`console` methods,
+`process.exitCode`),
+in 29 files by one search,
+are queued as a family to classify against this.
+
 ### M79: a coverage census measuring compressed code
 
 Status:
@@ -16548,6 +16806,19 @@ no match),
 and a search confirming the "under zero" rewording ran in the batch of the `sed` that made it
 (its output showed the new wording,
 so the edit landed first).
+Again during B78 on 2026-10-01 (UTC),
+four times,
+with no wrong outcome landing:
+three times while writing the fix,
+an edit and a command reading it in one batch,
+with the lint,
+the named test run and the source scans that `8204394fc` cites all run in later calls,
+after the last edits to the files it changed (their logs are newer than those files);
+and once when the check of `e2b0962fd`'s message for `#` and task numbers ran in the batch of the message's write
+(it printed no missing-file error,
+so it read the file;
+rerun alone,
+no match).
 The prevention stands as written:
 the edit or write,
 then,

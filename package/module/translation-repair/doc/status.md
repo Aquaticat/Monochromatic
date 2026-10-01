@@ -256,7 +256,7 @@ exponent and signed spellings as numbers its writer never writes,
 and no stored pass log carries one.
 Two families were found beside it:
 elapsed times measured on the wall clock where a monotonic one is meant,
-still open,
+closed by B78,
 and the package's other number reads from text,
 closed by B73.
 Its census (`census-vi1FHB`,
@@ -347,9 +347,23 @@ and a `__proto__` count was never written.
 Every table looked up by text is now a map,
 every record filled by a key a map until it is handed on,
 and `text-keyed-tables.unit.test.ts` fails on a new one.
-Open before the eighteenth batch:
-elapsed times on the wall clock;
-the census taken once it closes is that batch's baseline,
+B78 closed the last family open before the eighteenth batch
+(`a3f1f2c55` to `e2b0962fd`):
+durations,
+holds,
+paces and budgets were differences of system-clock readings,
+which setting the clock moved by the hour it was set.
+Every difference inside one process now reads `monotonicMs`,
+the system clock is read only as a stamp,
+and `wall-clock-reads.unit.test.ts` fails on a new read of it as a number.
+On the way,
+the stub its red cases used replaced `Date.now` for the whole test process
+while module-test ran other cases beside it,
+and a guard-off hung a file rather than failing it;
+the stub now holds the clock for its own case only (ledger M100).
+The package's 29 other test files that replace process globals are open as a family;
+they change tests only,
+so the census taken next is the eighteenth batch's baseline,
 recorded under each entry it closes.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.

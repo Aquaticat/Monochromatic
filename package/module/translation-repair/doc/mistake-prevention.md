@@ -1881,3 +1881,76 @@ a class field,
 a parameter destructured from an object an alias types,
 a key typed by a template literal,
 and a cast of text to a table's literal keys.
+
+## Durations on the system clock
+
+What happened:
+durations,
+deadlines,
+holds,
+paces and budgets were differences of `Date.now()` readings,
+and the system clock is the time of day a person or a time daemon can set.
+Set back an hour,
+the pacer asked a take to wait an hour more than its window,
+the budget view held a refuser an hour on a 300 ms backoff,
+and an entry's artifact recorded a duration of an hour below zero,
+which its reader refuses;
+set forward,
+the repair benchmark read its budget spent and skipped an entry (ledger B78).
+
+The rule:
+a difference of two readings inside one process reads `monotonicMs` (`monotonic-clock.ts`),
+whose clock no setting of the system time moves;
+the system clock is read only as a stamp,
+`new Date().toISOString()`,
+for a moment that outlives the process.
+A `monotonicMs` reading counts from near the process's start,
+so it is never stored,
+and zero marks nothing as absent:
+a stamp for "never" is negative infinity.
+A timer can end a millisecond before a monotonic deadline,
+so code that must not start early reads the clock again after its sleep.
+
+What enforces it:
+`wall-clock-reads.unit.test.ts`,
+which `source-scans` runs,
+fails on the system clock read as a number in source or tests
+(`Date.now` in any form,
+`getTime` or `valueOf` called,
+a unary plus or `Number` on a date,
+`performance.timeOrigin`,
+`Temporal.Now`),
+and the red cases in each site's test file step the system clock through `wall-clock-stub.test-fixture.ts`.
+Out of the scan's reach:
+those globals reached through `globalThis` or another name,
+dates compared with `<` or `>`,
+and durations between stamps a process wrote.
+
+## Globals a case replaces
+
+What happened:
+the stub for the system clock replaced `Date.now` for the whole test process,
+while module-test runs a suite's cases side by side,
+sixteen at a time by default.
+A pacer case beside the stepped one read the stubbed clock,
+and a guard-off that should have failed a case hung its file instead;
+the logger's stamps in sibling cases took the stepped time too (ledger M100).
+
+The rule:
+a case that replaces a global replaces it only for itself:
+a method through the case's own sandbox,
+`ctx.sinon.stub(target, 'method')`,
+which module-test answers only to code in that case's async context and restores when the case ends;
+a value no sandbox can scope,
+such as a `process.env` variable,
+is set only where no case running beside it reads the same value,
+or in a suite run one case at a time.
+Before writing such a fixture,
+read how the runner schedules cases.
+A guard-off whose process does not exit is a finding,
+and a guard runner ends each file after a bound.
+
+What enforces it:
+`wall-clock-stub.unit.test.ts` holds a sibling case that reads the real clock while another case holds a stepped one.
+The package's other replacements of process globals in tests are being classified as a family,
+and their guard is not written yet.
