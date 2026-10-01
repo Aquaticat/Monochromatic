@@ -277,9 +277,9 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
       String(fault.sliceIndex,)
     } carries archive wording its own lane record disagrees with, so the two were built from different `
       + 'preparations';
-  return `slice ${String(fault.sliceIndex,)} is ${
+  return `slice ${String(fault.sliceIndex,)}'s lane record says archive wording is ${
     fault.recorded
-  } of archive wording by its lane record and the other way by its prepared chunk`;
+  } there, and its prepared chunk says the opposite`;
 }
 
 /**
