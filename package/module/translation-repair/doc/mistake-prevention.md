@@ -145,7 +145,9 @@ and a refusal case rewritten to name its side swapped its class for the message,
 since `toThrow` given a text checks only that the message contains it (M85);
 and the slice coverage and delivery refusal cases checked the class alone or a fragment of the message,
 though every check in each file throws one class carrying a structured fault
-(T8's seventeenth batch).
+(T8's seventeenth batch);
+and a guard-off build put a mutant in a file's second top-level suite beside one failing its first,
+so the file stopped before the second suite and its case never ran (M89).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -189,6 +191,10 @@ is read against that precondition in the code first.
 A case guarding a short circuit is run once with the short circuit removed,
 and must fail there,
 before its commit says what it guards.
+A guard-off build mutates cases in one top-level suite per file,
+since a failing suite ends its file,
+and a mutant whose case prints no FAIL line is read as surviving
+only once that case's suite printed its pass line.
 When one side of a compared pair becomes derived from the other,
 every guard comparing them is re-read:
 one that can no longer fail goes,
@@ -618,6 +624,9 @@ the ledger report read the atomic writer's temporary files as contests,
 a stray file in the published tree raised ENOTDIR out of the verifier,
 and the slice cache stopped an entry on a directory named like a slice;
 meanwhile B64's own listing result was a copy of one `directory-listing.ts` already had (ledger B65).
+Two readers moved into modules of their own for the italic-title pass shipped tested only through their callers,
+since the rule asking for their own tests stood under "Text by code point",
+where a reader of structure is not looked for (M88).
 
 The rule:
 before writing a helper,
@@ -642,6 +651,10 @@ naming the kind of entry its writer makes
 never links),
 then filters by the name its writer gives a record,
 so a write still under its temporary name is never read.
+A helper moved into a module of its own,
+or given a second caller,
+gets a unit test file of its own in the same change,
+with the edges no caller reaches among its cases.
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
@@ -661,6 +674,8 @@ The shared helpers (`code-points.ts`,
 `src/directory-listing-scan.unit.test.ts` (ledger B65),
 among the source scans,
 fails on any directory-listing import outside `directory-listing.ts` and the walkers it names with why.
+Nothing yet fails on a shared module without its own test:
+a source scan over a classified list of the 167 there are is open (ledger M88).
 
 ## Text by code point
 
@@ -1453,6 +1468,11 @@ The container block deficit counted runs of non-blank lines on each side,
 so a list written tight in the original and loose in the archive,
 or a fenced block with a blank line inside,
 moved the deficit and admitted or refused a passage wrongly (ledger B68).
+The italic-title pass read the archive's italics by splitting each line at its stars,
+so a comment's or an expression's words read as a title
+and a linked or underscored one was never read,
+and it wrote a quoted title in italics inside an italic span,
+where nothing set it apart (ledger B72).
 
 The rule:
 a question about what a passage's blocks are
@@ -1472,12 +1492,25 @@ check that both read the structure one way.
 Where a count is compared across two sides and then spent,
 one reading serves all three:
 the deficit's passages cost the blocks the container counted for their slices.
+The same holds inline:
+which words a text sets in italics,
+in bold or in a link is read off the parse
+(`emphasisSpans` for italics),
+with HTML comments first blanked to spaces of the same length,
+as `parse-slice-body.ts` does,
+so that no offset moves and no comment's words are read.
 
 What enforces it:
 habit and review;
 `quote-preservation.unit.test.ts` carries both disagreeing shapes,
 and `quoteBlockCount` no longer exists to be reached for;
-`insertion-container-deficit.unit.test.ts` carries loose against tight lists and a fenced block with a blank line.
+`insertion-container-deficit.unit.test.ts` carries loose against tight lists and a fenced block with a blank line;
+`emphasis-spans.unit.test.ts` and `archive-italic-title-restore.unit.test.ts` carry the inline shapes a split misreads:
+a comment,
+a JSX comment beside one,
+a link,
+underscores
+and a span across lines.
 Three more blank-line block readers are listed under ledger B68 to be read against this rule.
 
 ## What a catch charges

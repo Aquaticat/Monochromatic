@@ -348,6 +348,15 @@ this one says what changed after it.
   Its census at `3bc823c13` (`census-vi1FHB`,
   1,472 passes)
   leaves library source at 747 stretches over 1,435 lines in 275 files,
+  with 15 functions never called.
+  Ledger B72 followed
+  (`db01484f7` to `3429c8229`):
+  the italic-title pass now reads the archive's italics and the page's off the parse,
+  leaving a title inside italics quoted,
+  with no current output changed.
+  Its census at `3429c8229` (`census-apleN5`,
+  1,475 passes)
+  leaves library source at 746 stretches over 1,432 lines in 274 files,
   with 15 functions never called,
   and is the eighteenth batch's baseline,
   that batch taking the archive modules

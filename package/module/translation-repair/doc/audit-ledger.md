@@ -4678,6 +4678,18 @@ and `corpus-run/run` (2 files,
 The tie goes to the most cold lines,
 so the eighteenth batch takes `archive`.
 
+B72 closed before that batch,
+and its census at `3429c8229` (`census-apleN5`) is recorded under B72.
+Its triage (`t8-triage-aplen5.txt`) leaves the queue at 306 returns,
+156 nullish fallbacks,
+126 ternaries,
+77 throws
+and 81 others:
+the stretch B72 removed was a ternary in `corpus-run/archive`,
+a cluster of its own,
+so `archive` and `corpus-run/run` still tie at 18 stretches,
+and the eighteenth batch takes `archive` against `census-apleN5`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -13859,9 +13871,8 @@ and the quotes that set it apart are gone
 (an inference from the default styling:
 the local site checkout holds only `data`,
 so its stylesheet was not read).
-How many settled pages hold such a span is not yet measured;
-the fix is to be measured over the pinned corpus,
-then taken red first.
+B72 measured it over the pinned corpus and closed it,
+with the archive side's reading of italics.
 
 Recurrence:
 a fold or loop over the input never copies what it has built;
@@ -13932,6 +13943,143 @@ The package's other number reads from text are the same family and are open ther
 Recurrence:
 a reader of text it wrote itself accepts only the spelling its writer writes,
 and reads each field once.
+
+### B72: the italic-title pass read structure off the text
+
+Found reading `italicizeSlice` for B70's splice,
+which left open that a quoted title inside an emphasis span was rewritten in asterisks there too.
+The archive side read structure the same way:
+`archiveItalicSpans` (`corpus-run/archive-italic-spans.ts`) split each line of a slice at its stars,
+so words inside an HTML comment or an MDX expression read as italics,
+a span across two lines read as its first line's words,
+a linked title read as link markup and never as a title,
+and a span set with underscores was never read.
+
+Measured first with the site's compiler
+(`@mdx-js/mdx` with `remark-math`,
+comments rewritten as the site's build does;
+`italic-in-emphasis-census.mjs`)
+over the 92 archives at the pin and the 273 settled pages,
+of which it parses 272.
+Its control,
+one quoted title inside emphasis,
+one inside bold and one outside,
+counted 3 found,
+1 inside emphasis and 1 inside bold.
+The pass finds one quoted archive title in the archives and two in the settled pages,
+none inside emphasis or bold.
+The two readings of the archives' titles differ by nine
+(`italic-title-reading-diff.mjs`,
+`italic-star-only-where.mjs`):
+five only the split reads,
+four of them inside MDX expressions in `XIEPT2` and `shihai4h`
+and one the first line of a span in `Susiethegamer`;
+four only the parse reads,
+three linked titles in `Futajuhuacha` and `zhangyubaka`
+and that whole span in `Susiethegamer`.
+None of the nine stands quoted in any archive or settled page
+(`italic-reading-effect.mjs`),
+so the fix changes no current output.
+
+Fixed (`db01484f7` red,
+`f0bad6d25`,
+then cases in `d38620f38` and `3429c8229`):
+`emphasisSpans` (`corpus-run/emphasis-spans.ts`) blanks HTML comments to spaces of the same length,
+reads the text with `parseBodyTolerant`,
+and returns each emphasis node's offsets and words,
+its text and inline code in document order with a hard break read as a line feed,
+on one line.
+`archiveItalicSpans` reads those words,
+and `italicizeSlice` parses a slice only when it quotes an archive title in prose,
+then leaves quoted any title that overlaps an emphasis span.
+`treeNodes` moved to `mdast-tree-nodes.ts`,
+shared with the formula floor in `translate-formula.ts`.
+
+Four calls made here are open to veto.
+The parse is the tolerant one,
+strict MDX first and plain Markdown where the strict grammar refuses,
+so the pass has no refusal arm:
+with the package's `parseMdxBody`,
+2,251 top-level blocks of the archives and 10,724 of 272 settled pages each parse alone,
+and one settled page (`yulianNyanner`) is refused whole,
+so a refusal is reachable on shipped pages,
+while inline emphasis reads the same in both grammars.
+Only emphasis is left alone,
+not bold:
+italics inside bold render bold italic,
+which still sets a title apart.
+A quoted title is left when it overlaps an emphasis span at all,
+not only when it lies inside one.
+And `oneLine` folds only the space and the line feed,
+though its TSDoc said every whitespace run:
+the pass writes the page's own words back,
+so folding a no-break space would change the page's spacing.
+Measured at the pin
+(`b72-whitespace-probe.mjs`,
+its control counting a tab,
+a carriage return and a no-break space),
+no quoted span of an archive or settled page holds whitespace other than those two,
+nor does any emphasis span of the 272 settled pages the compiler parses,
+and one archive emphasis span holds a narrow no-break space.
+The TSDoc now says what the code folds.
+
+With the emphasis skip,
+the comment mask and the hard break's line feed each turned off in one build,
+the case covering each failed and nothing else in the file.
+The case for words inside an HTML comment passes with the mask off,
+since plain Markdown reads a comment as an HTML node,
+which is why `d38620f38` puts a JSX comment beside one:
+the strict grammar reads it as an expression only once the HTML comment is blanked.
+The readers' own tests failed as named with `treeNodes` made recursive
+(the deep tree,
+a `RangeError`),
+the parse made strict alone
+(the refused text,
+an `MdxParseError`)
+and `oneLine` folding every whitespace character
+(the no-break space),
+the last in a build of its own (ledger M89).
+Each was restored,
+and the tree read clean.
+
+Its census at `3429c8229`
+(`census-apleN5`,
+1,475 passes,
+taken clean)
+reads against `census-vi1FHB`:
+ran 0,
+still cold 1,103,
+cold since then 4,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 2
+(`archive-italic-spans.ts` loaded with 0 cold stretches,
+and `archive-italic-title-restore.ts` with 1,
+its `break` on a quote that never closes,
+cold at the baseline too).
+Library source went from 747 stretches over 1,435 lines in 275 files to 746 over 1,432 in 274:
+the star split's stretch went with it.
+The suite prints one pass line per top-level suite,
+so the 3 more passes are the new test files' three suites,
+and the cases added to an existing file add none.
+The 4 cold since then are the other packages' stretches `census-vi1FHB` read as run
+(`with-timeout.ts` 57-59,
+`create-logger.ts` 240-247 and 366-373,
+`error-format.ts` 31-58),
+and no commit since touched those packages,
+so they come and go with run timing:
+cold in `census-DapwaX`,
+run in `census-vi1FHB`,
+and cold in `census-apleN5` and in the census one commit before it (`census-NUrxKe`).
+
+Recurrence:
+a reader of a page's structure,
+block or inline,
+reads the parse the site's build reads,
+with comments masked as that build masks them,
+never a split of the text at a delimiter;
+and a helper moved into a module of its own gets a unit test of its own in the same change
+(ledger M88).
 
 ## Process mistakes in this audit
 
@@ -14545,6 +14693,58 @@ Prevention:
 code moved from a test into a fixture follows an existing fixture's idiom
 (`archive-selection.test-fixture.ts` for a scripted client),
 and the lint runs before the move is used.
+
+### M88: shared readers extracted with no unit test of their own
+
+Status:
+happened 2026-10-01 (UTC) in `f0bad6d25`,
+found the same day reading the prevention doc against B72's census,
+and corrected in `3429c8229`.
+`f0bad6d25` moved `treeNodes` into `mdast-tree-nodes.ts`
+and wrote `emphasisSpans` and `oneLine` into `corpus-run/emphasis-spans.ts`,
+each with two callers,
+and tested them only through the italic-title pass and the formula floor.
+The prevention doc's rule that a shared reader gets a unit test of its own when it is extracted
+stood under "Text by code point",
+where a reader of structure is not looked for.
+Writing those tests found `oneLine`'s TSDoc saying every whitespace run reads as one space,
+where the code folds the space and the line feed alone (ledger B72).
+A probe at `3429c8229`
+(`shared-untested-probe.mjs`,
+its control `code-points.ts` read as tested)
+counts 167 of the 562 production modules imported by two or more others,
+barrels aside,
+with no unit test file of their own.
+Prevention:
+the rule now stands under "Copies of shared code",
+where moving a helper is looked for;
+a source scan failing on a new shared module without its own test,
+over a classified list of the 167,
+is open.
+
+### M89: a guard-off build whose last mutant's case never ran
+
+Status:
+happened 2026-10-01 (UTC) during B72's reader tests,
+found reading the run's output,
+and corrected by a second build.
+One build carried three mutants:
+`treeNodes` made recursive,
+`emphasisSpans` parsing strictly
+and `oneLine` folding every whitespace character.
+The last one's case sits in `oneLine`'s suite,
+the second top-level `describe` of `emphasis-spans.unit.test.ts`.
+Each test file awaits its suites at the top level,
+and a suite with a failing case rejects,
+so the file stopped after its first suite failed,
+and the `oneLine` case never ran;
+the harness prints a line per failing case and per passing suite,
+so it printed nothing for that case or its suite.
+A second build with that mutant alone failed the case.
+Prevention:
+a guard-off build mutates cases in one top-level suite per file,
+and a mutant whose case prints no FAIL line is read as surviving
+only once that case's suite is seen to have run.
 
 ### M79: a coverage census measuring compressed code
 

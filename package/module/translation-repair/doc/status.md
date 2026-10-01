@@ -229,10 +229,9 @@ taking the mark after it.
 The lists now grow by appending,
 the splices write in one pass (`spliceDisjointEdits`),
 and `fold-copies.unit.test.ts` fails on a new fold that copies.
-One finding from reading that pass is open:
-a quoted title inside an emphasis span is rewritten into italics nested in italics,
-losing the quotes that set it apart,
-and is to be measured over the pinned corpus before its red case.
+One finding from reading that pass,
+a quoted title inside an emphasis span rewritten into italics nested in italics,
+is closed by B72.
 Its census (`census-DapwaX`,
 1,472 passes,
 taken from a tree with nothing uncommitted)
@@ -271,6 +270,24 @@ the archive modules
 (`archive`,
 18 stretches over 36 lines in 9 files);
 the runner entry files and unloaded bundles come after the library.
+B72 closed before that batch
+(`db01484f7` to `3429c8229`):
+the italic-title pass read the archive's italics by splitting each line at its stars,
+and wrote a quoted title in italics inside an italic span;
+it now reads both off the parse,
+with comments masked,
+and leaves a title inside italics quoted.
+Measured over the pinned corpus first,
+the change alters no current output.
+Its census (`census-apleN5`,
+1,475 passes,
+taken from a tree with nothing uncommitted)
+leaves library source at 746 stretches over 1,432 lines in 274 files,
+with 15 functions never called,
+and leaves the archive modules as they were,
+so it is the eighteenth batch's baseline.
+Readers moved into modules of their own now get unit tests of their own in the same change,
+and a scan for the 167 shared modules without one is open (ledger M88).
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:
