@@ -92,7 +92,7 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
       /**
        Native IDs validate namespace collisions before registration changes occur.
        */
-      const ids = new Set(models.map(function modelId(model,) { return model.id; },),);
+      const ids = new Set(models.map(function modelId(model: ForeignBorrowed<Model<Api>>, ) { return model.id; },),);
       for (const model of models) {
         if (model.id
           .startsWith(PRIORITY_TARGET_PREFIX,)
@@ -159,7 +159,8 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
                Physical target is always looked up from the current catalog.
                */
               const target = ctx.modelRegistry
-                .find(
+                .getModelOfType(
+                  'chat',
                   FAST_PROVIDER,
                   targetId,
                 );

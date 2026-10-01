@@ -21,7 +21,10 @@ import {
   type CODEX_API,
 } from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
-import type { OriginalDispatchCapabilities, OriginalModelLookup, } from './original-dispatch-types.ts';
+import type {
+  OriginalDispatchCapabilities,
+  OriginalModelLookup,
+} from './original-dispatch-types.ts';
 
 //region Original host binding
 
@@ -116,7 +119,8 @@ export function createOriginalDispatch({
     inner.trace(`looking up original Codex model ${id}`,);
     if (state.registry !== undefined)
       return state.registry
-        .find(
+        .getModelOfType(
+          'chat',
           CODEX_PROVIDER,
           id,
         );
@@ -139,7 +143,11 @@ export function createOriginalDispatch({
 
    @throws FastModelError when invoked before initialization
    */
-  function dispatch({ model, context, options, }: {
+  function dispatch({
+    model,
+    context,
+    options,
+  }: {
     readonly model: ForeignHostCapability<Model<typeof CODEX_API>>;
     readonly context: ForeignHostCapability<TranscriptContext>;
     readonly options?: ForeignHostCapability<OpenAICodexResponsesOptions>;
@@ -166,9 +174,19 @@ export function createOriginalDispatch({
     bind,
     getProvider,
     lookup,
-    /** {@inheritDoc dispatch} */
-    stream: function stream(model: ForeignHostCapability<Model<typeof CODEX_API>>, context: ForeignHostCapability<TranscriptContext>, options?: ForeignHostCapability<OpenAICodexResponsesOptions>,): AssistantMessageEventStream {
-      return dispatch({ model, context, ...(options === undefined ? {} : { options, }), },);
+    /**
+     {@inheritDoc dispatch}
+     */
+    stream: function stream(
+      model: ForeignHostCapability<Model<typeof CODEX_API>>,
+      context: ForeignHostCapability<TranscriptContext>,
+      options?: ForeignHostCapability<OpenAICodexResponsesOptions>,
+    ): AssistantMessageEventStream {
+      return dispatch({
+        model,
+        context,
+        ...(options === undefined ? {} : { options, }),
+      },);
     },
   },);
 }

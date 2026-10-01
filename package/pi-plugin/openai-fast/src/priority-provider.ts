@@ -2,16 +2,40 @@
  Keyless priority targets leave the original Codex provider untouched. @module
  */
 import type {
-  Api, ApiStreamOptions, Model, OpenAICodexResponsesOptions, Provider, StreamFunction, TranscriptContext,
+  Api,
+  ApiStreamOptions,
+  Model,
+  OpenAICodexResponsesOptions,
+  Provider,
+  StreamFunction,
+  TranscriptContext,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { FAST_PROVIDER, type CODEX_API, } from './constants.ts';
+import { KEYLESS_AUTH, noAvailableTargets, } from './keyless-auth.ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import {
+  FAST_PROVIDER,
+  type CODEX_API,
+} from './constants.ts';
 import type { OriginalModelLookup, } from './original-dispatch-types.ts';
-import { isPriorityTarget, priorityTarget, resolvePriorityBase, } from './priority-target.ts';
-import { streamPriority, streamSimplePriority, } from './priority-stream.ts';
+import {
+  isPriorityTarget,
+  priorityTarget,
+  resolvePriorityBase,
+} from './priority-target.ts';
+import {
+  streamPriority,
+  streamSimplePriority,
+} from './priority-stream.ts';
 
-export { isPriorityTarget, priorityTarget, resolvePriorityBase, } from './priority-target.ts';
+export {
+  isPriorityTarget,
+  priorityTarget,
+  resolvePriorityBase,
+} from './priority-target.ts';
 
 /**
  Module logger excludes request content and authentication.
@@ -110,30 +134,18 @@ export function createPriorityProvider({
    */
   function getModels(): readonly Model<Api>[] {
     return originalModels()
-      .map(priorityTarget,);
+      .map(function createTarget(model: ForeignBorrowed<Model<Api>>,) { return priorityTarget(model,); },);
   }
 
   l.debug('creating keyless priority adapter',);
   return {
     id: FAST_PROVIDER,
     name: 'OpenAI Codex Fast',
-    auth: {
-      apiKey: {
-        name: 'Routes to existing Codex login',
-        check: function check() { return Promise.resolve({
-          type: 'api_key' as const,
-          source: 'routes-to-openai-codex',
-        },); },
-        resolve: function resolve() { return Promise.resolve({
-          auth: {},
-          source: 'routes-to-openai-codex',
-        },); },
-      },
-    },
+    auth: KEYLESS_AUTH,
     getModels,
     getAllModels: getModels,
-    filterModels: function filterModels() { return []; },
-    filterAllModels: function filterAllModels() { return []; },
+    filterModels: noAvailableTargets,
+    filterAllModels: noAvailableTargets,
     stream: function stream<TApi extends Api>(
       model: Model<TApi>,
       context: TranscriptContext,
@@ -177,6 +189,8 @@ export function createPriorityProvider({
       },);
     },
     refreshModels: async function refreshModels(context,) {
+      // Yield before catalog synchronization to avoid synchronous refresh re-entry.
+      await Promise.resolve();
       /**
        Refresh logger records companion synchronization without another provider's I/O.
        */

@@ -62,9 +62,17 @@ export function createCatalogCredentials(): CredentialStore {
   /**
    Factory logger records metadata bootstrap lifecycle only.
    */
-  const l = tagged({ tag: createCatalogCredentials.name, l: moduleLogger, },);
+  const l = tagged({
+    tag: createCatalogCredentials.name,
+    l: moduleLogger,
+  },);
   l.trace('creating credential-free catalog reader',);
-  return Object.freeze({ read, list, modify, delete: deleteCredential, },);
+  return Object.freeze({
+    read,
+    list,
+    modify,
+    delete: deleteCredential,
+  },);
 }
 
 //endregion

@@ -21,13 +21,21 @@ export type OriginalModelLookup = (id: string) => ReturnType<ModelRegistry['find
  Frozen capabilities around the session-owned mutable registry binding.
  */
 export type OriginalDispatchCapabilities = {
-  /** Store the initialized host capability on owned factory state. */
+  /**
+   Store the initialized host capability on owned factory state.
+   */
   readonly bind: (registry: ForeignHostCapability<ModelRegistry>) => void;
-  /** Read only the original provider's effective catalog. */
+  /**
+   Read only the original provider's effective catalog.
+   */
   readonly getProvider: () => ForeignHostCapability<Provider>;
-  /** Preserve native lookup absence until target resolution supplies its diagnostic. */
+  /**
+   Preserve native lookup absence until target resolution supplies its diagnostic.
+   */
   readonly lookup: OriginalModelLookup;
-  /** Native callback shape owns the externally dictated positional arguments. */
+  /**
+   Native callback shape owns the externally dictated positional arguments.
+   */
   readonly stream: StreamFunction<typeof CODEX_API, OpenAICodexResponsesOptions>;
 };
 

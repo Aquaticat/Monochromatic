@@ -1,10 +1,19 @@
 /**
  Local routing identities preserve native capabilities without authentication headers. @module
  */
-import { hasApi, type Api, type AnyModel, type Model, } from '@earendil-works/pi-ai';
+import {
+  hasApi,
+  type Api,
+  type AnyModel,
+  type Model,
+} from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { CODEX_API, FAST_PROVIDER, PRIORITY_TARGET_PREFIX, } from './constants.ts';
+import {
+  CODEX_API,
+  FAST_PROVIDER,
+  PRIORITY_TARGET_PREFIX,
+} from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
 import type { OriginalModelLookup, } from './original-dispatch-types.ts';
 
