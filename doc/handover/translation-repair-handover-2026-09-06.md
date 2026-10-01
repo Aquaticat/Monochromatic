@@ -449,10 +449,21 @@ this one says what changed after it.
   and now every line a reader sees must be apparatus;
   over the pinned archives it accepts the same 40 blocks as before
   (`d6d72cbcf` to `3788e8223`).
-  The nineteenth batch's own reading of `corpus-run/run` already shows one defect to take red first:
-  a round that never reached quorum is logged without its grace field
-  (`stage-round.ts`),
-  and the timing parser reads that complete line as a truncated one.
+  The nineteenth batch took `corpus-run/run` against `census-EJl6yz`
+  and closed B82:
+  the run timing readers read less than their writers write
+  (a round that never reached quorum,
+  a round line short of its fields,
+  a completion line without its outcome,
+  calls spanning no time),
+  and each is now read or refused by name
+  (`71f7720a9` to `37f637675`).
+  Its census,
+  `census-IqLEk4` at `8175dc866`
+  (693 library stretches in 263 files),
+  names the twentieth batch:
+  `corpus-run/heading`
+  (17 stretches over 25 lines in 3 files).
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
