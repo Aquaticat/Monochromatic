@@ -106,8 +106,18 @@ The operator procedure is `doc/runbook/lfs-r2-worker.md`.
 ```sh
 mise run //package/config/lfs-r2-worker:deploy
 mise run //package/config/lfs-r2-worker:deploy:dry-run
-printf '%s' "<token>" | mise run //package/config/lfs-r2-worker:secret:write-token
+mise run //package/config/lfs-r2-worker:secret:write-token < "${HOME}/temp/lfs-write-token.txt"
 ```
+
+`wrangler secret put` stores an **empty** secret without complaint when its stdin delivers no value,
+and an empty `LFS_WRITE_TOKEN` makes `authorized()` accept an empty Basic-auth password,
+which opens uploads to any anonymous caller.
+Redirect the value from a private file,
+then verify the live Worker against three credentials (correct,
+ empty,
+ wrong) before trusting a rotation.
+`doc/runbook/lfs-r2-worker.md` carries the procedure;
+`doc/troubleshooting/wrangler-secret-put-empty-stdin.md` carries the measurements and the source trace.
 
 The R2 bucket is created once with `cf r2 buckets create --name monochromatic-lfs`
 (or `wrangler r2 bucket create monochromatic-lfs`).
