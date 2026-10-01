@@ -920,7 +920,12 @@ Gateway-internal attempts remain separately accounted under Q11.
 
 The user clarified that questions within a Drex call run in parallel without affecting one another.
 Batch independent semantic axioms in the first request;
-subsequent calls serve qualified information dependencies or eligible transport recovery,
+subsequent calls construct their question sets and wording dynamically from the action,
+current evidence,
+and preceding answers.
+They are not fixed checklists or an exhaustive predefined question tree.
+Qualify the construction and selection process rather than every possible future literal question.
+Use subsequent calls for remaining decision-relevant uncertainty or eligible transport recovery,
 not one call per source,
 voting,
 or repeated uncertainty sampling.

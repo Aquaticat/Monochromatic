@@ -134,12 +134,14 @@ with narrow semantic questions and code-owned decisions.
 
 Freeze new public/synthetic inputs,
 references,
-question templates,
+the adaptive question-construction and selection procedure,
 answer-ID checks,
 diagnostic bands,
 call schedule,
 clocks,
 and stop conditions before inference.
+Calls two and three may generate different question sets and wording from prior answers;
+retain the generated questions and selection reasons rather than requiring a fixed checklist.
 Include positive and prohibition controls,
 the previously problematic cross-clause motifs as disclosed historical anchors,
 and new independent cases rather than calling old anchors held-out evidence.

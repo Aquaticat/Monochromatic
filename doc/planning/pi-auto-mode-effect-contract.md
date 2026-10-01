@@ -763,7 +763,13 @@ so this is not an end-to-end physical-inference cap.
 
 Batch independent semantic axioms rather than assigning one call per source or predicate.
 The user clarified that Drex questions within a call evaluate in parallel without affecting one another.
-Use later calls only for qualified dependent questions or eligible transport recovery;
+Construct later question sets and wording adaptively from the action,
+evidence,
+and preceding answers;
+there is no fixed call-two or call-three checklist.
+Qualify the question-construction and selection process,
+not every possible future literal question.
+Use later calls only for remaining decision-relevant questions or eligible transport recovery;
 stop after any batch that settles the deterministic outcome.
 The [batched assessment proposal](pi-auto-mode-batched-assessment.md) records the scheduling implications.
 An uncertainty result is not a transport failure and does not justify resampling until it looks approvable.

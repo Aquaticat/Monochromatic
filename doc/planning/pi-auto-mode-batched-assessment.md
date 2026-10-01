@@ -113,9 +113,22 @@ human-origin authentication,
 source priority,
 or grant creation to the model.
 
-A later batch can depend on a newly identified semantic effect or condition.
-Its question templates and selection rules must be qualified in advance,
-not improvised to get a more favorable score.
+Calls two and three are adaptive,
+not fixed follow-up checklists.
+Construct their question sets and wording from the actual action,
+governing instructions,
+current evidence,
+and preceding answers.
+A later batch can concern a newly identified semantic effect,
+resource,
+condition,
+or unresolved relationship.
+Different assessments should ask different follow-ups when their remaining uncertainty differs.
+
+Qualify the question-construction and selection process and the meanings of its axioms,
+not an exhaustive bank of every future literal question or a fixed answer tree.
+Dynamic questions remain narrow claims that code can consume;
+they are not disguised final-verdict requests.
 Do not send a first-round answer as an instruction telling the model what to conclude next.
 Repeated paraphrases,
 voting,
@@ -183,7 +196,7 @@ or renormalize permission and prohibition into complements.
 not a requirement to fill a batch.
 Include the relevant rule dependencies and stop planning unnecessary questions.
 If they exceed a call's capacity,
-use a predeclared continuation while slots and time remain,
+construct the remaining relevant batch dynamically while slots and time remain,
 or defer to manual review;
 never silently drop required prohibition or coverage checks.
 
@@ -216,12 +229,17 @@ then show that unrelated unresolved axioms do not postpone it.
 
 Fresh Drex 1.5 evaluation should use the intended batched shape,
 not automatically repeat the old request-versus-prose two-call layout.
-Freeze question definitions,
+For a finite qualification experiment,
+freeze its input cases,
 independent references,
-adaptive selection rules,
+question-construction procedure,
+selection criteria,
 bands,
 limits,
-and stop conditions before a new model phase.
+and stop conditions before model calls.
+Generated follow-up wording and selected questions can depend on observed answers;
+retain those realized questions with their selection reasons.
+Freezing an experiment's procedure does not freeze every eventual decision's question list.
 Keep completed Drex 1.0 and Jev experiments historical.
 No historical threshold is adopted for the new model or format.
 
@@ -252,6 +270,7 @@ without editing protected `AGENTS.md`:
 settled provider consent is not a recurring gate;
 batch independent work and create evidence receipts at meaningful acceptance or irreversible boundaries,
 not every intermediate edit.
+Qualify adaptive follow-up construction rather than requiring a fixed question list or exhaustive question tree.
 
 [questions]: https://drex.nace.ai/docs/guides/questions
 [models]: https://drex.nace.ai/docs/reference/models
