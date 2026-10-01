@@ -17,6 +17,7 @@ import {
   readMeterLine,
   readMeterLog,
 } from '../../dist/final/node/index.mjs';
+import { STAMPS_NOT_WRITTEN, } from '../iso-stamp-text.test-fixture.ts';
 
 /**
  A record exactly as `takeReading` writes one.
@@ -175,6 +176,23 @@ await describe({
         const line = '[info] [not-a-date] [t] [takeReading] METERS synthetic=wet hyper=wet';
 
         expect(readMeterLine({ line, },),).toBe('skipped',);
+      },
+    },),
+
+    it({
+      name: 'SKIPS A RECORD WHOSE STAMP THE LOGGER DID NOT WRITE, rather than dating a reading by text no writer here '
+        + 'makes: a stamp without its zone reads as local time and a date alone as midnight (ledger B73)',
+      fn: async () => {
+        expect(STAMPS_NOT_WRITTEN.map(function readingOf(stamp,) {
+          return readMeterLine({
+            line: REAL_LINE.replace(
+              '2026-08-24T18:17:35.383Z',
+              stamp,
+            ),
+          },);
+        },),).toEqual(STAMPS_NOT_WRITTEN.map(function skipped(): string {
+          return 'skipped';
+        },),);
       },
     },),
 

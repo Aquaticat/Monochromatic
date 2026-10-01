@@ -27,6 +27,10 @@ import {
   readRoundTiming,
   readRunTiming,
 } from '../../dist/final/node/index.mjs';
+import {
+  STAMPS_NOT_WRITTEN,
+  WRITTEN_STAMP,
+} from '../iso-stamp-text.test-fixture.ts';
 
 //region Fixtures
 
@@ -296,6 +300,24 @@ await describe({
           name: 'passes over a line that is not a completion at all',
           fn: async () => {
             expect(readCallTiming({ line: ROUND_LINE, },).kind,).toBe('other-line',);
+          },
+        },),
+
+        it({
+          name: 'TAKES ONLY A STAMP SPELLED AS THE LOGGER WRITES ONE, so no call is placed at an instant its line '
+            + 'never recorded: a stamp without its zone reads as local time, a date alone as midnight, and no stamp '
+            + 'as NaN, which no sweep can order (ledger B73)',
+          fn: async () => {
+            expect(STAMPS_NOT_WRITTEN.map(function kindOf(stamp,): string {
+              return readCallTiming({
+                line: TIMED_CALL_LINE.replace(
+                  WRITTEN_STAMP,
+                  stamp,
+                ),
+              },).kind;
+            },),).toEqual(STAMPS_NOT_WRITTEN.map(function unstamped(): string {
+              return 'unstamped';
+            },),);
           },
         },),
 

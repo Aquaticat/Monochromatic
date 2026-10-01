@@ -27,6 +27,7 @@ import {
   MODEL_CARDS,
   POOLED_P90,
 } from '../../dist/final/node/index.mjs';
+import { STAMPS_NOT_WRITTEN, } from '../iso-stamp-text.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_OPENROUTER_ONLY,
@@ -222,6 +223,24 @@ await describe({
         },).map(function contentOf(sample,) {
           return sample.content;
         },),).toEqual(['unpaired', 'unpaired', 'unpaired',],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A LINE WHOSE STAMP THE LOGGER DID NOT WRITE, rather than dating or pairing a call by a '
+        + 'reading of text no writer here makes: a stamp without its zone reads as local time, a date alone as '
+        + 'midnight, and no stamp as NaN, which pairs with nothing and compares as no time at all (ledger B73)',
+      fn: async () => {
+        expect(capSamplesOf({
+          lines: STAMPS_NOT_WRITTEN.flatMap(function linesFor(stamp,): readonly string[] {
+            return [
+              streamLine({ stamp, label: HYPER_ID, outcome: 'completed', content: 7, },),
+              spendLine({
+                stamp,
+                tail: `provider=hyper model=${HYPER_ID} prompt=10 completion=13`,
+              },),
+            ];
+          },),
+        },),).toEqual([],);
       },
     },),
     it({
