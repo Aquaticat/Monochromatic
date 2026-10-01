@@ -98,6 +98,18 @@ const SIGNED_TWICE = pair({
   target: '',
 });
 
+/**
+ Two sections in one slice: the first heading names the signer, the second
+ names no one.
+ */
+const TWO_SECTIONS = pair({
+  sliceIndex: 3,
+  source: '### 其三：猫猫\n\n它睡了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>\n\n'
+    + '### 其四：狗狗\n\n它跑了。',
+  target: '### Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">——Maomao, December 17, 2024</p>\n\n'
+    + '### Doggo\n\nIt runs.',
+});
+
 await describe({
   name: 'a contributor name is rendered one way across headings and signatures (class sixty-seven)',
   children: [
@@ -197,6 +209,30 @@ await describe({
         expect(restored.replacements[0]?.replacementText,)
           .toBe('It sang.\n\n<p style="text-align: end;">—— Yun Mao【Daydream】“Rainbow Dreamland”</p>\n\nIt sang again.\n\n<p style="text-align: end;">—— Yun Mao【Daydream】《Wu Hou Mao Yu》</p>',);
         expect(restored.findings.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'LEAVES THE HEADINGS OF A SLICE WHOSE PAGE DROPPED ONE OF THEM AS THE PAGE HAS THEM: pairing the page\'s '
+        + 'headings with the original\'s titles by position once wrote the signer\'s name over the next '
+        + 'section\'s title (ledger B84)',
+      fn: async () => {
+        /**
+         What the page writes for the two sections, the first heading dropped.
+         */
+        const dropped = {
+          sliceIndex: 3,
+          replacementText: 'It sleeps.\n\n> <p style="text-align: end;">——Maomao, December 17, 2024</p>\n\n'
+            + '### Four: Doggo\n\nIt runs.',
+        };
+        const restored = restoreContributorNames({
+          slices: [TWO_SECTIONS,],
+          replacements: [dropped,],
+        },);
+        expect(restored,).toEqual({
+          replacements: [dropped,],
+          restored: [],
+          findings: [],
+        },);
       },
     },),
   ],
