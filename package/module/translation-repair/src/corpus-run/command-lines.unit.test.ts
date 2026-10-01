@@ -18,6 +18,7 @@ import {
 
 import {
   COMMAND_LINES,
+  isAsciiLowerLetter,
   nodeEntries,
 } from '../../dist/final/node/index.mjs';
 
@@ -51,11 +52,131 @@ const DESCRIPTION_PREFIX = 'description = ';
 const HEADER_PREFIX = '[';
 
 /**
- A long flag as a description spells one: two dashes, then a lowercase word
- that may carry inner dashes. A bare `--`, which descriptions write before
- the arguments mise passes on, has no word and is not one.
+ What starts a long flag.
  */
-const FLAG_PATTERN = /--[a-z][a-z-]*/gu;
+const LONG_PREFIX = '--';
+
+/**
+ What a long flag's word may carry between its letters.
+ */
+const WORD_DASH = '-';
+
+/**
+ Whether a character can continue a long flag's word once its first letter
+ is written: a lowercase ASCII letter or a dash.
+
+ @param character - one UTF-16 unit, empty past a text's edge
+
+ @returns True for `a` to `z` and `-` only
+
+ @example
+ ```ts
+ continuesFlagWord({ character: '-', },); // true
+ ```
+ */
+function continuesFlagWord({ character, }: { readonly character: string; },): boolean {
+  return (character === WORD_DASH) || isAsciiLowerLetter({ character, },);
+}
+
+/**
+ Whether a declared flag name is a word a long flag can carry: a lowercase
+ ASCII letter, then lowercase letters and dashes.
+
+ @param name - a flag name as a declaration writes it, without its dashes
+
+ @returns True when `--` and the name spell a flag a description can name
+
+ @example
+ ```ts
+ isFlagWord({ name: 'require-providers', },); // true
+ isFlagWord({ name: 'Only', },); // false
+ ```
+ */
+function isFlagWord({ name, }: { readonly name: string; },): boolean {
+  return isAsciiLowerLetter({ character: name.charAt(0,), },)
+    && Array.from(name.slice(1,),).every(function continues(character,): boolean {
+      return continuesFlagWord({ character, },);
+    },);
+}
+
+/**
+ Whether a long flag starts at a position: two dashes, then a lowercase
+ ASCII letter. A bare `--` followed by a space starts none.
+
+ @param text - text a flag may start in
+ @param at - UTF-16 offset of the first dash
+
+ @returns True when the dashes and a first letter stand at the offset
+
+ @example
+ ```ts
+ startsFlag({ text: 'pass -- --only', at: 5, },); // false
+ startsFlag({ text: 'pass -- --only', at: 8, },); // true
+ ```
+ */
+function startsFlag({
+  text,
+  at,
+}: {
+  readonly text: string;
+  readonly at: number;
+},): boolean {
+  return text.startsWith(
+    LONG_PREFIX,
+    at,
+  )
+    && isAsciiLowerLetter({ character: text.charAt(at + LONG_PREFIX.length,), },);
+}
+
+/**
+ Every long flag a description spells, in order: two dashes, then a
+ lowercase word that may carry inner dashes. A bare `--`, which descriptions
+ write before the arguments mise passes on, has no word and is not one.
+
+ One pass from the start, so the time is linear in the description.
+
+ @param description - a task description
+
+ @returns The flags, dashes included, as often as the description spells them
+
+ @example
+ ```ts
+ flagsSpelled({ description: 'probe (pass -- --only a,b)', },); // ['--only']
+ ```
+ */
+function flagsSpelled({ description, }: { readonly description: string; },): readonly string[] {
+  /**
+   Flags found so far.
+   */
+  const flags: string[] = [];
+
+  /**
+   Where the scan stands.
+   */
+  let at = 0;
+  while (at < description.length) {
+    if (!startsFlag({
+      text: description,
+      at,
+    },)) {
+      at += 1;
+      continue;
+    }
+
+    /**
+     Just past the flag's last character.
+     */
+    let end = at + LONG_PREFIX.length + 1;
+    while (continuesFlagWord({ character: description.charAt(end,), },))
+      end += 1;
+    flags.push(description.slice(
+      at,
+      end,
+    ),);
+    at = end;
+  }
+  return flags;
+}
 
 /**
  Each runner's task description in the task file, by runner name.
@@ -92,7 +213,9 @@ function taskDescriptions({ text, }: { readonly text: string; },): ReadonlyMap<s
        The description as TOML writes it, a quoted string JSON reads alike.
        */
       const parsed: unknown = JSON.parse(line.slice(DESCRIPTION_PREFIX.length,),);
-      description = (typeof parsed === 'string') ? parsed : '';
+      if ((typeof parsed) !== 'string')
+        throw new Error(`a task description in mise.toml is not a quoted string: ${line}`,);
+      description = parsed;
     } else if (line.startsWith(RUN_PREFIX,) && line.endsWith(RUN_SUFFIX,)) {
       found.set(
         line.slice(
@@ -148,7 +271,7 @@ await describe({
             ...((new Set(names,).size === names.length) ? [] : [`${command} names a flag twice`,]),
             ...names
               .filter(function isMalformed(name,): boolean {
-                return !/^[a-z][a-z-]*$/u.test(name,);
+                return !isFlagWord({ name, },);
               },)
               .map(function malformed(name,): string {
                 return `${command} names flag ${name}`;
@@ -168,6 +291,7 @@ await describe({
          Each runner's task description.
          */
         const descriptions = taskDescriptions({ text: await readFile(MISE_TOML, 'utf8',), },);
+        expect([...descriptions.keys(),].toSorted(),).toEqual(Object.keys(COMMAND_LINES,).toSorted(),);
 
         /**
          The flags each description spells, by runner.
@@ -178,7 +302,7 @@ await describe({
         ] {
           return [
             command,
-            [...new Set((descriptions.get(command,) ?? '').match(FLAG_PATTERN,) ?? [],),].toSorted(),
+            [...new Set(flagsSpelled({ description: descriptions.get(command,) ?? '', },),),].toSorted(),
           ];
         },),);
 
@@ -203,7 +327,6 @@ await describe({
           ];
         },),);
 
-        expect([...descriptions.keys(),].toSorted(),).toEqual(Object.keys(COMMAND_LINES,).toSorted(),);
         expect(offered,).toEqual(read,);
       },
     },),
