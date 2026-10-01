@@ -921,15 +921,15 @@ synchronous controlled wait,
 owned mock root,
 independent fixture environments,
 and whole-trace/error validation.
-No draft module has been invoked.
+The initial draft epoch invoked no module.
 Early core review required explicit bootstrap file-profile whitelisting,
 a final cancellation/deadline check after success tracing,
 sampling immediately before native controlled waiting,
 and separate initial-missing/during-read instability classifications.
-Those changes remain source-only and require complete closure review.
+Those historical corrections preceded complete closure review.
 The controller,
 builtin startup/worker gates,
-and exact managed start/input/EOF orchestration are also draft source.
+and exact managed start/input/EOF orchestration were subsequently completed privately.
 The complete literal-source review held executable admission for unchecked intermediate cached success,
 discarded measurement evidence,
 unmeasured totals and factory/artifact accounting,
@@ -940,28 +940,61 @@ aggregate success/rejection/wait totals,
 check scoped environment and fixture counts,
 retain bounded primary/cleanup/logging cause graphs with private descriptor fallback,
 and reserve a unique external launch marker before stream redirections.
-Every corrected literal source and caller still requires another independent review.
-Source-data admission,
-executable freeze,
-and runtime qualification remain absent.
+The v2/v3 complete source reviews preserved further holds on short diagnostic writes,
+partial foreign-owner evidence,
+vacuous native-read checks,
+unadmitted consumer EOF,
+and fallible final status emission.
+The v4 review cleared concrete source holds only for its exact 20 records and caller.
+Explicit prerequisites then admitted one announced synthetic attempt,
+`proc_f674`,
+which exited zero with its own successful native outcome and complete literal output checks.
+It retained 31 accepted test outcomes:
+four synthetic successes and 27 expected rejections.
+All intermediate cached successes,
+whole A/B traces,
+native-read sequences including positive EOF,
+and measured deadline crossings were checked.
+Scoped helper requests/returns were 32;
+fixture inventory was 35 directories,
+68 regular files,
+and three symlinks.
+The 126,984-byte saved input matched the archived original strings byte for byte.
+The entry-clock measurement was 4528.6348689999995 ms,
+not full handback timing or a five-second guarantee.
+Source/policy freshness and actual private descriptors were admitted;
+SDK imports,
+genuine originals,
+models,
+grants,
+and actions remained zero within the reviewed source scope.
+The launching gate and namespace are now consumed;
+never rerun them.
+Historical draft holds remain preserved,
+not retrospectively repaired.
 Current permission,
 actual SDK-root integration,
 human evidence,
 grants,
 and represented actions remain unestablished.
-An eighth stale task-registry observation again ended at #81 and could not retrieve #92;
+An eighth and later ninth stale task-registry observation again ended at #81 and could not retrieve #92;
 receipt-backed restoration changes bookkeeping only,
 with cause unknown.
 Next:
-finish the private executable closure,
-bind original review inputs,
-independently review every literal source and caller,
-and admit the declared one-shot prerequisites before any dispatch.
+qualify actual SDK-root integration separately,
+then declare/review/freeze a new configured-host human epoch naming the planned,
+not-yet-constructed root.
+Validate new original exact-scope evidence before SDK construction or disposable private permission state.
+Finite mock qualification does not complete task #69,
+atomicity,
+injected I/O/diagnostic/cleanup branches,
+individual guard necessity,
+or preparation-inclusive full handback.
 The visible task registry again ended at #81;
 `task-registry-reconciliation-sixth.json` restores receipt-backed states as bookkeeping only,
 with cause unknown and no new authority or test outcome inferred.
 The completed finite SDK phase does not complete that lifecycle area.
-The gate itself launched the consumed phase;
+The combined SDK startup gate launched its consumed phase;
 never rerun it or treat it as a harmless preflight.
 No genuine originals,
 model calls,
