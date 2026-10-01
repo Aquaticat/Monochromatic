@@ -226,7 +226,9 @@ await describe({
     it({
       name:
         'REFUSES a document that moved while nothing survived, which is the same contradiction from '
-        + 'the other side and would hide a rewrite from every per-slice reader',
+        + 'the other side and would hide a rewrite from every per-slice reader, BY THE RE-SPLICE: no '
+        + 'replacements reassemble to the archive itself, so the moved document is not what its zero '
+        + 'survivors make',
       fn: async () => {
         /**
          Failure the check raised.
@@ -243,7 +245,12 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(caught,).toBeInstanceOf(AssemblyContractError,);
+        if (!(caught instanceof AssemblyContractError))
+          throw new Error('the check raises an assembly contract refusal',);
+        expect(caught.fault,).toEqual({
+          kind: 'reassembly-differs',
+          survivors: 0,
+        },);
       },
     },),
     it({

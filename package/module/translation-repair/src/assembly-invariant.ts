@@ -40,7 +40,7 @@ import {
  
  @example
  ```ts
- throw new AssemblyContractError({ fault: { kind: 'changed-without-claim', }, },);
+ throw new AssemblyContractError({ fault: { kind: 'reassembly-differs', survivors: 0, }, },);
  ```
  */
 export class AssemblyContractError extends Error {
@@ -336,10 +336,13 @@ export function orderedChangeSets(
  makes the two impossible to disagree, and re-splicing them is what proves the
  returned text is the one those replacements make.
  
- THE EMPTINESS CHECK SURVIVES THE RE-SPLICE, and is not redundant with it. A
- net-zero set genuinely re-splices to the archive text, so exact reconstruction
- accepts it; what refuses it is the second direction, which enforces
- `guardFootnoteAssembly`'s canonical answer that such a set ships nothing.
+ ONE EMPTINESS CHECK SURVIVES THE RE-SPLICE, the one it cannot imply. A
+ document that moved while nothing survived fails the re-splice itself, since
+ no replacements reassemble to the archive text; a separate check for it never
+ ran and went in T8's twenty-first batch. A net-zero set genuinely re-splices
+ to the archive text, so exact reconstruction accepts it; what refuses it is
+ the check that remains, which enforces `guardFootnoteAssembly`'s canonical
+ answer that such a set ships nothing.
  That direction was unenforceable until the guard learned to canonicalize:
  two adjacent slices whose replacements each differ from their own incumbent
  can reassemble to the archive text, and refusing THAT would crash a run the
@@ -365,9 +368,9 @@ export function orderedChangeSets(
  @returns Slices the returned document carries a change for
  
  @throws AssemblyContractError when a surviving replacement repeats its own
- incumbent, when re-splicing them does not reproduce the returned document,
- when that document moved while nothing survived, or when it did not move
- while something did
+ incumbent, when re-splicing them does not reproduce the returned document
+ (a document that moved while nothing survived among them), or when it did
+ not move while something did
  
  @example
  ```ts
@@ -417,8 +420,6 @@ export function deriveShippedIndices(
   const shipped = survivingReplacements.map(function toIndex(replacement,): number {
     return replacement.sliceIndex;
   },);
-  if ((assembledText !== incumbentText) && (shipped.length === 0))
-    throw new AssemblyContractError({ fault: { kind: 'changed-without-claim', }, },);
   if ((assembledText === incumbentText) && (shipped.length > 0))
     throw new AssemblyContractError({
       fault: {

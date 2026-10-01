@@ -108,11 +108,6 @@ export type AssemblyContractFault = {
   readonly survivors: number;
 } | {
   /**
-   Returned document differs from the archive while no slice is named.
-   */
-  readonly kind: 'changed-without-claim';
-} | {
-  /**
    Returned document equals the archive while slices are named as changed.
    */
   readonly kind: 'unchanged-with-claims';
@@ -132,7 +127,7 @@ export type AssemblyContractFault = {
  
  @example
  ```ts
- const sentence = assemblySentence({ fault: { kind: 'changed-without-claim', }, },);
+ const sentence = assemblySentence({ fault: { kind: 'reassembly-differs', survivors: 0, }, },);
  ```
  */
 export function assemblySentence({ fault, }: { readonly fault: AssemblyContractFault; },): string {
@@ -157,8 +152,6 @@ export function assemblySentence({ fault, }: { readonly fault: AssemblyContractF
     return `change set names slice ${String(fault.index,)} of ${String(fault.sliceCount,)} prepared`;
   if (fault.kind === 'reassembly-differs')
     return `returned document is not what its ${String(fault.survivors,)} surviving replacements assemble to`;
-  if (fault.kind === 'changed-without-claim')
-    return 'returned document differs from the archive while no slice is named as changed';
 
   /**
    Slices named as changed.
