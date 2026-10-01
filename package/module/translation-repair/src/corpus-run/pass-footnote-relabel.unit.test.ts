@@ -191,5 +191,51 @@ await describe({
         );
       },
     },),
+    it({
+      name: 'RELABELS THE ARCHIVE AND LEAVES ITS DEFINITIONS STANDING where moving them would change how the page '
+        + 'parses them (ledger T8, eighteenth batch): the refused move once threw, and the whole relabel was kept '
+        + 'back with it, so the markers stayed under the archive\'s labels',
+      fn: async () => {
+        /**
+         Archive numbering its notes the other way, its note on the sill
+         written as a fence whose lines stand outside the definition, so a
+         paragraph definition moved after it would take them as its own.
+         */
+        const archiveText = 'The cat[^2] slept on the sill.\n\nThe bird[^1] sang outside.\n\n'
+          + '[^1]: A sparrow.\n\n[^2]: ```\nsill\n```\n';
+
+        expect(relabelArchiveFootnotes({
+          entryId: 'invented-unmovable',
+          slices: prepareDocumentPair({
+            sourceText: SOURCE_TEXT,
+            targetText: archiveText,
+            sliceCharBudget: SLICE_BUDGET,
+          },).slices,
+          definitionPairs: [
+            {
+              sourceLabel: '1',
+              targetLabel: '2',
+            },
+            {
+              sourceLabel: '2',
+              targetLabel: '1',
+            },
+          ],
+          sourceText: SOURCE_TEXT,
+          archiveText,
+          l: capturingLogger({ messages: [], },),
+        },),).toEqual({
+          archiveText: 'The cat[^1] slept on the sill.\n\nThe bird[^2] sang outside.\n\n'
+            + '[^2]: A sparrow.\n\n[^1]: ```\nsill\n```\n',
+          changed: true,
+          findings: [
+            'footnotes: archive relabelled [^2]->[^1], [^1]->[^2] off the definitions the roster paired to follow '
+              + 'the original\'s labels',
+            'footnotes: archive definitions stand: moving the footnote definitions would change how the page '
+              + 'parses them, so they keep their order',
+          ],
+        },);
+      },
+    },),
   ],
 },);
