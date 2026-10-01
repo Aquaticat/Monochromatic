@@ -829,13 +829,28 @@ The task registry again returned a stale frontier;
 receipt-based reconciliation establishes no cause,
 new authorization,
 or replay permission.
+The separate Markdown checkpoint `proc_a62b` exited zero:
+three current documents rendered with zero native diagnostics.
+Its receipt commit is `d6e849fb2f2e1b2e63b851cacb4d383efb4933e4`.
+It did not read or update the historical audit and did not revalidate audit-context compatibility.
+Task #87 is complete at the declared finite scope.
+Task #69 has resumed with a source-only dependency intake in the private
+`contract/lifecycle/finalization-dependency-intake/` namespace.
+The existing mechanical snapshot rechecks root ownership,
+epoch,
+branch JSON,
+and mechanical eligibility;
+the synthetic finalizer also rechecks cancellation,
+synthetic policy version,
+selected record identity,
+and candidate coverage.
+Neither establishes current authority,
+external source/target observations,
+an absolute deadline,
+or cache-release freshness.
 Next:
-complete the separately named Markdown checkpoint for these result bytes,
-then resume current permission,
-source/target freshness,
-cache,
-deadline,
-and finalization qualification.
+freeze a separate disposable source/target/deadline/cache contract and independent controls,
+keeping current human permission and SDK-linked human ancestry as separate evidence requirements.
 The completed finite SDK phase does not complete that lifecycle area.
 The gate itself launched the consumed phase;
 never rerun it or treat it as a harmless preflight.

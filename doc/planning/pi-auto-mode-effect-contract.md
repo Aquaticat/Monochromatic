@@ -26,11 +26,17 @@ as already accepted by the user.
 
 ## Policy epoch admission
 
-The current policy hash is
+The observed current policy hash is
+`1f5c31c969c5a18aa994465baf7afe25f00a7a9ab11d6190bcab56746732bd4b`.
+It was unchanged with zero local diff before and after the finite SDK phase `proc_d94d`.
+The historical task #76 structural capture used
 `2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`.
-The previous `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
-studies and structural index cannot be admitted as current-policy evidence.
-Preserve them and capture the full new policy separately under task #76.
+The earlier studies and structural index used
+`4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+Preserve those distinct epochs;
+neither historical structural capture qualifies the new policy's structure or semantics.
+The premature complete-read claim remains retracted,
+with later bounded coverage recorded separately.
 A changed on-disk policy is not proof that an already-running harness refreshed its loaded instructions.
 The collector must keep those source versions and observations distinct.
 See the [freshness checkpoint](../handover/pi-auto-mode-axiom-evaluation.md#policy-freshness-checkpoint).
@@ -40,7 +46,7 @@ See the [freshness checkpoint](../handover/pi-auto-mode-axiom-evaluation.md#poli
 A bounded actual Pi `0.87.1` SDK phase passed baseline,
 later-handler,
 request-local,
-and forced-projection cases under the current policy snapshot.
+and forced-projection cases under their then-admitted policy snapshot.
 It used disposable sessions,
 a scripted provider,
 and an inert tool,
@@ -111,7 +117,7 @@ Historical exact-action admission still reports `currentEligibilityEstablished:f
 The original standalone fixture transaction did not name an SDK session ID.
 Constructor-owned experimental root/epoch association cannot become retroactive human-witnessed ancestry
 or renewed human authorization.
-The next root attachment/reset phase must keep records operationally test-only,
+Root attachment/reset qualification must keep records operationally test-only,
 canonicalize duplicate views by original transaction identity rather than handle allocation,
 and retain original evidence after reset without permitting historical re-registration.
 Lifecycle/finalization,
