@@ -38,8 +38,9 @@ The project [pi settings README](../../.pi/README.md) reserves user-specific wor
 for global settings rather than project settings.
 The installed pi documentation inspected for initial context reports version `0.99.2`.
 
-An unrelated modification to `pnpm-lock.yaml` existed before this work.
-Do not stage or modify it as part of the design interview.
+A pre-existing modification to `pnpm-lock.yaml` existed before this work.
+The user later explicitly authorized including that update because it supplies
+prerequisite pi `0.99.2` and Node-type lock entries for the new extension.
 
 ## Work areas
 
@@ -271,15 +272,39 @@ match the executed scratch programs.
 The routing and native-adapter fixture tests passed without live inference.
 
 Independent reviews were used to check selection-consent boundaries and the proposed native virtual routing architecture.
-No extension source,
+At the design-stage checkpoint,
+ no extension source,
  global settings,
  default model,
- or enabled-model scope has been changed.
-The pre-existing `pnpm-lock.yaml` modification remains unrelated and unstaged.
+ or enabled-model scope had been changed.
+Implementation began only after Q7 confirmation.
+
+## Implementation progress
+
+- Package metadata,
+   catalog bootstrap,
+   genuine virtual registration,
+   and native priority-provider overlay have been committed.
+- Catalog bootstrap uses an empty read-only credential capability and disables availability/network refresh,
+   preserving configured model metadata without reading real credentials.
+- Priority dispatch is bound to the live host's original-model registry path,
+   so model-specific headers and native OAuth resolution remain at the original identity.
+- Native streaming/payload modules and host lifecycle tests are being implemented independently.
+- The initial type check identified exact optional-property omissions;
+   absent options are now omitted rather than supplied as `undefined`.
+   Built-artifact imports require the first package build before final type verification.
+- A filtered offline pnpm install added only the generated `openai-fast` importer,
+   leaving the pre-existing lockfile update unchanged.
+- The user selected option A to authorize committing that pre-existing update with the generated importer.
+   Commit `a2b216772` records that dependency prerequisite and the authorization.
+
+No global package installation or settings change has been performed yet.
 
 ## Next action
 
-Implement the repository package and verify the required host behavior.
+Finish source and tests,
+ build the repository package,
+ and verify the required host behavior.
 Replace the incumbent globally only after verification,
  preserving defaults and `enabledModels`.
 
