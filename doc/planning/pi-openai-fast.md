@@ -3,7 +3,8 @@
 ## Status
 
 Design interview requested with `/grill-me`.
-The user answered "Confirm." to the complete design and request-only backend contract.
+The user answered "Confirm."
+ to the complete design and request-only backend contract.
 Implementation and verified global replacement are now authorized.
 This document tracks the accepted requirements,
  evidence,
@@ -413,7 +414,11 @@ Proposed `AGENTS.md` tightening:
  replace `QJ1` with the following wording,
  retaining its measurement requirement and adding an explicit completion boundary:
 
-> QJ1: Measure sizes, counts, usage, and timings before quantitative claims or adjectives.
+> QJ1:
+> Measure sizes,
+> counts,
+> usage,
+> and timings before quantitative claims or adjectives.
 > Omit unbuilt-fix estimates.
 > Unmeasured token or context usage is not a stopping condition.
 
@@ -428,12 +433,26 @@ Proposed `AGENTS.md` tightening:
 - Overflow recognition was verified;
    completed summary compaction and automatic retry remain unverified.
 
-## Next action
+## Delivery checkpoint
 
-Render and lint the final documentation,
- then report the installed selection,
- reload guidance,
- and npm reconciliation caveat.
+Implementation and global replacement are complete on pi `1.0.0`.
+Build,
+ types,
+ lint,
+ offline tests,
+ native extension verification,
+ live ordinary/priority probes,
+ and disposable installation/discovery controls passed.
+Rendered documentation and the exact embedded installation reproduction also passed.
+The final Markdown check is being rerun after semantic line-wrap corrections.
+
+Restart pi to load the replacement,
+ then select `openai-codex-fast/<model-id>` in its normal model picker.
+Defaults and exact enabled-model scope were retained.
+Native npm removal reconciled other dependencies;
+ affected active factories loaded successfully,
+ but their complete behavior was not audited.
+The verification limits remain explicit.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
