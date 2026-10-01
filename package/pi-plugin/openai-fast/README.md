@@ -4,8 +4,9 @@ Genuine pi virtual models that request priority through the existing Codex login
 Build,
  type checking,
  and the complete offline suite pass against pi `1.0.0`.
-Ordinary and priority-request live checks passed on `0.99.2`;
- the current `1.0.0` live and lint revalidation is in progress.
+Lint and extension-host verification also pass.
+Ordinary and priority-request live checks passed on pi `1.0.0`,
+ including discovery of the globally installed replacement.
 
 ## Model selection
 
@@ -83,6 +84,10 @@ its physical model IDs conflict with the new virtual entries using the same comp
 Keep installation in global `~/.pi/agent/settings.json`,
  not this repository's intentionally package-free project settings.
 The package manifest loads `dist/final/node/index.mjs`.
+The verified replacement is installed globally.
+Restart pi or run `/reload`,
+ then select `openai-codex-fast/<model-id>` through the standard model picker.
+Pi may store the package declaration relative to its settings directory.
 
 ## Development verification
 
@@ -95,6 +100,8 @@ mise run //package/pi-plugin/openai-fast:lint:types
 mise run //package/pi-plugin/openai-fast:lint:oxlint
 mise run //package/pi-plugin/openai-fast:test:unit
 mise run //package/pi-plugin/openai-fast:verify:extension
+mise run //package/pi-plugin/openai-fast:verify:live
+mise run //package/pi-plugin/openai-fast:verify:installed
 ```
 
 Tests use built artifacts,
@@ -103,6 +110,13 @@ Tests use built artifacts,
 A native payload-construction check alone does not establish backend acceleration.
 Live validation must use isolated pi settings and synthetic prompts,
  never real project files or shared session state.
+`verify:installed` resolves the global declaration,
+ preserves its resource filters,
+ and exercises native relative package discovery in disposable settings.
+Live probes do not prove acceleration,
+ live OAuth refresh,
+ network catalog refresh,
+ or completed overflow compaction/retry.
 
 ## Source boundaries
 

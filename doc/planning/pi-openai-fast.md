@@ -313,10 +313,13 @@ Implementation began only after Q7 confirmation.
 - The user selected option A to authorize committing that pre-existing update with the generated importer.
    Commit `a2b216772` records that dependency prerequisite and the authorization.
 
-The package build passed after the current source changes.
-The subsequent type check reported test-fixture typing errors,
- not production-source errors;
- runtime tests and standards cleanup remain in progress.
+The initial package build passed;
+ subsequent test-fixture typing and assertion issues were corrected.
+The current build,
+ type check,
+ complete offline suite,
+ lint,
+ and extension-host verification all pass against pi `1.0.0`.
 Native adapter readiness now uses an explicit side-effect-free auth check.
 Host investigation found that provider-scoped availability does not populate its auth snapshot,
  and availability-only refresh can be superseded by registration-triggered cached refreshes.
@@ -343,7 +346,32 @@ The recursion-rejection control also emitted the expected `LiveVerificationError
 Allowed/rejected disposable fixtures and a removed-guard scratch control passed,
  showing the guard assertion depends on the guard.
 
-No global package installation or settings change has been performed yet.
+Global replacement has been performed using the native pi package commands.
+The old `npm:pi-openai-codex-fast` declaration and npm package were removed.
+The repository replacement is now declared as a native relative local path.
+The installation task's non-package settings comparison passed.
+Its initial absolute-path assertion then failed before comparing unrelated package declarations;
+ that assertion was corrected using native source/path semantics.
+Do not claim that the interrupted comparison verified the original unrelated-package baseline.
+
+Native npm uninstall reported changing 80 packages and removing the incumbent.
+Its log identifies affected active npm extensions,
+ including process management,
+ provider integrations,
+ Radius,
+ subagents,
+ and BTW.
+This is dependency reconciliation,
+ not proof that versions remained unchanged.
+No `npm audit fix` was run.
+The reported audit summary was 14 vulnerabilities:
+ 1 low,
+ 2 moderate,
+ and 11 high.
+
+The installed replacement passed ordinary and fast Luna requests through native package discovery.
+A subsequent probe preserved package filters and exercised a rebased relative declaration.
+Disposable installation and affected-extension load controls are the remaining verification step.
 
 ## Pi 1.0 target update
 
@@ -356,17 +384,48 @@ The native virtual routing,
 The current package build,
  type check,
  and complete offline tests passed on pi `1.0.0` without a source compatibility change.
-Lint and live request revalidation on that target are running before global replacement.
+Lint completed with zero warnings and zero errors across 46 files.
+Both ordinary and fast live probes passed on `1.0.0`,
+ including native installed-package discovery.
+The original model ID was retained;
+ only fast requests supplied priority.
+This does not establish acceleration.
 Earlier `0.99.2` evidence is historical,
  not proof for the updated host.
 
 A fresh `pnpm-lock.yaml` modification appeared with the upgrade and is concurrent work.
 Do not stage it as an extension source change.
 
+## Communication correction
+
+An unsupported usage estimate was retracted after the user's correction.
+Task completion is determined by accepted requirements and verification,
+ not an unmeasured token or context count.
+
+Proposed `AGENTS.md` tightening:
+ replace `QJ1` with the following wording,
+ retaining its measurement requirement and adding an explicit completion boundary:
+
+> QJ1: Measure sizes, counts, usage, and timings before quantitative claims or adjectives.
+> Omit unbuilt-fix estimates.
+> Unmeasured token or context usage is not a stopping condition.
+
+## Verification limits
+
+- No claim of backend acceleration or confirmed served priority.
+- Live probes reused a valid access token rather than exercising a live OAuth refresh.
+- Catalog-change controls used native fixture refresh,
+   not a real network catalog refresh.
+- History tests cover persisted JSONL resume and branching;
+   cold-runtime restored-session dispatch remains unverified.
+- Overflow recognition was verified;
+   completed summary compaction and automatic retry remain unverified.
+
 ## Next action
 
-Complete pi `1.0.0` verification,
- then replace the incumbent globally while preserving defaults and `enabledModels`.
+Finish disposable installation and affected-extension load controls,
+ render and lint the final documentation,
+ then report the installed selection and reload guidance.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
