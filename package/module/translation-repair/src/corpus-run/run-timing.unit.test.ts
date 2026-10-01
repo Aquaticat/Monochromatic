@@ -216,6 +216,24 @@ await describe({
         },),
 
         it({
+          name: 'NAMES AN EMPTY COUNT rather than reading a ratio missing its heard count as a round that heard nobody',
+          fn: async () => {
+            /**
+             Round line whose ratio lost its heard count.
+             */
+            const line = ROUND_LINE.replace('6/7 heard', '/7 heard',);
+            expect(refusalTexts({
+              read: function readsEmptyHeard(): void {
+                readRoundTiming({ line, },);
+              },
+            },),).toEqual([
+              `round line unreadable: ${line}`,
+              'count field is empty',
+            ],);
+          },
+        },),
+
+        it({
           name: 'THROWS ON A DURATION NOT WRITTEN IN DIGITS rather than reading an empty one as no time at all, or a '
             + 'signed or exponent one as a time the round line never writes (ledger B73)',
           fn: async () => {
@@ -318,6 +336,24 @@ await describe({
             },),).toEqual(STAMPS_NOT_WRITTEN.map(function unstamped(): string {
               return 'unstamped';
             },),);
+          },
+        },),
+
+        it({
+          name: 'COUNTS A COMPLETION LINE MISSING ITS STAMP FIELD AS UNSTAMPED, and one with no field after its outcome '
+            + 'as untimed, so neither is placed at an instant or given a duration its line never wrote',
+          fn: async () => {
+            expect([
+              readCallTiming({
+                line: `[info${TIMED_CALL_LINE.slice(TIMED_CALL_LINE.indexOf('] [reportStreamProgress] ',),)}`,
+              },).kind,
+              readCallTiming({
+                line: TIMED_CALL_LINE.slice(0, TIMED_CALL_LINE.indexOf(', ',),),
+              },).kind,
+            ],).toEqual([
+              'unstamped',
+              'untimed',
+            ],);
           },
         },),
 
