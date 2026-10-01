@@ -1,3 +1,4 @@
+import { isAsciiDigits, } from '../ascii-letters.ts';
 import type { CardProvider, } from '../model-card-derive.ts';
 
 //region Roster card rendering
@@ -151,27 +152,63 @@ function readsImagesFrom(modalities: unknown,): Listed<boolean> {
 }
 
 /**
+ Separator between a decimal's whole and fractional digits.
+ */
+const DECIMAL_POINT = '.';
+
+/**
+ Whether text is a decimal written in ASCII digits, with at most one point
+ that has digits on both sides.
+
+ @param text - number as the listing wrote it, currency sign removed
+
+ @returns Whether it is digits, or digits, a point and digits
+
+ @example
+ ```ts
+ isDecimalText({ text: '0.000003', },); // true
+ ```
+ */
+function isDecimalText({ text, }: { readonly text: string; },): boolean {
+  /**
+   Digits before the point, those after it where one is written, and any
+   text past a second point, which no decimal has.
+   */
+  const [
+    whole = '',
+    fraction,
+    ...beyond
+  ] = text.split(DECIMAL_POINT,);
+  return (beyond.length === 0)
+    && isAsciiDigits({ text: whole, },)
+    && ((fraction === undefined) || isAsciiDigits({ text: fraction, },));
+}
+
+/**
  Number a listing field holds, whether it wrote it as a number, a string
  or a dollar-prefixed string (Synthetic prices read `$0.000003`).
 
+ A LENGTH OR A PRICE, SO A DECIMAL NOT BELOW ZERO (ledger B73). `Number` read
+ a blank field as 0, a free model with no context; `$0x1` as one dollar a
+ token; and a sign through, so a listing's `-1` (a price it does not quote)
+ became a card with a negative price. Each is now left unlisted, and the
+ card asks for it.
+
  @param value - field value
 
- @returns The number, or {@link NOT_LISTED} where the field is neither
+ @returns The number, or {@link NOT_LISTED} where the field is no decimal
+ written in digits, or is below zero
  */
 function numberFrom(value: unknown,): Listed<number> {
   if ((typeof value) === 'number')
-    return value;
+    return (Number.isFinite(value,) && (value >= 0)) ? value : NOT_LISTED;
   if ((typeof value) !== 'string')
     return NOT_LISTED;
   /**
    The string without the currency sign Synthetic prefixes its prices with.
    */
   const bare = value.startsWith(CURRENCY_SIGN,) ? value.slice(CURRENCY_SIGN.length,) : value;
-  /**
-   Whether what is left is a non-empty numeric string.
-   */
-  const numeric = (bare !== '') && Number.isFinite(Number(bare,),);
-  return numeric ? Number(bare,) : NOT_LISTED;
+  return isDecimalText({ text: bare, },) ? Number(bare,) : NOT_LISTED;
 }
 
 /**

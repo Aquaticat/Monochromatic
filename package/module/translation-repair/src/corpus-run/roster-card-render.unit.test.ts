@@ -207,6 +207,76 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES NOT_LISTED a number past the range a double holds, which `JSON.parse` reads as Infinity '
+        + '(ledger B73)',
+      fn: async () => {
+        /**
+         Row as `JSON.parse` decodes a listing that writes its window past a double's range.
+         */
+        const row: unknown = JSON.parse(
+          '{"id":"hf:cat/Mittens-9","input_modalities":["text"],"context_length":1e400,"max_output_length":8000}',
+        );
+        if (((typeof row) !== 'object') || (row === null))
+          throw new Error('fixture row did not decode to an object',);
+        expect(cardFieldsFrom({
+          provider: 'synthetic',
+          row: row as Record<string, unknown>,
+        },).contextLength,).toBe(NOT_LISTED,);
+      },
+    },),
+
+    it({
+      name: 'READS a string field only as a decimal written in digits: a second point, a point with no digit on '
+        + 'one side and an exponent stay NOT_LISTED, while whole digits and a decimal with digits on both '
+        + 'sides read as written (ledger B73)',
+      fn: async () => {
+        expect([
+          cardFieldsFrom({
+            provider: 'synthetic',
+            row: {
+              id: 'hf:cat/Mittens-9',
+              input_modalities: ['text',],
+              context_length: '1.2.3',
+              max_output_length: '8000.',
+              pricing: {
+                prompt: '$.5',
+                completion: '$1e-7',
+              },
+            },
+          },),
+          cardFieldsFrom({
+            provider: 'synthetic',
+            row: {
+              id: 'hf:cat/Mittens-9',
+              input_modalities: ['text',],
+              context_length: '128000',
+              max_output_length: '8000',
+              pricing: {
+                prompt: '$0.5',
+                completion: '$7',
+              },
+            },
+          },),
+        ],).toEqual([
+          {
+            readsImages: false,
+            maxOutputLength: NOT_LISTED,
+            contextLength: NOT_LISTED,
+            promptPrice: NOT_LISTED,
+            completionPrice: NOT_LISTED,
+          },
+          {
+            readsImages: false,
+            maxOutputLength: 8_000,
+            contextLength: 128_000,
+            promptPrice: 0.5,
+            completionPrice: 7,
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'RENDERS the provider side with the listing\'s values and a question for each field it lacks',
       fn: async () => {
         /**
