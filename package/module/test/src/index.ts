@@ -8,6 +8,12 @@ export type {
   DescribeResult,
 } from './describe.ts';
 
+/**
+ Cases a suite runs at once when neither it nor any suite around it sets
+ `concurrency`. Exported so a file that gathers its suites under one
+ sequential root can hand each suite back the width it ran at alone.
+ */
+export { DEFAULT_CONCURRENCY, } from './descriptor.ts';
 export type { TestDescriptor, } from './descriptor.ts';
 
 export { it, } from './it.ts';
