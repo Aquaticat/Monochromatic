@@ -14,8 +14,9 @@ This document tracks requirements and open decisions;
 - Use virtual models.
 - Correct misunderstandings about pi before implementing.
 
-The working interpretation of virtual models is selectable companion entries
-that map to existing upstream model IDs rather than new upstream models.
+Virtual models mean pi's native `pi.registerVirtualModel()` entries,
+ not just a physical provider with companion model IDs.
+Each selection ultimately uses an existing upstream Codex model ID.
 The user accepted Codex-login-only authentication,
  opt-in fast companions,
  and global replacement of the incumbent extension after verification.
@@ -51,10 +52,12 @@ Do not stage or modify it as part of the design interview.
 - User-facing selection and installation:
    settle preferences through the design interview.
 
-Read-only research agents are writing separate evidence notes:
+Read-only research completed in separate evidence notes:
 [provider research](pi-openai-fast-provider-research.md)
 and [service research](pi-openai-fast-service-research.md).
-Those notes are pending and do not yet establish capabilities.
+The main agent inspected the incumbent source and relevant native types and implementations,
+ corrected physical-versus-virtual terminology,
+ and ran disposable fixture probes.
 
 ## Interview frontier
 
@@ -138,28 +141,130 @@ Independent Advisor review identified the same boundary and highlighted session 
  authentication refresh,
  and requested-versus-served tier observability.
 
-## Unsettled factual prerequisites
+## Verified pi distinctions
 
-- Whether the installed fast extension already implements virtual models.
-- Whether pi has a suitable shared transport hook without reimplementing streaming.
-- How alias IDs preserve authentication,
-   capabilities,
-   session identity,
-   reasoning support,
-   and auxiliary-call selection.
-- Which priority semantics are documented for each authentication route.
-- Whether the requested tier can differ from the served tier and whether pi exposes that difference.
+The incumbent `pi-openai-codex-fast@0.0.17` registers physical companions,
+ not native virtual models,
+ and uses a manually maintained allowlist.
+Native virtual routing returns physical model,
+ thinking level,
+ and optional state;
+ it has no request-options return channel.
+Pi resolves the physical target from the catalog and discards changes to a cloned route target.
+
+A disposable `ModelRuntime` fixture verified:
+
+- A genuine virtual selection has API `pi-virtual`.
+- A physical routing target can be omitted from `getAvailable()` through a native provider filter,
+   while a virtual entry remains available and routes to it.
+- A cloned target's changed API and an extra route `serviceTier` value do not reach the resolved request.
+
+A second probe invoked the real native Codex adapter,
+ with synthetic authentication and a payload callback that stopped before networking.
+The full native stream constructed `service_tier: "priority"`.
+Native `streamSimple` discarded an extra top-level `serviceTier` value during option conversion.
+The exported `buildBaseOptions()` preserved the abort signal,
+ `transport: "auto"`,
+ and session ID.
+These are offline construction and routing probes,
+ not a completed extension or live backend verification.
+
+## Proposed implementation awaiting confirmation
+
+- Register genuine virtual entries using the incumbent
+   `openai-codex-fast/<base-model-id>` identities to preserve existing selections.
+- Enumerate every registered base Codex model without a priority compatibility list.
+- Route fast entries through internal physical priority targets that are excluded from availability lists.
+- Keep ordinary Codex model entries,
+   OAuth ownership,
+   configuration overrides,
+   catalog refresh,
+   and ordinary streaming behavior intact.
+- Translate internal targets back to the live upstream base identity before native streaming.
+- Reuse the native simple-option conversion helper and reasoning mapping,
+   then call native Codex streaming with priority request options.
+   Preserve asynchronous payload callbacks,
+   callback replacement payloads,
+   response instrumentation,
+   cancellation,
+   timeouts,
+   retries,
+   cache behavior,
+   headers,
+   environment,
+   and transport selection.
+- Preserve canonical base-model assistant history while pi persists the virtual selection separately.
+- Preserve defaults and `enabledModels`.
+- Add no extension-authored feedback UI.
+  Pi's normal model display and virtual-routing presentation remain host behavior.
+- Build the package at `package/pi-plugin/openai-fast`,
+   verify it through the host,
+   then replace the incumbent globally without loading conflicting physical and virtual identities together.
+
+The filter probe establishes availability-list exclusion,
+ not invisibility in every registry API or host display.
+Provider composition,
+ OAuth reuse,
+ request dispatch,
+ refresh synchronization,
+ session recovery,
+ reasoning,
+ tool calls,
+ accounting,
+ and transport behavior need candidate verification.
+Independent Advisor review required those checks and warned against global mutable fast-state tagging.
+
+## Backend contract and remaining evidence gaps
+
+The extension's intended guarantee is requesting `service_tier: "priority"`,
+ not guaranteed acceleration or confirmed priority execution.
+Do not silently fall back to a different model or tier after a rejection.
+A server-side outcome is distinct from client fallback.
+
+[OpenAI's Codex speed documentation][codex-speed] documents increased subscription-limit consumption for Fast.
+A [pi maintainer comment][pi-fast-comment] questioned Fast effectiveness in non-Codex harnesses.
+Neither source establishes this login's current backend behavior through pi.
+Actual acceptance,
+ served-tier interpretation,
+ latency,
+ entitlement,
+ and quota consumption have not been measured here.
+The user does not want a reporting UI or compatibility catalog to manage those uncertainties.
+
+## Verification obligations after confirmation
+
+- Validate startup,
+   explicit model selection,
+   scope preservation,
+   reload,
+   catalog changes,
+   and incumbent-session migration in disposable host fixtures.
+- Show normal requests retain their normal tier path and fast requests use the original model ID plus priority.
+- Exercise asynchronous payload replacement,
+   reasoning levels,
+   tool follow-ups,
+   overflow recovery,
+   aborts,
+   retry controls,
+   and native transport delegation.
+- Verify OAuth refresh and logout with disposable credentials before touching the real installation.
+- Verify canonical history and virtual selection through resume,
+   fork,
+   branch navigation,
+   and extension removal.
+- Run scoped package lint,
+   type checking,
+   tests,
+   build,
+   and consumer-facing host verification.
+- Perform a live Codex smoke request after implementation without claiming that success alone proves acceleration.
 
 ## Next action
 
-Await the pending research notifications without polling.
-Use verified findings to form the next interview frontier,
- including model identity,
- model coverage,
- priority failure behavior,
- and the meaning of opt-in for auxiliary calls.
-Preserve `enabledModels` unchanged.
-Do not introduce a manually maintained priority compatibility list.
+Ask the user to confirm the complete shared design and request-only backend contract.
 Do not implement,
  change installed packages,
- or change defaults before the user confirms the complete design.
+ or change defaults before that confirmation.
+
+[codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
+[pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
