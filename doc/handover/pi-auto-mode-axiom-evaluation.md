@@ -761,7 +761,13 @@ The builtin-only startup gate and isolated raw Mise task are separately reviewed
 including actual stdout/stderr descriptor checks before controller import.
 `proc_2662` established only stdout binding.
 Fresh `proc_f108` established both raw-task bindings;
-the separately named normal-task negative awaits acceptance.
+the separately named normal-task negative `proc_fddd` failed with Node `ERR_ASSERTION` at `check.mjs:20:8`:
+`true !== false`.
+The frozen stdout non-inheritance expectation was rejected.
+The stderr assertion was not reached,
+no accepted negative projection exists,
+and SDK dispatch remains withheld.
+The attempt and outputs are preserved without replay.
 No freeze or actual SDK sensitivity dispatch has occurred.
 The SDK phase remains withheld until the actual caller and every prerequisite are admitted.
 One separately admitted text-only generated preview `proc_f232` exited zero:
