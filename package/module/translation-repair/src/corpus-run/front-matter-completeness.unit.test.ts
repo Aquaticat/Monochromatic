@@ -720,7 +720,7 @@ await describe({
         if (renderedSlice.kind !== 'paired')
           throw new Error('snowpaw archive fixture did not pair',);
         /**
-         Insertion slice for the no-archive variant below.
+         Insertion slice for this case's no-archive variant.
          */
         const insertionSlice = frontMatterSlice({ source, },);
         if (insertionSlice.kind !== 'paired')

@@ -74,7 +74,7 @@ const COMMENT_TARGET = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: G
 
 /**
  Archive establishing one contributor spelling at info.location, paired with
- COMMENT_AUTHORITY_CANDIDATE below, which establishes a different spelling:
+ `COMMENT_AUTHORITY_CANDIDATE`, which establishes a different spelling:
  the two differ so a source that wrongly resolved a comment relation would
  route through to a refusal, not coincidentally stay quiet.
  */
@@ -501,7 +501,7 @@ await describe({
       fn: async () => {
         /**
          Source establishing a distinct name and alias, so the identity rule
-         stays quiet regardless of the shape outcome below.
+         stays quiet whatever shape outcome this case asserts.
          */
         const sourceText = '---\nname: Clementine\ninfo:\n  alias: Clem\n---\n\nBody.\n';
         /**
@@ -532,7 +532,7 @@ await describe({
       fn: async () => {
         /**
          Source establishing a distinct name and alias, so the identity rule
-         stays quiet regardless of the shape outcome below.
+         stays quiet whatever shape outcome this case asserts.
          */
         const sourceText = '---\nname: Clementine\ninfo:\n  alias: Clem\n---\n\nThe cat naps.\n';
         /**
