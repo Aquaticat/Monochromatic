@@ -295,6 +295,52 @@ await describe({
       },
     },),
     it({
+      name: 'CORROBORATES A BLOCK ONLY WHEN EVERY LINE IS APPARATUS, so prose beside a label, a picture or a '
+        + 'comment is not passed as apparatus with it (ledger B81)',
+      fn: async () => {
+        // Prose after a label line, and before a contributor line.
+        expect(isVerifiableEditorialArchiveBlock({
+          blockText: 'Translator: Cat Friend\nThe cat won an award in spring.',
+        },),).toBe(false,);
+        expect(isVerifiableEditorialArchiveBlock({
+          blockText: 'The cat won an award in spring.\nContributor for this entry: Mittens',
+        },),).toBe(false,);
+        // A contributor line carrying its own names declares nothing on the
+        // line after it.
+        expect(isVerifiableEditorialArchiveBlock({
+          blockText: 'Contributor for this entry: Mittens\nThe cat won an award in spring.',
+        },),).toBe(false,);
+        // Prose after a picture, and prose between two comments.
+        expect(isVerifiableEditorialArchiveBlock({
+          blockText: '![A tabby asleep](tabby.png) The cat won an award in spring.',
+        },),).toBe(false,);
+        expect(isVerifiableEditorialArchiveBlock({
+          blockText: '<!-- note --> The cat won an award in spring. <!-- end -->',
+        },),).toBe(false,);
+        // A label's words opening a longer word.
+        expect(isVerifiableEditorialArchiveBlock({
+          blockText: 'Translation byproducts piled up by the litter box.',
+        },),).toBe(false,);
+        // Every line apparatus: names continuing a label standing alone, a
+        // picture beside a credit, comments alone, a label with its names.
+        expect([
+          'Contributors for this entry:\nMittens\nBiscuit',
+          '![A tabby asleep](tabby.png)\nSource: [Cat notes](https://example.test)',
+          '<!-- translator note -->\n<!-- second note -->',
+          'Translated by Mittens',
+          'Translation:',
+        ].map(function corroborated(blockText,): boolean {
+          return isVerifiableEditorialArchiveBlock({ blockText, },);
+        },),).toEqual([
+          true,
+          true,
+          true,
+          true,
+          true,
+        ],);
+      },
+    },),
+    it({
       name: 'RETAINS anchored source wording only after two distinct naturalness responsibilities',
       fn: async () => {
         const prompts: string[] = [];
