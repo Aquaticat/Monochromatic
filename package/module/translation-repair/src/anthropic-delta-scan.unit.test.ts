@@ -472,6 +472,50 @@ await describe({
     },),
 
     it({
+      name: 'COUNTS a payload that parses to an array as unreadable, as the completion reader '
+        + 'refuses one: every Anthropic frame is an object (ledger B92)',
+      fn: async () => {
+        /**
+         Scanner fed a JSON array where a frame belongs.
+         */
+        const scanner = scanAnthropicDeltas();
+        scanner.feed({ chunk: 'data: [1]\n\n', },);
+        expect(scanner.unreadableFrames(),).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS a content_block_delta frame whose delta is an array as unreadable, the same '
+        + 'refusal a frame with no delta object gets, rather than reading its type as empty and '
+        + 'passing it over uncounted (ledger B92)',
+      fn: async () => {
+        /**
+         Scanner fed a delta frame whose delta field is a JSON array.
+         */
+        const scanner = scanAnthropicDeltas();
+
+        /**
+         Deltas that frame yielded, which must be none.
+         */
+        const deltas = scanner.feed({
+          chunk: blockStart({
+            index: 0,
+            type: 'text',
+          },) + frameOf({
+            body: {
+              type: 'content_block_delta',
+              index: 0,
+              delta: [1,],
+            },
+          },),
+        },);
+
+        expect(deltas.length,).toBe(0,);
+        expect(scanner.unreadableFrames(),).toBe(1,);
+      },
+    },),
+
+    it({
       name: 'READS a delta by its own type when its frame names no block, or a block that never '
         + 'opened: without a declaration there is nothing to outrank the type',
       fn: async () => {

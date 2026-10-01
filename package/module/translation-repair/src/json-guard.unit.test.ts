@@ -30,9 +30,11 @@ await describe({
           },
         },),
         it({
-          name: 'admits arrays, whose numeric-keyed probes simply miss',
+          name: 'rejects arrays, since every call site that read one as a record either said so in '
+            + 'its own refusal message or forwarded it on to a crash or a spurious index-keyed entry '
+            + '(ledger B92)',
           fn: async () => {
-            expect(isJsonRecord(['喵',],),).toBe(true,);
+            expect(isJsonRecord(['喵',],),).toBe(false,);
           },
         },),
         it({

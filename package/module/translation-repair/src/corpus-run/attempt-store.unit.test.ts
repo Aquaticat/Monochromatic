@@ -241,6 +241,22 @@ await describe({
     },),
 
     it({
+      name: 'returns an empty map for a well-formed JSON ARRAY rather than reading its index keys '
+        + 'as entry ids, which is read through today as counts "0" and "1" instead of starting the '
+        + 'ordering over (ledger B92)',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        expect(
+          await readWritten({
+            directory: scratch.path,
+            contents: '[2, 5]',
+          },),
+        ).toStrictEqual(new Map(),);
+      },
+    },),
+
+    it({
       name: 'COERCES a non-numeric count to zero rather than dropping the '
         + 'entry, keeping every recorded id in the map. Zero means fewest '
         + 'attempts, so a corrupted count makes that entry sort first, which '

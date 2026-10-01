@@ -556,6 +556,43 @@ await describe({
         expect((await openSliceCache({ dir, generation: TEST_GENERATION, },)).resumed.size,).toBe(0,);
       },
     },),
+
+    it({
+      name: 'TREATS AN ARRAY authorship FIELD AS UNREADABLE, recomputing the slice rather than '
+        + 'resuming a record with no further validation on it: the two readers that go on to spread '
+        + 'authorship.everyIssue would otherwise crash on the resumed value (ledger B92)',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         Entry cache directory for this case.
+         */
+        const dir = join(
+          scratch.path,
+          'Mittens',
+        );
+
+        /**
+         Cache this run persists through.
+         */
+        const cache = await openSliceCache({ dir, generation: TEST_GENERATION, },);
+
+        /**
+         Otherwise-complete outcome whose authorship is a bare array rather
+         than the record every reader of it expects.
+         */
+        const arrayAuthorship = {
+          ...catOutcome({ sliceIndex: 0, },),
+          authorship: ['Whiskers',],
+        };
+        await cache.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(arrayAuthorship,),
+        },);
+
+        expect((await openSliceCache({ dir, generation: TEST_GENERATION, },)).resumed.size,).toBe(0,);
+      },
+    },),
   ],
 },);
 
@@ -1088,6 +1125,59 @@ await describe({
         },);
         expect(repair.resumed.size,).toBe(0,);
         expect((await listResumableEntries({ dir: scratch.path, },)).size,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'TREATS AN ARRAY stageResult OR alignment FIELD AS UNREADABLE, recomputing the slice '
+        + 'rather than resuming a record that the slice-selection reader would crash on, since its '
+        + 'own named fields all read as undefined off an array (ledger B92)',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         Entry directory both lanes share.
+         */
+        const dir = join(
+          scratch.path,
+          'whiskers',
+        );
+
+        /**
+         Cache this run persists through.
+         */
+        const cache = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+
+        /**
+         Otherwise-complete records, each with one of the two record fields
+         replaced by a bare array.
+         */
+        const arrayStageResult = {
+          ...catTranslateRecord({ sliceIndex: 0, },),
+          stageResult: ['Whiskers',],
+        };
+        const arrayAlignment = {
+          ...catTranslateRecord({ sliceIndex: 1, },),
+          alignment: ['Whiskers',],
+        };
+        await Promise.all([
+          cache.persist({
+            key: 'slice-hash-stage',
+            serialized: JSON.stringify(arrayStageResult,),
+          },),
+          cache.persist({
+            key: 'slice-hash-align',
+            serialized: JSON.stringify(arrayAlignment,),
+          },),
+        ],);
+
+        expect((await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },)).resumed.size,).toBe(0,);
       },
     },),
   ],

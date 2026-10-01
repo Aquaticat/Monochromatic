@@ -90,6 +90,24 @@ await describe({
         expect(caught instanceof MalformedCompletionError,).toBe(true,);
       },
     },),
+
+    it({
+      name: 'throws on an event that parses to an array, which was folded as a usage-only event '
+        + 'instead of refused (ledger B92)',
+      fn: async () => {
+        /** Value caught from an array event. */
+        let caught: unknown;
+        try {
+          extractStreamedCompletion({
+            bodyText: 'data: [1]\n\ndata: [DONE]\n',
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof MalformedCompletionError,).toBe(true,);
+      },
+    },),
   ],
 },);
 

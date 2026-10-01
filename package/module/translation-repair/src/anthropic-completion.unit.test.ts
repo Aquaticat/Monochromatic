@@ -399,6 +399,35 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a content_block_delta frame whose delta is an array, the same refusal a frame '
+        + 'with no delta object gets, rather than reading its type as empty and silently folding '
+        + 'nothing for it (ledger B92)',
+      fn: async () => {
+        expect(function arrayDelta() {
+          extractAnthropicCompletion({
+            bodyText: startOf({ inputTokens: 8, },)
+              + deltaOf({
+                deltaType: 'text_delta',
+                field: 'text',
+                text: 'Biscuit ',
+              },)
+              + frameOf({
+                body: {
+                  type: 'content_block_delta',
+                  index: 0,
+                  delta: [1,],
+                },
+              },)
+              + endOf({
+                stopReason: 'end_turn',
+                outputTokens: 3,
+              },),
+          },);
+        },).toThrow(MalformedCompletionError,);
+      },
+    },),
+
+    it({
       name: 'REFUSES a text_delta whose text is not a string, since reading it as empty dropped '
         + 'words from a prose answer that then shipped as whole (ledger B89)',
       fn: async () => {
@@ -678,6 +707,22 @@ await describe({
         expect(function numbered() {
           extractAnthropicCompletion({
             bodyText: `${startOf({ inputTokens: 8, },)}data: 7\n\n${endOf({
+              stopReason: 'end_turn',
+              outputTokens: 1,
+            },)}`,
+          },);
+        },).toThrow('stream event is not a JSON object',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a payload that parses to an array, since every Anthropic frame is an object and '
+        + 'reading one as a frame named no type and was silently passed over rather than refused '
+        + '(ledger B92)',
+      fn: async () => {
+        expect(function arrayed() {
+          extractAnthropicCompletion({
+            bodyText: `${startOf({ inputTokens: 8, },)}data: [1]\n\n${endOf({
               stopReason: 'end_turn',
               outputTokens: 1,
             },)}`,

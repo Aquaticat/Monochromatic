@@ -205,5 +205,30 @@ await describe({
         },),).rejects.toBeInstanceOf(DecisionReplyShapeError,);
       },
     },),
+
+    it({
+      name: 'REFUSES an answers field that is an array rather than reading it as spurious '
+        + 'index-keyed answers named "0", "1" and so on, which an array element shaped like a '
+        + 'choice answer is read as today with no refusal at all (ledger B92)',
+      fn: async () => {
+        const arrayed = createDecisionsClient({
+          apiKey: 'test-key',
+          transport: recordedTransport({
+            status: 200,
+            bodyText: JSON.stringify({
+              model: 'typesafe/jev-1.13',
+              answers: [{ type: 'choice', choice: '2', },],
+            },),
+          },).transport,
+          retryPolicy: NO_RETRY,
+        },);
+        await expect(arrayed.decide({
+          modelId: SEAT_OPENROUTER_DECISIONS,
+          state: 'a cat',
+          questions: { best: { type: 'choice', instructions: 'Which cat?', criteria: { '2': 'Mittens', }, }, },
+          signal: AbortSignal.timeout(5_000,),
+        },),).rejects.toBeInstanceOf(DecisionReplyShapeError,);
+      },
+    },),
   ],
 },);

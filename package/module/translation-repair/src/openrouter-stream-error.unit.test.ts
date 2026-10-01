@@ -185,6 +185,26 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'TREATS AN ARRAY error FIELD AS NO ERROR AT ALL, falling through to the finish-reason '
+        + 'check rather than reporting a found failure with every field unnamed, which reading an '
+        + 'array chunk field as a record produces today (ledger B92)',
+      fn: async () => {
+        /**
+         A chunk whose error field is a bare array rather than a record.
+         */
+        const arrayErrorStream = framed({
+          chunk: {
+            provider: 'Sill',
+            choices: [],
+            error: [504,],
+          },
+        },);
+
+        expect(openRouterStreamErrorOf({ bodyText: arrayErrorStream, },),).toEqual(STREAM_ERROR_ABSENT,);
+      },
+    },),
   ],
 },);
 

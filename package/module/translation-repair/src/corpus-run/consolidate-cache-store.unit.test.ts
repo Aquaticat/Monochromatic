@@ -392,5 +392,20 @@ await describe({
         },),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'REFUSES A decided FIELD THAT IS AN ARRAY, which this guard otherwise lets through '
+        + 'unvalidated: `decided.decision` would then read undefined, never equal to any entry in '
+        + 'UNSETTLED_DECISIONS, and an unsettled or corrupted round would settle silently '
+        + '(ledger B92)',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            decided: ['Whiskers',],
+          },
+        },),).toBe(false,);
+      },
+    },),
   ],
 },);

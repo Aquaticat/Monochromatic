@@ -251,6 +251,38 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES an issue record whose `issue` field is an array, contributing nothing rather '
+        + 'than the spurious accepted-but-silent view {status: "", claimIds: []} that reading an '
+        + 'array as a record produces today (ledger B92)',
+      fn: async () => {
+        /**
+         Artifact whose one issue record names an array rather than a record
+         under `issue`. VERSION 1, root-level `issues`, the shape the "parses
+         attribution and issues DOWN TO their contents" case already proves
+         survives the pool and reaches `toEntry`, so this entry's absence
+         from `entries` cannot be mistaken for the refusal under test.
+         */
+        await using scratch = await writeArtifacts({
+          artifacts: {
+            'Mittens.json': {
+              artifactSchemaVersion: 1,
+              id: 'Mittens',
+              issues: [{ sliceIndex: 0, issue: ['stray',], },],
+            },
+          },
+        },);
+
+        /**
+         Entries as the CLI would gather them.
+         */
+        const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+
+        expect(entries.length,).toBe(1,);
+        expect(entries[0]?.issues,).toStrictEqual([],);
+      },
+    },),
+
+    it({
       name: 'ISOLATES a failure to the artifact that caused it, so one corrupt '
         + 'or half-written file costs its own row and not the whole run. A pass '
         + 'killed at its hard cap can leave a truncated artifact, and a bare '
