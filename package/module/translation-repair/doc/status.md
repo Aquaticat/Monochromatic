@@ -241,10 +241,35 @@ with 15 functions never called,
 and by the first construct
 (`t8-triage-dapwax.txt`)
 three clusters still tie at 18 stretches,
-so the seventeenth batch takes the one with the most cold lines,
+so the seventeenth batch took the one with the most cold lines,
 the slice modules
 (`slice`,
-18 stretches over 112 lines in 7 files);
+18 stretches over 112 lines in 7 files),
+and closed every one
+(`774710cb0` to `3bc823c13`):
+arms no input reaches went,
+among them a one-slice fallback no aligned pair reaches and a helper re-reading a decision the delivery had already proved,
+the reachable refusals and a textless picture have cases,
+and the refusal cases in both slice test files now assert each refusal's structured fault rather than its class or a fragment.
+B71 closed on the way:
+the slice-cost reader read an empty count as 0 and hexadecimal,
+exponent and signed spellings as numbers its writer never writes,
+and no stored pass log carries one.
+Two families found beside it are open:
+elapsed times measured on the wall clock where a monotonic one is meant,
+and the package's other number reads from text.
+Its census (`census-vi1FHB`,
+1,472 passes,
+taken from a tree with nothing uncommitted)
+leaves library source at 747 stretches over 1,435 lines in 275 files,
+with 15 functions never called,
+and by the first construct
+(`t8-triage-vi1fhb.txt`)
+two clusters tie at 18 stretches,
+so the eighteenth batch takes the one with the most cold lines,
+the archive modules
+(`archive`,
+18 stretches over 36 lines in 9 files);
 the runner entry files and unloaded bundles come after the library.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.

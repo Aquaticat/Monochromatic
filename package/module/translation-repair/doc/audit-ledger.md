@@ -4540,6 +4540,144 @@ with 112,
 and 18 lines,
 so the seventeenth batch still takes `slice`.
 
+The seventeenth batch took the slice modules against `census-DapwaX`,
+18 stretches over 112 lines in 7 files,
+in five code commits,
+`774710cb0` to `3bc823c13`,
+and found B71 on the way.
+Its rows read three ways.
+
+The unreachable ones went.
+`slice-pair` 76,
+a hand-written throw on an empty run,
+became `nonNullishOrThrow`,
+which still throws.
+`slice-pair` 318-350,
+a one-slice fallback for a section one side of which carries no blocks:
+every caller takes its pairs from `alignDocumentSections`,
+whose `chunkByHeadings` chunks each hold a node,
+and a target is such a chunk or an insertion anchor,
+so the function now returns early for an anchor and groups both sides otherwise.
+The test that named the fallback ran through the grouping,
+its translation being a bare heading;
+it is reworded and now checks it gets one slice.
+`slice-delivery-decide` 230-235,
+`nonNullishAccepted`'s throw:
+`decideDelivery` returns the document's text beside the delivery,
+so the shipped row reads it there,
+and the fault kind went with its sentence (`slice-delivery-fault` 270).
+`slice-delivery-decide` 187-188,
+a gap for a decision agreeing with an archive that holds nothing:
+the coherence check refuses wording beside an absent archive and an empty decision there,
+so `decideDelivery` now runs that check itself and the arm went.
+`slice-delivery` 327-332,
+a missing wording after the count check,
+became `nonNullishOrThrow`,
+and its fault kind and sentence went (`slice-delivery-fault` 294).
+`slice-cost-read` 244 and 292 went with B71's one-pass reader.
+
+The reachable ones have cases (`1845b72c2`):
+declined and sealed blocks placed in a slice (`slice-coverage` 207-220,
+410-417 and 441-449),
+a withdrawn set naming a slice the lane never reached (`slice-delivery-decide` 112),
+a wording naming another slice than its position's (`slice-delivery` 342-349),
+a record calling the archive present at an anchor (`slice-delivery` 368-374,
+`slice-delivery-fault` 302-306)
+and a picture carrying no text (`slice-pictures` 208-215).
+Both files' existing refusal cases asserted the class alone or a fragment of the message,
+and every check in each file throws one class;
+they now assert the refusal's structured fault whole.
+One fixture put `acceptedText` beside a wording's outcome rather than in it,
+so its outcome never changed;
+it now sets the outcome.
+
+One case was red on purpose:
+the anchor refusal read "slice 1 is present of archive wording by its lane record and the other way by its prepared chunk",
+and `3bc823c13` rewords it to say which record says what.
+
+The batch's control copy,
+the pictures test with its new case expecting `not read`,
+failed that case alone and was deleted.
+With each guard turned off in one build
+(the digit check in `countField`,
+the declined check,
+the index and kind checks in `buildSliceDelivery`,
+the withdrawn name in `decideDelivery`,
+the no-text finding),
+exactly the case covering it failed in each file,
+and the tree was clean after the restore.
+The sealed-blocks check was not turned off:
+the session's permission classifier refused that edit,
+so its case is unmeasured against a guard-off.
+The write tool,
+like the edit tool,
+wrote a rewritten file's spaced TSDoc blank lines empty;
+each was put back by line address before lint,
+and `tsdoc-blank-lines.mjs` read every edited file's form after.
+
+Three findings are open from this batch.
+`armSliceCost` measures a slice as a difference of `Date.now()` readings,
+the wall clock,
+and the package does so for most of its elapsed times
+(`performance.now()` in two files);
+each site is to be read for whether it measures work,
+which wants a monotonic clock,
+or a budget the owner reads in wall time.
+The package has about fifty number reads from text in 32 production files,
+several on operator-typed variables;
+each is to be read for an empty,
+signed,
+hexadecimal,
+exponent or unsafe value read as a number nobody wrote.
+And `coverageSentence` and `blockPlacementSentence` print a count of one before a plural noun,
+which the open family of counts before a fixed plural covers.
+
+Its census at `3bc823c13`
+(`census-vi1FHB`,
+1,472 passes,
+taken clean)
+reads against `census-DapwaX`:
+ran 8,
+still cold 1,103,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 5,
+each of the 5 loaded and left with 0 cold stretches.
+Library source went from 765 stretches over 1,547 lines in 282 files to 747 over 1,435 in 275,
+with 15 functions never called as before:
+the cluster's 18 stretches and 112 lines,
+its 7 files no longer listed.
+Compared file by file,
+the 8 that ran are the cluster's 5 in the two unedited files
+(`slice-coverage` 4,
+`slice-pictures` 1)
+and 3 in other packages no commit here touched
+(`with-timeout.ts` 1 and `create-logger.ts` 2,
+whose `onTimeout` and `markEntryUnavailable` left the never-called list),
+while the logger's `reportLoggerInternalError` (`error-format.ts` 31) left it too:
+called this time,
+its one cold stretch became 3 inside the same range,
+so the reading counts none as newly cold.
+Those three move with timing the suite does not fix
+(a logger sink verification that timed out appears in this batch's lint output),
+an inference not measured here.
+
+By the first construct
+(`t8-triage-vi1fhb.txt`),
+the queue for the eighteenth batch is 306 returns,
+156 nullish fallbacks,
+127 ternaries,
+77 throws
+and 81 others.
+Two clusters tie at 18 stretches:
+`archive` (9 files,
+36 lines)
+and `corpus-run/run` (2 files,
+18 lines).
+The tie goes to the most cold lines,
+so the eighteenth batch takes `archive`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -13731,6 +13869,69 @@ it appends,
 and several edits into one text are written in one pass from offsets into that text.
 `fold-copies.unit.test.ts` fails on a new one,
 and an exemption names why a fold's copies are bounded or are its meaning.
+
+### B71: the slice-cost reader read counts nobody wrote
+
+Found by T8's seventeenth batch,
+reading the two cold throws in `slice-cost-read.ts`.
+`readLine` checked every field in one loop,
+then read each again through `provenWhole` and `provenMember`,
+which threw when the loop had not checked the field;
+no line could reach those throws,
+and the file's own note said it validated and built together.
+Its count check was `Number(raw)` and `Number.isInteger`,
+and `Number` reads an empty text as 0,
+`0x1F` as 31,
+`1e3` as 1000
+and a leading sign,
+so a `chunk=`,
+`sourceChars=` or `ms=` field that `armSliceCost` never wrote
+(it writes `String` of an integer)
+became a count in a row.
+A digit run past the largest integer a double holds exactly read as a neighbouring number.
+
+Measured over every stored `SLICE-COST` line under `node_modules/.monochromatic` and the audit's scratch folder
+(`b71-scan-count.mjs`,
+1,395,824 lines,
+37,183 distinct):
+174 carry a count field that is not plain digits,
+and every one is source or test text,
+not a logged value:
+the writer's template in built bundles and their maps,
+the reader tests' own fixtures,
+and ledger excerpts
+(`b71-scan-values.mjs` lists each value).
+The positive control,
+five planted lines,
+flagged the four malformed ones and not the fifth.
+So no stored pass log carries a count this reader misread.
+
+Fixed (`774710cb0` red,
+`3da144aed`):
+each field is read once into its value or a named refusal
+(`memberField`,
+`countField`),
+and the row is built from those readings;
+a count is read only when its text is ASCII digits
+(`isAsciiDigits`)
+that `Number` reads as a safe integer,
+and an empty field is named `empty` in the reason.
+With the digit check put back to `Number` alone,
+the red case failed and nothing else;
+restored.
+A signed value is refused although the writer could write `ms=-3`:
+it measures the slice as a difference of `Date.now()` readings,
+the wall clock,
+which a clock step can move backward mid-slice
+(the elapsed-time family,
+open in T8's seventeenth batch record).
+A negative duration is not a measurement,
+and the dropped reason names it.
+The package's other number reads from text are the same family and are open there too.
+
+Recurrence:
+a reader of text it wrote itself accepts only the spelling its writer writes,
+and reads each field once.
 
 ## Process mistakes in this audit
 

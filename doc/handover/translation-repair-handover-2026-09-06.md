@@ -339,11 +339,24 @@ this one says what changed after it.
   1,472 passes)
   leaves library source at 765 stretches over 1,547 lines in 282 files,
   with 15 functions never called,
-  and is the seventeenth batch's baseline,
-  that batch taking the slice modules
-  (`slice`,
-  18 stretches over 112 lines in 7 files,
-  the most cold lines of the three clusters tied at 18).
+  and was the seventeenth batch's baseline.
+  That batch took the slice modules,
+  closing all 18 of their stretches in 7 files
+  (`774710cb0` to `3bc823c13`;
+  ledger B71,
+  a slice-cost reader that read an empty or misspelt count as a number).
+  Its census at `3bc823c13` (`census-vi1FHB`,
+  1,472 passes)
+  leaves library source at 747 stretches over 1,435 lines in 275 files,
+  with 15 functions never called,
+  and is the eighteenth batch's baseline,
+  that batch taking the archive modules
+  (`archive`,
+  18 stretches over 36 lines in 9 files,
+  the most cold lines of the two clusters tied at 18).
+  Two families found in the seventeenth batch are open:
+  elapsed times measured on the wall clock,
+  and the package's other number reads from text.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

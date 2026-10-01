@@ -142,7 +142,10 @@ and six artifact refusal reasons printed as something other than what the reader
 two of them the opposite,
 behind cases that checked a fragment the wrong reading also held (B33);
 and a refusal case rewritten to name its side swapped its class for the message,
-since `toThrow` given a text checks only that the message contains it (M85).
+since `toThrow` given a text checks only that the message contains it (M85);
+and the slice coverage and delivery refusal cases checked the class alone or a fragment of the message,
+though every check in each file throws one class carrying a structured fault
+(T8's seventeenth batch).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -157,6 +160,9 @@ never both,
 so a refusal is caught with `caught`,
 then checked with `toBeInstanceOf` and with `caughtValueText` whole,
 and a rewritten assertion is compared with the one it replaces.
+Where the class carries a structured fault,
+the case asserts the fault whole beside the class,
+and one case per sentence checks the message.
 An `ArtifactParseError` reason is printed after "expected",
 so it names what the reader wanted there,
 never what it found or a sentence about the record,
@@ -1583,3 +1589,36 @@ and on a loop that reassigns a list or text as a copy of itself,
 unless the fold is named with why its copies are bounded or are its meaning,
 and on a named fold that no longer copies;
 `disjoint-splice.unit.test.ts` holds the one-pass writer to the old splice's text and its refusals.
+
+## Numbers read back from text
+
+What happened:
+the slice-cost reader took a count as whatever `Number` made of the field's text,
+so an empty field read as 0,
+`0x1F` as 31,
+`1e3` as 1000,
+a leading sign as part of the count,
+and a digit run past the largest exact integer as a neighbouring number,
+though its writer only ever writes the digits of an integer (ledger B71).
+It also checked each field in one loop and read it again through helpers that threw when the loop had not,
+throws no line could reach.
+
+The rule:
+a reader of text this package wrote accepts only the spelling the writer writes:
+a count is a non-empty run of ASCII digits (`isAsciiDigits`)
+that reads as a safe integer,
+and anything else is refused by name,
+an empty value named `empty`.
+Each field is read once,
+into its value or its refusal,
+and the record is built from those readings.
+A number an operator types is read the same way,
+since an empty variable read as 0 is a setting nobody chose.
+
+What enforces it:
+habit and review;
+`slice-cost-read.unit.test.ts` carries the empty,
+hexadecimal,
+exponent,
+signed and unsafe spellings.
+The package's other number reads from text are open as a family under T8's seventeenth batch.
