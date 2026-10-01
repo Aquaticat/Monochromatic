@@ -768,8 +768,43 @@ The stderr assertion was not reached,
 no accepted negative projection exists,
 and SDK dispatch remains withheld.
 The attempt and outputs are preserved without replay.
-No freeze or actual SDK sensitivity dispatch has occurred.
-The SDK phase remains withheld until the actual caller and every prerequisite are admitted.
+A separate matched-destination positive `proc_2a24` and existing-decoy negative `proc_1506` then exited zero
+with their independent true/true and false/false projections.
+The original normal-task failure remains unchanged.
+After explicit canonical-runtime,
+exact saved reviewer-string,
+startup gate/task,
+private descriptor,
+policy,
+Git,
+and unused-namespace admission,
+the single combined SDK phase `proc_d94d` exited zero after 22 seconds.
+It retained a new freeze and all 13 ordered intact/changed movements:
+26 workers,
+34 own completed sessions,
+68 scripted responses,
+34 own callbacks,
+32 distinct owned returned manager identities,
+six owned child returns,
+and four ledger publications.
+All worker stderr sizes were zero.
+The controller measured 21,296.303577 ms,
+including 189.032582 ms of preparation;
+builtin startup and static evaluation precede that clock.
+This is finite actual SDK own-completion with synthetic helper/boundary contrasts only,
+not SDK-native prefix/persistence coverage or general guard necessity.
+No genuine original,
+model,
+grant,
+or represented action was used by the reviewed source path.
+Current eligibility and production permission remain false.
+Total memory,
+live-write caps,
+complete network instrumentation,
+parent-stall resistance,
+general cleanup,
+and preparation-inclusive five-second handback remain unqualified.
+The protected policy retained the same hash and zero local diff after the run.
 One separately admitted text-only generated preview `proc_f232` exited zero:
 26 maps,
 156 syntax parses,
@@ -795,16 +830,15 @@ receipt-based reconciliation establishes no cause,
 new authorization,
 or replay permission.
 Next:
-accept the fresh two-descriptor contrast,
-bind the separately reviewed startup gate and raw task to their actual bytes,
-admit canonical runtime,
-private startup output files,
-current policy,
-scoped Git state,
-and unused namespace,
-then dispatch one bounded phase with pre-call accounting and unopened-suffix stops.
-The gate itself launches that phase;
-never run it separately as a harmless preflight.
+complete the separately named Markdown checkpoint for these result bytes,
+then resume current permission,
+source/target freshness,
+cache,
+deadline,
+and finalization qualification.
+The completed finite SDK phase does not complete that lifecycle area.
+The gate itself launched the consumed phase;
+never rerun it or treat it as a harmless preflight.
 No genuine originals,
 model calls,
 grants,

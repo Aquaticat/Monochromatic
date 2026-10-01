@@ -1096,8 +1096,9 @@ The fresh `sdk-startup/fd-identity-control/plan.json` declares a different contr
 matched destinations first,
 then distinct existing decoy destinations,
 with independent expected pairs `[true, true]` and `[false, false]`.
-Its outcome is tracked separately;
-declaring this plan does not establish a pass.
+The fresh positive `proc_2a24` and negative `proc_1506` each exited zero with their exact expected projection.
+That independently declared contrast adds prospective evidence;
+it does not repair or relabel `proc_fddd`.
 
 ### Verified boundary and tradeoffs
 
