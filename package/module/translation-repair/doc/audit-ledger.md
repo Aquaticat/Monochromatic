@@ -16235,6 +16235,49 @@ which frame a payload is gets read off its parse;
 `mistake-prevention.md`,
 "Structure read off the parse".
 
+### B88: prompt tokens that left out the cache
+
+Found in T8's twenty-second batch,
+reading `foldUsage` against the prompt-caching documentation
+(platform.claude.com),
+red in `9a885953d`,
+fixed in the commit adding this entry.
+Anthropic's `input_tokens` counts only the tokens after the last cache breakpoint;
+the documentation gives the prompt as `cache_read_input_tokens + cache_creation_input_tokens + input_tokens`.
+`extractAnthropicCompletion` reported `input_tokens` alone as `prompt_tokens`,
+so a call that read or wrote the cache was counted,
+and priced,
+as a short one.
+The fold now keeps each usage field's last report (`USAGE_SERIES`),
+a null read as absent,
+and the prompt is the sum of the three.
+
+Reach:
+only `hyper-client.ts` calls this reader in production,
+and Charm Hyper's captured stream (2026-08-24) carries no cache field,
+so production counts do not move.
+The one capture that does carry one is OpenRouter's Messages endpoint
+(2026-09-03,
+measurement only):
+its expected prompt count moved from 574 to 702.
+Whether that gateway's `input_tokens` already counts cached tokens was not settled:
+today's DigitalOcean prices for the model matched neither reading of the capture's own cost.
+The payload store keeps only the extracted counts,
+so no stored reply carries a cache field to replay.
+`corpus-run/hyper-price.ts` prices every prompt token at the input rate,
+so a cached call is now over-estimated where it was under-estimated;
+its cache rates are recorded and unused.
+
+Calls made here are open to veto:
+
+- the documented sum is followed,
+  though the one gateway capture carrying a cache count could not be checked against it.
+
+Recurrence:
+a provider's field is read as its documentation defines it;
+`mistake-prevention.md`,
+"Provider fields read by their documentation".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

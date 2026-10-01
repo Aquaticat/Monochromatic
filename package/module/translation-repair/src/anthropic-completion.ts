@@ -98,15 +98,54 @@ type AnthropicFold = {
   readonly stopReasons: string[];
 
   /**
-   Prompt tokens, from `message_start`.
+   Prompt tokens after the last cache breakpoint, which is all Anthropic's
+   `input_tokens` counts, in arrival order.
    */
-  readonly promptTokens: number[];
+  readonly inputTokens: number[];
 
   /**
-   Completion tokens, from `message_delta`.
+   Prompt tokens written to the cache, in arrival order.
+   */
+  readonly cacheWriteTokens: number[];
+
+  /**
+   Prompt tokens read from the cache, in arrival order.
+   */
+  readonly cacheReadTokens: number[];
+
+  /**
+   Completion tokens, in arrival order.
    */
   readonly completionTokens: number[];
 };
+
+/**
+ Usage fields this reader counts, each beside the series it lands in.
+
+ THE PROMPT IS THREE OF THEM (ledger B88). Anthropic's `input_tokens` counts
+ only the tokens after the last cache breakpoint; the prompt-caching
+ documentation gives the prompt as that plus the tokens read from and
+ written to the cache. Reading `input_tokens` alone reported a cached call
+ as a short one.
+ */
+const USAGE_SERIES = [
+  [
+    'input_tokens',
+    'inputTokens',
+  ],
+  [
+    'cache_creation_input_tokens',
+    'cacheWriteTokens',
+  ],
+  [
+    'cache_read_input_tokens',
+    'cacheReadTokens',
+  ],
+  [
+    'output_tokens',
+    'completionTokens',
+  ],
+] as const;
 
 /**
  Reads one string field off a parsed object.
@@ -143,17 +182,21 @@ function stringField(
 
 /**
  Records the token counts a usage block carried, ignoring absent ones.
- 
+
  THE TWO FRAMES NEST IT DIFFERENTLY, which is why the holder is a parameter
  rather than read off the frame here. `message_delta` puts `usage` at the top
  level, while `message_start` puts it inside `message` alongside the model
  name and the null stop reason. Reading only the top level would silently drop
  every prompt-token count.
- 
+
+ A NULL IS ABSENT, not zero: OpenRouter's Messages endpoint opened with
+ `cache_read_input_tokens: null` and closed with a count (captured
+ 2026-09-03), and the count is the one kept.
+
  @param holder - object that directly holds the `usage` block
- 
+
  @param fold - accumulator to append to
- 
+
  @example
  ```ts
  foldUsage({ holder: frame, fold, },);
@@ -175,24 +218,16 @@ function foldUsage(
   if (!isJsonRecord(usage,))
     return;
 
-  /**
-   Prompt tokens this frame reported.
-   */
-  const { input_tokens: input, } = usage;
-
-  /**
-   Completion tokens this frame reported.
-   */
-  const { output_tokens: output, } = usage;
-
-  if ((typeof input) === 'number')
-    fold
-      .promptTokens
-      .push(input,);
-  if ((typeof output) === 'number')
-    fold
-      .completionTokens
-      .push(output,);
+  for (const [field, series,] of USAGE_SERIES) {
+    /**
+     Count this frame reported under that field, of unknown type.
+     */
+    const reported = usage[field];
+    if ((typeof reported) === 'number') {
+      fold[series]
+        .push(reported,);
+    }
+  }
 }
 
 /**
@@ -341,28 +376,39 @@ function foldMessageDelta(
  
  @example
  ```ts
- const counts: ReportedCounts = { promptTokens: [41,], completionTokens: [12,], };
+ const counts: ReportedCounts = { inputTokens: [41,], cacheWriteTokens: [], cacheReadTokens: [], completionTokens: [12,], };
  ```
  */
-type ReportedCounts = {
-  /**
-   Prompt tokens, in arrival order.
-   */
-  readonly promptTokens: readonly number[];
+type ReportedCounts = Readonly<Record<(typeof USAGE_SERIES)[number][1], readonly number[]>>;
 
-  /**
-   Completion tokens, in arrival order.
-   */
-  readonly completionTokens: readonly number[];
-};
+/**
+ Reads a count series as the total it reports.
+
+ THE LAST REPORT, because `message_delta` counts are cumulative (the
+ streaming documentation's warning) and may repeat or update what
+ `message_start` reported. Zero where the stream reported none: a stream
+ reporting no cache field used no cache this reader can count.
+
+ @param series - one count series, in arrival order
+
+ @returns Its last report, zero when it holds none
+
+ @example
+ ```ts
+ const fresh = latestOf({ series: counts.inputTokens, },);
+ ```
+ */
+function latestOf({ series, }: { readonly series: readonly number[]; },): number {
+  return series.at(-1,) ?? 0;
+}
 
 /**
  Usage fragment for the result, present only when the stream reported counts.
- 
+
  @param counts - token counts the body reported, read only
- 
+
  @returns Spreadable fragment carrying usage, or nothing
- 
+
  @example
  ```ts
  const fragment = usageOf({ counts: fold, },);
@@ -372,32 +418,39 @@ function usageOf(
   { counts, }: { readonly counts: ReportedCounts; },
 ): Pick<ExtractedCompletion, 'usage'> {
   /**
-   Both count series, named so neither read is a three-step chain.
+   Every count series, named so no read is a three-step chain.
    */
   const {
-    promptTokens,
+    inputTokens,
+    cacheWriteTokens,
+    cacheReadTokens,
     completionTokens,
   } = counts;
 
   /**
-   Prompt tokens, which arrive once in `message_start`.
+   Prompt tokens the model read: those after the last cache breakpoint, plus
+   those written to and read from the cache (ledger B88).
    */
-  const prompt = promptTokens
-    .at(-1,)
-    ?? 0;
+  const prompt = latestOf({ series: inputTokens, },)
+    + latestOf({ series: cacheWriteTokens, },)
+    + latestOf({ series: cacheReadTokens, },);
 
   /**
    Completion tokens, whose last report is the running total.
    */
-  const completion = completionTokens
-    .at(-1,)
-    ?? 0;
+  const completion = latestOf({ series: completionTokens, },);
 
   /**
    Whether the provider reported any count at all.
    */
-  const silent = (promptTokens.length === 0)
-    && (completionTokens.length === 0);
+  const silent = [
+    inputTokens,
+    cacheWriteTokens,
+    cacheReadTokens,
+    completionTokens,
+  ].every(function unreported(series,): boolean {
+    return series.length === 0;
+  },);
 
   if (silent)
     return {};
@@ -671,7 +724,9 @@ export function extractAnthropicCompletion(
     textParts: [],
     toolParts: [],
     stopReasons: [],
-    promptTokens: [],
+    inputTokens: [],
+    cacheWriteTokens: [],
+    cacheReadTokens: [],
     completionTokens: [],
   };
 

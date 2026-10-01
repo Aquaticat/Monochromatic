@@ -2217,3 +2217,25 @@ What enforces it:
 and a page whose remaining refusal names no place;
 `strict-refusal-offset.unit.test.ts` holds an element left open in a paragraph and one left open at the document's end.
 No scan finds offsets compared across texts.
+
+## Provider fields read by their documentation
+
+What happened:
+the Anthropic reader reported `input_tokens` as the prompt,
+as the name suggests,
+though Anthropic's documentation counts in it only the tokens after the last cache breakpoint
+and gives the prompt as that plus the tokens read from and written to the cache,
+so a cached call read as a short one (ledger B88).
+
+The rule:
+a field on a provider's wire is read as the provider's current documentation defines it,
+fetched while writing the reader,
+and a reader mapping one provider's fields onto another's shape
+(Anthropic's usage onto the OpenAI-shaped `prompt_tokens`)
+states each mapping beside the documentation it follows.
+A gateway that serves one provider's format for another is read by the format's documentation,
+and a capture that cannot be checked against it says so where it is kept.
+
+What enforces it:
+habit and review;
+`anthropic-completion.unit.test.ts` holds a stream that reads and writes the cache.
