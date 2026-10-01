@@ -725,12 +725,14 @@ type Forwarding = {
  How a listed site uses the caught error's text.
 
  FORWARDS: the text becomes part of the marked message, so the catch must
- narrow to marked classes, whose sentences this file checks. OPERATOR-TYPED:
- the text is a library's message quoting only what the operator typed, which
- the marker permits. READ-FOR-A-NUMBER: the text is read for a number the
- class's own inventory names, and none of it reaches the message.
+ narrow to marked classes, whose sentences this file checks.
+ READ-FOR-A-NUMBER: the text is read for a number the class's own inventory
+ names, and none of it reaches the message. The one site that forwarded a
+ library's message quoting what the operator typed, the coverage census's
+ own `parseArgs` catch, went when every runner's line moved to
+ `readCommandLine`, which writes its own refusals (ledger B75).
  */
-type ForwardingKind = 'forwards' | 'operator-typed' | 'read-for-a-number';
+type ForwardingKind = 'forwards' | 'read-for-a-number';
 
 /**
  Every construction of a marked class whose arguments turn a caught error
@@ -767,13 +769,6 @@ const FORWARDING_SITES: readonly (Forwarding & {
     narrowedTo: ['DeliveryCoherenceError', 'WordingCoherenceError',],
     kind: 'forwards',
     names: 'a slice index and fault and outcome kinds',
-  },
-  {
-    file: 'corpus-run/coverage-census-input.ts',
-    className: 'StatedRefusalError',
-    narrowedTo: [],
-    kind: 'operator-typed',
-    names: 'the arguments the operator typed, as Node\'s parseArgs quotes them',
   },
   {
     file: 'run-json-read.ts',

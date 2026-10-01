@@ -31,7 +31,7 @@ import type {
 // It runs with `strict` off and hands back its tokens, and every refusal is
 // written here: all of them at once, in the words the B73 readers already
 // used, and a number written with a minus sign after a flag still reaches the
-// reader that answers it as below zero, which strict `parseArgs` refuses as
+// reader that answers it as under zero, which strict `parseArgs` refuses as
 // ambiguous before any reader sees it.
 
 /**
@@ -50,7 +50,7 @@ const FIRST_TYPED_AT = 2;
 const LONG_PREFIX = '--';
 
 /**
- Sign a number below zero is written with.
+ Sign a number under zero is written with.
  */
 const MINUS = '-';
 
