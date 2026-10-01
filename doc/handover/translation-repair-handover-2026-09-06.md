@@ -401,10 +401,19 @@ this one says what changed after it.
   or an entry id spelled `constructor` or `__proto__` read as a prototype value;
   every table looked up by text is now a map,
   and `text-keyed-tables.unit.test.ts` fails on a new one.
-  Open,
-  to close before the eighteenth batch:
-  elapsed times measured on the wall clock (found in the seventeenth batch).
-  The census taken once it closes is the eighteenth batch's baseline,
+  Ledger B78 followed
+  (`a3f1f2c55` to `e2b0962fd`):
+  durations,
+  holds,
+  paces and budgets were differences of system-clock readings (found in the seventeenth batch),
+  so setting the clock moved them by the hour it was set;
+  every difference inside one process now reads `monotonicMs`,
+  and `wall-clock-reads.unit.test.ts` fails on a new read of the system clock as a number.
+  Its red cases' stub first replaced `Date.now` for the whole test process,
+  and a guard-off hung a file instead of failing it;
+  the stub now holds the clock for its own case only (ledger M100),
+  and the package's 29 other test files that replace process globals are open as a family.
+  The census taken next is the eighteenth batch's baseline,
   that batch taking the archive modules
   (`archive`,
   18 stretches over 36 lines in 9 files,
