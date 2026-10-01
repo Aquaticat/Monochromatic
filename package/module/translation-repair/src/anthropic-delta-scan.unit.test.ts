@@ -551,27 +551,126 @@ await describe({
     },),
 
     it({
-      name: 'EMITS nothing for a delta frame with no delta, or a delta whose text is empty, as the '
-        + 'first tool-argument fragment the documentation shows is',
+      name: 'EMITS AND COUNTS nothing for a delta whose text is empty, as the first tool-argument '
+        + 'fragment the documentation shows is: an empty fragment is read, not unreadable',
       fn: async () => {
-        expect(scanAll({
-          raw: blockStart({
+        /**
+         Scanner fed a tool block's empty opening fragment.
+         */
+        const scanner = scanAnthropicDeltas();
+
+        /**
+         Deltas that fragment yielded, which must be none.
+         */
+        const deltas = scanner.feed({
+          chunk: blockStart({
             index: 0,
             type: 'tool_use',
           },)
-            + frameOf({
-              body: {
-                type: 'content_block_delta',
-                index: 0,
-              },
-            },)
             + blockDelta({
               index: 0,
               deltaType: 'input_json_delta',
               field: 'partial_json',
               text: '',
             },),
-        },).length,).toBe(0,);
+        },);
+
+        expect(deltas.length,).toBe(0,);
+        expect(scanner.unreadableFrames(),).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS as unreadable a delta frame with no delta, and a delta of a type it reads whose '
+        + 'text field is absent or not a string, as the completion reader refuses the first and '
+        + 'the answer fragments among the rest (ledger B93)',
+      fn: async () => {
+        /**
+         Scanner fed four delta frames it is meant to read and cannot.
+         */
+        const scanner = scanAnthropicDeltas();
+
+        /**
+         Deltas those frames yielded, which must be none.
+         */
+        const deltas = scanner.feed({
+          chunk: blockStart({
+            index: 0,
+            type: 'thinking',
+          },)
+            + blockStart({
+              index: 1,
+              type: 'text',
+            },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 1,
+              },
+            },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 1,
+                delta: {
+                  type: 'text_delta',
+                  text: 7,
+                },
+              },
+            },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 1,
+                delta: { type: 'text_delta', },
+              },
+            },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 0,
+                delta: { type: 'thinking_delta', },
+              },
+            },),
+        },);
+
+        expect(deltas.length,).toBe(0,);
+        expect(scanner.unreadableFrames(),).toBe(4,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS NOTHING for a delta of a type it does not read, whatever that delta holds: '
+        + 'the documentation says new types may be added and are to be passed over',
+      fn: async () => {
+        /**
+         Scanner fed a signature delta and a type no documentation names.
+         */
+        const scanner = scanAnthropicDeltas();
+        scanner.feed({
+          chunk: blockStart({
+            index: 0,
+            type: 'thinking',
+          },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 0,
+                delta: {
+                  type: 'signature_delta',
+                  signature: 7,
+                },
+              },
+            },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 0,
+                delta: { type: 'purr_delta', },
+              },
+            },),
+        },);
+        expect(scanner.unreadableFrames(),).toBe(0,);
       },
     },),
 
@@ -631,6 +730,7 @@ await describe({
         expect(answering.verdict().kind,).toBe('undecided',);
       },
     },),
+
     it({
       name: 'COUNTS A KEEP-ALIVE PING AS NOTHING, not as an unreadable frame, which a live capture '
         + 'on 2026-08-24 showed this provider sends: twenty of them on an idle stream would '
