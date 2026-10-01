@@ -4992,6 +4992,11 @@ and 33 others.
 so the twentieth batch takes `corpus-run/heading`
 against `census-IqLEk4`.
 
+The full suite on `143e786eb`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,509 PASS lines and no FAIL line.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
