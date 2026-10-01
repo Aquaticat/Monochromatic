@@ -41,6 +41,14 @@ const ROUND_LINE = '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [edit
   + 'editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace';
 
 /**
+ A round line as `runGatherRound` writes it when quorum never stood (ledger
+ P12): no time to quorum and no grace, since the round stopped once every
+ ask settled.
+ */
+const NO_QUORUM_LINE = '[info] [2026-08-25T10:00:40.000Z] [translation-repair] [editor] '
+  + 'editor round: 1/7 heard, 120000ms total, no quorum (1 of 4 needed), every ask settled';
+
+/**
  A completion line as `reportStreamProgress` writes it since the timing work.
  */
 const TIMED_CALL_LINE = '[info] [2026-08-25T10:00:10.000Z] [translation-repair] '
@@ -216,6 +224,85 @@ await describe({
         },),
 
         it({
+          name: 'READS A ROUND WHERE QUORUM NEVER STOOD as the round it is, and keeps a truncated one out: '
+            + 'the writer logs it with no grace field, and reading every line without one as cut off '
+            + 'dropped the rounds that lost the most voices from the report (T8, nineteenth batch)',
+          fn: async () => {
+            expect({
+              reading: readRoundTiming({ line: NO_QUORUM_LINE, },),
+              truncated: readRoundTiming({ line: NO_QUORUM_LINE.slice(0, -'ded), every ask settled'.length,), },)
+                .kind,
+              rounds: readRunTiming({
+                lines: [
+                  ROUND_LINE,
+                  NO_QUORUM_LINE,
+                ],
+              },).rounds.length,
+            },).toEqual({
+              reading: {
+                kind: 'round',
+                round: {
+                  stage: 'editor',
+                  heard: 1,
+                  asked: 7,
+                  totalMs: 120_000,
+                  quorum: {
+                    kind: 'never',
+                    needed: 4,
+                  },
+                },
+              },
+              truncated: 'other-line',
+              rounds: 2,
+            },);
+          },
+        },),
+
+        it({
+          name: 'NAMES WHAT A ROUND LINE LACKS OR CONTRADICTS: a payload short of the four fields its writer writes, '
+            + 'and a no-quorum field whose heard count is not the ratio\'s, rather than reading a missing field '
+            + 'as one that lost its unit (T8, nineteenth batch)',
+          fn: async () => {
+            /**
+             Round line that kept only its ratio and its grace.
+             */
+            const short = ROUND_LINE.replace(', 91402ms total, 61401ms to quorum', '',);
+            /**
+             No-quorum line whose two heard counts disagree.
+             */
+            const disagreeing = NO_QUORUM_LINE.replace('1/7 heard', '2/7 heard',);
+            /**
+             No-quorum line whose needed count is a word.
+             */
+            const wordy = NO_QUORUM_LINE.replace('1 of 4 needed', '1 of four needed',);
+            expect([
+              short,
+              disagreeing,
+              wordy,
+            ].map(function refusalsOf(line,): readonly string[] {
+              return refusalTexts({
+                read: function readsRound(): void {
+                  readRoundTiming({ line, },);
+                },
+              },);
+            },),).toEqual([
+              [
+                `round line unreadable: ${short}`,
+                'round payload has 2 fields where its writer writes 4',
+              ],
+              [
+                `round line unreadable: ${disagreeing}`,
+                'quorum field counts 1 heard where the ratio counts 2',
+              ],
+              [
+                `round line unreadable: ${wordy}`,
+                `count field is not ${WHOLE_NUMBER_RULE}: "four"`,
+              ],
+            ],);
+          },
+        },),
+
+        it({
           name: 'NAMES AN EMPTY COUNT rather than reading a ratio missing its heard count as a round that heard nobody',
           fn: async () => {
             /**
@@ -361,11 +448,37 @@ await describe({
           name: 'THROWS ON A DURATION WITH NO DIGITS BEFORE ITS UNIT rather than reading it as a call that took no '
             + 'time (ledger B73)',
           fn: async () => {
+            /**
+             Completion line whose duration lost its digits.
+             */
+            const line = TIMED_CALL_LINE.replace('elapsed 10000ms', 'elapsed ms',);
             expect(refusalTexts({
               read: function readsUnitAlone(): void {
-                readCallTiming({ line: TIMED_CALL_LINE.replace('elapsed 10000ms', 'elapsed ms',), },);
+                readCallTiming({ line, },);
               },
-            },),).toEqual([`timing field's milliseconds are not ${WHOLE_NUMBER_RULE}: "ms"`,],);
+            },),).toEqual([
+              `completion line unreadable: ${line}`,
+              `timing field's milliseconds are not ${WHOLE_NUMBER_RULE}: "ms"`,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A COMPLETION LINE WHOSE FIRST FIELD IS NOT LABEL AND OUTCOME rather than reading a call that '
+            + 'ended in no outcome at all (T8, nineteenth batch)',
+          fn: async () => {
+            /**
+             Completion line whose label and outcome lost the colon between them.
+             */
+            const line = TIMED_CALL_LINE.replace('hf:whiskers: completed', 'hf:whiskers completed',);
+            expect(refusalTexts({
+              read: function readsNoOutcome(): void {
+                readCallTiming({ line, },);
+              },
+            },),).toEqual([
+              `completion line unreadable: ${line}`,
+              'completion field is not "<label>: <outcome>": "hf:whiskers completed"',
+            ],);
           },
         },),
       ],
@@ -447,6 +560,24 @@ await describe({
 
             expect(flight.peakInFlight,).toBe(1,);
             expect(flight.meanInFlight,).toBeCloseTo(1, 2,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES CALLS THAT SPAN NO TIME rather than reporting every one of them in flight at a mean while '
+            + 'the sweep counts a peak of none: a span of zero is the empty list\'s division by nothing (T8, '
+            + 'nineteenth batch)',
+          fn: async () => {
+            expect(refusalTexts({
+              read: function measuresInstant(): void {
+                measureInFlight({
+                  calls: [
+                    callRunning({ endsAtSeconds: 10, ranSeconds: 0, },),
+                    callRunning({ endsAtSeconds: 10, ranSeconds: 0, },),
+                  ],
+                },);
+              },
+            },),).toEqual(['every timed call in this log took no time, so no span holds a call in flight',],);
           },
         },),
 
