@@ -3,9 +3,11 @@
 ## Status
 
 Design interview requested with `/grill-me`.
-Implementation is not authorized until the user confirms shared understanding.
-This document tracks requirements and open decisions;
- it is not an accepted architecture decision.
+The user answered "Confirm." to the complete design and request-only backend contract.
+Implementation and verified global replacement are now authorized.
+This document tracks the accepted requirements,
+ evidence,
+ and implementation progress.
 
 ## Requested behavior
 
@@ -80,7 +82,7 @@ The user answered `Q1 A`,
 
 These answers settle requirements,
  not the complete implementation design.
-The user has not yet confirmed shared understanding of that complete design.
+The user subsequently confirmed shared understanding of the complete design in Q7.
 
 ### Accepted round-two answers
 
@@ -169,7 +171,7 @@ The exported `buildBaseOptions()` preserved the abort signal,
 These are offline construction and routing probes,
  not a completed extension or live backend verification.
 
-## Proposed implementation awaiting confirmation
+## Accepted implementation design
 
 - Register genuine virtual entries using the incumbent
    `openai-codex-fast/<base-model-id>` identities to preserve existing selections.
@@ -277,10 +279,9 @@ The pre-existing `pnpm-lock.yaml` modification remains unrelated and unstaged.
 
 ## Next action
 
-Ask the user to confirm the complete shared design and request-only backend contract.
-Do not implement,
- change installed packages,
- or change defaults before that confirmation.
+Implement the repository package and verify the required host behavior.
+Replace the incumbent globally only after verification,
+ preserving defaults and `enabledModels`.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
