@@ -584,7 +584,7 @@ await describe({
     it({
       name: 'FOLDS NOTHING from a message_start with no message or a message with no usage, or '
         + 'from a message_delta with no delta, while keeping the counts and answer the rest carry: '
-        + 'usage and the stop reason are reported by their absence',
+        + 'the stop reason is reported by its absence',
       fn: async () => {
         expect(extractAnthropicCompletion({
           bodyText: frameOf({ body: { type: 'message_start', }, },)
@@ -602,21 +602,75 @@ await describe({
             + frameOf({
               body: {
                 type: 'message_delta',
-                usage: { output_tokens: 2, },
+                usage: {
+                  input_tokens: 8,
+                  output_tokens: 2,
+                },
               },
             },)
             + frameOf({ body: { type: 'message_stop', }, },),
         },),).toEqual({
           text: 'Pleased.',
           usage: {
-            prompt_tokens: 0,
+            prompt_tokens: 8,
             completion_tokens: 2,
-            total_tokens: 2,
+            total_tokens: 10,
           },
         },);
       },
     },),
 
+    it({
+      name: 'REPORTS no usage rather than a zero when the stream reported its completion count and '
+        + 'never its prompt count, or the reverse: a zero would read as a measured count, and the '
+        + 'OpenAI-compatible reader reports usage only when both are numbers (ledger B94)',
+      fn: async () => {
+        /**
+         Bodies each reporting one of the two counts, never the other.
+         */
+        const halfReported = [
+          frameOf({
+            body: {
+              type: 'message_delta',
+              delta: { stop_reason: 'end_turn', },
+              usage: { output_tokens: 2, },
+            },
+          },),
+          frameOf({
+            body: {
+              type: 'message_start',
+              message: {
+                id: 'msg_tabby',
+                usage: { input_tokens: 8, },
+              },
+            },
+          },),
+          frameOf({
+            body: {
+              type: 'message_start',
+              message: {
+                id: 'msg_tabby',
+                usage: {
+                  input_tokens: 8,
+                  cache_read_input_tokens: 300,
+                },
+              },
+            },
+          },),
+        ];
+        for (const counts of halfReported) {
+          expect(extractAnthropicCompletion({
+            bodyText: counts
+              + deltaOf({
+                deltaType: 'text_delta',
+                field: 'text',
+                text: 'Pleased.',
+              },)
+              + frameOf({ body: { type: 'message_stop', }, },),
+          },).usage,).toBe(undefined,);
+        }
+      },
+    },),
     it({
       name: 'REFUSES a payload that parses to a number, since every Anthropic frame is an object '
         + 'and the answer assembled from the rest would be missing a piece',
