@@ -14850,6 +14850,10 @@ The red commits show the rest:
 each red case failed on its assertion against the unfixed code,
 and the scan's package case listed every site before the fix
 (`f0322ce6f` and `98f5b8861`).
+The full suite on `d2af668bd`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,493 PASS lines and no FAIL line.
 
 What the scan cannot see was read by a typed census of the fixed tree
 (`~/temp/agent/audit-glossary-fix/b486-prototype-census.mjs`,
