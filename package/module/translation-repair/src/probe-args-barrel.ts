@@ -14,13 +14,13 @@ export {
   wholeNumberFlag,
   writtenOr,
 } from './corpus-run/command-flags.ts';
-export {
-  type CommandLineFor,
-  type CommandLineSpec,
-  type FlagValue,
-  type PositionalSpec,
-  readCommandLine,
-} from './corpus-run/command-line.ts';
+export type {
+  CommandLineFor,
+  CommandLineSpec,
+  FlagValue,
+  PositionalSpec,
+} from './corpus-run/command-line-types.ts';
+export { readCommandLine, } from './corpus-run/command-line.ts';
 export {
   COMMAND_LINES,
   type CommandLineOf,

@@ -1,5 +1,5 @@
 import { idListFlag, } from './command-flags.ts';
-import type { ReadsFlag, } from './command-line.ts';
+import type { ReadsFlag, } from './command-line-types.ts';
 
 //region Entry filter
 // Restricts a pass to named corpus entries.

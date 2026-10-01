@@ -5,7 +5,7 @@ import { idListFlag, } from './command-flags.ts';
 import type {
   ReadsFlag,
   ReadsSwitch,
-} from './command-line.ts';
+} from './command-line-types.ts';
 import { RUN_ROSTER, } from './run-config.ts';
 
 //region Probe candidates

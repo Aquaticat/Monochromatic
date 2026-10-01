@@ -20,7 +20,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
 import type { ModelTransport, } from '../synthetic-transport.ts';
 import { idListFlag, } from './command-flags.ts';
-import type { ReadsFlag, } from './command-line.ts';
+import type { ReadsFlag, } from './command-line-types.ts';
 
 //region Required providers for measured arms
 

@@ -497,7 +497,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-calibrate'
   },);
 
   for (
-    const line of standingReportLines({
+    const standingLine of standingReportLines({
     seat: 'EDITOR',
     roster: RUN_ROSTER,
     perSlice: editorPerSlice,
@@ -517,11 +517,11 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-calibrate'
     answered: { kind: 'unrecorded', },
   },)
   ) {
-    console.log(line,);
+    console.log(standingLine,);
   }
 
   for (
-    const line of standingReportLines({
+    const standingLine of standingReportLines({
     seat: 'REFINER',
     roster: RUN_ROSTER,
     perSlice: refinerPerSlice,
@@ -541,7 +541,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-calibrate'
     },
   },)
   ) {
-    console.log(line,);
+    console.log(standingLine,);
   }
 
   reportRefineReach({ perSlice, },);

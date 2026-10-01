@@ -282,8 +282,8 @@ async function main({ line, }: { readonly line: CommandLineOf<'producer-calibrat
     answered: { kind: 'unrecorded', },
   },);
 
-  for (const line of coverageGapLines({ coverage, },)) {
-    console.log(`  ${line}`,);
+  for (const gapLine of coverageGapLines({ coverage, },)) {
+    console.log(`  ${gapLine}`,);
   }
 
   console.log(

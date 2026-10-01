@@ -7,6 +7,11 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { isAsciiDigits, } from '../ascii-letters.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import type {
+  CommandLineFor,
+  CommandLineSpec,
+  FlagValue,
+} from './command-line-types.ts';
 
 //region Command line
 // THE ONE READER OF THE WHOLE COMMAND LINE every runner takes (ledger B75).
@@ -50,182 +55,26 @@ const LONG_PREFIX = '--';
 const MINUS = '-';
 
 /**
- What a flag carried, or that nobody wrote it.
+ What an option token carried after its flag.
 
- NAMED RATHER THAN LEFT NULLISH because the two answers lead to opposite
- behaviour one line later: an unwritten flag takes a default, and a written
- one is read and may be refused. Each answer carries the flag as the person
- types it, so a reader refusing the value names the flag without being told
- it a second time.
+ NAMED RATHER THAN LEFT NULLISH, as `FlagValue` is: `parseArgs` answers
+ `undefined` for a flag written with nothing after it, and this is that answer
+ turned into one a reader has to name.
 
  @example
  ```ts
- const asked: FlagValue = { kind: 'written', flag: '--cap', value: '4', };
+ const carried: Carried = { kind: 'text', text: 'tabby', };
  ```
  */
-export type FlagValue = {
-  readonly kind: 'written';
-
-  /**
-   Flag as typed, dashes included.
-   */
-  readonly flag: string;
-
-  /**
-   What was written after it, never empty: an empty value is refused.
-   */
-  readonly value: string;
+type Carried = {
+  readonly kind: 'nothing';
 } | {
-  readonly kind: 'unwritten';
+  readonly kind: 'text';
 
   /**
-   Flag as typed, dashes included.
+   What was written after the flag, or after its `=`.
    */
-  readonly flag: string;
-};
-
-/**
- What a command reads after its flags, by position.
-
- @example
- ```ts
- const logs: PositionalSpec = { names: ['log file',], least: 1, rest: true, };
- ```
- */
-export type PositionalSpec = {
-  /**
-   What each position holds, in order, as the usage line names it.
-   */
-  readonly names: readonly string[];
-
-  /**
-   How many positions must be written.
-   */
-  readonly least: number;
-
-  /**
-   Whether the last position may be written any number of times.
-   */
-  readonly rest: boolean;
-};
-
-/**
- Everything a command reads from its command line.
-
- @example
- ```ts
- const spec: CommandLineSpec = {
-   valued: { only: 'entry ids', },
-   repeatable: {},
-   switches: { plan: true, },
-   positionals: { names: [], least: 0, rest: false, },
- };
- ```
- */
-export type CommandLineSpec<
-  Valued extends string = string,
-  Listed extends string = string,
-  Switch extends string = string,
-> = {
-  /**
-   Flags written once with a value, each mapped to what the value is, as the
-   usage line names it.
-   */
-  readonly valued: Readonly<Record<Valued, string>>;
-
-  /**
-   Flags that may be written any number of times, each with a value.
-   */
-  readonly repeatable: Readonly<Record<Listed, string>>;
-
-  /**
-   Flags written once with no value, each mapped to `true`, so a table
-   naming the switches a command reads must name every one of them.
-   */
-  readonly switches: Readonly<Record<Switch, true>>;
-
-  /**
-   What the command reads after its flags.
-   */
-  readonly positionals: PositionalSpec;
-};
-
-/**
- A command line read against what its command declares, offering only the
- flags declared: asking for any other is a type error rather than a flag that
- always reads as unwritten.
-
- @example
- ```ts
- const asked = line.flag('only',);
- ```
- */
-export type CommandLineFor<Spec extends CommandLineSpec> = {
-  /**
-   Path of the script the runtime ran, which names the runner's built file.
-   */
-  readonly script: string;
-
-  /**
-   What a flag written once with a value carried.
-   */
-  readonly flag: (name: keyof Spec['valued'] & string) => FlagValue;
-
-  /**
-   Every value a repeatable flag carried, in the order written.
-   */
-  readonly list: (name: keyof Spec['repeatable'] & string) => readonly string[];
-
-  /**
-   Whether a switch was written.
-   */
-  readonly switched: (name: keyof Spec['switches'] & string) => boolean;
-
-  /**
-   What was written after the flags, by position.
-   */
-  readonly positionals: readonly string[];
-};
-
-/**
- The part of a command line a reader of one valued flag needs, so a reader
- shared by several commands accepts the line of any command declaring it.
-
- @example
- ```ts
- function readCap({ line, }: { readonly line: ReadsFlag<'cap'>; },): FlagValue { return line.flag('cap',); }
- ```
- */
-export type ReadsFlag<Name extends string> = {
-  readonly flag: (name: Name) => FlagValue;
-};
-
-/**
- The part of a command line a reader of one switch needs.
-
- @example
- ```ts
- function readPlan({ line, }: { readonly line: ReadsSwitch<'plan'>; },): boolean { return line.switched('plan',); }
- ```
- */
-export type ReadsSwitch<Name extends string> = {
-  readonly switched: (name: Name) => boolean;
-};
-
-/**
- One option token as `parseArgs` hands it back.
-
- @example
- ```ts
- const token: OptionToken = { kind: 'option', index: 0, name: 'plan', rawName: '--plan', value: undefined, };
- ```
- */
-type OptionToken = {
-  readonly kind: 'option';
-  readonly index: number;
-  readonly name: string;
-  readonly rawName: string;
-  readonly value: string | undefined;
+  readonly text: string;
 };
 
 /**
@@ -238,7 +87,7 @@ type OptionToken = {
  */
 type OptionReading =
   | {
-    readonly kind: 'value';
+    readonly kind: 'value' | 'list';
     readonly name: string;
     readonly value: string;
   }
@@ -300,17 +149,31 @@ function optionsOf({ spec, }: { readonly spec: CommandLineSpec; },): Record<stri
    */
   const carriesNothing: ParseArgsOptionDescriptor = { type: 'boolean', };
 
-  return Object.fromEntries([
-    ...Object.keys(spec.valued,).map(function valuedOption(name,): [string, ParseArgsOptionDescriptor,] {
-      return [name, carriesValue,];
-    },),
-    ...Object.keys(spec.repeatable,).map(function repeatableOption(name,): [string, ParseArgsOptionDescriptor,] {
-      return [name, carriesValue,];
-    },),
-    ...Object.keys(spec.switches,).map(function switchOption(name,): [string, ParseArgsOptionDescriptor,] {
-      return [name, carriesNothing,];
-    },),
-  ],);
+  /**
+   Flags that carry a value, written once or any number of times.
+   */
+  const valuedNames = [
+    ...Object.keys(spec.valued,),
+    ...Object.keys(spec.repeatable,),
+  ];
+
+  /**
+   Each declared flag beside its descriptor.
+   */
+  const options = new Map<string, ParseArgsOptionDescriptor>();
+  for (const name of valuedNames) {
+    options.set(
+      name,
+      carriesValue,
+    );
+  }
+  for (const name of Object.keys(spec.switches,)) {
+    options.set(
+      name,
+      carriesNothing,
+    );
+  }
+  return Object.fromEntries(options,);
 }
 
 /**
@@ -339,46 +202,62 @@ function usageOf(
   },
 ): string {
   /**
-   Names of the positions, as declared.
+   Names of the positions, how many must be written, and whether the last
+   repeats.
    */
-  const { names, } = spec.positionals;
+  const {
+    names,
+    least,
+    rest,
+  } = spec.positionals;
 
   /**
-   Each part of the line after the command.
+   The command, then each part of the line after it, in the order shown.
    */
-  const parts = [
-    ...Object.entries(spec.valued,).map(function valuedPart([name, value,],): string {
-      return `[--${name} <${value}>]`;
-    },),
-    ...Object.entries(spec.repeatable,).map(function repeatablePart([name, value,],): string {
-      return `[--${name} <${value}> ...]`;
-    },),
-    ...Object.keys(spec.switches,).map(function switchPart(name,): string {
-      return `[--${name}]`;
-    },),
-    ...names.map(function positionalPart(name, at,): string {
-      /**
-       Whether this position must be written.
-       */
-      const required = at < spec.positionals.least;
+  const parts = [command,];
+  for (
+    const [
+      name,
+      value,
+    ] of Object.entries(spec.valued,)
+  )
+    parts.push(`[--${name} <${value}>]`,);
+  for (
+    const [
+      name,
+      value,
+    ] of Object.entries(spec.repeatable,)
+  )
+    parts.push(`[--${name} <${value}> ...]`,);
+  for (const name of Object.keys(spec.switches,))
+    parts.push(`[--${name}]`,);
+  for (const [at, name,] of names.entries()) {
+    /**
+     Whether this position must be written.
+     */
+    const required = at < least;
 
-      /**
-       Whether this is the last position and may repeat.
-       */
-      const repeats = spec.positionals.rest && (at === (names.length - 1));
+    /**
+     Whether this is the last position and may repeat.
+     */
+    const repeats = rest && (at === (names.length - 1));
 
-      if (repeats)
-        return required ? `<${name}> [<${name}> ...]` : `[<${name}> ...]`;
-      return required ? `<${name}>` : `[<${name}>]`;
-    },),
-  ];
-  return [command, ...parts,].join(' ',);
+    if (repeats)
+      parts.push(required ? `<${name}> [<${name}> ...]` : `[<${name}> ...]`,);
+    else
+      parts.push(required ? `<${name}>` : `[<${name}>]`,);
+  }
+  return parts.join(' ',);
 }
 
 /**
  Reads one option token against the declaration.
 
- @param token - token as `parseArgs` split it
+ @param name - flag name as `parseArgs` read it, without dashes or value
+
+ @param flag - flag as the person typed it, without any value written with `=`
+
+ @param carried - what the token carried after the flag
 
  @param written - the whole argument the token came from
 
@@ -388,55 +267,79 @@ function usageOf(
 
  @example
  ```ts
- const reading = optionReading({ token, written: '--only=tabby', spec, },);
+ const reading = optionReading({ name: 'only', flag: '--only', carried, written: '--only=tabby', spec, },);
  ```
  */
 function optionReading(
   {
-    token,
+    name,
+    flag,
+    carried,
     written,
     spec,
   }: {
-    readonly token: OptionToken;
+    readonly name: string;
+    readonly flag: string;
+    readonly carried: Carried;
     readonly written: string;
     readonly spec: CommandLineSpec;
   },
 ): OptionReading {
   /**
-   Flag as the person typed it, without any value written with `=`.
+   Whether the declaration names this flag as written once with a value.
    */
-  const flag = token.rawName;
+  const once = Object.hasOwn(
+    spec.valued,
+    name,
+  );
 
   /**
-   Whether the declaration names this flag as carrying a value.
+   Whether it names this flag as written any number of times with a value.
    */
-  const carriesValue = Object.hasOwn(spec.valued, token.name,) || Object.hasOwn(spec.repeatable, token.name,);
+  const repeatable = Object.hasOwn(
+    spec.repeatable,
+    name,
+  );
 
-  if (carriesValue) {
+  /**
+   Whether it names this flag as a switch.
+   */
+  const isSwitch = Object.hasOwn(
+    spec.switches,
+    name,
+  );
+
+  if (once || repeatable) {
+    /**
+     What was written after the flag, empty when nothing was, which is
+     refused the same way.
+     */
+    const text = (carried.kind === 'text') ? carried.text : '';
+
     // NOTHING AFTER IT, AN EMPTY ARGUMENT, OR THE NEXT FLAG standing where its
     // value should be: each once read as unwritten and took the default nobody
     // asked for (ledger B73).
-    if ((token.value === undefined) || (token.value === '') || token.value.startsWith(LONG_PREFIX,))
+    if ((text === '') || text.startsWith(LONG_PREFIX,))
       return {
         kind: 'refused',
         says: `${flag} needs a value written after it`,
       };
     return {
-      kind: 'value',
-      name: token.name,
-      value: token.value,
+      kind: once ? 'value' : 'list',
+      name,
+      value: text,
     };
   }
 
-  if (Object.hasOwn(spec.switches, token.name,)) {
-    if (token.value !== undefined)
+  if (isSwitch) {
+    if (carried.kind === 'text')
       return {
         kind: 'refused',
         says: `${flag} takes no value, and ${written} gives it one`,
       };
     return {
       kind: 'switch',
-      name: token.name,
+      name,
     };
   }
 
@@ -498,13 +401,18 @@ function countRefusals(
   /**
    Arguments past the last position the command reads.
    */
-  const extra = rest ? [] : positionals.slice(names.length,);
+  const extra = rest
+    ? []
+    : positionals.slice(names.length,);
 
   /**
    Positions that must be written and were not, as the usage line shows them.
    */
   const missing = names
-    .slice(positionals.length, least,)
+    .slice(
+      positionals.length,
+      least,
+    )
     .map(function shown(name,): string {
       return `<${name}>`;
     },);
@@ -648,7 +556,14 @@ export function readCommandLine<const Spec extends CommandLineSpec>(
      What this token reads as.
      */
     const reading = optionReading({
-      token,
+      name: token.name,
+      flag: token.rawName,
+      carried: (token.value === undefined)
+        ? { kind: 'nothing', }
+        : {
+          kind: 'text',
+          text: token.value,
+        },
       written,
       spec,
     },);
@@ -660,26 +575,32 @@ export function readCommandLine<const Spec extends CommandLineSpec>(
       continue;
     }
 
-    if (reading.kind === 'switch') {
-      timesWritten.set(reading.name, (timesWritten.get(reading.name,) ?? 0) + 1,);
-      switches.add(reading.name,);
-      continue;
-    }
-
-    if (Object.hasOwn(spec.repeatable, reading.name,)) {
+    if (reading.kind === 'list') {
       /**
        Values this flag carried before this one.
        */
       const earlier = lists.get(reading.name,);
       if (earlier === undefined)
-        lists.set(reading.name, [reading.value,],);
+        lists.set(
+          reading.name,
+          [reading.value,],
+        );
       else
         earlier.push(reading.value,);
       continue;
     }
 
-    timesWritten.set(reading.name, (timesWritten.get(reading.name,) ?? 0) + 1,);
-    values.set(reading.name, reading.value,);
+    timesWritten.set(
+      reading.name,
+      (timesWritten.get(reading.name,) ?? 0) + 1,
+    );
+    if (reading.kind === 'switch')
+      switches.add(reading.name,);
+    else
+      values.set(
+        reading.name,
+        reading.value,
+      );
   }
 
   refusals.push(...countRefusals({

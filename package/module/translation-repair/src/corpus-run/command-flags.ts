@@ -4,7 +4,7 @@ import {
   isWholeNumberText,
   WHOLE_NUMBER_RULE,
 } from '../whole-number-text.ts';
-import type { FlagValue, } from './command-line.ts';
+import type { FlagValue, } from './command-line-types.ts';
 
 //region Command flags
 // The readers of flag VALUES the package's command lines share, so every

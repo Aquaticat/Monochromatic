@@ -4,7 +4,7 @@ import {
   idListFlag,
   wholeNumberFlag,
 } from './command-flags.ts';
-import type { FlagValue, } from './command-line.ts';
+import type { FlagValue, } from './command-line-types.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 
 //region Judge fidelity arguments

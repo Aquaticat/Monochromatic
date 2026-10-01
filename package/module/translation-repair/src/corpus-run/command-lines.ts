@@ -2,7 +2,7 @@ import type {
   CommandLineFor,
   CommandLineSpec,
   PositionalSpec,
-} from './command-line.ts';
+} from './command-line-types.ts';
 
 //region Command lines
 // WHAT EVERY RUNNER READS FROM ITS COMMAND LINE, keyed by its build entry
@@ -208,7 +208,10 @@ export const COMMAND_LINES: CommandLines = {
   'editor-width-probe': {
     ...NO_ARGUMENTS,
     positionals: {
-      names: ['slices', 'draw',],
+      names: [
+        'slices',
+        'draw',
+      ],
       least: 0,
       rest: false,
     },
@@ -272,7 +275,10 @@ export const COMMAND_LINES: CommandLines = {
   'roster-card': {
     ...NO_ARGUMENTS,
     positionals: {
-      names: ['synthetic|hyper|openrouter|bedrock', 'served id',],
+      names: [
+        'synthetic|hyper|openrouter|bedrock',
+        'served id',
+      ],
       least: 2,
       rest: false,
     },
