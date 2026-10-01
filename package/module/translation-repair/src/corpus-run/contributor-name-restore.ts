@@ -332,7 +332,20 @@ function restoreSlice(
   /**
    Whether the page signs as often as the original here.
    */
-  const aligned = paged.length === signed.length;
+  const signaturesAligned = paged.length === signed.length;
+  /**
+   Heading titles the page writes here.
+   */
+  const pageTitles = headingTitles({ text, },);
+  /**
+   Whether the page heads as many sections as the original here.
+
+   HEADINGS PAIR BY POSITION ONLY WHERE THE COUNTS AGREE, as signatures
+   already did (ledger B84). A page slice that dropped a heading puts every
+   later heading at another position, and pairing them once wrote a signer's
+   name over the next section's title.
+   */
+  const headingsAligned = pageTitles.length === titles.length;
   /**
    One finding per rewritten line.
    */
@@ -355,8 +368,9 @@ function restoreSlice(
       const restoration = restoreOne({
         line,
         titles,
+        headingsAligned,
         signed,
-        aligned,
+        signaturesAligned,
         authorities,
         met,
       },);
@@ -382,9 +396,13 @@ function restoreSlice(
 
  @param titles - original heading titles of the slice
 
+ @param headingsAligned - whether the page heads as many sections as the
+ original here, without which no heading pairs with a title
+
  @param signed - original signatures of the slice
 
- @param aligned - whether the page signs as often as the original here
+ @param signaturesAligned - whether the page signs as often as the original
+ here, without which no signature pairs with a signer
 
  @param authorities - rendering per original name
 
@@ -394,22 +412,24 @@ function restoreSlice(
 
  @example
  ```ts
- const restoration = restoreOne({ line, titles, signed, aligned, authorities, met, },);
+ const restoration = restoreOne({ line, titles, headingsAligned, signed, signaturesAligned, authorities, met, },);
  ```
  */
 function restoreOne(
   {
     line,
     titles,
+    headingsAligned,
     signed,
-    aligned,
+    signaturesAligned,
     authorities,
     met,
   }: {
     readonly line: string;
     readonly titles: readonly string[];
+    readonly headingsAligned: boolean;
     readonly signed: readonly Signature[];
-    readonly aligned: boolean;
+    readonly signaturesAligned: boolean;
     readonly authorities: ReadonlyMap<string, Authority>;
     readonly met: {
       headings: number;
@@ -419,9 +439,9 @@ function restoreOne(
 ): LineRestoration {
   if (isHeadingLine({ line, },)) {
     /**
-     Original title at this heading position.
+     Original title at this heading position, where the headings pair.
      */
-    const title = titles[met.headings];
+    const title = headingsAligned ? titles[met.headings] : undefined;
     met.headings += 1;
     return (title === undefined) ? UNCHANGED : restoreHeading({
       line,
@@ -438,7 +458,7 @@ function restoreOne(
   /**
    Original signature at this position.
    */
-  const original = aligned ? signed[met.signatures] : undefined;
+  const original = signaturesAligned ? signed[met.signatures] : undefined;
   met.signatures += 1;
   /**
    Authority of the original's signer, if any.
