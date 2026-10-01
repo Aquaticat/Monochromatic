@@ -705,5 +705,37 @@ In the morning it dozes on the windowsill.
         },).kind,).toBe('valid',);
       },
     },),
+    it({
+      name: 'REFUSES a translation that keeps every top-level block but drops a quote nested inside a container '
+        + 'tag, which the top-level block comparison cannot see, and ACCEPTS one that keeps the nested quote '
+        + '(ledger B110)',
+      fn: async () => {
+        /**
+         Verdict where the candidate keeps the container tag the page and
+         the original both carry, same kind and same position, and turns
+         the quote nested inside it into prose. `compareBlocks` sees one
+         `mdxJsxFlowElement` on every side and returns no finding for it.
+         */
+        const dropped = validateTranslatedSlice({
+          sourceText: '<details>\n\n> 中午喂我。\n\n</details>',
+          pageText: '<details>\n\n> Feed me at noon.\n\n</details>',
+          candidateText: '<details>\n\nShe asked to be fed at noon.\n\n</details>',
+        },);
+        expect(dropped.kind,).toBe('invalid',);
+        expect(
+          (dropped.kind === 'invalid') ? dropped.findings.join('\n',) : '',
+        ).toContain('quoted passage',);
+
+        /**
+         Control: the same container tag, the nested quote kept rather than
+         dropped, which must still pass.
+         */
+        expect(validateTranslatedSlice({
+          sourceText: '<details>\n\n> 中午喂我。\n\n</details>',
+          pageText: '<details>\n\n> Feed me at noon.\n\n</details>',
+          candidateText: '<details>\n\n> She asked to be fed at noon.\n\n</details>',
+        },).kind,).toBe('valid',);
+      },
+    },),
   ],
 },);

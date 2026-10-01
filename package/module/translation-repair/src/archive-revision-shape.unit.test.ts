@@ -104,5 +104,38 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'WITHHOLDS a revision that keeps the block\'s own shape but drops a quote nested inside a container '
+        + 'tag, which the shape check cannot see, and PASSES one that keeps the nested quote (ledger B110)',
+      fn: async () => {
+        /**
+         Block of one container tag, one quote nested inside it.
+         */
+        const block = '<CatBox>\n\n> Feed me at noon.\n\n</CatBox>';
+
+        /**
+         Revision, the same container with the quote made prose.
+         `sameShape` sees one `mdxJsxFlowElement` on each side and returns
+         no finding for it.
+         */
+        expect(revisionShapeFindings({
+          modelId: REVIEWER,
+          blockText: block,
+          replacementText: '<CatBox>\n\nShe was asked to be fed at noon.\n\n</CatBox>',
+        },),).toEqual([
+          `archive-revision-refused (${REVIEWER}): the block carries 1 quoted passage and the revision carries 0; a `
+            + 'revision keeps every quoted passage the block carries, including one nested inside a container tag, '
+            + 'a list, a footnote, or another blockquote',
+        ],);
+
+        // Control: the same container tag, the nested quote kept rather
+        // than dropped, which must still pass.
+        expect(revisionShapeFindings({
+          modelId: REVIEWER,
+          blockText: block,
+          replacementText: '<CatBox>\n\n> She was asked to be fed at noon.\n\n</CatBox>',
+        },),).toEqual([],);
+      },
+    },),
   ],
 },);
