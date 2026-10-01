@@ -520,8 +520,8 @@ await describe({
         + 'read for its declaration alone (ledger B93)',
       fn: async () => {
         /**
-         Scanner fed three thinking starts it cannot read, then a text delta
-         at index 0.
+         Scanner fed three block starts it cannot read, the first declaring
+         thinking at no index, then a text delta at index 0.
          */
         const scanner = scanAnthropicDeltas();
 
@@ -561,6 +561,46 @@ await describe({
           text: 'Smug.',
         },],);
         expect(scanner.unreadableFrames(),).toBe(3,);
+      },
+    },),
+
+    it({
+      name: 'FORGETS an earlier declaration when a later start at the same index cannot be read, '
+        + 'with no block or no type: the later start supersedes it, as a readable one does, and '
+        + 'the block there is now of no known type (ledger B93)',
+      fn: async () => {
+        for (const unreadableStart of [
+          frameOf({
+            body: {
+              type: 'content_block_start',
+              index: 0,
+            },
+          },),
+          frameOf({
+            body: {
+              type: 'content_block_start',
+              index: 0,
+              content_block: { type: 7, },
+            },
+          },),
+        ]) {
+          expect(scanAll({
+            raw: blockStart({
+              index: 0,
+              type: 'thinking',
+            },)
+              + unreadableStart
+              + blockDelta({
+                index: 0,
+                deltaType: 'text_delta',
+                field: 'text',
+                text: 'Smug.',
+              },),
+          },),).toEqual([{
+            channel: 'content',
+            text: 'Smug.',
+          },],);
+        }
       },
     },),
 
