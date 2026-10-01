@@ -3,12 +3,12 @@ import type { PhrasingContent, } from 'mdast';
 
 import { codePointCount, } from './code-points.ts';
 import { contributorDeclarationLines, } from './contributor-name-authority.ts';
-import { continuesLatinWord, } from './latin-letters.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import { parseMarkdownBody, } from './parse-mdx.ts';
 import { normalizePunctuation, } from './quote-normalize.ts';
 import { referencePageTexts, } from './reference-line-head.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
+import { wordStarts, } from './word-bounds.ts';
 
 //region Archive block evidence
 
@@ -121,12 +121,13 @@ export function isArchiveReferenceQuoteAnchored(
 }
 
 /**
- Whether a line opens with an apparatus label as a word of its own, so
- "Translation byproducts" is no "translation by" label.
+ Whether a line opens with an apparatus label standing as words of its own,
+ read by `wordStarts` with both edges bounded, so "Translation byproducts"
+ is no "translation by" label (the B23 family).
  
  @param line - one line of a block, its comments blanked
  
- @returns Whether the line, case-folded, opens with a label ending a word
+ @returns Whether the line, case-folded, opens with a label at word edges
  
  @example
  ```ts
@@ -139,19 +140,13 @@ function isLabelLine({ line, }: { readonly line: string; },): boolean {
    */
   const normalized = line.trim()
     .toLowerCase();
-  return EDITORIAL_PREFIXES.some(function opensWith(prefix,): boolean {
-    if (!normalized.startsWith(prefix,))
-      return false;
-    /**
-     Whether a word runs on through the label's last character, which a
-     colon ends.
-     */
-    const labelRunsOn = continuesLatinWord({ character: prefix.slice(-1,), },);
-    /**
-     Whether a word runs on through the character after the label.
-     */
-    const lineRunsOn = continuesLatinWord({ character: normalized.charAt(prefix.length,), },);
-    return !(labelRunsOn && lineRunsOn);
+  return EDITORIAL_PREFIXES.some(function opensWith(label,): boolean {
+    return wordStarts({
+      text: normalized,
+      needle: label,
+      end: 'word',
+    },)
+      .includes(0,);
   },);
 }
 
