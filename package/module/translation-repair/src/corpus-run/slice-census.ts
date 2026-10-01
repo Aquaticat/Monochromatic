@@ -141,14 +141,15 @@ async function main(): Promise<void> {
    */
   const legacy: string[] = [];
   for (const entryId of entryIds) {
+    /* oxlint-disable no-await-in-loop -- sequential by design: this reads git at a pinned commit and a fan-out would only contend for the same object store */
     /**
      Recipe the entry's settled artifact records, if any.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- sequential by design: this reads git at a pinned commit and a fan-out would only contend for the same object store */
     const settled = await readSettledRecipe({
       entryId,
       runsDir,
     },);
+    /* oxlint-enable no-await-in-loop */
     if (settled.kind === 'legacy')
       legacy.push(entryId,);
     try {

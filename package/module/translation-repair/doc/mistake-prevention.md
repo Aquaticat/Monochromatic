@@ -1168,7 +1168,12 @@ B31);
 `src/unused-imports.unit.test.ts`,
 which fails on an import binding its file never names outside its imports,
 type positions and export lists counted,
-unless a TSDoc link names it (ledger B32).
+unless a TSDoc link names it (ledger B32);
+`src/tsdoc-attachment.unit.test.ts`,
+which fails on a TSDoc block followed by anything but the declaration,
+member or function it documents,
+a lint suppression among them,
+outside `@module` headers (ledger B96).
 
 ## Tasks, builds and bulk output
 

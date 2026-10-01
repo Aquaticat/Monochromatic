@@ -269,11 +269,12 @@ export async function drainBody(
 
   try {
     while (!cursor.done) {
+      /* oxlint-disable no-await-in-loop -- chunks arrive in order; each read depends on the previous one completing */
       /**
        Next chunk, or the end-of-stream marker.
        */
-      // oxlint-disable-next-line no-await-in-loop -- chunks arrive in order; each read depends on the previous one completing
       const chunk = await reader.read();
+      /* oxlint-enable no-await-in-loop */
       cursor.done = chunk.done;
       if (chunk.value === undefined)
         continue;

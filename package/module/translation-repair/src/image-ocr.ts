@@ -80,12 +80,13 @@ const TESSERACT_LANGUAGES = 'chi_sim+eng';
 // on nothing and, worse, offers the corroboration stage two pieces of garbage
 // that may agree with each other.
 
+/* oxlint-disable typescript/strict-void-return -- promisify deliberately ignores Node execFile's ChildProcess return while adapting its callback */
 /**
  Runs a command-line tool and waits for it, since every reader this module
  reaches for is a program rather than a library.
  */
-// oxlint-disable-next-line typescript/strict-void-return -- promisify deliberately ignores Node execFile's ChildProcess return while adapting its callback
 const execFileAsync = promisify(execFile,);
+/* oxlint-enable typescript/strict-void-return */
 
 /**
  What reading a picture without a model produced.

@@ -1029,6 +1029,7 @@ export async function resolveRunsDir(): Promise<string> {
  */
 const l = contextRoot({ tag: 'translation-repair', },);
 
+/* oxlint-disable require-await, typescript/require-await -- compatibility meter contract is asynchronous */
 /**
  Synthetic quota shape used only when Hyper is sole configured provider.
  
@@ -1042,7 +1043,6 @@ const l = contextRoot({ tag: 'translation-repair', },);
  const quota = await unconfiguredSyntheticQuota();
  ```
  */
-// oxlint-disable-next-line require-await, typescript/require-await -- compatibility meter contract is asynchronous
 async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
   return {
     fiveHour: {
@@ -1057,6 +1057,7 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
     },
   };
 }
+/* oxlint-enable require-await, typescript/require-await */
 
 /**
  Builds client every run calls from every configured provider,

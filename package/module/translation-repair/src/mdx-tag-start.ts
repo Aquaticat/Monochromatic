@@ -18,19 +18,21 @@ import { codePointAt, } from './code-points.ts';
 // rewrites `<!--` into a JSX comment before compiling, and each scanner reads
 // comments by their own opener.
 
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode ID_Start has no string API */
 /**
  A character that can start an identifier, as `estree-util-is-identifier-name`
  3.0.0 reads one for the MDX compiler (`startRe`).
  */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode ID_Start has no string API
 const IDENTIFIER_START = /^[$_\p{ID_Start}]$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
 
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode White_Space has no string API short of listing it */
 /**
  Whitespace the compiler steps over between `<` and a tag's name, as
  `micromark-util-character` reads it (`unicodeWhitespace`).
  */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode White_Space has no string API short of listing it
 const WHITESPACE = /^\s$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
  Characters right after `<` that leave it text: markdown's space, tab and

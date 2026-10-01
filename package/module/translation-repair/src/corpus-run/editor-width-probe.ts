@@ -244,16 +244,17 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
   }
 
   for (const slice of drawn) {
+    /* oxlint-disable eslint/no-await-in-loop -- sequential by design: every arm of every slice must meet the same provider conditions, which fanning the draw out would destroy, and the run is bounded by quota rather than by wall time */
     /**
      Work the critics and panel found in this slice.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: every arm of every slice must meet the same provider conditions, which fanning the draw out would destroy, and the run is bounded by quota rather than by wall time
     const outcome = await gatherWidthInput({
       client,
       slice,
       signal,
       l,
     },);
+    /* oxlint-enable eslint/no-await-in-loop */
 
     if (outcome.kind === 'skipped') {
       skipped.set(
@@ -268,10 +269,10 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
       continue;
     }
 
+    /* oxlint-disable eslint/no-await-in-loop -- sequential for the same reason the draw's gather is */
     /**
      That slice run at both widths, with the null band beside it.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential for the same reason the draw's gather is
     const row = await runWidthSlice({
       client,
       input: outcome.input,
@@ -281,6 +282,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
       signal,
       l,
     },);
+    /* oxlint-enable eslint/no-await-in-loop */
 
     rows.push(row,);
     console.log(

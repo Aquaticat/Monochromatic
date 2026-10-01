@@ -256,15 +256,16 @@ async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-s
       subject,
       references,
     } of cited) {
+      /* oxlint-disable no-await-in-loop -- sequential by design: every subject shares one roster, and concurrent asks would interleave the progress stream a long run exists to be watched through */
       /**
        What the roster said about this one.
        */
-      // oxlint-disable-next-line no-await-in-loop -- sequential by design: every subject shares one roster, and concurrent asks would interleave the progress stream a long run exists to be watched through
       const row = await auditOne({
         subject,
         references,
         client,
       },);
+      /* oxlint-enable no-await-in-loop */
       rows.push(row,);
       printRow({ row, },);
     }

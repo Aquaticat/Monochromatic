@@ -135,10 +135,10 @@ async function reportModelHealth(): Promise<void> {
 
   for (const modelId of RUN_ROSTER) {
     try {
+      /* oxlint-disable no-await-in-loop -- one model at a time on purpose: this is a diagnostic, and concurrent calls would let a provider rate limit read as a model fault */
       /**
        What this model returned, or the fault that stopped it.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- one model at a time on purpose: this is a diagnostic, and concurrent calls would let a provider rate limit read as a model fault */
       const outcome = await client.chatJson({
         modelId,
         messages: [
@@ -152,6 +152,7 @@ async function reportModelHealth(): Promise<void> {
         exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
         signal: AbortSignal.timeout(RUN_PER_CALL_TIMEOUT_MS,),
       },);
+      /* oxlint-enable no-await-in-loop */
 
       l.info(
         `${modelId}: ${outcome.kind}${

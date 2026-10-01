@@ -219,10 +219,10 @@ export async function selectPerEnvelope(
       continue;
     }
 
+    /* oxlint-disable no-await-in-loop -- current envelope winners mutate ordered attribution state; replacement DAG must separate concurrent selection from ordered reduction */
     /**
      Judges verdict over the distinct proposals for this envelope.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- current envelope winners mutate ordered attribution state; replacement DAG must separate concurrent selection from ordered reduction */
     const outcome = await selectBestCandidate({
       client,
       candidates: proposals,
@@ -257,6 +257,7 @@ export async function selectPerEnvelope(
       perCallTimeoutMs,
       l,
     },);
+    /* oxlint-enable no-await-in-loop */
     selectionFindings.push(...outcome.findings,);
     rounds.push(describeJudgedRound({
       stage: 'envelope',

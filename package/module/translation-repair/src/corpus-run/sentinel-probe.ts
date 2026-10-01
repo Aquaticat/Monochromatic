@@ -90,33 +90,35 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
      */
     const t0 = monotonicMs();
     try {
+      /* oxlint-disable no-await-in-loop -- diagnostic entries remain sequential so each log and failure belongs to one named sentinel; provider capacity is not the reason */
       /**
        Original zh page text for this entry.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- diagnostic entries remain sequential so each log and failure belongs to one named sentinel; provider capacity is not the reason */
       const sourceText = await readCorpusFile({
         pin: RUN_CORPUS_PIN,
         relPath: `people/${id}/page.md`,
       },);
+      /* oxlint-enable no-await-in-loop */
 
+      /* oxlint-disable no-await-in-loop -- pairs with the read of its source page */
       /**
        Translated en page text for this entry.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- pairs with the read of its source page */
       const targetText = await readCorpusFile({
         pin: RUN_CORPUS_PIN,
         relPath: `people/${id}/page.en.md`,
       },);
+      /* oxlint-enable no-await-in-loop */
 
       /**
        Fresh abort controller per entry; the probe imposes no deadline of its own.
        */
       const controller = new AbortController();
 
+      /* oxlint-disable no-await-in-loop -- sequential by design, for the reason the source read gives */
       /**
        Repair result for this probed entry.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- sequential by design, for the reason the source read gives */
       const result = await repairTranslation({
         client,
         sourceText,
@@ -125,6 +127,7 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
         signal: controller.signal,
         perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       },);
+      /* oxlint-enable no-await-in-loop */
 
       /**
        Accepted issues among all adjudicated.

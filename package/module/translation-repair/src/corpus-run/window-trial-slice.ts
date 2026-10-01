@@ -222,10 +222,10 @@ export async function runSliceArms(
    */
   const appended: WindowTrialRow[] = [];
   for (const [position, arm,] of order.entries()) {
+    /* oxlint-disable no-await-in-loop -- arms are bought one at a time on purpose, so a kill loses one arm rather than three */
     /**
      What the judges made of the same slate under this arm's evidence.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- arms are bought one at a time on purpose, so a kill loses one arm rather than three */
     const decided = await judgeTranslateSlate({
       client,
       produced,
@@ -241,6 +241,7 @@ export async function runSliceArms(
       perCallTimeoutMs,
       l,
     },);
+    /* oxlint-enable no-await-in-loop */
 
     /**
      Row recording it.

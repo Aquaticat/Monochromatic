@@ -112,7 +112,7 @@ export async function waitOutHold(
     )
   ) {
     signal.throwIfAborted();
-    // eslint-disable-next-line no-await-in-loop -- the loop IS the wait, sliced only so an abort is noticed
+    // oxlint-disable-next-line no-await-in-loop -- the loop IS the wait, sliced only so an abort is noticed
     await wait(Math.min(
       remaining,
       pollMs,

@@ -259,11 +259,12 @@ export async function repairArchiveBlocks(
    Operation-only audit findings.
    */
   const findings: string[] = [];
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- Reverse-offset sequential splicing carries each accepted correction forward. */
   /**
    Archive with selected corrections applied.
    */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Reverse-offset sequential splicing carries each accepted correction forward.
   let revisedText = targetText;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
   /**
    Blocks ordered so replacement cannot invalidate later offsets.
    */

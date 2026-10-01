@@ -84,23 +84,25 @@ async function gatherCases(
     if (cases.length >= CASES_OFFERED)
       break;
 
+    /* oxlint-disable eslint/no-await-in-loop -- sequential by design: the walk stops as soon as enough cases are found, and reading every entry up front would read the whole corpus to use a few pages of it */
     /**
      Original side at the pin.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: the walk stops as soon as enough cases are found, and reading every entry up front would read the whole corpus to use a few pages of it
     const sourceText = await readCorpusFile({
       pin: RUN_CORPUS_PIN,
       relPath: `people/${entryId}/page.md`,
     },);
+    /* oxlint-enable eslint/no-await-in-loop */
 
+    /* oxlint-disable eslint/no-await-in-loop -- paired with the original's read; the two sides of one entry are read together or not at all */
     /**
      Translation at the pin.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- paired with the original's read; the two sides of one entry are read together or not at all
     const targetText = await readCorpusFile({
       pin: RUN_CORPUS_PIN,
       relPath: `people/${entryId}/page.en.md`,
     },);
+    /* oxlint-enable eslint/no-await-in-loop */
 
     /**
      Translation parsed once, since every case for this entry shares it.

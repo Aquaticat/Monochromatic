@@ -78,23 +78,26 @@ export async function runAttemptQueue<EntryT extends QueueableEntry,>(
     if (stopBeforeNext())
       return;
 
+    /* oxlint-disable no-await-in-loop -- one cheap read per attempt, against an attempt that may run seven hours */
     /**
      Slices this entry already holds.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- one cheap read per attempt, against an attempt that may run seven hours */
     const cachedBefore = await cachedCountFor({ entry, },);
+    /* oxlint-enable no-await-in-loop */
 
+    /* oxlint-disable no-await-in-loop -- entries run sequentially by design; that is the point of a queue */
     /**
      Settlement or retry disposition from this attempt.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- entries run sequentially by design; that is the point of a queue */
     const outcome = await attempt({ entry, },);
+    /* oxlint-enable no-await-in-loop */
 
+    /* oxlint-disable no-await-in-loop -- pairs with the read bracketing the other side of this attempt */
     /**
      Slices present now the attempt has stopped.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- pairs with the read bracketing the other side of this attempt */
     const cachedAfter = await cachedCountFor({ entry, },);
+    /* oxlint-enable no-await-in-loop */
 
     /**
      What the attempt earned.

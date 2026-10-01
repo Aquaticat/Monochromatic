@@ -219,10 +219,10 @@ export async function widthControlHolds(
       producers: [],
     },);
 
+    /* oxlint-disable eslint/no-await-in-loop -- sequential by design: this gate exists to stop a run before it spends, so the pairs must resolve one at a time and be allowed to answer the question early */
     /**
      Which the panel preferred, over both seatings.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: this gate exists to stop a run before it spends, so the pairs must resolve one at a time and be allowed to answer the question early
     const verdict = await bothOrders({
       client,
       input: {
@@ -240,6 +240,7 @@ export async function widthControlHolds(
       signal,
       l,
     },);
+    /* oxlint-enable eslint/no-await-in-loop */
 
     verdicts.push(verdict.verdict,);
 

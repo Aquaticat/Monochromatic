@@ -539,10 +539,10 @@ export async function coverageControlHolds(
     if (rows.length >= CONTROL_CASES)
       break;
 
+    /* oxlint-disable eslint/no-await-in-loop -- sequential by design: this gate decides whether a reading may be trusted, and the cases must meet the same provider conditions as each other for their agreement to mean anything */
     /**
      This case's before and after, or a refusal.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design: this gate decides whether a reading may be trusted, and the cases must meet the same provider conditions as each other for their agreement to mean anything
     const row = await tryCase({
       client,
       probe,
@@ -551,6 +551,7 @@ export async function coverageControlHolds(
       exchangeTimeoutMs,
       l,
     },);
+    /* oxlint-enable eslint/no-await-in-loop */
 
     if (!('after' in row)) {
       refusals.push(row,);

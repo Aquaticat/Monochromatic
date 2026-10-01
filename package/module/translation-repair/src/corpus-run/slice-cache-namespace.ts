@@ -327,10 +327,10 @@ export async function loadNamespacedSlices<ValueT,>(
     },))
       continue;
     try {
+      /* oxlint-disable no-await-in-loop -- small per-entry cache read sequentially at setup */
       /**
        Parsed JSON of this cache file, checked before it is trusted.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- small per-entry cache read sequentially at setup */
       const parsed: unknown = JSON.parse(await readFile(
         join(
           dir,
@@ -338,6 +338,7 @@ export async function loadNamespacedSlices<ValueT,>(
         ),
         'utf8',
       ),);
+      /* oxlint-enable no-await-in-loop */
 
       /**
        Key this file's NAME says it answers.

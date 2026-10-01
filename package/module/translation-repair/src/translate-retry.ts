@@ -333,11 +333,11 @@ export async function judgeSlateWithRetry(
      */
     const narrowed = offeredCount < slate.length;
 
+    /* oxlint-disable no-await-in-loop -- each round's question is the previous round's tie, so the rounds cannot run in parallel */
     /**
      What the same panel said this round, about the same candidates or
      about the finalists of a tie.
      */
-    // oxlint-disable-next-line no-await-in-loop -- each round's question is the previous round's tie, so the rounds cannot run in parallel
     const again = await askJudges({
       judging: {
         ...judging,
@@ -356,6 +356,7 @@ export async function judgeSlateWithRetry(
         responsibility: 'decline-challenge',
       },
     },);
+    /* oxlint-enable no-await-in-loop */
 
     // A DECLINE THAT RETURNS IS RESTAMPED, a decision is kept as it stands.
     // Either way every earlier round's findings are carried, so the record

@@ -18,12 +18,13 @@
 // default-ignorable, and every one it turns into a space is White_Space, so a
 // text this calls something still says something after the fold.
 
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode White_Space and Default_Ignorable_Code_Point have no string API */
 /**
  Whether one code point shows nothing: Unicode White_Space, a
  default-ignorable code point, or a control.
  */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with one class and no quantifier, so the test is bounded and cannot backtrack; Unicode White_Space and Default_Ignorable_Code_Point have no string API
 const SHOWS_NOTHING = /^[\p{White_Space}\p{Default_Ignorable_Code_Point}\p{Cc}]$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
  Whether a text shows a reader nothing at all: empty, or made only of

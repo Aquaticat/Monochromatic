@@ -58,13 +58,14 @@ export function bindsWord({ character, }: { readonly character: string; },): boo
 // straight on a curly page. THE NEIGHBOURS ARE WHOLE CODE POINTS, read by
 // `code-points.ts`.
 
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general category has no string API */
 /**
  Whether one code point is a combining mark (general category M, variation
  selectors included), which belongs to the character before it rather than
  standing as one.
  */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general category has no string API
 const MARK_CODE_POINT = /^\p{M}$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
  Offset where the run of combining marks ending at an offset starts: the

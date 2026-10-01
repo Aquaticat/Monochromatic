@@ -157,18 +157,20 @@ async function awaitHeard<ValueT,>(
    */
   const counters = { heard: 0, };
   while ((counters.heard < heardNeeded) && (pending.size > 0)) {
+    /* oxlint-disable no-await-in-loop -- the loop IS the wait: each pass consumes exactly one settled ask and re-races the rest */
     /**
      Position of the ask that settled first among those still pending.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- the loop IS the wait: each pass consumes exactly one settled ask and re-races the rest */
     const settled = await Promise.race(pending.values(),);
+    /* oxlint-enable no-await-in-loop */
     pending.delete(settled,);
 
+    /* oxlint-disable no-await-in-loop -- reading an already-settled promise, which suspends for one microtask rather than for a call */
     /**
      That ask's outcome, already settled and therefore free to await.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- reading an already-settled promise, which suspends for one microtask rather than for a call */
     const outcome = await asks[settled];
+    /* oxlint-enable no-await-in-loop */
     if (outcome?.voice
       .heard
       === true)

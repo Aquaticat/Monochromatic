@@ -8,23 +8,24 @@
 // character with its case mapping read a script capital as neither. Every
 // test here takes one whole character (`codePointAt`).
 
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general categories have no string API */
 /**
  Whether one code point is a cased letter.
  */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general categories have no string API
 const CASED_LETTER = /^(?:\p{Lu}|\p{Ll}|\p{Lt})$/u;
 
 /**
  Whether one code point is a capital: upper or title case.
  */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general categories have no string API
 const CAPITAL_LETTER = /^(?:\p{Lu}|\p{Lt})$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
 
+/* oxlint-disable no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general category has no string API */
 /**
  Whether one code point is a small letter.
  */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends with no quantifier, so the test is bounded and cannot backtrack; the Unicode general category has no string API
 const SMALL_LETTER = /^\p{Ll}$/u;
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
  Whether one character is a letter with case, in any script: upper, lower or

@@ -483,19 +483,20 @@ export function createRoutingClient(
     // decision depends on the refusal before it, and the last refusal is the
     // answer.
     for (const attempt of PROVIDER_ORDER.keys()) {
+      /* oxlint-disable no-await-in-loop -- each choice depends on the refusal before it */
       /**
        Provider the policy picked on what is known before this attempt.
        */
-      // eslint-disable-next-line no-await-in-loop -- each choice depends on the refusal before it
       const provider = await chooseProvider({
         request,
         refused: last.refused,
       },);
+      /* oxlint-enable no-await-in-loop */
 
       try {
         return {
           provider,
-          // eslint-disable-next-line no-await-in-loop -- the call IS the attempt
+          // oxlint-disable-next-line no-await-in-loop -- the call IS the attempt
           reply: await callOn({
             provider,
             request,
@@ -526,7 +527,7 @@ export function createRoutingClient(
         if (!isBudgetRefusal({ error, },))
           throw error;
 
-        // eslint-disable-next-line no-await-in-loop -- the hold must start before the next decision reads the budgets
+        // oxlint-disable-next-line no-await-in-loop -- the hold must start before the next decision reads the budgets
         await budgets.markRefused({
           provider,
           signal: request.signal,

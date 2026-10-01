@@ -269,14 +269,15 @@ async function runRecallBenchmark({ line, }: { readonly line: CommandLineOf<'rec
     if (chosen.length >= (ENTRIES_PER_BAND * BANDS.length))
       break;
 
+    /* oxlint-disable no-await-in-loop -- corpus reads are sequential git shows and this selection runs once at setup */
     /**
      This id's seeding outcome, carrying its band when it is usable.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- corpus reads are sequential git shows and this selection runs once at setup */
     const outcome = await buildEntry({
       id,
       sizer,
     },);
+    /* oxlint-enable no-await-in-loop */
     if (outcome.kind === 'skipped')
       continue;
     if (perBand[outcome.band] >= ENTRIES_PER_BAND)

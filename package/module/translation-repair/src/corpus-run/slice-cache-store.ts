@@ -148,11 +148,11 @@ export async function listResumableEntries(
     kind: 'directory',
   },);
   for (const id of ids) {
+    /* oxlint-disable no-await-in-loop -- small one-time setup scan over per-entry dirs */
     /**
      Files inside this entry's cache directory, none where a settled entry's
      discard removed it since the root was listed.
      */
-    /* oxlint-disable-next-line no-await-in-loop -- small one-time setup scan over per-entry dirs */
     const names = await presentNamesOfKind({
       dir: join(
         dir,
@@ -160,6 +160,7 @@ export async function listResumableEntries(
       ),
       kind: 'file',
     },);
+    /* oxlint-enable no-await-in-loop */
     if (names.some(function isSliceFile(name,): boolean {
       return belongsToNamespace({
         name,

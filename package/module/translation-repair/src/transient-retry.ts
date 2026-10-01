@@ -467,10 +467,10 @@ export async function exchangeWithRetry(
     attempt <= policy.limit;
     attempt += 1
   ) {
+    /* oxlint-disable no-await-in-loop -- attempts are inherently sequential; each retry depends on the previous failure */
     /**
      Reply or captured failure of this attempt.
      */
-    // oxlint-disable-next-line no-await-in-loop -- attempts are inherently sequential; each retry depends on the previous failure
     const outcome = await attemptExchange({
       transport,
       exchange,
@@ -483,6 +483,7 @@ export async function exchangeWithRetry(
         ? {}
         : { onAbandonedAttempt, }),
     },);
+    /* oxlint-enable no-await-in-loop */
 
     /**
      Whether attempts remain after this one.

@@ -17,14 +17,15 @@ import { foldCarriageReturns, } from './line-endings.ts';
 // Reads go through `git show <sha>:<path>` against a pinned commit, so benchmark
 // runs stay reproducible even while the clone itself moves.
 
+/* oxlint-disable typescript/strict-void-return -- promisify deliberately ignores Node execFile's ChildProcess return while adapting its callback */
 /**
  Promise adapter for byte-exact subprocess capture;
  blob reads cannot go through nano-spawn because its line-oriented stdout
  strips the final newline, and repairs must preserve corpus text
  byte-for-byte.
  */
-// oxlint-disable-next-line typescript/strict-void-return -- promisify deliberately ignores Node execFile's ChildProcess return while adapting its callback
 const execFileAsync = promisify(execFile,);
+/* oxlint-enable typescript/strict-void-return */
 
 /**
  Bytes per kibibyte, named for the blob ceiling arithmetic.

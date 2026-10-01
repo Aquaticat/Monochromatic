@@ -16761,13 +16761,30 @@ two after folding in a clause the survivor lacked;
 and five pairs of a TSDoc block and a `//` comment became one block.
 Seven file headers gained the `@module` tag the package's other headers carry.
 
-Open:
-37 blocks are separated from their declaration by a `disable-next-line` lint suppression,
+37 more blocks were separated from their declaration by a `disable-next-line` lint suppression,
 the shape the repository's rule forbids
-(a suppression on a documented declaration opens before the TSDoc and closes after the declaration);
-they are rewrapped in their own change,
-and the forward scan that guards this entry lands with it,
-since it would fail on each of them today.
+(a suppression on a documented declaration opens before the TSDoc and closes after the declaration).
+They were rewrapped in a change of their own,
+which converted the one `eslint-disable-next-line` among them to the `oxlint` form
+and merged two neighbouring suppressions in `cased-letters.ts` into one pair;
+in each of the 27 files every rule a block disables is enabled again
+(a count of the disable and enable comments per rule,
+2026-10-01 UTC),
+and the lint reported 0 warnings and 0 errors after it.
+
+What enforces it:
+`src/tsdoc-attachment.unit.test.ts`,
+among the source scans,
+reads forward from every TSDoc block and fails on one followed by anything but what it documents:
+a declaration,
+a class or object member,
+an enum or union member,
+or a function expression returned or passed;
+a block holding `@module` is exempt.
+Its fixture case finds five orphan shapes and none of the legitimate ones;
+with one `disable-next-line` suppression put back between a TSDoc and its declaration in `renders-as-nothing.ts`,
+its package case failed,
+and passed once the line was removed.
 
 Recurrence:
 `mistake-prevention.md`,
