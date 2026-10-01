@@ -1,3 +1,4 @@
+import { isIsoStampText, } from '../iso-stamp-text.ts';
 import type { MeterState, } from '../provider-meters.ts';
 
 //region Meter sample read
@@ -272,7 +273,8 @@ function levelFields(
  
  @param line - whole log line
  
- @returns Epoch milliseconds, or that no timestamp could be read
+ @returns Epoch milliseconds, or that the bracket holds no stamp as the logger
+ writes one (ledger B73)
  
  @example
  ```ts
@@ -313,17 +315,17 @@ function stampOf(
     return 'unstamped';
 
   /**
-   Epoch milliseconds the bracket parsed to, or NaN where it is not a date.
+   What the bracket holds.
    */
-  const parsed = Date.parse(line.slice(
+  const stamp = line.slice(
     opened + 1,
     closed,
-  ),);
+  );
 
-  if (Number.isNaN(parsed,))
+  if (!isIsoStampText({ text: stamp, },))
     return 'unstamped';
 
-  return parsed;
+  return Date.parse(stamp,);
 }
 
 /**

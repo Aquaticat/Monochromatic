@@ -1,3 +1,4 @@
+import { isIsoStampText, } from '../iso-stamp-text.ts';
 import {
   isWholeNumberText,
   WHOLE_NUMBER_RULE,
@@ -181,6 +182,14 @@ export type CallReading =
   }
   | {
     /**
+     Completion line carrying a duration but no stamp as the logger writes
+     one, so no instant places the call (ledger B73). Counted rather than
+     skipped, like an untimed line.
+     */
+    readonly kind: 'unstamped';
+  }
+  | {
+    /**
      Line is not a completion at all.
      */
     readonly kind: 'other-line';
@@ -359,7 +368,8 @@ export function readRoundTiming(
 }
 
 /**
- Reads one stream completion line, saying whether it carried a duration.
+ Reads one stream completion line, saying whether it carried a duration and
+ a stamp as the logger writes one.
  
  @param line - one log line
  
@@ -407,6 +417,12 @@ export function readCallTiming(
 
   if (!(elapsedField ?? '').startsWith(ELAPSED_FIELD,))
     return { kind: 'untimed', };
+
+  // A STAMP THE LOGGER DID NOT WRITE PLACES NO CALL: `Date.parse` reads one
+  // without its zone as local time and one cut off as NaN, which the sweep
+  // cannot order (ledger B73).
+  if (!isIsoStampText({ text: stamp, },))
+    return { kind: 'unstamped', };
 
   /**
    Label and outcome, which the first field joins with a colon.

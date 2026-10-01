@@ -1,3 +1,4 @@
+import { isIsoStampText, } from '../iso-stamp-text.ts';
 import { isWholeNumberText, } from '../whole-number-text.ts';
 import { STREAM_MARKER, } from './run-timing-parse.ts';
 import {
@@ -25,7 +26,9 @@ import {
 // PAIRED BY LABEL AND CLOCK. A stream's completion line and its `SPEND` line
 // are written by the same exchange within milliseconds, so a `SPEND` line takes
 // the latest unpaired completion of the same served id within the window; one
-// with none is counted as unpaired, never guessed.
+// with none is counted as unpaired, never guessed. A line whose stamp the
+// logger did not write is left out and counted, since no clock pairs or dates
+// it (ledger B73).
 //
 // NO PATTERNS AND NO WORDING. Both lines are this codebase's own, read by index
 // scans; the census carries ids and numbers only.
@@ -97,15 +100,20 @@ export type CapSample = {
 
  @param line - one log line, `[level] [iso] ...`
 
- @returns Milliseconds, `NaN` for a line without the stamp
+ @returns Milliseconds, or that the line carries no stamp as the logger
+ writes one (ledger B73)
 
  @example
  ```ts
  const at = stampOf({ line, },);
  ```
  */
-function stampOf({ line, }: { readonly line: string; },): number {
-  return Date.parse(line.split('] [',)[1] ?? '',);
+function stampOf({ line, }: { readonly line: string; },): number | 'unstamped' {
+  /**
+   What the line's second bracket holds.
+   */
+  const stamp = line.split('] [',)[1] ?? '';
+  return isIsoStampText({ text: stamp, },) ? Date.parse(stamp,) : 'unstamped';
 }
 
 /**
@@ -177,6 +185,28 @@ function streamContentOf(
 }
 
 /**
+ What one pass-run log says about the calls it completed.
+
+ @example
+ ```ts
+ const { samples, unstampedLines, } = readCapLog({ lines: text.split('\n',), },);
+ ```
+ */
+export type CapLogReading = {
+  /**
+   One sample per reported `SPEND` line with a completion count and a stamp
+   as the logger writes one.
+   */
+  readonly samples: readonly CapSample[];
+
+  /**
+   Stream and `SPEND` lines left out because the logger did not write their
+   stamp, so no clock pairs or dates them (ledger B73).
+   */
+  readonly unstampedLines: number;
+};
+
+/**
  Reads every completed call a pass-run log reports, each with what its stream
  delivered.
 
@@ -184,16 +214,17 @@ function streamContentOf(
 
  @returns One sample per reported `SPEND` line with a completion count;
  reckoned lines and unreported counts are left out, since neither is a length
- the wire measured
+ the wire measured, and lines whose stamp the logger did not write are left
+ out and counted
 
  @example
  ```ts
- const samples = capSamplesOf({ lines: text.split('\n',), },);
+ const { samples, unstampedLines, } = readCapLog({ lines: text.split('\n',), },);
  ```
  */
-export function capSamplesOf(
+export function readCapLog(
   { lines, }: { readonly lines: readonly string[]; },
-): readonly CapSample[] {
+): CapLogReading {
   /**
    Completed streams not yet paired, by label, oldest first.
    */
@@ -206,18 +237,31 @@ export function capSamplesOf(
    Samples read so far.
    */
   const samples: CapSample[] = [];
+
+  /**
+   Lines left out so far for a stamp the logger did not write.
+   */
+  const unstamped = { lines: 0, };
   for (const line of lines) {
     /**
      The line as a completed stream, if it is one.
      */
     const stream = streamContentOf({ line, },);
     if (stream !== 'other-line') {
+      /**
+       When the stream line was written.
+       */
+      const streamAt = stampOf({ line, },);
+      if (streamAt === 'unstamped') {
+        unstamped.lines += 1;
+        continue;
+      }
       waiting.set(
         stream.label,
         [
           ...(waiting.get(stream.label,) ?? []),
           {
-            at: stampOf({ line, },),
+            at: streamAt,
             content: stream.content,
           },
         ],
@@ -237,6 +281,10 @@ export function capSamplesOf(
      When the spend line was written.
      */
     const at = stampOf({ line, },);
+    if (at === 'unstamped') {
+      unstamped.lines += 1;
+      continue;
+    }
 
     /**
      Streams of this label still unpaired.
@@ -273,7 +321,10 @@ export function capSamplesOf(
       content: paired,
     },);
   }
-  return samples;
+  return {
+    samples,
+    unstampedLines: unstamped.lines,
+  };
 }
 
 //endregion Cap census read

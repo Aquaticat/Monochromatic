@@ -42,6 +42,7 @@ export {
   isHandleCharacter,
   standsAsHandle,
 } from './handle-token.ts';
+export { isIsoStampText, } from './iso-stamp-text.ts';
 export {
   continuesLatinWord,
   foldLatinWord,

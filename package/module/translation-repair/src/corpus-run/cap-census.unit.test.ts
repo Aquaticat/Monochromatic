@@ -21,11 +21,11 @@ import {
   capCensus,
   type CapCensusRow,
   capFlagsOf,
-  capSamplesOf,
   COMPLETION_CAP,
   MIN_PROVIDER_CALLS,
   MODEL_CARDS,
   POOLED_P90,
+  readCapLog,
 } from '../../dist/final/node/index.mjs';
 import { STAMPS_NOT_WRITTEN, } from '../iso-stamp-text.test-fixture.ts';
 import {
@@ -163,12 +163,12 @@ function stepped({ n, step, }: { readonly n: number; readonly step: number; },):
 }
 
 await describe({
-  name: capSamplesOf.name,
+  name: readCapLog.name,
   children: [
     it({
       name: 'PAIRS A SPEND LINE WITH ITS STREAM by label within the window, and reads what the stream delivered',
       fn: async () => {
-        expect(capSamplesOf({
+        expect(readCapLog({
           lines: [
             streamLine({ stamp: '2026-09-28T10:00:00.000Z', label: OPENROUTER_ID, outcome: 'completed', content: 59, },),
             spendLine({
@@ -176,20 +176,23 @@ await describe({
               tail: `provider=openrouter model=${OPENROUTER_ID} prompt=799 completion=23 cost=0.0625 endpoint=Morph`,
             },),
           ],
-        },),).toEqual([{
-          provider: 'openrouter',
-          model: OPENROUTER_ID,
-          completion: 23,
-          at: Date.parse('2026-09-28T10:00:00.020Z',),
-          content: 59,
-        },],);
+        },),).toEqual({
+          samples: [{
+            provider: 'openrouter',
+            model: OPENROUTER_ID,
+            completion: 23,
+            at: Date.parse('2026-09-28T10:00:00.020Z',),
+            content: 59,
+          },],
+          unstampedLines: 0,
+        },);
       },
     },),
     it({
       name: 'LEAVES A SPEND LINE UNPAIRED when no completed stream of its label is in the window: one too early, '
         + 'one cut rather than completed',
       fn: async () => {
-        expect(capSamplesOf({
+        expect(readCapLog({
           lines: [
             streamLine({ stamp: '2026-09-28T10:00:00.000Z', label: HYPER_ID, outcome: 'completed', content: 7, },),
             streamLine({ stamp: '2026-09-28T10:00:01.000Z', label: HYPER_ID, outcome: 'cut', content: 7, },),
@@ -198,9 +201,11 @@ await describe({
               tail: `provider=hyper model=${HYPER_ID} prompt=10 completion=13082`,
             },),
           ],
-        },).map(function contentOf(sample,) {
-          return sample.content;
-        },),).toEqual(['unpaired',],);
+        },)
+          .samples
+          .map(function contentOf(sample,) {
+            return sample.content;
+          },),).toEqual(['unpaired',],);
       },
     },),
     it({
@@ -208,7 +213,7 @@ await describe({
         + 'is no stream that delivered nothing, and a sign or an exponent is no count the stream line writes '
         + '(ledger B73)',
       fn: async () => {
-        expect(capSamplesOf({
+        expect(readCapLog({
           lines: ['', '-5', '1e3',].flatMap(function pairFor(content, second,): readonly string[] {
             return [
               `[info] [2026-09-28T10:00:0${String(second,)}.000Z] [translation-repair] [reportStreamProgress] stream `
@@ -220,9 +225,11 @@ await describe({
               },),
             ];
           },),
-        },).map(function contentOf(sample,) {
-          return sample.content;
-        },),).toEqual(['unpaired', 'unpaired', 'unpaired',],);
+        },)
+          .samples
+          .map(function contentOf(sample,) {
+            return sample.content;
+          },),).toEqual(['unpaired', 'unpaired', 'unpaired',],);
       },
     },),
     it({
@@ -230,23 +237,29 @@ await describe({
         + 'reading of text no writer here makes: a stamp without its zone reads as local time, a date alone as '
         + 'midnight, and no stamp as NaN, which pairs with nothing and compares as no time at all (ledger B73)',
       fn: async () => {
-        expect(capSamplesOf({
-          lines: STAMPS_NOT_WRITTEN.flatMap(function linesFor(stamp,): readonly string[] {
-            return [
-              streamLine({ stamp, label: HYPER_ID, outcome: 'completed', content: 7, },),
-              spendLine({
-                stamp,
-                tail: `provider=hyper model=${HYPER_ID} prompt=10 completion=13`,
-              },),
-            ];
-          },),
-        },),).toEqual([],);
+        /**
+         A completed stream and its spend line for each spelling, every one
+         stamped as the logger never stamps.
+         */
+        const lines = STAMPS_NOT_WRITTEN.flatMap(function linesFor(stamp,): readonly string[] {
+          return [
+            streamLine({ stamp, label: HYPER_ID, outcome: 'completed', content: 7, },),
+            spendLine({
+              stamp,
+              tail: `provider=hyper model=${HYPER_ID} prompt=10 completion=13`,
+            },),
+          ];
+        },);
+        expect(readCapLog({ lines, },),).toEqual({
+          samples: [],
+          unstampedLines: lines.length,
+        },);
       },
     },),
     it({
       name: 'LEAVES OUT A RECKONED LINE AND AN UNREPORTED COUNT, since neither is a length the wire measured',
       fn: async () => {
-        expect(capSamplesOf({
+        expect(readCapLog({
           lines: [
             spendLine({
               stamp: '2026-09-28T10:00:00.000Z',
@@ -257,7 +270,10 @@ await describe({
               tail: `provider=hyper model=${HYPER_ID} prompt=unreported completion=unreported`,
             },),
           ],
-        },),).toEqual([],);
+        },),).toEqual({
+          samples: [],
+          unstampedLines: 0,
+        },);
       },
     },),
   ],

@@ -105,6 +105,11 @@ const HASH_PREFIX = 'reads a fixed-length prefix of a hexadecimal digest hashCon
 const EPOCH_MILLISECONDS = 'builds a date from epoch milliseconds, a number; no text is read';
 
 /**
+ Why a read of a log stamp holds to its writer's spelling.
+ */
+const LOG_STAMP = 'reads only a stamp isIsoStampText takes: exactly what toISOString, the logger\'s writer, writes';
+
+/**
  Each read the package makes, as `path#site: reader`, with how many there
  are and the rule that holds them to their writer's spelling.
  */
@@ -144,6 +149,14 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: 'reads a run its own scan bounded to ASCII digits, then refuses a run longer than a day takes',
   },
+  'corpus-run/cap-census-read.ts#<module>: Date.parse': {
+    calls: 1,
+    why: 'reads a literal with its zone written, so it names the same instant on every machine',
+  },
+  'corpus-run/cap-census-read.ts#stampOf: Date.parse': {
+    calls: 1,
+    why: LOG_STAMP,
+  },
   'corpus-run/cap-census-read.ts#streamContentOf: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
@@ -168,6 +181,10 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },
+  'corpus-run/meter-sample-read.ts#stampOf: Date.parse': {
+    calls: 1,
+    why: LOG_STAMP,
+  },
   'corpus-run/ordinal-style.ts#readHanNumeral: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
@@ -183,6 +200,10 @@ const HELD_READS: Readonly<Record<string, {
   'corpus-run/run-timing-parse.ts#durationIn: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
+  },
+  'corpus-run/run-timing-parse.ts#readCallTiming: Date.parse': {
+    calls: 1,
+    why: LOG_STAMP,
   },
   'corpus-run/slice-overlap.ts#readOverlapSetting: Number': {
     calls: 1,
@@ -215,6 +236,14 @@ const HELD_READS: Readonly<Record<string, {
   'grade-sheet-read.ts#toItem: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
+  },
+  'iso-stamp-text.ts#isIsoStampText: Date.parse': {
+    calls: 1,
+    why: 'the shared rule itself, which writes what it read back with toISOString and compares',
+  },
+  'iso-stamp-text.ts#isIsoStampText: new Date': {
+    calls: 1,
+    why: EPOCH_MILLISECONDS,
   },
   'page-headings.ts#htmlHeadings: Number': {
     calls: 1,

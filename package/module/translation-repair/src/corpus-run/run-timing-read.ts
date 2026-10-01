@@ -33,7 +33,8 @@ export type RunTiming = {
   readonly rounds: readonly RoundTiming[];
 
   /**
-   Every call whose line carried a duration.
+   Every call whose line carried a duration and a stamp as the logger writes
+   one.
    */
   readonly calls: readonly CallTiming[];
 
@@ -43,6 +44,13 @@ export type RunTiming = {
    describes only the calls that happened to be readable.
    */
   readonly callsWithoutDuration: number;
+
+  /**
+   Completion lines that carried a duration but no stamp as the logger writes
+   one, so no instant places their calls (ledger B73). A concurrency computed
+   while this is above zero leaves them out too.
+   */
+  readonly callsWithoutStamp: number;
 };
 
 /**
@@ -107,7 +115,7 @@ export type InFlight = {
  
  @param lines - log lines, in the order they were written
  
- @returns Rounds, calls, and how many calls could not be timed
+ @returns Rounds, calls, and how many calls could not be timed or placed
  
  @example
  ```ts
@@ -125,6 +133,7 @@ export function readRunTiming(
     rounds: [] as RoundTiming[],
     calls: [] as CallTiming[],
     untimed: 0,
+    unstamped: 0,
   };
 
   for (const line of lines) {
@@ -139,10 +148,11 @@ export function readRunTiming(
       continue;
     }
 
-    // ONE READ DECIDES ALL THREE OUTCOMES. The parse already separates a
-    // completion carrying a duration from one that predates the timing work and from a
-    // line that is not a completion at all, so nothing here re-inspects the
-    // text to tell them apart.
+    // ONE READ DECIDES ALL FOUR OUTCOMES. The parse already separates a
+    // completion carrying a duration from one that predates the timing work,
+    // from one whose stamp the logger did not write, and from a line that is
+    // not a completion at all, so nothing here re-inspects the text to tell
+    // them apart.
     /**
      What this line turned out to say about a call.
      */
@@ -155,12 +165,15 @@ export function readRunTiming(
     }
     if (call.kind === 'untimed')
       found.untimed += 1;
+    if (call.kind === 'unstamped')
+      found.unstamped += 1;
   }
 
   return {
     rounds: found.rounds,
     calls: found.calls,
     callsWithoutDuration: found.untimed,
+    callsWithoutStamp: found.unstamped,
   };
 }
 

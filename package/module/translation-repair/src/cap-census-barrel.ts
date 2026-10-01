@@ -9,8 +9,9 @@ export {
 } from './completion-cap.ts';
 export {
   CAPS_ON_WIRE_AT,
+  type CapLogReading,
   type CapSample,
-  capSamplesOf,
+  readCapLog,
 } from './corpus-run/cap-census-read.ts';
 export {
   type CapCensus,

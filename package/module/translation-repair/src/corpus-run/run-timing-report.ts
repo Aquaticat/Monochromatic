@@ -258,6 +258,13 @@ async function reportRunTiming(): Promise<void> {
     );
   }
 
+  if (reading.callsWithoutStamp > 0) {
+    console.log(
+      `Completion lines whose stamp the logger did not write: ${String(reading.callsWithoutStamp,)}. No `
+        + 'instant places their calls, so any concurrency this report prints leaves them out.',
+    );
+  }
+
   /**
    How many calls the logs left an interval for.
    */

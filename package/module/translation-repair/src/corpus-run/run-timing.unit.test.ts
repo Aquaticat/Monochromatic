@@ -339,17 +339,22 @@ await describe({
       name: readRunTiming.name,
       children: [
         it({
-          name: 'SEPARATES ROUNDS FROM CALLS AND COUNTS WHAT IT COULD NOT TIME, so a mixed log '
+          name: 'SEPARATES ROUNDS FROM CALLS AND COUNTS WHAT IT COULD NOT TIME OR PLACE, so a mixed log '
             + 'reports its own blind spot instead of reporting the readable half as the whole',
           fn: async () => {
             /**
-             Every timing line a mixed log holds.
+             Every timing line a mixed log holds, one completion stamped as the
+             logger never stamps.
              */
             const reading = readRunTiming({
               lines: [
                 ROUND_LINE,
                 TIMED_CALL_LINE,
                 UNTIMED_CALL_LINE,
+                TIMED_CALL_LINE.replace(
+                  WRITTEN_STAMP,
+                  STAMPS_NOT_WRITTEN[0],
+                ),
                 'a line about nothing in particular',
               ],
             },);
@@ -357,6 +362,7 @@ await describe({
             expect(reading.rounds.length,).toBe(1,);
             expect(reading.calls.length,).toBe(1,);
             expect(reading.callsWithoutDuration,).toBe(1,);
+            expect(reading.callsWithoutStamp,).toBe(1,);
           },
         },),
       ],

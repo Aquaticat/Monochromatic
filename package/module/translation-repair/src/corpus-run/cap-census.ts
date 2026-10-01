@@ -8,8 +8,9 @@ import { join, } from 'node:path';
 
 import { ARTIFACTS_DIR, } from './artifact-file-name.ts';
 import {
-  capSamplesOf,
+  type CapLogReading,
   type CapSample,
+  readCapLog,
 } from './cap-census-read.ts';
 import {
   capCensus,
@@ -217,16 +218,17 @@ async function logsUnder(
 
  @param path - log file
 
- @returns Its samples, or that it is no pass-run log
+ @returns Its samples and the lines it left out for their stamp, or that it
+ is no pass-run log
 
  @example
  ```ts
- const samples = await passRunSamplesOf({ path, },);
+ const read = await passRunReadingOf({ path, },);
  ```
  */
-async function passRunSamplesOf(
+async function passRunReadingOf(
   { path, }: { readonly path: string; },
-): Promise<readonly CapSample[] | 'not-a-pass-run'> {
+): Promise<CapLogReading | 'not-a-pass-run'> {
   /**
    Head of the log, read without reading the rest.
    */
@@ -261,7 +263,7 @@ async function passRunSamplesOf(
     return line.startsWith(PASS_RUN_MARKER,);
   },))
     return 'not-a-pass-run';
-  return capSamplesOf({
+  return readCapLog({
     lines: (await readFile(
       path,
       'utf8',
@@ -352,18 +354,24 @@ async function reportCapCensus(): Promise<void> {
    Pass-run logs read, one entry each.
    */
   const passRunLogs: string[] = [];
+
+  /**
+   Lines those logs left out for a stamp the logger did not write.
+   */
+  const unstamped = { lines: 0, };
   for (const path of logs) {
     /* oxlint-disable no-await-in-loop -- one log at a time, so memory holds samples rather than every log's text */
     /**
      This log's samples, or that it is no pass run.
      */
-    const read = await passRunSamplesOf({ path, },);
+    const read = await passRunReadingOf({ path, },);
     /* oxlint-enable no-await-in-loop */
     if (read !== 'not-a-pass-run') {
       passRunLogs.push(path,);
+      unstamped.lines += read.unstampedLines;
       // ONE AT A TIME, NOT SPREAD: one log can hold more calls than a call's
       // argument list takes.
-      for (const sample of read)
+      for (const sample of read.samples)
         samples.push(sample,);
     }
   }
@@ -375,7 +383,8 @@ async function reportCapCensus(): Promise<void> {
   console.log(
     `cap-census: ${String(logs.length,)} logs, ${String(passRunLogs.length,)} pass-run logs, `
       + `${String(samples.length,)} completed calls, ${String(census.offRoster,)} on ids no card names, `
-      + `${String(unreadable,)} paths unreadable`,
+      + `${String(unreadable,)} paths unreadable; `
+      + `lines left out for a stamp the logger did not write: ${String(unstamped.lines,)}`,
   );
   for (const row of census.rows) {
     console.log(
