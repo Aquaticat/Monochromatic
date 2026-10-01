@@ -5122,6 +5122,11 @@ before `corpus-run/attribution` at 15 over 18 lines,
 so the twenty-second batch takes `anthropic`
 against the census taken once this batch's docs close.
 
+The full suite on `a44cf50c4`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1512 PASS lines and no FAIL line.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -17156,6 +17161,15 @@ Prevention:
 a message or record says a case reaches a stretch only after a census
 (or a coverage read of that file) shows the stretch ran;
 before that it says which stretch the case is written for.
+
+Recurred the same day in the commit recording the batch's full suite:
+its message file,
+stating the source scans' result of 23 PASS lines and no FAIL line,
+was written in the same parallel call that counted them.
+The counts matched before the commit ran,
+but the claim was written ahead of its evidence.
+The prevention covers any count a message states:
+the message is written after the call that shows the count returns.
 
 ### M79: a coverage census measuring compressed code
 
