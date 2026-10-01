@@ -321,6 +321,40 @@ await describe({
         },),
 
         it({
+          name: 'NAMES A RATIO OR QUORUM FIELD NOT IN ITS WRITER\'S FRAME: a ratio that does not close on "heard", and '
+            + 'a no-quorum field without its bracketed counts (T8, nineteenth batch)',
+          fn: async () => {
+            /**
+             Round line whose ratio counts something other than voices heard.
+             */
+            const unframedRatio = ROUND_LINE.replace('6/7 heard', '6/7 voices',);
+            /**
+             No-quorum line that lost its bracketed counts.
+             */
+            const unframedQuorum = NO_QUORUM_LINE.replace('no quorum (1 of 4 needed)', 'no quorum',);
+            expect([
+              unframedRatio,
+              unframedQuorum,
+            ].map(function refusalsOf(line,): readonly string[] {
+              return refusalTexts({
+                read: function readsRound(): void {
+                  readRoundTiming({ line, },);
+                },
+              },);
+            },),).toEqual([
+              [
+                `round line unreadable: ${unframedRatio}`,
+                'round ratio is not heard/asked: "6/7 voices"',
+              ],
+              [
+                `round line unreadable: ${unframedQuorum}`,
+                'quorum field is not "no quorum (<heard> of <needed> needed)": "no quorum"',
+              ],
+            ],);
+          },
+        },),
+
+        it({
           name: 'NAMES AN EMPTY COUNT rather than reading a ratio missing its heard count as a round that heard nobody',
           fn: async () => {
             /**
