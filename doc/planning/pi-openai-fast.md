@@ -16,7 +16,9 @@ This document tracks requirements and open decisions;
 
 The working interpretation of virtual models is selectable companion entries
 that map to existing upstream model IDs rather than new upstream models.
-The intended authentication routes and default-selection policy remain open.
+The user accepted Codex-login-only authentication,
+ opt-in fast companions,
+ and global replacement of the incumbent extension after verification.
 
 ## Existing environment
 
@@ -56,34 +58,26 @@ Those notes are pending and do not yet establish capabilities.
 
 ## Interview frontier
 
-### Authentication coverage
+### Accepted round-one answers
 
-Should the initial extension target the existing Codex login,
- an OpenAI API key,
- or both routes?
+The user answered `Q1 A`,
+ `Q2 A`,
+ and `Q3 A`.
 
-Recommendation:
-start with the existing Codex workflow,
- subject to verification that its transport supports the intended request behavior.
-This follows the observed enabled-model scope without adding an unrequested authentication route.
+- Authentication:
+   reuse the existing Codex login;
+   OpenAI API-key support is out of scope for the initial extension.
+- Defaults:
+   fast companion models remain opt-in;
+   preserve ordinary model entries and the existing default model.
+- Delivery:
+   build and verify the repository package,
+   then install it globally and replace `pi-openai-codex-fast`.
+   Check migration implications and competing hooks before replacement.
 
-### Default selection
-
-Should companion models remain opt-in without changing defaults,
- or should installation also select a fast companion as the default?
-
-Recommendation:
-leave existing defaults unchanged.
-Model aliases and default selection are separate concerns.
-
-### Delivery scope
-
-Should completion include global installation and replacement of the incumbent fast extension,
- or only a package in this repository?
-
-Recommendation:
-build and verify the repository package,
- then install globally and replace the incumbent only after its behavior and migration implications are established.
+These answers settle requirements,
+ not the complete implementation design.
+The user has not yet confirmed shared understanding of that complete design.
 
 ## Unsettled factual prerequisites
 
@@ -99,8 +93,12 @@ build and verify the repository package,
 
 ## Next action
 
-Ask the independent preference questions while research runs.
-Use verified findings to form the next interview frontier.
+Await the pending research notifications without polling.
+Use verified findings to form the next interview frontier,
+ including model identity,
+ model coverage,
+ priority failure behavior,
+ and compatibility with auxiliary calls.
 Do not implement,
  change installed packages,
  or change defaults before the user confirms the complete design.
