@@ -229,6 +229,16 @@ await describe({
       },
     },),
     it({
+      name: 'READS an italic title across a hard line break as its words with one space between, never run '
+        + 'together (ledger B72)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat loved *Long\\\nNap* most.',
+          replacement: 'The kitten loved “Long Nap”.',
+        },),).toBe('The kitten loved *Long Nap*.',);
+      },
+    },),
+    it({
       name: 'READS a title the archive sets in italics with underscores, which a split at the stars never saw '
         + '(ledger B72)',
       fn: async () => {

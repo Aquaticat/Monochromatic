@@ -7,6 +7,10 @@ import {
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { archiveItalicSpans, } from './archive-italic-spans.ts';
 import {
+  emphasisSpans,
+  oneLine,
+} from './emphasis-spans.ts';
+import {
   rewriteEverySlice,
   type TextRewrite,
 } from './page-slice-rewrite.ts';
@@ -25,7 +29,9 @@ import {
 // prose (whitespace runs, line breaks included, read as one space), writes
 // the archive's italic span back. A period or comma the quotes held after
 // the words moves outside the italics. Quotation marks around any other
-// words are left alone, since those may be speech.
+// words are left alone, since those may be speech, and so are those inside
+// an italic span (ledger B72): italics inside italics show the title no
+// different from the words around it, and the quotes were what set it apart.
 
 /**
  One pair of quotation marks a title may be written in.
@@ -71,31 +77,6 @@ type QuoteSpan = {
  A quoted span with the italic form it takes, empty where it names no title.
  */
 type TitleSpan = QuoteSpan & { readonly form: string; };
-
-/**
- Words with every whitespace run read as one space.
-
- @param text - words as written
-
- @returns Words on one line
-
- @example
- ```ts
- oneLine({ text: 'Long:\nNap', },); // 'Long: Nap'
- ```
- */
-function oneLine({ text, }: { readonly text: string; },): string {
-  return text
-    .replaceAll(
-      '\n',
-      ' ',
-    )
-    .split(' ',)
-    .filter(function hasWords(piece,): boolean {
-      return piece.length > 0;
-    },)
-    .join(' ',);
-}
 
 /**
  Every span of a text one pair of quotation marks encloses, in order.
@@ -221,9 +202,9 @@ function italicizeSlice(
    */
   const ranges = protectedRanges({ text, },);
   /**
-   Quoted titles in prose, in document order.
+   Quoted titles in prose.
    */
-  const restorable = QUOTE_PAIRS
+  const quotedTitles = QUOTE_PAIRS
     .flatMap(function spansOf(pair,): readonly QuoteSpan[] {
       return quoteSpans({
         text,
@@ -239,11 +220,33 @@ function italicizeSlice(
         },),
       };
     },)
-    .filter(function isRestorable(span,): boolean {
+    .filter(function isTitleInProse(span,): boolean {
       return (span.form !== '') && inProse({
         ranges,
         start: span.start,
         end: span.end,
+      },);
+    },);
+  // MOST SLICES QUOTE NO TITLE, and those are left before their text is parsed.
+  if (quotedTitles.length === 0) {
+    return {
+      text,
+      changed: [],
+    };
+  }
+  /**
+   Spans the text already sets in italics.
+   */
+  const italics = emphasisSpans({ text, },);
+  /**
+   Quoted titles clear of every italic span, in document order: one inside
+   italics stays quoted, since italics there would show it no different from
+   the words around it (ledger B72).
+   */
+  const restorable = quotedTitles
+    .filter(function outsideItalics(span,): boolean {
+      return !italics.some(function overlaps(italic,): boolean {
+        return (italic.start < span.end) && (span.start < italic.end);
       },);
     },)
     .toSorted(function byStart(

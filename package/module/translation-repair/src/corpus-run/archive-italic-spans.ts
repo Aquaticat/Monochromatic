@@ -1,25 +1,21 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isLatinCapital, } from '../latin-letters.ts';
+import { emphasisSpans, } from './emphasis-spans.ts';
 
 //region Archive italic spans
-// The words the archive sets in single-star italics, read for class one
-// hundred seventy-three's title restore. A line cut at every star leaves the
-// italic words at the odd pieces; a bold span's two stars make an empty piece
-// on each side, so its words fall at an even piece and are never read as
-// italics. A list item's opening star is cut off first so it does not shift
-// the count.
-
-/**
- Opening of a list item written with a star.
- */
-const STAR_ITEM = '* ';
+// The words the archive sets in italics, read for class one hundred
+// seventy-three's title restore, off the parse (ledger B72). This split each
+// line at its stars: words inside an HTML comment or an MDX expression read as
+// italics, a span across two lines read as its first line's words, and a
+// linked title or one set with underscores was never read. Bold is a strong
+// node, not emphasis, so its words are not read as italics either way.
 
 /**
  Whether a span reads as a title: no space at either edge and a capital Latin
  letter first, accented or not, as a work's name opens (`Émile`); the test
  took A to Z only until ledger B18.
 
- @param span - words between two stars
+ @param span - words a span sets in italics
 
  @returns Whether the span can name a work
 
@@ -39,42 +35,11 @@ function titleLike({ span, }: { readonly span: string; },): boolean {
 }
 
 /**
- Italic spans of one line.
-
- @param line - one line of archive text
-
- @returns Words the line sets in single-star italics
-
- @example
- ```ts
- lineItalics({ line: 'She loved *Long Nap* and **Nap Time**.', },); // ['Long Nap']
- ```
- */
-function lineItalics({ line, }: { readonly line: string; },): readonly string[] {
-  /**
-   Line without a list item's opening star.
-   */
-  const body = line.trimStart()
-    .startsWith(STAR_ITEM,)
-    ? line.trimStart()
-      .slice(STAR_ITEM.length,)
-    : line;
-  return body
-    .split('*',)
-    .filter(function italic(
-      span,
-      index,
-    ): boolean {
-      return ((index % 2) === 1) && titleLike({ span, },);
-    },);
-}
-
-/**
- Every span the archive's body sets in single-star italics.
+ Every span the archive's body sets in italics that can name a work.
 
  @param slices - prepared pairs, whose target text is the archive's
 
- @returns Italic spans, once each
+ @returns Italic spans, once each, every whitespace run read as one space
 
  @example
  ```ts
@@ -89,12 +54,16 @@ export function archiveItalicSpans(
       return slice.syntax !== 'front-matter';
     },)
     .flatMap(function readSlice(slice,): readonly string[] {
-      return slice.target
-        .text
-        .split('\n',)
-        .flatMap(function readLine(line,): readonly string[] {
-          return lineItalics({ line, },);
+      return emphasisSpans({
+        text: slice.target
+          .text,
+      },)
+        .map(function wordsOf(span,): string {
+          return span.words;
         },);
+    },)
+    .filter(function isTitle(span,): boolean {
+      return titleLike({ span, },);
     },),);
 }
 

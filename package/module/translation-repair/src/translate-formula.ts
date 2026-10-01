@@ -1,5 +1,4 @@
-import type { Nodes, } from 'mdast';
-
+import { treeNodes, } from './mdast-tree-nodes.ts';
 import {
   parseMdxBody,
   requireMdxRefusal,
@@ -42,36 +41,6 @@ type FormulaReading =
   | {
     readonly kind: 'refused';
   };
-
-/**
- Every node of a tree, in no promised order.
-
- @param root - tree's top node
-
- @returns The tree's nodes
-
- @example
- ```ts
- const nodes = treeNodes({ root: parseMdxBody({ body: 'Naps.', },), },);
- ```
- */
-function treeNodes({ root, }: { readonly root: Nodes; },): readonly Nodes[] {
-  /**
-   Nodes met so far, which is what the function returns.
-   */
-  const met: Nodes[] = [];
-  /**
-   Nodes still to visit.
-   */
-  const pending: Nodes[] = [root,];
-  // Each node in turn, until the stack is empty.
-  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
-    met.push(node,);
-    if ('children' in node)
-      pending.push(...(node.children as readonly Nodes[]),);
-  }
-  return met;
-}
 
 /**
  Whether a node is one the site renders as a formula.
