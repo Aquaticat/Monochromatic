@@ -34,7 +34,10 @@ import {
 import {
   gatherAttributionEntries,
 } from '../../dist/final/node/index.mjs';
-import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from '../roster-seats.test-fixture.ts';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Pipeline commit every fixture artifact carries unless its case sets one.
@@ -57,6 +60,13 @@ const SHARED_GENERATION = `sha256-tree-v1:${'f'.repeat(64,)}`;
  Critic used throughout.
  */
 const TABBY = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
+
+/**
+ Second critic, used only where a proposer must be a DIFFERENT model from
+ whichever one a chunk heard, so a check reading `heardCriticIds` has
+ something to actually refuse instead of trivially agreeing with itself.
+ */
+const QUIET = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  Claim the fixtures attribute.
@@ -179,6 +189,39 @@ function artifactWith(
   };
 }
 
+/**
+ Gathers a directory and keys its refusals by the file each one names.
+ 
+ @param artifactsDir - directory the case wrote its artifacts into
+ 
+ @returns Refusal reason per file, absent for a file the gather accepted, so
+ a shape a check let through reads as a missing key
+ 
+ @example
+ ```ts
+ const reasons = await refusalsByFile({ artifactsDir: scratch.dir, },);
+ ```
+ */
+async function refusalsByFile(
+  {
+    artifactsDir,
+  }: {
+    readonly artifactsDir: string;
+  },
+): Promise<ReadonlyMap<string, string>> {
+  /**
+   What the directory yielded.
+   */
+  const { malformed, } = await gatherAttributionEntries({ artifactsDir, },);
+
+  return new Map(malformed.map(function toNameAndReason({ name, reason, },): [string, string,] {
+    return [
+      name,
+      reason,
+    ];
+  },),);
+}
+
 await describe({
   name: gatherAttributionEntries.name,
   children: [
@@ -251,19 +294,29 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES an issue record whose `issue` field is an array, contributing nothing rather '
-        + 'than the spurious accepted-but-silent view {status: "", claimIds: []} that reading an '
-        + 'array as a record produces today (ledger B92)',
+      name: 'REFUSES, NAMING issues[0].issue, an issue record whose `issue` field is an array, '
+        + 'superseding the earlier reading that let it CONTRIBUTE NOTHING and produce the spurious '
+        + 'accepted-but-silent view {status: "", claimIds: []}: `status` and `claims` are written by '
+        + 'every generation, so a present-but-malformed `issue` is corruption rather than an entry '
+        + 'this reader may quietly read as empty (ledger B92, B106)',
       fn: async () => {
         /**
-         Artifact whose one issue record names an array rather than a record
-         under `issue`. VERSION 1, root-level `issues`, the shape the "parses
-         attribution and issues DOWN TO their contents" case already proves
-         survives the pool and reaches `toEntry`, so this entry's absence
-         from `entries` cannot be mistaken for the refusal under test.
+         One sound artifact beside one whose issue record names an array
+         rather than a record under `issue`. VERSION 1, root-level `issues`,
+         the shape the "parses attribution and issues DOWN TO their contents"
+         case already proves survives the pool and reaches `toEntry`, so this
+         entry's absence from `entries` cannot be mistaken for the refusal
+         under test.
          */
         await using scratch = await writeArtifacts({
           artifacts: {
+            'Whiskers.json': artifactWith({
+              sliceCritics: [{
+                sliceIndex: 0,
+                heardCriticIds: [TABBY,],
+                claimAttributions: [],
+              },],
+            },),
             'Mittens.json': {
               artifactSchemaVersion: 1,
               id: 'Mittens',
@@ -273,12 +326,214 @@ await describe({
         },);
 
         /**
-         Entries as the CLI would gather them.
+         What the directory yielded.
          */
-        const { entries, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
+        const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir: scratch.dir, },);
 
-        expect(entries.length,).toBe(1,);
-        expect(entries[0]?.issues,).toStrictEqual([],);
+        // The sound sibling still produces its own entry, so Mittens' absence
+        // from `entries` is the refusal under test and not a pool-wide failure.
+        expect(entries,).toHaveLength(1,);
+        expect(entries[0]?.id,).toBe('Whiskers',);
+
+        expect(malformed,).toHaveLength(1,);
+        expect(malformed[0]?.name,).toBe('Mittens.json',);
+        expect(malformed[0]?.reason,).toContain('issues[0].issue',);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE FIELD rather than reading a fallback at every level `toEntry` and '
+        + '`recordsHolderOf` themselves can break, mirroring the `decodeSliceCritics` table that '
+        + 'pins the same discipline inside the decoder. Every field here is written by every '
+        + 'generation that has ever settled an artifact, so for each of them BOTH absence and '
+        + 'malformation are corruption: `issues` missing is not a legacy entry, since `issues` '
+        + 'predates attribution itself, and a `lanes` key appearing on a generation that keeps its '
+        + 'records at the root is not a two-lane artifact read early',
+      fn: async () => {
+        /**
+         One artifact per shape `toEntry` or `recordsHolderOf` must refuse,
+         each paired with a substring its refusal has to carry. Carrying BOTH
+         the path and the reason, as the `decodeSliceCritics` table does, since a path
+         alone is a prefix the NEXT check down would also satisfy.
+         */
+        const broken: readonly {
+          readonly id: string;
+          readonly expects: string;
+          readonly artifact: Record<string, unknown>;
+        }[] = [
+          {
+            id: 'IssuesAbsent',
+            expects: '.issues: expected an array',
+            artifact: { artifactSchemaVersion: 1, },
+          },
+          {
+            id: 'IssuesNotArray',
+            expects: '.issues: expected an array',
+            artifact: { artifactSchemaVersion: 1, issues: 'not an array', },
+          },
+          {
+            id: 'IssueRecordNotRecord',
+            expects: 'issues[0]: expected a record',
+            artifact: { artifactSchemaVersion: 1, issues: ['stray',], },
+          },
+          {
+            id: 'StatusAbsent',
+            expects: 'issues[0].issue.status: expected a string',
+            artifact: {
+              artifactSchemaVersion: 1,
+              issues: [{ sliceIndex: 0, issue: { claims: [{ claimId: NAP, },], }, },],
+            },
+          },
+          {
+            id: 'StatusNotString',
+            expects: 'issues[0].issue.status: expected a string',
+            artifact: {
+              artifactSchemaVersion: 1,
+              issues: [{
+                sliceIndex: 0,
+                issue: { status: 7, claims: [{ claimId: NAP, },], },
+              },],
+            },
+          },
+          {
+            id: 'ClaimsAbsent',
+            expects: 'issues[0].issue.claims: expected an array',
+            artifact: {
+              artifactSchemaVersion: 1,
+              issues: [{ sliceIndex: 0, issue: { status: 'accepted', }, },],
+            },
+          },
+          {
+            id: 'ClaimsNotArray',
+            expects: 'issues[0].issue.claims: expected an array',
+            artifact: {
+              artifactSchemaVersion: 1,
+              issues: [{ sliceIndex: 0, issue: { status: 'accepted', claims: 'not an array', }, },],
+            },
+          },
+          {
+            id: 'ClaimMemberNotRecord',
+            expects: 'issues[0].issue.claims[0]: expected a record',
+            artifact: {
+              artifactSchemaVersion: 1,
+              issues: [{ sliceIndex: 0, issue: { status: 'accepted', claims: ['stray',], }, },],
+            },
+          },
+          {
+            id: 'ClaimIdAbsent',
+            expects: 'issues[0].issue.claims[0].claimId: expected a string',
+            artifact: {
+              artifactSchemaVersion: 1,
+              issues: [{ sliceIndex: 0, issue: { status: 'accepted', claims: [{},], }, },],
+            },
+          },
+          {
+            id: 'ClaimIdNotString',
+            expects: 'issues[0].issue.claims[0].claimId: expected a string',
+            artifact: {
+              artifactSchemaVersion: 1,
+              issues: [{
+                sliceIndex: 0,
+                issue: { status: 'accepted', claims: [{ claimId: 7, },], },
+              },],
+            },
+          },
+          {
+            id: 'LanesPresentOnVersion1',
+            expects: '.lanes: expected no lanes, since this generation keeps its records at the root',
+            artifact: { artifactSchemaVersion: 1, lanes: { repair: { result: {}, }, }, },
+          },
+          {
+            id: 'LanesPresentUnversioned',
+            expects: '.lanes: expected no lanes, since this generation keeps its records at the root',
+            artifact: { lanes: {}, },
+          },
+          {
+            id: 'LanesNotRecord',
+            expects: '.lanes: expected a record',
+            artifact: { artifactSchemaVersion: 2, lanes: 'not a record', },
+          },
+          {
+            id: 'RepairAbsent',
+            expects: '.lanes.repair: expected a record',
+            artifact: { artifactSchemaVersion: 2, lanes: {}, },
+          },
+          {
+            id: 'ResultNotRecord',
+            expects: '.lanes.repair.result: expected a record',
+            artifact: { artifactSchemaVersion: 2, lanes: { repair: { result: 'not a record', }, }, },
+          },
+          {
+            // A VERSION 2+ CRITIC RECORD WHOSE CLAIM NAMES AN UNHEARD PROPOSER.
+            // QUIET proposes while only TABBY was recorded as heard on this
+            // chunk, which `decodeSliceCritics` must refuse rather than credit
+            // a critic the record itself says never answered.
+            id: 'ProposerNotHeard',
+            expects: '.modelId: expected a critic named in heardCriticIds',
+            artifact: {
+              artifactSchemaVersion: 2,
+              lanes: {
+                repair: {
+                  result: {
+                    chunkCritics: [{
+                      sliceIndex: 0,
+                      heardCriticIds: [TABBY,],
+                      claimAttributions: [{
+                        claimId: NAP,
+                        proposers: [{ modelId: QUIET, emissionCount: 1, },],
+                      },],
+                    },],
+                  },
+                },
+              },
+            },
+          },
+        ];
+
+        /**
+         All of them written into one directory beside a readable sibling, so
+         a shape that was quietly accepted shows up as a missing row rather
+         than as a passing case.
+         */
+        await using scratch = await writeArtifacts({
+          artifacts: {
+            'Readable.json': {
+              ...artifactWith({
+                sliceCritics: [{
+                  sliceIndex: 0,
+                  heardCriticIds: [TABBY,],
+                  claimAttributions: [{
+                    claimId: NAP,
+                    proposers: [{ modelId: TABBY, emissionCount: 1, },],
+                  },],
+                },],
+              },),
+              id: 'Readable',
+            },
+            ...Object.fromEntries(broken.map(function toFile(one,): [string, unknown,] {
+              return [
+                `${one.id}.json`,
+                { ...one.artifact, id: one.id, },
+              ];
+            },),),
+          },
+        },);
+
+        /**
+         Why each file failed, keyed by the file that failed.
+         */
+        const reasons = await refusalsByFile({ artifactsDir: scratch.dir, },);
+
+        expect(reasons.size,).toBe(broken.length,);
+        for (const one of broken) {
+          /**
+           Why this file failed, absent where the check under test accepted a
+           shape it was supposed to refuse.
+           */
+          const reason = reasons.get(`${one.id}.json`,);
+
+          expect(String(reason,),).toContain(one.expects,);
+        }
       },
     },),
 
@@ -495,9 +750,10 @@ await describe({
          `proposers[0].modelId`. Three of these passed against three missing
          guards before the reason was pinned beside the path.
          
-         `claimAttributions` is decoded before `heardCriticIds` is read, so
-         the shapes aimed at the heard set carry an empty attribution list:
-         a broken one would be refused first and the case would then pin a
+         `heardCriticIds` is decoded before `claimAttributions`, since a
+         proposer's `modelId` is now checked against it, so the shapes aimed
+         at `claimAttributions` carry a valid `heardCriticIds: [TABBY]`: a
+         broken one would be refused first and the case would then pin a
          field it was not aiming at.
          */
         const broken: readonly {
@@ -608,14 +864,7 @@ await describe({
         /**
          Why each file failed, keyed by the file that failed.
          */
-        const reasons = new Map((await gatherAttributionEntries({ artifactsDir: scratch.dir, },))
-          .malformed
-          .map(function toEntry(row,): [string, string,] {
-            return [
-              row.name,
-              row.reason,
-            ];
-          },),);
+        const reasons = await refusalsByFile({ artifactsDir: scratch.dir, },);
 
         expect(reasons.size,).toBe(broken.length,);
         for (const one of broken) {
