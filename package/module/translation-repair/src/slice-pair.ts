@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type {
   ChunkPair,
   ContentChunk,
@@ -64,16 +66,14 @@ function runToChunk(
   },
 ): ContentChunk {
   /**
-   First node of the run, guaranteed by construction.
+   First node of the run, which every run carries by construction.
    */
-  const [first,] = run;
+  const first = nonNullishOrThrow(run[0],);
 
   /**
-   Last node of the run, guaranteed by construction.
+   Last node of the run.
    */
-  const last = run.at(-1,);
-  if ((first === undefined) || (last === undefined))
-    throw new Error('unreachable: node runs always carry at least one node',);
+  const last = nonNullishOrThrow(run.at(-1,),);
   return {
     sliceIndex,
     nodes: run,
@@ -89,16 +89,16 @@ function runToChunk(
 
 /**
  Subdivides one aligned section pair into paragraph-bound slice pairs.
- Whenever both sides carry blocks, a monotone alignment decides which block
- partners which, and may leave a block unpartnered rather than force it onto
- a neighbour. Pairing by shared index was tried and is wrong: equal node
+ A section whose target is an insertion is sliced by the source alone, one
+ slice per budget run, all written at the insertion boundary. Every other
+ pair carries blocks on both sides, and a monotone alignment decides which
+ block partners which, and may leave a block unpartnered rather than force it
+ onto a neighbour. Pairing by shared index was tried and is wrong: equal node
  counts do NOT imply one-to-one correspondence, so a translation that drops
  one block and gains another elsewhere kept its total while every pairing
- after the drop compared a block against its neighbour. A section whose
- target is an insertion is sliced by the source alone, one slice per budget
- run, all written at the insertion boundary; any other pair with a side that
- has no blocks stays one slice, re-indexed. Paragraph-count mismatch within a
- section is ordinary translation freedom, so subdivision emits no findings.
+ after the drop compared a block against its neighbour. Paragraph-count
+ mismatch within a section is ordinary translation freedom, so subdivision
+ emits no findings.
  
  @param pair - aligned section pair to subdivide
  
@@ -110,6 +110,9 @@ function runToChunk(
  
  @param budget - target-side characters one slice aims for;
  defaults to {@link SLICE_CHAR_BUDGET}
+ 
+ @param blockPairing - correspondences a roster agreed on, chunk-local; absent
+ when the roster agreed none, so the scorer pairs the blocks
  
  @param sealed - ids of translation blocks the archive's note seals, which
  reach no slice and take the originals paired to them along
@@ -183,101 +186,7 @@ export function subdivideSealedChunkPair(
     1,
     Math.round(budget * densityRatio,),
   );
-  if (
-    (pair.source
-      .nodes
-      .length
-      > 0)
-    && (pair.target
-      .nodes
-      .length
-      > 0)
-  ) {
-    /**
-     Runs the grouping settled, and the originals the seal took with it.
-     */
-    const grouped = groupNodesSealed({
-      sourceNodes: pair.source
-        .nodes,
-      targetNodes: pair.target
-        .nodes,
-      sourceBudget,
-      targetBudget: budget,
-      // A ROSTER'S PAIRING WHEN THE CALLER HAS ONE, and the scorer otherwise.
-      // Indices are chunk-local, which is what the caller asked about. Spread
-      // rather than passed as undefined, since `exactOptionalPropertyTypes`
-      // separates an absent option from one explicitly unset.
-      ...((blockPairing === undefined)
-        ? {}
-        : {
-          steps: blockPairingToSteps({
-            pairs: blockPairing,
-            sourceCount: pair.source
-              .nodes
-              .length,
-            targetCount: pair.target
-              .nodes
-              .length,
-          },),
-        }),
-      sealed,
-    },);
-    return {
-      sealedSourceIds: grouped.sealedSourceIds,
-      slices: grouped.runs
-        .map(function toSlice(
-        run,
-        sliceOffset,
-      ): ChunkPair {
-        /**
-         Original side, built the same way whichever kind of run this is.
-         */
-        const source = runToChunk({
-          run: run.sourceRun,
-          documentText: sourceText,
-          sliceIndex: baseIndex + sliceOffset,
-        },);
 
-        // Block-scale insertion: a run of originals nothing rendered gets a PLACE on
-        // the translation side rather than blocks, so the lane can write there.
-        // `runToChunk` would throw on the empty run this used to be handed,
-        // which is why the fold this replaces existed at all.
-        if (run.kind === 'insertion')
-          return {
-            source,
-            target: makeInsertionChunk({
-              sliceIndex: baseIndex + sliceOffset,
-              offset: run.targetOffset,
-            },),
-          };
-
-        return {
-          source,
-          target: runToChunk({
-            run: run.targetRun,
-            documentText: targetText,
-            sliceIndex: baseIndex + sliceOffset,
-          },),
-        };
-      },),
-    };
-  }
-
-  /**
-   Nothing is sealed from here on: a seal names translation blocks, and
-   every path reaching this line is one where the translation side carries
-   none.
-   */
-  const nothingSealed = new Set<string>();
-
-  /**
-   Source-side node runs within the scaled budget.
-   */
-  const sourceRuns = groupNodes({
-    nodes: pair.source
-      .nodes,
-    budget: sourceBudget,
-  },);
   // AN INSERTION HAS NO TARGET RUNS TO FRAME BY, so it is sliced by the SOURCE.
   //
   // This used to return the whole section as ONE slice, on the reasoning that a
@@ -291,62 +200,114 @@ export function subdivideSealedChunkPair(
   // characters against a budget of 400, holding 6 and 23 blocks whose largest
   // member is 384 characters. Nothing had to be split to slice them; they were
   // one slice only because the side that frames subdivision was empty.
-  if ((sourceRuns.length > 0) && isInsertionChunk(pair.target,))
+  if (isInsertionChunk(pair.target,)) {
     return {
-      sealedSourceIds: nothingSealed,
-      slices: sourceRuns.map(function toInsertionSlice(
-        run,
-        sliceOffset,
-      ): ChunkPair {
-        return {
-          source: runToChunk({
-            run,
-            documentText: sourceText,
-            sliceIndex: baseIndex + sliceOffset,
-          },),
+      // NOTHING IS SEALED: a seal names translation blocks, and an insertion
+      // carries none.
+      sealedSourceIds: new Set<string>(),
+      slices: groupNodes({
+        nodes: pair.source
+          .nodes,
+        budget: sourceBudget,
+      },)
+        .map(function toInsertionSlice(
+          run,
+          sliceOffset,
+        ): ChunkPair {
+          return {
+            source: runToChunk({
+              run,
+              documentText: sourceText,
+              sliceIndex: baseIndex + sliceOffset,
+            },),
 
-          // EVERY SLICE AT THE SAME BOUNDARY, in slice order, which is the shape
-          // `spliceSlices` orders. The section has one place to be written, and
-          // its slices go there one after another.
+            // EVERY SLICE AT THE SAME BOUNDARY, in slice order, which is the
+            // shape `spliceSlices` orders. The section has one place to be
+            // written, and its slices go there one after another.
+            target: makeInsertionChunk({
+              sliceIndex: baseIndex + sliceOffset,
+              offset: pair.target
+                .startOffset,
+            },),
+          };
+        },),
+    };
+  }
+
+  // BOTH SIDES CARRY BLOCKS FROM HERE ON. Every pair comes from
+  // `alignDocumentSections`, whose chunks (`chunkByHeadings`) each hold at
+  // least one node, and a target that is not an insertion anchor is one of
+  // those chunks. This function kept a one-slice fallback for a side with no
+  // blocks until T8's seventeenth batch read that no input reaches it, and it
+  // went; it re-stamped the pair's section index with the global one, which
+  // every path here does through `runToChunk` and `makeInsertionChunk`.
+  /**
+   Runs the grouping settled, and the originals the seal took with it.
+   */
+  const grouped = groupNodesSealed({
+    sourceNodes: pair.source
+      .nodes,
+    targetNodes: pair.target
+      .nodes,
+    sourceBudget,
+    targetBudget: budget,
+    // A ROSTER'S PAIRING WHEN THE CALLER HAS ONE, and the scorer otherwise.
+    // Indices are chunk-local, which is what the caller asked about. Spread
+    // rather than passed as undefined, since `exactOptionalPropertyTypes`
+    // separates an absent option from one explicitly unset.
+    ...((blockPairing === undefined)
+      ? {}
+      : {
+        steps: blockPairingToSteps({
+          pairs: blockPairing,
+          sourceCount: pair.source
+            .nodes
+            .length,
+          targetCount: pair.target
+            .nodes
+            .length,
+        },),
+      }),
+    sealed,
+  },);
+  return {
+    sealedSourceIds: grouped.sealedSourceIds,
+    slices: grouped.runs
+      .map(function toSlice(
+      run,
+      sliceOffset,
+    ): ChunkPair {
+      /**
+       Original side, built the same way whichever kind of run this is.
+       */
+      const source = runToChunk({
+        run: run.sourceRun,
+        documentText: sourceText,
+        sliceIndex: baseIndex + sliceOffset,
+      },);
+
+      // Block-scale insertion: a run of originals nothing rendered gets a PLACE on
+      // the translation side rather than blocks, so the lane can write there.
+      // `runToChunk` would throw on the empty run this used to be handed,
+      // which is why the fold this replaces existed at all.
+      if (run.kind === 'insertion')
+        return {
+          source,
           target: makeInsertionChunk({
             sliceIndex: baseIndex + sliceOffset,
-            offset: pair.target
-              .startOffset,
+            offset: run.targetOffset,
           },),
         };
-      },),
-    };
-  // ONE SIDE HAS NO BLOCKS FROM HERE ON: both-sided pairs took
-  // `groupNodesSealed`, a run list is empty exactly when its side has no
-  // nodes, and an insertion returned just now. The proportional merge that
-  // once followed (the wider side merged greedily by cumulative character
-  // fraction) could therefore never run, and it was deleted rather than kept
-  // as the fallback its TSDoc promised.
-  //
-  // RE-INDEXED, because the pair arrived carrying its SECTION index and
-  // every other path stamps the global one. Returning it untouched let two
-  // slices of one document share an index once any earlier section
-  // subdivided, and slice identity is what the cache key and the splice both
-  // rest on.
-  //
-  // STILL ONE SLICE where the target carries a span but no blocks, which is
-  // not an insertion: several pairs would have to replace one span rather
-  // than be written into a boundary, and that is a different question from
-  // slicing an insertion.
-  return {
-    sealedSourceIds: nothingSealed,
-    slices: [
-      {
-        source: {
-          ...pair.source,
-          sliceIndex: baseIndex,
-        },
-        target: {
-          ...pair.target,
-          sliceIndex: baseIndex,
-        },
-      },
-    ],
+
+      return {
+        source,
+        target: runToChunk({
+          run: run.targetRun,
+          documentText: targetText,
+          sliceIndex: baseIndex + sliceOffset,
+        },),
+      };
+    },),
   };
 }
 

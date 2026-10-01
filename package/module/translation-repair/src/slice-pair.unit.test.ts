@@ -347,11 +347,15 @@ await describe({
     },),
 
     it({
-      name: 'stamps the base index on a section only ONE side carries, which is the path that returned the pair untouched. It arrived holding its SECTION index while every other path stamps the global one, so once any earlier section subdivided two slices of one document shared an index, and slice identity is what the cache key and the splice both rest on',
+      name: 'stamps the base index on a section whose translation is a bare heading against an original with prose. '
+        + 'The pair arrives holding its SECTION index, and a path that returned it untouched let two slices of one '
+        + 'document share an index once any earlier section subdivided; slice identity is what the cache key and '
+        + 'the splice both rest on',
       fn: async () => {
         /**
          Original whose section has prose against a translation whose
-         matching section is a bare heading, so one side groups into no runs.
+         matching section is a bare heading, which the grouping folds into
+         one slice.
          */
         const onlySource = '## 猫的一天\n\n小猫早晨在窗台晒太阳。\n';
 
@@ -372,6 +376,7 @@ await describe({
           targetText: emptyTarget,
           baseIndex: 7,
         },);
+        expect(slices,).toHaveLength(1,);
         for (const slice of slices) {
           expect(slice.source
             .sliceIndex,).toBe(7,);

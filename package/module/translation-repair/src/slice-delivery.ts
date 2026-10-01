@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type {
@@ -6,7 +8,6 @@ import type {
 } from './lane-slice-text.ts';
 import {
   decideDelivery,
-  nonNullishAccepted,
   type SliceDelivery,
 } from './slice-delivery-decide.ts';
 import {
@@ -14,7 +15,6 @@ import {
   SliceDeliveryError,
 } from './slice-delivery-fault.ts';
 import type { SliceReplacement, } from './splice-slices.ts';
-import { assertWordingCoherent, } from './wording-coherence.ts';
 
 /**
  No shipped slice trimmed, which is every lane whose guard cut nothing.
@@ -192,6 +192,9 @@ function assertNoRepeat(
  preparation one for one, when an index set names a slice twice or names one
  the preparation never produced, or when a slice's reports contradict
  
+ @throws {@link WordingCoherenceError} when a slice's record contradicts
+ itself, by way of {@link decideDelivery}
+ 
  @example
  ```ts
  const ledger = buildSliceDelivery({ slices, wordings, changedSliceIndices, withdrawnSliceIndices, blocked, },);
@@ -320,16 +323,10 @@ export function buildSliceDelivery(
     position,
   ): SliceDeliveryRecord {
     /**
-     What the lane decided for this position.
+     What the lane decided for this position, present at every position since
+     the counts were checked equal.
      */
-    const wording = wordings[position];
-    if (wording === undefined)
-      throw new SliceDeliveryError({
-        fault: {
-          kind: 'wording-absent',
-          position,
-        },
-      },);
+    const wording = nonNullishOrThrow(wordings[position],);
 
     /**
      Index and archive wording this slice carries.
@@ -374,18 +371,11 @@ export function buildSliceDelivery(
       },);
     }
 
-    // THE TWO AXES AGAINST EACH OTHER, which no lane-against-preparation check
-    // covers:
-    // they compare the lane record against the preparation, and this compares
-    // the record against itself. `buildLaneSliceTexts` refuses all three of
-    // these while building, and a wording reaching here need not have come from
-    // it.
-    assertWordingCoherent({ wording, },);
-
     /**
-     What the document carries here, and by which route.
+     What the document carries here, by which route, and its wording; the
+     record's own two axes are checked against each other there.
      */
-    const delivery = decideDelivery({
+    const decision = decideDelivery({
       sliceIndex,
       wording,
       shipped: shipped.has(sliceIndex,),
@@ -400,10 +390,10 @@ export function buildSliceDelivery(
       incumbentKind: wording.incumbentKind,
       incumbentText: wording.incumbentText,
       outcome: wording.outcome,
-      shippedText: (delivery.kind === 'replacement-shipped')
-        ? (trimmedText.get(sliceIndex,) ?? nonNullishAccepted({ wording, },))
-        : wording.incumbentText,
-      delivery,
+      // A TRIM NAMES ONLY A SHIPPED SLICE, refused otherwise, so the guard's
+      // trimmed text stands in for a shipped decision and for nothing else.
+      shippedText: trimmedText.get(sliceIndex,) ?? decision.documentText,
+      delivery: decision.delivery,
     };
   },);
 }

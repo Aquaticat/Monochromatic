@@ -19,7 +19,7 @@ export type DeliverySetName = 'shipped' | 'withdrawn';
  
  @example
  ```ts
- const fault: SliceDeliveryFault = { kind: 'ships-without-decision', sliceIndex: 4, };
+ const fault: SliceDeliveryFault = { kind: 'decided-unstated', sliceIndex: 4, };
  ```
  */
 export type SliceDeliveryFault = {
@@ -85,16 +85,6 @@ export type SliceDeliveryFault = {
 
   /**
    Slice decided.
-   */
-  readonly sliceIndex: number;
-} | {
-  /**
-   A slice ships a replacement and reports no decision.
-   */
-  readonly kind: 'ships-without-decision';
-
-  /**
-   Slice shipping.
    */
   readonly sliceIndex: number;
 } | {
@@ -169,16 +159,6 @@ export type SliceDeliveryFault = {
   readonly sliceCount: number;
 } | {
   /**
-   No wording at a position the preparation has a slice for.
-   */
-  readonly kind: 'wording-absent';
-
-  /**
-   Position without a wording.
-   */
-  readonly position: number;
-} | {
-  /**
    Wording at a position names another slice than the one there.
    */
   readonly kind: 'wording-index-differs';
@@ -233,7 +213,7 @@ export type SliceDeliveryFault = {
  
  @example
  ```ts
- const sentence = deliverySentence({ fault: { kind: 'wording-absent', position: 2, }, },);
+ const sentence = deliverySentence({ fault: { kind: 'wording-count', wordings: 2, slices: 3, }, },);
  ```
  */
 export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFault; },): string {
@@ -266,8 +246,6 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
       String(fault.sliceIndex,)
     } decided wording of its own and is named as neither shipped nor withdrawn by a run that was not `
       + 'blocked, so what the document carries there is unstated';
-  if (fault.kind === 'ships-without-decision')
-    return `slice ${String(fault.sliceIndex,)} ships a replacement and reports no decision`;
   if (fault.kind === 'trim-names-unshipped')
     return `slice ${
       String(fault.sliceIndex,)
@@ -290,8 +268,6 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
     return `an index set names slice ${String(fault.sliceIndex,)}, which this preparation of ${
       String(fault.sliceCount,)
     } slices never produced`;
-  if (fault.kind === 'wording-absent')
-    return `no wording for slice at position ${String(fault.position,)}`;
   if (fault.kind === 'wording-index-differs')
     return `slice at position ${String(fault.position,)} is indexed ${
       String(fault.sliceIndex,)
@@ -314,7 +290,7 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
  
  @example
  ```ts
- throw new SliceDeliveryError({ fault: { kind: 'ships-without-decision', sliceIndex: 2, }, },);
+ throw new SliceDeliveryError({ fault: { kind: 'decided-unstated', sliceIndex: 2, }, },);
  ```
  */
 export class SliceDeliveryError extends Error {
