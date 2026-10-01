@@ -335,62 +335,74 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
     : '';
 
   /**
+   Each hand-off call: the `argv` it is handed and the runner it names.
+   */
+  const handOffs = nodes
+    .filter(function isHandOff(node,): boolean {
+      return (node.type === 'CallExpression') && (identifierName({ node: node.callee, },) === HAND_OFF);
+    },)
+    .map(function handedOff(node,): {
+      readonly argv: unknown;
+      readonly what: string;
+    } {
+      /**
+       The object the call is handed, absent when it is handed none.
+       */
+      const [options,] = node.arguments as readonly unknown[];
+
+      /**
+       Its properties, by name as written.
+       */
+      const properties = new Map(
+        (isTreeNode(options,) && (options.type === 'ObjectExpression')
+          ? options.properties as readonly TreeNode[]
+          : [])
+          .map(function named(property,): [string, TreeNode,] {
+            return [
+              propertyName({
+                node: property,
+                key: 'key',
+              },),
+              property,
+            ];
+          },),
+      );
+      return {
+        argv: properties.get('argv',)?.value,
+        what: literalText({ node: properties.get('what',)?.value, },),
+      };
+    },);
+
+  /**
    Start offsets of the `process.argv` reads a hand-off is given.
    */
-  const handedOn = new Set<number>();
+  const handedOn = new Set(
+    handOffs
+      .filter(function handsArgv({ argv, },): boolean {
+        return readsArgv({ node: argv, },);
+      },)
+      .map(function startOf({ argv, },): number {
+        return (unwrapped({ node: argv, },) as TreeNode).start;
+      },),
+  );
 
   /**
-   What the file reads, as `path: what`.
+   What the file reads, as `path: what`, starting with what its hand-offs
+   are handed wrongly.
    */
-  const reads: string[] = [];
-
-  /**
-   Whether a hand-off names this file's runner and hands it `process.argv`.
-   */
-  let handsOff = false;
-
-  for (const node of nodes) {
-    if ((node.type !== 'CallExpression') || (identifierName({ node: node.callee, },) !== HAND_OFF))
-      continue;
+  const reads: string[] = handOffs.flatMap(function handedWrongly({
+    argv,
+    what,
+  },): readonly string[] {
     /**
-     The object the call is handed, absent when it is handed none.
+     Whether the call names a runner other than this file's, or none.
      */
-    const [options,] = node.arguments as readonly unknown[];
-    /**
-     Its properties, by name as written.
-     */
-    const properties = new Map(
-      (isTreeNode(options,) && (options.type === 'ObjectExpression')
-        ? options.properties as readonly TreeNode[]
-        : [])
-        .map(function named(property,): [string, TreeNode,] {
-          return [
-            propertyName({
-              node: property,
-              key: 'key',
-            },),
-            property,
-          ];
-        },),
-    );
-    /**
-     The `argv` the call is handed.
-     */
-    const argv = properties.get('argv',)?.value;
-
-    /**
-     The runner the call names.
-     */
-    const what = literalText({ node: properties.get('what',)?.value, },);
-    if (readsArgv({ node: argv, },))
-      handedOn.add((unwrapped({ node: argv, },) as TreeNode).start,);
-    else
-      reads.push(`${file.path}: hands ${HAND_OFF} an argv other than process.argv`,);
-    if ((what === '') || (what !== runner))
-      reads.push(`${file.path}: hands ${HAND_OFF} what ${JSON.stringify(what,)}`,);
-    if (readsArgv({ node: argv, },) && (runner !== '') && (what === runner))
-      handsOff = true;
-  }
+    const namesAnother = (what === '') || (what !== runner);
+    return [
+      ...(readsArgv({ node: argv, },) ? [] : [`${file.path}: hands ${HAND_OFF} an argv other than process.argv`,]),
+      ...(namesAnother ? [`${file.path}: hands ${HAND_OFF} what ${JSON.stringify(what,)}`,] : []),
+    ];
+  },);
 
   for (const node of nodes) {
     if ((node.type === 'MemberExpression') && readsArgv({ node, },) && (!handedOn.has(node.start,)))
@@ -444,7 +456,12 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
   }
   return {
     reads,
-    handsOff,
+    handsOff: (runner !== '') && handOffs.some(function isOwn({
+      argv,
+      what,
+    },): boolean {
+      return readsArgv({ node: argv, },) && (what === runner);
+    },),
   };
 }
 
