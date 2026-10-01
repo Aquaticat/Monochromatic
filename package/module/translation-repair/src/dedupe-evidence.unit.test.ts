@@ -1,4 +1,8 @@
-/** Emission deduplication must retain every member's known decision evidence. */
+/**
+ Emission deduplication must retain every member's known decision evidence.
+ 
+ @module
+ */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { type AdjudicatedIssue, dedupeAcceptedIssues, tallyVotes, } from '../dist/final/node/index.mjs';
 

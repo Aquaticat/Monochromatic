@@ -231,9 +231,10 @@ async function runEntryPipeline(
      THE SEATS ARE READ INSIDE (`pass-prepare-reseat.ts`), off the meters
      first of all, and every stage that asks the roster re-seats under a hold
      (ledger X12).
+     
+     EVERY PREPARATION FINDING RIDES `paired.alignmentFindings` into the
+     artifact (ledger B54); a list returned beside it went unread here.
      */
-    // EVERY PREPARATION FINDING RIDES `paired.alignmentFindings` into the
-    // artifact (ledger B54); a list returned beside it went unread here.
     const { prepared: paired, } = await runPassPreparation({
       client,
       entryId: entry.id,
@@ -430,23 +431,21 @@ async function runEntryPipeline(
       l: tagged({ tag: entry.id, },),
     },);
 
-    /**
-     This entry's TALLY line, read off the artifact BEFORE it is written.
-     
-     NOT INLINED INTO THE `console.log` THAT PRINTS IT, which is where it sat until
-     2026-08-22 and where the obvious tidying would put it back. The line asks
-     what each slice would carry, and that question raises
-     `UnansweredContestSliceError` on a document whose lanes differ at a slice
-     the contest names nowhere. Raised after the write, that lands in the entry's
-     `catch`, which prints `status=ERROR` for an entry whose complete artifact is
-     already on disk: every later reader would then find a settled file the
-     pass reported as failed.
-     
-     Asking first makes the refusal truthful. A contest that cannot account for
-     a slice it was obliged to decide has not settled the document, and no
-     artifact should claim it did; the stage caches still hold every answer, so
-     a re-run reproduces the contradiction rather than losing it.
-     */
+    // This entry's TALLY line, read off the artifact BEFORE it is written.
+    //
+    // NOT INLINED INTO THE `console.log` THAT PRINTS IT, which is where it sat until
+    // 2026-08-22 and where the obvious tidying would put it back. The line asks
+    // what each slice would carry, and that question raises
+    // `UnansweredContestSliceError` on a document whose lanes differ at a slice
+    // the contest names nowhere. Raised after the write, that lands in the entry's
+    // `catch`, which prints `status=ERROR` for an entry whose complete artifact is
+    // already on disk: every later reader would then find a settled file the
+    // pass reported as failed.
+    //
+    // Asking first makes the refusal truthful. A contest that cannot account for
+    // a slice it was obliged to decide has not settled the document, and no
+    // artifact should claim it did; the stage caches still hold every answer, so
+    // a re-run reproduces the contradiction rather than losing it.
     assertPageGuards({
       artifact,
       slices: prepared.slices,

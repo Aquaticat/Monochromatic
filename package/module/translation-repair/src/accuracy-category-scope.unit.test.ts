@@ -1,4 +1,8 @@
-/** Distorted source-grounded content must not acquire a duplicate deletion diagnosis. */
+/**
+ Distorted source-grounded content must not acquire a duplicate deletion diagnosis.
+ 
+ @module
+ */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { buildAdjudicationMessages, buildCriticMessages, } from '../dist/final/node/index.mjs';
 

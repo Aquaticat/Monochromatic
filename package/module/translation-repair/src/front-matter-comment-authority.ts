@@ -132,9 +132,6 @@ function contributorAttribution(
   if (comment.kind !== 'found')
     return { kind: 'not-found', };
   /**
-   Last contributor delimiter, allowing place comment itself to carry commas.
-   */
-  /**
    Whether contributor delimiter exists in comment.
    */
   const hasContributor = comment.text
@@ -142,7 +139,9 @@ function contributorAttribution(
   if (!hasContributor)
     return { kind: 'not-found', };
   /**
-   Last contributor delimiter after presence was established.
+   Last contributor delimiter after presence was established. Using the last
+   occurrence, not the first, lets the place portion of the comment carry its
+   own commas without being mistaken for the marker.
    */
   const markerAt = comment.text
     .lastIndexOf(CONTRIBUTOR_MARKER,);

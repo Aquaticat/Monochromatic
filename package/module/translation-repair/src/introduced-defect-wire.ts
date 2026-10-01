@@ -98,15 +98,6 @@ export function isIntroducedDefectVerdict(value: unknown,): value is IntroducedD
 }
 
 /**
- System instructions shared by every prober call.
- 
- Wording follows the design review: the negative case is named as a search
- that found nothing rather than as a clean bill of health, and the four
- exclusions are stated as rules rather than as hints, because the pre-existing
- defect sitting in every region is the thing a general "review this" prompt
- reports first.
- */
-/**
  Which edit a probe run is auditing.
  
  The question is identical for both and the probe's rules are shared; only what
@@ -213,6 +204,12 @@ const PROBE_HOUSE_RULE_CLAUSE =
 
 /**
  Composes the prober's system prompt for one edit kind.
+ 
+ Wording follows the design review: the negative case is named as a search
+ that found nothing rather than as a clean bill of health, and the four
+ exclusions are stated as rules rather than as hints, because the pre-existing
+ defect sitting in every region is the thing a general "review this" prompt
+ reports first.
  
  Composed rather than substituted into a placeholder: the framing is prose
  built from a closed set, and a template with a marker in it is a small

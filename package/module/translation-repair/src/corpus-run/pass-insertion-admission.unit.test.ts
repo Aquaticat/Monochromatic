@@ -164,14 +164,14 @@ function coverageClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       /**
-       Next scripted seat outcome, which must exist for every requested seat.
-       */
-      /**
        Whether latest unresolved verdict is present in this prompt.
        */
       const isFollowup = request.messages.some(function hasPriorVerdict(message,): boolean {
         return messageText({ message, },).includes('PRIOR UNRESOLVED VERDICT',);
       },);
+      /**
+       Next scripted seat outcome, which must exist for every requested seat.
+       */
       const next = isFollowup ? followups.next() : responses.next();
       if (next.done === true)
         throw new Error('coverage stage asked beyond scripted roster',);

@@ -92,10 +92,8 @@ export async function gatherEntryPictures(
   if (named.size === 0)
     return gathered;
 
-  /**
-   Every read, run together: these are local git invocations rather than
-   model calls, so nothing here contends for a per-model slot.
-   */
+  // Every read, run together: these are local git invocations rather than
+  // model calls, so nothing here contends for a per-model slot.
   await Promise.all([...named].map(async function gather(assetName,): Promise<void> {
     try {
       gathered.set(

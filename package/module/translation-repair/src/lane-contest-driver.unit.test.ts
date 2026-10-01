@@ -552,16 +552,13 @@ async function drive(
   },);
 
   /**
-   Client-level activity instrument, outside provider slot limiting so it
-   measures slices admitted by the driver rather than transport concurrency.
-   */
-  /**
    Caller signal a fixture may abort after enough contest calls were admitted.
    */
   const controller = new AbortController();
 
   /**
-   Calls admitted at client boundary.
+   Calls admitted at client boundary, outside provider slot limiting so it
+   measures slices admitted by the driver rather than transport concurrency.
    */
   const admitted = { count: 0, };
 

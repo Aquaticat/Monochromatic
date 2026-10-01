@@ -245,14 +245,15 @@ export async function drainBody(
    SEPARATE FROM THE IDLE GUARD because they detect opposite things. The idle
    guard asks whether bytes are arriving; a degenerating model answers yes
    forever. Neither can stand in for the other.
+   
+   GIVEN THIS CALL'S OWN BOUND WHEN THE CALLER KNOWS ONE, and policed at the
+   module default otherwise. The default is absolute, and an absolute number
+   cannot separate a long legitimate passage from a short line that ran away:
+   the emission that forced this through was 10381 characters against a
+   56-character source, well under the default and 185 times its input. A
+   caller that knows how large its input was can say so, and
+   `produced-volume-bound.ts` records what that bound rests on.
    */
-  // GIVEN THIS CALL'S OWN BOUND WHEN THE CALLER KNOWS ONE, and policed at the
-  // module default otherwise. The default is absolute, and an absolute number
-  // cannot separate a long legitimate passage from a short line that ran away:
-  // the emission that forced this through was 10381 characters against a
-  // 56-character source, well under the default and 185 times its input. A
-  // caller that knows how large its input was can say so, and
-  // `produced-volume-bound.ts` records what that bound rests on.
   const watch = watchRunaway({
     // Conditional spreads keep each knob absent rather than explicitly
     // undefined, so the watch applies its own default for whichever the

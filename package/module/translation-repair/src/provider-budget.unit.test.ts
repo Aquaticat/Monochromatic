@@ -700,7 +700,7 @@ await describe({
         },);
 
         await budgets.read({ signal: SIGNAL, },);
-        /** Three refusals landing before the reading the first one forced can finish. */
+        // Three refusals landing before the reading the first one forced can finish.
         await Promise.all([
           budgets.markRefused({
             provider: 'hyper',

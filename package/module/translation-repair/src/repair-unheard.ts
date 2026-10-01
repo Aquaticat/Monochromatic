@@ -185,9 +185,7 @@ export function assertUnheardKeptArchive(
   if (!heardNobodyAbout({ outcome, },))
     return;
 
-  /**
-   Where the contradiction is, for a message that names one slice.
-   */
+  // Where the contradiction is, for a message that names one slice.
   if (outcome.repairedText !== incumbentText) {
     throw new RepairUnheardError({
       sliceIndex: outcome.sliceIndex,

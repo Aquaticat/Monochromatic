@@ -132,12 +132,12 @@ function countMarker(
   },
 ): number {
   /**
-   User prompt content of the request.
-   */
-  /**
    Last message, whose text the fixture branches on.
    */
   const last = request.messages.at(-1,);
+  /**
+   User prompt content of the request.
+   */
   const content = (last === undefined) ? '' : messageText({ message: last, },);
 
   return content.split(marker,).length - 1;

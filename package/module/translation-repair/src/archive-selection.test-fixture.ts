@@ -1,5 +1,7 @@
 /**
  Test-only archive review clients exercising real stage boundaries.
+ 
+ @module
  */
 import {
   type ChatJsonOutcome,

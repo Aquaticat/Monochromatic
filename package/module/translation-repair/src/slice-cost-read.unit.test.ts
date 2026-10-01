@@ -221,10 +221,8 @@ await describe({
           fn: async () => {
             const said: string[] = [];
 
-            /**
-             Loop that leaves its body early for every slice, as a lane does for a
-             slice it has nothing to do with.
-             */
+            // Loop that leaves its body early for every slice, as a lane does for a
+            // slice it has nothing to do with.
             for (const sliceIndex of [
               0,
               1,

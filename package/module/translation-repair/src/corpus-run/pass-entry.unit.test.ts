@@ -263,9 +263,6 @@ const FRONT_MATTER_ENTRY = {
 };
 
 /**
- Entry inserting source metadata into target page that has none.
- */
-/**
  Entry whose archive translated its metadata, which therefore stands: the
  lanes never see slice zero and the page carries the archive's bytes.
  */
@@ -275,6 +272,9 @@ const FRONT_MATTER_STANDING_ENTRY = {
   targetText: `${FRONT_MATTER_FRESH}${TARGET_TEXT}`,
 };
 
+/**
+ Entry inserting source metadata into target page that has none.
+ */
 const FRONT_MATTER_SOURCE_ONLY_ENTRY = {
   id: 'CatFrontMatterInsertion',
   sourceText: `${FRONT_MATTER_SOURCE}${SOURCE_TEXT}`,

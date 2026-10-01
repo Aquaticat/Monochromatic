@@ -1156,11 +1156,11 @@ await describe({
         + 'on whole or reading its name, and an unmarked class',
       fn: async () => {
         /**
-         One cat-themed file holding each shape, a function apiece.
+         One cat-themed file holding each shape, a function apiece. Each
+         interpolation's `$` and `{` are split across a concatenation, so no
+         plain string holds a whole placeholder, which lint reads as a
+         template literal written by mistake.
          */
-        // Each interpolation's `$` and `{` are split across a concatenation, so
-        // no plain string holds a whole placeholder, which lint reads as a
-        // template literal written by mistake.
         const catFile: SourceText = {
           path: 'cat-refusals.ts',
           isTest: false,

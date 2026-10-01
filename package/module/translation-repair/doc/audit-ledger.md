@@ -16625,6 +16625,42 @@ text is ordered by `compareCodePoints` and cased without the locale;
 "Text by code point";
 the scan refuses a new locale-dependent call.
 
+### B96: TSDoc blocks that document nothing
+
+Found 2026-10-01 (UTC) by a census of every TSDoc block in the package
+(`~/temp/agent/audit-glossary-fix/orphan-tsdoc-census-report.md`,
+29,778 blocks read forward from each block to what follows it),
+fixed in the commit adding this entry.
+A TSDoc block documents the declaration directly after it.
+30 stood where no declaration claimed them:
+before a second TSDoc block,
+before a `//` comment,
+or before a statement,
+so a reader at the declaration saw the other block or none,
+and the tsdoc lint plugin never read them,
+since every one of its rules walks from a declaration back to the nearest block
+(`createTsdocVisitor`,
+`package/oxlint-plugin/tsdoc/src/rule/tsdoc-visitors.ts`).
+Twelve moved to the declaration they describe,
+three of them merged with a shorter block already there;
+eight that described statements became `//` comments;
+five that repeated the declaration's own block went,
+two after folding in a clause the survivor lacked;
+and five pairs of a TSDoc block and a `//` comment became one block.
+Seven file headers gained the `@module` tag the package's other headers carry.
+
+Open:
+37 blocks are separated from their declaration by a `disable-next-line` lint suppression,
+the shape the repository's rule forbids
+(a suppression on a documented declaration opens before the TSDoc and closes after the declaration);
+they are rewrapped in their own change,
+and the forward scan that guards this entry lands with it,
+since it would fail on each of them today.
+
+Recurrence:
+`mistake-prevention.md`,
+"Lint and edits".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

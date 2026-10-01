@@ -285,9 +285,9 @@ await describe({
 
         /**
          Lines announcing a discard, which is the only kind this asks about.
+         THROUGH THE LOGGER, so the line carries its level and tag prefix and
+         the notice is found inside it rather than at its start.
          */
-        // THROUGH THE LOGGER, so the line carries its level and tag prefix and
-        // the notice is found inside it rather than at its start.
         const announced = lines.filter(function isDiscard(line,): boolean {
           return line.includes('SLICE discarding',);
         },);

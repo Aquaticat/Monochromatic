@@ -59,14 +59,6 @@ export type PatchOperation = {
 };
 
 /**
- One rejected operation with its scorecard-stable reason.
- 
- @example
- ```ts
- const rejection: PatchRejection = { operation, reason: 'stale-base-hash', };
- ```
- */
-/**
  Whether this application enforces the preservation gate, and with what
  licence.
  

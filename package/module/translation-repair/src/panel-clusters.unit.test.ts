@@ -1,4 +1,8 @@
-/** Cluster-local packets retain every claim, merge ballot and independent quorum basis. */
+/**
+ Cluster-local packets retain every claim, merge ballot and independent quorum basis.
+ 
+ @module
+ */
 import { type Logger, tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {

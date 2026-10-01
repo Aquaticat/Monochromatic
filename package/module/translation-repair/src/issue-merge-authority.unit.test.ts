@@ -1,4 +1,8 @@
-/** Rejected descriptions of a real defect must not become repair authority through merging. */
+/**
+ Rejected descriptions of a real defect must not become repair authority through merging.
+ 
+ @module
+ */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   type AdjudicationConfig,

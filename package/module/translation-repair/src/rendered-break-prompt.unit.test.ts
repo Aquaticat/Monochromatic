@@ -34,7 +34,7 @@ await describe({
         expect(JSON.stringify(plan.messages,),).toContain(CONTRACT,);
         expect(JSON.stringify(plan.messages,),).toContain('soft newlines',);
         expect(JSON.stringify(plan.messages,),).toContain('<br/>',);
-        /** Verbatim source must remain evidence, not be canonicalized in place. */
+        // Verbatim source must remain evidence, not be canonicalized in place.
         expect(JSON.stringify(plan.messages,),).toContain(JSON.stringify(SOURCE,).slice(1, -1,),);
       },
     },),

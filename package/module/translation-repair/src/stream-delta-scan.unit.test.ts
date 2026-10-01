@@ -290,10 +290,8 @@ await describe({
         expect(deltas[0]?.text,).toBe('A cat. ',);
         expect(unreadable,).toBe(0,);
 
-        /**
-         And the done marker in the same tight form, which must not read as a
-         frame nobody could parse.
-         */
+        // And the done marker in the same tight form, which must not read as a
+        // frame nobody could parse.
         expect(scanAll({ raw: 'data:[DONE]\n\n', },).unreadable,).toBe(0,);
       },
     },),

@@ -1045,7 +1045,12 @@ line numbers for in-place edits were worked out from offsets rather than read,
 and garbled comments in three runner files before the diff showed it (M93);
 and the scratch readers of lint output could miss a finding:
 a location pattern written with a Unicode dash,
-and a summary pattern that misses oxlint's singular "1 warning" (M95).
+and a summary pattern that misses oxlint's singular "1 warning" (M95);
+and 30 TSDoc blocks documented nothing,
+each standing before a second block,
+a `//` comment or a statement,
+which the tsdoc lint plugin never reads,
+since it walks from each declaration back to the nearest block (ledger B96).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1097,6 +1102,10 @@ each a check on the other (M95).
 Commit before `--fix` and read the diff after it for anything but layout.
 A split searches `src`,
 tests and `doc` for the old file's name and repoints every hit in the same commit.
+A TSDoc block sits directly before the declaration it documents:
+a note on a statement is a `//` comment,
+two blocks for one declaration are one,
+and a lint suppression on a documented declaration opens before the TSDoc and closes after the declaration (ledger B96).
 The line cap is met by splitting by concern,
 never by reformatting or disabling the rule.
 A Markdown change runs `mise run lint:markdown <files>` from the repository root,

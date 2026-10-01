@@ -88,9 +88,6 @@ const REPLACEMENT = 'The cat is asleep.';
 const PATCHED_TEXT = 'The cat is asleep. She wakes at dusk.';
 
 /**
- Accepted issue the replacement was written for.
- */
-/**
  Weighted mass behind this fixture's claim, as the panel summed it.
  */
 const PANEL_TALLY = {
@@ -130,6 +127,9 @@ const PANEL_READING = {
   tally: PANEL_TALLY,
 } as const satisfies ClaimPanelReading;
 
+/**
+ Accepted issue the replacement was written for.
+ */
 const ISSUE: AdjudicatedIssue = {
   issueId: 'adjudicated/nap',
   status: 'accepted' as const,

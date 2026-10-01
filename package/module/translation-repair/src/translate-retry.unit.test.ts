@@ -271,9 +271,6 @@ function scriptedRig(
           .join('\n',);
 
         /**
-         Ballot for this judging.
-         */
-        /**
          What this seat says this judging: a rejection, or the rendering it
          wants by a word only that rendering carries.
          */
@@ -281,6 +278,9 @@ function scriptedRig(
           judging,
           request.modelId,
         );
+        /**
+         Ballot for this judging.
+         */
         const ballot: unknown = {
           best: (wanted === 'reject')
             ? 0
@@ -343,13 +343,13 @@ async function judgedUnder(
   readonly judgePrompts: readonly string[];
 }> {
   /**
-   Scripted client and its counter.
-   */
-  /**
    Translator whose rendering carries the word the scripts ask for, known
    only once the slate is produced, since the rig renders in call order.
    */
   const author = { dozes: NOBODY, };
+  /**
+   Scripted client and its counter.
+   */
   const rig = scriptedRig({
     ballotFor: function withAuthor(
       judging,

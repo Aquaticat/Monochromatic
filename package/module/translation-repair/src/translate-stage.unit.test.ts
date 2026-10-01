@@ -230,10 +230,6 @@ function laneClient(
         },),);
 
         /**
-         Rendering this translator was scripted to return, absent when it was
-         scripted to answer unusably.
-         */
-        /**
          Whether this request is grounded in latest rejected slate.
          */
         const isFollowup = request.messages.some(function carriesRejection(message,): boolean {
@@ -245,6 +241,10 @@ function laneClient(
         const selectedTranslations = (isFollowup && (followupTranslations !== undefined))
           ? (followupTranslations[productionRound - 1] ?? translations)
           : translations;
+        /**
+         Rendering this translator was scripted to return, absent when it was
+         scripted to answer unusably.
+         */
         const scripted = selectedTranslations[request.modelId];
         if (scripted === undefined) {
           return {
@@ -382,9 +382,6 @@ async function runLane(
   };
 
   /**
-   What the lane decided for this slice.
-   */
-  /**
    Judge sheets this round produced, so a case can read what judges were told.
    */
   const judgeSheets: string[] = [];
@@ -393,6 +390,9 @@ async function runLane(
    */
   const producerPrompts: string[] = [];
 
+  /**
+   What the lane decided for this slice.
+   */
   const result = await runTranslateStage({
     client: laneClient({
       translations,

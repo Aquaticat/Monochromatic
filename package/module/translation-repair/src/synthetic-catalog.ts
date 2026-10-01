@@ -52,7 +52,69 @@ export type {
 } from './roster-id.ts';
 
 /**
- Every always-on Synthetic chat model this pipeline may call.
+ Verified per-model facts routing and budgeting read.
+ 
+ @example
+ ```ts
+ const info: SyntheticModelInfo = SYNTHETIC_MODELS['hf:zai-org/GLM-5.3-Flash'];
+ ```
+ */
+export type SyntheticModelInfo = {
+  /**
+   Model identifier sent in request bodies.
+   */
+  readonly id: SyntheticServedId;
+
+  /**
+   Vendor family for cross-family fan-out and rerouting.
+   */
+  readonly family: SyntheticVendorFamily;
+
+  /**
+   Whether this model can be sent an image alongside its text.
+   
+   READ FROM THE PROVIDER RATHER THAN ASSUMED. `GET
+   https://api.synthetic.new/openai/v1/models` reports `input_modalities` per
+   model, and the values here are that response as of 2026-08-29: three of the
+   four Synthetic roster models read images. The provider's other vision
+   entries, `syn:large:vision` and `syn:small:vision`, are aliases of two of
+   those same three. The vision sub-roster is now EXACTLY THREE.
+   
+   WHY IT IS A FIELD RATHER THAN A FETCH: the rest of this catalog is static,
+   a build that reached the network would fail closed on a provider outage,
+   and a wrong value here fails loudly at the first call rather than quietly.
+   */
+  readonly readsImages: boolean;
+
+  /**
+   Context window in tokens.
+   */
+  readonly contextLength: number;
+
+  /**
+   Maximum output tokens per completion.
+   */
+  readonly maxOutputLength: number;
+
+  /**
+   Input price in dollars per token;
+   request weighting derives from ratios of this field.
+   */
+  readonly promptDollarsPerToken: number;
+
+  /**
+   Output price in dollars per token;
+   feeds weekly-credit spend estimates.
+   */
+  readonly completionDollarsPerToken: number;
+};
+
+/**
+ Every always-on Synthetic chat model this pipeline may call, keyed by id
+ and read off the cards. All entries support `json_mode` and
+ `structured_outputs` per live feature flags, so schema-constrained calls
+ need no per-model capability branching; client-side validation stays
+ regardless because schema strictness is unverified.
  
  These are the models the provider offers that this pipeline seats. The models
  endpoint also lists `syn:large:text`, `syn:large:vision`, `syn:small:text`,
@@ -113,72 +175,7 @@ export type {
  after adjacent required-correction reviews produced contradictory guidance.
  Historical artifacts retain the exact departed identity, but no active
  roster or callable catalog row reaches it.
- */
-
-/**
- Verified per-model facts routing and budgeting read.
  
- @example
- ```ts
- const info: SyntheticModelInfo = SYNTHETIC_MODELS['hf:zai-org/GLM-5.3-Flash'];
- ```
- */
-export type SyntheticModelInfo = {
-  /**
-   Model identifier sent in request bodies.
-   */
-  readonly id: SyntheticServedId;
-
-  /**
-   Vendor family for cross-family fan-out and rerouting.
-   */
-  readonly family: SyntheticVendorFamily;
-
-  /**
-   Whether this model can be sent an image alongside its text.
-   
-   READ FROM THE PROVIDER RATHER THAN ASSUMED. `GET
-   https://api.synthetic.new/openai/v1/models` reports `input_modalities` per
-   model, and the values here are that response as of 2026-08-29: three of the
-   four Synthetic roster models read images. The provider's other vision
-   entries, `syn:large:vision` and `syn:small:vision`, are aliases of two of
-   those same three. The vision sub-roster is now EXACTLY THREE.
-   
-   WHY IT IS A FIELD RATHER THAN A FETCH: the rest of this catalog is static,
-   a build that reached the network would fail closed on a provider outage,
-   and a wrong value here fails loudly at the first call rather than quietly.
-   */
-  readonly readsImages: boolean;
-
-  /**
-   Context window in tokens.
-   */
-  readonly contextLength: number;
-
-  /**
-   Maximum output tokens per completion.
-   */
-  readonly maxOutputLength: number;
-
-  /**
-   Input price in dollars per token;
-   request weighting derives from ratios of this field.
-   */
-  readonly promptDollarsPerToken: number;
-
-  /**
-   Output price in dollars per token;
-   feeds weekly-credit spend estimates.
-   */
-  readonly completionDollarsPerToken: number;
-};
-
-/**
- Catalog of every model, keyed by id, read off the cards.
- All entries support `json_mode` and `structured_outputs` per live feature flags,
- so schema-constrained calls need no per-model capability branching;
- client-side validation stays regardless because schema strictness is unverified.
-
  @example
  ```ts
  const flash = SYNTHETIC_MODELS['hf:openai/gpt-oss-120b'];

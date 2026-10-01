@@ -201,9 +201,6 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 }
 
 /**
- Models that render each slice.
- */
-/**
  Exactly the failure an entry deadline trips with.
  
  HELD AT MODULE SCOPE so the fixture that aborts and the case that asserts
@@ -213,6 +210,9 @@ function renderingFor({ content, }: { readonly content: string; },): string {
  */
 const ENTRY_DEADLINE_FAILURE = new Error('entry deadline reached',);
 
+/**
+ Models that render each slice.
+ */
 const TRANSLATORS: readonly RosterModelId[] = [
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,

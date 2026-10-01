@@ -125,9 +125,7 @@ function scriptedRefiner(
         .name
         ?? '';
 
-      /**
-       Scripted reply for the stage.
-       */
+      // Scripted reply for the stage.
       if ((stage !== 'refine_report') && (selectionSheets !== undefined))
         selectionSheets.push(JSON.stringify(request.messages,),);
       /**

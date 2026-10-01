@@ -22,16 +22,6 @@ import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 // math would pair their dollar signs in 171 of those 457 inputs.
 
 /**
- Signals MDX source that refuses to parse;
- corpus documents compile upstream, so failure indicates corruption
- or a construct outside the mirrored grammar.
- 
- @example
- ```ts
- throw new MdxParseError({ cause: error, },);
- ```
- */
-/**
  Describes where an MDX refusal stopped, quoting nothing it read.
  
  MOSTLY SAFE ALREADY, and that is why this is narrow rather than absent. Four

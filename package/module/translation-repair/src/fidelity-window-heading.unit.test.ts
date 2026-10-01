@@ -1,4 +1,8 @@
-/** Heading-boundary windows preserve one following body without crossing another section. */
+/**
+ Heading-boundary windows preserve one following body without crossing another section.
+ 
+ @module
+ */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   type ChunkPair,

@@ -325,20 +325,18 @@ export function preparationIdentity(
   { prepared, }: { readonly prepared: PreparedDocumentPair; },
 ): PreparationIdentity {
   /**
-   Whole payload, framed field by field in a fixed order.
-   
-   Both document texts are hashed beside the slices rather than trusted to be
-   implied by them: a section neither side sliced appears in no row, so two
-   preparations differing only outside every slice would otherwise agree.
-   */
-  /**
    Identity scheme selected by preparation generation.
    */
   const format = prepared.legacyIdentity === true
     ? LEGACY_IDENTITY_FORMAT
     : IDENTITY_FORMAT;
   /**
-   Whole preparation payload under selected identity scheme.
+   Whole preparation payload, framed field by field in a fixed order under
+   the selected identity scheme.
+   
+   Both document texts are hashed beside the slices rather than trusted to be
+   implied by them: a section neither side sliced appears in no row, so two
+   preparations differing only outside every slice would otherwise agree.
    */
   const payload = [
     framed({ value: format, },),

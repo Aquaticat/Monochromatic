@@ -216,9 +216,6 @@ export function applyLaneContestEligibility(
     ...((eligibility === undefined) ? {} : { eligibility, }),
   },);
   /**
-   Whether raw roster spent any ballot on deterministically invalid lane.
-   */
-  /**
    Raw ballots retained without candidate redirection.
    */
   const { ballots, } = outcome;
