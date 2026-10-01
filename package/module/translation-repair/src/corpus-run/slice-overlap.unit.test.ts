@@ -118,6 +118,20 @@ await describe({
     },),
 
     it({
+      name: 'RETURNS THE CALLER\'S FALLBACK for a variable set to blanks, as it does for one set empty and as the '
+        + 'grace, writer grace, cap, spend ceiling, credit and request pace dials do, since blanks ask for no '
+        + 'overlap at all; it read them as an unreadable value and refused (ledger B73)',
+      fn: async () => {
+        using dial = dialSaying({ says: '  ', },);
+
+        expect(readOverlapSetting({ fallback: 1, },),).toEqual({
+          overlap: 1,
+          source: 'fallback',
+        },);
+      },
+    },),
+
+    it({
       name: 'REFUSES a value that is not a number rather than falling back to one, because a typo '
         + 'that quietly became sequential would produce a comparison of two identical runs and a '
         + 'recorded conclusion that overlapping units changes nothing',
