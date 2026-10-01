@@ -466,6 +466,89 @@ await describe({
       },
     },),
     it({
+      name: 'PASSES OVER HEADINGS THE ORIGINAL NEVER NUMBERED: a slice with no numbered heading, a heading that '
+        + 'opens with 其 but carries no colon, and an unnumbered heading beside a numbered one in the same slice '
+        + '(T8, twentieth batch)',
+      fn: async () => {
+        const unified = unifyHeadingSeries({
+          slices: [
+            sections({
+              sliceIndex: 0,
+              source: '### 序\n\n猫。',
+              target: '### Preface\n\nCat.',
+            },),
+            sections({
+              sliceIndex: 1,
+              source: '### 其他\n\n猫。\n\n### 其一：橘猫\n\n猫。',
+              target: '### Others\n\nCat.\n\n### One: Ginger\n\nCat.',
+            },),
+            sections({
+              sliceIndex: 2,
+              source: '### 其二：黑猫\n\n猫。',
+              target: '### Two: Sooty\n\nCat.',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 1,
+              replacementText: '### Others\n\nCat.\n\n### I: Ginger\n\nCat.',
+            },
+            {
+              sliceIndex: 2,
+              replacementText: '### II: Sooty\n\nCat.',
+            },
+          ],
+        },);
+        expect(unified.replacements,).toEqual([
+          {
+            sliceIndex: 1,
+            replacementText: '### Others\n\nCat.\n\n### One: Ginger\n\nCat.',
+          },
+          {
+            sliceIndex: 2,
+            replacementText: '### Two: Sooty\n\nCat.',
+          },
+        ],);
+      },
+    },),
+    it({
+      name: 'LETS THE RENDERINGS DECIDE WHERE THE ARCHIVE HEADS THE SERIES IN TWO STYLES, and counts a rendered '
+        + 'prefix that is no ordinal as no number at all (T8, twentieth batch)',
+      fn: async () => {
+        const unified = unifyHeadingSeries({
+          slices: [
+            section({
+              sliceIndex: 0,
+              source: '### 其一：橘猫',
+              target: '### One: Ginger',
+            },),
+            PARTED[1] as ChunkPair,
+            PARTED[2] as ChunkPair,
+          ],
+          replacements: [
+            rendered({
+              sliceIndex: 0,
+              heading: '### Kitten: Ginger',
+            },),
+            rendered({
+              sliceIndex: 1,
+              heading: '### Sooty',
+            },),
+            rendered({
+              sliceIndex: 2,
+              heading: '### III: Snowy',
+            },),
+          ],
+        },);
+        expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
+          '### Kitten: Ginger',
+          '### Sooty',
+          '### Snowy',
+        ],);
+        expect(unified.findings[0],).toContain('most renderings\' style',);
+      },
+    },),
+    it({
       name: 'READS THE ARCHIVE\'S STYLE ONLY WHERE ITS HEADINGS PAIR WITH THE ORIGINAL\'S: an archive slice that '
         + 'opens with an interlude heading of its own once had that heading read as the series\' third, so the '
         + 'archive seemed to use two styles and its own "Part" style was lost (ledger B84)',

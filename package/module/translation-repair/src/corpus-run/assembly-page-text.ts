@@ -1,5 +1,3 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 
@@ -58,6 +56,41 @@ export function pageTextBySlice(
 }
 
 /**
+ Refusal to read page text for a slice the page text was never built from.
+
+ @example
+ ```ts
+ throw new SliceNotOnPageError({ sliceIndex: 7, },);
+ ```
+ */
+export class SliceNotOnPageError extends Error {
+  /**
+   Declares this message safe to forward: it names a slice index and nothing
+   else.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Slice the page text lacks.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   Names the slice the page text lacks and what that means.
+
+   @param sliceIndex - slice asked for, which the map was not built from
+   */
+  constructor({ sliceIndex, }: { readonly sliceIndex: number; },) {
+    super(
+      `slice ${String(sliceIndex,)} is not among the slices this page text was built from, so a page-assembly `
+        + 'pass asked for a slice of some other list; reading it as empty text would ship that section as nothing',
+    );
+    this.name = 'SliceNotOnPageError';
+    this.sliceIndex = sliceIndex;
+  }
+}
+
+/**
  Text the page carries for one slice, read from what `pageTextBySlice` built.
 
  THROWS RATHER THAN READING A MISSING SLICE AS EMPTY TEXT. The map holds
@@ -70,6 +103,8 @@ export function pageTextBySlice(
  @param sliceIndex - slice of the same list the map was built from
 
  @returns The slice's page text
+
+ @throws SliceNotOnPageError where the map lacks the slice
 
  @example
  ```ts
@@ -85,7 +120,13 @@ export function pageTextOf(
     readonly sliceIndex: number;
   },
 ): string {
-  return nonNullishOrThrow(pageText.get(sliceIndex,),);
+  /**
+   The slice's page text, if the map holds the slice.
+   */
+  const text = pageText.get(sliceIndex,);
+  if (text === undefined)
+    throw new SliceNotOnPageError({ sliceIndex, },);
+  return text;
 }
 
 /**

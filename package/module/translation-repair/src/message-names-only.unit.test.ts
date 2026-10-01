@@ -156,6 +156,7 @@ const MARKED_CLASSES: readonly string[] = [
   'SliceCoverageError',
   'SliceDeliveryError',
   'SliceIndexingError',
+  'SliceNotOnPageError',
   'SliceRecordContradictionError',
   'SourceMapFileError',
   'SpendCeilingOverrideError',

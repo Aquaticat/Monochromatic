@@ -18,6 +18,12 @@ export {
   withoutGloss,
 } from './corpus-run/handle-reading.ts';
 export { unifyHeadingSeries, } from './corpus-run/heading-series-unify.ts';
+export { headingTitles, } from './corpus-run/heading-title-lines.ts';
+export {
+  pageTextBySlice,
+  pageTextOf,
+  SliceNotOnPageError,
+} from './corpus-run/assembly-page-text.ts';
 export {
   NO_NUMBER,
   type OrdinalStyle,
