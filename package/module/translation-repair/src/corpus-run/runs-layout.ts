@@ -16,6 +16,36 @@ import { FIXED_TREE_DIR, } from './publish-fixed.ts';
 // (the cap census skips the large ones) cannot drift from what a pass writes.
 
 /**
+ Name of the default runs directory, under the worktree's
+ `node_modules/.monochromatic/`; a runs directory set by
+ `TRANSLATION_REPAIR_RUNS_DIR` beside it carries it as a prefix by habit
+ (`translation-repair-runs-pass16`), which the cache-account audit reads.
+ */
+export const RUNS_DIR_NAME = 'translation-repair-runs';
+
+/**
+ The default runs directory of one worktree, which `resolveRunsDir`
+ (`run-config.ts`) uses unless `TRANSLATION_REPAIR_RUNS_DIR` names another.
+
+ @param worktreeRoot - top directory of the worktree
+
+ @returns Its gitignored runs directory
+
+ @example
+ ```ts
+ const runsDir = defaultRunsDirIn({ worktreeRoot, },);
+ ```
+ */
+export function defaultRunsDirIn({ worktreeRoot, }: { readonly worktreeRoot: string; },): string {
+  return join(
+    worktreeRoot,
+    'node_modules',
+    '.monochromatic',
+    RUNS_DIR_NAME,
+  );
+}
+
+/**
  Directory under a runs dir holding per-entry slice caches.
  */
 export const SLICE_CACHE_DIR = 'slice-cache';

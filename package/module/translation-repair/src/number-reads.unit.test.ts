@@ -129,13 +129,13 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/cache-account-audit.ts#utcMinutes: new Date': {
-    calls: 1,
-    why: EPOCH_MILLISECONDS,
-  },
   'corpus-run/cache-account-commits.ts#sourceCommitOf: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
+  },
+  'corpus-run/cache-account-commits.ts#utcMinutes: new Date': {
+    calls: 1,
+    why: EPOCH_MILLISECONDS,
   },
   'corpus-run/cache-account-read.ts#declaresVersion: Number': {
     calls: 1,

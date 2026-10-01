@@ -2,8 +2,8 @@
  Tests the commit reading behind the pre-launch cache version check (ledger
  M28): a log line read into a commit, a subject's own tab kept and a short
  line refused; the setting commit as the newest that added the value on
- balance; and the commits no account cites by nine characters, each with the
- versions set strictly before it.
+ balance; the commits no account cites by nine characters, each with the
+ versions set strictly before it; and a time written as UTC to the minute.
 
  @module
  */
@@ -22,6 +22,7 @@ import {
   type SourceCommit,
   sourceCommitOf,
   unaccountedCommits,
+  utcMinutes,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -238,6 +239,28 @@ await describe({
           ['nap e', ['NAP_CACHE_VERSION', 'PURR_CACHE_VERSION',],],
           ['nap f', ['NAP_CACHE_VERSION',],],
         ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: utcMinutes.name,
+  children: [
+    it({
+      name: 'WRITES A TIME AS UTC TO THE MINUTE, dropping the seconds rather than rounding them up',
+      fn: async () => {
+        expect(utcMinutes({ seconds: 0, },),).toBe('1970-01-01T00:00Z',);
+        expect(utcMinutes({
+          seconds: Date.UTC(
+            2_026,
+            8,
+            27,
+            14,
+            5,
+            59,
+          ) / 1_000,
+        },),).toBe('2026-09-27T14:05Z',);
       },
     },),
   ],

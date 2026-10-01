@@ -89,7 +89,7 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a commit hash',
   ],
   [
-    'corpus-run/cache-account-audit.ts#ISO_MINUTES_LENGTH',
+    'corpus-run/cache-account-commits.ts#ISO_MINUTES_LENGTH',
     'an ISO time stamp',
   ],
   [

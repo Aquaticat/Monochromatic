@@ -12,6 +12,7 @@ export {
   sourceCommitOf,
   type UnaccountedCommit,
   unaccountedCommits,
+  utcMinutes,
   type VersionSetting,
 } from './corpus-run/cache-account-commits.ts';
 export {
@@ -22,5 +23,15 @@ export {
   CITED_HASH_LENGTH,
   declarationLineCounts,
 } from './corpus-run/cache-account-read.ts';
+export {
+  type NewestSliceRecord,
+  type RunsDirSearch,
+  runsDirsIn,
+  runsDirsUnder,
+  type SliceCacheAccount,
+  sliceCacheAccount,
+  type SliceRecord,
+  type UnlistedDir,
+} from './corpus-run/cache-account-slices.ts';
 
 //endregion Cache account barrel

@@ -116,7 +116,7 @@ depends = ["build"]
 run = "node dist/final/node/spend-report.mjs"
 
 [tasks."cache-account-audit"]
-description = "Ledger M28: before a launch, read every cache version constant the source declares, the commit that set each current value, and every non-test source commit since the earliest of them that no version's account names; READ-ONLY, SPENDS NO QUOTA"
+description = "Ledger M28: before a launch, read every cache version constant the source declares, the commit that set each current value, and every non-test source commit since the earliest of them that no version's account names, then the slice-cache records under the runs directories (count, newest, versions set after it; ledger M57, M81); READ-ONLY, SPENDS NO QUOTA (pass --runs-under dir after --, repeatable, to also search a directory holding runs directories four levels down)"
 depends = ["build"]
 run = "node dist/final/node/cache-account-audit.mjs"
 

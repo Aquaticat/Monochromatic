@@ -17192,6 +17192,19 @@ names each root by where the runs are written (`runs-layout.ts`),
 and leaves out checkouts and copy payloads;
 `cache-account-audit` is to report the newest cache file and the control itself,
 so an account needs no hand-written `find`.
+It does since 2026-10-01 (UTC):
+after the version accounts it prints how many slice-cache records it read under how many runs directories,
+naming where it looked
+(the default runs directory's parent,
+the configured runs directory,
+and each `--runs-under` directory,
+searched four levels down outside hidden directories and dependency trees,
+so a copy payload is never read),
+then each directory that search could not list with the filesystem's reason
+(its first run over the agents' scratch root stopped at an `EACCES`,
+so a locked directory is now named as left out of the count instead of ending the audit),
+then the newest record by its full path and time,
+and how many cache versions were set after it.
 The copy that ran out of memory and left its payload is issue #580,
 filed against `cli-git`,
 which owns the hook.
@@ -18407,6 +18420,7 @@ A written step and a read error file did not stop the slip,
 so the check itself is queued for `cache-account-audit`:
 report the newest slice-cache file and a control count,
 so an account needs no hand-written `find`.
+It reports both since 2026-10-01 (UTC) (M81).
 
 ### M56: a red guard whose comment case never reached the comment path
 

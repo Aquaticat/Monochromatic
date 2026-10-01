@@ -39,7 +39,7 @@ import type {
 export type CommandLines = {
   readonly 'audit-sensitivity': CommandLineSpec<never, never, never>;
   readonly 'budget-sample': CommandLineSpec<never, never, never>;
-  readonly 'cache-account-audit': CommandLineSpec<never, never, never>;
+  readonly 'cache-account-audit': CommandLineSpec<never, 'runs-under', never>;
   readonly 'cap-census': CommandLineSpec<never, never, never>;
   readonly 'checker-sensitivity': CommandLineSpec<never, never, never>;
   readonly 'corpus-pass': CommandLineSpec<'only' | 'require-providers', never, 'plan'>;
@@ -150,7 +150,10 @@ const SEATABLE_IDS = 'seatable ids';
 export const COMMAND_LINES: CommandLines = {
   'audit-sensitivity': NO_ARGUMENTS,
   'budget-sample': NO_ARGUMENTS,
-  'cache-account-audit': NO_ARGUMENTS,
+  'cache-account-audit': {
+    ...NO_ARGUMENTS,
+    repeatable: { 'runs-under': 'directory holding runs directories', },
+  },
   'cap-census': {
     ...NO_ARGUMENTS,
     positionals: {

@@ -293,4 +293,38 @@ export function unaccountedCommits(
     },);
 }
 
+/**
+ Milliseconds in a second.
+ */
+export const MS_PER_SECOND = 1_000;
+
+/**
+ Characters of an ISO time up to its minutes.
+ */
+const ISO_MINUTES_LENGTH = 16;
+
+/**
+ A commit or file time as UTC to the minute, the precision the accounts cite.
+
+ @param seconds - unix seconds
+
+ @returns ISO time ending in Z
+
+ @example
+ ```ts
+ utcMinutes({ seconds: 0, },); // '1970-01-01T00:00Z'
+ ```
+ */
+export function utcMinutes({ seconds, }: { readonly seconds: number; },): string {
+  /**
+   Full ISO time, milliseconds and all.
+   */
+  const iso = new Date(seconds * MS_PER_SECOND,)
+    .toISOString();
+  return `${iso.slice(
+    0,
+    ISO_MINUTES_LENGTH,
+  )}Z`;
+}
+
 //endregion Cache account commits

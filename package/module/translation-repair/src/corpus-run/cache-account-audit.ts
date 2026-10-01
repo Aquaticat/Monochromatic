@@ -11,6 +11,7 @@ import {
   settingCommit,
   sourceCommitOf,
   unaccountedCommits,
+  utcMinutes,
   type VersionSetting,
 } from './cache-account-commits.ts';
 import {
@@ -19,7 +20,9 @@ import {
   citedHash,
   declarationLineCounts,
 } from './cache-account-read.ts';
+import { reportSliceCaches, } from './cache-account-slice-report.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import type { CommandLineOf, } from './command-lines.ts';
 import { resolveGit, } from './git-command.ts';
 
 //region Cache account audit
@@ -30,6 +33,11 @@ import { resolveGit, } from './git-command.ts';
 // version's account names, with the versions each one postdates. Each such
 // commit rides inside those versions, and the check reads it and either says
 // so in the account or moves the version.
+//
+// THEN THE SLICE CACHES (ledger M57, M81), in `cache-account-slice-report.ts`:
+// the runs directories read, how many records they hold, the newest record and
+// how many versions were set after it, which every account stated from a
+// hand-written `find` until then.
 //
 // MOVED IN FROM A SCRATCH SCRIPT the accounts cited and nobody else could run.
 // That script walked a list of seven constants typed in by hand, which is
@@ -45,16 +53,6 @@ import { resolveGit, } from './git-command.ts';
  Logger for the audit's progress lines, apart from the report on stdout.
  */
 const auditLog = contextRoot({ tag: 'cache-account-audit', },);
-
-/**
- Milliseconds in a second.
- */
-const MS_PER_SECOND = 1_000;
-
-/**
- Characters of an ISO time up to its minutes.
- */
-const ISO_MINUTES_LENGTH = 16;
 
 /**
  Log format of one source commit: hash, committer time, subject.
@@ -105,30 +103,6 @@ function commitsOf({ output, }: { readonly output: string; },): readonly SourceC
     .map(function commitOf(line,): SourceCommit {
       return sourceCommitOf({ line, },);
     },);
-}
-
-/**
- A commit time as UTC to the minute.
-
- @param seconds - unix seconds
-
- @returns ISO time ending in Z
-
- @example
- ```ts
- utcMinutes({ seconds: 0, },); // '1970-01-01T00:00Z'
- ```
- */
-function utcMinutes({ seconds, }: { readonly seconds: number; },): string {
-  /**
-   Full ISO time, milliseconds and all.
-   */
-  const iso = new Date(seconds * MS_PER_SECOND,)
-    .toISOString();
-  return `${iso.slice(
-    0,
-    ISO_MINUTES_LENGTH,
-  )}Z`;
 }
 
 /**
@@ -294,19 +268,24 @@ function printAudit(
 
 /**
  Reads every cache version the package's source declares and prints the
- source commits no version account names.
+ source commits no version account names, then the slice caches' account.
 
  Returns nothing: the report on stdout IS the output.
+
+ @param line - the command line, whose `--runs-under` names directories to
+ search for runs directories beside the worktree's own
 
  @throws StatedRefusalError where the working directory holds no cache
  version, or a value is uncommitted
 
  @example
  ```ts
- await auditCacheAccounts();
+ await auditCacheAccounts({ line, },);
  ```
  */
-async function auditCacheAccounts(): Promise<void> {
+async function auditCacheAccounts(
+  { line, }: { readonly line: CommandLineOf<'cache-account-audit'>; },
+): Promise<void> {
   /**
    Package directory, where the mise task runs.
    */
@@ -450,6 +429,11 @@ async function auditCacheAccounts(): Promise<void> {
     settings,
     earliest,
     commits,
+  },);
+  await reportSliceCaches({
+    root,
+    searched: line.list('runs-under',),
+    settings,
   },);
 }
 

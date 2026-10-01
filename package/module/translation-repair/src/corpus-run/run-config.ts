@@ -49,6 +49,7 @@ import {
 import { refusingCulledSeats, } from '../culled-seat-guard.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 import { resolveGit, } from './git-command.ts';
+import { defaultRunsDirIn, } from './runs-layout.ts';
 
 //region Corpus-run configuration
 // Shared roster, budgets, corpus pin, and location resolvers for the corpus-run
@@ -1020,12 +1021,7 @@ export async function resolveRunsDir(): Promise<string> {
     .TRANSLATION_REPAIR_RUNS_DIR;
   if ((override !== undefined) && (override !== ''))
     return override;
-  return join(
-    await resolveWorktreeRoot(),
-    'node_modules',
-    '.monochromatic',
-    'translation-repair-runs',
-  );
+  return defaultRunsDirIn({ worktreeRoot: await resolveWorktreeRoot(), },);
 }
 
 /**
