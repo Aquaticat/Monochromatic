@@ -162,5 +162,13 @@ The orchestration seam must supply the actual complete parallel set.
 
 A finite private fix prototype passed;
 a deployed extension fix is not claimed.
-The native-manager qualification remains separate and has not dispatched its actual SDK run.
+The separate native-manager run `proc_3b91` subsequently passed its finite 12-case contract:
+three successes and nine expected rejections,
+with no model,
+AgentSession,
+genuine original,
+permission,
+grant,
+or represented action.
+That result does not integrate the batch prototype into production.
 The new grouping contract must be incorporated into the eventual real-consumer integration.

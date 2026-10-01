@@ -20,7 +20,11 @@ adopt Drex,
 select confidence thresholds,
 or turn model estimates into authority.
 Jev input consent through the approved Gateway route remains settled.
-Drex evaluation inputs retain their public/synthetic plus verified public-policy scope.
+The user subsequently authorized task-relevant private Drex inputs,
+explicitly including previous real Pi transcripts.
+That replaces the earlier public/synthetic-only restriction for future Drex evaluation.
+Keep raw transcripts out of Git and exclude credentials or sensitive details the evaluation does not need.
+Historical public-only experiments retain their original input scope.
 
 ## Judgment unit and cost target
 

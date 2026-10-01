@@ -1,5 +1,18 @@
 # Pi auto-mode axiom evaluation handover
 
+## Current continuation pointer
+
+The [current frontier](pi-auto-mode-current-frontier.md) records the 2026-10-01 requirements and results:
+pre-baked wordings with adaptive selection,
+parallel tool groups as one judgment,
+three-call ceiling,
+US$0.001 mean cost target,
+explicit private-input authorization for Drex,
+the accepted native-manager phase,
+and the parallel-batch prototype.
+This document remains the historical evidence ledger;
+its older observation-time limits do not supersede those later explicit requirements.
+
 ## Authority and active design
 
 The user wants lower cost and no unusual judge traffic to coding-plan providers.

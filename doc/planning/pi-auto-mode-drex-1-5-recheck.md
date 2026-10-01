@@ -99,9 +99,27 @@ No-training does not mean no-retention.
 The referenced [general terms][general-terms] and [general privacy policy][general-privacy] were fetched too.
 The Drex-specific precedence language controls the stated Drex exception.
 
-Drex inputs remain public/synthetic plus complete verified public policy.
-The user's wider private-input authorization for Jev is not automatically reassigned to Drex.
-No additional consent was requested for this recheck.
+The completed metadata and cost canary used the earlier public/synthetic input scope.
+The user subsequently explicitly authorized sending Drex whatever this work needs,
+including previous private real Pi transcripts.
+This is a separate Drex authorization,
+not an inference from Jev consent.
+It supersedes the public/synthetic-only restriction for future task-relevant Drex inputs.
+Do not ask for that consent again.
+
+Use only assessment-relevant content,
+exclude credentials and irrelevant sensitive details,
+and keep raw transcripts out of Git.
+Full prior transcripts may be used when the evaluation needs them;
+there is no blanket excerpt-only restriction.
+The authorization does not imply training,
+account or billing changes,
+unrelated bulk export,
+ongoing capture,
+represented actions,
+or production adoption.
+Historical transcripts are evaluation evidence,
+not new current-permission grants.
 
 The [pricing reference][pricing] quotes $0.05 per million input tokens for 1.5,
 with output tokens unbilled.
@@ -133,7 +151,7 @@ It used a different model and request layout.
 The next candidate phase should reflect the intended independent multi-question batch,
 with narrow semantic questions and code-owned decisions.
 
-Freeze new public/synthetic inputs,
+Freeze new inputs within the now-authorized Drex scope,
 references,
 the complete pre-baked wording library and adaptive question-selection procedure,
 answer-ID checks,
