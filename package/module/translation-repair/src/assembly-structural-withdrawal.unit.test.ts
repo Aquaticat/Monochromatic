@@ -5,7 +5,15 @@
  @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { type ChunkPair, guardFootnoteAssembly, prepareDocumentPair, singleStructuralWithdrawal, } from '../dist/final/node/index.mjs';
+import {
+  advancingStructuralWithdrawal,
+  type ChunkPair,
+  guardFootnoteAssembly,
+  prepareDocumentPair,
+  singleStructuralWithdrawal,
+  spliceSlices,
+  strictRefusalOffset,
+} from '../dist/final/node/index.mjs';
 
 /** Source and archive component shared before translation. */
 const COMPONENT = `<PhotoScroll photos={['\${path}/photos/cat.webp']} />`;
@@ -13,6 +21,22 @@ const COMPONENT = `<PhotoScroll photos={['\${path}/photos/cat.webp']} />`;
 const BROKEN_COMPONENT = `<PhotoScroll photos=['\${path}/photos/cat.webp']} />`;
 /** Link carried by the source-only passage which an unrelated withdrawal must preserve. */
 const LINK = 'https://example.test/cat';
+/** Original of three sections, each its own slice. */
+const SECTIONS_SOURCE = '## 猫\n\n猫猫在窗台上打盹〔1〕。\n\n## 鸟\n\n窗台上有一只鸟。\n\n## 注\n\n〔1〕：那是它最喜欢的位置。\n';
+/** Archive of those sections. */
+const SECTIONS_TARGET = '## The cat\n\nThe cat is doing the sleeping on the windowsill[^1].\n\n## The bird\n\n'
+  + 'On the windowsill there is being a bird.\n\n## Notes\n\n[^1]: That is its favourite spot.\n';
+/** Expression the bird's replacement leaves open, the first break on the page. */
+const BIRD_BREAK = '{\'unclosed';
+/**
+ First section whole and much shorter than its archive text, the other two each breaking the grammar, so
+ withdrawing the first lengthens the page before both breaks and moves neither.
+ */
+const SHIFTING = [
+  { sliceIndex: 0, replacementText: '## The cat\n\nIt naps[^1].', },
+  { sliceIndex: 1, replacementText: `## The bird\n\nOn the windowsill there sits a bird. ${BIRD_BREAK}`, },
+  { sliceIndex: 2, replacementText: '## Notes {\'unclosed\n\n[^1]: That is its favourite spot.', },
+];
 
 await describe({
   name: 'structural assembly withdrawal',
@@ -140,6 +164,45 @@ await describe({
         expect(guarded.findings.some(function proved(finding,): boolean {
           return finding.startsWith('assembly-structure-single-withdrawal',);
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'READS EVERY REFUSAL ON THE PAGE AS ASSEMBLED, so a withdrawal that only lengthens the text before a '
+        + 'break never reads as moving it, and the one that removes the first break is chosen (ledger B85)',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        expect(prepared.slices.length,).toBe(SHIFTING.length,);
+        /** Page as assembled, both breaks on it. */
+        const standing = spliceSlices({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements: SHIFTING, },);
+        /** Where the grammar first stops on it: the bird's open expression. */
+        const first = strictRefusalOffset({ text: standing, },);
+        /** Same page with the bird's break overwritten at its own length, which leaves the notes break where it stands. */
+        const second = strictRefusalOffset({ text: standing.replace(BIRD_BREAK, 'x'.repeat(BIRD_BREAK.length,),), },);
+        if ((!first.refused) || (!second.refused))
+          throw new Error('both breaks are on the page',);
+        expect(second.offset,).toBeGreaterThan(first.offset,);
+        /** What the guard would withdraw next. */
+        const steps = advancingStructuralWithdrawal({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements: SHIFTING, },);
+        expect(steps.map(function toIndex(step,): number {
+          return step.sliceIndex;
+        },),).toEqual([1,],);
+        expect(steps,).toEqual([{ sliceIndex: 1, from: first.offset, to: second.offset, cleared: false, },],);
+      },
+    },),
+    it({
+      name: 'KEEPS A WHOLE REPLACEMENT that only changed the length of the text before two breaks, withdrawing the '
+        + 'two broken ones (ledger B85)',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** Real assembly guard over both breaks and the whole section before them. */
+        const guarded = guardFootnoteAssembly({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements: SHIFTING, },);
+        expect(guarded.replacements,).toEqual(SHIFTING.slice(0, 1,),);
+        expect(guarded.revertedChunkIndices.toSorted(function ascending(left, right,): number {
+          return left - right;
+        },),).toEqual([1, 2,],);
+        expect(guarded.assembledText,).toContain('It naps[^1].',);
       },
     },),
   ],
