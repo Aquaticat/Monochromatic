@@ -58,7 +58,7 @@ run = '''
 import { execFile } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { promisify } from 'node:util'
-import { resolve, join } from 'node:path'
+import { resolve, join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getAgentDir } from '@earendil-works/pi-coding-agent'
 class GlobalInstallationError extends Error {
@@ -82,11 +82,15 @@ const { packages: installedPackages, ...installedSettings } = after
 if (JSON.stringify(previousSettings) !== JSON.stringify(installedSettings)) {
   throw new GlobalInstallationError('Pi package installation changed non-package settings; inspect the settings diff before continuing.')
 }
-if (installedPackages.includes('npm:pi-openai-codex-fast') || !installedPackages.includes(packagePath)) {
+function isReplacement(value) {
+  const source = typeof value === 'string' ? value : value.source
+  return typeof source === 'string' && resolve(dirname(settingsPath), source) === packagePath
+}
+if (installedPackages.includes('npm:pi-openai-codex-fast') || !installedPackages.some(isReplacement)) {
   throw new GlobalInstallationError('Pi global package replacement did not produce the expected package declarations.')
 }
-const unrelatedBefore = previousPackages.filter(function unrelated(value) { return value !== 'npm:pi-openai-codex-fast' && value !== packagePath })
-const unrelatedAfter = installedPackages.filter(function unrelated(value) { return value !== packagePath })
+const unrelatedBefore = previousPackages.filter(function unrelated(value) { return value !== 'npm:pi-openai-codex-fast' && !isReplacement(value) })
+const unrelatedAfter = installedPackages.filter(function unrelated(value) { return !isReplacement(value) })
 if (JSON.stringify(unrelatedBefore) !== JSON.stringify(unrelatedAfter)) {
   throw new GlobalInstallationError('Pi package installation changed unrelated package declarations; inspect the settings diff before continuing.')
 }
