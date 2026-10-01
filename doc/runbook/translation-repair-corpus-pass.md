@@ -731,6 +731,7 @@ and a run made from that checkout recorded none of what they read either.
     ```text
     run-timing-report: 1 logs, 6 lines
     rounds                 2, 1.50min in total
+      without quorum       0
       waiting after quorum 40.00s, 44.4% of round time
       voices never heard   1
     calls in flight        mean 1.05, peak 2
@@ -742,6 +743,12 @@ and a run made from that checkout recorded none of what they read either.
     That is the quantity `STRAGGLER_GRACE_MS` trades against,
     so read it before changing the window.
 
+    `without quorum` counts rounds that stopped once every ask settled
+    with fewer voices than quorum needed.
+    Their time and their unheard voices count in the other figures;
+    they add nothing to `waiting after quorum`,
+    since no quorum stood for them to wait after.
+
     `calls in flight` is ACHIEVED concurrency,
     not configured concurrency.
     A peak below the producer count means the pipeline never actually ran that wide,
@@ -752,8 +759,11 @@ and a run made from that checkout recorded none of what they read either.
 
     ```text
     NO ROUND LINE. This log predates round lines and call durations, so how long each fan-out took and how much of that was spent waiting after quorum are both unrecorded. That is not the same as a run that never waited.
-    NO TIMED CALL. Nothing here can be counted in flight, which is not the same as a run that made one call at a time.
+    NOTHING IN FLIGHT: no call in this log carried a duration, so nothing can be counted in flight, which is not the same as a run that made one call at a time.
     ```
+
+    Timed calls that all took no time at one instant leave no span to count over either,
+    and the `NOTHING IN FLIGHT` line says so in its own words.
 
     THE EXIT CODE IS `0` EITHER WAY.
     Check for `NO ROUND LINE` in the output rather than reading the exit code as a verdict.

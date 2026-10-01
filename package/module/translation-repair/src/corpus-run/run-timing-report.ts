@@ -231,7 +231,9 @@ async function reportRunTiming({ line, }: { readonly line: CommandLineOf<'run-ti
     // NO SPAN TO COUNT OVER, whether no call carried a duration or every timed
     // call took no time: the refusal says which, and neither is a run that
     // made one call at a time.
-    console.log(`NOTHING IN FLIGHT. ${error.message}, which is not the same as a run that made one call at a time.`,);
+    // A COLON, not a period: the refusal's sentence opens in lower case, as
+    // every error message here does, so it continues the heading.
+    console.log(`NOTHING IN FLIGHT: ${error.message}, which is not the same as a run that made one call at a time.`,);
   }
 }
 
