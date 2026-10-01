@@ -188,5 +188,55 @@ await describe({
         },),).toBe('The kitten loved *The "Long Nap" Chronicles*.',);
       },
     },),
+    it({
+      name: 'LEAVES a quoted title inside an emphasis span as it stands, since italics inside italics show the '
+        + 'title no different from the words around it and the quotes were what set it apart (ledger B72)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat loved *Long Nap*.',
+          replacement: '*The kitten loved “Long Nap” all day.*',
+        },),).toBe('*The kitten loved “Long Nap” all day.*',);
+      },
+    },),
+    it({
+      name: 'READS NO TITLE out of an HTML comment, which the site never shows, so a page quoting the '
+        + 'comment\'s words keeps its quotes (ledger B72)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat napped. <!-- *Hidden Nap* -->',
+          replacement: 'The kitten loved “Hidden Nap”.',
+        },),).toBe('The kitten loved “Hidden Nap”.',);
+      },
+    },),
+    it({
+      name: 'READS a linked title in italics as its words, which a split at the stars read as link markup and '
+        + 'never as a title (ledger B72)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat loved *[Long Nap](https://example.com/nap)*.',
+          replacement: 'The kitten loved “Long Nap”.',
+        },),).toBe('The kitten loved *Long Nap*.',);
+      },
+    },),
+    it({
+      name: 'READS an italic span across two lines whole, never its first line\'s words alone as a title of '
+        + 'their own (ledger B72)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat loved *Long\nNap* most.',
+          replacement: 'She loved “Long” and “Long Nap”.',
+        },),).toBe('She loved “Long” and *Long Nap*.',);
+      },
+    },),
+    it({
+      name: 'READS a title the archive sets in italics with underscores, which a split at the stars never saw '
+        + '(ledger B72)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat loved _Long Nap_.',
+          replacement: 'The kitten loved “Long Nap”.',
+        },),).toBe('The kitten loved *Long Nap*.',);
+      },
+    },),
   ],
 },);
