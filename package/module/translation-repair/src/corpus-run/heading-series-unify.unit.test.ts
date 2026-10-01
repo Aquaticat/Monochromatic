@@ -72,6 +72,53 @@ function section(
 }
 
 /**
+ One slice carrying whole texts, as many headings as they hold.
+
+ @param sliceIndex - where the slice stands
+
+ @param source - original text of the slice
+
+ @param target - archive text of the slice
+
+ @returns Prepared pair
+
+ @example
+ ```ts
+ const slice = sections({ sliceIndex: 1, source: '### 其二：黑猫\n\n猫。', target: '### Sooty\n\nCat.', },);
+ ```
+ */
+function sections(
+  {
+    sliceIndex,
+    source,
+    target,
+  }: {
+    readonly sliceIndex: number;
+    readonly source: string;
+    readonly target: string;
+  },
+): ChunkPair {
+  return {
+    source: {
+      kind: 'content',
+      sliceIndex,
+      nodes: [],
+      startOffset: 0,
+      endOffset: source.length,
+      text: source,
+    },
+    target: {
+      kind: 'content',
+      sliceIndex,
+      nodes: [],
+      startOffset: 0,
+      endOffset: target.length,
+      text: target,
+    },
+  };
+}
+
+/**
  Three numbered sections the archive never headed, so the renderings alone
  set the style.
  */
@@ -386,6 +433,73 @@ await describe({
         },);
         expect(unified.findings,).toEqual([],);
         expect(unified.restored,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'LEAVES A SLICE WHOSE PAGE DROPPED ONE OF ITS NUMBERED HEADINGS AS THE PAGE HAS IT: pairing the page\'s '
+        + 'headings with the original\'s numbers by position gave the third section the second\'s number '
+        + '(ledger B84)',
+      fn: async () => {
+        /**
+         What the page writes for the two-section slice, its first heading dropped.
+         */
+        const dropped = {
+          sliceIndex: 1,
+          replacementText: 'Cat.\n\n### Part Three: Snowy\n\nCat.',
+        };
+        const unified = unifyHeadingSeries({
+          slices: [
+            PARTED[0] as ChunkPair,
+            sections({
+              sliceIndex: 1,
+              source: '### 其二：黑猫\n\n猫。\n\n### 其三：白猫\n\n猫。',
+              target: '### Part Two: Sooty\n\nCat.\n\n### Part Three: Snowy\n\nCat.',
+            },),
+          ],
+          replacements: [dropped,],
+        },);
+        expect(unified,).toEqual({
+          replacements: [dropped,],
+          restored: [],
+          findings: [],
+        },);
+      },
+    },),
+    it({
+      name: 'READS THE ARCHIVE\'S STYLE ONLY WHERE ITS HEADINGS PAIR WITH THE ORIGINAL\'S: an archive slice that '
+        + 'opens with an interlude heading of its own once had that heading read as the series\' third, so the '
+        + 'archive seemed to use two styles and its own "Part" style was lost (ledger B84)',
+      fn: async () => {
+        const unified = unifyHeadingSeries({
+          slices: [
+            PARTED[0] as ChunkPair,
+            PARTED[1] as ChunkPair,
+            sections({
+              sliceIndex: 2,
+              source: '### 其三：白猫\n\n猫。',
+              target: '### Interlude\n\nCat.\n\n### Part Three: Snowy\n\nCat.',
+            },),
+          ],
+          replacements: [
+            rendered({
+              sliceIndex: 0,
+              heading: '### Ginger',
+            },),
+            rendered({
+              sliceIndex: 1,
+              heading: '### Sooty',
+            },),
+            rendered({
+              sliceIndex: 2,
+              heading: '### Snowy',
+            },),
+          ],
+        },);
+        expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
+          '### Part One: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
+        ],);
       },
     },),
   ],
