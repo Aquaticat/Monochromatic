@@ -438,9 +438,21 @@ this one says what changed after it.
   names the nineteenth batch:
   `corpus-run/run`
   (18 stretches over 18 lines in 2 files).
-  That batch reads against the census taken once the two findings the eighteenth left open close:
-  the editorial-apparatus check accepting prose after a label,
-  and archive revisions checked one at a time though they compose.
+  That batch reads against the census taken once the two findings the eighteenth left open close,
+  and both have closed.
+  B80:
+  archive revisions were checked one at a time though they compose,
+  and each block is now reviewed in the page the revisions already applied leave
+  (`308bbe206` to `ccc2df6f2`).
+  B81:
+  the editorial-apparatus check vouched for a block on one of its lines,
+  and now every line a reader sees must be apparatus;
+  over the pinned archives it accepts the same 40 blocks as before
+  (`d6d72cbcf` to `3788e8223`).
+  The nineteenth batch's own reading of `corpus-run/run` already shows one defect to take red first:
+  a round that never reached quorum is logged without its grace field
+  (`stage-round.ts`),
+  and the timing parser reads that complete line as a truncated one.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
