@@ -79,28 +79,23 @@ These answers settle requirements,
  not the complete implementation design.
 The user has not yet confirmed shared understanding of that complete design.
 
-### Round-two scope question
+### Accepted round-two answers
 
-Should global installation leave `enabledModels` unchanged,
- or append exact fast-companion entries beside currently enabled Codex entries?
+The user answered `Q4 A` and `Q5 A`,
+ with a correction to the registration proposal.
 
-Recommendation:
-leave scope unchanged to preserve the strongest interpretation of opt-in.
-Appending entries makes aliases eligible to callers that select automatically within that scope,
- including auto-mode's judge.
-If auxiliary use is desired,
- scope inclusion should be an explicit decision rather than an installation side effect.
+- Leave `enabledModels` unchanged during installation.
+- Register fast companions for every base Codex model pi registers,
+   independently of personal scope.
+- Do not manually maintain a compatibility list or filter companions by declared priority support.
+- Treat fast support as a request-time assumption,
+   not a verified statement that every backend model accepts priority.
+- The user considers selecting an incompatible model in fast mode a user error.
+  Surface the backend rejection rather than silently selecting a different model or ordinary tier.
 
-### Round-two registration coverage question
-
-Should the extension register companions for all compatible Codex models in pi's registry,
- or only for currently enabled Codex models?
-
-Recommendation:
-register compatible Codex companions independently of scope.
-This avoids binding extension model discovery to personal workflow restrictions.
-Registration coverage does not authorize widening the enabled-model scope.
-Compatibility requirements remain subject to the provider research.
+The initial recommendation's word "compatible" is superseded:
+there is no manually curated priority-capability gate.
+Registering a companion does not authorize scope widening or establish backend support.
 
 ## Local selection evidence
 
@@ -150,7 +145,8 @@ Use verified findings to form the next interview frontier,
  model coverage,
  priority failure behavior,
  and the meaning of opt-in for auxiliary calls.
-Do not silently widen `enabledModels` as an installation convenience.
+Preserve `enabledModels` unchanged.
+Do not introduce a manually maintained priority compatibility list.
 Do not implement,
  change installed packages,
  or change defaults before the user confirms the complete design.
