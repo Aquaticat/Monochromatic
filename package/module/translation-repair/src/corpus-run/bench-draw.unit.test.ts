@@ -139,6 +139,51 @@ await describe({
           ],);
       },
     },),
+
+    it({
+      name: 'BREAKS AN ENTRY TIE BY CODE POINT, the same on every machine, so a capitalised entry '
+        + 'name comes before a lower-case one and a name past U+FFFF after one inside it: the '
+        + 'runtime locale ordered them by its own collation, so two machines could draw different '
+        + 'benches from one corpus (ledger B95)',
+      fn: async () => {
+        /**
+         Same-size slices whose entry names a locale collation and code
+         points order differently.
+         */
+        const tied: readonly DrawableSlice[] = [
+          sized({
+            entryId: 'mooncat',
+            index: 0,
+            size: 5,
+          },),
+          sized({
+            entryId: 'Tabby',
+            index: 0,
+            size: 5,
+          },),
+          sized({
+            entryId: 'cat\u{1F431}',
+            index: 0,
+            size: 5,
+          },),
+          sized({
+            entryId: 'cat\u{FF5E}',
+            index: 0,
+            size: 5,
+          },),
+        ];
+        expect(orderBySourceSize({ slices: tied, },)
+          .map(function toEntry(slice,): string {
+            return slice.entryId;
+          },),)
+          .toEqual([
+            'Tabby',
+            'cat\u{FF5E}',
+            'cat\u{1F431}',
+            'mooncat',
+          ],);
+      },
+    },),
   ],
 },);
 
