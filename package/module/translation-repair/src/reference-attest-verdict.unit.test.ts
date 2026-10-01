@@ -20,6 +20,7 @@ import {
   attestationVerdictLine,
   attestationVerdicts,
   keptAttestations,
+  referenceLineOf,
 } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from './roster-seats.test-fixture.ts';
 
@@ -203,6 +204,109 @@ await describe({
         expect(unlinked.map(function kindOf(verdict,): string {
           return verdict.kind;
         },),).toEqual(['dropped',],);
+      },
+    },),
+    it({
+      name: 'DROPS an item whose reference quote is only in a line\'s head or in the lookup\'s note on a page '
+        + 'it could not fetch or read, since an address and a failure note are nothing a page states, '
+        + 'and KEEPS one quoting the page\'s title or text (ledger B25\'s open item)',
+      fn: async () => {
+        /**
+         Archive the items quote, so only the reference side decides.
+         */
+        const archiveText = 'Mittens naps by the stove.\n';
+        /**
+         Block as the lookup writes it: a fetched page with a title, one the
+         endpoint refused, and one with nothing readable.
+         */
+        const referenceContext = [
+          referenceLineOf({
+            index: 1,
+            record: {
+              url: 'https://cats.example/naps',
+              fetchedAt: '2026-10-01T00:00:00.000Z',
+              status: 'success',
+              title: 'Stove naps',
+              text: 'Mittens naps by the stove.',
+            },
+          },),
+          referenceLineOf({
+            index: 2,
+            record: {
+              url: 'https://cats.example/gone',
+              fetchedAt: '2026-10-01T00:00:00.000Z',
+              status: 'error',
+              title: '',
+              text: '',
+              failure: 'Not Found',
+            },
+          },),
+          referenceLineOf({
+            index: 3,
+            record: {
+              url: 'https://cats.example/blank',
+              fetchedAt: '2026-10-01T00:00:00.000Z',
+              status: 'success',
+              title: '',
+              text: '',
+            },
+          },),
+        ].join('\n',);
+        /**
+         Verdict kinds, one per item in answer order: the first page's
+         address, its head's number, the second page's failure note and the
+         third page's, then the first page's title and its text.
+         */
+        const kinds = attestationVerdicts({
+          modelId: VOICE,
+          items: [
+            {
+              reference: 1,
+              referenceQuote: 'https://cats.example/naps',
+            },
+            {
+              reference: 1,
+              referenceQuote: 'reference 1',
+            },
+            {
+              reference: 2,
+              referenceQuote: 'could not be fetched (Not Found)',
+            },
+            {
+              reference: 3,
+              referenceQuote: 'nothing readable on the page',
+            },
+            {
+              reference: 1,
+              referenceQuote: 'Stove naps',
+            },
+            {
+              reference: 1,
+              referenceQuote: 'Mittens naps by the stove.',
+            },
+          ].map(function itemQuoting({
+            reference,
+            referenceQuote,
+          },) {
+            return {
+              archiveQuote: 'Mittens naps by the stove.',
+              reference,
+              referenceQuote,
+            };
+          },),
+          archiveText,
+          referenceContext,
+        },).map(function kindOf(verdict,): string {
+          return verdict.kind;
+        },);
+        expect(kinds,).toEqual([
+          'dropped',
+          'dropped',
+          'dropped',
+          'dropped',
+          'verified',
+          'verified',
+        ],);
       },
     },),
     it({
