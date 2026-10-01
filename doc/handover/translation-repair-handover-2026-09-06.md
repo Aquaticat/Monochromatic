@@ -489,7 +489,26 @@ this one says what changed after it.
   (650 library stretches in 251 files),
   names the twenty-second batch:
   `anthropic`
-  (16 stretches over 22 lines in 2 files).
+  (16 stretches over 22 lines in 2 files),
+  taken against `census-lxT62v` at `73bd4426c`.
+  That batch closed B87 to B91 and B93 to B94 on the Charm Hyper reader:
+  a body cut inside its last frame passed the retry ladder as whole,
+  an error event read as a cut stream,
+  the prompt count left out the cache,
+  a missing answer fragment was dropped without a word,
+  a refused body named the wrong wire's contract,
+  the delta scanner filed or passed over frames it does not read,
+  and a count the stream never sent was reported as 0
+  (`57ffcf2dd` to `a41e6218b`);
+  B92,
+  `isJsonRecord` passing arrays,
+  is queued as its own family.
+  Its census,
+  `census-Hq0z31` at `a41e6218b`
+  (633 library stretches in 249 files),
+  names the twenty-third batch:
+  `front`
+  (15 stretches over 20 lines in 3 files).
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

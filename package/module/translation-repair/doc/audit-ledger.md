@@ -5127,6 +5127,67 @@ The full suite on `a44cf50c4`
 with the worktree clean)
 printed 1512 PASS lines and no FAIL line.
 
+The twenty-second batch took `anthropic` against `census-lxT62v`
+(taken at `73bd4426c` once the twenty-first batch's docs closed:
+649 library stretches in 251 files,
+`anthropic` 16 stretches in 2 files).
+Reading its cold stretches against the Anthropic streaming and prompt-caching documentation found B87 to B91,
+and writing cases for the arms left lenient found B93 and B94
+(each recorded in its own entry).
+B92,
+`isJsonRecord` passing arrays where its callers refuse anything but an object,
+surfaced in the same cases and is queued as a family of its own;
+the whole-message case for a payload that is not a frame still feeds it an array,
+so this cluster is not clear of that family.
+The arms left lenient,
+each a metadata frame missing a part the answer does not need,
+are cased in `08635488c`
+(its message calls a fabricated zero count an absence;
+the comment on that commit corrects it,
+and B94 fixes the zero).
+Fifteen guard-offs over eight builds,
+one guard per test file per build,
+each made a case for its fix fail
+(B87,
+B88,
+B89,
+B90,
+B91,
+B93 and B94),
+and each was restored with `git diff --stat` empty.
+The closing census,
+`census-Hq0z31` at `a41e6218b`,
+read against `census-lxT62v`:
+ran 0,
+still cold 982,
+cold since then 0,
+not loaded 6,
+sources edited since then 5.
+Of the edited sources,
+`anthropic-completion.ts` and `anthropic-delta-scan.ts` left 0 cold stretches,
+and `completion-shape.ts`,
+`hyper-client.ts` and `stream-completion.ts` kept the 1,
+3 and 4 the baseline held,
+which belong to other clusters;
+`anthropic-whole-message.ts`,
+added by the batch,
+left none.
+Library source went from 649 stretches in 251 files to 633 in 249.
+
+By the first construct
+(`t8-triage-hq0z31.txt`),
+the queue for the twenty-third batch is 270 returns,
+110 ternaries,
+109 nullish fallbacks,
+70 throws
+and 74 others.
+`front` and `corpus-run/attribution` lead at 15 stretches each,
+over 20 lines in 3 files and 18 lines in 2;
+the more lines decide it,
+as they did for the twenty-first batch,
+so the twenty-third batch takes `front`
+against the census taken once this batch's docs close.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -17526,6 +17587,38 @@ count its blank lines inside TSDoc blocks by form and keep the one the file used
 A source scan holding each file to one form would make this a check rather than a habit;
 none is written yet,
 and 264 of the package's 2,017 TypeScript files under `src` mixed the two forms when this was recorded.
+
+The check held for the rest of the batch:
+before the B93 and B94 fix commits it found 4,
+4 and 7 empty lines the edit tool had left
+and restored them.
+
+### M104: a read of red runs that missed a case whose line was cut before its marker
+
+Status:
+happened 2026-10-01 (UTC) in T8's twenty-second batch,
+found in a guard-off log,
+and the runner fixed the same day.
+The scratch runner of named tests (`~/temp/agent/audit-glossary-fix/run-guards-named.ts`)
+prints each line holding `[FAIL]`,
+cut to 400 characters.
+A case whose name ran past the cut lost its own marker,
+and the reads searched for that marker,
+so they skipped the line.
+B88's guard-off printed three lines and the read showed two;
+the count in the file's header line gave it away.
+Across the 420 runner logs then in that folder,
+16 printed lines in 14 logs had lost the marker
+(`~/temp/agent/audit-glossary-fix/b22-cut-marker-census.mjs`).
+Every log still printed the file's count of such lines in its header.
+Two of the runs were traced to their messages:
+B84's red message cites the suite's own "2 children failed",
+and B88's red message names all three lines.
+The other twelve were not traced.
+Prevention:
+the runner now prints `FAILED: ` before every line it keeps,
+so the marker survives the cut,
+and a red run is read by that prefix and checked against the header's count.
 
 ### M79: a coverage census measuring compressed code
 

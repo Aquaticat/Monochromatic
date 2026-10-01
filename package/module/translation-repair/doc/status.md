@@ -442,8 +442,28 @@ so withdrawing the break the parser named first read as moving the refusal back 
 (`3086d2ffe` and `0e7353948`).
 Its census (`census-dnr81C` at `9244d67d3`)
 leaves library source at 650 stretches in 251 files,
-and the twenty-second batch takes `anthropic`
-(16 stretches over 22 lines in 2 files) against the census taken after this batch's docs.
+and the twenty-second batch took `anthropic`
+(16 stretches over 22 lines in 2 files) against the census taken after its docs (`census-lxT62v`).
+It closed B87 to B91 against the Anthropic streaming and prompt-caching documentation:
+the retry ladder took a body cut inside its last frame as whole and read an error event as a cut stream,
+the prompt count left out the cache,
+a missing answer fragment was dropped without a word,
+a refused Anthropic body named the OpenAI-compatible contract,
+and a delta type the scanner does not read was filed as reasoning inside a thinking block
+(`57ffcf2dd` to `ef4cebc7e`).
+Writing cases for the arms left lenient found two more:
+B93,
+the scanner passed delta frames and block starts it could not read without counting them,
+and B94,
+the reader reported a count the stream never sent as 0
+(`ac4980b81` to `a41e6218b`).
+B92,
+`isJsonRecord` passing arrays,
+is queued as a family of its own.
+Its census (`census-Hq0z31` at `a41e6218b`)
+leaves library source at 633 stretches in 249 files,
+and the twenty-third batch takes `front`
+(15 stretches over 20 lines in 3 files) against the census taken after this batch's docs.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
