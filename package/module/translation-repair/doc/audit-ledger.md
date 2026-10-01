@@ -4946,6 +4946,11 @@ so the nineteenth batch takes `corpus-run/run`.
 The two findings this batch left open close first,
 and the batch reads against the census taken once they close.
 
+The full suite on `7f7b1610a`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,505 PASS lines and no FAIL line.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
