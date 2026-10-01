@@ -355,9 +355,8 @@ The native virtual routing,
  and extension contracts remain present in the installed 1.0 documentation and declarations.
 The current package build,
  type check,
- full tests,
- lint,
- and live request probes must be rerun on this target.
+ and complete offline tests passed on pi `1.0.0` without a source compatibility change.
+Lint and live request revalidation on that target are running before global replacement.
 Earlier `0.99.2` evidence is historical,
  not proof for the updated host.
 

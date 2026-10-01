@@ -1,8 +1,11 @@
 # pi-plugin-openai-fast
 
 Genuine pi virtual models that request priority through the existing Codex login.
-Real pi `0.99.2` ordinary and priority-request smoke checks have passed.
-Offline lifecycle tests and standards verification remain in progress.
+Build,
+ type checking,
+ and the complete offline suite pass against pi `1.0.0`.
+Ordinary and priority-request live checks passed on `0.99.2`;
+ the current `1.0.0` live and lint revalidation is in progress.
 
 ## Model selection
 
@@ -103,9 +106,12 @@ Live validation must use isolated pi settings and synthetic prompts,
 
 ## Source boundaries
 
-- `catalog.ts` restores configured and cached native metadata using empty read-only credentials and no network.
+- `catalog.ts` restores configured and cached native metadata without network access.
+- `catalog-credentials.ts` supplies frozen empty read-only credential capabilities.
 - `virtual-registration.ts` derives native virtual definitions and synchronizes catalog changes.
 - `priority-provider.ts` creates keyless targets while leaving the original native provider untouched.
+- `priority-target.ts` maps local target identities and omits authentication headers.
+- `keyless-auth.ts` declares adapter readiness without a separate credential.
 - `priority-stream.ts` reuses native option conversion and full streaming.
 - `priority-payload.ts` composes payload callbacks while preserving the priority request.
 - `original-dispatch.ts` owns the live registry binding and resolves original-model authentication and headers.
