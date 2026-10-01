@@ -425,6 +425,22 @@ this one says what changed after it.
   a `console` method or the working directory in suites that ran their cases at once;
   each such suite now runs one case at a time,
   and `global-writes-sequenced.unit.test.ts` fails on a write outside one.
+  The eighteenth batch took the archive modules and the two usage-line arms
+  (`9a362ba09` to `f9babaec4`)
+  and found four defects behind their cold lines:
+  the footnote relabel's ambiguity detail named a label by its folded key without its side,
+  the revision footnote floor passed a block the archive did not carry,
+  a definition move that would change the parse kept a sound rename back with it,
+  and the revision shape refusals listed shapes where a count belongs.
+  Its census,
+  `census-JXU9Js` at `67f85061a`
+  (711 library stretches over 1,367 lines in 265 files),
+  names the nineteenth batch:
+  `corpus-run/run`
+  (18 stretches over 18 lines in 2 files).
+  That batch reads against the census taken once the two findings the eighteenth left open close:
+  the editorial-apparatus check accepting prose after a label,
+  and archive revisions checked one at a time though they compose.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
