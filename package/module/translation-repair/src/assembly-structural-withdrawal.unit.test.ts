@@ -263,6 +263,50 @@ await describe({
       },
     },),
     it({
+      name: 'READS A BREAK BEFORE A WITHDRAWN LAST SECTION AS UNMOVED, when withdrawing it only cuts the page short',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** The bird's break, and a last section that only adds a closing line to its archive text. */
+        const replacements = [
+          ...SHIFTING.slice(1, 2,),
+          { sliceIndex: 2, replacementText: '## Notes\n\n[^1]: That is its favourite spot.\n\nThe end.', },
+        ];
+        /** Page as assembled. */
+        const standing = spliceSlices({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },);
+        /** Where the grammar stops on it. */
+        const first = strictRefusalOffset({ text: standing, },);
+        if (!first.refused)
+          throw new Error('the break is on the page',);
+        expect(advancingStructuralWithdrawal({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },),)
+          .toEqual([{ sliceIndex: 1, from: first.offset, to: standing.length, cleared: true, },],);
+      },
+    },),
+    it({
+      name: 'PLACES A REFUSAL IN THE WITHDRAWN SLICE\'S OWN ARCHIVE TEXT where that slice begins, so restoring an '
+        + 'archive section that breaks earlier than the page does is never chosen',
+      fn: async () => {
+        /** Archive whose bird heading leaves an expression open. */
+        const brokenArchive = SECTIONS_TARGET.replace('## The bird\n', '## The bird {\'archived\n',);
+        expect(brokenArchive,).not.toBe(SECTIONS_TARGET,);
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: brokenArchive, },);
+        /** A bird section that mends the archive's heading, and a notes heading that breaks. */
+        const replacements = [
+          { sliceIndex: 1, replacementText: '## The bird\n\nA bird sits on the windowsill.', },
+          { sliceIndex: 2, replacementText: '## Notes {\'unclosed\n\n[^1]: That is its favourite spot.', },
+        ];
+        /** Page as assembled. */
+        const standing = spliceSlices({ targetText: brokenArchive, slices: prepared.slices, replacements, },);
+        /** Where the grammar stops on it: the notes heading. */
+        const first = strictRefusalOffset({ text: standing, },);
+        if (!first.refused)
+          throw new Error('the notes break is on the page',);
+        expect(advancingStructuralWithdrawal({ targetText: brokenArchive, slices: prepared.slices, replacements, },),)
+          .toEqual([{ sliceIndex: 2, from: first.offset, to: standing.length, cleared: true, },],);
+      },
+    },),
+    it({
       name: 'CHOOSES NOTHING when no single withdrawal moves the first refusal: two expressions each left open to the '
         + 'end of the page stop the grammar there whichever one is withdrawn',
       fn: async () => {
