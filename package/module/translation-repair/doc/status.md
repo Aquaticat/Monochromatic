@@ -428,8 +428,22 @@ wherever a page slice dropped a heading
 Every page pass now reads a slice's page text through one reader that refuses a slice it was not built from.
 Its census (`census-STKkse` at `4c0039a57`)
 leaves library source at 666 stretches in 260 files,
-and the twenty-first batch takes `assembly`
-(16 stretches over 27 lines in 8 files) against the census taken after this batch's docs.
+and the twenty-first batch took `assembly`
+(16 stretches over 27 lines in 8 files) against the census taken after its docs (`census-zkJwfY`).
+It closed B85:
+the assembly guard's advancing withdrawal compared refusal offsets on two different pages,
+so a whole replacement that only changed the length of the text before a break read as moving it
+and was withdrawn in place of the broken one
+(`9c007f857` and `a70c074a3`).
+It closed B86 on the reader of those offsets:
+a refusal was placed at the start of the span the parser named,
+and one naming no span at the start of the body,
+so withdrawing the break the parser named first read as moving the refusal back to the page's start
+(`3086d2ffe` and `0e7353948`).
+Its census (`census-dnr81C` at `9244d67d3`)
+leaves library source at 650 stretches in 251 files,
+and the twenty-second batch takes `anthropic`
+(16 stretches over 22 lines in 2 files) against the census taken after this batch's docs.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,

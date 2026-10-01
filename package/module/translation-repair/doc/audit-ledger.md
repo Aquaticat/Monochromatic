@@ -5049,6 +5049,79 @@ the B84 entry this batch's docs commit wrote pointed at a count by position
 `ac44c5378` names the count,
 and the full suite on it printed 1512 PASS lines and no FAIL line.
 
+The twenty-first batch took `assembly` against `census-zkJwfY`
+(taken at `b9da490fb` once the twentieth batch's docs closed:
+665 library stretches in 259 files,
+`assembly` 16 stretches in 8 files).
+Reading its cold stretches found B85,
+an advancing withdrawal that compared refusal offsets on two different pages,
+and checking what B85's fix compares found B86,
+a strict refusal read at the start of what the parser left behind
+(both recorded in their own entries).
+Of the 16 stretches,
+five were reachable arms,
+cased in `4af8a6107`:
+a container's opening half withheld when its closing half ships nothing,
+a doubled definition whose carriers' originals both define it,
+a line opening with a reference and no colon,
+a repeated run of twelve function words,
+and a page where no single withdrawal moves the refusal.
+Ten could not run:
+the moved-while-nothing-survived check and its sentence,
+which the re-splice before it already made (`a67db99e3`),
+and eight lookups of maps built over the very keys they were asked for,
+two in `assembly-integrity.ts` and six in `assembly-repetition-span.ts`,
+which throw now (`0c1c1fe12`).
+The last,
+the reducer that picks the furthest of several advancing withdrawals,
+still runs in no case;
+B85's entry gives the route by which it can.
+The arms B85's fix added are cased in `c17feba5b` and `9244d67d3`
+(the first message claimed one arm its case does not reach;
+M102 records it).
+The closing census,
+`census-dnr81C` at `9244d67d3`,
+read against `census-zkJwfY`:
+ran 3,
+still cold 1,003,
+cold since then 1,
+not loaded 6,
+sources edited since then 7.
+The three that ran are the cased arms in sources the batch left unedited
+(container halves,
+orphan trim,
+repetition).
+Of the edited sources,
+`assembly-contract-fault.ts`,
+`assembly-integrity.ts`,
+`assembly-invariant.ts`,
+`assembly-repetition-span.ts` and `strict-refusal-offset.ts` left 0 cold stretches,
+`assembly-structural-withdrawal.ts` 1
+(the reducer),
+and `parse-mdx.ts` 2,
+the two arms for a cause that is no `Error` the baseline held at its lines 53 and 109
+(cluster `parse`).
+The stretch cold since then is `request-pace.ts:128`,
+in a source and test no commit of the batch touched:
+it ran at the baseline and in the two censuses taken during the batch,
+so some test reaches the default sleeper on a path that depends on time,
+and that is now its own task.
+Library source went from 665 stretches in 259 files to 650 in 251.
+
+By the first construct
+(`t8-triage-dnr81c.txt`),
+the queue for the twenty-second batch is 281 returns,
+112 nullish fallbacks,
+111 ternaries,
+71 throws
+and 75 others.
+`anthropic` leads at 16 stretches
+(2 files,
+22 lines),
+before `corpus-run/attribution` at 15 over 18 lines,
+so the twenty-second batch takes `anthropic`
+against the census taken once this batch's docs close.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -15971,6 +16044,113 @@ pairing items by position is sound only where both sides carry the same count at
 `mistake-prevention.md`,
 "Pairing by position".
 
+### B85: an advancing withdrawal that compared refusal offsets on two different pages
+
+Found by T8's twenty-first batch while reading the uncalled reducer in `assembly-structural-withdrawal.ts`,
+red in `9c007f857`,
+fixed in `a70c074a3`.
+`advancingStructuralWithdrawal`
+(class fifty-eight,
+reached when no single withdrawal repairs the page)
+read where the strict grammar first stops on the page as assembled,
+then where it stops on the page with one replacement withdrawn,
+and called the withdrawal advancing when the second offset was the larger.
+The two offsets index two texts:
+a withdrawal before the break changes the length of the text ahead of it,
+so the same break sits at another offset without having moved.
+A whole replacement 40 characters shorter than its archive text,
+before two broken sections,
+read as moving the first break 40 characters later,
+ranked above the withdrawal that removed that break,
+and the guard went on to withdraw all three replacements
+(`b21-advance-red-probe.mjs` in the audit's scratch folder,
+cat-themed).
+The reducer that picks the furthest step had never run,
+since every case gave one candidate;
+this fixture gave two only through the defect.
+
+`assembledOffsetOf` now maps a refusal on the withdrawn page back to the assembled one.
+The two pages differ only in the withdrawn slice,
+so a refusal in the shared text before it keeps its offset,
+one in the shared text after it moves by the difference in length,
+and one inside the slice's own archive text stands where the slice begins.
+A withdrawal after which the grammar accepts the page is marked `cleared`
+and outranks any that only moves the refusal,
+since a grammar that stops at a page's very end
+(an expression left open)
+leaves the moved offset no later than the page's length.
+The guard's finding names such a step as clearing the refusal.
+The arms the mapping added are cased in `c17feba5b` and `9244d67d3`.
+
+Guard shown to fail:
+with the raw offset compared again,
+both B85 cases failed,
+and so did the direct B86 left-open case and the nothing-advances case,
+each comparing offsets across a length change;
+the B86 guard-level case passed.
+
+The reducer still runs in no case.
+After the fix,
+two withdrawals both advance only where the parser carries state across slices,
+so that one slice's text decides how another's is read
+(an inference from the mapping:
+a withdrawal elsewhere leaves the text around the break as it was).
+No fixture built in this batch reached two candidates;
+the reducer is kept,
+reachable in principle by that route.
+
+### B86: a strict refusal read at the start of what the parser left behind
+
+Found by checking what B85's fix compares,
+before it was written,
+red in `3086d2ffe`,
+fixed in `0e7353948`.
+`strictRefusalOffset` names where the strict grammar stopped,
+and `advancingStructuralWithdrawal` is its one reader.
+`mdast-util-mdx-jsx` raises its refusals on leaving the span it names
+(`onErrorRightIsTag` and `exitMdxJsxTag` in `lib/index.js`,
+3.2.0):
+an element left open in a paragraph is refused at the paragraph's end,
+and one still open when the document ends is refused with no place at all.
+`refusalPlace` read the message's `line` and `column`,
+which a `VFileMessage` copies from the span's start,
+and `strictRefusalOffset` read a refusal with no place as the start of the body.
+On a page whose open element sat beside a broken expression,
+the parser named the expression first;
+withdrawing it left the open element,
+read as offset 0,
+so no withdrawal advanced and the guard withdrew every replacement
+(`b21-b86-probe.mjs`,
+printed `assembly-withdrew-every-replacement` on `a70c074a3`).
+
+`stopPointOf` now reads the end of the span a message names,
+or the point it names;
+a refusal with no place reads as the end of the body.
+Micromark's own refusals name a point,
+and its columns count UTF-16 units as the offsets here do
+(`b21-place-probe.mjs`:
+a break after an emoji refuses at the offset its index gives).
+
+Guards shown to fail:
+with the position-less refusal read at the body's start again,
+the document-end case and both left-open withdrawal cases failed;
+with the span read at its start again,
+the paragraph-end case failed alone.
+
+Calls made here are open to veto:
+
+- a refusal is placed where the parser stopped,
+  the end of the span it names,
+  not where the span begins;
+- a withdrawal after which the page parses outranks any that moves the refusal,
+  however far.
+
+Recurrence:
+an offset means something only in the text it indexes,
+and a parser's position is where its message says it stopped;
+`mistake-prevention.md`,
+"Offsets and positions".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -16728,6 +16908,15 @@ one file per call;
 after an insertion,
 the numbers below it are read again rather than shifted by hand.
 
+Recurred 2026-10-01 (UTC) in T8's twenty-first batch,
+on a scratch probe rather than a package file:
+a `sed --in-place` aimed at the probe's `require` line took line 9 from memory,
+where line 9 opened a doc comment,
+and garbled it;
+the tool's own diff showed it and the next call restored both lines.
+The prevention stands,
+scratch files included.
+
 ### M94: a commit message draft naming a lint finding at a commit that did not raise it
 
 Status:
@@ -16949,6 +17138,24 @@ Prevention:
 a turn ends only when the tracked queue is empty or a step needs the owner;
 a shrinking context is handled by committing and going on,
 and a summary that names a next step the agent could take itself is the sign it must not stop.
+
+### M102: a commit message saying a case reached an arm before any census showed it
+
+Status:
+happened 2026-10-01 (UTC) in T8's twenty-first batch,
+caught by the next census,
+corrected by a comment on the commit and by `9244d67d3`.
+`c17feba5b`'s message said its tail case reached both `sharedPrefixLength` running to the end of the shorter text
+and `sharedSuffixLength` using all its room.
+`census-Yh15Hq` at that commit still listed the second as cold:
+the case's break sits in the shared prefix,
+so `assembledOffsetOf` returns before the suffix is measured.
+The claim came from reading the case against the code,
+not from a run.
+Prevention:
+a message or record says a case reaches a stretch only after a census
+(or a coverage read of that file) shows the stretch ran;
+before that it says which stretch the case is written for.
 
 ### M79: a coverage census measuring compressed code
 
@@ -17909,6 +18116,17 @@ lint,
 type check and the named tests run after the final edit of a commit,
 in that order,
 and a commit follows only a clean run of all three.
+
+Recurred 2026-10-01 (UTC) in T8's twenty-first batch,
+with a commit message rather than a type check:
+`9c007f857`'s message was checked for task and issue numbers,
+then a line was appended to it and the commit ran in the same call,
+so the check never read the text that was committed.
+The committed message read afterwards (`git log -1 --format=%B`) holds none.
+Prevention:
+the message check is one of the checks that run after the final edit;
+any write to a message file starts the check again,
+and the commit goes in a call of its own.
 
 ### M45: a lint over an empty file list read as clean
 
