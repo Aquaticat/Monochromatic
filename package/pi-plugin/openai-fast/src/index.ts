@@ -5,7 +5,7 @@ import type {
   Model,
   Provider,
   OpenAICodexResponsesOptions,
-  TranscriptContext,
+  StreamFunction,
 } from '@earendil-works/pi-ai';
 import type { ExtensionAPI, ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -33,7 +33,7 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.index', },);
 /**
  Register virtual companions and a keyless adapter without replacing the original provider.
  @param pi - host registration capability
- @param provider - native Codex provider before priority wrapping
+ @param provider - credential-free bootstrap metadata source
  @mutates pi - registers the provider, virtual models, and session-start callback
  @mutates provider - invokes model listing and ordinary stream callbacks
  */
@@ -47,11 +47,13 @@ export function registerOpenAIFast({ pi, provider, }: {
   const synchronize = createFastModelRegistration(pi,);
 
   /**
-   Read the current ordinary model, never another internal priority target.
-   @param id - original upstream model identity
-   @returns current model or absent when removed
+   Read the original provider without traversing the adapter catalog.
+   @returns bootstrap metadata source or live original provider
+   @throws FastModelError when the original provider was removed
    */
   function originalProvider(): ForeignHostCapability<Provider> {
+    const ol = tagged({ tag: originalProvider.name, l, },);
+    ol.trace('reading original provider metadata',);
     if (registry === undefined)
       return provider;
     const original = registry.getProvider(CODEX_PROVIDER,);
@@ -79,16 +81,15 @@ export function registerOpenAIFast({ pi, provider, }: {
    @param context - normalized conversation
    @param options - native priority request options
    @returns native assistant event stream
-   @mutates model - provider dispatch reads host model capabilities
    @mutates options - provider consumes cancellation and instrumentation callbacks
    */
-  function dispatch(model: Model<typeof CODEX_API>, context: TranscriptContext, options?: OpenAICodexResponsesOptions,) {
+  const dispatch: StreamFunction<typeof CODEX_API, OpenAICodexResponsesOptions> = function dispatch(model, context, options,) {
     const dl = tagged({ tag: dispatch.name, l, },);
     dl.debug(`dispatching priority request for ${model.id}`,);
     if (registry === undefined)
       throw new FastModelError('Codex fast dispatch requires an initialized pi session. Start or reload the session before requesting a fast model.',);
     return registry.stream(model, context, options,);
-  }
+  };
 
   pi.registerProvider(createPriorityProvider({ provider, getProvider: originalProvider, lookup, dispatch, onCatalog: synchronize, },),);
   synchronize(provider.getModels(),);
