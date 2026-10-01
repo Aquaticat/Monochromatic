@@ -1,19 +1,12 @@
-/** Native virtual Codex fast entries with request-local priority transport. @module */
+/** Native virtual Codex fast entries using the unchanged original provider. @module */
 
-import type {
-  Api,
-  Model,
-  Provider,
-  OpenAICodexResponsesOptions,
-  StreamFunction,
-} from '@earendil-works/pi-ai';
-import type { ExtensionAPI, ModelRegistry, } from '@earendil-works/pi-coding-agent';
+import type { Provider, } from '@earendil-works/pi-ai';
+import type { ExtensionAPI, SessionStartEvent, } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { loadCodexProvider, } from './catalog.ts';
-import { CODEX_API, CODEX_PROVIDER, } from './constants.ts';
+import { OriginalDispatch, } from './original-dispatch.ts';
 import { createPriorityProvider, } from './priority-provider.ts';
-import { FastModelError, } from './fast-model-error.ts';
 import { createFastModelRegistration, } from './virtual-registration.ts';
 
 export { createCatalogCredentials, loadCodexProvider, } from './catalog.ts';
@@ -27,76 +20,40 @@ export { PriorityRequestError, } from './priority-error.ts';
 
 //region Native registration
 
-/** Module logger records extension lifecycle without additional UI. */
+/** Module logger records lifecycle without additional selection UI. */
 const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.index', },);
 
 /**
- Register virtual companions and a keyless adapter without replacing the original provider.
+ Register virtual companions and keyless targets without replacing the original provider.
  @param pi - host registration capability
  @param provider - credential-free bootstrap metadata source
- @mutates pi - registers the provider, virtual models, and session-start callback
- @mutates provider - invokes model listing and ordinary stream callbacks
+ @mutates pi - registers adapter, virtual models, and session-start callback
+ @mutates provider - invokes original metadata accessors
  */
 export function registerOpenAIFast({ pi, provider, }: {
   readonly pi: ForeignHostCapability<ExtensionAPI>;
   readonly provider: ForeignHostCapability<Provider>;
 },): void {
+  /** Registration logger carries the module boundary into helper calls. */
   const l = tagged({ tag: registerOpenAIFast.name, l: moduleLogger, },);
   l.debug('registering virtual priority companions',);
-  let registry: ForeignHostCapability<ModelRegistry> | undefined;
+  /** Session binding is private state, never a global request-tier switch. */
+  const binding = new OriginalDispatch({ provider, l, },);
+  /** Structural registration guard prevents getter-triggered reentrant catalog recursion. */
   const synchronize = createFastModelRegistration(pi,);
-
-  /**
-   Read the original provider without traversing the adapter catalog.
-   @returns bootstrap metadata source or live original provider
-   @throws FastModelError when the original provider was removed
-   */
-  function originalProvider(): ForeignHostCapability<Provider> {
-    const ol = tagged({ tag: originalProvider.name, l, },);
-    ol.trace('reading original provider metadata',);
-    if (registry === undefined)
-      return provider;
-    const original = registry.getProvider(CODEX_PROVIDER,);
-    if (original === undefined)
-      throw new FastModelError('The original Codex provider is no longer registered. Restore it or select another provider.',);
-    return original;
-  }
-
-  /**
-   Read the current original model without enumerating the adapter.
-   @param id - original upstream identity
-   @returns live original model or absent after removal
-   */
-  function lookup(id: string,): Model<Api> | undefined {
-    const ll = tagged({ tag: lookup.name, l, },);
-    ll.trace(`looking up original Codex model ${id}`,);
-    if (registry !== undefined)
-      return registry.find(CODEX_PROVIDER, id,);
-    return provider.getModels().find(function matchingModel(model,) { return model.id === id; },);
-  }
-
-  /**
-   Resolve original-model auth and model-specific headers through the live host before native dispatch.
-   @param model - original model, not the internal target
-   @param context - normalized conversation
-   @param options - native priority request options
-   @returns native assistant event stream
-   @mutates options - provider consumes cancellation and instrumentation callbacks
-   */
-  const dispatch: StreamFunction<typeof CODEX_API, OpenAICodexResponsesOptions> = function dispatch(model, context, options,) {
-    const dl = tagged({ tag: dispatch.name, l, },);
-    dl.debug(`dispatching priority request for ${model.id}`,);
-    if (registry === undefined)
-      throw new FastModelError('Codex fast dispatch requires an initialized pi session. Start or reload the session before requesting a fast model.',);
-    return registry.stream(model, context, options,);
-  };
-
-  pi.registerProvider(createPriorityProvider({ provider, getProvider: originalProvider, lookup, dispatch, onCatalog: synchronize, },),);
+  pi.registerProvider(createPriorityProvider({
+    provider,
+    getProvider: binding.getProvider.bind(binding,),
+    lookup: binding.lookup.bind(binding,),
+    dispatch: binding.stream.bind(binding,),
+    onCatalog: synchronize,
+  },),);
   synchronize(provider.getModels(),);
-  pi.on('session_start', function sessionStart(_event, ctx,) {
+  pi.on('session_start', function sessionStart(_event: ForeignBorrowed<SessionStartEvent>, ctx,) {
+    /** Session logger exposes binding lifecycle without payloads or credentials. */
     const sl = tagged({ tag: sessionStart.name, l, },);
-    registry = ctx.modelRegistry;
-    synchronize(originalProvider().getModels(),);
+    binding.bind(ctx.modelRegistry,);
+    synchronize(binding.getProvider().getModels(),);
     sl.debug('bound priority dispatch to the unchanged original pi provider',);
   },);
 }
@@ -106,13 +63,15 @@ export function registerOpenAIFast({ pi, provider, }: {
 //region Extension factory
 
 /**
- Initialize every configured Codex companion before startup model selection.
- @param pi - native extension registration capability
- @mutates pi - delegates provider and virtual-model registration
+ Initialize configured Codex companions before startup model selection.
+ @param pi - native registration capability
+ @mutates pi - delegates adapter and virtual-model registration
  */
 export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>,): Promise<void> {
+  /** Factory logger records initialization without another footer or notification. */
   const l = tagged({ tag: openAIFast.name, l: moduleLogger, },);
   l.debug('initializing virtual Codex fast extension',);
+  /** Bootstrap uses metadata only; real request auth stays in the active original provider. */
   const provider = await loadCodexProvider();
   registerOpenAIFast({ pi, provider, },);
   l.debug('virtual Codex fast extension initialized',);

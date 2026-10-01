@@ -16,6 +16,7 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.catalog', },);
  @returns credential store that permits only empty metadata reads
  */
 export function createCatalogCredentials(): CredentialStore {
+  /** Credential-store logger records only metadata bootstrap lifecycle. */
   const l = tagged({ tag: createCatalogCredentials.name, l: moduleLogger, },);
   l.trace('creating credential-free catalog reader',);
   return {
@@ -37,21 +38,27 @@ export function createCatalogCredentials(): CredentialStore {
  @throws FastModelError when the model configuration or native provider is unavailable
  */
 export async function loadCodexProvider({ modelsPath, }: { readonly modelsPath?: string; } = {},): Promise<Provider> {
+  /** Catalog logger excludes credential and header values. */
   const l = tagged({ tag: loadCodexProvider.name, l: moduleLogger, },);
   l.debug('loading configured Codex model metadata without credential access',);
+  /** Disposable metadata runtime has no access to stored real credentials. */
   const catalog = await ModelRuntime.create({
     credentials: createCatalogCredentials(),
     refreshOnCreate: false,
     allowModelNetwork: false,
     ...(modelsPath === undefined ? {} : { modelsPath, }),
   },);
+  /** Native cache restoration runs without network or OAuth refresh. */
   const refresh = await catalog.refresh({ allowNetwork: false, providers: [CODEX_PROVIDER,], },);
+  /** Cache restoration errors remain explicit initialization failures. */
   const refreshError = refresh.errors.get(CODEX_PROVIDER,);
   if (refreshError !== undefined)
     throw new FastModelError(`Cannot restore the Codex model catalog: ${String(refreshError,)}. Correct the cached catalog or model configuration.`,);
+  /** Configuration diagnostics prevent registering misleading companion entries. */
   const problem = catalog.getError();
   if (problem !== undefined)
     throw new FastModelError(`Cannot initialize Codex fast models: ${problem}. Correct the model configuration before loading the fast extension.`,);
+  /** Effective source includes configured metadata and restored native cache data. */
   const provider = catalog.getProvider(CODEX_PROVIDER,);
   if (provider === undefined)
     throw new FastModelError('The native openai-codex provider is unavailable. Restore the native provider before loading the fast extension.',);

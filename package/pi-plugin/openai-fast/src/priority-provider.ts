@@ -12,7 +12,7 @@ import {
   type OpenAICodexResponsesOptions,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { CODEX_API, FAST_PROVIDER, PRIORITY_TARGET_PREFIX, } from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
 import { streamPriority, streamSimplePriority, } from './priority-stream.ts';
@@ -23,7 +23,8 @@ import { streamPriority, streamSimplePriority, } from './priority-stream.ts';
 const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.priority-provider', },);
 
 /** Detect extension-owned routing identities, never model priority compatibility. */
-export function isPriorityTarget(model: Pick<AnyModel, 'id'>,): boolean {
+export function isPriorityTarget(model: Readonly<Pick<AnyModel, 'id'>>, ): boolean {
+  /** Identity logger records only the routing-boundary operation. */
   const l = tagged({ tag: isPriorityTarget.name, l: moduleLogger, },);
   l.trace('checking internal routing identity',);
   return model.id.startsWith(PRIORITY_TARGET_PREFIX,);
@@ -34,9 +35,11 @@ export function isPriorityTarget(model: Pick<AnyModel, 'id'>,): boolean {
  @param model - original catalog model
  @returns local physical target, never an upstream model ID
  */
-export function priorityTarget(model: Model<Api>,): Model<Api> {
+export function priorityTarget(model: ForeignBorrowed<Model<Api>>, ): Model<Api> {
+  /** Target logger excludes all request-auth metadata. */
   const l = tagged({ tag: priorityTarget.name, l: moduleLogger, },);
   l.trace(`creating physical routing target for ${model.id}`,);
+  /** Authentication headers are deliberately left at the original request boundary. */
   const { headers: _headers, ...metadata } = model;
   return { ...metadata, provider: FAST_PROVIDER, id: `${PRIORITY_TARGET_PREFIX}${model.id}`, };
 }
@@ -50,13 +53,16 @@ export function priorityTarget(model: Model<Api>,): Model<Api> {
  @mutates lookup - invokes supplied catalog lookup capability
  */
 export function resolvePriorityBase({ model, lookup, }: {
-  readonly model: Model<Api>;
+  readonly model: ForeignBorrowed<Model<Api>>;
   readonly lookup: (id: string) => Model<Api> | undefined;
 },): Model<typeof CODEX_API> {
+  /** Original-model logger keeps translation visible without request data. */
   const l = tagged({ tag: resolvePriorityBase.name, l: moduleLogger, },);
   if (!isPriorityTarget(model,))
     throw new FastModelError(`Model "${model.id}" is not an internal Codex priority target. Select its fast virtual entry instead.`,);
+  /** Fixed prefix removal recovers the original catalog identity. */
   const id = model.id.slice(PRIORITY_TARGET_PREFIX.length,);
+  /** Current original is resolved after configuration and catalog changes. */
   const base = lookup(id,);
   if (base === undefined)
     throw new FastModelError(`Codex fast model "${id}" no longer exists. Refresh models or select an available model.`,);
@@ -95,12 +101,16 @@ export type PriorityProviderOptions = {
  @mutates onCatalog - catalog reads invoke virtual registration
  */
 export function createPriorityProvider({ provider, getProvider, lookup, dispatch, onCatalog, }: PriorityProviderOptions,): Provider {
+  /** Adapter logger retains the module boundary through catalog callbacks. */
   const l = tagged({ tag: createPriorityProvider.name, l: moduleLogger, },);
 
   /** Read only the original provider, never recursively enumerate this adapter. */
   function originalModels(): readonly Model<Api>[] {
+    /** Catalog-read logger never receives model headers or authentication. */
     const ml = tagged({ tag: originalModels.name, l, },);
+    /** Source lookup targets only the unchanged original provider. */
     const source = getProvider?.() ?? provider;
+    /** Virtual routers cannot be routed to as physical bases. */
     const models = source.getModels().filter(function physicalModel(model,) { return model.api !== 'pi-virtual'; },);
     onCatalog(models,);
     ml.trace(`read ${models.length} original Codex models`,);
@@ -137,6 +147,7 @@ export function createPriorityProvider({ provider, getProvider, lookup, dispatch
       return streamSimplePriority({ model: resolvePriorityBase({ model, lookup, },), context, ...(options === undefined ? {} : { options, }), stream: dispatch, },);
     },
     refreshModels: async function refreshModels(context,) {
+      /** Refresh logger records companion synchronization without another provider's I/O. */
       const rl = tagged({ tag: refreshModels.name, l, },);
       if (context.signal.aborted)
         return;
