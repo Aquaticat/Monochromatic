@@ -100,6 +100,9 @@ export type AuthorizedParams = {
  secret, so the username is free-form; git-lfs sends whatever userinfo the
  configured `lfs.url` carries.
 
+ A secret that is absent or blank refuses every write, because comparing
+ against a blank value would accept a blank password.
+
  @param request - inbound request whose `Authorization` header is inspected
 
  @param env - Worker env carrying the `LFS_WRITE_TOKEN` upload secret
@@ -127,10 +130,14 @@ export function authorized({
   },);
   /**
    Configured upload secret; absent on a fresh deploy until `wrangler secret put` runs.
+   `wrangler secret put` also stores a blank value without complaint when its stdin
+   yields nothing, so a blank secret is refused here rather than compared against:
+   an equality check would accept a request whose Basic password is blank too.
+   See `doc/troubleshooting/wrangler-secret-put-empty-stdin.md`.
    */
   const token = env.LFS_WRITE_TOKEN;
-  if (token === undefined) {
-    al.warn('LFS_WRITE_TOKEN is unset; refusing the write',);
+  if ((token === undefined) || (token.trim() === '')) {
+    al.warn('LFS_WRITE_TOKEN is unset or blank; refusing the write',);
     return false;
   }
   /**

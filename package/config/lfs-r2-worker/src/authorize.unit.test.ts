@@ -63,6 +63,29 @@ await describe({
       },
     },),
     it({
+      name: 'refuses every write while the secret is blank',
+      fn: async () => {
+        /**
+         Env whose secret was stored empty, as `wrangler secret put` does when its stdin yields nothing.
+         Without a blank check the empty password below would compare equal to the empty secret.
+         */
+        const blank: WorkerEnv = { BUCKET: createMemoryObjectStore(), LFS_WRITE_TOKEN: '', };
+        expect(authorized({ request: requestWith(`Basic ${btoa('lfs:',)}`,), env: blank, l, },),).toBe(false,);
+        expect(authorized({ request: requestWith(`Basic ${btoa(`lfs:${TOKEN}`,)}`,), env: blank, l, },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'refuses every write while the secret holds only whitespace',
+      fn: async () => {
+        /**
+         Env whose secret carries no credential characters.
+         The request password matches the secret byte for byte, so only the blank check refuses it.
+         */
+        const whitespace: WorkerEnv = { BUCKET: createMemoryObjectStore(), LFS_WRITE_TOKEN: ' ', };
+        expect(authorized({ request: requestWith(`Basic ${btoa('lfs: ',)}`,), env: whitespace, l, },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'refuses a request without an Authorization header',
       fn: async () => {
         expect(authorized({ request: requestWith(), env, l, },),).toBe(false,);

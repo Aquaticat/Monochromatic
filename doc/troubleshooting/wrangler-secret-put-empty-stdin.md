@@ -450,9 +450,10 @@ const secretValue = trimTrailingWhitespace(
 ### Steps to reproduce
 
 1. Deploy any Worker that gates a route on a secret.
-2. Run `wrangler secret put KEY` in a context where stdin yields no value
-   (in our case the value was piped through a task runner; `</dev/null`
-   reproduces it directly).
+2. Run `wrangler secret put KEY` in a context where stdin yields no value.
+   We measured it with the value piped through a task runner. We did not test
+   `</dev/null`; the source path is the same for any stdin that yields nothing,
+   but that specific invocation is inference, not measurement.
 3. Observe `✨ Success! Uploaded secret KEY`.
 4. Call the gated route with an empty credential. It succeeds.
 
