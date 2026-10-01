@@ -148,7 +148,9 @@ and the slice coverage and delivery refusal cases checked the class alone or a f
 though every check in each file throws one class carrying a structured fault
 (T8's seventeenth batch);
 and a guard-off build put a mutant in a file's second top-level suite beside one failing its first,
-so the file stopped before the second suite and its case never ran (M89).
+so the file stopped before the second suite and its case never ran (M89),
+and a red case sat the same way behind red cases in the file's first suite,
+so it could not be seen failing (M97).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -196,6 +198,9 @@ A guard-off build mutates cases in one top-level suite per file,
 since a failing suite ends its file,
 and a mutant whose case prints no FAIL line is read as surviving
 only once that case's suite printed its pass line.
+A red case counts as red only from its own FAIL line,
+and a file awaiting several suites at the top level is wrapped in one root `describe`
+before a case is added to any suite but its first.
 When one side of a compared pair becomes derived from the other,
 every guard comparing them is re-read:
 one that can no longer fail goes,
@@ -228,7 +233,11 @@ the coverage census measured a compressed build,
 where guards folded into logical expressions had no range and read as run,
 after the ledger had inferred from the stretched spans alone that its error ran only toward cold (M79);
 a census of number reads counted calls and missed readers handed on as values (`.map(Number)`) and `Date.parse`,
-six reads in all (M90).
+six reads in all (M90);
+a source scan read a `satisfies` as typing a table with string keys,
+and missed a parameter destructured from an object until moving code changed its count (M98);
+and a search whose pattern `rg` refused printed its `|| echo` fallback,
+which read as finding nothing (M99).
 
 The rule:
 a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
@@ -248,7 +257,19 @@ a value handed on,
 a coercion)
 and every function with the same behaviour on another type,
 and its guard says which it reads and which it leaves out of reach.
-A null result counts only after a positive control shows the search can match.
+A source scan lists every way the language declares the shape it looks for
+(an annotation,
+a cast,
+a `satisfies`,
+an alias,
+a parameter named,
+destructured or defaulted),
+says for each whether it gives the shape,
+and holds one of each in its fixture;
+a count that moves when code moves without changing what it does marks a gap in the scan.
+A null result counts only after a positive control shows the search can match,
+and a fallback report names the exit status (`|| echo "exit $?"`),
+since `rg` exits 1 for no match and 2 for a refused pattern or another error.
 A measurement that aggregates is checked against an invariant any correct output meets,
 not only against an earlier tool's totals,
 since two tools sharing a flaw agree:
@@ -1811,3 +1832,52 @@ Habit holds a new runner that narrows its walk by id to `askedAmong`.
 Out of the scan's reach:
 `process` reached through `globalThis` or handed on whole,
 and a property name built at run time.
+
+## Tables keyed by text
+
+What happened:
+plain objects served as tables looked up by text the package did not write:
+a provider's stream delta type,
+a corpus asset's extension,
+a stored issue status and repair disposition,
+and corpus entry ids in the attempt counts.
+An object answers `constructor`,
+`toString` and the other names it inherits with the prototype's values,
+and one written through `__proto__` sets its prototype and drops the entry,
+so a delta typed `constructor` was routed with `Object.prototype` as its channel,
+an asset named `tabby.constructor` read as usable,
+a claim with that status was filed under the `Object` function as its arm,
+and a count for `__proto__` was never written (ledger B77).
+
+The rule:
+a table looked up by text is a `ReadonlyMap`,
+and a record filled by a key is a `Map` until it is handed on whole,
+as an object from `Object.fromEntries` at its function's return or its file's write.
+A table over a closed set of names keeps the names in its type
+(a literal-keyed object,
+checked with `satisfies` rather than annotated as a record of strings,
+or a `Record` over the set's own union),
+so the compiler refuses a lookup by unchecked text;
+an exported table needs an annotation under `isolatedDeclarations`,
+which widens its keys,
+so an exported table looked up by text is a map.
+
+What enforces it:
+`text-keyed-tables.unit.test.ts`,
+which `source-scans` runs,
+fails on a declaration typed with string keys
+(`Record<string, …>`,
+that inside `Readonly`,
+a string index signature,
+or a package alias of one,
+by annotation or by a cast)
+whose value is an object literal at a module's top or `{}` anywhere,
+or that is written through a computed key;
+the red cases in each site's test file hold the inherited names.
+Out of the scan's reach,
+and read once by a typed census recorded in ledger B77:
+a table built by `Object.fromEntries` or handed back from a function and then read by text,
+a class field,
+a parameter destructured from an object an alias types,
+a key typed by a template literal,
+and a cast of text to a table's literal keys.

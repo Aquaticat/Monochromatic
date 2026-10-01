@@ -336,11 +336,20 @@ so the runner ran over nothing or over the rest;
 `askedAmong` now refuses the line,
 naming every stray,
 and `sentinel-probe` holds its ids to the corpus too.
+B77 followed
+(`f0322ce6f` to `2293b0ded`):
+plain-object tables looked up by text from outside the package answered the names every object inherits,
+so a stream delta,
+an asset name,
+a stored status or disposition,
+or an entry id spelled `constructor` or `__proto__` read as a prototype value,
+and a `__proto__` count was never written.
+Every table looked up by text is now a map,
+every record filled by a key a map until it is handed on,
+and `text-keyed-tables.unit.test.ts` fails on a new one.
 Open before the eighteenth batch:
-elapsed times on the wall clock,
-and plain-object tables looked up by text from outside the package
-(the fidelity probe's defect table closed by B75);
-the census taken once they close is that batch's baseline,
+elapsed times on the wall clock;
+the census taken once it closes is that batch's baseline,
 recorded under each entry it closes.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.

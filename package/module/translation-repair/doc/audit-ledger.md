@@ -4696,8 +4696,9 @@ a flag written twice and prototype keys).
 B75 closed the repeated flag and found a fourth,
 an `--only` naming no entry,
 which B76 closed,
-so the elapsed-time family and prototype keys close first,
-and the batch reads against the census taken once they close.
+and B77 closed the prototype keys,
+so the elapsed-time family closes first,
+and the batch reads against the census taken once it closes.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -14319,7 +14320,8 @@ Found on the way and open:
 a flag written twice is read at its first value (closed by B75);
 plain-object tables are looked up and filled by text from outside the package,
 which reaches a prototype's keys
-(the fidelity probe's defect table closed by B75);
+(the fidelity probe's defect table closed by B75,
+the rest by B77);
 the request pace's real-clock case flaked,
 18.89 and 18.99 milliseconds against a 19 millisecond bound,
 recorded with the elapsed-time family;
@@ -14635,7 +14637,8 @@ Found on the way and open:
 an `--only` naming no entry runs over none without a word
 (closed by B76);
 and the package's other plain-object tables looked up or filled by text from outside it
-(the open family of prototype keys;
+(the family of prototype keys,
+closed by B77;
 the defect table is closed here).
 
 Recurrence:
@@ -14715,6 +14718,168 @@ printed 1,490 PASS lines and no FAIL line.
 Recurrence:
 a runner that narrows its walk by id passes the ids asked for and the ids it can reach through `askedAmong`;
 `command-flags.unit.test.ts` holds the refusal.
+
+### B77: tables keyed by text answered the names every object inherits
+
+Found in B73 and left open there;
+B75 made the fidelity probe's defect table a map,
+and this entry reads the rest of the package.
+A plain object read through a key the package did not write answers `constructor`,
+`toString` and the other names on `Object.prototype` with the prototype's values,
+and answers `__proto__` with the prototype itself where it holds no entry of that name;
+written through `__proto__`,
+it sets its prototype instead of holding the entry,
+so the entry is gone without a word.
+A JSON file that records a `__proto__` key does read back,
+since `JSON.parse` defines it as the object's own,
+so the defect needs a key the object does not hold,
+or one the code writes.
+Found by reading the code;
+no stored output was searched for a key spelled this way.
+
+Five sites read a key from outside the package
+(the red cases in `42eb0b0dd` each failed on its assertion before the fix):
+
+- `anthropic-delta-scan.ts` routed a stream delta by the type the provider names,
+  through `DELTA_CHANNELS` and `DELTA_TEXT_FIELDS`;
+  a delta typed `__proto__` or `constructor`,
+  with text in the field the inherited value's string form names,
+  yielded that text with `Object.prototype` as its channel;
+- `image-asset.ts` read an asset's media type off its extension through `MEDIA_TYPES`,
+  and answered `tabby.constructor` as usable;
+- `corpus-run/judge-crosscheck.ts` placed a claim in an arm by its issue's stored status through `ARM_OF_STATUS`,
+  and filed a status `constructor` or `__proto__` under the `Object` function or `Object.prototype`;
+  the status count `score-crosscheck` prints,
+  counted into `{}`,
+  printed the `Object` function's text in the count for `constructor` and dropped `__proto__`;
+- `repair-sheet.ts` printed the inherited function as the note for a stored disposition `constructor`;
+- `corpus-run/attempt-store.ts` held the attempt counts the corpus pass keeps by entry id as a plain object,
+  so an id spelled as an inherited name counted as the inherited value,
+  and a count for `__proto__` was not written.
+
+`f55cb82a0` first moved the two reads that sat in runner bodies,
+the attempt count and the status count,
+into `attemptsOf`,
+`countAttempt` and `statusBreakdown`,
+with no change in what they do,
+so cases could reach them.
+
+The other tables and records read or wrote only keys the package itself chose,
+and changed for one rule across the package:
+the three canon tables in `quote-normalize.ts` and `CLOSER_OF` and `OPENER_OF` in `translate-quote-balance.ts`,
+keyed by one UTF-16 unit,
+which no inherited name is;
+`CANADIAN_PAIRS`,
+which reached its readers only through the `CANADIAN_SPELLINGS` map;
+`nodeEntries`,
+the build's own entry names;
+`ADMISSIBILITY_FIELDS`,
+looked up by the names of the counts the reader itself declared;
+and records filled by ids or names the package itself produces
+(claim,
+cluster,
+issue,
+seed and envelope ids,
+repair statuses and dispositions,
+refusal reasons,
+recall bands),
+in `adjudicate-wire.ts`,
+`tally-resolution.ts`,
+`restoration-judge-wire.ts`,
+`derivability-wire.ts`,
+`repair-scorecard.ts`,
+`repair-region.ts`,
+`corpus-run/editor-width-probe.ts`,
+`corpus-run/sentinel-probe.ts` and `corpus-run/recall-benchmark.ts`.
+
+Fixed (`2293b0ded`):
+a table looked up by text is a `ReadonlyMap`,
+and a record filled by a key is a `Map` until it is handed on whole,
+as an object built by `Object.fromEntries` at its function's return or its file's write,
+so the shapes callers and stored files read are unchanged.
+The attempt counts are a `Map` in memory and an object only in their JSON file.
+A table over a closed set of names keeps the names in its type instead,
+so the compiler refuses a lookup by unchecked text:
+`ADMISSIBILITY_FIELDS`,
+which the reader now walks by its own list of counts rather than by the declared record's entries,
+`perBand`,
+and `HYPER_CREDIT_RATES`,
+checked with `satisfies` rather than typed as a record of strings.
+`nodeEntries` and `CANADIAN_PAIRS` are maps rather than literal-keyed objects
+because `isolatedDeclarations` (TS9010) needs an annotation on an exported constant,
+and an annotation widens the keys to `string`;
+the build configs hand rolldown `Object.fromEntries(nodeEntries)`.
+Written one tuple per line,
+the pairs table went past `eslint(max-lines)`'s 300 counted lines (490),
+so its doubled-l and word-by-word groups moved to
+`corpus-run/canadian-spelling-pairs-doubled-l.ts` and `corpus-run/canadian-spelling-pairs-word.ts`,
+spread back in their places so the map's order is unchanged.
+
+Found on the way and fixed in the same commits:
+the media-type note said the table had two entries because the corpus had two extensions,
+where the table had four from the commit that wrote the note (`158117e79`);
+counted over the data repository at the pin,
+the corpus's pictures are 210 `.webp`,
+91 `.jpg`,
+6 `.png` and 1 `.jpeg`,
+and the note now says so.
+The pairs table's TSDoc called every Canadian form lower case,
+where `id` maps to `ID` (class 169).
+And the comment over `score-crosscheck`'s status count said it counted control-arm claims only,
+where it counts the undecided claims too (`f55cb82a0`).
+
+Calls made here are open to veto:
+
+- every table looked up by text is a map,
+  the ones whose keys could never be an inherited name among them,
+  so one rule covers the package and the scan lists no exceptions;
+- records filled by a key are maps inside the function and objects outside it,
+  rather than maps all the way to the stored file,
+  which would change what every reader and stored artifact holds;
+- tables over a closed key set keep literal keys rather than becoming maps,
+  since the compiler then holds every lookup to the set;
+- `judge-crosscheck.unit.test.ts`'s two suites sit under one root `describe`,
+  so a failure in the first no longer stops the second from running (ledger M97).
+
+Guard-offs on the fixed tree,
+restored with `git diff` printing nothing after:
+with `DISPOSITION_NOTES` a plain object again,
+the scan's package case failed (`expected [ Array(1) ] to deeply equal []`)
+and the repair sheet's inherited-name case failed (`expected false to equal true`).
+The red commits show the rest:
+each red case failed on its assertion against the unfixed code,
+and the scan's package case listed every site before the fix
+(`f0322ce6f` and `98f5b8861`).
+
+What the scan cannot see was read by a typed census of the fixed tree
+(`~/temp/agent/audit-glossary-fix/b486-prototype-census.mjs`,
+TypeScript 7.0.2's checker over the package's 2,005 source files),
+which lists every element access and `in` test whose key is not a written literal.
+In production code,
+no write goes through a key typed as text,
+and the 63 reads and 3 `in` tests keyed by text each take a field name the package chose
+(read through a helper whose callers pass a written name),
+an id the package minted,
+or a key `Object.keys` gave from the same record;
+the 4 keyed by a type parameter are keyed by a closed set.
+A second probe (`b486-casts.mjs`) found no cast narrowing text to literal keys,
+and two computed destructurings,
+both of `process.env` by the package's own variable names.
+
+Recurrence:
+a table looked up by text is a `ReadonlyMap`,
+and a record filled by a key is a `Map` until handed on whole;
+`text-keyed-tables.unit.test.ts`,
+which `source-scans` runs,
+fails on a declaration typed with string keys whose value is an object literal at a module's top or `{}` anywhere,
+or that is written through a computed key.
+Out of its reach,
+and named in its module note:
+a table built by `Object.fromEntries` or handed back from a function and then read by text,
+a class field,
+a parameter destructured from an object an alias types,
+a key typed by a template literal,
+and a cast of text to a table's literal keys.
 
 ## Process mistakes in this audit
 
@@ -15523,6 +15688,80 @@ or walks with a bound that skips `node_modules`,
 and runs with a heap cap (`--max-old-space-size`),
 since repository rule RXI asks host-exhausting work to run bounded;
 a scan that runs past its expected time is checked once by process status.
+
+### M97: a red case hidden behind another suite's failure in the same file
+
+Status:
+happened 2026-10-01 (UTC) while writing B77's red cases,
+found when the run printed no line at all for one suite,
+and fixed before the red commit (`42eb0b0dd`).
+`judge-crosscheck.unit.test.ts` awaited two suites at the top level.
+The census suite's new red cases failed,
+so that suite rejected and the file stopped before the `statusBreakdown` suite ran:
+its red case printed neither a FAIL line nor its suite's PASS line,
+and could not be seen failing.
+The two suites now sit under one root `describe`
+(the `json-guard.unit.test.ts` pattern),
+and a direct run failed exactly the two new cases with every other case passing.
+This is M89's mechanism met on the red side:
+there a guard-off mutant's case never ran,
+here a red case never ran.
+Prevention:
+a red case counts as red only from its own FAIL line;
+a file awaiting several suites at the top level is wrapped in one root `describe`
+before a case is added to any suite but the first,
+and the package's other such files are queued as a family of their own.
+
+### M98: a source scan written without listing the forms of what it scans for
+
+Status:
+happened 2026-10-01 (UTC) during B77,
+twice,
+the first caught before the scan's commit and the second after it,
+with no fix resting on either.
+Drafted,
+the text-keyed table scan read a `satisfies` as typing a table with string keys.
+A `satisfies` checks without widening,
+so the keys stay the literal's own and a lookup by unchecked text does not compile;
+the draft flagged tables the compiler already held,
+`CLAIM_BY_ROLE` among them.
+Committed (`f0322ce6f`),
+it read a parameter as typed with string keys only when the parameter was a name annotated in place,
+and missed one destructured from an object,
+the form every function of two or more parameters takes here.
+Moving the attempt count into `countAttempt({ attempts, id })` dropped the package findings from 36 to 35 with the write still there,
+which is how the gap showed,
+and `98f5b8861` closed it.
+M90's family,
+met again in a guard's scan.
+Prevention:
+before a scan is written,
+list every way the language declares the shape it looks for
+(an annotation,
+a cast,
+a `satisfies`,
+an alias,
+a parameter named,
+destructured or defaulted)
+and say for each whether it gives the shape;
+the fixture holds one of each,
+and a count that moves when code moves without changing what it does is read as a gap in the scan.
+
+### M99: a search whose pattern was refused, read through its fallback as finding nothing
+
+Status:
+happened 2026-10-01 (UTC) during B77,
+caught before any conclusion rested on it.
+A search for casts used a lookahead,
+which `rg`'s default regex engine refuses,
+and the call's `|| echo` fallback said no casts were found,
+printing for the refused pattern exactly as it would for an empty search.
+The search was rerun with `--pcre2`,
+then replaced by a typed probe (`~/temp/agent/audit-glossary-fix/b486-casts.mjs`).
+Prevention:
+a fallback report names the exit status (`|| echo "exit $?"`),
+since `rg` exits 1 for no match and 2 for an error,
+and a null is read only with the command's error output in view.
 
 ### M79: a coverage census measuring compressed code
 
@@ -17098,6 +17337,7 @@ Three times more on 2026-10-01 (UTC) during B75
 `probe-candidates.unit.test.ts`,
 `mistake-prevention.md`),
 each viewed with `rg` or `sed`.
+Once more on 2026-10-01 (UTC) during B77 (`sheet-barrel.ts`).
 Prevention:
 read the region with the Read tool before editing it;
 a `sed` or `rg` view does not count as a read.
