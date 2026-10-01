@@ -18,6 +18,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { readCoverageProbeArguments, } from './coverage-probe-args.ts';
 
 //region Coverage probe
 // PROTOTYPE for question 28: can a roster tell a passage the translation merged
@@ -57,18 +58,6 @@ import { reportingRefusals, } from './cli-refusal.ts';
 //
 // STANDARD OUTPUT IS OTHERWISE UNCHANGED and gains only the line saying where
 // the file went, so nothing a caller does today breaks.
-
-/**
- How many candidates one invocation asks about by default.
- 
- Small on purpose: the first run of anything that spends quota should be
- readable in full before a larger one is bought.
- 
- COUNTED IN ATTEMPTS RATHER THAN IN ROWS, because a cap on successes lets a
- failing roster spend without bound and hides the failures from the count a
- reader checks.
- */
-const DEFAULT_CANDIDATE_CAP = 12;
 
 /**
  Both sides of one entry, or the fact that it has only one.
@@ -172,59 +161,6 @@ type ProbeRow = {
 };
 
 /**
- Reads the entry filter and cap from the command line.
- 
- @returns Entry ids to probe, empty for every entry, and the candidate cap
- 
- @example
- ```ts
- const { onlyIds, cap, } = readArguments();
- ```
- */
-function readArguments(): {
-  readonly onlyIds: readonly string[];
-  readonly cap: number;
-} {
-  /**
-   Arguments after the script path.
-   */
-  const args = process.argv
-    .slice(2,);
-
-  /**
-   Entry ids named after `--only`, comma separated.
-   */
-  const onlyAt = args.indexOf('--only',);
-
-  /**
-   Cap named after `--cap`.
-   */
-  const capAt = args.indexOf('--cap',);
-
-  /**
-   Cap as written, when one was named.
-   */
-  const capText = (capAt === (-1)) ? '' : (args[capAt + 1] ?? '');
-
-  /**
-   Cap as a number, falling back when it is not one.
-   */
-  const cap = (capText === '')
-    ? Number.NaN
-    : Math.trunc(Number(capText,),);
-  return {
-    onlyIds: (onlyAt === (-1))
-      ? []
-      : (args[onlyAt + 1] ?? '')
-        .split(',',)
-        .filter(function isNamed(id,): boolean {
-          return id !== '';
-        },),
-    cap: Number.isNaN(cap,) ? DEFAULT_CANDIDATE_CAP : cap,
-  };
-}
-
-/**
  Asks the roster about every unpaired passage it is given, up to the cap.
  
  READS THAT FAIL ARE SKIPPED AND LOGGED rather than thrown, since an entry
@@ -274,7 +210,7 @@ async function main(): Promise<void> {
   const {
     onlyIds,
     cap,
-  } = readArguments();
+  } = readCoverageProbeArguments({ argv: process.argv, },);
 
   /**
    Client for every exchange.

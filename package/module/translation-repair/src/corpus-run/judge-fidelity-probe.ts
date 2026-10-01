@@ -57,7 +57,7 @@ async function main(): Promise<void> {
     cap,
     damageKinds,
     withContext,
-  } = readFidelityArguments();
+  } = readFidelityArguments({ argv: process.argv, },);
   /**
    Approved candidates can be measured without acquiring a production seat.
    */

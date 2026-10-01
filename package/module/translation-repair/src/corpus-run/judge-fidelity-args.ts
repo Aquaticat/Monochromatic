@@ -11,7 +11,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
  COUNTED IN ATTEMPTS, not in successes, so a failing roster cannot spend
  without bound while the count a reader checks stays small.
  */
-const DEFAULT_TRIAL_CAP = 16;
+export const DEFAULT_TRIAL_CAP = 16;
 
 /**
  Defects built for every pair when the caller names none.
@@ -46,15 +46,20 @@ const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = 
  
  @internal
  
+ @param argv - process arguments, passed rather than read so this is testable
+ without a subprocess
+ 
  @returns Entry ids to trial, empty for every entry, the trial cap, and which
  defects to build
  
  @example
  ```ts
- const { onlyIds, cap, damageKinds, } = readFidelityArguments();
+ const { onlyIds, cap, damageKinds, } = readFidelityArguments({ argv: process.argv, },);
  ```
  */
-export function readFidelityArguments(): {
+export function readFidelityArguments(
+  { argv, }: { readonly argv: readonly string[]; },
+): {
   readonly onlyIds: readonly string[];
   readonly cap: number;
   readonly damageKinds: readonly FidelityDamageKind[];
@@ -63,7 +68,7 @@ export function readFidelityArguments(): {
   /**
    Arguments after the script path.
    */
-  const args = process.argv
+  const args = argv
     .slice(2,);
 
   /**

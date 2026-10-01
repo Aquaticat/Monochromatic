@@ -10,9 +10,9 @@
 //
 // POOLING AND GENERATION IDENTITY LEFT for `generation-barrel.ts` on the same
 // grounds when this file in turn reached the budget. `index.ts` composes both,
-// so nothing importing the package sees the seam.
+// so nothing importing the package sees the seam. What an operator types to a
+// bench or probe left for `probe-args-barrel.ts` the same way.
 
-export { readAskedCount, } from './corpus-run/asked-count.ts';
 export {
   probeRosterWith,
   readCandidateIds,
