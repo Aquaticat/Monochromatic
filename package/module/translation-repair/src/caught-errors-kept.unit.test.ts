@@ -26,6 +26,7 @@ import {
 
 import {
   childNodes,
+  identifierName,
   isTreeNode,
   parseSource,
   readPackageSource,
@@ -67,26 +68,6 @@ type ClauseReading = {
    */
   readonly discards: boolean;
 };
-
-/**
- Name an identifier node carries.
-
- @param node - identifier node
-
- @returns Its name, empty for any other node
-
- @example
- ```ts
- const name = identifierName({ node: clause.param, },);
- ```
- */
-function identifierName({ node, }: { readonly node: TreeNode; },): string {
-  /**
-   The node's name field.
-   */
-  const { name, } = node;
-  return ((node.type === 'Identifier') && ((typeof name) === 'string')) ? (name as string) : '';
-}
 
 /**
  Reads one catch clause's body, not entering functions nested in it.
@@ -225,40 +206,6 @@ function droppedErrors({ files, }: { readonly files: readonly SourceText[]; },):
   return found.toSorted();
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export function nap() {}', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'caught errors kept (ledger B29)',
   children: [
@@ -268,7 +215,7 @@ await describe({
       fn: async () => {
         expect(droppedErrors({
           files: [
-            fixture({
+            {
               path: 'cat.ts',
               text: [
                 'export function nap(): number { try { return 1; } catch { return 0; } }',
@@ -281,12 +228,12 @@ await describe({
                 'export function yawn(): string { try { return \'\'; } catch (error) { const later = () => error; return \'\'; } }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'try { JSON.parse(\'{\'); } catch (error) { void error; }',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'cat.ts#groom: neither logs, rethrows nor passes on error',

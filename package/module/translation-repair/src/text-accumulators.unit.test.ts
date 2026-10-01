@@ -26,6 +26,7 @@ import {
 
 import {
   childNodes,
+  identifierName,
   isTreeNode,
   parseSource,
   readPackageSource,
@@ -56,26 +57,6 @@ const NOT_TEXT: Readonly<Record<string, string>> = {
   'corpus-run/ordinal-style.ts#roman: out':
     'builds a roman numeral from a small number over a fixed table; the loop reads the table, not text',
 };
-
-/**
- Name an identifier node carries.
-
- @param node - identifier node
-
- @returns Its name, empty for any other node
-
- @example
- ```ts
- const name = identifierName({ node: declarator.id, },);
- ```
- */
-function identifierName({ node, }: { readonly node: TreeNode; },): string {
-  /**
-   The node's name field.
-   */
-  const { name, } = node;
-  return ((node.type === 'Identifier') && ((typeof name) === 'string')) ? (name as string) : '';
-}
 
 /**
  Names a program binds with `let` to a string or template literal.
@@ -240,40 +221,6 @@ function textGrownInLoops({ files, }: { readonly files: readonly SourceText[]; }
   return [...found,].toSorted();
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export function nap() {}', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'text accumulators (ledger B29)',
   children: [
@@ -283,7 +230,7 @@ await describe({
       fn: async () => {
         expect(textGrownInLoops({
           files: [
-            fixture({
+            {
               path: 'cat.ts',
               text: [
                 'export function purr(text: string): string { let held = \'\'; for (const c of text) held += c; return held; }',
@@ -294,12 +241,12 @@ await describe({
                 'export function stretch(text: string): string { const pieces: string[] = []; for (const c of text) pieces.push(c); return pieces.join(\'\'); }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'let sheet = \'\'; for (const c of \'meow\') sheet += c;',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'cat.ts#groom: fur',

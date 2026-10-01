@@ -41,6 +41,7 @@ import {
 
 import {
   childNodes,
+  identifierName,
   isTreeNode,
   parseSource,
   readPackageSource,
@@ -800,28 +801,6 @@ const FORWARDING_SITES: readonly (Forwarding & {
 const NESTED_FUNCTION_KINDS: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression',],);
 
 /**
- Name an identifier node carries.
-
- @param node - node to read
-
- @returns Its name, empty for any node that is not an identifier
-
- @example
- ```ts
- const name = identifierNameOf({ node: construction.callee, },);
- ```
- */
-function identifierNameOf({ node, }: { readonly node: unknown; },): string {
-  if ((!isTreeNode(node,)) || (node.type !== 'Identifier'))
-    return '';
-  /**
-   The node's name field.
-   */
-  const { name, } = node;
-  return ((typeof name) === 'string') ? name : '';
-}
-
-/**
  Members through which a value becomes its text.
  */
 const TEXT_MEMBERS: ReadonlySet<string> = new Set(['message', 'stack',],);
@@ -858,7 +837,7 @@ function textNamesUnder({ roots, }: { readonly roots: readonly TreeNode[]; },): 
     /**
      Name this node calls, when it is a call.
      */
-    const called = (node.type === 'CallExpression') ? identifierNameOf({ node: node.callee, },) : '';
+    const called = (node.type === 'CallExpression') ? identifierName({ node: node.callee, },) : '';
     /**
      Arguments of that call.
      */
@@ -871,13 +850,13 @@ function textNamesUnder({ roots, }: { readonly roots: readonly TreeNode[]; },): 
       found.add(called,);
     if ((called === 'caughtValueText') || (called === 'String')) {
       for (const argument of callArguments)
-        found.add(identifierNameOf({ node: argument, },),);
+        found.add(identifierName({ node: argument, },),);
     }
-    if ((node.type === 'MemberExpression') && TEXT_MEMBERS.has(identifierNameOf({ node: node.property, },),))
-      found.add(identifierNameOf({ node: node.object, },),);
+    if ((node.type === 'MemberExpression') && TEXT_MEMBERS.has(identifierName({ node: node.property, },),))
+      found.add(identifierName({ node: node.object, },),);
     if ((node.type === 'TemplateLiteral') && Array.isArray(node.expressions,)) {
       for (const expression of node.expressions)
-        found.add(identifierNameOf({ node: expression, },),);
+        found.add(identifierName({ node: expression, },),);
     }
     pending.push(...childNodes({ node, },),);
   }
@@ -918,11 +897,11 @@ function narrowingsOf(
   const pending = [body,];
   for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     if ((node.type === 'BinaryExpression') && (node.operator === 'instanceof')
-      && (identifierNameOf({ node: node.left, },) === binding)) {
+      && (identifierName({ node: node.left, },) === binding)) {
       /**
        Class tested against.
        */
-      const tested = identifierNameOf({ node: node.right, },);
+      const tested = identifierName({ node: node.right, },);
       if (tested !== '')
         found.add(tested,);
     }
@@ -997,7 +976,7 @@ function forwardingIn(
     /**
      Class constructed here, or nothing.
      */
-    const className = (node.type === 'NewExpression') ? identifierNameOf({ node: node.callee, },) : '';
+    const className = (node.type === 'NewExpression') ? identifierName({ node: node.callee, },) : '';
     if (marked.has(className,)) {
       /**
        Names the construction's arguments carry.
@@ -1026,7 +1005,7 @@ function forwardingIn(
       ? [
         ...catches,
         {
-          binding: identifierNameOf({ node: node.param, },),
+          binding: identifierName({ node: node.param, },),
           body: node.body,
         },
       ]

@@ -214,40 +214,6 @@ function recordChecks({ files, }: { readonly files: readonly SourceText[]; },): 
 
 //endregion Record checks
 
-/**
- A source file for the fixture case.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'record checks (ledger B92)',
   children: [
@@ -257,7 +223,7 @@ await describe({
       fn: async () => {
         expect(recordChecks({
           files: [
-            fixture({
+            {
               path: 'litter.ts',
               text: [
                 'export function isBasket(value: unknown,): boolean {',
@@ -271,12 +237,12 @@ await describe({
                 'export const said = \'object\' === \'object\';',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'catnip.unit.test.ts',
               text: 'export const mock = (typeof {}) === \'object\';',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'litter.ts#<module>',

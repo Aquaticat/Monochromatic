@@ -716,40 +716,6 @@ const NAMED_OMISSIONS: readonly NamedOmission[] = [
 //endregion Named omissions
 
 /**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export function nap() {}', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
-/**
  Whether an omission sits in a measurement file.
 
  @param omission - omission as reported
@@ -775,7 +741,7 @@ await describe({
       fn: async () => {
         expect(floorInputOmissions({
           files: [
-            fixture({
+            {
               path: 'bowl.ts',
               text: [
                 'export function fill({ kibble, declared = [], lineStructured, pictureContext, }: '
@@ -783,8 +749,8 @@ await describe({
                 + 'readonly pictureContext?: string; readonly treats?: number; },): string { return kibble; }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.ts',
               text: [
                 'import { fill, } from \'./bowl.ts\';',
@@ -799,12 +765,12 @@ await describe({
                 'function makeMeal(): Parameters<typeof fill>[0] { return { kibble: \'tuna\', lineStructured: true, }; }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'import { fill, } from \'./bowl.ts\';\nfill({ kibble: \'beef\', lineStructured: true, },);',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'cat.ts#breakfast -> fill: omits [declared, pictureContext]',
@@ -817,16 +783,16 @@ await describe({
       fn: async () => {
         expect(floorInputOmissions({
           files: [
-            fixture({
+            {
               path: 'cat.ts',
               text: 'export function groom({ declared = [], }: { readonly declared?: readonly string[]; },): number { return declared.length; }',
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'kitten.ts',
               text: 'export function groom({ pageText = \'\', }: { readonly pageText?: string; },): number { return pageText.length; }',
               isTest: false,
-            },),
+            },
           ],
         },),).toEqual(['groom: ambiguous, declared in cat.ts | kitten.ts',],);
       },

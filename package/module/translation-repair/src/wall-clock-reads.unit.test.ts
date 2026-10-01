@@ -294,40 +294,6 @@ function wallClockReads({ files, }: { readonly files: readonly SourceText[]; },)
 
 //endregion Wall clock reads
 
-/**
- A source file for the fixture case.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'wall clock reads (ledger B78)',
   children: [
@@ -338,7 +304,7 @@ await describe({
       fn: async () => {
         expect(wallClockReads({
           files: [
-            fixture({
+            {
               path: 'litter.ts',
               text: [
                 'export function napLength(start: number,): number {',
@@ -360,18 +326,18 @@ await describe({
                 'export const sleepy = { now: 1, }.now + Number(\'2\',) + +\'3\';',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'catnip.unit.test.ts',
               text: 'export const began = Date.now();',
               isTest: true,
-            },),
+            },
             ...[...STUB_PATHS,].map(function exempt(path,): SourceText {
-              return fixture({
+              return {
                 path,
                 text: 'Date.now = () => new Date().getTime() - Date.now();',
                 isTest: true,
-              },);
+              };
             },),
           ],
         },),).toEqual([

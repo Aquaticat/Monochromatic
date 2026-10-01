@@ -343,40 +343,6 @@ function fixedPlurals(
 
 //endregion Count nouns
 
-/**
- A source file for the fixture case.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'count nouns (ledger B98)',
   children: [
@@ -387,7 +353,7 @@ await describe({
         /**
          A file counting naps once and printing them twice with a fixed plural.
          */
-        const litter = fixture({
+        const litter = {
           path: 'litter.ts',
           text: [
             'export function naps(count: number,): string {',
@@ -396,15 +362,15 @@ await describe({
             `export const purrs = \`\${String(2,)} naps and \${String(3,)} purrs, deep naps \${String(4,)} naps=\${String(5,)}\`;`,
           ].join('\n',),
           isTest: false,
-        },);
+        };
         /**
          A test printing the same plural.
          */
-        const catnip = fixture({
+        const catnip = {
           path: 'catnip.unit.test.ts',
           text: `export const line = \`\${String(1,)} naps\`;`,
           isTest: true,
-        },);
+        };
         /**
          The nouns the files count.
          */

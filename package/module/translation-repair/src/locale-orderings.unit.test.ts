@@ -151,40 +151,6 @@ function localeReads({ files, }: { readonly files: readonly SourceText[]; },): r
 
 //endregion Locale orderings
 
-/**
- A source file for the fixture case.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'locale orderings (ledger B95)',
   children: [
@@ -195,7 +161,7 @@ await describe({
       fn: async () => {
         expect(localeReads({
           files: [
-            fixture({
+            {
               path: 'litter.ts',
               text: [
                 'export function byName(left: string, right: string,): number {',
@@ -211,12 +177,12 @@ await describe({
                 'export const other = { Collator: 1, }.Collator;',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'catnip.unit.test.ts',
               text: 'export const sorted = [\'b\', \'a\',].toSorted((left, right,) => left.localeCompare(right,),);',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'catnip.unit.test.ts#<module>: localeCompare',

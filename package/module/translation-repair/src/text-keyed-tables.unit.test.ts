@@ -575,40 +575,6 @@ function textKeyedTables({ files, }: { readonly files: readonly SourceText[]; },
     .toSorted();
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'text-keyed tables (ledger B77)',
   children: [
@@ -619,7 +585,7 @@ await describe({
       fn: async () => {
         expect(textKeyedTables({
           files: [
-            fixture({
+            {
               path: 'litter.ts',
               text: [
                 'export type Naps = Record<string, number>;',
@@ -658,8 +624,8 @@ await describe({
                 '}',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'basket.ts',
               text: [
                 'import type { Naps, } from \'./litter.ts\';',
@@ -669,12 +635,12 @@ await describe({
                 '}',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'export const NAPS: Record<string, number> = { tabby: 1, };',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'basket.ts: naps starts a text-keyed record as {}',

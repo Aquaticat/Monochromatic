@@ -17217,6 +17217,47 @@ Recurrence:
 `mistake-prevention.md`,
 "Structure read off the parse".
 
+### B101: the source-scan tests kept their own copies of the shared helpers
+
+Found 2026-10-01 (UTC) reading the scan tests for helpers B99 had not hoisted,
+fixed in the commit adding this entry.
+Each scan test that parses the package's source took its tree helpers from `source-scan.test-fixture.ts`
+and also defined some of them again:
+15 files held a `fixture` builder returning the object it was handed,
+6 held their own `identifierName` and one the same body as `identifierNameOf`,
+2 held one `literalText`,
+and `command-line-reads.unit.test.ts` held its own `nodesUnder`
+and an `unwrapped` that returned the bare inner node.
+The duplicate-body scan reads production source alone
+(`duplicate-bodies.unit.test.ts` filters test files out),
+so none of these copies could fail it.
+
+The 26 local definitions are gone:
+the 40 builder calls are the object literals they returned,
+`literalText` joins the fixture beside `identifierName`,
+and `command-line-reads.unit.test.ts` reads the fixture's `unwrapped` through its `.inner`.
+Copies that differ in behaviour stay where they are:
+`count-nouns.unit.test.ts`'s `literalText` unwraps first,
+`floor-inputs-stated.unit.test.ts`'s `unwrapped` reads fewer wrapper kinds,
+and the two `callsNamed` differ in unwrapping.
+
+The duplicate-body scan's own logic,
+run over the 946 test files and fixtures after this change,
+found 96 groups holding 266 copies.
+Six are whole test-case bodies:
+three repeated across the glossary test files,
+and three repeated within one file each
+(`fidelity-splice.unit.test.ts`,
+`grace-override.unit.test.ts`
+and `mask-invisible-lines.unit.test.ts`).
+They are queued as a family of their own,
+to be hoisted,
+deleted or listed with a reason before the scan widens to test files.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -19199,6 +19240,11 @@ with no wrong outcome landing:
 the package lint ran in the batch of the edit to `translate-slice-guards.unit.test.ts` it read
 (rerun alone,
 "Found 0 warnings and 0 errors.").
+Again during B101,
+once:
+the ledger's Markdown lint ran in the batch of the edit to B101's entry it read
+(rerun alone,
+no findings).
 The prevention stands as written:
 the edit or write,
 then,

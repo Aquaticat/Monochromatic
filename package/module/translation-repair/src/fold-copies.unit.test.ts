@@ -36,6 +36,7 @@ import {
 
 import {
   childNodes,
+  identifierName,
   isTreeNode,
   parseSource,
   readPackageSource,
@@ -99,28 +100,6 @@ const BOUNDED_OR_SEQUENTIAL: Readonly<Record<string, string>> = {
   'stage-quorum.ts#collectRounds: pending':
     'the next round\'s queue, rebuilt once per round, and the rounds are bounded by maxRetryRounds',
 };
-
-/**
- Name an identifier node carries.
-
- @param node - identifier node
-
- @returns Its name, empty for any other node
-
- @example
- ```ts
- const name = identifierName({ node: callback.id, },);
- ```
- */
-function identifierName({ node, }: { readonly node: unknown; },): string {
-  if (!isTreeNode(node,))
-    return '';
-  /**
-   The node's name field.
-   */
-  const { name, } = node;
-  return ((node.type === 'Identifier') && ((typeof name) === 'string')) ? (name as string) : '';
-}
 
 /**
  Names a binding pattern binds, destructured or not.
@@ -560,40 +539,6 @@ function foldCopies({ files, }: { readonly files: readonly SourceText[]; },): re
   return [...found,].toSorted();
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export function nap() {}', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'fold copies (ledger B70)',
   children: [
@@ -606,7 +551,7 @@ await describe({
       fn: async () => {
         expect(foldCopies({
           files: [
-            fixture({
+            {
               path: 'cat.ts',
               text: [
                 'const cats = [\'tabby\', \'calico\',];',
@@ -630,12 +575,12 @@ await describe({
                 'export function seeded() { const box = new Map<string, string[]>(); box.set(\'a\', [...(box.get(\'a\') ?? []), \'tabby\']); return box; }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'const copied = [\'nap\'].reduce(function copy(acc: string[], c) { return [...acc, c]; }, []);',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'cat.ts#distinct/keep: acc',

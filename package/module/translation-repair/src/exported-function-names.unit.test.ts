@@ -99,40 +99,6 @@ function sharedExportedNames({ files, }: { readonly files: readonly SourceText[]
     .toSorted();
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export function nap() {}', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'exported function names',
   children: [
@@ -142,7 +108,7 @@ await describe({
       fn: async () => {
         expect(sharedExportedNames({
           files: [
-            fixture({
+            {
               path: 'cat.ts',
               text: [
                 'export function nap(): number { return 1; }',
@@ -152,8 +118,8 @@ await describe({
                 'export function knead(): number { return purr(); }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'kitten.ts',
               text: [
                 'export function nap(): number { return 5; }',
@@ -163,12 +129,12 @@ await describe({
                 'export function pounce(): number { return purr(); }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'export function knead(): number { return 9; }',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'groom: cat.ts | kitten.ts',

@@ -298,40 +298,6 @@ function orphanTsdocEntries({ files, }: { readonly files: readonly SourceText[];
 
 //endregion Tsdoc attachment
 
-/**
- A source file for the fixture case.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'tsdoc attachment (ledger B19)',
   children: [
@@ -486,11 +452,11 @@ await describe({
         ].join('\n',);
         expect(orphanTsdocEntries({
           files: [
-            fixture({
+            {
               path: 'litter.ts',
               text: litter,
               isTest: false,
-            },),
+            },
           ],
         },),).toEqual([
           'litter.ts:133: before an import',

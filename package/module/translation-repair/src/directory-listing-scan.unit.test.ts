@@ -31,6 +31,7 @@ import {
 import {
   childNodes,
   isTreeNode,
+  literalText,
   parseSource,
   readPackageSource,
   type SourceText,
@@ -67,24 +68,6 @@ const WALKERS: Readonly<Record<string, string>> = {
     'digests the whole build recursively and must see every entry to refuse a link or special file '
     + 'it cannot identify',
 };
-
-/**
- Text a string literal node carries.
-
- @param node - node read
-
- @returns Its value, empty for any other node
-
- @example
- ```ts
- const from = literalText({ node: declaration.source, },);
- ```
- */
-function literalText({ node, }: { readonly node: unknown; },): string {
-  if ((!isTreeNode(node,)) || (node.type !== 'Literal') || ((typeof node.value) !== 'string'))
-    return '';
-  return node.value as string;
-}
 
 /**
  What one import declaration brings in from a listing module, as the names
@@ -158,40 +141,6 @@ function directoryListings({ files, }: { readonly files: readonly SourceText[]; 
   return [...found,].toSorted();
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'directory listings (ledger B65)',
   children: [
@@ -201,7 +150,7 @@ await describe({
       fn: async () => {
         expect(directoryListings({
           files: [
-            fixture({
+            {
               path: 'cat.ts',
               text: [
                 'import { readdir, readFile, } from \'node:fs/promises\';',
@@ -210,8 +159,8 @@ await describe({
                 'export const nap = [readdir, readFile, napList, opendir,];',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'kitten.ts',
               text: [
                 'import * as whiskers from \'node:fs/promises\';',
@@ -219,12 +168,12 @@ await describe({
                 'export const purr = async () => [whiskers, paws, await import(\'node:fs/promises\'),];',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'import { readdir, } from \'node:fs/promises\'; export const nap = readdir;',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual([
           'cat.ts: readdir',

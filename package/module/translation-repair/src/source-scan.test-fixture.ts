@@ -252,6 +252,28 @@ export function memberName({ node, }: { readonly node: TreeNode; },): string {
 }
 
 /**
+ Text a string literal node carries.
+
+ @param node - node read
+
+ @returns Its value, empty for any other node
+
+ @example
+ ```ts
+ const from = literalText({ node: declaration.source, },);
+ ```
+ */
+export function literalText({ node, }: { readonly node: unknown; },): string {
+  if ((!isTreeNode(node,)) || (node.type !== 'Literal'))
+    return '';
+  /**
+   The literal's value, of whatever kind.
+   */
+  const { value, } = node;
+  return ((typeof value) === 'string') ? value : '';
+}
+
+/**
  Node kinds that wrap one expression without changing the value it holds.
  */
 const WRAPPER_KINDS: ReadonlySet<string> = new Set([

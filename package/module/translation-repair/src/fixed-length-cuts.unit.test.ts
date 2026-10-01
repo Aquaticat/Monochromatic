@@ -24,6 +24,7 @@ import {
 
 import {
   childNodes,
+  identifierName,
   isTreeNode,
   parseSource,
   readPackageSource,
@@ -137,24 +138,6 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
  */
 function isConstantName({ name, }: { readonly name: string; },): boolean {
   return (name.toUpperCase() === name) && (name.toLowerCase() !== name);
-}
-
-/**
- The name an identifier node carries.
-
- @param node - field of a node
-
- @returns The name, empty where the field is no identifier
-
- @example
- ```ts
- const name = identifierName({ node: callee.property, },); // 'slice'
- ```
- */
-function identifierName({ node, }: { readonly node: unknown; },): string {
-  return (isTreeNode(node,) && (node.type === 'Identifier') && ((typeof node.name) === 'string'))
-    ? node.name
-    : '';
 }
 
 /**

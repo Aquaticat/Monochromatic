@@ -561,46 +561,12 @@ function deadCode(
 }
 
 /**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'function nap() {}', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
-/**
  The cat fixtures: one source file holding a declaration of every kind, a
  barrel re-exporting some, a bowl whose one module-level statement reads a
  value built from others, and a test reading some.
  */
 const CAT_FILES: readonly SourceText[] = [
-  fixture({
+  {
     path: 'cat.ts',
     text: [
       'function nap(): number { return 1; }',
@@ -631,13 +597,13 @@ const CAT_FILES: readonly SourceText[] = [
       'export function doze(): number { naps.set(\'cat\', 1,); return naps.size; }',
     ].join('\n',),
     isTest: false,
-  },),
-  fixture({
+  },
+  {
     path: 'barrel.ts',
     text: 'export { yawn, pounce, reset, TAIL, } from \'./cat.ts\';',
     isTest: false,
-  },),
-  fixture({
+  },
+  {
     path: 'bowl.ts',
     text: [
       'import { loaf, knead, TOTAL, PERCH, Calico, doze, } from \'./cat.ts\';',
@@ -645,12 +611,12 @@ const CAT_FILES: readonly SourceText[] = [
       'console.log(meal, new Calico(),);',
     ].join('\n',),
     isTest: false,
-  },),
-  fixture({
+  },
+  {
     path: 'cat.unit.test.ts',
     text: 'import { groom, reset, TAIL, } from \'./cat.ts\';\ngroom();\nreset();\nconsole.log(TAIL,);',
     isTest: true,
-  },),
+  },
 ];
 
 await describe({

@@ -32,6 +32,7 @@ import {
 
 import {
   childNodes,
+  identifierName,
   isTreeNode,
   parseSource,
   readPackageSource,
@@ -292,28 +293,6 @@ const HELD_READS: Readonly<Record<string, {
 };
 
 /**
- Name an identifier node carries.
-
- @param node - node read
-
- @returns Its name, empty for any other node
-
- @example
- ```ts
- const name = identifierName({ node: call.callee, },);
- ```
- */
-function identifierName({ node, }: { readonly node: unknown; },): string {
-  if ((!isTreeNode(node,)) || (node.type !== 'Identifier'))
-    return '';
-  /**
-   The node's name field.
-   */
-  const { name, } = node;
-  return ((typeof name) === 'string') ? (name as string) : '';
-}
-
-/**
  Which reader an expression names, written as the source spells it.
 
  @param node - expression read
@@ -496,40 +475,6 @@ function numberReads({ files, }: { readonly files: readonly SourceText[]; },): R
   },),);
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export function nap() {}', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'number reads (ledger B73)',
   children: [
@@ -540,7 +485,7 @@ await describe({
       fn: async () => {
         expect(numberReads({
           files: [
-            fixture({
+            {
               path: 'cat.ts',
               text: [
                 'export function purr(t: string): number { return Number(t) + parseInt(t, 10) + parseFloat(t); }',
@@ -556,12 +501,12 @@ await describe({
                 'export function clock(): Date { return new Date(); }',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'const meow = Number(\'7\');',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual({
           'cat.ts#<module>: Number': 1,

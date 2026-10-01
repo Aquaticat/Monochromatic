@@ -37,12 +37,15 @@ import {
 
 import { nodeEntries, } from '../dist/final/node/index.mjs';
 import {
-  childNodes,
+  identifierName,
   isTreeNode,
+  literalText,
+  nodesUnder,
   parseSource,
   readPackageSource,
   type SourceText,
   type TreeNode,
+  unwrapped,
 } from './source-scan.test-fixture.ts';
 
 /**
@@ -54,18 +57,6 @@ const PROCESS_MODULES: ReadonlySet<string> = new Set(['node:process', 'process',
  Specifiers of the module `parseArgs` comes from.
  */
 const UTIL_MODULES: ReadonlySet<string> = new Set(['node:util', 'util',],);
-
-/**
- Node kinds that wrap one expression without changing what it names.
- */
-const WRAPPER_KINDS: ReadonlySet<string> = new Set([
-  'ChainExpression',
-  'ParenthesizedExpression',
-  'TSAsExpression',
-  'TSNonNullExpression',
-  'TSSatisfiesExpression',
-  'TSTypeAssertion',
-],);
 
 /**
  The call every runner hands its line to.
@@ -85,69 +76,6 @@ const ALLOWED: Readonly<Record<string, string>> = {
  Folder the runner entries sit in, as the scan names paths.
  */
 const RUNNER_FOLDER = 'corpus-run/';
-
-/**
- Name an identifier node carries.
-
- @param node - node read
-
- @returns Its name, empty for any other node
-
- @example
- ```ts
- const name = identifierName({ node: call.callee, },);
- ```
- */
-function identifierName({ node, }: { readonly node: unknown; },): string {
-  if ((!isTreeNode(node,)) || (node.type !== 'Identifier'))
-    return '';
-  /**
-   The node's name field.
-   */
-  const { name, } = node;
-  return ((typeof name) === 'string') ? (name as string) : '';
-}
-
-/**
- Text a string literal node carries.
-
- @param node - node read
-
- @returns Its value, empty for any other node
-
- @example
- ```ts
- const from = literalText({ node: declaration.source, },);
- ```
- */
-function literalText({ node, }: { readonly node: unknown; },): string {
-  if ((!isTreeNode(node,)) || (node.type !== 'Literal') || ((typeof node.value) !== 'string'))
-    return '';
-  return node.value as string;
-}
-
-/**
- The expression a wrapper holds, unwrapped until it is none.
-
- @param node - expression read
-
- @returns The innermost expression the wrappers hold, the node itself when it
- is no wrapper
-
- @example
- ```ts
- const object = unwrapped({ node: member.object, },); // process for (process as NodeJS.Process)
- ```
- */
-function unwrapped({ node, }: { readonly node: unknown; },): unknown {
-  /**
-   Expression reached so far.
-   */
-  let inner = node;
-  while (isTreeNode(inner,) && WRAPPER_KINDS.has(inner.type,))
-    inner = inner.expression;
-  return inner;
-}
 
 /**
  Name of the property a member expression or object property names, as
@@ -181,39 +109,6 @@ function propertyName(
   if (node.computed === true)
     return literalText({ node: named, },);
   return identifierName({ node: named, },) || literalText({ node: named, },);
-}
-
-/**
- Every node under a root, the root included, walked with a stack.
-
- @param root - node to walk from
-
- @returns Nodes in no particular order
-
- @example
- ```ts
- const nodes = nodesUnder({ root: program, },);
- ```
- */
-function nodesUnder({ root, }: { readonly root: TreeNode; },): readonly TreeNode[] {
-  /**
-   Nodes visited.
-   */
-  const visited: TreeNode[] = [];
-
-  /**
-   Nodes still to visit.
-   */
-  const pending: TreeNode[] = [root,];
-  while (pending.length > 0) {
-    /**
-     Node visited now.
-     */
-    const node = pending.pop() as TreeNode;
-    visited.push(node,);
-    pending.push(...childNodes({ node, },),);
-  }
-  return visited;
 }
 
 /**
@@ -314,10 +209,10 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
     /**
      The node without its wrappers.
      */
-    const member = unwrapped({ node, },);
+    const member = unwrapped({ node, },).inner;
     return isTreeNode(member,)
       && (member.type === 'MemberExpression')
-      && processNames.has(identifierName({ node: unwrapped({ node: member.object, },), },),)
+      && processNames.has(identifierName({ node: unwrapped({ node: member.object, },).inner, },),)
       && (propertyName({
         node: member,
         key: 'property',
@@ -382,7 +277,7 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
         return readsArgv({ node: argv, },);
       },)
       .map(function startOf({ argv, },): number {
-        return (unwrapped({ node: argv, },) as TreeNode).start;
+        return (unwrapped({ node: argv, },).inner as TreeNode).start;
       },),
   );
 
@@ -409,7 +304,7 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
       reads.push(`${file.path}: reads argv off process`,);
     if (
       (node.type === 'MemberExpression')
-      && utilNames.has(identifierName({ node: unwrapped({ node: node.object, },), },),)
+      && utilNames.has(identifierName({ node: unwrapped({ node: node.object, },).inner, },),)
       && (propertyName({
         node,
         key: 'property',
@@ -420,7 +315,7 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
       (node.type === 'VariableDeclarator')
       && isTreeNode(node.id,)
       && (node.id.type === 'ObjectPattern')
-      && processNames.has(identifierName({ node: unwrapped({ node: node.init, },), },),)
+      && processNames.has(identifierName({ node: unwrapped({ node: node.init, },).inner, },),)
       && (node.id.properties as readonly TreeNode[]).some(function namesArgv(property,): boolean {
         return (property.type === 'Property') && (propertyName({
           node: property,
@@ -517,40 +412,6 @@ function commandLineReads({ files, }: { readonly files: readonly SourceText[]; }
   };
 }
 
-/**
- A fixture file, as the scan reads one.
-
- @param path - file name
-
- @param text - file text
-
- @param isTest - whether it stands for a test
-
- @returns Source file
-
- @example
- ```ts
- const file = fixture({ path: 'cat.ts', text: 'export const nap = 1;', isTest: false, },);
- ```
- */
-function fixture(
-  {
-    path,
-    text,
-    isTest,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly isTest: boolean;
-  },
-): SourceText {
-  return {
-    path,
-    text,
-    isTest,
-  };
-}
-
 await describe({
   name: 'command-line reads (ledger B75)',
   children: [
@@ -561,12 +422,12 @@ await describe({
       fn: async () => {
         expect(commandLineReads({
           files: [
-            fixture({
+            {
               path: 'corpus-run/nap-report.ts',
               text: 'await reportingRefusals({ what: \'nap-report\', argv: process.argv, run: async () => {}, },);',
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'corpus-run/purr-report.ts',
               text: [
                 'await reportingRefusals({ what: \'nap-report\', argv: process.argv, run: async () => {}, },);',
@@ -574,8 +435,8 @@ await describe({
                 + 'async () => {}, },);',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'whiskers.ts',
               text: [
                 'import { parseArgs as split, promisify, } from \'node:util\';',
@@ -591,12 +452,12 @@ await describe({
                 '];',
               ].join('\n',),
               isTest: false,
-            },),
-            fixture({
+            },
+            {
               path: 'cat.unit.test.ts',
               text: 'import { parseArgs, } from \'node:util\'; export const nap = [process.argv, parseArgs,];',
               isTest: true,
-            },),
+            },
           ],
         },),).toEqual({
           reads: [
