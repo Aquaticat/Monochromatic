@@ -993,7 +993,12 @@ and the coverage census did the same with the rule written,
 its four error classes and a copied helper failing two scans on the census's own first run;
 and a scripted client moved from a unit test into a `.test-fixture.ts` file drew three lint errors and six warnings,
 since the lint config relaxes the arrow-function and `require-await` rules
-only for `*.test.ts` and `*.bench.ts` files (M87).
+only for `*.test.ts` and `*.bench.ts` files (M87);
+line numbers for in-place edits were worked out from offsets rather than read,
+and garbled comments in three runner files before the diff showed it (M93);
+and the scratch readers of lint output could miss a finding:
+a location pattern written with a Unicode dash,
+and a summary pattern that misses oxlint's singular "1 warning" (M95).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1031,7 +1036,12 @@ and which lints as source:
 code moved there from a test follows an existing fixture's idiom
 (`archive-selection.test-fixture.ts` for a scripted client).
 A line-range `sed --in-place` names one file,
-since it applies the range to every file it is given (M71).
+since it applies the range to every file it is given (M71),
+and takes its line numbers from `rg --line-number '' <file> | sed --quiet 'A,Bp'` just before the edit,
+read again after any insertion higher in the file (M93).
+Lint's summary is read with `rg 'Found [0-9]+ warnings?'`,
+beside the findings list,
+each a check on the other (M95).
 Commit before `--fix` and read the diff after it for anything but layout.
 A split searches `src`,
 tests and `doc` for the old file's name and repoints every hit in the same commit.
@@ -1087,7 +1097,10 @@ the census first chose `tmpdir()` for about 8 GB of raw coverage,
 where `/tmp` is a tmpfs held in memory (M64);
 a test's stand-in command carried a literal `[FAIL]`,
 which a warning quoted into the suite's own log,
-where the census counts it (M65).
+where the census counts it (M65);
+a scratch sweep walked the package and `doc/` with a recursive `readdirSync`
+and held 6.7 GB resident after 16 minutes,
+when it was stopped (M96).
 
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
@@ -1097,6 +1110,10 @@ after `df` has shown the filesystem.
 A fixture printing a marker that tooling counts builds the marker when it runs,
 and a new test file's first run is read for markers,
 not only for its exit.
+A scratch scan lists its files from git's index,
+or walks with a bound that skips `node_modules`,
+and runs with a heap cap (`node --max-old-space-size=512`);
+one that runs past its expected time is checked once by process status.
 
 What enforces it:
 the coverage census,
@@ -1729,3 +1746,59 @@ and `iso-stamp-text.test-fixture.ts` lists the stamp spellings every stamp reade
 Out of the scan's reach:
 a reader reached through `globalThis` or a renamed binding,
 and arithmetic on text.
+
+## Command lines
+
+What happened:
+every runner found its own flags with `indexOf` or `includes` on the exact token,
+so `--cap=0`,
+a mistyped `--olny`,
+a second `--only`,
+or any argument to a runner that reads none
+read as not written,
+and the runner ran what nobody asked for:
+every pending corpus entry,
+every subject the settled audit could buy,
+or the seated roster in place of the models named (ledger B75).
+A flag written last or before the next flag read as unwritten,
+a plain-object table looked up by a typed name found `Object.prototype`'s keys,
+the mise task descriptions,
+written by hand,
+had drifted from what five runners read,
+and three refusals did not show what was typed,
+one of them not even which part of the line was wrong.
+
+The rule:
+a runner declares what it reads in `corpus-run/command-lines.ts`
+(valued flags,
+repeatable flags,
+switches and positions),
+hands `process.argv` and its own name to `reportingRefusals`,
+and reads only the line that call hands it;
+a flag's value goes through `corpus-run/command-flags.ts`.
+The reader refuses,
+all at once and ending with the usage line,
+anything the declaration does not name or a value it cannot use,
+and every refusal names the part that is wrong and quotes what was typed.
+A table keyed by typed text is a `Map`,
+and a list the command line names,
+such as the card providers,
+is written once and read by both the declaration and the reader.
+A task description,
+and every invocation in the living docs,
+names only flags the runner reads.
+
+What enforces it:
+`command-lines.unit.test.ts` fails on a runner the build makes that the table does not declare,
+a malformed declaration,
+a task description out of step with its runner's flags,
+or a living doc invoking a runner with a flag it does not read;
+`command-line-reads.unit.test.ts`,
+which `source-scans` runs,
+fails on a read of `process.argv`,
+an import of `parseArgs`,
+or a dynamic import of `node:process` or `node:util` anywhere but a runner's own hand-off and the one reader;
+`command-line.unit.test.ts` holds the reader's readings and refusals.
+Out of the scan's reach:
+`process` reached through `globalThis` or handed on whole,
+and a property name built at run time.

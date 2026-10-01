@@ -314,10 +314,25 @@ the cap census's queue among them,
 set a map entry to a copy of what it held at every repeat,
 and they append in place now,
 with `fold-copies.unit.test.ts` reading the shape.
+B75 closed before the eighteenth batch too
+(`6035e9b03` to `5a3e38037`):
+every runner found its own flags as exact tokens,
+so `--cap=0`,
+a mistyped flag,
+a second `--only` or an argument to a runner that reads none
+read as not written.
+Each runner now declares its line in `corpus-run/command-lines.ts`,
+and `reportingRefusals` reads the whole line against that before the runner starts,
+refusing every problem at once with a usage line;
+the table,
+the task descriptions and the living docs' invocations are held to each other,
+and `command-line-reads.unit.test.ts` fails on a read of the line anywhere else.
 Open before the eighteenth batch:
 elapsed times on the wall clock,
-a flag written twice read at its first value,
-and plain-object tables looked up by text from outside the package;
+plain-object tables looked up by text from outside the package
+(the fidelity probe's defect table closed by B75),
+and an `--only` naming no entry,
+which runs over none without a word;
 the census taken once they close is that batch's baseline,
 recorded under each entry it closes.
 Each throw and fallback is read for reachability first,
@@ -336,7 +351,9 @@ issue #576),
 and L6 (the lane contest on insertion slices,
 designed and deferred past the next launch);
 M1,
-M6 and M57 recur.
+M6,
+M51,
+M57 and M59 recur.
 Every other finding the ledger names is fixed,
 measured and decided,
 or ruled on by the owner.

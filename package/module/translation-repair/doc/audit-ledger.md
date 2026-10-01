@@ -14312,9 +14312,10 @@ Each was restored,
 and `git diff` printed nothing after.
 
 Found on the way and open:
-a flag written twice is read at its first value;
+a flag written twice is read at its first value (closed by B75);
 plain-object tables are looked up and filled by text from outside the package,
-which reaches a prototype's keys;
+which reaches a prototype's keys
+(the fidelity probe's defect table closed by B75);
 the request pace's real-clock case flaked,
 18.89 and 18.99 milliseconds against a 19 millisecond bound,
 recorded with the elapsed-time family;
@@ -14400,6 +14401,236 @@ or groups with `Map.groupBy`,
 and removes in place;
 it never sets an entry to a copy of what the entry held.
 `fold-copies.unit.test.ts` fails on a new one.
+
+### B75: command lines read token by token, each runner for itself
+
+Found beside B73,
+which gave a flag's value one reader (`flagValue`)
+and left each runner finding the flag itself.
+Every runner found its flags with `indexOf` or `includes` on the exact token,
+so a flag written any other way read as not written at all,
+and nothing said which tokens a runner reads.
+
+What the red commit (`6035e9b03`) shows each reader doing:
+
+- `readOnlyIds` read `--only=Tabby_01`,
+  and the mistyped `--olny Tabby_01`,
+  as no filter,
+  which `corpus-pass` runs as every pending entry;
+- `readOnlyIds` and `flagValue` took the first of two `--only` or `--naps` values
+  and dropped the second without a word;
+- `flagValue` read `--naps=3` as unwritten;
+- `readAuditArguments` read `--cap=0`,
+  and `--cpa 0`,
+  as no cap,
+  which the settled audit runs as buying every subject in the archive;
+- `readCandidateIds` read `--candidates=<ids>` as none,
+  so the probe ran the seated roster and none of the models it was started for.
+
+The named run of the four files printed exit 1 for each,
+with 3,
+2,
+2 and 1 failing cases.
+Read in the same sweep and recorded in the fix's message (`97aeee2ca`):
+`sentinel-probe` dropped flags and probed the value after one as an entry id;
+`coverage-control-probe` read `--only` written last as every entry;
+`score-agreement` and `score-probe` read a flag written with an empty value as their default file;
+`ledger-report` read `--model --x` as a seat named `--x`;
+a runner that takes no flags ran as if nothing had been typed after it;
+`--damage constructor` found `Object.prototype.constructor` in the fidelity probe's plain-object defect table
+and handed a function on as the defects to build;
+and the descriptions of five mise tasks left out flags their runners read
+(`b78a90e4a`'s red case names them).
+Found while closing it (`dd882e587` red):
+`roster-card` answered an empty served id and a provider outside the four alike,
+with the bare usage line,
+and the provider and candidate readers named a refused id unquoted,
+so a spaced one read as two words of the message.
+
+Fixed (`97aeee2ca`,
+`1f37aa07d`,
+`b78a90e4a`,
+`b8ba86137`,
+`911d9afc3`,
+`1241086aa`,
+`5a3e38037`,
+with the guards in `6f45620da`,
+`c5d814d14` and `4dded7d92`):
+
+- `corpus-run/command-line.ts` holds `readCommandLine`,
+  the one reader of a runner's whole line.
+  Node's `parseArgs` splits it,
+  with `strict` off and its tokens kept,
+  so the equals form,
+  the `--` terminator and grouped short flags read as they do for every Node command,
+  and every refusal is written there,
+  all at once,
+  ending with a usage line built from the declaration.
+  It refuses a flag the runner does not read,
+  a valued flag with nothing usable after it
+  (nothing,
+  an empty argument,
+  or the next flag),
+  a switch given a value,
+  a once-only flag written twice,
+  an argument past the last position read,
+  and a required position left out.
+- `corpus-run/command-lines.ts` declares,
+  for each of the 42 runner entries,
+  its valued flags,
+  repeatable flags,
+  switches and positions,
+  typed key for key by `CommandLines`
+  (the package's isolated declarations cannot infer the table).
+- `reportingRefusals` takes `argv` and reads the line against the entry its `what` names before the body starts,
+  handing the body the line it read;
+  a refusal exits 6,
+  as every stated refusal does.
+- The value readers in `corpus-run/command-flags.ts` take a flag's value from that line:
+  `flagValue` is gone,
+  `writtenOr` reads the score reports' file flags,
+  and `idListFlag` trims space around each id,
+  as the pass's entry filter already did.
+- The fidelity probe's defect table is a `Map`.
+- `ledger-report`'s own exit 3 for `--model` with no seat is gone,
+  answered by the shared refusal;
+  `score-probe` refuses one of `--repair-sheet` and `--manifest` without the other,
+  where it printed its unscored note and dropped the file named;
+  `readAskedCount` refuses an empty count argument.
+- The five task descriptions name every flag their runners read.
+- `roster-card` names each wrong part of its ask,
+  both at once when both are,
+  and the provider and candidate refusals quote the id they refuse;
+  `CARD_PROVIDERS` in `model-card-derive.ts` is the one list `CardProvider`,
+  the ask reader and `roster-card`'s declaration are written from,
+  where the reader and the declaration each wrote the four names by hand.
+
+Calls made here are open to veto:
+
+- a minus sign before ASCII digits reads as a position,
+  as Python's argparse reads one when no flag looks like a number,
+  so a count typed under zero still reaches the reader that answers it as under zero;
+- `parseArgs` runs loose and the package writes every refusal,
+  so all of a line's problems are named at once in the words the B73 readers used,
+  where strict `parseArgs` stops at the first in its own words
+  (`Unknown option '--olny'` for `--olny a --paln`,
+  measured on node v26.10.0);
+- a valued flag takes the argument after it whatever it is,
+  and refuses one starting with `--` as the next flag,
+  so no value can start with `--`;
+  a path starting with `--` is written after the `--` terminator,
+  where only positions are read;
+- a once-only flag written twice is refused,
+  where `parseArgs` keeps the last value and the old readers kept the first;
+- a repeatable flag (`--source` of `coverage-census`) keeps every value,
+  in the order written;
+- a grouped short flag such as `-abc` is refused once,
+  whole,
+  as typed;
+- `idListFlag` trims space around each id;
+- `ledger-report`'s `--model` with no seat exits 6,
+  where it exited 3;
+- `score-probe` refuses `--repair-sheet` or `--manifest` alone;
+- `readAskedCount` refuses an empty count argument,
+  reversing a case that pinned it to the default;
+  B73's reading of blanks as unset covers environment variables,
+  and an argument typed empty is not unset;
+- a refusal quotes what was typed through `JSON.stringify`,
+  so an empty or spaced value shows;
+- a task description spells exactly the flags its runner reads,
+  and the living docs invoke a runner only with flags it reads;
+  the audit ledger is left out of that check,
+  since it records what was typed when it was typed.
+
+The guards:
+
+- `command-line.unit.test.ts` holds the reader's readings and refusals on real runners' declarations,
+  through `command-line.test-fixture.ts`;
+- `command-lines.unit.test.ts` holds the table to the runner entries the build makes,
+  each declaration to flag names a long flag can carry and positions that can be written,
+  each runner's mise task description to exactly the flags it reads,
+  and every runner invocation in the living docs to flags the runner reads;
+- `cli-refusal.unit.test.ts` holds a refused line to exit 6 before the body runs,
+  and the body to the line as read;
+- `command-line-reads.unit.test.ts`,
+  which `source-scans` runs,
+  reads the package's source for `argv` read off `process`
+  or off a whole import of `node:process`
+  (as a member,
+  an indexed or optional member,
+  or through a parenthesis or type assertion),
+  `argv` destructured from `process` or imported from `node:process`,
+  `parseArgs` imported from `node:util` or read off a whole import of it,
+  dynamic imports of either module,
+  and a `reportingRefusals` call handed another argv or naming a runner other than its own file;
+  it allows only `command-line.ts`'s import of `parseArgs`,
+  and requires a hand-off from every runner the build makes.
+  Out of its reach:
+  `process` reached through `globalThis` or handed on whole,
+  and a property name built at run time.
+
+Guard-offs,
+one mutation per build,
+each restored with `git diff` printing nothing after
+(`~/temp/agent/audit-glossary-fix/b75-guard-offs.ts`):
+an unknown flag read as a switch failed the reader's mistyped-flag,
+flagless-runner and prototype-name cases and `cli-refusal`'s refused-line case;
+a repeated once-only flag let through failed the repeat case;
+an empty value let through,
+and in another build the next flag taken as the value,
+each failed the valueless-flag case,
+the first also the fidelity probe's case for a flag written last;
+a switch's value let through failed the switch case,
+and the fidelity probe's again;
+the once-only lookup made with `in` failed the prototype-name case
+(`--constructor needs a value written after it`);
+a minus number read as short flags failed the number case
+(`-35 is not a flag this command reads`);
+arguments past the last position kept failed the past-position,
+mistyped-flag and flagless-runner cases and `cli-refusal`'s;
+a required position let go failed the past-position case;
+the defect table looked up as a plain object failed the fidelity probe's defect case;
+a description without `--manifest` failed the description case;
+and a runner renamed in the table failed the table and description cases.
+The scan
+(`~/temp/agent/audit-glossary-fix/b75-scan-guard-offs.ts`)
+failed its fixture case with each detection removed in turn:
+whole imports of `node:process`,
+wrappers,
+bracketed names,
+destructuring,
+`argv` imports,
+`parseArgs` imports (its package case too),
+`parseArgs` read off a whole import,
+dynamic imports,
+a hand-off naming another runner,
+one handed another argv,
+and a hand-off counted as the file's own whatever runner it names;
+its package case failed with `spend-report` naming another runner,
+and with it copying the line before handing it on.
+With `roster-card`'s ask keeping only its first problem,
+the case naming both failed;
+with `--plan` misspelt in `mistake-prevention.md`,
+the invocation case failed naming `mistake-prevention.md:57 corpus-pass --paln`.
+Before the invocation case,
+a scratch sweep over every tracked Markdown file under the package and `doc/`
+read 69 invocations and found no undeclared flag,
+and reported both invocations planted in a control file.
+
+Found on the way and open:
+an `--only` naming no entry runs over none without a word
+(the open family of entry ids that name nothing);
+and the package's other plain-object tables looked up or filled by text from outside it
+(the open family of prototype keys;
+the defect table is closed here).
+
+Recurrence:
+a runner declares what it reads in `corpus-run/command-lines.ts`,
+reads only the line `reportingRefusals` hands it,
+and reads a flag's value through `corpus-run/command-flags.ts`;
+`command-lines.unit.test.ts` fails on a runner,
+description or documented invocation out of step with the table,
+and `command-line-reads.unit.test.ts` on a read of the line anywhere else.
 
 ## Process mistakes in this audit
 
@@ -15131,6 +15362,79 @@ a shell call chains at most three steps with `&&` and reports with `||`;
 with paths relative to it,
 read from a list file where they are many.
 
+### M93: line numbers for in-place edits worked out rather than read
+
+Status:
+happened 2026-10-01 (UTC) during B75,
+three times,
+each seen in the diff before any commit and restored.
+Inserting `argv: process.argv` and doc lines across the runner entries with `sed --in-place`,
+line numbers were worked out from offsets and from listings taken before an insertion higher in the same file:
+`sentinel-probe.ts` had its doc comment garbled
+(rewritten through the scratch `replace-lines.mjs`),
+`coverage-census.ts` had an `@param` placed in the wrong comment and a line written over
+(restored),
+and a delete in `score-probe.ts` took one line more than meant,
+the opening of a doc comment
+(restored).
+Prevention:
+a line number for an in-place edit is read from `rg --line-number '' <file> | sed --quiet 'A,Bp'`
+taken just before the edit,
+one file per call;
+after an insertion,
+the numbers below it are read again rather than shifted by hand.
+
+### M94: a commit message draft naming a lint finding at a commit that did not raise it
+
+Status:
+happened 2026-10-01 (UTC) during B75,
+caught before the commit.
+The draft of `1f37aa07d`'s message said max-lines fired at `97aeee2ca`;
+the reader passed max-lines' 300 counted lines only once `1f37aa07d` itself laid it out one element per line,
+and the message was rewritten to say so.
+Prevention:
+a message's claim about what a tool reported at a commit names the run that printed it,
+as every claim in a message is command output or a labelled inference.
+
+### M95: scratch readers of lint output that could miss a finding
+
+Status:
+happened 2026-10-01 (UTC) during B75,
+twice,
+with no finding missed.
+The scratch `lint-findings.mjs` paired findings with locations through a pattern written with a Unicode dash
+where oxlint prints an ASCII one,
+so it could match no location line;
+it was corrected to `,-\[`.
+And the summary check `rg 'Found [0-9]+ warnings'` cannot match oxlint's singular
+"Found 1 warning and 0 errors.";
+on the one run that printed it,
+the findings reader showed the warning and the summary check printed nothing,
+which was read back from the log before it was fixed.
+Prevention:
+the summary is read with `warnings?`,
+and the findings list and the summary are read together,
+each a check on the other.
+
+### M96: a scratch sweep that walked directories without bound
+
+Status:
+happened 2026-10-01 (UTC) during B75;
+stopped by its process id,
+nothing written.
+A scratch sweep of documented runner invocations listed Markdown files by walking the package and `doc/` with a recursive `readdirSync`;
+it ran 16 minutes and held 6.7 GB resident before it was stopped,
+and no output it gave was used.
+The rewrite lists tracked Markdown through `git ls-files`
+and caps the V8 heap at 512 MB,
+and read 1,184 files in one run.
+Prevention:
+a scratch scan lists its files from git's index,
+or walks with a bound that skips `node_modules`,
+and runs with a heap cap (`--max-old-space-size`),
+since repository rule RXI asks host-exhausting work to run bounded;
+a scan that runs past its expected time is checked once by process status.
+
 ### M79: a coverage census measuring compressed code
 
 Status:
@@ -15632,6 +15936,25 @@ with `position-references`,
 `text-accumulators` and `rendered-sheets-census`);
 its first run passed all fifteen.
 
+Recurred 2026-10-01 (UTC) during B75,
+with the task written and not run:
+`97aeee2ca` wrote "answers it as below zero" in `command-line.ts`'s region comment,
+which `position-references.unit.test.ts` reads as a reference by position,
+and none of B75's source commits ran `source-scans`;
+the scan failed first on the docs commit's guard run,
+naming that line and the same phrase in the B75 entry.
+Both now say "under zero",
+B73's wording for a count typed with a minus sign.
+The task's first run then failed `message-names-only.unit.test.ts` as well:
+it listed five sites forwarding a caught error's text into a marked class,
+and `97aeee2ca` had removed one,
+the coverage census's own `parseArgs` catch.
+`5a3e38037` fixes both;
+`source-scans` then exits 0 with all 20 suites passing.
+The prevention stands:
+`mise run //package/module/translation-repair:source-scans` runs before each source commit,
+beside its named tests.
+
 ### M58: a red case whose fixture could not reach the check it was said to pin
 
 Status:
@@ -15884,6 +16207,15 @@ no match),
 and the stamp probe ran in the batch of its own write
 (rerun alone after;
 its output is the one `a381f9da1` cites).
+Again during B75 on 2026-10-01 (UTC),
+twice,
+with no wrong outcome landing:
+the check of `1241086aa`'s message for `#` and task numbers ran in the batch of the message's write
+(rerun alone after,
+no match),
+and a search confirming the "under zero" rewording ran in the batch of the `sed` that made it
+(its output showed the new wording,
+so the edit landed first).
 The prevention stands as written:
 the edit or write,
 then,
@@ -16672,6 +17004,11 @@ harmless (the tool refuses).
 Twice more on 2026-09-27 (`tally-resolution.unit.test.ts`,
 `roster-fixture.ts`),
 both files viewed with `sed` rather than the Read tool.
+Three times more on 2026-10-01 (UTC) during B75
+(`required-providers.unit.test.ts`,
+`probe-candidates.unit.test.ts`,
+`mistake-prevention.md`),
+each viewed with `rg` or `sed`.
 Prevention:
 read the region with the Read tool before editing it;
 a `sed` or `rg` view does not count as a read.
