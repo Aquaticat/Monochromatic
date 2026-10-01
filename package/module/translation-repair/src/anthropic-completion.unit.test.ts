@@ -461,6 +461,46 @@ await describe({
     },),
 
     it({
+      name: 'COUNTS CACHED PROMPT TOKENS as prompt tokens, since Anthropic\'s input_tokens counts only '
+        + 'what follows the last cache breakpoint: the prompt the model read is that plus the tokens '
+        + 'read from and written to the cache, and dropping them priced a cached call as a short one '
+        + '(ledger B88)',
+      fn: async () => {
+        expect(extractAnthropicCompletion({
+          bodyText: frameOf({
+            body: {
+              type: 'message_start',
+              message: {
+                id: 'msg_tabby',
+                role: 'assistant',
+                stop_reason: null,
+                usage: {
+                  input_tokens: 40,
+                  cache_creation_input_tokens: 20,
+                  cache_read_input_tokens: 300,
+                  output_tokens: 1,
+                },
+              },
+            },
+          },)
+            + deltaOf({
+              deltaType: 'text_delta',
+              field: 'text',
+              text: 'Biscuit is smug.',
+            },)
+            + endOf({
+              stopReason: 'end_turn',
+              outputTokens: 12,
+            },),
+        },).usage,).toEqual({
+          prompt_tokens: 360,
+          completion_tokens: 12,
+          total_tokens: 372,
+        },);
+      },
+    },),
+
+    it({
       name: 'REPORTS no finish reason rather than guessing one, since a completion that stopped '
         + 'early is indistinguishable from a malformed one without it',
       fn: async () => {
@@ -581,10 +621,15 @@ await describe({
         },),).toEqual({
           text: '{"translation": "She left.", "ambiguous": true, "reason": "Context decides."}',
           finishReason: 'end_turn',
+          // 574 FRESH PLUS 128 READ FROM THE CACHE (ledger B88). This case
+          // expected 574 before, which wrote the dropped cache read into the
+          // capture's reading. Whether this gateway's input_tokens already
+          // counts the cached ones was not settled: today's endpoint prices
+          // matched neither reading of the capture's own cost.
           usage: {
-            prompt_tokens: 574,
+            prompt_tokens: 702,
             completion_tokens: 306,
-            total_tokens: 880,
+            total_tokens: 1_008,
           },
         },);
       },
