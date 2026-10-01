@@ -1614,11 +1614,17 @@ the second cut in the wrong place:
 a title quoted inside a quoted title lost the mark after it.
 Nothing read the shape:
 the text accumulator scan sees only a `let` begun as text and grown in a loop.
+The guard written then read folds and reassigned bindings,
+and five loops that grouped or queued by key set a map entry to a copy of what it held at every repeat,
+among them the cap census's queue of a label's streams (ledger B74).
 
 The rule:
 a fold or loop over its input appends to what it builds,
 and removes in place where a step removes;
-it never returns a copy of the list or text built so far.
+it never returns a copy of the list or text built so far,
+nor sets a map entry to a copy of what the entry held:
+it pushes onto the entry's list,
+or groups with `Map.groupBy`.
 A record of fixed fields may be copied per step,
 since it costs the same each time.
 Several edits into one text are placed by offsets into that text
@@ -1638,7 +1644,8 @@ What enforces it:
 a copying method,
 a `Map` or `Set` built from it,
 or `+` where the fold starts from text)
-and on a loop that reassigns a list or text as a copy of itself,
+and on a loop that reassigns a list or text as a copy of itself
+or sets a map entry to a copy of what the map's `get` read there,
 unless the fold is named with why its copies are bounded or are its meaning,
 and on a named fold that no longer copies;
 `disjoint-splice.unit.test.ts` holds the one-pass writer to the old splice's text and its refusals.

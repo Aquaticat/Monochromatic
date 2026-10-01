@@ -368,18 +368,23 @@ this one says what changed after it.
   among them a log stamp without its zone read as local time;
   each now reads through a rule held to its writer's spelling,
   and `number-reads.unit.test.ts` fails on a new read until it names its rule.
-  The census closing B73 is the eighteenth batch's baseline,
+  Ledger B74 followed
+  (`9e01f2650` to `81ec51782`):
+  five loops that grouped or queued by key,
+  the cap census's queue among them,
+  set a map entry to a copy of what it held at every repeat;
+  they append in place now,
+  and `fold-copies.unit.test.ts` fails on a new one.
+  Open,
+  each to close before the eighteenth batch:
+  elapsed times measured on the wall clock (found in the seventeenth batch),
+  a flag written twice read at its first value,
+  and plain-object tables looked up by text from outside the package (both found in B73).
+  The census taken once they close is the eighteenth batch's baseline,
   that batch taking the archive modules
   (`archive`,
   18 stretches over 36 lines in 9 files,
   the most cold lines of the two clusters tied at 18).
-  Found in the seventeenth batch and open:
-  elapsed times measured on the wall clock.
-  Found in B73 and open,
-  each to close before the eighteenth batch:
-  a flag written twice read at its first value,
-  plain-object tables looked up by text from outside the package,
-  and a cap census queue copied at every stream line.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

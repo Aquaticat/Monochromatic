@@ -286,8 +286,7 @@ Its census (`census-apleN5`,
 taken from a tree with nothing uncommitted)
 leaves library source at 746 stretches over 1,432 lines in 274 files,
 with 15 functions never called,
-and leaves the archive modules as they were,
-so it is the eighteenth batch's baseline.
+and leaves the archive modules as they were.
 Readers moved into modules of their own now get unit tests of their own in the same change,
 and a scan for the 167 shared modules without one is open (ledger M88).
 B73 closed before the eighteenth batch too
@@ -309,7 +308,18 @@ no stored log record reads differently,
 and of the stored provider listings only OpenRouter's `-1`,
 a price it does not quote,
 now reads as not listed rather than as a negative price.
-Its census is recorded under B73.
+B74 closed on the way:
+five loops that grouped or queued by key,
+the cap census's queue among them,
+set a map entry to a copy of what it held at every repeat,
+and they append in place now,
+with `fold-copies.unit.test.ts` reading the shape.
+Open before the eighteenth batch:
+elapsed times on the wall clock,
+a flag written twice read at its first value,
+and plain-object tables looked up by text from outside the package;
+the census taken once they close is that batch's baseline,
+recorded under each entry it closes.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

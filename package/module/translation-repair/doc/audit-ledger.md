@@ -4689,7 +4689,11 @@ and 81 others:
 the stretch B72 removed was a ternary in `corpus-run/archive`,
 a cluster of its own,
 so `archive` and `corpus-run/run` still tie at 18 stretches,
-and the eighteenth batch takes `archive` against `census-apleN5`.
+and the eighteenth batch takes `archive`.
+B73 and B74 followed,
+and three findings are to close first (the elapsed-time family,
+a flag written twice and prototype keys),
+so the batch reads against the census taken once they close.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -14314,8 +14318,8 @@ which reaches a prototype's keys;
 the request pace's real-clock case flaked,
 18.89 and 18.99 milliseconds against a 19 millisecond bound,
 recorded with the elapsed-time family;
-`readCapLog` copies its queue of a label's streams at every stream line,
-a copy `fold-copies.unit.test.ts` does not read;
+`readCapLog` copied its queue of a label's streams at every stream line,
+a copy `fold-copies.unit.test.ts` did not read (closed by B74);
 and `run-timing-report` prints its count of completion lines without a duration before a fixed plural,
 which the open family of counts before a fixed plural covers.
 
@@ -14328,6 +14332,74 @@ or a round trip through the writer,
 and an operator's text through the same rules,
 saying what leaving the value off does;
 `number-reads.unit.test.ts` fails on a new read until it names its rule.
+
+### B74: map entries rebuilt as copies at every repeat of their key
+
+Found reading `readCapLog` (`corpus-run/cap-census-read.ts`) for B73.
+Each completed stream spread its label's queue into a new list,
+and each pairing set the queue to a `toSpliced` copy,
+so a log's streams of one label cost the square of their count:
+the shape B70 removed from folds,
+moved into a map.
+`fold-copies.unit.test.ts` read `reduce` callbacks and loops reassigning a binding as a copy of itself,
+not a map entry set to a copy of what the map held,
+so it could not see this.
+
+The guard now also reads,
+inside a loop,
+a call `R.set(key, value)` whose value copies what `R.get` read,
+directly or through a name bound to that read,
+by the copying shapes it reads elsewhere,
+and it reads a path through `??` or `||` from its left side.
+Its fixture case gains a map entry spread into a new list,
+one cut with `toSpliced` through a bound name,
+one appended in place and one copied outside any loop;
+the first two are found and the last two are not.
+At `9e01f2650` its package case found five unnamed
+(a probe built from the guard's own functions printed them):
+`aggregateClaims`' `byComponent`,
+`censusByGeneration`'s `byDigest`,
+`indexProposers`' `index`,
+`readCapLog`'s `waiting`
+and `gatherRelabelCases`' `byRegion`,
+each rebuilding a list held in a map entry at every repeat of its key.
+
+Fixed (`9e01f2650` red,
+`fde3a7298`,
+then cases in `81ec51782`):
+`aggregateClaims` groups with `Map.groupBy`,
+which keeps member order within a group and the groups in the order their first members come;
+the other four push onto the entry's list,
+`readCapLog` splicing a paired stream out in place,
+`indexProposers` copying a claim's first proposers once so a record's own list is never appended to,
+and `gatherRelabelCases` gathering through a local type whose positions list is writable.
+
+With each append disabled in one build,
+the cases of `aggregate-claims`,
+`attribution-report`,
+`artifact-eligible` and `pool-generation` failed,
+and those of `cap-census` and `probe-relabel-gathering` passed:
+no case had two completed streams of one label waiting,
+and none drew one region twice.
+`81ec51782` adds both,
+the second drawing the windowsill edit again at position 7,
+the position `DAMAGED_CASES` records as the same edit drawn under a second accepted issue.
+With the two appends disabled again,
+both new cases failed
+(the cap census read `[ 11, 'unpaired' ]`);
+with the queue's splice removing nothing,
+the cap census case read `[ 22, 22 ]`;
+and with the guard's map check disabled,
+its fixture case failed.
+Each was restored,
+and `git diff` printed nothing after.
+
+Recurrence:
+a loop that groups or queues by key appends to the entry's list,
+or groups with `Map.groupBy`,
+and removes in place;
+it never sets an entry to a copy of what the entry held.
+`fold-copies.unit.test.ts` fails on a new one.
 
 ## Process mistakes in this audit
 
