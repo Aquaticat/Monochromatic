@@ -1935,22 +1935,35 @@ sixteen at a time by default.
 A pacer case beside the stepped one read the stubbed clock,
 and a guard-off that should have failed a case hung its file instead;
 the logger's stamps in sibling cases took the stepped time too (ledger M100).
+Thirteen other test files wrote environment variables,
+`console` methods or the working directory in suites that ran their cases at once,
+where a restore finishing out of order could leave a sibling's value behind (ledger B79).
 
 The rule:
 a case that replaces a global replaces it only for itself:
 a method through the case's own sandbox,
 `ctx.sinon.stub(target, 'method')`,
 which module-test answers only to code in that case's async context and restores when the case ends;
-a value no sandbox can scope,
-such as a `process.env` variable,
-is set only where no case running beside it reads the same value,
-or in a suite run one case at a time.
+any other write to a process global
+(an environment variable,
+a `console` method,
+`process.exitCode`,
+the working directory)
+happens only in a suite run one case at a time,
+`concurrency: 1` on it or on every suite around it out to the file's top,
+even when no await falls between the write and its restore today.
 Before writing such a fixture,
 read how the runner schedules cases.
 A guard-off whose process does not exit is a finding,
 and a guard runner ends each file after a bound.
 
 What enforces it:
+`global-writes-sequenced.unit.test.ts`,
+which `source-scans` runs,
+fails on a write to a process global in a test or test fixture
+that is not inside a case every suite around which runs one case at a time,
+following helpers called by name to their cases;
 `wall-clock-stub.unit.test.ts` holds a sibling case that reads the real clock while another case holds a stepped one.
-The package's other replacements of process globals in tests are being classified as a family,
-and their guard is not written yet.
+Out of the scan's reach:
+a write through an alias such as `const env = process.env`,
+and a case made by a function the suite's text only calls.

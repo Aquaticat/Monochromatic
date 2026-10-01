@@ -361,10 +361,17 @@ the stub its red cases used replaced `Date.now` for the whole test process
 while module-test ran other cases beside it,
 and a guard-off hung a file rather than failing it;
 the stub now holds the clock for its own case only (ledger M100).
-The package's 29 other test files that replace process globals are open as a family;
+The package's 29 other test files that replace process globals were open as a family then;
 they change tests only,
 so the census taken next is the eighteenth batch's baseline,
 recorded under each entry it closes.
+B79 closed that family after the census
+(`b9edc1542` to `cf17f1dd0`):
+13 of those files wrote an environment variable,
+a `console` method or the working directory in suites that ran their cases at once,
+where a restore finishing out of order could leave a sibling's value set;
+each such suite now runs one case at a time,
+and `global-writes-sequenced.unit.test.ts` fails on a write outside one.
 That census (`census-dKGOhZ` at `36e3f36cc`,
 1,500 passes,
 taken clean)

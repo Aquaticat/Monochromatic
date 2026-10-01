@@ -15123,6 +15123,148 @@ a unary plus or `Number` on a date,
 `performance.timeOrigin` and `Temporal.Now`,
 in source and tests alike.
 
+### B79: tests that wrote a process global while module-test ran other cases beside them
+
+Found by the census M100 queued.
+module-test runs a suite's children sixteen at a time unless a suite says otherwise
+(`package/module/test/src/describe.ts`),
+so a case that sets an environment variable,
+diverts `console.log` or moves the working directory across an await
+shares that value with every case running beside it,
+and each restore puts back what it found,
+which can be a sibling's value when cases finish out of order.
+29 test files wrote a process global
+(assignments,
+deletes,
+and `Reflect` or `Object` writes,
+one of them split over two lines).
+Read file by file,
+16 already ran every writing case in a suite run one at a time,
+several with a comment giving this reason;
+the other 13,
+which the scan committed red (`b9edc1542`) listed as 134 findings,
+fell into these groups:
+
+- three where restores finishing out of order could leave a sibling's value set:
+  `candidate-ledger` and `run-config`'s `resolveRunsDir` suite on the runs directory,
+  and `artifact-pool-conflict` on the pool variables,
+  one of its cases setting them only after an await;
+  `recordContest`,
+  `resolveRunsDir` and `resolvePool` read their variable before their first await,
+  so each case read its own value,
+  and no later suite in those files reads the variable,
+  so no assertion failed on it;
+- `run-config`'s `readHeadSha` suite moved the working directory with `process.chdir` across an await while its sibling ran,
+  which passed only because `readHeadSha` does not depend on the working directory,
+  the very thing the moving case checks;
+- `bench-report` never put the runs directory back nor removed its `mkdtemp` directory,
+  harmless only because its case is the file's one;
+- seven whose writes sit in windows with no await between setting and restoring,
+  or in the only case of their suite:
+  `transient-retry`,
+  `artifact-pool-names`,
+  `bench-report-groups`,
+  `corpus-pin-override`,
+  `pass-generation-guard`,
+  `probe-telemetry-report` and `spend-ceiling`,
+  safe as written and one await away from not being;
+- `artifact-placement`,
+  whose captures chain to each other and filter by file name,
+  built for cases running at once;
+  a restore out of order left a closed wrapper forwarding to the real reporter;
+- `writer-grace-override`,
+  whose two clearers sat in a table that nothing calls by name,
+  so no reading of the text could follow them to a case.
+
+`bench-sample-draw` sets `PATH` only in the text of a program a child process runs,
+which is not this process,
+and the scan reads it as text.
+
+Fixed (`cf17f1dd0`):
+every suite whose cases write a process global runs at `concurrency: 1`,
+with a comment naming the global;
+`bench-report`'s case restores the variable and removes its directory when it ends;
+`clearDial` holds one static delete per dial in an `if` chain
+(the lint configuration bans `switch`),
+which also retires a `Record` keyed by text;
+and `artifact-placement`'s capture no longer claims its suite runs cases at once.
+
+The scan,
+`global-writes-sequenced.unit.test.ts`,
+reads every test and test fixture for an assignment or `delete` on a member chain off
+`process`,
+`console`,
+`globalThis`,
+`Date`,
+`Math`,
+`performance`,
+`Intl`,
+`JSON` or `crypto`;
+`Reflect.deleteProperty`,
+`Reflect.set`,
+`Reflect.defineProperty`,
+`Object.defineProperty` and `Object.assign` with such a first argument;
+and `process.chdir` or `process.umask` with an argument.
+It places a write in a function declared by name at every call of that name,
+followed out to a fixpoint,
+and a write in a method or callback where that function is made;
+a write passes only in a case whose every enclosing suite,
+out to the one awaited at the file's top,
+runs at concurrency 1,
+written there or inherited.
+A write outside any case,
+in a function no call by name reaches,
+or in a suite not awaited at the top is reported.
+A stub through the case's own sandbox (`ctx.sinon`) is no write form,
+since module-test scopes it to the case.
+
+Calls made here are open to veto:
+
+- every writing case is sequenced,
+  the seven safe today among them,
+  so the rule reads off the text and still holds when an await is added;
+- a suite sequenced inside one that is not counts as running beside others,
+  since its parent dispatches it with its siblings;
+- a writer no call by name reaches is reported rather than passed;
+- console captures stay as they are in sequenced suites
+  rather than moving to `ctx.sinon` stubs,
+  which would scope them by construction
+  but rewrite capture helpers that work,
+  where sequencing is the package's own answer in 16 files already;
+- no red case per file:
+  whether a restore leaves a sibling's value depends on the order cases finish,
+  so a check of the variable after the suite could pass by luck,
+  and the scan's package case is the deterministic red.
+
+Guard-offs on the fixed tree,
+each restored with `git diff` printing nothing after:
+`readHeadSha`'s suite back at concurrency 16 failed the package case with exactly its two `process.chdir` writes;
+`Reflect.set` dropped from the write calls,
+following no caller of a named helper,
+and reading only the innermost suite
+each failed the fixture case
+(the `Reflect.set` finding missing,
+then the write a helper chain reaches,
+then the write in a sequenced suite inside a concurrent one,
+12 findings for 13).
+
+Out of the scan's reach,
+and named in its module note:
+a write through an alias (`const env = process.env`),
+a global shadowed by a local of the same name,
+and a case made by a function the suite's text only calls.
+Package source is not read:
+production code that writes a process global is a different question,
+and none was looked for here.
+
+Recurrence:
+a case that writes a process global runs in a suite run one at a time,
+out to the top of its file,
+or replaces a method through its own sandbox;
+`global-writes-sequenced.unit.test.ts`,
+which `source-scans` runs,
+fails on any other.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -16068,7 +16210,7 @@ The package's other tests that replace process globals
 `console` methods,
 `process.exitCode`),
 in 29 files by one search,
-are queued as a family to classify against this.
+were classified and fixed as B79.
 17 of those files already set `concurrency: 1` on at least one suite,
 several with a comment giving this reason
 (`cli-refusal`,
