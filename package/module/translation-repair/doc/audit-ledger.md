@@ -14620,6 +14620,9 @@ Before the invocation case,
 a scratch sweep over every tracked Markdown file under the package and `doc/`
 read 69 invocations and found no undeclared flag,
 and reported both invocations planted in a control file.
+The full suite on `3d8776f9f`
+(`mise run //package/module/translation-repair:buildAndTest`)
+printed 1,489 PASS lines and no FAIL line.
 
 Found on the way and open:
 an `--only` naming no entry runs over none without a word
