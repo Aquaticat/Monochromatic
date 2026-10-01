@@ -42,7 +42,10 @@ A new protected-policy check after the source-only fork checkpoint found SHA-256
 `1f5c31c969c5a18aa994465baf7afe25f00a7a9ab11d6190bcab56746732bd4b`:
 31,220 bytes and 1,393 lines.
 The initial complete-read statement was premature and is retracted.
-Complete coverage was then established by bounded reads from lines 1, 351, 701, and 1,051;
+Complete coverage was then established by bounded reads from lines 1,
+ 351,
+ 701,
+ and 1,051;
 the truncated final range was read separately.
 A post-read hash and size command exited zero with the same identity.
 That later coverage does not rehabilitate the premature prerequisite claim.
