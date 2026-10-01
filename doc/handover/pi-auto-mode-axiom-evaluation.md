@@ -834,6 +834,16 @@ three current documents rendered with zero native diagnostics.
 Its receipt commit is `d6e849fb2f2e1b2e63b851cacb4d383efb4933e4`.
 It did not read or update the historical audit and did not revalidate audit-context compatibility.
 Task #87 is complete at the declared finite scope.
+The later answer `Authorize test-only state` permits disposable private current-permission qualification.
+It is not itself the fixture permission.
+A newly frozen SDK-linked configured-host confirmation is still required before active permission state.
+No production grants,
+represented actions,
+provider expansion,
+or adoption are authorized.
+The initial question tool aborted without an answer;
+the later explicit answer and scoped acceptance are retained separately in private intake records.
+
 Task #69 has resumed with a source-only dependency intake in the private
 `contract/lifecycle/finalization-dependency-intake/` namespace.
 The existing mechanical snapshot rechecks root ownership,
@@ -851,6 +861,17 @@ or cache-release freshness.
 Next:
 freeze a separate disposable source/target/deadline/cache contract and independent controls,
 keeping current human permission and SDK-linked human ancestry as separate evidence requirements.
+Task #92 designs those mechanical controls using the existing collector and root snapshot owners.
+Independent review requires root-bound instances,
+fixed monotonic deadlines,
+original cancellation retention,
+descriptor-bound file observations,
+isolated literal controls,
+and explicit non-atomicity limits before source freeze.
+No implementation or dispatch of that phase has started.
+The visible task registry again ended at #81;
+`task-registry-reconciliation-sixth.json` restores receipt-backed states as bookkeeping only,
+with cause unknown and no new authority or test outcome inferred.
 The completed finite SDK phase does not complete that lifecycle area.
 The gate itself launched the consumed phase;
 never rerun it or treat it as a harmless preflight.
