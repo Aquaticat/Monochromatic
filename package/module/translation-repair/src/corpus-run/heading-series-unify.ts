@@ -6,6 +6,7 @@ import {
   colonAt,
   isHeadingLine,
   pageTextBySlice,
+  pageTextOf,
   slicesInOrder,
   splitHeading,
   withRewrittenText,
@@ -386,7 +387,10 @@ export function unifyHeadingSeries(
     /**
      Page lines of this slice, which the page text holds for every slice.
      */
-    const lines = nonNullishOrThrow(pageText.get(sliceIndex,),)
+    const lines = pageTextOf({
+      pageText,
+      sliceIndex,
+    },)
       .split('\n',);
     // A PAGE SLICE IS READ ONLY WHERE ITS HEADINGS PAIR WITH THE ORIGINAL'S
     // (ledger B84). A slice that dropped or gained a heading puts every later
@@ -468,7 +472,10 @@ export function unifyHeadingSeries(
      Slice lines as they stand after earlier rewrites.
      */
     const current = rewritten.get(heading.sliceIndex,)
-      ?? nonNullishOrThrow(pageText.get(heading.sliceIndex,),);
+      ?? pageTextOf({
+        pageText,
+        sliceIndex: heading.sliceIndex,
+      },);
     /**
      Those lines.
      */

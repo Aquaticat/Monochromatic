@@ -2,6 +2,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import {
   pageTextBySlice,
+  pageTextOf,
   slicesInOrder,
   withRewrittenText,
 } from './assembly-page-text.ts';
@@ -249,7 +250,10 @@ export function restoreJsxAttributes(
     /**
      Page text of this slice.
      */
-    const text = pageText.get(sliceIndex,) ?? '';
+    const text = pageTextOf({
+      pageText,
+      sliceIndex,
+    },);
     /**
      Tags the page wrote for this slice.
      */

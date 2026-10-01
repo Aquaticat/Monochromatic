@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 
@@ -53,6 +55,37 @@ export function pageTextBySlice(
     );
   }
   return text;
+}
+
+/**
+ Text the page carries for one slice, read from what `pageTextBySlice` built.
+
+ THROWS RATHER THAN READING A MISSING SLICE AS EMPTY TEXT. The map holds
+ every slice it was built from, so a missing one is a slice from some other
+ list, and a pass that took it for empty text once wrote an empty override
+ for a section the page never replaced (ledger B83).
+
+ @param pageText - page text per slice, as `pageTextBySlice` built it
+
+ @param sliceIndex - slice of the same list the map was built from
+
+ @returns The slice's page text
+
+ @example
+ ```ts
+ const text = pageTextOf({ pageText, sliceIndex: slice.target.sliceIndex, },);
+ ```
+ */
+export function pageTextOf(
+  {
+    pageText,
+    sliceIndex,
+  }: {
+    readonly pageText: ReadonlyMap<number, string>;
+    readonly sliceIndex: number;
+  },
+): string {
+  return nonNullishOrThrow(pageText.get(sliceIndex,),);
 }
 
 /**

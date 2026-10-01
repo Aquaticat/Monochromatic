@@ -1,7 +1,10 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   pageTextBySlice,
+  pageTextOf,
   slicesInOrder,
   withRewrittenText,
 } from './assembly-page-text.ts';
@@ -388,7 +391,10 @@ export function placeHandleGlosses(
   ] {
     return [
       sliceIndex,
-      pageText.get(sliceIndex,) ?? '',
+      pageTextOf({
+        pageText,
+        sliceIndex,
+      },),
     ];
   },),);
   /**
@@ -413,7 +419,8 @@ export function placeHandleGlosses(
     const appearances = replaced.flatMap(function inSlice(sliceIndex,): readonly Appearance[] {
       return appearancesIn({
         sliceIndex,
-        text: texts.get(sliceIndex,) ?? '',
+        // Every replaced slice has its text here, entered when `texts` was built.
+        text: nonNullishOrThrow(texts.get(sliceIndex,),),
         rendering,
       },);
     },);
@@ -428,7 +435,10 @@ export function placeHandleGlosses(
    */
   const rewritten = new Map<number, string>([...texts.entries(),]
     .filter(function changed([sliceIndex, text,],): boolean {
-      return text !== (pageText.get(sliceIndex,) ?? '');
+      return text !== pageTextOf({
+        pageText,
+        sliceIndex,
+      },);
     },),);
   return {
     ...withRewrittenText({

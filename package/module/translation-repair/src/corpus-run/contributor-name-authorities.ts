@@ -1,4 +1,5 @@
 import type { ChunkPair, } from '../chunk-document.ts';
+import { pageTextOf, } from './assembly-page-text.ts';
 import {
   type Signature,
   signaturesOf,
@@ -145,8 +146,11 @@ export function nameAuthorities(
        Page's rendering at the same position, without a gloss it carries.
        */
       const [page,] = alignedSignature({
-        text: pageText.get(slice.target
-          .sliceIndex,) ?? '',
+        text: pageTextOf({
+          pageText,
+          sliceIndex: slice.target
+            .sliceIndex,
+        },),
         at,
         count: signed.length,
       },);

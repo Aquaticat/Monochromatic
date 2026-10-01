@@ -10,6 +10,7 @@ import type { DeepReadonlyData, } from '../readonly-data.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import {
   pageTextBySlice,
+  pageTextOf,
   slicesInOrder,
   withRewrittenText,
 } from './assembly-page-text.ts';
@@ -530,7 +531,10 @@ export function restoreListSpread(
     /**
      Page text of this slice.
      */
-    const text = pageText.get(sliceIndex,) ?? '';
+    const text = pageTextOf({
+      pageText,
+      sliceIndex,
+    },);
     /**
      Lists the archive's spacing rewrites, last first so each rewrite
      leaves the earlier lists' offsets true.

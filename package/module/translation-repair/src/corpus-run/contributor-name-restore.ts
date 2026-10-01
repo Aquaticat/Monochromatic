@@ -5,6 +5,7 @@ import {
   isHeadingLine,
   lastColonAt,
   pageTextBySlice,
+  pageTextOf,
   slicesInOrder,
   splitHeading,
   withRewrittenText,
@@ -522,7 +523,10 @@ export function restoreContributorNames(
      */
     const restored = restoreSlice({
       slice,
-      text: pageText.get(sliceIndex,) ?? '',
+      text: pageTextOf({
+        pageText,
+        sliceIndex,
+      },),
       authorities,
     },);
     /**

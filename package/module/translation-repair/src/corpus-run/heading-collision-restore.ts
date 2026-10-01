@@ -4,7 +4,12 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import { headingWords, } from '../entry-notes.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
-import { slicesInOrder, } from './assembly-page-text.ts';
+import {
+  pageTextBySlice,
+  pageTextOf,
+  slicesInOrder,
+  withRewrittenText,
+} from './assembly-page-text.ts';
 
 //region Heading collision restore
 // CLASS FORTY-FIVE (hulicaijia6, 2026-09-17). The repair lane rendered the
@@ -139,14 +144,12 @@ export function restoreCollidingHeadings(
   if (source.length !== archive.length)
     return unchanged;
   /**
-   Text the page would carry per slice index.
+   Text the page carries per slice: a lane's replacement, else the archive's.
    */
-  const textBySlice = new Map(replacements.map(function toEntry(replacement,) {
-    return [
-      replacement.sliceIndex,
-      replacement.replacementText,
-    ] as const;
-  },),);
+  const pageText = pageTextBySlice({
+    slices,
+    replacements,
+  },);
   /**
    Each slice's page headings, beside how many headings its archive text
    carries.
@@ -168,7 +171,10 @@ export function restoreCollidingHeadings(
       /**
        What the page carries for this slice.
        */
-      const text = textBySlice.get(sliceIndex,) ?? incumbent;
+      const text = pageTextOf({
+        pageText,
+        sliceIndex,
+      },);
       return {
         headings: headingLinesOf({ text, },)
           .map(function withSlice(line,): PageHeading {
@@ -272,7 +278,10 @@ export function restoreCollidingHeadings(
      Slice text as it stands after earlier restorations.
      */
     const current = restoredText.get(heading.sliceIndex,)
-      ?? nonNullishOrThrow(textBySlice.get(heading.sliceIndex,),);
+      ?? pageTextOf({
+        pageText,
+        sliceIndex: heading.sliceIndex,
+      },);
     restoredText.set(
       heading.sliceIndex,
       current.replace(
@@ -287,31 +296,10 @@ export function restoreCollidingHeadings(
         + `where the original's differ; the archive's "${replacement.words}" restored (class forty-five)`,
     );
   }
-  /**
-   Replacements with the restored slices' text.
-   */
-  const withRestored = replacements.map(function restore(replacement,): SliceReplacement {
-    /**
-     Restored text for this slice, if any.
-     */
-    const text = restoredText.get(replacement.sliceIndex,);
-    return (text === undefined)
-      ? replacement
-      : {
-        sliceIndex: replacement.sliceIndex,
-        replacementText: text,
-      };
-  },);
   return {
-    replacements: withRestored,
-    restored: [...restoredText.entries(),].map(function toRow([
-      sliceIndex,
-      replacementText,
-    ],): SliceReplacement {
-      return {
-        sliceIndex,
-        replacementText,
-      };
+    ...withRewrittenText({
+      replacements,
+      rewritten: restoredText,
     },),
     findings,
   };
