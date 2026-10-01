@@ -252,9 +252,10 @@ await describe({
     },),
 
     it({
-      name: 'READS a string field only as a decimal written in digits: a second point, a point with no digit on '
-        + 'one side and an exponent stay NOT_LISTED, while whole digits and a decimal with digits on both '
-        + 'sides read as written (ledger B73)',
+      name: 'READS a string field only as JSON writes an unsigned number: digits, a fraction with digits on both '
+        + 'sides of its point, and an exponent with digits, as a catalogue in OpenRouter\'s shape writes '
+        + '`0.042e-6`; a second point, a point missing a digit on one side and an exponent missing its digits '
+        + 'stay NOT_LISTED (ledger B73)',
       fn: async () => {
         expect([
           cardFieldsFrom({
@@ -266,7 +267,33 @@ await describe({
               max_output_length: '8000.',
               pricing: {
                 prompt: '$.5',
-                completion: '$1e-7',
+                completion: '$1e',
+              },
+            },
+          },),
+          cardFieldsFrom({
+            provider: 'synthetic',
+            row: {
+              id: 'hf:cat/Mittens-9',
+              input_modalities: ['text',],
+              context_length: 'e5',
+              max_output_length: '1e+',
+              pricing: {
+                prompt: '$1.5e3.2',
+                completion: '$1e5e5',
+              },
+            },
+          },),
+          cardFieldsFrom({
+            provider: 'synthetic',
+            row: {
+              id: 'hf:cat/Mittens-9',
+              input_modalities: ['text',],
+              context_length: '1.28E5',
+              max_output_length: '8000',
+              pricing: {
+                prompt: '$0.042e-6',
+                completion: '$1.5e-7',
               },
             },
           },),
@@ -290,6 +317,20 @@ await describe({
             contextLength: NOT_LISTED,
             promptPrice: NOT_LISTED,
             completionPrice: NOT_LISTED,
+          },
+          {
+            readsImages: false,
+            maxOutputLength: NOT_LISTED,
+            contextLength: NOT_LISTED,
+            promptPrice: NOT_LISTED,
+            completionPrice: NOT_LISTED,
+          },
+          {
+            readsImages: false,
+            maxOutputLength: 8_000,
+            contextLength: 128_000,
+            promptPrice: 4.2e-8,
+            completionPrice: 1.5e-7,
           },
           {
             readsImages: false,
