@@ -79,6 +79,34 @@ These answers settle requirements,
  not the complete implementation design.
 The user has not yet confirmed shared understanding of that complete design.
 
+## Local selection evidence
+
+`package/pi-shared/model-selection/src/scope-patterns.ts` resolves scope by model identity.
+A disposable fixture probe called the real `resolveModelPatterns()` implementation:
+
+- Positive control:
+   `openai-codex/gpt-6-sol*` selected the ordinary fixture and its `-fast` companion.
+- Existing exact entry:
+   `openai-codex/gpt-6-sol` selected only the ordinary fixture.
+
+The probe also called the real `scoreModelSpeed()` from
+`package/pi-shared/model-selection/src/speed-signals.ts`.
+The ordinary fixture scored `0`;
+ the fixture with a `-fast` suffix and `Fast` display-name suffix scored `90`.
+These scores are local name heuristics,
+ not measured backend speed.
+`package/pi-plugin/auto-mode/src/budget-model.ts` uses that scoring to sort eligible automatic judge candidates.
+
+The first-round wording that opt-in always requires explicit selection was incomplete:
+preserving the default model alone does not prevent automatic auxiliary selection.
+Scope inclusion and auxiliary-selection eligibility must also be considered.
+No aliases have been implemented or added to the user's scope.
+
+Independent Advisor review identified the same boundary and highlighted session migration,
+ transport preservation,
+ authentication refresh,
+ and requested-versus-served tier observability.
+
 ## Unsettled factual prerequisites
 
 - Whether the installed fast extension already implements virtual models.
@@ -98,7 +126,8 @@ Use verified findings to form the next interview frontier,
  including model identity,
  model coverage,
  priority failure behavior,
- and compatibility with auxiliary calls.
+ and the meaning of opt-in for auxiliary calls.
+Do not silently widen `enabledModels` as an installation convenience.
 Do not implement,
  change installed packages,
  or change defaults before the user confirms the complete design.
