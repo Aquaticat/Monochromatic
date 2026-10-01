@@ -2309,3 +2309,59 @@ and counts Opus 5.5 tokens.
 Scratch is not durable;
 this doc's approved-text sections are canonical.
 Proposal code blocks mark sections with Markdown headings.
+
+## Voyage sorting fit assessment (2026-10-01)
+
+The user asked whether to use Voyage `rerank-3` to sort `AGENTS.md`.
+This is a capability lookup and provisional proposal,
+not adoption or a completed vendor selection.
+No instruction file or integration changed;
+no Voyage request was made for this assessment.
+
+### Evidence and existing boundaries
+
+- `AGENTS.md:3` defines organization by moment of decision.
+  The adopted section-move policy in "Adopted without asking" preserves that organization.
+- `file-enforcer.config.ts:2211` to `:2245` embeds `AGENTS.md` into generated `CLAUDE.md`.
+  Any eventual canonical reorganization affects both consumers.
+- The [reranker guide](https://docs.voyageai.com/docs/reranker) defines query-relative document relevance.
+  The API model identifier is `rerank-3`.
+- The [release announcement](https://blog.voyageai.com/2026/09/30/rerank-3/)
+  confirms instruction-following support,
+  so a supplied sorting criterion is possible.
+  Its retrieval evaluations do not measure adherence to this repository's instructions.
+- Existing Voyage use includes multimodal image embeddings in `package/module/image-diff/src/voyage.ts`
+  and separate guard-model experiments documented in `pi-auto-mode-voyage-fit.md`.
+  Neither establishes whether sorting these rules improves adherence.
+  The image provider's type-assertion suppression concerns API response types,
+  not instruction ordering.
+- "Decisions" prioritizes token cost with full rule coverage,
+  then adherence and maintainability,
+  and declines a standing formal adherence check.
+  Reordering alone is not evidence of reduced token cost.
+
+### Provisional proposal and limits
+
+Keep the current lifecycle layout as the baseline.
+A human-reviewed canonical reorder and a task-specific runtime reorder are distinct experiments.
+Voyage could produce suggestions under an explicit criterion;
+its relevance score is not instruction authority,
+importance,
+or precedence.
+No comparative ordering or adherence experiment was run here.
+
+Any later experiment would preserve complete rule blocks,
+codes,
+wording,
+headings,
+and lifecycle context,
+without filtering or silent truncation.
+Ordering and highlighting would be evaluated separately.
+Runtime ordering also introduces task-context disclosure and provider-failure questions.
+A one-off comparison could inspect representative task outcomes and rule violations;
+it would not silently introduce the standing regression suite already declined.
+
+The open question before concrete adoption is the intended sorting criterion:
+canonical lifecycle organization or relevance to the current task.
+Until that is settled and the proposed behavior is exercised,
+there is no recommendation to deploy Voyage as the instruction sorter.
