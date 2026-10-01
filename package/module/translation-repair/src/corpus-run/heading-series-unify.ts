@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import {
@@ -36,6 +38,12 @@ import {
 // of its headings, all in one style) the page takes the archive's style; the
 // renderings' plurality decides only where the archive never headed the
 // series.
+//
+// A SLICE IS PAIRED WITH THE ORIGINAL'S NUMBERS ONLY WHERE IT CARRIES AS MANY
+// HEADINGS (ledger B84). Pairing is by position inside a slice, so a page
+// slice that dropped a heading, or an archive slice that heads a section of
+// its own, would hand every later heading the wrong number or the wrong
+// style; such a slice is left as it stands and read for nothing.
 
 /**
  Mark the original's numbered headings open with.
@@ -233,16 +241,23 @@ function archiveStyle({ slices, }: { readonly slices: readonly ChunkPair[]; },):
       .filter(function heading(line,): boolean {
         return isHeadingLine({ line, },);
       },);
+    // AN ARCHIVE SLICE IS READ ONLY WHERE ITS HEADINGS PAIR WITH THE
+    // ORIGINAL'S (ledger B84). One that heads a section of its own, or merges
+    // two, puts every later heading of the slice at another position, and its
+    // own heading once read as a numbered one hid the archive's style.
+    if (lines.length !== values.length)
+      continue;
     values.forEach(function readArchive(
       value,
       at,
     ): void {
-      /**
-       Archive heading at this position, if the archive carries one.
-       */
-      const line = lines[at];
-      if ((value === 0) || (line === undefined))
+      if (value === 0)
         return;
+      /**
+       Archive heading at this position, which exists because the slice
+       carries as many headings as the original's.
+       */
+      const line = nonNullishOrThrow(lines[at],);
       /**
        Archive heading as rendered.
        */
@@ -305,14 +320,14 @@ function majorityStyle({ headings, }: { readonly headings: readonly SeriesHeadin
   /**
    Earliest heading whose style drew the largest count.
    */
-  const earliest = headings.find(function leads(heading,): boolean {
+  const earliest = nonNullishOrThrow(headings.find(function leads(heading,): boolean {
     /**
      Key of this heading's style.
      */
     const key = styleKey({ style: heading.style, },);
     return counts.get(key,) === most;
-  },);
-  return (earliest === undefined) ? NO_NUMBER : earliest.style;
+  },),);
+  return earliest.style;
 }
 
 /**
@@ -369,9 +384,23 @@ export function unifyHeadingSeries(
     },))
       continue;
     /**
-     Page lines of this slice.
+     Page lines of this slice, which the page text holds for every slice.
      */
-    const lines = (pageText.get(sliceIndex,) ?? '').split('\n',);
+    const lines = nonNullishOrThrow(pageText.get(sliceIndex,),)
+      .split('\n',);
+    // A PAGE SLICE IS READ ONLY WHERE ITS HEADINGS PAIR WITH THE ORIGINAL'S
+    // (ledger B84). A slice that dropped or gained a heading puts every later
+    // heading at another position, and pairing them once gave the third
+    // section the second's number. Such a slice keeps its headings as the page
+    // has them.
+    /**
+     Heading lines the page carries in this slice.
+     */
+    const pageHeadings = lines.filter(function heading(line,): boolean {
+      return isHeadingLine({ line, },);
+    },);
+    if (pageHeadings.length !== values.length)
+      continue;
     /**
      Headings met so far in the page text.
      */
@@ -383,9 +412,11 @@ export function unifyHeadingSeries(
       if (!isHeadingLine({ line, },))
         return;
       /**
-       Number of the original's heading at this position, zero if none.
+       Number of the original's heading at this position, zero if none,
+       which exists because the slice carries as many headings as the
+       original's.
        */
-      const value = values[met] ?? 0;
+      const value = nonNullishOrThrow(values[met],);
       met += 1;
       if (value === 0)
         return;
@@ -437,16 +468,16 @@ export function unifyHeadingSeries(
      Slice lines as they stand after earlier rewrites.
      */
     const current = rewritten.get(heading.sliceIndex,)
-      ?? pageText.get(heading.sliceIndex,)
-      ?? '';
+      ?? nonNullishOrThrow(pageText.get(heading.sliceIndex,),);
     /**
      Those lines.
      */
     const lines = current.split('\n',);
     /**
-     Heading line as the page had it.
+     Heading line as the page had it, which exists because a rewrite replaces
+     a line and never adds or removes one.
      */
-    const before = lines[heading.line] ?? '';
+    const before = nonNullishOrThrow(lines[heading.line],);
     if (before === unified)
       continue;
     lines[heading.line] = unified;
