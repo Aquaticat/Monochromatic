@@ -502,6 +502,188 @@ The source-matched mechanisms do not justify a duplicate feature request.
 The user requested a local extension,
 not upstream work.
 
+## Pi 1.0 local installation and relative package declarations
+
+### Symptom
+
+The native package commands reported successful removal of the incumbent and installation of the replacement.
+The repository's installation verifier then emitted:
+
+```text
+# Repository installation verifier
+GlobalInstallationError: Pi global package replacement did not produce the expected package declarations.
+```
+
+This was a consumer assertion error,
+ not a failed native installation.
+The verifier had already compared non-package settings successfully.
+Its unrelated-package comparison had not run when the path assertion failed.
+
+### Root cause
+
+Pi `1.0.0` normalizes local package sources relative to the owning settings directory.
+Installed `coding-agent/dist/core/package-manager.js:1159` contains:
+
+```js
+// coding-agent/dist/core/package-manager.js:1159
+normalizePackageSourceForSettings(source, scope) {
+    const parsed = this.parseSource(source);
+    if (parsed.type !== "local") {
+        return source;
+    }
+    const baseDir = this.getBaseDirForScope(scope);
+    const resolved = this.resolvePath(parsed.path);
+    const rel = relative(baseDir, resolved);
+    return rel || ".";
+}
+```
+
+The previously cloned upstream source has the same method in
+`packages/coding-agent/src/core/package-manager.ts:1469`.
+The deciding installed `1.0.0` implementation was inspected separately.
+Pi's `docs/packages.md` explicitly says relative local paths resolve from their owning settings file.
+
+The initial repository assertion used `installedPackages.includes(packagePath)`.
+A relative declaration did not equal the absolute input string,
+ although it resolved to the same package.
+The replacement assertion uses the installed native `isLocalPath()` and `resolvePath()` helpers,
+ accepts string and object declarations,
+ and resolves against `dirname(settingsPath)`.
+Incumbent checks recognize versioned and object-form npm declarations.
+
+### Verification and workaround
+
+Build,
+ type checking,
+ the complete offline suite,
+ zero-warning lint,
+ and extension-host verification passed on pi `1.0.0`.
+Native installed-package discovery also passed ordinary and fast Luna live requests.
+Only the fast requests supplied priority;
+ both used the original model ID.
+
+The installed verifier now resolves the same native agent directory as installation,
+ rebases the source to a relative path inside disposable state,
+ and preserves object declaration filters.
+This consumer-side fix does not alter native installation semantics.
+It depends on the installed unbundled path helpers,
+ so host upgrades require these installation probes as well as the provider tests.
+
+A disposable reproduction of the corrected installation task:
+
+```ts
+// ~/temp/agent/pi-fast-relative-install.ts, run from repository root
+import { strict as assert } from 'node:assert';
+import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { homedir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { promisify } from 'node:util';
+const run = promisify(execFile);
+const root = await mkdtemp(join(homedir(), 'temp', 'agent', 'pi-fast-relative-'));
+try {
+  const before = {
+    packages: ['npm:pi-openai-codex-fast', { source: 'npm:unrelated-fixture', extensions: [] }],
+    defaultProvider: 'fixture', defaultModel: 'ordinary', enabledModels: ['fixture/ordinary'],
+  };
+  await writeFile(join(root, 'settings.json'), JSON.stringify(before));
+  const result = await run('mise', ['run', '//package/pi-plugin/openai-fast:install:global'], {
+    cwd: process.cwd(),
+    env: { ...process.env, HOME: root, PI_CODING_AGENT_DIR: root, PI_OFFLINE: '1' },
+  });
+  assert.match(result.stdout, /PASS global replacement/u);
+  const after = JSON.parse(await readFile(join(root, 'settings.json'), 'utf8'));
+  assert.equal(resolve(root, after.packages[1]), resolve('package/pi-plugin/openai-fast'));
+  assert.deepEqual(after.packages[0], before.packages[1]);
+  assert.deepEqual({ ...after, packages: [] }, { ...before, packages: [] });
+} finally {
+  await rm(root, { recursive: true, force: true });
+}
+```
+
+The executed installation controls covered a string incumbent and a versioned filtered-object incumbent.
+Both retained defaults,
+ exact enabled-model scope,
+ and an unrelated filtered package declaration.
+Native discovery controls covered:
+
+- Correct relative declaration:
+   the built extension loads.
+- Filtered declaration with `extensions: []`:
+   the extension does not load.
+- Wrong or missing package path:
+   the replacement does not load.
+- Active npm package factories:
+   all configured npm extensions affected by reconciliation load without extension errors.
+
+The factory probe is not a complete behavioral test of those other extensions.
+No saved pre-install package baseline was found in the agent directory or accessible scratch settings candidates.
+The original interrupted comparison is therefore not retrospectively claimed as a pass.
+
+### Native uninstall reconciliation
+
+Installed `coding-agent/dist/core/package-manager.js:1532` invokes npm rather than deleting one directory:
+
+```js
+// coding-agent/dist/core/package-manager.js:1542
+const args = ["uninstall", source.name, "--prefix", installRoot];
+if (packageManagerName !== "pnpm") {
+    args.push("--legacy-peer-deps");
+}
+await this.runNpmCommand(args);
+```
+
+The executed npm `11.19.1` log records
+`npm uninstall pi-openai-codex-fast --prefix <agent-dir>/npm --legacy-peer-deps`.
+It also records failure to reuse the installed tree lock metadata because `node_modules/ajv` was missing from that lockfile.
+Npm reported removing the incumbent and changing 80 packages.
+Those entries include active provider,
+ process,
+ Radius,
+ subagent,
+ and BTW packages.
+The log does not establish that all changed entries moved to new versions.
+
+Npm also reported 14 vulnerabilities:
+ 1 low,
+ 2 moderate,
+ and 11 high.
+No audit remediation was attempted.
+The affected active extension factories were exercised in disposable,
+ credential-free,
+ offline state.
+Settings preservation must not be described as dependency-tree preservation.
+
+### What does not work
+
+- Comparing a persisted local source to its absolute command input as raw strings.
+- Stripping object filters while testing installed discovery.
+- Using a different agent directory for installation and installed verification.
+- Treating a passed post-install check as recovery of an absent pre-install baseline.
+- Claiming that targeted native npm removal leaves every other installed dependency untouched.
+
+### Upstream filing decision
+
+1.  Fault:
+    this was the repository's assertion,
+    not an upstream defect.
+2.  Fixability:
+    the consumer assertion was corrected without changing pi.
+3.  Supported use case:
+    pi documents relative local package sources.
+4.  Contribution:
+    no upstream contribution is needed.
+5.  Direction:
+    no undocumented behavior or contradictory upstream promise was established.
+6.  Prototype:
+    the consumer fix and disposable positive/negative controls passed;
+    no upstream patch is warranted.
+
+Upstream filing artifact:
+ nothing to add.
+The upstream-fault gate fails,
+ so no issue or comment is proposed for expected package-source normalization.
+
 ## Backend evidence boundary
 
 [OpenAI's Codex speed documentation][codex-speed] describes increased quota consumption

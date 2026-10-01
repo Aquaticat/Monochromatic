@@ -371,7 +371,14 @@ The reported audit summary was 14 vulnerabilities:
 
 The installed replacement passed ordinary and fast Luna requests through native package discovery.
 A subsequent probe preserved package filters and exercised a rebased relative declaration.
-Disposable installation and affected-extension load controls are the remaining verification step.
+Disposable installation controls passed for string and versioned filtered-object incumbents.
+They retained non-package settings and unrelated package declarations.
+Relative native discovery controls passed for allowed,
+ disabled,
+ wrong,
+ and missing package declarations.
+All active affected npm package factories loaded without extension errors in credential-free offline state.
+This does not constitute complete behavioral testing of those other extensions.
 
 ## Pi 1.0 target update
 
@@ -423,9 +430,10 @@ Proposed `AGENTS.md` tightening:
 
 ## Next action
 
-Finish disposable installation and affected-extension load controls,
- render and lint the final documentation,
- then report the installed selection and reload guidance.
+Render and lint the final documentation,
+ then report the installed selection,
+ reload guidance,
+ and npm reconciliation caveat.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
