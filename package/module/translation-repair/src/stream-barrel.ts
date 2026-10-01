@@ -9,6 +9,7 @@
 // finished with before a reply becomes a value the pipeline reads.
 
 export { extractStreamedCompletion, } from './stream-completion.ts';
+export { requireWholeAnthropicMessage, } from './anthropic-whole-message.ts';
 export { ssePayloadOf, } from './sse-data-line.ts';
 export { drainBody, } from './stream-drain.ts';
 export {

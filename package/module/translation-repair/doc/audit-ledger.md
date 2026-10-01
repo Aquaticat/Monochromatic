@@ -16192,7 +16192,10 @@ the refusal named a cut connection;
 with one after it,
 the fold returned what came before as the answer.
 
-`requireWholeAnthropicMessage` replaces it.
+`requireWholeAnthropicMessage` replaces it,
+since moved with the frame reading into `anthropic-whole-message.ts`,
+which has its own tests,
+when the B89 fix took `anthropic-completion.ts` past the line limit.
 Each payload is read as a frame by `readFrame`,
 which the fold shares;
 the terminator is a frame whose `type` is `message_stop`,
@@ -16275,6 +16278,42 @@ Calls made here are open to veto:
 
 Recurrence:
 a provider's field is read as its documentation defines it;
+`mistake-prevention.md`,
+"Provider fields read by their documentation".
+
+### B89: Anthropic answer fragments dropped without a word
+
+Found in T8's twenty-second batch,
+reading the stretch census-lxT62v lists cold at `anthropic-completion.ts:242`
+(a `content_block_delta` frame with no delta returned nothing)
+against the streaming documentation,
+red in `7b5a9d2ac`,
+fixed in the commit adding this entry.
+The documentation gives every `content_block_delta` frame a `delta`,
+every `text_delta` a `text` and every `input_json_delta` a `partial_json`.
+`foldDelta` passed over a frame with no delta,
+and `stringField` read a text or `partial_json` that was not a string as empty,
+so the answer came back with a piece missing and nothing said;
+a prose answer missing words would then be judged and placed as whole.
+The same reader refuses a frame that is not JSON,
+on the grounds that the answer assembled from the rest is missing an unknown piece,
+and a frame that parses but lacks its fragment is the same case.
+Now `foldDelta` refuses the first,
+and `answerFragmentOf` the second,
+each with a `MalformedCompletionError` naming the field.
+A delta of a type the fold does not read,
+and one naming no type,
+are still passed over:
+either may be a type the provider added later,
+which the documentation asks a reader to handle gracefully.
+
+The B29 census of silent fallbacks read nullish fallbacks,
+parameter defaults and caught errors;
+a reader returning an empty string for a field of the wrong type is none of those,
+so this file's `stringField` was not in its reach.
+
+Recurrence:
+a frame that parses but lacks the fragment its kind carries is refused as a frame that does not parse is;
 `mistake-prevention.md`,
 "Provider fields read by their documentation".
 
@@ -17305,6 +17344,25 @@ but the claim was written ahead of its evidence.
 The prevention covers any count a message states:
 the message is written after the call that shows the count returns.
 
+### M103: TSDoc blank lines written in the form their file does not use
+
+Status:
+happened 2026-10-01 (UTC) in T8's twenty-second batch,
+found before the third commit of the batch's fixes and corrected in it.
+`anthropic-completion.ts` writes every blank line inside a TSDoc block as one space;
+the blocks written by `33bffdb7b` and `08f56f71e` used empty ones,
+34 of them in the file at `08f56f71e` beside 20 spaced,
+and the lint and the source scans pass either form.
+The same slip was corrected once before,
+in `d811fcf2b`,
+where the edit tool had dropped the spaces.
+Prevention:
+before committing a file whose TSDoc changed,
+count its blank lines inside TSDoc blocks by form and keep the one the file used.
+A source scan holding each file to one form would make this a check rather than a habit;
+none is written yet,
+and 264 of the package's 2,017 TypeScript files under `src` mixed the two forms when this was recorded.
+
 ### M79: a coverage census measuring compressed code
 
 Status:
@@ -18136,6 +18194,12 @@ Once more in that batch the check came after the commit:
 and its check,
 run next,
 found no match.
+Again during T8's twenty-second batch on 2026-10-01 (UTC),
+once,
+with no wrong outcome landing:
+the named test run for B89's red cases ran in the batch of the edit adding them
+(rerun alone,
+the same three cases failed and their suite with them).
 The prevention stands as written:
 the edit or write,
 then,

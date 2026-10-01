@@ -1,8 +1,11 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { isAsciiLowerLetter, } from './ascii-letters.ts';
+import {
+  readFrame,
+  requireWholeAnthropicMessage,
+  stringField,
+} from './anthropic-whole-message.ts';
 import { contextRoot, } from './log-context.ts';
-import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import {
   type ExtractedCompletion,
@@ -26,11 +29,9 @@ const l = contextRoot({ tag: 'translation-repair', },);
 // arguments. Those fragments ARE the answer, and concatenating them yields the
 // JSON a validator then reads.
 //
-// THE TERMINATOR IS `message_stop`, NOT `[DONE]`. Requiring it matters for the
-// same reason `extractStreamedCompletion` requires its own: a stream that ended
-// without one was cut off, and returning the truncated prefix would hand a
-// validator a half-written JSON object and get it reported as a schema mismatch
-// rather than as the transport failure it is.
+// THE BODY IS CHECKED WHOLE FIRST, by `requireWholeAnthropicMessage` in
+// `anthropic-whole-message.ts`, which the retry ladder asks too: a terminator
+// frame, and no error event.
 //
 // `[DONE]` IS SKIPPED, NOT REFUSED. OpenRouter's Messages endpoint appends an
 // `event: data` frame carrying the OpenAI-style `data: [DONE]` sentinel after
@@ -42,29 +43,6 @@ const l = contextRoot({ tag: 'translation-repair', },);
 // THINKING IS DISCARDED HERE ON PURPOSE. `thinking_delta` is the model's
 // private channel; `anthropic-delta-scan.ts` routes it to the guards that watch
 // for a runaway, and this file reads only the answer.
-
-/**
- Event ending a well-formed message.
- */
-const TERMINATOR = 'message_stop';
-
-/**
- Event a provider sends when the message fails partway, in place of the rest
- of it (the streaming documentation's "Error events").
- */
-const ERROR_EVENT = 'error';
-
-/**
- Longest error type a refusal repeats. The documented types are short
- protocol words; anything longer is read as text and not repeated.
- */
-const ERROR_TYPE_LIMIT = 64;
-
-/**
- Name a refusal gives an error event whose type is absent or is not a
- protocol word.
- */
-const UNNAMED_ERROR = 'unnamed';
 
 /**
  Sentinel some gateways append after the terminator, carrying no event.
@@ -121,7 +99,7 @@ type AnthropicFold = {
 
 /**
  Usage fields this reader counts, each beside the series it lands in.
-
+ 
  THE PROMPT IS THREE OF THEM (ledger B88). Anthropic's `input_tokens` counts
  only the tokens after the last cache breakpoint; the prompt-caching
  documentation gives the prompt as that plus the tokens read from and
@@ -148,55 +126,22 @@ const USAGE_SERIES = [
 ] as const;
 
 /**
- Reads one string field off a parsed object.
- 
- @param fields - parsed object to read
- 
- @param name - field wanted
- 
- @returns Value, or empty when absent or not a string
- 
- @example
- ```ts
- const kind = stringField({ fields: frame, name: 'type', },);
- ```
- */
-function stringField(
-  {
-    fields,
-    name,
-  }: {
-    readonly fields: Readonly<Record<string, unknown>>;
-    readonly name: string;
-  },
-): string {
-  /**
-   Raw value under that name, of unknown type.
-   */
-  const value = fields[name];
-
-  if ((typeof value) !== 'string')
-    return '';
-  return value;
-}
-
-/**
  Records the token counts a usage block carried, ignoring absent ones.
-
+ 
  THE TWO FRAMES NEST IT DIFFERENTLY, which is why the holder is a parameter
  rather than read off the frame here. `message_delta` puts `usage` at the top
  level, while `message_start` puts it inside `message` alongside the model
  name and the null stop reason. Reading only the top level would silently drop
  every prompt-token count.
-
+ 
  A NULL IS ABSENT, not zero: OpenRouter's Messages endpoint opened with
  `cache_read_input_tokens: null` and closed with a count (captured
  2026-09-03), and the count is the one kept.
-
+ 
  @param holder - object that directly holds the `usage` block
-
+ 
  @param fold - accumulator to append to
-
+ 
  @example
  ```ts
  foldUsage({ holder: frame, fold, },);
@@ -265,15 +210,67 @@ function foldStart(
 }
 
 /**
+ Reads the text an answer-carrying delta must hold.
+ 
+ @param delta - delta descriptor of a frame that carries the answer
+ 
+ @param kind - delta type, which names the field
+ 
+ @param field - field the text rides in
+ 
+ @returns The fragment, empty only where the provider sent it empty
+ 
+ @throws {@link MalformedCompletionError} when the field is absent or not a string
+ 
+ @example
+ ```ts
+ const fragment = answerFragmentOf({ delta, kind: 'text_delta', field: 'text', },);
+ ```
+ */
+function answerFragmentOf(
+  {
+    delta,
+    kind,
+    field,
+  }: {
+    readonly delta: Readonly<Record<string, unknown>>;
+    readonly kind: 'text_delta' | 'input_json_delta';
+    readonly field: 'text' | 'partial_json';
+  },
+): string {
+  /**
+   Raw value under that field, of unknown type.
+   */
+  const value = delta[field];
+
+  if ((typeof value) !== 'string') {
+    throw new MalformedCompletionError({
+      detail: `anthropic ${kind} carries no ${field} string`,
+    },);
+  }
+  return value;
+}
+
+/**
  Folds one `content_block_delta` frame's answer text, if it carried any.
  
  READS BOTH `text_delta` AND `input_json_delta`, because a model asked for a
  tool answers in the second and a model asked for prose answers in the first,
  and this pipeline uses both shapes.
  
+ A FRAGMENT THE FRAME SHOULD HOLD AND DOES NOT REFUSES THE BODY (ledger B89).
+ The streaming documentation gives every such frame a `delta`, every
+ `text_delta` a `text` and every `input_json_delta` a `partial_json`;
+ folding past one returned the answer with a piece missing and nothing said,
+ which a prose answer then carried into a page. A delta of a type this
+ reader does not fold, a new one included, is passed over, and so is one
+ naming no type, which cannot be told from a type added later.
+ 
  @param frame - parsed delta frame
  
  @param fold - accumulator to append to
+ 
+ @throws {@link MalformedCompletionError} when the frame carries no delta, or an answer delta carries no text
  
  @example
  ```ts
@@ -293,8 +290,11 @@ function foldDelta(
    Delta descriptor the frame carried.
    */
   const { delta, } = frame;
-  if (!isJsonRecord(delta,))
-    return;
+  if (!isJsonRecord(delta,)) {
+    throw new MalformedCompletionError({
+      detail: 'anthropic content_block_delta frame carries no delta object',
+    },);
+  }
 
   /**
    Kind of delta, which names the field its text rides in.
@@ -304,20 +304,24 @@ function foldDelta(
     name: 'type',
   },);
 
-  if (kind === 'text_delta')
+  if (kind === 'text_delta') {
     fold
       .textParts
-      .push(stringField({
-      fields: delta,
-      name: 'text',
+      .push(answerFragmentOf({
+      delta,
+      kind,
+      field: 'text',
     },),);
-  if (kind === 'input_json_delta')
+  }
+  if (kind === 'input_json_delta') {
     fold
       .toolParts
-      .push(stringField({
-      fields: delta,
-      name: 'partial_json',
+      .push(answerFragmentOf({
+      delta,
+      kind,
+      field: 'partial_json',
     },),);
+  }
 }
 
 /**
@@ -383,16 +387,16 @@ type ReportedCounts = Readonly<Record<(typeof USAGE_SERIES)[number][1], readonly
 
 /**
  Reads a count series as the total it reports.
-
+ 
  THE LAST REPORT, because `message_delta` counts are cumulative (the
  streaming documentation's warning) and may repeat or update what
  `message_start` reported. Zero where the stream reported none: a stream
  reporting no cache field used no cache this reader can count.
-
+ 
  @param series - one count series, in arrival order
-
+ 
  @returns Its last report, zero when it holds none
-
+ 
  @example
  ```ts
  const fresh = latestOf({ series: counts.inputTokens, },);
@@ -404,11 +408,11 @@ function latestOf({ series, }: { readonly series: readonly number[]; },): number
 
 /**
  Usage fragment for the result, present only when the stream reported counts.
-
+ 
  @param counts - token counts the body reported, read only
-
+ 
  @returns Spreadable fragment carrying usage, or nothing
-
+ 
  @example
  ```ts
  const fragment = usageOf({ counts: fold, },);
@@ -464,235 +468,6 @@ function usageOf(
 }
 
 /**
- What one event payload reads as: a frame, or why it is not one.
-
- A DISCRIMINATED RESULT so the two readers of a body share one parse and
- still differ in what they do with a payload that is not a frame: the check
- for a whole message passes over it, and the fold refuses the body.
-
- @example
- ```ts
- const reading: FrameReading = { kind: 'not-object', };
- ```
- */
-type FrameReading =
-  | {
-    readonly kind: 'frame';
-
-    /**
-     Parsed frame, which carries its own `type`.
-     */
-    readonly frame: Readonly<Record<string, unknown>>;
-  }
-  | {
-    readonly kind: 'not-json';
-
-    /**
-     Parse failure, kept as the cause of any refusal.
-     */
-    readonly cause: unknown;
-  }
-  | { readonly kind: 'not-object'; };
-
-/**
- Reads one event payload as a frame.
-
- @param payload - one `data:` line's payload, already unwrapped
-
- @returns Frame, or why the payload is not one
-
- @example
- ```ts
- const reading = readFrame({ payload: '{"type":"ping"}', },);
- ```
- */
-function readFrame({ payload, }: { readonly payload: string; },): FrameReading {
-  try {
-    /**
-     Whatever the payload parsed to, before any shape is assumed.
-     */
-    const parsed: unknown = JSON.parse(payload,);
-
-    if (!isJsonRecord(parsed,))
-      return { kind: 'not-object', };
-    return {
-      kind: 'frame',
-      frame: parsed,
-    };
-  } catch (error) {
-    l.debug(`anthropic stream payload did not parse: ${errorName({ error, },)}`,);
-    return {
-      kind: 'not-json',
-      cause: error,
-    };
-  }
-}
-
-/**
- Whether a provider's error type reads as a protocol word: lower-case ASCII
- letters and underscores, as every documented type is spelled, and short.
-
- A TEST OF SHAPE RATHER THAN A LIST, so a type the provider adds later is
- still named, while text that is not a protocol word is never repeated in a
- refusal whose class promises to quote nothing from the body.
-
- @param text - error type as the frame gave it
-
- @returns Whether a refusal may repeat it
-
- @example
- ```ts
- isProtocolWord({ text: 'overloaded_error', },);
- ```
- */
-function isProtocolWord({ text, }: { readonly text: string; },): boolean {
-  if ((text.length === 0) || (text.length > ERROR_TYPE_LIMIT))
-    return false;
-  return Array.from(text,)
-    .every(function isWordCharacter(character,): boolean {
-    return (character === '_') || isAsciiLowerLetter({ character, },);
-  },);
-}
-
-/**
- Names the failure an error event reported, for the refusal that ends the
- call.
-
- @param frame - parsed error frame
-
- @returns Error type, or that the frame named none a refusal may repeat
-
- @example
- ```ts
- const named = errorTypeOf({ frame, },);
- ```
- */
-function errorTypeOf(
-  { frame, }: { readonly frame: Readonly<Record<string, unknown>>; },
-): string {
-  /**
-   Error descriptor the frame carried.
-   */
-  const { error, } = frame;
-  if (!isJsonRecord(error,))
-    return UNNAMED_ERROR;
-
-  /**
-   Type the descriptor names, empty when it names none.
-   */
-  const named = stringField({
-    fields: error,
-    name: 'type',
-  },);
-
-  return isProtocolWord({ text: named, },)
-    ? named
-    : UNNAMED_ERROR;
-}
-
-/**
- Refuses a body whose event stream did not end the way a whole message does:
- with a `message_stop` frame, and with no error event anywhere in it.
-
- SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO. A body that stops before
- `message_stop` is a transport failure wearing a success status: the HTTP
- exchange returned 200 and the message inside it is not whole. Reading it
- only after the retry had already returned meant the one failure this file
- calls a transport failure was the only one that never retried.
-
- ONE RULE IN ONE PLACE. `extractAnthropicCompletion` calls this rather than
- carrying its own copy, so the retry and the parse can never disagree about
- what a finished message looks like.
-
- THE TERMINATOR IS A FRAME OF THAT TYPE, read off the parse (ledger B87).
- Looking for the quoted word anywhere in a payload passed a body cut inside
- its last frame, after `{"type":"message_stop"` and before the closing
- brace, so the ladder returned it and the fold then refused it as not JSON,
- with no retry left to spend. It also passed any frame holding that word as
- a value, a tool's name for one.
-
- AN ERROR EVENT REFUSES THE MESSAGE even when a terminator follows it, and
- the refusal names its type. The provider said why it stopped; calling that
- a cut connection sent a reader to the network. Refused here, it is retried
- like a cut stream, which suits an overloaded or internal error; a request
- the provider called invalid is retried too, and that waste is left open in
- the ledger.
-
- ONLY THE ENDING IS READ. A frame elsewhere in the body that does not parse
- is the fold's to refuse, after the ladder: a body whose terminator arrived
- was delivered whole, and a frame inside it that cannot be read is read here
- as a formatting defect a retry would repeat and pay for again (an
- inference, not measured). `requireStreamTerminator`, the OpenAI-shaped
- sibling, reads the same scope.
-
- @param bodyText - whole drained body, as the transport returned it
-
- @throws {@link MalformedCompletionError} when an error event arrived or the terminator never did
-
- @example
- ```ts
- requireWholeAnthropicMessage({ bodyText, },);
- ```
- */
-export function requireWholeAnthropicMessage(
-  { bodyText, }: { readonly bodyText: string; },
-): void {
-  /**
-   Frames the body carried, in arrival order; payloads that are not frames
-   are passed over.
-   */
-  const frames = bodyText
-    .split('\n',)
-    .flatMap(function framesOf(rawLine,): readonly Readonly<Record<string, unknown>>[] {
-      /**
-       Payload of this line, empty for a line carrying no event.
-       */
-      const payload = ssePayloadOf({ line: rawLine, },);
-      if (payload === '')
-        return [];
-
-      /**
-       What that payload reads as.
-       */
-      const reading = readFrame({ payload, },);
-      return (reading.kind === 'frame')
-        ? [reading.frame,]
-        : [];
-    },);
-
-  /**
-   Type each frame declared, empty where it declared none.
-   */
-  const kinds = frames.map(function kindOf(frame,): string {
-    return stringField({
-      fields: frame,
-      name: 'type',
-    },);
-  },);
-
-  /**
-   First error event, when the provider sent one.
-   */
-  const failure = frames.find(function isFailure(frame,): boolean {
-    return stringField({
-      fields: frame,
-      name: 'type',
-    },) === ERROR_EVENT;
-  },);
-
-  if (failure !== undefined) {
-    throw new MalformedCompletionError({
-      detail: `anthropic stream carried an error event (${errorTypeOf({ frame: failure, },)})`,
-    },);
-  }
-  if (!kinds.includes(TERMINATOR,)) {
-    throw new MalformedCompletionError({
-      detail: `anthropic stream ended without ${TERMINATOR}`,
-    },);
-  }
-}
-
-/**
  Reassembles one drained Anthropic Messages body into a completion.
  
  @param bodyText - whole drained `text/event-stream` body
@@ -700,7 +475,7 @@ export function requireWholeAnthropicMessage(
  @returns Answer text, stop reason, and usage
  
  @throws {@link MalformedCompletionError} when an event is not JSON, an error event arrived, or `message_stop` never did
-
+ 
  @example
  ```ts
  const extracted = extractAnthropicCompletion({ bodyText: reply.bodyText, },);

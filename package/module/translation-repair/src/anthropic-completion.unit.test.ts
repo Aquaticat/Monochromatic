@@ -366,72 +366,6 @@ await describe({
     },),
 
     it({
-      name: 'CALLS AN ERROR UNNAMED rather than repeat a type that is not a protocol word: the '
-        + 'refusal promises to quote nothing from the body, and an absent, empty, spaced or '
-        + 'overlong type is text, not a name',
-      fn: async () => {
-        /**
-         Error descriptors whose type a refusal may not repeat, each with
-         the text that must stay out of it.
-         */
-        const unnamed = [
-          {
-            error: {
-              type: 'Over loaded',
-              message: 'Napping',
-            },
-            withheld: 'Over loaded',
-          },
-          {
-            error: {
-              type: '',
-              message: 'Napping',
-            },
-            withheld: '()',
-          },
-          {
-            error: {
-              type: 'a'.repeat(65,),
-              message: 'Napping',
-            },
-            withheld: 'a'.repeat(65,),
-          },
-          {
-            error: 'napping',
-            withheld: 'napping',
-          },
-        ];
-        for (const { error, withheld, } of unnamed) {
-          /**
-           Stream ending in this error event.
-           */
-          const bodyText = startOf({ inputTokens: 8, },)
-            + frameOf({
-              body: {
-                type: 'error',
-                error,
-              },
-            },);
-          expect(function errored() {
-            extractAnthropicCompletion({ bodyText, },);
-          },).toThrow('error event (unnamed)',);
-          /**
-           Refusal this stream raised, read for what it must not repeat.
-           */
-          const message = (function refusalOf(): string {
-            try {
-              extractAnthropicCompletion({ bodyText, },);
-              return '';
-            } catch (refusal) {
-              return String(refusal,);
-            }
-          })();
-          expect(message.includes(withheld,),).toBe(false,);
-        }
-      },
-    },),
-
-    it({
       name: 'REFUSES a content_block_delta frame that carries no delta, since the documentation '
         + 'gives every such frame one, and folding past it returned the answer with a piece '
         + 'missing and nothing said (ledger B89)',
@@ -515,6 +449,37 @@ await describe({
               },),
           },);
         },).toThrow(MalformedCompletionError,);
+      },
+    },),
+
+    it({
+      name: 'PASSES OVER a delta naming no type, or a type this reader does not fold, since either '
+        + 'may be one the provider added later and neither carries the answer',
+      fn: async () => {
+        expect(extractAnthropicCompletion({
+          bodyText: startOf({ inputTokens: 8, },)
+            + deltaOf({
+              deltaType: 'text_delta',
+              field: 'text',
+              text: 'Biscuit is smug.',
+            },)
+            + frameOf({
+              body: {
+                type: 'content_block_delta',
+                index: 0,
+                delta: { text: 'stray', },
+              },
+            },)
+            + deltaOf({
+              deltaType: 'citations_delta',
+              field: 'citation',
+              text: 'a whisker',
+            },)
+            + endOf({
+              stopReason: 'end_turn',
+              outputTokens: 4,
+            },),
+        },).text,).toBe('Biscuit is smug.',);
       },
     },),
 

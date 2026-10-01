@@ -2226,6 +2226,9 @@ as the name suggests,
 though Anthropic's documentation counts in it only the tokens after the last cache breakpoint
 and gives the prompt as that plus the tokens read from and written to the cache,
 so a cached call read as a short one (ledger B88).
+The same reader read a `text` or `partial_json` that was not a string as empty,
+and passed over a delta frame with no delta,
+so an answer came back with a piece missing and nothing said (ledger B89).
 
 The rule:
 a field on a provider's wire is read as the provider's current documentation defines it,
@@ -2235,7 +2238,18 @@ and a reader mapping one provider's fields onto another's shape
 states each mapping beside the documentation it follows.
 A gateway that serves one provider's format for another is read by the format's documentation,
 and a capture that cannot be checked against it says so where it is kept.
+A field the documentation makes part of a frame,
+and that carries the answer,
+is refused when absent or of the wrong type,
+as a frame that does not parse is refused;
+an empty string stands only for an empty fragment the provider sent.
+A frame of a kind the reader does not read is passed over,
+since the protocol may add kinds.
 
 What enforces it:
 habit and review;
-`anthropic-completion.unit.test.ts` holds a stream that reads and writes the cache.
+`anthropic-completion.unit.test.ts` holds a stream that reads and writes the cache,
+a delta frame with no delta,
+a text that is a number,
+a tool fragment with no `partial_json`,
+and the deltas still passed over.

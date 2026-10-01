@@ -2,10 +2,8 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
-import {
-  extractAnthropicCompletion,
-  requireWholeAnthropicMessage,
-} from './anthropic-completion.ts';
+import { extractAnthropicCompletion, } from './anthropic-completion.ts';
+import { requireWholeAnthropicMessage, } from './anthropic-whole-message.ts';
 import { buildAnthropicBody, } from './anthropic-request.ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import type {
