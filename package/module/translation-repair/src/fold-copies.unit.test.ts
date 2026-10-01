@@ -14,9 +14,12 @@
  `slice`, `toSpliced`, `toSorted`, `toReversed`, `with`, `flat`), a `Map` or
  `Set` built from one, and, where the fold starts from text, `+` with one.
  Inside a loop, an assignment whose value copies its own target the same
- ways. A spread inside a record is not read: a record of fixed fields costs
- the same at every step. Named exemptions state why a fold's copies are
- bounded or are its meaning.
+ ways, and a `set` on a map whose value copies what the map's `get` read,
+ directly or through a name bound to that read (`readCapLog` queued each
+ label's streams so until B73's batch). A path through `??` or `||` is read
+ from its left side. A spread inside a record is not read: a record of fixed
+ fields costs the same at every step. Named exemptions state why a fold's
+ copies are bounded or are its meaning.
 
  THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a
  scan shown able to find each kind (ledger M21). Fixtures are cat-themed;
@@ -164,6 +167,14 @@ function boundNames({ pattern, }: { readonly pattern: unknown; },): ReadonlySet<
 }
 
 /**
+ Operators whose left side is what a path names when it is there.
+ */
+const FALLBACK_OPERATORS: ReadonlySet<string> = new Set([
+  '??',
+  '||',
+],);
+
+/**
  Node kinds that wrap one expression without changing what it names.
  */
 const WRAPPER_KINDS: ReadonlySet<string> = new Set([
@@ -189,7 +200,28 @@ const WRAPPER_KINDS: ReadonlySet<string> = new Set([
 function innerOf({ node, }: { readonly node: TreeNode; },): unknown {
   if (node.type === 'MemberExpression')
     return node.object;
+  if (node.type === 'LogicalExpression')
+    return FALLBACK_OPERATORS.has(node.operator as string,) ? node.left : undefined;
   return WRAPPER_KINDS.has(node.type,) ? node.expression : undefined;
+}
+
+/**
+ The map a call reads an entry from.
+
+ @param node - call expression
+
+ @returns The path `get` is called on, nothing for any other call
+
+ @example
+ ```ts
+ const map = entryMapOf({ node: call, },); // waiting for waiting.get(label)
+ ```
+ */
+function entryMapOf({ node, }: { readonly node: TreeNode; },): unknown {
+  if ((!isTreeNode(node.callee,)) || (node.callee.type !== 'MemberExpression') || (node.callee.computed === true)
+    || (identifierName({ node: node.callee.property, },) !== 'get'))
+    return undefined;
+  return node.callee.object;
 }
 
 /**
@@ -208,6 +240,18 @@ function rootName({ node, }: { readonly node: unknown; },): string {
   for (let current = node; isTreeNode(current,); current = innerOf({ node: current, },)) {
     if (current.type === 'Identifier')
       return identifierName({ node: current, },);
+    if (current.type === 'CallExpression') {
+      /**
+       The map whose entry the call reads, when it reads one, named by its
+       own root.
+       */
+      const map = entryMapOf({ node: current, },);
+      /**
+       The name that map's path is rooted at.
+       */
+      const mapName = isTreeNode(map,) ? rootName({ node: map, },) : '';
+      return (mapName === '') ? '' : `${mapName}.get`;
+    }
   }
   return '';
 }
@@ -322,6 +366,102 @@ function foldOf({ node, }: { readonly node: TreeNode; },): readonly { readonly c
 }
 
 /**
+ Names a program binds to an entry read from a map, each with that map's
+ name.
+
+ @param program - parsed program
+
+ @returns The map each such name was read from
+
+ @example
+ ```ts
+ const entryNames = entryBindings({ program, },); // queue → waiting for const queue = waiting.get(model) ?? [];
+ ```
+ */
+function entryBindings({ program, }: { readonly program: TreeNode; },): ReadonlyMap<string, string> {
+  /**
+   Bindings found so far.
+   */
+  const bound = new Map<string, string>();
+  /**
+   Nodes still to visit.
+   */
+  const pending: TreeNode[] = [program,];
+  while (pending.length > 0) {
+    /**
+     Node visited now.
+     */
+    const node = pending.pop() as TreeNode;
+    pending.push(...childNodes({ node, },),);
+    if (node.type !== 'VariableDeclarator')
+      continue;
+    /**
+     What the binding reads, as `map.get` when it reads a map's entry.
+     */
+    const read = rootName({ node: node.init, },);
+    /**
+     The name bound.
+     */
+    const name = identifierName({ node: node.id, },);
+    if (read.endsWith('.get',) && (name !== ''))
+      bound.set(name, read.slice(0, -'.get'.length,),);
+  }
+  return bound;
+}
+
+/**
+ The map a `set` call writes a copy of its own entry into.
+
+ @param node - call expression
+
+ @param entryNames - names bound to an entry read from a map, each with that map's name
+
+ @returns The map's name, empty when the call sets no such copy
+
+ @example
+ ```ts
+ const map = entryCopied({ node, entryNames, },); // 'waiting' for waiting.set(label, [...(waiting.get(label) ?? []), line])
+ ```
+ */
+function entryCopied(
+  {
+    node,
+    entryNames,
+  }: {
+    readonly node: TreeNode;
+    readonly entryNames: ReadonlyMap<string, string>;
+  },
+): string {
+  if ((node.type !== 'CallExpression') || (!isTreeNode(node.callee,)) || (node.callee.type !== 'MemberExpression')
+    || (node.callee.computed === true) || (identifierName({ node: node.callee.property, },) !== 'set'))
+    return '';
+  /**
+   The map written, by the name its path is rooted at.
+   */
+  const map = rootName({ node: node.callee.object, },);
+  /**
+   The value written.
+   */
+  const [, value,] = node.arguments as readonly unknown[];
+  if ((map === '') || (!isTreeNode(value,)))
+    return '';
+  /**
+   Names standing for the entry read from that map: its `get`, and every name bound to one.
+   */
+  const names = new Set([
+    `${map}.get`,
+    ...[...entryNames,]
+      .filter(function readsMap([, from,],): boolean {
+        return from === map;
+      },)
+      .map(function nameOf([name,],): string {
+        return name;
+      },),
+  ],);
+  return copiesAny({ root: value, names, textFold: false, },) ? map : '';
+}
+
+/**
  Folds and loops in the package's source that copy what they build, as
  `path#site: names`.
 
@@ -346,6 +486,10 @@ function foldCopies({ files, }: { readonly files: readonly SourceText[]; },): re
      The parsed file.
      */
     const { program, } = parseSource({ file, },);
+    /**
+     Names the file binds to an entry read from a map.
+     */
+    const entryNames = entryBindings({ program, },);
     /**
      Nodes still to visit, each with its enclosing named function and loop depth.
      */
@@ -395,6 +539,13 @@ function foldCopies({ files, }: { readonly files: readonly SourceText[]; },): re
           found.add(`${file.path}#${site}/${callbackName}: ${[...names,].join(', ',)}`,);
         }
       }
+      /**
+       The map whose entry the node sets to a copy of itself inside a loop,
+       empty for any other node.
+       */
+      const copiedMap = (loops === 0) ? '' : entryCopied({ node, entryNames, },);
+      if (copiedMap !== '')
+        found.add(`${file.path}#${site}: ${copiedMap} entry`,);
       if ((node.type !== 'AssignmentExpression') || (node.operator !== '=') || (loops === 0))
         continue;
       /**
@@ -448,8 +599,10 @@ await describe({
   children: [
     it({
       name: 'FINDS a fold copying its list by spread, through a field, through a destructured name, by concat, '
-        + 'by slice, by toSpliced and into a Set, text grown by + from a text start, and a loop reassigning a '
-        + 'copy of itself, and leaves a sum, an appending fold, a record fold, a copy outside any loop, and tests',
+        + 'by slice, by toSpliced and into a Set, text grown by + from a text start, a loop reassigning a '
+        + 'copy of itself, and a loop setting a map entry to a copy of what it read there, directly or through '
+        + 'a name, and leaves a sum, an appending fold, a record fold, an entry appended in place, a copy '
+        + 'outside any loop, and tests',
       fn: async () => {
         expect(foldCopies({
           files: [
@@ -471,6 +624,10 @@ await describe({
                 'export function pushed() { return cats.reduce(function push(acc: string[], cat) { acc.push(cat); return acc; }, []); }',
                 'export function tally() { return cats.reduce(function count(acc: { n: number }, cat) { return { ...acc, n: acc.n + cat.length }; }, { n: 0 }); }',
                 'export function once() { let pile: string[] = []; pile = [...pile, \'tabby\']; return pile; }',
+                'export function grouped() { const byCat = new Map<string, string[]>(); for (const cat of cats) byCat.set(cat[0], [...(byCat.get(cat[0]) ?? []), cat]); return byCat; }',
+                'export function shed() { const left = new Map<string, string[]>(); for (const cat of cats) { const pile = left.get(cat) ?? []; left.set(cat, pile.toSpliced(0, 1)); } return left; }',
+                'export function appended() { const byCat = new Map<string, string[]>(); for (const cat of cats) { const bed = byCat.get(cat[0]); if (bed === undefined) byCat.set(cat[0], [cat]); else bed.push(cat); } return byCat; }',
+                'export function seeded() { const box = new Map<string, string[]>(); box.set(\'a\', [...(box.get(\'a\') ?? []), \'tabby\']); return box; }',
               ].join('\n',),
               isTest: false,
             },),
@@ -483,12 +640,14 @@ await describe({
         },),).toEqual([
           'cat.ts#distinct/keep: acc',
           'cat.ts#dropped/drop: state',
+          'cat.ts#grouped: byCat entry',
           'cat.ts#joined/join: acc',
           'cat.ts#line/queue: acc',
           'cat.ts#named/purr: acc',
           'cat.ts#nearest/scan: state',
           'cat.ts#rebuilt: pile',
           'cat.ts#seen/note: names',
+          'cat.ts#shed: left entry',
           'cat.ts#spliced/cut: current',
           'cat.ts#trimmed: run',
         ],);
