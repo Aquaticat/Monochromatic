@@ -514,6 +514,37 @@ await describe({
     },),
 
     it({
+      name: 'NAMES A PICTURE WITH NO TEXT AS `carries no text`, a fact about the picture rather than a '
+        + 'shortfall, and renders nothing about it in context, since most of this corpus\'s pictures are '
+        + 'photographs and a finding worded as missing evidence would send a reader looking for it',
+      fn: async () => {
+        /**
+         What one slice naming a textless picture resolves to.
+         */
+        const rendered = slicePictures({
+          slices: [sliceOf({
+            text: `She dozes on the warm stones.\n\n`
+              + `${photoElement({ assetNames: ['stones.webp',], },)}\n`,
+            sliceIndex: 0,
+          },),],
+          slicePosition: 0,
+          readings: new Map<string, PairedReading>([
+            [
+              'stones.webp',
+              {
+                kind: 'no-text',
+                characters: 0,
+              },
+            ],
+          ],),
+        },);
+
+        expect(rendered.context,).toBe('',);
+        expect(rendered.findings,).toEqual(['picture stones.webp: carries no text',],);
+      },
+    },),
+
+    it({
       name: 'RENDERS AN EMPTY CONTEXT AND NO FINDINGS FOR A SLICE THAT SHOWS NO PICTURES, '
         + 'which is most slices in the corpus',
       fn: async () => {

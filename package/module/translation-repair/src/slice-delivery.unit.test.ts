@@ -17,6 +17,7 @@ import {
   type LaneSliceText,
   makeInsertionChunk,
   SliceDeliveryError,
+  type SliceDeliveryFault,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -221,6 +222,31 @@ function anchoredWordings(
   ];
 }
 
+/**
+ Reads the fault a ledger build's refusal names, after checking it is a
+ delivery refusal at all.
+ 
+ THE FAULT RATHER THAN A FRAGMENT OF THE MESSAGE, since every check here throws
+ the same class and a fragment can match more than one sentence.
+ 
+ @param build - call that should refuse
+ 
+ @returns Fault the refusal carries
+ 
+ @example
+ ```ts
+ const fault = deliveryFault({ build: function build() { buildSliceDelivery({ ... },); }, },);
+ ```
+ */
+function deliveryFault({ build, }: { readonly build: () => void; },): SliceDeliveryFault {
+  /**
+   What the build threw.
+   */
+  const refusal = caught(build,);
+  expect(refusal,).toBeInstanceOf(SliceDeliveryError,);
+  return (refusal as SliceDeliveryError).fault;
+}
+
 await describe({
   name: buildSliceDelivery.name,
   children: [
@@ -254,14 +280,21 @@ await describe({
     it({
       name: 'REFUSES a trimmed replacement naming a slice the document does not ship',
       fn: async () => {
-        expect(() => buildSliceDelivery({
-          slices: preparedSlices(),
-          wordings: laneWordings({ decided: new Map([[0, 'The cat is asleep.',],],), },),
-          changedSliceIndices: [0,],
-          withdrawnSliceIndices: [],
-          trimmedReplacements: [{ sliceIndex: 1, replacementText: 'The cat eats well.', },],
-          blocked: false,
-        },),).toThrow(SliceDeliveryError,);
+        expect(deliveryFault({
+          build: function trimsUnshipped() {
+            buildSliceDelivery({
+              slices: preparedSlices(),
+              wordings: laneWordings({ decided: new Map([[0, 'The cat is asleep.',],],), },),
+              changedSliceIndices: [0,],
+              withdrawnSliceIndices: [],
+              trimmedReplacements: [{ sliceIndex: 1, replacementText: 'The cat eats well.', },],
+              blocked: false,
+            },);
+          },
+        },),).toEqual({
+          kind: 'trim-names-unshipped',
+          sliceIndex: 1,
+        },);
       },
     },),
     it({
@@ -411,7 +444,7 @@ await describe({
         + 'is the state where nothing says what the document carries there',
       fn: async () => {
         /**
-         What unstatedSlice raised, read for its class as well as its wording.
+         What unstatedSlice raised, read for its class and the fault it names.
          */
         const refusalOfUnstatedSlice = caught(function unstatedSlice() {
           buildSliceDelivery({
@@ -430,7 +463,10 @@ await describe({
         },);
 
         expect(refusalOfUnstatedSlice,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfUnstatedSlice as Error).message,).toContain('is unstated',);
+        expect((refusalOfUnstatedSlice as SliceDeliveryError).fault,).toEqual({
+          kind: 'decided-unstated',
+          sliceIndex: 0,
+        },);
       },
     },),
     it({
@@ -438,7 +474,7 @@ await describe({
         + 'that the lane never reached: each says the document carries a change nobody made',
       fn: async () => {
         /**
-         What shippedWithoutChange raised, read for its class as well as its wording.
+         What shippedWithoutChange raised, read for its class and the fault it names.
          */
         const refusalOfShippedWithoutChange = caught(function shippedWithoutChange() {
           buildSliceDelivery({
@@ -451,9 +487,12 @@ await describe({
         },);
 
         expect(refusalOfShippedWithoutChange,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfShippedWithoutChange as Error).message,).toContain('a change nobody made',);
+        expect((refusalOfShippedWithoutChange as SliceDeliveryError).fault,).toEqual({
+          kind: 'shipped-archive-wording',
+          sliceIndex: 0,
+        },);
         /**
-         What shippedWithoutDecision raised, read for its class as well as its wording.
+         What shippedWithoutDecision raised, read for its class and the fault it names.
          */
         const refusalOfShippedWithoutDecision = caught(function shippedWithoutDecision() {
           buildSliceDelivery({
@@ -471,7 +510,33 @@ await describe({
         },);
 
         expect(refusalOfShippedWithoutDecision,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfShippedWithoutDecision as Error).message,).toContain('both did and did not reach it',);
+        expect((refusalOfShippedWithoutDecision as SliceDeliveryError).fault,).toEqual({
+          kind: 'named-without-decision',
+          sliceIndex: 0,
+          set: 'shipped',
+        },);
+        // THE OTHER SET, named on a slice the lane never reached: the refusal
+        // names which set did it.
+        expect(deliveryFault({
+          build: function withdrawnWithoutDecision() {
+            buildSliceDelivery({
+              slices: preparedSlices(),
+              wordings: laneWordings({
+                decided: new Map([
+                  [0, INCUMBENTS[0],],
+                  [2, INCUMBENTS[2],],
+                ],),
+              },),
+              changedSliceIndices: [],
+              withdrawnSliceIndices: [1,],
+              blocked: false,
+            },);
+          },
+        },),).toEqual({
+          kind: 'named-without-decision',
+          sliceIndex: 1,
+          set: 'withdrawn',
+        },);
       },
     },),
     it({
@@ -480,7 +545,7 @@ await describe({
         + 'lane`s slice against another`s while the two name different passages',
       fn: async () => {
         /**
-         What shortWordings raised, read for its class as well as its wording.
+         What shortWordings raised, read for its class and the fault it names.
          */
         const refusalOfShortWordings = caught(function shortWordings() {
           buildSliceDelivery({
@@ -497,9 +562,13 @@ await describe({
         },);
 
         expect(refusalOfShortWordings,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfShortWordings as Error).message,).toContain('different preparations',);
+        expect((refusalOfShortWordings as SliceDeliveryError).fault,).toEqual({
+          kind: 'wording-count',
+          wordings: 2,
+          slices: 3,
+        },);
         /**
-         What outOfRangeIndex raised, read for its class as well as its wording.
+         What outOfRangeIndex raised, read for its class and the fault it names.
          */
         const refusalOfOutOfRangeIndex = caught(function outOfRangeIndex() {
           buildSliceDelivery({
@@ -512,31 +581,118 @@ await describe({
         },);
 
         expect(refusalOfOutOfRangeIndex,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfOutOfRangeIndex as Error).message,).toContain('this preparation of 3 slices never produced',);
+        expect((refusalOfOutOfRangeIndex as SliceDeliveryError).fault,).toEqual({
+          kind: 'set-names-unproduced',
+          sliceIndex: 7,
+          sliceCount: 3,
+        },);
 
         /** Wordings whose archive text was taken from another document. */
         const drifted = laneWordings({ decided: everySliceUnchanged(), },)
           .map(function toDrifted(
             wording,
             position,
-          ) {
+          ): LaneSliceText {
             return (position === 1)
               ? {
                 ...wording,
                 incumbentText: 'The cat dines.',
-                acceptedText: 'The cat dines.',
+                outcome: {
+                  kind: 'decided',
+                  acceptedText: 'The cat dines.',
+                },
               }
               : wording;
           },);
-        expect(function driftedIncumbent() {
+        expect(deliveryFault({
+          build: function driftedIncumbent() {
+            buildSliceDelivery({
+              slices: preparedSlices(),
+              wordings: drifted,
+              changedSliceIndices: [],
+              withdrawnSliceIndices: [],
+              blocked: false,
+            },);
+          },
+        },),).toEqual({
+          kind: 'archive-wording-differs',
+          sliceIndex: 1,
+        },);
+
+        /** Wordings whose second names the third slice. */
+        const shifted = laneWordings({ decided: everySliceUnchanged(), },)
+          .map(function toShifted(
+            wording,
+            position,
+          ): LaneSliceText {
+            return (position === 1)
+              ? {
+                ...wording,
+                sliceIndex: 2,
+              }
+              : wording;
+          },);
+        expect(deliveryFault({
+          build: function shiftedIndex() {
+            buildSliceDelivery({
+              slices: preparedSlices(),
+              wordings: shifted,
+              changedSliceIndices: [],
+              withdrawnSliceIndices: [],
+              blocked: false,
+            },);
+          },
+        },),).toEqual({
+          kind: 'wording-index-differs',
+          position: 1,
+          sliceIndex: 1,
+          wordingIndex: 2,
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a record that calls the archive present at an anchor, whose prepared chunk names a place and '
+        + 'carries no wording, and words it plainly: the lane record and the preparation disagree about whether '
+        + 'the archive translated that passage at all',
+      fn: async () => {
+        /**
+         Anchored wordings whose anchor claims archive wording, with the same
+         empty text the anchor carries, so only the kind disagrees.
+         */
+        const claimed = anchoredWordings({ anchorNotApplicable: false, },)
+          .map(function toClaimed(
+            wording,
+            position,
+          ): LaneSliceText {
+            return (position === 1)
+              ? {
+                ...wording,
+                incumbentKind: 'present',
+              }
+              : wording;
+          },);
+
+        /**
+         What the build raised.
+         */
+        const refusal = caught(function claimsArchiveAtAnchor() {
           buildSliceDelivery({
-            slices: preparedSlices(),
-            wordings: drifted,
+            slices: anchoredSlices(),
+            wordings: claimed,
             changedSliceIndices: [],
             withdrawnSliceIndices: [],
             blocked: false,
           },);
-        },).toThrow(SliceDeliveryError,);
+        },);
+        expect(refusal,).toBeInstanceOf(SliceDeliveryError,);
+        expect((refusal as SliceDeliveryError).fault,).toEqual({
+          kind: 'incumbent-kind-differs',
+          sliceIndex: 1,
+          recorded: 'present',
+        },);
+        expect((refusal as SliceDeliveryError).message,).toBe(
+          'slice 1\'s lane record says archive wording is present there, and its prepared chunk says the opposite',
+        );
       },
     },),
 
@@ -547,7 +703,7 @@ await describe({
         + 'the count nor the ledger showed it',
       fn: async () => {
         /**
-         What shippedTwice raised, read for its class as well as its wording.
+         What shippedTwice raised, read for its class and the fault it names.
          */
         const refusalOfShippedTwice = caught(function shippedTwice() {
           buildSliceDelivery({
@@ -568,9 +724,14 @@ await describe({
         },);
 
         expect(refusalOfShippedTwice,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfShippedTwice as Error).message,).toContain('counts at least one slice twice',);
+        expect((refusalOfShippedTwice as SliceDeliveryError).fault,).toEqual({
+          kind: 'set-repeats',
+          set: 'shipped',
+          named: 2,
+          distinct: 1,
+        },);
         /**
-         What withdrawnTwice raised, read for its class as well as its wording.
+         What withdrawnTwice raised, read for its class and the fault it names.
          */
         const refusalOfWithdrawnTwice = caught(function withdrawnTwice() {
           buildSliceDelivery({
@@ -591,7 +752,12 @@ await describe({
         },);
 
         expect(refusalOfWithdrawnTwice,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfWithdrawnTwice as Error).message,).toContain('counts at least one slice twice',);
+        expect((refusalOfWithdrawnTwice as SliceDeliveryError).fault,).toEqual({
+          kind: 'set-repeats',
+          set: 'withdrawn',
+          named: 2,
+          distinct: 1,
+        },);
       },
     },),
 
@@ -601,7 +767,7 @@ await describe({
         + 'had taken back as one the document carries',
       fn: async () => {
         /**
-         What shippedAndWithdrawn raised, read for its class as well as its wording.
+         What shippedAndWithdrawn raised, read for its class and the fault it names.
          */
         const refusalOfShippedAndWithdrawn = caught(function shippedAndWithdrawn() {
           buildSliceDelivery({
@@ -619,7 +785,10 @@ await describe({
         },);
 
         expect(refusalOfShippedAndWithdrawn,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfShippedAndWithdrawn as Error).message,).toContain('both shipped and withdrawn',);
+        expect((refusalOfShippedAndWithdrawn as SliceDeliveryError).fault,).toEqual({
+          kind: 'both-shipped-and-withdrawn',
+          sliceIndex: 2,
+        },);
       },
     },),
 
@@ -630,7 +799,7 @@ await describe({
         + 'the slice alone',
       fn: async () => {
         /**
-         What withdrewNothing raised, read for its class as well as its wording.
+         What withdrewNothing raised, read for its class and the fault it names.
          */
         const refusalOfWithdrewNothing = caught(function withdrewNothing() {
           buildSliceDelivery({
@@ -643,7 +812,10 @@ await describe({
         },);
 
         expect(refusalOfWithdrewNothing,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfWithdrewNothing as Error).message,).toContain('no replacement for assembly to take back',);
+        expect((refusalOfWithdrewNothing as SliceDeliveryError).fault,).toEqual({
+          kind: 'withdrawn-archive-wording',
+          sliceIndex: 1,
+        },);
       },
     },),
 
@@ -653,7 +825,7 @@ await describe({
         + 'those are the two events a reader counting integrity damage has to tell apart',
       fn: async () => {
         /**
-         What withdrewWhileBlocked raised, read for its class as well as its wording.
+         What withdrewWhileBlocked raised, read for its class and the fault it names.
          */
         const refusalOfWithdrewWhileBlocked = caught(function withdrewWhileBlocked() {
           buildSliceDelivery({
@@ -668,7 +840,10 @@ await describe({
         },);
 
         expect(refusalOfWithdrewWhileBlocked,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfWithdrewWhileBlocked as Error).message,).toContain('without assembling anything',);
+        expect((refusalOfWithdrewWhileBlocked as SliceDeliveryError).fault,).toEqual({
+          kind: 'withdrawn-on-blocked',
+          sliceIndex: 0,
+        },);
       },
     },),
 
@@ -678,7 +853,7 @@ await describe({
         + 'seen, and the ledger would report the run delivering work it explicitly refused to deliver',
       fn: async () => {
         /**
-         What shippedWhileBlocked raised, read for its class as well as its wording.
+         What shippedWhileBlocked raised, read for its class and the fault it names.
          */
         const refusalOfShippedWhileBlocked = caught(function shippedWhileBlocked() {
           buildSliceDelivery({
@@ -693,7 +868,10 @@ await describe({
         },);
 
         expect(refusalOfShippedWhileBlocked,).toBeInstanceOf(SliceDeliveryError,);
-        expect((refusalOfShippedWhileBlocked as Error).message,).toContain('shipped by a blocked run',);
+        expect((refusalOfShippedWhileBlocked as SliceDeliveryError).fault,).toEqual({
+          kind: 'shipped-on-blocked',
+          sliceIndex: 0,
+        },);
       },
     },),
     it({

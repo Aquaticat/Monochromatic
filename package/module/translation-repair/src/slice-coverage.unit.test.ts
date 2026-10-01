@@ -12,6 +12,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -19,6 +20,7 @@ import {
 import {
   assertSliceCoverage,
   SliceCoverageError,
+  type SliceCoverageFault,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -142,6 +144,31 @@ const SECOND_RENDERING = blockNode({
 },);
 
 /**
+ Reads the fault a carving's refusal names, after checking it is a coverage
+ refusal at all.
+ 
+ THE FAULT RATHER THAN THE CLASS ALONE, since every check here throws the
+ same class: a case asserting the class passes whichever check fired.
+ 
+ @param carve - call that should refuse
+ 
+ @returns Fault the refusal carries
+ 
+ @example
+ ```ts
+ const fault = coverageFault({ carve: function carve() { assertSliceCoverage({ pair: PAIR, carved: [], },); }, },);
+ ```
+ */
+function coverageFault({ carve, }: { readonly carve: () => void; },): SliceCoverageFault {
+  /**
+   What the carving threw.
+   */
+  const refusal = caught(carve,);
+  expect(refusal,).toBeInstanceOf(SliceCoverageError,);
+  return (refusal as SliceCoverageError).fault;
+}
+
+/**
  The pair every carving here was carved from.
  */
 const PAIR = {
@@ -192,7 +219,167 @@ await describe({
         // THE PRODUCTION FAILURE, reduced: the last original is simply absent
         // from every slice. Nothing else about the carving is wrong, which is
         // why no other check in the pipeline can see it.
-        expect(function losesTheLastBlock() {
+        expect(coverageFault({
+          carve: function losesTheLastBlock() {
+            assertSliceCoverage({
+              pair: PAIR,
+              carved: [
+                {
+                  source: chunkSide({
+                    nodes: [
+                      FIRST_ORIGINAL,
+                      SECOND_ORIGINAL,
+                    ],
+                  },),
+                  target: chunkSide({
+                    nodes: [
+                      FIRST_RENDERING,
+                      SECOND_RENDERING,
+                    ],
+                  },),
+                },
+              ],
+            },);
+          },
+        },),).toEqual({
+          kind: 'placement',
+          sliceIndex: 0,
+          side: 'source',
+          placement: {
+            kind: 'missing',
+            missing: ['block/2',],
+            expected: 3,
+          },
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a carving that places one block into two slices',
+      fn: async () => {
+        // A REPEAT IS NOT MERELY UNTIDY: the grouper measures characters per
+        // step, so a block counted twice inflates a run past its budget and
+        // cuts the document somewhere it should not.
+        expect(coverageFault({
+          carve: function repeatsABlock() {
+            assertSliceCoverage({
+              pair: PAIR,
+              carved: [
+                {
+                  source: chunkSide({
+                    nodes: [
+                      FIRST_ORIGINAL,
+                      SECOND_ORIGINAL,
+                    ],
+                  },),
+                  target: chunkSide({ nodes: [FIRST_RENDERING,], },),
+                },
+                {
+                  source: chunkSide({
+                    nodes: [
+                      SECOND_ORIGINAL,
+                      THIRD_ORIGINAL,
+                    ],
+                  },),
+                  target: chunkSide({ nodes: [SECOND_RENDERING,], },),
+                },
+              ],
+            },);
+          },
+        },),).toEqual({
+          kind: 'placement',
+          sliceIndex: 0,
+          side: 'source',
+          placement: {
+            kind: 'repeated',
+            repeated: ['block/1',],
+          },
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a carving that reorders the blocks it places',
+      fn: async () => {
+        // OUT OF ORDER means one slice gathers text from two places in the
+        // document, which reads as a coherent passage and is not one.
+        expect(coverageFault({
+          carve: function reordersBlocks() {
+            assertSliceCoverage({
+              pair: PAIR,
+              carved: [
+                {
+                  source: chunkSide({
+                    nodes: [
+                      THIRD_ORIGINAL,
+                      FIRST_ORIGINAL,
+                    ],
+                  },),
+                  target: chunkSide({ nodes: [FIRST_RENDERING,], },),
+                },
+                {
+                  source: chunkSide({ nodes: [SECOND_ORIGINAL,], },),
+                  target: chunkSide({ nodes: [SECOND_RENDERING,], },),
+                },
+              ],
+            },);
+          },
+        },),).toEqual({
+          kind: 'placement',
+          sliceIndex: 0,
+          side: 'source',
+          placement: {
+            kind: 'out-of-order',
+            placed: [
+              'block/2',
+              'block/0',
+              'block/1',
+            ],
+          },
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a rendering dropped while the originals are whole',
+      fn: async () => {
+        // CHECKED PER SIDE. A carving can keep every original and still lose a
+        // rendering, and losing one deletes shipped English just as surely.
+        expect(coverageFault({
+          carve: function losesARendering() {
+            assertSliceCoverage({
+              pair: PAIR,
+              carved: [
+                {
+                  source: chunkSide({
+                    nodes: [
+                      FIRST_ORIGINAL,
+                      SECOND_ORIGINAL,
+                      THIRD_ORIGINAL,
+                    ],
+                  },),
+                  target: chunkSide({ nodes: [FIRST_RENDERING,], },),
+                },
+              ],
+            },);
+          },
+        },),).toEqual({
+          kind: 'placement',
+          sliceIndex: 0,
+          side: 'target',
+          placement: {
+            kind: 'missing',
+            missing: ['block/1',],
+            expected: 2,
+          },
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES a carving that places translation blocks the pairing declined, and words it with the '
+        + 'ids, since two parts of the preparation then disagree about where those blocks went',
+      fn: async () => {
+        /**
+         Refusal of a carving placing both renderings the pairing declined.
+         */
+        const refusal = caught(function placesDeclined() {
           assertSliceCoverage({
             pair: PAIR,
             carved: [
@@ -201,6 +388,7 @@ await describe({
                   nodes: [
                     FIRST_ORIGINAL,
                     SECOND_ORIGINAL,
+                    THIRD_ORIGINAL,
                   ],
                 },),
                 target: chunkSide({
@@ -211,92 +399,92 @@ await describe({
                 },),
               },
             ],
+            declined: new Set([
+              'block/0',
+              'block/1',
+            ],),
           },);
-        },).toThrow(SliceCoverageError,);
+        },);
+        expect(refusal,).toBeInstanceOf(SliceCoverageError,);
+        expect((refusal as SliceCoverageError).fault,).toEqual({
+          kind: 'declined-reached',
+          sliceIndex: 0,
+          contradicted: [
+            'block/0',
+            'block/1',
+          ],
+        },);
+        expect((refusal as SliceCoverageError).message,)
+          .toBe('slicing chunk 0: target 2 declined blocks reached a slice: block/0, block/1',);
       },
     },),
     it({
-      name: 'REFUSES a carving that places one block into two slices',
+      name: 'REFUSES a carving that places blocks the archive\'s note sealed, on either side, and names the side, '
+        + 'since a sealed block ships as it stands and reaches no slice by the owner\'s rule of 2026-09-08',
       fn: async () => {
-        // A REPEAT IS NOT MERELY UNTIDY: the grouper measures characters per
-        // step, so a block counted twice inflates a run past its budget and
-        // cuts the document somewhere it should not.
-        expect(function repeatsABlock() {
+        /**
+         Carving that places every block of the pair once.
+         */
+        const whole = [
+          {
+            source: chunkSide({
+              nodes: [
+                FIRST_ORIGINAL,
+                SECOND_ORIGINAL,
+                THIRD_ORIGINAL,
+              ],
+            },),
+            target: chunkSide({
+              nodes: [
+                FIRST_RENDERING,
+                SECOND_RENDERING,
+              ],
+            },),
+          },
+        ];
+
+        /**
+         Refusal when two sealed originals reach the slice.
+         */
+        const sourceRefusal = caught(function placesSealedOriginals() {
           assertSliceCoverage({
             pair: PAIR,
-            carved: [
-              {
-                source: chunkSide({
-                  nodes: [
-                    FIRST_ORIGINAL,
-                    SECOND_ORIGINAL,
-                  ],
-                },),
-                target: chunkSide({ nodes: [FIRST_RENDERING,], },),
-              },
-              {
-                source: chunkSide({
-                  nodes: [
-                    SECOND_ORIGINAL,
-                    THIRD_ORIGINAL,
-                  ],
-                },),
-                target: chunkSide({ nodes: [SECOND_RENDERING,], },),
-              },
-            ],
+            carved: whole,
+            sealed: {
+              source: new Set([
+                'block/0',
+                'block/1',
+              ],),
+              target: new Set<string>(),
+            },
           },);
-        },).toThrow(SliceCoverageError,);
-      },
-    },),
-    it({
-      name: 'REFUSES a carving that reorders the blocks it places',
-      fn: async () => {
-        // OUT OF ORDER means one slice gathers text from two places in the
-        // document, which reads as a coherent passage and is not one.
-        expect(function reordersBlocks() {
-          assertSliceCoverage({
-            pair: PAIR,
-            carved: [
-              {
-                source: chunkSide({
-                  nodes: [
-                    THIRD_ORIGINAL,
-                    FIRST_ORIGINAL,
-                  ],
-                },),
-                target: chunkSide({ nodes: [FIRST_RENDERING,], },),
+        },);
+        expect(sourceRefusal,).toBeInstanceOf(SliceCoverageError,);
+        expect((sourceRefusal as SliceCoverageError).message,)
+          .toBe('slicing chunk 0: source 2 sealed blocks reached a slice: block/0, block/1',);
+        expect(coverageFault({
+          carve: function placesSealedRenderings() {
+            assertSliceCoverage({
+              pair: PAIR,
+              carved: whole,
+              sealed: {
+                source: new Set<string>(),
+                target: new Set([
+                  'block/0',
+                  'block/1',
+                ],),
               },
-              {
-                source: chunkSide({ nodes: [SECOND_ORIGINAL,], },),
-                target: chunkSide({ nodes: [SECOND_RENDERING,], },),
-              },
-            ],
-          },);
-        },).toThrow(SliceCoverageError,);
-      },
-    },),
-    it({
-      name: 'REFUSES a rendering dropped while the originals are whole',
-      fn: async () => {
-        // CHECKED PER SIDE. A carving can keep every original and still lose a
-        // rendering, and losing one deletes shipped English just as surely.
-        expect(function losesARendering() {
-          assertSliceCoverage({
-            pair: PAIR,
-            carved: [
-              {
-                source: chunkSide({
-                  nodes: [
-                    FIRST_ORIGINAL,
-                    SECOND_ORIGINAL,
-                    THIRD_ORIGINAL,
-                  ],
-                },),
-                target: chunkSide({ nodes: [FIRST_RENDERING,], },),
-              },
-            ],
-          },);
-        },).toThrow(SliceCoverageError,);
+            },);
+          },
+        },),).toEqual({
+          kind: 'sealed-reached',
+          sliceIndex: 0,
+          side: 'target',
+          contradicted: [
+            'block/0',
+            'block/1',
+          ],
+        },);
       },
     },),
     it({
