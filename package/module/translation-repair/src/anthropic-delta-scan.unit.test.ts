@@ -346,6 +346,25 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES to emit anything for a delta type it does not read inside a THINKING BLOCK, '
+        + 'where the block once claimed it as reasoning and its text was read from the field '
+        + 'named by the empty string (ledger B91)',
+      fn: async () => {
+        expect(scanAll({
+          raw: blockStart({
+            index: 0,
+            type: 'thinking',
+          },) + blockDelta({
+            index: 0,
+            deltaType: 'signature_delta',
+            field: '',
+            text: 'a pawprint',
+          },),
+        },).length,).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'REASSEMBLES a frame split across two chunks, since a chunk boundary lands wherever '
         + 'the network puts it and routinely falls inside a frame',
       fn: async () => {
