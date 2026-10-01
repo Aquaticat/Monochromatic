@@ -972,6 +972,17 @@ The launching gate and namespace are now consumed;
 never rerun them.
 Historical draft holds remain preserved,
 not retrospectively repaired.
+The later documentation-only `proc_8a92` exited zero and reported five documents with zero native diagnostics,
+but it was launched before retaining its required literal-source/caller and fresh runtime prerequisites.
+That checkpoint remains consumed and unadmitted;
+#92 completion was retracted pending a separately named checkpoint.
+The tenth stale registry observation again lost #92 and newly created #95;
+receipt-backed restoration changes bookkeeping only,
+with cause unknown.
+The native manager adapter intake is proposed in `native-manager-dependency-intake/`,
+not reviewed,
+frozen,
+or executed.
 Current permission,
 actual SDK-root integration,
 human evidence,
@@ -981,7 +992,8 @@ An eighth and later ninth stale task-registry observation again ended at #81 and
 receipt-backed restoration changes bookkeeping only,
 with cause unknown.
 Next:
-qualify actual SDK-root integration separately,
+qualify a separately named documentation checkpoint,
+then qualify actual SDK-root integration separately,
 then declare/review/freeze a new configured-host human epoch naming the planned,
 not-yet-constructed root.
 Validate new original exact-scope evidence before SDK construction or disposable private permission state.

@@ -1263,8 +1263,18 @@ literal body equality,
 applicable complete output checks,
 and terminal zero.
 The version-bound receipt comparison deliberately stops on changed or ambiguous formatting.
-These new caller checks remain source-qualified,
-not a completed-runtime claim.
+At that source-review epoch,
+these caller checks were not a completed-runtime claim.
+Later consumed `proc_f674` exited zero after retaining its exact 126,984-byte queued-input receipt.
+The child's saved original matched the archived v4 strings byte for byte;
+complete output/native outcome checks accepted 31 synthetic outcomes.
+This establishes that finite consumer boundary,
+not a stronger promise from the write receipt itself.
+No SDK,
+genuine original,
+current permission,
+grant,
+or represented action was established.
 
 Ignoring the receipt or treating fulfilled tool delivery as successful EOF does not establish that boundary.
 
