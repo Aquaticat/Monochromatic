@@ -1,3 +1,4 @@
+import { compareCodePoints, } from '../code-points.ts';
 import type {
   ColdSince,
   EditedClaim,
@@ -151,8 +152,10 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
       left,
       right,
     ): number {
-      return left.source
-        .localeCompare(right.source,)
+      return compareCodePoints({
+        left: left.source,
+        right: right.source,
+      },)
         || (left.line - right.line);
     },)
     .map(function placed(fn,): string {

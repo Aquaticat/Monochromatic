@@ -1,3 +1,4 @@
+import { compareCodePoints, } from '../code-points.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import type { MappedFunction, } from './coverage-lines.ts';
 import type { MappedStretch, } from './coverage-pieces.ts';
@@ -401,8 +402,10 @@ export function sourceRowsOf(
       right,
     ): number {
       return (right.lines - left.lines)
-        || left.source
-        .localeCompare(right.source,);
+        || compareCodePoints({
+          left: left.source,
+          right: right.source,
+        },);
     },);
 }
 

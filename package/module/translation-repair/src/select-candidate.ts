@@ -1,3 +1,4 @@
+import { compareCodePoints, } from './code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 //region Candidate selection
@@ -199,8 +200,10 @@ export function compareCandidates(
     return l.touchedRegionChars - r.touchedRegionChars;
   if ((left.candidateId === UNCHANGED_CANDIDATE_ID) !== (right.candidateId === UNCHANGED_CANDIDATE_ID))
     return left.candidateId === UNCHANGED_CANDIDATE_ID ? -1 : 1;
-  return left.candidateId
-    .localeCompare(right.candidateId,);
+  return compareCodePoints({
+    left: left.candidateId,
+    right: right.candidateId,
+  },);
 }
 
 /**

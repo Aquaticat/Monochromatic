@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 //region Code points
 // One counter, shared by everything that compares a Chinese size against an
 // English one, and the two readers that take the whole code point at or before
@@ -176,6 +178,56 @@ export function wholeOpening({
     0,
     cutsPair ? (units - 1) : units,
   );
+}
+
+/**
+ Orders two texts by code point, the same on every machine: the first code
+ point that differs decides, and a text that runs out first comes first.
+
+ NOT `localeCompare`, whose order follows the runtime's locale and collation
+ data, so two machines could order one list two ways and draw a different
+ benchmark from one corpus (ledger B95). NOT `<` on the strings either, which
+ compares UTF-16 units and so puts a character past U+FFFF, whose first unit
+ is a surrogate, before one between U+E000 and U+FFFF.
+
+ @param left - text that comes first on a negative answer
+
+ @param right - text that comes first on a positive answer
+
+ @returns Negative, zero or positive, as `toSorted` reads a comparator
+
+ @example
+ ```ts
+ const ordered = ids.toSorted(function byId(left, right,): number {
+   return compareCodePoints({ left, right, },);
+ },);
+ ```
+ */
+export function compareCodePoints({
+  left,
+  right,
+}: {
+  readonly left: string;
+  readonly right: string;
+},): number {
+  /**
+   Offset reached in both texts, which agree on every unit before it.
+   */
+  const cursor = { at: 0, };
+  while ((cursor.at < left.length) && (cursor.at < right.length)) {
+    /**
+     Code point of the left text at the shared offset.
+     */
+    const leftPoint = nonNullishOrThrow(left.codePointAt(cursor.at,),);
+    /**
+     Code point of the right text at the same offset.
+     */
+    const rightPoint = nonNullishOrThrow(right.codePointAt(cursor.at,),);
+    if (leftPoint !== rightPoint)
+      return leftPoint - rightPoint;
+    cursor.at += (leftPoint > BMP_MAX) ? 2 : 1;
+  }
+  return left.length - right.length;
 }
 
 //endregion Code points

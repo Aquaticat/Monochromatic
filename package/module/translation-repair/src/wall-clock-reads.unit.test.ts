@@ -40,6 +40,7 @@ import {
   childNodes,
   identifierName,
   isTreeNode,
+  memberName,
   parseSource,
   readPackageSource,
   type SourceText,
@@ -77,35 +78,6 @@ const NUMBER_MEMBERS: ReadonlySet<string> = new Set([
   'getTime',
   'valueOf',
 ],);
-
-/**
- Name a member expression reads, written plainly or computed from a string.
-
- @param node - member expression read
-
- @returns The member's name, empty where it is computed from anything but a
- string literal
-
- @example
- ```ts
- const member = memberName({ node: call.callee, },); // 'now' for Date['now']
- ```
- */
-function memberName({ node, }: { readonly node: TreeNode; },): string {
-  if (node.computed !== true)
-    return identifierName({ node: node.property, },);
-  /**
-   The computed key.
-   */
-  const { property, } = node;
-  if ((!isTreeNode(property,)) || (property.type !== 'Literal'))
-    return '';
-  /**
-   The literal's value.
-   */
-  const { value, } = property;
-  return ((typeof value) === 'string') ? value as string : '';
-}
 
 /**
  Whether an expression is a global by name, through parentheses and casts.

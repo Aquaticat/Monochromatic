@@ -1,5 +1,8 @@
 import { refusalText, } from '../refusal-text.ts';
-import { wholeOpening, } from '../code-points.ts';
+import {
+  compareCodePoints,
+  wholeOpening,
+} from '../code-points.ts';
 import {
   listCorpusPeople,
   readCorpusFile,
@@ -154,8 +157,10 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
           left,
           right,
         ) {
-          return left[0]
-            .localeCompare(right[0],);
+          return compareCodePoints({
+            left: left[0],
+            right: right[0],
+          },);
         },)
         .map(function toPair(entry,) {
           return `${entry[0]}:${String(entry[1],)}`;

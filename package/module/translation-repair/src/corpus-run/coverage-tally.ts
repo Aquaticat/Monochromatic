@@ -1,3 +1,4 @@
+import { compareCodePoints, } from '../code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type {
@@ -647,7 +648,10 @@ export function createCoverageTally(): CoverageTally {
           [left,],
           [right,],
         ): number {
-          return left.localeCompare(right,);
+          return compareCodePoints({
+            left,
+            right,
+          },);
         },)
         .flatMap(function stretchesOfBundle([bundle, bundlePieces,],): readonly ColdStretch[] {
           return stretchesOf({
@@ -672,8 +676,10 @@ export function createCoverageTally(): CoverageTally {
             left,
             right,
           ): number {
-            return left.bundle
-              .localeCompare(right.bundle,)
+            return compareCodePoints({
+              left: left.bundle,
+              right: right.bundle,
+            },)
               || (left.start - right.start)
               || (right.end - left.end);
           },),

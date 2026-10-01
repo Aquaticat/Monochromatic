@@ -1,3 +1,4 @@
+import { compareCodePoints, } from '../code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 //region Bench draw
@@ -110,10 +111,13 @@ export function orderBySourceSize<SliceT extends DrawableSlice,>(
       return bySize;
 
     /**
-     Entry name, so identical sizes never reorder between runs.
+     Entry name by code point, so identical sizes never reorder between
+     runs or between machines (ledger B95).
      */
-    const byEntry = left.entryId
-      .localeCompare(right.entryId,);
+    const byEntry = compareCodePoints({
+      left: left.entryId,
+      right: right.entryId,
+    },);
     if (byEntry !== 0)
       return byEntry;
 

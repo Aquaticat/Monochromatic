@@ -35,6 +35,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  compareCodePoints,
   discardSliceCache,
   listResumableEntries,
   openSliceCache,
@@ -935,7 +936,10 @@ await describe({
           [left,],
           [right,],
         ): number {
-          return left.localeCompare(right,);
+          return compareCodePoints({
+            left,
+            right,
+          },);
         },),).toEqual([
           ['slice-hash-counted', counted,],
           ['slice-hash-unread', unread,],

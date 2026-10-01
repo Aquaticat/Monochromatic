@@ -16565,6 +16565,66 @@ never 0;
 `mistake-prevention.md`,
 "Provider fields read by their documentation".
 
+### B95: text ordered by the runtime's locale
+
+Found 2026-10-01 (UTC) by a census of the package's orderings
+(`~/temp/agent/audit-glossary-fix/locale-order-census-report.md`),
+red in `169218442`,
+fixed in the commit adding this entry.
+`orderBySourceSize` in `corpus-run/bench-draw.ts` broke a source-size tie with `localeCompare` on entry ids,
+which are the corpus's own directory names,
+so the order of tied slices,
+and with it which slices `pickSpreadSample` drew for a benchmark,
+followed the locale and collation data of the machine that ran it:
+a collation interleaves capitals with lower case,
+and code points put every capital first.
+Nine more `localeCompare` calls ordered candidate ids,
+claim and cluster ids,
+coverage sources and bundle names,
+and sentinel rows;
+the census measured each on its value domain and found every tested locale agreeing with code-point order,
+so none moved an output today,
+but each rested on its domain staying closed.
+Three tests ordered with it too,
+one of them under a description saying it ordered by code unit.
+`preservation-check.ts` sorted lost document words with the default order,
+which compares UTF-16 units and puts a character past U+FFFF before one between U+E000 and U+FFFF.
+`compareCodePoints` (`code-points.ts`) now orders text by code point,
+the same on every machine,
+and every one of those sites uses it.
+`locale-orderings.unit.test.ts`,
+a source scan,
+finds `localeCompare`,
+the `toLocale` casing and formatting members
+and `Intl.Collator` in source and tests;
+it found none outside its fixture once the sites moved.
+`memberName`,
+the scan's reader of a member's name,
+moved from `wall-clock-reads.unit.test.ts` to `source-scan.test-fixture.ts`
+so the two scans share it.
+
+Reach:
+a benchmark drawn before this fix and after it can differ wherever a source-size tie was broken by entry id.
+The other orders the census measured do not move.
+Sorts of entry ids with the default order
+(`corpus-pass.ts` and `pass-decline.ts`,
+both for log lines)
+and comparators using `<` on ids are left as they are:
+they are the same on every machine,
+and differ from code-point order only for a character past U+FFFF in an id.
+
+Calls made here are open to veto:
+
+- code-point order for every text the package orders,
+  in place of keeping `localeCompare` where its domain measured stable;
+- the default order kept for entry ids sorted only for log lines.
+
+Recurrence:
+text is ordered by `compareCodePoints` and cased without the locale;
+`mistake-prevention.md`,
+"Text by code point";
+the scan refuses a new locale-dependent call.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

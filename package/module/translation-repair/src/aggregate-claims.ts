@@ -1,3 +1,4 @@
+import { compareCodePoints, } from './code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { hashContent, } from './document-node.ts';
@@ -307,8 +308,10 @@ export function aggregateClaims(
       left,
       right,
     ) {
-      return left.claimId
-        .localeCompare(right.claimId,);
+      return compareCodePoints({
+        left: left.claimId,
+        right: right.claimId,
+      },);
     },);
 
   /**
@@ -405,8 +408,10 @@ export function aggregateClaims(
     ) {
       if (left.position !== right.position)
         return left.position - right.position;
-      return left.clusterId
-        .localeCompare(right.clusterId,);
+      return compareCodePoints({
+        left: left.clusterId,
+        right: right.clusterId,
+      },);
     },);
 
   return { clusters, };

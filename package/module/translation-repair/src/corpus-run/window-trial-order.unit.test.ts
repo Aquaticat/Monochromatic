@@ -21,6 +21,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   armOrderFor,
+  compareCodePoints,
   TRIAL_ARM_SET,
   TRIAL_ARMS,
 } from '../../dist/final/node/index.mjs';
@@ -52,7 +53,8 @@ function ascending(
 }
 
 /**
- Orders two arm names by code unit.
+ Orders two arm names by code point, the same on every machine; this said
+ code unit while it asked the runtime's locale (ledger B95).
  
  @param left - one arm
  
@@ -69,7 +71,10 @@ function alphabetical(
   left: string,
   right: string,
 ): number {
-  return left.localeCompare(right,);
+  return compareCodePoints({
+    left,
+    right,
+  },);
 }
 
 await describe({

@@ -158,6 +158,35 @@ export function identifierName({ node, }: { readonly node: unknown; },): string 
 }
 
 /**
+ Name a member expression reads, written plainly or computed from a string.
+
+ @param node - member expression read
+
+ @returns The member's name, empty where it is computed from anything but a
+ string literal
+
+ @example
+ ```ts
+ const member = memberName({ node: call.callee, },); // 'now' for Date['now']
+ ```
+ */
+export function memberName({ node, }: { readonly node: TreeNode; },): string {
+  if (node.computed !== true)
+    return identifierName({ node: node.property, },);
+  /**
+   The computed key.
+   */
+  const { property, } = node;
+  if ((!isTreeNode(property,)) || (property.type !== 'Literal'))
+    return '';
+  /**
+   The literal's value.
+   */
+  const { value, } = property;
+  return ((typeof value) === 'string') ? value as string : '';
+}
+
+/**
  Node kinds that wrap one expression without changing the value it holds.
  */
 const WRAPPER_KINDS: ReadonlySet<string> = new Set([

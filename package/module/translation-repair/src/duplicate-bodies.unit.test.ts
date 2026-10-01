@@ -24,6 +24,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { compareCodePoints, } from '../dist/final/node/index.mjs';
 import {
   childNodes,
   isTreeNode,
@@ -295,7 +296,8 @@ function bodiesOf({ file, }: { readonly file: SourceText; },): readonly (readonl
 
  @param right - another
 
- @returns Negative, zero or positive, as `localeCompare` answers
+ @returns Negative, zero or positive, by code point, the same on every
+ machine (ledger B95)
 
  @example
  ```ts
@@ -303,7 +305,10 @@ function bodiesOf({ file, }: { readonly file: SourceText; },): readonly (readonl
  ```
  */
 function byFirstLocation(left: readonly string[], right: readonly string[],): number {
-  return (left[0] ?? '').localeCompare(right[0] ?? '',);
+  return compareCodePoints({
+    left: left[0] ?? '',
+    right: right[0] ?? '',
+  },);
 }
 
 /**

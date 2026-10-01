@@ -1,3 +1,4 @@
+import { compareCodePoints, } from '../code-points.ts';
 import {
   type CensusStretch,
   isUnmappedSource,
@@ -506,8 +507,10 @@ export function coldSinceOf(
       left,
       right,
     ): number {
-      return left.source
-        .localeCompare(right.source,)
+      return compareCodePoints({
+        left: left.source,
+        right: right.source,
+      },)
         || (left.startLine - right.startLine);
     },)
     .map(function standing(stretch,): ColdSince {

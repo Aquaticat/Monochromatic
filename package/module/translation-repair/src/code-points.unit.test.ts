@@ -19,6 +19,7 @@ import {
   codePointAt,
   codePointBefore,
   codePointCount,
+  compareCodePoints,
   wholeOpening,
 } from '../dist/final/node/index.mjs';
 
@@ -182,6 +183,73 @@ await describe({
           text: `${LONE_HIGH}x`,
           units: 1,
         },),).toBe(LONE_HIGH,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: compareCodePoints.name,
+  children: [
+    it({
+      name: 'ORDERS BY CODE POINT, capitals before lower case, where a collation would interleave them '
+        + '(ledger B95)',
+      fn: async () => {
+        expect(['mooncat', 'Tabby', 'biscuit', 'Ginger',].toSorted(function byCodePoint(
+          left,
+          right,
+        ): number {
+          return compareCodePoints({
+            left,
+            right,
+          },);
+        },),).toEqual(['Ginger', 'Tabby', 'biscuit', 'mooncat',],);
+      },
+    },),
+    it({
+      name: 'PUTS A CHARACTER PAST U+FFFF AFTER ONE BETWEEN U+E000 AND U+FFFF, where a comparison of '
+        + 'UTF-16 units puts it first for its leading surrogate',
+      fn: async () => {
+        expect(compareCodePoints({
+          left: ASTRAL,
+          right: '\u{FF5E}',
+        },),).toBeGreaterThan(0,);
+        expect(ASTRAL < '\u{FF5E}',).toBe(true,);
+      },
+    },),
+    it({
+      name: 'PUTS A TEXT BEFORE ANY LONGER TEXT IT BEGINS, and calls equal texts equal, the empty text '
+        + 'among them',
+      fn: async () => {
+        expect(compareCodePoints({
+          left: 'nap',
+          right: 'napping',
+        },),).toBeLessThan(0,);
+        expect(compareCodePoints({
+          left: `nap${ASTRAL}`,
+          right: 'nap',
+        },),).toBeGreaterThan(0,);
+        expect(compareCodePoints({
+          left: `cat${ASTRAL}`,
+          right: `cat${ASTRAL}`,
+        },),).toBe(0,);
+        expect(compareCodePoints({
+          left: '',
+          right: '',
+        },),).toBe(0,);
+      },
+    },),
+    it({
+      name: 'READS A LONE HALF OF A PAIR AS THE ONE UNIT IT IS, as the string\'s own iteration does',
+      fn: async () => {
+        expect(compareCodePoints({
+          left: `${LONE_HIGH}a`,
+          right: ASTRAL,
+        },),).toBeLessThan(0,);
+        expect(compareCodePoints({
+          left: LONE_LOW,
+          right: '\u{FF5E}',
+        },),).toBeLessThan(0,);
       },
     },),
   ],

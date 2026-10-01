@@ -735,9 +735,17 @@ and eleven fixed-length text cuts could keep half an emoji.
 The shared readers shipped tested only through their callers,
 and their own tests later found a lone second half counted as nothing
 and an opening that dropped a lone first half although no pair was cut.
+A benchmark draw broke its ties with `localeCompare`,
+so which slices it drew followed the machine's locale,
+and a sort of document words compared UTF-16 units (ledger B95).
 
 The rule:
-a test whose domain reaches past the first plane
+text is ordered with `compareCodePoints` from `code-points.ts`,
+never `localeCompare`,
+`Intl.Collator` or the default sort over text that may hold characters past the first plane,
+and cased with `toLowerCase` and `toUpperCase`,
+never their `toLocale` forms.
+A test whose domain reaches past the first plane
 (Han beyond the unified block,
 `\p{L}` or any general category,
 case)
@@ -760,6 +768,7 @@ What enforces it:
 `src/code-points.unit.test.ts` and `src/cased-letters.unit.test.ts` pin the readers themselves,
 lone halves included;
 `src/fixed-length-cuts.unit.test.ts` fails on any `.slice(0, LIMIT)` or `.slice(-LIMIT)` it does not list with a reason;
+`src/locale-orderings.unit.test.ts` fails on any locale-dependent ordering or casing in source or tests;
 the Latin-twin cases in `corpus-run/canadian-forms.unit.test.ts`,
 and the script and Extension B cases in the declared-name,
 tokenizer,
