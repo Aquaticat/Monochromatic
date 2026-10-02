@@ -10,13 +10,9 @@
 
 import {
   mkdir,
-  mkdtempDisposable,
   writeFile,
 } from 'node:fs/promises';
-import {
-  devNull,
-  tmpdir,
-} from 'node:os';
+import { devNull, } from 'node:os';
 import { join, } from 'node:path';
 
 import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
@@ -32,6 +28,7 @@ import {
   packageCommit,
   sourcesEditedSince,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Environment that keeps the operator's git configuration out of a throwaway
@@ -45,16 +42,10 @@ const HERMETIC = {
 };
 
 /**
- A fresh directory removed with its contents when the test's scope ends.
-
- @returns The directory
+ Start of each case's throwaway repository name, so a leftover shows this
+ file made it; each case binds its own `scratchDir` with `await using`.
  */
-async function throwawayRepository() {
-  return mkdtempDisposable(join(
-    tmpdir(),
-    'translation-repair-census-commit-test-',
-  ),);
-}
+const REPOSITORY_PREFIX = 'translation-repair-census-commit-test-';
 
 /**
  Runs git in a throwaway repository.
@@ -168,7 +159,7 @@ await describe({
         it({
           name: 'NAMES THE COMMIT BY NINE CHARACTERS, clean until a file under the package changes',
           fn: async () => {
-            await using directory = await throwawayRepository();
+            await using directory = await scratchDir({ prefix: REPOSITORY_PREFIX, },);
             await gitIn({
               directory: directory.path,
               args: ['init',],
@@ -215,7 +206,7 @@ await describe({
             'NAMES THE SOURCES THAT DIFFER FROM A COMMIT, relative to the package as a census names them: one edited '
             + 'and not committed, one added and committed since, and not one left as it was',
           fn: async () => {
-            await using repository = await throwawayRepository();
+            await using repository = await scratchDir({ prefix: REPOSITORY_PREFIX, },);
             await gitIn({
               directory: repository.path,
               args: ['init',],
@@ -273,7 +264,7 @@ await describe({
             + 'by line across an edit (ledger B62). Names git would quote, a space, a double quote, a newline and Han, '
             + 'come back as the census names them',
           fn: async () => {
-            await using repository = await throwawayRepository();
+            await using repository = await scratchDir({ prefix: REPOSITORY_PREFIX, },);
             await gitIn({
               directory: repository.path,
               args: ['init',],

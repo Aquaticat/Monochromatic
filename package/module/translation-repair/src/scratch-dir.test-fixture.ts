@@ -8,6 +8,16 @@
  from here. Helpers that make a directory and never remove it are a different
  behaviour and stay in their files until they gain a disposer of their own.
 
+ `scratchDirWith` is for a helper whose setup runs more than the one call
+ that makes the directory: `git init`, a write, a commit, each its own
+ `await` the directory must survive a throw from, until the helper's own
+ return. Binding `scratchDir`'s result with `await using` inside such a
+ helper is wrong, since it disposes before the caller ever sees the
+ directory; `scratchDirWith` runs the setup under a `try` instead, so a
+ throw partway through still removes the directory before it escapes.
+ `scratchDirPrepared` is the same for a setup that hands back no fields of
+ its own, so no caller spells an empty result type.
+
  @module
  */
 
@@ -71,4 +81,131 @@ export async function scratchDir({ prefix, }: { readonly prefix: string; },): Pr
       );
     },
   };
+}
+
+/**
+ Makes a fresh directory under the platform temp root, runs `setup` against
+ it, and carries `setup`'s own result alongside the directory, removed on
+ scope exit; a throw anywhere in `setup` removes the directory before it
+ escapes, since nothing outside this function ever held a reference to it
+ yet.
+
+ REFUSED AT THE TYPE LEVEL: `setup`'s result may not declare `path` or
+ `[Symbol.asyncDispose]` of its own. Both come from the directory this
+ function already made, and a `setup` that redeclared either would have its
+ own value silently overwritten by one call ordered after the spread; a
+ runtime refusal could only catch this once a case actually ran, where a
+ compile error catches it at the one place this helper is itself edited.
+
+ @param prefix - start of the directory's name, so a leftover shows which
+ test made it
+
+ @param setup - fills the directory, reading only its path, never its
+ disposer, so it cannot remove the directory ahead of its own caller; returns
+ the fields a caller reads alongside that path
+
+ @returns `setup`'s fields, the directory's path, and its disposer
+
+ @throws whatever `setup` throws, after removing the directory
+
+ @example
+ ```ts
+ await using corpus = await scratchDirWith({
+   prefix: 'whiskers-corpus-',
+   setup: async function seeded({ path, },): Promise<{ readonly commitSha: string; }> {
+     await writeFile(join(path, 'page.md',), 'Whiskers naps.\n',);
+     return { commitSha: 'deadbeef', };
+   },
+ },);
+ ```
+ */
+export async function scratchDirWith<
+  const SetupT extends Record<PropertyKey, unknown> & {
+    readonly path?: never;
+    readonly [Symbol.asyncDispose]?: never;
+  },
+>(
+  {
+    prefix,
+    setup,
+  }: {
+    readonly prefix: string;
+    readonly setup: (dir: Pick<ScratchDir, 'path'>) => Promise<SetupT>;
+  },
+): Promise<SetupT & ScratchDir> {
+  /**
+   Directory this call owns until `setup` finishes or throws.
+   */
+  const scratch = await scratchDir({ prefix, },);
+  try {
+    /**
+     Fields `setup` hands back, carrying no `path` or disposer of its own.
+     */
+    const result = await setup(scratch,);
+    /**
+     The directory alone, spread in concrete rather than generic so its two
+     fields are never read as overlapping `SetupT`'s.
+     */
+    const handle: ScratchDir = {
+      path: scratch.path,
+      [Symbol.asyncDispose]: scratch[Symbol.asyncDispose],
+    };
+    return {
+      ...result,
+      ...handle,
+    };
+  }
+  catch (error) {
+    await scratch[Symbol.asyncDispose]();
+    throw error;
+  }
+}
+
+/**
+ Makes a fresh directory under the platform temp root and runs `prepare`
+ against it, for a helper whose setup fills the directory and hands nothing
+ back beside it; a throw anywhere in `prepare` removes the directory before
+ it escapes, as `scratchDirWith` does for a setup with fields to return.
+
+ @param prefix - start of the directory's name, so a leftover shows which
+ test made it
+
+ @param prepare - fills the directory, reading only its path, never its
+ disposer, so it cannot remove the directory ahead of its own caller
+
+ @returns The directory, removed on scope exit
+
+ @throws whatever `prepare` throws, after removing the directory
+
+ @example
+ ```ts
+ await using runs = await scratchDirPrepared({
+   prefix: 'whiskers-runs-',
+   prepare: async function seeded({ path, },): Promise<void> {
+     await mkdir(join(path, 'artifacts',),);
+   },
+ },);
+ ```
+ */
+export async function scratchDirPrepared(
+  {
+    prefix,
+    prepare,
+  }: {
+    readonly prefix: string;
+    readonly prepare: (dir: Pick<ScratchDir, 'path'>) => Promise<void>;
+  },
+): Promise<ScratchDir> {
+  /**
+   Directory this call owns until `prepare` finishes or throws.
+   */
+  const scratch = await scratchDir({ prefix, },);
+  try {
+    await prepare(scratch,);
+    return scratch;
+  }
+  catch (error) {
+    await scratch[Symbol.asyncDispose]();
+    throw error;
+  }
 }

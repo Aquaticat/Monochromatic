@@ -33,7 +33,7 @@ import {
   republishSettledPages,
   type RepublishOutcome,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
@@ -89,64 +89,66 @@ async function settledRun(
   readonly publishDir: string;
   readonly pagePath: string;
 } & AsyncDisposable> {
-  /**
-   The runs directory.
-   */
-  const scratch = await scratchDir({ prefix: 'page-republish-', },);
-  const runsDir = scratch.path;
-  /**
-   Where the artifact lives.
-   */
-  const artifactsDir = join(
-    runsDir,
-    'artifacts',
-  );
-  await mkdir(artifactsDir,);
-  /**
-   The artifact as the builder writes it, over the carve a current pass makes.
-   */
-  const written = JSON.parse(settledArtifactText({
-    prepared: prepareDocumentPair({
-      sourceText: SOURCE_DOC,
-      targetText: TARGET_DOC,
-      includeFrontMatter: true,
-      sealArchiveOriginal: true,
-    },),
-    entryId: ENTRY,
-  },),) as { readonly preparation: Record<string, unknown>; };
-  await writeFile(
-    join(
-      artifactsDir,
-      `${ENTRY}.json`,
-    ),
-    JSON.stringify({
-      ...written,
-      preparation: Object.fromEntries(Object.entries(written.preparation,)
-        .filter(function kept([key,],): boolean {
-          return !strip.includes(key,);
-        },),),
-    },),
-  );
-  /**
-   Root of the mirrored tree.
-   */
-  const publishDir = join(
-    runsDir,
-    'fixed',
-  );
-  return {
-    artifactsDir,
-    publishDir,
-    pagePath: join(
-      publishDir,
-      'people',
-      ENTRY,
-      'page.en.md',
-    ),
-    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
+  // The runs directory.
+  return await scratchDirWith({
+    prefix: 'page-republish-',
+    setup: async function seeded({ path: runsDir, },): Promise<{
+      readonly artifactsDir: string;
+      readonly publishDir: string;
+      readonly pagePath: string;
+    }> {
+      /**
+       Where the artifact lives.
+       */
+      const artifactsDir = join(
+        runsDir,
+        'artifacts',
+      );
+      await mkdir(artifactsDir,);
+      /**
+       The artifact as the builder writes it, over the carve a current pass makes.
+       */
+      const written = JSON.parse(settledArtifactText({
+        prepared: prepareDocumentPair({
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          includeFrontMatter: true,
+          sealArchiveOriginal: true,
+        },),
+        entryId: ENTRY,
+      },),) as { readonly preparation: Record<string, unknown>; };
+      await writeFile(
+        join(
+          artifactsDir,
+          `${ENTRY}.json`,
+        ),
+        JSON.stringify({
+          ...written,
+          preparation: Object.fromEntries(Object.entries(written.preparation,)
+            .filter(function kept([key,],): boolean {
+              return !strip.includes(key,);
+            },),),
+        },),
+      );
+      /**
+       Root of the mirrored tree.
+       */
+      const publishDir = join(
+        runsDir,
+        'fixed',
+      );
+      return {
+        artifactsDir,
+        publishDir,
+        pagePath: join(
+          publishDir,
+          'people',
+          ENTRY,
+          'page.en.md',
+        ),
+      };
     },
-  };
+  },);
 }
 
 /**

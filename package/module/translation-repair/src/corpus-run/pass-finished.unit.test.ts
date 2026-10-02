@@ -9,11 +9,8 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -28,6 +25,7 @@ import {
   finishedEntryIds,
   writeDeclinedEntry,
 } from '../../dist/final/node/index.mjs';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  A throwaway runs dir, removed when the case ends.
@@ -43,37 +41,30 @@ async function throwawayRuns(): Promise<{
   readonly artifactsDir: string;
   readonly declinedDir: string;
 } & AsyncDisposable> {
-  /**
-   Root nothing outside this case writes into.
-   */
-  const root = await mkdtemp(join(
-    tmpdir(),
-    'pass-finished-',
-  ),);
-  /**
-   Artifact directory, created empty.
-   */
-  const artifactsDir = join(
-    root,
-    'artifacts',
-  );
-  await mkdir(artifactsDir,);
-  return {
-    artifactsDir,
-    declinedDir: join(
-      root,
-      DECLINED_DIR,
-    ),
-    [Symbol.asyncDispose]: async () => {
-      await rm(
+  // Root nothing outside this case writes into.
+  return await scratchDirWith({
+    prefix: 'pass-finished-',
+    setup: async function seeded({ path: root, },): Promise<{
+      readonly artifactsDir: string;
+      readonly declinedDir: string;
+    }> {
+      /**
+       Artifact directory, created empty.
+       */
+      const artifactsDir = join(
         root,
-        {
-          recursive: true,
-          force: true,
-        },
+        'artifacts',
       );
+      await mkdir(artifactsDir,);
+      return {
+        artifactsDir,
+        declinedDir: join(
+          root,
+          DECLINED_DIR,
+        ),
+      };
     },
-  };
+  },);
 }
 
 /**

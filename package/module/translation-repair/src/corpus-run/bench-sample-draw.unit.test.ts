@@ -50,7 +50,7 @@ import {
   sampleBenchSlices,
 } from '../../dist/final/node/index.mjs';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -137,93 +137,92 @@ function git(
 async function clonedCorpusHolding(
   { files, }: { readonly files: Readonly<Record<string, string>>; },
 ): Promise<CorpusPin & AsyncDisposable> {
-  /**
-   Throwaway clone standing in for the corpus.
-   */
-  const scratch = await scratchDir({ prefix: 'translation-repair-bench-corpus-', },);
-  /**
-   Clone directory this case owns.
-   */
-  const cloneDir = scratch.path;
+  // Throwaway clone standing in for the corpus; `scratchDirWith` removes it if
+  // any step of the clone, the writes or the commit throws.
+  return await scratchDirWith({
+    prefix: 'translation-repair-bench-corpus-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{
+      readonly cloneDir: string;
+      readonly commitSha: string;
+    }> {
+      git({
+        cwd: cloneDir,
+        args: [
+          'init',
+          '--quiet',
+          '--initial-branch',
+          'main',
+        ],
+      },);
 
-  git({
-    cwd: cloneDir,
-    args: [
-      'init',
-      '--quiet',
-      '--initial-branch',
-      'main',
-    ],
-  },);
+      await Promise.all(Object.entries(files,)
+        .map(async function writeOne([relPath, text,],): Promise<void> {
+          /**
+           Whole path of this file inside the clone.
+           */
+          const path = join(
+            cloneDir,
+            relPath,
+          );
 
-  await Promise.all(Object.entries(files,)
-    .map(async function writeOne([relPath, text,],): Promise<void> {
+          await mkdir(
+            dirname(path,),
+            { recursive: true, },
+          );
+          await writeFile(
+            path,
+            text,
+            'utf8',
+          );
+        },),);
+
       /**
-       Whole path of this file inside the clone.
+       Every path this fixture wrote, named explicitly.
+
+       NAMED RATHER THAN STAGED IN BULK, because the repository's own git
+       guard rejects `--all` and pathspec-less commits, and it guards a
+       throwaway clone exactly as it guards the real one. Naming them is
+       what the guard asks for and is cheap here, since this helper wrote
+       them.
        */
-      const path = join(
+      const paths = Object.keys(files,);
+
+      git({
+        cwd: cloneDir,
+        args: [
+          'add',
+          '--',
+          ...paths,
+        ],
+      },);
+      git({
+        cwd: cloneDir,
+        args: [
+          '-c',
+          'user.name=Bench Fixture',
+          '-c',
+          'user.email=bench@example.invalid',
+          'commit',
+          '--quiet',
+          '--message',
+          'fixture',
+          '--',
+          ...paths,
+        ],
+      },);
+
+      return {
         cloneDir,
-        relPath,
-      );
-
-      await mkdir(
-        dirname(path,),
-        { recursive: true, },
-      );
-      await writeFile(
-        path,
-        text,
-        'utf8',
-      );
-    },),);
-
-  /**
-   Every path this fixture wrote, named explicitly.
-   
-   NAMED RATHER THAN STAGED IN BULK, because the repository's own git guard
-   rejects `--all` and pathspec-less commits, and it guards a throwaway clone
-   exactly as it guards the real one. Naming them is what the guard asks for
-   and is cheap here, since this helper wrote them.
-   */
-  const paths = Object.keys(files,);
-
-  git({
-    cwd: cloneDir,
-    args: [
-      'add',
-      '--',
-      ...paths,
-    ],
-  },);
-  git({
-    cwd: cloneDir,
-    args: [
-      '-c',
-      'user.name=Bench Fixture',
-      '-c',
-      'user.email=bench@example.invalid',
-      'commit',
-      '--quiet',
-      '--message',
-      'fixture',
-      '--',
-      ...paths,
-    ],
-  },);
-
-  return {
-    cloneDir,
-    commitSha: git({
-      cwd: cloneDir,
-      args: [
-        'rev-parse',
-        'HEAD',
-      ],
-    },),
-    [Symbol.asyncDispose]: async function removeClone(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
+        commitSha: git({
+          cwd: cloneDir,
+          args: [
+            'rev-parse',
+            'HEAD',
+          ],
+        },),
+      };
     },
-  };
+  },);
 }
 
 //endregion Fixtures

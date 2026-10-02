@@ -1,13 +1,8 @@
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import {
-  devNull,
-  tmpdir,
-} from 'node:os';
+import { devNull, } from 'node:os';
 import {
   dirname,
   join,
@@ -20,6 +15,7 @@ import {
   foldCarriageReturns,
   passArchiveText,
 } from '../dist/final/node/index.mjs';
+import { scratchDirWith, } from './scratch-dir.test-fixture.ts';
 
 //region Disposable history fixtures
 // Native Git writes only invented content inside individually owned repositories.
@@ -197,56 +193,51 @@ export async function makeNamingArchive({
   readonly relPath: string;
   readonly archiveText: string;
 }> {
-  /**
-   Individually disposable repository; no user/shared Git state is mutated.
-   */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'translation-naming-',
-  ),);
-  await namingFixtureGit({
-    cloneDir,
-    args: ['init'],
-  },);
-  /**
-   Sole predecessor of the naming revision.
-   */
-  const parentCommit = await commitNamingArchive({
-    cloneDir,
-    relPath,
-    text: before,
-  },);
-  /**
-   Pinned current naming revision.
-   */
-  const commitSha = await commitNamingArchive({
-    cloneDir,
-    relPath,
-    text: after,
-  },);
-  return {
-    pin: {
-      cloneDir,
-      commitSha,
-      gitPath: REAL_GIT,
-    },
-    parentCommit,
-    relPath,
-    archiveText: passArchiveText({
-      text: foldCarriageReturns({ text: after, },)
-        .text,
-      l,
-    },),
-    async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
+  // Individually disposable repository; no user/shared Git state is mutated.
+  return await scratchDirWith({
+    prefix: 'translation-naming-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{
+      readonly pin: CorpusPin;
+      readonly parentCommit: string;
+      readonly relPath: string;
+      readonly archiveText: string;
+    }> {
+      await namingFixtureGit({
         cloneDir,
-        {
-          recursive: true,
-          force: true,
+        args: ['init'],
+      },);
+      /**
+       Sole predecessor of the naming revision.
+       */
+      const parentCommit = await commitNamingArchive({
+        cloneDir,
+        relPath,
+        text: before,
+      },);
+      /**
+       Pinned current naming revision.
+       */
+      const commitSha = await commitNamingArchive({
+        cloneDir,
+        relPath,
+        text: after,
+      },);
+      return {
+        pin: {
+          cloneDir,
+          commitSha,
+          gitPath: REAL_GIT,
         },
-      );
+        parentCommit,
+        relPath,
+        archiveText: passArchiveText({
+          text: foldCarriageReturns({ text: after, },)
+            .text,
+          l,
+        },),
+      };
     },
-  };
+  },);
 }
 
 //endregion Disposable history fixtures

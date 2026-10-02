@@ -22,7 +22,7 @@
  it means every settled entry was never published, which is this check's most
  serious finding, so it stays checkable with an empty tree.
  
- DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp`
+ DISPOSABLE FIXTURES ONLY: every case writes into its own `scratchDir`
  directory, and nothing here reads a real run.
  
  Fixtures are cat-themed invention. No corpus content appears here.
@@ -52,7 +52,10 @@ import {
   settledEntryIds,
   whatThereIsToVerify,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import {
+  scratchDir,
+  scratchDirWith,
+} from '../scratch-dir.test-fixture.ts';
 
 /**
  Fixed tree directory a run publishes under, as `publish-fixed.ts` names it.
@@ -87,39 +90,31 @@ const ARTIFACTS = 'artifacts';
 async function runSettling(
   { names, }: { readonly names: readonly string[]; },
 ): Promise<{ readonly runsDir: string; } & AsyncDisposable> {
-  /**
-   Disposable root for this case.
-   */
-  const scratch = await scratchDir({ prefix: 'published-tree-listing-', },);
-  /**
-   Run directory this case populates.
-   */
-  const runsDir = scratch.path;
-
-  await mkdir(
-    join(
-      runsDir,
-      ARTIFACTS,
-    ),
-    { recursive: true, },
-  );
-  await Promise.all(names.map(async function writeOne(name,): Promise<void> {
-    await writeFile(
-      join(
-        runsDir,
-        ARTIFACTS,
-        name,
-      ),
-      '{}',
-      'utf8',
-    );
-  },),);
-  return {
-    runsDir,
-    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
+  // Disposable root for this case.
+  return await scratchDirWith({
+    prefix: 'published-tree-listing-',
+    setup: async function seeded({ path: runsDir, },): Promise<{ readonly runsDir: string; }> {
+      await mkdir(
+        join(
+          runsDir,
+          ARTIFACTS,
+        ),
+        { recursive: true, },
+      );
+      await Promise.all(names.map(async function writeOne(name,): Promise<void> {
+        await writeFile(
+          join(
+            runsDir,
+            ARTIFACTS,
+            name,
+          ),
+          '{}',
+          'utf8',
+        );
+      },),);
+      return { runsDir, };
     },
-  };
+  },);
 }
 
 /**

@@ -21,8 +21,6 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -44,8 +42,8 @@ import {
   type CorpusPin,
   gatherEntryPictures,
 } from '../../dist/final/node/index.mjs';
-import { sliceOf, } from '../content-slice-of.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Logger every gather in this file writes its progress to.
@@ -120,6 +118,51 @@ function photoElement({ assetNames, }: { readonly assetNames: readonly string[];
 }
 
 /**
+ Builds one slice pair carrying given original text, target side empty.
+ 
+ Offsets and nodes are named directly rather than parsed, mirroring
+ `slice-pictures.unit.test.ts`: what is under test here is which pictures a
+ gather reads off a pinned corpus, not how a slice was carved.
+ 
+ @param text - original-side text this slice covers
+ 
+ @param sliceIndex - position of this slice in its document
+ 
+ @returns Pair whose original side carries that text
+ 
+ @example
+ ```ts
+ const pair = sliceOf({ text: 'Mittens naps.\n', sliceIndex: 0, },);
+ ```
+ */
+function sliceOf(
+  {
+    text,
+    sliceIndex,
+  }: {
+    readonly text: string;
+    readonly sliceIndex: number;
+  },
+): ChunkPair {
+  return {
+    source: {
+      sliceIndex,
+      nodes: [],
+      startOffset: 0,
+      endOffset: text.length,
+      text,
+    },
+    target: {
+      sliceIndex,
+      nodes: [],
+      startOffset: 0,
+      endOffset: 0,
+      text: '',
+    },
+  };
+}
+
+/**
  Builds a throwaway corpus-shaped git repository committing given
  pictures, removed on dispose.
  
@@ -142,100 +185,89 @@ async function makeThrowawayCorpus(
     readonly pin: CorpusPin;
   }
 > {
-  /**
-   Fresh directory holding the throwaway repository.
-   */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'entry-pictures-corpus-',
-  ),);
-
-  await spawn(
-    REAL_GIT,
-    [
-      'init',
-      cloneDir,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-
-  await Promise.all(pictures.map(async function writePicture(picture,): Promise<void> {
-    /**
-     Directory this asset's entry keeps its photos under.
-     */
-    const photosDir = join(
-      cloneDir,
-      'people',
-      picture.entryId,
-      'photos',
-    );
-    await mkdir(
-      photosDir,
-      { recursive: true, },
-    );
-    await writeFile(
-      join(
-        photosDir,
-        picture.assetName,
-      ),
-      picture.bytes,
-    );
-  },),);
-
-  await fixtureGit({
-    cloneDir,
-    args: [
-      'add',
-      'people',
-    ],
-  },);
-  await fixtureGit({
-    cloneDir,
-    args: [
-      '-c',
-      'user.name=cat',
-      '-c',
-      'user.email=cat@example.org',
-      'commit',
-      '--message',
-      'add pictures',
-      '--no-gpg-sign',
-    ],
-  },);
-
-  /**
-   Commit every test read pins to.
-   */
-  const commitSha = (await fixtureGit({
-    cloneDir,
-    args: [
-      'rev-parse',
-      'HEAD',
-    ],
-  },))
-    .trim();
-
-  return {
-    pin: {
-      cloneDir,
-      commitSha,
-      gitPath: REAL_GIT,
-    },
-    [Symbol.asyncDispose]: async function removeClone() {
-      await rm(
-        cloneDir,
+  // Fresh directory holding the throwaway repository.
+  return await scratchDirWith({
+    prefix: 'entry-pictures-corpus-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{ readonly pin: CorpusPin; }> {
+      await spawn(
+        REAL_GIT,
+        [
+          'init',
+          cloneDir,
+        ],
         {
-          recursive: true,
-          force: true,
+          env: {
+            GIT_CONFIG_GLOBAL: devNull,
+            GIT_CONFIG_SYSTEM: devNull,
+          },
         },
       );
+
+      await Promise.all(pictures.map(async function writePicture(picture,): Promise<void> {
+        /**
+         Directory this asset's entry keeps its photos under.
+         */
+        const photosDir = join(
+          cloneDir,
+          'people',
+          picture.entryId,
+          'photos',
+        );
+        await mkdir(
+          photosDir,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            photosDir,
+            picture.assetName,
+          ),
+          picture.bytes,
+        );
+      },),);
+
+      await fixtureGit({
+        cloneDir,
+        args: [
+          'add',
+          'people',
+        ],
+      },);
+      await fixtureGit({
+        cloneDir,
+        args: [
+          '-c',
+          'user.name=cat',
+          '-c',
+          'user.email=cat@example.org',
+          'commit',
+          '--message',
+          'add pictures',
+          '--no-gpg-sign',
+        ],
+      },);
+
+      /**
+       Commit every test read pins to.
+       */
+      const commitSha = (await fixtureGit({
+        cloneDir,
+        args: [
+          'rev-parse',
+          'HEAD',
+        ],
+      },))
+        .trim();
+
+      return {
+        pin: {
+          cloneDir,
+          commitSha,
+          gitPath: REAL_GIT,
+        },
+      };
     },
-  };
+  },);
 }
 
 await describe({

@@ -18,12 +18,9 @@
 import {
   chmod,
   mkdir,
-  mkdtemp,
   readdir,
   readFile,
-  rm,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -54,6 +51,7 @@ import {
   stubWallClock,
   WALL_START_MS,
 } from '../wall-clock-stub.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -985,64 +983,59 @@ async function throwawayDirs(): Promise<
     readonly sliceCacheDir: string;
   } & AsyncDisposable
 > {
-  /**
-   Root nothing outside this case writes into.
-   */
-  const root = await mkdtemp(join(
-    tmpdir(),
-    'pass-entry-',
-  ),);
-
-  /**
-   Directory settled entries write into, created here because the PASS
-   creates it before settling anything: `settleEntry` writes into a directory
-   it is handed, and a case that skipped this would be testing the atomic
-   write's behavior on a missing parent instead.
-   */
-  const artifactsDir = join(
-    root,
-    'artifacts',
-  );
-  await mkdir(
-    artifactsDir,
-    { recursive: true, },
-  );
-  /**
-   Root of the mirrored corpus tree, created here for the same reason the
-   artifacts directory is: the PASS creates it before settling anything, so a
-   case that left it out would be measuring how the publisher behaves against
-   a missing root rather than how it publishes.
-   */
-  const publishDir = join(
-    root,
-    'fixed',
-  );
-  await mkdir(
-    publishDir,
-    { recursive: true, },
-  );
-
-  return {
-    artifactsDir,
-    publishDir,
-    declinedDir: join(
-      root,
-      'declined',
-    ),
-    sliceCacheDir: join(
-      root,
-      'cache',
-    ),
-    [Symbol.asyncDispose]: async () => {
-      await rm(
+  // Root nothing outside this case writes into.
+  return await scratchDirWith({
+    prefix: 'pass-entry-',
+    setup: async function seeded({ path: root, },): Promise<{
+      readonly artifactsDir: string;
+      readonly publishDir: string;
+      readonly declinedDir: string;
+      readonly sliceCacheDir: string;
+    }> {
+      /**
+       Directory settled entries write into, created here because the PASS
+       creates it before settling anything: `settleEntry` writes into a
+       directory it is handed, and a case that skipped this would be
+       testing the atomic write's behavior on a missing parent instead.
+       */
+      const artifactsDir = join(
         root,
-        {
-          recursive: true,
-          force: true,
-        },
+        'artifacts',
       );
+      await mkdir(
+        artifactsDir,
+        { recursive: true, },
+      );
+      /**
+       Root of the mirrored corpus tree, created here for the same reason
+       the artifacts directory is: the PASS creates it before settling
+       anything, so a case that left it out would be measuring how the
+       publisher behaves against a missing root rather than how it
+       publishes.
+       */
+      const publishDir = join(
+        root,
+        'fixed',
+      );
+      await mkdir(
+        publishDir,
+        { recursive: true, },
+      );
+
+      return {
+        artifactsDir,
+        publishDir,
+        declinedDir: join(
+          root,
+          'declined',
+        ),
+        sliceCacheDir: join(
+          root,
+          'cache',
+        ),
+      };
     },
-  };
+  },);
 }
 
 /**

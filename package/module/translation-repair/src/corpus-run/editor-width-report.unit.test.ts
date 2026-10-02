@@ -27,13 +27,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  readFile,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
+import { readFile, } from 'node:fs/promises';
 
 import {
   describe,
@@ -47,6 +41,7 @@ import {
   type WidthRow,
   writeWidthReport,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -159,52 +154,42 @@ const ROWS: readonly WidthRow[] = [
 const SKIPPED: Readonly<Record<string, number>> = { 'no accepted issue': 5, };
 
 /**
- Opens a throwaway runs directory and points the environment at it.
- 
+ Start of each case's runs directory name, so a leftover shows this file
+ made it.
+ */
+const RUNS_PREFIX = 'whiskers-width-report-';
+
+/**
+ Points the runs directory variable at a path until the handle's scope ends.
+
  `process.env` is process-wide, so every case here runs at `concurrency: 1`
- and the disposer puts the variable back however the case ends.
- 
- @returns Disposable handle restoring the environment
- 
+ and the disposer puts the variable back however the case ends. The
+ directory itself is the case's own `scratchDir`, bound first so it is
+ removed after the variable is restored.
+
+ @param path - directory the variable names meanwhile
+
+ @returns Disposable handle restoring the variable as it stood
+
  @example
  ```ts
- await using runs = await runsDir();
+ await using runs = await scratchDir({ prefix: RUNS_PREFIX, },);
+ using pointed = runsDirPointedAt({ path: runs.path, },);
  ```
  */
-async function runsDir(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
+function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
   /**
    Runs directory standing before this case ran.
    */
   const before = process.env
     .TRANSLATION_REPAIR_RUNS_DIR;
-
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-width-report-',
-  ),);
-
   process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-
   return {
-    path,
-    [Symbol.asyncDispose]: async function restore() {
+    [Symbol.dispose]: function restore(): void {
       if (before === undefined)
         delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
       else
         process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
     },
   };
 }
@@ -235,7 +220,8 @@ async function reportFor(
   readonly path: string;
   readonly text: string;
 }> {
-  await using runs = await runsDir();
+  await using runs = await scratchDir({ prefix: RUNS_PREFIX, },);
+  using pointed = runsDirPointedAt({ path: runs.path, },);
 
   /**
    Where the writer says it put the report.
@@ -279,7 +265,8 @@ async function bothDraws(): Promise<readonly {
   readonly path: string;
   readonly text: string;
 }[]> {
-  await using runs = await runsDir();
+  await using runs = await scratchDir({ prefix: RUNS_PREFIX, },);
+  using pointed = runsDirPointedAt({ path: runs.path, },);
 
   /**
    Draws to write, in order, into the one directory.

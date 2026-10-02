@@ -24,14 +24,9 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import {
-  devNull,
-  tmpdir,
-} from 'node:os';
+import { devNull, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -46,6 +41,7 @@ import {
   CorpusReadError,
 } from '../../dist/final/node/index.mjs';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Slice census entry tests
 
@@ -178,104 +174,98 @@ async function throwawayCorpus(
     };
   }
 > {
-  /**
-   Fresh temp directory holding the throwaway repository.
-   */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-slice-census-',
-  ),);
-
-  await spawn(
-    REAL_GIT,
-    [
-      'init',
-      cloneDir,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  await mkdir(
-    join(
-      cloneDir,
-      'people',
-      ENTRY_ID,
-    ),
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      cloneDir,
-      'people',
-      ENTRY_ID,
-      'page.md',
-    ),
-    sourcePage,
-    'utf8',
-  );
-  await writeFile(
-    join(
-      cloneDir,
-      'people',
-      ENTRY_ID,
-      'page.en.md',
-    ),
-    targetPage,
-    'utf8',
-  );
-  await fixtureGit({
-    cloneDir,
-    args: [
-      'add',
-      `people/${ENTRY_ID}/page.md`,
-      `people/${ENTRY_ID}/page.en.md`,
-    ],
-  },);
-  await fixtureGit({
-    cloneDir,
-    args: [
-      '-c',
-      'user.name=cat',
-      '-c',
-      'user.email=cat@example.org',
-      'commit',
-      '--message',
-      'add whiskers',
-      '--no-gpg-sign',
-    ],
-  },);
-
-  /**
-   Commit every read of this fixture's corpus pins to.
-   */
-  const commitSha = (await fixtureGit({
-    cloneDir,
-    args: [
-      'rev-parse',
-      'HEAD',
-    ],
-  },))
-    .trim();
-
-  return {
-    pin: {
-      cloneDir,
-      commitSha,
-    },
-    [Symbol.asyncDispose]: async function removeClone() {
-      await rm(
-        cloneDir,
+  // Fresh temp directory holding the throwaway repository.
+  return await scratchDirWith({
+    prefix: 'whiskers-slice-census-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{
+      readonly pin: {
+        readonly cloneDir: string;
+        readonly commitSha: string;
+      };
+    }> {
+      await spawn(
+        REAL_GIT,
+        [
+          'init',
+          cloneDir,
+        ],
         {
-          recursive: true,
-          force: true,
+          env: {
+            GIT_CONFIG_GLOBAL: devNull,
+            GIT_CONFIG_SYSTEM: devNull,
+          },
         },
       );
+      await mkdir(
+        join(
+          cloneDir,
+          'people',
+          ENTRY_ID,
+        ),
+        { recursive: true, },
+      );
+      await writeFile(
+        join(
+          cloneDir,
+          'people',
+          ENTRY_ID,
+          'page.md',
+        ),
+        sourcePage,
+        'utf8',
+      );
+      await writeFile(
+        join(
+          cloneDir,
+          'people',
+          ENTRY_ID,
+          'page.en.md',
+        ),
+        targetPage,
+        'utf8',
+      );
+      await fixtureGit({
+        cloneDir,
+        args: [
+          'add',
+          `people/${ENTRY_ID}/page.md`,
+          `people/${ENTRY_ID}/page.en.md`,
+        ],
+      },);
+      await fixtureGit({
+        cloneDir,
+        args: [
+          '-c',
+          'user.name=cat',
+          '-c',
+          'user.email=cat@example.org',
+          'commit',
+          '--message',
+          'add whiskers',
+          '--no-gpg-sign',
+        ],
+      },);
+
+      /**
+       Commit every read of this fixture's corpus pins to.
+       */
+      const commitSha = (await fixtureGit({
+        cloneDir,
+        args: [
+          'rev-parse',
+          'HEAD',
+        ],
+      },))
+        .trim();
+
+      return {
+        pin: {
+          cloneDir,
+          commitSha,
+        },
+      };
     },
-  };
+  },);
 }
 
 await describe({

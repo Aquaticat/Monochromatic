@@ -15,12 +15,9 @@
  */
 
 import {
-  mkdtemp,
   readdir,
   readFile,
-  rm,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -381,17 +378,13 @@ await describe({
             /**
              Cache directory for the wall-clock reads.
              */
-            const walled = await mkdtemp(join(tmpdir(), 'outside-reads-wall-',),);
+            await using walledScratch = await scratchDir({ prefix: 'outside-reads-wall-', },);
+            const walled = walledScratch.path;
             /**
              Cache directory for the fixed-clock reads.
              */
-            const fixed = await mkdtemp(join(tmpdir(), 'outside-reads-fixed-',),);
-            await using cleanup = {
-              [Symbol.asyncDispose]: async function removeCaches(): Promise<void> {
-                await rm(walled, { recursive: true, force: true, },);
-                await rm(fixed, { recursive: true, force: true, },);
-              },
-            };
+            await using fixedScratch = await scratchDir({ prefix: 'outside-reads-fixed-', },);
+            const fixed = fixedScratch.path;
             const { fetchFn, seen, } = exaStub();
             /**
              Readers over one cache directory, on the wall clock or the fixed one.
@@ -489,12 +482,8 @@ await describe({
             /**
              Cache directory the reads would write to.
              */
-            const dir = await mkdtemp(join(tmpdir(), 'outside-reads-keyless-',),);
-            await using cleanup = {
-              [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
-                await rm(dir, { recursive: true, force: true, },);
-              },
-            };
+            await using scratch = await scratchDir({ prefix: 'outside-reads-keyless-', },);
+            const dir = scratch.path;
             const { fetchFn, seen, } = exaStub();
             /**
              Readers over an environment with no key.

@@ -7,8 +7,7 @@
  @module
  */
 
-import { mkdtemp, readFile, rm, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -18,6 +17,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { writeBenchReport, } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 await describe({
   name: writeBenchReport.name,
@@ -30,29 +30,27 @@ await describe({
         + 'and the roster beside the rows, readable as JSON',
       fn: async () => {
         /**
-         Disposable runs directory the writer resolves through the variable.
-         */
-        const runsDir = await mkdtemp(join(tmpdir(), 'bench-report-',),);
-        /**
          The variable as this process found it.
          */
         const found = process.env.TRANSLATION_REPAIR_RUNS_DIR;
-        // PUT BACK AND CLEARED AWAY when the case ends: the case left the
-        // variable pointing at its directory for the rest of the process, and
-        // the directory on disk (ledger B79).
-        await using restore = {
-          [Symbol.asyncDispose]: async function restoreRunsDir(): Promise<void> {
+        /**
+         Disposable runs directory the writer resolves through the variable.
+         */
+        await using scratch = await scratchDir({ prefix: 'bench-report-', },);
+        /**
+         Working path of the runs directory.
+         */
+        const runsDir = scratch.path;
+        // PUT BACK when the case ends, disposed before `scratch` removes the
+        // directory: the case left the variable pointing at its directory
+        // for the rest of the process, and the directory on disk (ledger
+        // B79).
+        using restore = {
+          [Symbol.dispose]: function restoreRunsDir(): void {
             if (found === undefined)
               Reflect.deleteProperty(process.env, 'TRANSLATION_REPAIR_RUNS_DIR',);
             else
               process.env.TRANSLATION_REPAIR_RUNS_DIR = found;
-            await rm(
-              runsDir,
-              {
-                recursive: true,
-                force: true,
-              },
-            );
           },
         };
         process.env.TRANSLATION_REPAIR_RUNS_DIR = runsDir;

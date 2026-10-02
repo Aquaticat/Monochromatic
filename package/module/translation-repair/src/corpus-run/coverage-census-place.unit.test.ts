@@ -13,11 +13,9 @@
 
 import {
   mkdir,
-  mkdtempDisposable,
   readdir,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
@@ -32,6 +30,7 @@ import {
   placeTally,
   tallyCoverage,
 } from '../../dist/final/node/index.mjs';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  A bundle's text: one line, then a second line of 120 characters, which a
@@ -77,80 +76,98 @@ async function fixturePackage(
   { bundles, }: { readonly bundles: readonly FixtureBundle[]; },
 ) {
   /**
-   The package directory, removed when the case ends.
+   Built package: setup's own fields, plus the directory's path and
+   disposer, wired by `scratchDirWith`.
    */
-  const directory = await mkdtempDisposable(join(
-    tmpdir(),
-    'translation-repair-place-test-',
-  ),);
-  /**
-   Its build directory.
-   */
-  const distDirectory = join(
-    directory.path,
-    'dist',
-    'final',
-    'node',
-  );
-  /**
-   Where the coverage files go.
-   */
-  const coverageDirectory = join(
-    directory.path,
-    'coverage',
-  );
-  await mkdir(
-    distDirectory,
-    { recursive: true, },
-  );
-  await mkdir(
-    coverageDirectory,
-    { recursive: true, },
-  );
-  await mkdir(
-    join(
-      directory.path,
-      'src',
-    ),
-    { recursive: true, },
-  );
-  await Promise.all(bundles.map(async function written({ bundle, source, },): Promise<void> {
-    await writeFile(
-      join(
+  const built = await scratchDirWith({
+    prefix: 'translation-repair-place-test-',
+    setup: async function seeded({ path, },): Promise<{
+      readonly distDirectory: string;
+      readonly coverageDirectory: string;
+      readonly prefix: string;
+    }> {
+      /**
+       Its build directory.
+       */
+      const distDirectory = join(
+        path,
+        'dist',
+        'final',
+        'node',
+      );
+      /**
+       Where the coverage files go.
+       */
+      const coverageDirectory = join(
+        path,
+        'coverage',
+      );
+      await mkdir(
         distDirectory,
-        bundle,
-      ),
-      BUNDLE_TEXT,
-    );
-    if (source === undefined)
-      return;
-    await Promise.all([
-      writeFile(
+        { recursive: true, },
+      );
+      await mkdir(
+        coverageDirectory,
+        { recursive: true, },
+      );
+      await mkdir(
         join(
-          distDirectory,
-          `${bundle}.map`,
+          path,
+          'src',
         ),
-        JSON.stringify({
-          version: 3,
-          sources: [`../../../${source}`,],
-          names: [],
-          mappings: ';AAAA',
-        },),
-      ),
-      writeFile(
-        join(
-          directory.path,
-          source,
-        ),
-        'doze\nyawn\nstretch',
-      ),
-    ],);
-  },),);
+        { recursive: true, },
+      );
+      await Promise.all(bundles.map(async function writtenBundle({ bundle, source, },): Promise<void> {
+        await writeFile(
+          join(
+            distDirectory,
+            bundle,
+          ),
+          BUNDLE_TEXT,
+        );
+        if (source === undefined)
+          return;
+        await Promise.all([
+          writeFile(
+            join(
+              distDirectory,
+              `${bundle}.map`,
+            ),
+            JSON.stringify({
+              version: 3,
+              sources: [`../../../${source}`,],
+              names: [],
+              mappings: ';AAAA',
+            },),
+          ),
+          writeFile(
+            join(
+              path,
+              source,
+            ),
+            'doze\nyawn\nstretch',
+          ),
+        ],);
+      },),);
+      return {
+        distDirectory,
+        coverageDirectory,
+        prefix: `${pathToFileURL(distDirectory,).href}/`,
+      };
+    },
+  },);
   return {
-    directory,
-    distDirectory,
-    coverageDirectory,
-    prefix: `${pathToFileURL(distDirectory,).href}/`,
+    /**
+     The package directory alone, the shape every call site already binds
+     with `await using`.
+     */
+    directory: {
+      path: built.path,
+      [Symbol.asyncDispose]: built[Symbol.asyncDispose],
+    },
+    distDirectory: built.distDirectory,
+    coverageDirectory: built.coverageDirectory,
+    prefix: built.prefix,
   };
 }
 

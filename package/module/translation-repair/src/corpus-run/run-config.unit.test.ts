@@ -33,10 +33,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -59,6 +55,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Environment variable that overrides the runs directory.
@@ -569,12 +566,8 @@ await describe({
             /**
              Directory holding this case's empty ledger.
              */
-            const dir = await mkdtemp(join(tmpdir(), 'run-client-ledger-',),);
-            await using _cleanup = {
-              [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
-                await rm(dir, { recursive: true, force: true, },);
-              },
-            };
+            await using scratch = await scratchDir({ prefix: 'run-client-ledger-', },);
+            const dir = scratch.path;
             /**
              What each provider's meter read as, on a client keyed for all four.
 
@@ -904,12 +897,8 @@ await describe({
             /**
              Payload directory this case owns.
              */
-            const dir = await mkdtemp(join(tmpdir(), 'run-client-payloads-',),);
-            await using _cleanup = {
-              [Symbol.asyncDispose]: async function removePayloads(): Promise<void> {
-                await rm(dir, { recursive: true, force: true, },);
-              },
-            };
+            await using scratch = await scratchDir({ prefix: 'run-client-payloads-', },);
+            const dir = scratch.path;
 
             /**
              Transport recording provider calls.

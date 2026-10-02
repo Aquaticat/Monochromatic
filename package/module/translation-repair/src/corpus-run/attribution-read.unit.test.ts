@@ -18,12 +18,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-  writeFile,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -42,6 +37,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Pipeline commit every fixture artifact carries unless its case sets one.
@@ -96,59 +92,46 @@ async function writeArtifacts(
     readonly artifacts: Record<string, unknown>;
   },
 ): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Throwaway directory, never a real runs directory.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'attribution-read-',
-  ),);
+  // Throwaway directory, never a real runs directory.
+  return await scratchDirWith({
+    prefix: 'attribution-read-',
+    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
+      await Promise.all(Object
+        .entries(artifacts,)
+        .map(async function writeOne([name, body,],) {
+        /**
+         Body as written, with a pipeline commit supplied when the case did not
+         name one.
 
-  await Promise.all(Object
-    .entries(artifacts,)
-    .map(async function writeOne([name, body,],) {
-    /**
-     Body as written, with a pipeline commit supplied when the case did not
-     name one.
-     
-     Every settled artifact carries `tip` and `pipelineDigest`, and the
-     readers now refuse a pool they cannot partition by `pipelineDigest`. These
-     cases are about PARSING rather than about generations, so they get one
-     shared pair and stay a single-generation pool; a case that wants to
-     exercise the generation guard sets its own. Deliberately not defaulted
-     inside the reader: an artifact recording no pipeline is exactly what
-     must not be quietly accepted.
-     */
-    const written = (((typeof body) === 'object') && (body !== null))
-      ? {
-        tip: SHARED_TIP,
-        pipelineDigest: SHARED_GENERATION,
-        ...body,
-      }
-      : body;
+         Every settled artifact carries `tip` and `pipelineDigest`, and the
+         readers now refuse a pool they cannot partition by `pipelineDigest`. These
+         cases are about PARSING rather than about generations, so they get one
+         shared pair and stay a single-generation pool; a case that wants to
+         exercise the generation guard sets its own. Deliberately not defaulted
+         inside the reader: an artifact recording no pipeline is exactly what
+         must not be quietly accepted.
+         */
+        const written = (((typeof body) === 'object') && (body !== null))
+          ? {
+            tip: SHARED_TIP,
+            pipelineDigest: SHARED_GENERATION,
+            ...body,
+          }
+          : body;
 
-    await writeFile(
-      join(
-        dir,
-        name,
-      ),
-      ((typeof written) === 'string') ? written : JSON.stringify(written,),
-      'utf8',
-    );
-  },),);
+        await writeFile(
+          join(
+            dir,
+            name,
+          ),
+          ((typeof written) === 'string') ? written : JSON.stringify(written,),
+          'utf8',
+        );
+      },),);
 
-  return {
-    dir,
-    async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
+      return { dir, };
     },
-  };
+  },);
 }
 
 /**

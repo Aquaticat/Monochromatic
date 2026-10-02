@@ -5,8 +5,8 @@
  the only suite that reached them before asked about this repository's own
  root and HEAD, which can never produce the two failures worth a test: a
  shallow history and a commit git does not know. Both are built here from
- nothing, in `mkdtemp` directories, as three empty commits and a `--depth 2`
- clone of them. Nothing here reads the pinned corpus clone or this worktree,
+ nothing, in `scratchDir` directories, as three empty commits and a
+ `--depth 2` clone of them. Nothing here reads the pinned corpus clone or this worktree,
  and the identity every commit is written under is passed per call, so the
  fixtures never read this machine's git configuration.
  
@@ -36,7 +36,10 @@ import {
   resolveCommit,
   tipContains,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import {
+  scratchDirPrepared,
+  scratchDirWith,
+} from '../scratch-dir.test-fixture.ts';
 
 /**
  Real git binary, the one the module under test prefers as well.
@@ -188,89 +191,100 @@ type ThrowawayHistory = Readonly<{
  */
 async function throwawayHistory(): Promise<ThrowawayHistory & AsyncDisposable> {
   /**
-   Complete repository, written from nothing.
+   Complete repository, written from nothing; `scratchDirWith` removes it if
+   `git`, a commit or the commit-count check throws.
    */
-  const fullScratch = await scratchDir({ prefix: 'artifact-generation-full-', },);
-  /**
-   Directory the complete repository lives in.
-   */
-  const full = fullScratch.path;
-  await git({
-    repository: full,
-    args: [
-      'init',
-      '--quiet',
-      '--initial-branch=main',
-    ],
-  },);
-  await commitEmpty({
-    repository: full,
-    subject: 'first',
-  },);
-  await commitEmpty({
-    repository: full,
-    subject: 'second',
-  },);
-  await commitEmpty({
-    repository: full,
-    subject: 'third',
-  },);
+  const fullScratch = await scratchDirWith({
+    prefix: 'artifact-generation-full-',
+    setup: async function committed({ path: full, },): Promise<{
+      readonly commits: readonly [string, string, string];
+    }> {
+      await git({
+        repository: full,
+        args: [
+          'init',
+          '--quiet',
+          '--initial-branch=main',
+        ],
+      },);
+      await commitEmpty({
+        repository: full,
+        subject: 'first',
+      },);
+      await commitEmpty({
+        repository: full,
+        subject: 'second',
+      },);
+      await commitEmpty({
+        repository: full,
+        subject: 'third',
+      },);
 
-  /**
-   The three commits, oldest first, as git lists them.
-   */
-  const listed = (await git({
-    repository: full,
-    args: [
-      'rev-list',
-      '--reverse',
-      'HEAD',
-    ],
-  },))
-    .split('\n',);
-  const [
-    first,
-    second,
-    third,
-  ] = listed;
-  if ((first === undefined) || (second === undefined) || (third === undefined)) {
-    throw new Error(
-      `expected ${String(HISTORY_LENGTH,)} commits, git listed ${String(listed.length,)}`,
-    );
-  }
-
-  /**
-   Shallow clone, which sees the last two commits only.
-   */
-  const shallowScratch = await scratchDir({ prefix: 'artifact-generation-shallow-', },);
-  /**
-   Directory the shallow clone lives in.
-   */
-  const shallow = shallowScratch.path;
-  await spawn(
-    GIT,
-    [
-      'clone',
-      '--quiet',
-      '--depth',
-      String(HISTORY_LENGTH - 1,),
-      `file://${full}`,
-      shallow,
-    ],
-  );
-  return {
-    full,
-    shallow,
-    commits: [
-      first,
-      second,
-      third,
-    ],
-    [Symbol.asyncDispose]: async function removeHistory(): Promise<void> {
-      await fullScratch[Symbol.asyncDispose]();
-      await shallowScratch[Symbol.asyncDispose]();
+      /**
+       The three commits, oldest first, as git lists them.
+       */
+      const listed = (await git({
+        repository: full,
+        args: [
+          'rev-list',
+          '--reverse',
+          'HEAD',
+        ],
+      },))
+        .split('\n',);
+      const [
+        first,
+        second,
+        third,
+      ] = listed;
+      if ((first === undefined) || (second === undefined) || (third === undefined)) {
+        throw new Error(
+          `expected ${String(HISTORY_LENGTH,)} commits, git listed ${String(listed.length,)}`,
+        );
+      }
+      return { commits: [first, second, third,], };
     },
-  };
+  },);
+
+  // THE OUTER OWNS THE INNER FROM HERE: `fullScratch` already disposes
+  // itself on a throw inside its own setup, but nothing disposes it once it
+  // has returned until the caller's `await using` fires, so a throw from
+  // the shallow clone's own setup must still remove it here.
+  try {
+    /**
+     Shallow clone, which sees the last two commits only;
+     `scratchDirPrepared` removes it if the clone itself throws.
+     */
+    const shallowScratch = await scratchDirPrepared({
+      prefix: 'artifact-generation-shallow-',
+      prepare: async function cloned({ path: shallow, },): Promise<void> {
+        await spawn(
+          GIT,
+          [
+            'clone',
+            '--quiet',
+            '--depth',
+            String(HISTORY_LENGTH - 1,),
+            `file://${fullScratch.path}`,
+            shallow,
+          ],
+        );
+      },
+    },);
+    return {
+      full: fullScratch.path,
+      shallow: shallowScratch.path,
+      commits: fullScratch.commits,
+      [Symbol.asyncDispose]: async function removeHistory(): Promise<void> {
+        await shallowScratch[Symbol.asyncDispose]();
+        await fullScratch[Symbol.asyncDispose]();
+      },
+    };
+  }
+  catch (error) {
+    await fullScratch[Symbol.asyncDispose]();
+    throw error;
+  }
 }
 
 /**

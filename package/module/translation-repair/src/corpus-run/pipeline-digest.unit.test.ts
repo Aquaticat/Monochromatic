@@ -36,7 +36,7 @@ import {
   isDigestShaped,
   PipelineDigestError,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Contents of a minimal built output directory.
@@ -62,45 +62,37 @@ const BUILT = {
 async function writeBuild(
   { files, }: { readonly files: Readonly<Record<string, string>>; },
 ): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Disposable root for this case.
-   */
-  const scratch = await scratchDir({ prefix: 'pipeline-digest-', },);
-  /**
-   Directory this case's files land in.
-   */
-  const dir = scratch.path;
+  // Disposable root for this case.
+  return await scratchDirWith({
+    prefix: 'pipeline-digest-',
+    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
+      for (const [name, text,] of Object.entries(files,)) {
+        /**
+         Path this file takes inside the fixture.
+         */
+        const path = join(
+          dir,
+          name,
+        );
 
-  for (const [name, text,] of Object.entries(files,)) {
-    /**
-     Path this file takes inside the fixture.
-     */
-    const path = join(
-      dir,
-      name,
-    );
+        /* oxlint-disable-next-line no-await-in-loop -- fixture setup, and nesting means a later file can need a directory an earlier one created */
+        await mkdir(
+          join(
+            path,
+            '..',
+          ),
+          { recursive: true, },
+        );
+        /* oxlint-disable-next-line no-await-in-loop -- same, sequential by design */
+        await writeFile(
+          path,
+          text,
+        );
+      }
 
-    /* oxlint-disable-next-line no-await-in-loop -- fixture setup, and nesting means a later file can need a directory an earlier one created */
-    await mkdir(
-      join(
-        path,
-        '..',
-      ),
-      { recursive: true, },
-    );
-    /* oxlint-disable-next-line no-await-in-loop -- same, sequential by design */
-    await writeFile(
-      path,
-      text,
-    );
-  }
-
-  return {
-    dir,
-    [Symbol.asyncDispose]: async function removeBuild(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
+      return { dir, };
     },
-  };
+  },);
 }
 
 /**

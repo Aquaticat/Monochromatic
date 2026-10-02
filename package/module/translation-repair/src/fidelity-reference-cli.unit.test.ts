@@ -1,20 +1,16 @@
-import { mkdtemp, rm, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
 import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from './roster-seats.test-fixture.ts';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /** Native compiled CLI, never a source import. */
 const CLI = fileURLToPath(new URL('../dist/final/node/judge-fidelity-probe.mjs', import.meta.url));
 
 /** Runs only zero-call preflight in an owned empty runs directory. */
 async function preflight(extra: readonly string[]) {
-  const directory = await mkdtemp(join(tmpdir(), 'reviewed-fidelity-cli-'));
-  await using owned = { [Symbol.asyncDispose]: async () => {
-    await rm(directory, { recursive: true, force: true });
-  } };
+  await using owned = await scratchDir({ prefix: 'reviewed-fidelity-cli-' });
+  const directory = owned.path;
   const options = { cwd: directory, env: {
     TRANSLATION_REPAIR_RUNS_DIR: directory,
     TRANSLATION_REPAIR_CORPUS_CLONE_DIR: directory,

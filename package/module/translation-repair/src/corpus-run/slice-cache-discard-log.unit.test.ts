@@ -47,7 +47,7 @@ import {
   openNamespacedCache,
   type SliceNamespace,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -122,32 +122,24 @@ function collectingInto(
 async function cacheHolding(
   { names, }: { readonly names: readonly string[]; },
 ): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Throwaway directory standing in for a shared slice cache.
-   */
-  const scratch = await scratchDir({ prefix: 'translation-repair-slice-cache-', },);
-  /**
-   Directory this case's cache files land in.
-   */
-  const dir = scratch.path;
+  // Throwaway directory standing in for a shared slice cache.
+  return await scratchDirWith({
+    prefix: 'translation-repair-slice-cache-',
+    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
+      await Promise.all(names.map(async function writeOne(name,): Promise<void> {
+        await writeFile(
+          join(
+            dir,
+            name,
+          ),
+          '{}',
+          'utf8',
+        );
+      },),);
 
-  await Promise.all(names.map(async function writeOne(name,): Promise<void> {
-    await writeFile(
-      join(
-        dir,
-        name,
-      ),
-      '{}',
-      'utf8',
-    );
-  },),);
-
-  return {
-    dir,
-    [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
+      return { dir, };
     },
-  };
+  },);
 }
 
 /**

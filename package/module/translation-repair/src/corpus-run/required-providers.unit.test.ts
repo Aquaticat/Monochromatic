@@ -11,11 +11,6 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -37,6 +32,7 @@ import {
   RequiredProviderError,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
@@ -292,12 +288,8 @@ await describe({
             /**
              Directory holding this case's empty ledger.
              */
-            const dir = await mkdtemp(join(tmpdir(), 'required-providers-ledger-',),);
-            await using cleanup = {
-              [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
-                await rm(dir, { recursive: true, force: true, },);
-              },
-            };
+            await using scratch = await scratchDir({ prefix: 'required-providers-ledger-', },);
+            const dir = scratch.path;
             /**
              Gate over Bedrock with one credit override.
 

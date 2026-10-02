@@ -9,12 +9,6 @@
  */
 
 import { createHash, } from 'node:crypto';
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -45,6 +39,7 @@ import {
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Logger the round writes to, whose lines are not under test.
@@ -371,12 +366,8 @@ await describe({
             /**
              Entry cache directory this case owns.
              */
-            const dir = await mkdtemp(join(tmpdir(), 'page-title-cache-',),);
-            await using cleanup = {
-              [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
-                await rm(dir, { recursive: true, force: true, },);
-              },
-            };
+            await using scratch = await scratchDir({ prefix: 'page-title-cache-', },);
+            const dir = scratch.path;
             /**
              One settled title, every field of the right shape.
              */

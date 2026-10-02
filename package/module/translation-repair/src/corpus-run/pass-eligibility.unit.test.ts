@@ -14,8 +14,6 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -36,6 +34,7 @@ import {
   CorpusReadError,
 } from '../../dist/final/node/index.mjs';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Pages the throwaway clone carries, by entry then side.
@@ -73,124 +72,117 @@ async function throwawayCorpus(): Promise<
     readonly commitSha: string;
   }
 > {
-  /**
-   Where the clone lives.
-   */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'pass-eligibility-',
-  ),);
-  await spawn(
-    REAL_GIT,
-    [
-      'init',
-      cloneDir,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
+  // Where the clone lives.
+  return await scratchDirWith({
+    prefix: 'pass-eligibility-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{
+      readonly cloneDir: string;
+      readonly commitSha: string;
+    }> {
+      await spawn(
+        REAL_GIT,
+        [
+          'init',
+          cloneDir,
+        ],
+        {
+          env: {
+            GIT_CONFIG_GLOBAL: devNull,
+            GIT_CONFIG_SYSTEM: devNull,
+          },
+        },
+      );
 
-  /**
-   Every path written, for explicit staging.
-   */
-  const written: string[] = [];
-  for (const [entryId, pages,] of Object.entries(PAGES,)) {
-    for (const [name, text,] of Object.entries(pages,)) {
       /**
-       Path within the clone.
+       Every path written, for explicit staging.
        */
-      const relPath = `people/${entryId}/${name}`;
-      written.push(relPath,);
-      /* oxlint-disable-next-line no-await-in-loop -- fixture setup writes a handful of files in order */
+      const written: string[] = [];
+      for (const [entryId, pages,] of Object.entries(PAGES,)) {
+        for (const [name, text,] of Object.entries(pages,)) {
+          /**
+           Path within the clone.
+           */
+          const relPath = `people/${entryId}/${name}`;
+          written.push(relPath,);
+          /* oxlint-disable-next-line no-await-in-loop -- fixture setup writes a handful of files in order */
+          await mkdir(
+            join(
+              cloneDir,
+              'people',
+              entryId,
+            ),
+            { recursive: true, },
+          );
+          /* oxlint-disable-next-line no-await-in-loop -- fixture setup writes a handful of files in order */
+          await writeFile(
+            join(
+              cloneDir,
+              relPath,
+            ),
+            text,
+            'utf8',
+          );
+        }
+      }
       await mkdir(
         join(
           cloneDir,
           'people',
-          entryId,
+          HALF_ENTRY,
         ),
         { recursive: true, },
       );
-      /* oxlint-disable-next-line no-await-in-loop -- fixture setup writes a handful of files in order */
       await writeFile(
         join(
           cloneDir,
-          relPath,
+          'people',
+          HALF_ENTRY,
+          'page.md',
         ),
-        text,
+        '## 简介\n\n猫猫有自己的碗。\n',
         'utf8',
       );
-    }
-  }
-  await mkdir(
-    join(
-      cloneDir,
-      'people',
-      HALF_ENTRY,
-    ),
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      cloneDir,
-      'people',
-      HALF_ENTRY,
-      'page.md',
-    ),
-    '## 简介\n\n猫猫有自己的碗。\n',
-    'utf8',
-  );
-  written.push(`people/${HALF_ENTRY}/page.md`,);
-  await fixtureGit({
-    cloneDir,
-    args: [
-      'add',
-      ...written,
-    ],
-  },);
-  await fixtureGit({
-    cloneDir,
-    args: [
-      '-c',
-      'user.name=cat',
-      '-c',
-      'user.email=cat@example.org',
-      'commit',
-      '--message',
-      'add cats',
-      '--no-gpg-sign',
-      '--',
-      ...written,
-    ],
-  },);
-
-  /**
-   Commit the entries sit at.
-   */
-  const commitSha = (await fixtureGit({
-    cloneDir,
-    args: [
-      'rev-parse',
-      'HEAD',
-    ],
-  },))
-    .trim();
-  return {
-    cloneDir,
-    commitSha,
-    [Symbol.asyncDispose]: async function removeClone() {
-      await rm(
+      written.push(`people/${HALF_ENTRY}/page.md`,);
+      await fixtureGit({
         cloneDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
+        args: [
+          'add',
+          ...written,
+        ],
+      },);
+      await fixtureGit({
+        cloneDir,
+        args: [
+          '-c',
+          'user.name=cat',
+          '-c',
+          'user.email=cat@example.org',
+          'commit',
+          '--message',
+          'add cats',
+          '--no-gpg-sign',
+          '--',
+          ...written,
+        ],
+      },);
+
+      /**
+       Commit the entries sit at.
+       */
+      const commitSha = (await fixtureGit({
+        cloneDir,
+        args: [
+          'rev-parse',
+          'HEAD',
+        ],
+      },))
+        .trim();
+      return {
+        cloneDir,
+        commitSha,
+      };
     },
-  };
+  },);
 }
 
 await describe({

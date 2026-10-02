@@ -14,15 +14,10 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import {
-  devNull,
-  tmpdir,
-} from 'node:os';
+import { devNull, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -47,7 +42,10 @@ import {
   recipeLabel,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import {
+  scratchDir,
+  scratchDirWith,
+} from '../scratch-dir.test-fixture.ts';
 import { rawResultFor, } from './lane-result-evidence.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 
@@ -104,104 +102,97 @@ async function throwawayCorpus(
     readonly commitSha: string;
   }
 > {
-  /**
-   Where the clone lives.
-   */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-settled-carve-',
-  ),);
-  await spawn(
-    REAL_GIT,
-    [
-      'init',
-      cloneDir,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-
-  /**
-   Entry directory.
-   */
-  const dir = join(
-    cloneDir,
-    'people',
-    ENTRY_ID,
-  );
-  await mkdir(
-    dir,
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      dir,
-      'page.md',
-    ),
-    sourcePage,
-    'utf8',
-  );
-  await writeFile(
-    join(
-      dir,
-      'page.en.md',
-    ),
-    targetPage,
-    'utf8',
-  );
-  await fixtureGit({
-    cloneDir,
-    args: [
-      'add',
-      `people/${ENTRY_ID}/page.md`,
-      `people/${ENTRY_ID}/page.en.md`,
-    ],
-  },);
-  await fixtureGit({
-    cloneDir,
-    args: [
-      '-c',
-      'user.name=cat',
-      '-c',
-      'user.email=cat@example.org',
-      'commit',
-      '--message',
-      'add whiskers',
-      '--no-gpg-sign',
-      '--',
-      `people/${ENTRY_ID}/page.md`,
-      `people/${ENTRY_ID}/page.en.md`,
-    ],
-  },);
-
-  /**
-   Commit the entry sits at.
-   */
-  const commitSha = (await fixtureGit({
-    cloneDir,
-    args: [
-      'rev-parse',
-      'HEAD',
-    ],
-  },))
-    .trim();
-  return {
-    cloneDir,
-    commitSha,
-    [Symbol.asyncDispose]: async function removeClone() {
-      await rm(
-        cloneDir,
+  // Where the clone lives.
+  return await scratchDirWith({
+    prefix: 'whiskers-settled-carve-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{
+      readonly cloneDir: string;
+      readonly commitSha: string;
+    }> {
+      await spawn(
+        REAL_GIT,
+        [
+          'init',
+          cloneDir,
+        ],
         {
-          recursive: true,
-          force: true,
+          env: {
+            GIT_CONFIG_GLOBAL: devNull,
+            GIT_CONFIG_SYSTEM: devNull,
+          },
         },
       );
+
+      /**
+       Entry directory.
+       */
+      const dir = join(
+        cloneDir,
+        'people',
+        ENTRY_ID,
+      );
+      await mkdir(
+        dir,
+        { recursive: true, },
+      );
+      await writeFile(
+        join(
+          dir,
+          'page.md',
+        ),
+        sourcePage,
+        'utf8',
+      );
+      await writeFile(
+        join(
+          dir,
+          'page.en.md',
+        ),
+        targetPage,
+        'utf8',
+      );
+      await fixtureGit({
+        cloneDir,
+        args: [
+          'add',
+          `people/${ENTRY_ID}/page.md`,
+          `people/${ENTRY_ID}/page.en.md`,
+        ],
+      },);
+      await fixtureGit({
+        cloneDir,
+        args: [
+          '-c',
+          'user.name=cat',
+          '-c',
+          'user.email=cat@example.org',
+          'commit',
+          '--message',
+          'add whiskers',
+          '--no-gpg-sign',
+          '--',
+          `people/${ENTRY_ID}/page.md`,
+          `people/${ENTRY_ID}/page.en.md`,
+        ],
+      },);
+
+      /**
+       Commit the entry sits at.
+       */
+      const commitSha = (await fixtureGit({
+        cloneDir,
+        args: [
+          'rev-parse',
+          'HEAD',
+        ],
+      },))
+        .trim();
+      return {
+        cloneDir,
+        commitSha,
+      };
     },
-  };
+  },);
 }
 
 /**

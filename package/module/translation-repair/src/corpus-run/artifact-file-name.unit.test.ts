@@ -8,8 +8,8 @@
  cover the name predicate, the entry id, and the listing that reports an
  absent directory rather than raising.
 
- DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp` directory,
- removed when the case ends, and nothing here reads a real run.
+ DISPOSABLE FIXTURES ONLY: every case writes into its own `scratchDir`
+ directory, removed when the case ends, and nothing here reads a real run.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -18,12 +18,9 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -40,6 +37,7 @@ import {
   isArtifactFileName,
   listArtifactFiles,
 } from '../../dist/final/node/index.mjs';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Artifact file name tests
 
@@ -59,37 +57,24 @@ import {
 async function directoryHolding(
   { names, }: { readonly names: readonly string[]; },
 ): Promise<AsyncDisposable & { readonly dir: string; }> {
-  /**
-   Disposable root for this case.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'artifact-file-name-',
-  ),);
+  // Disposable root for this case.
+  return await scratchDirWith({
+    prefix: 'artifact-file-name-',
+    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
+      await Promise.all(names.map(async function writeOne(name,): Promise<void> {
+        await writeFile(
+          join(
+            dir,
+            name,
+          ),
+          '{}',
+          'utf8',
+        );
+      },),);
 
-  await Promise.all(names.map(async function writeOne(name,): Promise<void> {
-    await writeFile(
-      join(
-        dir,
-        name,
-      ),
-      '{}',
-      'utf8',
-    );
-  },),);
-
-  return {
-    dir,
-    [Symbol.asyncDispose]: async function removeDirectory() {
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
+      return { dir, };
     },
-  };
+  },);
 }
 
 await describe({

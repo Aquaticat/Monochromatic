@@ -16,11 +16,8 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
@@ -44,7 +41,10 @@ import {
   readArtifactSubjects,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import {
+  scratchDir,
+  scratchDirWith,
+} from '../scratch-dir.test-fixture.ts';
 import { rawResultFor, } from './lane-result-evidence.test-fixture.ts';
 
 /**
@@ -279,51 +279,43 @@ async function makeCorpus(): Promise<
     readonly commitSha: string;
   }
 > {
-  /**
-   Fresh temp directory holding the throwaway repository.
-   */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'settled-audit-corpus-',
-  ),);
-
-  await spawn(
-    REAL_GIT,
-    [
-      'init',
-      cloneDir,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: DEV_NULL,
-        GIT_CONFIG_SYSTEM: DEV_NULL,
-      },
-    },
-  );
-
-  /**
-   Commit the pair landed in, which every fixture artifact pins.
-   */
-  const commitSha = await commitEntry({
-    cloneDir,
-    entryId: ENTRY_ID,
-    sourcePage: SOURCE_PAGE,
-    targetPage: TARGET_PAGE,
-  },);
-
-  return {
-    cloneDir,
-    commitSha,
-    [Symbol.asyncDispose]: async function removeClone() {
-      await rm(
-        cloneDir,
+  // Fresh temp directory holding the throwaway repository.
+  return await scratchDirWith({
+    prefix: 'settled-audit-corpus-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{
+      readonly cloneDir: string;
+      readonly commitSha: string;
+    }> {
+      await spawn(
+        REAL_GIT,
+        [
+          'init',
+          cloneDir,
+        ],
         {
-          recursive: true,
-          force: true,
+          env: {
+            GIT_CONFIG_GLOBAL: DEV_NULL,
+            GIT_CONFIG_SYSTEM: DEV_NULL,
+          },
         },
       );
+
+      /**
+       Commit the pair landed in, which every fixture artifact pins.
+       */
+      const commitSha = await commitEntry({
+        cloneDir,
+        entryId: ENTRY_ID,
+        sourcePage: SOURCE_PAGE,
+        targetPage: TARGET_PAGE,
+      },);
+
+      return {
+        cloneDir,
+        commitSha,
+      };
     },
-  };
+  },);
 }
 
 /**

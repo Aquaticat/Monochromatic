@@ -27,12 +27,7 @@
  @module
  */
 
-import {
-  mkdtemp,
-  rm,
-  writeFile,
-} from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -52,6 +47,7 @@ import {
   poolGeneration,
   selectEligible,
 } from '../../dist/final/node/index.mjs';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Pool generation tests
 
@@ -186,41 +182,28 @@ const PLACED_DIGEST = `sha256-tree-v1:${'0123456789abcdef'.repeat(4,)}`;
 async function settledArtifacts(
   { entryIds, }: { readonly entryIds: readonly string[]; },
 ): Promise<AsyncDisposable & { readonly artifactsDir: string; }> {
-  /**
-   Throwaway artifacts directory, never a real run.
-   */
-  const artifactsDir = await mkdtemp(join(
-    tmpdir(),
-    'pool-generation-',
-  ),);
+  // Throwaway artifacts directory, never a real run.
+  return await scratchDirWith({
+    prefix: 'pool-generation-',
+    setup: async function seeded({ path: artifactsDir, },): Promise<{ readonly artifactsDir: string; }> {
+      await Promise.all(entryIds.map(async function settleOne(entryId,): Promise<void> {
+        await writeFile(
+          join(
+            artifactsDir,
+            `${entryId}.json`,
+          ),
+          JSON.stringify({
+            id: entryId,
+            tip: PLACED_TIP,
+            pipelineDigest: PLACED_DIGEST,
+          },),
+          'utf8',
+        );
+      },),);
 
-  await Promise.all(entryIds.map(async function settleOne(entryId,): Promise<void> {
-    await writeFile(
-      join(
-        artifactsDir,
-        `${entryId}.json`,
-      ),
-      JSON.stringify({
-        id: entryId,
-        tip: PLACED_TIP,
-        pipelineDigest: PLACED_DIGEST,
-      },),
-      'utf8',
-    );
-  },),);
-
-  return {
-    artifactsDir,
-    [Symbol.asyncDispose]: async function removeArtifacts() {
-      await rm(
-        artifactsDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
+      return { artifactsDir, };
     },
-  };
+  },);
 }
 
 await describe({

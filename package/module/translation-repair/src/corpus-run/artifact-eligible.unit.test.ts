@@ -39,7 +39,7 @@ import {
   MixedGenerationError,
   selectEligible,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  One built pipeline, as a digest-shaped invention.
@@ -139,44 +139,36 @@ async function writeArtifacts(
     }>[];
   },
 ): Promise<{ readonly dir: string; } & AsyncDisposable> {
-  /**
-   Disposable root for this case.
-   */
-  const scratch = await scratchDir({ prefix: 'artifact-generation-', },);
-  /**
-   Directory this case writes artifacts into.
-   */
-  const dir = scratch.path;
+  // Disposable root for this case.
+  return await scratchDirWith({
+    prefix: 'artifact-generation-',
+    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
+      await Promise.all(
+        entries.map(async function writeOne(entry,) {
+          /**
+           Artifact body, carrying each identity only when one was given.
+           */
+          const body = {
+            id: entry.entryId,
+            status: 'repaired',
+            ...('tip' in entry ? { tip: entry.tip, } : {}),
+            ...('digest' in entry ? { pipelineDigest: entry.digest, } : {}),
+          };
 
-  await Promise.all(
-    entries.map(async function writeOne(entry,) {
-      /**
-       Artifact body, carrying each identity only when one was given.
-       */
-      const body = {
-        id: entry.entryId,
-        status: 'repaired',
-        ...('tip' in entry ? { tip: entry.tip, } : {}),
-        ...('digest' in entry ? { pipelineDigest: entry.digest, } : {}),
-      };
-
-      await writeFile(
-        join(
-          dir,
-          `${entry.entryId}.json`,
-        ),
-        JSON.stringify(body,),
-        'utf8',
+          await writeFile(
+            join(
+              dir,
+              `${entry.entryId}.json`,
+            ),
+            JSON.stringify(body,),
+            'utf8',
+          );
+        },),
       );
-    },),
-  );
 
-  return {
-    dir,
-    [Symbol.asyncDispose]: async function removeArtifacts(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
+      return { dir, };
     },
-  };
+  },);
 }
 
 await describe({

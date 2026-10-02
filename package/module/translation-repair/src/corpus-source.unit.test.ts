@@ -8,8 +8,6 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -31,6 +29,7 @@ import {
   readCorpusFile,
 } from '../dist/final/node/index.mjs';
 import { fixtureGit, REAL_GIT, } from './hermetic-git-run.test-fixture.ts';
+import { scratchDirWith, } from './scratch-dir.test-fixture.ts';
 
 /**
  Invented zh page content committed into the throwaway clone.
@@ -60,110 +59,102 @@ async function makeThrowawayClone(): Promise<
     readonly commitSha: string;
   }
 > {
-  /**
-   Fresh temp directory holding the throwaway repository.
-   */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'translation-repair-corpus-',
-  ),);
-
-  await spawn(
-    REAL_GIT,
-    [
-      'init',
-      cloneDir,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  await mkdir(
-    join(
-      cloneDir,
-      'people',
-      'whiskers',
-    ),
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      cloneDir,
-      'people',
-      'whiskers',
-      'page.md',
-    ),
-    WHISKERS_PAGE,
-    'utf8',
-  );
-  await mkdir(
-    join(
-      cloneDir,
-      'people',
-      'tabby',
-    ),
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      cloneDir,
-      'people',
-      'tabby',
-      'page.md',
-    ),
-    TABBY_CRLF_PAGE,
-    'utf8',
-  );
-  await fixtureGit({
-    cloneDir,
-    args: [
-      'add',
-      'people/whiskers/page.md',
-      'people/tabby/page.md',
-    ],
-  },);
-  await fixtureGit({
-    cloneDir,
-    args: [
-      '-c',
-      'user.name=cat',
-      '-c',
-      'user.email=cat@example.org',
-      'commit',
-      '--message',
-      'add whiskers',
-      '--no-gpg-sign',
-    ],
-  },);
-
-  /**
-   Commit every test read pins to.
-   */
-  const commitSha = (await fixtureGit({
-    cloneDir,
-    args: [
-      'rev-parse',
-      'HEAD',
-    ],
-  },))
-    .trim();
-
-  return {
-    cloneDir,
-    commitSha,
-    [Symbol.asyncDispose]: async function removeClone() {
-      await rm(
-        cloneDir,
+  // Fresh temp directory holding the throwaway repository.
+  return await scratchDirWith({
+    prefix: 'translation-repair-corpus-',
+    setup: async function seeded({ path: cloneDir, },): Promise<{
+      readonly cloneDir: string;
+      readonly commitSha: string;
+    }> {
+      await spawn(
+        REAL_GIT,
+        [
+          'init',
+          cloneDir,
+        ],
         {
-          recursive: true,
-          force: true,
+          env: {
+            GIT_CONFIG_GLOBAL: devNull,
+            GIT_CONFIG_SYSTEM: devNull,
+          },
         },
       );
+      await mkdir(
+        join(
+          cloneDir,
+          'people',
+          'whiskers',
+        ),
+        { recursive: true, },
+      );
+      await writeFile(
+        join(
+          cloneDir,
+          'people',
+          'whiskers',
+          'page.md',
+        ),
+        WHISKERS_PAGE,
+        'utf8',
+      );
+      await mkdir(
+        join(
+          cloneDir,
+          'people',
+          'tabby',
+        ),
+        { recursive: true, },
+      );
+      await writeFile(
+        join(
+          cloneDir,
+          'people',
+          'tabby',
+          'page.md',
+        ),
+        TABBY_CRLF_PAGE,
+        'utf8',
+      );
+      await fixtureGit({
+        cloneDir,
+        args: [
+          'add',
+          'people/whiskers/page.md',
+          'people/tabby/page.md',
+        ],
+      },);
+      await fixtureGit({
+        cloneDir,
+        args: [
+          '-c',
+          'user.name=cat',
+          '-c',
+          'user.email=cat@example.org',
+          'commit',
+          '--message',
+          'add whiskers',
+          '--no-gpg-sign',
+        ],
+      },);
+
+      /**
+       Commit every test read pins to.
+       */
+      const commitSha = (await fixtureGit({
+        cloneDir,
+        args: [
+          'rev-parse',
+          'HEAD',
+        ],
+      },))
+        .trim();
+
+      return {
+        cloneDir,
+        commitSha,
+      };
     },
-  };
+  },);
 }
 
 await describe({

@@ -12,12 +12,9 @@
  */
 
 import {
-  mkdtemp,
   readFile,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -32,6 +29,10 @@ import {
   readTextOrEmptyIfMissing,
   rethrowUnlessMissingPath,
 } from '../dist/final/node/index.mjs';
+import {
+  scratchDir,
+  scratchDirWith,
+} from './scratch-dir.test-fixture.ts';
 
 /**
  Runs a body and hands back what it threw.
@@ -76,51 +77,44 @@ async function realFailures(): Promise<{
   readonly absent: unknown;
   readonly throughFile: unknown;
 } & AsyncDisposable> {
-  /**
-   Directory this case owns.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'missing-path-error-',
-  ),);
-  /**
-   A regular file where a directory would have to be.
-   */
-  const litterBox = join(
-    dir,
-    'litter-box.txt',
-  );
-  await writeFile(
-    litterBox,
-    'A cat sleeps here.\n',
-  );
-  return {
-    absent: await caughtFrom({
-      body: async () => {
-        await readFile(join(
-          dir,
-          'no-cat-here.txt',
-        ),);
-      },
-    },),
-    throughFile: await caughtFrom({
-      body: async () => {
-        await readFile(join(
-          litterBox,
-          'kitten.txt',
-        ),);
-      },
-    },),
-    [Symbol.asyncDispose]: async () => {
-      await rm(
+  // Directory this case owns.
+  return await scratchDirWith({
+    prefix: 'missing-path-error-',
+    setup: async function seeded({ path: dir, },): Promise<{
+      readonly absent: unknown;
+      readonly throughFile: unknown;
+    }> {
+      /**
+       A regular file where a directory would have to be.
+       */
+      const litterBox = join(
         dir,
-        {
-          recursive: true,
-          force: true,
-        },
+        'litter-box.txt',
       );
+      await writeFile(
+        litterBox,
+        'A cat sleeps here.\n',
+      );
+      return {
+        absent: await caughtFrom({
+          body: async () => {
+            await readFile(join(
+              dir,
+              'no-cat-here.txt',
+            ),);
+          },
+        },),
+        throughFile: await caughtFrom({
+          body: async () => {
+            await readFile(join(
+              litterBox,
+              'kitten.txt',
+            ),);
+          },
+        },),
+      };
     },
-  };
+  },);
 }
 
 await describe({
@@ -216,21 +210,11 @@ await describe({
             /**
              Directory this case owns.
              */
-            const dir = await mkdtemp(join(
-              tmpdir(),
-              'read-text-if-present-',
-            ),);
-            await using owned = {
-              [Symbol.asyncDispose]: async () => {
-                await rm(
-                  dir,
-                  {
-                    recursive: true,
-                    force: true,
-                  },
-                );
-              },
-            };
+            await using owned = await scratchDir({ prefix: 'read-text-if-present-', },);
+            /**
+             Working path of the directory this case owns.
+             */
+            const dir = owned.path;
             /**
              A file with a line in it.
              */

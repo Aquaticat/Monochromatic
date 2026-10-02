@@ -32,14 +32,9 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import {
-  devNull,
-  tmpdir,
-} from 'node:os';
+import { devNull, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -57,6 +52,7 @@ import {
   type RelabelCase,
 } from '../../dist/final/node/index.mjs';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Probe relabel gathering tests
 
@@ -470,156 +466,165 @@ async function gatheringRig(
     .TRANSLATION_REPAIR_RUNS_DIR;
 
   /**
-   Fresh temp directory holding the throwaway corpus repository.
+   Throwaway corpus clone, built and guarded on its own: a throw anywhere in
+   its own setup already removes it, through scratchDirWith's own `catch`.
    */
-  const cloneDir = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-relabel-corpus-',
-  ),);
-
-  /**
-   Fresh temp directory standing in for a run.
-   */
-  const runsDir = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-relabel-runs-',
-  ),);
-
-  await spawn(
-    REAL_GIT,
-    [
-      'init',
-      cloneDir,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  await mkdir(
-    join(
-      cloneDir,
-      'people',
-      ENTRY_ID,
-    ),
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      cloneDir,
-      'people',
-      ENTRY_ID,
-      'page.md',
-    ),
-    SOURCE_PAGE,
-    'utf8',
-  );
-  await writeFile(
-    join(
-      cloneDir,
-      'people',
-      ENTRY_ID,
-      'page.en.md',
-    ),
-    TARGET_PAGE,
-    'utf8',
-  );
-  await fixtureGit({
-    cloneDir,
-    args: [
-      'add',
-      `people/${ENTRY_ID}/page.md`,
-      `people/${ENTRY_ID}/page.en.md`,
-    ],
-  },);
-  await fixtureGit({
-    cloneDir,
-    args: [
-      '-c',
-      'user.name=cat',
-      '-c',
-      'user.email=cat@example.org',
-      'commit',
-      '--message',
-      'add whiskers',
-      '--no-gpg-sign',
-    ],
-  },);
-
-  /**
-   Commit every read pins to.
-   */
-  const commitSha = (await fixtureGit({
-    cloneDir,
-    args: [
-      'rev-parse',
-      'HEAD',
-    ],
-  },))
-    .trim();
-
-  await mkdir(
-    join(
-      runsDir,
-      'artifacts',
-    ),
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      runsDir,
-      'artifacts',
-      `${ENTRY_ID}.json`,
-    ),
-    JSON.stringify(settledArtifact(),),
-    'utf8',
-  );
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = runsDir;
-
-  /**
-   Path the manifest was written to, outside the runs directory because the
-   reader takes whatever path it is handed.
-   */
-  const manifestPath = join(
-    runsDir,
-    'manifest.json',
-  );
-
-  await writeFile(
-    manifestPath,
-    JSON.stringify(drawnManifest({ alsoDrawn, },),),
-    'utf8',
-  );
-
-  return {
-    pin: {
-      cloneDir,
-      commitSha,
-    },
-    manifestPath,
-    [Symbol.asyncDispose]: async function removeRig() {
-      if (before === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-      await rm(
+  const corpus = await scratchDirWith({
+    prefix: 'whiskers-relabel-corpus-',
+    setup: async function cloned({ path: cloneDir, },): Promise<{ readonly commitSha: string; }> {
+      await spawn(
+        REAL_GIT,
+        [
+          'init',
+          cloneDir,
+        ],
+        {
+          env: {
+            GIT_CONFIG_GLOBAL: devNull,
+            GIT_CONFIG_SYSTEM: devNull,
+          },
+        },
+      );
+      await mkdir(
+        join(
+          cloneDir,
+          'people',
+          ENTRY_ID,
+        ),
+        { recursive: true, },
+      );
+      await writeFile(
+        join(
+          cloneDir,
+          'people',
+          ENTRY_ID,
+          'page.md',
+        ),
+        SOURCE_PAGE,
+        'utf8',
+      );
+      await writeFile(
+        join(
+          cloneDir,
+          'people',
+          ENTRY_ID,
+          'page.en.md',
+        ),
+        TARGET_PAGE,
+        'utf8',
+      );
+      await fixtureGit({
         cloneDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-      await rm(
-        runsDir,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
+        args: [
+          'add',
+          `people/${ENTRY_ID}/page.md`,
+          `people/${ENTRY_ID}/page.en.md`,
+        ],
+      },);
+      await fixtureGit({
+        cloneDir,
+        args: [
+          '-c',
+          'user.name=cat',
+          '-c',
+          'user.email=cat@example.org',
+          'commit',
+          '--message',
+          'add whiskers',
+          '--no-gpg-sign',
+        ],
+      },);
+
+      /**
+       Commit every read pins to.
+       */
+      const commitSha = (await fixtureGit({
+        cloneDir,
+        args: [
+          'rev-parse',
+          'HEAD',
+        ],
+      },))
+        .trim();
+
+      return { commitSha, };
     },
-  };
+  },);
+
+  // THE OUTER OWNS THE INNER FROM HERE: `corpus` already disposes itself on
+  // a throw inside its own setup, but once it has returned successfully
+  // nothing disposes it automatically until the caller's `await using`
+  // fires, so a throw from the runs directory's own setup (guarded the same
+  // way, by its own scratchDirWith) must still remove `corpus` here.
+  try {
+    /**
+     Throwaway runs directory holding one settled artifact and the drawn
+     manifest.
+     */
+    const runs = await scratchDirWith({
+      prefix: 'whiskers-relabel-runs-',
+      setup: async function seeded({ path: runsDir, },): Promise<{ readonly manifestPath: string; }> {
+        await mkdir(
+          join(
+            runsDir,
+            'artifacts',
+          ),
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            runsDir,
+            'artifacts',
+            `${ENTRY_ID}.json`,
+          ),
+          JSON.stringify(settledArtifact(),),
+          'utf8',
+        );
+
+        /**
+         Path the manifest was written to, outside the runs directory
+         because the reader takes whatever path it is handed.
+         */
+        const manifestPath = join(
+          runsDir,
+          'manifest.json',
+        );
+
+        await writeFile(
+          manifestPath,
+          JSON.stringify(drawnManifest({ alsoDrawn, },),),
+          'utf8',
+        );
+
+        return { manifestPath, };
+      },
+    },);
+
+    // SET ONLY AFTER `runs` SUCCEEDS, so nothing between here and the return
+    // can throw and leave the variable pointing at a directory this
+    // function is about to remove.
+    process.env.TRANSLATION_REPAIR_RUNS_DIR = runs.path;
+
+    return {
+      pin: {
+        cloneDir: corpus.path,
+        commitSha: corpus.commitSha,
+      },
+      manifestPath: runs.manifestPath,
+      [Symbol.asyncDispose]: async function removeRig() {
+        if (before === undefined)
+          delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
+        else
+          process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
+        await runs[Symbol.asyncDispose]();
+        await corpus[Symbol.asyncDispose]();
+      },
+    };
+  }
+  catch (error) {
+    await corpus[Symbol.asyncDispose]();
+    throw error;
+  }
 }
 
 /**

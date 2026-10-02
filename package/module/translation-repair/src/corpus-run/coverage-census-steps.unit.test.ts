@@ -11,11 +11,9 @@
 
 import {
   mkdir,
-  mkdtempDisposable,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -35,18 +33,13 @@ import {
   tallyCoverage,
   unloadedSourcesOf,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
- A fresh directory removed with its contents when the test's scope ends.
-
- @returns The directory
+ Start of each case's throwaway directory name, so a leftover shows this
+ file made it; each case binds its own `scratchDir` with `await using`.
  */
-async function scratch() {
-  return mkdtempDisposable(join(
-    tmpdir(),
-    'translation-repair-census-test-',
-  ),);
-}
+const SCRATCH_PREFIX = 'translation-repair-census-test-';
 
 /**
  A coverage file of one process loading `nap.mjs` from the given build.
@@ -128,7 +121,7 @@ await describe({
         it({
           name: 'COUNTS THE MARKERS A PASSING COMMAND PRINTED, with the coverage directory handed to it',
           fn: async () => {
-            await using directory = await scratch();
+            await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             const coverageDirectory = join(
               directory.path,
               'coverage',
@@ -166,7 +159,7 @@ await describe({
         it({
           name: 'READS A FAILING COMMAND\'S EXIT CODE AND FAIL MARKERS, and a command that never started as exit 1',
           fn: async () => {
-            await using directory = await scratch();
+            await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             const logPath = join(
               directory.path,
               'suite.log',
@@ -212,7 +205,7 @@ await describe({
         it({
           name: 'READS EVERY COVERAGE FILE TWICE: a block one process lists as cold ran in the other, and one file alone leaves it cold',
           fn: async () => {
-            await using both = await scratch();
+            await using both = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             await writeFile(
               join(
                 both.path,
@@ -240,7 +233,7 @@ await describe({
             expect(tally.coldStretches(),).toEqual([],);
             expect(tally.loadedBundles(),).toEqual(['nap.mjs',],);
 
-            await using one = await scratch();
+            await using one = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             await writeFile(
               join(
                 one.path,
@@ -265,7 +258,7 @@ await describe({
         it({
           name: 'REFUSES A COVERAGE FILE THAT DOES NOT READ as V8 writes one',
           fn: async () => {
-            await using directory = await scratch();
+            await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             await writeFile(
               join(
                 directory.path,
@@ -289,7 +282,7 @@ await describe({
         it({
           name: 'YIELDS EACH FILE\'S BUNDLE SCRIPTS IN THE ORDER GIVEN',
           fn: async () => {
-            await using directory = await scratch();
+            await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             const purrPrefix = 'file:///cattery/purr/';
             const paths = [
               join(
@@ -334,7 +327,7 @@ await describe({
         it({
           name: 'READS A BUNDLE AND ITS MAP, naming its sources from the package',
           fn: async () => {
-            await using directory = await scratch();
+            await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             const distDirectory = join(
               directory.path,
               'dist',
@@ -383,7 +376,7 @@ await describe({
         it({
           name: 'REFUSES A BUNDLE WHOSE MAP DOES NOT READ as a version 3 map',
           fn: async () => {
-            await using directory = await scratch();
+            await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             await writeFile(
               join(
                 directory.path,
@@ -415,7 +408,7 @@ await describe({
         it({
           name: 'KEEPS EACH SOURCE ONCE, LEAVES OUT ONE A LOADED BUNDLE CARRIES, and counts each one\'s physical lines with its kind',
           fn: async () => {
-            await using directory = await scratch();
+            await using directory = await scratchDir({ prefix: SCRATCH_PREFIX, },);
             await mkdir(
               join(
                 directory.path,

@@ -1,5 +1,4 @@
-import { mkdtemp, readFile, readdir, rm, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { readFile, readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -18,6 +17,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
@@ -52,10 +52,8 @@ await describe({
         : crossed ? 'reorders after forced elimination while refusing to cache the incomplete initial agreement'
         : 'reprepares changed target text with fresh cache keys and current node metadata, then reuses both warm recipes',
       fn: async () => {
-        const entryCacheDir = await mkdtemp(join(tmpdir(), 'footnote-pass-lifecycle-'));
-        await using owned = { [Symbol.asyncDispose]: async (): Promise<void> => {
-          await rm(entryCacheDir, { recursive: true, force: true });
-        } };
+        await using owned = await scratchDir({ prefix: 'footnote-pass-lifecycle-' });
+        const entryCacheDir = owned.path;
         // Model I/O uses only the injected transport, and the preparation reads
         // nothing from outside the pipeline (ledger X19).
         const calls: { readonly phase: string; readonly body: string; }[] = [];

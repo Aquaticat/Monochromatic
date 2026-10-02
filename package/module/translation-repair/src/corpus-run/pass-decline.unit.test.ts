@@ -38,7 +38,7 @@ import {
   removeDeclinedPages,
 } from '../../dist/final/node/index.mjs';
 import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Hex digits in a tree digest.
@@ -81,36 +81,35 @@ async function runsDirectory(): Promise<{
   readonly publishDir: string;
   readonly pageDir: string;
 } & AsyncDisposable> {
-  /**
-   Runs directory this case owns.
-   */
-  const scratch = await scratchDir({ prefix: 'pass-decline-', },);
-  /**
-   The runs directory.
-   */
-  const runsDir = scratch.path;
-  /**
-   Root of the mirrored tree.
-   */
-  const publishDir = join(
-    runsDir,
-    'fixed',
-  );
-  return {
-    declinedDir: join(
-      runsDir,
-      'declined',
-    ),
-    publishDir,
-    pageDir: join(
-      publishDir,
-      'people',
-      ENTRY.id,
-    ),
-    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
+  // Runs directory this case owns.
+  return await scratchDirWith({
+    prefix: 'pass-decline-',
+    setup: async function named({ path: runsDir, },): Promise<{
+      readonly declinedDir: string;
+      readonly publishDir: string;
+      readonly pageDir: string;
+    }> {
+      /**
+       Root of the mirrored tree.
+       */
+      const publishDir = join(
+        runsDir,
+        'fixed',
+      );
+      return {
+        declinedDir: join(
+          runsDir,
+          'declined',
+        ),
+        publishDir,
+        pageDir: join(
+          publishDir,
+          'people',
+          ENTRY.id,
+        ),
+      };
     },
-  };
+  },);
 }
 
 /**

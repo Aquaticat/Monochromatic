@@ -31,7 +31,10 @@ import {
   prepareDocumentPair,
   republishSettledPages,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import {
+  scratchDir,
+  scratchDirWith,
+} from '../scratch-dir.test-fixture.ts';
 
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
@@ -80,68 +83,66 @@ async function publishedRun(): Promise<{
   readonly runsDir: string;
   readonly pagePath: string;
 } & AsyncDisposable> {
-  /**
-   The runs directory.
-   */
-  const scratch = await scratchDir({ prefix: 'verify-published-', },);
-  /**
-   Runs directory this case publishes into.
-   */
-  const runsDir = scratch.path;
-  /**
-   Where the artifact lives.
-   */
-  const artifactsDir = join(
-    runsDir,
-    'artifacts',
-  );
-  await mkdir(artifactsDir,);
-  await writeFile(
-    join(
-      artifactsDir,
-      `${ENTRY}.json`,
-    ),
-    settledArtifactText({
-      prepared: prepareDocumentPair({
-        sourceText: SOURCE_DOC,
-        targetText: TARGET_DOC,
-        includeFrontMatter: true,
-        sealArchiveOriginal: true,
-      },),
-      entryId: ENTRY,
-    },),
-  );
-  /**
-   Root of the mirrored tree.
-   */
-  const publishDir = join(
-    runsDir,
-    'fixed',
-  );
-  await republishSettledPages({
-    entryIds: [ENTRY,],
-    artifactsDir,
-    publishDir,
-    readPair: async function readPair() {
+  // The runs directory.
+  return await scratchDirWith({
+    prefix: 'verify-published-',
+    setup: async function seeded({ path: runsDir, },): Promise<{
+      readonly runsDir: string;
+      readonly pagePath: string;
+    }> {
+      /**
+       Where the artifact lives.
+       */
+      const artifactsDir = join(
+        runsDir,
+        'artifacts',
+      );
+      await mkdir(artifactsDir,);
+      await writeFile(
+        join(
+          artifactsDir,
+          `${ENTRY}.json`,
+        ),
+        settledArtifactText({
+          prepared: prepareDocumentPair({
+            sourceText: SOURCE_DOC,
+            targetText: TARGET_DOC,
+            includeFrontMatter: true,
+            sealArchiveOriginal: true,
+          },),
+          entryId: ENTRY,
+        },),
+      );
+      /**
+       Root of the mirrored tree.
+       */
+      const publishDir = join(
+        runsDir,
+        'fixed',
+      );
+      await republishSettledPages({
+        entryIds: [ENTRY,],
+        artifactsDir,
+        publishDir,
+        readPair: async function readPair() {
+          return {
+            sourceText: SOURCE_DOC,
+            targetText: TARGET_DOC,
+          };
+        },
+        l: tagged({ tag: 'verify-published-test', },),
+      },);
       return {
-        sourceText: SOURCE_DOC,
-        targetText: TARGET_DOC,
+        runsDir,
+        pagePath: join(
+          publishDir,
+          'people',
+          ENTRY,
+          'page.en.md',
+        ),
       };
     },
-    l: tagged({ tag: 'verify-published-test', },),
   },);
-  return {
-    runsDir,
-    pagePath: join(
-      publishDir,
-      'people',
-      ENTRY,
-      'page.en.md',
-    ),
-    [Symbol.asyncDispose]: async function removeRunsDir(): Promise<void> {
-      await scratch[Symbol.asyncDispose]();
-    },
-  };
 }
 
 /**

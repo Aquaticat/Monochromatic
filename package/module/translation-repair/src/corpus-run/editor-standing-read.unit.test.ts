@@ -20,12 +20,9 @@
 import { spawnSync, } from 'node:child_process';
 import {
   mkdir,
-  mkdtemp,
-  rm,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -33,6 +30,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Editor standing read listing tests
 
@@ -86,60 +85,47 @@ type StandingStreams = {
 async function throwawayArchive(
   { nested, }: { readonly nested: boolean; },
 ): Promise<AsyncDisposable & { readonly archive: string; }> {
-  /**
-   Throwaway archive, never a real runs directory.
-   */
-  const archive = await mkdtemp(join(
-    tmpdir(),
-    'editor-standing-read-',
-  ),);
+  // Throwaway archive, never a real runs directory.
+  return await scratchDirWith({
+    prefix: 'editor-standing-read-',
+    setup: async function seeded({ path: archive, },): Promise<{ readonly archive: string; }> {
+      /**
+       Directory the fixture artifacts go into.
+       */
+      const artifactsDir = nested
+        ? join(
+          archive,
+          'artifacts',
+        )
+        : archive;
 
-  /**
-   Directory the fixture artifacts go into.
-   */
-  const artifactsDir = nested
-    ? join(
-      archive,
-      'artifacts',
-    )
-    : archive;
-
-  await mkdir(
-    artifactsDir,
-    { recursive: true, },
-  );
-  await writeFile(
-    join(
-      artifactsDir,
-      'Mittens.json',
-    ),
-    '{}',
-    'utf8',
-  );
-  await mkdir(join(
-    artifactsDir,
-    'Tabby.json',
-  ),);
-  await symlink(
-    'Mittens.json',
-    join(
-      artifactsDir,
-      'Siamese.json',
-    ),
-  );
-
-  return {
-    archive,
-    [Symbol.asyncDispose]: async function removeArchive() {
-      await rm(
-        archive,
-        {
-          recursive: true,
-          force: true,
-        },
+      await mkdir(
+        artifactsDir,
+        { recursive: true, },
       );
+      await writeFile(
+        join(
+          artifactsDir,
+          'Mittens.json',
+        ),
+        '{}',
+        'utf8',
+      );
+      await mkdir(join(
+        artifactsDir,
+        'Tabby.json',
+      ),);
+      await symlink(
+        'Mittens.json',
+        join(
+          artifactsDir,
+          'Siamese.json',
+        ),
+      );
+
+      return { archive, };
     },
-  };
+  },);
 }
 
 /**

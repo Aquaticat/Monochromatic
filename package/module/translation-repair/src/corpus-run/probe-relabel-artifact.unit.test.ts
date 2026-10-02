@@ -26,11 +26,8 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -45,6 +42,7 @@ import {
   compareLanes,
   readArtifactRecords,
 } from '../../dist/final/node/index.mjs';
+import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Probe relabel artifact reading tests
 
@@ -309,56 +307,34 @@ function issueRecord(
 }
 
 /**
- Opens a throwaway runs directory and points the environment at it.
- 
- @returns Disposable handle that restores the environment
- 
+ Points the runs directory variable at a path until the handle's scope ends.
+
+ The directory itself is the caller's own `scratchDir`, bound first so it is
+ removed after the variable is restored.
+
+ @param path - directory the variable names meanwhile
+
+ @returns Disposable handle restoring the variable as it stood
+
  @example
  ```ts
- await using runs = await runsDir();
+ await using runs = await scratchDir({ prefix: 'whiskers-relabel-artifact-', },);
+ using pointed = runsDirPointedAt({ path: runs.path, },);
  ```
  */
-async function runsDir(): Promise<{
-  readonly path: string;
-  readonly [Symbol.asyncDispose]: () => Promise<void>;
-}> {
+function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
   /**
    Runs directory standing before this case ran.
    */
   const before = process.env
     .TRANSLATION_REPAIR_RUNS_DIR;
-
-  /**
-   Fresh directory under the platform temp root.
-   */
-  const path = await mkdtemp(join(
-    tmpdir(),
-    'whiskers-relabel-artifact-',
-  ),);
-
-  await mkdir(
-    join(
-      path,
-      'artifacts',
-    ),
-    { recursive: true, },
-  );
   process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-
   return {
-    path,
-    [Symbol.asyncDispose]: async function restore() {
+    [Symbol.dispose]: function restore(): void {
       if (before === undefined)
         delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
       else
         process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
     },
   };
 }
@@ -417,7 +393,15 @@ async function recordsOf(
   readonly repairRegions: readonly { readonly envelopeId: string; }[];
   readonly recorded: Readonly<Record<string, string>>;
 }[]> {
-  await using runs = await runsDir();
+  await using runs = await scratchDir({ prefix: 'whiskers-relabel-artifact-', },);
+  await mkdir(
+    join(
+      runs.path,
+      'artifacts',
+    ),
+    { recursive: true, },
+  );
+  using pointed = runsDirPointedAt({ path: runs.path, },);
 
   await writeFile(
     join(

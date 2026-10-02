@@ -7,8 +7,8 @@
  a directory, a symlink to each, and asks for one kind at a time, the other
  kind's entries and both links being what must not come back.
 
- DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp` directory,
- removed when the case ends, and nothing here reads a real run.
+ DISPOSABLE FIXTURES ONLY: every case writes into its own `scratchDir`
+ directory, removed when the case ends, and nothing here reads a real run.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -17,12 +17,9 @@
 
 import {
   mkdir,
-  mkdtemp,
-  rm,
   symlink,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -37,6 +34,7 @@ import {
   presentNamesOfKind,
   readingOf,
 } from '../../dist/final/node/index.mjs';
+import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 //region Directory listing tests
 
@@ -53,53 +51,40 @@ import {
  ```
  */
 async function mixedDirectory(): Promise<AsyncDisposable & { readonly dir: string; }> {
-  /**
-   Disposable root for this case.
-   */
-  const dir = await mkdtemp(join(
-    tmpdir(),
-    'directory-listing-',
-  ),);
-
-  await writeFile(
-    join(
-      dir,
-      'Mittens.json',
-    ),
-    '{}',
-    'utf8',
-  );
-  await mkdir(join(
-    dir,
-    'Tabby',
-  ),);
-  await symlink(
-    'Mittens.json',
-    join(
-      dir,
-      'Siamese.json',
-    ),
-  );
-  await symlink(
-    'Tabby',
-    join(
-      dir,
-      'Calico',
-    ),
-  );
-
-  return {
-    dir,
-    [Symbol.asyncDispose]: async function removeDirectory() {
-      await rm(
-        dir,
-        {
-          recursive: true,
-          force: true,
-        },
+  // Disposable root for this case.
+  return await scratchDirWith({
+    prefix: 'directory-listing-',
+    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
+      await writeFile(
+        join(
+          dir,
+          'Mittens.json',
+        ),
+        '{}',
+        'utf8',
       );
+      await mkdir(join(
+        dir,
+        'Tabby',
+      ),);
+      await symlink(
+        'Mittens.json',
+        join(
+          dir,
+          'Siamese.json',
+        ),
+      );
+      await symlink(
+        'Tabby',
+        join(
+          dir,
+          'Calico',
+        ),
+      );
+
+      return { dir, };
     },
-  };
+  },);
 }
 
 await describe({
