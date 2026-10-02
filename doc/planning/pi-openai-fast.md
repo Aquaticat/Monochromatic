@@ -509,36 +509,67 @@ The extension currently hardcodes the legacy source,
  and `src/priority-stream.ts`.
 Changing only the provider string would not preserve the new native request path.
 
-### Current frontier
+### Accepted authentication-scope answer
 
-Q8 asks whether the new companions should accept only ChatGPT subscription sign-in,
- or both native ChatGPT sign-in and API-key authentication.
-Recommendation:
-subscription sign-in only,
- matching the requested addition and previously accepted authentication scope.
-The broader option avoids an authentication-method restriction,
- but expands support and verification into API-key billing.
-No answer has been recorded.
+The user answered `Q8 B`:
 
-Independent Advisor review confirmed the additive interpretation,
- warned against conflating the native providers' transports or credentials,
- and identified effective authentication selection as a prerequisite for any subscription-only guard.
+> We don't do special handling with API-key billing and verification.
+> We don't explicitly reject API-key-backed fast requests.
+> Keep the changes as minimum as possible.
+
+Both native ChatGPT sign-in and API-key authentication may back `openai-fast` requests.
+Delegate to the native provider without authentication-method restrictions,
+ copied credentials,
+ billing logic,
+ or a separate API-key verification campaign.
+
+The subscription-only recommendation is rejected.
+The suggestion that supporting both methods requires dedicated API-key billing verification is superseded
+by the user's explicit constraint.
+Normal scoped build,
+ lint,
+ type,
+ test,
+ and consumer-host checks remain part of implementation verification.
+
+### Minimal additive design pending confirmation
+
+- Retain `openai-codex-fast/<model-id>` mapped to the legacy `openai-codex` provider.
+- Add `openai-fast/<model-id>` mapped to the native `openai` provider.
+- Reuse the existing virtual registration,
+   internal-target,
+   and priority-payload mechanisms with the minimum provider-specific changes.
+  Do not introduce a new authentication or billing layer.
+- Preserve each original provider's identity,
+   transport API,
+   effective model metadata,
+   credential resolution,
+   and native request behavior during dispatch.
+- Preserve defaults,
+   model scopes,
+   catalog-derived companion coverage,
+   no additional UI,
+   and no model or tier fallback.
+- Keep `service_tier: "priority"` as request intent,
+   not a promise of acceleration or confirmed served priority.
+
+Independent Advisor review confirmed that final shared-understanding confirmation is the sole remaining frontier.
+It also confirmed that the original provider identity must survive dispatch,
+ and that ordinary regression checks do not require a separate live API-key or billing campaign.
 
 ### Next actions and verification boundaries
 
-- Obtain the authentication-scope answer,
-   then recompute dependent interview questions.
-- Inspect effective native credential precedence and request authentication before designing any restriction.
-- Confirm the complete updated design before implementation.
-- Verify both companion families,
-   ordinary-request invariance,
-   equal model IDs across providers,
-   native payload hooks,
-   refresh/logout,
-   catalog changes,
-   and saved selections in disposable host fixtures.
-- A live new-sign-in smoke probe remains pending;
-   old Codex live evidence does not verify the new provider.
+- Ask Q9 to confirm shared understanding of the settled additive design.
+- After confirmation,
+   implement only the provider mapping and necessary native-stream changes.
+- Extend existing scoped tests and host fixtures for the additional mapping,
+   identical model IDs across providers,
+   native priority payloads,
+   and unchanged legacy and ordinary requests.
+- Existing Codex live evidence does not verify the new native sign-in.
+  Do not claim new-provider live acceptance,
+   served priority,
+   or acceleration without a corresponding probe.
 - Do not modify extension source,
    real authentication,
    or personal settings during this interview.
