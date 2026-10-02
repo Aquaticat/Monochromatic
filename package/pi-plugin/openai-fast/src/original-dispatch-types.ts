@@ -6,7 +6,10 @@ import type {
   StreamFunction,
 } from '@earendil-works/pi-ai';
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
-import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { PriorityApi, } from './constants.ts';
 
 //region Native callback contracts

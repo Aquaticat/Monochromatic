@@ -3,6 +3,7 @@
 
  @module
  */
+import type { AuthContext, } from '@earendil-works/pi-ai';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { createKeylessAuth, } from '../dist/final/node/index.mjs';
@@ -23,11 +24,11 @@ await describe({ name: '', children: [
         const auth = createKeylessAuth(source,);
         /** Unused context rejects any attempt to read environment values or files here. */
         const context = {
-          env: function env(): Promise<string | undefined> { throw new Error('Adapter must not resolve environment credentials.',); },
+          env: function env(): ReturnType<AuthContext['env']> { throw new Error('Adapter must not resolve environment credentials.',); },
           fileExists: function fileExists(): Promise<boolean> { throw new Error('Adapter must not inspect credential files.',); },
         };
         /** Native availability supplies its own cancellation authority. */
-        const signal = new AbortController().signal;
+        const {signal} = new AbortController();
         /** Stored adapter credentials must not be copied into original-provider requests. */
         const input = { ctx: context, signal, credential: { type: 'api_key' as const, key: 'unused-adapter-fixture', }, };
         expect(await auth.apiKey?.check?.(input,),).toEqual(configured
@@ -35,7 +36,7 @@ await describe({ name: '', children: [
         expect(source,).toHaveBeenCalledExactlyOnceWith(signal,);
         expect(await auth.apiKey?.resolve(input,),).toEqual({ auth: {}, source: 'routes-to-original-provider', },);
         expect(source,).toHaveBeenCalledTimes(1,);
-        expect(auth.apiKey?.login,).toBeUndefined();
+        expect(auth.apiKey,).not.toHaveProperty('login',);
         expect(auth.oauth,).toBeUndefined();
       }, },);
     },),
@@ -44,7 +45,9 @@ await describe({ name: '', children: [
         /** Exact error identity distinguishes cancellation and source failure from false readiness. */
         const failure = new Error(`Synthetic availability ${reason}.`,);
         /** Cancellation must prevent source work; a source failure must propagate unchanged. */
-        const source = ctx.sinon.spy(function sourceReady(): Promise<boolean> { throw failure; },);
+        const source = ctx.sinon.spy(function sourceReady(): Promise<boolean> {
+          throw failure;
+        },);
         /** Descriptor delegates readiness rather than swallowing source errors. */
         const auth = createKeylessAuth(source,);
         /** Cancellation is owned by this test and cannot affect another attempt. */
@@ -53,7 +56,7 @@ await describe({ name: '', children: [
           controller.abort(failure,);
         /** Native auth context is unused by the adapter. */
         const context = {
-          env: function env(): Promise<string | undefined> { return Promise.resolve(undefined,); },
+          env: function env(): ReturnType<AuthContext['env']> { return Promise.resolve(undefined,); },
           fileExists: function fileExists(): Promise<boolean> { return Promise.resolve(false,); },
         };
         /** The native callback must reject instead of returning a misleading configured state. */

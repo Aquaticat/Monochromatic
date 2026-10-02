@@ -128,7 +128,9 @@ await describe({ name: '', children: [
         return (model.id === host.base.id) && (model.api === 'pi-virtual');
       },),).toBe(true,);
       /** Fresh native credentials restore availability in the same bound host. */
-      await host.credentials.modify(OPENAI_PROVIDER, function restoreNative() { return Promise.resolve(fixtureCredential(),); },);
+      await host.credentials.modify(OPENAI_PROVIDER, function restoreNative() {
+        return Promise.resolve(fixtureCredential(),);
+      },);
       expect((await host.runtime.getAvailable('openai-fast',)).some(function nativeRestored(model: ForeignBorrowed<Model<Api>>) {
         return (model.id === host.base.id) && (model.api === 'pi-virtual');
       },),).toBe(true,);

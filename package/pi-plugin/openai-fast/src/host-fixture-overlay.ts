@@ -38,6 +38,18 @@ export type FixtureOverlay = {
 };
 
 /**
+ Report synthetic source readiness without resolving credentials.
+
+ @param signal - cancellation authority supplied by the native availability operation
+
+ @returns readiness for independently configured overlay fixtures
+ */
+function fixtureAvailability(signal: ForeignBorrowed<AbortSignal>,): Promise<boolean> {
+  signal.throwIfAborted();
+  return Promise.resolve(true,);
+}
+
+/**
  Capture priority dispatch and source catalog synchronization without network.
  
  @param provider - native provider whose current metadata supplies the overlay
@@ -91,10 +103,7 @@ export function fixtureOverlay(provider: ForeignHostCapability<Provider>,): Fixt
    */
   const overlay = createPriorityProvider({
     provider,
-    isConfigured: async function isConfigured(signal: ForeignBorrowed<AbortSignal>): Promise<boolean> {
-      signal.throwIfAborted();
-      return await Promise.resolve(true,);
-    },
+    isConfigured: fixtureAvailability,
     dispatch: function dispatchOriginal(
       model: ForeignBorrowed<Model<PriorityApi>>,
       context: ForeignBorrowed<TranscriptContext>,

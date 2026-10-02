@@ -176,7 +176,10 @@ export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>
   /**
    Native source readiness uses the original pi auth path without resolving tokens or refreshing over the network.
    */
-  const availability = await ModelRuntime.create({ refreshOnCreate: false, allowModelNetwork: false, },);
+  const availability = await ModelRuntime.create({
+    refreshOnCreate: false,
+    allowModelNetwork: false,
+  },);
   // Finish sink initialization before synchronous catalog registration can fill startup buffering.
   await l.flush();
   for (const provider of providers) {
@@ -184,7 +187,11 @@ export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>
       pi,
       provider,
       checkInitialAvailability: async function checkInitialAvailability(signal: ForeignBorrowed<AbortSignal>): Promise<boolean> {
-        return (await availability.getAvailableOfType('chat', provider.id, { signal, },)).length > 0;
+        return (await availability.getAvailableOfType(
+          'chat',
+          provider.id,
+          { signal, },
+        )).length > 0;
       },
     },);
   }

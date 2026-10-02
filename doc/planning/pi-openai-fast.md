@@ -699,6 +699,20 @@ The expanded fixtures cover stored OAuth,
  configuration keys,
  command-backed keys without execution,
  and source logout/reconfiguration.
+The expanded CLI matrix passed stored OAuth,
+ stored API keys,
+ environment keys,
+ configuration keys,
+ and command-backed keys without executing the command or changing auth-file bytes.
+The full suite exposed a stale logout assertion:
+ after availability is correctly removed,
+ pi rejects the stale virtual route with `which has no credentials`
+ before reaching original-provider request authentication.
+The assertion now checks that native routing diagnostic and still forbids dispatch or fallback.
+Lint findings are being resolved with native callback return-type aliases,
+ explicit fixture scope,
+ and declaration formatting,
+ without suppressions or rule changes.
 The complete verification sequence is pending.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed

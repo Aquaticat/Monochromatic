@@ -15,7 +15,10 @@ import {
   tagged,
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type {
+  ForeignBorrowed,
+  ForeignHostCapability,
+} from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { PriorityApi, } from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
 import type {
@@ -113,14 +116,22 @@ export function createOriginalDispatch({
     /**
      Availability logger excludes authentication details.
      */
-    const inner = tagged({ tag: isConfigured.name, l: logger, },);
+    const inner = tagged({
+      tag: isConfigured.name,
+      l: logger,
+    },);
     inner.trace(`checking original ${provider.id} availability`,);
     if (state.registry === undefined)
       return checkInitialAvailability === undefined ? false : await checkInitialAvailability(signal,);
     /**
      Source-scoped reads avoid recursive adapter availability checks and stale cached status.
      */
-    const available = await state.registry.getAvailableOfType('chat', provider.id, { signal, },);
+    const available = await state.registry
+      .getAvailableOfType(
+        'chat',
+        provider.id,
+        { signal, },
+      );
     return available.length > 0;
   }
 

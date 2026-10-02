@@ -8,7 +8,7 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { CODEX_PROVIDER, FAST_PROVIDER, isPriorityTarget, PRIORITY_TARGET_PREFIX, registerOpenAIFast, } from '../dist/final/node/index.mjs';
 import { fixtureContext, fixtureModel, } from './host-fixture-model.ts';
-import { HOST_TOKEN, } from './host-fixture-provider.ts';
+import { fixtureCredential, HOST_TOKEN, } from './host-fixture-provider.ts';
 import { fixtureHome, fixtureHost, requireCompanion, } from './host-fixture-session.ts';
 
 //region OAuth and catalog: no extra login or stale compatibility allowlist.
@@ -73,14 +73,14 @@ await describe({ name: registerOpenAIFast.name, children: [
     /** Logged-out priority request must fail without dispatch or ordinary fallback. */
     const denied = await host.runtime.completeSimple(companion, fixtureContext(), { reasoning: 'high', },);
     expect(denied.stopReason,).toBe('error',);
-    expect(denied.errorMessage,).toContain('not configured',);
+    expect(denied.errorMessage,).toContain('which has no credentials',);
     expect(host.source.state.calls,).toHaveLength(3,);
     expect(host.source.state.oauthRefreshes,).toBe(1,);
     expect(await host.credentials.list(),).toEqual([],);
     /** Reconfiguration becomes visible in the same bound session without copied fast credentials. */
-    await host.credentials.modify(CODEX_PROVIDER, function restoreLogin() { return Promise.resolve({
-      type: 'oauth' as const, access: HOST_TOKEN, refresh: 'fixture-reconfigured', expires: Date.now() + 3_600_000,
-    },); },);
+    await host.credentials.modify(CODEX_PROVIDER, function restoreLogin() {
+      return Promise.resolve(fixtureCredential(),);
+    },);
     expect((await host.runtime.getAvailable(FAST_PROVIDER,)).some(function restoredFast(model: ForeignBorrowed<Model<Api>>) {
       return (model.id === host.base.id) && (model.api === 'pi-virtual');
     },),).toBe(true,);

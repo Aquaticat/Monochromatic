@@ -89,13 +89,13 @@ await describe({ name: 'built default extension startup', children: scenarios.ma
       throw result.error;
     expect(result.status,).toBe(0,);
     /** Real CLI rows expose precisely the available provider identities. */
-    const providers = result.stdout.split('\n',).map(function providerColumn(line,) {
+    const providers = new Set(result.stdout.split('\n',).map(function providerColumn(line,) {
       return line.trim().split(/\s+/u,)[0];
-    },);
-    expect(providers.includes(OPENAI_PROVIDER,),).toBe(nativeConfigured,);
-    expect(providers.includes(CODEX_PROVIDER,),).toBe(legacyConfigured,);
-    expect(providers.includes('openai-fast',),).toBe(nativeConfigured,);
-    expect(providers.includes('openai-codex-fast',),).toBe(legacyConfigured,);
+    },));
+    expect(providers.has(OPENAI_PROVIDER,),).toBe(nativeConfigured,);
+    expect(providers.has(CODEX_PROVIDER,),).toBe(legacyConfigured,);
+    expect(providers.has('openai-fast',),).toBe(nativeConfigured,);
+    expect(providers.has('openai-codex-fast',),).toBe(legacyConfigured,);
     expect(result.stderr,).toBe('',);
     expect(await readFile(authPath, 'utf8',),).toBe(serializedAuth,);
     expect(existsSync(marker,),).toBe(false,);

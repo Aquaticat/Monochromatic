@@ -2,7 +2,7 @@
  Source-dependent readiness for a transport adapter that resolves original auth later. @module
  */
 import type {
-  AuthCheck,
+  ApiKeyAuth,
   AuthResult,
   Model,
   Api,
@@ -38,6 +38,11 @@ function resolve(): Promise<AuthResult> {
  @returns keyless auth descriptor without a separate login or token resolution
 
  @mutates isConfigured - readiness checks invoke native availability handling
+
+ @example
+ ```ts
+ const auth = createKeylessAuth(checkNativeAvailability);
+ ```
  */
 export function createKeylessAuth(
   isConfigured: (signal: ForeignBorrowed<AbortSignal>) => Promise<boolean>,
@@ -45,7 +50,10 @@ export function createKeylessAuth(
   /**
    Factory logger preserves the readiness capability boundary.
    */
-  const l = tagged({ tag: createKeylessAuth.name, l: moduleLogger, },);
+  const l = tagged({
+    tag: createKeylessAuth.name,
+    l: moduleLogger,
+  },);
   l.debug('creating source-dependent priority readiness',);
 
   /**
@@ -55,18 +63,24 @@ export function createKeylessAuth(
 
    @returns adapter readiness only when original chat models are available
    */
-  async function check({ signal, }: { readonly signal: ForeignBorrowed<AbortSignal>; },): Promise<AuthCheck | undefined> {
+  async function check({ signal, }: { readonly signal: ForeignBorrowed<AbortSignal>; },): ReturnType<NonNullable<ApiKeyAuth['check']>> {
     /**
      Readiness logger records only the configuration decision.
      */
-    const inner = tagged({ tag: check.name, l, },);
+    const inner = tagged({
+      tag: check.name,
+      l,
+    },);
     signal.throwIfAborted();
     if (!await isConfigured(signal,)) {
       inner.debug('original provider is unavailable; hiding priority companions',);
       return undefined;
     }
     inner.debug('original provider is available; exposing priority companions',);
-    return { type: 'api_key', source: 'routes-to-original-provider', };
+    return {
+      type: 'api_key',
+      source: 'routes-to-original-provider',
+    };
   }
 
   return Object.freeze({
