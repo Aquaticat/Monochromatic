@@ -116,10 +116,6 @@ function createAskUserQuestionTool(
     label: 'Ask User Question',
     description: 'Ask the user one free-form question and block model execution until the user submits or cancels a multiline answer in the default editor.',
     promptSnippet: 'Ask the user one free-form question and wait for a multiline answer',
-    promptGuidelines: [
-      'Use ask_user_question when work requires a user decision or free-form information that cannot be measured from available evidence.',
-      'Never request passwords, tokens, credentials, or other secrets through ask_user_question.',
-    ],
     parameters: AskUserQuestionParameters,
     executionMode: 'sequential',
     execute:
