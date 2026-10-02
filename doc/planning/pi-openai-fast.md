@@ -11,9 +11,10 @@ This document tracks the accepted requirements,
  and implementation progress.
 
 A new `/grill-me` interview requests additional support for the non-legacy `openai` sign-in.
-The original confirmation applies to the delivered Codex extension,
- not to this pending scope extension.
-Implementation of the additional provider awaits shared-understanding confirmation.
+The original confirmation applies to the delivered Codex extension.
+The user subsequently answered "Yes."
+ to Q9,
+ confirming the minimal additive design and authorizing the additional native provider mapping.
 
 ## Requested behavior
 
@@ -532,7 +533,7 @@ Normal scoped build,
  test,
  and consumer-host checks remain part of implementation verification.
 
-### Minimal additive design pending confirmation
+### Confirmed minimal additive design
 
 - Retain `openai-codex-fast/<model-id>` mapped to the legacy `openai-codex` provider.
 - Add `openai-fast/<model-id>` mapped to the native `openai` provider.
@@ -553,15 +554,24 @@ Normal scoped build,
 - Keep `service_tier: "priority"` as request intent,
    not a promise of acceleration or confirmed served priority.
 
-Independent Advisor review confirmed that final shared-understanding confirmation is the sole remaining frontier.
-It also confirmed that the original provider identity must survive dispatch,
- and that ordinary regression checks do not require a separate live API-key or billing campaign.
+Independent Advisor review confirmed that final shared-understanding confirmation was the sole remaining frontier.
+The user answered "Yes."
+ to Q9 and authorized this design.
+The original provider identity must survive dispatch.
+Ordinary regression checks do not require a separate live API-key or billing campaign.
 
 ### Next actions and verification boundaries
 
-- Ask Q9 to confirm shared understanding of the settled additive design.
-- After confirmation,
-   implement only the provider mapping and necessary native-stream changes.
+- Provider mapping:
+   implement only the additional native provider mapping and necessary stream changes.
+- Regression verification:
+   run package-scoped build,
+   types,
+   lint,
+   tests,
+   and consumer-host checks.
+- Documentation and delivery:
+   update package documentation and record verification results.
 - Extend existing scoped tests and host fixtures for the additional mapping,
    identical model IDs across providers,
    native priority payloads,
@@ -570,16 +580,16 @@ It also confirmed that the original provider identity must survive dispatch,
   Do not claim new-provider live acceptance,
    served priority,
    or acceleration without a corresponding probe.
-- Do not modify extension source,
-   real authentication,
-   or personal settings during this interview.
+- No real authentication or personal settings changes are required.
+  The existing globally installed local package loads its rebuilt artifact.
 
 The scoped `mise run lint:markdown -- doc/planning/pi-openai-fast.md` check passed.
 A local `marked` render confirmed the interview headings,
  companion identity code spans,
  preserved reference link,
  and absence of unintended emphasis or tables in the added section.
-No implementation or live new-provider verification has been performed.
+Implementation is authorized and pending.
+No live new-provider verification has been performed.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
