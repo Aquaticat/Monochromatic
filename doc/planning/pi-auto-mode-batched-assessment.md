@@ -41,13 +41,20 @@ First establish whether the combined operation's relevant effects are already co
 
 The user requested an average cost no greater than US$0.001 per judgment,
 and wants to be told if that appears unattainable.
-Treat this as an optimization target,
-not permission to truncate policy,
+Treat this as a workload-average optimization target,
+not a per-judgment spending ceiling.
+Hard judgments may cost more than US$0.001;
+cheaper judgments and early termination can keep the relevant workload mean within target.
+Do not truncate policy,
 drop required evidence,
-or change uncertainty into approval.
+or change uncertainty into approval to meet the mean.
+Offline development spend across alternative experiments is not an observed production mean.
+The live three-attempt ceiling limits one guard decision,
+not the number of independently planned research variants.
 
 At Drex 1.5's published US$0.05 per million input tokens,
-US$0.001 corresponds to 20,000 billed input tokens across the entire judgment.
+US$0.001 corresponds to an average allowance of 20,000 billed input tokens per judgment,
+summing all attempts within each judgment before averaging across the relevant workload.
 This arithmetic is conditional on that published rate,
 not a verified invoice or measured workload average.
 The [one-call 1.5 canary](pi-auto-mode-drex-1-5-recheck.md#one-call-full-policy-cost-diagnostic)
@@ -191,7 +198,11 @@ The user separately authorized diagnostic wording changes when cases are answere
 Such development runs pre-author each new version,
 retain original failures,
 include regression controls,
-and report cumulative costs.
+and report cumulative costs separately from estimated operational cost.
+The user clarified that development must test different axiom decompositions,
+input representations,
+and question types where relevant,
+not merely alternative wording.
 They do not establish held-out quality or authorize runtime-generated production wording.
 
 ## What earliest termination means

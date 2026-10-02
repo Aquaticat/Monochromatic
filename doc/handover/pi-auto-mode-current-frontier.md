@@ -172,11 +172,21 @@ not final-policy approval measurements or proof of an internal model mechanism.
 Modeled means per version were US$0.00043813,
 US$0.00044073,
 and US$0.00043428.
-Including all three attempts gives US$0.00131314 per case,
-above the US$0.001 target for that three-call pattern.
-This is development cost,
-not an established production workload mean or invoice rate.
-The cycle is closed at three attempts per case.
+Including all three versions gives US$0.00131314 per case in development spend.
+That is not a measured production workload mean or a per-case spending violation.
+The user clarified that US$0.001 is an average target;
+individual hard judgments may cost more.
+The live three-call ceiling limits one guard decision,
+not offline experimentation.
+The three variants remain historical completed runs,
+not a prohibition on fresh research.
+
+The user also directed testing more than wording.
+Next work must compare different axiom decompositions,
+input representations,
+and suitable question types,
+while retaining full composed context and code-owned decisions.
+Measure unchanged-input variability before claiming a design improves scores.
 See the [Drex recheck](../planning/pi-auto-mode-drex-1-5-recheck.md#composed-program-effects-and-wording-development).
 
 ## Parallel-tool bug and private prototype
@@ -302,7 +312,9 @@ while preserving actual verification and authorization constraints.
   Earlier witnesses are not reusable current permission.
 - Only after that new original is admitted,
   perform the already-authorized disposable current-permission tests.
-- Use the retained composed-effect failures to refine the question/state design without reopening the closed cycle.
+- Use the retained composed-effect failures to test decomposition and representation changes in new research phases.
+  Completed artifacts remain unchanged;
+  the live call ceiling is not a blanket research-attempt limit.
   Preserve whole-program interactions;
   do not reinstate a code-only effect-proof requirement or infer new budgets from callbacks.
 - Qualify the intended pre-baked question library and adaptive selection on representative inputs,

@@ -327,12 +327,25 @@ but the unused-file and write-after-execution failures remained.
 
 All three versions together cost a modeled US$0.0065657,
 or US$0.00131314 per case including all three attempts.
-That cumulative figure exceeds the US$0.001 target:
-using three full-policy calls like these for every judgment would not meet it.
-Single-version observations remain below target;
-no representative production follow-up rate has been established.
-This development cycle stops at three attempts per case,
-without adopting thresholds or discarding failed variants.
+That is accumulated development cost,
+not a measured production workload mean or a per-case violation.
+The user clarified that US$0.001 applies to the average:
+expensive hard judgments are acceptable when the relevant workload mean meets the target.
+No representative production follow-up rate or workload mix has been established.
+The three recorded variants remain a completed experiment,
+not a cap on further offline research.
+The live three-call ceiling does not limit the number of separately planned diagnostic designs.
+
+The user also directed testing more than alternative wording.
+Next comparisons must change what is estimated or how evidence is represented:
+separate source applicability from semantic effects,
+retain an ordered structural view of the parent program,
+and test suitable question types.
+Drex's [question guide][questions] supports categorical `choice` distributions as well as binary `noul` estimates;
+its [state guide][state] permits both text and structured JSON.
+These are capabilities to test,
+not evidence of improved results or permission to ask for model policy verdicts.
+Measure unchanged-input variability before attributing score differences to a design change.
 
 Evidence is retained in the separate qualification repository under
 `contract/research/drex-composed-effects/`,
@@ -354,6 +367,7 @@ No production threshold or provider was adopted.
 - Continue native manager and real-consumer qualification separately;
   model data consent is not the missing implementation work.
 
+[state]: https://drex.nace.ai/docs/guides/state
 [models]: https://drex.nace.ai/docs/reference/models
 [evaluate]: https://drex.nace.ai/docs/api-reference/systemone
 [questions]: https://drex.nace.ai/docs/guides/questions
