@@ -26,13 +26,13 @@ catalogs:
       version: 9.4.0
     '@earendil-works/pi-ai':
       specifier: '>=0.84.2'
-      version: 0.99.2
+      version: 1.0.0
     '@earendil-works/pi-coding-agent':
       specifier: '>=0.84.2'
-      version: 0.99.2
+      version: 1.0.0
     '@earendil-works/pi-tui':
       specifier: '>=0.84.2'
-      version: 0.99.2
+      version: 1.0.0
     '@electron/packager':
       specifier: '>=20.3.0'
       version: 20.3.0
@@ -149,7 +149,7 @@ catalogs:
       version: 4.29.3
     chai:
       specifier: '>=6.2.2'
-      version: 6.2.2
+      version: 6.3.0
     chai-as-promised:
       specifier: '>=8.0.2'
       version: 8.0.2
@@ -1342,6 +1342,31 @@ importers:
       string-dedent:
         specifier: 'catalog:'
         version: 3.0.2
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.3
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/cloudflare-worker/rand:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -3529,10 +3554,10 @@ importers:
         version: 22.0.0
       chai:
         specifier: 'catalog:'
-        version: 6.2.2
+        version: 6.3.0
       chai-as-promised:
         specifier: 'catalog:'
-        version: 8.0.2(chai@6.2.2)
+        version: 8.0.2(chai@6.3.0)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
@@ -3544,7 +3569,7 @@ importers:
         version: 22.1.0
       sinon-chai:
         specifier: 'catalog:'
-        version: 4.0.1(chai@6.2.2)(sinon@22.1.0)
+        version: 4.0.1(chai@6.3.0)(sinon@22.1.0)
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -3600,7 +3625,7 @@ importers:
     dependencies:
       '@anthropic-ai/sdk':
         specifier: '>=0.120.0'
-        version: 0.129.0
+        version: 0.130.0
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -4001,13 +4026,13 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)(undici@8.11.2)
+        version: 1.0.0(supports-color@10.2.2)(undici@8.11.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.99.2
+        version: 1.0.0
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4041,7 +4066,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4072,10 +4097,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.99.2
+        version: 1.0.0
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4121,10 +4146,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)(undici@8.11.2)
+        version: 1.0.0(supports-color@10.2.2)(undici@8.11.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4161,10 +4186,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.99.2
+        version: 1.0.0
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4192,7 +4217,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4226,13 +4251,13 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)(undici@8.11.2)
+        version: 1.0.0(supports-color@10.2.2)(undici@8.11.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.99.2
+        version: 1.0.0
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4269,7 +4294,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4297,10 +4322,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@earendil-works/pi-tui':
         specifier: 'catalog:'
-        version: 0.99.2
+        version: 1.0.0
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4328,10 +4353,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)(undici@8.11.2)
+        version: 1.0.0(supports-color@10.2.2)(undici@8.11.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4359,7 +4384,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4399,7 +4424,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4430,7 +4455,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4455,7 +4480,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4480,7 +4505,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4508,7 +4533,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)(undici@8.11.2)
+        version: 1.0.0(supports-color@10.2.2)(undici@8.11.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -4542,10 +4567,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)(undici@8.11.2)
+        version: 1.0.0(supports-color@10.2.2)(undici@8.11.2)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.99.2(supports-color@10.2.2)
+        version: 1.0.0(supports-color@10.2.2)
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
@@ -5065,8 +5090,8 @@ importers:
 
 packages:
 
-  '@anthropic-ai/sdk@0.129.0':
-    resolution: {integrity: sha512-MH7LB20kNpGLUpPTe2OG5XvL/KhX8HUO9XyBaFjgFk6TLS4Xjt0VPIuMKywe7POKKPslX+QxSlVok9e+8kG5Nw==, tarball: https://registry.npmjs.org/@anthropic-ai/sdk/-/sdk-0.129.0.tgz}
+  '@anthropic-ai/sdk@0.130.0':
+    resolution: {integrity: sha512-UMkwdFHvIdhYJHuPYkufmBTePKgk50RolnqZPUqyPclXp7LoVM7QgXsfQnx7KlmbkQtb+RhmUjN5ARYpbnz9YQ==, tarball: https://registry.npmjs.org/@anthropic-ai/sdk/-/sdk-0.130.0.tgz}
     hasBin: true
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
@@ -5272,38 +5297,38 @@ packages:
       '@luma.gl/core': ~9.4.0
       '@luma.gl/engine': ~9.4.0
 
-  '@earendil-works/chord@0.99.2':
-    resolution: {integrity: sha512-2dJWiNsOJm/ioBl1fhpJmw0hIjFUhM0CAteEnVkiVG0Kg4LimR7Asq8PfjclEvrbCPsDntzy7rGKhTZObI9TZw==, tarball: https://registry.npmjs.org/@earendil-works/chord/-/chord-0.99.2.tgz}
+  '@earendil-works/chord@1.0.0':
+    resolution: {integrity: sha512-BIfWfrByM0pKq6tfKYXuwx0ed2CvaqIM3EDA7Dps+fP+d3CiPWdlHi1cDsJC05llqKJoRz5//G0hz0yQwwjISQ==, tarball: https://registry.npmjs.org/@earendil-works/chord/-/chord-1.0.0.tgz}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-agent-core@0.99.2':
-    resolution: {integrity: sha512-VX0QMcg8HKBsv1bYP2NwmutBYa44OrwmtqR6Dq7QC3Ln8X/IlpHhUxB5L1JgnXNUUkTm8Wg/HZhzS797NBDMCQ==, tarball: https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-0.99.2.tgz}
+  '@earendil-works/pi-agent-core@1.0.0':
+    resolution: {integrity: sha512-bHFONjtEBDqiV+g1DmmtkSlfAaqHELr+XO+6I5Nah4gswwZrLJO4yZB/JjsnlI4AKWTayBLfgS6DCbeBBz9e2Q==, tarball: https://registry.npmjs.org/@earendil-works/pi-agent-core/-/pi-agent-core-1.0.0.tgz}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-ai@0.99.2':
-    resolution: {integrity: sha512-9RFOEdY+ZTJ1AI+UuAFs4RM0tF2Tje/R/CEv9gWTJHt0iTu8XHZs64U/EIZxNSllFmec/4HfwsOxYj1qQek9bg==, tarball: https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-0.99.2.tgz}
-    engines: {node: '>=22.19.0'}
-    hasBin: true
-
-  '@earendil-works/pi-codemode@0.99.2':
-    resolution: {integrity: sha512-PVxNGu4l7LI92MvwUbaY3trjznU1Mlp2OMGwHwCWzLsjG7/lDa8xf6ei+Gws7VCt+Ri1tO+nFVl9KV2EeX7HWg==, tarball: https://registry.npmjs.org/@earendil-works/pi-codemode/-/pi-codemode-0.99.2.tgz}
-    engines: {node: '>=22.19.0'}
-
-  '@earendil-works/pi-coding-agent@0.99.2':
-    resolution: {integrity: sha512-6R1BZ2N77CrVcGf3eC2KovTz1Q4RYiAeydvVWQT546N2fi1nBc81aURlbOZCgruWoW9VY/UrLzDynF4YTolpoA==, tarball: https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-0.99.2.tgz}
+  '@earendil-works/pi-ai@1.0.0':
+    resolution: {integrity: sha512-3/W1vdDaVtpeMd23ElvJC12HLA5yS/BGqqcXF+0SK082dN7cbgNcCwguTBRBC258Ke8SzSvUW1B75iAf8w8IxA==, tarball: https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-1.0.0.tgz}
     engines: {node: '>=22.19.0'}
     hasBin: true
 
-  '@earendil-works/pi-mcp@0.99.2':
-    resolution: {integrity: sha512-ISk6OIsiUzmULF+sUilLnENGKo9/gVDxZG2CTEq8f4dbp70AXOr/hMiwOjtcrlX6xBd4UMUsIz4EPTOlU6U+HA==, tarball: https://registry.npmjs.org/@earendil-works/pi-mcp/-/pi-mcp-0.99.2.tgz}
+  '@earendil-works/pi-codemode@1.0.0':
+    resolution: {integrity: sha512-LPpFI4+T9NzDnhBDs15izWAolaoM8xnwqdziRd6Zx8BQeoEPvzefD2vMMzSyF0rOtq34TfQqkZ0ki16f6cGdMg==, tarball: https://registry.npmjs.org/@earendil-works/pi-codemode/-/pi-codemode-1.0.0.tgz}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-telemetry@0.99.2':
-    resolution: {integrity: sha512-WThYU4XM6jjjzH4FzLdreN7QAPS9SDdokL0W0Ldheg1ssCIJkfpK7PgebFm7/PoQub7OiXx+SRF6B/oF7z7lXA==, tarball: https://registry.npmjs.org/@earendil-works/pi-telemetry/-/pi-telemetry-0.99.2.tgz}
+  '@earendil-works/pi-coding-agent@1.0.0':
+    resolution: {integrity: sha512-/FtbxoSQU/mEv1QnichJjRjqteqaIaMWxmhB4G367+MwZfX7/DI5B9YAg5lqbN7nztFskBEtUSZ+FlmMBECtMw==, tarball: https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-1.0.0.tgz}
+    engines: {node: '>=22.19.0'}
+    hasBin: true
+
+  '@earendil-works/pi-mcp@1.0.0':
+    resolution: {integrity: sha512-rYra0aF5iPmJd+fsB+VBuqxWNABGJ3Iiyhg0CqIc/91ta2n7IvQmCp0Cac/YkUTNnvRsVZnjgAiBkRi6+ouWuw==, tarball: https://registry.npmjs.org/@earendil-works/pi-mcp/-/pi-mcp-1.0.0.tgz}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-tui@0.99.2':
-    resolution: {integrity: sha512-IOcNnd390NCIwBEKeOiBK/bvaR7Z+vEsvB5TtKsFdsY/vAZE6qRHbQqt6jpTefTiKPfQlwG8eS1BU42DeG2v4w==, tarball: https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-0.99.2.tgz}
+  '@earendil-works/pi-telemetry@1.0.0':
+    resolution: {integrity: sha512-WjNBj5TYIiPZFQEz2WlULcDwPLaKwIlmsKjVeYM+LJSbnSp38kWsHUJysIDGnu23IcLbKoPtywsvYfUJCeZePA==, tarball: https://registry.npmjs.org/@earendil-works/pi-telemetry/-/pi-telemetry-1.0.0.tgz}
+    engines: {node: '>=22.19.0'}
+
+  '@earendil-works/pi-tui@1.0.0':
+    resolution: {integrity: sha512-JsT7kXnpZA2YOtQu6RyriyxEO0eJIzPyfiH09bH+OLN5+s18HYkwaUD/tBkjhnSfMu6/50CQPRYJagzSP6HdPw==, tarball: https://registry.npmjs.org/@earendil-works/pi-tui/-/pi-tui-1.0.0.tgz}
     engines: {node: '>=22.19.0'}
 
   '@electron-internal/extract-zip@1.0.5':
@@ -6808,8 +6833,8 @@ packages:
     peerDependencies:
       chai: '>= 2.1.2 < 7'
 
-  chai@6.2.2:
-    resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==, tarball: https://registry.npmjs.org/chai/-/chai-6.2.2.tgz}
+  chai@6.3.0:
+    resolution: {integrity: sha512-XWAtwJ6OHO+tj0EKCs0Y2UamnyOxseZWltU4x2U2wh8g4AigdjwvtUjvLP2tqkA/avxHEtzxNaqGq/YGNwckKg==, tarball: https://registry.npmjs.org/chai/-/chai-6.3.0.tgz}
     engines: {node: '>=18'}
 
   chalk@6.0.0:
@@ -6868,8 +6893,8 @@ packages:
     resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==, tarball: https://registry.npmjs.org/commander/-/commander-9.5.0.tgz}
     engines: {node: ^12.20.0 || >=14}
 
-  copy-anything@4.1.4:
-    resolution: {integrity: sha512-/LLeW0CtsoSybVkEpYjifB2Pis8DUSuwY7QD9FiR98fWkdbdrACw3ilckfnAHMecQ+RFEdZlRt6eCXhYHJbl/g==, tarball: https://registry.npmjs.org/copy-anything/-/copy-anything-4.1.4.tgz}
+  copy-anything@4.1.5:
+    resolution: {integrity: sha512-vePst2VLTSqPglW7Q98VwFpGiGpOHTyXIo81MO5VyLecA5zMbZw/P/V1vmwD1jksa2iJpn/YkDrJ3XhTfzUyhQ==, tarball: https://registry.npmjs.org/copy-anything/-/copy-anything-4.1.5.tgz}
     engines: {node: '>=18'}
 
   core-js@3.50.0:
@@ -8237,8 +8262,8 @@ packages:
     resolution: {integrity: sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g==, tarball: https://registry.npmjs.org/supports-color/-/supports-color-10.2.2.tgz}
     engines: {node: '>=18'}
 
-  supports-hyperlinks@4.5.0:
-    resolution: {integrity: sha512-ZW2OvfeCXrNTbLakPUzjQG922EeGCOteFSVoek5DKStTh898wf7zgtuFlzQN8HfZCxC3Eh02yJVrRW51hADf+w==, tarball: https://registry.npmjs.org/supports-hyperlinks/-/supports-hyperlinks-4.5.0.tgz}
+  supports-hyperlinks@4.6.0:
+    resolution: {integrity: sha512-FL/q/YePS4tFFTNiBOR+zPk2ZrKheqNtmTJ/9OUZ4e1wKHJofDbGQSmSsxS0XNnabSkqexryCaXGvEKz1vf9UQ==, tarball: https://registry.npmjs.org/supports-hyperlinks/-/supports-hyperlinks-4.6.0.tgz}
     engines: {node: '>=20'}
 
   svg-tags@1.0.0:
@@ -8527,7 +8552,7 @@ packages:
 
 snapshots:
 
-  '@anthropic-ai/sdk@0.129.0':
+  '@anthropic-ai/sdk@0.130.0':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.1.1
@@ -8780,19 +8805,14 @@ snapshots:
       - '@loaders.gl/core'
       - texture-compressor
 
-  '@earendil-works/chord@0.99.2':
+  '@earendil-works/chord@1.0.0':
     dependencies:
       esbuild: 0.28.2
 
-  '@earendil-works/pi-agent-core@0.99.2(supports-color@10.2.2)(undici@8.11.2)':
+  '@earendil-works/pi-agent-core@1.0.0(supports-color@10.2.2)(undici@8.11.2)':
     dependencies:
-      '@earendil-works/chord': 0.99.2
-      '@earendil-works/pi-ai': 0.99.2(supports-color@10.2.2)(undici@8.11.2)
-      '@earendil-works/pi-telemetry': 0.99.2
-      diff: 8.0.4
-      ignore: 7.0.8
+      '@earendil-works/pi-ai': 1.0.0(supports-color@10.2.2)(undici@8.11.2)
       typebox: 1.3.27
-      yaml: 2.9.0
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -8803,10 +8823,10 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.99.2(supports-color@10.2.2)(undici@8.11.2)':
+  '@earendil-works/pi-ai@1.0.0(supports-color@10.2.2)(undici@8.11.2)':
     dependencies:
-      '@anthropic-ai/sdk': 0.129.0
-      '@earendil-works/pi-telemetry': 0.99.2
+      '@anthropic-ai/sdk': 0.130.0
+      '@earendil-works/pi-telemetry': 1.0.0
       '@smithy/node-http-handler': 4.12.1
       http-proxy-agent: 9.1.0(supports-color@10.2.2)
       https-proxy-agent: 9.1.0(supports-color@10.2.2)
@@ -8823,18 +8843,18 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-codemode@0.99.2':
+  '@earendil-works/pi-codemode@1.0.0':
     dependencies:
       quickjs-wasi: 3.6.2
 
-  '@earendil-works/pi-coding-agent@0.99.2(supports-color@10.2.2)':
+  '@earendil-works/pi-coding-agent@1.0.0(supports-color@10.2.2)':
     dependencies:
-      '@earendil-works/chord': 0.99.2
-      '@earendil-works/pi-agent-core': 0.99.2(supports-color@10.2.2)(undici@8.11.2)
-      '@earendil-works/pi-ai': 0.99.2(supports-color@10.2.2)(undici@8.11.2)
-      '@earendil-works/pi-codemode': 0.99.2
-      '@earendil-works/pi-mcp': 0.99.2
-      '@earendil-works/pi-tui': 0.99.2
+      '@earendil-works/chord': 1.0.0
+      '@earendil-works/pi-agent-core': 1.0.0(supports-color@10.2.2)(undici@8.11.2)
+      '@earendil-works/pi-ai': 1.0.0(supports-color@10.2.2)(undici@8.11.2)
+      '@earendil-works/pi-codemode': 1.0.0
+      '@earendil-works/pi-mcp': 1.0.0
+      '@earendil-works/pi-tui': 1.0.0
       '@silvia-odwyer/photon-node': 0.3.4
       chalk: 6.0.0
       cross-spawn: 7.0.6
@@ -8860,13 +8880,13 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-mcp@0.99.2':
+  '@earendil-works/pi-mcp@1.0.0':
     dependencies:
       cross-spawn: 7.0.6
 
-  '@earendil-works/pi-telemetry@0.99.2': {}
+  '@earendil-works/pi-telemetry@1.0.0': {}
 
-  '@earendil-works/pi-tui@0.99.2':
+  '@earendil-works/pi-tui@1.0.0':
     dependencies:
       get-east-asian-width: 1.6.0
       marked: 18.0.11
@@ -10083,12 +10103,12 @@ snapshots:
 
   ccount@2.0.1: {}
 
-  chai-as-promised@8.0.2(chai@6.2.2):
+  chai-as-promised@8.0.2(chai@6.3.0):
     dependencies:
-      chai: 6.2.2
+      chai: 6.3.0
       check-error: 2.1.3
 
-  chai@6.2.2: {}
+  chai@6.3.0: {}
 
   chalk@6.0.0: {}
 
@@ -10129,7 +10149,7 @@ snapshots:
 
   commander@9.5.0: {}
 
-  copy-anything@4.1.4: {}
+  copy-anything@4.1.5: {}
 
   core-js@3.50.0:
     optional: true
@@ -11726,9 +11746,9 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  sinon-chai@4.0.1(chai@6.2.2)(sinon@22.1.0):
+  sinon-chai@4.0.1(chai@6.3.0)(sinon@22.1.0):
     dependencies:
-      chai: 6.2.2
+      chai: 6.3.0
       sinon: 22.1.0
 
   sinon@22.1.0:
@@ -11858,7 +11878,7 @@ snapshots:
       postcss-selector-parser: 7.1.6
       postcss-value-parser: 4.2.0
       string-width: 8.3.0
-      supports-hyperlinks: 4.5.0
+      supports-hyperlinks: 4.6.0
       svg-tags: 1.0.0
       table: 6.9.0
       write-file-atomic: 7.0.1
@@ -11874,11 +11894,11 @@ snapshots:
 
   superjson@2.2.6:
     dependencies:
-      copy-anything: 4.1.4
+      copy-anything: 4.1.5
 
   supports-color@10.2.2: {}
 
-  supports-hyperlinks@4.5.0:
+  supports-hyperlinks@4.6.0:
     dependencies:
       has-flag: 5.0.1
       supports-color: 10.2.2

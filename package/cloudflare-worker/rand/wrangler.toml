@@ -1,0 +1,12 @@
+name = "rand"
+# The handler-only neutral bundle produced by `mise run build`; the deploy tasks depend on
+# that build so wrangler ships the same artifact the unit tests exercised.
+main = "dist/final/neutral/worker.mjs"
+compatibility_date = "2026-06-01"
+workers_dev = true
+
+# Serves https://rand.aquaticat.workers.dev, because Cloudflare attaches a custom domain
+# only inside an active Cloudflare zone and `aquati.cat` stays on Njalla nameservers.
+# The plan-tier gating behind that is measured in
+# doc/troubleshooting/cloudflare-mirror-evaluation.md.
+# No bindings and no vars: every response is computed from the request alone.
