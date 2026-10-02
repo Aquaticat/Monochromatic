@@ -386,27 +386,6 @@ function judgeBallot({ best, }: { readonly best: number; },): string {
   },);
 }
 
-/**
- Builds a gate voice's reply.
- 
- @param choice - rendering this voice names
- 
- @returns Reply body a gate voice would return
- 
- @example
- ```ts
- const reply = gateBallot({ choice: 'consolidated', },);
- ```
- */
-function gateBallot({ choice, }: { readonly choice: string; },): string {
-  return JSON.stringify({
-    choice,
-    unsupported: [],
-    dropped: [],
-    reason: 'the original supports it',
-  },);
-}
-
 await describe({
   name: wrapConsolidationProposals.name,
   children: [

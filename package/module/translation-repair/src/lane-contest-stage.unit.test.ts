@@ -42,6 +42,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { ballot, } from './structural-ballot.test-fixture.ts';
 
 /**
  One contested slice, standing in for a corpus passage.
@@ -96,27 +97,6 @@ const EXCHANGE_TIMEOUT_MS = 5_000;
  bound, and cut when the round abandons the call, so no timer outlives it.
  */
 const NEVER_ANSWERS_MS = EXCHANGE_TIMEOUT_MS * 2;
-
-/**
- Builds one ballot body.
- 
- @param choice - candidate this judge names
- 
- @returns Reply body a judge would return
- 
- @example
- ```ts
- const body = ballot({ choice: 'repair', },);
- ```
- */
-function ballot({ choice, }: { readonly choice: string; },): string {
-  return JSON.stringify({
-    choice,
-    unsupported: [],
-    dropped: [],
-    reason: 'the original supports it',
-  },);
-}
 
 /**
  Builds a client whose models reply in roster order.

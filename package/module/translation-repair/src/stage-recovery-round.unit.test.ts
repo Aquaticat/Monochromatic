@@ -19,7 +19,6 @@ import {
   runRecoveryRound,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  type JsonSchemaResponseFormat,
   type RosterModelId,
   type SyntheticClient,
   type UnreadableCause,
@@ -30,6 +29,11 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import {
+  isMeowReply,
+  MEOW_FORMAT,
+  type MeowReply,
+} from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Grace each recovery round gives its re-asks, short because every scripted
@@ -41,41 +45,6 @@ const RECOVERY_GRACE_MS = 60;
  Text the stage's own prompt carries.
  */
 const STAGE_PROMPT = 'meow';
-
-/**
- Trivial reply payload the scripted client emits.
- */
-type MeowReply = {
-  readonly meow: string;
-};
-
-/**
- Guards the trivial payload.
-
- @param value - parsed reply
-
- @returns True for a reply carrying a meow
-
- @example
- ```ts
- isMeowReply({ meow: 'purr', },);
- ```
- */
-function isMeowReply(value: unknown,): value is MeowReply {
-  return ((typeof value) === 'object') && (value !== null)
-    && ((typeof (value as MeowReply).meow) === 'string');
-}
-
-/**
- Response format every scripted ask carries.
- */
-const MEOW_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'meow_reply',
-    schema: { type: 'object', },
-  },
-};
 
 /**
  What the scripted client saw of one seat's asks.

@@ -18,57 +18,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type ChunkPair,
   type SliceReplacement,
   unifyQuoteStyle,
 } from '../../dist/final/node/index.mjs';
-
-/**
- One slice over an archive text, starting at an offset.
-
- @param sliceIndex - where the slice stands
-
- @param target - archive text
-
- @param startOffset - where the archive text starts in the page
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, target: 'She napped.', startOffset: 0, },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    target,
-    startOffset,
-  }: {
-    readonly sliceIndex: number;
-    readonly target: string;
-    readonly startOffset: number;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 4,
-      text: '她打盹。',
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset,
-      endOffset: startOffset + target.length,
-      text: target,
-    },
-  };
-}
+import { pairAt, } from './archive-slice-pair.test-fixture.ts';
 
 /**
  Text the unified page carries at slice 0.
@@ -105,12 +58,12 @@ function firstSlice(
    */
   const unified = unifyQuoteStyle({
     slices: [
-      pair({
+      pairAt({
         sliceIndex: 0,
         target: archive,
         startOffset: 0,
       },),
-      pair({
+      pairAt({
         sliceIndex: 1,
         target: 'The cat napped.',
         startOffset: archive.length + 2,

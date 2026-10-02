@@ -45,6 +45,7 @@ import {
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { rawResultFor, } from './lane-result-evidence.test-fixture.ts';
 
 /**
  Real git binary every fixture command runs through.
@@ -394,50 +395,6 @@ function replacedFirstSlice(
           : { kind: 'incumbent-retained', },
       };
     },);
-}
-
-/**
- What one lane's raw result reports about those rows.
- 
- @param rows - ledger the result describes
- 
- @returns Raw result fields version 2 requires
- 
- @example
- ```ts
- const raw = rawResultFor({ rows, },);
- ```
- */
-function rawResultFor(
-  { rows, }: { readonly rows: readonly SliceDeliveryRecord[]; },
-): Record<string, unknown> {
-  /**
-   Slices whose replacement the document carries.
-   */
-  const shipped = rows
-    .filter(function wasShipped(row,): boolean {
-      return row.delivery
-        .kind === 'replacement-shipped';
-    },)
-    .map(function indexOf(row,): number {
-      return row.sliceIndex;
-    },);
-
-  return {
-    sliceCount: rows.length,
-    changedSliceIndices: shipped,
-    withdrawnSliceIndices: [],
-    changedSliceCount: shipped.length,
-    withdrawnSliceCount: 0,
-    sliceTexts: rows.map(function toEvidence(row,): Record<string, unknown> {
-      return {
-        sliceIndex: row.sliceIndex,
-        incumbentKind: row.incumbentKind,
-        incumbentText: row.incumbentText,
-        outcome: row.outcome,
-      };
-    },),
-  };
 }
 
 /**

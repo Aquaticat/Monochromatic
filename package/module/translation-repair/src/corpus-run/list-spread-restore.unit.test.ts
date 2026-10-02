@@ -22,53 +22,7 @@ import {
   type ChunkPair,
   restoreListSpread,
 } from '../../dist/final/node/index.mjs';
-
-/**
- One prepared pair.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text
-
- @param target - archive text, empty where the archive never translated it
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, source: '1. 猫', target: '1. Cat', },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
+import { pair, } from './title-reference.test-fixture.ts';
 
 /**
  A loose ordered list, a tight bulleted one, a paragraph, and a list the

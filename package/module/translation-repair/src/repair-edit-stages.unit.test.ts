@@ -39,6 +39,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { catIssue, } from './accepted-cat-issue.test-fixture.ts';
 
 /**
  Logger for the stages under test.
@@ -63,28 +64,6 @@ const CHECKERS = [
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
-
-/**
- Builds one accepted issue the checkers rule on.
- 
- @param issueId - handle the tallies are keyed by
- 
- @returns Accepted issue
- 
- @example
- ```ts
- const issue = catIssue({ issueId: 'adjudicated/tense', },);
- ```
- */
-function catIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssue {
-  return {
-    issueId,
-    status: 'accepted' as const,
-    severity: 'major' as const,
-    claims: [],
-    tallies: {},
-  };
-}
 
 /**
  Client answering each checker with a scripted report, or losing its voice.

@@ -32,24 +32,22 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   buildEditorMessages,
-  type Candidate,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   CHUNK_SELECTION_CRITERIA,
   ENVELOPE_SELECTION_CRITERIA,
   hashContent,
   messageText,
-  type PatchOutcome,
   selectChunkPatch,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { chunkCandidate, } from './whole-chunk-candidate.test-fixture.ts';
 
 /**
  Logger for the selection under test.
@@ -70,33 +68,6 @@ const JUDGE_RULE = 'Saying something twice is adding content unless the ORIGINAL
  Invented archive English with one region.
  */
 const TARGET_TEXT = 'Mittens woke at dawn.\n\nThe cat hates the sun.\n';
-
-/**
- One whole-chunk candidate.
-
- @param patchedText - the candidate's chunk text
-
- @returns Candidate carrying that text
-
- @example
- ```ts
- const candidate = chunkCandidate({ patchedText: 'The cat loves the sun.', },);
- ```
- */
-function chunkCandidate({ patchedText, }: { readonly patchedText: string; },): Candidate<PatchOutcome> {
-  return {
-    producer: {
-      kind: 'model',
-      modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-    },
-    value: {
-      patchedText,
-      applied: [],
-      rejected: [],
-    },
-    rendered: patchedText,
-  };
-}
 
 /**
  System sheets the chunk judges are shown.

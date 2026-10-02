@@ -21,53 +21,7 @@ import {
   type ChunkPair,
   restoreJsxAttributes,
 } from '../../dist/final/node/index.mjs';
-
-/**
- One slice carrying a marker tag and a sentence.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text
-
- @param target - archive text, empty where the archive never translated it
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, source: '<Paw n="五"/>', target: '<Paw n="V"/>', },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
+import { pair, } from './title-reference.test-fixture.ts';
 
 /**
  Two marker slices the archive renders with Roman numerals, one heading

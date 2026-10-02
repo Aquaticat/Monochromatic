@@ -18,7 +18,6 @@ import {
 } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   describe,
   expect,
@@ -31,13 +30,7 @@ import {
   listCorpusPeople,
   readCorpusFile,
 } from '../dist/final/node/index.mjs';
-
-/**
- Real git binary for fixture setup and pinned reads;
- the repo PATH exposes a policy shim whose staging guards reject fixture
- staging patterns.
- */
-const REAL_GIT = await resolveGit();
+import { fixtureGit, REAL_GIT, } from './hermetic-git-run.test-fixture.ts';
 
 /**
  Invented zh page content committed into the throwaway clone.
@@ -49,50 +42,6 @@ const WHISKERS_PAGE = '---\nname: 小猫-whiskers\n---\n\n## 简介\n\n猫猫喜
  pinned corpus is.
  */
 const TABBY_CRLF_PAGE = '---\r\nname: 小猫-tabby\r\n---\r\n\r\n## 简介\r\n\r\n猫猫在窗台上睡觉。\r\n';
-
-/**
- Runs one git command inside the throwaway clone,
- hermetic against user and system git configuration.
- 
- @param cloneDir - throwaway repository directory
- 
- @param args - git argument vector
- 
- @returns Captured stdout
- 
- @example
- ```ts
- const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- ```
- */
-async function fixtureGit(
-  {
-    cloneDir,
-    args,
-  }: {
-    readonly cloneDir: string;
-    readonly args: readonly string[];
-  },
-): Promise<string> {
-  /**
-   Subprocess result; only stdout is consumed.
-   */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
-      '-C',
-      cloneDir,
-      ...args,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  return stdout;
-}
 
 /**
  Builds a throwaway corpus-shaped git repository with one committed entry,

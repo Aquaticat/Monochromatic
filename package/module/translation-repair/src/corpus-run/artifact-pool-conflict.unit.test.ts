@@ -34,6 +34,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { resolvePool, } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
@@ -97,32 +98,6 @@ function environmentSaying(
   };
 }
 
-/**
- Runs a call that must refuse and hands back what it threw.
- 
- @param act - call expected to reject
- 
- @returns Whatever it rejected with, unchanged
- 
- @throws Error when the call resolved instead of rejecting
- 
- @example
- ```ts
- const refusal = await refusalOf(async function overBothPools() { ... },);
- ```
- */
-async function refusalOf(act: () => Promise<unknown>,): Promise<unknown> {
-  try {
-    await act();
-  }
-  catch (error) {
-    return error;
-  }
-  throw new Error(
-    `Expected ${(act.name === '') ? 'the call' : act.name} to refuse, but it returned`,
-  );
-}
-
 //endregion Fixtures
 
 await describe({
@@ -147,7 +122,7 @@ await describe({
         /**
          What the reader said about the pair.
          */
-        const refusal = await refusalOf(async function overBothPools() {
+        const refusal = await rejectionOf(async function overBothPools() {
           await resolvePool({ artifactsDir: join(
             tmpdir(),
             'translation-repair-pool-conflict-unread',
@@ -181,7 +156,7 @@ await describe({
         /**
          What the reader said when only one pool was actually requested.
          */
-        const refusal = await refusalOf(async function overAnEmptyPool() {
+        const refusal = await rejectionOf(async function overAnEmptyPool() {
           await resolvePool({ artifactsDir, },);
         },);
 

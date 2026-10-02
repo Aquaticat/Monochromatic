@@ -27,10 +27,14 @@ import {
   attemptStageCall,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  type JsonSchemaResponseFormat,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
+import {
+  isPurrReply,
+  PURR_FORMAT,
+  type PurrReply,
+} from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Logger for the exchanges under test.
@@ -41,41 +45,6 @@ const l = tagged({ tag: 'stage-call-test', },);
  Model the exchanges address.
  */
 const MODEL_ID = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
-
-/**
- Trivial reply payload the scripted clients emit.
- */
-type PurrReply = {
-  readonly purr: string;
-};
-
-/**
- Guards the trivial payload.
- 
- @param value - candidate reply
- 
- @returns Whether value carries a string purr
- 
- @example
- ```ts
- isPurrReply({ purr: 'loud', },);
- ```
- */
-function isPurrReply(value: unknown,): value is PurrReply {
-  return ((typeof value) === 'object') && (value !== null)
-    && ((typeof (value as PurrReply).purr) === 'string');
-}
-
-/**
- Response format naming the test stage.
- */
-const PURR_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'purr_reply',
-    schema: { type: 'object', },
-  },
-};
 
 /**
  Client answering with one scripted outcome, or throwing one scripted error.

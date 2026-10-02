@@ -53,6 +53,7 @@ import {
 } from '../roster-seats.test-fixture.ts';
 
 import { candidateNumber, } from '../archive-selection.test-fixture.ts';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 
 /**
  Logger for the control under test.
@@ -156,32 +157,6 @@ function judgeBacking({ wanted, }: { readonly wanted: string; },): SyntheticClie
   };
 }
 
-/**
- Runs a call that must refuse and hands back what it threw.
- 
- @param act - call expected to reject
- 
- @returns Whatever it rejected with, unchanged
- 
- @throws Error when the call resolved instead of rejecting
- 
- @example
- ```ts
- const refusal = await refusalOf(async function overOneSentence() { ... },);
- ```
- */
-async function refusalOf(act: () => Promise<unknown>,): Promise<unknown> {
-  try {
-    await act();
-  }
-  catch (error) {
-    return error;
-  }
-  throw new Error(
-    `Expected ${(act.name === '') ? 'the call' : act.name} to refuse, but it returned`,
-  );
-}
-
 //endregion Fixtures
 
 await describe({
@@ -204,7 +179,7 @@ await describe({
         /**
          What the control said about a draw with nothing to cut.
          */
-        const refusal = await refusalOf(async function overUndamageableSlices() {
+        const refusal = await rejectionOf(async function overUndamageableSlices() {
           await widthControlHolds({
             client: CLIENT,
             slices: [

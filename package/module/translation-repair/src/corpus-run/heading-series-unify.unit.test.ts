@@ -23,6 +23,7 @@ import {
   type ChunkPair,
   unifyHeadingSeries,
 } from '../../dist/final/node/index.mjs';
+import { pair, } from './title-reference.test-fixture.ts';
 
 /**
  One slice carrying one heading of the series.
@@ -67,53 +68,6 @@ function section(
       startOffset: 0,
       endOffset: target.length,
       text: (target === '') ? 'Cat.' : `${target}\n\nCat.`,
-    },
-  };
-}
-
-/**
- One slice carrying whole texts, as many headings as they hold.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text of the slice
-
- @param target - archive text of the slice
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = sections({ sliceIndex: 1, source: '### 其二：黑猫\n\n猫。', target: '### Sooty\n\nCat.', },);
- ```
- */
-function sections(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
     },
   };
 }
@@ -450,7 +404,7 @@ await describe({
         const unified = unifyHeadingSeries({
           slices: [
             PARTED[0] as ChunkPair,
-            sections({
+            pair({
               sliceIndex: 1,
               source: '### 其二：黑猫\n\n猫。\n\n### 其三：白猫\n\n猫。',
               target: '### Part Two: Sooty\n\nCat.\n\n### Part Three: Snowy\n\nCat.',
@@ -472,17 +426,17 @@ await describe({
       fn: async () => {
         const unified = unifyHeadingSeries({
           slices: [
-            sections({
+            pair({
               sliceIndex: 0,
               source: '### 序\n\n猫。',
               target: '### Preface\n\nCat.',
             },),
-            sections({
+            pair({
               sliceIndex: 1,
               source: '### 其他\n\n猫。\n\n### 其一：橘猫\n\n猫。',
               target: '### Others\n\nCat.\n\n### One: Ginger\n\nCat.',
             },),
-            sections({
+            pair({
               sliceIndex: 2,
               source: '### 其二：黑猫\n\n猫。',
               target: '### Two: Sooty\n\nCat.',
@@ -557,7 +511,7 @@ await describe({
           slices: [
             PARTED[0] as ChunkPair,
             PARTED[1] as ChunkPair,
-            sections({
+            pair({
               sliceIndex: 2,
               source: '### 其三：白猫\n\n猫。',
               target: '### Interlude\n\nCat.\n\n### Part Three: Snowy\n\nCat.',

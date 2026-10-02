@@ -17,57 +17,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ChunkPair,
-  restoreArchiveItalicTitles,
-} from '../../dist/final/node/index.mjs';
-
-/**
- One slice over an archive text, starting at an offset.
-
- @param sliceIndex - where the slice stands
-
- @param target - archive text
-
- @param startOffset - where the archive text starts in the page
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, target: 'She napped.', startOffset: 0, },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    target,
-    startOffset,
-  }: {
-    readonly sliceIndex: number;
-    readonly target: string;
-    readonly startOffset: number;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 4,
-      text: '她打盹。',
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset,
-      endOffset: startOffset + target.length,
-      text: target,
-    },
-  };
-}
+import { restoreArchiveItalicTitles, } from '../../dist/final/node/index.mjs';
+import { pairAt, } from './archive-slice-pair.test-fixture.ts';
 
 /**
  Text the page carries at slice 1 after the pass, where slice 0 is an
@@ -98,8 +49,8 @@ function secondSlice(
    */
   const page = restoreArchiveItalicTitles({
     slices: [
-      pair({ sliceIndex: 0, target: archive, startOffset: 0, },),
-      pair({ sliceIndex: 1, target: 'The cat napped.', startOffset: archive.length + 2, },),
+      pairAt({ sliceIndex: 0, target: archive, startOffset: 0, },),
+      pairAt({ sliceIndex: 1, target: 'The cat napped.', startOffset: archive.length + 2, },),
     ],
     replacements: [{ sliceIndex: 1, replacementText: replacement, },],
     archiveOriginalSpans: [],

@@ -24,7 +24,6 @@ import {
 } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   describe,
   expect,
@@ -36,11 +35,7 @@ import {
   collectEligiblePairs,
   CorpusReadError,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Real git binary for fixture setup and pinned reads.
- */
-const REAL_GIT = await resolveGit();
+import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 
 /**
  Pages the throwaway clone carries, by entry then side.
@@ -60,49 +55,6 @@ const PAGES: Readonly<Record<string, Readonly<Record<'page.md' | 'page.en.md', s
  Entry the clone carries only the original of.
  */
 const HALF_ENTRY = 'tabby';
-
-/**
- Runs git against the fixture clone with no user configuration.
- 
- @param cloneDir - fixture clone
- 
- @param args - git arguments
- 
- @returns Standard output
- 
- @example
- ```ts
- const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- ```
- */
-async function fixtureGit(
-  {
-    cloneDir,
-    args,
-  }: {
-    readonly cloneDir: string;
-    readonly args: readonly string[];
-  },
-): Promise<string> {
-  /**
-   Git's output.
-   */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
-      '-C',
-      cloneDir,
-      ...args,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  return stdout;
-}
 
 /**
  Makes a throwaway corpus clone with two complete entries and one that has

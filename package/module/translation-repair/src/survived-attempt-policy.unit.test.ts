@@ -26,6 +26,7 @@ import {
   buildTranslateMessages,
   HOUSE_POLICY_BLOCK,
 } from '../dist/final/node/index.mjs';
+import { systemOf, } from './chat-message-reading.test-fixture.ts';
 
 /**
  Clause the rule must carry, read off the house policy verbatim so a
@@ -40,31 +41,6 @@ const SURVIVED_ATTEMPT =
  Cat-themed source, since neither sheet varies with what it is given.
  */
 const SOURCE_TEXT = '猫在窗台上睡觉。';
-
-/**
- Joins the system half of an exchange, which is where standing rules live.
-
- @param messages - exchange to read
-
- @returns Every system message, joined
-
- @example
- ```ts
- const sheet = systemOf({ messages: buildTranslateMessages({ sourceText, },).messages, },);
- ```
- */
-function systemOf(
-  { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },
-): string {
-  return messages
-    .filter(function isSystem(message,): boolean {
-      return message.role === 'system';
-    },)
-    .map(function toContent(message,): string {
-      return message.content;
-    },)
-    .join('\n',);
-}
 
 await describe({
   name: 'a survived attempt is an attempt on every sheet (class seventy-nine, shi_Yumiaoya)',

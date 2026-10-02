@@ -39,6 +39,7 @@ import {
   type SliceDeliveryRecord,
   verifyArtifactMeasurements,
 } from '../../dist/final/node/index.mjs';
+import { toEvidence, } from './lane-result-evidence.test-fixture.ts';
 
 /**
  Original document, two sections a preparation slices apart.
@@ -130,13 +131,8 @@ function rawResultFor(
     // on the other side.
     changedSliceCount: 0,
     withdrawnSliceCount: 0,
-    sliceTexts: rows.map(function toEvidence(row,): Record<string, unknown> {
-      return {
-        sliceIndex: row.sliceIndex,
-        incumbentKind: row.incumbentKind,
-        incumbentText: row.incumbentText,
-        outcome: row.outcome,
-      };
+    sliceTexts: rows.map(function evidenceOf(row,): Record<string, unknown> {
+      return toEvidence(row,);
     },),
   };
 }

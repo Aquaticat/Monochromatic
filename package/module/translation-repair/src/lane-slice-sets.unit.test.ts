@@ -41,6 +41,7 @@ import {
   makeInsertionChunk,
   validateNamedSets,
 } from '../dist/final/node/index.mjs';
+import { listed, } from './sorted-number-sets.test-fixture.ts';
 
 /**
  Archive wording standing at a slice the corpus translated.
@@ -201,28 +202,6 @@ function notApplicableSet(
     indices,
     incumbent: 'absent',
   };
-}
-
-/**
- Renders returned sets as sorted arrays, so a case reads as what it claims.
- 
- @param sets - one set per list, in the order the lists were given
- 
- @returns Same sets as sorted arrays
- 
- @example
- ```ts
- expect(listed({ sets, },),).toEqual([[1,], [0,],],);
- ```
- */
-function listed(
-  { sets, }: { readonly sets: readonly ReadonlySet<number>[]; },
-): readonly (readonly number[])[] {
-  return sets.map(function toList(one,): readonly number[] {
-    return [...one,].toSorted(function ascending(left, right,): number {
-      return left - right;
-    },);
-  },);
 }
 
 await describe({

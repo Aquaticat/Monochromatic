@@ -17836,6 +17836,79 @@ Recurrence:
 `mistake-prevention.md`,
 "Structure read off the parse".
 
+### B111: test files kept 90 groups of copied helper bodies
+
+Queued by B101 and B103,
+fixed in part in the commit adding this entry.
+The duplicate-body grouping,
+run over the package's test files and fixtures at the parent commit
+(948 files,
+bodies of 80 or more characters with comments and whitespace aside),
+finds 90 bodies kept in two or more places,
+247 copies in all.
+After this change it finds 58 groups and 137 copies over 966 files.
+A read-only agent wrote the patch:
+32 groups move into 18 new `.test-fixture.ts` files
+(scripted clients,
+stream frames,
+refusal readers,
+glossary lookups,
+lane evidence and others),
+and 80 test files import them.
+Two helpers that shared one name did different things,
+so each fixture names its own:
+`rejectionOf` hands back whatever a call rejected with,
+and `statedRefusalMessage` reads the message of the package's own stated refusal.
+The stage-recovery-round test's meow reply,
+its guard and its format move onto the shared trivial-reply fixture with them.
+
+The patch needed more than its review found.
+A fixture file gets the package's production lint rules,
+not the test-file override,
+and lint over the patched tree reported 18 errors and 33 warnings:
+arrow functions,
+missing return types,
+type-only imports without `import type`,
+positional parameters,
+callbacks passed by reference,
+unchecked type assertions,
+and a named import nano-spawn does not export (TS2614).
+Reading found an import the patch had written inside a template literal,
+names that collided once two copies met in one file,
+and TSDoc blocks left on statements,
+which the TSDoc attachment probe still found three of after the first fixes.
+All are fixed here;
+the assertions are type guards or `Error.isError` checks,
+and the glossary tests call `seededAmong` rather than passing `isSeeded` to `filter`.
+
+One move was wrong in kind and is undone.
+The patch hoisted `collectingInto`,
+which replaces `console.log`,
+out of the two report tests whose suites run one case at a time.
+The global-writes scan follows a writer to its cases by calls within one file,
+so in a fixture its write has no case.
+Run with that fixture restored for the measurement,
+the scan fails on both of its writes,
+each `console assigned, in collectingInto, which no call by name reaches`;
+the source scans had not yet run over the patched tree.
+Both copies stand beside their sequenced suites again.
+
+Open:
+the 58 remaining groups,
+among them five capturing `console.log` that the case's own sandbox
+(`ctx.sinon.stub(console, 'log')`)
+could replace in one fixture,
+and eight glossary cases whose bodies match because each reads its own file's term list.
+The duplicate-body scan widens to test files once each is hoisted or listed.
+Its grouping strips whitespace inside string literals as well,
+so two bodies differing only in a literal's spaces group as one;
+the widened scan has to compare literals as written.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code"
+and "Globals a case replaces".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

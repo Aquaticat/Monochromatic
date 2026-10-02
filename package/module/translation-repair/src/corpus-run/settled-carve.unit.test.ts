@@ -25,7 +25,6 @@ import {
 } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -49,11 +48,8 @@ import {
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
-
-/**
- Real git binary for fixture setup and pinned reads.
- */
-const REAL_GIT = await resolveGit();
+import { rawResultFor, } from './lane-result-evidence.test-fixture.ts';
+import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 
 /**
  Entry the throwaway clone carries.
@@ -80,49 +76,6 @@ const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as Pipeline
  Wording a lane writes where the archive holds none.
  */
 const FRESH_LINE = 'The cat has been given a line.';
-
-/**
- Runs git against the fixture clone with no user configuration.
- 
- @param cloneDir - fixture clone
- 
- @param args - git arguments
- 
- @returns Standard output
- 
- @example
- ```ts
- const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- ```
- */
-async function fixtureGit(
-  {
-    cloneDir,
-    args,
-  }: {
-    readonly cloneDir: string;
-    readonly args: readonly string[];
-  },
-): Promise<string> {
-  /**
-   Git's output.
-   */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
-      '-C',
-      cloneDir,
-      ...args,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  return stdout;
-}
 
 /**
  Makes a throwaway corpus clone carrying the fixture entry at one commit.
@@ -309,49 +262,6 @@ function rowsFor(
         delivery: { kind: 'incumbent-retained', },
       };
     },);
-}
-
-/**
- Raw lane result consistent with the rows.
- 
- @param rows - rows the result reports
- 
- @returns Evidence core the builder projects
- 
- @example
- ```ts
- const result = rawResultFor({ rows, },);
- ```
- */
-function rawResultFor(
-  { rows, }: { readonly rows: readonly SliceDeliveryRecord[]; },
-): Record<string, unknown> {
-  /**
-   Slices the rows say shipped a replacement.
-   */
-  const shipped = rows
-    .filter(function wasShipped(row,): boolean {
-      return row.delivery
-        .kind === 'replacement-shipped';
-    },)
-    .map(function indexOf(row,): number {
-      return row.sliceIndex;
-    },);
-  return {
-    sliceCount: rows.length,
-    changedSliceIndices: shipped,
-    withdrawnSliceIndices: [],
-    changedSliceCount: shipped.length,
-    withdrawnSliceCount: 0,
-    sliceTexts: rows.map(function toEvidence(row,): Record<string, unknown> {
-      return {
-        sliceIndex: row.sliceIndex,
-        incumbentKind: row.incumbentKind,
-        incumbentText: row.incumbentText,
-        outcome: row.outcome,
-      };
-    },),
-  };
 }
 
 /**

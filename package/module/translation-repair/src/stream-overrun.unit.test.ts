@@ -31,45 +31,7 @@ import {
   StreamOverrunError,
   watchRunaway,
 } from '../dist/final/node/index.mjs';
-
-/**
- Builds one server-sent event frame carrying text on one channel.
- 
- @param channel - which channel the text arrives on
- 
- @param text - text the frame carries
- 
- @returns Frame as the wire sends it
- 
- @example
- ```ts
- const raw = frameOf({ channel: 'content', text: 'The cat sat. ', },);
- ```
- */
-function frameOf(
-  {
-    channel,
-    text,
-  }: {
-    readonly channel: 'content' | 'reasoning';
-    readonly text: string;
-  },
-): string {
-  /**
-   Delta object, whose field name distinguishes the channels.
-   */
-  const delta = (channel === 'content') ? { content: text, } : { reasoning_content: text, };
-
-  return `data: ${
-    JSON.stringify({
-      choices: [{
-        index: 0,
-        delta,
-        finish_reason: null,
-      },],
-    },)
-  }\n\n`;
-}
+import { frameOf, } from './sse-frame.test-fixture.ts';
 
 /**
  Builds internally varied cat-themed text of at least `length` characters.

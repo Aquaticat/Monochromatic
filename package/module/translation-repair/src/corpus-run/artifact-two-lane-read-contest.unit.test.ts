@@ -24,11 +24,7 @@ import {
   SLICE_SPELLED_KEYS,
   parseLaneSelection,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Archive`s own English for the slice every fixture here describes.
- */
-const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
+import { ARCHIVE_NAP, catRow, } from '../two-lane-comparison-row.test-fixture.ts';
 
 /**
  Wording the repair lane left.
@@ -83,57 +79,6 @@ const FOR_NEITHER = {
   droppedRaw: [],
   reason: 'both candidates invent a detail',
 };
-
-/**
- Builds a comparison row carrying the two lane wordings a test needs.
- 
- @param sliceIndex - slice this names
- 
- @param repairText - wording the repair document carries
- 
- @param translateText - wording the translate document carries
- 
- @returns Row with the rest of its fields held constant
- 
- @example
- ```ts
- const row = catRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
- ```
- */
-function catRow(
-  {
-    sliceIndex,
-    repairText,
-    translateText,
-  }: {
-    readonly sliceIndex: number;
-    readonly repairText: string;
-    readonly translateText: string;
-  },
-): ArtifactComparisonRow {
-  return {
-    sliceIndex,
-    incumbentKind: 'present',
-    incumbentText: ARCHIVE_NAP,
-    repairText,
-    translateText,
-    laneRelation: (repairText === translateText) ? 'both-agree' : 'both-differ',
-    repairOutcome: {
-      kind: 'decided',
-      acceptedText: repairText,
-    },
-    translateOutcome: {
-      kind: 'decided',
-      acceptedText: translateText,
-    },
-    decisionComparison: {
-      kind: 'comparable',
-      verdict: (repairText === translateText) ? 'same' : 'different',
-    },
-    repairDelivery: { kind: 'replacement-shipped', },
-    translateDelivery: { kind: 'replacement-shipped', },
-  };
-}
 
 /**
  Slice both lanes worded differently, which a contest may answer.

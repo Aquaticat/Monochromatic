@@ -34,6 +34,12 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../roster-seats.test-fixture.ts';
+import {
+  ARCHIVE_NAP,
+  repairLedger,
+  translateLedger,
+  translateResult,
+} from '../two-lane-ledger-fixtures.test-fixture.ts';
 
 /**
  Ballot backing the translate lane, carried by the contest cases.
@@ -48,104 +54,10 @@ const CONTEST_BALLOT = {
 };
 
 /**
- Original of the slice both lanes work on.
- */
-const SOURCE_NAP = '猫猫在窗台上睡觉。';
-
-/**
- Original of the passage the archive never translated.
- */
-const SOURCE_BIRD = '窗台上有一只鸟。';
-
-/**
- Archive's own English for the first slice.
- */
-const ARCHIVE_NAP = 'The cat sleeps on the sill.';
-
-/**
- Wording the translate lane decided for it.
- */
-const FRESH_NAP = 'The cat naps on the windowsill.';
-
-/**
  Identity a preparation gives itself, which a standalone reader checks for
  SYNTAX only: the inputs it hashes are not in the file.
  */
 const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
-
-/**
- Repair lane's ledger: it kept the archive's wording, and had nothing to do at
- a passage the archive never translated.
- 
- @returns Two rows, in document order
- 
- @example
- ```ts
- const rows = repairLedger();
- ```
- */
-function repairLedger(): readonly ArtifactDeliveryRow[] {
-  return [
-    {
-      sliceIndex: 0,
-      sourceText: SOURCE_NAP,
-      incumbentKind: 'present',
-      incumbentText: ARCHIVE_NAP,
-      outcome: {
-        kind: 'decided',
-        acceptedText: ARCHIVE_NAP,
-      },
-      shippedText: ARCHIVE_NAP,
-      delivery: { kind: 'incumbent-retained', },
-    },
-    {
-      sliceIndex: 1,
-      sourceText: SOURCE_BIRD,
-      incumbentKind: 'absent',
-      incumbentText: '',
-      outcome: { kind: 'not-applicable', },
-      shippedText: '',
-      delivery: { kind: 'gap-remains', },
-    },
-  ];
-}
-
-/**
- Translate lane's ledger: it replaced the first slice and could not fill the
- second.
- 
- @returns Two rows, in document order
- 
- @example
- ```ts
- const rows = translateLedger();
- ```
- */
-function translateLedger(): readonly ArtifactDeliveryRow[] {
-  return [
-    {
-      sliceIndex: 0,
-      sourceText: SOURCE_NAP,
-      incumbentKind: 'present',
-      incumbentText: ARCHIVE_NAP,
-      outcome: {
-        kind: 'decided',
-        acceptedText: FRESH_NAP,
-      },
-      shippedText: FRESH_NAP,
-      delivery: { kind: 'replacement-shipped', },
-    },
-    {
-      sliceIndex: 1,
-      sourceText: SOURCE_BIRD,
-      incumbentKind: 'absent',
-      incumbentText: '',
-      outcome: { kind: 'unfilled', },
-      shippedText: '',
-      delivery: { kind: 'gap-remains', },
-    },
-  ];
-}
 
 /**
  Repair lane's raw result, carrying fields version 2 never described so every
@@ -189,51 +101,6 @@ function repairResult(): Record<string, unknown> {
         incumbentKind: 'absent',
         incumbentText: '',
         outcome: { kind: 'not-applicable', },
-      },
-    ],
-  };
-}
-
-/**
- Translate lane's raw result, on the same footing.
- 
- @returns Raw result JSON
- 
- @example
- ```ts
- const raw = translateResult();
- ```
- */
-function translateResult(): Record<string, unknown> {
-  return {
-    translatedText: `## Section one\n\n${FRESH_NAP}`,
-    sliceCount: 2,
-    changedSliceCount: 1,
-    refusedSliceCount: 0,
-    withdrawnSliceCount: 0,
-    changedSliceIndices: [0,],
-    withdrawnSliceIndices: [],
-    resumedSliceCount: 0,
-    status: 'unfilled',
-    unfilled: [{ sliceIndex: 1, },],
-    slices: [],
-    sliceSelections: [],
-    findings: [],
-    sliceTexts: [
-      {
-        sliceIndex: 0,
-        incumbentKind: 'present',
-        incumbentText: ARCHIVE_NAP,
-        outcome: {
-          kind: 'decided',
-          acceptedText: FRESH_NAP,
-        },
-      },
-      {
-        sliceIndex: 1,
-        incumbentKind: 'absent',
-        incumbentText: '',
-        outcome: { kind: 'unfilled', },
       },
     ],
   };

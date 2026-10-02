@@ -31,7 +31,6 @@ import {
 } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -45,13 +44,7 @@ import {
   type CorpusPin,
   gatherEntryPictures,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Real git binary for fixture setup and pinned reads, mirroring
- `corpus-source.unit.test.ts`: the repo PATH exposes a policy shim whose
- staging guards reject fixture staging patterns.
- */
-const REAL_GIT = await resolveGit();
+import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 
 /**
  Logger every gather in this file writes its progress to.
@@ -168,50 +161,6 @@ function sliceOf(
       text: '',
     },
   };
-}
-
-/**
- Runs one git command inside a throwaway clone, hermetic against user and
- system git configuration.
- 
- @param cloneDir - throwaway repository directory
- 
- @param args - git argument vector
- 
- @returns Captured stdout
- 
- @example
- ```ts
- const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- ```
- */
-async function fixtureGit(
-  {
-    cloneDir,
-    args,
-  }: {
-    readonly cloneDir: string;
-    readonly args: readonly string[];
-  },
-): Promise<string> {
-  /**
-   Subprocess result; only stdout is consumed.
-   */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
-      '-C',
-      cloneDir,
-      ...args,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  return stdout;
 }
 
 /**

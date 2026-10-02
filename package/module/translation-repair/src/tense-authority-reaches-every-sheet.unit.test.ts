@@ -40,6 +40,7 @@ import {
   type ConsolidateSubject,
   CONTEST_POLICY,
 } from '../dist/final/node/index.mjs';
+import { systemOf, } from './chat-message-reading.test-fixture.ts';
 
 //region Fixtures
 
@@ -92,31 +93,6 @@ const NAPPING_ISSUE: AdjudicatedIssue = {
   ],
   tallies: {},
 };
-
-/**
- Joins the system half of an exchange, which is where standing rules live.
- 
- @param messages - exchange to read
- 
- @returns Every system message, joined
- 
- @example
- ```ts
- const sheet = systemOf({ messages: buildConsolidateMessages({ subject, },), },);
- ```
- */
-function systemOf(
-  { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },
-): string {
-  return messages
-    .filter(function isSystem(message,): boolean {
-      return message.role === 'system';
-    },)
-    .map(function toContent(message,): string {
-      return message.content;
-    },)
-    .join('\n',);
-}
 
 //endregion Fixtures
 

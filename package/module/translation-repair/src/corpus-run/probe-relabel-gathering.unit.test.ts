@@ -42,7 +42,6 @@ import {
 } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   describe,
   expect,
@@ -57,16 +56,9 @@ import {
   gatherRelabelCases,
   type RelabelCase,
 } from '../../dist/final/node/index.mjs';
+import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 
 //region Probe relabel gathering tests
-
-/**
- Real git binary for fixture setup and pinned reads.
- 
- The repo PATH exposes a policy shim whose staging guards reject the staging
- patterns a fixture needs.
- */
-const REAL_GIT = await resolveGit();
 
 /**
  Entry every fixture here describes.
@@ -216,52 +208,6 @@ const REGIONS: readonly FixtureRegion[] = [
     before: NEXT_BEFORE,
   },
 ];
-
-/**
- Runs one git command inside the throwaway clone.
- 
- Hermetic against user and system git configuration, so a contributor's own
- settings cannot change what the fixture commits.
- 
- @param cloneDir - throwaway repository directory
- 
- @param args - git argument vector
- 
- @returns Captured stdout
- 
- @example
- ```ts
- const sha = await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
- ```
- */
-async function fixtureGit(
-  {
-    cloneDir,
-    args,
-  }: {
-    readonly cloneDir: string;
-    readonly args: readonly string[];
-  },
-): Promise<string> {
-  /**
-   Subprocess result; only stdout is consumed.
-   */
-  const { stdout, } = await spawn(
-    REAL_GIT,
-    [
-      '-C',
-      cloneDir,
-      ...args,
-    ],
-    {
-      env: {
-        GIT_CONFIG_GLOBAL: devNull,
-        GIT_CONFIG_SYSTEM: devNull,
-      },
-    },
-  );
-  return stdout;
-}
 
 /**
  Builds the ledger row the artifact carries for its one slice.

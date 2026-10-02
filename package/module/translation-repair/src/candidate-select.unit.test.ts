@@ -18,11 +18,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  applyPatchOperations,
   CANDIDATE_NONE,
   chunkCandidateOf,
   FULL_VOTE_WEIGHT,
-  hashContent,
   MIN_SELECTION_WEIGHT,
   NoProviderForModelError,
   ProducerRosterError,
@@ -34,8 +32,6 @@ import {
   type Candidate,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  type EditableEnvelope,
-  type EditorCandidate,
   type FanOutMode,
   type PatchOutcome,
   type RosterModelId,
@@ -52,6 +48,11 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import {
+  candidateFor,
+  ENVELOPE,
+  TARGET_TEXT,
+} from './editor-candidate-envelope.test-fixture.ts';
 
 /**
  Logger for the stages under test.
@@ -62,24 +63,6 @@ const l = tagged({ tag: 'candidate-select-test', },);
  Original the judges compare against.
  */
 const SOURCE_TEXT = '猫猫喜欢追蝴蝶。';
-
-/**
- Translation the envelopes are cut from.
- */
-const TARGET_TEXT = 'The cat naps. The cat hates butterflies. The bowl stays full.';
-
-/**
- Region covering the planted mistranslation.
- */
-const ENVELOPE: EditableEnvelope = {
-  envelopeId: 'envelope/butterflies',
-  startOffset: TARGET_TEXT.indexOf('The cat hates butterflies.',),
-  endOffset: TARGET_TEXT.indexOf('The cat hates butterflies.',)
-    + 'The cat hates butterflies.'.length,
-  baseText: 'The cat hates butterflies.',
-  baseHash: hashContent({ content: 'The cat hates butterflies.', },),
-  issueIds: ['adjudicated/butterflies',],
-};
 
 /**
  Ballots a scripted judge casts, keyed by model id.
@@ -439,47 +422,6 @@ async function runShortBench(
     perCallTimeoutMs: 1_000,
     l,
   },);
-}
-
-/**
- Builds one editor candidate proposing a replacement for the fixture
- envelope.
- 
- @param modelId - proposing model
- 
- @param newText - replacement it proposed
- 
- @returns Candidate carrying the gated patch
- 
- @example
- ```ts
- const candidate = candidateFor({ modelId, newText, },);
- ```
- */
-function candidateFor(
-  {
-    modelId,
-    newText,
-  }: {
-    readonly modelId: RosterModelId;
-    readonly newText: string;
-  },
-): EditorCandidate {
-  return {
-    modelId,
-    patch: applyPatchOperations({
-      targetText: TARGET_TEXT,
-      envelopes: [ENVELOPE,],
-      operations: [
-        {
-          envelopeId: ENVELOPE.envelopeId,
-          baseHash: ENVELOPE.baseHash,
-          newText,
-        },
-      ],
-      preservation: { mode: 'skip', },
-    },),
-  };
 }
 
 await describe({

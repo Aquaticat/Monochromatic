@@ -26,6 +26,7 @@ import {
   HOUSE_POLICY_BLOCK,
   RENDERING_GLOSSARY,
 } from '../dist/final/node/index.mjs';
+import { systemOf, } from './chat-message-reading.test-fixture.ts';
 
 /**
  Clause the rule must carry, read off the house policy verbatim so a
@@ -41,31 +42,6 @@ const KEPT_SUBJECT =
  Cat-themed source, since neither sheet varies with what it is given.
  */
 const SOURCE_TEXT = '我会记得这只猫。';
-
-/**
- Joins the system half of an exchange, which is where standing rules live.
-
- @param messages - exchange to read
-
- @returns Every system message, joined
-
- @example
- ```ts
- const sheet = systemOf({ messages: buildTranslateMessages({ sourceText, },).messages, },);
- ```
- */
-function systemOf(
-  { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },
-): string {
-  return messages
-    .filter(function isSystem(message,): boolean {
-      return message.role === 'system';
-    },)
-    .map(function toContent(message,): string {
-      return message.content;
-    },)
-    .join('\n',);
-}
 
 await describe({
   name: 'a clause keeps the subject the ORIGINAL writes (class one hundred eighty-three, TianqiChen666)',

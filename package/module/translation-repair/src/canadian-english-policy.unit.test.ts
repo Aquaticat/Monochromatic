@@ -27,6 +27,7 @@ import {
   RENDERING_GLOSSARY,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+import { systemOf, } from './chat-message-reading.test-fixture.ts';
 
 /**
  Clause the rule opens on, read off the house policy verbatim so a rewording
@@ -82,31 +83,6 @@ const GAS_CAR = '猫说邻居那辆旧燃油车吵得它睡不着。';
  Original naming the teacher in charge of the cat's grade.
  */
 const GRADE_HEAD = '年级组长对猫很好。';
-
-/**
- Joins the system half of an exchange, which is where standing rules live.
-
- @param messages - exchange to read
-
- @returns Every system message, joined
-
- @example
- ```ts
- const sheet = systemOf({ messages: buildTranslateMessages({ sourceText, },).messages, },);
- ```
- */
-function systemOf(
-  { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },
-): string {
-  return messages
-    .filter(function isSystem(message,): boolean {
-      return message.role === 'system';
-    },)
-    .map(function toContent(message,): string {
-      return message.content;
-    },)
-    .join('\n',);
-}
 
 /**
  Every rendering either glossary offers the bench, lowercased.

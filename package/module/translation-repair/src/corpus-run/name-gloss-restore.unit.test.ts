@@ -15,53 +15,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ChunkPair,
-  restoreNameGlossLines,
-} from '../../dist/final/node/index.mjs';
-
-/**
- One slice over an archive text.
-
- @param sliceIndex - where the slice stands
-
- @param target - archive text
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, target: 'She napped.', },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 4,
-      text: '她打盹。',
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
+import { restoreNameGlossLines, } from '../../dist/final/node/index.mjs';
+import { pair, } from './archive-slice-pair.test-fixture.ts';
 
 /**
  The archive's gloss line.

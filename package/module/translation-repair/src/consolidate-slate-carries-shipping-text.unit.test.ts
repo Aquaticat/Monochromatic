@@ -45,6 +45,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { ballot, } from './structural-ballot.test-fixture.ts';
 
 /**
  Logger the stage writes through, whose output is not under test.
@@ -385,27 +386,6 @@ function judgeBallot({ best, }: { readonly best: number; },): string {
   },);
 }
 
-/**
- Builds a gate voice's reply.
- 
- @param choice - rendering this voice names
- 
- @returns Reply body a gate voice would return
- 
- @example
- ```ts
- const reply = gateBallot({ choice: 'consolidated', },);
- ```
- */
-function gateBallot({ choice, }: { readonly choice: string; },): string {
-  return JSON.stringify({
-    choice,
-    unsupported: [],
-    dropped: [],
-    reason: 'the original supports it',
-  },);
-}
-
 await describe({
   name: `${settleConsolidation.name} over wrapped proposals`,
   children: [
@@ -418,7 +398,7 @@ await describe({
         const { settled, served, } = await settleWith({
           proposals: [REWRAPPING, REWRAPPING, REWRAPPING,],
           judgeReply: judgeBallot({ best: 1, },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
 
         // The fixture's premise, asserted rather than trusted: this proposal
@@ -444,7 +424,7 @@ await describe({
           proposals: [REWRAPPING, REWRAPPING, REWRAPPING,],
           lineStructured: true,
           judgeReply: judgeBallot({ best: 0, },),
-          gateReply: gateBallot({ choice: 'standing', },),
+          gateReply: ballot({ choice: 'standing', },),
         },);
 
         expect(served.judge,).toBeGreaterThan(0,);
@@ -470,7 +450,7 @@ await describe({
               wanted: wrapReplacementText({ text: FRESH, },),
             },),
           },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
 
         expect(judgeSheets.length,).toBeGreaterThan(0,);
@@ -500,7 +480,7 @@ await describe({
               wanted: wrapReplacementText({ text: FRESH, },),
             },),
           },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
 
         expect(settled.terminal,).toBe('consolidated',);
@@ -522,7 +502,7 @@ await describe({
           // No judge is asked, which `served.judge` pins, so the ballot a
           // judge would cast is never read.
           judgeReply: judgeBallot({ best: 1, },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
 
         expect(served.judge,).toBe(0,);

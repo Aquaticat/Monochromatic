@@ -29,31 +29,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { scanOptimalPaths, } from '../dist/final/node/index.mjs';
-
-/**
- Renders one side's sets as plain arrays, so a case reads as what it claims.
- 
- @param sets - partner or gap sets in unit order
- 
- @returns Same sets as sorted arrays
- 
- @example
- ```ts
- expect(listed({ sets: paths.partnersOfSource, },),).toEqual([[0,], [1,],],);
- ```
- */
-function listed(
-  { sets, }: { readonly sets: readonly ReadonlySet<number>[]; },
-): readonly (readonly number[])[] {
-  return sets.map(function toList(one,): readonly number[] {
-    return [...one,].toSorted(function ascending(
-      left,
-      right,
-    ): number {
-      return left - right;
-    },);
-  },);
-}
+import { listed, } from './sorted-number-sets.test-fixture.ts';
 
 /**
  Three sections a document might carry.

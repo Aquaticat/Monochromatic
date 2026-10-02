@@ -47,6 +47,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { ARCHIVE_NAP, catRow, } from './two-lane-comparison-row.test-fixture.ts';
 
 /**
  Roster of three, the smallest that can produce a two-to-one split.
@@ -85,11 +86,6 @@ type ContestConcurrency = {
  Original of the slice the two lanes disagree about.
  */
 const SOURCE_NAP = '猫猫在书店的阁楼里睡觉。';
-
-/**
- Archive`s own English for it.
- */
-const ARCHIVE_NAP = 'The cat sleeps in the bookshop attic.';
 
 /**
  Wording the repair lane left.
@@ -174,57 +170,6 @@ function catLedgerRow(
 }
 
 /**
- Builds one comparison row carrying the two lane wordings.
- 
- @param sliceIndex - slice this row names
- 
- @param repairText - wording the repair document carries
- 
- @param translateText - wording the translate document carries
- 
- @returns Version 2 comparison row
- 
- @example
- ```ts
- const row = catComparisonRow({ sliceIndex: 0, repairText: REPAIR_NAP, translateText: TRANSLATE_NAP, },);
- ```
- */
-function catComparisonRow(
-  {
-    sliceIndex,
-    repairText,
-    translateText,
-  }: {
-    readonly sliceIndex: number;
-    readonly repairText: string;
-    readonly translateText: string;
-  },
-): ArtifactComparisonRow {
-  return {
-    sliceIndex,
-    incumbentKind: 'present',
-    incumbentText: ARCHIVE_NAP,
-    repairText,
-    translateText,
-    laneRelation: (repairText === translateText) ? 'both-agree' : 'both-differ',
-    repairOutcome: {
-      kind: 'decided',
-      acceptedText: repairText,
-    },
-    translateOutcome: {
-      kind: 'decided',
-      acceptedText: translateText,
-    },
-    decisionComparison: {
-      kind: 'comparable',
-      verdict: (repairText === translateText) ? 'same' : 'different',
-    },
-    repairDelivery: { kind: 'replacement-shipped', },
-    translateDelivery: { kind: 'replacement-shipped', },
-  };
-}
-
-/**
  Builds both lanes as version 2 rows over a list of wording pairs.
  
  @param pairs - wording each lane left, slice by slice
@@ -271,7 +216,7 @@ function catProjection(
       pair,
       sliceIndex,
     ): ArtifactComparisonRow {
-      return catComparisonRow({
+      return catRow({
         sliceIndex,
         repairText: pair[0],
         translateText: pair[1],

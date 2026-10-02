@@ -19,10 +19,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  RENDERING_GLOSSARY,
-  validateTranslatedSlice,
-} from '../dist/final/node/index.mjs';
+import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import { seededAmong, } from './rendering-glossary-seeded.test-fixture.ts';
 
 /**
  Original in which the cat joined the choir in junior high.
@@ -72,11 +70,7 @@ await describe({
     it({
       name: 'SEEDS 初中, 自考 and 压力话',
       fn: async () => {
-        expect(SEEDED_TERMS.filter(function isSeeded(term,): boolean {
-          return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {
-            return entry.term === term;
-          },);
-        },),).toEqual([...SEEDED_TERMS,],);
+        expect(seededAmong({ terms: SEEDED_TERMS, },),).toEqual([...SEEDED_TERMS,],);
       },
     },),
     it({

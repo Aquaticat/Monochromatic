@@ -33,8 +33,6 @@ import {
   NON_TRANSLATION_BLOCK_VOTES,
   parseDocument,
   runChunkCriticPhase,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import {
@@ -43,6 +41,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { criticClient, } from './critic-scripted-client.test-fixture.ts';
 
 /**
  Logger for the phases under test.
@@ -119,46 +118,6 @@ const CONTENT_CRITIQUE = {
   sourceQuote: '太阳移动时她会醒来',
   targetQuote: 'She wakes when the sun moves.',
 };
-
-/**
- Client answering every critic with one scripted report.
- 
- @param reportFor - report each model returns, by roster position
- 
- @returns Client honoring that script
- 
- @example
- ```ts
- const client = criticClient({ reportFor: () => ({ issues: [], }), },);
- ```
- */
-function criticClient(
-  { reportFor, }: { readonly reportFor: (modelId: string,) => unknown; },
-): SyntheticClient {
-  return {
-    chatText: async () => {
-      throw new Error('chatText unused',);
-    },
-    chatJson: async <ValueT,>(
-      request: ChatJsonRequest<ValueT>,
-    ): Promise<ChatJsonOutcome<ValueT>> => {
-      /**
-       Scripted report for the answering model.
-       */
-      const scripted = reportFor(request.modelId,);
-      if (!request.validate(scripted,))
-        throw new Error('scripted report failed the critic guard',);
-      return {
-        kind: 'ok',
-        value: scripted,
-        rawText: JSON.stringify(scripted,),
-      };
-    },
-    quotas: async () => {
-      throw new Error('quotas unused',);
-    },
-  };
-}
 
 /**
  Runs the phase against a scripted client.

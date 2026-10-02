@@ -48,6 +48,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { ballot, } from './structural-ballot.test-fixture.ts';
 
 /**
  Logger the stage writes through, whose output is not under test.
@@ -489,27 +490,6 @@ function judgeBallot({ best, }: { readonly best: number; },): string {
 }
 
 /**
- Builds a gate voice's reply.
- 
- @param choice - rendering this voice names
- 
- @returns Reply body a gate voice would return
- 
- @example
- ```ts
- const reply = gateBallot({ choice: 'standing', },);
- ```
- */
-function gateBallot({ choice, }: { readonly choice: string; },): string {
-  return JSON.stringify({
-    choice,
-    unsupported: [],
-    dropped: [],
-    reason: 'the original supports it',
-  },);
-}
-
-/**
  Runs one settlement over a scripted roster.
  
  @param voices - proposals reaching the stage
@@ -540,7 +520,7 @@ async function settleWith(
     validity,
     standingText = STANDING,
     judgeReply = judgeBallot({ best: 0, },),
-    gateReply = gateBallot({ choice: 'standing', },),
+    gateReply = ballot({ choice: 'standing', },),
     producedFindings = [],
     lineStructured = false,
     standingEligible = true,
@@ -929,7 +909,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
 
         expect(settled.terminal,).toBe('consolidated',);
@@ -966,7 +946,7 @@ await describe({
             voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
             validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
             judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-            gateReply: gateBallot({ choice: 'consolidated', },),
+            gateReply: ballot({ choice: 'consolidated', },),
           },);
           return [judgeSheets, gateSheets,].map(function carried(sheets,): boolean {
             return (sheets.length > 0) && sheets.every(function carries(sheet,): boolean {
@@ -1000,7 +980,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
         const frontMatter = await settleWith({
           subject: {
@@ -1019,7 +999,7 @@ await describe({
               sourceText,
             },),
           },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
         /**
          Whether every gate sheet of a settlement carries the rule.
@@ -1052,7 +1032,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'standing', },),
+          gateReply: ballot({ choice: 'standing', },),
         },);
 
         expect(settled.terminal,).toBe('gate-kept-standing',);
@@ -1077,7 +1057,7 @@ await describe({
               incumbentText: '',
             },),
           },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
           standingEligible: false,
         },);
 
@@ -1105,7 +1085,7 @@ await describe({
               incumbentText: '',
             },),
           },),
-          gateReply: gateBallot({ choice: 'standing', },),
+          gateReply: ballot({ choice: 'standing', },),
           standingEligible: false,
         },);
         expect(settled.terminal,).toBe('consolidated',);
@@ -1120,7 +1100,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'standing', },),
+          gateReply: ballot({ choice: 'standing', },),
         },);
         expect(eligible.settled.terminal,).toBe('gate-kept-standing',);
         expect(eligible.settled.text,).toBe(STANDING,);
@@ -1143,7 +1123,7 @@ await describe({
               incumbentText: '',
             },),
           },),
-          gateReply: gateBallot({ choice: 'neither', },),
+          gateReply: ballot({ choice: 'neither', },),
           standingEligible: false,
         },);
         expect(settled.terminal,).toBe('consolidated',);
@@ -1156,7 +1136,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'neither', },),
+          gateReply: ballot({ choice: 'neither', },),
         },);
         expect(eligible.settled.terminal,).toBe('gate-kept-standing',);
         expect(eligible.settled.text,).toBe(STANDING,);
@@ -1172,7 +1152,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'neither', },),
+          gateReply: ballot({ choice: 'neither', },),
           runoffOverStanding: true,
         },);
         expect(settled.terminal,).toBe('consolidated',);
@@ -1186,7 +1166,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'standing', },),
+          gateReply: ballot({ choice: 'standing', },),
           runoffOverStanding: true,
         },);
         expect(refused.settled.terminal,).toBe('gate-kept-standing',);
@@ -1223,7 +1203,7 @@ await describe({
               laneTexts,
             },),
           },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
 
         expect(settled.terminal,).toBe('consolidated',);
@@ -1302,7 +1282,7 @@ await describe({
             validityOf({ modelId: ROSTER[1], valid: true, },),
           ],
           judgeReply: tiedThenSettled,
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
           standingEligible: false,
         },);
         expect(settled.terminal,).toBe('consolidated',);
@@ -1322,7 +1302,7 @@ await describe({
             validityOf({ modelId: ROSTER[1], valid: true, },),
           ],
           judgeReply: tiedThenSettled,
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
         expect(eligible.settled.terminal,).toBe('slate-declined-standing',);
         expect(eligible.judgeSheets.some(function challenged(sheet,): boolean {
@@ -1398,7 +1378,7 @@ await describe({
             validityOf({ modelId: ROSTER[1], valid: true, },),
           ],
           judgeReply: tiedThenSettled,
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
           runoffOverStanding: true,
         },);
         expect(decided.settled.terminal,).toBe('consolidated',);
@@ -1430,7 +1410,7 @@ await describe({
             validityOf({ modelId: ROSTER[1], valid: true, },),
           ],
           judgeReply: tiedThroughout,
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
           runoffOverStanding: true,
         },);
         expect(undecided.settled.terminal,).toBe('slate-declined-standing',);
@@ -1458,7 +1438,7 @@ await describe({
               incumbentText: '',
             },),
           },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
           standingEligible: false,
           standingRefusal: refusal,
         },);
@@ -1472,7 +1452,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
         expect(eligible.gateSheets.length,).toBeGreaterThan(0,);
         expect(eligible.gateSheets.some(function saysCannotShip(sheet,): boolean {
@@ -1489,7 +1469,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: 0, },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
           standingEligible: false,
         },);
         expect(settled.terminal,).toBe('consolidated',);
@@ -1543,7 +1523,7 @@ await describe({
           voices: [voiceOf({ modelId: ROSTER[0], translation: STANDING, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: 1, },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
           standingEligible: false,
         },);
         expect(settled.terminal,).toBe('wrap-erased-difference',);
@@ -1587,7 +1567,6 @@ await describe({
       },
     },),
 
-
     it({
       name: 'SETTLES A PURE RE-WRAPPING WITHOUT BUYING EITHER ROUND, which is what changed on 2026-08-22. '
         + 'This case asserted wrap-erased-difference until 2026-08-22: the proposal reached the slate '
@@ -1607,7 +1586,7 @@ await describe({
           // No judge is asked, which `served.judge` pins, so the ballot a
           // judge would cast is never read.
           judgeReply: judgeBallot({ best: 1, },),
-          gateReply: gateBallot({ choice: 'consolidated', },),
+          gateReply: ballot({ choice: 'consolidated', },),
         },);
 
         expect(settled.terminal,).toBe('slate-unjudged-standing',);

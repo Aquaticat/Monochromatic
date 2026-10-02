@@ -24,7 +24,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  createSyntheticClient,
   MIN_STAGE_VOICES,
   pairSectionsWithRoster,
   reachableQuorum,
@@ -38,6 +37,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
 
 /**
  Three original sections standing in for a Chinese page.
@@ -95,58 +95,6 @@ const l = tagged({ tag: 'pair-sections-stage-test', },);
 const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
- Builds a client whose models reply with the given pairings, in roster order.
- 
- @param replyByModel - reply body per model id
- 
- @returns Client over a canned transport
- 
- @example
- ```ts
- const client = cannedClient({ replyByModel: ['{"pairs":[]}'], },);
- ```
- */
-function cannedClient(
-  { replyByModel, }: { readonly replyByModel: readonly string[]; },
-) {
-  /**
-   Calls served so far, so each model gets its own reply.
-   */
-  const served: string[] = [];
-  return createSyntheticClient({
-    apiKey: 'test-key',
-    transport: async function cannedTransport(exchange,) {
-      /**
-       Which reply this call receives.
-       */
-      const at = served.length;
-      served.push(exchange.label,);
-
-      /**
-       This model's reply text.
-       */
-      const content = replyByModel[at] ?? replyByModel[0] ?? '';
-
-      // THE CLIENT READS A STREAM, not a completion body: one delta frame and
-      // the terminator, which is the smallest well-formed reply.
-      return {
-        status: 200,
-        bodyText: `data: ${
-          JSON.stringify({
-            choices: [
-              {
-                index: 0,
-                delta: { content, },
-              },
-            ],
-          },)
-        }\n\ndata: [DONE]\n\n`,
-      };
-    },
-  },);
-}
-
-/**
  Runs one round over the three-by-three fixture.
  
  @param replyByModel - reply body per model id
@@ -190,7 +138,6 @@ const FIVE_SEAT_ROSTER = [
   ...FOUR_SEAT_ROSTER,
   SEAT_HYPER_VISION,
 ] as const;
-
 
 await describe({
   name: pairSectionsWithRoster.name,

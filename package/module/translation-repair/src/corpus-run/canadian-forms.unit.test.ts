@@ -21,55 +21,8 @@ import {
 import {
   canadianizePage,
   canadianizeText,
-  type ChunkPair,
 } from '../../dist/final/node/index.mjs';
-
-/**
- One slice over an archive text, starting at an offset.
-
- @param sliceIndex - where the slice stands
-
- @param target - archive text
-
- @param startOffset - where the archive text starts in the page
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, target: 'She napped.', startOffset: 0, },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    target,
-    startOffset,
-  }: {
-    readonly sliceIndex: number;
-    readonly target: string;
-    readonly startOffset: number;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 4,
-      text: '她打盹。',
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset,
-      endOffset: startOffset + target.length,
-      text: target,
-    },
-  };
-}
+import { pairAt, } from './archive-slice-pair.test-fixture.ts';
 
 /**
  Rewrites one text whose original carries no English, and returns only the text.
@@ -474,9 +427,9 @@ await describe({
          Three archive slices: one untouched, one replaced, one sealed.
          */
         const slices = [
-          pair({ sliceIndex: 0, target: '29th April was the cat\'s birthday.', startOffset: 0, },),
-          pair({ sliceIndex: 1, target: 'The cat napped.', startOffset: 40, },),
-          pair({ sliceIndex: 2, target: 'On 4 May the cat wrote this in English.', startOffset: 80, },),
+          pairAt({ sliceIndex: 0, target: '29th April was the cat\'s birthday.', startOffset: 0, },),
+          pairAt({ sliceIndex: 1, target: 'The cat napped.', startOffset: 40, },),
+          pairAt({ sliceIndex: 2, target: 'On 4 May the cat wrote this in English.', startOffset: 80, },),
         ];
         /**
          Pass over the page with slice 1 replaced and slice 2 sealed.

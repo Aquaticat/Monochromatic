@@ -25,7 +25,6 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   gatherStageVoices,
-  type JsonSchemaResponseFormat,
   NoProviderForModelError,
   type RosterModelId,
   rotatedBench,
@@ -40,6 +39,10 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import {
+  isPurrReply,
+  PURR_FORMAT,
+} from './stage-trivial-reply.test-fixture.ts';
 
 /**
  How long the slow seat takes to answer, far past the grace window, so a
@@ -83,36 +86,6 @@ const SIX_SEATS: readonly RosterModelId[] = [
  How a scripted seat behaves when asked.
  */
 type SeatRole = 'refused' | 'slow' | 'fast' | 'failing';
-
-/**
- Trivial reply payload the scripted client emits.
- */
-type PurrReply = {
-  readonly purr: string;
-};
-
-/**
- Guards the trivial payload.
-
- @param value - reply to check
-
- @returns Whether the reply is the scripted shape
- */
-function isPurrReply(value: unknown,): value is PurrReply {
-  return ((typeof value) === 'object') && (value !== null)
-    && ((typeof (value as PurrReply).purr) === 'string');
-}
-
-/**
- Response format naming the test stage.
- */
-const PURR_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'purr_reply',
-    schema: { type: 'object', },
-  },
-};
 
 /**
  Client scripted per seat: refused by the router, answering late, answering

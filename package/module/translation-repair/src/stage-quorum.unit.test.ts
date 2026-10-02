@@ -30,7 +30,6 @@ import {
   OFF_SHAPE_RECOVERY_NUDGE,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  type JsonSchemaResponseFormat,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -47,6 +46,11 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import {
+  isMeowReply,
+  MEOW_FORMAT,
+  untilAborted,
+} from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Grace the stalling case gives a re-ask before abandoning it.
@@ -75,21 +79,6 @@ const BOUNDED_ENOUGH_MS = 1_000;
  Logger for the gathers under test.
  */
 const l = tagged({ tag: 'stage-quorum-test', },);
-
-/**
- Trivial reply payload the scripted clients emit.
- */
-type MeowReply = {
-  readonly meow: string;
-};
-
-/**
- Guards the trivial payload.
- */
-function isMeowReply(value: unknown,): value is MeowReply {
-  return ((typeof value) === 'object') && (value !== null)
-    && ((typeof (value as MeowReply).meow) === 'string');
-}
 
 /**
  Client whose named model throws rather than answering, and records calls.
@@ -325,17 +314,6 @@ function stallingClient(
 }
 
 /**
- Response format naming the test stage.
- */
-const MEOW_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'meow_reply',
-    schema: { type: 'object', },
-  },
-};
-
-/**
  Client scripted per model: fails until the model's remaining failure
  budget is spent, then answers; records every call.
  
@@ -401,43 +379,6 @@ function flakyClient(
       throw new Error('quotas unused',);
     },
   };
-}
-
-/**
- Resolves when a signal aborts, and never otherwise.
- 
- Deliberately has NO timer of its own. A stub that also gave up after some
- duration would pass the abandonment case whether or not the cut ever reached
- the call, which is the one thing that case exists to prove.
- 
- @param signal - call signal the round owns
- 
- @returns Nothing, once the call is cut
- 
- @example
- ```ts
- await untilAborted({ signal, },);
- ```
- */
-async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
-  if (signal.aborted)
-    return;
-
-  /**
-   Capability resolved by the abort listener.
-   */
-  const {
-    promise,
-    resolve,
-  } = Promise.withResolvers<undefined>();
-  signal.addEventListener(
-    'abort',
-    function onAbort(): void {
-      resolve(undefined,);
-    },
-    { once: true, },
-  );
-  await promise;
 }
 
 /**

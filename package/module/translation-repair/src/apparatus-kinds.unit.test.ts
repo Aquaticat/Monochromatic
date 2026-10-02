@@ -39,6 +39,7 @@ import {
   PAGE_APPARATUS_IS_KEPT,
 } from '../dist/final/node/index.mjs';
 import { renderedSheets, } from './rendered-sheets.test-fixture.ts';
+import { systemOf, } from './chat-message-reading.test-fixture.ts';
 
 /**
  Whether a sheet carries a rule as written, or as a JSON state escapes it,
@@ -55,48 +56,37 @@ function carries({ text, rule, }: { readonly text: string; readonly rule: string
 }
 
 /**
- Joins every system message, since each sheet's rules live there.
-
- @param messages - Chat messages one builder returned.
- @returns System text a model reads before the pair.
- */
-function systemText(messages: readonly { readonly role: string; readonly content: string; }[],): string {
-  return messages
-    .filter(function isSystem(message,): boolean {
-      return message.role === 'system';
-    },)
-    .map(function toContent(message,): string {
-      return message.content;
-    },)
-    .join('\n',);
-}
-
-/**
  Critic system instructions for a cat-themed pair.
  */
-const critic = systemText(buildCriticMessages({
-  sourceText: '猫睡了。',
-  targetText: 'The cat slept.',
-},),);
+const critic = systemOf({
+  messages: buildCriticMessages({
+    sourceText: '猫睡了。',
+    targetText: 'The cat slept.',
+  },),
+},);
 
 /**
  Panelist system instructions for a cat-themed pair with no claims.
  */
-const panel = systemText(buildAdjudicationMessages({
-  sourceText: '猫睡了。',
-  targetText: 'The cat slept.',
-  clusters: [],
-},).messages,);
+const panel = systemOf({
+  messages: buildAdjudicationMessages({
+    sourceText: '猫睡了。',
+    targetText: 'The cat slept.',
+    clusters: [],
+  },).messages,
+},);
 
 /**
  Archive block review system instructions for a cat-themed credit block.
  */
-const blockReview = systemText(buildArchiveBlockReviewMessages({
-  sourceText: '猫睡了。',
-  targetText: 'The cat slept.\n\nTranslated by a tabby.',
-  blockText: 'Translated by a tabby.',
-  priorFindings: [],
-},),);
+const blockReview = systemOf({
+  messages: buildArchiveBlockReviewMessages({
+    sourceText: '猫睡了。',
+    targetText: 'The cat slept.\n\nTranslated by a tabby.',
+    blockText: 'Translated by a tabby.',
+    priorFindings: [],
+  },),
+},);
 
 await describe({
   name: 'apparatus kinds are one list (ledger S5)',

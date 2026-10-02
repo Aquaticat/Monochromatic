@@ -11,7 +11,6 @@
  */
 
 import {
-  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -26,6 +25,7 @@ import {
   scoreGradedPrecision,
   StatedRefusalError,
 } from '../dist/final/node/index.mjs';
+import { statedRefusalMessage, } from './stated-refusal-message.test-fixture.ts';
 
 /**
  Legend every graded line carries, which bounds the grader's answer.
@@ -63,27 +63,6 @@ function catSheet(
       ];
     },),
   ].join('\n',);
-}
-
-/**
- Message of the stated refusal a read threw.
- 
- @param read - read that must refuse
- 
- @returns The refusal's message
- 
- @example
- ```ts
- const said = caughtRefusal({ read: () => parsePreGrades({ text: '{}', },), },);
- ```
- */
-function caughtRefusal({ read, }: { readonly read: () => void; },): string {
-  /**
-   What the read threw.
-   */
-  const refusal = caught(read,);
-  expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-  return (refusal as Error).message;
 }
 
 /**
@@ -466,7 +445,7 @@ await describe({
             },)
               .replace('### 2.', '### 3.',);
 
-            expect(caughtRefusal({
+            expect(statedRefusalMessage({
               read: function readsRenumbered(): void {
                 parseGradedSheet({ text: renumbered, },);
               },
@@ -481,7 +460,7 @@ await describe({
              Sheet whose first heading carries no number.
              */
             const sheet = catSheet({ answers: ['[Y]',], },).replace('### 1.', '### .',);
-            expect(caughtRefusal({
+            expect(statedRefusalMessage({
               read: function readsUnnumbered(): void {
                 parseGradedSheet({ text: sheet, },);
               },
@@ -499,7 +478,7 @@ await describe({
              Sheet whose first heading writes its number with an exponent.
              */
             const sheet = catSheet({ answers: ['[Y]',], },).replace('### 1.', '### 1e0.',);
-            expect(caughtRefusal({
+            expect(statedRefusalMessage({
               read: function readsExponent(): void {
                 parseGradedSheet({ text: sheet, },);
               },

@@ -16,57 +16,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ChunkPair,
-  restoreContributorNames,
-} from '../../dist/final/node/index.mjs';
-
-/**
- One slice with an original and an archive text.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text
-
- @param target - archive text, empty where the archive has none
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, source: '### 猫猫', target: '### Maomao', },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
+import { restoreContributorNames, } from '../../dist/final/node/index.mjs';
+import { pair, } from './title-reference.test-fixture.ts';
 
 /**
  A section the archive carries: the heading names the signer, the archive

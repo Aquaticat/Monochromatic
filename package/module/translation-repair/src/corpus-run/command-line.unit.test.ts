@@ -8,7 +8,6 @@
  */
 
 import {
-  caught,
   describe,
   expect,
   it,
@@ -17,36 +16,15 @@ import {
 import {
   COMMAND_LINES,
   readCommandLine,
-  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 import { lineOf, } from './command-line.test-fixture.ts';
+import { statedRefusalMessage, } from '../stated-refusal-message.test-fixture.ts';
 
 /**
  Usage line every corpus-pass refusal ends with, as its declaration builds it.
  */
 const PASS_USAGE = 'Usage: corpus-pass [--only <entry ids>] '
   + '[--require-providers <providers of synthetic, bedrock, hyper, openrouter>] [--plan]';
-
-/**
- Message of the stated refusal a read threw.
-
- @param read - read that must refuse
-
- @returns The refusal's message
-
- @example
- ```ts
- const said = refusalOf({ read: () => lineOf({ command: 'corpus-pass', typed: ['--olny',], },), },);
- ```
- */
-function refusalOf({ read, }: { readonly read: () => unknown; },): string {
-  /**
-   What the read threw.
-   */
-  const refusal = caught(read,);
-  expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-  return (refusal as Error).message;
-}
 
 await describe({
   name: readCommandLine.name,
@@ -95,7 +73,7 @@ await describe({
       name: 'REFUSES a mistyped flag and a mistyped switch, each of which once ran every pending corpus entry, '
         + 'naming every problem and ending with the usage line',
       fn: async () => {
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsMistypedFlag(): unknown {
             return lineOf({
               command: 'corpus-pass',
@@ -106,7 +84,7 @@ await describe({
           '--olny is not a flag this command reads; this command takes no argument but its flags, and was given '
             + `"Tabby_01". ${PASS_USAGE}`,
         );
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsMistypedSwitch(): unknown {
             return lineOf({
               command: 'corpus-pass',
@@ -119,7 +97,7 @@ await describe({
     it({
       name: 'REFUSES a once-only flag or a switch written twice, which kept one of the two in silence',
       fn: async () => {
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsTwice(): unknown {
             return lineOf({
               command: 'corpus-pass',
@@ -146,7 +124,7 @@ await describe({
           ['--only', '--',],
         ];
         expect(valueless.map(function readsValueless(typed,): string {
-          return refusalOf({
+          return statedRefusalMessage({
             read: function read(): unknown {
               return lineOf({
                 command: 'corpus-pass',
@@ -162,7 +140,7 @@ await describe({
     it({
       name: 'REFUSES a switch given a value',
       fn: async () => {
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsValuedSwitch(): unknown {
             return lineOf({
               command: 'corpus-pass',
@@ -175,7 +153,7 @@ await describe({
     it({
       name: 'REFUSES any argument to a runner that reads none, which once ran as if nothing had been typed',
       fn: async () => {
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsFlagToBareRunner(): unknown {
             return lineOf({
               command: 'verify-published',
@@ -191,7 +169,7 @@ await describe({
     it({
       name: 'REFUSES names that sit on Object.prototype and grouped short flags, the group once and whole',
       fn: async () => {
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsPrototypeNames(): unknown {
             return lineOf({
               command: 'verify-published',
@@ -208,7 +186,7 @@ await describe({
     it({
       name: 'REFUSES an argument past the last position read, and a required position left out',
       fn: async () => {
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsTwoLogs(): unknown {
             return lineOf({
               command: 'slice-cost-report',
@@ -219,7 +197,7 @@ await describe({
           'this command takes nothing after <log file>, and was given "ginger.log". '
             + 'Usage: slice-cost-report <log file>',
         );
-        expect(refusalOf({
+        expect(statedRefusalMessage({
           read: function readsHalfAnAsk(): unknown {
             return lineOf({
               command: 'roster-card',
@@ -236,7 +214,7 @@ await describe({
         + 'left off (ledger T8, eighteenth batch: no case printed these, though runners declare each)',
       fn: async () => {
         expect([
-          refusalOf({
+          statedRefusalMessage({
             read: function readsLogsMistyped(): unknown {
               return lineOf({
                 command: 'meter-report',
@@ -244,7 +222,7 @@ await describe({
               },);
             },
           },),
-          refusalOf({
+          statedRefusalMessage({
             read: function readsCensusMistyped(): unknown {
               return lineOf({
                 command: 'coverage-census',
@@ -252,7 +230,7 @@ await describe({
               },);
             },
           },),
-          refusalOf({
+          statedRefusalMessage({
             read: function readsBenchMistyped(): unknown {
               return lineOf({
                 command: 'roster-bench',

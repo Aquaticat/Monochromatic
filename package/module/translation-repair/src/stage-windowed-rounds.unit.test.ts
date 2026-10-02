@@ -19,7 +19,6 @@ import {
   runWindowedRounds,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  type JsonSchemaResponseFormat,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -31,6 +30,10 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import {
+  isMeowReply,
+  MEOW_FORMAT,
+} from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Six-seat bench in roster order.
@@ -48,32 +51,6 @@ const BENCH: readonly RosterModelId[] = [
  Quorum over the whole bench.
  */
 const QUORUM = Math.ceil(BENCH.length / 2,);
-
-/**
- Trivial reply payload the scripted client emits.
- */
-type MeowReply = {
-  readonly meow: string;
-};
-
-/**
- Guards the trivial payload.
- */
-function isMeowReply(value: unknown,): value is MeowReply {
-  return ((typeof value) === 'object') && (value !== null)
-    && ((typeof (value as MeowReply).meow) === 'string');
-}
-
-/**
- Response format naming the test stage.
- */
-const MEOW_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'meow_reply',
-    schema: { type: 'object', },
-  },
-};
 
 /**
  Test logger.

@@ -25,6 +25,10 @@ import {
   StreamDegenerateError,
   StreamOverrunError,
 } from '../dist/final/node/index.mjs';
+import {
+  frameOf,
+  longVariedStream,
+} from './sse-frame.test-fixture.ts';
 
 /**
  Roomy window, so nothing in these tests trips the silence guard: what is
@@ -37,45 +41,6 @@ const ROOMY_MS = 600_000;
  so a piece decodes to exactly this many characters.
  */
 const PIECE_CHARS = 4_096;
-
-/**
- Builds one server-sent event frame carrying text on one channel.
- 
- @param channel - which channel the text arrives on
- 
- @param text - text the frame carries
- 
- @returns Frame as the wire sends it
- 
- @example
- ```ts
- const raw = frameOf({ channel: 'reasoning', text: 'I will output. ', },);
- ```
- */
-function frameOf(
-  {
-    channel,
-    text,
-  }: {
-    readonly channel: 'content' | 'reasoning';
-    readonly text: string;
-  },
-): string {
-  /**
-   Delta object, whose field name distinguishes the channels.
-   */
-  const delta = (channel === 'content') ? { content: text, } : { reasoning_content: text, };
-
-  return `data: ${
-    JSON.stringify({
-      choices: [{
-        index: 0,
-        delta,
-        finish_reason: null,
-      },],
-    },)
-  }\n\n`;
-}
 
 /**
  Wraps text in a response whose body arrives in pieces, counting how many
@@ -513,29 +478,7 @@ await describe({
         /**
          Long, varied thinking followed by a long, varied answer.
          */
-        const raw = Array.from(
-          { length: 6_000, },
-          function think(
-            _unused,
-            at,
-          ): string {
-            return frameOf({
-              channel: 'reasoning',
-              text: `Weighing option ${String(at,)} for shelf ${String(at * 3,)} at hour ${String(at % 24,)}. `,
-            },);
-          },
-        ).join('',) + Array.from(
-          { length: 120, },
-          function answer(
-            _unused,
-            at,
-          ): string {
-            return frameOf({
-              channel: 'content',
-              text: `Sentence ${String(at,)} concerning an entirely separate cat, noted at ${String(at % 60,)}. `,
-            },);
-          },
-        ).join('',);
+        const raw = longVariedStream();
 
         const { response, } = streamOf({ raw, },);
 

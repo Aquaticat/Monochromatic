@@ -29,6 +29,8 @@ import {
   RENDERING_GLOSSARY,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+import { seededAmong, } from './rendering-glossary-seeded.test-fixture.ts';
+import { systemOf, } from './chat-message-reading.test-fixture.ts';
 
 /**
  Rule replacing the entries keyed on one sentence's construction.
@@ -119,31 +121,6 @@ const CONTEXT_RIGHT: readonly { readonly sourceText: string; readonly candidateT
 ];
 
 /**
- Joins the system half of an exchange, which is where standing rules live.
-
- @param messages - exchange to read
-
- @returns Every system message, joined
-
- @example
- ```ts
- const sheet = systemOf({ messages: buildTranslateMessages({ sourceText, },).messages, },);
- ```
- */
-function systemOf(
-  { messages, }: { readonly messages: readonly { readonly role: string; readonly content: string; }[]; },
-): string {
-  return messages
-    .filter(function isSystem(message,): boolean {
-      return message.role === 'system';
-    },)
-    .map(function toContent(message,): string {
-      return message.content;
-    },)
-    .join('\n',);
-}
-
-/**
  Rules a sheet's system text lacks.
 
  @param system - sheet's joined system text
@@ -199,11 +176,7 @@ await describe({
     it({
       name: 'LEAVES no entry keyed on one sentence\'s words',
       fn: async () => {
-        expect(SENTENCE_PATCHES.filter(function isKept(term,): boolean {
-          return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {
-            return entry.term === term;
-          },);
-        },),).toEqual([],);
+        expect(seededAmong({ terms: SENTENCE_PATCHES, },),).toEqual([],);
       },
     },),
     it({

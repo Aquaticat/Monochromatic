@@ -26,6 +26,7 @@ import {
   type InsertionCoverageRow,
   makeInsertionChunk,
 } from '../../dist/final/node/index.mjs';
+import { pair, } from './title-reference.test-fixture.ts';
 
 /**
  Opening half of a disclosure block: the tag and its summary.
@@ -61,53 +62,6 @@ const CLOSE_SOURCE = '猫不喜欢洗澡。\n\n</details>';
  Archive's rendering of the closing half.
  */
 const CLOSE_TARGET = 'The cat does not like baths.\n\n</details>';
-
-/**
- Builds one paired slice.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text
-
- @param target - archive text
-
- @returns Slice paired with its rendering
-
- @example
- ```ts
- const slice = paired({ sliceIndex: 0, source: OPEN_SOURCE, target: OPEN_TARGET, },);
- ```
- */
-function paired(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
 
 /**
  Builds one source-only slice.
@@ -234,12 +188,12 @@ function containerSlices(
   },
 ): readonly ChunkPair[] {
   return [
-    paired({
+    pair({
       sliceIndex: 0,
       source: openSource,
       target: openTarget,
     },),
-    paired({
+    pair({
       sliceIndex: 1,
       source: firstSource,
       target: firstTarget,
@@ -248,7 +202,7 @@ function containerSlices(
       sliceIndex: 2,
       source: missingSource,
     },),
-    paired({
+    pair({
       sliceIndex: 3,
       source: closeSource,
       target: closeTarget,
@@ -383,12 +337,12 @@ await describe({
             const deficit = admitContainerDeficit({
               // Five blocks in the original's container, four in the archive's.
               slices: [
-                paired({
+                pair({
                   sliceIndex: 0,
                   source: OPEN_SOURCE,
                   target: OPEN_TARGET,
                 },),
-                paired({
+                pair({
                   sliceIndex: 1,
                   source: FIRST_SOURCE,
                   target: FIRST_TARGET,
@@ -401,7 +355,7 @@ await describe({
                   sliceIndex: 3,
                   source: secondMissing,
                 },),
-                paired({
+                pair({
                   sliceIndex: 4,
                   source: CLOSE_SOURCE,
                   target: WHOLE_CLOSE_TARGET,

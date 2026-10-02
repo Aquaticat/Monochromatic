@@ -29,14 +29,12 @@ import {
   computeIssueClaimId,
   parseDocument,
   runCriticStage,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 } from './roster-seats.test-fixture.ts';
+import { criticClient, } from './critic-scripted-client.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -91,50 +89,6 @@ const UNANCHORABLE_WIRE = {
   sourceQuote: '猫猫踩奶',
   targetQuote: 'The cat kneads the blanket.',
 };
-
-/**
- Client answering each critic with a scripted report.
- 
- @param reportFor - report each model returns, chosen by model id
- 
- @returns Client honoring that script
- 
- @example
- ```ts
- const client = criticClient({ reportFor: () => ({ issues: [], }), },);
- ```
- */
-function criticClient(
-  {
-    reportFor,
-  }: {
-    readonly reportFor: (modelId: string,) => unknown;
-  },
-): SyntheticClient {
-  return {
-    chatText: async () => {
-      throw new Error('chatText unused',);
-    },
-    chatJson: async <ValueT,>(
-      request: ChatJsonRequest<ValueT>,
-    ): Promise<ChatJsonOutcome<ValueT>> => {
-      /**
-       Scripted report for the answering model.
-       */
-      const scripted = reportFor(request.modelId,);
-      if (!request.validate(scripted,))
-        throw new Error('scripted report failed the critic guard',);
-      return {
-        kind: 'ok',
-        value: scripted,
-        rawText: JSON.stringify(scripted,),
-      };
-    },
-    quotas: async () => {
-      throw new Error('quotas unused',);
-    },
-  };
-}
 
 /**
  Runs the critic stage against a scripted client.

@@ -43,6 +43,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { cannedClient, } from './streaming-reply-client.test-fixture.ts';
 
 /**
  Original side, two blocks so the section is worth a question.
@@ -71,55 +72,6 @@ const l = tagged({ tag: 'prepare-with-pairing-test', },);
  Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
-
-/**
- Builds a client whose models reply in turn with the given bodies.
- 
- @param replyByModel - reply body per call, in the order calls are made
- 
- @returns Client over a canned transport
- 
- @example
- ```ts
- const client = cannedClient({ replyByModel: ['{"pairs":[]}',], },);
- ```
- */
-function cannedClient(
-  { replyByModel, }: { readonly replyByModel: readonly string[]; },
-) {
-  /**
-   Calls served so far, so each model gets its own reply.
-   */
-  const served: string[] = [];
-  return createSyntheticClient({
-    apiKey: 'test-key',
-    transport: async function cannedTransport(exchange,) {
-      /**
-       Which reply this call receives.
-       */
-      const at = served.length;
-      served.push(exchange.label,);
-
-      /**
-       This model's reply text.
-       */
-      const content = replyByModel[at] ?? replyByModel[0] ?? '';
-      return {
-        status: 200,
-        bodyText: `data: ${
-          JSON.stringify({
-            choices: [
-              {
-                index: 0,
-                delta: { content, },
-              },
-            ],
-          },)
-        }\n\ndata: [DONE]\n\n`,
-      };
-    },
-  },);
-}
 
 /**
  Builds client that fails if cache path buys any exchange.

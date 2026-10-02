@@ -30,7 +30,6 @@ import {
   runGatherRound,
   type ChatJsonOutcome,
   type ChatJsonRequest,
-  type JsonSchemaResponseFormat,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -45,6 +44,11 @@ import {
   stubWallClock,
   WALL_START_MS,
 } from './wall-clock-stub.test-fixture.ts';
+import {
+  isMeowReply,
+  MEOW_FORMAT,
+  untilAborted,
+} from './stage-trivial-reply.test-fixture.ts';
 
 //region Fixtures
 
@@ -96,65 +100,6 @@ const ROSTER: readonly RosterModelId[] = [
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
-
-/**
- Trivial reply payload the scripted client emits.
- */
-type MeowReply = {
-  readonly meow: string;
-};
-
-/**
- Guards the trivial payload.
- */
-function isMeowReply(value: unknown,): value is MeowReply {
-  return ((typeof value) === 'object') && (value !== null)
-    && ((typeof (value as MeowReply).meow) === 'string');
-}
-
-/**
- Response format naming the test stage.
- */
-const MEOW_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'meow_reply',
-    schema: { type: 'object', },
-  },
-};
-
-/**
- Resolves when a signal aborts, and never otherwise.
- 
- @param signal - call signal the round owns
- 
- @returns Nothing, once the call is cut
- 
- @example
- ```ts
- await untilAborted({ signal, },);
- ```
- */
-async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
-  if (signal.aborted)
-    return;
-
-  /**
-   Capability resolved by the abort listener.
-   */
-  const {
-    promise,
-    resolve,
-  } = Promise.withResolvers<undefined>();
-  signal.addEventListener(
-    'abort',
-    function onAbort(): void {
-      resolve(undefined,);
-    },
-    { once: true, },
-  );
-  await promise;
-}
 
 /**
  Client answering each model on its own schedule: at once, after a delay, or

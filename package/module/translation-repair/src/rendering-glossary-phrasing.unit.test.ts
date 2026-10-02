@@ -20,10 +20,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  RENDERING_GLOSSARY,
-  validateTranslatedSlice,
-} from '../dist/final/node/index.mjs';
+import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import { seededAmong, } from './rendering-glossary-seeded.test-fixture.ts';
 
 /**
  Original in which the cat stops resisting bath time.
@@ -66,11 +64,7 @@ await describe({
     it({
       name: 'SEEDS 摆烂 and 万千世界',
       fn: async () => {
-        expect(SEEDED_TERMS.filter(function isSeeded(term,): boolean {
-          return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {
-            return entry.term === term;
-          },);
-        },),).toEqual([...SEEDED_TERMS,],);
+        expect(seededAmong({ terms: SEEDED_TERMS, },),).toEqual([...SEEDED_TERMS,],);
       },
     },),
     it({

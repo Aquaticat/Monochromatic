@@ -754,6 +754,15 @@ by its body's shape as well as its name,
 before it is written into a test file.
 A fixture's header that says copies remain names where they stand,
 and the change that writes that header moves them or queues them in the ledger.
+Code moved into a `.test-fixture.ts` file meets the production lint rules there,
+not the test-file override,
+so the move is linted,
+and a patch an agent wrote passes lint,
+the source scans and the TSDoc attachment probe before any review of it is trusted
+(ledger B111).
+A helper that writes a process global moves into a fixture only by stubbing through the case's own sandbox;
+one that assigns the global directly stays in the file of the sequenced suites that call it,
+where the global-writes scan can follow it to its cases (ledger B111).
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
@@ -781,7 +790,8 @@ and the checks it names with why.
 among the source scans,
 fails on a production module with neither a unit test of its own nor a line in its allowlist.
 Nothing yet fails on a helper copied between test files:
-the duplicate-body scan widens to them once the copies it would find there are hoisted or listed (ledger B101).
+the duplicate-body scan widens to them once the copies it would find there are hoisted or listed (ledger B101),
+58 groups after ledger B111.
 
 ## Text by code point
 

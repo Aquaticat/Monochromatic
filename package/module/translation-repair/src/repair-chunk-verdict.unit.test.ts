@@ -32,12 +32,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  type AdjudicatedIssue,
   type ChunkVerdict,
   parseDocument,
   settleChunkFromChecks,
   settleChunkVerdict,
 } from '../dist/final/node/index.mjs';
+import { catIssue, } from './accepted-cat-issue.test-fixture.ts';
 
 /**
  Slice these verdicts are settled for.
@@ -142,28 +142,6 @@ function settleWith(
   },);
 }
 
-/**
- Accepted issue the checkers were asked about.
- 
- @param issueId - id the tallies are keyed by
- 
- @returns Issue with no claims, which is all the settlement reads
- 
- @example
- ```ts
- const issue = acceptedIssue({ issueId: 'issue-1', },);
- ```
- */
-function acceptedIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssue {
-  return {
-    issueId,
-    status: 'accepted' as const,
-    severity: 'major' as const,
-    claims: [],
-    tallies: {},
-  };
-}
-
 await describe({
   name: '',
   concurrency: 1,
@@ -255,9 +233,9 @@ await describe({
               patchedText: KEEPS_EVERY_NAME,
               appliedOperations: [],
               creditableIssues: [
-                acceptedIssue({ issueId: 'issue-1', },),
-                acceptedIssue({ issueId: 'issue-2', },),
-                acceptedIssue({ issueId: 'issue-3', },),
+                catIssue({ issueId: 'issue-1', },),
+                catIssue({ issueId: 'issue-2', },),
+                catIssue({ issueId: 'issue-3', },),
               ],
               tallies: {
                 'issue-1': {

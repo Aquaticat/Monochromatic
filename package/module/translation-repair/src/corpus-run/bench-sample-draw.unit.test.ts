@@ -49,6 +49,7 @@ import {
   type CorpusPin,
   sampleBenchSlices,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
@@ -225,32 +226,6 @@ async function clonedCorpusHolding(
   };
 }
 
-/**
- Runs a call that must refuse and hands back what it threw.
- 
- @param act - call expected to reject
- 
- @returns Whatever it rejected with, unchanged
- 
- @throws Error when the call resolved instead of rejecting
- 
- @example
- ```ts
- const refusal = await refusalOf(async function overNothing() { ... },);
- ```
- */
-async function refusalOf(act: () => Promise<unknown>,): Promise<unknown> {
-  try {
-    await act();
-  }
-  catch (error) {
-    return error;
-  }
-  throw new Error(
-    `Expected ${(act.name === '') ? 'the call' : act.name} to refuse, but it returned`,
-  );
-}
-
 //endregion Fixtures
 
 await describe({
@@ -329,7 +304,7 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOp
         /**
          What the draw said about it.
          */
-        const refusal = await refusalOf(async function overAnEmptyCorpus() {
+        const refusal = await rejectionOf(async function overAnEmptyCorpus() {
           await sampleBenchSlices({
             count: 1,
             pin,

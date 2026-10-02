@@ -26,6 +26,7 @@ import {
   wholeNumberFlag,
   writtenOr,
 } from '../../dist/final/node/index.mjs';
+import { statedRefusalMessage, } from '../stated-refusal-message.test-fixture.ts';
 
 /**
  Largest whole number a double holds exactly, as digits.
@@ -63,27 +64,6 @@ function written({ value, }: { readonly value: string; },): FlagValue {
     flag: '--naps',
     value,
   };
-}
-
-/**
- Message of the stated refusal a read threw.
-
- @param read - read that must refuse
-
- @returns The refusal's message
-
- @example
- ```ts
- const said = refusalOf({ read: () => napCap({ asked: written({ value: 'x', },), },), },);
- ```
- */
-function refusalOf({ read, }: { readonly read: () => void; },): string {
-  /**
-   What the read threw.
-   */
-  const refusal = caught(read,);
-  expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-  return (refusal as Error).message;
 }
 
 /**
@@ -153,7 +133,7 @@ await describe({
         it({
           name: 'REFUSES a minus sign before digits as a number below zero, saying what leaving the flag off does',
           fn: async () => {
-            expect(refusalOf({
+            expect(statedRefusalMessage({
               read: function readsNegative(): void {
                 napCap({ asked: written({ value: '-3', },), },);
               },
@@ -179,7 +159,7 @@ await describe({
               String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,),
             ];
             expect(mistyped.map(function readsMistyped(value,): string {
-              return refusalOf({
+              return statedRefusalMessage({
                 read: function read(): void {
                   napCap({ asked: written({ value, },), },);
                 },
@@ -218,7 +198,7 @@ await describe({
           name: 'REFUSES separators and space that name no id, which would read as no restriction one line later',
           fn: async () => {
             expect([',', ', ,', ' ',].map(function readsNobody(value,): string {
-              return refusalOf({
+              return statedRefusalMessage({
                 read: function read(): void {
                   idListFlag({
                     asked: written({ value, },),

@@ -20,81 +20,23 @@ import {
   buildChunkCandidates,
   CheckerIndependenceError,
   describeProducer,
-  hashContent,
   mergeProducers,
   pickFallbackCandidate,
   producerModelIds,
   ProducerRosterError,
   type CandidateProducer,
-  type EditableEnvelope,
-  type EditorCandidate,
   type PatchOutcome,
-  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
-
-/**
- Translation the envelopes are cut from.
- */
-const TARGET_TEXT = 'The cat naps. The cat hates butterflies. The bowl stays full.';
-
-/**
- Region covering the planted mistranslation.
- */
-const ENVELOPE: EditableEnvelope = {
-  envelopeId: 'envelope/butterflies',
-  startOffset: TARGET_TEXT.indexOf('The cat hates butterflies.',),
-  endOffset: TARGET_TEXT.indexOf('The cat hates butterflies.',)
-    + 'The cat hates butterflies.'.length,
-  baseText: 'The cat hates butterflies.',
-  baseHash: hashContent({ content: 'The cat hates butterflies.', },),
-  issueIds: ['adjudicated/butterflies',],
-};
-
-/**
- Builds one editor candidate proposing a replacement for the fixture
- envelope, so tests differ only in who proposed what.
- 
- @param modelId - proposing model
- 
- @param newText - replacement it proposed
- 
- @returns Candidate carrying the gated patch
- 
- @example
- ```ts
- const candidate = candidateFor({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, newText, },);
- ```
- */
-function candidateFor(
-  {
-    modelId,
-    newText,
-  }: {
-    readonly modelId: RosterModelId;
-    readonly newText: string;
-  },
-): EditorCandidate {
-  return {
-    modelId,
-    patch: applyPatchOperations({
-      targetText: TARGET_TEXT,
-      envelopes: [ENVELOPE,],
-      operations: [
-        {
-          envelopeId: ENVELOPE.envelopeId,
-          baseHash: ENVELOPE.baseHash,
-          newText,
-        },
-      ],
-      preservation: { mode: 'skip', },
-    },),
-  };
-}
+import {
+  candidateFor,
+  ENVELOPE,
+  TARGET_TEXT,
+} from './editor-candidate-envelope.test-fixture.ts';
 
 /**
  Apply-gate outcome that repairs nothing, standing for the untouched chunk.

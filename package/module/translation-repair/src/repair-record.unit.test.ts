@@ -18,6 +18,7 @@ import {
   type ChunkRepairOutcome,
   type RepairRegion,
 } from '../dist/final/node/index.mjs';
+import { catIssue, } from './accepted-cat-issue.test-fixture.ts';
 
 /**
  Slice text after the naturalness lane rewrote it.
@@ -37,29 +38,6 @@ const PATCHED_TEXT = 'The cat is asleep. She wakes at dusk.';
  {@link PATCHED_TEXT}.
  */
 const REPLACEMENT = 'The cat is asleep.';
-
-/**
- Builds one accepted issue with no claims, since nothing under test reads
- them.
- 
- @param issueId - adjudicated identity
- 
- @returns Issue the report carries
- 
- @example
- ```ts
- const issue = catIssue({ issueId: 'adjudicated/nap', },);
- ```
- */
-function catIssue({ issueId, }: { readonly issueId: string; },): AdjudicatedIssue {
-  return {
-    issueId,
-    status: 'accepted' as const,
-    severity: 'major' as const,
-    claims: [],
-    tallies: {},
-  };
-}
 
 /**
  Builds one region serving the given issues.

@@ -8,7 +8,6 @@
  @module
  */
 
-import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -20,8 +19,8 @@ import {
   DERIVABILITY_RESPONSE_FORMAT,
   DERIVABILITY_VERDICTS,
   isDerivabilityVerdict,
-  messageText,
 } from '../dist/final/node/index.mjs';
+import { userText, } from './chat-message-reading.test-fixture.ts';
 
 /**
  Invented zh source the probe judges against.
@@ -47,30 +46,6 @@ const REFERENCES = [
  used, on a line of its own.
  */
 const RULED_SOURCE = '第一行。\n=====\n第二行。';
-
-/**
- User message of a plan, as text.
- 
- @param messages - messages the builder returned
- 
- @returns Last message's text
- 
- @throws {@link Error} when the builder returned no message
- 
- @example
- ```ts
- const content = userText({ messages, },);
- ```
- */
-function userText({ messages, }: { readonly messages: readonly ChatMessage[]; },): string {
-  /**
-   Last message, which is the user turn.
-   */
-  const asked = messages.at(-1,);
-  if (asked === undefined)
-    throw new Error('the builder returned no message',);
-  return messageText({ message: asked, },);
-}
 
 await describe({
   name: '',
