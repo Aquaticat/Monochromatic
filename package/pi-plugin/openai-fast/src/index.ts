@@ -165,6 +165,8 @@ export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>
   ].map(async function loadProvider(providerId,) {
     return await loadOriginalProvider({ providerId, },);
   },),);
+  // Finish sink initialization before synchronous catalog registration can fill startup buffering.
+  await l.flush();
   for (const provider of providers) {
     registerOpenAIFast({
       pi,

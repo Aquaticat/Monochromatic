@@ -610,6 +610,26 @@ Installed `openai-responses.js:177` confirms that native simple streaming uses `
  and converts clamped reasoning into `reasoningEffort`.
 The shared priority bridge retains that conversion;
  the new host assertions check serialized high reasoning and exact default/scope preservation.
+The rebuilt package type check passed.
+Source lint then passed with zero warnings and zero errors across 48 files.
+The native catalog inventory found 44 `openai` chat models,
+ all using `openai-responses`,
+ and 9 legacy models,
+ all using `openai-codex-responses`.
+This verifies the installed default catalog,
+ not arbitrary user overrides.
+
+The CLI startup fixture discovered both namespaces but also exposed the repository logger's warning:
+`3328 startup records dropped before a backend verified (buffer cap 10000)`.
+The exact emitter is `package/module/logger/src/create-logger.ts:393`.
+Its startup buffer holds records until asynchronous sink verification settles.
+The default extension factory now awaits its tagged logger's existing `flush()` before synchronous catalog registration.
+This retains logging rather than suppressing stderr or raising the buffer limit.
+The committed fixture failed before this lifecycle correction;
+ the corrected startup result is pending.
+
+A reasoning assertion was corrected to check the exact `reasoning.effort` property,
+ without rejecting native `reasoning.summary: "auto"`.
 The complete verification sequence remains pending.
 No live new-provider verification has been performed.
 

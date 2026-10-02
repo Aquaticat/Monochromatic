@@ -103,7 +103,8 @@ await describe({ name: '', children: [
       expect(native.requests[0]?.payload,).not.toHaveProperty('service_tier',);
       for (const request of native.requests.slice(1,)) {
         expect(request.url,).toBe('https://api.openai.com/v1/responses',);
-        expect(request.payload,).toMatchObject({ model: host.base.id, service_tier: 'priority', reasoning: { effort: 'high', }, },);
+        expect(request.payload,).toMatchObject({ model: host.base.id, service_tier: 'priority', },);
+        expect(request.payload,).toHaveProperty('reasoning.effort', 'high',);
       }
       expect(native.requests[1]?.headers.get('authorization',),).toBe(`Bearer ${HOST_TOKEN}`,);
       expect(native.requests[2]?.headers.get('authorization',),).toBe('Bearer sk-native-fixture',);
