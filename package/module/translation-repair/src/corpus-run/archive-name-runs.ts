@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   isTitleCase,
   onHeadingLine,
@@ -141,13 +142,11 @@ export function titleRuns(
       /**
        First word of the run.
        */
-      const [first,] = words;
+      const first = nonNullishOrThrow(words[0],);
       /**
        Last word of the run.
        */
-      const last = words.at(-1,);
-      if ((first === undefined) || (last === undefined))
-        throw new Error('A run of at least two words has a first and a last word.',);
+      const last = nonNullishOrThrow(words.at(-1,),);
       return {
         phrase: text.slice(
           first.start,

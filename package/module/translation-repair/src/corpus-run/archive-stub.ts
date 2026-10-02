@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { maskHtmlComments, } from '../mask-html-comments.ts';
 
 //region Archive stub markers
@@ -322,7 +323,7 @@ export function stripStubMarkersWithOrigins(
     /**
      This line as masked, unchanged when no comment touches it.
      */
-    const maskedLine = maskedLines[index] ?? '';
+    const maskedLine = nonNullishOrThrow(maskedLines[index],);
     if (scan.inFrontMatter) {
       kept.push(retainedLine,);
       scan.inFrontMatter = !((index > 0) && (line === FRONT_MATTER_FENCE));

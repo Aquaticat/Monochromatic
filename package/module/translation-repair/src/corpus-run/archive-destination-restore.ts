@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import { linksOf, } from '../page-name-glossary.ts';
@@ -172,7 +173,7 @@ export function replacedDestinations(
     ] {
       return [
         from,
-        [...tos,][0] ?? from,
+        nonNullishOrThrow([...tos,][0],),
       ];
     },),);
 }

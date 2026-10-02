@@ -152,6 +152,33 @@ await describe({
       },
     },),
     it({
+      name: 'READS the run that opens the whole page as a sentence start rather than mid-sentence, so only its '
+        + 'later mid-sentence uses count toward the archive\'s form',
+      fn: async () => {
+        /** The name opens the page itself, so that use alone cannot count toward the two mid-sentence uses. */
+        const restored = restoreArchiveNameCasing({
+          slices: [
+            pair({
+              sliceIndex: 0,
+              target: 'Mittens Paws dozed by the window, and Mittens Paws dozed again, purring softly.',
+            },),
+            pair({ sliceIndex: 1, target: 'Later, Mittens Paws napped once more, by the mat.', },),
+            pair({ sliceIndex: 2, target: 'A quiet afternoon followed.', },),
+          ],
+          replacements: [
+            { sliceIndex: 2, replacementText: 'We found Mittens paws near the gate.', },
+          ],
+        },);
+        expect([
+          textsOf({ rows: restored.replacements, },),
+          restored.findings,
+        ],).toEqual([
+          ['We found Mittens Paws near the gate.',],
+          ['archive-name-casing-restored (slice 2: "Mittens paws" to "Mittens Paws")',],
+        ],);
+      },
+    },),
+    it({
       name: 'READS an accented word before a name as mid-sentence, and an accented letter touching a phrase as another word (ledger B18)',
       fn: async () => {
         // With ASCII letters only, the name after `café` read as opening a

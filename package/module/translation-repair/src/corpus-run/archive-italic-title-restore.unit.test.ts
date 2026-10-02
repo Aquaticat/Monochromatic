@@ -116,6 +116,15 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES a quote the page never closes, reading past it rather than running off the end of the text',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat loved *Long Nap*.',
+          replacement: 'She said “Long Nap and then trailed off.',
+        },),).toBe('She said “Long Nap and then trailed off.',);
+      },
+    },),
+    it({
       name: 'RESTORES a title that opens on an accented capital, which a test of A to Z alone never read as a title '
         + '(ledger B18)',
       fn: async () => {

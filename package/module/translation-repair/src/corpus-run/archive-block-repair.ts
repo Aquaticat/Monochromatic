@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { runArchiveBlockReviewStage, } from '../archive-block-review-stage.ts';
@@ -92,7 +93,7 @@ function pastLineEndings(
   },
 ): number {
   for (let at = offset; at < text.length; at += 1) {
-    if (!LINE_ENDINGS.has(text[at] ?? '',))
+    if (!LINE_ENDINGS.has(nonNullishOrThrow(text[at],),))
       return at;
   }
   return text.length;
@@ -122,7 +123,7 @@ function beforeLineEndings(
   },
 ): number {
   for (let at = offset; at > 0; at -= 1) {
-    if (!LINE_ENDINGS.has(text[at - 1] ?? '',))
+    if (!LINE_ENDINGS.has(nonNullishOrThrow(text[at - 1],),))
       return at;
   }
   return 0;

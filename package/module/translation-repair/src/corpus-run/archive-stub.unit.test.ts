@@ -174,6 +174,23 @@ await describe({
             expect(stripStubMarkersWithOrigins({ text: '(To-Do)', },).text,).toBe('',);
           },
         },),
+        it({
+          name: 'DROPS the blank line ABOVE a marker that ends the document with no trailing newline, since no '
+            + 'following line stands to give up its blank instead',
+          fn: async () => {
+            expect(stripStubMarkersWithOrigins({ text: 'Body.\n\n(To-Do)', },),).toEqual({
+              text: 'Body.',
+              stripped: [{
+                lineNumber: 3,
+                text: '(To-Do)',
+              },],
+              lines: [{
+                text: 'Body.',
+                lineNumber: 1,
+              },],
+            },);
+          },
+        },),
       ],
     },),
 

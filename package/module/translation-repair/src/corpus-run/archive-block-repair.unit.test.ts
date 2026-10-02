@@ -262,6 +262,62 @@ async function reviewsAsked(
   return asks;
 }
 
+/**
+ Reviews one block, recording every call's exact request messages.
+
+ @param sourceContexts - source-context map the block correction round reads
+
+ @returns Serialized messages of every archive-block-review call, in order
+
+ @example
+ ```ts
+ const prompts = await reviewPrompts({ sourceContexts: new Map(), },);
+ ```
+ */
+async function reviewPrompts(
+  { sourceContexts, }: { readonly sourceContexts: ReadonlyMap<string, string>; },
+): Promise<readonly string[]> {
+  /**
+   Every archive-block-review call's exact messages, serialized.
+   */
+  const prompts: string[] = [];
+  /**
+   Scripted reviewer retaining the block unchanged.
+   */
+  const inner = correctionClient({
+    replacementFor: function replacement(): string {
+      return 'The cat napped on the mat.';
+    },
+  },);
+  /**
+   Single archive text, which is also its one unclaimed block.
+   */
+  const targetText = 'The cat napped on the mat.';
+  /**
+   That block.
+   */
+  const block = blockAt({ targetText, blockText: targetText, blockId: 'block/0', },);
+  await repairArchiveBlocks({
+    client: {
+      chatText: inner.chatText,
+      chatJson: async (request,) => {
+        if (request.responseFormat?.json_schema.name === 'archive_block_review')
+          prompts.push(JSON.stringify(request.messages,),);
+        return await inner.chatJson(request,);
+      },
+      quotas: inner.quotas,
+    },
+    modelIds: ROSTER,
+    targetText,
+    sourceContexts,
+    blocks: [block,],
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: 5_000,
+    l,
+  },);
+  return prompts;
+}
+
 await describe({
   name: 'archive block repair',
   children: [
@@ -279,13 +335,73 @@ await describe({
             const [block,] = prepared.unclaimedTargetBlocks;
             if (block === undefined)
               throw new Error('fixture did not expose unclaimed block',);
-            const contexts = archiveBlockSourceContexts({ prepared, });
-            expect(
-              contexts.get(archiveBlockIdentity({
+            const contexts = archiveBlockSourceContexts({ prepared, },);
+            /**
+             Key the block's support is filed under.
+             */
+            const identity = archiveBlockIdentity({
               block,
               targetText: prepared.targetText,
-            },)),
-            ).toBe('Cats nap.');
+            },);
+            expect(contexts.get(identity,),).toBe('Cats nap.',);
+          },
+        },),
+        it({
+          name: 'SCOPES source support to the aligned section when the preparation carries an explicit section '
+            + 'pairing, not only when alignment ran automatically',
+          fn: async () => {
+            const prepared = prepareDocumentPair({
+              sourceText: 'Cats nap.',
+              targetText: 'Cats nap.\n\nAn aside.',
+              blockPairings: new Map([[0, [{ source: 0, target: 0, },],],]),
+              sectionPairing: [{ source: 0, target: 0, },],
+            },);
+            expect(prepared.sectionPairing,).toEqual([{ source: 0, target: 0, },],);
+            const [block,] = prepared.unclaimedTargetBlocks;
+            if (block === undefined)
+              throw new Error('fixture did not expose unclaimed block',);
+            const contexts = archiveBlockSourceContexts({ prepared, },);
+            /**
+             Key the block's support is filed under.
+             */
+            const identity = archiveBlockIdentity({
+              block,
+              targetText: prepared.targetText,
+            },);
+            expect(contexts.get(identity,),).toBe('Cats nap.',);
+          },
+        },),
+        it({
+          name: 'SCOPES an aligned-pair location with no matching alignment pair to empty support, rather than '
+            + 'the archive\'s whole original section',
+          fn: async () => {
+            const prepared = prepareDocumentPair({
+              sourceText: 'Cats nap.',
+              targetText: 'Cats nap.\n\nAn aside.',
+              blockPairings: new Map([[0, [{ source: 0, target: 0, },],],]),
+            },);
+            const [block,] = prepared.unclaimedTargetBlocks;
+            if (block === undefined)
+              throw new Error('fixture did not expose unclaimed block',);
+            /** The same block, naming an alignment pair the page has none of. */
+            const misaligned: UnclaimedTargetBlock = {
+              ...block,
+              location: { kind: 'aligned-pair', pairIndex: 99, },
+            };
+            const contexts = archiveBlockSourceContexts({
+              prepared: {
+                ...prepared,
+                unclaimedTargetBlocks: [misaligned,],
+              },
+            },);
+            /**
+             Key the misaligned block's support is filed under.
+             */
+            const identity = archiveBlockIdentity({
+              block: misaligned,
+              targetText: prepared.targetText,
+            },);
+            expect(contexts.get(identity,),).toBe('',);
           },
         },),
         it({
@@ -344,6 +460,30 @@ await describe({
             expect([...targetOnly.values(),].every(function empty(value,): boolean {
               return value === '';
             },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'SENDS the same empty source support whether the map simply has no entry for the block\'s '
+            + 'identity or the caller spelled the entry out as empty',
+          fn: async () => {
+            const [missing, explicitEmpty,] = await Promise.all([
+              reviewPrompts({ sourceContexts: new Map(), },),
+              reviewPrompts({
+                sourceContexts: new Map([[
+                  archiveBlockIdentity({
+                    block: blockAt({
+                      targetText: 'The cat napped on the mat.',
+                      blockText: 'The cat napped on the mat.',
+                      blockId: 'block/0',
+                    },),
+                    targetText: 'The cat napped on the mat.',
+                  },),
+                  '',
+                ],],),
+              },),
+            ],);
+            expect(missing,).toEqual(explicitEmpty,);
+            expect(missing.length,).toBeGreaterThan(0,);
           },
         },),
         it({
