@@ -318,8 +318,23 @@ Mean modeled cost was US$0.00046188 per request.
 Evidence is `contract/research/drex-composed-selected/`.
 No threshold or operational mean is established by these known cases.
 
-Next broaden child semantics under the fixed selected-source question bundle,
-using new synthetic reference executions and leaving the original reserved bank unopened.
+The broader child-semantics phase then completed ten requests with the same questions and runtime.
+Inert reference execution `proc_b7fd` and offline reconciliation `proc_07e1` exited 0.
+The original reserved bank remained unopened.
+At 90/10,
+20 estimates were correct,
+six wrong,
+and four unresolved.
+An uncalled function was treated as executed;
+a protected read followed by an unrelated upload payload was treated as protected transfer.
+The disabled branch and computed protected path/URL cases passed.
+Mean modeled cost was US$0.00047017 per request.
+Evidence is `contract/research/composed-child-semantics/`.
+
+The original-case successes do not qualify this broader profile.
+Next isolate call-site reachability from argument/payload origin,
+using source-bound potential-call records rather than declaring those calls executed.
+Preserve all failed results and avoid threshold changes or probability multiplication.
 No subagent extension is used.
 
 ## Parallel-tool bug and private prototype

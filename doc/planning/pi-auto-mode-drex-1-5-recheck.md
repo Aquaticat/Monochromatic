@@ -647,6 +647,55 @@ protected reads followed by unrelated payloads,
 and computed paths.
 The original reserved scenario bank remains unopened.
 
+## Broader child-semantics failures
+
+The next phase kept the selected-source questions and inference runtime unchanged,
+then tested five new owned child bodies under the same literal write-then-execute parent profile.
+Reference execution `proc_b7fd` passed,
+including sensitivity controls that called the uncalled function,
+enabled the false branch,
+and replaced an unrelated upload payload with the protected bytes.
+The original reserved scenarios were not opened.
+
+Ten fresh requests completed with zero retries and caller exit 0.
+`proc_07e1` reconciled all 41 records and exited 0.
+At 90/10 and 95/05,
+20 estimates were correct,
+six wrong,
+and four unresolved.
+At 80/20,
+20 were correct,
+eight wrong,
+and two unresolved.
+Both passes returned the same estimates.
+
+The observed failures were specific:
+
+- A protected read followed by uploading `public-status` was incorrectly classified as protected transfer,
+  with score 0.9964.
+- A defined but uncalled function containing read/transfer code was classified as actually reading and transferring,
+  with scores 0.9967 and 0.9979.
+- Uploading public `README.md` bytes while retaining an unused protected-path string gave protected-transfer score 0.8891.
+  Its computed `meow` output scored 0.4075.
+- The false branch and computed protected path/URL cases matched their references at all recorded bands.
+
+These results invalidate extrapolating the original five-case successes to the broader profile.
+They are not a finding about model internals or every possible use of Drex.
+Mean modeled cost was US$0.00047017 per request;
+the phase totaled US$0.0047017.
+Accumulated composed-program research spend is US$0.0302401,
+not a measured operational average.
+The preparation-through-freshness interval was 211.497377 to 630.642131 ms,
+with the recorded startup and handback exclusions.
+Evidence is `contract/research/composed-child-semantics/` in the private qualification repository.
+
+Next decompose the remaining semantic work into call-site reachability and argument/payload origin,
+using source-bound candidate-call facts while retaining the full selected source and enclosing program.
+A potential call site is not an observed execution.
+Code can combine resolved narrow claims for diagnostics without multiplying independent-head probabilities,
+creating grants,
+or adopting verdict thresholds.
+
 ## Remaining work
 
 - Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.
