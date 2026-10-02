@@ -1224,6 +1224,14 @@ WR5:
  TSDoc,
  and comments.
 
+WR6:
+ A moved identifier (URL,
+ host,
+ path,
+ name) in a historical record keeps its original text
+ plus an in-place note giving the current value and the move date;
+ never leave it pointing nowhere.
+
 #### Markdown syntax
 
 MD1:
