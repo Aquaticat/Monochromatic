@@ -451,6 +451,34 @@ the current host prepares those hooks serially before parallel execution.
 
 See the [parallel batch plan](../planning/pi-auto-mode-parallel-batch.md).
 
+## Request-stage instruction-source controls
+
+`contract/collector/request-stage-controls/` completed as `proc_74bc`,
+exit 0:
+six new scripted Pi 1.0.0 `AgentSession` completions,
+zero external model requests,
+and no current permission or human witness.
+Full private worker streams,
+exact callback order,
+manager/loader identity,
+JSON-value persistence,
+and cleanup were checked.
+
+The current getter missed request-local context changes and final payload-only additions.
+Persisted entries retained only the base marker,
+not forced,
+request-local,
+or native-payload markers.
+The ordinary collector remained fresh on its observations while retaining all three coverage gaps.
+The omitted-payload-hook control was rejected by the exact final-payload validator;
+a disposable removal of that validator caused its consumer test to fail.
+
+These are synthetic native-payload observations,
+not built-in provider encoding or complete instruction authority.
+The next probe uses the real built-in serializer with an injected local response transport,
+keeping external network blocked.
+See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
+
 ## Tooling and workflow
 
 The user removed the `todo` extension.

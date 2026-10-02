@@ -1,4 +1,4 @@
-# Pi 0.87.1 instruction snapshots can miss later prompt transformations
+# Pi 0.87.1 and 1.0.0 instruction snapshots can miss later prompt transformations
 
 ## Symptom and relevance
 
@@ -386,6 +386,117 @@ governing-instruction semantics,
 finalizer behavior,
 or production timing qualification.
 No production extension or cutoff was changed.
+
+## Pi 1.0.0 terminal-stage controls
+
+A later private phase,
+`contract/collector/request-stage-controls/`,
+ran stock installed Pi 1.0.0 with Node 26.10.0.
+`proc_74bc` exited 0:
+six new owned `AgentSession` completions,
+six scripted local provider requests,
+zero external model requests,
+and zero represented tool effects.
+This is not historical session-ledger reconciliation or a human-witnessed root.
+
+The worker used a cleared disposable home,
+no discovered extensions or context files,
+no tools,
+and disabled agent retries,
+compaction,
+and cache warming with effective-setting readback.
+Its complete streams were private before SDK import,
+worker stderr was empty,
+and a 60-second process bound was enforced.
+The 512 MiB old-space setting is not a total-memory bound.
+Listed source and Node hashes were checked;
+complete transitive runtime attestation was not claimed.
+
+### Source path and callback order
+
+Paths in this subsection are relative to installed `@earendil-works/pi-coding-agent@1.0.0`,
+not the historical 0.87.1 checkout.
+`dist/core/sdk.js:213` forwards the payload hook to the extension runner:
+
+```javascript
+// @earendil-works/pi-coding-agent/dist/core/sdk.js
+const transformProviderPayload = async (payload) => {
+    const runner = extensionRunnerRef.current;
+    if (!runner?.hasHandlers("before_provider_request"))
+        return payload;
+    return runner.emitBeforeProviderRequest(payload);
+};
+```
+
+The SDK installs that callback as `onPayload` at `dist/core/sdk.js:262`.
+The provider must actually call it and use its returned payload.
+`dist/core/extensions/runner.js:1060` runs the handler chain;
+its replacement branch at line 1071 is:
+
+```javascript
+// @earendil-works/pi-coding-agent/dist/core/extensions/runner.js
+if (handlerResult !== undefined) {
+    currentPayload = handlerResult;
+}
+```
+
+`dist/core/agent-session.js:1310` wraps the preceding context transform and then applies forced prompt text:
+
+```javascript
+// @earendil-works/pi-coding-agent/dist/core/agent-session.js
+const transformed = previousTransformContext ? await previousTransformContext(messages, signal) : messages;
+const forced = this._runSystemPromptOptions?.forceSystemPrompt;
+if (forced === undefined)
+    return transformed;
+```
+
+The owned traces asserted exact callback order,
+not merely handler counts.
+The combined case confirmed that forced projection replaced the request-local system head before payload rewriting.
+
+### Observed boundaries
+
+- Base and forced cases:
+  the getter equaled the normalized provider prompt and final synthetic payload prompt.
+- Request-local context case:
+  the getter differed from both provider and final payload prompt.
+- Payload case:
+  the getter matched provider context but omitted the final native-payload additions.
+- Combined case:
+  forced text replaced the request-local head,
+  then both payload handlers added their markers in registration order.
+- Omitted-hook control:
+  the getter and unchanged payload matched,
+  yet the final-payload validator rejected the missing required transformations with `FinalPayloadCoverageError`.
+
+Every persisted session retained the base marker and omitted the forced,
+request-local,
+and payload markers.
+Own entries matched their persisted JSON values;
+this was not raw-object identity or byte-for-byte serialization equality.
+The existing collector's `assertObservedFresh()` passed on its observed surfaces even when later payload content differed.
+It correctly retained `run-producer-inventory`,
+`final-request-transformations`,
+and `provider-native-payload` as unqualified gaps.
+Its freshness check was never a claim of terminal-request completeness.
+
+A separate disposable guard-removal pair passed with the validator intact and failed when the mismatch check was removed.
+Unexpected setup,
+SDK,
+retention,
+extension,
+and cleanup errors were not accepted as that expected rejection.
+
+The collector separately read the complete current mandatory policy,
+with SHA-256 `15890c665cdb1c054f8c56c2f212cb75297292b812dc0a2e8065e21156483c39`.
+The scripted SDK provider used owned marker prompts,
+not a full-policy model assessment.
+This phase qualifies source-stage observations for its synthetic native payload protocol,
+not real provider encoding,
+complete producer coverage,
+current permission,
+or governing-instruction authority.
+The next probe targets the built-in provider's final serialization boundary without external network access.
 
 ## Verified workarounds and limits
 
