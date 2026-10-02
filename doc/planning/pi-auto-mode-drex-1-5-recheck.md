@@ -748,6 +748,75 @@ not another wording variant or a new production provider decision.
 Recheck current model metadata and retain gateway-internal retry/cost uncertainty separately.
 No old Jev study or original reserved scenario is reopened.
 
+## Same-input Jev comparison
+
+The previously approved Jev/Gateway qualification route received the same frozen state,
+questions,
+and references as the Drex call-site diagnostic.
+Fresh public metadata confirmed the `typesafe/jev-1.13.0` route and published input rate of US$0.042 per million tokens.
+No old Jev experiment,
+original reserved scenario,
+account setting,
+or dashboard was reopened.
+
+Ten requests completed with zero client retries and caller exit 0.
+`proc_955d` reconciled all 41 records and exited 0.
+The client requested four-second research gaps between assessments,
+outside their unchanged five-second clocks.
+Observed inter-assessment intervals,
+including record I/O,
+were 3999.826664 to 4003.566241 ms;
+requested timer durations are not strict elapsed lower bounds.
+
+At 90/10,
+Jev's actual-observable heads were 36 correct,
+zero wrong,
+and 14 unresolved.
+Its counterfactual heads were 11 correct,
+zero wrong,
+and one unresolved,
+reported separately.
+Matched-site composed effects were 18 correct,
+zero wrong,
+and 12 unresolved.
+For comparison,
+Drex had 24 correct,
+four wrong,
+and two unresolved effects on these inputs.
+At 80/20,
+Jev had 28 correct effects and two unresolved;
+at 95/05,
+six correct and 24 unresolved.
+There were no resolved effect errors in this finite Jev sample at any recorded band.
+That does not qualify a cutoff or establish general calibration.
+
+Unlike the observed Drex repeats,
+Jev's unchanged-input estimates varied between passes.
+The uncalled-function read reachability estimates were both 0.16;
+transfer reachability was 0.19 then 0.17.
+The unrelated constant payload was 0.10 then 0.09.
+These observations support further qualification of the already accepted direction,
+not a new provider-adoption or stable global-ranking claim.
+
+Modeled returned-input usage cost was US$0.004385304 for the phase,
+or US$0.0004385304 per request.
+Extra Gateway charges,
+internal attempts,
+and invoices remain unverified;
+unknown charges are not counted as zero.
+The combined published-usage subtotal across these composed-program studies is US$0.039808004,
+not an actual all-in spend or operational workload mean.
+Assessment intervals were 360.028691 to 1027.916781 ms,
+with imports and complete host handback still outside the claim.
+Requested/reported model identity is not upstream weight attestation.
+
+Evidence is `contract/research/jev-callsite-recheck/` in the private qualification repository.
+The Bash credential bridge was used because the managed-process environment lacked the named key;
+no secret was printed or persisted for that bridge.
+Further model/provider/cutoff adoption remains unauthorized.
+Next resume the incomplete real instruction-source and SDK consumer bridge,
+retaining unresolved estimates rather than prompting until they become approval.
+
 ## Remaining work
 
 - Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.

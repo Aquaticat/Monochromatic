@@ -348,9 +348,28 @@ the unrelated constant upload payload remained unresolved.
 Mean modeled cost was US$0.00051826 per request.
 Evidence is `contract/research/composed-callsite-diagnostic/`.
 
-Next compare the previously approved Jev/Gateway qualification route using the same inputs and questions,
-with fresh metadata and separate gateway-internal retry/cost uncertainty.
-This is not a new provider-adoption decision or a replay of historical Jev studies.
+The same-input Jev/Gateway comparison then completed ten requests with zero client retries.
+Fresh metadata and the already settled route authorization were used;
+no historical Jev phase was replayed.
+`proc_955d` reconciled all 41 records and exited 0.
+At 90/10,
+Jev composed effects were 18 correct,
+zero wrong,
+and 12 unresolved,
+compared with Drex's 24 correct,
+four wrong,
+and two unresolved.
+Observable and counterfactual head counts remain separate in the receipt.
+
+Modeled returned-input usage averaged US$0.0004385304 per request.
+Unknown Gateway-internal attempts/charges and invoices remain separate;
+this is not an operational workload mean or weight attestation.
+Four-second research gaps were outside each five-second assessment clock.
+Evidence is `contract/research/jev-callsite-recheck/`.
+No provider or threshold adoption follows from this finite comparison.
+
+Next resume the unfinished instruction-source/SDK consumer bridge,
+keeping current permission unavailable until its new SDK-linked human original exists.
 Preserve all failed results and avoid threshold changes or probability multiplication.
 No subagent extension is used.
 
