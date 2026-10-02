@@ -313,8 +313,31 @@ The previous composition errors remained,
 and the previously resolved marker-output positive became unresolved.
 No stable improvement is inferred from individual score changes.
 
+A third version used short direct questions with literal fixture paths,
+the upload URL,
+and `meow`.
+State remained unchanged,
+and all five requests completed with no retries and command exit 0.
+Its mean modeled cost was US$0.00043428.
+Every diagnostic band reported nine correct,
+five wrong,
+and one unresolved scalar.
+The direct wording resolved the marker-only positive in this run,
+but the unused-file and write-after-execution failures remained.
+
+All three versions together cost a modeled US$0.0065657,
+or US$0.00131314 per case including all three attempts.
+That cumulative figure exceeds the US$0.001 target:
+using three full-policy calls like these for every judgment would not meet it.
+Single-version observations remain below target;
+no representative production follow-up rate has been established.
+This development cycle stops at three attempts per case,
+without adopting thresholds or discarding failed variants.
+
 Evidence is retained in the separate qualification repository under
-`contract/research/drex-composed-effects/` and `contract/research/drex-composed-wording-v2/`.
+`contract/research/drex-composed-effects/`,
+`contract/research/drex-composed-wording-v2/`,
+and `contract/research/drex-composed-wording-v3/`.
 The original results and wording remain intact.
 No production threshold or provider was adopted.
 

@@ -186,7 +186,13 @@ they are not disguised final-verdict requests.
 Do not send a first-round answer as an instruction telling the model what to conclude next.
 Repeated paraphrases,
 voting,
-and retrying uncertainty until it becomes approval remain excluded.
+and retrying uncertainty until it becomes approval remain excluded from the production decision loop.
+The user separately authorized diagnostic wording changes when cases are answered poorly.
+Such development runs pre-author each new version,
+retain original failures,
+include regression controls,
+and report cumulative costs.
+They do not establish held-out quality or authorize runtime-generated production wording.
 
 ## What earliest termination means
 

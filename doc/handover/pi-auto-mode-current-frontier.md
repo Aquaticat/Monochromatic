@@ -135,6 +135,50 @@ The explicitly requested read and `README.md` transfer remained unresolved.
 The canary is consumed and must not be repeated to obtain more favorable scores.
 New private-input authorization does not rewrite its historical public/synthetic scope.
 
+## Composed-effect wording experiments
+
+The user directed trying different wording on cases that are answered poorly.
+This permits controlled diagnostic prompt development,
+not erasing failures or inventing production questions during a decision.
+
+Five synthetic programs held the invoked script path fixed while changing written source,
+which file was written,
+or write/execution order.
+A read-only control separated protected reads from transfers.
+Inert reference execution and state-leak checks passed before provider calls.
+Every request included the full parent program,
+relevant initial files,
+primitive definitions,
+and current `AGENTS.md` bytes.
+Local expected labels and descriptive case IDs were excluded.
+
+Three pre-authored wording versions each made one request per case,
+with no retries.
+At 90/10,
+initial wording produced nine correct,
+five wrong,
+and one unresolved scalar;
+invocation-time wording produced eight correct,
+five wrong,
+and two unresolved;
+short direct wording produced nine correct,
+five wrong,
+and one unresolved.
+The unused-file and write-after-execution cases remained wrong.
+No version qualifies this composed-effect representation.
+These are semantic-estimate outcomes,
+not final-policy approval measurements or proof of an internal model mechanism.
+
+Modeled means per version were US$0.00043813,
+US$0.00044073,
+and US$0.00043428.
+Including all three attempts gives US$0.00131314 per case,
+above the US$0.001 target for that three-call pattern.
+This is development cost,
+not an established production workload mean or invoice rate.
+The cycle is closed at three attempts per case.
+See the [Drex recheck](../planning/pi-auto-mode-drex-1-5-recheck.md#composed-program-effects-and-wording-development).
+
 ## Parallel-tool bug and private prototype
 
 The actual built extension reproduced two judgments for a parallel two-call group.
@@ -258,6 +302,9 @@ while preserving actual verification and authorization constraints.
   Earlier witnesses are not reusable current permission.
 - Only after that new original is admitted,
   perform the already-authorized disposable current-permission tests.
+- Use the retained composed-effect failures to refine the question/state design without reopening the closed cycle.
+  Preserve whole-program interactions;
+  do not reinstate a code-only effect-proof requirement or infer new budgets from callbacks.
 - Qualify the intended pre-baked question library and adaptive selection on representative inputs,
   now including task-relevant private history where needed.
   Keep cost accounting and full-policy freshness intact.
