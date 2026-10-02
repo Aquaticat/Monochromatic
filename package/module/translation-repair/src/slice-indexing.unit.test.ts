@@ -1,7 +1,7 @@
 /**
  Tests for the slice-indexing invariant every cache key rests on.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -20,13 +20,13 @@ import {
 
 /**
  Builds one slice pair carrying the two indices under test.
- 
+
  @param sourceIndex - index stamped on the original side
- 
+
  @param targetIndex - index stamped on the translation side
- 
+
  @returns Slice pair shaped like a prepared one
- 
+
  @example
  ```ts
  const slice = sliceAt({ sourceIndex: 0, targetIndex: 0, },);

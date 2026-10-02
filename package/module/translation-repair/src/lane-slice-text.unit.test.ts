@@ -1,14 +1,14 @@
 /**
  Tests for the per-slice wording both lanes report.
- 
+
  This is the join key of every two-lane comparison, so its failure mode is a
  comparison that reads clean while lining up two different passages. The
  coverage checks are the whole point: a lane that skipped a slice, or reported
  one its preparation never produced, must say so rather than produce a shorter
  list nobody counts.
- 
+
  Fixtures are invented. No corpus content appears here.
- 
+
  @module
  */
 
@@ -26,15 +26,15 @@ import {
 
 /**
  Builds one prepared slice pair.
- 
+
  @param index - global slice index both sides carry
- 
+
  @param source - original text of this slice
- 
+
  @param target - archive translation of it
- 
+
  @returns Pair shaped as preparation produces
- 
+
  @example
  ```ts
  const pair = pairOf({ index: 0, source: '猫', target: 'The cat.', },);

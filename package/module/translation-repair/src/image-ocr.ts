@@ -52,7 +52,7 @@ import { refusalText, } from './refusal-text.ts';
 
 /**
  How the OCR reader is invoked, including the language data it needs.
- 
+
  BOTH SCRIPTS, since the corpus is Chinese and its pictures carry Latin
  handles, dates and place names inside otherwise Chinese text.
  */
@@ -63,18 +63,18 @@ const TESSERACT_LANGUAGES = 'chi_sim+eng';
 // claimed to be drawn from.
 // Shortest OCR yield treated as text rather than as noise, in characters after
 // whitespace is removed.
-// 
+//
 // STATED AS A CHOICE, because the measurement does not make it for us. The
 // yield over 191 assets runs 0, then 1, 2, 4 and up through 2965 with no gap
 // anywhere: 119 assets return nothing and the remaining 72 form a continuum. So
 // there is no boundary to discover, only a line to draw.
-// 
+//
 // DRAWN AT `MIN_READING_CHARS`, the value `image-reading-sense.ts` already uses
 // for a model reading too short to be a reading. Reusing it keeps ONE notion of
 // "too short to be a transcription" rather than inventing a second that would
 // drift from it. At this line 60 assets read and 12 low-yield ones are called
 // textless.
-// 
+//
 // THE ERRORS ARE NOT SYMMETRIC, which is why the line sits where it does rather
 // than lower. Calling a caption textless loses a little evidence about a
 // picture that 79 of 1260 slices mention. Calling noise text spends model calls
@@ -91,7 +91,7 @@ const execFileAsync = promisify(execFile,);
 
 /**
  What reading a picture without a model produced.
- 
+
  @example
  ```ts
  const reading: OcrReading = { kind: 'no-text', characters: 0, };
@@ -134,7 +134,7 @@ export type OcrReading = {
 
 /**
  Directory that removes itself, so no cleanup depends on a `finally`.
- 
+
  @example
  ```ts
  await using scratch = await scratchDirectory();
@@ -154,15 +154,15 @@ type ScratchDirectory = {
 
 /**
  Makes a private directory that removes itself when it leaves scope.
- 
+
  THROWAWAY BY CONSTRUCTION. Every intermediate this module writes is a decoded
  copy of somebody's photograph, so it lives under the system temporary
  directory for the length of one reading and no longer.
- 
+
  @returns Directory and its disposer
- 
+
  @throws Whatever `mkdtemp` raises when a temporary directory cannot be made
- 
+
  @example
  ```ts
  await using scratch = await scratchDirectory();
@@ -193,15 +193,15 @@ async function scratchDirectory(): Promise<ScratchDirectory> {
 
 /**
  Counts what is left of a text once whitespace is dropped.
- 
+
  A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "characters that
  are not whitespace", which a scan states directly in one pass and cannot
  backtrack.
- 
+
  @param text - what OCR returned
- 
+
  @returns How many non-whitespace characters it holds
- 
+
  @example
  ```ts
  const count = solidCharacters({ text: 'a b', },);
@@ -221,21 +221,21 @@ export function solidCharacters({ text, }: { readonly text: string; },): number 
 
 /**
  Decodes a picture to PNG, which is what the OCR reader accepts.
- 
+
  `dwebp` FIRST AND `magick` SECOND, which is the opposite of what it looks
  like it should be. ImageMagick on this machine has no working webp reader and
  fails outright on the format 187 of 191 corpus assets use, while `dwebp`
  handles exactly that format. So the specific tool leads and the general one
  covers the rest.
- 
+
  @param source - picture as written to scratch
- 
+
  @param png - where the decoded copy should land
- 
+
  @param l - logger the two decoder failures are recorded on
- 
+
  @returns Whether either decoder produced one
- 
+
  @example
  ```ts
  const decoded = await decodeToPng({ source, png, l, },);
@@ -288,19 +288,19 @@ async function decodeToPng(
 
 /**
  Reads a picture with the deterministic OCR reader.
- 
+
  @param bytes - picture as gathered from the corpus
- 
+
  @param assetName - its file name, kept so the scratch copy carries the
  extension a decoder may want
- 
+
  @param l - lane logger
- 
+
  @returns What it read, that it read nothing, or why it could not try
- 
+
  @throws Whatever `mkdtemp` raises when scratch cannot be made, which is a
  broken machine rather than an unreadable picture
- 
+
  @example
  ```ts
  const reading = await readImageWithOcr({ bytes, assetName: 'letter.webp', l, },);

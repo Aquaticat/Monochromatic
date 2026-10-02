@@ -37,7 +37,7 @@
 
 /**
  Share of the smaller reading's trigrams the larger has to carry.
- 
+
  THIRTY PERCENT, from the measured gap rather than from taste. The lowest
  same-picture pair scored 0.643 and the highest different-picture pair 0.129,
  so this sits roughly a factor of two from each. Stated as revisitable: five
@@ -48,7 +48,7 @@ export const CORROBORATION_TRIGRAM_SHARE = 0.3;
 
 /**
  Characters a gram spans.
- 
+
  THREE, because two is too weak and four too brittle. Measured over the same
  pairs, bigrams separate 0.746-and-up from 0.292-and-below, a narrower gap,
  while trigrams separate 0.643 from 0.129.
@@ -57,7 +57,7 @@ const GRAM_LENGTH = 3;
 
 /**
  How a reading may fail to be corroborated, or that it was.
- 
+
  @example
  ```ts
  const verdict: CorroborationVerdict = { kind: 'corroborated', overlap: 0.97, };
@@ -88,16 +88,16 @@ export type CorroborationVerdict = {
 
 /**
  Text with every whitespace run collapsed to one space, trimmed.
- 
+
  WHY COLLAPSE AT ALL. Models differ in how they lay a transcription out, one
  preserving the picture's line breaks and another running lines together, and
  a trigram spanning a newline would differ from the same trigram spanning a
  space. Collapsing makes the comparison about the words rather than the layout.
- 
+
  @param text - reading as the model returned it
- 
+
  @returns Same characters with runs of whitespace flattened
- 
+
  @example
  ```ts
  const flat = collapsedWhitespace({ text: reading, },);
@@ -137,13 +137,13 @@ function collapsedWhitespace({ text, }: { readonly text: string; },): string {
 
 /**
  Segmenter cutting text into user-perceived characters.
- 
+
  GRAPHEMES RATHER THAN UTF-16 UNITS OR CODE POINTS. Indexing a string splits a
  character outside the basic plane in half, and code points split a flag or a
  modified emoji into its parts, so both would cut grams neither reader would
  produce. A grapheme is what a person reading the picture would call one
  character, which is the unit the comparison is about.
- 
+
  BUILT ONCE, because constructing a segmenter is far more expensive than using
  one and every reading is cut the same way.
  */
@@ -154,11 +154,11 @@ const GRAPHEMES = new Intl.Segmenter(
 
 /**
  Distinct character trigrams of one reading.
- 
+
  @param text - reading to cut
- 
+
  @returns Its distinct trigrams, empty when it is shorter than one
- 
+
  @example
  ```ts
  const grams = characterTrigrams({ text: reading, },);
@@ -206,19 +206,19 @@ export function characterTrigrams({ text, }: { readonly text: string; },): Reado
 
 /**
  Share of the smaller reading's trigrams the larger one carries.
- 
+
  THE SMALLER SIDE IS THE DENOMINATOR, deliberately. One model transcribes more
  of a picture than the other: Kimi-K3 read `Mio/photo7.webp` as 178 characters
  against Qwen's 590. Dividing by the union would score that pair as
  disagreement when what it shows is one reader stopping early, and the shorter
  reading still vouches for every word it does carry.
- 
+
  @param left - one reading
- 
+
  @param right - the other
- 
+
  @returns Share between zero and one; zero when either carries no trigram
- 
+
  @example
  ```ts
  const overlap = trigramOverlap({ left, right, },);
@@ -267,13 +267,13 @@ export function trigramOverlap(
 
 /**
  Whether two readings describe the same picture.
- 
+
  @param left - one reading
- 
+
  @param right - the other, from a different model shown the same picture
- 
+
  @returns Whether they agree, and by how much
- 
+
  @example
  ```ts
  const verdict = readingsCorroborate({ left, right, },);

@@ -30,7 +30,7 @@ import { rm, } from 'node:fs/promises';
 
 /**
  Files a draw has written, and whether it finished writing all of them.
- 
+
  @example
  ```ts
  await using outputs: DrawOutputs = trackDrawOutputs();
@@ -50,13 +50,13 @@ export type DrawOutputs = AsyncDisposable & {
 
 /**
  Tracks the files a draw writes and removes them unless it finished.
- 
+
  @param enabled - whether this draw's outputs are exclusively created, which
  is true of a final draw and false of a preliminary one; a disabled tracker
  records nothing and removes nothing
- 
+
  @returns Tracker to be held with `await using`
- 
+
  @example
  ```ts
  await using outputs = trackDrawOutputs({ enabled: isFinal, },);

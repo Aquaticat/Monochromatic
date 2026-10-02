@@ -24,9 +24,9 @@ const TITLE_CLOSE = '》';
  more, 118 spans, at most 13 in one entry (XingZ60).
 
  @param text - original document
- 
+
  @returns Titles as the original writes them
- 
+
  @example
  ```ts
  workTitlesOf({ text: '她读《活着》，又读《活着》。', },);
@@ -53,11 +53,11 @@ export function workTitlesOf(
 
 /**
  Query sent for one title, which is also the cache key.
- 
+
  @param title - title with its marks
- 
+
  @returns Search string asking for the official English title
- 
+
  @example
  ```ts
  lookupQueryFor({ title: '《活着》', },);

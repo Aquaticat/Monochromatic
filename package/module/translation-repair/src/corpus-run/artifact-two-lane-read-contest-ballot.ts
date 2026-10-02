@@ -40,15 +40,15 @@ const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
 
 /**
  Reads one list of candidate names a judge wrote.
- 
+
  @param value - recorded list
- 
+
  @param path - dotted path of that list
- 
+
  @returns Candidate names it carries
- 
+
  @throws {@link ArtifactParseError} when any entry names no candidate
- 
+
  @example
  ```ts
  const named = parseChoiceList({ value, path, },);
@@ -81,15 +81,15 @@ function parseChoiceList(
 
 /**
  Reads one judge`s ballot.
- 
+
  @param value - recorded ballot
- 
+
  @param path - dotted path of that ballot
- 
+
  @returns Ballot as the judge left it
- 
+
  @throws {@link ArtifactParseError} when any field is missing or unreadable
- 
+
  @example
  ```ts
  const ballot = parseContestBallot({ value, path, },);
@@ -142,7 +142,7 @@ export function parseContestBallot(
     };
   /**
    Archive verdict this ballot carries, present only when it recorded one.
-   
+
    SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
    under `exactOptionalPropertyTypes`. A ballot written before the question
    existed carries no such key, and reading it back as absent is what makes

@@ -59,7 +59,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 
 /**
  Controls drawn per entry that contributes any flagged slice.
- 
+
  Small on purpose. Controls exist to detect a general context-induced
  conservatism, which would show across many entries rather than within one, so
  breadth is worth more here than depth.
@@ -68,7 +68,7 @@ const CONTROLS_PER_ENTRY = 1;
 
 /**
  Decimal places the paired estimate is printed to.
- 
+
  Two, because the draw cannot resolve a third: at the size measured here the
  spread on this estimate is larger than a hundredth, and printing more digits
  would suggest a precision the sample does not have.
@@ -77,7 +77,7 @@ const EXCESS_DIGITS = 2;
 
 /**
  Refusals in a row that end the run.
- 
+
  Small, because slices that genuinely cannot be tried do not cluster: the draw
  interleaves entries and classes, so several in a row is a provider or a
  roster, not a run of awkward slices.
@@ -86,7 +86,7 @@ const REFUSALS_BEFORE_STOPPING = 5;
 
 /**
  Digest characters printed in the run's opening line.
- 
+
  Enough to tell two protocols apart at a glance in a log, and short enough that
  the line stays readable; the ledger carries the whole digest either way.
  */
@@ -99,7 +99,7 @@ const l = contextRoot({ tag: 'window-trial', },);
 
 /**
  Both sides of one entry, or the fact that it carries only one.
- 
+
  @example
  ```ts
  const texts: PairTexts = { kind: 'missing', };
@@ -129,12 +129,12 @@ type PairTexts = {
 
 /**
  Slices one entry contributes, flagged plus its controls.
- 
+
  @param entryId - entry to read
- 
+
  @returns Slices to buy and the preparation they index into, empty when the
  entry cannot be read or the screen flagged nothing
- 
+
  @example
  ```ts
  const drawn = await drawEntry({ entryId, },);
@@ -204,13 +204,13 @@ async function drawEntry(
 
 /**
  Reads both sides of one entry.
- 
+
  @param entryId - entry to read
- 
+
  @returns Both texts, absent when either side is missing
- 
+
  @throws Whatever the read threw, when it was not a corpus read failure
- 
+
  @example
  ```ts
  const texts = await readPairTexts({ entryId, },);
@@ -242,7 +242,7 @@ async function readPairTexts(
 
 /**
  Runs the trial over the pinned corpus.
- 
+
  @example
  ```ts
  await main();
@@ -303,7 +303,7 @@ async function main(): Promise<void> {
   /**
    Slices bought so far, which the first-slice check reads, and slices that
    refused.
-   
+
    A REFUSAL IS COUNTED AND WALKED PAST, never fatal to the run. A slice can
    refuse for reasons that are properties of the slice rather than of the
    trial: no neighbouring section to widen to, or a slice with no incumbent

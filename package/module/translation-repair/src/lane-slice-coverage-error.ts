@@ -18,7 +18,7 @@ import {
 
 /**
  Sets a lane may name slices under, beside its decisions.
- 
+
  @example
  ```ts
  const label: NamedSliceSetLabel = 'unfilled';
@@ -50,7 +50,7 @@ const SET_CLAUSES: Record<NamedSliceSetLabel, {
 
 /**
  Why a lane's slice report does not cover its preparation.
- 
+
  @example
  ```ts
  const fault: LaneSliceCoverageFault = { kind: 'left-undecided', sliceIndex: 4, };
@@ -205,11 +205,11 @@ export type LaneSliceCoverageFault = {
 
 /**
  Words a lane slice coverage fault from set labels, kinds and numbers.
- 
+
  @param fault - why the lane's report does not cover its preparation
- 
+
  @returns Sentence written here
- 
+
  @example
  ```ts
  const sentence = laneCoverageSentence({ fault: { kind: 'left-undecided', sliceIndex: 4, }, },);
@@ -283,10 +283,10 @@ export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCove
 
 /**
  Refusal of a lane report that does not cover its preparation.
- 
+
  MARKED: its message is the sentence `laneCoverageSentence` writes from set
  labels, kinds and numbers.
- 
+
  @example
  ```ts
  throw new LaneSliceCoverageError({ fault: { kind: 'left-undecided', sliceIndex: 4, }, },);

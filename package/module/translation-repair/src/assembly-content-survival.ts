@@ -32,7 +32,7 @@ import { foldedLatinWords, } from './latin-letters.ts';
 
 /**
  Shortest word that can carry a specific.
- 
+
  Below six letters the vocabulary is mostly function words and common verbs,
  which survive any rewrite and say nothing about whether meaning did.
  */
@@ -40,7 +40,7 @@ const MIN_DISTINCTIVE_LETTERS = 6;
 
 /**
  Most times the archive may use a word for it to still count as distinctive.
- 
+
  A word the archive leans on repeatedly is part of its register rather than one
  of its specifics, and register is exactly what a repair is allowed to change.
  */
@@ -48,10 +48,10 @@ const MAX_ARCHIVE_USES = 2;
 
 /**
  What the archive's specifics did in the shipped document.
- 
+
  CARRIES NO WORDING, like every finding in this package: a findings list
  travels into logs and artifacts where corpus text does not belong.
- 
+
  @example
  ```ts
  const survival: ContentSurvival = { distinctive: 216, kept: 197, lost: 19, };
@@ -76,11 +76,11 @@ export type ContentSurvival = {
 
 /**
  Words the archive uses rarely and at length, which carry its specifics.
- 
+
  @param archiveText - translation as it stood before the pipeline ran
- 
+
  @returns Distinctive words, each once
- 
+
  @example
  ```ts
  const specifics = distinctiveWords({ archiveText, },);
@@ -110,13 +110,13 @@ export function distinctiveWords(
 
 /**
  Measures how much of the archive's specific vocabulary the document still has.
- 
+
  @param archiveText - translation as it stood before the pipeline ran
- 
+
  @param shippedText - assembled document the repair lane produced
- 
+
  @returns Counts, never wording
- 
+
  @example
  ```ts
  const survival = measureContentSurvival({ archiveText, shippedText, },);
@@ -193,19 +193,19 @@ export function lostDistinctiveWords(
 
 /**
  Renders content survival as an assembly finding.
- 
+
  ALWAYS ONE FINDING, rather than one only when a threshold is crossed. The
  healthy and damaged runs measured so far sit at 8% and 45% loss on one entry
  and 23% and 29% on another, which is not enough separation to place a
  threshold honestly. Reporting the rate every time leaves that judgement to
  whoever reads the run, and costs one line.
- 
+
  @param archiveText - translation as it stood before the pipeline ran
- 
+
  @param shippedText - assembled document the repair lane produced
- 
+
  @returns One finding naming the counts
- 
+
  @example
  ```ts
  const findings = contentSurvivalFindings({ archiveText, shippedText, },);

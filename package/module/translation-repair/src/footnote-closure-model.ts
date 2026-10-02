@@ -9,7 +9,7 @@ import type {
 
 /**
  Why an archive must remain unchanged instead of merging or guessing note identities.
- 
+
  @example
  ```ts
  const open: OpenFootnoteClosure = { kind: 'open', detail: 'source correspondence remains incomplete' };
@@ -28,7 +28,7 @@ export type OpenFootnoteClosure = {
 
 /**
  Closed simultaneous rewrite and the separate authority for each kind of move.
- 
+
  @example
  ```ts
  if (closure.kind === 'closed') applyFootnoteRelabel({ text, map: closure.map });
@@ -59,7 +59,7 @@ export type RelabelClosure = OpenFootnoteClosure | {
 
 /**
  Checked normalized namespaces and independent label relations.
- 
+
  @example
  ```ts
  if (input.kind === 'ready') inspect(input.correspondences);

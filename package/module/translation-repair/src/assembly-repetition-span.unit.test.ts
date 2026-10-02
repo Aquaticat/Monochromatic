@@ -1,15 +1,15 @@
 /**
  Tests for growing repeated windows into the passages they belong to.
- 
+
  WHY THESE ARE HERE rather than only through `findIntroducedRepetitions`. The
  finder's tests say what a document reports, which is the contract that
  matters, but they cannot distinguish the two ways a merge can be wrong: too
  eager, joining passages that merely abut, and too shy, leaving one
  duplication as many findings. These reach the rule itself and pin both
  directions with word lists short enough to read.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -33,11 +33,11 @@ const LENGTH = 2;
 
 /**
  Splits a sentence into the word list the real caller passes.
- 
+
  @param text - words separated by single spaces
- 
+
  @returns Those words
- 
+
  @example
  ```ts
  const words = wordList({ text: 'tabby naps here', },);
@@ -49,15 +49,15 @@ function wordList({ text, }: { readonly text: string; },): readonly string[] {
 
 /**
  Grows every repeated window of a word list, admitting all of them.
- 
+
  ADMITS EVERY REPEATED WINDOW rather than applying the finder's content rules,
  because what is under test is the growing rather than the filtering. The
  finder decides admission; this decides what admitted windows become.
- 
+
  @param text - document as a spaced sentence
- 
+
  @returns Spans grown from it
- 
+
  @example
  ```ts
  const spans = spansOf({ text: 'tabby naps tabby naps', },);
@@ -98,17 +98,17 @@ function spansOf({ text, }: { readonly text: string; },) {
 
 /**
  Passages that would earn a finding, as against those kept only to suppress.
- 
+
  THE TWO ARE DIFFERENT LISTS and a test that ignores the difference measures
  the wrong thing. Every span is returned, because every span suppresses the
  shorter phrases inside it; only the ones no earlier span accounts for are
  findings. A passage said twice is reached again at its second occurrence and
  appears in the full list a second time, marked.
- 
+
  @param text - document as a spaced sentence
- 
+
  @returns Phrases that would be reported, in order
- 
+
  @example
  ```ts
  const phrases = reportedPhrases({ text: 'tabby naps tabby naps', },);

@@ -25,7 +25,7 @@ import type { TranslateCandidateValue, } from './translate-candidates.ts';
 
 /**
  Whether a slice has a translation to fall back on.
- 
+
  @example
  ```ts
  const incumbentKind: IncumbentKind = isInsertionChunk(slice.target,) ? 'absent' : 'present';
@@ -45,7 +45,7 @@ export type IncumbentKind =
 
 /**
  Why a slice with no incumbent could not be filled.
- 
+
  @example
  ```ts
  const reason: TranslateAbsenceReason = 'no-candidate';
@@ -55,7 +55,7 @@ export type TranslateAbsenceReason =
   /**
    Translators answered and none of their answers was usable, and there is no
    incumbent to stand in their place.
-   
+
    SAYS SOMETHING ABOUT THE PASSAGE. Models that were heard and proposed
    nothing a guard would accept are evidence that this slice is hard, so the
    gap it leaves is one a re-run would probably meet again.
@@ -63,13 +63,13 @@ export type TranslateAbsenceReason =
   | 'no-candidate'
   /**
    No translator was heard at all: every voice on the slate was lost.
-   
+
    SAYS SOMETHING ABOUT THE HOUR RATHER THAN THE PASSAGE, which is why it is
    a separate reason. `no-candidate` used to cover this case as well, so a
    transient failure and a genuinely hard slice left identical gaps in the
    published page and identical absences in the artifact, and nothing
    downstream could tell a reader or a resumed pass which it had met.
-   
+
    Measured on 2026-08-24: voice loss ran at 1 percent for two hours and 20
    percent for the next, across two passes on different builds and different
    entries, spread evenly over all six models. In that hour XIEPT2's translate
@@ -89,11 +89,11 @@ export type TranslateAbsenceReason =
   /**
    Judges declined the same slate TWICE, so the panel was asked again and
    still backed nothing.
-   
+
    Stronger than either single-round decline, and recorded instead of them once
    the retry is spent. Those two describe one round's mood, where this says the
    slate itself never won a voice from a panel that saw it twice.
-   
+
    A REASON RATHER THAN A LANDING: the slice goes where it would have gone
    anyway, keeping an incumbent where there is one and leaving the gap where
    there is not.
@@ -126,7 +126,7 @@ export type UnfilledReason =
   | TranslateAbsenceReason
   /**
    The page has no room to be missing this passage, so nothing was bought.
-   
+
    Decided before anything is spent, by
    `doc/decision/translation-repair-absence-verdict.md`: a pairing leaving an
    original unplaced is one signature and a page measurably shorter than its
@@ -138,14 +138,14 @@ export type UnfilledReason =
 
 /**
  Raised when selection returned text that says nothing for a source that does.
- 
+
  A DIFFERENT FAULT FROM ABSENCE, and separate because the two have opposite
  remedies. An unfilled passage is a slice the run could not translate, which
  costs that slice and leaves the archive's gap; a blank winner means selection
  chose a deletion, which is a defect in this code rather than an outcome, and
  a caller that treated it as an unfilled passage would record a slice the
  archive DOES translate as one it never did.
- 
+
  Reached by no ordinary path while the slate builder and the reply guards ask
  `rendersAsNothing` (`renders-as-nothing.ts`): a proposal or an incumbent that
  shows nothing never becomes a candidate. That was claimed unreachable while
@@ -153,7 +153,7 @@ export type UnfilledReason =
  passed them, the intake fold emptied it, and an empty candidate reached the
  judges (ledger B40). It exists so a route that changes this is a loud
  failure rather than a deletion.
- 
+
  @example
  ```ts
  throw new BlankSelectionError({ findings, },);
@@ -172,9 +172,9 @@ export class BlankSelectionError extends Error {
 
   /**
    Builds the failure with the evidence the round produced.
-   
+
    @param findings - stage findings up to this point
-   
+
    @example
    ```ts
    throw new BlankSelectionError({ findings, },);
@@ -192,12 +192,12 @@ export class BlankSelectionError extends Error {
 
 /**
  Raised internally when one absent-passage slate produced no translation.
- 
+
  CARRIES ITS FINDINGS, because the work that led here is real evidence: which
  translators were heard, what collapsed, what the judges counted. Thrown away
  with the exception, that evidence would leave a run reporting an unfilled
  passage with nothing to say about why.
- 
+
  @example
  ```ts
  throw new TranslateAbsenceError({ reason: 'no-candidate', findings, },);
@@ -228,13 +228,13 @@ export class TranslateAbsenceError extends Error {
 
   /**
    Builds the refusal with the evidence the stage had collected.
-   
+
    @param reason - why nothing could be written
-   
+
    @param findings - stage findings up to this point, kept for the record
-   
+
    @param finalists - candidates a tied round backed, when fewer than the slate
-   
+
    @example
    ```ts
    throw new TranslateAbsenceError({ reason: 'declined-indecision', findings, },);
@@ -294,16 +294,16 @@ export function requireTranslateAbsence({ error, }: { readonly error: unknown; }
 /**
  Reports whether a winning text says nothing about a source that says
  something.
- 
+
  Asked of the SOURCE rather than of the winner alone, because a rendering of
  nothing is nothing: it is only a defect where there was a passage to render.
- 
+
  @param winner - text selection chose
- 
+
  @param sourceText - original that text is meant to render
- 
+
  @returns Whether shipping it would delete a passage
- 
+
  @example
  ```ts
  const empty = blankAgainst({ winner: outcome.value.text, sourceText, },);
@@ -375,11 +375,11 @@ export function assertAbsentSliceFilled(
 
 /**
  Names an unfilled slice the way every other stage finding is named.
- 
+
  @param reason - why nothing could be written
- 
+
  @returns Finding in scorecard-stable wording
- 
+
  @example
  ```ts
  const finding = absenceFinding({ reason: 'no-candidate', },);

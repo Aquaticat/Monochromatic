@@ -56,9 +56,9 @@ import {
  Draws the stratified precision sample and writes the grading sheet outside
  the repo. Reads config and artifacts from the environment; `--final` writes
  the gate sheet, otherwise a labelled preliminary sheet.
- 
+
  @param line - the draw's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await drawGradingSample({ line, },);
@@ -73,7 +73,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
   /**
    Seed the DRAW uses, which is deliberately NOT the gate seed on a
    preliminary run.
-   
+
    A preliminary draw exists to check that the sheets render and that the pool
    reconciles, and it is run repeatedly while the pool grows. Drawing it with
    the gate seed would make each one a preview of the gate sample over the
@@ -88,7 +88,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
 
   /**
    Write mode for this draw's outputs.
-   
+
    Final outputs are created exclusively. `resolveSheetPath` already refuses a
    path that exists, but that check and this write are separate steps, so two
    draws racing each other can both see absence and both truncate. The whole
@@ -111,7 +111,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
 
   /**
    One directory listing, shared with the census.
-   
+
    Taken once and threaded through, because the accumulation writes into this
    directory continuously: a second listing inside the census would classify a
    different set of files from the one this draw goes on to read, so an
@@ -185,7 +185,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
     );
     /**
      Entries actually contributing a candidate.
-     
+
      An entry that settled `unchanged` accepts nothing, so it raises the entry
      count while adding no candidate and no spread. Reading readiness off the
      raw count would credit it for coverage it does not provide.
@@ -197,7 +197,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
     },);
     /**
      Per-entry candidate counts, heaviest first.
-     
+
      Printed because the band totals hide how lopsided a band is: the draw
      round-robins across entries, so a band's spread comes from how many
      entries contribute, not from how many candidates they brought. Seeing the
@@ -253,7 +253,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
 
   /**
    Pool-wide candidates carrying no recorded repair.
-   
+
    Reported because {@link assertRepairMeasurable} only inspects what was
    DRAWN, so pre-recording candidates left in the pool escape it whenever the
    seed happens not to select them. Seeing the pool figure says whether a
@@ -306,7 +306,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
 
   /**
    Companion manifest path.
-   
+
    Resolved with the sheets and BEFORE any write, never after. Every one of
    these throws when a final file already exists, which is the protection
    against overwriting graded work, and a path resolved after a write turns
@@ -331,7 +331,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
   // disagree about the very thing that exists to prove they agree.
   /**
    Which built pipeline settled this pool.
-   
+
    ONE DIGEST FOR THE WHOLE POOL, taken from the entries the draw actually
    kept. The pool refuses a mixed generation before a draw can reach it, so
    every kept entry carries the same digest and disagreement here would mean
@@ -354,7 +354,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
 
   /**
    Draw fingerprint printed into both sheet headers.
-   
+
    Non-null because `buildSampleManifest` always computes one; the field is
    optional only so manifests written before the binding can still be read.
    */

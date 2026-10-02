@@ -29,7 +29,7 @@ import type { CandidateMeasurements, } from './select-candidate.ts';
 
 /**
  Accepted issues an applied operation actually served.
- 
+
  Selection credit is limited to these. Checkers are asked about EVERY accepted
  issue, including ones no envelope could be cut for and ones whose envelope
  received no surviving operation, and a checker reading the patched text can
@@ -37,15 +37,15 @@ import type { CandidateMeasurements, } from './select-candidate.ts';
  unchanged on credit for issue B that nothing touched, which is not evidence
  the patch improved anything. Verdicts on unserved issues remain in the
  tallies as telemetry; they simply stop deciding the selection.
- 
+
  @param acceptedIssues - every accepted issue of the chunk
- 
+
  @param envelopes - envelopes operations were written against
- 
+
  @param applied - operations that survived the apply gate
- 
+
  @returns Accepted issues an applied operation served, in issue order
- 
+
  @example
  ```ts
  const creditable = selectCreditableIssues({ acceptedIssues, envelopes, applied, },);
@@ -79,7 +79,7 @@ export function selectCreditableIssues(
 
 /**
  Both answers one walk over the applied operations yields.
- 
+
  @example
  ```ts
  const reading: AppliedEnvelopeReading = { creditableIssues, authorship, };
@@ -99,20 +99,20 @@ export type AppliedEnvelopeReading = {
 
 /**
  What the applied envelopes bought.
- 
+
  ONE READING RATHER THAN TWO CALLS. Both answers come off the same walk over
  the operations that survived the gate, and taking them separately lets the
  issues a candidate is credited for drift from the authors it is discounted
  for.
- 
+
  @param acceptedIssues - accepted issues the checkers examined
- 
+
  @param envelopes - editable envelopes offered to the editors
- 
+
  @param editor - editor stage result, carrying its rounds and its gate
- 
+
  @returns Creditable issues beside authorship of the patched text
- 
+
  @example
  ```ts
  const reading = readAppliedEnvelopes({ acceptedIssues, envelopes, editor, },);
@@ -145,23 +145,23 @@ export function readAppliedEnvelopes(
 
 /**
  Measures the patched candidate against the unchanged translation.
- 
+
  @param acceptedIssues - accepted issues the checkers examined
- 
+
  @param tallies - checker verdicts keyed by issue id
- 
+
  @param resolvedTotal - count of issues the checkers confirmed fixed
- 
+
  @param envelopes - envelopes operations were written against
- 
+
  @param applied - operations that survived the apply gate
- 
+
  @param patchedDocument - parsed patched candidate
- 
+
  @param targetDocument - parsed unchanged translation
- 
+
  @returns Measurements selection ranks by
- 
+
  @example
  ```ts
  const measurements = measurePatchedCandidate({ ... },);
@@ -194,12 +194,12 @@ export function measurePatchedCandidate(
 
   /**
    Whether the patch left footnote structure no worse than it found it.
-   
+
    A broken footnote leaves the grammar perfectly valid, so the downgrade
    signal cannot see it, and four settled repairs shipped footnote damage
    because nothing else asked. Comparison rather than an absolute count: an
    input translation is free to arrive with dangling references, and one does.
-   
+
    Chunk-scoped like every other measurement here, so it sees damage a patch
    does WITHIN one chunk. A definition deleted in one chunk whose reference
    lives in another still passes, since neither chunk's own count rises.
@@ -251,18 +251,18 @@ export function measurePatchedCandidate(
 /**
  Accepted issues the checkers confirmed fixed ON THE CANDIDATE, whether or not
  that candidate won.
- 
+
  Kept apart from what a slice REPORTS as resolved, which is gated on the
  candidate shipping. A patched candidate that loses selection still produced
  checker verdicts, and discarding them would leave every rejected repair
  looking like one nobody examined.
- 
+
  @param acceptedIssues - issues the panel accepted for this slice
- 
+
  @param tallies - checker verdicts keyed by issue id
- 
+
  @returns Ids the checkers confirmed, in the order the issues appear
- 
+
  @example
  ```ts
  const confirmed = candidateConfirmedIssueIds({ acceptedIssues, tallies, },);

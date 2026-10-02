@@ -1,20 +1,20 @@
 /**
  Tests for the per-entry ceiling an invocation runs under.
- 
+
  The ceiling is what stops one entry running away with a whole pass, so the
  case that matters most is the one where the override is WRONG. Falling back
  to the default there would leave an operator believing a run is bounded the
  way they asked for when it is bounded some other way, and nothing downstream
  could tell them otherwise: an artifact records no ceiling.
- 
+
  The empty-string case is the other one worth having, and this package already
  carries the scar. `resolveRunsDir` had the same shape, and an
  exported-but-empty variable is an ordinary shell accident rather than an
  intention.
- 
+
  The override text is injected rather than the environment mutated, so no case
  here can leak into another.
- 
+
  @module
  */
 

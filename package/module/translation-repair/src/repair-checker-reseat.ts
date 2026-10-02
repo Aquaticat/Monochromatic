@@ -26,24 +26,24 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Refuses a checker bench the contract would refuse against the chunk's own
  writers: the editors and refiners the chunk was seated with wrote the text
  the bench checks, whichever bench is asked.
- 
+
  LEDGER B29. The chunk check left the refiners out, while its TSDoc said it
  refused a checker who refines and every other caller of the independence
  check passes them; and the bench read at the stage was read for quorum
  alone, so a re-seat naming this chunk's editor would have had it grade its
  own rewrite. Production seats derived benches against the static editors
  and refiners (`corpus-run/run-seats.ts`), so neither reached a run.
- 
+
  @param models - roster the chunk was seated with, whose writers the bench
  must not hold
- 
+
  @param checkerModelIds - bench to be asked
- 
+
  @throws {@link CheckerIndependenceError} when a checker also edits or
  refines, unless the chunk permits self-certification
- 
+
  @throws {@link CheckerQuorumError} when the bench is below the floor
- 
+
  @example
  ```ts
  assertBenchAgainstWriters({ models, checkerModelIds: fresh, },);
@@ -71,14 +71,14 @@ function assertBenchAgainstWriters(
  Refuses a chunk roster whose checker bench the contract would refuse: a
  checker who also edits or refines, or fewer checkers than a split verdict
  can be read from. Runs once per chunk before any stage buys anything.
- 
+
  @param models - roster the chunk is seated with
- 
+
  @throws {@link CheckerIndependenceError} when a checker also edits or
  refines
- 
+
  @throws {@link CheckerQuorumError} when the bench is below the floor
- 
+
  @example
  ```ts
  assertCheckerBench({ models, },);
@@ -95,9 +95,9 @@ export function assertCheckerBench(
 
 /**
  Seating for a driver given no hook: the roster it was handed stands.
- 
+
  @returns Empty seating
- 
+
  @example
  ```ts
  const seating = await standingSeating();
@@ -109,13 +109,13 @@ export function standingSeating(): Promise<RepairSliceSeating> {
 
 /**
  Whether two benches name the same seats in the same order.
- 
+
  @param left - one bench
- 
+
  @param right - other bench
- 
+
  @returns True when neither seat nor order differs
- 
+
  @example
  ```ts
  const unchanged = sameBench({ left: seated, right: fresh, },);
@@ -143,22 +143,22 @@ function sameBench(
 /**
  Checkers the stage runs on: the bench the seating read now names where a
  hook is given and that bench differs, else the chunk's own.
- 
+
  @param models - roster the chunk was seated with
- 
+
  @param reseat - reads the seating as of now; `standingSeating` where the
  roster the driver was given stands for the whole run
- 
+
  @param l - repair-lane logger
- 
+
  @returns Checker ids for this chunk's checker stage and its probe
- 
+
  @throws {@link CheckerQuorumError} when the bench read now is below the
  checker floor, since a stage the contract refuses must not start
- 
+
  @throws {@link CheckerIndependenceError} when the bench read now holds a
  model that edited or refines this chunk, for the same reason
- 
+
  @example
  ```ts
  const stageCheckers = await checkerBenchAtStage({ models, reseat, l, },);

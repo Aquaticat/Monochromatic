@@ -1,7 +1,7 @@
 /**
  Tests for the cross-run cache key one picture's paired reading is stored
  under.
- 
+
  WHAT THIS PINS is the one claim the whole module exists to make true: a key
  is built from what a reading was ASKED, never from what came back. A
  reading is not deterministic, so a key built from its wording would miss on
@@ -9,9 +9,9 @@
  this function twice with the same picture and the same roster stands in
  for two runs that asked the same question and would have gotten different
  words back, and both runs still have to land on the same key.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -41,11 +41,11 @@ const HEX_ALPHABET = '0123456789abcdef';
 /**
  Bytes standing in for one picture, distinguished by seed so two calls can
  stand for two different pictures.
- 
+
  @param seed - byte every position of returned buffer carries
- 
+
  @returns Small buffer filled with that byte
- 
+
  @example
  ```ts
  const bytes = bytesOf({ seed: 7, },);
@@ -59,11 +59,11 @@ function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
  Casts a cat-themed stand-in identifier to roster's closed union type,
  since this module only folds a model id into JSON and never validates it
  against real roster.
- 
+
  @param id - cat-themed stand-in for production model id
- 
+
  @returns Same string, typed as roster's closed union
- 
+
  @example
  ```ts
  const modelId = catModelId({ id: 'hf:cat/Whiskers', },);
@@ -75,16 +75,16 @@ function catModelId({ id, }: { readonly id: string; },): RosterModelId {
 
 /**
  Whether every character of a string is a lowercase hex digit.
- 
+
  SCANS BY INDEX RATHER THAN SPREADING, since spreading a string produces
  Unicode code points that break multi-unit characters apart; a digest is
  always single-byte-per-character, but `charAt` sidesteps the question
  rather than resting on that assumption.
- 
+
  @param value - string to check
- 
+
  @returns True when every character sits in `HEX_ALPHABET`
- 
+
  @example
  ```ts
  const isHex = isHexDigest({ value: 'a3', },);

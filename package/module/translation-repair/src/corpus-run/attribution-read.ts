@@ -49,17 +49,17 @@ import {
 
 /**
  Reads the claim ids one adjudicated issue represents.
- 
+
  @param issue - adjudicated issue block
- 
+
  @param path - dotted path of `issue` itself, which each refusal of a field
  inside it extends
- 
+
  @returns Deterministic claim ids this issue represents
- 
+
  @throws {@link ArtifactParseError} when `claims` is absent or not an array, a
  member is not a record, or its `claimId` is absent or not a string
- 
+
  @example
  ```ts
  const claimIds = readClaimIds({ issue, path: `${entryId}.issues[0].issue`, },);
@@ -114,39 +114,39 @@ function readClaimIds(
 
 /**
  Record carrying this artifact's own attribution and issue records.
- 
+
  TWO PATHS, AND EXACTLY ONE PER ARTIFACT, CHOSEN BY THE ARTIFACT'S OWN
  GENERATION rather than guessed from what keys happen to be there. Version 1
  wrote the critic record and `issues` at the artifact root and carried no
  `lanes` key at all; version 2 onward writes them inside the repair lane at
  `lanes.repair.result`, root-level decoys included, and a reader that still
  asked the root would silently agree with one.
- 
+
  Measured, before this held, over the settled artifacts: 0 of 47 carried
  `chunkCritics` at the root and 47 of 47 carried it in the repair lane, so the
  whole population was filed as pre-feature and the 2479 attributions it held
  reached no consumer. The issue read failed the same way, 0 records against
  1546.
- 
+
  The version 1 path stays rather than being replaced, because artifacts
  outlive the pipelines that wrote them and a settled file must keep answering
  for itself. A `lanes` key on a version 1 or unversioned artifact is refused
  rather than read: that generation never wrote one, so its presence is
  corruption rather than a two-lane artifact caught early.
- 
+
  @param parsed - parsed artifact
- 
+
  @param entryId - artifact identity, which starts the path of each refusal here
- 
+
  @param reading - this artifact's own generation, already read by the caller
- 
+
  @returns Root record on a generation that keeps its records there, else the
  repair lane's own result
- 
+
  @throws {@link ArtifactParseError} when a version 1 or unversioned artifact
  carries a `lanes` key, or when a version 2 or later artifact's `lanes`,
  `lanes.repair` or `lanes.repair.result` is absent or not a record
- 
+
  @example
  ```ts
  const records = recordsHolderOf({ parsed, entryId, reading, },);
@@ -218,17 +218,17 @@ function recordsHolderOf(
 
 /**
  Reads one artifact's accepted-issue views.
- 
+
  @param raw - record holding this artifact's own `issues`
- 
+
  @param entryId - artifact identity, which starts the path of each refusal here
- 
+
  @returns Issue views this artifact's records hold
- 
+
  @throws {@link ArtifactParseError} when `issues` is absent or not an array, a
  record is not a record, its `issue` is absent or not a record, or its
  `status` is absent or not a string
- 
+
  @example
  ```ts
  const issues = readIssueViews({ raw, entryId, },);
@@ -419,7 +419,7 @@ export function attributionEntryOf(
 
 /**
  One artifact that could not be read at all.
- 
+
  @example
  ```ts
  const failure: MalformedArtifact = { name: 'Kitten.json', reason: 'Unexpected end of JSON input', };
@@ -439,7 +439,7 @@ export type MalformedArtifact = {
 
 /**
  Everything a run directory yielded, including what it could not.
- 
+
  @example
  ```ts
  const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
@@ -460,23 +460,23 @@ export type AttributionGather = {
 
 /**
  Reads every settled artifact into the shape the report needs.
- 
+
  ISOLATED PER ARTIFACT, which is the difference between a loud failure and a
  useless one. The decoding (`attribution-decode.ts`) throws by design, and a bare
  `Promise.all` over the directory would let ONE bad file reject the whole
  gather: a single truncated artifact would mean no calibration at all for
  every other entry in the run. That is the same disproportion the writer
  avoids by not throwing on a telemetry invariant.
- 
+
  Half-written artifacts are a real case rather than a hypothetical one. A pass
  killed at its hard cap can leave one, which is why `openSliceCache` already
  treats a half-written slice as absent, and `JSON.parse` on it raises a
  `SyntaxError` that has nothing to do with attribution.
- 
+
  @param artifactsDir - directory the pass writes entries into
- 
+
  @returns Entries that parsed, and the artifacts that did not
- 
+
  @example
  ```ts
  const { entries, malformed, } = await gatherAttributionEntries({ artifactsDir, },);
@@ -491,7 +491,7 @@ export async function gatherAttributionEntries(
 ): Promise<AttributionGather> {
   /**
    One directory listing, shared with the census.
-   
+
    Taken once and threaded through, because the accumulation writes into this
    directory continuously: a second listing inside the census would classify a
    different set of files from the one this reader goes on to read.

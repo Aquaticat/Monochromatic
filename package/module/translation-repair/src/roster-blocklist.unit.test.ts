@@ -3,7 +3,7 @@
  compiled catalogs and labels family arrivals, while leaving the eligible
  neighbours (dated DeepSeek aliases, the Qwen3.8 line short of Max, the
  GLM-5.3 pair) untouched.
- 
+
  @module
  */
 

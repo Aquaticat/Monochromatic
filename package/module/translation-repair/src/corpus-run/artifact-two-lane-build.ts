@@ -44,17 +44,17 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 
 /**
  Records which decider chose the aligned sections.
- 
+
  DERIVED FROM PRESENCE rather than carried as a third state on the
  preparation, because on the preparation absence already means exactly one
  thing: `prepareDocumentPair` ran its deterministic aligner. The artifact
  cannot afford the same spelling, since there absence also means "written
  before the field", so the builder says it out loud.
- 
+
  @param prepared - preparation the artifact records
- 
+
  @returns Deterministic when no pairing was supplied, else the pairs consumed
- 
+
  @example
  ```ts
  const alignment = sectionAlignmentOf({ prepared, },);
@@ -79,40 +79,40 @@ function sectionAlignmentOf(
 
 /**
  Assembles one settled entry's version 2 artifact.
- 
+
  @param entryId - corpus entry this covers
- 
+
  @param tip - repository head when the pass started, as provenance
- 
+
  @param pipelineDigest - built output that ran, as identity
- 
+
  @param corpusSha - corpus commit the two texts were read at
- 
+
  @param callConfig - model call configuration this run used
- 
+
  @param durationMs - time the entry took on `monotonicMs`, both lanes included
- 
+
  @param prepared - preparation both lanes ran over, which supplies the
  identity and every measurement rather than being measured by the caller
- 
+
  @param lanes - what both lanes returned, with the ledgers derived from them
- 
+
  @param laneSelection - which lane ships, or that nobody has asked
- 
+
  @param consolidation - what the third rendering settled, or that it never ran
- 
+
  @param pageAssembly - what the page-level assembly guard did to the composed
  page
- 
+
  @returns Artifact ready to serialize
- 
+
  @throws {@link LaneComparisonError} when the two ledgers cannot be compared,
  which is a defect in the run rather than in this artifact: an entry whose
  lanes disagree about their own preparation has nothing worth writing
- 
+
  @throws {@link ArtifactPreparationMismatchError} when either ledger, or the
  run's alignment findings, describe a preparation other than the one passed
- 
+
  @example
  ```ts
  const artifact = buildSettledTwoLaneArtifact({ entryId, tip, pipelineDigest, ... },);
@@ -216,12 +216,12 @@ export function buildSettledTwoLaneArtifact(
 
   /**
    The two lanes compared, derived here rather than accepted as a parameter.
-   
+
    A comparison supplied beside the ledgers it describes could disagree with
    them, and a reader has no way to tell which of the two to believe. Derived,
    there is only one answer, and a reader that recomputes it is checking this
    code rather than adjudicating between two stored claims.
-   
+
    The ledgers go in AS THEY CAME, names included, so the comparison's own
    refusal is doing work rather than reading back what this function wrote.
    */
@@ -232,7 +232,7 @@ export function buildSettledTwoLaneArtifact(
 
   /**
    Both ledgers as version 2 rows, beside the comparison they derive.
-   
+
    SHARED WITH THE CONTEST DRIVER, which needs the same comparison to know
    which slices are worth asking a roster about. Two derivations here would
    let the writer and the driver disagree about which slices those are.

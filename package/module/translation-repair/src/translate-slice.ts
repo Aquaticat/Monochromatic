@@ -48,49 +48,49 @@ import {
 
 /**
  Translates one slice and settles what the driver accepts for it.
- 
+
  @param client - injected model client
- 
+
  @param slice - prepared slice pair
- 
+
  @param prepared - document the slice came from, for declared names and
  governance
- 
+
  @param models - translator and judge rosters
- 
+
  @param neighbouringSourceText - original of the sections either side, shown to
  the judges as context they are not asked to render. Absent by default, so the
  lane behaves exactly as it did; the window trial supplies it on the slices
  the displacement screen flags, to read whether the replacement rate falls when a judge can see
  that the archive put this slice's content next door
- 
+
  @param neighbouringIncumbentText - archive English of the sections either
  side, shown so a passage missing here can be recognised next door rather than
  read as one the archive never had
- 
+
  @param pictureContext - what the pictures this slice and its neighbours show
  were read as, shown to translators and judges as source evidence they could
  otherwise not see
- 
+
  @param pictureFindings - one line per picture no reading is available for,
  carried into the record so a run says which pictures went unread rather than
  leaving their absence indistinguishable from a slice showing none
- 
+
  @param archiveDispute - dispute over this slice's archive rendering (class
  one hundred seven), whose repair text is judged as the incumbent in the
  archive's place and ships where the judges keep it
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - driver logger
- 
+
  @returns Settled record, whether the stage's text was accepted or refused
- 
+
  @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
  when absent-passage correction repeats exact task or providers remain unavailable
- 
+
  @example
  ```ts
  const record = await settleTranslateSlice({ client, slice, prepared, models, signal, perCallTimeoutMs, l, },);
@@ -298,11 +298,11 @@ export async function settleTranslateSlice(
 
   /**
    Whether the guard stands in the way of that.
-   
+
    Only a REPLACEMENT can be refused. A slice the judges left alone needs no
    permission to stay as it is, and refusing it would report a protection that
    protected nothing.
-   
+
    AND ONLY WHERE THERE IS SOMETHING TO PROTECT. The guard exists to stop a
    short source replacing a long translation the source cannot account for; at
    an anchor there is no translation to lose, so a refusal there would put the
@@ -472,7 +472,7 @@ export async function settleTranslateSlice(
 
   /**
    What this slice leaves the document with.
-   
+
    THE ARCHIVE'S OWN BYTES WHEN NOTHING CHANGED, rather than a reconstruction
    of them. Restoring a protected run onto an unchanged judged part rebuilds
    the same passage, and a rebuild that differs by so much as a trailing

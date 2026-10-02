@@ -1,6 +1,6 @@
 /**
  Tests for judging a slate that already exists.
- 
+
  WHAT THIS FILE IS FOR, and it is one claim: the same slate can be judged more
  than once, and the second judging sees the same candidates as the first. That
  is the whole reason the stage was split. While producing and judging were one
@@ -8,12 +8,12 @@
  answers differed in the candidates as well as in whatever the caller meant to
  vary. The window trial varies the judges' evidence; a position-bias probe would vary
  ballot position. Neither means anything if the texts move underneath.
- 
+
  `translate-stage.unit.test.ts` still covers what the composed stage decides,
  unchanged, and is the evidence that splitting changed no behaviour.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -81,7 +81,7 @@ const JUDGES: readonly RosterModelId[] = [
 
 /**
  What each translator renders, keyed by model.
- 
+
  DIFFERENT PER MODEL AND PER CALL COUNT, so a second production would be
  visibly different from the first. That is what lets the test tell a reused
  slate from a rebought one rather than assuming it.
@@ -96,9 +96,9 @@ const RENDERINGS: readonly string[] = [
 /**
  Client whose translators answer differently on every call, and whose judges
  abstain so the incumbent stands.
- 
+
  @returns Client plus the judge sheets it was sent
- 
+
  @example
  ```ts
  const rig = driftingClient();
@@ -110,7 +110,7 @@ function driftingClient(): {
 } {
   /**
    Translator calls served so far, which drives the drift.
-   
+
    A `const` holding a mutable field rather than a root `let`, which
    `no-function-root-let` forbids.
    */
@@ -199,15 +199,15 @@ function driftingClient(): {
 
 /**
  Buys one slate and reports the sheet its judges were sent.
- 
+
  READS THE REQUEST, NOT THE RESULT. What a judge decided is a fact about the
  fixture; what a judge was SHOWN is the fact these cases are about, and the two
  are only connected while the wiring is right, which is the thing under test.
- 
+
  @param lineStructured - whether this round is governed by the verse rule
- 
+
  @returns Sheet the judges received, joined as they read it
- 
+
  @example
  ```ts
  const sheet = await judgeSheetFor({ lineStructured: true, },);
@@ -267,7 +267,7 @@ async function judgeSheetFor(
 
 /**
  Client that fails if anything asks it a question.
- 
+
  THE POINT OF EVERY CASE CALLING `refusalOverAnchor` IS THAT NO ROUND IS
  BOUGHT. An empty slate
  has nothing to judge, so a judge that called a model would be spending on a
@@ -286,12 +286,12 @@ const NOBODY_TO_ASK: SyntheticClient = {
 /**
  Builds an empty slate that reports how many translators were heard producing
  it.
- 
+
  @param heardTranslators - translators that answered usably, zero when every
  voice on the slate was lost
- 
+
  @returns Slate carrying no candidates
- 
+
  @example
  ```ts
  const produced = emptySlate({ heardTranslators: 0, },);
@@ -310,11 +310,11 @@ function emptySlate(
 /**
  Judges an empty slate over a passage the archive has no English for, and
  returns whatever it refused with.
- 
+
  @param heardTranslators - translators that answered usably
- 
+
  @returns Refusal raised, so a case can name its class and reason
- 
+
  @example
  ```ts
  const refusal = await refusalOverAnchor({ heardTranslators: 0, },);

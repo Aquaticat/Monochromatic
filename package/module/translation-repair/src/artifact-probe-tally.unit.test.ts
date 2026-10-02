@@ -1,23 +1,23 @@
 /**
  Tests for reading one region tally out of a probe artifact.
- 
+
  THE COUNTS ARE DERIVED AND THE PARSER SAYS SO. The screen computes every
  declared count from the claim list, so the two are one fact written twice,
  and a tally where they disagree is a malformed artifact rather than a
  different answer. The reader refuses it, because downstream the CLAIMS report
  sums the counts while the majority rule reads the claims, and a disagreement
  would make one region report a corroboration and flag nothing.
- 
+
  ATTRIBUTION ONLY. A claim carries evidence and reasons quoted from corpus
  text; the tally this reader returns carries who said it and how the screen
  judged it, and nothing else, which the control case pins by handing it a
  claim with those fields and reading back the keys.
- 
+
  `readArtifactProbe` was the only caller and reached this through whole probe
  files, so no case named these refusals before.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -67,11 +67,11 @@ const MATCHED_TALLY = {
 
 /**
  Reads a tally expected to refuse, returning what it said.
- 
+
  @param value - tally as an artifact would carry it
- 
+
  @returns Refusal text, or an empty string where it read
- 
+
  @example
  ```ts
  const said = refusalOf({ value: 7, },);

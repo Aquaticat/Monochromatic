@@ -52,7 +52,7 @@ import {
 
 /**
  Which side of the ballot holds the clean text.
- 
+
  `preserve` puts it on the incumbent, so keeping the incumbent is correct;
  `replace` puts it on the fresh proposal, so replacing is correct.
  */
@@ -60,7 +60,7 @@ export type FidelityDirection = 'preserve' | 'replace';
 
 /**
  One constructed comparison with a known right answer.
- 
+
  @example
  ```ts
  const trial: FidelityTrial = { trialId, direction: 'preserve', damageKind: 'deletion', sourceText, contextText: '', cleanText, damagedText, cleanFirst: true, };
@@ -91,7 +91,7 @@ export type FidelityTrial = {
 
   /**
    Original of the SURROUNDING sections, empty by default.
-   
+
    WHY THIS EXISTS. 6.4 percent of corpus slices were measured to sit in a
    pair where the translator carried a passage across a section boundary. A
    judge shown one slice pair sees the archive inventing content there and
@@ -124,7 +124,7 @@ export type FidelityTrial = {
 
 /**
  How one judge voted, in terms of the answer rather than the ballot position.
- 
+
  @example
  ```ts
  const ballot: FidelityBallotRead = { modelId, picked: 'clean', reason: 'covers the last sentence', weight: 1, };
@@ -138,7 +138,7 @@ export type FidelityBallotRead = {
 
   /**
    Which text it chose, or that it named no candidate.
-   
+
    A JUDGE THAT DECLINES HAS NOT PICKED THE DAMAGED TEXT, which reading a
    ballot as "clean or otherwise" would record. `CANDIDATE_NONE` is zero and
    the ballot index is one-based, so the two are only distinguishable by
@@ -160,7 +160,7 @@ export type FidelityBallotRead = {
 
 /**
  What one trial produced.
- 
+
  @example
  ```ts
  const outcome: FidelityOutcome = { trialId, direction: 'preserve', verdict: 'clean', correct: true, ... };
@@ -232,7 +232,7 @@ const INCUMBENT_PRODUCER: CandidateProducer = {
 
 /**
  Producer label for the proposed side.
- 
+
  A COMPOSITE WITH NO CONTRIBUTORS, so no judge holds a stake in it and no
  ballot is discounted as a self-vote. Naming a roster model instead would halve
  one judge's weight on one side of the comparison and quietly tilt the very
@@ -246,11 +246,11 @@ const FIXTURE_PRODUCER: CandidateProducer = {
 
 /**
  Builds the ballot for one trial, clean text in the position the trial names.
- 
+
  @param trial - constructed comparison
- 
+
  @returns Candidates in ballot order
- 
+
  @example
  ```ts
  const candidates = buildSlate({ trial, },);
@@ -305,21 +305,21 @@ function buildSlate(
 
 /**
  Runs one constructed comparison past the production judges.
- 
+
  @param client - injected model client
- 
+
  @param trial - comparison with a known right answer
- 
+
  @param judgeModelIds - roster asked
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - logger of the calling harness
- 
+
  @returns Which text won, whether that is right, and every ballot
- 
+
  @example
  ```ts
  const outcome = await runFidelityTrial({ client, trial, judgeModelIds, signal, perCallTimeoutMs, l, },);

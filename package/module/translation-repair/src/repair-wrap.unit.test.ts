@@ -1,22 +1,22 @@
 /**
  Tests for wrapping what the repair lane produced.
- 
+
  WHAT THESE PIN is which outcomes are touched. `assembleRepair` builds the
  replacements AND the lane wordings out of one outcome list, and the delivery
  invariant splices the ledger's rows over the archive and demands the result
  equal the document the lane returned, byte for byte. Wrapping one consumer
  and not the other breaks that, so the list is wrapped once before either
  reads it.
- 
+
  The second thing they pin is the demotion. A passage differing from the
  archive only in its wrapping becomes the archive once wrapped, and an outcome
  still claiming a change there fails `assertReplacementsChange` and the
  coherence rule that a replacement's wording may not be the archive's own. No
  slice in the pool settled 2026-08-18 does this, so the case is constructed
  here rather than observed.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -37,19 +37,19 @@ const l = tagged({ tag: 'repair-wrap-test', },);
 
 /**
  Builds one settled repair outcome.
- 
+
  MINIMAL BY DESIGN: the wrap reads three fields and carries the rest through
  untouched, so a fixture carrying the whole contract would test the spread
  rather than the decision.
- 
+
  @param sliceIndex - slice index
- 
+
  @param repairedText - wording this lane produced
- 
+
  @param changed - whether it claims to differ from the archive
- 
+
  @returns Outcome shaped as the lane settles one
- 
+
  @example
  ```ts
  const outcome = outcomeOf({ sliceIndex: 0, repairedText: 'It naps.', changed: true, },);

@@ -64,16 +64,16 @@ import { parseComparisonRow, } from './artifact-two-lane-read-rows.ts';
 
 /**
  Reads the branded identity a preparation gives itself.
- 
+
  @param value - recorded identity
- 
+
  @param path - dotted path for error message
- 
+
  @returns Identity, narrowed by the same check a fresh one passes
- 
+
  @throws {@link ArtifactParseError} when the value is not a string, or not
  shaped like an identity
- 
+
  @example
  ```ts
  const identity = requireIdentity({ value: preparation.identity, path, },);
@@ -111,16 +111,16 @@ function requireIdentity(
 
 /**
  Reads the slicing both lanes ran over.
- 
+
  @param value - preparation JSON
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Preparation as a reader gets it
- 
+
  @throws {@link ArtifactParseError} when it carries a key this version does
  not name, or any field is the wrong shape
- 
+
  @example
  ```ts
  const preparation = parsePreparation({ value: artifact.preparation, path, },);
@@ -265,27 +265,27 @@ function parsePreparation(
 
 /**
  Reads one two-lane artifact, of any generation that wrote the shape.
- 
+
  NAMED FOR THE FAMILY, not for one integer. Generations 2, 3 and 4 record the
  same two lanes, the same comparison and the same lane selection, and differ
  only in how the slice-index and change-set keys are spelled;
  `artifact-key-vocabulary.ts` holds that difference and the recorded version
  picks the spelling, so no artifact is ever tried under another's names.
- 
+
  IT REFUSES EVERY OTHER GENERATION INCLUDING VERSION 1: generic dispatch has
  already happened by the time this is called, so a version 1 artifact arriving
  here is a caller reading the wrong file rather than an old artifact needing
  tolerance.
- 
+
  @param value - artifact JSON, freshly parsed and still untyped
- 
+
  @returns Everything the artifact records, with its comparison recomputed
- 
+
  @throws {@link ArtifactParseError} when the artifact belongs to no
  generation of this shape, when any field is missing or the wrong shape, when
  it carries a key this shape does not name, or when any two of its parts
  contradict each other
- 
+
  @example
  ```ts
  const artifact = parseSettledTwoLaneArtifact({ value: parseRunJson({ text, from, },), },);

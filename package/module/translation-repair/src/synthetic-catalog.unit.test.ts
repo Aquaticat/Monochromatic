@@ -1,6 +1,6 @@
 /**
  Tests for the verified model catalog.
- 
+
  @module
  */
 

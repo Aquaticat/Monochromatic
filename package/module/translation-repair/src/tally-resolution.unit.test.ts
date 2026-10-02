@@ -1,7 +1,7 @@
 /**
  Tests for resolution-check wire resolution and majority tallying.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

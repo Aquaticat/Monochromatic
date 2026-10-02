@@ -31,11 +31,11 @@ import type {
 
 /**
  Parses one span, requiring a known side and a quoted-text string.
- 
+
  @param value - the span JSON
- 
+
  @param path - dotted path for the error message
- 
+
  @returns The gradable span
  */
 function parseSpan(
@@ -76,11 +76,11 @@ function parseSpan(
 
 /**
  Parses one member claim wrapper into its gradable claim.
- 
+
  @param value - the member (aggregated-claim) JSON
- 
+
  @param path - dotted path for the error message
- 
+
  @returns The wrapped gradable claim
  */
 function parseMember(
@@ -142,11 +142,11 @@ function parseMember(
 
 /**
  Parses one accepted issue into its gradable shape.
- 
+
  @param issue - the issue record (already confirmed accepted)
- 
+
  @param path - dotted path for the error message
- 
+
  @returns The gradable issue
  */
 function parseAcceptedIssue(
@@ -185,12 +185,12 @@ function parseAcceptedIssue(
 
 /**
  One accepted issue with whatever the run recorded about repairing it.
- 
+
  Kept a wrapper rather than folded into {@link GradableIssue} so the issue
  shape stays the thing a pipeline `AdjudicatedIssue` satisfies structurally,
  and so repair provenance stays visibly a property of the RECORD the driver
  built rather than of the panel's decision.
- 
+
  @example
  ```ts
  const accepted: ParsedAcceptedIssue = { issue, repair: { kind: 'unrecorded', }, };
@@ -205,7 +205,7 @@ export type ParsedAcceptedIssue = {
   /**
    What became of its repair, carried as the READING rather than as an
    optional field.
-   
+
    The reading already distinguishes an artifact written before repair
    recording existed from one recording a repair, and `parseRecordRepair`
    names that distinction for the stated reason that an absent field is the
@@ -220,7 +220,7 @@ export type ParsedAcceptedIssue = {
 
 /**
  One artifact's settled identity and its accepted issues.
- 
+
  @example
  ```ts
  const parsed: ParsedArtifact = {
@@ -249,7 +249,7 @@ export type ParsedArtifact = {
 
   /**
    Which slices the settled document changed, with its generation named.
-   
+
    A DOCUMENT fact rather than an issue one, which is why it rides here beside
    the issues rather than inside them: a slice can be withdrawn while carrying
    no accepted issue of its own, and a run that recorded nothing is not a run
@@ -263,16 +263,16 @@ export type ParsedArtifact = {
  malformed accepted issue throws {@link ArtifactParseError} rather than being
  skipped, so the accepted population is never silently short. Non-accepted
  issues are excluded because they are not part of the precision denominator.
- 
+
  @param value - the artifact JSON, freshly parsed and still untyped
- 
+
  @returns Entry id, status, accepted issues, and which slices the document
  changed
- 
+
  @throws {@link ArtifactParseError} when the artifact or an accepted issue is
  structurally malformed, when it carries one index set without the other, or
  when the two sets break a rule the writing lanes hold them to
- 
+
  @example
  ```ts
  const parsed = parseSettledArtifact({

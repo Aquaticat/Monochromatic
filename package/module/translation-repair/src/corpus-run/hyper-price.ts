@@ -24,7 +24,7 @@
 
 /**
  Date every retained rate was verified against the public model-list API.
- 
+
  SHIPPED WITH THE RATES rather than left to a comment, because every report
  that prints a credit figure has to be able to say how old it is.
  */
@@ -32,7 +32,7 @@ export const HYPER_PRICE_READ_ON = '2026-09-11';
 
 /**
  What one model costs, in credits per million tokens.
- 
+
  @example
  ```ts
  const rates: CreditRates = { input: 40, output: 120, cacheCreate: 0, cacheHit: 5, };
@@ -69,7 +69,7 @@ const RATE_UNIT_TOKENS = 1_000_000;
 
 /**
  Every model the provider listed, by the id it serves the model under.
- 
+
  THE WHOLE PAGE RATHER THAN THE EIGHT THIS PIPELINE SEATS, so that changing
  the roster does not silently drop a seat into the unpriced bucket, and so a
  reader comparing seats can see what an unseated model would have cost.
@@ -284,7 +284,7 @@ const HYPER_CREDIT_RATES = {
 
 /**
  Rates keyed for lookup by a model id that came off a log line.
- 
+
  A `Map` RATHER THAN `HYPER_CREDIT_RATES` ITSELF, for the reason `spend-read.ts` gives
  about its own field table: the key arrives from a run log, and an object
  lookup would answer `__proto__` and `constructor` with something that is not
@@ -297,16 +297,16 @@ const RATES: ReadonlyMap<string, CreditRates> = new Map(Object.entries(HYPER_CRE
 
 /**
  What this model costs, or that the table has never heard of it.
- 
+
  NAMED ABSENCE RATHER THAN A ZERO RATE. A model the provider added after this
  table was read is not free, and a total that quietly billed it at nothing
  would read as a cheaper run rather than an incomplete one.
- 
+
  @param model - id as the provider serves it, exactly as the `SPEND` line
  recorded it
- 
+
  @returns Rates for this model, or that it is not in the table
- 
+
  @example
  ```ts
  const rates = ratesFor({ model: 'qwen3.8-max', },);
@@ -328,20 +328,20 @@ export function ratesFor(
 
 /**
  Prices one seat's tokens, keeping the two halves apart.
- 
+
  BOTH HALVES RETURNED, not just their sum, because the output half is where
  this roster's cost actually lives and a single total hides which seat's
  thinking bought it.
- 
+
  @param model - id as the provider serves it
- 
+
  @param promptTokens - prompt tokens summed over this seat's reported calls
- 
+
  @param completionTokens - completion tokens summed over the same calls,
  thinking included
- 
+
  @returns Credits for each half, or that this model is not in the table
- 
+
  @example
  ```ts
  const cost = creditsFor({ model: 'kimi-k3', promptTokens: 84_000, completionTokens: 51_065, },);

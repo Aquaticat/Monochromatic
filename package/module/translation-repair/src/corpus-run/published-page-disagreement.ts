@@ -15,7 +15,7 @@ import { wordForCount, } from '../count-word.ts';
 
 /**
  How a page disagreed with its artifact.
- 
+
  @example
  ```ts
  const disagreement: PageDisagreement = { kind: 'weight-off', actual: 10, expected: 12, exact: true, };
@@ -56,11 +56,11 @@ export type PageDisagreement = {
 
 /**
  Sentence for one disagreement, carrying counts and indices only.
- 
+
  @param disagreement - what the check found
- 
+
  @returns Sentence naming it without quoting any text
- 
+
  @example
  ```ts
  const said = disagreementSentence({ disagreement, },);
@@ -112,7 +112,7 @@ function disagreementSentence(
 
 /**
  Raised when a page does not carry what its artifact says would ship.
- 
+
  @example
  ```ts
  throw new PublishedPageDisagreesError({
@@ -137,7 +137,7 @@ export class PublishedPageDisagreesError extends Error {
 
   /**
    @param entryId - person entry, named in the refusal
-   
+
    @param disagreement - what the check found
    */
   constructor(

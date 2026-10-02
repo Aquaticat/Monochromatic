@@ -1,6 +1,6 @@
 /**
  Tests for the repeat pairings and the band the settled audit reads off them.
- 
+
  The band exists because the headline of the settled audit is a comparison, and a
  comparison resolves nothing narrower than the spread the instrument moves
  through on unchanged input. The sharpest cases here are the REFUSALS, since
@@ -9,9 +9,9 @@
  that merely share a slot, two rows whose text moved, and two rows that
  predate the recorded identity and would otherwise pair through their shared
  absence.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -34,19 +34,19 @@ import {
 
 /**
  Builds one audited slice carrying a stated number of anchored claims.
- 
+
  @param runSet - archive subdirectory
- 
+
  @param entryId - corpus entry
- 
+
  @param sliceIndex - slice index
- 
+
  @param claims - how many claims anchored, over one voice
- 
+
  @param texts - what the audit was shown, omitted to leave it unrecorded
- 
+
  @returns Row shaped as the probe persists it
- 
+
  @example
  ```ts
  const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, claims: 1, },);

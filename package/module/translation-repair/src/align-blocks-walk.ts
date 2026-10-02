@@ -20,7 +20,7 @@ import { tableCell, } from './table-cell.ts';
 
 /**
  One step of the alignment: a partnered pair, or a block skipped on one side.
- 
+
  @example
  ```ts
  const step: AlignmentStep = { kind: 'paired', sourceIndex: 7, targetIndex: 6, };
@@ -56,7 +56,7 @@ export type AlignmentStep =
 
     /**
      Whether this block CONTINUES the pairing of the step before it.
-     
+
      Set when a translation MERGES several originals into one block, so the
      second and later originals ride along with the rendering that covers
      them. The mirror of the same field on `target-only`.
@@ -77,13 +77,13 @@ export type AlignmentStep =
     /**
      Whether this block CONTINUES the pairing of the step before it, rather
      than standing alone.
-     
+
      Set only by `blockPairingToSteps`, where one original rendered by several
      translation blocks becomes a `paired` step followed by continuations. The
      grouper must not cut between them: separating a rendering from the
      original it renders puts a passage in front of the critics with no source
      beside it, which is the mispairing this whole path exists to end.
-     
+
      The deterministic walk never sets it, because a block it skips genuinely
      stands alone.
      */
@@ -109,11 +109,11 @@ type Cell = {
  Builds the score table for the two block lists. Row zero and column zero are
  pure gap runs, so a document whose counterpart is empty aligns as all skips
  rather than failing.
- 
+
  @param sourceNodes - original blocks in document order
- 
+
  @param targetNodes - translation blocks in document order
- 
+
  @returns Filled table with one extra row and column for the empty prefixes
  */
 function buildTable(
@@ -127,7 +127,7 @@ function buildTable(
 ): readonly (readonly Cell[])[] {
   /**
    How far THIS translation expands, estimated once over both whole lists.
-   
+
    Per document rather than per pair, and per pair is impossible anyway: the
    pairing is what the table is deciding. A fixed constant made every correct
    pair look implausible on entries whose translator writes long, which is what
@@ -286,14 +286,14 @@ function moveAt(
 /**
  Aligns two block lists monotonically, skipping rather than forcing a partner
  where no partner fits. Order is preserved on both sides.
- 
+
  @param sourceNodes - original blocks in document order
- 
+
  @param targetNodes - translation blocks in document order
- 
+
  @returns Steps in document order, covering every block on both sides exactly
  once
- 
+
  @example
  ```ts
  const steps = alignBlocks({ sourceNodes, targetNodes, },);

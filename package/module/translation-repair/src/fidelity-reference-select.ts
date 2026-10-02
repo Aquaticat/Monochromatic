@@ -6,15 +6,15 @@ import type { FidelityReferenceSpec, } from './fidelity-reference-model.ts';
 
 /**
  Selects only named reviewed references and refuses ambiguous or empty requests.
- 
+
  @param specs - caller-owned reviewed manifest
- 
+
  @param onlyEntryIds - reviewed entry names, or empty for the whole manifest
- 
+
  @returns Owned reference specifications in manifest order
- 
+
  @throws {@link FidelityReferenceError} for duplicates, missing references or unknown entry filters
- 
+
  @example
  ```ts
  const selected = selectReviewedFidelitySpecs({ specs, onlyEntryIds });

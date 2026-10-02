@@ -1,19 +1,19 @@
 /**
  Tests for the resolution checker stage.
- 
+
  `runCheckerStage` had no test, and it produces `tallies`, which decide
  `resolvedIssueIds`. Those feed candidate selection AND the milestone's
  headline resolution rate, so a defect here does not break a run; it moves the
  number the milestone is judged on.
- 
+
  The stage's own arithmetic lives in `tallyResolutionChecks`, which is tested
  separately. What is untested here is the wiring: that every heard checker
  becomes exactly one ballot, that a lost voice reduces the count rather than
  silently counting as agreement, and that ballot irregularities reach the
  findings rather than being dropped between the two halves.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -67,11 +67,11 @@ const CHECKERS = [
 
 /**
  Client answering each checker with a scripted report, or losing its voice.
- 
+
  @param reportFor - report per model; returning undefined loses that voice
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = checkerClient({ reportFor: () => ({ checks: [], }), },);
@@ -122,13 +122,13 @@ function checkerClient(
 
 /**
  Runs the checker stage against a scripted client.
- 
+
  @param client - scripted checker client
- 
+
  @param issues - accepted issues under check
- 
+
  @returns Stage result
- 
+
  @example
  ```ts
  const result = await runStage({ client, issues, },);
@@ -325,7 +325,7 @@ await describe({
          */
         const result = await runStage({
           client: checkerClient({
-            reportFor: (modelId,) => 
+            reportFor: (modelId,) =>
               answering.has(modelId,)
                 ? {
                   checks: [

@@ -1,13 +1,13 @@
 /**
  Tests for the pairing stage: what the roster has to agree on before a
  correspondence is kept, and what happens when it agrees on nothing.
- 
+
  WHY AGREEMENT IS PER PAIR. Two models can agree on nine correspondences and
  differ on the tenth, and discarding both replies over the tenth throws away
  the nine. The stage counts each `source,target` on its own.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

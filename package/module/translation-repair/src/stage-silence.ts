@@ -12,7 +12,7 @@
 
 /**
  Opening every quorum-unmet finding carries, followed by the shortfall.
- 
+
  @example
  ```ts
  const silent = finding.startsWith(STAGE_QUORUM_UNMET_PREFIX,);
@@ -22,11 +22,11 @@ export const STAGE_QUORUM_UNMET_PREFIX = 'stage-quorum-unmet (';
 
 /**
  Builds the finding a stage records when fewer voices than quorum answered.
- 
+
  @param shortfall - stage and count, such as `critic 2/6`
- 
+
  @returns Finding text in the one spelling the caches read
- 
+
  @example
  ```ts
  findings.push(stageQuorumUnmetFinding({ shortfall: 'critic 2/6', },),);
@@ -40,11 +40,11 @@ export function stageQuorumUnmetFinding(
 
 /**
  Findings among the given ones that say a stage heard fewer than quorum.
- 
+
  @param findings - findings a settlement carries
- 
+
  @returns The quorum-unmet findings, in order, empty when every stage was heard
- 
+
  @example
  ```ts
  const silent = silentStagesOf({ findings: outcome.findings, },);
@@ -61,15 +61,15 @@ export function silentStagesOf(
 /**
  Whether a settlement was reached with every stage at or above quorum, which
  is what a cache may keep and a resumed run may trust.
- 
+
  A stage that lost some voices but kept quorum still counts as heard; the
  `stage-voice-lost` findings it leaves are a different number and are not
  read here.
- 
+
  @param findings - findings a settlement carries
- 
+
  @returns Whether no stage fell short of quorum
- 
+
  @example
  ```ts
  if (everyStageHeard({ findings: outcome.findings, },)) await cache.persist(...);

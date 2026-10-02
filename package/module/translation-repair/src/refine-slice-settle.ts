@@ -34,13 +34,13 @@ import { runCheckerStage, } from './repair-edit-stages.ts';
 
 /**
  What one slice's refinement settled, as the cache stores it.
- 
+
  `asked` IS DELIBERATELY NOT IN HERE, and that absence is the point. It says
  whether this RUN reached a rewriter, which decides whether a run overtaken by
  an abort may still call itself finished. A slice resumed from disk asked
  nobody anything, so a stored `asked` would be a previous run's answer to a
  question only the current run can be asked.
- 
+
  @example
  ```ts
  const settled: RefinedSliceSettlement = { outcome, findings: [], };
@@ -60,7 +60,7 @@ export type RefinedSliceSettlement = {
 
 /**
  Same settlement plus whether this run reached a rewriter.
- 
+
  @example
  ```ts
  const bought: RefinedSliceOutcome = { outcome, findings: [], asked: true, };
@@ -77,7 +77,7 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
    Models whose rewrite is in the text this returns, empty on every path
    where no rewrite ships: a non-translation slice, a rewriter that changed
    nothing, and a rewrite the recheck rolled back.
-   
+
    NOT STORED, FOR THE REASON `asked` IS NOT. It names what THIS run bought,
    and a slice resumed from disk bought no rewrite. `outcome.authorship`
    already carries who wrote the text for every later reader; this exists so
@@ -88,7 +88,7 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
 
   /**
    Refiners heard with a usable answer on this slice, proposal or not.
-   
+
    NOT STORED, FOR THE REASON `refinedBy` IS NOT. This exists so an
    instrument can tell a refiner that answered and left the paragraph as it
    stood from one that never answered, which every stored field unions
@@ -99,50 +99,50 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
 
 /**
  @internal
- 
+
  Runs the naturalness lane over one settled slice.
- 
+
  @param client - injected model client
- 
+
  @param outcome - settled accuracy outcome for this slice
- 
+
  @param sourceText - slice original, which is the faithfulness anchor
- 
+
  @param incumbentText - archive wording, which a rewrite may land back on
- 
+
  @param definitions - definitions of the assembled document, so references
  resolve during gating even when their definition lives in another slice
- 
+
  @param models - role roster
- 
+
  @param reseat - reads the checker seating as of now, so the recheck and the
  rewrite probe run on the bench a hold that began inside the lane re-seats
  (class one hundred thirteen); the standing seating when absent
- 
+
  @param refinerModelIds - rewriters, already known non-empty
- 
+
  @param identityContext - declared names and handles, when any
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param declaredNames - same declarations as strings a guard compares
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Final outcome, findings, and whether a rewriter was reached
- 
+
  @param neighbouringSourceText - original of the passages either side, handed
  to the damage probe so a phrase that moved next door is not read as one this
  rewrite deleted
- 
+
  @param neighbouringIncumbentText - archive English of those same two, which is
  the side a relocation shows
- 
+
  @example
  ```ts
  const settled = await settleRefinedSlice({ client, outcome, sourceText, incumbentText, definitions, models, refinerModelIds, declaredNames, signal, perCallTimeoutMs, l, },);
@@ -231,7 +231,7 @@ export async function settleRefinedSlice(
   /**
    This slice with the refinement round appended to what the editor stage
    already recorded.
-   
+
    BUILT BEFORE ANY EXIT OF THIS FUNCTION, because a refinement that lost is exactly the
    round worth reading: it says the panel looked at the repaired text and
    either could not agree or preferred a rewrite the guards then refused.
@@ -327,7 +327,7 @@ export async function settleRefinedSlice(
    nothing about the text this rewrite produced. Auditing one whole slice
    rather than each rewritten paragraph matches the unit the lane itself
    decides in: `retainsResolvedIssues` rolls back the whole slice too.
-   
+
    The roster is the checkers, exactly as the accuracy probe uses, and
    `assertCheckerIndependence` in the refine phase has already established that
    no refiner is among them, so nobody audits their own rewrite.
@@ -488,39 +488,39 @@ export async function settleRefinedSlice(
 /**
  Whether a refinement kept every issue the checkers had already confirmed,
  and made no accepted issue `T1` leaves open worse.
- 
+
  Rolls back the WHOLE slice when it did not. Checkers report per ISSUE while
  refinement happens per paragraph, and an issue can span paragraphs, so which
  paragraph broke a given issue is not derivable from what the checker returns.
  The regressed issue is named in the findings so a later session can judge
  whether finer attribution is worth building.
- 
+
  @param client - injected model client
- 
+
  @param checkerModelIds - checkers as seated at the stage
- 
+
  @param outcome - settled accuracy outcome for this slice, carrying who wrote
  the repaired text this rewrote
- 
+
  @param refineContributors - models whose rewrite won, empty when none did
- 
+
  @param sourceText - original chunk text
- 
+
  @param refinedText - candidate text the refinement produced
- 
+
  @param identityContext - declared names and handles, when any (ledger L14)
- 
+
  @param referenceContext - what the pages the original cites say, when it
  cites any (ledger L14)
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Whether refinement may ship, plus findings
- 
+
  AN OPEN ISSUE IS ROLLED BACK ON ONE WORSE BALLOT, the threshold the owner
  ruled for a patch's unconfirmed edits the same day (ledger L3): the checkers
  were never going to call an issue the patch did not fix `fixed`, so
@@ -528,7 +528,7 @@ export async function settleRefinedSlice(
  says the rewrite damaged it. A `fixed` ballot credits nothing; the round is
  a rollback gate, and a resolution it recorded would rest on a round no panel
  or selection ever weighed.
- 
+
  @example
  ```ts
  const retained = await retainsResolvedIssues({ client, checkerModelIds, outcome, refineContributors, sourceText, refinedText, signal, perCallTimeoutMs, l, },);

@@ -1,7 +1,7 @@
 /**
  Verifies that rendered structure reaches production sheets before models write
  or choose text. Live probes, not these assertions, measure model behavior.
- 
+
  @module
  */
 

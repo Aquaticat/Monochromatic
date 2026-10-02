@@ -13,7 +13,7 @@ import {
 
 /**
  Immutable archive interval, including the declaration that establishes its authority.
- 
+
  @example
  ```ts
  const ranges = footnoteProtectedRanges({ text: archiveText });
@@ -33,13 +33,13 @@ export type FootnoteProtectedRange = {
 /**
  Anchors protected spans to the exact comment occurrence that declared them.
  Whole-page originals protect the entire input, including apparatus.
- 
+
  @param text - current archive bytes, reparsed after any allowed external rename
- 
+
  @returns Protected intervals in the same coordinate space as the input
- 
+
  @throws FootnoteRewriteError when a declared span cannot be tied to its comment occurrence
- 
+
  @example
  ```ts
  const protectedRanges = footnoteProtectedRanges({ text });
@@ -82,15 +82,15 @@ export function footnoteProtectedRanges({ text, }: { readonly text: string; },):
 
 /**
  Tests whether a candidate edit region intersects protected archive bytes.
- 
+
  @param startOffset - first potentially changed position
- 
+
  @param endOffset - exclusive edit-region end
- 
+
  @param protectedRanges - current-coordinate original-English intervals
- 
+
  @returns Whether this operation must be withheld
- 
+
  @example
  ```ts
  const blocked = overlapsFootnoteProtection({ startOffset, endOffset, protectedRanges });
@@ -114,15 +114,15 @@ export function overlapsFootnoteProtection(
 
 /**
  Checks actual marker changes, not every supplied correspondence, against original-English authority.
- 
+
  @param text - archive before any rename
- 
+
  @param map - closed simultaneous operational map
- 
+
  @param protectedRanges - original-coordinate protected intervals
- 
+
  @returns Whether even one rename would change protected bytes
- 
+
  @example
  ```ts
  const blocked = footnoteRenameTouchesOriginal({ text, map, protectedRanges });

@@ -1,33 +1,33 @@
 /**
  Tests for publishing one settled entry as a page in the mirrored corpus tree.
- 
+
  DRIVEN THROUGH THE REAL ASSEMBLER, `spliceSlices`, rather than a stub of it.
  The publisher's whole job is to put the deciders' answers back where they
  came from, and every way of getting that wrong lives in the join between a
  reading and the span it belongs to: an index read positionally, an offset
  recovered by searching for text, a slice written twice. A fixture assembler
  would agree with whatever the publisher did.
- 
+
  THE ARCHIVE HERE IS A WHOLE LITTLE DOCUMENT, not one paragraph, because the
  property that matters most is what the publisher does NOT touch. A page
  assembled correctly is byte-identical outside the slices that were replaced,
  and only text either side of a replaced span can show that.
- 
+
  THE TWO PURE SUBJECTS LIVE IN `publish-fixed-replacements.unit.test.ts`, apart
  from these. A file is abandoned once any describe in it fails, so while they
  shared one, a break in the replacement builder left every case here unrun and
  unreported: the runner named one narrow failure where the real blast radius
  was every page the pass writes.
- 
+
  ONE CASE PROVES A BRANCH THE CORPUS CANNOT REACH. No slice in any settled
  artifact on disk carries an archive that holds no wording, 249 of 249 at the
  last count, so the silent readings are unreachable there and a measurement
  over real output can only report zero. Whether the publisher does the right
  thing when a decider ships nothing into a passage the original speaks is
  therefore settled here, by a fixture built to be in that state.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -67,7 +67,7 @@ import { artifactWithAnUnfilledAnchor, } from './would-ship-unfilled-anchor.test
 
 /**
  Opening paragraph, which no case ever replaces.
- 
+
  ITS JOB IS TO STAY PUT. Every case that replaces a later slice asserts this
  text survived unchanged, which is what distinguishes a publisher that wrote
  one span from one that rebuilt the document out of the pieces it knew about.
@@ -86,7 +86,7 @@ const CLOSING = '\n## Remembered by\n\nEveryone who came in out of the rain.\n';
 
 /**
  Whole archive English, as the corpus holds it.
- 
+
  ENDS IN EXACTLY ONE NEWLINE, and every case that publishes an untouched
  entry asserts the published bytes still do. Nothing in the publisher may
  normalize a document's ending: the corpus went to subprocess-level lengths
@@ -132,17 +132,17 @@ const ARCHIVE_LINKED = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING_LINKED}`;
 
 /**
  Builds one pair from a translation-side span.
- 
+
  THE SOURCE SIDE ALWAYS SAYS SOMETHING, deliberately: `spliceSlices` reads the
  original to decide whether writing nothing into a place is a deletion or a
  passage lost, so a silent source would leave that passage-lost refusal
  untestable. Its offsets are the Chinese document's and nothing here reads
  them, since only the translation side is written into.
- 
+
  @param target - translation-side chunk, carrying the span to write into
- 
+
  @returns Pair the publisher may write into
- 
+
  @example
  ```ts
  const pair = pairOver({ target: { sliceIndex: 0, ... }, },);
@@ -171,15 +171,15 @@ function pairOver(
 
 /**
  Builds the whole document's slices, opening and closing included.
- 
+
  SLICED WHOLE RATHER THAN AT THE ONE PARAGRAPH UNDER TEST, because the
  assembler refuses any other shape: it reads a slice's index as its position,
  so a list holding only the middle slice is a caller disagreeing with the
  slicer. Prepared documents are sliced whole too, which is what makes this the
  faithful fixture rather than the convenient one.
- 
+
  @returns Three pairs covering the archive end to end
- 
+
  @example
  ```ts
  const slices = documentSlices();
@@ -219,9 +219,9 @@ function documentSlices(): readonly ChunkPair[] {
 
 /**
  Builds the slices of the archive whose closing carries the moved link.
- 
+
  @returns Three pairs covering that archive end to end
- 
+
  @example
  ```ts
  const slices = linkedDocumentSlices();
@@ -247,14 +247,14 @@ function linkedDocumentSlices(): readonly ChunkPair[] {
 
 /**
  Builds a document whose middle section the archive never translated.
- 
+
  THE SECOND SLICE IS A ZERO-WIDTH PLACE at the boundary rather than a span
  over wording, which is what a preparation produces where a source section has
  no translation to pair with. The archive's own middle paragraph is left
  unsliced, so a rendering written here lands AHEAD of it rather than over it.
- 
+
  @returns Two pairs, the second of them a place rather than wording
- 
+
  @example
  ```ts
  const slices = documentSlicesWithAGap();
@@ -286,18 +286,18 @@ function documentSlicesWithAGap(): readonly ChunkPair[] {
 
 /**
  Builds an artifact whose one slice reads as the wording given.
- 
+
  GOES THROUGH THE CONTEST rather than the consolidation, because the contest
  is the shortest path to a chosen wording and this file is about what happens
  AFTER a decider spoke, not about which decider spoke. Whether each stage is
  read correctly is `would-ship-text.unit.test.ts`.
- 
+
  @param translateText - wording the translate lane offered and the contest picked
- 
+
  @param incumbentKind - whether the archive holds wording at this slice
- 
+
  @returns Artifact the publisher reads
- 
+
  @example
  ```ts
  const artifact = artifactShipping({ translateText: DECIDED_MIDDLE, },);
@@ -408,15 +408,15 @@ const OVERSTATED_BY = 5;
 /**
  Builds an artifact whose comparison row claims MORE archive wording at the
  slice than the archive actually holds there.
- 
+
  MODELS A KNOWN FAILURE CLASS RATHER THAN A TYPO: an artifact and the publisher
  disagreeing about what a slice covers is exactly the state that cost XIEPT2
  four hours and forty-eight minutes, and it is invisible to every check that
  reads only one of the two. The wording still ships and still lands in order,
  so the occurrence scan passes and only the arithmetic notices.
- 
+
  @returns Artifact that disagrees with the archive the publisher splices
- 
+
  @example
  ```ts
  const artifact = artifactOverstatingTheArchive();
@@ -444,15 +444,15 @@ function artifactOverstatingTheArchive(): WouldShipSource {
 
 /**
  Publishes one entry and reads back what landed.
- 
+
  @param artifact - settled entry to publish
- 
+
  @param publishDir - tree root to write into
- 
+
  @param slices - pairs the entry was prepared into
- 
+
  @returns Path written and the bytes at it
- 
+
  @example
  ```ts
  const { text, } = await publishAndRead({ artifact, publishDir, },);

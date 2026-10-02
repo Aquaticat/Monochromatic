@@ -270,17 +270,17 @@ export function attachClaimFilers(
 /**
  Records a chunk's issues with their filers attached and logs one line per
  issue: the fate the panel gave it and, for every member claim, who filed it.
- 
+
  @param sliceIndex - chunk position
- 
+
  @param issues - the reference screen's rejections then the panel's issues
- 
+
  @param attributions - the critic phase's attribution record
- 
+
  @param l - pipeline logger
- 
+
  @returns Same issues with `filedBy` attached where any claim is on record
- 
+
  @example
  ```ts
  const recordedIssues = recordIssuesWithFilers({ sliceIndex, issues, attributions, l, },);

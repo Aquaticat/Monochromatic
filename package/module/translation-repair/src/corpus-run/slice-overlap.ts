@@ -25,7 +25,7 @@ const MINIMUM_OVERLAP = 1;
 
 /**
  Slices editor calibration keeps in flight when nobody said.
- 
+
  Four was decided from matched 2026-08-26 arms recorded in
  `doc/decision/translation-repair-calibration-overlap.md`.
  */
@@ -33,7 +33,7 @@ export const CALIBRATION_OVERLAP = 4;
 
 /**
  Where overlap value came from, for launch logs.
- 
+
  @example
  ```ts
  const source: OverlapSettingSource = 'fallback';
@@ -43,7 +43,7 @@ export type OverlapSettingSource = 'fallback' | typeof OVERLAP_VAR;
 
 /**
  One overlap reading beside its source.
- 
+
  @example
  ```ts
  const setting: OverlapSetting = { overlap: 4, source: 'fallback', };
@@ -63,22 +63,22 @@ export type OverlapSetting = {
 
 /**
  Reads overlap and names where it came from.
- 
+
  Refuses rather than falls back on invalid environment input because matched
  arms must not silently become identical after a typo. A variable unset,
  empty or blank says nothing, as it does for every numeric dial in the
  package, and takes the fallback (ledger B73).
- 
+
  DIGITS ONLY, by the package's one count rule (ledger B73), which also reads
  `04` as four; a minus sign before digits is answered as a value below one.
- 
+
  @param fallback - slices in flight when environment says nothing
- 
+
  @returns Valid overlap beside fallback or variable source
- 
+
  @throws StatedRefusalError when variable is not a whole number written in
  digits, or is below one
- 
+
  @example
  ```ts
  const setting = readOverlapSetting({ fallback: CALIBRATION_OVERLAP, },);
@@ -122,16 +122,16 @@ export function readOverlapSetting(
 
 /**
  Reads how many slices may be in flight at once.
- 
+
  Compatibility wrapper for callers that do not log setting source.
- 
+
  @param fallback - slices in flight when environment says nothing
- 
+
  @returns Valid overlap
- 
+
  @throws StatedRefusalError when variable is not a whole number written in
  digits, or is below one
- 
+
  @example
  ```ts
  const overlap = readOverlap({ fallback: CALIBRATION_OVERLAP, },);

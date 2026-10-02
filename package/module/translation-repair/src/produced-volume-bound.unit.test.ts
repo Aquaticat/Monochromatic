@@ -1,15 +1,15 @@
 /**
  Tests for the produced-volume bound, and for the seam that carries it.
- 
+
  THE SECOND HALF IS THE POINT. A bound nothing passes to the watch ends no
  call, which is exactly the state this task found the code in: `watchRunaway`
  already accepted a per-call bound and nothing anywhere handed it one. So the
  arithmetic is tested, and then the drain is shown to end a call at a bound
  far below the module default, with an otherwise identical drain naming no
  bound left running as the control.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -51,11 +51,11 @@ const PIECE_CHARS = 512;
 
 /**
  Builds one server-sent event frame carrying answer text.
- 
+
  @param text - text this frame carries
- 
+
  @returns Frame as the wire sends it
- 
+
  @example
  ```ts
  const raw = frameOf({ text: 'The cat naps. ', },);
@@ -75,9 +75,9 @@ function frameOf({ text, }: { readonly text: string; },): string {
 
 /**
  Fixture body: an answer of known size, one sentence per frame.
- 
+
  @returns Whole event stream
- 
+
  @example
  ```ts
  const raw = bodyOf();
@@ -103,11 +103,11 @@ function bodyOf(): string {
 
 /**
  Wraps a body in a response delivered in socket-sized pieces.
- 
+
  @param raw - whole body
- 
+
  @returns Response whose body arrives in pieces
- 
+
  @example
  ```ts
  const response = streamOf({ raw: bodyOf(), },);
@@ -143,19 +143,19 @@ function streamOf({ raw, }: { readonly raw: string; },): Response {
 
 /**
  Runs one call that must refuse and hands back what it threw.
- 
+
  ASYNC, so `caught` from module-test does not apply: that one is synchronous
  by design, and a rejected promise needs its own capture. Reading the refusal
  rather than matching on a message lets the class and the bound it names both
  be asserted, and an assertion naming only a message passes just as happily
  when the wrong error type is thrown.
- 
+
  @param act - call that must reject
- 
+
  @returns Failure it raised
- 
+
  @throws `Error` when the call resolved instead of refusing
- 
+
  @example
  ```ts
  const refusal = await refusalFrom(async function readsPastTheBound() { ... },);

@@ -1,7 +1,7 @@
 /**
  Tests that the structural floor still floors when the page refuses the strict
  grammar.
- 
+
  WHAT THIS FILE EXISTS TO STOP, measured on the sixth consolidation bed rather
  than imagined. A slice boundary fell between an opening `details` tag and its
  closing tag, so the page span carried no closing tag and the strict MDX
@@ -9,11 +9,11 @@
  back to the original alone, and a 164-character rendering passed against a
  3875-character page. Both lanes had carried that page whole; only the third
  rendering dropped it, and it shipped.
- 
+
  A CHECK THAT CANNOT RUN MUST NOT ANSWER YES. The page side now downgrades to
  plain markdown, which reads the same span as a paragraph followed by an html
  block, and the floor refuses the one-paragraph candidate on its own evidence.
- 
+
  WHY THE FIXTURE IS UNBALANCED ON PURPOSE. A WELL-FORMED `details` element
  parses under the strict grammar perfectly well, so a tidy fixture proves
  nothing here: it would pass before the fix and after it. Only a span cut
@@ -25,9 +25,9 @@
  Huasheng pass stopped on it. The relaxed path is therefore exercised here by
  a page the grammar refuses for another reason, an inline tag torn from its
  closer on the same line, and the cut-container page has its own cases.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -82,17 +82,17 @@ const NOTE_ONLY = '(Note: this account may be upsetting; please be aware before 
 
 /**
  Pulls the findings out of a verdict that must be a refusal.
- 
+
  NARROWS BY THROWING rather than by optional chaining, so a verdict that
  unexpectedly passed fails the case where it happened instead of silently
  comparing an empty string.
- 
+
  @param verdict - what the floor answered
- 
+
  @returns Findings joined, one per line
- 
+
  @throws {@link Error} when the verdict was not a refusal
- 
+
  @example
  ```ts
  const findings = findingsOf({ verdict, },);

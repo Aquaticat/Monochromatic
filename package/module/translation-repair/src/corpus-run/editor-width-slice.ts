@@ -27,24 +27,24 @@ import {
 
 /**
  Runs one slice at both widths and reads the result.
- 
+
  @param client - injected model client
- 
+
  @param input - slice with its accepted issues
- 
+
  @param narrowEditorIds - seats for the narrow arm
- 
+
  @param wideEditorIds - seats for the wide arm
- 
+
  @param judgeModelIds - panel, held fixed throughout, which is what makes a
  difference between the arms attributable to the seats
- 
+
  @param signal - cancellation
- 
+
  @param l - logger
- 
+
  @returns Row this slice contributed
- 
+
  @example
  ```ts
  const row = await runWidthSlice({ client, input, narrowEditorIds, wideEditorIds, judgeModelIds, signal, l, },);
@@ -115,7 +115,7 @@ export async function runWidthSlice(
 
   /**
    Everything the head-to-head decided, absent where none was earned.
-   
+
    Slices whose arms shipped the same text are answered already, and judging
    a text against itself would spend twelve ballots to learn that twice.
    */

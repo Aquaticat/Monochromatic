@@ -21,7 +21,7 @@ import {
 
 /**
  One slice's measured cost.
- 
+
  @example
  ```ts
  const row: SliceCostRow = { lane: 'repair', sliceIndex: 3, sourceChars: 812, elapsedMs: 45210, };
@@ -56,7 +56,7 @@ export type SliceCostRow = {
 
 /**
  Everything one log said about slice cost, refusals kept beside rows.
- 
+
  @example
  ```ts
  const reading: SliceCostReading = readSliceCosts({ log, },);
@@ -76,11 +76,11 @@ export type SliceCostReading = {
 
 /**
  Splits one marker-bearing line into its `key=value` pairs.
- 
+
  @param line - whole log line, including whatever the logger prefixed
- 
+
  @returns Pairs found after the marker, later duplicates overwriting earlier
- 
+
  @example
  ```ts
  const fields = fieldsOf({ line, },);
@@ -124,11 +124,11 @@ function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, s
 /**
  What one field of a cost line reads as: the value it carries, or the words
  naming why it carries none.
- 
+
  DISCRIMINATED rather than a nullish union, because zero is an ordinary
  answer here: a slice can genuinely cost 0 ms, and a sentinel would make that
  indistinguishable from a field the log never carried.
- 
+
  @example
  ```ts
  const reading: FieldReading<number> = { kind: 'read', value: 45_210, };
@@ -158,14 +158,14 @@ type FieldReading<ValueT,> = {
 
 /**
  Words a field whose text this reader does not accept.
- 
+
  @param name - field refused
- 
+
  @param raw - text the line carried for it
- 
+
  @returns Field name and its text, with an empty text said as `empty` so the
  reason does not end in a bare space
- 
+
  @example
  ```ts
  spelledAs({ name: 'ms', raw: '45e', },); // 'ms 45e'
@@ -185,16 +185,16 @@ function spelledAs(
 
 /**
  Reads a field that carries one of a fixed set of values.
- 
+
  @param fields - pairs read off one line
- 
+
  @param name - field to read
- 
+
  @param allowed - values it may carry, read from the writer's own list so a
  lane or exit added there is accepted here without a second edit
- 
+
  @returns Member it carries, or the refusal naming what it carried instead
- 
+
  @example
  ```ts
  const lane = memberField({ fields, name: 'lane', allowed: SLICE_COST_LANES, },);
@@ -246,7 +246,7 @@ function memberField<const MemberT extends string,>(
 /**
  Reads a field that carries a count: a slice index, a character count or a
  duration.
- 
+
  PLAIN DECIMAL DIGITS ONLY, which is all `armSliceCost` writes. This read
  `Number(raw)` and asked whether that was an integer, and `Number` also reads
  an empty text as 0, `0x1F` as 31, `1e3` as 1000 and a leading sign, so a
@@ -254,13 +254,13 @@ function memberField<const MemberT extends string,>(
  largest integer a double holds exactly is refused too, since it would read as
  a neighbouring number. The rule is the package's one count rule
  (`whole-number-text.ts`, ledger B73).
- 
+
  @param fields - pairs read off one line
- 
+
  @param name - field to read
- 
+
  @returns Count it carries, or the refusal naming what it carried instead
- 
+
  @example
  ```ts
  const ms = countField({ fields, name: 'ms', },);
@@ -303,7 +303,7 @@ function countField(
 
 /**
  What one marker-bearing line yielded: a row, or the reason it yielded none.
- 
+
  @example
  ```ts
  const read: LineReading = readLine({ fields, },);
@@ -333,16 +333,16 @@ type LineReading = {
 
 /**
  Turns one line's fields into a row, or says why they are not one.
- 
+
  VALIDATES AND BUILDS TOGETHER: each field is read once, into its value or its
  refusal, and the row is built from those readings. This used to check every
  field in one loop and read each again through a helper that threw when the
  loop had not checked it, a throw no line could reach.
- 
+
  @param fields - pairs read off one line
- 
+
  @returns Row, or the named refusal
- 
+
  @example
  ```ts
  const read = readLine({ fields, },);
@@ -433,12 +433,12 @@ function readLine(
 
 /**
  Reads every slice cost a log reported.
- 
+
  @param log - whole log text, of any length, including lines about other things
- 
+
  @returns Rows in log order, beside a named refusal for every marker-bearing
  line that produced none
- 
+
  @example
  ```ts
  const { rows, dropped, } = readSliceCosts({ log: await readFile(path, 'utf8',), },);

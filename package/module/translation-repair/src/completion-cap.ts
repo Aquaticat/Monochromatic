@@ -124,13 +124,13 @@ export const COMPLETION_CAP: Readonly<Record<RosterModelId, number>> = recordOve
 
 /**
  Ceiling one call carries: the measured cap, or a caller's own when lower.
- 
+
  @param modelId - roster model the call is for
- 
+
  @param requested - caller's ceiling, which only ever lowers the cap
- 
+
  @returns Value for the request body's `max_tokens`
- 
+
  @example
  ```ts
  const maxTokens = completionCapFor({ modelId: 'minimax-m3', requested: 500, },);

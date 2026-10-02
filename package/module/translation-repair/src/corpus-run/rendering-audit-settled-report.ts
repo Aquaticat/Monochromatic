@@ -41,9 +41,9 @@ import { resolveRunsDir, } from './run-config.ts';
 
 /**
  Reads a persisted run and prints what it amounts to.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await main({ line, },);

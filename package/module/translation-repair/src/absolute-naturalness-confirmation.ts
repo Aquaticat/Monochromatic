@@ -15,7 +15,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Decisive review beside earlier acceptable readings of same exact candidate.
- 
+
  @example
  ```ts
  const confirmed: ConfirmedAbsoluteNaturalness = { review, confirmations: [initial,] };
@@ -35,11 +35,11 @@ export type ConfirmedAbsoluteNaturalness = {
 
 /**
  Requires distinct challenge acceptance after exact-candidate discovery approval.
- 
+
  @param request - exact request each independent review receives
- 
+
  @returns Decisive review and every earlier acceptable reading
- 
+
  @example
  ```ts
  const confirmed = await confirmAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });

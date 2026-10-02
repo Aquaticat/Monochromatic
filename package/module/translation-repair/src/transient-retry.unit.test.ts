@@ -1,26 +1,26 @@
 /**
  Tests for the transport-level transient retry.
- 
+
  `exchangeWithRetry` had no test. It sits under every model call in the
  pipeline, so its two failure modes are both expensive: retrying something
  permanent burns the flat-rate provider's capacity on a guaranteed rejection,
  and NOT retrying something transient throws away a voice the ensemble needed,
  which shows up much later as a thinner quorum rather than as an error.
- 
+
  The abort case gets the most attention. A caller abort during backoff must
  stop the loop rather than burn the remaining attempts, and it must surface
  the failure that actually happened rather than a generic one.
- 
+
  The two guard errors, degeneration and overrun, are both ends this system
  chose rather than weather. They ride one predicate instead of two separate
  class checks, so both get a case here: a check that named only one of them
  would pass this whole suite while the ladder re-bought every overrun.
- 
+
  Every case uses a tiny backoff base so the suite stays fast; the delay
  arithmetic is jittered and is not what these assert.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -79,11 +79,11 @@ const SHORTEST_FIRST_BACKOFF_MS = SLOW_POLICY.baseMs / 2;
 
 /**
  Builds the exchange every case sends.
- 
+
  @param signal - caller abort handle
- 
+
  @returns Exchange the transport receives
- 
+
  @example
  ```ts
  const exchange = exchangeWith({ signal: new AbortController().signal, },);
@@ -103,14 +103,14 @@ function exchangeWith({ signal, }: { readonly signal: AbortSignal; },) {
 /**
  Transport replaying a scripted list of replies and failures, recording how
  many times it was called.
- 
+
  @param script - one entry per expected attempt; an Error is thrown, a reply
  is returned
- 
+
  @param calls - shared counter the cases assert on
- 
+
  @returns Transport honoring the script
- 
+
  @example
  ```ts
  const transport = scriptedTransport({ script: [okReply,], calls, },);

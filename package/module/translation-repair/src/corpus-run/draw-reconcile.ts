@@ -12,7 +12,7 @@
 
 /**
  Name `typeof` gives a value.
- 
+
  @example
  ```ts
  const found: TypeofName = typeof 'one';
@@ -22,7 +22,7 @@ export type TypeofName = 'bigint' | 'boolean' | 'function' | 'number' | 'object'
 
 /**
  Why an artifact could not be reconciled with the population parsed from it.
- 
+
  @example
  ```ts
  const fault: DrawReconcileFault = { kind: 'count-disagrees', declared: 4, parsed: 1, };
@@ -76,11 +76,11 @@ const RECONCILE_SENTENCES: {
 
 /**
  Words a reconcile fault, from its kind and numbers alone.
- 
+
  @param fault - why the artifact could not be reconciled
- 
+
  @returns Sentence naming the fault, without the entry
- 
+
  @example
  ```ts
  const sentence = reconcileSentence({ fault: { kind: 'no-numeric-count', foundType: 'string', }, },);
@@ -95,10 +95,10 @@ export function reconcileSentence({ fault, }: { readonly fault: DrawReconcileFau
 /**
  Refusal of a final draw whose artifact cannot be reconciled with the
  accepted population parsed from it.
- 
+
  MARKED, because its message is composed of the entry id, which these tools
  report by design, and sentences written here from a kind and numbers.
- 
+
  @example
  ```ts
  throw new DrawReconcileError({ entryId: 'Toka_ls', fault: { kind: 'count-disagrees', declared: 4, parsed: 1, }, },);
@@ -123,7 +123,7 @@ export class DrawReconcileError extends Error {
 
   /**
    @param entryId - entry whose artifact was refused
-   
+
    @param fault - why it could not be reconciled
    */
   constructor(

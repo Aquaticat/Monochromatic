@@ -37,17 +37,17 @@ import {
 
 /**
  Reads every picture one entry's slices name, at the pinned commit.
- 
+
  @param pin - corpus clone and commit
- 
+
  @param entryId - person entry whose photos directory holds these assets
- 
+
  @param slices - prepared slice pairs, whose source sides name pictures
- 
+
  @param l - entry logger
- 
+
  @returns Bytes per asset name, omitting any that could not be read
- 
+
  @example
  ```ts
  const assets = await gatherEntryPictures({ pin, entryId, slices, l, },);

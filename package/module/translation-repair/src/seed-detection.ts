@@ -33,7 +33,7 @@ import {
 
 /**
  How a planted seed fared at the detection stage.
- 
+
  @example
  ```ts
  const verdict: SeedDetectionVerdict = 'declined-protective';
@@ -55,17 +55,17 @@ const PROTECTIVE_STATUS = 'source-defect';
 /**
  How each planted seed fared, distinguishing a seed nobody reported from one
  the panel saw and declined on protective grounds.
- 
+
  @param sourceText - original document exactly as repaired
- 
+
  @param seededText - translation after planting, exactly as repaired
- 
+
  @param applications - planted regions in seeded-text coordinates
- 
+
  @param issues - whole-document issue report from the repair run
- 
+
  @returns Detection verdict keyed by seed id
- 
+
  @example
  ```ts
  const detection = gradeSeedDetection({ sourceText, seededText, applications, issues, },);

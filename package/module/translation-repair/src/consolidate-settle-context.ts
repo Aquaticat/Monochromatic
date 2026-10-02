@@ -12,12 +12,12 @@ import type { SliceValidation, } from './translate-validate.ts';
 /**
  One voice's structural verdict WITHOUT its text, which is what a record of
  this stage may carry.
- 
+
  The proposals themselves are corpus renderings and do not belong in a
  settlement a run writes out. Who was refused and why does: run 8 carried 7
  invalid candidates across slices that all shipped normally, and nothing
  downstream could see them.
- 
+
  @example
  ```ts
  const verdict: ProposalVerdict = { modelId: 'hf:cat/Cat-A', kind: 'valid', findings: [], };
@@ -57,22 +57,22 @@ export type SettlementIdentity = {
 
 /**
  Identity and evidence as the two rounds take them.
- 
+
  SPREAD PER FIELD RATHER THAN PASSED WHOLE. An absent identity is absent
  rather than declared empty, and an absent picture and an empty picture are
  the same state and must render as no heading at all, since a heading
  promising readings and carrying none reads as a picture nobody could make
  sense of.
- 
+
  ONE VALUE FEEDS THE SHEET AND THE KEY, which is the judging window's lesson stated in
  `translate-document.ts` as well: a key that did not name the evidence would
  let a narrow run's answer be resumed for a wide one, and nothing anywhere
  would report the two as different questions.
- 
+
  @param subject - slice in the archive's terms
- 
+
  @returns Identity fields and evidence fields, each present only when carried
- 
+
  @example
  ```ts
  const { identity, evidence, } = settlementContextOf({ subject, },);
@@ -122,11 +122,11 @@ export function settlementContextOf(
 
 /**
  Every voice's verdict without its text, which is what a run may record.
- 
+
  @param validity - each voice's structural verdict, keyed by model id
- 
+
  @returns Verdicts in the same order, refusals carrying their findings
- 
+
  @example
  ```ts
  const verdicts = verdictsOf({ validity, },);

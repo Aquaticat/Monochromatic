@@ -46,7 +46,7 @@ const KEY_VARIABLES: Readonly<Record<ProviderName, string>> = {
 
 /**
  Raised before model calls when measured arm provider requirement is not wet.
- 
+
  @example
  ```ts
  throw new RequiredProviderError({ provider: 'hyper', reason: 'key missing', });
@@ -60,11 +60,11 @@ export class RequiredProviderError extends StatedRefusalError {
 
   /**
    Constructs provider requirement refusal.
-   
+
    @param provider - required provider
-   
+
    @param reason - closed launch reason
-   
+
    @example
    ```ts
    new RequiredProviderError({ provider, reason: 'budget dry', });
@@ -86,14 +86,14 @@ export class RequiredProviderError extends StatedRefusalError {
 
 /**
  Parses measured-arm provider requirement from CLI.
- 
+
  @param line - the pass's command line, read whole by `reportingRefusals`
- 
+
  @returns Required providers in caller order without duplicates
- 
+
  @throws {@link StatedRefusalError} when flag value names no provider or an
  unknown one
- 
+
  @example
  ```ts
  const required = readRequiredProviders({ line, },);
@@ -128,13 +128,13 @@ export function readRequiredProviders(
 
 /**
  Reads one provider's meter and refuses when it is dry or unreadable.
- 
+
  @param provider - provider being gated
- 
+
  @param readDry - live meter read answering whether the provider is dry
- 
+
  @throws {@link RequiredProviderError} when the meter reads dry or cannot be read
- 
+
  @example
  ```ts
  await gateProvider({ provider: 'hyper', readDry, },);
@@ -180,10 +180,10 @@ async function gateProvider(
 
 /**
  Requires selected provider keys and live non-dry meters before model calls.
- 
+
  Ordinary runs pass empty requirement and retain any-provider behavior.
  Validation and performance arms name the providers they require explicitly.
- 
+
  @param required - providers measured arm requires wet
 
  @param env - environment the keys and the Bedrock ledger's place are read

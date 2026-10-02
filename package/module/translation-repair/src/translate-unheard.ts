@@ -18,17 +18,17 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 
 /**
  Whether the producing stage behind this record heard nobody.
- 
+
  ONE DEFINITION, because three places ask: the driver deciding whether to
  cache, the wording builder deciding what the outcome is, and
  `assertUnheardKeptIncumbent`.
  Two spellings of it would eventually disagree, and the slice that fell between
  them would be cached as a decision nobody made.
- 
+
  @param record - settled slice record
- 
+
  @returns Whether no translator answered for this slice
- 
+
  @example
  ```ts
  if (heardNobody({ record, },)) l.warn('no translator answered',);
@@ -44,17 +44,17 @@ export function heardNobody(
 
 /**
  Names a cached record refused for having heard nobody.
- 
+
  TAGGED LIKE ITS SIBLINGS (`translate-heard-no-translator`,
  `translate-discarded-contradictory-slice`) rather than written as a sentence,
  because findings are read in bulk: an untagged one cannot be counted across a
  corpus, so a build that started refusing every cached slice would look like a
  run that simply had no cache.
- 
+
  @param sliceIndex - slice being asked again
- 
+
  @returns Finding naming the slice and why it was recomputed
- 
+
  @example
  ```ts
  findings.push(unheardCacheDiscardFinding({ sliceIndex, },),);
@@ -71,7 +71,7 @@ export function unheardCacheDiscardFinding(
 
 /**
  Raised when a stage that heard nobody reports having produced something.
- 
+
  @example
  ```ts
  throw new TranslateUnheardError({ message: 'slice 4 heard nobody and reports a change', },);
@@ -80,9 +80,9 @@ export function unheardCacheDiscardFinding(
 export class TranslateUnheardError extends Error {
   /**
    Builds the error naming the slice and what it claimed.
-   
+
    @param message - what the record claims that hearing nobody rules out
-   
+
    @example
    ```ts
    throw new TranslateUnheardError({ message: 'slice 4 heard nobody and reports a change', },);
@@ -96,18 +96,18 @@ export class TranslateUnheardError extends Error {
 
 /**
  Refuses a record that heard nobody and did not leave the archive alone.
- 
+
  @param sliceIndex - slice this record settles, for the message
- 
+
  @param record - settled record, checked only when its stage heard nobody
- 
+
  @param incumbentText - archive wording of this slice, read from the
  preparation rather than from the record, since the record is what is under
  suspicion
- 
+
  @throws {@link TranslateUnheardError} when the record carries wording other
  than the archive's, or claims a change, without a voice behind it
- 
+
  @example
  ```ts
  assertUnheardKeptIncumbent({ sliceIndex, record, incumbentText, },);

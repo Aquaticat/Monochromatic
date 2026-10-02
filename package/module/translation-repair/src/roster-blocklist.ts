@@ -18,7 +18,7 @@
 
 /**
  One blocked model spelling beside the owner's reason for it.
- 
+
  @example
  ```ts
  const entry: RosterBlocklistEntry = { id: 'qwen3.8-max', reason: 'absurd cost in money', };
@@ -43,7 +43,7 @@ const TOO_OUTDATED = 'too outdated';
 
 /**
  Every blocked spelling either provider serves as of 2026-09-01.
- 
+
  @example
  ```ts
  const everyEntry = ROSTER_BLOCKLIST;
@@ -145,14 +145,14 @@ export const ROSTER_BLOCKLIST: readonly RosterBlocklistEntry[] = [
 
 /**
  Trailing provider-path segment, lowercased, for family matching.
- 
+
  Both providers embed the model name last: Synthetic as
  `hf:vendor/Name`, Hyper as the bare name.
- 
+
  @param id - spelling as a provider serves it
- 
+
  @returns Name segment in lowercase
- 
+
  @example
  ```ts
  const name = modelNameOf({ id: 'hf:Qwen/Qwen3.6-Plus', },);
@@ -170,7 +170,7 @@ function modelNameOf(
 
 /**
  Whether the owner blocklist bars one spelling, beside the stated reason.
- 
+
  @example
  ```ts
  const verdict: BlocklistVerdict = { blocked: true, reason: 'too outdated', };
@@ -197,15 +197,15 @@ export type BlocklistVerdict =
 
 /**
  Owner's verdict on one spelling.
- 
+
  Family predicates cover the entries the owner phrased as families:
  Llama as a whole, and the Qwen3 line through 3.7 while every Qwen3.8
  variant except the exact-listed Max stays eligible.
- 
+
  @param id - spelling a provider serves or could serve
- 
+
  @returns Blocked with the verbatim reason, or eligible
- 
+
  @example
  ```ts
  const verdict = blocklistVerdictFor({ id: 'llama-5-800b', },);

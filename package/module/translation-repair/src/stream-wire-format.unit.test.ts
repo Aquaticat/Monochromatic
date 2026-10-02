@@ -1,16 +1,16 @@
 /**
  Tests for the wire-format choice.
- 
+
  THE SILENT FAILURE IS THE WHOLE POINT. Draining a stream with a reader that
  does not understand its grammar produces no error and no warning. The
  scanner simply matches nothing, the answer channel stays empty, and every
  runaway guard downstream reads a call that behaved perfectly and produced
  nothing. That is indistinguishable from a model that declined, so a
  misrouted stream would surface as a lost voice and be blamed on a provider.
- 
+
  The cases in this file therefore assert the WRONG reader sees nothing, not only
  that the right one sees something. Only the pair proves the choice matters.
- 
+
  @module
  */
 
@@ -64,13 +64,13 @@ const OPENAI_STREAM = [
 
 /**
  Characters one reader takes off one stream.
- 
+
  @param wireFormat - grammar to read it as
- 
+
  @param stream - body text to read
- 
+
  @returns Answer-channel characters the guards would have counted
- 
+
  @example
  ```ts
  const seen = charsSeen({ wireFormat: 'anthropic', stream: ANTHROPIC_STREAM, },);

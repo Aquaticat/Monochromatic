@@ -41,11 +41,11 @@ import {
 
 /**
  What one side of a screened finding rests on.
- 
+
  NAMED ABSENCE rather than an optional field: a side a category does not use
  is a different thing from a side that happens to be missing, and a reader
  that has to tell them apart from `undefined` will eventually get it wrong.
- 
+
  @example
  ```ts
  const reading: SideReading = { kind: 'unused', };
@@ -76,7 +76,7 @@ export type SideReading = {
 
 /**
  One finding that survived screening.
- 
+
  @example
  ```ts
  const finding: ScreenedFinding = { category: 'omission', source, candidate: { kind: 'unused', }, reason, };
@@ -106,7 +106,7 @@ export type ScreenedFinding = {
 
 /**
  What one auditor's answer amounts to once screened.
- 
+
  @example
  ```ts
  const screened: ScreenedReport = { verdict: 'defects-found', findings: [], dropped: [], };
@@ -133,14 +133,14 @@ export type ScreenedReport = {
 
 /**
  Which sides a category rests on.
- 
+
  @param category - category to ask about
- 
+
  @returns Whether each side is required
- 
+
  @throws {@link Error} when a category belongs to no anchoring rule, which is
  a vocabulary that grew without this rule growing with it
- 
+
  @example
  ```ts
  const { needsSource, } = quotesRequired({ category: 'omission', },);
@@ -188,19 +188,19 @@ function quotesRequired(
 
 /**
  Reads one side of one claim.
- 
+
  @param text - side the claim names
- 
+
  @param locator - span identifying which occurrence is meant
- 
+
  @param focus - smallest span carrying the claimed change
- 
+
  @param side - which side this is, for the refusal wording
- 
+
  @param needed - whether this category rests on this side
- 
+
  @returns What the side rests on, or why the claim falls
- 
+
  @example
  ```ts
  const reading = readSide({ text, locator, focus, side: 'source', needed: true, },);
@@ -260,17 +260,17 @@ const DROPPED_WORD_LIMIT = 32;
 
 /**
  Bounds a word a model supplied to what a drop reason needs.
- 
+
  THE DIAGNOSTIC EXISTS TO SAY WHICH WORD, not to store prose. A drop reason
  is persisted in every run row, and a model answering the category or verdict
  field with a sentence would put that sentence in the run file whole. One
  token, cut at a fixed length on a whole character, names the word and
  carries nothing after it.
- 
+
  @param word - category or verdict as the model wrote it
- 
+
  @returns Its first whitespace-delimited token, at most the limit long
- 
+
  @example
  ```ts
  const named = boundedWord({ word: 'altered whiskers, and more', },);
@@ -302,15 +302,15 @@ function boundedWord({ word, }: { readonly word: string; },): string {
 
 /**
  Screens one claimed finding against both texts.
- 
+
  @param finding - claim as the auditor sent it
- 
+
  @param sourceText - original
- 
+
  @param candidateText - rendering under audit
- 
+
  @returns The finding with the texts' own spans, or why it was dropped
- 
+
  @example
  ```ts
  const screened = screenFinding({ finding, sourceText, candidateText, },);
@@ -329,7 +329,7 @@ function screenFinding(
 ): ScreenedFinding | { readonly dropped: string; } {
   /**
    Category, when it is one this version names.
-   
+
    FOUND RATHER THAN ASSERTED: the member comes back out of the vocabulary
    itself, so nothing here claims a string is a category it never checked.
    */
@@ -386,15 +386,15 @@ function screenFinding(
 
 /**
  Screens one auditor's whole answer.
- 
+
  @param report - reply as the wire guard accepted it
- 
+
  @param sourceText - original
- 
+
  @param candidateText - rendering under audit
- 
+
  @returns Findings that proved themselves, and why the rest fell
- 
+
  @example
  ```ts
  const screened = screenRenderingAudit({ report, sourceText, candidateText, },);
@@ -425,7 +425,7 @@ export function screenRenderingAudit(
 
   /**
    Verdict this version knows, or the absence of one.
-   
+
    A VERDICT THIS VERSION DOES NOT KNOW READS AS `uncertain` rather than as a
    refusal of the whole answer: the findings underneath it are checked against
    the texts either way, and a mis-cast verdict is not a reason to discard

@@ -34,10 +34,10 @@ import {
 
 /**
  Refusal of an assembly whose change sets or document contradict each other.
- 
+
  MARKED: its message is the sentence `assemblySentence` writes from set
  names, kinds and numbers.
- 
+
  @example
  ```ts
  throw new AssemblyContractError({ fault: { kind: 'reassembly-differs', survivors: 0, }, },);
@@ -67,19 +67,19 @@ export class AssemblyContractError extends Error {
 
 /**
  Refuses a replacement whose text is what the slice already said.
- 
+
  Writing a slice back over itself changes no byte of the document and still
  counts, in every later rate and index set, as a slice the lane changed. That
  is worse than a crash: the run settles, the artifact records it, and the
  number is wrong wherever it is read afterwards.
- 
+
  @param slices - prepared slice pairs, which supply each incumbent
- 
+
  @param replacements - what the lane wants assembly to write
- 
+
  @throws AssemblyContractError when a replacement names an unknown slice, or
  repeats its incumbent verbatim
- 
+
  @example
  ```ts
  assertReplacementsChange({ slices, replacements, },);
@@ -132,7 +132,7 @@ export function assertReplacementsChange(
 
 /**
  Both index sets a lane result carries, checked and put in document order.
- 
+
  @example
  ```ts
  const { shipped, withdrawn, } = orderedChangeSets({ sliceCount, shipped, withdrawn, },);
@@ -153,23 +153,23 @@ export type OrderedChangeSets = {
 /**
  Checks everything about both index sets that needs no slice count, and
  returns them in document order.
- 
+
  SPLIT OUT OF {@link orderedChangeSets} rather than duplicated, for the one
  reader that has the sets without their denominator: a settled artifact
  written before `sliceCount` was recorded carries both index arrays and no way
  to bound them. Every OTHER rule still applies to it, and a reader that
  skipped them all for want of a count would accept a repeat or an overlap it
  can plainly see.
- 
+
  @param shipped - slices the document carries a change for
- 
+
  @param withdrawn - slices whose change was taken back
- 
+
  @returns Both sets ascending
- 
+
  @throws AssemblyContractError when an index is not a whole number, is
  negative, repeats within its set, or appears in both
- 
+
  @example
  ```ts
  const checked = checkedChangeSets({ shipped, withdrawn, },);
@@ -256,13 +256,13 @@ export function checkedChangeSets(
 /**
  Checks both index sets against the slices they are out of, and returns them
  in document order.
- 
+
  Both lane contracts claim these sets are disjoint, in range and free of
  repeats, and until now nothing checked any of it. The shipped set was sorted
  at each call site and the withdrawn set was passed through in whatever order
  the guard took slices back, so two lanes compared slice by slice were being
  read from lists ordered by different rules.
- 
+
  WHICH FAILURE A CALLER SEES when a set breaks more than one rule is settled
  here rather than left to fall out of the code: everything a slice count is
  not needed for is checked FIRST, and the range check reads the sets after
@@ -271,18 +271,18 @@ export function checkedChangeSets(
  order rather than in the order the caller listed it. Nothing depends on the
  choice; it is pinned so that changing it is a decision rather than a side
  effect.
- 
+
  @param sliceCount - slices the preparation produced, which bounds both sets
- 
+
  @param shipped - slices the document carries a change for
- 
+
  @param withdrawn - slices whose change was taken back
- 
+
  @returns Both sets ascending
- 
+
  @throws AssemblyContractError when an index is not a whole number, falls
  outside the prepared slices, repeats within its set, or appears in both
- 
+
  @example
  ```ts
  const ordered = orderedChangeSets({ sliceCount, shipped, withdrawn, },);
@@ -327,7 +327,7 @@ export function orderedChangeSets(
 /**
  Names the slices a returned document carries a change for, refusing any
  document its own surviving replacements do not reconstruct.
- 
+
  DERIVED RATHER THAN ACCEPTED, which is the whole point. Both lanes used to
  map the surviving replacements to indices themselves and hand the result here
  as an independent argument, so a caller passing a set that named the wrong
@@ -335,7 +335,7 @@ export function orderedChangeSets(
  2 and 3 while reporting only slice 1 passed. Taking the replacements instead
  makes the two impossible to disagree, and re-splicing them is what proves the
  returned text is the one those replacements make.
- 
+
  ONE EMPTINESS CHECK SURVIVES THE RE-SPLICE, the one it cannot imply. A
  document that moved while nothing survived fails the re-splice itself, since
  no replacements reassemble to the archive text; a separate check for it never
@@ -347,31 +347,31 @@ export function orderedChangeSets(
  two adjacent slices whose replacements each differ from their own incumbent
  can reassemble to the archive text, and refusing THAT would crash a run the
  models got right.
- 
+
  PRECONDITION, and the only way a legitimate run reaches a refusal here: the
  replacements must be what `guardFootnoteAssembly` LET STAND, not what a lane
  proposed. The guard is where a net-zero set becomes no survivors, so calling
  this first, on a set that reassembles to the archive text, refuses a run
  nobody got wrong. The message says so, because the fix is the call order
  rather than anything about the document.
- 
+
  @param incumbentText - archive document the lane started from
- 
+
  @param assembledText - document the lane is about to return
- 
+
  @param slices - prepared slices, which place every replacement
- 
+
  @param survivingReplacements - what `guardFootnoteAssembly` let stand, which
  is the only admissible source for both the text and the index set; a set that
  has not been through the guard can be a legitimate net-zero this refuses
- 
+
  @returns Slices the returned document carries a change for
- 
+
  @throws AssemblyContractError when a surviving replacement repeats its own
  incumbent, when re-splicing them does not reproduce the returned document
  (a document that moved while nothing survived among them), or when it did
  not move while something did
- 
+
  @example
  ```ts
  const shipped = deriveShippedIndices({ incumbentText, assembledText, slices, survivingReplacements, },);

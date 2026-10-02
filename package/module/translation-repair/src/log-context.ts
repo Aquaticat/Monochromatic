@@ -262,9 +262,9 @@ function prefixing(
 
 /**
  Entry, lane and slice tags for the line being written.
- 
+
  @returns `[entry] [lane slice n] `, or empty outside an entry
- 
+
  @example
  ```ts
  const prefix = contextPrefix(); // '[Tabby] [repair slice 3] '
@@ -285,9 +285,9 @@ function contextPrefix(): string {
 
 /**
  Lane and slice tag for the line being written.
- 
+
  @returns `[lane slice n] `, or empty outside a slice
- 
+
  @example
  ```ts
  const prefix = slicePrefix(); // '[repair slice 3] '

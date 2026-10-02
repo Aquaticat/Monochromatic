@@ -54,7 +54,7 @@ import { writerRoundGraceMs, } from './writer-grace-override.ts';
 
 /**
  Everything the editor stage produced for one chunk.
- 
+
  @example
  ```ts
  const { patch, heardEditors, } = await runEditorStage({ ... },);
@@ -87,7 +87,7 @@ export type EditorStageResult = {
   /**
    Who wrote {@link EditorStageResult.patch}, absent when the untouched
    translation ships.
-   
+
    The one authority on authorship for this stage. Reading it off the rounds
    instead misses the editor whose patch ships when the whole-chunk judges
    decline, and credits envelope winners whose text lost to a rival
@@ -106,45 +106,45 @@ export type EditorStageResult = {
 
 /**
  Runs the editor ensemble over one chunk and returns the patch that ships.
- 
+
  @param client - injected model client
- 
+
  @param editorModelIds - editors proposing candidates
- 
+
  @param judgeModelIds - whole roster selection draws judges from
- 
+
  @param editorRuleAddendum - extra rule line for prompt calibration
- 
+
  @param sourceText - original chunk text
- 
+
  @param targetText - translation chunk text the envelopes were cut from
- 
+
  @param envelopes - non-overlapping envelopes in document order
- 
+
  @param issues - adjudicated issues the envelopes serve
- 
+
  @param neighbouringSourceText - source context also supplied to selecting judges
- 
+
  @param neighbouringIncumbentText - placement context for editors
- 
+
  @param documentSourceText - same-entry evidence forwarded to selectors, not an editor coverage expansion
- 
+
  @param identityContext - declared names and handles, for the editors and both selections (ledger S14)
- 
+
  @param referenceContext - what the pages the original cites say, for the same readers (ledger S14)
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Winning patch plus findings
- 
+
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when either
  roster repeats a model, no editor is seated, or too few judges are seated to
  reach the minimum vote weight
- 
+
  @example
  ```ts
  const editor = await runEditorStage({ ... },);

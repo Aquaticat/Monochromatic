@@ -1,16 +1,16 @@
 /**
  Tests for seating judges that did not propose the claim they judge.
- 
+
  The case that matters is the one that would produce a confident wrong
  number: a claim every seated model proposed, which must be reported rather
  than dropped. The rate renderer tested beside it had no caller after its
  runner changed and went on 2026-09-29 (ledger B30); the crosscheck runner
  reads `MIN_JUDGED_CLAIMS` itself.
- 
+
  Model ids are the real roster, since the rule under test is about the
  relationship between authorship and the seats available. No corpus text is
  involved.
- 
+
  @module
  */
 

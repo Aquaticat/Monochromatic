@@ -9,7 +9,7 @@ import { tableCell, } from './table-cell.ts';
 
 /**
  Affinity at or above which a unique candidate may anchor.
- 
+
  Vestigial in practice and kept for the case it was written for.
  `headingAffinity` divides by the smaller token count, so a single-token
  heading scores 1.00 against any heading containing that token, and the
@@ -46,13 +46,13 @@ export const GAP: LexScore = [
 
 /**
  Adds two lexicographic scores component by component.
- 
+
  @param left - first score
- 
+
  @param right - second score
- 
+
  @returns Sum
- 
+
  @example
  ```ts
  const total = addScore({ left, right, },);
@@ -76,17 +76,17 @@ export function addScore(
 
 /**
  Reports whether one score beats another.
- 
+
  Trusted anchors dominate, then FEWER gaps, then soft affinity. The middle
  term inverts, which is the whole reason a gap can win here and cannot win in
  the shipped scorer.
- 
+
  @param candidate - score under test
- 
+
  @param incumbent - score to beat
- 
+
  @returns True when the candidate is strictly better
- 
+
  @example
  ```ts
  const wins = beats({ candidate, incumbent, },);
@@ -110,13 +110,13 @@ export function beats(
 
 /**
  Reports whether two scores are identical.
- 
+
  @param left - first score
- 
+
  @param right - second score
- 
+
  @returns True when every component matches
- 
+
  @example
  ```ts
  const same = sameScore({ left, right, },);
@@ -153,13 +153,13 @@ export type Grid = {
 
 /**
  Scores every possible pairing and marks the trustworthy ones.
- 
+
  @param sourceHeadings - original-side unit labels
- 
+
  @param targetHeadings - translation-side unit labels
- 
+
  @returns Affinity and trust grids
- 
+
  @example
  ```ts
  const grid = buildGrid({ sourceHeadings, targetHeadings, },);
@@ -220,15 +220,15 @@ export function buildGrid(
 
 /**
  Scores pairing one source unit with one target unit.
- 
+
  @param grid - affinity and trust
- 
+
  @param sourceIndex - source unit
- 
+
  @param targetIndex - target unit
- 
+
  @returns Lexicographic cost of that pairing
- 
+
  @example
  ```ts
  const cost = pairScore({ grid, sourceIndex: 0, targetIndex: 0, },);

@@ -2,9 +2,9 @@
  Tests for the seam between the block pairing and the footnote relabel:
  definition blocks named as order-free, a crossing definition pair kept out
  of the slicing and read by label.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

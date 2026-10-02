@@ -1,14 +1,14 @@
 /**
  Tests for what shape the rendering audit accepts off the network.
- 
+
  SHAPE IS THE ONLY QUESTION HERE. A reply carrying words this version does not
  know is a voice that ANSWERED, and refusing it at the wire would file it as a
  lost voice instead, which is how a vocabulary problem disappears into the
  degradation rate. Whether the words are known, and whether the quotes prove
  anything, belongs to the screen.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

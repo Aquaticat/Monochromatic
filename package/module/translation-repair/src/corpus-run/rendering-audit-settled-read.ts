@@ -19,7 +19,7 @@ import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
 
 /**
  What the two halves of the population look like, read apart.
- 
+
  @example
  ```ts
  const split: AudienceSplit = { audits: 'archive', subjects: 16, claimed: 30, ... };
@@ -71,11 +71,11 @@ export type AudienceSplit = {
 
 /**
  How often one auditor thinks a rendering is worth a claim.
- 
+
  Exactly this was measured over the introduced-defect probe, finding the
  three voices disagreeing by more than an order of magnitude. This is the same
  reading on a different stage, so the two can be compared.
- 
+
  @example
  ```ts
  const rate: VoiceRate = { modelId: 'hf:cat/Tabby-1', asked: 40, answered: 38, spoke: 12, claims: 19, dropped: 2, };
@@ -121,11 +121,11 @@ export type VoiceRate = {
 /**
  An omission and an addition on neighbouring slices of one document, which
  the relocation rule says is one relocation rather than two defects.
- 
+
  REPORTED AS A CANDIDATE rather than subtracted from the tally. Per-slice
  judging cannot tell a relocation from a fabrication, and neither can this; it
  can only say which pairs a human should look at before either is counted.
- 
+
  @example
  ```ts
  const pair: AuditRelocationPair = { runSet, entryId, omissionAt: 3, additionAt: 4, };
@@ -166,11 +166,11 @@ export type AuditRelocationPair = {
 
 /**
  Every claim one subject's roster made that anchored.
- 
+
  @param row - one audited slice
- 
+
  @returns Findings across all voices, flattened
- 
+
  @example
  ```ts
  const claims = anchoredClaims({ row, },);
@@ -191,11 +191,11 @@ export function anchoredClaims(
 
 /**
  Defects two auditors located identically on one subject.
- 
+
  @param row - one audited slice
- 
+
  @returns Strict-tier count
- 
+
  @example
  ```ts
  const strict = corroboratedIn(row,);
@@ -209,11 +209,11 @@ function corroboratedIn(row: SettledAuditRow,): number {
 
 /**
  Groups of voices that agreed on one subject without quoting identical spans.
- 
+
  @param row - one audited slice
- 
+
  @returns Loose-tier count
- 
+
  @example
  ```ts
  const loose = agreedIn(row,);
@@ -227,11 +227,11 @@ function agreedIn(row: SettledAuditRow,): number {
 
 /**
  Pairs that nearly agreed on one subject.
- 
+
  @param row - one audited slice
- 
+
  @returns Near-miss count
- 
+
  @example
  ```ts
  const nearly = nearIn(row,);
@@ -245,13 +245,13 @@ function nearIn(row: SettledAuditRow,): number {
 
 /**
  Sums a per-row number.
- 
+
  @param rows - rows to sum over
- 
+
  @param of - what to take from each
- 
+
  @returns Total
- 
+
  @example
  ```ts
  const total = sumOver({ rows, of: nearIn, },);
@@ -279,13 +279,13 @@ function sumOver(
 
 /**
  Reads one half of the population.
- 
+
  @param rows - every audited slice
- 
+
  @param audits - which half to read
- 
+
  @returns That half, summed
- 
+
  @example
  ```ts
  const archive = splitFor({ rows, audits: 'archive', },);
@@ -369,7 +369,7 @@ export function splitFor(
 
 /**
  Reads how often each auditor thought a rendering was worth a claim.
- 
+
  ONE ROW PER ROSTER MEMBER when the run recorded its roster, in roster order,
  so a member the roster lost on every subject is a row at zero rather than an
  absence: the run file says it was asked, and a reader of voice-loss
@@ -378,14 +378,14 @@ export function splitFor(
  run written before the field existed did, one row per voice heard is all
  that can honestly be said, and `asked` equals `answered` there; inventing a
  zero for a name nobody recorded would claim it was asked from no evidence.
- 
+
  @param rows - every audited slice
- 
+
  @param roster - models the run asked, in roster order, empty where the run
  recorded none
- 
+
  @returns One rate per auditor
- 
+
  @example
  ```ts
  const rates = rateByVoice({ rows, roster, },);

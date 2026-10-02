@@ -24,7 +24,7 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
  OpenAI-style structured-output constraint;
  every catalog model advertises `structured_outputs`,
  but client-side validation stays because per-model strictness is unverified.
- 
+
  @example
  ```ts
  const format: JsonSchemaResponseFormat = {
@@ -62,13 +62,13 @@ export type JsonSchemaResponseFormat = {
 
 /**
  One message carrying parts rather than a plain string.
- 
+
  FOR IMAGES, and only images so far. A picture is sent so a transcribed
  passage has a source that can be CHECKED rather than only preserved, and the
  provider takes that as an OpenAI-compatible content-part array. The part type
  is the shared one from `@monochromatic-dev/module-llm-type`, so nothing here
  invents a protocol.
- 
+
  @example
  ```ts
  const message: VisionMessage = {
@@ -94,18 +94,18 @@ export type VisionMessage = {
 
 /**
  Text of a message, whichever shape it carries.
- 
+
  ONE READER RATHER THAN A CAST AT EVERY SITE. Widening `content` to carry
  picture parts left several readers expecting a string, and a cast at each of
  them would be five places to get wrong rather than one. A picture is not
  recoverable as text and is named by its part type instead, which is what a
  witness or a test assertion wants: what the model was ASKED, not the bytes it
  was shown.
- 
+
  @param message - message to read
- 
+
  @returns Its text, with any non-text part named
- 
+
  @example
  ```ts
  const asked = messageText({ message, },);
@@ -130,21 +130,21 @@ export function messageText({ message, }: { readonly message: ChatMessage | Visi
 
 /**
  Whether a conversation shows anything that only a vision stack can read.
- 
+
  ASKED BECAUSE REACH IS NARROWER FOR PICTURES THAN FOR TEXT, and not by the
  same models on both providers. `roster-reach.ts` records the case: one model
  reads pictures on one provider and not on the other, same weights, different
  serving stack. A router that asked one question for both would either send a
  picture where it cannot be read or refuse one that can.
- 
+
  ANY NON-TEXT PART COUNTS, rather than the image part alone. A part this
  pipeline has not met yet is still something a text-only stack cannot take,
  and guessing the other way is the mistake that costs a call.
- 
+
  @param messages - conversation as the caller built it
- 
+
  @returns Whether any message carries a part that is not text
- 
+
  @example
  ```ts
  const needsVision = carriesPicture({ messages, },);
@@ -169,7 +169,7 @@ export function carriesPicture(
 
 /**
  One chat exchange request.
- 
+
  @example
  ```ts
  const request: ChatTextRequest = {
@@ -187,7 +187,7 @@ export type ChatTextRequest = {
 
   /**
    Conversation sent as-is.
-   
+
    TEXT OR VISION, in one field rather than in two request shapes. The body is
    a pass-through, `messages: request.messages` inside a `JSON.stringify`, and
    the provider is OpenAI-compatible, so a message whose content is an array of
@@ -245,7 +245,7 @@ export type ChatTextRequest = {
 
 /**
  Raw text outcome of one chat exchange.
- 
+
  @example
  ```ts
  const reply: ChatTextReply = { text: '喵。', };
@@ -271,7 +271,7 @@ export type ChatTextReply = {
 
   /**
    Why the model stopped, verbatim from the provider, when it said.
-   
+
    CARRIED SO A CALLER CAN TELL A CUT-OFF REPLY FROM A MALFORMED ONE. Those
    arrive identically, as content that will not parse, and they need opposite
    remediation: one points at the token ceiling, the other at the prompt and
@@ -291,7 +291,7 @@ export type ChatTextReply = {
 /**
  One schema-validated chat request:
  text request plus the guard that admits parsed content.
- 
+
  @example
  ```ts
  const request: ChatJsonRequest<Verdict> = { ...textRequest, validate: isVerdict, };
@@ -309,7 +309,7 @@ export type ChatJsonRequest<ValueT,> = ChatTextRequest & {
  `truncated-completion` marks the provider's own token-ceiling stop,
  which invalidates even parseable content because a syntactically complete
  prefix does not prove generation completed.
- 
+
  @example
  ```ts
  const reason: SchemaMismatchReason = 'truncated-completion';
@@ -324,7 +324,7 @@ export type SchemaMismatchReason =
 /**
  Outcome of one schema-validated chat exchange.
  Refusals and mismatches are data (reroute and scorecard), never exceptions.
- 
+
  @example
  ```ts
  const outcome: ChatJsonOutcome<Verdict> = { kind: 'ok', value, rawText, };
@@ -406,13 +406,13 @@ export type ChatJsonOutcome<ValueT,> =
 
 /**
  What every provider's client can do, whichever protocol it speaks.
- 
+
  THE PART THAT IS NOT ABOUT BUDGET. Both providers take a conversation and
  return an answer; what they do NOT share is how the money is counted, which
  is a five-hour and weekly quota on one and a credit balance on the other.
  Splitting the surface here lets a router hold two clients as one type and
  lets a stage take either without knowing which it has.
- 
+
  @example
  ```ts
  async function ask({ caller, }: { readonly caller: ModelCaller; },): Promise<void> {}
@@ -442,7 +442,7 @@ export type ModelCaller = {
 
 /**
  Injected-transport client surface drivers consume.
- 
+
  @example
  ```ts
  const client: SyntheticClient = createSyntheticClient({ apiKey, transport, },);

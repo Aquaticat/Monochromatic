@@ -24,22 +24,22 @@ import { parseNaturalnessReviewRound, } from './artifact-two-lane-read-naturalne
 
 /**
  Reads schema-eight or later absolute review and binds final round to final text.
- 
+
  @param value - unknown review field
- 
+
  @param path - artifact path
- 
+
  @param finalText - exact polish text artifact says ships
- 
+
  @param correctionChainRequired - whether generation requires transition digests
- 
+
  @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  block (generation ten) rather than the refinable paragraphs alone
- 
+
  @param quorumBasisRequired - whether generation stores the effective wider quorum
- 
+
  @returns Cross-validated review audit
- 
+
  @example
  ```ts
  const review = parseNaturalnessReview({ value, path, finalText, });
@@ -65,11 +65,11 @@ export function parseNaturalnessReview(
   /**
    Reads one schema-nine-or-later confirmation round under this review's
    paragraph set.
-   
+
    @param round - unknown confirmation round and its path
-   
+
    @returns Exact candidate and paragraph-bound round
-   
+
    @example
    ```ts
    const parsed = parseConfirmationRound({ value, path, },);

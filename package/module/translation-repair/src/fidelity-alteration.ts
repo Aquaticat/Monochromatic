@@ -29,7 +29,7 @@ import { isAsciiDigit, } from './ascii-letters.ts';
 
 /**
  Shortest digit run worth altering.
- 
+
  Two, because a lone digit collides constantly: it appears inside longer
  numbers, in list markers and in dates on both sides, so neither the
  occurrence check nor the support check would mean anything.
@@ -43,11 +43,11 @@ const REPLACEMENT_TRIES = 9;
 
 /**
  Every maximal run of digits in a passage, in the order they appear.
- 
+
  @param text - passage to scan
- 
+
  @returns Digit runs, duplicates included
- 
+
  @example
  ```ts
  const runs = digitRuns({ text: cleanText, },);
@@ -97,13 +97,13 @@ export function digitRuns({ text, }: { readonly text: string; },): readonly stri
 
 /**
  Whether a passage carries a string exactly once.
- 
+
  @param text - passage to search
- 
+
  @param needle - string to count
- 
+
  @returns Whether exactly one occurrence exists
- 
+
  @example
  ```ts
  const unique = occursOnce({ text: cleanText, needle: '2004', },);
@@ -132,13 +132,13 @@ function occursOnce(
 
 /**
  Number the original states and the translation renders exactly once.
- 
+
  @param cleanText - archive English for this slice
- 
+
  @param sourceText - Chinese original for the same slice
- 
+
  @returns Longest such number, empty when the slice carries none
- 
+
  @example
  ```ts
  const shared = sharedNumber({ cleanText, sourceText, },);
@@ -155,7 +155,7 @@ export function sharedNumber(
 ): string {
   /**
    Numbers the ORIGINAL states in its own right.
-   
+
    WHOLE RUNS RATHER THAN SUBSTRINGS, which decides whether the fixture has
    ground truth at all. `sourceText.includes('2004')` is true of a Chinese
    carrying `120045`, a QQ number or a phone number, and this corpus carries
@@ -198,15 +198,15 @@ export function sharedNumber(
 
 /**
  A different number of the same shape that neither side supports.
- 
+
  @param original - number as both sides state it
- 
+
  @param cleanText - archive English, which must not already carry the result
- 
+
  @param sourceText - Chinese original, which must not state it either
- 
+
  @returns Replacement, empty when every candidate collides
- 
+
  @example
  ```ts
  const wrong = unsupportedVariant({ original: '2004', cleanText, sourceText, },);

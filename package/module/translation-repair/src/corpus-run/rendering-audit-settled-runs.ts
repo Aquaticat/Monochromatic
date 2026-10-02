@@ -25,26 +25,26 @@ import {
 
 /**
  Reads the persisted rows of one run.
- 
+
  VALIDATES ONLY WHAT THE READINGS TOUCH, and says so: a full parser for a
  shape this module also writes would be two copies of one contract, and the
  questions here are answered from a handful of fields.
- 
+
  Exported through the barrel for the built bundle's tests; `main` and
  `printAcross` are its callers.
- 
+
  @internal
- 
+
  @param path - persisted run file
- 
+
  @returns Rows as the probe wrote them, the archive that run named, and the
  roster it asked, empty for a run written before the roster was kept
- 
+
  @throws {@link ArtifactParseError} when the file is not an object
- 
+
  @throws {@link StatedRefusalError} when it carries no rows array, which
  means it is not a run of this probe rather than that the run was quiet
- 
+
  @example
  ```ts
  const { rows, archiveDir, roster, } = await readRunRows({ path, },);
@@ -91,7 +91,7 @@ export async function readRunRows(
 
   /**
    What that run was pointed at, in its own words.
-   
+
    FROM THE FILE, never from this invocation's arguments. Reading an old run
    with `--run` would otherwise print the archive THIS command defaulted to
    and attribute the rows to it, which is a confident misstatement of where
@@ -114,22 +114,22 @@ export async function readRunRows(
 
 /**
  Finds the newest run of this probe.
- 
+
  Names sort lexically by the instant they carry, so the last name is the
  newest run without reading a single file.
- 
+
  Exported through the barrel for the built bundle's tests; `main` is its
  only caller.
- 
+
  @internal
- 
+
  @param runsDir - resolved runs directory
- 
+
  @returns Path of the newest run
- 
+
  @throws {@link StatedRefusalError} when the probe has never run, since
  reporting nothing would look exactly like reporting a clean run
- 
+
  @example
  ```ts
  const path = await newestRun({ runsDir, },);
@@ -172,11 +172,11 @@ export async function newestRun({ runsDir, }: { readonly runsDir: string; },): P
 
 /**
  Counts slots in a phrase that reads correctly at one.
- 
+
  @param count - how many slots
- 
+
  @returns Phrase to open a sentence with
- 
+
  @example
  ```ts
  console.log(`${slotsPhrase({ count: 1, },)} that cannot be checked`,);
@@ -192,16 +192,16 @@ function slotsPhrase(
 
 /**
  Pairs this run against an earlier one and prints the spread.
- 
+
  Exported through the barrel for the built bundle's tests; `main` is its
  only caller.
- 
+
  @internal
- 
+
  @param rows - rows of the run being reported
- 
+
  @param against - path of the run to pair against
- 
+
  @example
  ```ts
  await printAcross({ rows, against, },);

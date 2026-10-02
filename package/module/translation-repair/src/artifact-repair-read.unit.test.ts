@@ -2,7 +2,7 @@
  Tests for reading repair provenance back out of a run artifact, including
  the one tolerance: artifacts written before repair recording existed.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -19,11 +19,11 @@ import {
 
 /**
  Builds one issue record wrapper carrying repair provenance.
- 
+
  @param overrides - fields replacing the well-formed defaults
- 
+
  @returns Record the reader parses
- 
+
  @example
  ```ts
  const record = catRecord({},);

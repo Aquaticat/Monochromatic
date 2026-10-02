@@ -50,7 +50,7 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Sentinel some gateways append after the terminator, carrying no event.
- 
+
  SPELLED HERE RATHER THAN IMPORTED from `stream-completion.ts`: that file's
  constant is private to the OpenAI-shaped reader, and the two readers are
  kept independent so a change to one wire format cannot reach the other.
@@ -103,7 +103,7 @@ type AnthropicFold = {
 
 /**
  Usage fields this reader counts, each beside the series it lands in.
- 
+
  THE PROMPT IS THREE OF THEM (ledger B88). Anthropic's `input_tokens` counts
  only the tokens after the last cache breakpoint; the prompt-caching
  documentation gives the prompt as that plus the tokens read from and
@@ -131,21 +131,21 @@ const USAGE_SERIES = [
 
 /**
  Records the token counts a usage block carried, ignoring absent ones.
- 
+
  THE TWO FRAMES NEST IT DIFFERENTLY, which is why the holder is a parameter
  rather than read off the frame here. `message_delta` puts `usage` at the top
  level, while `message_start` puts it inside `message` alongside the model
  name and the null stop reason. Reading only the top level would silently drop
  every prompt-token count.
- 
+
  A NULL IS ABSENT, not zero: OpenRouter's Messages endpoint opened with
  `cache_read_input_tokens: null` and closed with a count (captured
  2026-09-03), and the count is the one kept.
- 
+
  @param holder - object that directly holds the `usage` block
- 
+
  @param fold - accumulator to append to
- 
+
  @example
  ```ts
  foldUsage({ holder: frame, fold, },);
@@ -181,11 +181,11 @@ function foldUsage(
 
 /**
  Folds one `message_start` frame's usage, which it nests inside `message`.
- 
+
  @param frame - parsed message-start frame
- 
+
  @param fold - accumulator to append to
- 
+
  @example
  ```ts
  foldStart({ frame, fold, },);
@@ -215,17 +215,17 @@ function foldStart(
 
 /**
  Reads the text an answer-carrying delta must hold.
- 
+
  @param delta - delta descriptor of a frame that carries the answer
- 
+
  @param kind - delta type, which names the field
- 
+
  @param field - field the text rides in
- 
+
  @returns The fragment, empty only where the provider sent it empty
- 
+
  @throws {@link MalformedCompletionError} when the field is absent or not a string
- 
+
  @example
  ```ts
  const fragment = answerFragmentOf({ delta, kind: 'text_delta', field: 'text', },);
@@ -258,11 +258,11 @@ function answerFragmentOf(
 
 /**
  Folds one `content_block_delta` frame's answer text, if it carried any.
- 
+
  READS BOTH `text_delta` AND `input_json_delta`, because a model asked for a
  tool answers in the second and a model asked for prose answers in the first,
  and this pipeline uses both shapes.
- 
+
  A FRAGMENT THE FRAME SHOULD HOLD AND DOES NOT REFUSES THE BODY (ledger B89).
  The streaming documentation gives every such frame a `delta`, every
  `text_delta` a `text` and every `input_json_delta` a `partial_json`;
@@ -270,13 +270,13 @@ function answerFragmentOf(
  which a prose answer then carried into a page. A delta of a type this
  reader does not fold, a new one included, is passed over, and so is one
  naming no type, which cannot be told from a type added later.
- 
+
  @param frame - parsed delta frame
- 
+
  @param fold - accumulator to append to
- 
+
  @throws {@link MalformedCompletionError} when the frame carries no delta, or an answer delta carries no text
- 
+
  @example
  ```ts
  foldDelta({ frame, fold, },);
@@ -332,11 +332,11 @@ function foldDelta(
 
 /**
  Folds one `message_delta` frame's stop reason and usage.
- 
+
  @param frame - parsed message-delta frame
- 
+
  @param fold - accumulator to append to
- 
+
  @example
  ```ts
  foldMessageDelta({ frame, fold, },);
@@ -379,11 +379,11 @@ function foldMessageDelta(
 
 /**
  Token counts as a READER sees them, with no way to append.
- 
+
  A SEPARATE TYPE FROM {@link AnthropicFold} because the accumulator is
  deliberately mutable and this function only reads it. Taking the accumulator
  here would hand a reader the ability to change what it is reporting on.
- 
+
  @example
  ```ts
  const counts: ReportedCounts = { inputTokens: [41,], cacheWriteTokens: [], cacheReadTokens: [], completionTokens: [12,], };
@@ -393,18 +393,18 @@ type ReportedCounts = Readonly<Record<(typeof USAGE_SERIES)[number][1], readonly
 
 /**
  Reads a count series as the total it reports.
- 
+
  THE LAST REPORT, because `message_delta` counts are cumulative (the
  streaming documentation's warning) and may repeat or update what
  `message_start` reported. Zero where the stream reported none, which only
  a cache series may be read as: a stream reporting no cache field used no
  cache this reader can count. The input and output series are checked for
  a report before this is asked (ledger B94).
- 
+
  @param series - one count series, in arrival order
- 
+
  @returns Its last report, zero when it holds none
- 
+
  @example
  ```ts
  const fresh = latestOf({ series: counts.inputTokens, },);
@@ -417,20 +417,20 @@ function latestOf({ series, }: { readonly series: readonly number[]; },): number
 /**
  Usage fragment for the result, present only when the stream reported both
  its prompt count and its completion count.
- 
+
  BOTH OR NOTHING (ledger B94), as `readUsage` in `completion-shape.ts` reads
  the OpenAI-compatible wire. Usage was reported once any series held a
  report, and a series never reported read as zero, so a stream that sent
  its completion count alone came back with a prompt count of zero nobody
  measured. A cache series still reads as zero when absent, as
  {@link latestOf} explains.
- 
+
  @param counts - token counts the body reported, read only
- 
+
  @param l - logger of the reader that folded them
- 
+
  @returns Spreadable fragment carrying usage, or nothing
- 
+
  @example
  ```ts
  const fragment = usageOf({ counts: fold, l: rl, },);
@@ -507,13 +507,13 @@ function usageOf(
 
 /**
  Reassembles one drained Anthropic Messages body into a completion.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns Answer text, stop reason, and usage
- 
+
  @throws {@link MalformedCompletionError} when an event is not JSON, an error event arrived, or `message_stop` never did
- 
+
  @example
  ```ts
  const extracted = extractAnthropicCompletion({ bodyText: reply.bodyText, },);

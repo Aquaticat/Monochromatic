@@ -1,14 +1,14 @@
 /**
  Tests for the record the repair lane keeps of each judged round.
- 
+
  WHY THE DECLINE CASE IS THE POINT. A round that chose nothing carries the
  same ballots a round that chose something does, and it is the shape this lane
  produces whenever a panel cannot agree. A recorder that kept only winners
  would drop exactly the rounds where the judges were divided, which is where
  the reasoning is worth reading.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

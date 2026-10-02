@@ -33,7 +33,7 @@ const MIN_REFINE_CHARS = 120;
 
 /**
  Longest paragraph the lane will attempt.
- 
+
  A cap rather than an optimization: every protected atom in a paragraph has to
  survive in order, so a very long paragraph multiplies the ways a rewrite can
  silently drop one while still reading well.
@@ -49,7 +49,7 @@ const ELIGIBLE_KIND = 'paragraph';
 
 /**
  Parse findings that make the tree a LESS faithful account of the bytes.
- 
+
  `invisible-line-masked` is deliberately absent, and its absence is the whole
  point of naming kinds rather than counting them. Blanking a line that showed
  a reader nothing makes the parse more faithful, not less: it restores the
@@ -76,7 +76,7 @@ const MARKUP_MARKERS = [
 
 /**
  Why one paragraph was skipped, in scorecard-stable wording.
- 
+
  @example
  ```ts
  const reason: IneligibleReason = 'hard-break';
@@ -93,7 +93,7 @@ export type IneligibleReason =
 
 /**
  One paragraph's eligibility verdict.
- 
+
  @example
  ```ts
  const verdict: ParagraphEligibility = { node, eligible: true, };
@@ -125,13 +125,13 @@ export type ParagraphEligibility =
 /**
  Builds a skip verdict, so the rule chain reads as one expression per rule
  rather than as a reason threaded through an absent value.
- 
+
  @param node - block being skipped
- 
+
  @param reason - rule that excluded it
- 
+
  @returns Skip verdict
- 
+
  @example
  ```ts
  return skipped({ node, reason: 'too-short', },);
@@ -155,32 +155,32 @@ function skipped(
 
 /**
  Whether a paragraph's line breaks are AUTHORED rather than incidental.
- 
+
  The distinction this draws is the one the module header names and the code
  previously collapsed. A soft source wrap inside a paragraph is insignificant
  whitespace that renders as a space, so rewriting across it changes nothing a
  reader sees. A hard break is authored line structure, which is what verse
  uses and what a rewrite must never flatten.
- 
+
  Markdown spells a hard break two ways: a line ending in two or more spaces,
  or a line ending in a backslash. An HTML `<br>` is a third, and it needs no
  check here because `MARKUP_MARKERS` already excludes any paragraph
  containing `<`.
- 
+
  MEASURED before changing the rule, over the 92 entries at the pinned corpus
  commit: 811 of 2067 prose paragraphs carry an internal newline, and 29 of
  those carry a hard break. Rejecting every multi-line paragraph therefore
  discarded 782 ordinary wrapped paragraphs to protect 29, which is why the
  lane reported zero eligible paragraphs on 175 chunks.
- 
+
  A linear scan rather than a pattern, since the rule is positional (does THIS
  line, which is not the last, end in a break marker) and reads plainly as a
  loop.
- 
+
  @param text - paragraph source text, offsets intact
- 
+
  @returns Whether any non-final line ends in a hard-break marker
- 
+
  @example
  ```ts
  const authored = carriesHardBreak({ text: node.text, },);
@@ -206,16 +206,16 @@ function carriesHardBreak({ text, }: { readonly text: string; },): boolean {
 /**
  Judges one block against every eligibility rule, reporting the first that
  excluded it.
- 
+
  @param node - block under consideration
- 
+
  @param degraded - whether parsing this slice reported findings, which makes
  every block in it ineligible
- 
+
  @param minimumChars - shortest paragraph eligible in current refinement role
- 
+
  @returns Verdict carrying the excluding rule when there is one
- 
+
  @example
  ```ts
  const verdict = judgeParagraph({ node, degraded: false, minimumChars, },);
@@ -287,14 +287,14 @@ function judgeParagraph(
  Selects the paragraphs of one repaired slice the naturalness lane may
  rewrite, keeping every skip with its reason so the lane's yield is
  explainable rather than merely observed.
- 
+
  @param document - REPAIRED slice, parsed after accuracy edits landed
- 
+
  @param minimumChars - shortest eligible paragraph; defaults to measured
  repair-lane window while final polish may use narrower sentence-scale window
- 
+
  @returns Verdict per block in document order
- 
+
  @example
  ```ts
  const verdicts = selectRefinableParagraphs({ document, },);
@@ -314,7 +314,7 @@ export function selectRefinableParagraphs(
    disqualifies the whole slice rather than the offending block alone: a
    downgrade to plain markdown or a blanked comment changes how every block
    was read.
-   
+
    Asked of the finding KIND rather than of the count, because not every
    finding is a loss. See {@link DEGRADING_FINDINGS}.
    */

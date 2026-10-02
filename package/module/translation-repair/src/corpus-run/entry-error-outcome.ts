@@ -19,7 +19,7 @@ import { SliceSpliceError, } from '../splice-slices.ts';
 
 /**
  Tally status and scheduler outcome for one caught entry error.
- 
+
  @example
  ```ts
  const classified = entryErrorOutcome({ error, });
@@ -39,11 +39,11 @@ export type EntryErrorOutcome = {
 
 /**
  Keeps stage-local quality work and completeness invariants out of whole-entry retry.
- 
+
  @param error - caught entry failure
- 
+
  @returns Tally status and scheduler disposition
- 
+
  @example
  ```ts
  const classified = entryErrorOutcome({ error: new Error('transport'), });
@@ -85,17 +85,17 @@ export function entryErrorOutcome(
 /**
  Prints the TALLY line for an entry that raised out of its pipeline, and
  returns the scheduler's disposition for it.
- 
+
  @param entryId - entry that failed
- 
+
  @param error - what it raised
- 
+
  @param durationMs - time before it failed, on `monotonicMs`
- 
+
  @param aborted - whether the hard-ceiling abort fired
- 
+
  @returns Scheduling disposition, never a settlement
- 
+
  @example
  ```ts
  return tallyCaughtEntry({ entryId: entry.id, error, durationMs, aborted, },);

@@ -2,7 +2,7 @@
  Tests for front matter splitting.
  Fixtures mirror corpus structure only. Cat-themed invention throughout; no
  corpus content appears here.
- 
+
  @module
  */
 
@@ -37,7 +37,7 @@ const REFUSAL_FIXTURE_WORD = 'Tuftmallow';
 
 /**
  Front matter whose YAML refuses, with the fixture word on the offending line.
- 
+
  MEASURED: this refuses as `BLOCK_AS_IMPLICIT_KEY` at line 1 column 7, and the
  parser's own message reproduces the line. `rawYamlRefusal`, the control, asserts that,
  because an absence assertion against a probe that cannot show a difference
@@ -47,14 +47,14 @@ const REFUSING_SOURCE = `---\nname: ${REFUSAL_FIXTURE_WORD}\n  bad: [x\n---\n喵
 
 /**
  Reads what the YAML parser says with nothing between it and a reader.
- 
+
  @param yamlSource - YAML that must refuse
- 
+
  @returns Parser's own message, code frame included
- 
+
  @throws {@link Error} where the control fixture parsed, which would leave the
  absence assertions unproven
- 
+
  @example
  ```ts
  const raw = rawYamlRefusal({ yamlSource: 'a: [x\n', },);
@@ -76,14 +76,14 @@ function rawYamlRefusal({ yamlSource, }: { readonly yamlSource: string; },): str
 
 /**
  Splits source that must refuse, handing the refusal back to be read.
- 
+
  @param text - source whose front matter will not parse
- 
+
  @returns Refusal the split raised
- 
+
  @throws {@link Error} where the fixture parsed, which would mean it no longer
  exercises anything
- 
+
  @example
  ```ts
  const refusal = refusalFrom({ text: REFUSING_SOURCE, },);

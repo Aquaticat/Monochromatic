@@ -28,7 +28,7 @@ import { wordingKey, } from './wording-key.ts';
 
 /**
  Where one candidate translation came from.
- 
+
  @example
  ```ts
  const origin: TranslateOrigin = 'incumbent';
@@ -41,12 +41,12 @@ export type TranslateOrigin =
 /**
  One candidate translation with the fact that decides whether the slice was
  kept or replaced.
- 
+
  Origin rides on the VALUE rather than being inferred from the producer,
  because the two answer different questions: the producer says who must not
  judge this text, and the origin says whether shipping it changes the
  document. They come apart exactly when a model reproduces the incumbent.
- 
+
  @example
  ```ts
  const value: TranslateCandidateValue = { text: 'The cat naps.', origin: 'fresh', };

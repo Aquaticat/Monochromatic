@@ -19,11 +19,11 @@ type ReadonlyNode = DeepReadonlyData<RootContent>;
  Counts explicit rendered breaks within each top-level block.
  Markdown hard breaks and intrinsic lowercase br elements are equivalent;
  soft newlines, code, custom components and paragraph boundaries are not.
- 
+
  @param root - already parsed skeleton tree, avoiding another grammar pass
- 
+
  @returns Break counts aligned with skeleton block order
- 
+
  @example
  ```ts
  const explicitBreaks = explicitBreakCounts({ root, });
@@ -57,15 +57,15 @@ export function explicitBreakCounts({ root, }: { readonly root: DeepReadonlyData
  Refuses an explicit-break shortfall where the original alone sets the floor.
  Nonempty archive text stays outside this check even if its parser found no
  blocks. Expansion remains legal; unrelated blocks cannot compensate.
- 
+
  @param pageText - canonical incumbent text, empty where no archive span exists
- 
+
  @param source - original break counts, one per top-level block
- 
+
  @param candidate - corresponding candidate counts
- 
+
  @returns Model-facing findings for missing rendered breaks
- 
+
  @example
  ```ts
  sourceOnlyBreakFindings({ pageText: '', source: [2], candidate: [0] });
@@ -118,19 +118,19 @@ export function sourceOnlyBreakFindings(
 /**
  Refuses an explicit-break shortfall in a block kind the page never rendered,
  where the original alone sets that kind's floor.
- 
+
  @param pageBlocks - shapes of the page as it stands, at least one
- 
+
  @param sourceBlocks - original's shapes, aligned with `sourceBreaks`
- 
+
  @param sourceBreaks - original's break counts, one per top-level block
- 
+
  @param candidateBlocks - candidate's shapes, aligned with `candidateBreaks`
- 
+
  @param candidateBreaks - candidate's break counts, one per top-level block
- 
+
  @returns Model-facing findings, one per kind short of its floor
- 
+
  @example
  ```ts
  substituteBreakFindings({ pageBlocks: [{ kind: 'paragraph', detail: '', },], sourceBlocks: [{ kind: 'blockquote', detail: '', },], sourceBreaks: [2,], candidateBlocks: [{ kind: 'blockquote', detail: '', },], candidateBreaks: [0,], },);

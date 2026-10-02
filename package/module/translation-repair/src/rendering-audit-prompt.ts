@@ -33,7 +33,7 @@ import {
 
 /**
  What each category means, and which one wins when two of them fit.
- 
+
  ORDER IS THE PRECEDENCE, stated first so a reader meets the deciding rule
  before the list it decides between.
  */
@@ -120,9 +120,9 @@ const REASON_GUIDE: readonly string[] = [
 
 /**
  System message every audit call carries.
- 
+
  @returns Instructions, taxonomy and evidence rules
- 
+
  @example
  ```ts
  const instructions = auditInstructions();
@@ -158,12 +158,12 @@ function auditInstructions(): string {
 
 /**
  Builds the messages for one audit call.
- 
+
  @param subject - original, candidate, any licensed identity evidence and
  what the pages the original links say
- 
+
  @returns System and user messages
- 
+
  @example
  ```ts
  const messages = buildRenderingAuditMessages({ subject, },);

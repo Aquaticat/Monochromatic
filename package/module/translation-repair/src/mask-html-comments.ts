@@ -18,7 +18,7 @@ const COMMENT_CLOSE = '-->';
 
 /**
  One masked comment region in offsets of the unmasked input.
- 
+
  @example
  ```ts
  const region: MaskedCommentRegion = {
@@ -53,11 +53,11 @@ export type MaskedCommentRegion = {
  Iterates UTF-16 units (not code points):
  one space per unit keeps the masked string's length identical even when
  the comment carries astral characters.
- 
+
  @param region - comment slice to blank out
- 
+
  @returns Same-length whitespace with original newlines kept
- 
+
  @example
  ```ts
  blankRegion({ region: '<!-- x -->', },);
@@ -86,11 +86,11 @@ function blankRegion({ region, }: { readonly region: string; },): string {
  Masks every HTML comment with same-length whitespace.
  Single linear pass; the output is byte-length-identical to the input,
  so positions parsed from the masked text index the original text exactly.
- 
+
  @param text - body text possibly carrying HTML comments
- 
+
  @returns Masked text plus each region in original offsets
- 
+
  @example
  ```ts
  const { masked, regions, } = maskHtmlComments({ text: body, },);

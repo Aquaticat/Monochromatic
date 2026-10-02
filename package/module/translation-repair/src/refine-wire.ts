@@ -21,7 +21,7 @@ import type { EditableEnvelope, } from './patch-model.ts';
 
 /**
  One proposed paragraph rewrite on the wire.
- 
+
  @example
  ```ts
  const rewrite: RefineRewriteWire = { paragraph: 2, newText: 'She wrote it at seventeen.', };
@@ -41,7 +41,7 @@ export type RefineRewriteWire = {
 
 /**
  Whole rewriter reply on the wire.
- 
+
  @example
  ```ts
  const report: RefineReportWire = { rewrites: [], };
@@ -56,11 +56,11 @@ export type RefineReportWire = {
 
 /**
  Guards one wire rewrite.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value carries the required rewrite fields
- 
+
  @example
  ```ts
  isRefineRewriteWire({ paragraph: 1, newText: 'text', },);
@@ -85,11 +85,11 @@ function isRefineRewriteWire(value: unknown,): value is RefineRewriteWire {
 
 /**
  Guards a whole rewriter reply.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value is a well-formed report
- 
+
  @example
  ```ts
  isRefineReportWire({ rewrites: [], },);
@@ -140,7 +140,7 @@ export const REFINE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 
 /**
  Operations bound to paragraphs, plus what the wire got wrong.
- 
+
  @example
  ```ts
  const { operations, findings, } = resolveRefineRewrites({ wire, envelopes, },);
@@ -160,17 +160,17 @@ export type RefineResolution = {
 
 /**
  Binds wire rewrites to the paragraphs they name.
- 
+
  A rewrite naming a paragraph outside the sheet, or naming one already
  rewritten, is recorded and dropped rather than throwing: a rewriter
  miscounting its own list says nothing about the paragraphs it got right.
- 
+
  @param wire - reply as the rewriter reported it
- 
+
  @param envelopes - eligible paragraphs in prompt numbering order
- 
+
  @returns Operations plus findings as data
- 
+
  @example
  ```ts
  const resolution = resolveRefineRewrites({ wire, envelopes, },);

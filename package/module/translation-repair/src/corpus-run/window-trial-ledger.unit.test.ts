@@ -1,16 +1,16 @@
 /**
  Tests for the window trial's durable ledger.
- 
+
  WHAT THESE PIN is survivability of a run that spends roughly 1760 real
  exchanges and has no cache behind it, because the window trial calls the stage directly
  and the slice cache is read by the document driver. Everything here is about
  what happens when the process does NOT reach the end, which is the case the
  ledger exists for and the case that never happens in a passing test unless it
  is written on purpose.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only. Each case
  writes into its own throwaway directory.
- 
+
  @module
  */
 
@@ -44,15 +44,15 @@ const PROTOCOL = 'protocol-one';
 
 /**
  Builds one completed arm.
- 
+
  @param arm - which arm this row is
- 
+
  @param sliceIndex - slice position
- 
+
  @param protocol - digest it was bought under
- 
+
  @returns Row shaped like one a runner appends
- 
+
  @example
  ```ts
  const row = rowFor({ arm: 'wide', sliceIndex: 3, },);

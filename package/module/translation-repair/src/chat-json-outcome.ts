@@ -63,11 +63,11 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Usage fragment carried onto every outcome, present only when reported.
- 
+
  @param reply - reply whose usage is forwarded
- 
+
  @returns Spreadable fragment carrying usage, or nothing
- 
+
  @example
  ```ts
  const spread = usageSpreadOf({ reply, },);
@@ -86,16 +86,16 @@ function usageSpreadOf(
 
 /**
  Names why the model stopped, when the provider said, for a mismatch detail.
- 
+
  A REPLY THAT STOPPED EARLY IS NOT A MALFORMED ONE, and the mismatch reason
  must preserve that distinction: token-limit markers are refused before
  parsing, while other stop reasons are retained here for content that does
  not parse.
- 
+
  @param reply - reply whose stop reason is named
- 
+
  @returns Clause to append to a detail, empty when the provider said nothing
- 
+
  @example
  ```ts
  const stopped = stoppedNote({ reply, },);
@@ -116,16 +116,16 @@ function stoppedNote(
 
 /**
  Whether the provider says generation ended at its token ceiling.
- 
+
  Anthropic Messages reports `max_tokens`;
  OpenAI-compatible Chat Completions reports `length`.
  Either marker invalidates even parseable content because syntax does not
  prove every intended member was generated.
- 
+
  @param reply - needed because provider protocol chooses the stop-reason spelling
- 
+
  @returns Whether callers must refuse this answer regardless of parse result
- 
+
  @example
  ```ts
  isTruncatingFinishReason({ reply: { text: '{}', finishReason: 'max_tokens', }, },);
@@ -140,19 +140,19 @@ function isTruncatingFinishReason(
 
 /**
  Reads one raw reply into the outcome a caller acts on.
- 
+
  REFUSALS AND MISMATCHES ARE DATA, never exceptions: calling unreliable models
  is what this pipeline does, so an answer it cannot use is an ordinary result
  and only provider protocol failures throw. Nothing here throws at all.
- 
+
  @param modelId - model that produced this reply, for the log lines only
- 
+
  @param reply - raw text reply, whichever provider served it
- 
+
  @param validate - caller's guard admitting parsed content
- 
+
  @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
- 
+
  @example
  ```ts
  const outcome = readJsonOutcome({ modelId, reply, validate: isVerdict, },);

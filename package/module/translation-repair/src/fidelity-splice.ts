@@ -39,11 +39,11 @@ const WHITESPACE = [
 
 /**
  Whether one character separates rather than says anything.
- 
+
  @param character - single character to test
- 
+
  @returns Whether it is one of {@link WHITESPACE}
- 
+
  @example
  ```ts
  const separates = isSeparator({ character: '\n', },);
@@ -57,13 +57,13 @@ function isSeparator({ character, }: { readonly character: string; },): boolean 
 
 /**
  Counts whitespace immediately before a position.
- 
+
  @param text - passage being cut
- 
+
  @param at - position the run ends at, exclusive
- 
+
  @returns How many characters that run holds
- 
+
  @example
  ```ts
  const before = whitespaceBefore({ text, at: start, },);
@@ -97,13 +97,13 @@ function whitespaceBefore(
 
 /**
  Counts whitespace immediately after a position.
- 
+
  @param text - passage being cut
- 
+
  @param at - position the run starts at
- 
+
  @returns How many characters that run holds
- 
+
  @example
  ```ts
  const after = whitespaceAfter({ text, at: end, },);
@@ -138,11 +138,11 @@ function whitespaceAfter(
 /**
  Counts line breaks in a whitespace run, which is what decides whether it
  carries a paragraph.
- 
+
  @param run - whitespace run to weigh
- 
+
  @returns How many line feeds it holds
- 
+
  @example
  ```ts
  const breaks = lineBreaksIn({ run: '\n\n', },);
@@ -159,17 +159,17 @@ function lineBreaksIn({ run, }: { readonly run: string; },): number {
 
 /**
  Picks which of the two runs survives the cut.
- 
+
  @param before - whitespace preceding the removed sentence
- 
+
  @param after - whitespace following it
- 
+
  @param atStart - whether the preceding run reaches the start of the text
- 
+
  @param atEnd - whether the following run reaches the end of the text
- 
+
  @returns Run to write in place of both
- 
+
  @example
  ```ts
  const join = survivingRun({ before: ' ', after: ' ', atStart: false, atEnd: false, },);
@@ -206,15 +206,15 @@ function survivingRun(
 
 /**
  @internal
- 
+
  Removes one occurrence of a sentence and the separator it no longer needs.
- 
+
  @param text - passage to cut
- 
+
  @param needle - exact sentence to remove, which must occur
- 
+
  @returns Passage without it, joined as though it had never been written
- 
+
  @example
  ```ts
  const cut = spliceOutSentence({ text: cleanText, needle, },);

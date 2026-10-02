@@ -1,15 +1,15 @@
 /**
  Tests for one seat's rendered standing.
- 
+
  THE REPORT IS LINES, NOT PRINTS, so these cases read it without capturing
  the console. What they pin: a seat with no rounds says so instead of
  rendering an empty table, a seat with rounds renders its standings and then
  its coverage gaps with the answered-but-unslated state kept apart from the
  silent one, and `judgedAuthors` names every stakeholder of every slate in
  slate order, composites included.
- 
+
  Fixtures are model ids and ballots, so there is no passage here to invent.
- 
+
  @module
  */
 

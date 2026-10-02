@@ -131,9 +131,9 @@ function artifactsAmong(
  symlink was read as one more artifact (ledger B64).
 
  @param path - run directory, or its artifacts directory
- 
+
  @returns Full paths of every artifact file found, empty where none is
- 
+
  @example
  ```ts
  const paths = await artifactPaths({ path, },);
@@ -178,18 +178,18 @@ async function artifactPaths(
 
 /**
  What one artifact turned out to be.
- 
+
  TWO OF THE THREE NON-READINGS ARE THEIR OWN ANSWER, not a refusal.
- 
+
  `off-roster` means the artifact names models the roster no longer holds,
  which says the record predates the current seating and nothing bad about the
  record.
- 
+
  `earlier-schema` means its repair result carries no `chunks` at all, because
  the lane began recording rounds only in a later build. Found by running this
  over the archives: 22 of 41 artifacts were that, every one recording
  `status: repaired`.
- 
+
  Folding either in with malformed artifacts would report a healthy archive as
  a broken one, and this reader exists to say how much evidence there is.
  */
@@ -197,11 +197,11 @@ type ArtifactOutcome = ArtifactReading | 'off-roster' | 'earlier-schema' | 'refu
 
 /**
  Reads one artifact into the rounds each of its seats produced.
- 
+
  @param path - artifact file to read
- 
+
  @returns Its rounds, that it predates the roster, or that it would not parse
- 
+
  @example
  ```ts
  const outcome = await readOne({ path, },);
@@ -270,11 +270,11 @@ async function readOne(
 
 /**
  Prints one seat's standing within one digest.
- 
+
  @param seat - seat the standing is about
- 
+
  @param perChunk - that seat's rounds, grouped by the chunk that bought them
- 
+
  @example
  ```ts
  reportSeat({ seat: 'EDITOR', perChunk, },);
@@ -329,9 +329,9 @@ function reportSeat(
 
 /**
  Prints both seats for one digest, with the denominator that governs them.
- 
+
  @param group - readings sharing one built output
- 
+
  @example
  ```ts
  reportGroup({ group, },);
@@ -379,11 +379,11 @@ function reportGroup(
 
 /**
  Reads every named archive and reports both seats, per digest.
- 
+
  Returns nothing: the report on stdout and the exit code ARE the output.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await reportStandings({ line, },);

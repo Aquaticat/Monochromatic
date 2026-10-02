@@ -43,7 +43,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  A preparation and what the pairing cost to obtain.
- 
+
  @example
  ```ts
  const { prepared, findings, } = await prepareDocumentPairWithRoster({ ... },);
@@ -69,53 +69,53 @@ export type PairedPreparation = {
 
 /**
  Prepares a document pair, asking the roster which paragraph renders which.
- 
+
  @param client - injected model client
- 
+
  @param modelIds - roster to ask
- 
+
  @param sourceText - whole original document
- 
+
  @param targetText - whole translation document
- 
+
  @param signal - caller's steering
- 
+
  @param exchangeTimeoutMs - per-call bound
- 
+
  @param l - driver logger
- 
+
  @param sliceCharBudget - slice sizing, passed through untouched
- 
+
  @param pairingCache - store the per-section BLOCK rounds republish from
- 
+
  @param sectionCache - store the whole-document SECTION round republishes
  from, kept apart from `pairingCache` because the two answer different
  questions and a key space holding both would let one kind of record be read
  as the other
- 
+
  @param contextLines - evidence lines bought outside preparation, passed
  through to the identity context untouched
- 
+
  @param referenceContext - what the pages the original links say, passed
  through to the prepared pair untouched (class thirty-five)
- 
+
  @param attestedDetails - archive details a cited reference states, passed
  through to the prepared pair untouched (class thirty-seven)
- 
+
  @param frontMatterAuthority - existing caller policy for metadata ownership
- 
+
  @param sealArchiveOriginal - existing protection for archive wording declared English-original
- 
+
  @param pictureReadings - what reading produced per picture, shown to every
  block-pairing sheet so an archive block translating a picture is left
  unpaired (class thirty-four); absent before the pictures are read
- 
+
  @param beforeSection - awaited before the section round and before each section's
  block round, handing it the roster it is asked of; none keeps the given one
  (ledger X12)
- 
+
  @returns Preparation built on the roster's pairing, and its findings
- 
+
  @example
  ```ts
  const { prepared, } = await prepareDocumentPairWithRoster({ client, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, },);

@@ -40,7 +40,7 @@ export type DeclineReason = 'archive-original';
 
 /**
  What a decline record carries.
- 
+
  @example
  ```ts
  const record: DeclinedEntryRecord = {
@@ -93,12 +93,12 @@ export type DeclinedEntryRecord = {
 
 /**
  Writes one decline record where the next pass will find it.
- 
+
  @param declinedDir - directory of decline records, created if absent by the
  atomic writer
- 
+
  @param record - what to record
- 
+
  @example
  ```ts
  await writeDeclinedEntry({ declinedDir, record, },);
@@ -208,16 +208,16 @@ async function recordFiles(
 
 /**
  Entry ids a runs dir carries a decline record for.
- 
+
  An absent directory is no declines, not an error: a runs dir written before
  declines existed, or one whose pass declined nothing, has none. Any other
  listing failure throws, and a name that is not a regular file is no record,
  as the artifact listing reads its own directory (ledger A9b).
- 
+
  @param declinedDir - directory of decline records
- 
+
  @returns Ids, sorted
- 
+
  @example
  ```ts
  const declined = await declinedEntryIds({ declinedDir, },);

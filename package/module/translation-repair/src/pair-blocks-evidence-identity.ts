@@ -9,7 +9,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Closed identity failures whose diagnostics cannot carry model prose.
- 
+
  @example
  ```ts
  const failure: PairingEvidenceFailure = { kind: 'empty-electorate' };
@@ -36,7 +36,7 @@ export type PairingEvidenceFailure =
 /**
  Configuration or recorded-seat identity cannot represent independent pairing evidence.
  Unlike a model's unusable block indexes, this failure aborts interpretation or dispatch.
- 
+
  @example
  ```ts
  throw new PairingEvidenceError({ kind: 'empty-electorate' });
@@ -54,9 +54,9 @@ export class PairingEvidenceError extends Error {
 
   /**
    Names the input that cannot establish independent seats.
-   
+
    @param failure - closed failure details containing no response wording
-   
+
    @example
    ```ts
    const error = new PairingEvidenceError({ kind: 'duplicate-electorate' });
@@ -75,15 +75,15 @@ export class PairingEvidenceError extends Error {
  Refuses invalid electorates and recorded identities before they become calls or endorsements.
  Empty recorded outcomes and sparse ordered subsets are valid; skipped seats are not invented.
  A single configured identity is allowed but cannot satisfy the separate two-voice relation rule.
- 
+
  @param modelIds - configured electorate in its original order
- 
+
  @param askedModelIds - final recorded seat identities, omitted before live dispatch
- 
+
  @param l - caller logger preserving operation identity
- 
+
  @throws PairingEvidenceError when the electorate is empty or duplicated, or outcomes are not an ordered subset
- 
+
  @example
  ```ts
  assertPairingSeats({ modelIds, askedModelIds: outcomes.map(outcome => outcome.modelId), l });

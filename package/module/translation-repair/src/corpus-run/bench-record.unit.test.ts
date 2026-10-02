@@ -1,14 +1,14 @@
 /**
  Tests for the client wrapper that prices a bench run.
- 
+
  Every number the roster-width comparison rests on is read off these rows, and
  a wrapper that mispriced an exchange would print a confident table nobody
  could tell was wrong. The split between what a call SENDS and what it gets
  BACK is the part under test: seating one more producer resends the same
  prompt, so the two halves answer different questions about width.
- 
+
  Fixtures are invented. No corpus content appears here.
- 
+
  @module
  */
 
@@ -63,13 +63,13 @@ const JSON_REQUEST = {
 
 /**
  Builds a client whose exchanges answer exactly what a case scripts.
- 
+
  @param reply - what a free-text exchange returns
- 
+
  @param outcome - what a schema exchange returns, or `throw` to raise instead
- 
+
  @returns Client the wrapper can wrap, plus every quota read it served
- 
+
  @example
  ```ts
  const inner = scriptedClient({ reply: { text: 'mew', }, },);
@@ -94,7 +94,7 @@ function scriptedClient(
 
   /**
    Scripted client before it is handed over as one.
-   
+
    Cast once here rather than shaped to the contract: the point of the fixture
    is what comes BACK from an exchange, and scripting a refusal or a bare text
    reply per case is what the rows under test are built from.

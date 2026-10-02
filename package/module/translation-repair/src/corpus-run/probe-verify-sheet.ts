@@ -25,7 +25,7 @@ import type { RelabelCase, } from './probe-relabel-case.ts';
 
 /**
  One region to be judged, with what the probe said about it.
- 
+
  @example
  ```ts
  const item: VerifyItem = { relabelCase, claims, kind: 'control', };
@@ -45,7 +45,7 @@ export type VerifyItem = {
   /**
    Which partition this item belongs to, recorded in the manifest and never
    on the sheet.
-   
+
    Deliberately a free label rather than a fixed pair, because the two sheets
    that share this formatter partition on different things and reusing one
    vocabulary for both would put the same word on two meanings. The
@@ -58,7 +58,7 @@ export type VerifyItem = {
 
 /**
  One verify item paired with the digest its blind order sorts on.
- 
+
  Named rather than inferred, because an inferred object literal carries
  writable properties, and the comparator and unwrapping map that read it then
  take mutable parameters they never mutate.
@@ -77,15 +77,15 @@ type DigestedItem = Readonly<{
 
 /**
  Orders items by a digest of their identity.
- 
+
  Deterministic so a re-run produces the same sheet, and independent of kind so
  the damaged and control items interleave. Ordering by anything the grader
  could infer, insertion order included, would leak the answer.
- 
+
  @param items - items to order
- 
+
  @returns Same items, digest order
- 
+
  @example
  ```ts
  const ordered = orderBlind({ items, },);
@@ -134,11 +134,11 @@ export function orderBlind(
 
 /**
  Renders one claim as the reviewer's stated finding.
- 
+
  @param claim - screened claim
- 
+
  @returns Markdown lines for this claim
- 
+
  @example
  ```ts
  const block = renderClaim({ claim, },);
@@ -171,11 +171,11 @@ function renderClaim({ claim, }: { readonly claim: ScreenedDefectClaim; },): str
 
 /**
  Whether an item carries a machine claim to show the reader.
- 
+
  @param item - item being rendered
- 
+
  @returns Whether any claim accompanies it
- 
+
  @example
  ```ts
  const shown = hasClaims({ item, },);
@@ -192,13 +192,13 @@ function hasClaims({ item, }: { readonly item: VerifyItem; },): boolean {
 
 /**
  Renders one sheet item.
- 
+
  @param item - item to render
- 
+
  @param position - one-based position on the sheet
- 
+
  @returns Markdown section
- 
+
  @example
  ```ts
  const section = renderItem({ item, position: 1, },);
@@ -279,12 +279,12 @@ function renderItem(
 
 /**
  What the sheet tells the grader about the reviewer.
- 
+
  `reviewer-claims`: every item was flagged and the claims are printed, which
  is the verify sheet. `blind`: the items mix flagged and silent ones with the
  claims stripped, which is the damage sheet; telling that grader every item
  was flagged primed a Y on exactly the partition scored as probe misses.
- 
+
  @example
  ```ts
  const framing: SheetFraming = 'blind';
@@ -294,14 +294,14 @@ export type SheetFraming = 'reviewer-claims' | 'blind';
 
 /**
  Formats the whole blind verification sheet.
- 
+
  @param items - items to judge, any order; ordering is applied here
- 
+
  @param framing - what to tell the grader about the reviewer; the verify
  sheet keeps the default, the damage sheet is blind
- 
+
  @returns Sheet markdown
- 
+
  @example
  ```ts
  const sheet = formatVerifySheet({ items, },);
@@ -363,15 +363,15 @@ export function formatVerifySheet(
 
 /**
  Builds the manifest that scores the sheet.
- 
+
  Written beside the sheet rather than into it, because the sheet is blind and
  a grader who can see which items came from the damaged set is answering a
  different question than the one being asked.
- 
+
  @param items - items to judge, any order; ordering matches the sheet
- 
+
  @returns Manifest JSON
- 
+
  @example
  ```ts
  const manifest = formatVerifyManifest({ items, },);

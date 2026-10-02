@@ -3,10 +3,10 @@
  identity context, and a candidate lacking every accepted rendering is named
  on the sheet as evidence, in any casing, with an empty candidate skipped
  (owner, 2026-09-09).
- 
+
  Fixtures quote the seeded terms as single words. Cat-themed invention
  throughout; no corpus content appears here.
- 
+
  @module
  */
 

@@ -3,9 +3,9 @@
  the deterministic gate applies, and the absolute review that follows is
  recorded evidence on the settlement, never withholding authority and
  never buying a correction round.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -154,14 +154,14 @@ const client: SyntheticClient = {
 /**
  Builds a client whose absolute reviews follow a per-round verdict script
  and whose refiners may answer exactly once.
- 
+
  A SECOND REFINE CALL THROWS: the fixed polish round buys one proposal, so
  any correction re-ask is a regression this harness turns into a failure.
- 
+
  @param reviewAcceptableByRound - acceptable status per one-based review round; absent rounds throw as lost seats
- 
+
  @returns Scripted single-round client
- 
+
  @example
  ```ts
  const rejecting = singleRoundClient({ reviewAcceptableByRound: [false,], },);
@@ -335,11 +335,11 @@ const CONFIG = {
 
 /**
  Wraps one settled polish in the minimal artifact the completeness guard reads.
- 
+
  @param polish - settled polish record as the pipeline would persist it
- 
+
  @returns Artifact whose only consolidated body slice carries that polish
- 
+
  @example
  ```ts
  const artifact = artifactCarrying({ polish, },);
@@ -421,9 +421,9 @@ await describe({
         /**
          Client answering the refine schema with a given rewrite and
          recording what the polish gate is asked about.
-         
+
          @param newText - rewrite the refiner returns for paragraph 1
-         
+
          @returns Scripted client
          */
         function rewritingClient({ newText, }: { readonly newText: string; },): SyntheticClient {

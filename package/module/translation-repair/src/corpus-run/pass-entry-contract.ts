@@ -3,7 +3,7 @@
 
 /**
  Whether one entry reached its artifact.
- 
+
  @example
  ```ts
  const outcome: EntryOutcome = { kind: 'settled', };
@@ -35,7 +35,7 @@ export type EntryOutcome = {
 
 /**
  One eligible corpus pair with its text loaded.
- 
+
  @example
  ```ts
  const entry: CorpusPair = { id: 'CatEntry', sourceText: '猫。', targetText: 'Cat.' };

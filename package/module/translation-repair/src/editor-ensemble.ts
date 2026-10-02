@@ -72,40 +72,40 @@ import { envelopeContext, } from './editor-envelope-context.ts';
 /**
  Chooses one replacement text per envelope by judging the distinct proposals
  models made for it, then assembles the winners into one operation set.
- 
+
  An envelope only one model proposed for needs no vote: there is nothing to
  compare it against, and it still faces the chunk-level judges afterwards.
- 
+
  @param client - injected model client
- 
+
  @param candidates - editor proposals, in roster order
- 
+
  @param envelopes - envelopes of this chunk
- 
+
  @param judgeModelIds - whole roster; a judge that wrote a candidate still votes, at
  the self-vote weight for that candidate
- 
+
  @param sourceText - original chunk text, evidence for judges
- 
+
  @param targetText - translation chunk text, for the surrounding context each
  replacement has to fit
- 
+
  @param neighbouringSourceText - local factual evidence for the replacement
- 
+
  @param documentSourceText - same-entry original evidence beyond the local window
- 
+
  @param identityContext - declared names and handles, for the judges (ledger S14)
- 
+
  @param referenceContext - what the pages the original cites say (ledger S14)
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Composite operation set built from per-envelope winners
- 
+
  @example
  ```ts
  const composite = await selectPerEnvelope({ client, candidates, envelopes, ... },);
@@ -295,39 +295,39 @@ export async function selectPerEnvelope(
 
 /**
  Judges whole-chunk candidates and returns the patch that ships.
- 
+
  @param client - injected model client
- 
+
  @param candidates - whole-chunk proposals including the composite
- 
+
  @param judgeModelIds - whole roster; a judge that wrote a candidate still votes, at
  the self-vote weight for that candidate
- 
+
  @param sourceText - original chunk text, evidence for judges
- 
+
  @param neighbouringSourceText - local factual evidence for repaired details
- 
+
  @param documentSourceText - same-entry original evidence beyond the local window
- 
+
  @param identityContext - declared names and handles, for the judges (ledger S14)
- 
+
  @param referenceContext - what the pages the original cites say (ledger S14)
- 
+
  @param indecisionFallback - patch adopted when judges answered but failed to
  converge; callers must pass a patch that actually repairs something
- 
+
  @param rejectionFallback - patch adopted when judges affirmatively found no
  candidate acceptable; normally the untouched translation
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Winning patch, or the fallback when judges decline, plus the
  judge fan-out findings for the caller to carry into the artifact
- 
+
  @example
  ```ts
  const patch = await selectChunkPatch({ client, candidates, fallback, ... },);
@@ -374,7 +374,7 @@ export async function selectChunkPatch(
 
   /**
    Sole candidate, which needs no vote.
-   
+
    Callers deduplicate by rendered text before calling, so one candidate here
    means every editor and the composite agreed on the same text. That is
    unanimity rather than an unexamined survivor, and the text still faces the
@@ -490,15 +490,15 @@ export async function selectChunkPatch(
 /**
  Applies one candidate's operations, so a composite can be scored the same way
  a model's own proposal is.
- 
+
  @param targetText - translation chunk text
- 
+
  @param envelopes - envelopes of this chunk
- 
+
  @param operations - operations to apply
- 
+
  @returns Apply-gate outcome
- 
+
  @example
  ```ts
  const patch = applyCandidate({ targetText, envelopes, operations, preservation, },);

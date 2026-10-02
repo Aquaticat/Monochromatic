@@ -30,10 +30,10 @@ export const MAX_SLICE_IDENTIFIERS = 4_096;
 
 /**
  Raised when one text carries more footnote markers than the guard counts.
- 
+
  AN INPUT REFUSAL, not an invariant: a page really can carry them, and the
  boundary prints this whole because it names a count and a convention only.
- 
+
  @example
  ```ts
  throw new FootnoteOverflowError({ count: 5000, convention: 'gfm-reference', },);
@@ -48,7 +48,7 @@ export class FootnoteOverflowError extends Error {
 
   /**
    @param count - markers found
-   
+
    @param convention - which marker convention overflowed
    */
   constructor(
@@ -81,14 +81,14 @@ const FULLWIDTH_MARKER_PUNCTUATION = 2;
 
 /**
  How many characters one hit's identifier occupies in its own text.
- 
+
  The same for both conventions: a normalized ASCII digit and the full-width
  digit it came from are one unit each.
- 
+
  @param hit - marker hit from either scanner
- 
+
  @returns Characters between the marker's punctuation
- 
+
  @example
  ```ts
  const width = identifierLength({ hit, },);
@@ -105,17 +105,17 @@ function identifierLength(
  Whether a marker at an offset opens a DEFINITION rather than referring to
  one: a label followed by its separator, with only whitespace before it on its
  own line.
- 
+
  @param text - text the marker sits in
- 
+
  @param offset - offset the marker starts at
- 
+
  @param markerLength - length of the marker itself
- 
+
  @param separator - character a definition puts after its label
- 
+
  @returns True when this mention defines the footnote
- 
+
  @example
  ```ts
  const defines = opensDefinition({ text, offset, markerLength, separator: ':', },);

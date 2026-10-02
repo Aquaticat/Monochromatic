@@ -12,7 +12,7 @@ import type { SectionBlockPairing, } from './section-pairing.ts';
 
 /**
  Target block pairing roster left without source claim.
- 
+
  @example
  ```ts
  const block: UnclaimedTargetBlock = {
@@ -67,11 +67,11 @@ export type UnclaimedTargetBlock = {
 
 /**
  Who the page's front matter comes from.
- 
+
  `rendered` is the lanes' rendering of the source's metadata, judged like
  every other slice; `archive` is the archive's own bytes, left alone by the
  owner's rule of 2026-09-08 (`corpus-run/archive-front-matter.ts`).
- 
+
  @example
  ```ts
  const authority: FrontMatterAuthority = 'archive';
@@ -81,7 +81,7 @@ export type FrontMatterAuthority = 'archive' | 'rendered';
 
 /**
  A document pair reduced to the slices both lanes run over.
- 
+
  @example
  ```ts
  const prepared = prepareDocumentPair({ sourceText, targetText, },);
@@ -90,7 +90,7 @@ export type FrontMatterAuthority = 'archive' | 'rendered';
 export type PreparedDocumentPair = {
   /**
    Marks body-only slicing rebuilt for artifact generations before five.
-   
+
    Current preparations omit it and use metadata-aware identity scheme.
    */
   readonly legacyIdentity?: true;
@@ -116,7 +116,7 @@ export type PreparedDocumentPair = {
 
   /**
    Translation the target spans and offsets index into.
-   
+
    Carried so a lane assembles against the document it was prepared from. A
    driver handed a preparation and an unrelated translation would splice at
    offsets that mean nothing there, and produce plausible-looking text.
@@ -141,7 +141,7 @@ export type PreparedDocumentPair = {
    both documents carry and any web-lookup evidence, joined into prompt block.
    Each line says which kind it is; the sheets read declarations as
    authoritative and notes and lookups as vocabulary evidence only.
-   
+
    Absent rather than empty when nothing is declared, noted or looked up, so
    a caller spreading it into a prompt never emits a heading with nothing
    under it.
@@ -170,12 +170,12 @@ export type PreparedDocumentPair = {
 
   /**
    Declared name and contributor forms as TRANSLATION side spells them.
-   
+
    SEPARATE FROM `identityContext`, which is prose for a prompt. These are the
    strings a guard compares, and the guard exists because asking a model to
    keep a name does not work: probed on the repair lane's own judge sheet,
    six of six judges preferred the candidate that dropped a declared alias.
-   
+
    TRANSLATION SIDE ONLY, because the text being guarded is English.
    */
   readonly declaredNames: readonly string[];
@@ -184,7 +184,7 @@ export type PreparedDocumentPair = {
    Name pairs the front matter declares on both sides, source form beside
    its declared rendering, read by the publication rule's declared-name floor
    (class one hundred fourteen) wherever a candidate is validated.
-   
+
    OPTIONAL so a pair built before the floor existed, or by a caller with no
    front matter, reads as declaring nothing and leaves the floor silent.
    */
@@ -197,7 +197,7 @@ export type PreparedDocumentPair = {
 
   /**
    Archive blocks pairing roster deliberately left outside every source claim.
-   
+
    STRUCTURED APART FROM `alignmentFindings` so publication safety never parses
    diagnostic prose to decide whether unreviewed archive wording exists.
    */
@@ -207,7 +207,7 @@ export type PreparedDocumentPair = {
    Entries in the aligned unit list, which is the count worth logging beside
    the slice count: a document with far more slices than units subdivided
    heavily.
-   
+
    INSERTIONS ARE INCLUDED, and they are not section PAIRS: an insertion names
    a place in the translation where an untranslated original belongs, so it
    has an original on one side and a boundary on the other. The name predates
@@ -215,7 +215,7 @@ export type PreparedDocumentPair = {
    it, and because every consumer wants exactly this number: it is the bound
    `parseBlockPairing` refuses a section index against, and a real-pair
    count there would falsely refuse a block pairing filed after an insertion.
-   
+
    WHICH entries are insertions is reported by
    {@link PreparedDocumentPair.alignmentFindings}, where each one names its
    source section and either the boundary it was placed at or the refusal that
@@ -226,7 +226,7 @@ export type PreparedDocumentPair = {
   /**
    Pairing this slicing was built on, echoed back so what gets recorded is the
    object slicing consumed rather than a second copy assembled beside it.
-   
+
    ABSENT WHEN NOBODY WAS ASKED, present and possibly empty when somebody was.
    A section missing from a present list had no pairing consumed for it, and
    which of the several reasons applies is legible from
@@ -238,7 +238,7 @@ export type PreparedDocumentPair = {
    Section pairing this alignment was built on, echoed back the same way and
    for the same reason as {@link PreparedDocumentPair.blockPairing}: the
    artifact records the value slicing consumed, not a copy assembled beside it.
-   
+
    ABSENT WHEN THE DETERMINISTIC ALIGNER DECIDED THE SECTIONS, present when a
    supplied pairing did. The roster shell supplies one only when its section
    round agreed on at least one pair, so a present list is non-empty in

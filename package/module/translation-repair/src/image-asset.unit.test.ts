@@ -1,10 +1,10 @@
 /**
  Tests for preparing a picture to be sent, and refusing the ones that will not
  fit.
- 
+
  WHAT THESE PIN is that refusing is a first-class outcome rather than an error
  path, and that the CALLER decides the ceiling.
- 
+
  THE CEILING USED TO BE DERIVED HERE and it measured the wrong thing: half a
  model's context, converted to characters, compared against base64 length. A
  vision model tokenizes by resolution rather than by encoded length, so that
@@ -13,9 +13,9 @@
  what the derivation allowed, and read 2631 characters from it. This file no
  longer asserts anything about contexts, because this module no longer knows
  about them.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

@@ -20,16 +20,16 @@ import {
 
 /**
  Writes a file so no reader can observe it half-written.
- 
+
  The temporary name carries the process id, so two passes writing the same
  path cannot interleave into one another's partial file. It sits beside the
  target rather than in a system temporary directory, because rename is only
  atomic within a filesystem and the two can differ.
- 
+
  @param path - final path the content should appear at
- 
+
  @param text - complete file content
- 
+
  @example
  ```ts
  await writeFileAtomic({ path, text, },);

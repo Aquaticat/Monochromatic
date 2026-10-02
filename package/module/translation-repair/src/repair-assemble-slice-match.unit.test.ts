@@ -1,30 +1,30 @@
 /**
  Tests that assembly GIVES EACH SLICE ITS OWN REPAIR when it lists what the
  document carries.
- 
+
  WHAT THAT LIST IS FOR. The `lintong` example is two NEIGHBOURING slices
  shipping the same wording, which the document-scale repetition check cannot
  see because the duplicated sentence carries no long word. The adjacent check
  exists for exactly that, and it reads a per-slice list assembly builds by
  matching each surviving replacement to the slice it was written for.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting that match, so each slice takes
  the first replacement written for a DIFFERENT slice, failed no test in this
  package. The assembled document is unaffected, every count still agrees, and
  only the adjacency check is handed a shuffled list; it then reports
  repetitions between slices that share nothing and misses the ones that do.
- 
+
  THREE SLICES, WHICH IS THE FEWEST THAT CAN SHOW IT. Swapping two adjacent
  slices' wordings leaves the pair unchanged, so a two-slice fixture cannot
  tell a correct match from an inverted one. With three, an inverted match
  lands the same wording on two neighbours and manufactures a repetition.
- 
+
  THE SECOND CASE IS THE KILL and the first is its liveness control: without
  one showing the check speaks, "no finding" would be satisfied by a check
  that never says anything.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -119,13 +119,13 @@ const SLICES: readonly ChunkPair[] = [
 
 /**
  Builds one settled outcome that ships a repair.
- 
+
  @param sliceIndex - slice this outcome belongs to
- 
+
  @param repairedText - wording the lane settled on
- 
+
  @returns Outcome assembly reads
- 
+
  @example
  ```ts
  const outcome = outcomeOf({ sliceIndex: 0, repairedText: FIRST_REPAIR, },);
@@ -174,12 +174,12 @@ function outcomeOf(
 
 /**
  Assembles three repairs and hands back what assembly found.
- 
+
  @param second - wording the middle slice settled on, which is what each case
  varies
- 
+
  @returns Findings assembly recorded, plus the slices it says changed
- 
+
  @example
  ```ts
  const found = assembleWith({ second: SECOND_REPAIR, },);
@@ -224,11 +224,11 @@ function assembleWith(
 
 /**
  Findings naming an adjacent repetition, which is the only kind read here.
- 
+
  @param findings - everything assembly recorded
- 
+
  @returns Those naming an adjacent repetition
- 
+
  @example
  ```ts
  const repeated = adjacentOnly({ findings, },);

@@ -1,6 +1,6 @@
 /**
  Checks source facts, anonymous labels, and the no-prompt-change boundaries.
- 
+
  @module
  */
 

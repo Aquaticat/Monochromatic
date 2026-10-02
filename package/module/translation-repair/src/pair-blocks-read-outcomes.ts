@@ -42,25 +42,25 @@ type HeardPairingOutcome = RoundOutcome<BlockPairingWire> & {
  Reads final asked-seat outcomes through the production pairing reader and agreement rule.
  A schema-valid heard reply may still be unusable because its indexes or order are invalid.
  This operation buys no calls and does not turn missing seats into ballots.
- 
+
  @param outcomes - final outcomes of exactly the seats the stage asked
- 
+
  @param modelIds - configured electorate supplying the reported denominator
- 
+
  @param sourceCount - source block bound used by the original question
- 
+
  @param targetCount - target block bound used by the original question
- 
+
  @param freeOrder - definition indexes exempt from ordinary block ordering
- 
+
  @param l - caller logger retaining preparation identity
- 
+
  @returns Agreed relations, heard and usable counts, cache eligibility and findings
- 
+
  @throws {@link import('./pair-blocks-evidence-identity.ts').PairingEvidenceError} when seat identities cannot represent the configured electorate
- 
+
  @throws Error when an unexpected reader failure occurs
- 
+
  @example
  ```ts
  const read = readBlockPairingOutcomes({ outcomes, modelIds, sourceCount: 2, targetCount: 3, l });

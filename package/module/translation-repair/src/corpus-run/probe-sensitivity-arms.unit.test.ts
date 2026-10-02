@@ -1,6 +1,6 @@
 /**
  Tests for the sensitivity instrument's arms table.
- 
+
  The instrument's `prior=shown` arm was once found sending the same prompt as
  its `prior=absent` arm, because it relied on a default that had flipped. The
  cases in this file hold every arm's printed label to the disclosure it sends, so a
@@ -8,7 +8,7 @@
  and they pin the run plan: every accuracy region under all three lists,
  every labelling region under both lists that carry an issue, and the
  production arm read off the constant the pass sends.
- 
+
  @module
  */
 
@@ -27,11 +27,11 @@ import {
 
 /**
  Lists each region of a group was run under, sorted for comparison.
- 
+
  @param arms - arms of one region
- 
+
  @returns Sorted list labels
- 
+
  @example
  ```ts
  const lists = listsOf(arms,);
@@ -47,11 +47,11 @@ function listsOf(arms: readonly SensitivityArm[],): readonly string[] {
 
 /**
  Groups arms by the region they probe.
- 
+
  @param arms - arms to group
- 
+
  @returns Arms per envelope id
- 
+
  @example
  ```ts
  const byRegion = groupByRegion(SENSITIVITY_ARMS,);

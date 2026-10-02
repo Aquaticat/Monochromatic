@@ -23,23 +23,23 @@ import { heardNobody, } from './translate-unheard.ts';
 
 /**
  Builds the translate lane's per-slice wordings from its settled records.
- 
+
  @param slices - preparation the lane ran over, which every wording is stamped
  against rather than taken from the records, since a resumed run may hold
  cache values written under an earlier preparation of the same entry
- 
+
  @param settled - records the lane settled, unheard ones included
- 
+
  @param unfilledChunkIndices - passages lane reached and could not fill
- 
+
  @param carriedChunkIndices - source-only passages rendered elsewhere
- 
+
  @returns One wording per prepared slice, in document order
- 
+
  @throws {@link LaneSliceCoverageError} when the records do not cover the
  preparation, since this lane visits every slice by contract and a gap it did
  not name is a defect
- 
+
  @example
  ```ts
  const wordings = translateLaneWordings({ slices, settled, unfilledChunkIndices, },);

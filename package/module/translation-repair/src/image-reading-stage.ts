@@ -34,18 +34,18 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  What the reader is asked to do.
- 
+
  EXPORTED SO THE CACHE KEY CAN FOLD IT IN. A stored reading was produced by
  ASKING something, and an edit to this sentence changes what was asked. A key
  that ignored it would serve a reading of the old question as an answer to the
  new one.
- 
+
  TRANSCRIBE RATHER THAN DESCRIBE, and in the picture's own language. A
  description ("a screenshot of a profile card") shares no anchors with a
  transcript and would be refused by the screen anyway, having cost a call. The
  house policy is deliberately absent: those rules govern how this corpus is
  WRITTEN, and reading what a picture already says is not writing.
- 
+
  THE SIDE OF EACH BUBBLE IS PART OF WHAT A CHAT SAYS (class thirty-three,
  2026-09-16). Only the reader sees the picture; every stage after it sees
  lines. Mio16's transcript of `photo6.webp` was bare lines, so the five judges
@@ -111,27 +111,27 @@ export function imageReadingText({ perspective, }: { readonly perspective: Image
 
 /**
  Most bytes a picture may occupy in a reading request.
- 
+
  WHAT THE GATEWAY WILL CARRY, not what the model will read. The model is the
  authority on the second and says so plainly when asked: every asset in the
  pinned corpus is accepted at its natural size, including the largest at
  1344454 bytes, and `gqt/photo1.webp` at 1274028 was read for 2631
  characters. The derivation this replaced allowed 294912 for the same model,
  so it refused 45 of 191 pictures that nobody upstream had any trouble with.
- 
+
  THE GATEWAY IS THE AUTHORITY ON THE FIRST, and unlike the model it does not
  answer plainly. A body over its cap comes back as `400` naming a parse
  failure at a byte offset, which describes our JSON rather than its size, so
  a request refused for being too big reads as a request that was malformed.
  `doc/troubleshooting/synthetic-request-body-size-cap.md` is the measurement.
- 
+
  SEVEN MEBIBYTES, which is more than five times the corpus's largest asset.
  The overhead around the picture is a constant 501 bytes and base64 costs a
  third on top, so this ceiling maps onto a body of 9787235 bytes, leaving
  698525 under the only size measured to pass. The eight mebibytes here until
  2026-08-22 mapped onto 11185335, which is 699575 ABOVE it: the number
  guarding the request permitted requests the gateway rejects.
- 
+
  NOT THE EXACT FIT OF 7863927. Only the passing size is exact, the failing
  one is reported as approximate, and the boundary between them has never been
  bisected, so a ceiling with one byte of headroom would rest on an assumption.
@@ -142,7 +142,7 @@ const READING_MAX_BYTES = 7_340_032;
 
 /**
  What one reading attempt produced.
- 
+
  @example
  ```ts
  const reading: ImageReading = { kind: 'read', text: 'Name: Mittens', };
@@ -187,7 +187,7 @@ export type ImageReading = {
 
 /**
  Reasons that describe the provider's evening rather than the picture.
- 
+
  A reader that threw, answered nothing, answered too little or declined may
  read the same picture tomorrow; a model that does not read images, a media
  type nobody names, a file too large to send, and a reader reporting that the
@@ -203,11 +203,11 @@ const TRANSIENT_READING_REASONS: ReadonlySet<string> = new Set([
 
 /**
  Whether a reader's reason for producing nothing may not hold tomorrow.
- 
+
  @param reason - why the reader produced nothing
- 
+
  @returns Whether the reason describes the call rather than the picture
- 
+
  @example
  ```ts
  const transient = isTransientReadingReason({ reason: 'reader-failed', },);
@@ -221,29 +221,29 @@ export function isTransientReadingReason(
 
 /**
  Reads one picture with one model, screening what comes back.
- 
+
  @param client - transport to the provider
- 
+
  @param modelId - model doing the reading, which must read images
- 
+
  @param bytes - picture as read from disk
- 
+
  @param assetName - its file name, which carries the media type
- 
+
  @param perspective - distinct visual scan responsibility
- 
+
  @param signal - abort honoured for the whole exchange
- 
+
  @param perCallTimeoutMs - deadline bounding the exchange
- 
+
  @param l - lane logger
- 
+
  @returns Reading that passed the screen, or why none is available
- 
+
  @throws {@link import('./synthetic-client.ts').SyntheticHttpError} on a
  non-success status, which is a transport failure rather than an unreadable
  picture and is not this function's to interpret
- 
+
  @example
  ```ts
  const reading = await readImageAsset({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);

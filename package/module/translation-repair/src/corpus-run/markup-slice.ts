@@ -18,7 +18,7 @@
 /**
  Share of a slice's solid lines that must be structural before its original
  counts as markup rather than prose.
- 
+
  NOT 1.0. A photo block commonly carries one caption or attribution line, and
  a slice that is nine parts component to one part caption still cannot expand
  enough to be a donor. Measured against the corpus at the pinned commit, this
@@ -29,17 +29,17 @@ const MARKUP_LINE_SHARE = 0.8;
 
 /**
  Whether one line is structure rather than prose.
- 
+
  DELIBERATELY CRUDE, and prefix-based rather than parsed. The question is not
  what this markup means, only whether the translator had any prose here to
  move; a component tag, an image, a fence, a table row and the inside of a
  props array all answer no. Parsing the document to decide that would be a
  larger instrument than the reading it serves.
- 
+
  @param line - one line of a slice's original
- 
+
  @returns Whether it carries structure rather than translatable prose
- 
+
  @example
  ```ts
  const structural = isStructuralLine({ line: '<PhotoScroll photos={[', },);
@@ -75,16 +75,16 @@ function isStructuralLine(
 
 /**
  Share of a slice's non-blank lines that are structural.
- 
+
  BLANK LINES ARE EXCLUDED FROM BOTH SIDES rather than counted as markup. A
  slice separated into paragraphs would otherwise read as more structural the
  more readable it is, which inverts the measurement.
- 
+
  @param sourceText - slice's original
- 
+
  @returns Fraction from 0 to 1, and 1 for a slice with no solid lines at all,
  since a slice with nothing in it has no prose to give up either
- 
+
  @example
  ```ts
  const share = markupFraction({ sourceText, },);
@@ -118,11 +118,11 @@ export function markupFraction(
 /**
  Whether a slice's original is markup rather than prose, so it cannot have
  given a passage up.
- 
+
  @param sourceText - slice's original
- 
+
  @returns Whether this slice is disqualified as a relocation donor
- 
+
  @example
  ```ts
  if (isMarkupOnly({ sourceText, },)) console.log('cannot be a donor',);

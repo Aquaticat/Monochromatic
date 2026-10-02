@@ -1,15 +1,15 @@
 /**
  Tests for the two checks a versioned artifact reader needs.
- 
+
  WHAT THESE PIN is the TOLERANCE BOUNDARY, which is the part of a schema
  reader that is easy to get backwards: the fields version 2 owns refuse
  anything they do not name, and the two fields it deliberately leaves open
  accept what a later pipeline writes there. A reader strict everywhere refuses
  valid artifacts as the pipeline grows; a reader tolerant everywhere accepts
  files nobody wrote.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

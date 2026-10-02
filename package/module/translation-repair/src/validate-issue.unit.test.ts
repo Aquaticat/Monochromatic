@@ -3,7 +3,7 @@
  every way an unreliable critic misquotes, drifts, or fabricates anchors must be
  rejected as data.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -45,15 +45,15 @@ const DOCUMENTS = {
 /**
  Builds correctly anchored span for one needle by measuring the parsed pair,
  so tests never hand-count offsets.
- 
+
  @param side - document of the pair the needle lives in
- 
+
  @param needle - exact text to anchor
- 
+
  @returns Span whose offsets, node, hash, and quote all hold
- 
+
  @throws {@link Error} when needle is absent or spans no single node
- 
+
  @example
  ```ts
  const span = anchorFor({ side: 'source', needle: '也喜欢追蝴蝶', },);
@@ -108,13 +108,13 @@ function anchorFor(
 /**
  Builds zero-width insertion anchor immediately after one needle,
  the shape omission claims use to name where missing content belongs.
- 
+
  @param side - document of the pair the needle lives in
- 
+
  @param needle - exact text the insertion point follows
- 
+
  @returns Zero-width span with empty quote at needle end
- 
+
  @example
  ```ts
  const anchor = insertionAnchorAfter({ side: 'target', needle: 'in the sun.', },);
@@ -147,11 +147,11 @@ function insertionAnchorAfter(
 
 /**
  Wraps spans in an omission claim so tests vary anchors only.
- 
+
  @param spans - anchors under test
- 
+
  @returns Claim carrying given spans
- 
+
  @example
  ```ts
  const claim = omissionClaim({ spans: [span,], },);

@@ -1,19 +1,19 @@
 /**
  Tests for the Messages API request body.
- 
+
  THE CEILING CASES PIN AN OWNER DECISION, not a preference: `max_tokens` is
  the lower of the measured answer bound and the model's own cap, and a
  caller's own ceiling may lower it further but never raise it. A body that
  asked for more than the model can emit would be answered with a truncation
  the pipeline reads as a schema mismatch, which costs a call and blames a
  model.
- 
+
  THE ALTERNATION CASES PIN A PROTOCOL DIFFERENCE. The OpenAI-compatible
  provider takes the system prompt as a message and does not care what follows
  it. This one takes the system prompt as a field and requires the conversation
  to open on a user turn, so the same message array has to be rearranged rather
  than forwarded.
- 
+
  @module
  */
 

@@ -45,11 +45,11 @@ const FOOTNOTE_DEFINITION_KIND = 'footnoteDefinition';
 
 /**
  Whether one character is whitespace by the same test `trim` uses.
- 
+
  @param character - one character
- 
+
  @returns Whether trimming it alone leaves nothing
- 
+
  @example
  ```ts
  isWhitespace({ character: '\n', },);
@@ -70,13 +70,13 @@ function isWhitespace(
  Folds a note onto one line: every run of whitespace becomes one space and
  the ends are trimmed, so a multi-line definition or comment stays one
  identity-context line.
- 
+
  ONE LINEAR PASS with the string API rather than a pattern.
- 
+
  @param text - note text as it stands in the document
- 
+
  @returns Note on one line
- 
+
  @example
  ```ts
  foldedLine({ text: '[^1]: first\n    second', },);
@@ -106,12 +106,12 @@ export function foldedLine(
 
 /**
  Inner text of one HTML comment, delimiters removed.
- 
+
  @param comment - comment as it stands in the document, delimiters included;
  an unterminated comment has no closing delimiter and keeps its tail
- 
+
  @returns What the editor wrote
- 
+
  @example
  ```ts
  commentBody({ comment: '<!-- 起床战争：Bed Wars -->', },);
@@ -138,13 +138,13 @@ export function commentBody(
 
 /**
  Footnote definitions of one document as labelled lines.
- 
+
  @param document - parsed document
- 
+
  @param side - which document, for the label
- 
+
  @returns One line per definition, in document order
- 
+
  @example
  ```ts
  footnoteNoteLines({ document, side: 'ORIGINAL', },);
@@ -182,11 +182,11 @@ const HEADING_KIND = 'heading';
 /**
  Words of a heading, its opening marks and surrounding whitespace gone, so
  two headings compare by what a reader sees.
- 
+
  @param text - heading node's exact source
- 
+
  @returns Heading words on one line
- 
+
  @example
  ```ts
  headingWords({ text: '## 简介', },);
@@ -207,20 +207,20 @@ export function headingWords(
 
 /**
  Where a comment sits, in the words the sheets are told.
- 
+
  WHY THE ANCHOR EXISTS. A note that says "this title" or "here" points at the
  heading it sits under, and a line carried into every slice without saying
  so points at every heading at once: on 2026-09-06 yulianNyanner's source
  comment that "the English word for this title is dysphoria", which sits
  under its third heading, was read by seven of eight consolidation judges as
  fixing the SECOND heading, and the page shipped both as "Dysphoria".
- 
+
  @param document - parsed document the comment sits in
- 
+
  @param startOffset - where the comment opens, in the document's offsets
- 
+
  @returns Phrase naming the nearest preceding heading, or the absence of one
- 
+
  @example
  ```ts
  commentAnchor({ document, startOffset: 120, },);
@@ -252,16 +252,16 @@ function commentAnchor(
 /**
  Editors' HTML comments of one document as labelled lines, each naming the
  heading it sits under.
- 
+
  The parser masks every comment before parsing and records each as a finding
  with its offsets, which is the one place the comments survive.
- 
+
  @param document - parsed document
- 
+
  @param side - which document, for the label
- 
+
  @returns One line per comment carrying any text, in document order
- 
+
  @example
  ```ts
  commentNoteLines({ document, side: 'ARCHIVE', },);
@@ -314,13 +314,13 @@ export function commentNoteLines(
 /**
  Every note both documents carry, footnotes first and comments after, the
  original before the archive.
- 
+
  @param sourceDocument - parsed original
- 
+
  @param targetDocument - parsed archive
- 
+
  @returns Labelled lines, empty when neither document carries a note
- 
+
  @example
  ```ts
  const lines = entryNoteLines({ sourceDocument, targetDocument, },);

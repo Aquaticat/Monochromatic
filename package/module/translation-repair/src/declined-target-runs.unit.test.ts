@@ -1,25 +1,25 @@
 /**
  Tests for which translation blocks a pairing declined.
- 
+
  WHY THIS FILE EXISTS. Grouping and the coverage assertion both ask this
  question, and they must derive the same answer from the same inputs, since a
  disagreement between them reads as a coverage fault at a place neither one
  caused. The answer is built by turning the pairing into alignment steps,
  which needs to be told HOW MANY blocks each side has.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, swapping those two counts failed no test
  in this package. A swap is silent in the common case, because most pairs
  carry equal counts, and it only shows itself where the two sides differ:
  exactly the entries the pairing exists for.
- 
+
  THE FIXTURE THEREFORE MAKES THEM DIFFER, two originals against three
  translation blocks. Under the counts as passed, the third translation block
  is declined; under the swap, the walk stops one block early and reports
  nothing declined at all, which would hand grouping a block no slice covers
  while telling the coverage assertion everything was accounted for.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

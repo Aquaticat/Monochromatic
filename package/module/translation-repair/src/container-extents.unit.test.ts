@@ -1,14 +1,14 @@
 /**
  Tests for handing a dissolved container's tags to the blocks beside them.
- 
+
  The defect this exists for is that a container's opening and closing tags
  belong to no block once the container is dissolved, while every range in this
  package is minted from block offsets. A boundary could therefore fall between
  an opener and its closer, and assembly, which replaces a range and copies the
  rest through, would delete one tag and keep the other.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -31,15 +31,15 @@ import {
 
 /**
  Builds a container span from its two tag ranges.
- 
+
  @param name - element name reported on the span
- 
+
  @param opener - opening tag range
- 
+
  @param closer - closing tag range
- 
+
  @returns Span in the shape the parse reports
- 
+
  @example
  ```ts
  const container = spanOf({ name: 'details', opener: [0, 10,], closer: [40, 52,], },);
@@ -67,11 +67,11 @@ function spanOf(
 
 /**
  Reads a widened extent pair back as plain numbers for comparison.
- 
+
  @param extent - extent to read
- 
+
  @returns Start and end as a pair
- 
+
  @example
  ```ts
  const [start, end,] = pairOf({ extent, },);

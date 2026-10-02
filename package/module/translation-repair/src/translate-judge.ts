@@ -55,24 +55,24 @@ import { translateSlateEvidence, } from './translate-slate-evidence.ts';
 
 /**
  Puts an existing slate to the judges and returns what ships.
- 
+
  @param client - injected model client
- 
+
  @param produced - slate to judge, from {@link produceTranslateSlate}
- 
+
  @param judgeModelIds - whole roster selection seats, translators included;
  a ballot for the judge's own rendering counts for less
- 
+
  @param sourceText - original slice text
- 
+
  @param incumbentText - translation as it stands, blank where this slice has
  none
- 
+
  @param incumbentKind - whether there is a translation to fall back on,
  decided by the caller from the target chunk rather than from the text being
  blank: a content span holding only whitespace is the archive's own wording,
  and an anchor is a place where a rendering belongs and none exists
- 
+
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
 
@@ -84,7 +84,7 @@ import { translateSlateEvidence, } from './translate-slate-evidence.ts';
  stand-in and which details are accepted additions, so a candidate leaving
  one out is not read as dropping page content (class one hundred eight,
  2026-09-24); omitted on an undisputed slice
- 
+
  @param neighbouringSourceText - original of the sections either side, shown as
  CONTEXT the candidates are not expected to render. Absent by default, so a
  caller that does not ask for it gets the sheet production has always sent.
@@ -92,11 +92,11 @@ import { translateSlateEvidence, } from './translate-slate-evidence.ts';
  boundary, a judge shown one slice pair sees invention on one side and omission
  on the other, and the judge-quality bench's alteration arm went from 12 of 16 to 15 of 16 when
  the same trial was given exactly this
- 
+
  @param neighbouringIncumbentText - archive English of the sections either
  side, shown so a passage missing here can be recognised next door rather than
  read as one the archive never had
- 
+
  @param responsibility - initial selection or prior-decline challenge
 
  @param runoff - whether this judging is the challenge round's run-off over
@@ -113,25 +113,25 @@ import { translateSlateEvidence, } from './translate-slate-evidence.ts';
  left to narrow ships its preferred candidate; defaults to the withheld
  standing, and a caller with a further round of its own (the translate
  lane's follow-up production) defers it to that round
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Shipped text with how it was decided
- 
+
  @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
  nothing to write, which every fallback here would otherwise report as a
  settled slice carrying the archive's own wording, of which there is none;
  withheld wording that exists stands instead on the round that ships past a
  decline, where translators were heard (ledger B39)
- 
+
  @throws {@link BlankSelectionError} when selection chose text that says
  nothing for a source that says something, in EITHER mode, since that is a
  deletion rather than an outcome
- 
+
  @example
  ```ts
  const decided = await judgeTranslateSlate({ client, produced, judgeModelIds, ... },);
@@ -177,7 +177,7 @@ export async function judgeTranslateSlate(
 
     /**
      Whether the enclosing chunk is governed by the verse rule.
-     
+
      REQUIRED RATHER THAN OPTIONAL, which is the lesson the consolidation taught. The
      consolidation producers carried this same fact as an optional field for a
      day, no caller ever set it, and every verse passage was quietly told it
@@ -214,7 +214,7 @@ export async function judgeTranslateSlate(
 
   /**
    That slate as a record, so a ballot naming a position can be read later.
-   
+
    Derived from the SAME array the judges are shown rather than by rotating a
    second time. Two rotations agree today because the rotation is a pure
    function of the slice; they would stop agreeing the moment either call site
@@ -226,7 +226,7 @@ export async function judgeTranslateSlate(
   /**
    The incumbent as it stands on the ballot, carrying every model that
    reproduced it exactly.
-   
+
    Read off the slate rather than written fresh. Writing `matched: []` here
    erased the collapse on precisely the declined rounds where knowing that
    three models independently produced the archive's wording is the whole
@@ -238,7 +238,7 @@ export async function judgeTranslateSlate(
 
   /**
    Shipping the slice exactly as it stands, which every failure path returns.
-   
+
    Not an error while the archive HAS a translation here: leaving one as it
    stands is the state the run started in, while shipping text no judge could
    vet is a new claim about the archive. Where the archive has none, every
@@ -282,7 +282,7 @@ export async function judgeTranslateSlate(
     /**
      Whether the slate is empty because nobody was heard, rather than because
      everybody was heard and proposed nothing usable.
-     
+
      TWO DIFFERENT FACTS WEARING ONE WORD until the reason split. Translators that
      answered and proposed nothing a guard would accept are evidence about
      THE PASSAGE, and the gap they leave is one a re-run would probably meet

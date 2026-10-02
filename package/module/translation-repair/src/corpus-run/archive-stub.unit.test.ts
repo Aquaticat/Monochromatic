@@ -1,15 +1,15 @@
 /**
  Tests the stub-marker strip the archive passes through before preparation.
- 
+
  THE CASE IS ONE ARCHIVE: a page that is front matter, `(To-Do)`, an HTML
  comment of translator hints and nothing else, which the pipeline published
  with the marker standing over a finished translation. Here the marker goes
  with one blank line, the comment and the front matter stay byte for byte,
  and a marker inside a comment, a code fence, front matter or a sentence is
  left alone.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

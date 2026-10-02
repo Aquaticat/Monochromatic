@@ -37,20 +37,20 @@ const ADMISSIBILITY_VALUES: readonly ClaimAdmissibility[] = [
 /**
  Reads a claim's admissibility, refusing a value the screen cannot have
  written.
- 
+
  Narrowing rather than asserting, because the majority rule counts only the
  two upheld values. An unrecognized string would be silently non-upholding, so
  a writer emitting a new verdict name would quietly zero the corroboration
  every region reports rather than announce that the schemas diverged.
- 
+
  @param value - candidate admissibility from artifact JSON
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Admissibility as the screen recorded it
- 
+
  @throws {@link ArtifactParseError} when the value is not one the screen emits
- 
+
  @example
  ```ts
  const admissibility = requireAdmissibility({ value, path, },);
@@ -88,21 +88,21 @@ function requireAdmissibility(
 
 /**
  Parses a region's claim list down to who said what.
- 
+
  Attribution only, and the return type says so. `evidence`, `omittedText` and
  `reason` carry UNLICENSED corpus text, this reader feeds a summary meant to
  be pasteable, and nothing downstream reads them. Returning a full claim with
  those fields blanked would be indistinguishable from a prober that quoted
  nothing.
- 
+
  @param value - candidate claim array from artifact JSON
- 
+
  @param path - dotted path of the owning tally, for error messages
- 
+
  @returns Claims reduced to prober and admissibility
- 
+
  @throws {@link ArtifactParseError} when a claim is malformed
- 
+
  @example
  ```ts
  const claims = parseClaimAttributions({ value: tally.claims, path, },);
@@ -171,16 +171,16 @@ const ADMISSIBILITY_FIELDS: Readonly<Record<(typeof COUNTED_FIELDS)[number], Cla
 
 /**
  Parses one region tally.
- 
+
  @param value - candidate tally from artifact JSON
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Tally as the summary reads it
- 
+
  @throws {@link ArtifactParseError} when any count or id is malformed, or when
  the declared counts disagree with the claim list they were derived from
- 
+
  @example
  ```ts
  const tally = parseRegionTally({ value, path: 'Kitten.issues[0]...regions[0]', },);
@@ -205,11 +205,11 @@ export function parseRegionTally(
 
   /**
    Reads one named count off the tally.
-   
+
    @param field - count to read
-   
+
    @returns Count value
-   
+
    @example
    ```ts
    countAt('corroborated',);

@@ -21,13 +21,13 @@ import type { SelectionRound, } from '../self-preference.ts';
 
 /**
  Every model holding a stake in any candidate one seat's rounds judged.
- 
+
  @internal
- 
+
  @param perSlice - that seat's rounds, grouped by the slice that bought them
- 
+
  @returns Model ids, repeats included, in the order the slates carried them
- 
+
  @example
  ```ts
  const wrote = judgedAuthors({ perSlice, },);
@@ -49,7 +49,7 @@ export function judgedAuthors(
 
 /**
  Renders one seat's counts per slice, so a reader can bootstrap over slices.
- 
+
  SLICES ARE THE INDEPENDENT UNIT, NOT BALLOTS. Every ballot in a round was
  cast over one slate and every round on a slice was cut from one passage, so
  the pooled share's ballot-level error understates how far a standing moves
@@ -59,13 +59,13 @@ export function judgedAuthors(
  in sample order, so each pairs with its slice progress line by position, and
  they carry votes, ballots and candidates rather than a share, for the reason
  the pooled line carries its denominator.
- 
+
  @internal
- 
+
  @param perSlice - that seat's rounds, grouped by the slice that bought them
- 
+
  @returns One line per slice that bought a round, none for the rest
- 
+
  @example
  ```ts
  for (const line of sliceStandingLines({ perSlice, },))
@@ -107,21 +107,21 @@ export function sliceStandingLines(
 /**
  Renders one seat's standing over the rounds it produced, then the same
  counts per slice.
- 
+
  @internal
- 
+
  @param seat - what the standing is about, for the heading
- 
+
  @param roster - seats the run filled, which the coverage is read against
- 
+
  @param perSlice - that seat's rounds, grouped by the slice that bought them
- 
+
  @param produced - models known to have written a candidate, judged or not
- 
+
  @param answered - who the seat heard, or that it does not record that
- 
+
  @returns Report lines carrying their own indentation, heading first
- 
+
  @example
  ```ts
  for (const line of standingReportLines({ seat: 'EDITOR', roster, perSlice, produced, answered, },))
@@ -191,7 +191,7 @@ export function standingReportLines(
 
   /**
    Which of the seated models this table actually describes.
-   
+
    NAMED RATHER THAN OMITTED. `producerStandings` carries a row only for a
    model somebody voted on, so a model whose provider was out of budget
    vanishes, and absence there reads exactly like a model that wrote and

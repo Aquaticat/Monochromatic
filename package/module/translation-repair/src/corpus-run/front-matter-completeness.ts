@@ -29,7 +29,7 @@ import {
 
 /**
  Refusal when published front matter fails a structural check.
- 
+
  @example
  ```ts
  throw new FrontMatterCompletenessError({ entryId: 'Cat', reason: 'missing-slice', });
@@ -43,9 +43,9 @@ export class FrontMatterCompletenessError extends Error {
 
   /**
    Builds refusal.
-   
+
    @param entryId - entry refused
-   
+
    @param reason - structural check that failed: `missing-slice` when the
    preparation carries no metadata slice where it must, `invalid-page` when
    the page's metadata does not parse or breaks the identity or attribution
@@ -69,22 +69,22 @@ export class FrontMatterCompletenessError extends Error {
 
 /**
  Refuses page whose metadata fails a structural check.
- 
+
  @param entryId - entry being published
- 
+
  @param sourceText - complete original page
- 
+
  @param archiveText - complete archive page before lane changes
- 
+
  @param pageText - assembled page candidate
- 
+
  @param slices - preparation carrying explicit syntax role
- 
+
  @throws FrontMatterCompletenessError when metadata role or syntax differs,
  when the page's metadata does not parse or breaks the identity or
  attribution rules, or when its visible name is still the directory id while
  the source names the person differently
- 
+
  @example
  ```ts
  assertFrontMatterComplete({ entryId, sourceText, archiveText, pageText, slices, });

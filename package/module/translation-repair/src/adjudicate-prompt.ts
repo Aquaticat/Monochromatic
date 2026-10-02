@@ -39,25 +39,25 @@ import {
 
 /**
  What the neighbouring blocks are for, stated inside the panel sheet.
- 
+
  THE PANEL NEEDS THIS MORE THAN THE CRITIC DOES, because it decides claims
  rather than raises them. A critic that can see next door may raise a claim
  saying a passage belongs to a neighbouring section; a panel that CANNOT see
  next door has no way to check that and must reject it as unfounded. Widening
  the critic without widening the panel would therefore produce exactly the
  claims the panel is guaranteed to throw away.
- 
+
  DEMANDING A QUOTE WAS TRIED AND MEASURED WORSE, 2026-08-20, and reverted in
  `2c93f49bb`. The stronger wording required a panelist voting unsupported on
  relocation grounds to quote the nearby wording holding the content, on the
  reasoning that the rule otherwise invites the hypothesis without demanding
  evidence. That reasoning is sound and the result contradicted it:
- 
+
  ```text
  supported votes            lintong 72% -> 65%   saurikissa 52% -> 51%
  distinctive words kept     saurikissa repair lane 89.4% -> 83.8%
  ```
- 
+
  It lowered the panel support it was added to raise, and lowered retention of
  the archive's specifics, which is the damage the window exists to prevent.
  `doc/audit/the-damage-no-instrument-was-catching.md` carries the measurement.
@@ -114,11 +114,11 @@ Every claim number must appear exactly once in verdicts.`;
 
 /**
  One line of human-readable evidence for one span.
- 
+
  @param span - anchored evidence to present
- 
+
  @returns Line naming side and quoted text, or the insertion-point wording
- 
+
  @example
  ```ts
  evidenceLine({ span, },);
@@ -144,7 +144,7 @@ function evidenceLine(
  Messages plus the index maps ballots resolve through:
  claim number N on the wire means `claimIds[N - 1]`,
  group number M means `clusterIds[M - 1]`.
- 
+
  @example
  ```ts
  const plan: AdjudicationPromptPlan = buildAdjudicationMessages({
@@ -174,19 +174,19 @@ export type AdjudicationPromptPlan = {
 /**
  Builds the panel sheet for one chunk:
  documents fenced, clusters as numbered groups, claims numbered globally.
- 
+
  @param sourceText - original chunk text
- 
+
  @param targetText - translation chunk text
- 
+
  @param clusters - aggregation output for this chunk, in document order
- 
+
  @param neighbouringSourceText - nearby source evidence without extra coverage obligations
- 
+
  @param neighbouringIncumbentText - existing placement context, not factual authority
- 
+
  @param documentSourceText - optional same-entry original evidence for checking current claims
- 
+
  @param referenceContext - what the pages the original links say (class
  thirty-five), evidence for judging addition claims
 
@@ -195,7 +195,7 @@ export type AdjudicationPromptPlan = {
  (ledger S4); absent when the page declares none
 
  @returns Messages plus index maps for ballot resolution
- 
+
  @example
  ```ts
  const plan = buildAdjudicationMessages({ sourceText, targetText, clusters, },);
@@ -305,7 +305,7 @@ ${evidence}`;
 
   /**
    The passages either side, or nothing when this slice stands alone.
-   
+
    PLACED BEFORE THE CLAIMS AND AFTER THE PAIR, so a panelist reads the
    evidence in the order the question needs it: what is under review, then
    what sits beside it, then what is alleged about the first.

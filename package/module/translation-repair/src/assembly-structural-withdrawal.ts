@@ -16,19 +16,19 @@ import { strictRefusalOffset, } from './strict-refusal-offset.ts';
 
 /**
  Finds a single withdrawal that leaves no introduced structural or footnote defect.
- 
+
  Tries replacements in their supplied document order and keeps the first proven
  repair. Each trial reparses an actual splice, not an isolated slice that may
  own only one half of a valid container. No trial result changes caller state.
- 
+
  @param targetText - inherited document defining permissible existing defects
- 
+
  @param slices - prepared locations for every replacement
- 
+
  @param replacements - current assembly, before any speculative withdrawal
- 
+
  @returns One proven slice index, or none when blanket fallback remains necessary
- 
+
  @example
  ```ts
  const proven = singleStructuralWithdrawal({ targetText, slices, replacements, });

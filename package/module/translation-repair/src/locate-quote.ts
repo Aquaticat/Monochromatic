@@ -39,7 +39,7 @@ import {
 
 /**
  Located-quote outcome: anchors, or the failure reason.
- 
+
  @example
  ```ts
  const location: QuoteLocation = { located: false, reason: 'quote-not-found (target)', };
@@ -73,17 +73,17 @@ export type QuoteLocation =
  a region crossing blocks splits into one anchor per touched block,
  each carrying the document's own bytes for its intersection
  (inter-block gaps are simply not covered by any span).
- 
+
  @param document - side being anchored
- 
+
  @param side - which side the anchors belong to
- 
+
  @param at - region start in document offsets
- 
+
  @param end - exclusive region end
- 
+
  @returns Anchors, or the outside-blocks failure
- 
+
  @example
  ```ts
  const bound = bindQuoteRegion({ document, side: 'target', at, end, },);
@@ -167,18 +167,18 @@ function bindQuoteRegion(
  Describes the missed quote into the failure finding by its shape, so a miss
  can be diagnosed by size and script rather than only counted, and without
  writing corpus text into a finding.
- 
+
  NO TEXT, BY THE RULE FINDINGS LIVE UNDER. An earlier version quoted up to
  sixty characters of the needle; findings travel into logs, artifacts and any
  command that prints them, none of which may carry corpus text. The length,
  counted once over the one-line form, and the count of Latin tokens say what
  kind of quote missed (a paragraph, a name, a number) and nothing of its
  wording.
- 
+
  @param needle - punctuation-normalized quote that was not found
- 
+
  @returns Shape note prefixed with a space, ready to append to a reason
- 
+
  @example
  ```ts
  needlePreview({ needle: 'a quote that missed', },);
@@ -233,22 +233,22 @@ function needlePreview(
 
 /**
  Locates one quote inside one document and binds it to its blocks.
- 
+
  Searches the document and the quote in one canonical form, where curly and
  ASCII punctuation are the same character and a soft line break is a space, so
  a quote copied out of a wrapped paragraph still anchors. Refuses a quote that
  occurs more than once in THAT form, whatever the stored punctuation and
  wrapping happen to be, because a model's own punctuation and line breaks do
  not say which occurrence it read.
- 
+
  @param document - side being searched
- 
+
  @param side - which side the anchors belong to
- 
+
  @param quote - substring the critic claims
- 
+
  @returns Anchors, or the failure reason
- 
+
  @example
  ```ts
  const located = locateQuote({ document, side: 'target', quote, },);

@@ -41,7 +41,7 @@ const FAILURE_DETAIL_CHARS = 40;
  not move; whether that growth is in the PROMPT, which repeats every candidate
  to every judge, or in the ANSWER, if a verdict is written per candidate, is
  exactly what the totals cannot distinguish and what this split is for.
- 
+
  @example
  ```ts
  const cost: CallTokens = { promptTokens: 900, completionTokens: 120, tokens: 1020, };
@@ -78,7 +78,7 @@ const NO_TOKENS: CallTokens = {
 
 /**
  One exchange, as the bench records it.
- 
+
  @example
  ```ts
  const call: BenchCall = { schema: 'translate', modelId: 'hf:x', ms: 4200, promptTokens: 800, completionTokens: 100, tokens: 900, outcome: 'ok', };
@@ -109,7 +109,7 @@ export type BenchCall = CallTokens & {
 
 /**
  Client that records every exchange it forwards.
- 
+
  @example
  ```ts
  const { client, calls, } = recordingClient({ inner: createRunClient(), },);
@@ -129,12 +129,12 @@ export type RecordingClient = {
 
 /**
  Names the stage of one request by the schema it asked for.
- 
+
  @param request - exchange as the stage built it; free-text calls carry no
  schema at all
- 
+
  @returns Schema name, or `text` when none was asked for
- 
+
  @example
  ```ts
  const schema = schemaOf({ request, },);
@@ -153,12 +153,12 @@ function schemaOf(
 
 /**
  Tokens one exchange moved, as the server reported them.
- 
+
  @param answered - reply or outcome, whichever came back; both carry usage
  only when the server reported it
- 
+
  @returns Both halves, plus whichever total the server stated or their sum
- 
+
  @example
  ```ts
  const cost = usageOf({ answered: outcome, },);
@@ -195,11 +195,11 @@ function usageOf(
 
 /**
  Wraps a client so every exchange is timed, sized and classified.
- 
+
  @param inner - client that actually talks to the provider
- 
+
  @returns Wrapper plus the growing row list
- 
+
  @example
  ```ts
  const recorder = recordingClient({ inner: createRunClient(), },);
@@ -215,11 +215,11 @@ export function recordingClient(
 
   /**
    Forwards a free-text exchange and records it.
-   
+
    @param request - exchange as the stage built it
-   
+
    @returns Whatever the inner client answered
-   
+
    @example
    ```ts
    const reply = await chatText(request,);
@@ -249,13 +249,13 @@ export function recordingClient(
 
   /**
    Forwards a schema-validated exchange and records it, thrown or not.
-   
+
    @param request - exchange as the stage built it
-   
+
    @returns Whatever the inner client answered
-   
+
    @throws Whatever the inner client threw, after recording the attempt
-   
+
    @example
    ```ts
    const outcome = await chatJson(request,);
@@ -307,11 +307,11 @@ export function recordingClient(
 
   /**
    Forwards a quota read unrecorded, since it costs no generation.
-   
+
    @param args - abort signal the caller owns
-   
+
    @returns Snapshot the inner client returned
-   
+
    @example
    ```ts
    const snapshot = await quotas({ signal, },);

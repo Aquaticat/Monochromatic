@@ -53,14 +53,14 @@ import {
 /**
  Reasons a short original cannot support, because over a twenty-character
  line the ratio reports rounding rather than a rendering.
- 
+
  ONLY THE SHORTER DIRECTION, and the asymmetry is the whole point. A
  20-character original against a 12-character rendering is noise, and reading
  it as a shortfall would fire the note on every short line in the corpus. A
  56-character original against a 10381-character rendering is not rounding in
  either direction: it is a runaway, and it is exactly what this note exists
  to put in front of a judge.
- 
+
  @example
  ```ts
  FLOORED_REASONS.has('target-far-shorter',);
@@ -72,7 +72,7 @@ const FLOORED_REASONS: ReadonlySet<RatioImplausibility> = new Set([
 
 /**
  One rendering of a passage, under the name its own contest calls it.
- 
+
  THE LABEL IS THE CALLER'S, because the two contests name their candidates
  differently and `CONTEST_POLICY` is shared between them precisely by naming
  neither. A builder hardcoding one contest's vocabulary could not serve both.
@@ -91,7 +91,7 @@ export type ContestRendering = {
 
 /**
  Whether one rendering's size against its original is outside plausible range.
- 
+
  RATIO TAILS ONLY, read off character counts. A block-count gap says the two
  sides may not be the same passage, which makes a ratio meaningless rather
  than extreme, and it was the sole cause for 20 of 36 flagged slices while
@@ -99,14 +99,14 @@ export type ContestRendering = {
  not support would be showing it noise. Reading no blocks also means parsing
  no rendering, so a rendering the slice grammar refuses still gets its note
  (ledger B68).
- 
+
  @param sourceText - original passage
- 
+
  @param text - one rendering of it
- 
+
  @returns Whether a ratio tail applies, with the source-length floor applied
  only to the reasons {@link FLOORED_REASONS} names
- 
+
  @example
  ```ts
  const tailed = tripsARatioTail({ sourceText, text: repairText, },);
@@ -146,28 +146,28 @@ function tripsARatioTail(
 
 /**
  Builds the size evidence for one contested passage, or nothing to say.
- 
+
  SILENT UNLESS SOMETHING IS OUT OF PROPORTION, so that a judge reading a note
  knows the note is about this passage rather than boilerplate it can skim. On
  the settled corpus that is 2 of 116 eligible rows.
- 
+
  A SHORTFALL against an original shorter than {@link MIN_RATIO_SOURCE_CHARS}
  is passed over, because a ratio over a twenty-character line reports
  rounding. A SURPLUS is reported at any original length, and
  {@link FLOORED_REASONS} carries the measurement behind that split.
- 
+
  A rendering of zero length raises nothing here, because
  {@link ratioImplausibility} reports no reason when either side is empty. An
  empty candidate is a different failure, and the stage guards name it.
- 
+
  @param sourceText - original passage, which every ratio is taken against
- 
+
  @param renderings - archive rendering and both candidates, each under its own
  contest's name
- 
+
  @returns Note for the message, or an empty string when nothing is out of
  proportion
- 
+
  @example
  ```ts
  const note = contestSizeNote({
@@ -224,16 +224,16 @@ export function contestSizeNote(
 
 /**
  Policy teaching a judge how to read {@link contestSizeNote}.
- 
+
  NAMES NO CANDIDATE, because it joins `CONTEST_POLICY`, which the lane contest
  and the consolidate gate share and which their differing candidate names
  would otherwise split in two.
- 
+
  BOTH DIRECTIONS GET A READING RATHER THAN A NAME. The two readings differ in
  what they ask the judge to do, which is the property that made two named
  faults attractive in the first place, and they carry it without asserting a
  fault where the existing rule says the behaviour is correct.
- 
+
  SILENT SURPLUS IS PAGE CONTENT ONLY WHERE THE ARCHIVE CARRIES IT (ledger S7).
  The note exists for the looping candidate (10381 characters against a
  56-character original), and the sentence that called any surplus the Chinese

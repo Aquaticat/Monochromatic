@@ -40,7 +40,7 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
 
 /**
  One slice as current run reports it to phase aggregation.
- 
+
  @example
  ```ts
  const result: RefinePhaseSliceResult = { outcome, findings: [], asked: true, };
@@ -56,30 +56,30 @@ export type RefinePhaseSliceResult = RefinedSliceSettlement & {
 /**
  Persists one naturalness settlement only when caller remains live and every
  stage reached quorum.
- 
+
  Separated from model work so abort-safe persistence is directly testable:
  transport usually throws before settlement returns, which otherwise makes
  this final defense unreachable in a model-client fixture.
- 
+
  @param key - exact question this settlement answers
- 
+
  @param settled - outcome and findings eligible for serialization
- 
+
  @param sliceIndex - index named in refusal warning
- 
+
  @param refineCache - naturalness persistence boundary, when configured
- 
+
  @param signal - caller abort checked before write
- 
+
  @param l - phase logger receiving eligibility warning
- 
+
  @throws Whatever caller abort reason or persistence throws
- 
+
  @example
  ```ts
  await persistRefinePhaseSlice({ key, settled, sliceIndex, refineCache, signal, l, },);
  ```
- 
+
  @internal
  */
 export async function persistRefinePhaseSlice(
@@ -127,47 +127,47 @@ export async function persistRefinePhaseSlice(
 /**
  Resumes or buys one naturalness settlement and persists only decisions a warm
  run may reuse.
- 
+
  @param client - injected model client
- 
+
  @param outcome - accuracy settlement this slice refines
- 
+
  @param slices - prepared pairs used to refuse unknown indices and derive
  neighbouring fidelity window
- 
+
  @param models - stage rosters deciding rewrite and checks
- 
+
  @param reseat - reads the checker seating as of now, so the recheck and the
  rewrite probe run on the bench a hold that began inside the lane re-seats
  (class one hundred thirteen); the standing seating when absent
- 
+
  @param refinerModelIds - already-validated non-empty rewriter roster
- 
+
  @param runShape - model-facing governance folded into cache key
- 
+
  @param definitions - whole-document references rewriter and guards resolve
- 
+
  @param identityContext - declared identities model prompts preserve
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param declaredNames - exact declarations deterministic guard preserves
- 
+
  @param refineCache - prior settlements and persistence boundary
- 
+
  @param signal - caller abort checked before any persistence
- 
+
  @param perCallTimeoutMs - per-exchange deadline
- 
+
  @param l - phase logger receiving cache-refusal warning
- 
+
  @returns Slice outcome and findings plus whether current run asked rewriters
- 
+
  @throws UnpreparedSliceError when outcome index has no prepared pair
- 
+
  @throws Whatever settlement, persistence, or caller abort throws
- 
+
  @example
  ```ts
  const settled = await settleRefinePhaseSlice({
@@ -184,7 +184,7 @@ export async function persistRefinePhaseSlice(
    l,
  },);
  ```
- 
+
  @internal
  */
 export async function settleRefinePhaseSlice(

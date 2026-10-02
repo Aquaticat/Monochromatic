@@ -1,15 +1,15 @@
 /**
  Tests for the store that resumes ballots an earlier run bought.
- 
+
  WHY THE SHAPE IS CHECKED DOWN TO THE BALLOT rather than to the outcome, which
  is the claim these cases exist to prove. The artifact reader refuses a ballot
  it cannot read, so a store that resumed one would let a corrupted cache file
  settle an entry into an artifact no reader will take: the pass would spend a
  whole document and then write a file that fails to parse. Refusing it here
  costs one re-asked slice.
- 
+
  Fixtures are cat-themed invention written into throwaway directories.
- 
+
  @module
  */
 
@@ -46,11 +46,11 @@ const CAT_BALLOT = {
 
 /**
  Writes one outcome and reads the directory back through a fresh store.
- 
+
  @param outcome - value to persist, valid or not
- 
+
  @returns Whether a second store resumed it
- 
+
  @example
  ```ts
  const resumed = await roundTrip({ outcome, },);

@@ -14,7 +14,7 @@ import { isHanCharacter, } from './han-only-text.ts';
 /**
  Words too common to carry content, so their loss says nothing about whether
  an edit deleted anything.
- 
+
  Deliberately short. A long stop list would start removing words whose
  disappearance IS the damage, and the gate's whole job is noticing loss.
  */
@@ -78,7 +78,7 @@ const STOP_WORDS: ReadonlySet<string> = new Set([
 
 /**
  Characters that end a sentence, in both ASCII and full-width forms.
- 
+
  A COLON IS NOT HERE, deliberately. A name following a colon is still a proper
  noun, and treating the colon as a terminator is what made a deleted
  contributor name invisible to an earlier draft of this gate.
@@ -92,7 +92,7 @@ const LEADING_MARKS = ' \t\n\r"“‘\'(>[-*';
 
 /**
  Shortest capitalized run treated as a possible name.
- 
+
  Two-letter capitals are overwhelmingly initials and abbreviations, whose
  disappearance an ordinary rewrite explains.
  */
@@ -103,11 +103,11 @@ const MIN_NAME_LENGTH = 3;
  not), an ASCII digit, a combining mark, an apostrophe or a hyphen. With
  ASCII letters only, `Émile` lost its first letter and `Château` split in two
  (ledger B18).
- 
+
  @param character - single character
- 
+
  @returns True for a character a word runs on through
- 
+
  @example
  ```ts
  const isWord = isWordCharacter('a',);
@@ -123,11 +123,11 @@ function isWordCharacter(character: string,): boolean {
  Reports whether a character is a CJK ideograph, which tokenizes one per
  character rather than by word run: the floors' own Han test
  (`han-only-text.ts`), so the tokenizer and the floors read one page one way.
- 
+
  @param character - single character
- 
+
  @returns True for a CJK ideograph
- 
+
  @example
  ```ts
  const isHan = isIdeograph('家',);
@@ -139,14 +139,14 @@ export function isIdeograph(character: string,): boolean {
 
 /**
  Splits text into comparable content tokens.
- 
+
  Stop words drop out, one-character words drop out, and ideographs survive
  individually because a one-character Chinese token is a full word.
- 
+
  @param text - text to tokenize
- 
+
  @returns Lowercased content tokens in document order
- 
+
  @example
  ```ts
  const tokens = contentTokens({ text: 'She kept the Klipper videos', },);
@@ -222,20 +222,20 @@ export function contentTokens(
 
 /**
  Finds capitalized words that are NOT the first word of a sentence.
- 
+
  Sentence-initial capitals are ordinary words wearing a capital, and treating
  them as names made an earlier draft reject an edit for losing "Yet" and
  "Moreover".
- 
+
  SCANNED ON THE ORIGINAL TEXT, never on the text left after removing the
  licensed defect quote. Removing a quote can leave a real name sitting at what
  looks like the start of a sentence, which is exactly how a deleted
  contributor name escaped an earlier draft.
- 
+
  @param text - original text, with its sentence structure intact
- 
+
  @returns Lowercased proper nouns
- 
+
  @example
  ```ts
  const names = properNouns({ text: 'Contributor: Bilibi - the archive', },);

@@ -1,6 +1,6 @@
 /**
  Tests for rebuilding live pipeline values as the values version 2 writes.
- 
+
  WHY THIS MODULE EXISTS AT ALL, and what these cases have to check. The frozen
  vocabulary was introduced with the claim that the compiler enforces it,
  because the builder assigns live values into the frozen types. Half of that
@@ -9,23 +9,23 @@
  literals, not to values flowing through a variable, so the wider object
  assigns cleanly and `JSON.stringify` writes the new field into every
  artifact, and the version 2 parser then refuses the writer's own output.
- 
+
  SO THE CENTRAL CASES ARE KEY LISTS, not values. A projection that copied its
  input would pass every value assertion here and still carry a field the
  schema does not describe, which is the exact failure the rebuilding exists to
  stop. Each projection gets a case handing it a live value carrying an extra
  field, asserting the result's own keys.
- 
+
  THE COPY IS ALSO CHECKED. `undecidedLanes` is copied rather than aliased
  because the artifact outlives the run, and a reader mutating what it read
  would otherwise reach into the comparison the builder returned. A case
  mutates the source afterwards and reads the projection back.
- 
+
  `pass-entry-artifact.ts` is the only caller and it builds whole artifacts, so every
  rule here reached the suite as a settled file that happened to parse.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -67,11 +67,11 @@ const DECIDED_SILL = 'The cat naps on the windowsill.';
 /**
  Lists an object's own keys in a stable order, which is what a projection
  dropping an unwanted field is checked by.
- 
+
  @param value - projected record
- 
+
  @returns Own keys, sorted
- 
+
  @example
  ```ts
  expect(keysOf({ value: projected, },),).toEqual(['kind',],);

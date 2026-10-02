@@ -26,12 +26,12 @@ import { readArtifactRecords, } from './probe-relabel-artifact.ts';
 
 /**
  Sample positions whose repair a human read as damaged, with what was seen.
- 
+
  From the round-three repair sheet, which was deliberately left ungraded
  because the repairs were too broken to score. Written as records rather than
  bare numbers so each position carries the observation that put it here; a
  list of integers would say nothing about why these and not others.
- 
+
  @example
  ```ts
  const first = DAMAGED_CASES[0]?.position;
@@ -83,7 +83,7 @@ const DAMAGED_POSITIONS: ReadonlySet<number> = new Set(
 
 /**
  Everything one prober call needs, rebuilt for a single damaged region.
- 
+
  @example
  ```ts
  const [first,] = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, },);
@@ -140,24 +140,24 @@ type GatheringCase = Omit<RelabelCase, 'positions'> & {
 
 /**
  Finds the slice whose translation contains a region's replaced text.
- 
+
  Located by CONTENT rather than by the recorded chunk index, because an index
  carries a convention and a convention is the kind of thing that silently
  shifts between a run and a later reading. Text either contains the region or
  it does not.
- 
+
  @param sourceText - whole original document
- 
+
  @param targetText - whole translation
- 
+
  @param before - replaced text to locate
- 
+
  @returns Slice texts surrounding the region
- 
+
  @throws {@link ArtifactParseError} when no slice carries the replaced text,
  which means slicing no longer reproduces the run and every later comparison
  would use a different prompt than production sent
- 
+
  @example
  ```ts
  const slice = locateSlice({ sourceText, targetText, before, },);
@@ -238,18 +238,18 @@ export function locateSlice(
 
 /**
  Rebuilds every damaged-region case named by {@link DAMAGED_CASES}.
- 
+
  @param manifestPath - sample manifest the positions index into
- 
+
  @param pin - corpus commit to read the pages at: `RUN_CORPUS_PIN` in a run, a
  throwaway clone in a test. REQUIRED: a default read the clone for any caller
  that left it out (ledger M43, X24)
- 
+
  @returns One case per distinct region, in sample order
- 
+
  @throws {@link ArtifactParseError} when a manifest, artifact, or slice lookup
  does not reproduce the run
- 
+
  @example
  ```ts
  const cases = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, },);

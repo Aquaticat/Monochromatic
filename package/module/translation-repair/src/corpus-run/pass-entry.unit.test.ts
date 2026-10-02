@@ -1,17 +1,17 @@
 /**
  Tests for settling one entry from both lanes.
- 
+
  WHAT THESE COVER that neither the driver's nor the builder's tests can: that
  an entry reaches disk as ONE version 2 artifact over ONE preparation, that a
  failed entry keeps the slices it bought and writes nothing, and that an abort
  landing after the lanes return stops the write rather than being noticed only
  on the next call.
- 
+
  Everything runs against throwaway directories under the system temp root, so
  no case can reach a real artifacts directory or a real slice cache.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -86,11 +86,11 @@ type PassConcurrency = {
 
 /**
  Sets overlap dial until disposal and restores invoking value.
- 
+
  @param says - value one measurement arm requests
- 
+
  @returns Disposable restoring prior environment
- 
+
  @example
  ```ts
  using dial = overlapDial({ says: '2', },);
@@ -116,9 +116,9 @@ function overlapDial(
 
 /**
  Builds zeroed instruments for one pass arm.
- 
+
  @returns Independent activity counters per per-slice driver
- 
+
  @example
  ```ts
  const activity = emptyPassConcurrency();
@@ -290,7 +290,7 @@ const INVISIBLE_ENTRY = {
 
 /**
  Entry the cleanup case settles, under its own id.
- 
+
  SEPARATE because that case reads what was PRINTED, and the runner runs cases
  concurrently in one process: a capture keyed on nothing collects whatever
  other cases logged while it was installed. Filtering by an id no other case
@@ -559,11 +559,11 @@ type CoverageScript = 'lost' | 'absent' | 'full';
 
 /**
  Renders one slice the way a translator that respected block structure would.
- 
+
  @param content - translator prompt, which carries the slice original
- 
+
  @returns Rendering for that slice
- 
+
  @example
  ```ts
  const rendering = renderingFor({ content, },);
@@ -587,11 +587,11 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 
 /**
  Finds the one-based candidate index whose rendering carries a needle.
- 
+
  @param content - judge user message
- 
+
  @returns One-based index, or zero when no candidate carries it
- 
+
  @example
  ```ts
  const best = pickCandidate({ content, },);
@@ -627,28 +627,28 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
 
 /**
  Scripted reply for one stage.
- 
+
  The repair lane's critics find nothing, so that lane keeps the archive; the
  translate lane renders each slice afresh and its judges pick that rendering.
  The two lanes therefore disagree by construction, which is what makes the
  artifact worth reading.
- 
+
  @param schema - schema name the stage asked for
- 
+
  @param content - everything the stage sent
- 
+
  @param coverageScript - whether coverage roster answers absent or loses voice
- 
+
  @param consolidation - whether translation schema belongs to third rendering
- 
+
  @param polishScript - whether final naturalness rewrite is exercised
- 
+
  @param contestChoice - lane scripted contest endorses
- 
+
  @returns Wire value for that stage
- 
+
  @throws {@link Error} when a stage this script does not serve asks
- 
+
  @example
  ```ts
  const value = replyFor({ schema: 'critic_report', content, },);
@@ -794,20 +794,20 @@ function replyFor(
 
 /**
  Client serving both lanes from one script.
- 
+
  @param served - schema names appended in call order
- 
+
  @param failOnSchema - schema every call of which throws, standing in for a
  provider that is down for one stage; absent means the script never fails
- 
+
  @param activity - optional admission instrument for every per-slice driver
- 
+
  @param coverageScript - whether coverage roster answers or loses every voice
- 
+
  @param polishScript - whether final naturalness rewrite is exercised
- 
+
  @param contestChoice - lane scripted contest endorses
- 
+
  @param quotaReads - counter of meter readings, for the case that proves the
  judge seats are read before each phase and not once per entry
 
@@ -815,7 +815,7 @@ function replyFor(
  reading what a stage was shown
 
  @returns Client honoring the script
- 
+
  @example
  ```ts
  const client = entryClient({ served, },);
@@ -967,9 +967,9 @@ function entryClient(
 
 /**
  Throwaway artifacts, publish and cache directories for one case.
- 
+
  @returns Every directory a settling entry writes into, plus how to remove them
- 
+
  @example
  ```ts
  await using dirs = await throwawayDirs();
@@ -1040,11 +1040,11 @@ async function throwawayDirs(): Promise<
 
 /**
  Reads every artifact filename a case wrote.
- 
+
  @param artifactsDir - directory settled entries write into
- 
+
  @returns Filenames present, or none when the directory was never created
- 
+
  @example
  ```ts
  const written = await artifactNames({ artifactsDir, },);

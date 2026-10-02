@@ -44,7 +44,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 
 /**
  Cases gathered before the control is called.
- 
+
  MORE THAN THE CONTROL WILL USE, because a case is only damageable if the
  roster returns `carried` with evidence, which is not known until it is asked.
  Offering spares keeps a run from ending with nothing measured.
@@ -53,11 +53,11 @@ const CASES_OFFERED = 8;
 
 /**
  Collects passages to try, walking entries until enough are gathered.
- 
+
  @param onlyIds - entries to restrict the walk to, empty for all
- 
+
  @returns Cases the control may try
- 
+
  @example
  ```ts
  const cases = await gatherCases({ onlyIds, },);
@@ -139,12 +139,12 @@ async function gatherCases(
 
 /**
  Runs the control and reports what it found.
- 
+
  @param line - the control's command line, read whole by `reportingRefusals`
- 
+
  @throws Error when no entry offered a single passage to ask about, since a
  run that measured nothing must not be reported as one that measured a null
- 
+
  @example
  ```ts
  await main({ line, },);
@@ -222,7 +222,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-control-
 
   /**
    Cases the roster declined to call covered before anything was damaged.
-   
+
    REPORTED SEPARATELY FROM ANCHORING FAILURES because these are the wire
    voting absence on text nobody touched, which is a stronger reading than any
    damaged case can give.

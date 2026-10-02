@@ -33,7 +33,7 @@ import { isWholeNumberText, } from './whole-number-text.ts';
 
 /**
  What a human decided about one sampled issue.
- 
+
  @example
  ```ts
  const verdict: GradeVerdict = 'real-defect';
@@ -57,14 +57,14 @@ export type GradeVerdict =
   /**
    Answered `Duplicate`: this item is the same underlying defect as an earlier
    item in the same sample.
-   
+
    Separate from `unscored` because the two are declined for opposite reasons.
    An unscored item is one nobody could decide; a duplicate is one already
    decided, at another position. Round three drew seven of them, 14 percent of
    the sample, and counting them as false positives dragged strict precision
    from 0.740 to 0.680 while every other reading rose. That movement described
    the sampling instrument, not the detector.
-   
+
    The pipeline emitting one defect as several accepted issues is a real
    defect of its own, tracked separately; it is simply not the thing precision
    measures.
@@ -73,7 +73,7 @@ export type GradeVerdict =
 
 /**
  One item read back off a graded sheet.
- 
+
  @example
  ```ts
  const item: GradedItem = { index: 1, verdict: 'real-defect', note: '', };
@@ -116,11 +116,11 @@ const LEGEND_MARKER = '(Y = ';
 /**
  Reads the grader's answer out of one item heading, with the legend and any
  enclosing brackets removed.
- 
+
  @param line - item heading line
- 
+
  @returns Answer text, empty when the box was left unfilled
- 
+
  @example
  ```ts
  const answer = extractAnswer({ line: '### 1. grade: [Y]  (Y = ...)', },);
@@ -168,7 +168,7 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
 
 /**
  Answer marking an item as the same defect as an earlier one, lowercased.
- 
+
  A word rather than a letter, because it is not a verdict about the item: the
  grader is saying the question was already answered elsewhere on the sheet.
  */
@@ -176,11 +176,11 @@ const DUPLICATE_ANSWER = 'duplicate';
 
 /**
  Classifies one grader answer into a verdict and its remaining prose.
- 
+
  @param answer - grader's answer, unbracketed
- 
+
  @returns Verdict and the note that followed it
- 
+
  @example
  ```ts
  const read = readAnswer({ answer: 'N, anchored to the wrong text', },);
@@ -233,12 +233,12 @@ function readAnswer({ answer, }: { readonly answer: string; },): {
 
 /**
  How a refusal names the number a sheet heading printed.
- 
+
  @param printed - heading's number as written, spaces trimmed
- 
+
  @returns Digits as written; anything else quoted, so a stray space or sign
  shows; or that the heading carries none, where `Number` said zero
- 
+
  @example
  ```ts
  headedWords({ printed: '', },); // 'with no number'
@@ -252,11 +252,11 @@ function headedWords({ printed, }: { readonly printed: string; },): string {
 
 /**
  Reads every graded item off a filled detection sheet.
- 
+
  @param text - sheet as the grader left it
- 
+
  @returns Items in sheet order
- 
+
  @example
  ```ts
  const items = parseGradedSheet({ text: await readFile(path, 'utf8',), },);
@@ -276,7 +276,7 @@ export function parseGradedSheet(
     ): GradedItem {
       /**
        Number the heading prints, which the pre-grades are keyed by.
-       
+
        READ AND CHECKED rather than trusted from the position: a heading a
        grader deleted, duplicated or added by hand renumbers every later item
        silently against pre-grades keyed by the printed number.

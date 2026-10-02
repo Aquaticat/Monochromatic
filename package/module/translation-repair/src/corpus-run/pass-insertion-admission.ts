@@ -39,29 +39,29 @@ import type { BenchSeating, } from '../bench-seating.ts';
 
 /**
  Decides which source-only slices a corpus pass may ask translators to fill.
- 
+
  @param client - provider client shared with pass stages
- 
+
  @param prepared - one source/target preparation carrying insertion slices
- 
+
  @param modelIds - measured production coverage roster
- 
+
  @param overlap - most coverage questions in flight
- 
+
  @param signal - entry deadline and caller abort
- 
+
  @param perCallTimeoutMs - deadline per coverage exchange
- 
+
  @param l - entry logger
 
  @param beforeCandidate - awaited before each candidate's coverage question,
  handing it the roster it is asked of; none keeps the given one (ledger X12)
- 
+
  @returns Admitted positions and count-only evidence for every candidate
- 
+
  @throws {@link TranslationRepairInterruptedError}
  when no coverage voice was heard for some passage
- 
+
  @example
  ```ts
  const admission = await decidePassInsertionAdmission({ client, prepared, modelIds, overlap: 4, signal, perCallTimeoutMs, l, },);

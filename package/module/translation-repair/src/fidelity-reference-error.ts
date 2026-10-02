@@ -3,7 +3,7 @@
 
 /**
  Closed verification boundaries of the calibration reference contract.
- 
+
  @example
  ```ts
  const operation: FidelityReferenceOperation = 'archive';
@@ -21,7 +21,7 @@ export type FidelityReferenceOperation =
 
 /**
  Refuses a calibration input that no longer matches its reviewed evidence.
- 
+
  @example
  ```ts
  throw new FidelityReferenceError({ referenceId: spec.id, operation: 'reference' });
@@ -35,11 +35,11 @@ export class FidelityReferenceError extends Error {
 
   /**
    Builds an actionable refusal without repeating the disputed text.
-   
+
    @param referenceId - reviewed reference identifier supplied by the caller
-   
+
    @param operation - closed boundary requiring verification
-   
+
    @example
    ```ts
    new FidelityReferenceError({ referenceId: 'portrait-reference', operation: 'source' });

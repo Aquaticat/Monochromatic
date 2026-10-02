@@ -53,11 +53,11 @@ function contentLines({ text, }: { readonly text: string; },): readonly string[]
 
 /**
  Whether a line carries a Han character.
- 
+
  @param line - one line
- 
+
  @returns Whether any character is an ideograph
- 
+
  @example
  ```ts
  const han = carriesHan({ line: '猫醒了。', },);
@@ -76,11 +76,11 @@ function carriesHan({ line, }: { readonly line: string; },): boolean {
  an English line the original itself wrote. A line whose letters are all
  accented read as carrying none while the test took ASCII letters only
  (ledger B18).
- 
+
  @param line - one line
- 
+
  @returns Whether the line is the original's own English
- 
+
  @example
  ```ts
  const english = isOwnEnglish({ line: 'From *The Cat Show*', },);
@@ -99,17 +99,17 @@ function isOwnEnglish({ line, }: { readonly line: string; },): boolean {
 /**
  Counts adjacent pairs of a Han line and an English line in the original,
  which an English rendering owes one line, not two.
- 
+
  THE ENGLISH LINE IS THE RENDERING OF ITS NEIGHBOUR (class forty-seven,
  shi_Yumiaoya2, 2026-09-17): the original quoted a film line in Chinese with
  its English beside it, the archive carried the English once, and the floor
  refused every rendering that did not quote it twice. Each line joins at
  most one pair, taken in order.
- 
+
  @param lines - content lines of the original
- 
+
  @returns Each such pair, in order
- 
+
  @example
  ```ts
  const pairs = bilingualPairs({ lines: contentLines({ text: sourceText, },), },);
@@ -269,38 +269,38 @@ function repeatedLines(
 
 /**
  Names a governed rendering that merged lines its original kept apart.
- 
+
  AGAINST THE ORIGINAL, NEVER THE PAGE. A governed slice's page may itself be
  flat, since 50 of 64 archive incumbents already violate the line rule, and
  flooring on it would fault the producer that correctly unmerges: exactly the
  repair the rule demands.
- 
+
  FEWER LINES ONLY, never an equality check. Measured over the 211
  line-structured slices of the pinned corpus, the archive's own English
  matches its Chinese line for line on 115 and differs on 96, and 80 of those
  carry MORE lines than the Chinese, because an English rendering of Chinese
  verse legitimately expands. Requiring equality would send back nearly half of
  every governed rendering, so only a shortfall is named.
- 
+
  ONE BLIND SPOT, NAMED RATHER THAN CLOSED. The count is over the whole slice,
  so a rendering merging two lines in one block while splitting one in another
  nets to the same total and passes here. Closing that needs per-block
  alignment, a larger instrument than the flattening this was built to catch,
  and the blocks themselves are compared separately either way.
- 
+
  @param lineStructured - whether the line-structure rule governs this slice,
  decided upstream over the slice and its enclosing chunk together
- 
+
  @param sourceText - original slice, whose lines the rendering owes
- 
+
  @param candidateText - proposed translation of it
- 
+
  @param pageText - translation of the slice as the page stands, which bounds a
  bilingual pair to one line where it carries the pair so (class eighty,
  `bilingual-pair-bound.ts`); absent where the slice has none
- 
+
  @returns One finding where lines were merged, none otherwise
- 
+
  @example
  ```ts
  const found = compareLineCounts({ lineStructured, sourceText, candidateText, },);

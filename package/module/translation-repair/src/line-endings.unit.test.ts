@@ -1,10 +1,10 @@
 /**
  Tests for folding Windows line endings.
- 
+
  WHAT THESE PIN is that the fold counts what it changed, leaves LF text and
  a lone carriage return alone, and shrinks the text by exactly the count.
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 

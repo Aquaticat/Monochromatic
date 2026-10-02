@@ -13,7 +13,7 @@ import type { CommandLineOf, } from './command-lines.ts';
 
 /**
  How many trials one invocation runs by default.
- 
+
  COUNTED IN ATTEMPTS, not in successes, so a failing roster cannot spend
  without bound while the count a reader checks stays small.
  */
@@ -21,7 +21,7 @@ export const DEFAULT_TRIAL_CAP = 16;
 
 /**
  Defects built for every pair when the caller names none.
- 
+
  DELETION FIRST, since it is the reading already recorded and the one an
  insertion result is compared against.
  */
@@ -34,14 +34,14 @@ export const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
 /**
  Defects each `--damage` spelling asks for; every defect when the flag is
  not written.
- 
+
  EVERY DEFECT BY DEFAULT, because one fixture alone leaves a habit
  unmeasured: the deletion cannot separate reading from preferring length, and
  the insertion alone would not say the roster sees an omission at all. An
  unlisted spelling is refused, rather than silently running something the
  caller did not ask for; so is `--damage` written last, which read as no
  spelling and ran every defect (ledger B73).
- 
+
  A MAP RATHER THAN A PLAIN OBJECT, since the key is typed text: looked up on
  an object, `--damage constructor` found `Object.prototype.constructor` and
  handed a function on as the defects to build (ledger B75).
@@ -63,14 +63,14 @@ const DAMAGE_BY_NAME: ReadonlyMap<string, readonly FidelityDamageKind[]> = new M
 
 /**
  Reads which defects `--damage` asks for.
- 
+
  @param damage - what the flag carried, or that nobody wrote it
- 
+
  @returns Every defect when the flag was not written, else the one named
- 
+
  @throws StatedRefusalError when the flag names a defect this probe does not
  build
- 
+
  @example
  ```ts
  const kinds = damageKindsOf({ damage: { kind: 'written', flag: '--damage', value: 'insertion', }, },);
@@ -92,19 +92,19 @@ function damageKindsOf({ damage, }: { readonly damage: FlagValue; },): readonly 
 
 /**
  Reads `--only`, `--cap`, `--damage` and `--context` from the command line.
- 
+
  @internal
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
  and passed in so this is testable without a subprocess
- 
+
  @returns Entry ids to trial, empty for every entry, the trial cap, and which
  defects to build
- 
+
  @throws StatedRefusalError when a cap is not a whole number written in
  digits or is below zero, an entry filter names no entry, or a defect is one
  this probe does not build
- 
+
  @example
  ```ts
  const { onlyIds, cap, damageKinds, } = readFidelityArguments({ line, },);

@@ -1,6 +1,6 @@
 /**
  Tests for SSE stream reassembly.
- 
+
  @module
  */
 

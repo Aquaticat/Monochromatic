@@ -2,7 +2,7 @@
  Tests for the OpenRouter catalog: every row stands in for a roster seat,
  every roster seat has a row, and the routing preferences carry the owner's
  zero-data-retention decision.
- 
+
  @module
  */
 

@@ -47,17 +47,17 @@ export type ArmOutcome = {
 
 /**
  Reduces a stage result to the fields the comparison needs.
- 
+
  READS THE PRODUCER OFF THE RESULT rather than indexing the slate.
  `selectedIndex` is one-based over a slate the round may have reordered, which
  is a documented trap; `shippedProducer` is the stage's own answer.
- 
+
  @param stage - what one arm returned
- 
+
  @param targetText - translation as it stood, so an unchanged arm reads blank
- 
+
  @returns Arm reduced for comparison
- 
+
  @example
  ```ts
  const arm = readArm({ stage, targetText, },);
@@ -101,21 +101,21 @@ function readArm(
 
 /**
  Runs one arm end to end.
- 
+
  @param client - injected model client
- 
+
  @param input - slice with its accepted issues
- 
+
  @param editorModelIds - seats for this arm, the variable under test
- 
+
  @param judgeModelIds - panel, held fixed across every arm
- 
+
  @param signal - cancellation
- 
+
  @param l - logger
- 
+
  @returns Arm reduced for comparison
- 
+
  @example
  ```ts
  const narrow = await runArm({ client, input, editorModelIds, judgeModelIds, signal, l, },);

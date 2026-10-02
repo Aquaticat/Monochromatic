@@ -13,7 +13,7 @@ import { isJsonRecord, } from './json-guard.ts';
  Verified live response also carries `subscription`, `search`, and
  `freeToolCalls` blocks; they are deliberately unmodeled until something
  consumes them.
- 
+
  @example
  ```ts
  const snapshot: QuotaSnapshot = {
@@ -68,7 +68,7 @@ export type QuotaSnapshot = {
 /**
  Signals a `/quotas` body that refused to parse or lacked consumed fields;
  always a provider protocol failure, never a model defect.
- 
+
  @example
  ```ts
  throw new QuotaShapeError({ detail: 'rollingFiveHourLimit.remaining is not a number', },);
@@ -82,11 +82,11 @@ export class QuotaShapeError extends Error {
 
   /**
    Builds failure naming the field or parse step at fault.
-   
+
    @param detail - which expectation the body violated
-   
+
    @param cause - underlying parse error when JSON itself failed
-   
+
    @example
    ```ts
    new QuotaShapeError({ detail: 'body is not valid JSON', cause: error, },);
@@ -114,13 +114,13 @@ export class QuotaShapeError extends Error {
 
 /**
  Parses body text as JSON, converting parse failures into shape errors.
- 
+
  @param bodyText - raw response body
- 
+
  @returns Parsed JSON value
- 
+
  @throws {@link QuotaShapeError} when body is not valid JSON
- 
+
  @example
  ```ts
  const parsed = parseQuotaJson({ bodyText, },);
@@ -141,13 +141,13 @@ function parseQuotaJson({ bodyText, }: { readonly bodyText: string; },): unknown
 /**
  Parses one `/quotas` body into the typed snapshot,
  validating every consumed field.
- 
+
  @param bodyText - raw 200-response body
- 
+
  @returns Typed snapshot of budget-relevant quota state
- 
+
  @throws {@link QuotaShapeError} when body is not JSON or a consumed field is missing or mistyped
- 
+
  @example
  ```ts
  const snapshot = parseQuotaSnapshot({ bodyText: reply.bodyText, },);

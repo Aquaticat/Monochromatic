@@ -26,7 +26,7 @@ export type PositionPair = {
 
 /**
  One pair with the number of voices that named it.
- 
+
  @example
  ```ts
  const voted: VotedPair<PositionPair> = { pair: { source: 1, target: 0, }, votes: 3, };
@@ -39,7 +39,7 @@ export type VotedPair<PairT extends PositionPair,> = {
 
 /**
  Which claim on a contested target survives.
- 
+
  @example
  ```ts
  const outcome: ContestedTargetOutcome = { keep: 'later', finding: 'contested target (...)', };
@@ -60,13 +60,13 @@ export type ContestedTargetOutcome = {
 
 /**
  Decides by votes between two sources' uncorroborated claims on one target.
- 
+
  @param earlier - claim already kept, from the lower source
- 
+
  @param later - claim from the higher source on the same target
- 
+
  @returns Which claim to keep, with the finding that says why
- 
+
  @example
  ```ts
  const outcome = settleContestedTarget({ earlier, later, },);

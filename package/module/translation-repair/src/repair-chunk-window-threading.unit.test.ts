@@ -1,34 +1,34 @@
 /**
  Tests that the repair slice driver FORWARDS the neighbouring window to
  the sheets its stages send.
- 
+
  WHY A SEPARATE FILE FROM `nearby-window-reaches-the-models.unit.test.ts`.
  That one hands each builder a window directly and asserts the builder renders
  it, which is the right test of a builder and says nothing about whether
  anything ever hands one over. `repairChunk` builds the fragment those four
  call sites spread, and its own forwarding is what this pins.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting this driver's conditional spread
  so the neighbouring ORIGINAL is forwarded only when it is ABSENT failed no
  test in this package. Every builder case stayed green, because each is handed
  its window by hand. A driver that dropped it would leave the critic reasoning
  about a slice alone while the key that names its work claims a window: the
  exact shape of the defect where the slice key mislabelled its window sides.
- 
+
  THE CRITIC IS ENOUGH TO PIN IT. All four stages spread ONE fragment, built
  once, which the module says is deliberate: a critic that can see next door
  raises a relocation claim and a panel that cannot rejects it as unfounded. A
  run whose critics report nothing settles right after that phase, so scripting
  one stage exercises the forwarding without buying the other three.
- 
+
  BOTH DIRECTIONS ARE PINNED, since a driver pasting the blocks unconditionally
  would satisfy the first case alone.
- 
+
  NO NETWORK. The client scripts every critic with an empty report and records
  the sheet each was sent.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -116,11 +116,11 @@ const MODELS: RepairModels = {
 
 /**
  Runs one slice and returns the sheet every critic was sent.
- 
+
  @param beside - neighbouring texts to thread, empty for the control
- 
+
  @returns User sheets of the critic exchanges, in order
- 
+
  @example
  ```ts
  const sheets = await criticSheets({ beside: { neighbouringSourceText: NEARBY_SOURCE, }, },);

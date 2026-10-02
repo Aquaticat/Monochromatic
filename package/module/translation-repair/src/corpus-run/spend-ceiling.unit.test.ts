@@ -1,9 +1,9 @@
 /**
  Tests for the per-run spend ceiling: the resolver, the predicate the
  scheduler asks before each entry, and the line it prints when it stops.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 

@@ -71,7 +71,7 @@ const MINUTES_PER_HOUR = 60;
 
 /**
  Hours the whole benchmark may run.
- 
+
  Raised from 4 on run 001's own timing: it settled seven of nine entries in
  252 minutes and recorded the other two as skipped, coverage 0.778. Detection
  has to be re-measured anyway after the slice-index fix, and the rerun also
@@ -124,13 +124,13 @@ type SeedOutcome =
 /**
  Builds the seeded benchmark entry for one corpus id, reporting why when it
  cannot be seeded.
- 
+
  @param id - corpus person id
- 
+
  @param sizer - shared encoder measuring source bytes for banding
- 
+
  @returns Seeded entry with its band, or the reason it was skipped
- 
+
  @example
  ```ts
  const outcome = await buildEntry({ id: 'Whiskers', sizer, },);
@@ -211,11 +211,11 @@ async function buildEntry(
 /**
  Runs the recall benchmark over a band-stratified corpus sample and writes its
  scorecard beside the other run artifacts.
- 
+
  @param line - the benchmark's command line, read whole by `reportingRefusals`
- 
+
  @throws {@link Error} when the API key env var is unset
- 
+
  @example
  ```ts
  await runRecallBenchmark({ line, },);

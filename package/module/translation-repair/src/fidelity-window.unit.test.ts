@@ -1,6 +1,6 @@
 /**
  Tests for how much of the ORIGINAL a fidelity judge is shown.
- 
+
  Two things are pinned here, and they are the two halves of one claim. First,
  that {@link neighbouringSource} takes one section each way and nothing more,
  including at both ends of a document where there is no such section. Second,
@@ -9,9 +9,9 @@
  differing in exactly one thing. That second claim was argued in a comment and
  enforced nowhere, so the measured 12-of-16 against 15-of-16 rested on it
  without evidence.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -44,7 +44,7 @@ const l = tagged({ tag: 'fidelity-window-test', },);
 
 /**
  Label the sheet gives the neighbouring sections.
- 
+
  Matched on its distinctive opening rather than in full, so rewording the
  explanatory tail does not fail a test that is about presence.
  */
@@ -52,7 +52,7 @@ const SURROUNDING_LABEL = 'SURROUNDING ORIGINAL';
 
 /**
  Roster the sheets go to.
- 
+
  THREE RATHER THAN ONE because selection requires a minimum weight of two: a
  lone judge backing a candidate at full weight still falls short, and the
  trial declines. A one-model roster would make every sheet assertion here read
@@ -100,13 +100,13 @@ type SentSheets = {
 
 /**
  Builds a client that records each sheet and always backs candidate one.
- 
+
  WHAT IT DOES NOT DO is judge. The vote is fixed because this test is about
  what the judges are SHOWN; `judge-fidelity.unit.test.ts` covers what the
  trial makes of what they say.
- 
+
  @returns Recorder and the client writing into it
- 
+
  @example
  ```ts
  const recorder = recordingClient();
@@ -162,15 +162,15 @@ function recordingClient(): SentSheets {
 /**
  Runs one trial and answers every sheet it sent, with what the trial made of
  the replies.
- 
+
  The verdict comes back so a test can show the sheets were captured from a
  COMPLETED trial: a run that failed every call would also record sheets, and
  an assertion that some label is absent would pass on the wreckage.
- 
+
  @param contextText - surrounding original, empty for a narrow run
- 
+
  @returns Sheets the judges were sent, and the trial's verdict
- 
+
  @example
  ```ts
  const run = await sheetsFor({ contextText: '', },);
@@ -218,15 +218,15 @@ async function sheetsFor(
  that fixture leaves the target empty because the source window is all it
  needs, and reusing it here would assert against the empty string and pass for
  a function that returned nothing.
- 
+
  @param text - original of this slice
- 
+
  @param wording - archive English of this slice
- 
+
  @param sliceIndex - slice index
- 
+
  @returns Pair with both sides populated
- 
+
  @example
  ```ts
  const pair = pairOf({ text: '猫。', wording: 'A cat.', sliceIndex: 0, },);
@@ -360,7 +360,7 @@ await describe({
             /**
              Two slices of one section, stamped with the document-wide indices they
              would carry in an entry whose earlier sections were not sliced.
-         
+
              Passing `sliceIndex` here rather than the array position is the whole
              hazard: `11` and `12` are ordinary stamps, and both are outside a
              two-element array.

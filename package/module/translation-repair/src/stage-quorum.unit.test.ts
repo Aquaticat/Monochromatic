@@ -2,15 +2,15 @@
  Tests for stage voice gathering: retries stop at quorum, a straggler is
  abandoned a bounded grace after quorum rather than waited out, and roster
  shortfalls surface as findings.
- 
+
  The grace cases are the user's standing rule of 2026-08-15 made testable:
  the failure of any one model for the day must not delay the pipeline. Both
  directions are covered, because only the pair distinguishes a grace from a
  cut: a voice arriving inside the window is still heard, and one that never
  arrives costs the window rather than its whole deadline.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -59,7 +59,7 @@ const RECOVERY_GRACE_MS = 60;
 
 /**
  Exchange deadline the stalling case sets, far above its grace.
- 
+
  The gap is the measurement: a recovery round that waited for its voices
  would take this, and one bounded by the grace takes a fraction of it.
  */
@@ -82,19 +82,19 @@ const l = tagged({ tag: 'stage-quorum-test', },);
 
 /**
  Client whose named model throws rather than answering, and records calls.
- 
+
  SEPARATE FROM {@link flakyClient} BECAUSE THE TWO LOSSES ARE DIFFERENT. That
  one returns `schema-mismatch`, which is a model that finished and wrote
  something nothing could read. This one never delivers, which is what a
  transport failure looks like from here, and it is the loss the recovery round
  must leave alone.
- 
+
  @param silentModel - model that throws on every call
- 
+
  @param calls - shared call log the test asserts on
- 
+
  @returns Client honouring that script
- 
+
  @example
  ```ts
  const client = silentClient({ silentModel: SEAT_SYNTHETIC_VISION_WITHHELD, calls, },);
@@ -145,15 +145,15 @@ function silentClient(
  Client whose named seat is refused by the router for want of a wet provider
  and whose other named seat fails in transport, so a gather can tell the two
  losses apart.
- 
+
  @param drySeats - seats no provider serves
- 
+
  @param failingSeat - seat whose transport fails on a wet provider
- 
+
  @param calls - call count per model, written when given
- 
+
  @returns Client honouring that script
- 
+
  @example
  ```ts
  const client = dryBenchClient({ drySeats: [SEAT_HYPER_ONLY,], failingSeat: SEAT_SYNTHETIC_VISION_WITHHELD, },);
@@ -240,17 +240,17 @@ const DRY_SEVEN: readonly RosterModelId[] = [
 
 /**
  Client whose named model writes one unusable answer and then hangs forever.
- 
+
  THE SHAPE THE RECOVERY ROUND'S BOUND IS FOR. A model that finished once is
  re-asked, and nothing says the second call comes back: this scripts the worst
  case so the round's time can be read rather than reasoned about.
- 
+
  @param stallingModel - model that answers unusably once, then never returns
- 
+
  @param calls - shared call log the test asserts on
- 
+
  @returns Client honouring that script
- 
+
  @example
  ```ts
  const client = stallingClient({ stallingModel: SEAT_SYNTHETIC_VISION_WITHHELD, calls, },);
@@ -316,16 +316,16 @@ function stallingClient(
 /**
  Client scripted per model: fails until the model's remaining failure
  budget is spent, then answers; records every call.
- 
+
  A FAILURE IS AN UNREADABLE ANSWER unless `transport` says otherwise. In a
  run the prompt-uniqueness client replays an unreadable answer for the same
  prompt, so only the recovery round's nudged prompt can recover one (ledger
  P2); a transport failure is the weather the retry rounds exist for.
- 
+
  @param failuresByModel - failures each model serves before answering
- 
+
  @param calls - shared call log the test asserts on
- 
+
  @param transport - whether each failure is a transport failure rather than
  an unreadable answer
  */
@@ -384,16 +384,16 @@ function flakyClient(
 /**
  Client where every model answers at once except one, which either answers
  late or not at all.
- 
+
  @param hangingModelId - model that does not answer with the others
- 
+
  @param cut - flag the hung call sets when its abort arrives
- 
+
  @param lateMs - delay after which it answers anyway; omitted means it never
  answers on its own and waits to be abandoned
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = hangingClient({ hangingModelId, cut, },);

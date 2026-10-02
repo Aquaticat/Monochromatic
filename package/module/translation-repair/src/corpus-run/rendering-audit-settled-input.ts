@@ -95,7 +95,7 @@ import {
 
 /**
  Whether the recorded preparation identity still describes the pair.
- 
+
  @example
  ```ts
  const verification: SettledVerification = { kind: 'verified', };
@@ -138,7 +138,7 @@ export type SettledVerification = {
 
 /**
  One artifact, read.
- 
+
  @example
  ```ts
  const reading: SettledArtifactReading = { runSet, entryId, verification, subjects, };
@@ -178,7 +178,7 @@ export type SettledArtifactReading = {
 
 /**
  Where one artifact sits inside the archive.
- 
+
  @example
  ```ts
  const at: ArtifactLocation = { runSet: 'two-lane-cost-2026-08-16', artifactFile: 'Aniloviraw.json', };
@@ -187,7 +187,7 @@ export type SettledArtifactReading = {
 type ArtifactLocation = {
   /**
    Subdirectory to look in, EMPTY when the artifact sits at the archive root.
-   
+
    SEPARATE FROM `runSet`, which it used to be the same field as, and the two
    came apart the moment a flat layout was accepted: the path segment must be
    empty for an artifact at the root, while the label must still name
@@ -198,7 +198,7 @@ type ArtifactLocation = {
 
   /**
    What every row calls this settlement.
-   
+
    For a nested archive this is the subdirectory. For a flat one it is the
    archive's own name, because the directory IS the settlement there.
    */
@@ -212,14 +212,14 @@ type ArtifactLocation = {
 
 /**
  Runs the provenance check and turns its refusal into a value.
- 
+
  @param artifact - parsed artifact
- 
+
  @param rebuilt - preparation rebuilt from the corpus with the artifact's
  recorded recipe, beside the recipe halves it lacked
- 
+
  @returns Answer, never a throw
- 
+
  @example
  ```ts
  const verification = verifySettled({ artifact, rebuilt, },);
@@ -273,20 +273,20 @@ function verifySettled(
 
 /**
  Reads one settled artifact into audit subjects.
- 
+
  @param archiveDir - directory holding run-set subdirectories
- 
+
  @param runSet - subdirectory this artifact lives in
- 
+
  @param artifactFile - file name within it
- 
+
  @param cloneDir - corpus clone the artifact's own commit is read from
- 
+
  @returns Everything that artifact offers, provenance included
- 
+
  @throws {@link ArtifactParseError} when the file is not a settled version 2
  artifact, which is a defect in what was archived rather than a finding
- 
+
  @example
  ```ts
  const reading = await readArtifactSubjects({ archiveDir, runSetDir, runSet, artifactFile, cloneDir, },);
@@ -377,13 +377,13 @@ export async function readArtifactSubjects(
 
 /**
  Lists every artifact under an archive directory, in a stable order.
- 
+
  TAKES TWO LAYOUTS, because two exist and only one was accepted before.
- 
+
  NESTED, `archive/<run set>/<entry>.json`, which is what the hand-built
  archive at `~/translation-repair-v2-archive/` carries: each subdirectory is
  one settlement of the corpus and its name is the run set.
- 
+
  FLAT, `<runs dir>/artifacts/<entry>.json`, which is what `corpus-pass`
  ACTUALLY WRITES. A pass produces exactly one settlement, so it has no reason
  to invent a subdirectory for it, and the four archived artifacts read today
@@ -391,19 +391,19 @@ export async function readArtifactSubjects(
  this reader at a pass's own output found nothing and the audit refused with
  "no artifacts under", which reads like an empty pass rather than like a
  layout it cannot see.
- 
+
  REFUSES A DIRECTORY CARRYING BOTH rather than choosing. A directory with
  artifacts at its root AND in subdirectories is either two populations or a
  half-finished move, and reading one while ignoring the other would report a
  population smaller than the archive holds without saying so. That is the
  defect this whole instrument keeps finding in other places.
- 
+
  @param archiveDir - directory of run sets, or of artifacts
- 
+
  @returns Locations sorted by run set then file
- 
+
  @throws {@link StatedRefusalError} when artifacts sit at both levels
- 
+
  @example
  ```ts
  const located = await locateSettledArtifacts({ archiveDir, },);
@@ -475,16 +475,16 @@ async function locateSettledArtifacts(
 
 /**
  Reads every settled artifact under an archive directory.
- 
+
  ORDER IS DETERMINISTIC, sorted by run set then file, so two invocations
  produce rows in the same order and a capped run always buys the same prefix.
- 
+
  @param archiveDir - directory whose subdirectories are run sets
- 
+
  @param cloneDir - corpus clone every artifact's own commit is read from
- 
+
  @returns One reading per artifact, in archive order
- 
+
  @example
  ```ts
  const readings = await readArchiveSubjects({ archiveDir, cloneDir, },);

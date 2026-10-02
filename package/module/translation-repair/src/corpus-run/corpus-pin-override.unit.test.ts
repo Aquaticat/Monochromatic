@@ -2,9 +2,9 @@
  Tests that the corpus pin dial overrides either half and REFUSES rather
  than falling back, because a mistyped override silently becoming the pin
  would run the wrong corpus and record fixture conclusions as pinned ones.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -34,13 +34,13 @@ const FALLBACK_PIN = {
 
 /**
  Sets both dials for one case and restores whatever was there on dispose.
- 
+
  @param cloneDir - clone dir value to write, absent to leave the dial unset
- 
+
  @param commit - commit value to write, absent to leave the dial unset
- 
+
  @returns Disposable whose disposal restores the prior environment
- 
+
  @example
  ```ts
  using cleanup = pinEnvironment({ commit: 'b'.repeat(40,), },);
@@ -90,11 +90,11 @@ function pinEnvironment(
 
 /**
  Reads the setting under one commit dial value and returns what was thrown.
- 
+
  @param commit - commit value the environment writes for this reading
- 
+
  @returns Whatever the reading threw
- 
+
  @example
  ```ts
  const thrown = commitRefusal({ commit: 'abc123', },);

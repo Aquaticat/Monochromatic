@@ -52,11 +52,11 @@ function reckonedNote({ seat, }: { readonly seat: SeatSpend; },): string {
 
 /**
  Renders a credit figure at the precision the provider quotes balances in.
- 
+
  @param credits - what something came to
- 
+
  @returns Text for a report column
- 
+
  @example
  ```ts
  console.log(asCredits({ credits: 9.5, },),);
@@ -68,13 +68,13 @@ function asCredits({ credits, }: { readonly credits: number; },): string {
 
 /**
  Renders one priced seat, and what share of the bill it was.
- 
+
  @param seat - seat with its credits
- 
+
  @param totalCredits - what every priced seat came to together
- 
+
  @returns Line for the report
- 
+
  @example
  ```ts
  console.log(pricedLine({ seat, totalCredits, },),);
@@ -117,11 +117,11 @@ const USD_PLACES = 4;
 
 /**
  Renders a USD figure at the precision a corpus call costs in.
- 
+
  @param usd - what something came to
- 
+
  @returns Text for a report column
- 
+
  @example
  ```ts
  console.log(asUsd({ usd: 0.0842, },),);
@@ -134,13 +134,13 @@ function asUsd({ usd, }: { readonly usd: number; },): string {
 /**
  Renders one OpenRouter seat with the USD its lines reported, and what share
  of the run's USD it was.
- 
+
  @param seat - seat with the USD summed off its `cost=` fields
- 
+
  @param totalUsd - what every OpenRouter seat came to together
- 
+
  @returns Line for the report
- 
+
  @example
  ```ts
  console.log(usdLine({ seat, totalUsd, },),);
@@ -195,11 +195,11 @@ function usdLine(
 
 /**
  Renders a seat carrying tokens but no credit figure.
- 
+
  @param seat - subscription or unpriced seat
- 
+
  @returns Line for the report
- 
+
  @example
  ```ts
  console.log(tokensOnlyLine({ seat, },),);
@@ -219,9 +219,9 @@ function tokensOnlyLine({ seat, }: { readonly seat: SeatSpend; },): string {
 
 /**
  Prints everything a priced tally holds.
- 
+
  @param cost - what `priceTally` returned
- 
+
  @example
  ```ts
  printCost({ cost, },);
@@ -332,13 +332,13 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
 
 /**
  Reads named logs and reports what the run they describe cost.
- 
+
  Returns nothing: the report on stdout IS the output.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`,
  which refuses it when no log is named: any log a pass, probe or calibration
  wrote will do, and passing several totals them as one run
- 
+
  @example
  ```ts
  await reportSpendCost({ line, },);

@@ -1,7 +1,7 @@
 /**
  Tests for text marker scanners and error paths of the parsing core.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

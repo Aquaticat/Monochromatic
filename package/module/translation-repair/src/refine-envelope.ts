@@ -16,7 +16,7 @@ import { selectRefinableParagraphs, } from './refine-eligibility.ts';
 
 /**
  Eligible paragraphs as envelopes, plus what was skipped and why.
- 
+
  @example
  ```ts
  const { envelopes, definitions, } = deriveRefinableEnvelopes({ document, },);
@@ -50,15 +50,15 @@ const DEFINITION_KINDS: ReadonlySet<string> = new Set([
 
 /**
  Collects the link and footnote definition lines of one document.
- 
+
  Taken from the whole assembled `T1` rather than from one slice: a paragraph
  may reference a footnote defined in a different slice, and a reference whose
  definition is out of scope does not parse as a reference at all.
- 
+
  @param document - parsed document to read definitions from
- 
+
  @returns Definition lines joined as the parser would see them
- 
+
  @example
  ```ts
  const definitions = collectDefinitions({ document, },);
@@ -83,13 +83,13 @@ export function collectDefinitions(
 
 /**
  Derives the refinable envelopes of one repaired slice.
- 
+
  @param document - REPAIRED slice, parsed after accuracy edits landed
- 
+
  @param minimumChars - shortest paragraph eligible in calling refinement role
- 
+
  @returns Envelopes, definitions, and skip findings
- 
+
  @example
  ```ts
  const slice = deriveRefinableEnvelopes({ document, },);

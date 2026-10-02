@@ -39,11 +39,11 @@ const spentUsd: Record<ProviderName, number> = providerRecord({
 
 /**
  Adds one call's reported cost to its provider's running total.
- 
+
  @param provider - meter the call drew on
- 
+
  @param costUsd - USD the wire reported for the call
- 
+
  @example
  ```ts
  noteRunSpend({ provider: 'openrouter', costUsd: 0.0042, },);
@@ -63,12 +63,12 @@ export function noteRunSpend(
 
 /**
  Reads what this process has spent on one provider so far.
- 
+
  @param provider - meter to read
- 
+
  @returns USD reported on that provider's calls since the process began, or
  since the last reset
- 
+
  @example
  ```ts
  const soFar = runSpendUsd({ provider: 'openrouter', },);
@@ -80,9 +80,9 @@ export function runSpendUsd({ provider, }: { readonly provider: ProviderName; },
 
 /**
  Zeroes every provider's running total.
- 
+
  FOR TESTS, which share one process across cases; a run never resets.
- 
+
  @example
  ```ts
  resetRunSpend();

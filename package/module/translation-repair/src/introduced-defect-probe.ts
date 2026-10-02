@@ -37,7 +37,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Everything the probe stage produced for one chunk.
- 
+
  @example
  ```ts
  const { regions, } = await runIntroducedDefectProbe({ ... },);
@@ -69,7 +69,7 @@ export type IntroducedDefectReport = {
 
 /**
  Screened claim counts summed across every probed region.
- 
+
  Named so the fold that builds it states its own type. Left to the seed
  literal every count is writable, and the accumulator parameter then reports
  as mutable in a fold that only ever reads it.
@@ -126,31 +126,31 @@ export const EMPTY_INTRODUCED_DEFECT_REPORT: IntroducedDefectReport = {
 
 /**
  Asks whether each replaced region introduced a defect the baseline lacked.
- 
+
  @param client - injected model client
- 
+
  @param proberModelIds - roster asked, writer-disjoint like the checkers
- 
+
  @param sourceText - original chunk text
- 
+
  @param baselineText - translation before any replacement
- 
+
  @param regions - regions the accuracy stage replaced
- 
+
  @param issues - accepted issues, shown so probers can discount them
- 
+
  @param identityContext - declared names and handles, or the empty string on a page
  declaring none; REQUIRED so no caller omits it by accident (ledger H8, the
  H2 lesson)
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Screened tallies plus roster accounting
- 
+
  @example
  ```ts
  const probe = await runIntroducedDefectProbe({ ... },);
@@ -250,7 +250,7 @@ export async function runIntroducedDefectProbe(
 
   /**
    Claims summed across regions, for one readable log line.
-   
+
    The accumulator carries an explicit type rather than taking one from the
    seed literal. An inferred seed makes every count writable, and the rule
    then reports the fold's own parameter while naming the enclosing function

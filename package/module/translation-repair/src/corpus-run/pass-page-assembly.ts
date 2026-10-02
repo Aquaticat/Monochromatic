@@ -18,29 +18,29 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 
 /**
  Composes the settled artifact with the page-level guard's outcome recorded.
- 
+
  @param entryId - corpus entry
- 
+
  @param tip - pipeline tip
- 
+
  @param pipelineDigest - digest of the pipeline that ran
- 
+
  @param durationMs - time the entry took, on `monotonicMs`
- 
+
  @param prepared - preparation both lanes ran over
- 
+
  @param lanes - both lane results and their ledgers
- 
+
  @param contestSlices - what the contest decided per slice
- 
+
  @param consolidateSlices - what the third rendering settled per slice
- 
+
  @param targetText - archive text the page's replacements address
- 
+
  @param l - logger the guard's findings reach
- 
+
  @returns The artifact to write
- 
+
  @example
  ```ts
  const artifact = settledPageArtifact({ entryId, tip, pipelineDigest, durationMs, prepared, lanes, contestSlices, consolidateSlices, targetText, l, },);

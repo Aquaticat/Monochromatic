@@ -43,7 +43,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  What the disinterested judges made of one model's writing.
- 
+
  @example
  ```ts
  const standing: ProducerStanding = {
@@ -62,7 +62,7 @@ export type ProducerStanding = {
 
   /**
    Slates carrying a candidate this model helped write.
-   
+
    THE EVIDENCE COUNT, not a score. A model seated on few rounds can lead on
    rate and mean nothing.
    */
@@ -81,15 +81,15 @@ export type ProducerStanding = {
 
 /**
  Adds one candidate's disinterested ballots into a running tally.
- 
+
  @param tally - per-model counts, mutated in place
- 
+
  @param producer - who wrote this candidate
- 
+
  @param candidateIndex - one-based slate position a ballot names
- 
+
  @param ballots - every ballot cast over the whole slate
- 
+
  @example
  ```ts
  foldCandidate({ tally, producer, candidateIndex: 1, ballots, },);
@@ -160,11 +160,11 @@ function foldCandidate(
 
 /**
  Counts how often each model's writing was preferred by judges with no stake.
- 
+
  @param rounds - selection rounds, each a slate plus the ballots over it
- 
+
  @returns One standing per model that wrote at least one candidate
- 
+
  @example
  ```ts
  const standings = producerStandings({ rounds, },);
@@ -204,7 +204,7 @@ export function producerStandings(
 /**
  Share of disinterested ballots that named one model's writing, where the
  share can be taken at all.
- 
+
  @example
  ```ts
  const rate: PreferenceRate = { measured: true, share: 0.4, };
@@ -231,17 +231,17 @@ export type PreferenceRate =
 
 /**
  Share of disinterested ballots that named one model's writing.
- 
+
  A DISCRIMINATED ABSENCE rather than a zero, because a model nobody
  disinterested voted on has not been measured to be bad. Returning zero would
  sort it below every measured model and read as the strongest possible
  evidence against it, which is the opposite of what an empty denominator
  means.
- 
+
  @param standing - one model's counts
- 
+
  @returns Share, or that nothing disinterested was cast on its work
- 
+
  @example
  ```ts
  const rate = preferenceRate({ standing, },);

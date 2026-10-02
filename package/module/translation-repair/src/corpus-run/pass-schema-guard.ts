@@ -120,13 +120,13 @@ function generationLabel(
 
 /**
  Names one generation and the entries settled under it.
- 
+
  @param label - phrase naming the generation
- 
+
  @param entryIds - entries settled under it
- 
+
  @returns One line for the refusal
- 
+
  @example
  ```ts
  const line = generationLine({ label: 'schema version 1', entryIds, },);
@@ -168,7 +168,7 @@ const gl = contextRoot({ tag: 'pass-schema-guard', },);
 /**
  Ways forward every refusal here ends with, in the order an operator should
  consider them.
- 
+
  ARCHIVING IS ONE OF THEM, which the first version of this message denied. It
  said deleting was not the remedy, full stop, and that is false: moving an
  incompatible artifact out of the directory is exactly what lets the scheduler
@@ -204,11 +204,11 @@ export class SchemaGenerationError extends Error {
   /**
    Names every foreign generation, what this pass writes, and every way
    forward.
-   
+
    @param foreign - entries per generation this pass does not write
-   
+
    @param writes - generation this pass writes
-   
+
    @example
    ```ts
    throw new SchemaGenerationError({ foreign, writes: 2, },);
@@ -272,11 +272,11 @@ export class MislabelledArtifactError extends Error {
 
   /**
    Names the entry and the generation whose reader refused it.
-   
+
    @param entryId - entry whose artifact carries the wrong label
-   
+
    @param writes - generation it claims
-   
+
    @example
    ```ts
    throw new MislabelledArtifactError({ entryId: 'Mittens', writes: 2, },);
@@ -315,13 +315,13 @@ export class MislabelledArtifactError extends Error {
 
 /**
  Groups foreign census rows by the phrase a refusal names them with.
- 
+
  @param rows - every settled entry's classification
- 
+
  @param writes - generation this pass writes
- 
+
  @returns Entries per foreign generation, in census order
- 
+
  @example
  ```ts
  const foreign = foreignGroups({ rows, writes: 2, },);
@@ -367,16 +367,16 @@ function foreignGroups(
 
 /**
  Refuses an artifact that declares this generation and does not satisfy it.
- 
+
  @param artifactsDir - directory holding the artifact
- 
+
  @param entryId - entry to check
- 
+
  @param writes - generation it declares
- 
+
  @throws {@link MislabelledArtifactError} when this generation's reader
  refuses the body
- 
+
  @example
  ```ts
  await assertBodyMatchesLabel({ artifactsDir, entryId: 'Mittens', writes: 2, },);
@@ -422,20 +422,20 @@ async function assertBodyMatchesLabel(
 
 /**
  Refuses a resume that would mix artifact generations in one directory.
- 
+
  Silent on a fresh directory and on a resume into one this pass wrote, which
  are the two ordinary cases. It reads the artifacts rather than a marker, so a
  directory assembled by hand is judged on what it holds.
- 
+
  @param artifactsDir - directory holding one JSON per settled entry
- 
+
  @param writes - generation this pass writes, defaulting to the one it writes
  today; a parameter so a caller can exercise this without rebuilding. THE
  DEFAULT MUST MOVE WITH THE WRITER: it sat at seven through generations
  eight, nine and ten, unnoticed because every launch of those days went into
  an empty directory, and on 2026-09-02 it refused XIEPT2 a directory holding
  keyword233's generation-ten artifact, the generation this same build writes.
- 
+
  @throws {@link UnplaceableArtifactError} when a settled file is not an
  artifact at all (not JSON, or JSON that is not a record), whose remedy is
  removing it; the pass's placement half refuses such a file first, so only
@@ -446,7 +446,7 @@ async function assertBodyMatchesLabel(
 
  @throws {@link MislabelledArtifactError} when an artifact declares this
  generation and this generation's reader refuses it
- 
+
  @example
  ```ts
  await assertResumableSchemaGeneration({ artifactsDir, },);

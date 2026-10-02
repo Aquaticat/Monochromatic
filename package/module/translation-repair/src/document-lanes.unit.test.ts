@@ -1,14 +1,14 @@
 /**
  Tests for running both lanes over one preparation.
- 
+
  What this covers that neither lane's own tests can: that the two outputs come
  back side by side with nothing merged or preferred, that the preparation's
  alignment findings are reported once rather than per lane, that the lanes run
  in the stated order, and that a failure in the first lane stops the second
  from spending anything.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -164,19 +164,19 @@ type LaneConcurrency = {
 
 /**
  Client serving both lanes from one script.
- 
+
  @param served - schema names appended in call order
- 
+
  @param controller - abort the script may fire, standing in for the entry
  deadline
- 
+
  @param abortAfterCriticCalls - critic calls served before the script aborts;
  absent means it never does
- 
+
  @param activity - optional overlap instrument for both lane entry stages
- 
+
  @returns Client honoring the script
- 
+
  @example
  ```ts
  const client = lanesClient({ served, controller, },);
@@ -281,21 +281,21 @@ function lanesClient(
 
 /**
  Scripted reply for one stage.
- 
+
  The repair lane's critics find nothing, so that lane settles every slice
  unchanged and the naturalness lane leaves each paragraph alone. The translate
  lane renders each slice afresh and its judges pick that rendering. So the two
  lanes disagree about the document by construction, which is what makes "both
  outputs, neither chosen" a testable claim.
- 
+
  @param schema - schema name the stage asked for
- 
+
  @param content - everything the stage sent
- 
+
  @returns Wire value for that stage
- 
+
  @throws {@link Error} when a stage this script does not serve asks
- 
+
  @example
  ```ts
  const value = replyFor({ schema: 'critic_report', content, },);
@@ -330,11 +330,11 @@ function replyFor(
 
 /**
  Renders one slice the way a translator that respected block structure would.
- 
+
  @param content - translator prompt, which carries the slice original
- 
+
  @returns Rendering for that slice
- 
+
  @example
  ```ts
  const rendering = renderingFor({ content, },);
@@ -350,18 +350,18 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 
 /**
  Runs both lanes over the fixture pair.
- 
+
  @param served - schema log, passed in so a case expecting a REJECTION can
  still read what was bought
- 
+
  @param abortAfterCriticCalls - critic calls served before the script aborts
- 
+
  @param overlap - most slices each lane keeps in flight
- 
+
  @param activity - optional overlap instrument for both lane entry stages
- 
+
  @returns Both lane results
- 
+
  @example
  ```ts
  const lanes = await runLanes({ served: [], },);
@@ -801,7 +801,7 @@ await describe({
 
         /**
          Failure the run raised.
-         
+
          The repair lane's own cache store fails on the first settled slice,
          which is a failure inside the first lane with nothing aborted
          anywhere: the signal stays live throughout, so only the driver's own

@@ -1,15 +1,15 @@
 /**
  Tests for the two row relations at the level they are written, rather than
  through a whole artifact.
- 
+
  WHY NOT THROUGH THE READER: both cases here are about what an error MESSAGE
  says and about what happens when something unexpected is thrown inside a
  check. Neither is reachable by handing `parseSettledTwoLaneArtifact` a file, since
  one needs a value the file format cannot express and the other needs a
  failure that is not the file's fault at all.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

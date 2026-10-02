@@ -20,7 +20,7 @@ import {
 
 /**
  Event grammars a drained stream can speak.
- 
+
  @example
  ```ts
  const wireFormat: StreamWireFormat = 'anthropic';
@@ -38,7 +38,7 @@ const WIRE_SCANNERS: Readonly<Record<StreamWireFormat, () => DeltaScanner>> = {
 
 /**
  Grammar assumed where a caller names none.
- 
+
  THE OLDER ONE, so every existing call site keeps draining exactly the stream
  it drained before this choice existed.
  */
@@ -46,11 +46,11 @@ export const DEFAULT_WIRE_FORMAT: StreamWireFormat = 'openai';
 
 /**
  Opens a reader for one grammar.
- 
+
  @param wireFormat - grammar the stream speaks
- 
+
  @returns Fresh scanner, which carries per-stream state and is never shared
- 
+
  @example
  ```ts
  const scanner = scannerFor({ wireFormat: 'anthropic', },);

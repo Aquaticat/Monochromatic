@@ -32,9 +32,9 @@ const RELATION_COLUMN = 42;
 
 /**
  Prints one half of the population.
- 
+
  @param split - that half, summed
- 
+
  @example
  ```ts
  printSplit({ split, },);
@@ -66,9 +66,9 @@ export function printSplit({ split, }: { readonly split: AudienceSplit; },): voi
 
 /**
  Prints how much of the audit describes wording a later stage overruled.
- 
+
  @param tallies - one per relation present
- 
+
  @example
  ```ts
  printRelations({ tallies, },);
@@ -97,9 +97,9 @@ export function printRelations(
 
 /**
  Prints what each auditor thought was worth a claim.
- 
+
  @param rates - one rate per auditor that answered
- 
+
  @example
  ```ts
  printVoices({ rates, },);
@@ -140,14 +140,14 @@ export function printVoices({ rates, }: { readonly rates: readonly VoiceRate[]; 
 /**
  Prints the omission and addition pairs the relocation rule says are one
  relocation.
- 
+
  TWO COUNTS IN THE HEADING, because the pairs are per claim: three voices
  each filing one omission beside two each filing one addition are six claim
  pairs over one pair of slices, and a heading saying `6` would be quoted as
  six relocations. The slice-pair count is the one a reader means.
- 
+
  @param pairs - candidate relocations
- 
+
  @example
  ```ts
  printRelocations({ pairs, },);
@@ -172,15 +172,15 @@ export function printRelocations(
 
 /**
  Prints the spread two audits of one text landed in.
- 
+
  SAYS WHEN THERE IS NOTHING TO REPORT rather than printing zeroes. A band of
  zero over zero pairs and a band of zero over forty pairs are opposite
  findings, and a row of zeroes reads as the second.
- 
+
  @param band - spread over the pairs found
- 
+
  @param over - what was paired, named for the reader
- 
+
  @example
  ```ts
  printBand({ band, over: 'texts audited twice inside this run', },);

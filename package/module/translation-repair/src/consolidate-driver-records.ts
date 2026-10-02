@@ -10,7 +10,7 @@ import type { TwinStored, } from './twin-memo.ts';
 
 /**
  Fresh consolidation beside whether it became warm-run evidence.
- 
+
  @example
  ```ts
  const bought: BoughtConsolidation = { settlement, persisted: true, };
@@ -23,11 +23,11 @@ export type BoughtConsolidation = {
 
 /**
  Reads cache-eligible record from fresh consolidation.
- 
+
  @param bought - fresh result beside persistence status
- 
+
  @returns Record a twin may reuse, or deliberate nothing
- 
+
  @example
  ```ts
  const stored = storedConsolidationOf({ settlement, persisted: true, },);
@@ -46,18 +46,18 @@ export function storedConsolidationOf(
 
 /**
  Reads which lane the contest backed out of the verdict it recorded.
- 
+
  BOTH WAYS OF NOT SETTLING READ AS `neither`, deliberately. The record keeps
  `settled-neither` apart from `quorum-not-met` because they are different
  facts about the run, but this function asks which LANE stood. Neither did.
  `standingTextFor` then uses archive as comparison baseline so consolidation
  can recover, while final-selection guard prevents that unendorsed baseline
  from becoming publication fallback.
- 
+
  @param verdict - what the contest recorded for this slice
- 
+
  @returns Lane the contest backed, or the refusal
- 
+
  @example
  ```ts
  const choice = laneChoiceOf({ verdict, },);

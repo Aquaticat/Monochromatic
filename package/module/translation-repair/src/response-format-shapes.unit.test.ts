@@ -1,6 +1,6 @@
 /**
  Shape assertions for every `*_RESPONSE_FORMAT` structured-output constant.
- 
+
  Each of these constrains what shape of reply a provider can even produce,
  ahead of the paired `is*Wire` guard that checks the parsed JSON a second
  time. That ordering is exactly why a schema drifting from its guard is
@@ -10,12 +10,12 @@
  currently asks for. Nothing exercises these constants themselves anywhere
  else, unlike the guards, which every paired `*-wire.unit.test.ts` file
  already covers with scripted examples.
- 
+
  One block per constant, each pinning its schema name, every field the wire
  depends on being required, and the enum values where a schema constrains
  one. No invented prose is needed: every assertion reads the shipped
  constant directly, so there is no corpus content and no fixture to invent.
- 
+
  @module
  */
 

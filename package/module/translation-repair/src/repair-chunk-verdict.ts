@@ -43,7 +43,7 @@ import {
 
 /**
  What a slice settled on.
- 
+
  @example
  ```ts
  const verdict: ChunkVerdict = { repairedText, patchSelected: true, changed: true, };
@@ -69,7 +69,7 @@ export type ChunkVerdict = {
   /**
    Declared names the winning patch would have dropped, empty when it dropped
    none.
-   
+
    NON-EMPTY MEANS THE PATCH WAS REFUSED, and is the only way to tell that
    apart from a slice where the archive simply won on the measurements.
    */
@@ -120,29 +120,29 @@ function settlementState(
 
 /**
  Runs the slate for one slice and reads both verdicts off the winner.
- 
+
  The unchanged translation always competes, so it is built here rather than by
  the caller: an archive that has to be passed in as a candidate is an archive a
  caller can get wrong, and `selectRepairCandidate` refuses a slate whose
  unchanged entry carries anything else.
- 
+
  @param sliceIndex - slice being settled, which names the patched candidate
- 
+
  @param incumbentText - archive wording of this slice
- 
+
  @param patchedText - wording the editor produced
- 
+
  @param measurements - what the checks and the resolution stage measured about
  that patched wording
- 
+
  @param declaredNames - name forms the archive's front matter declares, which
  the patch may not drop
- 
+
  @returns Returned wording plus every verdict
- 
+
  @throws {@link Error} when the slate cannot be formed, which cannot happen
  from here since this function builds it
- 
+
  @example
  ```ts
  const verdict = settleChunkVerdict({ sliceIndex, incumbentText, patchedText, measurements, declaredNames, },);
@@ -195,7 +195,7 @@ export function settleChunkVerdict(
 
   /**
    Declared names the winner would have taken out of the document.
-   
+
    ASKED ONLY OF A WINNING PATCH. A slice the archive won needs no permission
    to stay as it is, and reporting a refusal there would name a protection
    that protected nothing.
@@ -230,7 +230,7 @@ export function settleChunkVerdict(
 
 /**
  What one slice settled on, plus the issue ids that survived the checkers.
- 
+
  @example
  ```ts
  const settled: SettledChunk = { ...verdict, resolvedIssueIds: [], };
@@ -245,37 +245,37 @@ export type SettledChunk = ChunkVerdict & {
 
 /**
  Turns the editor's patch and the checkers' tallies into a settlement.
- 
+
  MEASURING AND SELECTING ARE ONE STEP HERE, though they are two functions,
  because the resolved count is both an input to the measurement and an output
  of the slice. Computed at the caller they drift: in one recorded case a
  count credited issues no applied envelope ever served, and the only reason
  that was findable is that one place owned both.
- 
+
  @param sliceIndex - slice being settled
- 
+
  @param incumbentText - archive wording of this slice
- 
+
  @param patchedText - wording the editor produced
- 
+
  @param appliedOperations - envelope operations the editor actually applied
- 
+
  @param creditableIssues - accepted issues an applied envelope served, which
  are the only ones a repair may be credited for
- 
+
  @param tallies - checker verdicts by issue id
- 
+
  @param envelopes - eligible paragraphs the editor was allowed to touch
- 
+
  @param targetDocument - archive parsed, the grammar baseline
- 
+
  @param declaredNames - name forms the patch may not drop
- 
+
  @returns Every verdict plus the resolved ids
- 
+
  @throws {@link Error} when the slate cannot be formed, which cannot happen
  from here since this function builds it
- 
+
  @example
  ```ts
  const settled = settleChunkFromChecks({ sliceIndex, incumbentText, patchedText, ... },);
@@ -339,34 +339,34 @@ export function settleChunkFromChecks(
 
 /**
  Renders one slice's settlement as the line an operator watches a run by.
- 
+
  KEPT BESIDE THE VERDICT rather than at the caller, because every number in it
  is a count of something the verdict decided, and a summary that drifts from
  the decision it summarises is worse than no summary: a run reads as healthy
  while shipping something else.
- 
+
  @param sliceIndex - slice being reported
- 
+
  @param changed - whether the returned wording differs from the archive's
- 
+
  @param patchSelected - whether the patched candidate beat the archive, which
  tells a lost repair from one that wrote nothing
- 
+
  @param refused - whether the winning patch was refused for dropping a
  declared name
- 
+
  @param resolvedCount - accepted issues the checkers found resolved
- 
+
  @param creditableCount - accepted issues an applied envelope actually served
- 
+
  @param acceptedCount - issues the panel accepted at all
- 
+
  @param unenvelopedCount - accepted issues no envelope could serve
- 
+
  @returns One line naming what this slice settled on
- 
+
  @internal
- 
+
  @example
  ```ts
  const line = describeChunkSettlement({ sliceIndex, changed, patchSelected, refused, resolvedCount, ... },);

@@ -24,13 +24,13 @@ import {
 
 /**
  Names the one built pipeline a pool's kept entries were settled under.
- 
+
  ONE DIGEST FOR THE POOL. `selectEligible` and the pool guards refuse a
  directory holding two generations before a draw can reach it, so every kept
  entry carries the same digest by construction. Disagreement here would mean
  that guard had failed, which is worth reporting as an absence rather than
  silently taking the first.
- 
+
  LOOKED UP BY ENTRY ID. The draw keeps artifact file names, and the pool's
  lookup keys the census's entry ids; looking the file name up as it came
  matched nothing, so every real draw's manifest recorded no generation at
@@ -41,7 +41,7 @@ import {
  @param names - artifact file names the draw actually kept
 
  @returns Recorded generation, or why one could not be named
- 
+
  @example
  ```ts
  const generation = poolGeneration({ eligible, names, },);

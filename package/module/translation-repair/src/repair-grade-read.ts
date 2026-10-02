@@ -42,7 +42,7 @@ const DIGEST_PREFIX = 'Draw digest: ';
 
 /**
  What a sheet says about the draw it belongs to.
- 
+
  @example
  ```ts
  const identity: SheetIdentity = { seed: 'round-three', corpusSha: 'a41fc60', };
@@ -61,7 +61,7 @@ export type SheetIdentity = {
 
   /**
    Draw fingerprint the sheet declares, empty when the header carried none.
-   
+
    Empty is the ordinary reading for every sheet drawn before the binding
    existed, including round three's, which is why an absent digest is scored
    under the weaker check rather than refused.
@@ -71,17 +71,17 @@ export type SheetIdentity = {
 
 /**
  Reads the draw a sheet says it belongs to.
- 
+
  Only the header is read, and only up to the first item, so a line quoted
  inside an item cannot introduce a second identity. Both sheets and the
  manifest are written in one breath by one draw, so these agreeing is what
  makes joining them by POSITION sound. Equal item counts alone do not: two
  unrelated draws of the same size match on count and mislabel every verdict.
- 
+
  @param text - sheet contents as the grader left them
- 
+
  @returns Declared seed and corpus commit, each empty when absent
- 
+
  @example
  ```ts
  const identity = readSheetIdentity({ text, },);
@@ -136,7 +136,7 @@ const FENCE_MIN = 3;
 
 /**
  What a grader said about one repair.
- 
+
  @example
  ```ts
  const verdict: RepairVerdict = 'fixes';
@@ -149,7 +149,7 @@ export type RepairVerdict =
 
 /**
  One item as the repair sheet carries it after grading.
- 
+
  @example
  ```ts
  const item: GradedRepairItem = { index: 1, verdict: 'fixes', note: '', };
@@ -174,11 +174,11 @@ export type GradedRepairItem = {
 
 /**
  Leading run of fence characters on one line.
- 
+
  @param line - sheet line
- 
+
  @returns Run length at the start of the line, zero when it starts otherwise
- 
+
  @example
  ```ts
  const run = leadingFenceRun({ line: '````text', },);
@@ -194,11 +194,11 @@ function leadingFenceRun({ line, }: { readonly line: string; },): number {
 /**
  Reads the grader's answer out of one grade line, with the legend and any
  enclosing brackets removed.
- 
+
  @param line - line carrying the grade marker
- 
+
  @returns Answer as the grader left it
- 
+
  @example
  ```ts
  const answer = extractAnswer({ line: '- repair grade: [Y]  (Y = ...)', },);
@@ -243,11 +243,11 @@ function extractAnswer({ line, }: { readonly line: string; },): string {
 
 /**
  Classifies one grader answer into a verdict and its remaining prose.
- 
+
  @param answer - grader's answer, unbracketed
- 
+
  @returns Verdict and the note that followed it
- 
+
  @example
  ```ts
  const read = readAnswer({ answer: 'N, it drops the second clause', },);
@@ -289,16 +289,16 @@ function readAnswer({ answer, }: { readonly answer: string; },): {
 
 /**
  Reads every graded repair off a filled repair sheet.
- 
+
  Items carrying no grade box at all, which the sheet emits for repairs that
  never reached the reader, appear as `unscored`. They belong to coverage
  rather than to repair quality, and the caller keeps them out of the
  denominator by reading the verdict rather than by their absence.
- 
+
  @param text - sheet as the grader left it
- 
+
  @returns Items in sheet order, one per heading
- 
+
  @example
  ```ts
  const items = parseGradedRepairSheet({ text: await readFile(path, 'utf8',), },);

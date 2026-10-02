@@ -31,7 +31,7 @@ import {
 
 /**
  Ways a settlement can leave the stage, as the terminal names them.
- 
+
  SPELLED OUT RATHER THAN INFERRED, because this is a stored value: a union
  gaining a member should make an older cache file readable, not silently
  widen what this accepts to whatever the current source happens to say.
@@ -49,11 +49,11 @@ const SETTLEMENT_TERMINALS: readonly ConsolidationTerminal[] = [
 
 /**
  Whether a value is one judge`s gate ballot as this schema writes it.
- 
+
  @param value - parsed cache entry
- 
+
  @returns Whether it is a readable ballot
- 
+
  @example
  ```ts
  const readable = isGateBallot(parsed,);
@@ -88,11 +88,11 @@ function isGateBallot(value: unknown,): value is GateBallot {
 
 /**
  Whether a value is one proposal`s structural verdict.
- 
+
  @param value - parsed cache entry
- 
+
  @returns Whether it is a readable verdict
- 
+
  @example
  ```ts
  const readable = isProposalVerdict(parsed,);
@@ -107,11 +107,11 @@ function isProposalVerdict(value: unknown,): boolean {
 
 /**
  Whether a value is what the validity floor made of a slate.
- 
+
  @param value - parsed cache entry
- 
+
  @returns Whether it is a readable floor
- 
+
  @example
  ```ts
  const readable = isSlateFloor(parsed,);
@@ -127,16 +127,16 @@ function isSlateFloor(value: unknown,): boolean {
 
 /**
  Whether a value is what the gate settled, or nothing at all.
- 
+
  ABSENT IS VALID and is not the same as empty. A slice the floor stopped never
  reached the gate, so its settlement carries no gate; a gate that ran and
  heard nobody carries one with no ballots. The terminal tells them apart, and
  a store that required the key would refuse every floored slice.
- 
+
  @param value - parsed cache entry
- 
+
  @returns Whether it is a readable gate outcome or absent
- 
+
  @example
  ```ts
  const readable = isGateOutcomeOrAbsent(parsed.gate,);
@@ -163,17 +163,17 @@ function isGateOutcomeOrAbsent(value: unknown,): boolean {
 
 /**
  Whether a value is a settlement as this schema writes it.
- 
+
  `decided` IS NOT CHECKED BEYOND BEING A RECORD. It is the translate stage`s
  own result, checked by that stage when it was produced, and nothing this
  store feeds reads more than its `decision`. Re-deriving its whole shape here
  would duplicate a contract that lives elsewhere and would refuse valid files
  whenever that contract gained a field.
- 
+
  @param value - parsed cache entry
- 
+
  @returns Whether it is this schema`s settlement
- 
+
  @example
  ```ts
  if (isConsolidationSettlement(parsed,)) resumed.set(key, parsed,);
@@ -226,13 +226,13 @@ function isConsolidationSettlement(value: unknown,): value is ConsolidationSettl
 
 /**
  Opens the per-entry store of settlements already bought.
- 
+
  @param dir - per-entry slice-cache directory
- 
+
  @param generation - pipeline this run belongs to
- 
+
  @returns Cache of settlements, keyed by slice hash
- 
+
  @example
  ```ts
  const cache = await openConsolidateCache({ dir: entryCacheDir, generation: pipelineDigest, },);

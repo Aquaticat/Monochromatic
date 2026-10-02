@@ -1,15 +1,15 @@
 /**
  Tests for the gate deciding whether the rendering this run wrote replaces the
  one that would otherwise ship.
- 
+
  WHAT THIS FILE EXISTS TO STOP. A consolidation is a third candidate from the
  same kind of instrument that produced the first two, so it can be worse. It
  replaces nothing on a tie, on a refusal, or on a roster too thin to settle.
  Changing what a reader sees on a memorial page needs more evidence than
  leaving it, and the churn reason is already recorded in the translate wire.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -127,11 +127,11 @@ function refusingClient(
 
 /**
  Runs one gate over a canned roster.
- 
+
  @param replyByModel - reply body per model
- 
+
  @returns What the roster settled and what ships
- 
+
  @example
  ```ts
  const outcome = await gate({ replyByModel: [], },);

@@ -7,11 +7,11 @@ import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 
 /**
  Keeps the first spelling of each normalized identifier in encounter order.
- 
+
  @param labels - labels from one document's marker inventory
- 
+
  @returns Normalized keys and their original spellings
- 
+
  @example
  ```ts
  const labels = footnoteLabelNamespace({ labels: ['Note', 'note'] });
@@ -39,15 +39,15 @@ export function footnoteLabelNamespace({ labels, }: { readonly labels: readonly 
 /**
  Checks that supplied correspondences belong to both documents and remain injective after normalization.
  Repeated identical claims carry no additional authority and collapse to their first spelling.
- 
+
  @param map - positive label correspondences, including identity relations
- 
+
  @param archiveLabels - archive identifier universe
- 
+
  @param originalLabels - original identifier universe
- 
+
  @returns Checked input or an explicit refusal to infer a rewrite
- 
+
  @example
  ```ts
  const input = readFootnoteClosureInput({ map, archiveLabels, originalLabels });

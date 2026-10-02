@@ -33,7 +33,7 @@ const HEARD_SEPARATOR = '/';
 
 /**
  How a fan-out stage fared across the artifacts read.
- 
+
  @example
  ```ts
  const roster: StageRosterCoverage = { offered: 101, degraded: 12, silent: 6, };
@@ -58,19 +58,19 @@ export type StageRosterCoverage = {
 
 /**
  Reads the heard and configured counts out of one stage finding.
- 
+
  Scanned by index rather than matched by pattern. The two numbers sit between
  a known prefix and a known suffix, which an index scan states directly, and a
  finding this reader cannot parse must be skipped rather than throw: this
  count exists to notice a stage going quiet, so refusing to read drifted
  wording would silence it in exactly the case it was built for.
- 
+
  @param finding - stage finding, already known to carry the prefix
- 
+
  @param prefix - stage prefix the finding opens with
- 
+
  @returns Voices heard and voices asked, or nothing when unreadable
- 
+
  @example
  ```ts
  const voices = readVoices({ finding, prefix: 'editor-candidates (', },);
@@ -137,13 +137,13 @@ function readVoices(
 
 /**
  Counts how often one fan-out stage ran below its configured roster.
- 
+
  @param entries - per-artifact findings, verbatim
- 
+
  @param stage - stage prefix as the pipeline writes it, such as `editor`
- 
+
  @returns Units offered, units run degraded, and units nobody answered
- 
+
  @example
  ```ts
  const roster = summarizeStageRoster({ entries, stage: 'editor', },);

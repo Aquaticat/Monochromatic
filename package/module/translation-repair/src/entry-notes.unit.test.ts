@@ -1,11 +1,11 @@
 /**
  Tests the notes an entry carries, rendered as identity-context lines.
- 
+
  THE CASES MIRROR THE CORPUS'S SHAPES: one source footnote, an archive's
  editor comments (a translation hint and a glossary), a comment glossary under
  a heading, and a multi-line definition that must fold onto one line.
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

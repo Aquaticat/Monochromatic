@@ -25,15 +25,15 @@ const SHARE_PLACES = 1;
 
 /**
  Renders one model's standing as a report line.
- 
+
  CARRIES ITS OWN DENOMINATOR. A share with no count beside it cannot be told
  apart from a share one ballot wide, and a lead smaller than its denominator
  supports is not a lead.
- 
+
  @param standing - counts for one model
- 
+
  @returns Line naming the share and the evidence behind it
- 
+
  @example
  ```ts
  console.log(standingLine({ standing, },),);
@@ -73,15 +73,15 @@ export function standingLine(
 
 /**
  Orders standings best first, with unjudged models last.
- 
+
  AN UNJUDGED MODEL IS NOT A ZERO. It wrote candidates no disinterested judge
  ever voted on, which is absence of evidence rather than evidence of a poor
  showing, so it sorts to the end instead of to the bottom.
- 
+
  @param standings - what the tally produced
- 
+
  @returns Same standings, sorted
- 
+
  @example
  ```ts
  const ranked = rankStandings({ standings, },);

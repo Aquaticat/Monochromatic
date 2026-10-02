@@ -1,13 +1,13 @@
 /**
  Tests for the brief a consolidating producer is shown.
- 
+
  WHAT THIS FILE EXISTS TO STOP. A judge that answers `unsupported: ["repair"]`
  has put the substance of its finding in its reason, so pooling the findings
  into one list and the reasons into another would hand a producer a bare
  candidate name with nothing attached. Every judge's reading stays one block.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

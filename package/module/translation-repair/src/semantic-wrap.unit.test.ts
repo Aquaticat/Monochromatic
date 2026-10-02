@@ -1,19 +1,19 @@
 /**
  Tests for the semantic wrap applied to shipped text.
- 
+
  WHAT THESE PIN is the property the whole change rests on: the fix is
  ADD-ONLY. Every passage a lane produces goes through it without anybody
  reading them first, which is only safe because it cannot delete, move or join
  anything. A rule that rewrote text instead of inserting into it would be a
  silent editor sitting after every judge in the pipeline.
- 
+
  The second thing they pin is idempotence, which is what lets this run on a
  cache replay. A resumed slice is wrapped on the way OUT of the cache, so a
  pool written before this existed needs no migration, and a slice already
  wrapped has to come back unchanged.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -27,17 +27,17 @@ import { wrapReplacementText, } from '../dist/final/node/index.mjs';
 
 /**
  Reads a passage as content alone, with spacing and block markers discounted.
- 
+
  WHITESPACE GOES because a break replaces the space that separated two
  sentences, so comparing spaces would call that replacement a deletion.
  `>` GOES because a break inside a blockquote carries the marker onto the new
  line, which is a character the wrapper legitimately ADDS. What is left is the
  content, and content must survive wrapping exactly.
- 
+
  @param text - passage to reduce
- 
+
  @returns Content characters, spacing and blockquote markers removed
- 
+
  @example
  ```ts
  const content = contentOnly({ text: '> It naps.', },);

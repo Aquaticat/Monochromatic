@@ -19,14 +19,14 @@ import { slicePictures, } from './slice-pictures.ts';
 
 /**
  Transcripts of the pictures one aligned section shows, for its pairing sheet.
- 
+
  @param pair - aligned section whose original side names the pictures
- 
+
  @param pictureReadings - what reading produced per asset name for this entry
- 
+
  @returns Rendered picture context, empty when the section shows no picture
  anybody read
- 
+
  @example
  ```ts
  const pictureContext = pairingPictureContext({ pair, pictureReadings, },);

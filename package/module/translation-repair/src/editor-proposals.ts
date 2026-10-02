@@ -20,13 +20,13 @@ import type { EditorCandidate, } from './editor-selection-result.ts';
 
 /**
  Every distinct replacement proposed for one envelope.
- 
+
  @param candidates - editor outcomes, in roster order
- 
+
  @param envelope - envelope being decided
- 
+
  @returns Distinct proposals, each credited to every model that wrote it
- 
+
  @example
  ```ts
  const proposals = collectEnvelopeProposals({ candidates, envelope, },);

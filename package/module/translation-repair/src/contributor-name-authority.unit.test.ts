@@ -1,10 +1,10 @@
 /**
  Tests target-authoritative contributor identity extraction, and the
  declaring lines it reads (ledger B81).
- 
+
  Fixtures mirror archive attribution grammar only. Cat-themed invention
  throughout; no corpus content appears here.
- 
+
  @module
  */
 

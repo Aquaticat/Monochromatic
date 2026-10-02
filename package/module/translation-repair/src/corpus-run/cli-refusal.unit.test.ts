@@ -1,17 +1,17 @@
 /**
  Tests for reporting a refusal instead of crashing out of a CLI.
- 
+
  THE UNEXPECTED-FAULT CASES ARE THE ONES THAT CONSTRAIN THE DESIGN, and they
  replaced a forwarding case that pinned the opposite contract. That case
  checked a foreign class came straight back out, on the reasoning that
  catching every `Error` destroys the stack of a genuine programming fault.
- 
+
  Re-throwing was shown not to be neutral: it hands the decision to whatever
  prints next, and Node's reporter renders a cause chain, which is how a YAML
  refusal published a page's front matter. So everything is caught now, and the
  cases in this file hold both halves at once: the message must NOT be repeated, and
  the frames MUST still be there.
- 
+
  THREE EXIT CODES NOW, AND EACH IS DEFINED AGAINST THE OTHER TWO. One change
  closed the message of every class that had not declared itself quote-free,
  and a later rule decided which of our own may speak. So what a reader gets depends
@@ -20,11 +20,11 @@
  everything else is named without being quoted. The cases in this file hold one of
  each, so a later change that collapses the three into one report fails here
  rather than in an operator's terminal.
- 
+
  BOTH SWAPS ARE DISPOSABLE. `process.exitCode` is process-wide, so a case that
  set it and walked away would decide the whole suite's exit code, and a suite
  reporting 680 passes while exiting 4 is worse than a failing test.
- 
+
  THE SUITE RUNS AT `concurrency: 1` FOR THE SAME REASON, and it was written
  without that first. `describe` runs children concurrently by default, so the
  three cases raced on `console.error` and on `process.exitCode`: one case saw
@@ -33,7 +33,7 @@
  Both swaps are process-wide, and there is exactly one process here: the
  runner spawns `node` once per test FILE, so nothing outside this file is
  touched, and nothing inside it may overlap.
- 
+
  @module
  */
 
@@ -87,7 +87,7 @@ const UNEXPECTED_FAULT = 5;
 
 /**
  Message the fault fixture carries, which must never reach a reader.
- 
+
  Phrased as something a real error could say about content it was handed,
  because that is the shape this guard exists for.
  */
@@ -110,7 +110,7 @@ const STATED_LINES = 1;
 
 /**
  Message the stated fixture carries, which MUST reach a reader.
- 
+
  Shaped as a usage line because that is what the marker exists for: the words
  an operator needs most are the ones saying what to type next.
  */
@@ -137,11 +137,11 @@ const BARE_ARGV: readonly string[] = [
 
 /**
  Collects what would have gone to stderr, restoring the real one on disposal.
- 
+
  @param lines - collector the caller reads afterwards
- 
+
  @returns Collected lines, and the restore that disposal runs
- 
+
  @example
  ```ts
  using printed = collectingErrors({ lines: [], },);
@@ -169,9 +169,9 @@ function collectingErrors(
 
 /**
  Puts the process exit code back to whatever it was, however a case ends.
- 
+
  @returns Restore that disposal runs
- 
+
  @example
  ```ts
  using held = holdingExitCode();
@@ -192,9 +192,9 @@ function holdingExitCode(): Disposable {
 
 /**
  Builds the refusal these cases are reported about.
- 
+
  @returns Refusal naming a file, a class and an offset
- 
+
  @example
  ```ts
  throw fixtureRefusal();
@@ -222,9 +222,9 @@ const CONFIG_MESSAGE = `${CONFIG_VARIABLE} is not set; run under mise so sops in
 /**
  Empties the run-wide seat tally for the life of a scope and again on exit,
  so a case reads only what it caused and leaves nothing for the next one.
- 
+
  @returns Disposable emptying the tally again
- 
+
  @example
  ```ts
  using _fresh = withFreshRunSeats();

@@ -24,14 +24,14 @@ const PRICE_UNIT_TOKENS = 1_000_000;
 
 /**
  USD one completed exchange cost, off the usage the last chunk reported.
- 
+
  @param servedId - model the call went to, whose row carries the prices
- 
+
  @param extracted - completion whose `usage` block the provider filled in,
  or did not
- 
+
  @returns Cost in USD, or that no usage arrived to price
- 
+
  @example
  ```ts
  const cost = bedrockCostOf({ servedId: 'google.gemma-4-e2b', extracted, },);
@@ -85,15 +85,15 @@ export function bedrockCostOf(
  attempt is priced at no more prompt tokens than its body had bytes and no
  more completion tokens than its `max_tokens`. Abandoned attempts were 874 of
  about 190,000 Bedrock calls in the logs, so the over-read is small.
- 
+
  @param servedId - model the attempt went to, whose row carries the prices
- 
+
  @param requestBodyBytes - size of the body the attempt sent
- 
+
  @param maxTokens - `max_tokens` the body carried
- 
+
  @returns Token counts and their price at the bound
- 
+
  @example
  ```ts
  const bound = bedrockAttemptBound({ servedId: 'google.gemma-4-e2b', requestBodyBytes: 30_000, maxTokens: 1_149, },);

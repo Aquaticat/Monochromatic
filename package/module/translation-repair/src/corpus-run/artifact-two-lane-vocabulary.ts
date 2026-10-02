@@ -46,7 +46,7 @@
 
 /**
  What a lane did about one slice, as version 2 records it.
- 
+
  @example
  ```ts
  const outcome: ArtifactSliceOutcome = { kind: 'decided', acceptedText: 'The cat naps.', };
@@ -87,7 +87,7 @@ export type ArtifactSliceOutcome = {
 
 /**
  What one lane's document carries at one slice, as version 2 records it.
- 
+
  @example
  ```ts
  const delivery: ArtifactSliceDelivery = { kind: 'replacement-shipped', };
@@ -123,7 +123,7 @@ export type ArtifactSliceDelivery = {
 
 /**
  One row of one lane's delivery ledger, as version 2 records it.
- 
+
  @example
  ```ts
  const row: ArtifactDeliveryRow = { sliceIndex: 0, sourceText: '猫', ... };
@@ -169,7 +169,7 @@ export type ArtifactDeliveryRow = {
 /**
  How the two lanes' own decisions relate at one slice, as version 2 records
  it.
- 
+
  @example
  ```ts
  const decisions: ArtifactDecisionComparison = { kind: 'comparable', verdict: 'same', };
@@ -199,7 +199,7 @@ export type ArtifactDecisionComparison = {
 
 /**
  How the two documents relate at one slice, as version 2 records it.
- 
+
  @example
  ```ts
  const laneRelation: ArtifactLaneRelation = 'both-differ';
@@ -215,7 +215,7 @@ export type ArtifactLaneRelation =
 
 /**
  One slice as both lanes left it, as version 2 records it.
- 
+
  @example
  ```ts
  const row: ArtifactComparisonRow = { sliceIndex: 0, laneRelation: 'both-differ', ... };
@@ -249,7 +249,7 @@ export type ArtifactComparisonRow = {
 
   /**
    Which lanes changed this slice, and whether their changes agree.
-   
+
    NOT SPELLED `verdict`, which it was until 2026-08-22. That put one key
    name over two meanings at sibling paths of one artifact:
    `laneSelection.slices[].verdict` says who WON, which is the question

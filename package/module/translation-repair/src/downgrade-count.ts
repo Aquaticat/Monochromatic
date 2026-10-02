@@ -7,11 +7,11 @@ import type { RepairDocument, } from './parse-document.ts';
 /**
  Count of `mdx-downgraded` findings, the integrity signal:
  a patch that forces markdown fallback broke document grammar.
- 
+
  @param document - parsed document under inspection
- 
+
  @returns Downgrade finding count
- 
+
  @example
  ```ts
  downgradeCount({ document, },);

@@ -28,29 +28,29 @@ import type { ContainerSpan, } from './unwrap-container.ts';
  Prepares one already-aligned parent without buying unrelated section or block questions.
  Singletons and empty sides retain their zero-call paths.
  A cached section reuses its stored relations and findings without asking again.
- 
+
  @param client - existing production model client
- 
+
  @param modelIds - configured preparation electorate, unchanged by this operation
- 
+
  @param pair - complete aligned source and target parent
- 
+
  @param pairIndex - original alignment index used for findings and map identity
- 
+
  @param targetContainers - complete target parser containers for media-adjacency ownership
- 
+
  @param signal - caller cancellation
- 
+
  @param exchangeTimeoutMs - existing per-call ceiling
- 
+
  @param l - caller logger preserving entry identity
- 
+
  @param pairingCache - existing versioned block cache, absent for an uncached probe
- 
+
  @returns Explicit slicer pairing or the existing implicit, empty or fallback state
- 
+
  @throws Error when acquisition, cancellation or cache persistence fails unexpectedly
- 
+
  @example
  ```ts
  const result = await prepareBlockPairing({ client, modelIds, pair, pairIndex: 2, targetContainers, signal, exchangeTimeoutMs, l });

@@ -1,7 +1,7 @@
 /**
  Tests for the cached budget view: what it reads, what it caches, what a
  refused call corrects, and what it does when a meter cannot be read at all.
- 
+
  @module
  */
 
@@ -58,17 +58,17 @@ const WET_CREDITS = {
 
 /**
  Builds stub meters that answer as told.
- 
+
  @param quota - what the first provider's quota endpoint returns
- 
+
  @param balance - what the second provider's balance endpoint returns
- 
+
  @param remainingUsd - what the third provider's credits endpoint leaves
- 
+
  @param quotaThrows - whether the first provider's meter is unreachable
- 
+
  @returns Every meter plus the count of reads each took
- 
+
  @example
  ```ts
  const { synthetic, hyper, openrouter, reads, } = stubProviders({ quota: WET_QUOTA, balance: 243, },);

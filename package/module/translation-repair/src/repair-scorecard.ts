@@ -7,7 +7,7 @@ import type { RepairAttemptRecord, } from './repair-benchmark.ts';
 // every milestone verdict quotes.
 /**
  Milestone-two scorecard.
- 
+
  @example
  ```ts
  const scorecard = computeRepairScorecard({ records, },);
@@ -43,7 +43,7 @@ export type RepairScorecard = {
 
   /**
    Planted seeds the panel saw and declined on protective grounds.
-   
+
    Not detection failures. The house policy instructs the pipeline never to
    restore a suicide method or a drug name and dosage even when the original
    states it plainly, while this benchmark plants seeds by deleting published
@@ -55,7 +55,7 @@ export type RepairScorecard = {
 
   /**
    Detection rate over seeds the pipeline was actually free to repair.
-   
+
    Published BESIDE {@link RepairScorecard.seedDetectionRate} rather than
    replacing it: both are true, and a verdict has to say which one it cites.
    They differ only when `policyDeclinedSeeds` is above zero.
@@ -64,14 +64,14 @@ export type RepairScorecard = {
 
   /**
    Planted seeds a judge quorum ruled NOT derivable from the Chinese.
-   
+
    Also not detection failures, and for a sharper reason than the policy
    declines: there is nothing in the source to notice missing. This benchmark
    plants seeds by deleting published English, and published English is free
    to carry a translator's addition the original never stated. Deleting one
    creates a hole no reader of the Chinese could find, so counting it against
    detection scores the pipeline on a question it was never asked.
-   
+
    Only `not-derivable` counts here. `partially-derivable` leaves something in
    the source to notice, and an unjudged seed defaults to `derivable`, so an
    unheard probe can never excuse a miss.
@@ -80,7 +80,7 @@ export type RepairScorecard = {
 
   /**
    Detection rate over seeds that were both repairable and derivable.
-   
+
    Published BESIDE the other two rather than replacing them, on the same
    reasoning: all three are true and a verdict has to say which it cites.
    */
@@ -137,11 +137,11 @@ export type RepairScorecard = {
 
 /**
  Aggregates graded repair attempts into the milestone-two scorecard.
- 
+
  @param records - graded attempts in run order
- 
+
  @returns Scorecard over dispatched attempts with honest coverage
- 
+
  @example
  ```ts
  const scorecard = computeRepairScorecard({ records, },);
@@ -204,7 +204,7 @@ export function computeRepairScorecard(
 
   /**
    Seeds a judge quorum ruled the Chinese does not license at all.
-   
+
    `judged` is required as well as the verdict. An unjudged seed already
    defaults to `derivable`, so this is belt and braces, and it keeps the
    count meaning what its name says: seeds someone actually ruled on.
@@ -218,7 +218,7 @@ export function computeRepairScorecard(
 
   /**
    Seeds it is fair to score detection on: repairable AND derivable.
-   
+
    JOINED PER SEED rather than subtracting both counts from the total. A seed
    can be policy-declined AND non-derivable at once, and subtracting would
    remove it twice, shrinking the denominator and making the rate too

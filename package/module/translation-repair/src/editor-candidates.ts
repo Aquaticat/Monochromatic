@@ -31,7 +31,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Editor candidates with the wire irregularities found while building them.
- 
+
  @example
  ```ts
  const { candidates, findings, } = buildEditorCandidates({ voices, ... },);
@@ -51,7 +51,7 @@ export type EditorCandidateSet = {
 
 /**
  One editor's candidate paired with the findings its own reply raised.
- 
+
  Named rather than inferred, because an inferred object literal carries
  writable properties and the two unwrapping maps that read this list then take
  mutable parameters they never mutate.
@@ -71,19 +71,19 @@ type ResolvedVoice = Readonly<{
 /**
  Resolves every heard editor's reply into its own patch through the same
  deterministic gate, so the candidates are directly comparable.
- 
+
  @param voices - heard editor replies in arrival order
- 
+
  @param editorModelIds - roster, fixing candidate order
- 
+
  @param promptEnvelopes - envelopes in prompt numbering order
- 
+
  @param targetText - translation chunk text
- 
+
  @param envelopes - envelopes of this chunk
- 
+
  @returns Candidates in roster order plus findings
- 
+
  @example
  ```ts
  const set = buildEditorCandidates({ voices, editorModelIds, ... },);
@@ -158,7 +158,7 @@ export function buildEditorCandidates(
 
 /**
  Chunk-level candidate set after duplicates were collapsed.
- 
+
  @example
  ```ts
  const { candidates, collapsed, } = buildChunkCandidates({ candidates, composite, },);
@@ -181,18 +181,18 @@ export type ChunkCandidateSet = {
 
 /**
  Presents one editor's patch as a judgeable candidate.
- 
+
  SHARED BY THE SLATE AND THE FALLBACK, deliberately. The whole-chunk judges
  see candidates built here, and the patch that ships when they decline is
  built here too, so the producer recorded against shipped text is the same
  shape either way. Building the fallback's producer separately is how the two
  drift, and the discount on a checker judging its own work reads that
  producer.
- 
+
  @param candidate - one editor's proposal, already through the apply gate
- 
+
  @returns Candidate naming that editor as its sole producer
- 
+
  @example
  ```ts
  const offered = chunkCandidateOf(candidate,);
@@ -213,15 +213,15 @@ export function chunkCandidateOf(candidate: EditorCandidate,): Candidate<PatchOu
 /**
  Assembles the whole-chunk candidate set, dropping the composite when it
  repairs nothing and collapsing candidates whose text is identical.
- 
+
  @param candidates - editor candidates in roster order
- 
+
  @param composite - patch assembled from per-envelope winners
- 
+
  @param contributors - models whose operations the composite carries
- 
+
  @returns Distinct candidates plus how many collapsed
- 
+
  @example
  ```ts
  const set = buildChunkCandidates({ candidates, composite, contributors, },);
@@ -301,18 +301,18 @@ export function buildChunkCandidates(
 
 /**
  Picks the editor whose patch ships when chunk-level judges decline.
- 
+
  The fallback must repair something. Falling back to the untouched
  translation would discard fixes the panel already ruled real, turning a
  disagreement about wording into a lost repair, so this picks the editor that
  landed the most operations and breaks ties by roster order.
- 
+
  @param candidates - editor candidates in roster order, none empty
- 
+
  @returns Candidate with the most applied operations, named so shipped text has an author
- 
+
  @throws {@link Error} when handed an empty candidate list
- 
+
  @example
  ```ts
  const fallback = pickFallbackCandidate({ candidates, },);

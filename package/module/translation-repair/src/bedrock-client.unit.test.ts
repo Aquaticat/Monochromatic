@@ -1,12 +1,12 @@
 /**
  Tests for the Bedrock client over a recorded transport.
- 
+
  THE STREAM SHAPES ARE THE ONES THE PROBES CAPTURED on 2026-09-07 from
  bedrock-mantle in us-east-1: the Gemma route answers content chunks, a
  usage chunk and `[DONE]`; the gpt-oss route answers reasoning deltas,
  content chunks and a usage chunk with no sentinel. Fixtures are cat-themed
  invention; no corpus content appears here.
- 
+
  @module
  */
 
@@ -41,13 +41,13 @@ import {
 
 /**
  One chat completion chunk as the endpoint sends it.
- 
+
  @param delta - delta fields for the single choice
- 
+
  @param rest - top-level fields beyond the choice, usage included
- 
+
  @returns Event line, newline-terminated
- 
+
  @example
  ```ts
  const raw = chunkOf({ delta: { content: '{"spot":', }, },);
@@ -168,11 +168,11 @@ async function boundedAsk(
 /**
  In-memory ledger recording what the client notes and answering a fixed
  reading.
- 
+
  @param remainingUsd - what the reading says is left
- 
+
  @returns Ledger plus the entries noted into it
- 
+
  @example
  ```ts
  const { ledger, noted, } = memoryLedger({ remainingUsd: 150, },);
@@ -212,11 +212,11 @@ function memoryLedger({ remainingUsd = 150, }: { readonly remainingUsd?: number;
  What an abandoned attempt could have been billed, off the body it sent:
  no more prompt tokens than the body has bytes, and no more completion tokens
  than its `max_tokens` (ledger P1).
- 
+
  @param bodyJson - body the attempt sent
- 
+
  @returns Entry fields the ledger should hold for it
- 
+
  @example
  ```ts
  const bound = boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },);
@@ -249,11 +249,11 @@ function boundOf(
 
 /**
  Builds a client over a transport that records what it was sent.
- 
+
  @param reply - what the chat endpoint answers
- 
+
  @returns Client plus the exchanges the transport saw and the ledger's notes
- 
+
  @example
  ```ts
  const { client, exchanges, } = recordedClient({},);

@@ -29,7 +29,7 @@ import {
 
 /**
  A correspondence between one source position and one target position.
- 
+
  @example
  ```ts
  const pair: IndexPair = { source: 3, target: 4, };
@@ -42,7 +42,7 @@ export type IndexPair = {
 
 /**
  Multiplicity pairing consumer can represent.
- 
+
  @example
  ```ts
  const shape: PairingShape = 'many-to-many';
@@ -53,7 +53,7 @@ export type PairingShape = 'one-to-one' | 'many-to-many';
 /**
  Pairs the roster agreed on, with the findings for agreed pairs that could
  not be kept.
- 
+
  @example
  ```ts
  const { pairs, findings, } = agreePairs({ pairings, needed: 2, },);
@@ -73,11 +73,11 @@ export type PairAgreement<PairT extends IndexPair,> = {
 
 /**
  Counts every distinct pair across every voice's pairing.
- 
+
  @param pairings - one pairing per usable voice
- 
+
  @returns Distinct pairs with their vote counts, in first-named order
- 
+
  @example
  ```ts
  const voted = countAcrossVoices({ pairings, },);
@@ -114,15 +114,15 @@ function countAcrossVoices<PairT extends IndexPair,>(
 
 /**
  Reports whether enough voices named every candidate together.
- 
+
  @param candidates - pairs whose co-occurrence is being tested
- 
+
  @param pairings - one pairing per usable voice
- 
+
  @param needed - voices required
- 
+
  @returns Whether candidates are corroborated as one relation
- 
+
  @example
  ```ts
  const together = candidatesCoOccur({ candidates, pairings, needed: 2, });
@@ -159,17 +159,17 @@ function candidatesCoOccur<PairT extends IndexPair,>(
 
 /**
  Of candidates naming one source, set to keep under consumer multiplicity.
- 
+
  @param candidates - agreed pairs sharing source
- 
+
  @param pairings - one pairing per usable voice
- 
+
  @param needed - voices required
- 
+
  @param pairingShape - multiplicity consumer can represent
- 
+
  @returns Corroborated set, best-voted singleton, or nothing for tie
- 
+
  @example
  ```ts
  const winner = bestVoted({ candidates, pairings, needed, pairingShape, },);
@@ -221,15 +221,15 @@ function bestVoted<PairT extends IndexPair,>(
 
 /**
  Pairs enough voices named, kept strictly increasing on both sides.
- 
+
  @param pairings - one pairing per usable voice
- 
+
  @param needed - voices a pair needs to count as agreed
- 
+
  @param pairingShape - multiplicity consumer can represent
- 
+
  @returns Agreed pairs in source order, plus a finding per agreed pair dropped
- 
+
  @example
  ```ts
  const agreement = agreePairs({ pairings, needed: 2, },);

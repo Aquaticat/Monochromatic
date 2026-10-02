@@ -107,7 +107,7 @@ const NOT_FOUND = -1;
 /**
  Refusal of one field of a timing line, naming the field as the line carries
  it and what it lacks.
- 
+
  @example
  ```ts
  throw new TimingFieldError({ reason: 'count field is empty', },);
@@ -116,7 +116,7 @@ const NOT_FOUND = -1;
 export class TimingFieldError extends Error {
   /**
    Writes the refusal's one sentence.
- 
+
    @param reason - what the field lacks, with the field quoted where it has text
    */
   constructor({ reason, }: { readonly reason: string; },) {
@@ -128,11 +128,11 @@ export class TimingFieldError extends Error {
 /**
  Refusal of a whole timing line whose own fields will not read, carrying the
  field's refusal as its cause.
- 
+
  A ROUND OR CALL REPORTED IN PART IS WORSE THAN ONE NOT REPORTED: a straggler
  cost or an interval read from the fields that happened to parse describes a
  round or call the log never wrote.
- 
+
  @example
  ```ts
  throw new TimingLineError({ kind: 'round', line, cause: error, },);
@@ -141,12 +141,12 @@ export class TimingFieldError extends Error {
 export class TimingLineError extends Error {
   /**
    Writes the refusal around the line it could not read.
- 
+
    @param kind - which line the reader took it for
- 
+
    @param line - the log line its marker chose, quoted whole so an operator
    can find it
- 
+
    @param cause - the field's refusal
    */
   constructor(
@@ -171,11 +171,11 @@ export class TimingLineError extends Error {
 /**
  Whether a round's quorum stood, and its timing either side of that instant
  where it did.
- 
+
  TWO KINDS RATHER THAN ZEROS. A round whose quorum never stood measured no
  time to quorum and spent no grace; writing zeros for them would report a
  measurement the round line never made (T8, nineteenth batch).
- 
+
  @example
  ```ts
  const quorum: RoundQuorum = { kind: 'never', needed: 4, };
@@ -207,7 +207,7 @@ export type RoundQuorum =
 
 /**
  One fan-out round, as its own line reported it.
- 
+
  @example
  ```ts
  const round: RoundTiming = { stage: 'editor', heard: 6, asked: 7, totalMs: 91_402, quorum: { kind: 'stood', toQuorumMs: 61_401, inGraceMs: 30_001, }, };
@@ -242,7 +242,7 @@ export type RoundTiming = {
 
 /**
  What one line turned out to say about a round.
- 
+
  @example
  ```ts
  const reading: RoundReading = readRoundTiming({ line, },);
@@ -267,7 +267,7 @@ export type RoundReading =
 
 /**
  One model call, as its completion line reported it.
- 
+
  @example
  ```ts
  const call: CallTiming = { label: 'hf:whiskers', outcome: 'completed', endedAt: 1_760_000_000_000, elapsedMs: 4_210, };
@@ -298,7 +298,7 @@ export type CallTiming = {
 
 /**
  What one line turned out to say about a call.
- 
+
  @example
  ```ts
  const reading: CallReading = readCallTiming({ line, },);
@@ -338,14 +338,14 @@ export type CallReading =
 
 /**
  Reads one field as a whole number, refusing anything else.
- 
+
  @param field - digits and nothing else
- 
+
  @returns Count the field carries
- 
+
  @throws TimingFieldError when the field is empty, or is not digits a double
  holds exactly
- 
+
  @example
  ```ts
  const heard = countIn({ field: '5', },);
@@ -361,19 +361,19 @@ function countIn({ field, }: { readonly field: string; },): number {
 
 /**
  Reads one field's number, given the unit it must carry.
- 
+
  NAMES THE FIELD IT COULD NOT READ rather than returning a zero, because a
  silent zero in a timing report reads as a measurement of nothing happening.
- 
+
  @param field - one comma-separated field, shaped `<number>ms <name>`
- 
+
  @param unit - text the number is followed by
- 
+
  @returns Number the field opened with
- 
+
  @throws TimingFieldError when the field does not carry that unit, or what
  precedes it is not a whole number of milliseconds written in digits
- 
+
  @example
  ```ts
  const ms = durationIn({ field: '30001ms in grace', unit: 'ms ', },);
@@ -411,18 +411,18 @@ function durationIn(
 
 /**
  Reads the heard and asked counts off a ratio field.
- 
+
  TWO WHOLE NUMBERS OR NOTHING. `Number('')` is 0 and `Number('x')` is NaN,
  and either rode into the report as a round that heard nobody or a round that
  never summed.
- 
+
  @param field - the payload's first field, shaped `<heard>/<asked> heard`
- 
+
  @returns Heard and asked counts
- 
+
  @throws TimingFieldError when the field is not two whole numbers joined by a
  slash ahead of ` heard`
- 
+
  @example
  ```ts
  const { heard, asked, } = ratioIn({ field: '6/7 heard', },);
@@ -456,16 +456,16 @@ function ratioIn({ field, }: { readonly field: string; },): {
 /**
  Reads the count a round needed off its no-quorum field, checking the heard
  count the field repeats against the ratio's.
- 
+
  @param field - the payload's third field, shaped `no quorum (<heard> of <needed> needed)`
- 
+
  @param heard - heard count the ratio carries
- 
+
  @returns Count the round needed
- 
+
  @throws TimingFieldError when the field is not that shape, its counts are not
  whole numbers, or its heard count is not the ratio's
- 
+
  @example
  ```ts
  const needed = neededIn({ field: 'no quorum (1 of 4 needed)', heard: 1, },);
@@ -514,22 +514,22 @@ function neededIn(
 
 /**
  Reads one round line, or says the line is not one.
- 
+
  A COMPLETE LINE ENDS WITH ONE OF TWO FIELDS: the grace a round spent after
  its quorum stood, or `every ask settled` where it never stood (ledger P12).
  A line ending in anything else is a round line a log still being written cut
  off, and says nothing about a round. Reading every line without the grace
  field as cut off once dropped the no-quorum rounds, the ones that lost the
  most voices, from the report (T8, nineteenth batch).
- 
+
  @param line - one log line
- 
+
  @returns What the line turned out to say about a round
- 
+
  @throws TimingLineError when a complete round line's own fields will not
  read, since a round reporting a partial straggler cost is worse than one
  reporting none
- 
+
  @example
  ```ts
  const reading = readRoundTiming({ line, },);
@@ -640,15 +640,15 @@ export function readRoundTiming(
 /**
  Reads one stream completion line, saying whether it carried a duration and
  a stamp as the logger writes one.
- 
+
  @param line - one log line
- 
+
  @returns What the line turned out to say about a call
- 
+
  @throws TimingLineError when a timed, stamped completion line's own fields
  will not read: a first field that is not `<label>: <outcome>`, or a duration
  not written in whole milliseconds
- 
+
  @example
  ```ts
  const reading = readCallTiming({ line, },);

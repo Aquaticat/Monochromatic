@@ -12,18 +12,18 @@ import type { UnclaimedTargetBlock, } from './prepared-document-pair.ts';
 
 /**
  Target blocks outside every aligned section, less the ones a seal covers.
- 
+
  A SEALED BLOCK IS NOT UNCLAIMED: it is out of review by rule, and the block
  correction round must not be handed it either.
- 
+
  @param alignment - aligned section pairs over both documents
- 
+
  @param targetDocument - parsed archive
- 
+
  @param sealedTargetIds - ids of every translation block a seal covers
- 
+
  @returns Unclaimed blocks in document order, located by their section
- 
+
  @example
  ```ts
  const unclaimed = unclaimedOutsideAlignment({ alignment, targetDocument, sealedTargetIds, },);

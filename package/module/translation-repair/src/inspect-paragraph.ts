@@ -17,7 +17,7 @@ import {
 
 /**
  Recursively readonly mdast root, as this module BORROWS the parse result.
- 
+
  @example
  ```ts
  const root: ReadonlyMdastRoot = attempt.root;
@@ -27,7 +27,7 @@ type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 
 /**
  Recursively readonly mdast content node.
- 
+
  @example
  ```ts
  const node: ReadonlyMdastContent = root.children[0];
@@ -48,7 +48,7 @@ type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 /**
  Why a paragraph could not be inspected.
- 
+
  @example
  ```ts
  const reason: InspectionRejection = 'not-one-paragraph';
@@ -61,7 +61,7 @@ export type InspectionRejection =
 
 /**
  Result of reading one paragraph.
- 
+
  @example
  ```ts
  const inspection: ParagraphInspection = { kind: 'inspected', atoms, };
@@ -100,11 +100,11 @@ const MARKUP_KINDS: ReadonlySet<string> = new Set([
 
 /**
  Reads one inline node into the atoms it contributes, if any.
- 
+
  @param node - inline mdast node
- 
+
  @returns Atoms this node contributes, in order
- 
+
  @example
  ```ts
  const atoms = atomsOfNode({ node, },);
@@ -146,7 +146,7 @@ function atomsOfNode(
 /**
  Outcome of the strict parse, kept as a discriminated union so a refusal
  travels as a real value rather than as an absent root.
- 
+
  @example
  ```ts
  const attempt: ParseAttempt = { kind: 'refused', };
@@ -165,16 +165,16 @@ type ParseAttempt =
 
 /**
  Parses one paragraph under the strict grammar only.
- 
+
  The plain-markdown fallback is deliberately NOT used here. Document parsing
  downgrades so a whole corpus page still yields anchors; a single rewritten
  paragraph that needs the fallback is a candidate to refuse, not a document
  to rescue.
- 
+
  @param text - exact paragraph source
- 
+
  @returns Tree, or a refusal when the strict grammar rejected it
- 
+
  @example
  ```ts
  const attempt = parseStrictly({ text: paragraph, },);
@@ -197,13 +197,13 @@ function parseStrictly({ text, }: { readonly text: string; },): ParseAttempt {
 
 /**
  Reads one paragraph's protected atoms in document order.
- 
+
  The paragraph is parsed TWICE, for two different questions.
- 
+
  Alone, to answer whether it is exactly one paragraph: that is a fact about
  the candidate's own structure and must not be influenced by anything
  appended to it.
- 
+
  Then with the document's link and footnote definitions appended, to answer
  what it references. GFM only produces a `footnoteReference` or a
  `linkReference` when a matching definition is in scope, so an isolated
@@ -211,15 +211,15 @@ function parseStrictly({ text, }: { readonly text: string; },): ParseAttempt {
  the digit inside would be protected as a number while the marker syntax
  around it would not, and a rewrite turning `[^1]` into `1` would pass a gate
  that should have stopped it.
- 
+
  @param text - exact paragraph source, base or candidate
- 
+
  @param definitions - link and footnote definitions from the whole `T1`
  document, so references resolve; omitted means the paragraph references
  nothing defined elsewhere
- 
+
  @returns Ordered atoms, or the reason the paragraph was refused
- 
+
  @example
  ```ts
  const inspection = inspectParagraph({ text: paragraph, definitions, },);
@@ -315,7 +315,7 @@ export function inspectParagraph(
 
 /**
  Verdict of the structural gate over one rewrite.
- 
+
  @example
  ```ts
  const verdict: AtomGateVerdict = { kind: 'preserved', };
@@ -334,11 +334,11 @@ export type AtomGateVerdict =
 
 /**
  Renders one atom for a gate refusal.
- 
+
  @param atom - atom to describe
- 
+
  @returns Kind and value in one token
- 
+
  @example
  ```ts
  const label = describeAtom({ kind: 'number', value: '17', },);
@@ -351,21 +351,21 @@ function describeAtom(atom: ProtectedAtom,): string {
 /**
  Checks that a rewrite carries every protected atom through unchanged and in
  the same order.
- 
+
  Order is the point. Comparing multisets would pass a candidate that turned
  "3 cats and 5 dogs" into "5 cats and 3 dogs", or that swapped two links'
  destinations, or two names' positions: every atom still present, every claim
  different.
- 
+
  @param base - `T1` paragraph the rewrite replaces
- 
+
  @param candidate - proposed replacement
- 
+
  @param definitions - link and footnote definitions from the whole `T1`
  document, so both sides resolve their references identically
- 
+
  @returns Whether the rewrite may proceed, and what diverged when not
- 
+
  @example
  ```ts
  const verdict = gateParagraphRewrite({ base, candidate, },);

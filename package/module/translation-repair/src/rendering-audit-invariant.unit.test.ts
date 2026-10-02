@@ -1,11 +1,11 @@
 /**
  Tests for the class every rendering audit invariant is thrown as.
- 
+
  SIX SITES, ONE NAME. The invariants are unreachable by construction, so the
  only thing worth pinning is that reaching one is told apart by name from an
  operator refusal or a provider fault, and that the site's own sentence
  travels whole. Fixtures are invention.
- 
+
  @module
  */
 

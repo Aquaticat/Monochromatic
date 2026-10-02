@@ -1,6 +1,6 @@
 /**
  Tests for many-to-many block diagnostic counts.
- 
+
  @module
  */
 

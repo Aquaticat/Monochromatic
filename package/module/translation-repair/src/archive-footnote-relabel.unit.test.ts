@@ -1,6 +1,6 @@
 /**
  Tests for the archive's footnote labels following the original's.
- 
+
  THE NINETEENTH CLASS, found on one page of 2026-09-08: the original writes
  two names with their notes numbered against first appearance, the archive
  renumbered them by first appearance with definitions to match, and the page
@@ -8,7 +8,7 @@
  pointing at the other's note.
 
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

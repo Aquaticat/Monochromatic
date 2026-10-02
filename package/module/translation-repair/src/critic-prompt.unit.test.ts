@@ -3,7 +3,7 @@
  closed vocabularies embedded, quote rules stated, both documents
  fenced verbatim, JSON-only reply demanded.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

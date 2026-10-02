@@ -1,6 +1,6 @@
 /**
  Test-only archive review clients exercising real stage boundaries.
- 
+
  @module
  */
 import {
@@ -72,11 +72,11 @@ type ArchiveSelectionFixtureMode = 'revision' | 'original' | 'unavailable';
 
 /**
  Locates an actual numbered candidate rather than assuming proposal order.
- 
+
  @param text - selector's user message
- 
+
  @param wanted - exact candidate value expected on its slate
- 
+
  @returns One-based candidate number
 
  @throws Error where no candidate on the slate is the wanted text
@@ -111,7 +111,7 @@ export function candidateNumber({
 
 /**
  Rejects text-only calls outside this fixture's protocol.
- 
+
  @throws Error on any invocation
  */
 function unexpectedText(): never {
@@ -120,7 +120,7 @@ function unexpectedText(): never {
 
 /**
  Prevents accidental access to live quota resources.
- 
+
  @throws Error on any invocation
  */
 function unexpectedQuotas(): never {
@@ -129,13 +129,13 @@ function unexpectedQuotas(): never {
 
 /**
  Builds schema-valid review replies and captures the real selection message.
- 
+
  @param review - anchor and revision mixture
- 
+
  @param selection - selector result independent of review replies
- 
+
  @returns Scripted client and observable selector inputs
- 
+
  @example
  ```ts
  const fixture = archiveSelectionFixture({ review: 'mixed' });
@@ -240,9 +240,9 @@ export function archiveSelectionFixture(
         ];
   /**
    Synchronous fixture logic, adapted to the provider's asynchronous interface.
-   
+
    @param request - actual production role and schema
-   
+
    @returns Scripted schema-valid outcome
 
    @throws Error when the fixture's review bench is unavailable past its first seat

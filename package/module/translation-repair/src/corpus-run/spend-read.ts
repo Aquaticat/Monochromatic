@@ -71,7 +71,7 @@ export type SpendUsd = number | typeof UNREPORTED;
 
 /**
  What one `SPEND` line said.
- 
+
  @example
  ```ts
  const record: SpendRecord = {
@@ -142,11 +142,11 @@ type SpendField = {
 
 /**
  Splits a `name=value` field, reporting a piece that carries no separator.
- 
+
  @param field - one space-delimited piece of the record tail
- 
+
  @returns Name and value, or that this piece is not a field
- 
+
  @example
  ```ts
  const pair = fieldOf({ field: 'provider=hyper', },);
@@ -175,11 +175,11 @@ function fieldOf(
 /**
  Reads a count field, keeping a provider's silence as a named value rather
  than folding it into zero.
- 
+
  @param value - what the field carried
- 
+
  @returns Count, the named absence, or that the field will not read
- 
+
  @example
  ```ts
  const prompt = countOf({ value: '5120', },);
@@ -202,19 +202,19 @@ function countOf(
 
 /**
  Reads the cost field, keeping its absence as a named value.
- 
+
  FRACTIONAL AND NOT NEGATIVE, unlike a token count: a call costs a fraction
  of a cent, and the wire writes it with nine decimals.
- 
+
  SPELLED AS `String` SPELLS A NUMBER, which is how `reportSpend` writes it,
  exponent included for the smallest costs: `Number` also read a hexadecimal, a
  trailing zero and surrounding spaces as a cost the writer never writes, so
  only a value that reads back to its own text is a cost (ledger B73).
- 
+
  @param value - what the field carried, empty where the line had none
- 
+
  @returns USD, the named absence, or that the field will not read
- 
+
  @example
  ```ts
  const cost = usdOf({ value: '0.000126255304', },);
@@ -242,11 +242,11 @@ function usdOf(
 
 /**
  Finds the marker where a logger prefix precedes it.
- 
+
  @param line - one line of a run log
- 
+
  @returns Where the marker word starts, or that the line carries none
- 
+
  @example
  ```ts
  const at = spacedMarkerIn({ line: '[info] [t] SPEND provider=hyper', },);
@@ -265,16 +265,16 @@ function spacedMarkerIn(
 
 /**
  Collects the fields of a record tail, keyed by name.
- 
+
  A `Map` RATHER THAN AN OBJECT, because the keys come off a log line and an
  object would let a line writing `__proto__=` reach the prototype. Nothing in
  a run log is supposed to do that, which is exactly why the reader must not
  depend on it not happening.
- 
+
  @param fields - space-delimited pieces of the tail
- 
+
  @returns Every piece that split, keyed by name
- 
+
  @example
  ```ts
  const named = namedFields({ fields: ['provider=hyper',], },);
@@ -306,11 +306,11 @@ function namedFields(
 
 /**
  Reads one log line as a spend record.
- 
+
  @param line - one line of a run log, tag prefix and all
- 
+
  @returns Record, or which kind of non-record this line is
- 
+
  @example
  ```ts
  const read = readSpendLine({ line, },);
@@ -321,7 +321,7 @@ export function readSpendLine(
 ): SpendLineReading {
   /**
    Where the marker sits, or that this is an ordinary line.
-   
+
    ACCEPTED AT THE START OF A LINE OR AFTER A SPACE, so both forms read: the
    bare line `reportSpend` returns, and the same line once a logger has put
    its level, stamp and tags in front of it. Demanding the space would refuse
@@ -414,7 +414,7 @@ export function readSpendLine(
 
 /**
  What one seat spent across every call a log recorded for it.
- 
+
  @example
  ```ts
  const spend: SeatSpend = {
@@ -456,7 +456,7 @@ export type SeatSpend = {
 
   /**
    Calls whose provider sent no usage block.
-   
+
    CARRIED BESIDE THE TOTALS RATHER THAN FOLDED INTO THEM, because a total
    over reported calls only is a floor, and a reader has to be able to see how
    much of the run it is a floor over.
@@ -484,7 +484,7 @@ export type SeatSpend = {
 
 /**
  Everything a set of log lines said about what was spent.
- 
+
  @example
  ```ts
  const tally = tallySpend({ lines, },);
@@ -506,12 +506,12 @@ export type SpendTally = {
 
 /**
  Totals every spend record in a log, per seat.
- 
+
  @param lines - log lines in any order, records and prose mixed
- 
+
  @returns Per-seat totals, sorted by completion tokens so the seat that cost
  the most reads first, plus how many records would not parse
- 
+
  @example
  ```ts
  const tally = tallySpend({ lines: text.split('\n',), },);

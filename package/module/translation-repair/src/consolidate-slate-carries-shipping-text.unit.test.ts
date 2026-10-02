@@ -1,26 +1,26 @@
 /**
  Tests for what the consolidation stage puts on the slate once proposals are
  wrapped.
- 
+
  THE DEFECT THIS FILE EXISTS TO STOP is both deciders approving bytes the run
  then changes. `wrapConsolidation` used to be the only wrap on this path, and
  it runs AFTER the slate judges have chosen a rendering and the gate has
  approved it, so what shipped was not what either of them read. Measured over
  the two most recent runs of the band pair's six entries, 15 of the 16
  consolidations that shipped came back from that wrap altered.
- 
+
  DRIVEN THROUGH `settleConsolidation` RATHER THAN THE WRAPPER, which is the
  whole reason this file is separate from `consolidate-proposal-wrap.unit.test.ts`.
  A wrapper that returns the right array proves nothing about a stage that never
  calls it, and the runner abandons a file once a describe in it fails, so these
  cases would go unrun exactly when a unit case had broken.
- 
+
  THE INVARIANT EVERY CASE HERE SERVES: a candidate on the slate is the text
  that ships if it wins. Proposals arrive wrapped, the incumbent arrives
  untouched, and a governed slice arrives exactly as its producers wrote it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 import {
@@ -96,7 +96,7 @@ const STANDING = 'The cat fell asleep by the window.\nShe woke at four.';
 
 /**
  That same wording as a producer emits it, on one line.
- 
+
  VERIFIED RATHER THAN ASSUMED, by the case that uses it: wrapping this yields
  {@link STANDING} byte for byte. A fixture that only nearly matched would make
  every collapse assertion here report on the wording instead of on the stage.
@@ -111,13 +111,13 @@ const FRESH = 'The cat fell asleep beside the window. She woke at four in the af
 
 /**
  Builds one voice as the producing half hands them over.
- 
+
  @param modelId - voice that wrote it
- 
+
  @param translation - wording it proposed
- 
+
  @returns Voice shaped as the gather round returns one
- 
+
  @example
  ```ts
  const voice = voiceOf({ modelId: ROSTER[0], translation: FRESH, },);
@@ -140,14 +140,14 @@ function voiceOf(
 
 /**
  Builds a passing structural verdict.
- 
+
  Every case here means to reach the slate, so no case needs the refusing
  shape; `consolidate-settle.unit.test.ts` owns the floor's own behaviour.
- 
+
  @param modelId - voice the verdict belongs to
- 
+
  @returns Verdict shaped as the produce half reports one
- 
+
  @example
  ```ts
  const checked = passing({ modelId: ROSTER[0], },);
@@ -165,20 +165,20 @@ function passing({ modelId, }: { readonly modelId: string; },): ProposalValidity
 
 /**
  Renders one passage as it appears inside a serialised request body.
- 
+
  NEEDED BECAUSE THE SHEET ASSERTIONS READ JSON. A recorded body is a JSON
  string, so a passage carrying a newline appears in it with that newline
  escaped, and searching for the raw text finds nothing.
- 
+
  WHAT IS RECORDED MATTERS AS MUCH AS THIS. The router reads the whole
  serialised exchange, where the body is a string INSIDE another JSON document
  and every escape is doubled. Sheets are recorded as `bodyJson` for that
  reason: one level of escaping, which is the level this function produces.
- 
+
  @param text - passage as it exists in memory
- 
+
  @returns Same passage spelled as a JSON string body carries it
- 
+
  @example
  ```ts
  const needle = asSent({ text: STANDING, },);
@@ -192,21 +192,21 @@ function asSent({ text, }: { readonly text: string; },): string {
 /**
  Works out which numbered candidate carries one rendering, by replaying both
  the pre-slate wrap and the rotation the judges will see.
- 
+
  REPLAYS THE WRAP, unlike the sibling helper it is modelled on. The slate now
  carries wrapped proposals, so a lookup that skipped the wrap would search for
  a rendering that is not on the ballot and throw.
- 
+
  @param proposals - what each producing voice offered
- 
+
  @param incumbentText - wording in place
- 
+
  @param lineStructured - whether the verse rule governs this slice
- 
+
  @param wanted - rendering whose position is sought
- 
+
  @returns One-based ballot index naming it
- 
+
  @example
  ```ts
  const best = positionOfText({ proposals: [FRESH,], incumbentText: STANDING, lineStructured: false, wanted: FRESH, },);
@@ -254,26 +254,26 @@ function positionOfText(
 
 /**
  Runs one settlement over a scripted roster, recording what each round served.
- 
+
  ONE PRODUCER IS THE USUAL SHAPE, not three, and the reason is the vote
  weighting rather than brevity. Judges are drawn from the same roster as
  producers, and a judge weighing its own roster-mate's proposal is discounted
  to half a vote. With all three seats producing, three half votes fall short of
  the minimum weight and every slate declines, so a case meaning to reach the
  gate never gets there. Cases that buy no round at all may use all three.
- 
+
  @param proposals - what each producing voice offered, in roster order
- 
+
  @param standingText - wording in place
- 
+
  @param lineStructured - whether the verse rule governs this slice
- 
+
  @param judgeReply - body every slate judge returns
- 
+
  @param gateReply - body every gate voice returns
- 
+
  @returns Settlement, beside the calls each round served and the sheets sent
- 
+
  @example
  ```ts
  const { settled, served, } = await settleWith({ proposals: [REWRAPPING,], },);
@@ -369,11 +369,11 @@ async function settleWith(
 
 /**
  Builds a slate judge's reply.
- 
+
  @param best - ballot index, zero to decline
- 
+
  @returns Reply body a judge would return
- 
+
  @example
  ```ts
  const reply = judgeBallot({ best: 2, },);

@@ -34,13 +34,13 @@ const PERCENT_WHOLE = 100;
 
 /**
  Reads one percentile from a sorted sample.
- 
+
  @param sorted - values in ascending order
- 
+
  @param percentile - percentile to read
- 
+
  @returns Value at that rank, zero for an empty sample
- 
+
  @example
  ```ts
  const p90 = percentileOf({ sorted, percentile: 90, },);
@@ -70,13 +70,13 @@ export function percentileOf(
 
 /**
  Renders one distribution as a line.
- 
+
  @param label - what the numbers describe
- 
+
  @param values - sample
- 
+
  @returns Line naming count, percentiles and maximum
- 
+
  @example
  ```ts
  const line = describeSpread({ label: 'slice source chars', values, },);

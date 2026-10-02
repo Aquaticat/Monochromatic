@@ -46,7 +46,7 @@ export const WRITER_GRACE_VAR = 'TRANSLATION_REPAIR_WRITER_GRACE_MS';
 /**
  Milliseconds a writer round keeps waiting on stragglers after quorum when no
  launch dial says otherwise and the round window is shorter.
- 
+
  THE OWNER'S DECISION OF 2026-09-06, on the four pages of 2026-09-04 that
  shipped with their writers at this window through the launch dial while the
  reader rounds waited `STRAGGLER_GRACE_MS`: writer-round cuts were 4, 6, 11
@@ -59,7 +59,7 @@ export const WRITER_GRACE_MS = 180_000;
 
 /**
  Stage labels of the rounds the dial governs, as their log lines spell them.
- 
+
  Listed here rather than imported from the stages, because each stage imports
  this module to read its window and the list exists for the launch note only.
  */
@@ -72,17 +72,17 @@ export const WRITER_STAGE_LABELS: readonly string[] = [
 
 /**
  Reads the writer dial's text.
- 
+
  @param fallback - window the writers run under when the text is blank
- 
+
  @param raw - override text; tests pass their own, and the environment read
  supplies `''` for an absent variable, since unset and empty are alike here
- 
+
  @returns Milliseconds a writer round keeps waiting on stragglers after quorum
- 
+
  @throws {@link StatedRefusalError} when the override is present and is not
  a positive finite number of milliseconds
- 
+
  @example
  ```ts
  const writerMs = resolveWriterGraceMs({ fallback: WRITER_GRACE_MS, },);
@@ -107,7 +107,7 @@ export function resolveWriterGraceMs(
 
 /**
  Both windows of one invocation and where the writers' came from.
- 
+
  @example
  ```ts
  const grace: WriterGrace = { writerMs: 180_000, roundMs: 60_000, source: 'writer-dial', };
@@ -129,7 +129,7 @@ export type WriterGrace = {
    writers wait `WRITER_GRACE_MS` because nothing set them and the round
    window is shorter; `round-window` when the writers follow every other
    round, because that window is at least as long as the built-in.
-   
+
    CARRIED RATHER THAN INFERRED from the two numbers differing: the two are
    read from mutable environment, and a note that blamed the writer dial
    because two readings taken at different moments disagreed would name an
@@ -141,18 +141,18 @@ export type WriterGrace = {
 /**
  Reads both windows of this invocation, the round window first because the
  writer window is measured against it.
- 
+
  READ AT EACH GATHER rather than once at launch, by the path every other
  round already takes through `runGatherRound`: the calibration adopts its own
  window by writing the round variable after launch, and a writer round that
  had read the environment at import time would miss it.
- 
+
  @returns Both windows and the writers' source
- 
+
  @throws {@link StatedRefusalError} when either dial is set to something that
  is not a whole number of milliseconds a timer can hold; the round dial is
  read first, so a run with both wrong hears about the round dial first
- 
+
  @example
  ```ts
  const { writerMs, roundMs, source, } = readWriterGrace();
@@ -197,11 +197,11 @@ export function readWriterGrace(): WriterGrace {
  Window a writer round runs under in this invocation: the writer dial when
  set, otherwise the built-in writer window or the round window when that is
  longer.
- 
+
  @returns Milliseconds a writer round keeps waiting on stragglers after quorum
- 
+
  @throws {@link StatedRefusalError} as {@link readWriterGrace} does
- 
+
  @example
  ```ts
  const gather = await gatherStageVoices({ ..., stage: 'editor', graceMs: writerRoundGraceMs(), },);
@@ -218,17 +218,17 @@ export function writerRoundGraceMs(): number {
 /**
  Explains which window the writer rounds are under whenever it is not the
  round window, whether the built-in or a launch dial put them there.
- 
+
  PRINTED BY THE DRIVERS, beside the round window's own note, for the reason
  `graceOverrideNote` gives: a run must never hide which window it ran under,
  and a writer round that lost nobody under a longer window is exactly the
  round the seating wants to hear about.
- 
+
  @param grace - both windows and the writers' source
- 
+
  @returns Note naming both windows and the stages, or nothing when the
  writers follow every other round
- 
+
  @example
  ```ts
  const note = writerGraceOverrideNote({ grace: readWriterGrace(), },);

@@ -1,12 +1,12 @@
 /**
  Tests for the record of what the judges were actually shown.
- 
+
  Ballots name a one-based position and the slate is rotated per slice, so
  without this record a stored ballot saying "candidate 2" cannot be joined to
  any text or producer afterwards. These cases pin the join.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

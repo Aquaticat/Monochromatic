@@ -82,7 +82,7 @@ const CODE_FENCE = '```';
 
 /**
  One marker the strip removed, for the log and the record.
- 
+
  @example
  ```ts
  const marker: StrippedStubMarker = { lineNumber: 8, text: '(To-Do)', };
@@ -230,7 +230,7 @@ export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: stri
 
 /**
  One retained normalized line with its unchanged pinned-file position.
- 
+
  @example
  ```ts
  const retained: ArchiveRetainedLine = { text: 'Cat.', lineNumber: 3 };
@@ -249,7 +249,7 @@ export type ArchiveRetainedLine = {
 
 /**
  Removes every paragraph that is nothing but a placeholder token.
- 
+
  ONE LINEAR PASS over the lines, with HTML comments masked first so a marker
  inside a comment is left alone: the masked text keeps every newline, so its
  lines index the original's exactly. A marker paragraph is one line whose
@@ -257,11 +257,11 @@ export type ArchiveRetainedLine = {
  absent, outside front matter and code fences. The marker goes with one
  adjacent blank line: the following one, or the preceding one at the end of
  the document, so the page keeps single blank lines between blocks.
- 
+
  @param text - archive text after the invisible-variant fold
- 
+
  @returns Text without the markers, and each marker removed with its line
- 
+
  @example
  ```ts
  const { text, stripped, lines, } = stripStubMarkersWithOrigins({ text: archive, },);

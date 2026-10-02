@@ -2,9 +2,9 @@
  Tests archive-only provenance, correction, and recorded naturalness under
  the single-round contract: reviewer indecision retains the block with
  findings and never buys a second round.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -112,13 +112,13 @@ type ReplyFor = (input: {
 
 /**
  Creates schema-aware direct client and captures exact prompts.
- 
+
  @param replyFor - reply selector
- 
+
  @param prompts - prompt capture sink
- 
+
  @param payloads - optional model-plus-prompt identity sink
- 
+
  @returns Scripted client
  */
 function scriptedClient(
@@ -859,9 +859,9 @@ await describe({
          The retained block's findings when the replies to one naturalness
          responsibility, named by a phrase only its sheet carries, are cut
          for every seat but the first.
- 
+
          @param sheetPhrase - phrase naming the starved responsibility's sheet
- 
+
          @returns Which naturalness lines the findings carry
          */
         async function linesStarving(

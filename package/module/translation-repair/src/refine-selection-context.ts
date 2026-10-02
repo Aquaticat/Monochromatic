@@ -70,7 +70,7 @@ export function objectingJudgesOf(
 
 /**
  Why refinement is running and whether unchanged text remains admissible.
- 
+
  @example
  ```ts
  const mode: RefineStageMode = { kind: 'comparative', };
@@ -118,7 +118,7 @@ export function objectionsHeading(
 
 /**
  Inputs candidate selector receives after refinement generation.
- 
+
  @example
  ```ts
  const context = buildRefineSelectionContext({ mode, sourceText, repairedText, });
@@ -148,21 +148,21 @@ export type RefineSelectionContext = {
 
 /**
  Builds selector question matching refinement mode.
- 
+
  @param mode - comparative exploration or objection correction
- 
+
  @param sourceText - original Chinese fidelity anchor
- 
+
  @param repairedText - exact current English wording
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param identityContext - declared names and handles the refiner was told
  survive exactly, so its judges are told so too (ledger B28)
- 
+
  @returns Candidate-ranking context with review findings fenced as evidence
- 
+
  @example
  ```ts
  const context = buildRefineSelectionContext({ mode: { kind: 'comparative' }, sourceText, repairedText, });

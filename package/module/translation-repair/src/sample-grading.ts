@@ -45,7 +45,7 @@ export const DEFAULT_PRECISION_BAR = 0.9;
  Default draw seed. Fixing it makes the draw deterministic: the same
  candidate pool and seed always produce the same sample, so a draw can be
  reproduced and audited.
- 
+
  The seed MUST change whenever a graded sample is used to change the
  pipeline. Re-drawing with the seed the grades came from partially
  re-selects the very items a human already judged, so the next measurement
@@ -54,7 +54,7 @@ export const DEFAULT_PRECISION_BAR = 0.9;
  belongs to; the first round's seed was `milestone-three-precision`, whose
  fifty grades produced the identity, alignment, and policy fixes, and
  `-round-two` produced the roster, editor-ensemble, and house-policy changes.
- 
+
  A new seed does NOT guarantee that no already-graded issue is drawn again: a
  different shuffle can reselect one. It is the population that mostly changes
  between rounds, since round three draws from artifacts produced by a fresh
@@ -84,7 +84,7 @@ export type BandQuota = Readonly<Record<SizeBand, number>>;
 /**
  One accepted issue flattened into everything a human grader needs to judge
  whether it is a real defect, and everything the draw needs to stratify.
- 
+
  @example
  ```ts
  const candidate: GradingCandidate = {
@@ -158,7 +158,7 @@ export type GradingCandidate = {
   /**
    What the accuracy stage wrote for this issue and what became of it, when
    the run recorded that at all.
-   
+
    ABSENT is not the same as a repair with no regions, and no sheet may merge
    them. Absent is a run predating repair recording, where repair quality is
    unknowable and the item cannot enter any repair denominator; a recorded
@@ -170,7 +170,7 @@ export type GradingCandidate = {
 
 /**
  One replaced region as a grading sheet reads it.
- 
+
  @example
  ```ts
  const region: GradableRepairRegion = {
@@ -200,7 +200,7 @@ export type GradableRepairRegion = {
 
 /**
  One issue's repair as a grading sheet reads it.
- 
+
  @example
  ```ts
  const repair: GradableRepair = {
@@ -240,7 +240,7 @@ export type GradableRepair = {
 
 /**
  How an issue's source side is anchored.
- 
+
  @example
  ```ts
  const anchor: SourceAnchorKind = 'insertion-point';
@@ -330,7 +330,7 @@ export type GradableIssue = {
 /**
  Raised when a sample cannot support a repair measurement because some of its
  issues predate repair recording.
- 
+
  @example
  ```ts
  throw new UnmeasurableRepairError({ unrecorded: 50, sampled: 50, },);
@@ -344,9 +344,9 @@ export class UnmeasurableRepairError extends Error {
 
   /**
    Builds the refusal from the counts that make the sample unmeasurable.
-   
+
    @param unrecorded - sampled issues carrying no recorded repair
-   
+
    @param sampled - size of the drawn sample
    */
   constructor(
@@ -377,11 +377,11 @@ export class UnmeasurableRepairError extends Error {
 
 /**
  Counts sampled issues whose run never recorded what was written.
- 
+
  @param sample - drawn candidates
- 
+
  @returns How many carry no repair provenance at all
- 
+
  @example
  ```ts
  const unrecorded = countUnrecordedRepairs({ sample, },);
@@ -398,18 +398,18 @@ export function countUnrecordedRepairs(
 
 /**
  Refuses a gate sample that cannot state what the pipeline wrote.
- 
+
  The failure this prevents is silent rather than loud: the sheets render, every
  ungradable item reads as such, and the round still reports a repair number
  over whatever fraction happened to be recorded. It is reachable by simply
  drawing against a directory that still holds an earlier round's artifacts,
  since the corpus pass never overwrites one.
- 
+
  @param sample - drawn candidates
- 
+
  @throws {@link UnmeasurableRepairError} when any sampled issue carries no
  recorded repair
- 
+
  @example
  ```ts
  assertRepairMeasurable({ sample, },);
@@ -433,12 +433,12 @@ export function assertRepairMeasurable(
 /**
  UTF-8 byte length of an entry's zh source, branded so a CHARACTER count
  cannot be passed where a byte count belongs.
- 
+
  Branded rather than left a bare `number` because the two quantities differ by
  roughly a factor of two on this corpus and the wrong one silently classifies
  large pages as small. Mint it with {@link sourceBytesOf}; a raw number will
  not type-check.
- 
+
  @example
  ```ts
  const bytes: SourceBytes = sourceBytesOf({ text: source, },);
@@ -448,24 +448,24 @@ export type SourceBytes = number & { readonly __brand: 'SourceBytes'; };
 
 /**
  Narrows a count already known to be a UTF-8 byte length.
- 
+
  An assertion function rather than a cast, because `no-unsafe-type-assertion`
  refuses a narrowing `as` and this repository's guidance names assertion
  functions as the mechanism for runtime narrowing. The check is real: a byte
  length is a non-negative safe integer, so a fractional or negative count is a
  caller bug rather than a small measurement error.
- 
+
  Calling this is an EXPLICIT claim that the number was measured in bytes. It
  cannot verify that, which is the point of routing ordinary use through
  {@link sourceBytesOf} instead; reach for this only where the byte count is
  the thing under test, as at a band boundary.
- 
+
  @param count - byte length to narrow
- 
+
  @returns Nothing; it narrows `count` in the caller on success
- 
+
  @throws {@link RangeError} when the count is not a non-negative safe integer
- 
+
  @example
  ```ts
  assertSourceBytes(SMALL_BAND_MAX_BYTES - 1,);
@@ -485,15 +485,15 @@ export function assertSourceBytes(
 
 /**
  Measures source text in UTF-8 bytes.
- 
+
  The ordinary way to obtain a {@link SourceBytes}: it takes the TEXT rather
  than a count, so there is no opportunity to hand it the wrong unit. A number
  has already lost the evidence of which unit it is.
- 
+
  @param text - source text to measure
- 
+
  @returns Its UTF-8 byte length
- 
+
  @example
  ```ts
  const bytes = sourceBytesOf({ text: '雨', },); // 3
@@ -514,22 +514,22 @@ export function sourceBytesOf(
 /**
  Classifies a page into its size band by zh source byte length, using the
  same tertile cuts the accumulation loop sorts by.
- 
+
  BYTES, NOT CHARACTERS, and the gap is wide enough to move an entry two bands.
  The corpus is mostly Chinese, so UTF-8 spends about three bytes per han
  character; measured whole-file across settled pages the ratio lands between
  1.65 and 2.61 once Latin names, punctuation and markup are mixed in. A
  CHARACTER count passed here silently classifies large pages as small.
- 
+
  This has happened. The settled artifact records `sourceChars`, a CHARACTER
  count, and it is the nearest-looking field to hand when writing an ad-hoc
  census over the artifacts directory. Passing it straight in reported a
  20-entry pool as 16 small, 4 medium and 0 large when the true spread was 7,
  7 and 6, and produced a recommendation to keep accumulating until large
  entries appeared, of which six had already settled.
- 
+
  Take the bytes from the SOURCE TEXT, never from the artifact:
- 
+
  ```ts
  const source = await readCorpusFile({ pin, relPath: `people/${id}/page.md`, },);
  const band = classifyBand({
@@ -538,15 +538,15 @@ export function sourceBytesOf(
      .length,
  },);
  ```
- 
+
  `corpus-run/draw-entry-load.ts` is the one production caller and does exactly
  that. Copy it rather than reaching for the artifact field.
- 
+
  @param sourceBytes - UTF-8 BYTE length of the entry's zh source, never a
  character count
- 
+
  @returns The entry's size band
- 
+
  @example
  ```ts
  const band = classifyBand({ sourceBytes: 1_934, },); // 'medium'
@@ -565,11 +565,11 @@ export function classifyBand(
 /**
  Classifies how an issue anchors its source side, distinguishing a correctly
  anchored insertion from a claim that points at nothing in the original.
- 
+
  @param issue - the adjudicated issue whose spans are inspected
- 
+
  @returns Which anchor kind the source side has
- 
+
  @example
  ```ts
  const anchor = classifySourceAnchor({ issue, },);
@@ -604,11 +604,11 @@ export function classifySourceAnchor(
  Distinct non-empty span quotes on one side of an adjudicated issue, in
  first-seen order. A `Set` collapses the repeats a multi-claim issue anchors
  onto the same text while preserving insertion order.
- 
+
  @param issue - the adjudicated issue whose spans are gathered
- 
+
  @param side - which document side to keep quotes from
- 
+
  @returns Distinct quotes for that side
  */
 function sideQuotes(
@@ -644,18 +644,18 @@ function sideQuotes(
  Flattens one adjudicated issue into a grading candidate. Primary category,
  severity and summary come from the issue's first member claim in document
  order; source and target quotes gather across every member claim.
- 
+
  @param issue - the accepted adjudicated issue
- 
+
  @param entryId - corpus entry the issue was found in
- 
+
  @param band - size band of that entry
- 
+
  @param repair - what became of this issue's repair, omitted for artifacts
  written before repair recording existed
- 
+
  @returns The flattened grading candidate
- 
+
  @example
  ```ts
  const candidate = extractGradingCandidate({

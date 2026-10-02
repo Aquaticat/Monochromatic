@@ -11,12 +11,12 @@ export const CONTRIBUTOR_AUTHORITY_FINDING = 'Target-authoritative contributor i
 
 /**
  Finds privacy-safe target contributor authority defect in one candidate.
- 
+
  @param texts - target-authoritative archive then proposed replacement
- 
+
  @returns Empty when authority survives,
  otherwise one non-identifying correction finding
- 
+
  @example
  ```ts
  const findings = contributorAuthorityFindings({ texts: [pageText, candidateText,], },);

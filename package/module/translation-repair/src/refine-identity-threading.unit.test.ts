@@ -1,35 +1,35 @@
 /**
  Tests that the repair driver's refinement STEP hands the declared-name block
  down to the sheet the rewriters actually read.
- 
+
  WHY A SEPARATE FILE FROM `refine-window-threading.unit.test.ts`. That one
  drives `runRefinePhase`, one layer below this. The link measured missing here
  is `refineSettledSlices`, the wrapper the repair driver calls, and every case
  in that file passes whether or not this wrapper forwards anything: it calls
  the phase itself.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting this wrapper's conditional spread
  so the identity block is forwarded only when it is ABSENT failed no test in
  this package. The rewriters would then be asked to improve how a memorial
  page reads while being told nothing about which names and handles must
  survive exactly, which is the protection the declared-names guard puts there.
- 
+
  THE FAILURE MODE IS INVISIBLE TO EVERY OTHER KIND OF TEST, for the reason
  already found once: the block is an optional property spread into an object
  literal, TypeScript does not excess-property-check a spread, and the sheet
  still renders without it. A wrapper that forwarded nothing compiled, linted
  and passed its own suite while asking the models a strictly smaller question.
- 
+
  BOTH DIRECTIONS ARE PINNED. A document declaring nothing must get no block at
  all rather than an empty heading, so the case that asserts the heading is
  present is read against a control that asserts it is absent; without the
  control, a wrapper that pasted the heading unconditionally would pass.
- 
+
  NO NETWORK. The client scripts the rewriter, the judges and the probe, and
  records every rewriter sheet.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

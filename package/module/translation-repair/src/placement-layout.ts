@@ -28,7 +28,7 @@ import { wordForCount, } from './count-word.ts';
 
 /**
  What is wrong with one slice's span, in offset and count terms only.
- 
+
  @example
  ```ts
  const fault: PlacementFault = { kind: 'hollow-content', startOffset: 12, };
@@ -150,11 +150,11 @@ export type PlacementFault = {
 
 /**
  Sentence for one fault, from its numbers alone.
- 
+
  @param fault - what is wrong
- 
+
  @returns Sentence completing "slice at position N ..."
- 
+
  @example
  ```ts
  const said = placementSentence({ fault, },);
@@ -207,7 +207,7 @@ function placementSentence({ fault, }: { readonly fault: PlacementFault; },): st
 
 /**
  Thrown when target spans cannot be written back into their document.
- 
+
  @example
  ```ts
  throw new PlacementLayoutError({ position: 3, fault: { kind: 'overlaps-previous', startOffset: 4, boundary: 9, }, },);
@@ -228,11 +228,11 @@ export class PlacementLayoutError extends Error {
 
   /**
    Builds failure naming what cannot be placed.
-   
+
    @param position - where the slice sits in the list
-   
+
    @param fault - what is wrong, in offset and count terms
-   
+
    @example
    ```ts
    throw new PlacementLayoutError({ position: 3, fault: { kind: 'past-document', ... }, },);
@@ -255,17 +255,17 @@ export class PlacementLayoutError extends Error {
 
 /**
  Refuses one slice whose own span is malformed, whatever its neighbours do.
- 
+
  @param slice - prepared pair whose target side is checked
- 
+
  @param position - where it sits, for the message
- 
+
  @param targetText - document the span indexes into
- 
+
  @throws {@link PlacementLayoutError} when offsets are not whole numbers in
  order and in range, when a span's text is not what the document holds there,
  or when an insertion covers anything at all
- 
+
  @example
  ```ts
  assertSpanShape({ slice, position: 0, targetText, },);
@@ -390,20 +390,20 @@ function assertSpanShape(
 
 /**
  Refuses a preparation whose target spans cannot all be written back.
- 
+
  WALKS IN SLICE ORDER rather than in offset order, because slice order is what
  a caller relies on: it decides which of two insertions at one boundary comes
  first, and it is the order every lane result and every ledger is read in. A
  preparation whose spans are sorted differently from its slices is exactly the
  defect this exists to name.
- 
+
  @param slices - prepared slice pairs in document order
- 
+
  @param targetText - translation those spans index into
- 
+
  @throws {@link PlacementLayoutError} when a span is malformed, or when one
  does not start at or after the previous span's end
- 
+
  @example
  ```ts
  assertPlacementLayout({ slices, targetText, },);

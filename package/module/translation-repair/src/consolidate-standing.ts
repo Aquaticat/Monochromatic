@@ -9,22 +9,22 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
 
 /**
  Names the rendering a contested slice would ship without this stage.
- 
+
  A DECLINED CONTEST LEAVES NO LANE STANDING. Archive remains comparison
  baseline rather than invented lane choice, allowing third rendering to be
  judged against current page. Keeping baseline is not approval:
  `finalSelectionFindings` records it as evidence unless contest endorsed archive.
- 
+
  @param choice - what the lane contest settled
- 
+
  @param repairText - what the repair lane would ship
- 
+
  @param translateText - what the translate lane would ship
- 
+
  @param incumbentText - archive wording available as decline baseline
- 
+
  @returns Lane winner or archive baseline
- 
+
  @example
  ```ts
  const standing = standingTextFor({ choice: 'repair', repairText, translateText, incumbentText, },);
@@ -52,15 +52,15 @@ export function standingTextFor(
 
 /**
  Reports whether standing baseline may become final output unchanged.
- 
+
  @param choice - lane selected or neither
- 
+
  @param verdict - full contest result carrying archive endorsement
- 
+
  @param standingValid - whether baseline passes syntax publication invariants
- 
+
  @returns Whether prior contest approved publishable standing baseline
- 
+
  @example
  ```ts
  const mayShip = contestStandingMayShip({ choice, verdict, });

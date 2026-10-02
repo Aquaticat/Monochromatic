@@ -43,7 +43,7 @@ const ADJACENT: number = 1;
 
 /**
  One document as this rule reads it: a run set, an entry, and its slices.
- 
+
  @example
  ```ts
  const key = documentKey({ row, },);
@@ -53,15 +53,15 @@ type DocumentKey = string;
 
 /**
  Names the document a row belongs to.
- 
+
  BOTH the run set and the entry, because two runs of one entry write rows with
  the same entry id and the same slice indices. Pairing across them would
  report a relocation nobody's document contains.
- 
+
  @param row - one audited slice
- 
+
  @returns Key unique to one document of one run
- 
+
  @example
  ```ts
  const key = documentKey({ row, },);
@@ -73,13 +73,13 @@ function documentKey({ row, }: { readonly row: SettledAuditRow; },): DocumentKey
 
 /**
  Every claim on one subject that anchored, in one category.
- 
+
  @param row - one audited slice
- 
+
  @param category - category to keep
- 
+
  @returns Matching findings across all voices
- 
+
  @example
  ```ts
  const missing = findingsOf({ row, category: 'omission', },);
@@ -111,11 +111,11 @@ function findingsOf(
 
 /**
  Pairs an omission on one slice with an addition on its neighbour.
- 
+
  @param rows - every audited slice, from any number of documents
- 
+
  @returns Candidates, in row order, empty when nothing pairs
- 
+
  @example
  ```ts
  const candidates = auditRelocationPairs({ rows, },);
@@ -192,18 +192,18 @@ export function auditRelocationPairs(
 
 /**
  Counts the distinct pairs of slices the candidates sit on.
- 
+
  THE NUMBER A READER MEANS BY "relocations". `auditRelocationPairs` pairs
  claims, one per omission finding and addition finding across every voice, so
  one moved passage that three voices noticed on each side is nine candidates.
  Keyed on the run set as well as the entry, for the reason the pairing is: two
  runs of one entry write the same indices.
- 
+
  @param pairs - candidates as paired
- 
+
  @returns How many distinct (run set, entry, omission slice, addition slice)
  tuples they cover
- 
+
  @example
  ```ts
  const slicePairs = distinctSlicePairs({ pairs, },);

@@ -1,6 +1,6 @@
 /**
  Tests for the repair lane's per-slice wordings.
- 
+
  WHAT THESE PIN is that this lane's silence at a passage the archive never
  translated is reported as silence. It mends existing English, so where there
  is none it has no work to do and no opinion to record; its settled outcome
@@ -8,14 +8,14 @@
  as a decision said the lane chose the wording it found. A lane comparison
  then read that against a translate lane that had actually filled the passage
  and reported the two lanes choosing DIFFERENT wordings.
- 
+
  The second thing they pin is the intersection. The blocked exit settles a
  prefix and stops, so an anchor before the crossing was reached and one after
  it was not, and naming every anchor in the preparation would report the lane
  as having visited slices it never got to.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -45,9 +45,9 @@ const INCUMBENTS: Readonly<Record<number, string>> = {
 
 /**
  Four prepared slices: content, anchor, content, anchor.
- 
+
  @returns Pairs shaped as preparation produces them
- 
+
  @example
  ```ts
  const slices = alternatingSlices();
@@ -90,18 +90,18 @@ function alternatingSlices(): readonly ChunkPair[] {
 
 /**
  One settled slice a critic answered on, which is what makes it a decision.
- 
+
  WRITTEN OUT rather than defaulted, because the field it fills is exactly what
  separates a slice the lane examined from one it heard nobody about, and a
  fixture that left it implicit would stop testing the distinction the moment
  the default changed.
- 
+
  @param sliceIndex - slice this settled
- 
+
  @param repairedText - wording the lane settled on
- 
+
  @returns Outcome carrying one heard critic and no refinement
- 
+
  @example
  ```ts
  const outcome = heard({ sliceIndex: 0, repairedText: 'The cat naps.', },);
@@ -127,14 +127,14 @@ function heard(
 
 /**
  One settled slice no stage spoke about, which leaves the archive standing.
- 
+
  @param sliceIndex - slice this settled
- 
+
  @param repairedText - wording the lane settled on, which for a silent slice
  has to be the archive's own
- 
+
  @returns Outcome carrying no heard critic and no refinement
- 
+
  @example
  ```ts
  const outcome = unheard({ sliceIndex: 0, repairedText: ARCHIVE_NAP, },);

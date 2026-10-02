@@ -37,20 +37,20 @@ import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 
 /**
  Says how two disagreeing outcomes differ, in terms that distinguish them.
- 
+
  NAMING THE KINDS IS NOT ENOUGH when they agree. Two outcomes can carry the
  same member and still disagree, since one member holds wording, and a message
  built from the kinds alone would read `decided rather than decided` and send
  its reader looking for a difference it refused to state. Phrased as what the
  member carries rather than as accepted wording specifically, so it stays true
  of the next member that gains a payload.
- 
+
  @param raw - member the raw result names
- 
+
  @param recorded - member the ledger names
- 
+
  @returns Phrase naming the difference
- 
+
  @example
  ```ts
  const said = describeOutcomeDisagreement({ raw: 'decided', recorded: 'decided', },);
@@ -72,17 +72,17 @@ function describeOutcomeDisagreement(
 
 /**
  Refuses a lane whose raw evidence and ledger describe different runs.
- 
+
  @param evidence - what the lane's raw result says per slice
- 
+
  @param ledger - what the lane's delivery ledger says per slice
- 
+
  @param path - dotted path of the lane, for error messages
- 
+
  @throws {@link ArtifactParseError} when the two lists differ in length, or
  disagree at any position about which slice it is, what the archive holds, or
  what the lane decided
- 
+
  @example
  ```ts
  assertEvidenceMatchesLedger({ evidence, ledger, path: 'lanes.repair', },);
@@ -176,7 +176,7 @@ export function assertEvidenceMatchesLedger(
 
 /**
  Refuses a ledger whose rows are not in document order.
- 
+
  NOT COVERED BY ANY OTHER CHECK HERE, and the reason is the same one that
  makes every check here cheap: they all join BY POSITION. Two ledgers carrying
  the same permutation agree with each other, permuted evidence agrees with its
@@ -184,7 +184,7 @@ export function assertEvidenceMatchesLedger(
  sets are sets. A ledger of rows naming slices 20 then 10 passes all of that
  and hands a consumer zipping it against the preparation the wrong slice's
  wording, at every row.
- 
+
  STRICTLY INCREASING, which is the property the writer actually has and the
  weakest one that anchors a positional read. A first version of this checked
  DISTINCTNESS only, on the reasoning that the writer renumbers slices by
@@ -194,14 +194,14 @@ export function assertEvidenceMatchesLedger(
  the defect this replaces. Measured before choosing: `prepareDocumentPair`
  stamps strictly increasing target indices on every fixture tried, at three
  slice budgets, including a one-sided pair.
- 
+
  @param ledger - rows to check
- 
+
  @param path - dotted path of the lane, for error messages
- 
+
  @throws {@link ArtifactParseError} at the first row that does not advance,
  naming both slices and the position
- 
+
  @example
  ```ts
  assertSlicesOrdered({ ledger, path: 'lanes.repair', },);
@@ -245,20 +245,20 @@ export function assertSlicesOrdered(
 
 /**
  Refuses a ledger row whose two axes cannot both be true.
- 
+
  DELEGATED to the same assertions the writing pipeline runs, rather than
  restated here. They encode which pairs of outcome and delivery can occur
  together, that rule belongs to the shape rather than to either side of it,
  and a second copy would drift from the first exactly when it mattered.
- 
+
  @param ledger - rows to check
- 
+
  @param path - dotted path of the lane, for error messages
- 
+
  @throws {@link ArtifactParseError} carrying the failing row's position and
  whatever the coherence rule said, so a reader never meets an error type from
  the pipeline's internals
- 
+
  @example
  ```ts
  assertRowsCoherent({ ledger, path: 'lanes.repair', },);

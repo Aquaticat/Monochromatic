@@ -15,7 +15,7 @@ import type { ChunkPair, } from './chunk-document.ts';
 
 /**
  Why a slice list's indexing does not hold.
- 
+
  @example
  ```ts
  const fault: SliceIndexingFault = { kind: 'index-off-position', position: 4, targetIndex: 3, };
@@ -60,11 +60,11 @@ export type SliceIndexingFault = {
 
 /**
  Words an indexing fault, after the position the class prefixes.
- 
+
  @param fault - what does not hold
- 
+
  @returns Sentence composed from the fault's numbers alone
- 
+
  @example
  ```ts
  const sentence = indexingSentence({ fault: { kind: 'index-off-position', position: 4, targetIndex: 3, }, },);
@@ -82,10 +82,10 @@ export function indexingSentence({ fault, }: { readonly fault: SliceIndexingFaul
 
 /**
  Failure of the slice indexing invariant.
- 
+
  MARKED: its message is a position and the sentence `indexingSentence`
  writes from the fault's numbers.
- 
+
  @example
  ```ts
  throw new SliceIndexingError({ fault: { kind: 'index-off-position', position: 4, targetIndex: 3, }, },);
@@ -115,7 +115,7 @@ export class SliceIndexingError extends Error {
 
 /**
  Stamps one slice pair with the index it holds in the finished preparation.
- 
+
  THE LAST WORD ON WHAT A SLICE IS CALLED. Subdivision is handed a base index
  and adds its own offset, which is right only while every earlier section
  contributed exactly the slices the base counted. One-sided slicing breaks
@@ -124,13 +124,13 @@ export class SliceIndexingError extends Error {
  preparation never has to trust the arithmetic it handed out, and both sides
  of a pair are stamped from one value rather than twice from the same
  expression.
- 
+
  @param slice - pair as subdivision produced it
- 
+
  @param slicePosition - position this pair holds in the whole preparation
- 
+
  @returns Same pair with both sides carrying that index
- 
+
  @example
  ```ts
  const stamped = reindexSlicePair({ slice, slicePosition: 4, },);
@@ -160,10 +160,10 @@ export function reindexSlicePair(
 
 /**
  Refuses a slice list whose indices are not their own positions.
- 
+
  THREE THINGS ARE CHECKED, and each is assumed somewhere that cannot check it
  for itself:
- 
+
  -   BOTH SIDES AGREE. `settleTranslateSlice` reads the target side's index and
      `spliceSlices` keys on it alone, so a source side carrying some other
      number is unchecked everywhere it is used. Section pairing can produce
@@ -177,19 +177,19 @@ export function reindexSlicePair(
  -   ORDER IS DOCUMENT ORDER, which is the same statement read forwards: it is
      what lets a reader compare two lanes slice by slice without carrying
      offsets around.
- 
+
  AN ASSERTION BESIDE A CONSTRUCTION, since `prepareDocumentPair` now restamps
  every slice with {@link reindexSlicePair} rather than trusting the base index
  it handed to subdivision. From that path this cannot fail, which is the
  point: it fails if the restamp is changed or removed, and it is the only
  check any OTHER producer of slice pairs has. The probes, the benches and the
  census each subdivide with a base index of their own.
- 
+
  @param slices - prepared slice pairs in document order
- 
+
  @throws {@link SliceIndexingError} when the two sides of a slice disagree, or
  an index is not its own position
- 
+
  @example
  ```ts
  assertSliceIndexing({ slices, },);

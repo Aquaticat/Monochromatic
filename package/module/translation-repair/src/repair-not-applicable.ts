@@ -24,11 +24,11 @@ import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
 
 /**
  Finding naming a slice the repair lane has nothing to say about.
- 
+
  @param sliceIndex - slice this describes
- 
+
  @returns Finding in scorecard-stable wording
- 
+
  @example
  ```ts
  const finding = notApplicableFinding({ sliceIndex: 4, },);
@@ -42,17 +42,17 @@ export function notApplicableFinding(
 
 /**
  Builds the outcome for a slice with no translation to repair.
- 
+
  EVERY COUNT ZERO AND EVERY LIST EMPTY, which is the honest reading rather
  than a placeholder: no critic was heard because none was asked, no issue was
  filed because there was nothing to file one about, and nothing changed
  because there is nothing here to change. The finding is what says why, and it
  is the only thing this outcome asserts.
- 
+
  @param sliceIndex - slice this outcome describes
- 
+
  @returns Outcome carrying the archive's own absence of wording
- 
+
  @example
  ```ts
  const outcome = notApplicableRepair({ sliceIndex: 4, },);

@@ -1,12 +1,12 @@
 /**
  Tests for the writing-bench floor.
- 
+
  THE FIFTEENTH CLASS, the owner's decision of 2026-09-08: the eighth
  hakureico pass on Bedrock alone settled a page one translator wrote and
  three judges chose, with no editor or refiner reachable, as `SETTLED`. A
  writing bench below the pair a slate needs, with no provider naming its
  return, stops the entry for a pass that has the bench.
- 
+
  @module
  */
 

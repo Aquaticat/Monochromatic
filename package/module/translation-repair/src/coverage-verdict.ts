@@ -51,7 +51,7 @@ import type { AnchorTarget, } from './validate-issue.ts';
 
 /**
  What a roster concluded about one passage.
- 
+
  @example
  ```ts
  const verdict: CoverageVerdict = { kind: 'carried', ... };
@@ -109,7 +109,7 @@ export type CoverageVerdict = {
   /**
    DOCUMENT'S OWN TEXT for each anchored region, in roster order, so a reader
    can find every one of these by searching the translation.
-   
+
    It used to hold the submitted quote, which reads the same until a fallback
    pass does the matching: a quote anchored across a soft wrap, or through
    normalized punctuation, is by definition text the document does not hold
@@ -166,15 +166,15 @@ type WeighedVoice = {
 
 /**
  Reads back the document's own text for a located region.
- 
+
  WHY NOT THE SUBMITTED QUOTE: a match may come from a fallback pass, which is
  exactly when the submitted text does NOT occur in the document, so storing it
  as evidence produces a string a reader cannot find. Anchors span from the
  first to the last, covering any inter-block bytes between them, so the result
  is a literal substring of the document rather than a reassembly.
- 
+
  @param document - side the region was located in
- 
+
  @param anchors - located spans in document order, never empty by their type
  (ledger T8: a located quote's anchors are a non-empty list, so the throw
  that stood here for none could not run, and went with its class)
@@ -216,9 +216,9 @@ function matchedRegion(
 
 /**
  Looks for one voice's quote in the translation it describes.
- 
+
  @param voice - heard coverage reply
- 
+
  @param document - translation the quote should occur in
 
  @param foreignRegions - target regions paired to other source slices
@@ -300,11 +300,11 @@ function weighVoice(
 
 /**
  Whether a claim proved full coverage.
- 
+
  @param claim - weighed reply
- 
+
  @returns Whether it claimed full coverage and its quote was found
- 
+
  @example
  ```ts
  const full = isFull(claim,);
@@ -316,11 +316,11 @@ function isFull(claim: WeighedVoice,): boolean {
 
 /**
  Whether a claim proved partial coverage.
- 
+
  @param claim - weighed reply
- 
+
  @returns Whether it claimed partial coverage and its quote was found
- 
+
  @example
  ```ts
  const partial = isPartial(claim,);
@@ -332,11 +332,11 @@ function isPartial(claim: WeighedVoice,): boolean {
 
 /**
  Whether a claim reported no coverage at all.
- 
+
  @param claim - weighed reply
- 
+
  @returns Whether it found nothing
- 
+
  @example
  ```ts
  const absent = isAbsent(claim,);
@@ -348,11 +348,11 @@ function isAbsent(claim: WeighedVoice,): boolean {
 
 /**
  Whether a claim of coverage could not be found in the document.
- 
+
  @param claim - weighed reply
- 
+
  @returns Whether it claimed coverage and its quote was absent
- 
+
  @example
  ```ts
  const unanchored = isUnanchored(claim,);
@@ -382,11 +382,11 @@ function isMisattributed(claim: WeighedVoice,): boolean {
 
 /**
  Reads one claim's quote.
- 
+
  @param claim - weighed reply
- 
+
  @returns Quote it offered
- 
+
  @example
  ```ts
  const quote = claimQuote(claim,);
@@ -398,11 +398,11 @@ function claimQuote(claim: WeighedVoice,): string {
 
 /**
  Reads one claim's matched document text.
- 
+
  @param claim - weighed reply
- 
+
  @returns Document's own text for the region it matched
- 
+
  @example
  ```ts
  const matched = claimMatched(claim,);
@@ -414,13 +414,13 @@ function claimMatched(claim: WeighedVoice,): string {
 
 /**
  Counts the weighed voices matching one predicate.
- 
+
  @param weighed - every reply with its anchoring resolved
- 
+
  @param matches - predicate deciding membership
- 
+
  @returns How many match
- 
+
  @example
  ```ts
  const absent = countVoices({ weighed, matches: isAbsent, },);
@@ -441,9 +441,9 @@ function countVoices(
 
 /**
  Weighs a roster's coverage replies into one verdict.
- 
+
  @param voices - replies heard from the roster
- 
+
  @param document - translation every quote is checked against
 
  @param foreignRegions - target regions the pairing assigned to other source

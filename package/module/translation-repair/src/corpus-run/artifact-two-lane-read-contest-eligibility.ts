@@ -29,11 +29,11 @@ const ELIGIBILITY_CANDIDATES = [
 
 /**
  Reports whether comparison row carries explicit front matter slice.
- 
+
  @param row - recomputed lane comparison row
- 
+
  @returns Whether schema 7 must carry source-backed eligibility
- 
+
  @example
  ```ts
  const required = contestEligibilityRequired({ row, });
@@ -51,17 +51,17 @@ export function contestEligibilityRequired(
 
 /**
  Reads and re-derives source-backed candidate eligibility.
- 
+
  @param value - recorded eligibility
- 
+
  @param row - lane candidates eligibility governs
- 
+
  @param path - dotted eligibility path
- 
+
  @returns Proven deterministic eligibility
- 
+
  @throws ArtifactParseError when shape or any stored status disagrees
- 
+
  @example
  ```ts
  const eligibility = parseContestEligibility({ value, row, path, });

@@ -19,15 +19,15 @@ import { pairUnpartneredGaps, } from './unpartnered-gap-steps.ts';
 
 /**
  Converts a pairing into monotone alignment steps covering both sides.
- 
+
  @param pairs - correspondences the roster agreed on, in document order
- 
+
  @param sourceCount - original blocks
- 
+
  @param targetCount - translation blocks
- 
+
  @returns Steps in document order, each block appearing exactly once
- 
+
  @example
  ```ts
  const steps = bareBlockPairingSteps({ pairs, sourceCount: 12, targetCount: 16, },);
@@ -80,9 +80,9 @@ function bareBlockPairingSteps(
 
   /**
    Emits every unclaimed translation block strictly before a boundary.
-   
+
    @param before - first translation index NOT to emit
-   
+
    @example
    ```ts
    emitUnclaimedTargetsBefore(3,);
@@ -101,7 +101,7 @@ function bareBlockPairingSteps(
 
   /**
    Translation blocks already carried by an earlier original.
-   
+
    A translation that MERGES several originals into one block names that block
    against each of them. The first original pairs with it; the rest ride along
    as continuations, so their text reaches the same slice without the
@@ -131,7 +131,7 @@ function bareBlockPairingSteps(
      Whether an earlier original already claimed one of this original's
      renderings, which makes this original part of a merge however many
      further renderings it also has.
-     
+
      Testing ANY rather than EVERY is what keeps a merge that then splits from
      losing its original: such an original's first rendering is carried, so a
      first-rendering-wins test never places it and the block leaves the

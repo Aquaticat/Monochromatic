@@ -60,46 +60,46 @@ export type ArchiveBlockReviewOutcome = {
 
 /**
  Reviews one archive-only block once and selects a correction when any voice rejects it.
- 
+
  SINGLE ROUND BY DESIGN: a declined correction slate or an empty one retains
  the original block with the decline recorded as a finding, because archive
  wording is the shipping default and reviewer indecision must not withhold
  the entry (doc/planning/translation-repair-no-loop-design.md).
- 
+
  @param client - provider client
- 
+
  @param modelIds - reviewers and correction judges
- 
+
  @param sourceText - whole source searched for support
- 
+
  @param targetText - page the block stands in, as the revisions already
  applied leave it: the reviewers' context, the quote style a revision is
  restored to, and the page a revision's footnote check reads (ledger B80)
- 
+
  @param blockText - exact block under review
- 
+
  @param priorFindings - latest failed-strategy evidence
- 
+
  @param identityContext - declared names preparation holds, for the
  reviewers, the correction selectors and the naturalness read (ledger B28)
- 
+
  @param referenceContext - what the pages the original links say, with the
  attested lines under them; a retention may anchor in one page's text
- 
+
  @param signal - caller cancellation
- 
+
  @param exchangeTimeoutMs - per-call bound
- 
+
  @param l - stage logger
- 
+
  @returns Retained original or independently selected replacement
- 
+
  @throws TranslationRepairInterruptedError when fewer seats answered at all
  than the quorum on the reachable bench needs
- 
+
  @throws BlockOutsideArchiveError when the page does not carry the block,
  which a revision's footnote check reads it in
- 
+
  @example
  ```ts
  const result = await runArchiveBlockReviewStage({ ...input, priorFindings: [], });

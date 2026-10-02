@@ -1,13 +1,13 @@
 /**
  Tests for the check that an Anthropic Messages body ended whole.
- 
+
  THE CASES THAT DECIDE IT are the ones a word search passed (ledger B87): a
  body cut inside its terminator frame, and one holding the terminator's name
  only as a value. The retry ladder asks this check before it returns, so a
  body it calls whole is never retried.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -24,11 +24,11 @@ import {
 
 /**
  Builds one event line as the wire sends it.
- 
+
  @param body - frame payload, which carries its own `type`
- 
+
  @returns Frame, followed by the blank line that ends an event
- 
+
  @example
  ```ts
  const raw = frameOf({ body: { type: 'message_stop', }, },);
@@ -71,11 +71,11 @@ const TERMINATOR_FRAME = frameOf({ body: { type: 'message_stop', }, },);
 
 /**
  Reads the refusal a body raises, or empty when it raises none.
- 
+
  @param bodyText - drained body under test
- 
+
  @returns Refusal text, empty when the body was taken as whole
- 
+
  @example
  ```ts
  const refusal = refusalOf({ bodyText: OPENING, },);

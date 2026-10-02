@@ -38,9 +38,9 @@ const ROOMY_MS = 10_000;
 /**
  Waits for a stall to trip, by polling the guard's own signal rather than
  sleeping a fixed span, so the test does not race a slow machine.
- 
+
  @param signal - guard signal expected to abort
- 
+
  @returns Nothing; resolves once aborted
  */
 async function untilAborted(signal: AbortSignal,): Promise<void> {
@@ -57,9 +57,9 @@ async function untilAborted(signal: AbortSignal,): Promise<void> {
 /**
  Builds a Response whose body emits the given chunks, so the drain sees a
  real ReadableStream rather than a whole-body string.
- 
+
  @param chunks - byte chunks to emit in order
- 
+
  @returns Response carrying those chunks as its body
  */
 function streamingResponse(chunks: readonly Uint8Array[],): Response {

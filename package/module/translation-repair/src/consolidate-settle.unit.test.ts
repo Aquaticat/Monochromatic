@@ -1,12 +1,12 @@
 /**
  Tests for the consolidation's deciding half, composed end to end.
- 
+
  WHAT THIS FILE EXISTS TO STOP is the defect the stage was built to close, at
  one level up. `floorConsolidateSlate`, `gateConsolidatedSlice` and
  `wrapConsolidation` were each built, tested, and called by nothing. A unit
  test of a part cannot say the part is reached, so these drive the composition
  and assert which rounds were bought.
- 
+
  THE TRANSPORT ROUTES ON SHEET CONTENT, NOT ON CALL ORDER. A counter over
  calls looks like it works and breaks silently: a schema-mismatch retry or a
  quorum that proceeds early shifts every later index, and the wrong route then
@@ -15,9 +15,9 @@
  control.
 
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -79,13 +79,13 @@ const CALL_TIMEOUT_MS = 5_000;
  Phrase separating the gate's sheet from the selector's, taken from the sheet
  itself rather than invented, so a rewording breaks the router loudly instead
  of silently routing every call to one side.
- 
+
  CARRIES NO QUOTE CHARACTERS ON PURPOSE. The router reads the serialised
  exchange, where every quote inside a sheet arrives escaped, so a marker
  spelled with quotes matches nothing and every gate call is answered with a
  selector ballot the gate then reads as a schema mismatch. That is what the
  per-route counts exist to catch, and they caught exactly this.
- 
+
  `lane-contest-wire.ts` carries the same sentence, which does not matter here:
  this stage never asks the lane contest anything, so within one settlement the
  phrase appears in the gate sheet alone.
@@ -131,13 +131,13 @@ const WRAPPED_POLISHED_STANDING = 'She kept a cheerful outlook on rainy days and
 
 /**
  Builds one voice as the producing half hands them over.
- 
+
  @param modelId - voice that wrote it
- 
+
  @param translation - wording it proposed
- 
+
  @returns Voice shaped as the gather round returns one
- 
+
  @example
  ```ts
  const voice = voiceOf({ modelId: ROSTER[0], translation: FRESH, },);
@@ -160,13 +160,13 @@ function voiceOf(
 
 /**
  Builds one structural verdict.
- 
+
  @param modelId - voice the verdict belongs to
- 
+
  @param valid - whether the guard passed it
- 
+
  @returns Verdict shaped as the produce half reports one
- 
+
  @example
  ```ts
  const checked = validityOf({ modelId: ROSTER[0], valid: true, },);
@@ -192,18 +192,18 @@ function validityOf(
 /**
  Works out which numbered candidate carries one rendering, by replaying the
  rotation the judges will see.
- 
+
  NOT HARDCODED, because the slate is rotated by a hash of the source so the
  incumbent does not sit in one position across a document. A fixture that
  guessed the number would pass or fail on the fixture's wording rather than on
  the stage's behaviour.
- 
+
  @param texts - proposals reaching the slate, in roster order
- 
+
  @param wanted - rendering whose position is sought
- 
+
  @returns One-based ballot index naming it
- 
+
  @example
  ```ts
  const best = positionOfText({ texts: [FRESH,], wanted: FRESH, },);
@@ -269,15 +269,15 @@ type JudgeReply = string | ((sent: string, call: number,) => string);
 
 /**
  Reads one judge's reply body off a fixed string or a script.
- 
+
  @param judgeReply - fixed body or script over the sheet
- 
+
  @param sent - sheet this judge was shown
- 
+
  @param call - judge calls before this one
- 
+
  @returns Body this judge returns
- 
+
  @example
  ```ts
  const body = judgeBodyOf({ judgeReply, sent, call: 0, },);
@@ -301,15 +301,15 @@ function judgeBodyOf(
 
 /**
  Builds a client that answers each round from its own script.
- 
+
  @param judgeReply - body every slate judge returns, or a script over the sheet
- 
+
  @param gateReply - body every gate voice returns
- 
+
  @param served - counter the caller reads afterwards
- 
+
  @returns Client over a routing transport
- 
+
  @example
  ```ts
  const client = routedClient({ judgeReply, gateReply, served, },);
@@ -393,11 +393,11 @@ function routedClient(
 
 /**
  Builds direct client proving final polish remains reachable after slate decline.
- 
+
  @param servedSchemas - schema names called in execution order
- 
+
  @returns Client declining consolidation slate but approving final polish
- 
+
  @example
  ```ts
  const client = standingPolishClient({ servedSchemas: [], });
@@ -472,11 +472,11 @@ function standingPolishClient(
 
 /**
  Builds a slate judge's reply.
- 
+
  @param best - ballot index, zero to decline
- 
+
  @returns Reply body a judge would return
- 
+
  @example
  ```ts
  const reply = judgeBallot({ best: 0, },);
@@ -491,24 +491,24 @@ function judgeBallot({ best, }: { readonly best: number; },): string {
 
 /**
  Runs one settlement over a scripted roster.
- 
+
  @param voices - proposals reaching the stage
- 
+
  @param validity - what the guard made of each
- 
+
  @param standingText - wording in place, overridable to test its absence
- 
+
  @param judgeReply - body every slate judge returns
- 
+
  @param gateReply - body every gate voice returns
- 
+
  @param producedFindings - what gathering and repairing recorded
 
  @param served - counter the caller holds, so a case whose settlement throws
  can still read what was bought before the throw
 
  @returns Settlement beside the calls each round served
- 
+
  @example
  ```ts
  const { settled, served, } = await settleWith({ voices, validity, },);

@@ -1,17 +1,17 @@
 /**
  Tests for the window the writer rounds run under.
- 
+
  THE CASE THAT MATTERS IS PRECEDENCE. The writers have a built-in window of
  their own since 2026-09-06, the dial exists so a launch can move it, and the
  round window wins only when it is the longer one. A writer dial that lost to
  the round dial, a blank one that did not fall back to the built-in, or a
  built-in that dragged the calibration's longer window down, would run the
  writers under a window nobody chose while the launch note claimed otherwise.
- 
+
  The refusal rule is shared with the round dial through `readWindowDial`, so
  this suite proves the writer dial reaches it and names ITS variable, and
  leaves the rule's own edges to `grace-override.unit.test.ts`.
- 
+
  @module
  */
 
@@ -53,18 +53,18 @@ const LONG_ROUND = 300_000;
 
 /**
  Clears one dial's variable.
- 
+
  ONE STATIC DELETE PER DIAL, because deleting a computed key is what
  `no-dynamic-delete` refuses and each dial has exactly one spelling. Written
  here rather than kept in a table of clearers, which nothing calls by name,
  so the scan for process-global writes can follow each delete to the cases
  that call this (ledger B79).
- 
+
  @param variable - which dial
- 
+
  @throws {@link Error} when no clearer is known for the variable, since a
  case that thinks it cleared a dial and did not would test the wrong window
- 
+
  @example
  ```ts
  clearDial({ variable: WRITER_GRACE_VAR, },);
@@ -84,13 +84,13 @@ function clearDial({ variable, }: { readonly variable: string; },): void {
 
 /**
  Sets or clears one window variable for one case, restoring it after.
- 
+
  @param variable - which dial
- 
+
  @param says - value to set, or nothing to clear the variable
- 
+
  @returns Disposable that puts the variable back
- 
+
  @example
  ```ts
  using dial = dialSaying({ variable: WRITER_GRACE_VAR, },);

@@ -1,13 +1,13 @@
 /**
  Tests for the line an operator watches a repair run by.
- 
+
  WHAT THESE PIN is that the summary cannot drift from the settlement it
  summarises. Every number in the line is a count of something the verdict
  decided, and they arrive as four separate arguments in one sentence, so a
  transposition renders perfectly and reads as an ordinary run. The subject's
  own note says what that costs: a run reads as healthy while shipping
  something else.
- 
+
  The line is emitted at `info` and never returned, so nothing downstream can
  catch a wrong one; this file is where it is read.
 
@@ -15,9 +15,9 @@
  settlements: the archive beat the patch on the measurements, the patch won
  and wrote no byte, and the patch won and was refused for dropping a declared
  name. The log could not tell a lost repair from one that wrote nothing.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -31,7 +31,7 @@ import { describeChunkSettlement, } from '../dist/final/node/index.mjs';
 
 /**
  Slice these lines report.
- 
+
  Not zero, so a line that lost the index reads differently from one that kept
  it.
  */

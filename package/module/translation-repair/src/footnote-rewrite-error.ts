@@ -3,7 +3,7 @@
 
 /**
  Closed reasons for withholding a footnote rewrite.
- 
+
  @example
  ```ts
  const kind: FootnoteRewriteFailure = 'collision';
@@ -28,7 +28,7 @@ const MESSAGES: Readonly<Record<FootnoteRewriteFailure, string>> = {
 
 /**
  An operation cannot prove a syntax-preserving and injective rename.
- 
+
  @example
  ```ts
  throw new FootnoteRewriteError({ kind: 'collision' });
@@ -50,11 +50,11 @@ export class FootnoteRewriteError extends Error {
 
   /**
    Retains the failing operation without interpolating supplied text.
-   
+
    @param kind - invariant that could not be established
-   
+
    @param cause - original parser failure when available
-   
+
    @example
    ```ts
    const error = new FootnoteRewriteError({ kind: 'syntax', cause });

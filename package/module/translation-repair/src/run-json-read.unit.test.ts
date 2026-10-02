@@ -1,16 +1,16 @@
 /**
  Tests for reading a run file's JSON without ever quoting it.
- 
+
  THE ABSENCE CASES ARE THE POINT. This module exists because V8 hands a parse
  refusal a synthetic script whose source is the text it was given, so an
  unguarded read prints the file. Every case here that asserts a word is MISSING
  would pass again the moment someone forwards `error.message` through, which is
  exactly the change that reopens the defect.
- 
+
  Fixture wording is cat-themed invention, so no corpus content appears here,
  and each fixture carries a word found nowhere else in the case so an assertion
  of absence cannot pass by accident.
- 
+
  @module
  */
 
@@ -34,7 +34,7 @@ import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  Offset the truncated fixture stops being valid JSON at.
- 
+
  MEASURED, not chosen: the fixture is 27 characters long and V8 reports the
  position it ran out at, so a fixture edited without re-measuring fails here
  rather than silently checking nothing.
@@ -90,13 +90,13 @@ async function fixture(
 
 /**
  Reads a path and returns the refusal, failing the case where none came.
- 
+
  @param path - file expected to refuse
- 
+
  @returns Refusal the read raised
- 
+
  @throws {@link Error} where the read returned instead of refusing
- 
+
  @example
  ```ts
  const refusal = await refusalFrom({ path, },);
@@ -236,7 +236,7 @@ await describe({
       fn: async () => {
         /**
          Wording V8 quotes back verbatim inside its own refusal message.
-         
+
          EXACTLY TEN CHARACTERS, AND FIRST IN THE FILE, because that is the
          window V8 quotes. A longer word would be cut to its first ten and this
          case would pass even against a reader that forwards the message

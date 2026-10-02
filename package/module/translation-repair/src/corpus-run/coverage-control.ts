@@ -35,7 +35,7 @@ import { decoyCut, } from './coverage-control-decoy.ts';
 
 /**
  Cases the control is tried on.
- 
+
  Several rather than one, because a single case answered by a coin is
  indistinguishable from a wire that works; few rather than many, because this
  gates a reading rather than being the measurement itself.
@@ -89,7 +89,7 @@ export type CoverageControlRow = {
 
   /**
    Voices reporting nothing rendered the passage, after it.
-   
+
    THIS IS THE NUMBER THE CONTROL TURNS ON, rather than the verdict kind: the
    recorded null is about ballots, not about how they were rolled up, so a
    wire that produces a single absence vote it did not produce before has
@@ -101,7 +101,7 @@ export type CoverageControlRow = {
    Verdict when an EQUALLY LARGE cut was taken where the roster did not point,
    or `no-room` when the page had nowhere to take one clear of the anchored
    spans.
-   
+
    A sound wire keeps saying `carried` here: the rendering is untouched, so
    nothing about the passage changed. This is what separates a wire that reads
    the passage from one that answers `absent` to any damaged document.
@@ -115,7 +115,7 @@ export type CoverageControlRow = {
 
   /**
    Offset the decoy cut was taken at, or `-1` when there was no room.
-   
+
    KEPT so a decoy that does move the verdict can be diagnosed rather than
    guessed at: a cut landing on a title or a frontmatter block is structural
    damage of a different kind, and its offset is what says so.
@@ -136,7 +136,7 @@ export type CoverageControlRow = {
 
 /**
  Why a case could not be damaged.
- 
+
  TWO OPPOSITE MEANINGS used to print as one line saying "not damageable", and
  the difference is the whole question. A roster that did not say `carried` is
  a roster VOTING ABSENCE on undamaged corpus text, which is the strongest form
@@ -174,7 +174,7 @@ export type CoverageControlRefusal = {
 
 /**
  Decoy round reduced to what the row records.
- 
+
  The no-room case is given the shape of a verdict so the row does not have to
  branch twice over one condition, once per field.
  */
@@ -219,7 +219,7 @@ export type CoverageControlResult = {
 
   /**
    Cases it could not damage, each carrying why.
-   
+
    NOT A FAILURE LOG. A page whose passages the roster never calls covered
    produces nothing to damage and is reported entirely here, and that is a
    result rather than an empty run.
@@ -229,19 +229,19 @@ export type CoverageControlResult = {
 
 /**
  Deletes named spans from a document, or reports that none were there.
- 
+
  Exported so the cut can be tested directly. This decides what the control is
  actually asking about, and a version that quietly returned the text unchanged
  would turn the whole gate into a formality that passes whatever it is handed.
- 
+
  @internal
- 
+
  @param text - document to cut from
- 
+
  @param spans - exact document text of each region to remove
- 
+
  @returns Text with every span gone, or blank when no span was present
- 
+
  @example
  ```ts
  const damaged = withoutSpans({ text, spans, },);
@@ -258,7 +258,7 @@ export function withoutSpans(
 ): string {
   /**
    Spans worth cutting, longest first.
-   
+
    ORDER MATTERS: a short span sitting inside a longer one would be gone
    already by the time its own turn came, and the count of what was removed
    would then depend on which order the roster happened to answer in.
@@ -297,21 +297,21 @@ export function withoutSpans(
 
 /**
  Asks one case before and after its rendering is deleted.
- 
+
  @param client - injected model client
- 
+
  @param probe - passage and the translation it is asked about
- 
+
  @param modelIds - roster asked, the same one the reading under test used
- 
+
  @param signal - cancellation
- 
+
  @param exchangeTimeoutMs - deadline per exchange
- 
+
  @param l - logger
- 
+
  @returns Row for this case, or nothing when it could not be damaged
- 
+
  @example
  ```ts
  const row = await tryCase({ client, probe, modelIds, signal, exchangeTimeoutMs, l, },);
@@ -430,7 +430,7 @@ async function tryCase(
 
   /**
    What the roster says with that unrelated cut made instead.
-   
+
    SPLICED BY OFFSET rather than by text, so exactly as many characters go as
    the targeted cut took. Deleting by span would take every occurrence and the
    two cuts would stop being the same size.
@@ -489,21 +489,21 @@ async function tryCase(
 
 /**
  Asks whether deleting a passage's rendering changes what the roster votes.
- 
+
  @param client - injected model client
- 
+
  @param cases - passages to try, of which the first few damageable ones are used
- 
+
  @param modelIds - roster asked
- 
+
  @param signal - cancellation
- 
+
  @param exchangeTimeoutMs - deadline per exchange
- 
+
  @param l - logger
- 
+
  @returns Whether the wire voted absence once the rendering was gone
- 
+
  @example
  ```ts
  const control = await coverageControlHolds({ client, cases, modelIds, signal, exchangeTimeoutMs, l, },);

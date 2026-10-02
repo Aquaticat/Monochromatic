@@ -1,6 +1,6 @@
 /**
  Tests fail-closed front matter publication boundary.
- 
+
  STRUCTURAL CHECKS ONLY, by the owner's decision of 2026-09-02: the metadata
  slice sits where the preparation put it, the page parses, the identity and
  attribution rules hold, and the visible name is not the directory id where
@@ -10,9 +10,9 @@
  preparation made no metadata slice, and the page carries the archive's
  bytes, which this guard recomputes from the two documents rather than
  trusting the preparation.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -131,11 +131,11 @@ const BODY_SLICE: ChunkPair = {
 
 /**
  What the guard threw, or `undefined` when it accepted.
- 
+
  @param run - guarded call
- 
+
  @returns Thrown value
- 
+
  @example
  ```ts
  const refusal = thrownBy({ run: () => assertFrontMatterComplete({ ... },), },);

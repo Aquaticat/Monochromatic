@@ -30,7 +30,7 @@ import { matchSpanEdges, } from './span-edge-match.ts';
 
 /**
  Raised when replacements cannot be written into the slices they name.
- 
+
  @example
  ```ts
  throw new SliceSpliceError({ message: 'two replacements name one slice', },);
@@ -39,9 +39,9 @@ import { matchSpanEdges, } from './span-edge-match.ts';
 export class SliceSpliceError extends Error {
   /**
    Builds refusal carrying what could not hold.
-   
+
    @param message - which replacement cannot land, and what makes it impossible
-   
+
    @example
    ```ts
    throw new SliceSpliceError({ message: 'two replacements name one slice', },);
@@ -55,10 +55,10 @@ export class SliceSpliceError extends Error {
 
 /**
  Text to write over one slice's span.
- 
+
  Carries no `changed` flag: presence in the list IS the instruction to apply
  it, so a lane decides what changed and assembly decides where it goes.
- 
+
  @example
  ```ts
  const replacement: SliceReplacement = { sliceIndex: 4, replacementText: 'The cat naps.', };
@@ -72,7 +72,7 @@ export type SliceReplacement = {
 
   /**
    Text that replaces that slice's target span.
-   
+
    May be empty, which deletes the span. May be written into a zero-length
    span, which inserts at that offset: that is how a slice with no existing
    translation receives one.
@@ -82,7 +82,7 @@ export type SliceReplacement = {
 
 /**
  One replacement joined to the span it names.
- 
+
  @example
  ```ts
  const placed: PlacedReplacement = { replacement, span: slice.target, };
@@ -96,7 +96,7 @@ type PlacedReplacement = {
 
   /**
    Target span it goes into, resolved from the slice list.
-   
+
    NO SOURCE TEXT BESIDE IT. The original decides whether blank text may be
    written into a place that has nothing yet, and that question is answered
    where the pair is still in hand; carrying the answer's input forward would
@@ -107,10 +107,10 @@ type PlacedReplacement = {
 
 /**
  One write assembly performs, which is not one replacement.
- 
+
  Several anchors can share a boundary, and their separators are decided once
  for the whole group rather than by each in turn, so the group is ONE edit.
- 
+
  @example
  ```ts
  const edit: SpliceEdit = { kind: 'insertion', startOffset: 12, endOffset: 12, orderIndex: 3, fragments, };
@@ -170,19 +170,19 @@ type SpliceEdit = {
 
 /**
  Plans every write, in the order they can be made without moving each other.
- 
+
  DESCENDING, so writing one never shifts the offsets of those still pending.
  At one boundary the later slice is written first, which leaves the earlier
  one ahead of it: document order, and true only because an index IS a
  position, which {@link spliceSlices} asserts before this runs.
- 
+
  @param placed - replacements joined to the spans they name
- 
+
  @returns Edits in application order
- 
+
  @throws {@link Error} when a boundary group holds nothing, which grouping
  cannot produce
- 
+
  @example
  ```ts
  const edits = plannedEdits({ placed, },);
@@ -292,25 +292,25 @@ function plannedEdits(
 
 /**
  Rebuilds the translation with every replacement written in.
- 
+
  Edits apply in DESCENDING document order, so writing one never shifts the
  offsets of those still pending. An edit is not a replacement: every anchor
  sharing one boundary becomes a SINGLE edit whose fragments are joined in
  slice order, because the separators between them are decided once for the
  whole group rather than guessed at by each write in turn.
- 
+
  @param targetText - translation the slices were cut from
- 
+
  @param slices - slice pairs in document order
- 
+
  @param replacements - text to write, in any order
- 
+
  @returns Translation with every replacement applied
- 
+
  @throws {@link Error} when a replacement names a slice that does not exist,
  when two name the same slice, or when two slices carry one index: each means
  the caller and the slicing disagree, and each silently drops text
- 
+
  @example
  ```ts
  const assembled = spliceSlices({ targetText, slices, replacements, },);
@@ -367,7 +367,7 @@ export function spliceSlices(
   /**
    Replacements paired with the span each names, refusing anything that
    cannot be placed.
-   
+
    Resolved BEFORE sorting. Sorting first would have to invent an offset for
    an unresolvable index, and every fabricated offset orders the rest wrongly
    while looking like an ordinary sort.
@@ -442,7 +442,7 @@ export function spliceSlices(
   /**
    Every edit this call makes, with the anchors sharing one boundary gathered
    into a single one.
-   
+
    GATHERED RATHER THAN SEQUENCED, because the separators between them are
    decided once for the whole group: written one at a time, each would have to
    guess what the others had already put there.

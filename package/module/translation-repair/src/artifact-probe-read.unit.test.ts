@@ -2,7 +2,7 @@
  Tests for lifting probe telemetry back out of a settled artifact, where
  absence and malformation must not be treated alike.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -21,16 +21,16 @@ import {
 
 /**
  Builds one region tally as an artifact carries it.
- 
+
  @param envelopeId - envelope the region replaced
- 
+
  @param corroborated - upheld claims of added damage
- 
+
  @param issueIds - every issue this region serves, which is more than one
  whenever a single replacement covered several accepted issues
- 
+
  @returns Tally object for a fixture artifact
- 
+
  @example
  ```ts
  const tally = catTally({ envelopeId: 'envelope/nap', },);
@@ -65,16 +65,16 @@ function catTally(
 
 /**
  Builds one screened claim as an artifact carries it, quotes included.
- 
+
  The quote fields are present here precisely so a case can assert the reader
  DROPS them.
- 
+
  @param modelId - prober that made the claim
- 
+
  @param admissibility - what the screen made of the quote
- 
+
  @returns Claim object for a fixture artifact
- 
+
  @example
  ```ts
  const claim = catClaim({ modelId: 'cat/one', },);
@@ -102,17 +102,17 @@ function catClaim(
 
 /**
  Builds one issue record as an artifact carries it.
- 
+
  @param repairDisposition - what became of this issue's repair
- 
+
  @param introducedDefects - probe reading, or absent when never probed
- 
+
  @param issueId - adjudicated issue this record is about; defaults to one id
  because most cases have a single record and only ownership cases need to
  tell two apart
- 
+
  @returns Record object for a fixture artifact
- 
+
  @example
  ```ts
  const record = catRecord({ repairDisposition: 'shipped', },);
@@ -163,13 +163,13 @@ const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 
 /**
  One lane's delivery ledger over the single slice these fixtures carry.
- 
+
  @param shippedText - wording this lane delivered
- 
+
  @param delivery - what it did to get there
- 
+
  @returns One row, which is the whole ledger here
- 
+
  @example
  \`\`\`ts
  const rows = catLedger({ shippedText: ARCHIVE_NAP, delivery: 'incumbent-retained', },);
@@ -202,24 +202,24 @@ function catLedger(
 
 /**
  One whole version 2 artifact carrying this case's issue records.
- 
+
  WHY EVERY FIXTURE HERE IS A WHOLE ARTIFACT and not the bare
  \`{ id, issues }\` these cases used to pass: the records moved into the repair
  lane at version 2, and \`readArtifactProbe\` now reaches them through the
  version 2 parser rather than by naming a root key that no longer exists. That
  parser enforces exact top-level keys, so a fixture cannot be patched into
  shape one field at a time; it is a version 2 artifact or it is refused.
- 
+
  The envelope around \`issues\` is inert for every case here. Version 2 fixes
  the shape of a lane, not the shape of a result, so the records inside
  participate in no cross-check and each case still varies only its own records.
- 
+
  @param id - entry this artifact is about
- 
+
  @param issues - repair lane's issue records, empty when the lane filed none
- 
+
  @returns Artifact as JSON
- 
+
  @example
  \`\`\`ts
  const artifact = probeArtifact({ id: 'Kitten', issues: [], },);

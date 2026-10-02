@@ -1,21 +1,21 @@
 /**
  Tests for telling a model declining to read a picture from a model reading
  one.
- 
+
  WHY THIS IS ITS OWN SCREEN. Two refusals corroborate each other. Real traffic
  on 2026-08-19 returned `There is no text visible in this image.` from one
  reader and `No legible text is visible.` from the other, and the pair stage
  marked them corroborated at 0.565 trigram overlap, because two ways of saying
  "there is nothing here" share their vocabulary exactly as two transcriptions
  of one passage do. Both had slipped the phrase list by a single word.
- 
+
  SO THESE PIN THE SHAPE, not a wording. A refusal negates, names the picture
  or its text, and is a sentence rather than a passage. All three are required,
  and one case here removes each in turn to show that each is load-bearing.
- 
+
  Fixtures are cat-themed invention, except the two refusals, which are the
  exact replies that caused this and carry no corpus content.
- 
+
  @module
  */
 

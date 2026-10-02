@@ -13,11 +13,11 @@ import { silentStagesOf, } from './stage-silence.ts';
 
 /**
  Reasons a settled slice must not be cached, empty when it may be.
- 
+
  @param outcome - settlement the driver is about to persist
- 
+
  @returns Reasons in the words the warn line prints
- 
+
  @example
  ```ts
  const refusals = cacheRefusalsOf({ outcome, },);

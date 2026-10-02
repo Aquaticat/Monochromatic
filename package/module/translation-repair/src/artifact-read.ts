@@ -31,7 +31,7 @@ import { parseSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-rea
 
 /**
  One artifact, read by whichever generation's reader owns it.
- 
+
  @example
  ```ts
  const reading: ParsedArtifactReading = readSettledArtifact({ value, },);
@@ -74,20 +74,20 @@ export type ParsedArtifactReading = {
 
 /**
  Reads one artifact of any generation this reader understands.
- 
+
  ACCEPTS AN EXPLICIT VERSION 1, which is not the same as there being version 1
  artifacts on disk: a reader that understands a generation should read it, and
  how many files of it exist is a fact about one corpus rather than about the
  format. An unknown version is refused by the version reading itself.
- 
+
  @param value - artifact JSON, freshly parsed and still untyped
- 
+
  @returns Which generation it is, and what that generation's reader made of it
- 
+
  @throws {@link ArtifactParseError} when the value is not a record, when it
  names a generation this reader does not know, or when the chosen reader
  refuses it
- 
+
  @example
  ```ts
  const reading = readSettledArtifact({ value: parseRunJson({ text, from, },), },);

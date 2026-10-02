@@ -1,13 +1,13 @@
 /**
  Tests for the lane-neutral preparation both drivers slice from.
- 
+
  The property that matters is that ONE document pair yields ONE slicing. Two
  lanes preparing separately would each report slices that look right on their
  own, and nothing downstream could tell that a repair outcome and a translate
  outcome for "slice 4" described different spans.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -487,11 +487,11 @@ The cat also likes sunbathing.
         /**
          Reads a slicing as the spans it carries, which is what a later stage
          sees; counts alone would pass a slicing that moved every boundary.
-         
+
          @param prepared - preparation to read
-         
+
          @returns One span per slice, in slice order
-         
+
          @example
          ```ts
          const spans = spansOf(prepared,);

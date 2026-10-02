@@ -11,11 +11,11 @@ import {
 
 /**
  Reports whether contest explicitly endorsed archive fallback.
- 
+
  @param verdict - contest result for slice
- 
+
  @returns Whether archive won explicit semantic endorsement
- 
+
  @example
  ```ts
  const endorsed = archiveWasEndorsed({ verdict: { kind: 'settled-neither', archive: 'endorsed', }, });
@@ -30,15 +30,15 @@ function archiveWasEndorsed(
 /**
  Reports slices whose final selection keeps archive wording without contest
  endorsement, as findings rather than a refusal.
- 
+
  The contest verdict is recorded evidence, never withholding authority:
  the page ships and the reading judges the recorded non-endorsements
  (doc/planning/translation-repair-no-loop-design.md).
- 
+
  @param artifact - comparison and deciding stages used by final assembly
- 
+
  @returns One finding per slice standing without endorsement, empty when none
- 
+
  @example
  ```ts
  const findings = finalSelectionFindings({ artifact, });

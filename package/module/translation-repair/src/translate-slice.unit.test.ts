@@ -1,6 +1,6 @@
 /**
  Tests for the hop between one settled slice and the stage that settles it.
- 
+
  WHAT THIS EXISTS TO CATCH, and why a test rather than a check at run time.
  The window trial compares one slice judged twice, differing only in whether the judges
  were shown the neighbouring original. `translate-stage.unit.test.ts` proves
@@ -10,14 +10,14 @@
  parameter that silently went nowhere would produce two identical arms, and
  the measurement would report a confident null after fifteen hundred calls.
  That is the failure this file makes impossible.
- 
+
  IT ALSO PINS WHO SEES IT. The window is context for the judges; the
  translators are not shown it and must not be, since a translator that read
  the neighbouring original might render it and earn a coverage complaint for
  content that was never its slice.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -63,7 +63,7 @@ const SURROUNDING_LABEL = 'SURROUNDING ORIGINAL';
 
 /**
  Neighbouring original the wide arm supplies.
- 
+
  DISTINCTIVE ON PURPOSE, and present in no other fixture here, so a request
  carrying it can only have been given it through the parameter under test.
  */
@@ -119,7 +119,7 @@ const SLICE: ChunkPair = {
 
 /**
  Preparation the slice belongs to.
- 
+
  Minimal on purpose: what the lane reads from it is the identity context and
  the line-structure set, and this file is about neither.
  */
@@ -156,13 +156,13 @@ type SentRequests = {
 
 /**
  Builds a client that records what each role was sent and keeps the incumbent.
- 
+
  The verdict is fixed because this file is about what the roles are SHOWN.
  Every judge abstains, which settles on the incumbent and reaches a record
  without any case having to script a winner.
- 
+
  @returns Recorders and the client writing into them
- 
+
  @example
  ```ts
  const recorder = recordingClient();
@@ -256,11 +256,11 @@ function recordingClient(): SentRequests {
 
 /**
  Settles the slice once and hands back what each role was sent.
- 
+
  @param neighbouringSourceText - wider window, absent for the narrow arm
- 
+
  @returns Sheets both roles received
- 
+
  @example
  ```ts
  const arm = await settleWith({},);

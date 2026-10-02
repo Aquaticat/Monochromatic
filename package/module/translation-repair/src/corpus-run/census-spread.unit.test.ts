@@ -1,19 +1,19 @@
 /**
  Tests for the percentile reader the corpus censuses share.
- 
+
  THE RANK CONVENTION IS THE WHOLE SUBJECT. `percentileOf` takes
  `floor(p / 100 * n)` and clamps it to the last index, which is one of several
  defensible definitions and the only one the census lines mean. A later change
  to the more common `ceil(p / 100 * n) - 1` would move every published p50 by
  one rank on even-length samples without moving any test, so the cases in this file
  pin the rank itself rather than only the shape of the line.
- 
+
  THE CLAMP IS NOT DECORATION EITHER. Without it, p99 on a ten-value sample
  reads index 9 and p100 reads index 10, which is past the end; the function
  would return its `?? 0` fallback and report a far tail of zero for a sample
  whose maximum is 200. That is the failure a distribution reader must not have,
  because zero is a plausible-looking number.
- 
+
  @module
  */
 
@@ -34,7 +34,7 @@ import {
 
 /**
  How long each cat of one household slept, in minutes, out of order.
- 
+
  Deliberately unsorted, and deliberately long-tailed: the largest value is
  more than three times the second largest, so a reader that lost the clamp or
  the sort reports a visibly different tail rather than a near miss.

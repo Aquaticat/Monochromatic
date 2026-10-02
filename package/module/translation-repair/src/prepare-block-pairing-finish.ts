@@ -16,19 +16,19 @@ import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 /**
  Separates definition relations before handing an explicit pairing to the production slicer.
  Empty acquired relations retain the scorer fallback rather than becoming an explicit empty map entry.
- 
+
  @param pairs - acquired relations after existing media-adjacency normalization
 
  @param findings - observations already reported by acquisition and normalization
- 
+
  @param pair - parent nodes whose definition labels are being separated
- 
+
  @param pairIndex - original aligned-parent index used in findings
- 
+
  @param l - caller logger retaining parent identity
- 
+
  @returns Explicit slicer pairing or named unresolved fallback
- 
+
  @example
  ```ts
  const result = finishPreparedBlockPairing({ pairs, findings, pair, pairIndex: 2, l });

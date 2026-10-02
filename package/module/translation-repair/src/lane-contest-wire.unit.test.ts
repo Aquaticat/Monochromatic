@@ -1,16 +1,16 @@
 /**
  Tests for how a judge's reply becomes a ballot.
- 
+
  WHAT THIS FILE EXISTS TO STOP. The findings guard once demanded that every
  member of `unsupported` and `dropped` name a candidate, so a judge answering
  with the offending phrases lost its entire ballot, including a choice that
  was perfectly usable. Calibration lost two of its first sixty voices that
  way. The choice is the thing the contest counts, so the wording of a finding
  may never cost a voice.
- 
+
  Fixtures mirror corpus structure only. Cat-themed invention throughout; no
  corpus content appears here.
- 
+
  @module
  */
 

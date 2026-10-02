@@ -9,7 +9,7 @@ const MAX_GFM_LABEL_LENGTH = 999;
 
 /**
  This position does not contain a GFM marker, distinct from an invalid caller state.
- 
+
  @example
  ```ts
  if (typeof gfmMarkerAt({ text, offset }) === 'symbol') inspectOrdinaryText();
@@ -19,7 +19,7 @@ export const NO_GFM_MARKER: unique symbol = Symbol('no GFM marker at this positi
 
 /**
  Exact marker lexeme, with offsets relative to the supplied text.
- 
+
  @example
  ```ts
  const marker: GfmMarkerSpan = { rawLabel: 'Note', startOffset: 0, endOffset: 7 };
@@ -43,13 +43,13 @@ export type GfmMarkerSpan = {
 /**
  Checks backslash parity immediately before a possible marker.
  Runs inspected for distinct openings cannot overlap.
- 
+
  @param text - original syntax-bearing text
- 
+
  @param offset - opening bracket position
- 
+
  @returns Whether Markdown escapes this opening
- 
+
  @example
  ```ts
  const escaped = escapedMarkerOpening({ text, offset });
@@ -73,13 +73,13 @@ function escapedMarkerOpening({
 /**
  Reads one bounded marker, respecting bracket escapes and the tokenizer's whitespace rule.
  A definition and a reference share this lexeme; AST context distinguishes their roles.
- 
+
  @param text - syntax-bearing text, with non-content regions already masked when appropriate
- 
+
  @param offset - possible opening bracket
- 
+
  @returns Exact lexeme when present, otherwise no marker
- 
+
  @example
  ```ts
  const marker = gfmMarkerAt({ text: '[^a\\]b]', offset: 0 });
@@ -140,11 +140,11 @@ export function gfmMarkerAt({
 /**
  Scans positioned lexemes without treating escaped openings as unresolved references.
  Each attempted label has a fixed tokenizer bound, so malformed overlapping openings remain linear.
- 
+
  @param text - one syntax-bearing text-node slice
- 
+
  @returns Lexemes in source order
- 
+
  @example
  ```ts
  const markers = gfmMarkerSpans({ text: 'Missing[^9].' });

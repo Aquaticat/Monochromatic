@@ -20,7 +20,7 @@ import type { DeepReadonlyData, } from './readonly-data.ts';
 
 /**
  One active marker in the original document coordinate space.
- 
+
  @example
  ```ts
  const references = activeFootnoteMarkers({ text }).filter(marker => marker.kind === 'reference');
@@ -39,17 +39,17 @@ export type ActiveFootnoteMarker = GfmMarkerSpan & {
 
 /**
  Reads raw and normalized identities from a positioned syntax node.
- 
+
  @param node - parser-authorized footnote node
- 
+
  @param text - exact masked body supplied to the parser
- 
+
  @param bodyOffset - body origin in the complete document
- 
+
  @returns Matching raw marker in document coordinates
- 
+
  @throws FootnoteRewriteError when raw syntax disagrees with parser positions or identity
- 
+
  @example
  ```ts
  const marker = positionedFootnote({ node, text, bodyOffset });
@@ -105,13 +105,13 @@ function positionedFootnote(
 /**
  Inventories active markers under strict document grammar without hiding unmatched container tags.
  Literal-looking references are recovered only from text nodes in the masked parser input.
- 
+
  @param text - whole document or structural slice with canonical offsets
- 
+
  @returns Active references and definition openers in source order
- 
+
  @throws FootnoteRewriteError when syntax or positioned marker identity cannot be established
- 
+
  @example
  ```ts
  const markers = activeFootnoteMarkers({ text: 'Real[^1].\n\n[^1]: Note.' });
@@ -211,11 +211,11 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
 
 /**
  Keeps the first raw spelling of each logical marker identity.
- 
+
  @param markers - positioned markers already restricted to the desired roles
- 
+
  @returns Distinct raw labels in encounter order
- 
+
  @example
  ```ts
  const labels = footnoteMarkerLabels({ markers: activeFootnoteMarkers({ text }) });

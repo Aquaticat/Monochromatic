@@ -1,8 +1,8 @@
 /**
  Tests for the windowed rounds the six self-reading stages ask through.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -60,11 +60,11 @@ const l = tagged({ tag: 'stage-windowed-rounds-test', },);
 /**
  Client answering every seat, except those scripted to fail the first time
  they are asked or every time.
- 
+
  @param failsOnce - seats whose first ask throws and whose second answers
- 
+
  @param failsAlways - seats whose every ask throws
- 
+
  @param unreadable - seats that answer a shape the guard refuses
 
  @param refused - seats the router refuses for want of a wet provider
@@ -147,9 +147,9 @@ function scriptedClient(
 
 /**
  Runs the windowed rounds over the bench with one scripted client.
- 
+
  @param script - which seats fail or answer unreadably
- 
+
  @param fanOut - window or whole bench, absent for the production default
 
  @param quorumOver - wider bench the quorum is taken over, absent for the

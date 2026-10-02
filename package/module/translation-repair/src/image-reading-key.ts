@@ -23,13 +23,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Cross-run key for one picture's paired reading.
- 
+
  @param bytes - picture as read from disk
- 
+
  @param readerModelIds - vision sub-roster asked about it, in roster order
- 
+
  @returns Stable hash naming this reading across runs
- 
+
  @example
  ```ts
  const key = imageReadingKey({ bytes, readerModelIds, },);
@@ -46,7 +46,7 @@ export function imageReadingKey(
 ): string {
   /**
    Picture itself, as content a hash can take.
-   
+
    BASE64 RATHER THAN A DECODE, since the bytes are not text and any decoding
    would map distinct pictures onto one replacement character.
    */

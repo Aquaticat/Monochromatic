@@ -1,18 +1,18 @@
 /**
  Tests for the straggler window an invocation's rounds run under.
- 
+
  THE CASE THAT MATTERS IS THE WRONG OVERRIDE. The dial exists so two runs can
  differ in the window and in nothing else, and a value it cannot read that
  quietly became the built-in window would produce two matched runs and a
  recorded conclusion that a longer window buys nothing. That is not a failed
  measurement, it is a wrong one, and it would be believed.
- 
+
  The empty-string case is the other one worth having, for the reason the cap
  override's suite gives: an exported-but-empty variable is a shell accident.
- 
+
  The override text is injected rather than the environment mutated, so no case
  here can leak into another.
- 
+
  @module
  */
 
@@ -47,11 +47,11 @@ const LONGER = 300_000;
 
 /**
  Sets or clears the window variable for one case, restoring it after.
- 
+
  @param says - value to set, or nothing to clear the variable
- 
+
  @returns Disposable that puts the variable back
- 
+
  @example
  ```ts
  using dial = windowSaying({},);

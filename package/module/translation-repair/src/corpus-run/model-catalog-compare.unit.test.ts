@@ -1,16 +1,16 @@
 /**
  Tests for comparing the provider's offering against the compiled catalog.
- 
+
  The case that matters is the alias. The provider serves ids that are not
  distinct models, and admitting one would let a single model take two seats on
  a voting panel, so one opinion would be counted as two independent
  confirmations. The other case that matters is a catalog id the provider has
  dropped: that already happened twice on 2026-08-05 and cost a lost voice per
  call, silently, because 404 is not a transient status.
- 
+
  Model ids here are the real ones, since the rule under test is about their
  relationships. No corpus text is involved.
- 
+
  @module
  */
 

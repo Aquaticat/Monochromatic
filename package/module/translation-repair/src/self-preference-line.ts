@@ -18,18 +18,18 @@ const RATE_DIGITS = 2;
 
 /**
  States a self-preference result in one line.
- 
+
  EVERY OUTCOME SAYS WHAT IT MEANS rather than printing a bare number, because
  the three are acted on differently: a measured excess is evidence about the
  discount, no stakeholder ballots means the question was never put, and no
  disinterested ballots means the roster left nobody able to answer it. A
  reader who saw `0.00` for all three would take the last two for evidence of
  no favouritism.
- 
+
  @param preference - what the paired comparison found
- 
+
  @returns One line naming the outcome and the counts behind it
- 
+
  @example
  ```ts
  const line = describeSelfPreference({ preference, },);

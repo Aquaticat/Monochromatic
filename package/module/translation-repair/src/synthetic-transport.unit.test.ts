@@ -4,7 +4,7 @@
  signal), raw status passthrough, and abort propagation.
  The global fetch is stubbed per test; children run sequentially so
  stubs never overlap.
- 
+
  @module
  */
 

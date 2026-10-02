@@ -1,15 +1,15 @@
 /**
  Tests for reading damage regions out of a version 2 delivery ledger.
- 
+
  The case that matters is WHICH ROWS COUNT. The version 1 draw read a
  repair-lane issue list, and carrying that habit forward would have produced a
  draw covering less than half the regions where this pipeline replaced text,
  while describing itself as a draw over the shipped regions. Measured over the
  six settled entries the split is 32 repair against 37 translate, so the error
  would not have been small and nothing in the output would have shown it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -29,15 +29,15 @@ import {
 
 /**
  Builds one delivery row.
- 
+
  @param sliceIndex - slice index
- 
+
  @param kind - what the lane did with the slice
- 
+
  @param incumbentKind - whether the archive had wording there at all
- 
+
  @returns Row shaped as the ledger carries it
- 
+
  @example
  ```ts
  const row = rowOf({ sliceIndex: 0, kind: 'replacement-shipped', },);
@@ -97,18 +97,18 @@ const COVERED_SLICES = 16;
 
 /**
  Builds a reading carrying wording for every slice a case might use.
- 
+
  DEFAULTS TO EACH ROW'S OWN SHIPPED WORDING, so the annotation reads
  `survives` unless a case deliberately says otherwise. `rowOf` generates its
  texts from the index, so the reading can be built without the rows.
- 
+
  @param text - wording to claim would stand, defaulting to what the lane
  shipped at that index
- 
+
  @param decidedBy - stage whose decision survived
- 
+
  @returns Readings by chunk index
- 
+
  @example
  ```ts
  const readings = readingsOf({ text: 'Something else entirely.', },);

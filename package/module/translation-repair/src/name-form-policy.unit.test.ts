@@ -1,9 +1,9 @@
 /**
  Verifies measured quoted-form scope reaches writers, critics and selectors.
  Live evidence chooses the remedy; these checks only lock down its integration.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -29,9 +29,9 @@ const SCOPE = 'retain the form under discussion';
 
 /**
  Reads system instructions without confusing them with source examples.
- 
+
  @param messages - production builder output
- 
+
  @returns Instruction text only
  */
 function systemText(messages: ReturnType<typeof buildCriticMessages>,): string {

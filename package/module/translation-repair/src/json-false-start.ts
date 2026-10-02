@@ -32,17 +32,17 @@ export const FALSE_START_WINDOW = 256;
 
 /**
  Reads a JSON object that follows an abandoned opening fragment.
- 
+
  Each `{` inside the window, after the first character, is tried as the
  object's start until one parses to the end of the text; the first that
  does is the answer. Bounded by the window, so a long reply costs at most
  as many parses as it has braces in its first characters, and each parse
  is one linear pass.
- 
+
  @param text - answer channel that failed to parse as a whole
- 
+
  @returns Parsed value with the abandoned length, or nothing to read past
- 
+
  @example
  ```ts
  const past = readJsonPastFalseStart({ text: '{"best": 1{"best": 1}', },);
@@ -116,7 +116,7 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
  Parses an answer as a whole; where the whole fails, past a false start; and
  where that fails too, as the value it opens with when more text follows
  (ledger P8).
- 
+
  THE FALSE START BEFORE THE LEADING VALUE: a reply of two whole objects is
  the model revising its answer, and the replay of 587,102 stored replies on
  2026-09-28 found 18 such, the first empty or missing a field the second
@@ -124,12 +124,12 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
  reads to the end of the text, already takes it. Trailing prose defeats that
  reader, since no brace inside the window starts JSON that runs to the end,
  and the leading value then recovers the answer (919 replies in that replay).
- 
+
  @param text - fence-stripped answer channel
- 
+
  @returns Parsed value with the abandoned and trailing lengths (zero for a
  whole parse), or failure detail
- 
+
  @example
  ```ts
  const attempt = parseAnswerJson({ text: unwrapped, },);

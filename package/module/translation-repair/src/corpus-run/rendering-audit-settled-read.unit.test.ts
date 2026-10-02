@@ -1,15 +1,15 @@
 /**
  Tests for the three readings the settled audit owes over persisted audit
  rows.
- 
+
  These rules were written while the full run was still buying its subjects,
  and the cases here pin them so a later reader can see they were not tuned to
  a tally. The sharpest are the ones the relocation rule must REFUSE: pairing
  across two runs of one entry, and pairing slices that are not neighbours.
  Both would manufacture a relocation nobody's document contains.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -30,15 +30,15 @@ import {
 
 /**
  Builds one voice's screened answer.
- 
+
  @param modelId - auditor
- 
+
  @param categories - category of each claim that anchored
- 
+
  @param dropped - how many of its claims fell at the screen
- 
+
  @returns Voice row shaped as the audit returns it
- 
+
  @example
  ```ts
  const voice = voiceSaying({ modelId: 'hf:cat/Tabby-1', categories: ['omission',], dropped: 0, },);
@@ -77,19 +77,19 @@ function voiceSaying(
 
 /**
  Builds one audited slice.
- 
+
  @param runSet - archive subdirectory
- 
+
  @param entryId - corpus entry
- 
+
  @param sliceIndex - slice index
- 
+
  @param auditsArchiveText - whether this audited the archive's own English
- 
+
  @param voices - what each auditor said
- 
+
  @returns Row shaped as the probe persists it
- 
+
  @example
  ```ts
  const row = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, auditsArchiveText: false, voices: [], },);

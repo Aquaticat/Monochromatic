@@ -122,11 +122,11 @@ const DEFAULT_SLOT_LIMITS: SlotLimits = {
 /**
  Providers that can serve one call, narrowed to vision where it carries a
  picture.
- 
+
  @param request - call whose reach is read
- 
+
  @returns Reach for the policy, or for a re-ask, to decide on
- 
+
  @example
  ```ts
  const reach = reachFor({ request, },);
@@ -173,17 +173,17 @@ export type ProviderCallers = {
 
 /**
  Builds the client that routes each call to whichever provider can serve it.
- 
+
  @param callers - each configured provider's text call, which is all this
  delegates; a provider with no caller has no key, its meter reads dry
  (`UNCONFIGURED_METER`), and the route never picks it
 
  @param budgets - shared budget view every call is routed by
- 
+
  @param slotLimits - concurrent calls each limiting provider's client grants
  one model, which decides when it counts as saturated; must match the
  `perModelConcurrency` that client was built with
- 
+
  @param holdPollMs - how often a call waiting out a hold checks for abort;
  injectable so a test waits milliseconds rather than a second
 
@@ -200,9 +200,9 @@ export type ProviderCallers = {
  @param paces - request windows of the providers that pace their calls; a
  provider whose window would make the call wait reads saturated, so the call
  overflows to a usable provider behind it (class one hundred forty-nine)
- 
+
  @returns Client surface a stage calls without naming a provider
- 
+
  @example
  ```ts
  const client = createRoutingClient({ callers: { synthetic, hyper, openrouter, }, budgets, },);
@@ -253,18 +253,18 @@ export function createRoutingClient(
 
   /**
    Decides which provider takes one call, given what is known right now.
-   
+
    @param request - call being routed, read for its model and its pictures
-   
+
    @param refused - provider that has just refused us, or nobody
-   
+
    @returns Provider to ask
-   
+
    @throws {@link NoProviderForModelError} when nowhere can take it
-   
+
    @throws {@link import('./budget-routing.ts').EveryProviderDryError} when
    every provider is out of budget with no refusal hold left to wait out
-   
+
    @example
    ```ts
    const provider = await chooseProvider({ request, refused: NOBODY_REFUSED, },);
@@ -363,18 +363,18 @@ export function createRoutingClient(
 
   /**
    Performs one call on the named provider, releasing its slot afterwards.
-   
+
    PAIRED WITH THE TAKE IN `chooseProvider` AND IN THE RE-ASK: every decision
    takes one slot on a limiting provider and reaches exactly one call here.
-   
+
    @param provider - provider to ask, as {@link chooseProvider} decided
-   
+
    @param request - call to perform
-   
+
    @mutates request - the delegated client serializes messages and response format; see its contract
-   
+
    @returns Whatever that provider answered
-   
+
    @example
    ```ts
    const reply = await callOn({ provider: 'hyper', request, },);
@@ -414,15 +414,15 @@ export function createRoutingClient(
   /**
    Free-text chat exchange, routed and re-routed on budget refusals, at most
    once per provider.
-   
+
    @param request - exchange to perform
-   
+
    @mutates request - the delegated client serializes messages and response format; see its contract
-   
+
    @returns Content text and usage when reported, and who answered
-   
+
    @throws {@link NoProviderForModelError} when nowhere can take it
-   
+
    @example
    ```ts
    const { provider, reply, } = await routedText({ modelId, messages, signal, },);
@@ -442,7 +442,7 @@ export function createRoutingClient(
     /**
      Provider that refused the previous attempt, folded into the next
      decision; nobody before the first.
-     
+
      A RECORD RATHER THAN A ROOT `let`, so the one thing that changes
      between attempts is named and scoped to the loop that changes it.
      */
@@ -561,15 +561,15 @@ export function createRoutingClient(
 
   /**
    Free-text chat exchange, routed and re-routed on budget refusals.
-   
+
    @param request - exchange to perform
-   
+
    @mutates request - the delegated client serializes messages and response format; see its contract
-   
+
    @returns Content text and usage when reported
-   
+
    @throws {@link NoProviderForModelError} when nowhere can take it
-   
+
    @example
    ```ts
    const reply = await client.chatText({ modelId, messages, signal, },);
@@ -598,13 +598,13 @@ export function createRoutingClient(
 
   /**
    Schema-validated chat exchange over whichever provider served the text.
-   
+
    @param request - exchange plus content guard
-   
+
    @mutates request - the delegated client serializes messages and response format; see its contract
-   
+
    @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
-   
+
    @example
    ```ts
    const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);

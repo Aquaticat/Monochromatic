@@ -2,7 +2,7 @@
  Tests for naturalness eligibility: which paragraphs of a repaired slice the
  lane may rewrite, and the reason recorded for every skip.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -24,11 +24,11 @@ const LONG_PROSE =
 
 /**
  Eligibility verdicts over one fixture document.
- 
+
  @param text - slice text to parse and judge
- 
+
  @returns Verdict per block in document order
- 
+
  @example
  ```ts
  const verdicts = judge(LONG_PROSE,);
@@ -40,11 +40,11 @@ function judge(text: string,) {
 
 /**
  Reason recorded for the first block, or `eligible` when it passed.
- 
+
  @param text - slice text to parse and judge
- 
+
  @returns Reason string for the first block
- 
+
  @example
  ```ts
  expect(firstReason('## Heading',),).toBe('not-a-paragraph',);

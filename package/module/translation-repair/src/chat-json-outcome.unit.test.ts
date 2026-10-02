@@ -1,7 +1,7 @@
 /**
  Tests for the provider-neutral ladder that turns one raw reply into the
  outcome a caller acts on.
- 
+
  @module
  */
 
@@ -28,11 +28,11 @@ type CatVerdict = { readonly verdict: string; };
 
 /**
  Guards parsed model JSON as a verdict.
- 
+
  @param value - parsed candidate
- 
+
  @returns Whether value carries a string verdict
- 
+
  @example
  ```ts
  isCatVerdict({ verdict: 'nap', },);
@@ -44,13 +44,13 @@ function isCatVerdict(value: unknown,): value is CatVerdict {
 
 /**
  Reads one text into an outcome under the verdict guard.
- 
+
  @param text - answer channel as a provider delivered it
- 
+
  @param finishReason - why the model stopped, when it said
- 
+
  @returns Outcome the ladder decided on
- 
+
  @example
  ```ts
  const outcome = read({ text: '{"verdict":"nap"}', },);

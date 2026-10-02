@@ -2,7 +2,7 @@
  Tests for the count that separates a fan-out stage nobody asked from one that
  could not answer.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

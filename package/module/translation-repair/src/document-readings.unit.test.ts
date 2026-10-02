@@ -1,13 +1,13 @@
 /**
  Tests for gathering one document's picture readings before its slices run.
- 
+
  WHAT THESE PIN is the arithmetic that makes the stage affordable and the
  store that makes a resume honest.
- 
+
  ONCE PER PICTURE, NOT ONCE PER SLICE. A picture named by one slice is shown to
  that slice and to both its neighbours, so a naive gather would send the same
  asset three times. Over the pinned corpus that difference is most of the work.
- 
+
  AND ONCE PER RUN, NOT ONCE PER ATTEMPT. A reading is not deterministic: ask
  one model the same question about the same picture twice and the wording
  differs. Those words are in the translate slice key, because a judge shown
@@ -16,9 +16,9 @@
  naming a picture would change, and every settled slice on a picture-bearing
  document would be re-bought. The store is what makes a resumed key equal to
  the key it resumes.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -55,13 +55,13 @@ const l = tagged({ tag: 'document-readings-test', },);
 /**
  Deterministic reader that always finds text, so every picture reaches the
  models and these cases keep asking what they were written to ask.
- 
+
  SUPPLIED RATHER THAN LEFT TO THE REAL ONE, which shells out to `dwebp` and
  `tesseract`. A case that reached those would be asking what tools this
  machine carries, and would answer differently on one that carries none.
- 
+
  @returns Reading with enough characters to clear the gate
- 
+
  @example
  ```ts
  await readDocumentPictures({ readOcr: sawText, ... },);
@@ -87,7 +87,7 @@ const READERS: readonly RosterModelId[] = [
 
 /**
  Placeholder the corpus writes for an entry's own directory.
- 
+
  WRITTEN AS AN ESCAPED TEMPLATE LITERAL, the same way `photo-reference`'s own
  fixtures write it: the corpus text carries a literal dollar-brace, which a
  template literal escapes without an expression and a plain string cannot
@@ -108,11 +108,11 @@ const AGREEING_READING = '走失猫咪 Mittens，虎斑，2019 年出生，请�
 
 /**
  Source text naming one picture, in the corpus's only image construct.
- 
+
  @param assetName - file name within entry's photos directory
- 
+
  @returns Passage showing that picture
- 
+
  @example
  ```ts
  const text = showing({ assetName: 'noticeboard.webp', },);
@@ -124,11 +124,11 @@ function showing({ assetName, }: { readonly assetName: string; },): string {
 
 /**
  Bytes standing in for a picture, whose content no rule here reads.
- 
+
  @param seed - byte every position carries, so two calls differ by content
- 
+
  @returns Small buffer of that byte
- 
+
  @example
  ```ts
  const bytes = bytesOf({ seed: 7, },);
@@ -141,9 +141,9 @@ function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
 /**
  Client answering each reader with its scripted transcription, recording every
  model it was asked.
- 
+
  @returns Client and models a reading was requested from, in order
- 
+
  @example
  ```ts
  const { client, asked, } = agreeingClient();
@@ -189,11 +189,11 @@ function agreeingClient(): {
 
 /**
  Store recording what it was asked to persist.
- 
+
  @param resumed - readings an earlier run settled, keyed by reading key
- 
+
  @returns Cache and what it was told to write
- 
+
  @example
  ```ts
  const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
@@ -224,9 +224,9 @@ function recordingCache(
 /**
  A client whose every reader throws, which is what provider trouble looks
  like from here.
- 
+
  @returns Client and the models it was asked about
- 
+
  @example
  ```ts
  const { client, } = failingClient();
@@ -260,9 +260,9 @@ function failingClient(): {
 /**
  A client whose two readers describe different pictures, which is a stable
  verdict about the roster rather than about the evening.
- 
+
  @returns Client
- 
+
  @example
  ```ts
  const { client, } = disagreeingClient();

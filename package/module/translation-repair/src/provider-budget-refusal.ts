@@ -39,11 +39,11 @@ const UPSTREAM_ERROR_OPENING = '"message":"Provider returned error"';
  unreachable, and the entry stopped three attempts running inside 34
  minutes with every meter wet. The limit is that one model's, so the seat
  is lost for the round and the provider stays where its meter puts it.
- 
+
  @param error - whatever call threw
- 
+
  @returns Whether one model's upstream endpoint, not the provider, refused
- 
+
  @example
  ```ts
  if (isUpstreamModelRefusal({ error, },)) rl.warn(`${modelId}: upstream rate limit, seat lost this round`,);
@@ -65,18 +65,18 @@ export function isUpstreamModelRefusal(
 
 /**
  Whether thrown failure says provider is out of budget.
- 
+
  A subscription reports exhaustion as rate limit,
  while credit balance reports it as payment due.
  Retry ladder already rides transient 429 responses;
  reaching router means ladder exhausted.
  A 429 the aggregator passes on from one model's upstream endpoint is that
  model's refusal, not the provider's (`isUpstreamModelRefusal`).
- 
+
  @param error - whatever call threw
- 
+
  @returns Whether other provider should be asked instead
- 
+
  @example
  ```ts
  if (isBudgetRefusal({ error, },)) budgets.markRefused({ provider, },);
@@ -101,11 +101,11 @@ export function isBudgetRefusal(
  to the same wall, and the seat wait chose its short hold over Hyper's long
  one. A payment refusal is a statement about the balance, not about the
  minute, so the budget layer reads the provider dry until its meter moves.
- 
+
  @param error - whatever call threw
- 
+
  @returns Whether the provider's balance refused the call
- 
+
  @example
  ```ts
  await budgets.markRefused({ provider, signal, paymentRequired: isPaymentRefusal({ error, },), },);
@@ -122,16 +122,16 @@ export function isPaymentRefusal(
 /**
  Wait a refusal names for its provider's return, zero when it names none or
  when the failure is not a provider reply.
- 
+
  Hyper's daily limit answers "You've hit your daily rate limit. Please try
  again in 2h25m18s" (Huasheng, 2026-09-07); a hold shorter than that walks
  straight back into the same wall, which the router did every 60 s for
  2h53m.
- 
+
  @param error - whatever call threw
- 
+
  @returns Milliseconds the provider asked us to stay away
- 
+
  @example
  ```ts
  await budgets.markRefused({ provider, signal, statedWaitMs: statedWaitMsOf({ error, },), },);

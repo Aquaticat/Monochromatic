@@ -1,7 +1,7 @@
 /**
  Tests for reading a settled artifact's schema generation and index sets.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -24,11 +24,11 @@ import {
 
 /**
  Reads change sets out of one artifact record, returning whatever it threw.
- 
+
  @param artifact - artifact record under test
- 
+
  @returns Failure it raised, or `undefined` when it accepted the record
- 
+
  @example
  ```ts
  const refusal = changeSetFailure({ artifact: { shippedChunkIndices: [], }, },);

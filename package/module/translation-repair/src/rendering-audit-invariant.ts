@@ -17,10 +17,10 @@
 
 /**
  An invariant of the rendering audit that did not hold.
- 
+
  Unreachable by construction; reaching it means the code above the site
  changed and the site's assumption did not.
- 
+
  @example
  ```ts
  throw new RenderingAuditInvariantError({

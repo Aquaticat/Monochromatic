@@ -19,22 +19,22 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 
 /**
  Runs the assembly guard over the page the artifact would ship.
- 
+
  @param artifact - artifact as composed before the guard, carrying no page
  assembly yet
- 
+
  @param slices - preparation defining replacement spans
- 
+
  @param sourceText - the original document, whose headings set how many
  distinct headings the page owes (class forty-five)
- 
+
  @param targetText - archive text the replacement spans address
- 
+
  @param archiveOriginalSpans - spans sealed as the English original, which
  the Canadian forms pass leaves as the archive has them
- 
+
  @returns What the guard trimmed, withdrew and found
- 
+
  @example
  ```ts
  const pageAssembly = guardPageAssembly({ artifact, slices, sourceText, targetText, },);

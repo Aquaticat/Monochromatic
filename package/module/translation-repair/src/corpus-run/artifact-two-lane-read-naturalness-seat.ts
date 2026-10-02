@@ -27,13 +27,13 @@ import type {
 
 /**
  Reads paragraph-located finding.
- 
+
  @param value - unknown finding
- 
+
  @param path - artifact path
- 
+
  @returns Validated finding
- 
+
  @example
  ```ts
  const finding = parseFinding({ value, path, });
@@ -97,13 +97,13 @@ function parseFinding(
 
 /**
  Reads finding list in stored order.
- 
+
  @param value - unknown list
- 
+
  @param path - artifact path
- 
+
  @returns Validated findings
- 
+
  @example
  ```ts
  const findings = parseNaturalnessFindings({ value: [], path: 'review.findings', });
@@ -135,13 +135,13 @@ export function parseNaturalnessFindings(
 
 /**
  Reads one accounted reviewer seat and cross-validates status fields.
- 
+
  @param value - unknown seat
- 
+
  @param path - artifact path
- 
+
  @returns Validated seat
- 
+
  @example
  ```ts
  const seat = parseNaturalnessReviewSeat({ value, path, });
@@ -226,13 +226,13 @@ export function parseNaturalnessReviewSeat(
 
 /**
  Tests exact ordered equality between located finding lists.
- 
+
  @param left - first list
- 
+
  @param right - second list
- 
+
  @returns Whether same findings occupy same positions
- 
+
  @example
  ```ts
  sameNaturalnessFindings({ left, right, });
@@ -263,11 +263,11 @@ export function sameNaturalnessFindings(
 
 /**
  Deduplicates exact located findings in first occurrence order.
- 
+
  @param findings - roster-ordered findings
- 
+
  @returns First copy of each exact finding
- 
+
  @example
  ```ts
  const unique = uniqueNaturalnessFindings({ findings, });
@@ -289,9 +289,9 @@ export function uniqueNaturalnessFindings(
 
 /**
  Derives fail-closed verdict from accounted seats.
- 
+
  @param seats - every requested reviewer seat
- 
+
  @param quorumOver - explicit wider basis, or legacy interpretation from recorded seats
 
  @param unreachable - bench seats the review counted out of reach (ledger

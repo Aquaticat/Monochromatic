@@ -1,11 +1,11 @@
 /**
  Tests for naming a caught value.
- 
+
  The cases that matter are the ones a `catch` binding actually sees, which is
  anything at all: this exists because asserting a caught value to `Error` is a
  claim nobody checked, and the throw that breaks that assumption is the throw
  whose report someone is reading.
- 
+
  @module
  */
 
@@ -44,7 +44,7 @@ await describe({
             class TabbyMissingError extends Error {
               /**
                Names itself the way the pipeline's error classes do.
-           
+
                @example
                ```ts
                throw new TabbyMissingError();

@@ -30,7 +30,7 @@ const PICTURE_HEADING = 'PICTURE';
 
 /**
  Side markers a reader writes at the head of each chat message.
- 
+
  THE VOCABULARY `READING_INSTRUCTION` ASKS FOR, matched here as text so a
  context carrying any of them is led by the legend that says what they mean.
  */
@@ -41,7 +41,7 @@ const SIDE_MARKERS: readonly string[] = [
 
 /**
  What a stage shown side-marked transcripts is told the markers mean.
- 
+
  ONCE, AHEAD OF THE BLOCKS, and only when a block carries a marker (class
  thirty-three, 2026-09-16). A chat screenshot is taken by one of its two
  parties, so the right-hand bubbles are that party's own messages on every
@@ -55,7 +55,7 @@ export const SIDE_LEGEND: string = 'In a chat, [right] marks messages sent from 
 
 /**
  What one slice is shown about the pictures around it.
- 
+
  @example
  ```ts
  const pictures: SlicePictures = { context: '', findings: [], };
@@ -76,17 +76,17 @@ export type SlicePictures = {
 
 /**
  Pictures named by one slice and by the slices either side of it.
- 
+
  @param slices - prepared slice pairs of one entry
- 
+
  @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
- 
+
  @returns Asset names in document order, each once
- 
+
  @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
  since an index stamped elsewhere would silently name no pictures and read as
  a slice that shows none
- 
+
  @example
  ```ts
  const names = slicePictureNames({ slices, slicePosition, },);
@@ -147,17 +147,17 @@ export function slicePictureNames(
 
 /**
  Renders what is known about one slice's pictures, and names what is not.
- 
+
  @param slices - prepared slice pairs of one entry
- 
+
  @param slicePosition - POSITION IN `slices`
- 
+
  @param readings - what reading produced per asset name, for this entry
- 
+
  @returns Prompt block for corroborated readings, plus findings for the rest
- 
+
  @throws {@link RangeError} by way of {@link slicePictureNames}
- 
+
  @example
  ```ts
  const pictures = slicePictures({ slices, slicePosition, readings, },);
@@ -250,35 +250,35 @@ export function slicePictures(
 
 /**
  Every slice's picture block, keyed by the index its consumers read.
- 
+
  TWO INDEX SPACES MEET HERE, which is the whole reason this exists.
  {@link slicePictures} takes a POSITION, because a window is defined by who sits
  either side in the array. A stage downstream of preparation holds no array: it
  holds rows stamped with `sliceIndex`, and it is known what happens
  when those two are assumed equal by someone holding neither.
- 
+
  THEY ARE EQUAL, AND ENFORCED SO. `assertSliceIndexing` refuses any preparation
  whose slice at a position is stamped with a different index, so this reads the
  stamp rather than the position and gets the same number by a route that would
  break loudly if the invariant ever did.
- 
+
  THE FINDINGS ARE DROPPED, deliberately. A refused reading is already reported
  once by the stage that windows it for itself, and a second stage reporting the
  same refusal would have a run count one unread picture twice.
- 
+
  @param slices - prepared slice pairs of one entry, indexed as prepared
- 
+
  @param readings - what reading produced per asset name, for this entry
- 
+
  @returns Picture block per slice, keyed by stamped index, empty where a slice
  neighbours no readable picture
- 
+
  @throws {@link RangeError} by way of {@link slicePictures}
- 
+
  @throws Error - when two slices carry one stamped index, which
  `assertSliceIndexing` already forbids and which would otherwise silently drop
  one slice's pictures
- 
+
  @example
  ```ts
  const contexts = slicePictureContexts({ slices, readings, },);

@@ -6,14 +6,14 @@ import { parseDocument, } from './parse-document.ts';
 
 /**
  Key identifying a footnote defect across two documents.
- 
+
  Deliberately drops the node id: block indices move when a slice changes
  length, so keeping it would report every surviving defect as a new one.
- 
+
  @param finding - defect from a parsed document's footnote graph
- 
+
  @returns Stable key
- 
+
  @example
  ```ts
  const key = findingKey({ finding, },);
@@ -28,16 +28,16 @@ function findingKey(
 /**
  Footnote defects present in an assembled document that its incumbent did not
  already carry.
- 
+
  Counted rather than set-differenced, so a second duplicate definition of an
  identifier the archive already duplicated is still reported.
- 
+
  @param incumbentText - translation as it stands
- 
+
  @param assembledText - document spliced from the surviving replacements
- 
+
  @returns Defects the assembly introduced
- 
+
  @example
  ```ts
  const introduced = introducedFootnoteFindings({ incumbentText, assembledText, },);
@@ -100,7 +100,7 @@ export function introducedFootnoteFindings(
 /**
  Parse tolerances that mean the document became LESS parseable, rather than
  that the parser worked around something ordinary.
- 
+
  A masked comment and a blanked invisible line are ordinary. An unterminated
  comment swallows everything after it, and an MDX downgrade means the strict
  parser refused the document and the loose one accepted it as plain markdown.
@@ -115,13 +115,13 @@ const STRUCTURAL_REGRESSION_KINDS: readonly string[] = [
 
 /**
  Counts one parse-finding kind in a document.
- 
+
  @param text - document to parse
- 
+
  @param kind - finding kind to count
- 
+
  @returns How many the parser reported
- 
+
  @example
  ```ts
  const count = countParseFindings({ text, kind: 'mdx-downgraded', },);
@@ -147,14 +147,14 @@ function countParseFindings(
 /**
  Structural parse regressions an assembled document carries beyond its
  incumbent's.
- 
+
  @param incumbentText - translation as it stands
- 
+
  @param assembledText - document spliced from the surviving replacements
- 
+
  @returns Kinds the assembly carries MORE of, each named once; how many more
  is deliberately not reported, since one is already enough to withdraw over
- 
+
  @example
  ```ts
  const worse = introducedStructuralRegressions({ incumbentText, assembledText, },);

@@ -67,7 +67,7 @@ const ERROR_FINISH_KIND = 'error-finish';
 
 /**
  What one stream's error chunk said, reduced to names.
- 
+
  @example
  ```ts
  const found: StreamErrorReading = { found: true, code: 504, errorType: 'timeout', endpoint: 'ModelRun', };
@@ -102,7 +102,7 @@ export const STREAM_ERROR_ABSENT: StreamErrorReading = { found: false, };
 /**
  Raised when a success-status stream carried a provider failure instead of
  a completion.
- 
+
  DISTINCT FROM `MalformedCompletionError`, which names a body this client
  cannot read; this body was read fine and says the upstream failed. Both
  ride the retry ladder as thrown transport failures, because the ladder
@@ -127,13 +127,13 @@ export class InStreamProviderError extends Error {
 
   /**
    Names the failure the stream carried.
-   
+
    @param code - numeric failure class, or that none was reported
-   
+
    @param errorType - gateway's failure kind, or that none was named
-   
+
    @param endpoint - upstream display name, or that none was named
-   
+
    @example
    ```ts
    throw new InStreamProviderError({ code: 504, errorType: 'timeout', endpoint: 'ModelRun', },);
@@ -162,16 +162,16 @@ export class InStreamProviderError extends Error {
 
 /**
  Reads the failure a stream's error chunk carried, if any chunk carried one.
- 
+
  THE FIRST ERROR CHUNK WINS, as the endpoint reader's first name does: the
  gateway writes one and closes. A choice that stopped on an error finish
  with no error object beside it counts as a failure too, with no code and
  the upstream's own reason as its kind.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns Code, kind and endpoint of the failure, or that none was carried
- 
+
  @example
  ```ts
  const reading = openRouterStreamErrorOf({ bodyText: reply.bodyText, },);
@@ -246,16 +246,16 @@ export function openRouterStreamErrorOf(
 
 /**
  Refuses a success body whose stream carried a provider failure.
- 
+
  ASKED BEFORE THE TERMINATOR CHECK, because such a stream also lacks its
  terminator and the terminator check would otherwise name the framing
  rather than the failure.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @throws {@link InStreamProviderError} when a chunk carried an error object
  or a choice stopped on an error finish
- 
+
  @example
  ```ts
  requireNoStreamError({ bodyText, },);

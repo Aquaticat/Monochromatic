@@ -1,19 +1,19 @@
 /**
  Tests for rendering a caught value without repeating what it refused.
- 
+
  THE ABSENCE CASES ARE THE POINT, and one of them carries its own positive
  control. V8 quotes the first ten characters of the text a `JSON.parse`
  refusal was given, so the control asserts that the RAW message carries the
  fixture word before the guarded case asserts that the rendered text does not.
  Without the control, an assertion of absence would pass against a probe that
  could never have shown a difference.
- 
+
  MEASURED WHILE WRITING THESE: V8 quotes only where the text stops being JSON
  near its start. A file truncated at its tail yields a positional message that
  quotes nothing, so a fixture failing late would silently test nothing.
- 
+
  Fixture wording is cat-themed invention, so no corpus content appears here.
- 
+
  @module
  */
 
@@ -35,7 +35,7 @@ import {
 /**
  Word appearing nowhere else in this file, so an assertion of absence cannot
  pass by accident.
- 
+
  TEN CHARACTERS EXACTLY, because that is the width of V8's quote window. A
  shorter word would be quoted whole and a longer one truncated, and a
  truncated word would be absent from the message for a reason that has nothing
@@ -50,12 +50,12 @@ const UNPARSEABLE = `${FIXTURE_WORD} was never JSON`;
 
 /**
  Raises the parse refusal these cases are about.
- 
+
  @returns V8's own refusal, caught rather than raised so a case can read it
- 
+
  @throws {@link Error} where the fixture parsed, which would mean it no longer
  exercises anything
- 
+
  @example
  ```ts
  expect(parseRefusal().message.includes(FIXTURE_WORD,),).toBe(true,);

@@ -80,13 +80,13 @@ export class RunsDirectoryBusyError extends Error {
 
   /**
    Names the holder, how it was judged, and the two ways forward.
-   
+
    @param runsDir - directory whose lock is held
-   
+
    @param holder - what the lock file records, absent when unreadable
-   
+
    @param judgedBy - how the holder was judged to hold it
-   
+
    @example
    ```ts
    throw new RunsDirectoryBusyError({ runsDir, holder, judgedBy: 'identity', },);
@@ -129,17 +129,17 @@ export class RunsDirectoryBusyError extends Error {
 
 /**
  Tries to create the lock file, failing rather than overwriting.
- 
+
  `wx` makes the check and the claim ONE filesystem operation, which is the
  whole mechanism: checking for the file and then creating it leaves a window
  in which two passes both see it absent and both proceed.
- 
+
  @param path - lock file path
- 
+
  @param holder - what to record inside it
- 
+
  @returns Whether this call created it
- 
+
  @example
  ```ts
  const won = await claim({ path, holder, },);
@@ -157,7 +157,7 @@ async function claim(
   try {
     /**
      Handle from an exclusive create, which fails when the file is there.
-     
+
      DISPOSED RATHER THAN CLOSED BY HAND, so a write that fails still closes
      it; the empty file such a failure leaves is what the next pass reads as
      unreadable and evicts, which is the documented recovery.
@@ -179,18 +179,18 @@ async function claim(
 
 /**
  Takes exclusive ownership of a runs directory for the life of a scope.
- 
+
  Created with `wx`, so the check and the claim are one filesystem operation
  and two passes starting together cannot both win. A lock whose process is
  gone is taken over, since a pass killed at its hard cap leaves one behind and
  refusing forever would make every crash need manual cleanup.
- 
+
  @param runsDir - durable output root this pass owns
- 
+
  @returns Disposable releasing the lock
- 
+
  @throws RunsDirectoryBusyError when a live process already holds it
- 
+
  @example
  ```ts
  await using _lock = await lockRunsDir({ runsDir, },);
@@ -322,24 +322,24 @@ export async function lockRunsDir(
 /**
  Removes a stale lock so that exactly one of any number of concurrent
  starters does it.
- 
+
  A RENAME, NOT A REMOVE. Two starters that both found the lock stale and both
  removed it could interleave as remove, claim, remove, claim, the second
  remove deleting the first starter's fresh lock, and both passes then ran in
  one directory. A rename to a name only this call knows is atomic:
  the first starter's rename succeeds and the second's finds nothing to
  rename, so the second proceeds straight to a claim it will lose.
- 
+
  @param path - lock file to evict
- 
+
  @returns `evicted` when this call moved the lock aside, `gone` when another
  starter had already done so
- 
+
  @example
  ```ts
  const outcome = await evictStaleLock({ path, },);
  ```
- 
+
  @internal
  */
 export async function evictStaleLock(
@@ -370,9 +370,9 @@ export async function evictStaleLock(
  Removes the lock file only when it still carries this acquisition's token,
  so a starter that lost a takeover cannot delete the winner's lock on its
  way out. Says so when it keeps one.
- 
+
  @param path - lock file
- 
+
  @param holder - holder this acquisition wrote, of which only its token decides
 
  @returns `released` when the file was ours and is gone, `kept` otherwise

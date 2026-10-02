@@ -1,10 +1,10 @@
 /**
  Tests for the editor prompt's fencing.
- 
+
  The builder had no suite; what it fences is corpus prose and its own
  rendered regions, and the fence used to be a fixed row of equals signs a
  setext heading underline could reproduce.
- 
+
  @module
  */
 

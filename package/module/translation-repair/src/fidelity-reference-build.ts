@@ -33,21 +33,21 @@ const l = contextRoot({ tag: 'fidelity-reference', },);
 
 /**
  Runs the existing damage mechanism selected during source review.
- 
+
  @param kind - reviewed defect family
- 
+
  @param sourceText - pinned source passage
- 
+
  @param referenceText - verified reference
- 
+
  @param donorText - fixed reviewed donor
- 
+
  @param referenceId - input named for an unknown requested family
- 
+
  @returns Existing builder outcome, still requiring hash verification
- 
+
  @throws {@link FidelityReferenceError} for an unsupported family
- 
+
  @example
  ```ts
  const damage = reviewedDamage({ kind, sourceText, referenceText, donorText, referenceId });
@@ -88,17 +88,17 @@ function reviewedDamage({
  Reconstructs only a source-reviewed reference and its exact approved damage variants.
  Review is represented by the caller-owned manifest; byte checks prevent silent drift,
  not semantic inference from the fact that text is an unchanged archive.
- 
+
  @param sourceFile - complete source read at the specified pin
- 
+
  @param archiveFile - complete archive read at that same pin
- 
+
  @param spec - reviewed ranges, edits and variant hashes
- 
+
  @returns Owned reference data ready for a fixed calibration matrix
- 
+
  @throws {@link FidelityReferenceError} for any mismatch with the reviewed inputs
- 
+
  @example
  ```ts
  const reference = buildReviewedFidelityReference({ sourceFile, archiveFile, spec });

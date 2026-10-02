@@ -23,7 +23,7 @@ import type {
 
 /**
  One panelist's vote on one claim, beside the weight it carried.
- 
+
  @example
  ```ts
  const ballot: PanelClaimBallot = {
@@ -36,7 +36,7 @@ import type {
 export type PanelClaimBallot = {
   /**
    Panelist that voted, as the shell named it when resolving the ballot.
-   
+
    A plain string rather than a catalog id because the panel roster is the
    shell's to name: `tallyVotes` receives ballots keyed by whatever the caller
    used, and claims never carry panelist identity themselves.
@@ -51,7 +51,7 @@ export type PanelClaimBallot = {
 
   /**
    Weight this vote carried, read off the config in force for that run.
-   
+
    STORED PER BALLOT rather than left to a reader to look up, because the
    table lives in `AdjudicationConfig` and no settled artifact records it. A
    reader holding the votes alone could not reproduce the tally on a run whose
@@ -73,7 +73,7 @@ export type PanelClaimBallot = {
 
 /**
  Everything the panel decided about one claim.
- 
+
  @example
  ```ts
  const reading: ClaimPanelReading = { ballots, configuredPanelists: 6, tally, };
@@ -87,7 +87,7 @@ export type ClaimPanelReading = {
 
   /**
    Panelists the run seated, which is not recoverable from the ballots.
-   
+
    A lost voice leaves no ballot at all while an abstention leaves one, so
    three ballots of six seated and three of three are very different evidence
    and are indistinguishable without this. Same reasoning as
@@ -98,7 +98,7 @@ export type ClaimPanelReading = {
 
   /**
    Weighted mass behind each vote state, as this run summed it.
-   
+
    STORED RATHER THAN LEFT DERIVABLE so a reader can check its own arithmetic
    against the run's. The ballots and their weights are enough to recompute
    it, and a recomputation that disagrees means the weighting changed under a

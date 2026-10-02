@@ -33,7 +33,7 @@ import { errorName, } from './error-name.ts';
 
 /**
  Stand-in for a refusal that states no position of its own.
- 
+
  Shared so a reader meets one spelling across parsers: a YAML refusal and
  an MDX one report position differently, and inventing a phrase per parser
  makes a log line say two things where it means one.
@@ -47,11 +47,11 @@ export type NamingError = Error & { readonly messageNamesOnly: true; };
 
 /**
  Decides whether a caught value's message may be repeated.
- 
+
  @param value - caught value, of unknown type by construction
- 
+
  @returns Whether it declares its message free of quoted content
- 
+
  @example
  ```ts
  if (namesWithoutQuoting(error,))
@@ -66,11 +66,11 @@ export function namesWithoutQuoting(value: unknown,): value is NamingError {
 
 /**
  Renders a caught value for a log line or a stored record, quoting nothing.
- 
+
  @param error - caught value, of unknown type by construction
- 
+
  @returns Its message where it declares one safe, its class name otherwise
- 
+
  @example
  ```ts
  console.error(`${what}: ${refusalText({ error, },)}`,);

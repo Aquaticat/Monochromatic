@@ -34,7 +34,7 @@ const SCHEMA_INDENT = 2;
 /**
  Characters the Messages API accepts in a tool name besides ASCII letters and
  digits.
- 
+
  TESTED RATHER THAN MATCHED, because a character-class regex over an
  externally supplied name is exactly the shape `RG1` asks to be written as a
  scan instead, and a scan over a name this short costs nothing.
@@ -51,14 +51,14 @@ const NAME_LIMIT = 64;
 
 /**
  Structured-output constraint, projected so every path through it is readonly.
- 
+
  WHY THIS EXISTS RATHER THAN THE OPENAI-SIDE TYPE ITSELF: that type carries the
  schema body as an ordinary record, whose index signature is writable, and a
  writable index signature reachable from a parameter describes a function that
  could rewrite its caller's schema. Nothing here does, and this projection is
  how that is stated rather than promised. Every OpenAI-side constraint
  satisfies it structurally, so no caller changes.
- 
+
  @example
  ```ts
  const format: ReadableResponseFormat = { type: 'json_schema', json_schema, };
@@ -93,11 +93,11 @@ export type ReadableResponseFormat = {
 
 /**
  Refusal raised when a schema cannot be offered to Anthropic as a tool.
- 
+
  THROWN RATHER THAN RETURNED, unlike a model's refusal: a name the protocol
  rejects is our own construction error, not an unreliable model's answer, and
  it would otherwise surface as a provider `400` on every call of that stage.
- 
+
  @example
  ```ts
  throw new UnnameableToolError({ detail: 'name is empty', },);
@@ -111,9 +111,9 @@ export class UnnameableToolError extends Error {
 
   /**
    Builds failure naming what disqualified the schema's name.
-   
+
    @param detail - which naming rule the schema violated
-   
+
    @example
    ```ts
    new UnnameableToolError({ detail: 'name exceeds 64 characters', },);
@@ -129,11 +129,11 @@ export class UnnameableToolError extends Error {
 
 /**
  Tool entry the Messages API takes, carrying the answer schema.
- 
+
  FIELD NAMES ARE THE WIRE'S, not the repo's, for the same reason
  `JsonSchemaResponseFormat` carries `json_schema`: this value is serialised
  as-is and a camel-cased copy would need a second translation nobody reads.
- 
+
  @example
  ```ts
  const tool: AnthropicToolDefinition = { name: 'repair', description, input_schema, };
@@ -158,17 +158,17 @@ export type AnthropicToolDefinition = {
 
 /**
  Name the answer tool takes, refusing one the protocol would reject.
- 
+
  READS THE SCHEMA'S OWN NAME rather than inventing one, so a stage that is
  routed to either provider is described to the model identically by both.
- 
+
  @param responseFormat - structured-output constraint the caller stated
- 
+
  @returns Validated tool name
- 
+
  @throws {@link UnnameableToolError} where the name is empty, too long, or
  carries a character the Messages API rejects
- 
+
  @example
  ```ts
  const name = answerToolName({ responseFormat, },);
@@ -208,13 +208,13 @@ export function answerToolName(
 
 /**
  Answer tool as the Messages API takes it.
- 
+
  @param responseFormat - structured-output constraint the caller stated
- 
+
  @returns Tool entry for the request body
- 
+
  @throws {@link UnnameableToolError} where the schema name is unusable
- 
+
  @example
  ```ts
  const tools = [answerToolDefinition({ responseFormat, },),];
@@ -240,23 +240,23 @@ export function answerToolDefinition(
 
 /**
  System prompt carrying the caller's instruction and the whole answer schema.
- 
+
  THE INSTRUCTION COMES FIRST because it is the task; the answer protocol is
  how to hand the task's result back, and a model that reads only the opening
  of a long system prompt should meet the work rather than the envelope.
- 
+
  `strict` is deliberately not represented. It is an OpenAI-side server flag
  with no Messages counterpart, and the pipeline validates every answer
  client-side regardless, so nothing here weakens by dropping it.
- 
+
  @param instruction - caller's own system text, empty where it sent none
- 
+
  @param responseFormat - structured-output constraint the caller stated
- 
+
  @returns System text for the request body
- 
+
  @throws {@link UnnameableToolError} where the schema name is unusable
- 
+
  @example
  ```ts
  const system = renderToolSystemPrompt({ instruction, responseFormat, },);

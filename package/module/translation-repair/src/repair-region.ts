@@ -31,7 +31,7 @@ import type { EditableEnvelope, } from './patch-model.ts';
 /**
  One replacement the accuracy stage applied, with every accepted issue the
  replaced region was cut for.
- 
+
  @example
  ```ts
  const region: RepairRegion = {
@@ -62,7 +62,7 @@ export type RepairRegion = {
 
   /**
    Replacement text of the SELECTED accuracy patch.
-   
+
    Named for the stage rather than for a model on purpose: the editor
    ensemble's judges pick between candidates and may ship a composite or a
    fallback, so this is what the stage settled on, not what any one editor
@@ -78,13 +78,13 @@ export type RepairRegion = {
 /**
  Records every applied operation as a region, carrying the accepted issues its
  envelope serves.
- 
+
  @param envelopes - editable envelopes the operations were written against
- 
+
  @param applied - operations that passed the deterministic apply gate
- 
+
  @returns One region per applied operation, in operation order
- 
+
  @example
  ```ts
  const regions = collectRepairRegions({

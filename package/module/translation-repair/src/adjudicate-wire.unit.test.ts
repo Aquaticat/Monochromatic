@@ -1,7 +1,7 @@
 /**
  Tests for the panel ballot wire format and its fail-closed resolution.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

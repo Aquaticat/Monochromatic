@@ -1,14 +1,14 @@
 /**
  Tests for the contest driver: which slices it asks about, what it resumes,
  and what it refuses to write down.
- 
+
  WHAT IS UNDER TEST IS SPENDING. Every case here is about a call that must or
  must not be made, which is the one property a driver has that its stage does
  not: the stage answers whatever it is handed, and the driver decides what it
  is worth handing over.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -134,13 +134,13 @@ const VERSE_MERGED = 'A cat upon the windowsill and a dog beside the door.';
 
 /**
  Builds one ledger row, which is where the driver reads the original.
- 
+
  @param sliceIndex - slice this row names
- 
+
  @param shippedText - wording this lane`s document carries
- 
+
  @returns Version 2 delivery row
- 
+
  @example
  ```ts
  const row = catLedgerRow({ sliceIndex: 0, shippedText: REPAIR_NAP, },);
@@ -171,11 +171,11 @@ function catLedgerRow(
 
 /**
  Builds both lanes as version 2 rows over a list of wording pairs.
- 
+
  @param pairs - wording each lane left, slice by slice
- 
+
  @returns Projection the driver reads
- 
+
  @example
  ```ts
  const projected = catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },);
@@ -379,29 +379,29 @@ type CatRig = {
 
 /**
  Drives the contest over one projection, counting what it spent.
- 
+
  @param pairs - wording each lane left, slice by slice
- 
+
  @param answering - whether the transport serves ballots or fails every call
- 
+
  @param resumed - ballots an earlier run already bought
- 
+
  @param projected - optional explicit lane projection
- 
+
  @param frontMatterSlices - syntax-bearing positions
 
  @param lineStructuredSlices - positions the line-structure rule governs
 
  @param answerChoice - lane every scripted ballot selects
- 
+
  @param overlap - most contested slices in flight
- 
+
  @param activity - optional successful-call overlap instrument
- 
+
  @param abortOnCall - one-based admitted call that aborts caller signal
- 
+
  @returns What the driver called, persisted and recorded
- 
+
  @example
  ```ts
  const rig = await drive({ pairs, answering: true, },);

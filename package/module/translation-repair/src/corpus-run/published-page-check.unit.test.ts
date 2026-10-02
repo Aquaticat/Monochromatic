@@ -1,12 +1,12 @@
 /**
  Tests for reading the published tree back against the artifacts that made it.
- 
+
  NOTHING HERE TOUCHES A DISK. Both subjects are total functions of an artifact
  and a string, so a case that needed a directory would be measuring the reader
  rather than the check.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -80,7 +80,7 @@ const TWO_SWAPS = [
 /**
  One slice as a fixture states it: what the archive held there, and what the
  lanes settled on shipping in its place.
- 
+
  @example
  ```ts
  const row: FixtureSlice = { incumbent: OLD_NAP, ships: FIRST_NAP, };
@@ -100,16 +100,16 @@ type FixtureSlice = {
 
 /**
  Builds an artifact over the slices given, in `sliceIndex` order.
- 
+
  GOES THROUGH LANES THAT AGREED, which is the shortest path to a settled
  wording: a slice both lanes wrote the same way needs no contest, so the
  fixture carries no ballots. Which decider settles a slice is
  `would-ship-text.unit.test.ts`.
- 
+
  @param slices - archive text and shipped text per slice
- 
+
  @returns Artifact the checks read
- 
+
  @example
  ```ts
  const artifact = artifactOver([{ incumbent: OLD_NAP, ships: FIRST_NAP, },],);
@@ -155,12 +155,12 @@ function artifactOver(slices: readonly FixtureSlice[],): WouldShipSource {
 /**
  Builds an artifact whose slices ship the wordings given and leave the archive
  saying the same thing, which is all the wording scan needs.
- 
+
  @param wordings - text each slice carries, in `sliceIndex` order, with an
  empty string standing for a slice that ships nothing
- 
+
  @returns Artifact the check reads
- 
+
  @example
  ```ts
  const artifact = artifactShipping([FIRST_NAP, SECOND_NAP,],);

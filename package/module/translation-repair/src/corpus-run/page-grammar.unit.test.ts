@@ -1,15 +1,15 @@
 /**
  Tests for the page-level floor that refuses a page the MDX grammar cannot
  parse.
- 
+
  WHY THIS FLOOR EXISTS. On 2026-09-06 the yulianNyanner page shipped a
  component line whose JSX string literal had been curled into typographic
  quotes at the would-ship reading, after every slice floor had passed the
  straight-quoted slice. A page the site cannot compile is not a page, and
  nothing between the would-ship reading and the disk read it as a document.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

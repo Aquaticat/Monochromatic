@@ -1,17 +1,17 @@
 /**
  Tests for reading back what a slice cost.
- 
+
  THE CASE THAT DECIDES THIS PAIR is the round trip. The writer and the reader
  are the only two things that know this line's shape, and they live in separate
  files, so a reformatted message would leave a pass logging costs nobody can
  read while every other test still passed.
- 
+
  The refusals matter for a second reason: a log is written WHILE a pass runs,
  so its last line can be half-written. A reader that skipped malformed lines in
  silence would report a smaller corpus without ever saying it had.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

@@ -1,14 +1,14 @@
 /**
  Tests for what the contest reader refuses, which is the reason it re-derives
  anything at all.
- 
+
  SPLIT FROM THE ACCEPTANCE CASES on the line budget. A stored verdict is a
  claim about ballots the same record carries, and a stored contest is a claim
  about which slices the two lanes worded differently; each refusal here is one
  of those claims caught disagreeing with what it describes.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -83,13 +83,13 @@ const ONE_CONTESTED_ONE_AGREED: readonly ArtifactComparisonRow[] = [
 
 /**
  Reads a selection whose one slice carries whatever a test hands it.
- 
+
  @param slice - recorded slice, valid or not
- 
+
  @param comparison - rows the contest is checked against
- 
+
  @returns Nothing a caller uses; every case here expects a throw
- 
+
  @example
  ```ts
  readOneSlice({ slice, comparison: ONE_CONTESTED, },);

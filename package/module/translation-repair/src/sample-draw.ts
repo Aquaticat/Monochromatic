@@ -20,13 +20,13 @@ import {
  band with a candidate to spare, so the result is the most even
  availability-capped split and is deterministic. When candidates are scarce
  the total falls to what exists rather than over-drawing a band.
- 
+
  @param available - candidate count per band
- 
+
  @param size - total slots desired across all bands
- 
+
  @returns Slots allocated per band, summing to `min(size, total available)`
- 
+
  @example
  ```ts
  const quota = allocateBandQuota({
@@ -97,13 +97,13 @@ export function allocateBandQuota(
  `seed:kind:id`. Lexicographic order over the hex gives a stable
  pseudo-random order that is a pure function of the seed, matching the
  codebase's `createHash` idiom without a stateful generator.
- 
+
  @param seed - draw seed
- 
+
  @param kind - namespace separating entry keys from issue keys
- 
+
  @param id - the entry or issue id
- 
+
  @returns Hex sha256 digest to sort by
  */
 function shuffleKey(
@@ -164,11 +164,11 @@ type RankedCandidate = {
 
 /**
  Compares two hex shuffle keys lexicographically.
- 
+
  @param a - first key
- 
+
  @param b - second key
- 
+
  @returns Negative, zero, or positive ordering
  */
 function compareKeys(
@@ -192,13 +192,13 @@ function compareKeys(
  entry's issues are shuffle-ordered and ranked, then selection takes every
  entry's rank-0 issue before any rank-1 issue. So one issue-heavy entry never
  dominates the band's slots, and the order is a pure function of the seed.
- 
+
  @param candidates - every candidate in the band
- 
+
  @param count - slots to fill from the band
- 
+
  @param seed - draw seed
- 
+
  @returns The selected candidates in round-robin draw order
  */
 function selectFromBand(
@@ -312,15 +312,15 @@ function selectFromBand(
  {@link allocateBandQuota}, then each band fills by round-robin across its
  entries, so the draw is representative across size bands and spread across
  entries within each band. Fully deterministic in the seed.
- 
+
  @param candidates - the full accepted-issue pool
- 
+
  @param size - total sample size desired
- 
+
  @param seed - draw seed
- 
+
  @returns The sampled candidates, small band first
- 
+
  @example
  ```ts
  const sample = drawStratifiedSample({

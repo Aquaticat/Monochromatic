@@ -7,13 +7,13 @@ import type { RetainedArchiveFootnoteLabel, } from './footnote-label-rewrite.ts'
 /**
  Assigns deterministic unused labels to colliding unmatched archive notes.
  Every result stays outside both input namespaces; no original correspondence is implied.
- 
+
  @param labels - distinct colliding archive spellings in original encounter order
- 
+
  @param reserved - normalized identifiers from both complete input namespaces
- 
+
  @returns One distinct fresh label per displaced archive identifier
- 
+
  @example
  ```ts
  const retained = retainedFootnoteLabels({ labels: ['1'], reserved: new Set(['1', '2', '3']) });

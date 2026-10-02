@@ -34,7 +34,7 @@ import { RunConfigError, } from './run-config-error.ts';
 /**
  Clients a run may route to, each present when its key is, plus the budget
  view over all of them.
- 
+
  @example
  ```ts
  const { budgets, } = configureProviders({ env: process.env, transport: fetchTransport, },);

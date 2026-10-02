@@ -38,13 +38,13 @@ const TERMINAL_NAMES: readonly ArtifactConsolidationTerminal[] = [
 
 /**
  Reads what fidelity gate settled or that it was never asked.
- 
+
  @param value - gate field
- 
+
  @param path - artifact path
- 
+
  @returns Parsed gate record
- 
+
  @example
  ```ts
  const gate = parseGate({ value, path, });
@@ -136,26 +136,26 @@ function parseGate(
 
 /**
  Reads one consolidated slice under generation-selected shape.
- 
+
  @param value - slice record
- 
+
  @param path - artifact path
- 
+
  @param keys - generation key spellings
- 
+
  @param polishRequired - whether generation records final body polish
- 
+
  @param reviewRequired - whether polish record carries absolute naturalness review
- 
+
  @param correctionChainRequired - whether review carries digest-bound corrections
- 
+
  @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  block rather than the refinable paragraphs alone
- 
+
  @param quorumBasisRequired - whether review rounds retain their wider quorum
- 
+
  @returns Parsed consolidation slice
- 
+
  @example
  ```ts
  const slice = parseConsolidateSlice({ value, path, keys, polishRequired: true, });

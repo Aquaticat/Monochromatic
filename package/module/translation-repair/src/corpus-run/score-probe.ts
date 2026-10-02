@@ -51,14 +51,14 @@ import {
 
 /**
  Reads every settled artifact of a run.
- 
+
  @param artifactsDir - directory the pass writes entries into
- 
+
  @returns Readings and coverage counts across every artifact
- 
+
  @throws {@link ArtifactParseError} when a present probe field is malformed,
  because a count nobody can trust is worse than no count
- 
+
  @example
  ```ts
  const gathered = await gatherReadings({ artifactsDir, },);
@@ -69,7 +69,7 @@ async function gatherReadings(
 ): Promise<GatheredProbe> {
   /**
    One directory listing, shared with the census.
-   
+
    Taken once and threaded through, because the accumulation writes into this
    directory continuously: a second listing inside the census would classify a
    different set of files from the one this reader goes on to read.
@@ -90,7 +90,7 @@ async function gatherReadings(
 
   /**
    One reading set per artifact, read concurrently.
-   
+
    Every parse failure carries the artifact path it came from, so a malformed
    file names itself regardless of read order. Which of several malformed
    files reports first is not fixed, since `Promise.all` rejects with whichever
@@ -110,7 +110,7 @@ async function gatherReadings(
 
   /**
    Readings grouped by the artifact that carried them.
-   
+
    Grouped rather than flattened, because envelope ids are derived from the
    text they cover and so repeat across documents that share a paragraph.
    Flattening let the summary collapse two entries' unrelated regions into
@@ -202,12 +202,12 @@ async function gatherReadings(
 
 /**
  Reads a run's artifacts and prints the probe summary.
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
- 
+
  @throws StatedRefusalError when only one of `--repair-sheet` and `--manifest`
  is named
- 
+
  @example
  ```ts
  await main({ line, },);
@@ -344,7 +344,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'score-probe'>; },
 
   /**
    Joined positions whose slice the naturalness lane rewrote after probing.
-   
+
    Reported rather than silently folded in. The probe runs inside the accuracy
    stage and the lane runs after it, so on these positions the probe judged
    one text while the repair sheet asked the human to grade another. Every

@@ -36,7 +36,7 @@ import { reachOf, } from '../roster-reach.ts';
 
 /**
  Benches a phase may lean on, by the name the `JUDGE SEATS` line prints.
- 
+
  @example
  ```ts
  const bench: BenchName = 'translators';
@@ -53,11 +53,11 @@ export type BenchName =
 
 /**
  Phase a seat reading is taken for.
- 
+
  `translate lane` since the thirteenth class: the lanes phase seats both
  lanes at once, and the translate lane starts after the repair lane has
  spent minutes, which is long enough for a provider to be held out.
- 
+
  @example
  ```ts
  const phase: JudgeSeatPhase = 'lane contest';
@@ -74,7 +74,7 @@ export type JudgeSeatPhase =
 
 /**
  Which benches each phase cannot run without.
- 
+
  Preparation pairs blocks and reviews the archive with the wide bench; the
  pictures phase reads with the readers; the lanes need critics, panel and
  judges (wide), editors and refiners for repair and writers for translate
@@ -118,11 +118,11 @@ const READER_QUORUM = 2;
 
 /**
  Names the benches one phase cannot run without.
- 
+
  @param phase - phase about to start
- 
+
  @returns Bench names in the order the shortfall line prints them
- 
+
  @example
  ```ts
  phaseBenches({ phase: 'translate lane', },);
@@ -137,13 +137,13 @@ export function phaseBenches(
 
 /**
  Seats some wet provider would take a call for.
- 
+
  @param seats - bench under question
- 
+
  @param dry - dryness per provider, holds folded in
- 
+
  @returns Seats the router could send somewhere right now
- 
+
  @example
  ```ts
  const reachable = reachableSeats({ seats: wideSeats, dry, },);
@@ -168,16 +168,16 @@ export function reachableSeats(
 
 /**
  Benches that cannot reach quorum among the seats a wet provider serves.
- 
+
  @param benches - each bench the phase leans on, keyed by name
- 
+
  @param names - benches to read, in the order the shortfall line prints them
- 
+
  @param dry - dryness per provider, holds folded in
- 
+
  @returns One clause per short bench naming reachable seats against the
  quorum, empty when every bench can settle
- 
+
  @example
  ```ts
  shortBenches({ benches, names: phaseBenches({ phase, },), dry, },);

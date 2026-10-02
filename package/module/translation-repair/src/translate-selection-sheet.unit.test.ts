@@ -1,6 +1,6 @@
 /**
  Tests for what the translate lane's judges are told.
- 
+
  WHY A SHEET OF CONSTANTS IS WORTH PINNING. These strings are the only thing
  standing between a judge and the wrong reading of `nothing added`. Measured on
  one contested slice, three of six judges rejected a candidate for carrying a
@@ -8,14 +8,14 @@
  separate names criterion did not stop them, because it reads as spelling
  guidance while `nothing added` reads as a rule. Losing the carve-out again
  would cost accurate detail on memorial pages and nothing here would fail.
- 
+
  AND THE CARVE-OUT HAS ITS OWN FAILURE MODE, measured on the consolidation
  bed once it was written without a scope: a judge abstained from a whole slate
  because no candidate carried the declared LOCATION, and a shipped rendering
  signed a note left by a friend of the deceased with the deceased's own name,
  alias and city. Both directions are pinned here, because a sheet edit that
  fixes one by reopening the other would otherwise pass.
- 
+
  @module
  */
 
@@ -35,7 +35,7 @@ import {
 
 /**
  Clause the line-structure criterion overrides, spelled as both carry it.
- 
+
  WRITTEN OUT HERE rather than imported, because a case importing the constant
  would compare the sheet against itself and pass however the sentence was
  edited. The point is that this exact wording still reaches a judge.

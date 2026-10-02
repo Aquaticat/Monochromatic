@@ -19,7 +19,7 @@ import type { ClaimPanelReading, } from './panel-reading.ts';
  `source-defect` asserts the original text itself is wrong at the claimed
  spot, which must block "corrections" toward corruption;
  `abstain` withdraws from the electorate for that claim.
- 
+
  @example
  ```ts
  PANEL_VOTE_STATES.includes('supported',);
@@ -35,7 +35,7 @@ export const PANEL_VOTE_STATES = [
 
 /**
  One panelist's judgment of one claim.
- 
+
  @example
  ```ts
  const vote: PanelVoteState = 'supported';
@@ -45,11 +45,11 @@ export type PanelVoteState = typeof PANEL_VOTE_STATES[number];
 
 /**
  Guards untrusted vote strings from model JSON.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value names one listed vote state
- 
+
  @example
  ```ts
  isPanelVoteState('supported',);
@@ -95,7 +95,7 @@ export type BallotVerdict = {
  One panelist's complete resolved ballot over one chunk's clusters.
  Missing claims count as abstentions at tally time, so a panelist who
  answers half the sheet weakens only its own influence.
- 
+
  @example
  ```ts
  const ballot: PanelBallot = {
@@ -128,7 +128,7 @@ export type PanelBallot = {
  Fate of one adjudicated issue.
  `source-defect` outranks acceptance because correcting toward a corrupted
  original is worse than leaving the translation alone.
- 
+
  @example
  ```ts
  const status: AdjudicationStatus = 'accepted';
@@ -144,7 +144,7 @@ export type AdjudicationStatus =
  Weighted vote counts over one claim, kept on the issue for calibration
  and steering; weights default to one per panelist until canary
  calibration supplies better ones.
- 
+
  @example
  ```ts
  const tally: VoteTally = {
@@ -185,7 +185,7 @@ export type VoteTally = {
  so accepted issues contain only accepted claims. A source-defect decision
  still blocks the entire merged cluster, whose members may have mixed statuses.
  Per-claim tallies stay attached for calibration.
- 
+
  @example
  ```ts
  const issue: AdjudicatedIssue = {
@@ -228,14 +228,14 @@ export type AdjudicatedIssue = {
 
   /**
    Per-claim BALLOTS behind those tallies, keyed by claim id.
-   
+
    BESIDE {@link AdjudicatedIssue.tallies} RATHER THAN INSIDE IT, because the
    tally is the decision and the ballots are the evidence for it. Keeping them
    in one record is what made the evidence easy to drop: five weighted numbers
    look complete on their own, and cannot say whether an acceptance was
    unanimous or one weighted vote wide, cannot name a dissenter, and cannot be
    re-tallied under a different weight table.
-   
+
    OPTIONAL, AND ITS ABSENCE HAS ONE MEANING: this issue was not built by
    `tallyVotes`. A deduplicated issue may have readings for only its known
    members when it combines current records with older records.
@@ -253,7 +253,7 @@ export type AdjudicatedIssue = {
    record, so the panel stays provenance-blind and the artifact's reader no
    longer joins `sliceCritics[].claimAttributions` by hand to learn who
    filed a claim the panel accepted.
-   
+
    OPTIONAL WITH ONE MEANING: absent where no filer is on record, which is an
    issue rebuilt from an older artifact, a probe fixture, or a claim the
    reference screen filed itself. A claim on record always names at least
@@ -264,7 +264,7 @@ export type AdjudicatedIssue = {
 
 /**
  Tally rules; every knob is calibratable by the scorecard later.
- 
+
  @example
  ```ts
  const config: AdjudicationConfig = DEFAULT_ADJUDICATION_CONFIG;

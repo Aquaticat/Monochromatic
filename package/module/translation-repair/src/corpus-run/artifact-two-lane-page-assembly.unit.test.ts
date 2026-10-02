@@ -1,7 +1,7 @@
 /**
  Tests the page assembly section: its parsing across generations and the
  per-slice override reading.
- 
+
  @module
  */
 

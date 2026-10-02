@@ -1,10 +1,10 @@
 /**
  Tests for the one spelling of a silent stage and the question the caches ask.
- 
+
  A settlement reached while a stage heard nobody was once cached, because the
  quorum gather reports shortfall as a finding and no cache read it. The cases
  hold the producer's spelling and the consumers' reading together.
- 
+
  @module
  */
 

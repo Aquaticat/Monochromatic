@@ -1,17 +1,17 @@
 /**
  Tests for the sheet asking a producer to consolidate one slice.
- 
+
  WHAT THIS FILE EXISTS TO STOP. A producer told only that two renderings exist
  picks one. The whole reason this stage exists is that at least one slice of
  the eight-entry reading had each lane right about a DIFFERENT part of the same
  passage, so the sheet has to say that taking one clause from each is allowed,
  and has to say that where the candidates agree they may both be wrong.
- 
+
  It also has to present the judges' findings as claims. Obeying a false finding
  introduces a defect this pipeline authored itself.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -46,16 +46,16 @@ const bare: ConsolidateSubject = {
 
 /**
  Joins the content of every message with one role.
- 
+
  JOINED RATHER THAN INDEXED, because indexing a message out of the array would
  need a non-null assertion in every case.
- 
+
  @param subject - what the producer is shown
- 
+
  @param role - which side of the exchange to read
- 
+
  @returns That role's content, joined
- 
+
  @example
  ```ts
  const sheet = partFor({ subject: bare, role: 'system', },);
@@ -82,11 +82,11 @@ function partFor(
 
 /**
  Instructions the producer is given.
- 
+
  @param subject - what the producer is shown
- 
+
  @returns System content
- 
+
  @example
  ```ts
  const sheet = sheetFor({ subject: bare, },);
@@ -103,15 +103,15 @@ function sheetFor(
 
 /**
  Evidence the producer is shown.
- 
+
  SEPARATE FROM THE SHEET, because the instructions name DECLARED NAMES as a
  rule whether or not this slice has any, so a test asking whether the block was
  rendered would pass on the rule's own wording.
- 
+
  @param subject - what the producer is shown
- 
+
  @returns User content
- 
+
  @example
  ```ts
  const shown = shownFor({ subject: bare, },);

@@ -20,7 +20,7 @@ const gitLog = contextRoot({ tag: 'git-command', },);
 
 /**
  Real git binary, preferred over the PATH entry.
- 
+
  `git` on this repository's PATH resolves to `node_modules/.bin/git`, a shim
  carrying staging guards. Those guards are irrelevant to read-only calls, but
  resolving through a shim makes ancestry depend on a wrapper that exists for
@@ -30,7 +30,7 @@ const SYSTEM_GIT = '/usr/bin/git';
 
 /**
  One in-flight or settled probe for the git command, keyed by the path probed.
- 
+
  A Map rather than a module-root `let`, which the lint rule forbids and which
  this does not need: the entry is written once. Holding a PROMISE rather than a
  value keeps resolution on first use rather than on import, so loading this
@@ -41,9 +41,9 @@ const gitProbe = new Map<string, Promise<string>>();
 
 /**
  Finds a git to spawn, preferring the real binary over the PATH entry.
- 
+
  @returns Command name or absolute path
- 
+
  @example
  ```ts
  const git = await detectGit();
@@ -68,12 +68,12 @@ async function detectGit(): Promise<string> {
 
 /**
  Git command to spawn, resolved once per process.
- 
+
  Not itself async: it hands back the memoised promise, so concurrent callers
  share one probe rather than racing several.
- 
+
  @returns Promise of the command to spawn
- 
+
  @example
  ```ts
  const git = await resolveGit();

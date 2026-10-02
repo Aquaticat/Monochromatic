@@ -24,7 +24,7 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 /**
  Fate of one slice under the two widths, named exhaustively so a slice that
  fits none of them is a defect rather than a silent omission.
- 
+
  `nothing-shipped` covers both slates declining, which says nothing about
  width. `same-text` is the common case and is the answer for that slice:
  widening changed nothing here. Only `differs` earns a head-to-head.
@@ -33,7 +33,7 @@ export type WidthComparison = 'nothing-shipped' | 'same-text' | 'differs';
 
 /**
  Which winner the panel preferred when both were put on one slate.
- 
+
  `position-decided` is a REAL OUTCOME rather than a failure. The two orders
  disagreed, so the slate position decided the ballot rather than the text, and
  counting that as a win for whichever order ran first is how a position bias
@@ -43,7 +43,7 @@ export type HeadToHeadVerdict = 'wide-wins' | 'narrow-wins' | 'position-decided'
 
 /**
  Which half of the sample a run spends.
- 
+
  The sample is split rather than redrawn so a result near its own null band
  has a second, untouched reading available. That only means anything if the
  second half can actually be run, which is what this selects.
@@ -57,7 +57,7 @@ export type WidthArm = 'narrow' | 'wide';
 
 /**
  Everything one slice contributed, with no passage text in it.
- 
+
  TEXTS ARE DELIBERATELY ABSENT. This record is what the report prints and what
  a later session reads, and the corpus is unlicensed, so the comparison keeps
  hashes and lengths rather than the words they stand for.
@@ -96,7 +96,7 @@ export type WidthRow = {
 
   /**
    Whether each arm shipped a repair at all.
-   
+
    SEPARATE FROM THE COMPARISON because the wide arm fields twice the
    candidates against the same selection minimum, so it can split its own vote
    and settle on the incumbent where the narrow arm settled on a repair. That
@@ -143,13 +143,13 @@ export type WidthRow = {
 
 /**
  Reads the two arms into one classification.
- 
+
  @param narrowText - text the narrow arm shipped, blank when it shipped none
- 
+
  @param wideText - text the wide arm shipped, blank when it shipped none
- 
+
  @returns Which of the three cases this slice is
- 
+
  @example
  ```ts
  const comparison = classifyWidths({ narrowText, wideText, },);
@@ -178,17 +178,17 @@ export function classifyWidths(
 
 /**
  Reads two ordered head-to-head rounds into one verdict.
- 
+
  ORDERS MUST AGREE. Each round is the same pair of texts judged by the same
  panel, differing only in which sat first, so a disagreement is the position
  talking. Reporting the first order alone would launder that into a result.
- 
+
  @param firstOrderWinner - arm the panel preferred with the narrow text first
- 
+
  @param secondOrderWinner - arm it preferred with the wide text first
- 
+
  @returns Verdict for this pair
- 
+
  @example
  ```ts
  const verdict = readHeadToHead({ firstOrderWinner: 'wide', secondOrderWinner: 'wide', },);
@@ -230,7 +230,7 @@ export function readHeadToHead(
 export type WidthSummary = {
   /**
    Slices that produced a row at all.
-   
+
    EVERY row, including those where neither arm shipped anything. The band
    and the move count are both read over this same set, which is what makes
    comparing them legitimate; see {@link WidthSummary.churned}.
@@ -239,7 +239,7 @@ export type WidthSummary = {
 
   /**
    Slices where neither arm shipped a repair.
-   
+
    Reported so the reader can see how much of the draw was trivial, without
    removing those slices from the two counts that are compared against each
    other.
@@ -254,7 +254,7 @@ export type WidthSummary = {
   /**
    Slices where the narrow arm run twice shipped different text. This is the
    null band for {@link WidthSummary.moved} and is measured, not assumed.
-   
+
    COUNTED OVER EVERY ROW, for the same reason the move count is. Restricting
    the band to slices whose arms differed would drop exactly the rows that can
    carry churn but can never carry a move: a slice where both arms shipped
@@ -266,7 +266,7 @@ export type WidthSummary = {
 
   /**
    Slices that moved WITHOUT churning.
-   
+
    THIS AND ITS PARTNER ARE WHAT DECIDE IT. Both bits are measured on the same
    slice, so slices where they agree carry no information about which happens
    more: a slice that both moved and churned would have changed anyway, and a
@@ -278,7 +278,7 @@ export type WidthSummary = {
 
   /**
    Slices that churned without moving, the other half of the paired reading.
-   
+
    When this is not smaller than {@link WidthSummary.movedNotChurned}, the lane
    changes its own mind at least as readily as doubling the roster changes it,
    and width has not been shown to do anything.
@@ -319,11 +319,11 @@ export type WidthSummary = {
 
 /**
  Whether widening moved this slice's shipped text.
- 
+
  @param row - one slice's comparison
- 
+
  @returns Whether the two arms shipped different text
- 
+
  @example
  ```ts
  const moved = movedText(row,);
@@ -335,11 +335,11 @@ function movedText(row: WidthRow,): boolean {
 
 /**
  Whether widening changed this slice when the lane would not have.
- 
+
  @param row - one slice's comparison
- 
+
  @returns Whether it moved and did not churn
- 
+
  @example
  ```ts
  const attributable = movedWithoutChurning(row,);
@@ -351,11 +351,11 @@ function movedWithoutChurning(row: WidthRow,): boolean {
 
 /**
  Whether the lane changed this slice on its own without widening changing it.
- 
+
  @param row - one slice's comparison
- 
+
  @returns Whether it churned and did not move
- 
+
  @example
  ```ts
  const noise = churnedWithoutMoving(row,);
@@ -367,11 +367,11 @@ function churnedWithoutMoving(row: WidthRow,): boolean {
 
 /**
  Whether the narrow arm shipped a repair the wide arm did not.
- 
+
  @param row - one slice's comparison
- 
+
  @returns Whether widening cost this slice its repair
- 
+
  @example
  ```ts
  const suppressed = onlyNarrowShipped(row,);
@@ -383,11 +383,11 @@ function onlyNarrowShipped(row: WidthRow,): boolean {
 
 /**
  Whether the wide arm shipped a repair the narrow arm did not.
- 
+
  @param row - one slice's comparison
- 
+
  @returns Whether widening bought this slice a repair
- 
+
  @example
  ```ts
  const gained = onlyWideShipped(row,);
@@ -399,11 +399,11 @@ function onlyWideShipped(row: WidthRow,): boolean {
 
 /**
  Whether neither arm shipped a repair on this slice.
- 
+
  @param row - one slice's comparison
- 
+
  @returns Whether both arms left the translation as it stood
- 
+
  @example
  ```ts
  const trivial = shippedNothing(row,);
@@ -415,11 +415,11 @@ function shippedNothing(row: WidthRow,): boolean {
 
 /**
  Whether the narrow arm run twice disagreed with itself.
- 
+
  @param row - one slice's comparison
- 
+
  @returns Whether the repeat shipped different text
- 
+
  @example
  ```ts
  const churned = churnedOnRepeat(row,);
@@ -431,13 +431,13 @@ function churnedOnRepeat(row: WidthRow,): boolean {
 
 /**
  Counts rows a predicate holds for.
- 
+
  @param rows - rows to count over
- 
+
  @param holds - predicate naming what is being counted
- 
+
  @returns How many held
- 
+
  @example
  ```ts
  const moved = countWhere({ rows, holds: movedText, },);
@@ -459,13 +459,13 @@ function countWhere(
 
 /**
  Counts rows carrying one verdict.
- 
+
  @param rows - rows to count over
- 
+
  @param verdict - verdict being counted
- 
+
  @returns How many carried it
- 
+
  @example
  ```ts
  const wins = countVerdict({ rows, verdict: 'wide-wins', },);
@@ -489,12 +489,12 @@ function countVerdict(
 
 /**
  Counts the rows into the summary the decision reads.
- 
+
  @param rows - every slice the draw produced
- 
+
  @returns Counts, with no rate computed: a rate over a handful of slices
  invites reading three of seven as a percentage
- 
+
  @example
  ```ts
  const summary = summarizeWidths({ rows, },);

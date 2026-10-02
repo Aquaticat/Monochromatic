@@ -13,7 +13,7 @@ import { compareCodePoints, } from '../code-points.ts';
 
 /**
  One critic behind one claim, as far as the report needs to read it.
- 
+
  @example
  ```ts
  const proposer: ProposerView = { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 1, };
@@ -33,13 +33,13 @@ export type ProposerView = {
 
 /**
  Bumps one critic's counter.
- 
+
  @param counter - counter to bump
- 
+
  @param modelId - critic to credit
- 
+
  @param by - amount to add
- 
+
  @example
  ```ts
  bump({
@@ -68,12 +68,12 @@ function bump(
 
 /**
  One chunk's calibration, as far as the report needs to read it.
- 
+
  Structurally what `SliceCriticRecord` is, with model ids widened to plain
  strings. Stated independently so the reader can PARSE an artifact into this
  without asserting unknown strings into the model-id union, and a real
  `SliceCriticRecord` still satisfies it.
- 
+
  @example
  ```ts
  const view: SliceCriticView = { sliceIndex: 0, heardCriticIds: [], claimAttributions: [], };
@@ -108,7 +108,7 @@ export type SliceCriticView = {
 
 /**
  One accepted issue, as far as attribution needs to read it.
- 
+
  @example
  ```ts
  const record: AcceptedIssueView = { status: 'accepted', claimIds: ['issue/ab',], };
@@ -128,7 +128,7 @@ export type AcceptedIssueView = {
 
 /**
  One settled entry, as far as attribution needs to read it.
- 
+
  @example
  ```ts
  const entry: AttributionEntry = { id: 'Acheron', sliceCritics, issues, };
@@ -155,14 +155,14 @@ export type AttributionEntry = {
 /**
  An entry the eligibility filter has narrowed to, carrying `sliceCritics` as a
  required field rather than an optional one.
- 
+
  NAMED RATHER THAN INLINE, so the eligibility filter in
  `buildAttributionReport` can state it as a type guard.
  `Array.prototype.filter` narrows its result to this type only when the
  predicate itself reads `entry is EligibleAttributionEntry`, and a predicate
  typed to return plain `boolean` would leave every call downstream reading
  `entry.sliceCritics` as possibly absent all over again.
- 
+
  @example
  ```ts
  const eligible: readonly EligibleAttributionEntry[] = entries.filter(carriesAttribution,);
@@ -177,7 +177,7 @@ type EligibleAttributionEntry = AttributionEntry & {
 
 /**
  What one critic did across the eligible population.
- 
+
  @example
  ```ts
  const tally: CriticTally = { modelId, chunksHeard: 40, claimsRaised: 12, emissions: 14, acceptedHits: 9, };
@@ -213,7 +213,7 @@ export type CriticTally = {
 
 /**
  Everything the attribution reader can say about a run.
- 
+
  @example
  ```ts
  const report = buildAttributionReport({ entries, },);
@@ -268,7 +268,7 @@ export type AttributionReport = {
 
   /**
    Accepted issues where SOME member claims attributed and others did not.
-   
+
    Excluded from every other count here. A partial join is a defect rather
    than a measurement: the unattributed member may have come from a critic
    that gets no credit, so calling the issue sole-proposer would be a guess
@@ -279,11 +279,11 @@ export type AttributionReport = {
 
 /**
  Indexes an entry's attributions by claim id.
- 
+
  @param sliceCritics - per-chunk calibration records
- 
+
  @returns Claim id to proposer list
- 
+
  @example
  ```ts
  const index = indexProposers({ sliceCritics, },);
@@ -327,11 +327,11 @@ function indexProposers(
 
 /**
  What one accepted issue rested on.
- 
+
  Separated from the counting so each count is a `filter` over a fact already
  established, rather than a counter mutated in a loop that also decides the
  fact.
- 
+
  @example
  ```ts
  const support: IssueSupport = { contributors: ['hf:openai/gpt-oss-120b',], repeated: false, };
@@ -345,7 +345,7 @@ type IssueSupport = {
 
   /**
    Claims of this issue the attribution index does not hold.
-   
+
    Zero for a sound join. A count between zero and the issue's claim total is
    a PARTIAL join, where some support is known and some missing, and such an
    issue cannot honestly be called sole-proposer or multi-proposer: the
@@ -362,13 +362,13 @@ type IssueSupport = {
 
 /**
  Reads what one accepted issue rested on.
- 
+
  @param issue - accepted issue
- 
+
  @param proposersOf - proposers by claim id, for the issue's own entry
- 
+
  @returns Support behind it
- 
+
  @example
  ```ts
  const support = readIssueSupport({ issue, proposersOf, },);
@@ -408,15 +408,15 @@ function readIssueSupport(
 
 /**
  Turns recorded attribution into per-critic rates and support counts.
- 
+
  Restricted to entries carrying `sliceCritics`, because an entry settled
  before attribution existed records no proposer for a claim its critics did
  raise, and counting it would understate every critic at once.
- 
+
  @param entries - settled entries in any order
- 
+
  @returns Report over the eligible population only
- 
+
  @example
  ```ts
  const report = buildAttributionReport({ entries, },);
@@ -431,7 +431,7 @@ export function buildAttributionReport(
 ): AttributionReport {
   /**
    Entries that could record attribution at all.
-   
+
    TYPED AS A GUARD rather than a plain predicate, so `eligible` carries
    `sliceCritics` as a required field for the rest of this function: every
    `?? []` that follows would otherwise be load-bearing rather than defensive,
@@ -525,7 +525,7 @@ export function buildAttributionReport(
 
   /**
    Accepted issues whose join is PARTIAL: some claims attributed, some not.
-   
+
    Held out of every other count in this report rather than counted anywhere. An issue like
    this is a defect in the join, not a datum about critics, and averaging it
    in would let a broken join read as a confident calibration.

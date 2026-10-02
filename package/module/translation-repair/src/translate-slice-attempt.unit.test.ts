@@ -1,11 +1,11 @@
 /**
  Tests for one slice's attempt at translation, as the document driver asks it.
- 
+
  The attempt settles a record or propagates operational interruption.
  An absent passage never becomes a settled empty or unfilled quality result.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -92,9 +92,9 @@ const MODELS: TranslateModels = {
 /**
  Client nobody is scripted on: every structured reply fails the wire guard,
  so no translator is heard and no judge has anything to rank.
- 
+
  @returns Client answering nothing usable
- 
+
  @example
  ```ts
  const client = silentClient();
@@ -119,14 +119,14 @@ function silentClient(): SyntheticClient {
 /**
  Prepared pair with one insertion appended, the way the document driver
  appends a passage the archive never translated.
- 
+
  BUILT BY HAND rather than prepared from a mismatched pair, because the
  deterministic aligner refuses a heading-count mismatch outright and yields no
  slices at all; the pairing that would place the missing section is LLM
  assisted and not what this suite is about.
- 
+
  @returns Pair carrying two content slices and one insertion
- 
+
  @example
  ```ts
  const prepared = await pairWithInsertion();
@@ -163,13 +163,13 @@ async function pairWithInsertion(): Promise<PreparedDocumentPair> {
 
 /**
  Attempts one slice of the fixture pair with the silent client.
- 
+
  @param prepared - pair the slice was cut from
- 
+
  @param slice - slice to attempt
- 
+
  @returns What the attempt yielded
- 
+
  @example
  ```ts
  const attempt = await attemptSilently({ prepared, slice, },);

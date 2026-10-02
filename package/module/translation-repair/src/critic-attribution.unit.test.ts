@@ -1,6 +1,6 @@
 /**
  Tests for critic attribution, the record of WHICH critic raised each claim.
- 
+
  The distinction these cases exist to protect is between one critic repeating
  itself and several critics agreeing. Both look like extra emissions of the
  same claim, and a flat list of model ids renders them identically, but they
@@ -8,13 +8,13 @@
  independent support. Measured over 12 settled entries, 83.1% of accepted
  issues rest on a single deduplicated claim, so this is the common case rather
  than an edge one.
- 
+
  Attribution is calibration data only. It must never reach adjudication, which
  is provenance-blind by design because a real defect can arrive with exactly
  one proposer.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -64,11 +64,11 @@ const PURR_CLAIM = 'issue/purr';
 
 /**
  Builds an emission list without repeating the object shape in every case.
- 
+
  @param pairs - claim id and model id in emission order
- 
+
  @returns Emissions ready to fold
- 
+
  @example
  ```ts
  const emissions = emissionsOf([[NAP_CLAIM, TABBY,],],);

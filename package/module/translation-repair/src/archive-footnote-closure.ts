@@ -21,11 +21,11 @@ export type { RelabelClosure, } from './footnote-closure-model.ts';
 /**
  Distinct labels a text carries, references and definition openers alike,
  in order of first appearance.
- 
+
  @param text - document to read
- 
+
  @returns Labels, each once
- 
+
  @example
  ```ts
  documentLabels({ text: 'A[^2].\n\n[^1]: one\n\n[^2]: two\n' });
@@ -39,7 +39,7 @@ export function documentLabels({ text, }: { readonly text: string; },): readonly
  Builds an injective simultaneous label rewrite without inventing source correspondence for archive apparatus.
  The existing one-remaining-label elimination is allowed. Fresh displacement is allowed only when
  every original label is accounted for and destination occupancy is the remaining obstacle.
- 
+
  INJECTIVE BY CONSTRUCTION, so no check of it runs here (ledger T8, eighteenth
  batch, which removed one no input reached). The supplied relations are
  injective (`readFootnoteClosureInput` refuses any that are not); the
@@ -50,15 +50,15 @@ export function documentLabels({ text, }: { readonly text: string; },): readonly
  closes every map over every pair of small label sets and reads each result's
  destinations distinct, and applying a map that would merge identifiers is
  refused where it is applied (`footnote-rewrite-map.ts`, kind `collision`).
- 
+
  @param map - supplied positive correspondences, including identity relations when known
- 
+
  @param archiveLabels - complete archive identifier universe
- 
+
  @param originalLabels - complete original identifier universe
- 
+
  @returns Closed operational map with separate provenance, or an explicit refusal
- 
+
  @example
  ```ts
  const closure = closeFootnoteRelabel({ map: [{ from: '2', to: '1' }], archiveLabels: ['1', '2'], originalLabels: ['2', '1'] });

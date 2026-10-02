@@ -23,7 +23,7 @@ import { runSliceArms, } from './window-trial-slice.ts';
 
 /**
  What one drawn slice yielded.
- 
+
  @example
  ```ts
  const outcome: PickOutcome = { kind: 'refused', };
@@ -48,36 +48,36 @@ export type PickOutcome = {
 
 /**
  Buys one slice's arms, reporting a refusal rather than raising it.
- 
+
  THE LIVE WINDOW CHECK IS NOT CAUGHT HERE, because it does not run here: it
  reads the witness after this returns, so its refusal propagates out of the
  walk on its own. A guard for it inside this catch would be a branch nothing
  reaches.
- 
+
  @param client - injected model client
- 
+
  @param slices - every prepared slice of this entry, for the window
- 
+
  @param pick - slice to buy, with its class label
- 
+
  @param entryId - entry it belongs to
- 
+
  @param protocol - digest this run buys under
- 
+
  @param ledgerPath - where completed arms are appended
- 
+
  @param done - arms already bought, as keys
- 
+
  @param models - translator and judge rosters
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - run logger
- 
+
  @returns Arms bought, or the fact that this slice refused
- 
+
  @example
  ```ts
  const outcome = await runPick({ client, slices, pick, ... },);

@@ -1,14 +1,14 @@
 /**
  Tests for writing an artifact no concurrent reader can catch half-written.
- 
+
  The window is small and the consequence is a silently wrong denominator: a
  partial file is classified as malformed, the pool keeps malformed files on
  purpose so the reader that reports them still sees them, and a later reader
  parses the now-complete file and counts it without the generation checks it
  should have faced.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

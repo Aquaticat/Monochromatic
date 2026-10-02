@@ -67,17 +67,17 @@ const SHARE_PLACES = 1;
 
 /**
  Renders a span in the largest unit it fills.
- 
+
  THREE UNITS RATHER THAN HOURS ALONE. The same report reads a six-hour corpus
  pass and a thirty-second probe, and printing both in hours prints the probe
  as `0.01h`, which is indistinguishable from a run that did nothing. Choosing
  the unit per figure keeps a short span legible without making a long one
  unreadable.
- 
+
  @param ms - span to render
- 
+
  @returns Text for a report column
- 
+
  @example
  ```ts
  console.log(asSpan({ ms: 22_140_000, },),);
@@ -93,9 +93,9 @@ function asSpan({ ms, }: { readonly ms: number; },): string {
 
 /**
  Reports what the rounds spent, split into work and waiting.
- 
+
  @param reading - every timing line the log held
- 
+
  @example
  ```ts
  printRounds({ reading, },);
@@ -143,9 +143,9 @@ function printRounds({ reading, }: { readonly reading: RunTiming; },): void {
 
 /**
  Reports how many calls the run had in flight.
- 
+
  @param flight - what the sweep counted
- 
+
  @example
  ```ts
  printInFlight({ flight, },);
@@ -171,13 +171,13 @@ function printInFlight({ flight, }: { readonly flight: InFlight; },): void {
 
 /**
  Reads every named log and reports where its hours went.
- 
+
  Returns nothing: the report on stdout IS the output.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`,
  which refuses it when no log is named: any log a pass, probe or calibration
  wrote will do, and passing several reads them as one run
- 
+
  @example
  ```ts
  await reportRunTiming({ line, },);

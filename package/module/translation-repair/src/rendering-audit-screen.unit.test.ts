@@ -1,15 +1,15 @@
 /**
  Tests for what survives screening of one auditor's answer.
- 
+
  THE OBLIGATION RUNS BOTH WAYS, and half of these cases exist for the
  direction the first version left unenforced: a category resting on one side
  must not carry a quote on the other. An `omission` arriving with candidate
  text contradicts itself, and silently erasing that text let a voice file a
  paired claim under a one-sided category and escape the evidence the paired
  one asks for.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -47,11 +47,11 @@ const OVERLONG_LENGTH = 40;
 
 /**
  Fields a case may replace on the sound finding.
- 
+
  SPELLED OUT rather than derived from the wire type, because every property
  here is genuinely optional to a case: one that changes only the category
  should not restate four quotes it does not care about.
- 
+
  @example
  ```ts
  const overrides: FindingOverrides = { category: 'omission', };
@@ -91,11 +91,11 @@ type FindingOverrides = {
 
 /**
  One finding with every field, which each case overrides one part of.
- 
+
  @param overrides - fields this case changes
- 
+
  @returns Finding as a voice would send it
- 
+
  @example
  ```ts
  const finding = claim({ overrides: { category: 'omission', }, },);
@@ -117,13 +117,13 @@ function claim(
 
 /**
  Screens one answer carrying one finding.
- 
+
  @param overrides - fields that finding changes
- 
+
  @param verdict - what the voice cast
- 
+
  @returns Screened report
- 
+
  @example
  ```ts
  const screened = screenOne({ overrides: {}, },);

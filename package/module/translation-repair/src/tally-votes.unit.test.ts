@@ -1,7 +1,7 @@
 /**
  Tests for pure ballot aggregation into adjudicated issues.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

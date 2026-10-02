@@ -1,12 +1,12 @@
 /**
  Tests for invisible-line masking.
- 
+
  The fixtures use the shape that OCCURS: a line holding only a byte-order
  mark, with ordinary sentences directly above and below and no blank line
  anywhere near it. An earlier attempt at this fix was written against a
  hypothesis instead, a lone mark surrounded by blank lines, and it passed
  while leaving the corpus case untouched.
- 
+
  @module
  */
 

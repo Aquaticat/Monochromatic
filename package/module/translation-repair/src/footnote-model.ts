@@ -8,7 +8,7 @@
 
 /**
  Syntax family a footnote reference or definition was expressed in.
- 
+
  @example
  ```ts
  const convention: FootnoteConvention = 'gfm';
@@ -18,7 +18,7 @@ export type FootnoteConvention = 'gfm' | 'fullwidth-bracket';
 
 /**
  One in-text reference to a footnote.
- 
+
  @example
  ```ts
  const ref: FootnoteReferenceHit = {
@@ -54,7 +54,7 @@ export type FootnoteReferenceHit = {
 
 /**
  One footnote definition.
- 
+
  @example
  ```ts
  const def: FootnoteDefinitionHit = {
@@ -85,7 +85,7 @@ export type FootnoteDefinitionHit = {
  Integrity defect discovered while validating reference-to-definition mapping.
  Findings feed human checkpoints;
  marker-count parity alone proves nothing, so validation works on the graph.
- 
+
  @example
  ```ts
  const finding: FootnoteGraphFinding = {
@@ -123,7 +123,7 @@ export type FootnoteGraphFinding = {
 
 /**
  Complete footnote graph of one document.
- 
+
  @example
  ```ts
  const graph: FootnoteGraph = { references: [], definitions: [], findings: [], };

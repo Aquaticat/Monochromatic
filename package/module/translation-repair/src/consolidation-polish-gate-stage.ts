@@ -41,7 +41,7 @@ const RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat({
 
 /**
  Result of final naturalness gate.
- 
+
  @example
  ```ts
  const outcome: ConsolidationPolishGateOutcome = { choice: 'base', ships: 'base', ballots: [], usable: 0, findings: [], };
@@ -76,13 +76,13 @@ export type ConsolidationPolishGateOutcome = {
 
 /**
  Counts ballots naming candidate.
- 
+
  @param ballots - usable ballots
- 
+
  @param choice - candidate to count
- 
+
  @returns Number naming candidate
- 
+
  @example
  ```ts
  const votes = polishVotesFor({ ballots, choice: 'polished', });
@@ -108,11 +108,11 @@ function polishVotesFor(
 
 /**
  Settles naturalness ballots with approved base winning every tie.
- 
+
  @param ballots - usable ballots
- 
+
  @returns Clear winner or refusal
- 
+
  @example
  ```ts
  const choice = settleConsolidationPolishBallots({ ballots, });
@@ -144,21 +144,21 @@ export function settleConsolidationPolishBallots(
 
 /**
  Asks roster whether naturalness polish may replace approved base.
- 
+
  @param client - shared provider client
- 
+
  @param modelIds - fidelity and naturalness judges
- 
+
  @param subject - original and both English candidates
- 
+
  @param signal - caller cancellation
- 
+
  @param exchangeTimeoutMs - per-call ceiling
- 
+
  @param l - parent logger
 
  @returns Panel outcome with conservative shipping choice
- 
+
  @example
  ```ts
  const outcome = await gateConsolidationPolish({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });

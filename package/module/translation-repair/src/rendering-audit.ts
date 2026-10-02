@@ -51,7 +51,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  One auditor's screened answer, kept whole.
- 
+
  @example
  ```ts
  const row: AuditVoiceRow = { modelId, verdict: 'no-defect-found', findings: [], dropped: [], };
@@ -82,7 +82,7 @@ export type AuditVoiceRow = {
 
 /**
  Everything one audit produced about one rendering.
- 
+
  @example
  ```ts
  const report: RenderingAuditReport = { corroborated: [], near: [], rows: [], findings: [], };
@@ -123,24 +123,24 @@ export type RenderingAuditReport = {
 
 /**
  Audits one rendering against its original.
- 
+
  @param client - injected model client
- 
+
  @param subject - original, candidate and any licensed identity evidence
- 
+
  @param modelIds - auditor roster
- 
+
  @param signal - entry deadline and caller abort
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Corroborated defects, every voice's screened answer, and any
  degradation findings
- 
+
  @throws Whatever the gather raises when the caller aborts
- 
+
  @example
  ```ts
  const report = await runRenderingAudit({ client, subject, modelIds, signal, perCallTimeoutMs, l, },);

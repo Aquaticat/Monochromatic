@@ -1,27 +1,27 @@
 /**
  Tests that the artifact pool REFUSES two pools asked for at once.
- 
+
  WHAT THE TWO REQUESTS ARE. `TRANSLATION_REPAIR_REQUIRED_COMMIT` filters the
  pool to entries whose recorded pipeline contains a commit; setting
  `TRANSLATION_REPAIR_POOL_ALL` to its one accepted value takes every
  generation instead. Preferring either silently would record a policy nobody
  chose, and the report printed above the resulting number would name that
  policy as though it had been requested.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting the comparison that reads the
  pool-all variable failed no test in this package. A reader that mistook
  PRESENCE for the accepted VALUE would refuse ordinary invocations and admit
  the contradictory one, which is why both directions are pinned in this file rather
  than the refusal alone.
- 
+
  THE SECOND CASE IS THE DISCRIMINATING ONE. A variable exported with any other
  value is an ordinary shell accident, and folding it together with the request
  it does not make is what separates reading a value from noticing a name.
- 
+
  NO NETWORK, and no shared state: the environment is edited through a
  disposable that puts back whatever was there, and the pool is read out of a
  throwaway directory rather than any real artifacts.
- 
+
  @module
  */
 
@@ -56,15 +56,15 @@ const CONFLICT_WORDING = 'are both set';
 
 /**
  Points two environment variables at given values until disposed.
- 
+
  ABSENCE IS SPELT AS THE EMPTY STRING rather than removing the name, which the
  reader itself folds together with absence: an exported-but-empty variable is
  an ordinary shell accident, and the module says so where it reads them.
- 
+
  @param values - variable names mapped to what they should say
- 
+
  @returns Edit holding what each name now says, which puts them back on disposal
- 
+
  @example
  ```ts
  using edited = environmentSaying({ values: { [POOL_ALL_VAR]: 'yes', }, },);

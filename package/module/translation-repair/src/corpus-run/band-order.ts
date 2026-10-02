@@ -26,7 +26,7 @@ import {
  Page-source byte size below which an entry sits in the small band. The
  corpus page.md sizes fall into rough tertiles with the lower cut near
  1.8 KiB.
- 
+
  Takes its value from `sample-grading.ts` rather than restating it. The bands
  a pass FILLS have to be the bands a sample STRATIFIES over, or the graded
  sheet is drawn from a population the accumulation never balanced. Two
@@ -38,7 +38,7 @@ export const SMALL_PAGE_BYTES: typeof SMALL_BAND_MAX_BYTES = SMALL_BAND_MAX_BYTE
 /**
  Page-source byte size at or above which an entry sits in the large band, the
  upper tertile cut.
- 
+
  Shares its definition with the sampler for the reason given on
  {@link SMALL_PAGE_BYTES}.
  */
@@ -57,7 +57,7 @@ const BANDS = [
 
 /**
  One entry reduced to what ordering needs.
- 
+
  @example
  ```ts
  const sized: SizedEntry = { id: 'Kitten', sourceBytes: 1_920, };
@@ -77,11 +77,11 @@ export type SizedEntry = {
 
 /**
  Band an entry's page source falls in.
- 
+
  @param sourceBytes - page source size in UTF-8 bytes
- 
+
  @returns Band name
- 
+
  @example
  ```ts
  const band = bandOf({ sourceBytes: 1_920, },); // 'medium'
@@ -100,11 +100,11 @@ export function bandOf(
 /**
  Ids sitting in the small band, held as a set so a comparator is a lookup
  rather than a re-measurement on every compare.
- 
+
  @param entries - eligible entries with their page sizes
- 
+
  @returns Ids whose page source is under the small-band cut
- 
+
  @example
  ```ts
  const small = smallBandIds({ entries, },);
@@ -127,11 +127,11 @@ export function smallBandIds(
 /**
  Ranks every entry within its own size band, so a comparator can interleave
  the bands by rank instead of draining one before starting the next.
- 
+
  @param entries - eligible entries with their page sizes
- 
+
  @returns Entry id to zero-based rank within its band
- 
+
  @example
  ```ts
  const ranks = rankWithinBands({ entries, settledPerBand, },);
@@ -178,11 +178,11 @@ export function rankWithinBands(
 /**
  Counts settled entries per band, the offset {@link rankWithinBands} needs to
  keep ordering fair across runs.
- 
+
  @param entries - already-settled entries with their page sizes
- 
+
  @returns Band name to settled count
- 
+
  @example
  ```ts
  const settled = countSettledPerBand({ entries: done, },);

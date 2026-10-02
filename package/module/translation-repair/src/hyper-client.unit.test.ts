@@ -2,7 +2,7 @@
  Tests for the credit-metered provider's client: the Messages-protocol body
  it builds, the stream grammar it names, the spelling it sends, and the
  balance it reads.
- 
+
  @module
  */
 
@@ -42,7 +42,7 @@ const SLOW_TRANSPORT_MS = 30;
 
 /**
  Calls fired at one model to show they are not serialised.
- 
+
  One beyond width measured live,
  proving measured arm did not become artificial local ceiling.
  */
@@ -84,17 +84,17 @@ const RESPONSE_FORMAT = {
 
 /**
  Builds a drained Messages-protocol body carrying one tool call.
- 
+
  MIRRORS A LIVE CAPTURE, `ping` frame included: the keep-alive is a real
  event this provider sends, and a reader that chokes on it fails only against
  the live API where nothing can be replayed.
- 
+
  @param fragments - tool-argument fragments in arrival order
- 
+
  @param stopReason - reason the message ended with
- 
+
  @returns Whole `text/event-stream` body as the transport drains it
- 
+
  @example
  ```ts
  const body = messagesBody({ fragments: ['{"verdict":', '"pass"}',], },);
@@ -183,11 +183,11 @@ type CatVerdict = { readonly verdict: string; };
 
 /**
  Guards parsed model JSON as a verdict.
- 
+
  @param value - parsed candidate
- 
+
  @returns Whether value carries a string verdict
- 
+
  @example
  ```ts
  isCatVerdict({ verdict: 'pass', },);
@@ -199,11 +199,11 @@ function isCatVerdict(value: unknown,): value is CatVerdict {
 
 /**
  Reads the body one recorded exchange sent, parsed.
- 
+
  @param exchanges - exchanges the transport recorded
- 
+
  @returns Parsed request body of the first exchange
- 
+
  @example
  ```ts
  const body = sentBody({ exchanges, },);
@@ -707,9 +707,9 @@ await describe({
 
         /**
          Transport holding each call long enough for overlap to be visible.
-         
+
          @returns One recorded tool call, after the hold
-         
+
          @example
          ```ts
          const reply = await transport();
@@ -767,9 +767,9 @@ await describe({
 
         /**
          Transport whose gate exposes limiter width.
-         
+
          @returns Recorded completion after gate opens
-         
+
          @example
          ```ts
          await transport();

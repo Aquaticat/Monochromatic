@@ -1,15 +1,15 @@
 /**
  Tests for the sheet that asks a model to pair two documents' sections.
- 
+
  THE FENCE IS THE ADVERSARIAL CASE. Both sides are arbitrary prose from an
  archive nobody vets, and a section carrying a run of the fence character
  (`=`, which a setext heading underline is made of) would close its own
  listing under a fixed fence: everything after it would read as sheet
  structure, and a model would be answering about a document the sheet no
  longer describes.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -58,16 +58,16 @@ const TARGET_SECTIONS = [
 
 /**
  Reads the user half of a built sheet, which is where the sections go.
- 
+
  @param sourceSections - original side
- 
+
  @param targetSections - translation side
- 
+
  @returns That message's content
- 
+
  @throws Error when the sheet carries no user message, since a sheet with only
  a policy would ask a model about nothing
- 
+
  @example
  ```ts
  const sheet = sheetFor({ sourceSections, targetSections, },);

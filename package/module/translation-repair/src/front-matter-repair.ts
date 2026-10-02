@@ -23,13 +23,13 @@ const FRONT_MATTER_CRITIC: ChunkCriticPhase = {
 
 /**
  Creates explicit unchanged repair settlement for front matter.
- 
+
  @param sliceIndex - global front matter slice index
- 
+
  @param targetText - archive metadata retained by repair lane
- 
+
  @returns Stable no-op outcome with syntax finding
- 
+
  @example
  ```ts
  const outcome = frontMatterRepairOutcome({ sliceIndex: 0, targetText, });

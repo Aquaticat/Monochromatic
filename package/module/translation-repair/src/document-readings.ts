@@ -41,36 +41,36 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Reads every picture one document's slices name, through the resumable store.
- 
+
  @param client - injected model client
- 
+
  @param slices - prepared slice pairs of one entry
- 
+
  @param assets - picture bytes per asset name, gathered by the caller
- 
+
  @param readerModelIds - vision sub-roster
- 
+
  @param cache - cross-run store, so a resumed run re-reads no picture
- 
+
  @param priorReadings - completed evidence from this same pinned entry before re-preparation
- 
+
  @param signal - entry abort honoured by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - driver logger
 
  @param beforePicture - awaited before each picture the readers are asked about,
  handing it the readers it runs on; none keeps the given ones
- 
+
  @returns What reading produced per asset name, including refusals
- 
+
  @throws {@link DOMException} on the caller's abort, and whatever the reading
  cache raises, which is a disk failure rather than an unreadable picture. A
  READER THAT FAILS IS NOT AMONG THESE: `readImagePair` contains it as an
  unavailable reading, because nothing downstream requires a reading and an
  entry must not be lost to one
- 
+
  @example
  ```ts
  const readings = await readDocumentPictures({ client, readOcr, slices, assets, readerModelIds, cache, signal, perCallTimeoutMs, l, },);

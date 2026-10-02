@@ -1,7 +1,7 @@
 /**
  Tests for reading a picture without a model: counting what OCR yields, and
  refusing bytes no decoder can even turn into a picture.
- 
+
  WHAT THIS PINS. `solidCharacters` is the count `readImageWithOcr` compares
  against `MIN_OCR_CHARS` to decide `read` from `no-text`, so every shape of
  whitespace the raw reading might carry has to be discounted the same way,
@@ -11,13 +11,13 @@
  rather than an unhandled rejection, and this needs neither `dwebp` nor
  `magick` to succeed, only to fail, which arbitrary bytes buy on any machine
  whether or not it carries either tool.
- 
+
  THE `read` AND `no-text` PATHS ARE NOT EXERCISED HERE. Both depend on
  `tesseract` actually transcribing a picture, which needs its `chi_sim`
  language data installed, and a unit test must not depend on that. They are
  verified at the user boundary instead, through the built artifact, on
  2026-08-19:
- 
+
  ```
  wangzihao980/Word1.webp       71288 bytes   read      405 chars
  zheermao101/photo3.webp       33038 bytes   read      557 chars
@@ -27,7 +27,7 @@
  wangzihao980/picture4.webp    13728 bytes   no-text     0 chars
  Uekawakuyuurei/img231.webp   169776 bytes   no-text     0 chars
  ```
- 
+
  `extensionOf` IS NOT COVERED HERE. It lives in `image-asset.ts` and
  `readImageWithOcr` uses it to name the scratch file it writes before
  decoding, but `translate-barrel.ts` never re-exports it, so it never reaches
@@ -35,9 +35,9 @@
  `.d.mts` export statement for the bare name. No import from this test can
  reach a symbol the barrel does not carry, and adding it there is a second
  file this pass does not touch.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

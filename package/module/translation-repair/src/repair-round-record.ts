@@ -36,12 +36,12 @@ import { hashContent, } from './document-node.ts';
 
 /**
  Which of the repair lane's judged stages a round belongs to.
- 
+
  `envelope` and `chunk-patch` are the editor ensemble's two rounds: one per
  editable envelope, then one over whole-chunk patches. `refine` is the
  naturalness pass, which re-decides text the accuracy verdict already
  accepted and is therefore the stage most able to undo a repair.
- 
+
  @example
  ```ts
  const stage: RepairRoundStage = 'envelope';
@@ -54,11 +54,11 @@ export type RepairRoundStage =
 
 /**
  Envelope identifier standing for "this round decided the whole chunk".
- 
+
  A string rather than a nullish value so every recorded round names its scope
  the same way, and so the value cannot be confused with an envelope that was
  never stamped.
- 
+
  @example
  ```ts
  const scope = CHUNK_SCOPE_ENVELOPE;
@@ -69,7 +69,7 @@ export const CHUNK_SCOPE_ENVELOPE = 'chunk';
 /**
  One position on a repair ballot, with everything needed to read a vote for
  it.
- 
+
  @example
  ```ts
  const entry: RepairSlateEntry = { index: 1, rendered, hash, producer, };
@@ -102,7 +102,7 @@ export type RepairSlateEntry = {
 
 /**
  One judged round of the repair lane, win or refusal.
- 
+
  @example
  ```ts
  const round: RepairJudgedRound = describeJudgedRound({ stage: 'refine', envelopeId, candidates, outcome, },);
@@ -249,11 +249,11 @@ export type RepairJudgedRound =
 
 /**
  Records the slate a round was judged on.
- 
+
  @param candidates - candidates in judged order
- 
+
  @returns One entry per position
- 
+
  @example
  ```ts
  const slate = describeRepairSlate({ candidates: proposals, },);
@@ -281,17 +281,17 @@ export function describeRepairSlate<ValueT,>(
 
 /**
  Turns one selection round into the record an artifact carries.
- 
+
  @param stage - which judged stage ran it
- 
+
  @param envelopeId - envelope decided, or {@link CHUNK_SCOPE_ENVELOPE}
- 
+
  @param candidates - candidates in judged order, for joining ballot positions
- 
+
  @param outcome - what selection returned, win or refusal
- 
+
  @returns Round record carrying every ballot either way
- 
+
  @example
  ```ts
  rounds.push(describeJudgedRound({ stage: 'envelope', envelopeId, candidates, outcome, },),);
@@ -342,21 +342,21 @@ export function describeJudgedRound<ValueT,>(
 
 /**
  Records an envelope's sole proposal being adopted without a vote.
- 
+
  RECORDED AT ALL because the sole path was found pushing no round, so
  `issue-authors` read no author for any issue such an envelope served: a
  checker who wrote that text voted on it at full weight and the artifact said
  nobody wrote it. The record is the same slate shape a judged round carries,
  minus everything a vote would have produced.
- 
+
  @param stage - stage adopting it
- 
+
  @param envelopeId - envelope it was the one proposal for
- 
+
  @param candidate - the proposal
- 
+
  @returns Round record naming the adopted candidate and its authors
- 
+
  @example
  ```ts
  rounds.push(describeAdoptedRound({ stage: 'envelope', envelopeId, candidate: sole, },),);

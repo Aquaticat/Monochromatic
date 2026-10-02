@@ -1,7 +1,7 @@
 /**
  Tests for the per-slice delivery ledger.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -86,12 +86,12 @@ function preparedSlices(): readonly {
 
 /**
  Lane wordings for the fixture slices, with the decisions a case needs.
- 
+
  @param decided - accepted wording keyed by slice index; a slice absent from
  the map is one the lane never reached
- 
+
  @returns Wordings in document order
- 
+
  @example
  ```ts
  const wordings = laneWordings({ decided: new Map([[0, 'The cat naps.',],],), },);
@@ -124,9 +124,9 @@ function laneWordings(
 
 /**
  Wordings where every slice was examined and left exactly as it was.
- 
+
  @returns Map from slice index to the archive's own wording
- 
+
  @example
  ```ts
  const wordings = laneWordings({ decided: everySliceUnchanged(), },);
@@ -146,9 +146,9 @@ function everySliceUnchanged(): ReadonlyMap<number, string> {
 
 /**
  Fixture slices whose middle one is a place rather than existing text.
- 
+
  @returns Prepared pairs with an anchor at index one
- 
+
  @example
  ```ts
  const slices = anchoredSlices();
@@ -174,12 +174,12 @@ function anchoredSlices(): readonly ChunkPair[] {
 /**
  Lane wordings for {@link anchoredSlices}, whose anchor holds no archive
  wording to agree with.
- 
+
  @param anchorNotApplicable - whether the lane had no work to do at the anchor,
  as against having tried there and produced nothing
- 
+
  @returns Wordings in document order
- 
+
  @example
  ```ts
  const wordings = anchoredWordings({ anchorNotApplicable: false, },);
@@ -225,14 +225,14 @@ function anchoredWordings(
 /**
  Reads the fault a ledger build's refusal names, after checking it is a
  delivery refusal at all.
- 
+
  THE FAULT RATHER THAN A FRAGMENT OF THE MESSAGE, since every check here throws
  the same class and a fragment can match more than one sentence.
- 
+
  @param build - call that should refuse
- 
+
  @returns Fault the refusal carries
- 
+
  @example
  ```ts
  const fault = deliveryFault({ build: function build() { buildSliceDelivery({ ... },); }, },);

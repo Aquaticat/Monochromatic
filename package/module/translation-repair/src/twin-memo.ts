@@ -24,7 +24,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 /**
  What a buy left behind for its twins: the record it persisted, or nothing.
- 
+
  TAGGED RATHER THAN NULLISH, which this repository requires of every absence
  it models. It also says the thing plainly: a buy that stored nothing is a
  fact about the buy, not a missing value.
@@ -68,24 +68,24 @@ export type TwinOrBought<Settled, Bought,> = {
 /**
  Reuses what a twin persisted for this key, or buys and registers the buy so
  twins arriving meanwhile wait for it.
- 
+
  @param key - question this slice asks, shared by its twins
- 
+
  @param memo - promises of persisted records, one per key being bought
- 
+
  @param buy - starts this slice's own purchase; called at most once, and only
  when no twin persisted a record for the key
- 
+
  @param persistedOf - reads the persisted record off a purchase, answering
  `nothing` when the purchase was deliberately not stored
- 
+
  @param l - logger for a purchase that failed while twins waited on it
- 
+
  @returns Twin's record, or the purchase
- 
+
  @throws Whatever `buy` throws; a waiting twin sees nothing stored and buys
  its own, or throws under the same abort
- 
+
  @example
  ```ts
  const asked = await reuseTwinOrBuy({

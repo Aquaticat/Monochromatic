@@ -19,21 +19,21 @@ import { mapOverlapped, } from './overlapped-map.ts';
  Reads reviewed reference inputs from their immutable corpus pin.
  Custom manifests are explicit caller-owned review evidence; this loader proves byte identity,
  not semantic correctness of arbitrary supplied prose.
- 
+
  @param pin - local clone and immutable review revision
- 
+
  @param specs - reviewed manifest, defaulting to the checked-in source-reviewed set
- 
+
  @param onlyEntryIds - optional filter that may name only reviewed entries
- 
+
  @param signal - caller cancellation
- 
+
  @returns References in manifest order with all reviewed variants verified
- 
+
  @throws {@link FidelityReferenceError} for unreviewed filters, pin drift or invalid metadata
- 
+
  @throws {@link CorpusReadError} when a pinned file is unavailable
- 
+
  @example
  ```ts
  const references = await readReviewedFidelityReferences({ pin });

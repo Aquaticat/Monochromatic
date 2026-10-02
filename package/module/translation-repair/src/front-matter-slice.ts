@@ -12,7 +12,7 @@ import type { FrontMatterBlock, } from './front-matter.ts';
 
 /**
  Result of aligning optional front matter.
- 
+
  @example
  ```ts
  const result: FrontMatterSliceResult = { kind: 'none', };
@@ -27,15 +27,15 @@ export type FrontMatterSliceResult = {
 
 /**
  Creates front-matter slice when both documents declare one.
- 
+
  @param source - original front matter
- 
+
  @param target - translation front matter
- 
+
  @returns Tagged syntax-bearing pair,
  insertion pair for source-only metadata,
  or no localized slice
- 
+
  @example
  ```ts
  const pair = frontMatterSlice({ source, target, });
@@ -92,11 +92,11 @@ export function frontMatterSlice(
 
 /**
  Names syntax-bearing metadata slices in prepared order.
- 
+
  @param slices - prepared document slices
- 
+
  @returns Set of front matter slice indexes
- 
+
  @example
  ```ts
  const indexes = frontMatterSliceIndexes({ slices, });

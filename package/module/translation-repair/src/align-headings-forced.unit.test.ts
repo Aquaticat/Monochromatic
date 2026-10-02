@@ -1,15 +1,15 @@
 /**
  Tests for the aligner that can refuse.
- 
+
  The case that matters is `XingZ60`, whose headings are reproduced here from
  the section-alignment defect record. The shipped aligner paired every one of its
  sections with the wrong one, shifted by two, because its scorer cannot
  withhold a pairing: pairing two headings that share nothing scores zero
  against a negative for leaving both unpaired, so the maximum always prefers
  the unsupported pairing.
- 
+
  Other fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -27,17 +27,17 @@ import {
 
 /**
  Reads the target a source index was paired with, or undefined.
- 
+
  @param steps - alignment steps
- 
+
  @param sourceIndex - source unit to look up
- 
+
  Returns an ARRAY rather than an optional number, because the repo models
  absence without nullish unions and a bare -1 sentinel is the same mistake
  wearing a different hat.
- 
+
  @returns Single-element array with the target index, empty when unpaired
- 
+
  @example
  ```ts
  const partner = pairedWith({ steps, sourceIndex: 0, },);
@@ -66,17 +66,17 @@ function pairedWith(
 
 /**
  Reads one source unit's insertion anchor out of a step list.
- 
+
  @param steps - aligner output
- 
+
  @param sourceIndex - unit to read
- 
+
  @returns Its anchor
- 
+
  @throws Error when that unit was paired or is missing, since a test expecting
  an anchor there is asserting about something the aligner did not produce and
  should say so rather than compare against a blank
- 
+
  @example
  ```ts
  const anchor = anchorOf({ steps, sourceIndex: 1, },);

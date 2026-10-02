@@ -1,7 +1,7 @@
 /**
  Tests for the selection fan-out: when a judge bench is too thin for the
  window to carry a unanimous self-written slate.
- 
+
  @module
  */
 

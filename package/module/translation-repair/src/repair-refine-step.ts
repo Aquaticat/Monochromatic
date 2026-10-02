@@ -28,7 +28,7 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
 
 /**
  Runs the naturalness lane and applies the driver's abort rules to it.
- 
+
  TWO RULES, and they are the same rule from either side. A refinement torn
  down by the caller's abort fails with the abort's own identity, so a spent
  deadline and a provider fault are told apart by what is thrown rather than by
@@ -37,11 +37,11 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
  reaches the stage as silence, and a rewriter that heard nothing keeps the
  accuracy text, so the document would otherwise read as a finished run and be
  cached as one.
- 
+
  A run whose slices were all resumed and whose lane found nothing to rewrite
  still finishes under an abort, which is the slice loop's own rule: what a
  stopped run cannot do is BUY what it is missing.
- 
+
  THE SECOND RULE IS COARSER THAN THAT DESCRIPTION, and the difference is a
  real outcome rather than a caveat. `askedRewriters` says the lane asked
  somebody something, not that anything was lost, so a refinement that
@@ -51,37 +51,37 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
  coarse rule errs toward failing an entry whose work is finished, which costs
  the entry a retry; the alternative errs toward returning a document that was
  cut short as though it were whole, which costs a corpus a wrong artifact.
- 
+
  @param client - injected model client
- 
+
  @param targetText - archive translation, for assembling the text the lane
  reads references against
- 
+
  @param slices - slice pairs in document order
- 
+
  @param outcomes - settled accuracy outcomes, one per slice
- 
+
  @param models - role roster; an empty refiner roster turns the lane off
- 
+
  @param reseat - reads the checker seating as of now, so the recheck and the
  rewrite probe run on the bench a hold that began inside the lane re-seats
  (class one hundred thirteen); the standing seating when absent
- 
+
  @param identityContext - declared names and handles, when any
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param signal - caller abort, honored by both rules
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param overlap - most refinement slices in flight
- 
+
  @param l - driver logger
- 
+
  @returns Final outcomes plus the phase's findings
- 
+
  @throws Whatever `signal.reason` carries, once the caller aborts while this
  lane is buying
 
@@ -92,12 +92,12 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
 
  @throws {@link UnpreparedSliceError} when an outcome names a slice
  preparation never made, even with the lane off
- 
+
  @example
  ```ts
  const phase = await refineSettledSlices({ client, targetText, slices, outcomes, models, declaredNames, signal, perCallTimeoutMs, l, },);
  ```
- 
+
  @internal
  */
 export async function refineSettledSlices(

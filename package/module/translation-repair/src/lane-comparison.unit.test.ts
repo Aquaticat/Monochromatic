@@ -1,21 +1,21 @@
 /**
  Tests for the slice-by-slice comparison of the two lanes.
- 
+
  The comparison exists to answer one question, whether repair and translate
  produce the same English where both touch a slice, and it has one hard
  requirement: it must read what each DOCUMENT carries rather than what each
  lane chose. A slice whose replacement the assembly guard withdrew chose one
  thing and shipped another, and a comparison that read the choice would report
  a rewrite no reader ever saw.
- 
+
  It takes each lane's DELIVERY LEDGER rather than its wordings and an index
  set. The ledger has already refused a decided slice that is neither shipped,
  withdrawn, nor blocked, so what a document carries arrives as a stated fact;
  reading an index set here meant an omitted shipped index was indistinguisable
  from a lane that kept the archive.
- 
+
  Fixtures are invented. No corpus content appears here.
- 
+
  @module
  */
 
@@ -48,7 +48,7 @@ const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
  Slicing every case here claims to describe.
- 
+
  Built as a literal rather than from a preparation, because these cases are
  about the join and not about what names it; the validator is what makes it a
  real identity rather than a bare string.
@@ -64,11 +64,11 @@ const SLICING: PreparationIdentity = NAMED_SLICING;
 
 /**
  Stamps a set of rows with the slicing every case here shares.
- 
+
  @param records - rows of one lane's ledger
- 
+
  @returns Those rows, under this file's slicing
- 
+
  @example
  ```ts
  const ledger = ledgerOf({ records, },);
@@ -85,14 +85,14 @@ function ledgerOf(
 
 /**
  Builds one lane's ledger over a single decided slice.
- 
+
  @param acceptedText - wording that lane decided on
- 
+
  @param shipped - whether the returned document carries it
- 
+
  @returns Ledger shaped as `buildSliceDelivery` returns one, under the
  slicing every case here shares
- 
+
  @example
  ```ts
  const lane = laneOf({ acceptedText: 'The cat naps.', shipped: true, },);
@@ -135,13 +135,13 @@ function laneOf(
 
 /**
  Builds one lane's ledger over a single slice it did not decide.
- 
+
  @param outcome - what that lane did instead
- 
+
  @param incumbentKind - whether the archive holds wording at this slice
- 
+
  @returns Ledger carrying whatever the archive has there
- 
+
  @example
  ```ts
  const lane = undecidedLaneOf({ outcome: { kind: 'not-evaluated', }, incumbentKind: 'present', },);

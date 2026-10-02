@@ -45,7 +45,7 @@ const ARRANGEMENTS: readonly {
 
 /**
  One trial beside its reviewed provenance, not a claimed production slice index.
- 
+
  @example
  ```ts
  const result = await runFidelityTrial({ trial: row.trial, ... });
@@ -72,15 +72,15 @@ export type ReviewedFidelityTrial = {
 
 /**
  Expands reviewed variants into the existing position/direction matrix.
- 
+
  @param references - materialized and hash-verified reviewed inputs
- 
+
  @param damageKinds - requested supported families
- 
+
  @returns Fixed matrix in reference, damage and arrangement order
- 
+
  @throws {@link FidelityReferenceError} when selection cannot produce a reviewed comparison
- 
+
  @example
  ```ts
  const trials = reviewedFidelityTrials({ references, damageKinds: ['deletion', 'insertion'] });

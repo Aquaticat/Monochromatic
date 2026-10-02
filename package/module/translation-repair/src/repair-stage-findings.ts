@@ -8,17 +8,17 @@ import type { ChunkCriticPhase, } from './chunk-critic-phase.ts';
 /**
  Folds the findings of the stages that ran before the editor, naming the
  standing non-translation votes on the proceeding path.
- 
+
  @param critic - critic phase outcome
- 
+
  @param screened - the reference screen's findings
- 
+
  @param panel - the panel's findings
- 
+
  @param deduped - the dedupe's findings
- 
+
  @returns Findings in stage order, the votes-stand line last
- 
+
  @example
  ```ts
  const stageFindings = foldStageFindings({ critic, screened: screened.findings, panel: panel.findings, deduped: deduped.findings, },);

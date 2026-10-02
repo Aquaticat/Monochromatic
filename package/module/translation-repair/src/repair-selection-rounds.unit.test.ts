@@ -1,12 +1,12 @@
 /**
  Tests for projecting the repair lane's rounds into the shape a producer
  standing counts.
- 
+
  THE POSITION GUARD IS THE POINT. A ballot names a candidate by number, so
  the projection's whole correctness rests on slate order matching the numbers
  judges were shown. A slate that disagrees must refuse rather than quietly
  credit the wrong model, and that refusal is exercised in this file.
- 
+
  @module
  */
 
@@ -37,13 +37,13 @@ import {
 
 /**
  Builds one slate entry at a stated position.
- 
+
  @param index - one-based position judges were shown
- 
+
  @param modelId - model that wrote it
- 
+
  @returns Slate entry
- 
+
  @example
  ```ts
  const entry = entryAt({ index: 1, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },);
@@ -245,13 +245,13 @@ await describe({
           fn: async () => {
             /**
              A POSITIVE CONTROL FOR THE WHOLE READING CHAIN.
-         
+
              The first live smoke run reported zero rounds, correctly: its slice
              carried no accepted issue, so no editor was ever asked to write. A
              null from a probe never shown able to produce a non-null says
              nothing, so this drives projection and tally together and checks a
              standing actually falls out with the counts behind it.
-         
+
              Kimi wrote position one and Qwen position two. Three judges hold no
              stake in either, and all three named position one.
              */

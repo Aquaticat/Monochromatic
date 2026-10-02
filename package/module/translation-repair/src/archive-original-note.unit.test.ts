@@ -1,13 +1,13 @@
 /**
  Tests for where the archive is the original, said by its translators' note.
- 
+
  THE OWNER'S RULE OF 2026-09-08, after the twelfth hakureico pass rewrote
  Hanasaka's letter in five places under a note saying everything below it
  was written in English: a span such a note seals ships as the archive has
  it, and a page such a note calls the author's own English is declined. The
  two wordings the pinned corpus carries are the fixtures, and the quotes note
  hakureico also carries is the case that must NOT seal.
- 
+
  @module
  */
 

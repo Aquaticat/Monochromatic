@@ -61,44 +61,44 @@ type ConsolidationBuyInput = {
  (ledger B45).
 
  @param client - provider client borrowed by every round
- 
+
  @param roster - voices producing, and judging and gating when no narrower
  judge roster is given
- 
+
  @param judgeModelIds - voices judging the slate and gating the winner; the
  producers' roster by default
- 
+
  @param subject - slice and both lane candidates as every round sees them
- 
+
  @param standingText - wording this consolidation must beat
- 
+
  @param lineStructured - whether structural rule forbids merged lines
- 
+
  @param sliceIndex - index used by logs and final polish records
- 
+
  @param polishConfig - final body polish roles and guard facts
- 
+
  @param standingMayShip - whether unchanged baseline has prior endorsement
- 
+
  @param standingFindings - what reading the standing recorded, the
  incumbent's replacement of an ineligible standing among them
- 
+
  @param standingEligible - whether the baseline passed the deterministic
  publication gate; a baseline that did not is withheld from the slate
 
  @param standingRefusal - why the deterministic gate refused the baseline,
  shown to the gate judges
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - driver logger
- 
+
  @returns Complete settlement for this question
- 
+
  @throws Whatever producer, judging, gate, or caller abort throws
- 
+
  @example
  ```ts
  const settlement = await buyConsolidationAttempt({
@@ -113,7 +113,7 @@ type ConsolidationBuyInput = {
    l,
  },);
  ```
- 
+
  @internal
  */
 async function buyConsolidationAttempt(
@@ -285,7 +285,7 @@ export function standingKeptUnendorsed(
 
 /**
  Buys one consolidation and settles it in a single attempt.
- 
+
  SINGLE ATTEMPT BY DESIGN: when the standing baseline lacks contest
  endorsement and the judged round still keeps it, the settlement returns
  as it is with the non-endorsement recorded as a finding, because the
@@ -294,13 +294,13 @@ export function standingKeptUnendorsed(
  (doc/planning/translation-repair-no-loop-design.md). Zero produced voices
  under a barred standing remain the bounded provider error inside the
  attempt.
- 
+
  @param input - stage clients, candidates, standing policy, and operation bounds
- 
+
  @returns Complete settlement for this question
- 
+
  @throws {@link TranslationRepairInterruptedError} when a barred standing hears no producer voice
- 
+
  @example
  ```ts
  const settlement = await buyConsolidationSlice(input);

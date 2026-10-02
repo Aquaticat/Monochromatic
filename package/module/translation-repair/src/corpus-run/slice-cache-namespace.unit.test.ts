@@ -1,7 +1,7 @@
 /**
  Tests for how three lanes share one cache directory without deleting each
  other's files.
- 
+
  WHY THIS FILE EXISTS. The repair lane's namespace is defined by SUBTRACTION:
  it owns every file whose name is not claimed by a listed prefix. So a new
  lane that invents a prefix and forgets to register it is silently adopted by
@@ -10,7 +10,7 @@
  recently `picture.`, which was added to the store on 2026-08-19 and not to
  the list: opening the repair cache removed a picture reading and reported
  "discarding 1 cached slices".
- 
+
  THE FIRST TEST WALKS THE PACKAGE'S OWN LIST, `EVERY_SLICE_NAMESPACE`, rather
  than a copy of it. It used to keep a copy, and the copy drifted exactly the
  way the registration it guards had: `contest.` and `pairing.` were missing
@@ -20,7 +20,7 @@
  so it now reads the same array the store derives its claims from. The rest
  pin the containment in both directions, since a namespace that claims too
  much is as wrong as one that claims too little.
- 
+
  @module
  */
 
@@ -43,13 +43,13 @@ import {
 
 /**
  A file name in a namespace, built the way the store builds one.
- 
+
  @param namespace - lane whose prefix it carries
- 
+
  @param key - cache key standing in for a hash
- 
+
  @returns Name as it would sit on disk
- 
+
  @example
  ```ts
  const name = fileIn({ namespace: PICTURE_READING_NAMESPACE, key: 'abc', },);

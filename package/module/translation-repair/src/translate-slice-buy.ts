@@ -49,40 +49,40 @@ export type BoughtSlice = {
 /**
  Buys one slice: translated, judged, checked, and persisted when somebody
  was heard.
- 
+
  @param client - injected model client
- 
+
  @param slice - slice to buy
- 
+
  @param prepared - document the slice belongs to
- 
+
  @param models - translator and judge rosters
- 
+
  @param key - cross-run key the record is persisted under
- 
+
  @param neighbouringIncumbentText - archive English either side
- 
+
  @param neighbouringSourceText - original either side
- 
+
  @param pictureContext - what nearby pictures were read as
- 
+
  @param pictureFindings - which nearby pictures nobody could read
- 
+
  @param archiveDispute - dispute over this slice's archive rendering, passed on
- 
+
  @param sliceCache - where a heard record is persisted
- 
+
  @param signal - entry deadline and caller abort
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - lane logger
- 
+
  @returns Purchase, stored or not
- 
+
  @throws Whatever `signal.reason` carries, when the caller aborted before or
  during the purchase; nothing settled under that abort is cached
- 
+
  @example
  ```ts
  const bought = await buyTranslateSlice({ ... },);

@@ -1,6 +1,6 @@
 /**
  Tests for the answer tool, in both of the places it is described.
- 
+
  THE ANTI-DRIFT CASE IS THE POINT OF THIS FILE. The owner's instruction is
  that the full tool schema goes into the system prompt as well as into
  `tools`, because some model and provider pairs emit the wrong call format
@@ -8,7 +8,7 @@
  here teaches a model to call a tool that is not the one being offered, so the
  cases in this file check the name and the schema body in BOTH renderings rather than
  checking each rendering alone.
- 
+
  @module
  */
 
@@ -28,7 +28,7 @@ import {
 
 /**
  Structured-output constraint standing in for a real stage's.
- 
+
  NESTED ON PURPOSE: a renderer that printed only top-level keys would pass a
  flat fixture, and every real schema in this pipeline nests.
  */
@@ -61,11 +61,11 @@ const catFormat = {
 
 /**
  Builds a constraint carrying a chosen name over the same schema body.
- 
+
  @param name - schema name under test
- 
+
  @returns Constraint the functions under test take
- 
+
  @example
  ```ts
  const format = namedAs({ name: 'whisker_report', },);

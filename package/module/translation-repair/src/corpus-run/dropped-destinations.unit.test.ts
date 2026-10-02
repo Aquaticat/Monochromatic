@@ -1,16 +1,16 @@
 /**
  Tests for the document-level destination check.
- 
+
  WHAT THESE PIN: the bare-run scanner stops where prose and Markdown stop a
  link and sheds sentence punctuation; the tree reader finds link, image and
  definition destinations under the pipeline's own parse and names a downgrade; the union
  dedupes across both readers with a trailing slash treated as no difference;
  and the check names exactly the source destinations the page lacks while
  ignoring destinations the page adds.
- 
+
  Fixtures are invented addresses and two sentences about a bookshop cat, so
  there is no corpus text here.
- 
+
  @module
  */
 

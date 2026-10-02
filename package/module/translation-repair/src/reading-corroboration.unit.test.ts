@@ -1,7 +1,7 @@
 /**
  Tests for whether two models' readings of the same picture corroborate
  each other, purely from how much of their character trigrams overlap.
- 
+
  WHAT THESE PIN is the three design decisions the module's own header
  explains and measures: trigrams rather than shared anchors or single
  characters, dividing by the smaller reading so one model transcribing more
@@ -11,9 +11,9 @@
  pins the comparison's direction directly, since `overlap < threshold` and
  `overlap <= threshold` differ only at the one value a range assertion over
  ordinary fixtures could never land on by chance.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -83,7 +83,7 @@ const DISAGREEING_READING =
  Builds two readings whose measured trigram overlap sits at a chosen share
  of the shorter one's trigrams, for pinning behaviour that depends on
  landing on an exact number rather than falling somewhere in a range.
- 
+
  TWELVE PAIRWISE-DISTINCT LETTERS stand in for a full microchip scan. Since
  no letter repeats, every one of the ten trigrams that scan cuts into is
  distinct by construction, so the shared-trigram count a given share needs
@@ -91,11 +91,11 @@ const DISAGREEING_READING =
  reading carries a verbatim prefix of that scan and then diverges into
  digits, which share no letters with the alphabet the scan itself uses, so
  nothing past the shared prefix can coincidentally match.
- 
+
  @param share - fraction of full reading's trigrams partner must reproduce
- 
+
  @returns Full reading and partner sharing requested share of its trigrams
- 
+
  @example
  ```ts
  const { full, partial, } = trigramSharePair({ share: CORROBORATION_TRIGRAM_SHARE, },);

@@ -1,9 +1,9 @@
 /**
  Tests for the publication guard that keeps a sealed span as the archive has
  it.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

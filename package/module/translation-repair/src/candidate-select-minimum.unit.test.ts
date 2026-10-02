@@ -2,7 +2,7 @@
  Tests for the selection minimum on a short bench: the absolute minimum
  stands wherever the reachable bench reaches quorum, and scales by reachable
  over quorum where it does not (owner, 2026-09-09).
- 
+
  @module
  */
 

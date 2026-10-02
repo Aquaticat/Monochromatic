@@ -1,14 +1,14 @@
 /**
  Tests for rebuilding a translation from per-slice replacements.
- 
+
  The function is small and its failure is not: it assembles the text that
  actually ships. A splice applied in the wrong order silently corrupts every
  slice after the first, and because each slice is individually well-formed the
  result still looks like plausible prose. So the cases here are mostly about
  ORDER and about offsets that would drift.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -32,7 +32,7 @@ import { anchorAt, } from './insertion-anchor-pair.test-fixture.ts';
 
 /**
  Translation the slices are cut from.
- 
+
  Three paragraphs of deliberately different lengths, so an off-by-one in
  offset handling cannot coincidentally produce the right answer.
  */
@@ -40,15 +40,15 @@ const TARGET_TEXT = 'The cat sleeps.\n\nShe chases butterflies in the garden all
 
 /**
  Builds one target-side chunk covering a span of {@link TARGET_TEXT}.
- 
+
  @param sliceIndex - position of this chunk
- 
+
  @param startOffset - absolute start in target text
- 
+
  @param endOffset - absolute exclusive end in target text
- 
+
  @returns Chunk pair whose target side carries the span
- 
+
  @example
  ```ts
  const pair = chunkAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);
@@ -114,7 +114,7 @@ const PARAGRAPH_BREAK = '\n\n';
 
 /**
  Slices covering the three paragraphs, in document order.
- 
+
  Offsets are DERIVED from the text rather than written down. Hand-counted
  offsets are how a splice test ends up asserting the bug it was written to
  catch, and this fixture only has to agree with itself.
@@ -143,13 +143,13 @@ const FINAL_START = TARGET_TEXT.indexOf('She purrs.',);
 
 /**
  Builds one replacement.
- 
+
  @param sliceIndex - slice to write into
- 
+
  @param replacementText - text to write there
- 
+
  @returns Replacement as a lane emits it
- 
+
  @example
  ```ts
  const replacement = write({ sliceIndex: 0, replacementText: 'The cat naps.', },);
@@ -172,15 +172,15 @@ function write(
 
 /**
  Builds one repair outcome, for the mapping that feeds splicing.
- 
+
  @param sliceIndex - slice this outcome is for
- 
+
  @param repairedText - winning text for that slice
- 
+
  @param changed - whether the repair beat unchanged
- 
+
  @returns Outcome carrying only the fields the mapping reads
- 
+
  @example
  ```ts
  const outcome = outcomeFor({ sliceIndex: 0, repairedText: 'The cat naps.', changed: true, },);

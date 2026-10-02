@@ -63,7 +63,7 @@ const WHITESPACE: ReadonlySet<string> = new Set([
 
 /**
  One slice split into the part a lane may rewrite and the part it may not.
- 
+
  @example
  ```ts
  const split: TargetOnlySplit = { judgedText: 'The cat naps.', protectedText: '', };
@@ -80,7 +80,7 @@ export type TargetOnlySplit = {
    Archive wording the source cannot account for, empty when there is none:
    the archive's bytes from the anchor's end, the line breaks before the run
    included.
-   
+
    SPLICED BACK VERBATIM onto whichever wording wins, so it survives a
    replacement and a retention alike.
    */
@@ -89,15 +89,15 @@ export type TargetOnlySplit = {
 
 /**
  Folds every run of whitespace in a block to a single space.
- 
+
  A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "runs of
  whitespace stand as one space", which a scan states directly and in one pass
  over the block.
- 
+
  @param block - block to fold
- 
+
  @returns Its text with whitespace runs folded
- 
+
  @example
  ```ts
  const key = collapsed({ block: 'a  b', },);
@@ -130,17 +130,17 @@ function collapsed({ block, }: { readonly block: string; },): string {
 /**
  Separates the archive's wording at the source's last block, given both
  passages read into blocks.
- 
+
  @param source - source blocks, whose last one is the only possible anchor
- 
+
  @param archive - archive blocks, among which the anchor is looked for
- 
+
  @param incumbentText - archive wording the blocks were read from
- 
+
  @param whole - split kept when nothing is protected
- 
+
  @returns Wording to judge, and wording to protect
- 
+
  @example
  ```ts
  const split = splitAtAnchor({ source, archive, incumbentText, whole, },);
@@ -214,26 +214,26 @@ function splitAtAnchor(
 
 /**
  Separates the archive wording a source can account for from what follows it.
- 
+
  REQUIRES THE ANCHOR TO BE THE SOURCE'S LAST BLOCK. An identical block in the
  middle of both documents says nothing about what comes after it, since the
  source has more to say there too. Only an archive that continues past the end
  of its source is carrying something the source never had.
- 
+
  REQUIRES A BLOCKQUOTE IN THE RUN. Every transcript in the enumerated
  population is written as one, and the requirement keeps an ordinary trailing
  sentence, which a translator may legitimately reword or drop, out of the
  protected region.
- 
+
  A PASSAGE THE SLICE GRAMMAR REFUSES IS KEPT WHOLE: a run this reader cannot
  read into blocks cannot be shown to carry a transcript the source lacks.
- 
+
  @param sourceText - original passage
- 
+
  @param incumbentText - archive wording of that passage
- 
+
  @returns Wording to judge, and wording to protect
- 
+
  @example
  ```ts
  const split = splitTargetOnlyRun({ sourceText, incumbentText, },);
@@ -273,19 +273,19 @@ export function splitTargetOnlyRun(
 
 /**
  Puts a protected run back onto whatever wording won.
- 
+
  SEPARATED FROM THE SPLIT so both the replacement path and the retention path
  go through one place: a slice that keeps the archive must end up with exactly
  the archive's own bytes, and a slice that replaces it must end up with the new
  wording plus the same protected run.
- 
+
  @param text - wording that won
- 
+
  @param protectedText - run held out of judging, its leading line breaks
  included, possibly empty
- 
+
  @returns Wording with the run restored
- 
+
  @example
  ```ts
  const whole = restoreTargetOnlyRun({ text, protectedText, },);

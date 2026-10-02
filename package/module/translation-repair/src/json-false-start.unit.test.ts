@@ -1,11 +1,11 @@
 /**
  Tests for reading a JSON object past an abandoned opening fragment.
- 
+
  THE SEVENTEENTH CLASS: on 2026-09-08 reasoning streams from Bedrock's
  gpt-oss-120b and OpenRouter's Makora route for deepseek-v4-flash-0731 wrote
  an opening, abandoned it, and wrote the whole object after it, and every
  such reply was refused as a schema mismatch.
- 
+
  @module
  */
 

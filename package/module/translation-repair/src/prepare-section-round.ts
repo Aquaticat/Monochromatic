@@ -37,7 +37,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  What one document's section round settled, and what it cost.
- 
+
  @example
  ```ts
  const round: SectionRoundOutcome = { pairing: [], findings: [], };
@@ -46,7 +46,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 export type SectionRoundOutcome = {
   /**
    Correspondences to align on, empty when nobody was asked or nobody agreed.
-   
+
    EMPTY MEANS KEEP THE DETERMINISTIC ALIGNER, and the caller must read it
    that way rather than as "align nothing": a document handed an empty pairing
    would come out with every section unpaired on both sides, which is the
@@ -70,11 +70,11 @@ const NO_ROUND: SectionRoundOutcome = {
 
 /**
  Presents heading-bounded chunks as the numbered sections a sheet shows.
- 
+
  @param chunks - one side's sections in document order
- 
+
  @returns Same sections, numbered
- 
+
  @example
  ```ts
  const numbered = asNumbered({ chunks, },);
@@ -96,13 +96,13 @@ function asNumbered(
 
 /**
  Whether the deterministic aligner leaves any section without a partner.
- 
+
  @param sourceChunks - original sections in document order
- 
+
  @param targetChunks - translation sections in document order
- 
+
  @returns Whether asking a roster could add anything
- 
+
  @example
  ```ts
  const refused = deterministicRefuses({ sourceChunks, targetChunks, },);
@@ -119,7 +119,7 @@ function deterministicRefuses(
 ): boolean {
   /**
    Whether both sides have equal counts and matching leading node kinds.
-   
+
    EQUAL SHAPE PAIRS BY INDEX without the aligner being consulted, so there is
    no refusal to repair. The fast path stays by a measured decision (a roster
    agreed with index order on every equal-count entry), and checking it here
@@ -154,20 +154,20 @@ function deterministicRefuses(
 
 /**
  Names this question by the text it is about.
- 
+
  OVER BOTH SIDES WHOLE, because the pairing is a claim about these two
  documents and any edit to either makes the stored answer a claim about
  something else.
- 
+
  @param sourceSections - original sections as the sheet numbers them
- 
+
  @param targetSections - translation sections as the sheet numbers them
- 
+
  @param modelIds - roster that answers the question, so a round one bench
  settled is never resumed for another (ledger X13)
 
  @returns Cache key for this pairing question, one per question (ledger X15)
- 
+
  @example
  ```ts
  const key = roundKey({ sourceSections, targetSections, modelIds, },);
@@ -199,26 +199,26 @@ function roundKey(
 
 /**
  Buys a section pairing when, and only when, the aligner refused something.
- 
+
  @param client - injected model client
- 
+
  @param modelIds - roster to ask
- 
+
  @param source - parsed original document
- 
+
  @param target - parsed translation document
- 
+
  @param signal - caller's steering
- 
+
  @param exchangeTimeoutMs - per-call bound
- 
+
  @param l - driver logger
- 
+
  @param sectionCache - store a settled round is republished from, so a resumed
  entry buys nothing
- 
+
  @returns Pairing to align on, empty to keep the deterministic aligner
- 
+
  @example
  ```ts
  const round = await buySectionPairing({ client, modelIds, source, target, signal, exchangeTimeoutMs, l, },);

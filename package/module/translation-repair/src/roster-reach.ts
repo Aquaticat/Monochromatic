@@ -45,7 +45,7 @@ import { PROVIDER_ORDER, } from './provider-name.ts';
 
 /**
  Where one roster model can be reached on Charm Hyper.
- 
+
  @example
  ```ts
  const served = hyperIdFor({ modelId: 'hf:moonshotai/Kimi-K3', },);
@@ -72,7 +72,7 @@ export type HyperSpelling =
 
 /**
  Where one roster model can be reached on OpenRouter.
- 
+
  @example
  ```ts
  const served = openRouterIdFor({ modelId: 'hf:moonshotai/Kimi-K3', },);
@@ -99,7 +99,7 @@ export type OpenRouterSpelling =
 
 /**
  Where one roster model can be reached on Amazon Bedrock.
- 
+
  @example
  ```ts
  const served = bedrockIdFor({ modelId: 'gemma-4-26b-a4b-it', },);
@@ -132,11 +132,11 @@ export { ROSTER_MODEL_IDS, } from './roster-id.ts';
 
 /**
  How Charm Hyper spells one roster model, where it serves it at all.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Wire identifier, or that this provider does not serve it
- 
+
  @example
  ```ts
  const spelling = hyperIdFor({ modelId, },);
@@ -166,11 +166,11 @@ export function hyperIdFor(
 
 /**
  How OpenRouter spells one roster model, where it serves it at all.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Wire identifier, or that this provider does not serve it
- 
+
  @example
  ```ts
  const spelling = openRouterIdFor({ modelId, },);
@@ -199,11 +199,11 @@ export function openRouterIdFor(
 
 /**
  How Amazon Bedrock spells one roster model, where it serves it at all.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Wire identifier, or that this provider does not serve it
- 
+
  @example
  ```ts
  const spelling = bedrockIdFor({ modelId, },);
@@ -232,7 +232,7 @@ export function bedrockIdFor(
 
 /**
  What Synthetic knows about one roster model, where it serves it at all.
- 
+
  @example
  ```ts
  const entry: SyntheticEntry = { served: true, info, };
@@ -259,15 +259,15 @@ export type SyntheticEntry =
 
 /**
  What Synthetic's catalog says about one roster model.
- 
+
  FOUND RATHER THAN INDEXED, mirroring {@link hyperIdFor}. Indexing the record
  with a roster id needs an assertion that the id is one of its keys, which is
  the claim this function exists to check.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Catalog entry, or that this provider does not serve it
- 
+
  @example
  ```ts
  const entry = syntheticEntryFor({ modelId, },);
@@ -296,11 +296,11 @@ export function syntheticEntryFor(
 
 /**
  Which providers can take a text call for one roster model.
- 
+
  @param modelId - roster model to route
- 
+
  @returns Reach for the budget router to decide on
- 
+
  @example
  ```ts
  const reach = reachOf({ modelId, },);
@@ -349,11 +349,11 @@ export function reachOf(
 
 /**
  Whether Synthetic will show one roster model a picture.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Whether this provider serves it AND reports vision for it
- 
+
  @example
  ```ts
  const shows = syntheticShowsPictures({ modelId, },);
@@ -380,11 +380,11 @@ function syntheticShowsPictures(
 
 /**
  Whether Charm Hyper will show one roster model a picture.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Whether this provider serves it AND reports vision for it
- 
+
  @example
  ```ts
  const shows = hyperShowsPictures({ modelId, },);
@@ -411,11 +411,11 @@ function hyperShowsPictures(
 
 /**
  Whether OpenRouter will show one roster model a picture.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Whether this provider serves it AND the listing reports vision for it
- 
+
  @example
  ```ts
  const shows = openRouterShowsPictures({ modelId, },);
@@ -443,11 +443,11 @@ function openRouterShowsPictures(
 
 /**
  Whether Amazon Bedrock will show one roster model a picture.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Whether this provider serves it AND its card reports image input
- 
+
  @example
  ```ts
  const shows = bedrockShowsPictures({ modelId, },);
@@ -474,14 +474,14 @@ function bedrockShowsPictures(
 
 /**
  Which providers can take a call carrying a picture for one roster model.
- 
+
  NARROWER THAN {@link reachOf} AND DERIVED PER PROVIDER. A later catalog
  change can alter one serving stack's image support without altering another.
- 
+
  @param modelId - roster model to route
- 
+
  @returns Reach restricted to providers that report vision for it
- 
+
  @example
  ```ts
  const reach = visionReachOf({ modelId, },);
@@ -500,11 +500,11 @@ export function visionReachOf(
 
 /**
  Whether any provider can show one roster model a picture.
- 
+
  @param modelId - roster model to look up
- 
+
  @returns Whether a picture reaches it anywhere
- 
+
  @example
  ```ts
  const reads = readsImages({ modelId, },);

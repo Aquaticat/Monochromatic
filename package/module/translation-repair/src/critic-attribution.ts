@@ -9,7 +9,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  One critic's contribution to one claim.
- 
+
  @example
  ```ts
  const proposer: ClaimProposer = { modelId: 'hf:openai/gpt-oss-120b', emissionCount: 2, };
@@ -32,7 +32,7 @@ export type ClaimProposer = {
 
 /**
  Every critic behind one deduplicated claim.
- 
+
  @example
  ```ts
  const attribution: ClaimAttribution = { claimId, proposers, };
@@ -53,7 +53,7 @@ export type ClaimAttribution = {
 
 /**
  One critic emitting one resolved claim, before deduplication.
- 
+
  @example
  ```ts
  const emission: ClaimEmission = { claimId, modelId, };
@@ -73,16 +73,16 @@ export type ClaimEmission = {
 
 /**
  Folds raw emissions into per-claim, per-critic counts.
- 
+
  Must run BEFORE `aggregateClaims` deduplicates: structurally identical claims
  collapse to one id there, so afterwards there is no longer anything to
  attribute a second emitter to.
- 
+
  @param emissions - every emission in critic then report order
- 
+
  @returns Attribution per claim, both claims and proposers sorted by id so
  identical evidence serializes identically
- 
+
  @example
  ```ts
  const attributions = collectClaimAttributions({ emissions, },);
@@ -174,17 +174,17 @@ export function collectClaimAttributions(
 
 /**
  Drops attribution for claims that did not survive a later screen.
- 
+
  Screening removes claims after attribution is built, and an entry left
  pointing at a discarded claim would inflate a critic's recorded hits with
  claims the pipeline threw away.
- 
+
  @param attributions - attribution built at emission time
- 
+
  @param claimIds - identities still standing
- 
+
  @returns Attribution restricted to surviving claims, order preserved
- 
+
  @example
  ```ts
  const kept = retainAttributions({ attributions, claimIds, },);
@@ -206,7 +206,7 @@ export function retainAttributions(
 
 /**
  One chunk's calibration record, as the run artifact carries it.
- 
+
  @example
  ```ts
  const record: SliceCriticRecord = { sliceIndex: 0, heardCriticIds, claimAttributions, };
@@ -231,24 +231,24 @@ export type SliceCriticRecord = {
 
 /**
  Collects each chunk's calibration record for the run artifact.
- 
+
  PER CHUNK rather than folded into the issue list, because a chunk whose
  critics raised nothing produces no issue record at all, and dropping it would
  discard exactly the denominator that makes a rate computable. Keeping the
  chunks separate also stops two chunks that happened to produce an identical
  claim from merging their proposers into one inflated entry.
- 
+
  @param outcomes - settled chunk outcomes in any order
- 
+
  Does NOT reject a repeated chunk index, deliberately, though the READER
  throws on one. The proportion matters: an artifact's primary value is the
  repaired text, and attribution is telemetry beside it. Failing here would
  abort an entry and discard hours of repair over a calibration invariant,
  while failing at read time costs only the report. The reader is the right
  place for that guard.
- 
+
  @returns One record per chunk, ordered by chunk index
- 
+
  @example
  ```ts
  const sliceCritics = buildSliceCriticRecords({ outcomes, },);

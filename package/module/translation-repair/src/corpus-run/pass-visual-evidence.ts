@@ -57,27 +57,27 @@ const RUN_PICTURE_SOURCES: PassPictureSources = {
 
 /**
  Reads and requires complete visual evidence before any lane work.
- 
+
  @param client - provider client for image readers
- 
+
  @param slices - prepared entry slices naming assets
- 
+
  @param pin - corpus commit assets belong to
- 
+
  @param entryId - corpus entry whose asset directory is read
- 
+
  @param readerModelIds - vision roster
- 
+
  @param cache - durable paired reading cache
- 
+
  @param signal - entry cancellation
- 
+
  @param perCallTimeoutMs - image exchange deadline
- 
+
  @param l - entry logger
- 
+
  @param visualEvidenceReader - optional integration-test evidence seam
- 
+
  @param priorReadings - completed evidence retained within this pinned entry,
  empty before the entry's first reading
 
@@ -89,10 +89,10 @@ const RUN_PICTURE_SOURCES: PassPictureSources = {
  when absent
 
  @returns Corroborated or reviewed no-text evidence by asset
- 
+
  @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
  when any referenced asset lacks usable evidence
- 
+
  @example
  ```ts
  const readings = await readPassVisualEvidence({ client, slices, pin, entryId, readerModelIds, cache, signal, perCallTimeoutMs, l, priorReadings, beforePicture, });

@@ -1,14 +1,14 @@
 /**
  Tests for the repair lane's cache key.
- 
+
  THE KEY HAS NO OTHER WITNESS. Persist and resume both call the same function,
  so a change to how it is derived produces no failure anywhere: every run
  simply misses the cache and buys every slice again, and the only symptom is
  quota. The golden hash in this file is the witness, and it exists to fail when the
  derivation moves without the version moving with it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -60,11 +60,11 @@ const SLICE = {
 
 /**
  Keys the fixture slice under a run shape.
- 
+
  @param runShape - what a run asks
- 
+
  @returns Key for the fixture slice
- 
+
  @example
  ```ts
  const key = keyed({ runShape, },);

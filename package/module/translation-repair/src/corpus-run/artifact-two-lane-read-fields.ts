@@ -21,16 +21,16 @@ import {
 
 /**
  Reads the digest naming the built output that ran.
- 
+
  @param value - recorded digest
- 
+
  @param path - dotted path for error message
- 
+
  @returns Digest, narrowed by the same check a fresh one passes
- 
+
  @throws {@link ArtifactParseError} when the value is not a string, or not
  shaped like a digest
- 
+
  @example
  ```ts
  const digest = requireDigest({ value: artifact.pipelineDigest, path, },);
@@ -68,15 +68,15 @@ export function requireDigest(
 
 /**
  Reads the recorded front matter authority, which can only be the archive's.
- 
+
  @param value - recorded authority
- 
+
  @param path - dotted path for error messages
- 
+
  @returns The one authority a record carries
- 
+
  @throws {@link ArtifactParseError} when the record carries anything else
- 
+
  @example
  ```ts
  const authority = requireArchiveAuthority({ value: record.frontMatterAuthority, path, },);
@@ -102,16 +102,16 @@ export function requireArchiveAuthority(
 /**
  Reads the recorded archive-original spans: a non-empty list of offset pairs,
  each with the note that sealed it.
- 
+
  @param value - recorded list
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Spans as recorded
- 
+
  @throws {@link ArtifactParseError} when the list is empty, or a span lacks
  its offsets or note, or ends before it starts
- 
+
  @example
  ```ts
  const spans = requireArchiveOriginalSpans({ value: record.archiveOriginalSpans, path, },);

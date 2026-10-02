@@ -1,18 +1,18 @@
 /**
  Tests for the configuration check both lanes run before they start.
- 
+
  FOUND BY FAULT INJECTION: configuring zero critic models ran the repair lane
  end to end and returned a settled, unchanged document. No throw, no finding,
  no marker, and zero model exchanges bought. Downstream that is
  indistinguishable from a page that genuinely needed no repair, so a corpus
  pass under the misconfiguration would spend hours writing a directory of
  vacuous artifacts that later analysis reads as clean runs.
- 
+
  The quiet path is RIGHT for outages, and stays. What this refuses is the
  deterministic case, before any work is done.
- 
+
  Fixtures are invented. No corpus content appears here.
- 
+
  @module
  */
 
@@ -29,11 +29,11 @@ import {
 
 /**
  Runs one configuration and returns whatever it raised.
- 
+
  @param roles - rosters to check
- 
+
  @returns Failure raised, or undefined when the configuration was accepted
- 
+
  @example
  ```ts
  const caught = configurationFailure({ roles: { judgeModelIds: [], }, },);

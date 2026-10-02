@@ -1,13 +1,13 @@
 /**
  Tests for the constructed comparison that asks whether the translate judges
  can tell a complete rendering from one missing a sentence.
- 
+
  What these pin is that the trial SCORES what came back rather than where it
  sat: the same judge behaviour must read as correct in one direction and wrong
  in the other, and a decline must never be counted as a hit.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -79,11 +79,11 @@ type ScriptedVote = ScriptedPick | 'decline';
  Builds a client whose judges vote by TEXT rather than by position, each one
  following its own entry in the script, so a test states a judge behaviour and
  a mixed roster is expressible.
- 
+
  @param script - vote per roster model id
- 
+
  @returns Client the trial can be driven with
- 
+
  @example
  ```ts
  const client = judgesVoting({ script: { 'hf:cat/Cat-A': 'decline', },  },);
@@ -113,7 +113,7 @@ function judgesVoting(
 
       /**
        Where the second candidate begins, which the sheet labels.
-       
+
        READ RATHER THAN ASSUMED, because the trial rotates the ballot and a
        scripted judge that voted by position would agree with itself no matter
        what the trial did with the texts.
@@ -167,11 +167,11 @@ function judgesVoting(
 
 /**
  Script in which every judge does the same thing.
- 
+
  @param vote - what the whole roster does
- 
+
  @returns Script covering every roster model
- 
+
  @example
  ```ts
  const script = wholeRoster({ vote: 'decline', },);
@@ -188,15 +188,15 @@ function wholeRoster({ vote, }: { readonly vote: ScriptedVote; },): Record<strin
 
 /**
  Runs one trial against a scripted roster.
- 
+
  @param script - vote per roster model id
- 
+
  @param direction - which side holds the clean text
- 
+
  @param cleanFirst - whether the clean text is listed first
- 
+
  @returns Trial outcome
- 
+
  @example
  ```ts
  const outcome = await runScripted({ script, direction: 'preserve', cleanFirst: true, },);
@@ -234,15 +234,15 @@ async function runScripted(
 
 /**
  Runs one trial where every judge backs the same text.
- 
+
  @param pick - text every judge backs
- 
+
  @param direction - which side holds the clean text
- 
+
  @param cleanFirst - whether the clean text is listed first
- 
+
  @returns Trial outcome
- 
+
  @example
  ```ts
  const outcome = await trial({ pick: 'clean', direction: 'preserve', cleanFirst: true, },);

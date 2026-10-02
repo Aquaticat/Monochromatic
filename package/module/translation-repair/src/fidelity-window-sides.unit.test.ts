@@ -1,26 +1,26 @@
 /**
  Tests for which side of the window carries which text.
- 
+
  WHY THIS FILE EXISTS. The fidelity judge is shown two passages either side of
  a slice: the ORIGINAL, which says what the neighbour is about, and the
  ARCHIVE ENGLISH, which is the half that shows a relocation, because the
  Chinese says each thing once in its own place while the English says it next
  door. One record carries both so they provably come from one slice position.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, swapping the two sides failed no test in
  this package. A judge would then be shown the English under the heading that
  promises the Chinese, which is indistinguishable from an archive that moved a
  passage: exactly the reading the window exists to support, arriving inverted.
- 
+
  THE SLICE INDICES ARE NOT POSITIONS in the fixture, which pins the second
  half of the same contract: the map is keyed by the index each slice was
  STAMPED with, while the window is read by POSITION in the list.
- 
+
  Fixtures carry parsed nodes because heading-boundary context uses source
  structure as well as text and stamped indices.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -40,15 +40,15 @@ import {
 
 /**
  Builds one prepared slice pair.
- 
+
  @param sliceIndex - index this slice was stamped with
- 
+
  @param source - original wording of the passage
- 
+
  @param target - archive English of the same passage
- 
+
  @returns Pair shaped as preparation returns one
- 
+
  @example
  ```ts
  const slice = pairOf({ sliceIndex: 10, source: '猫睡了。', target: 'The cat slept.', },);

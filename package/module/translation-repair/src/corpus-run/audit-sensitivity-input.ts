@@ -13,7 +13,7 @@
 
 /**
  Original both arms are audited against.
- 
+
  It denies that the cats eat canned food, and says the tabby sleeps on the
  windowsill. Both are load-bearing: the flipped rendering reverses the first
  and leaves the second alone, so a voice that flags the second is reporting
@@ -24,7 +24,7 @@ export const SOURCE_TEXT = `三只猫住在书店的阁楼里。她们不吃罐�
 
 /**
  Rendering with the negation dropped, and nothing else changed.
- 
+
  THE POSITIVE ARM. A dropped negator is the least deniable defect available:
  the original denies what this asserts, in one clause, with every other
  proposition rendered faithfully. An instrument that misses this cannot be
@@ -36,7 +36,7 @@ The tabby sleeps on the windowsill, and the other two sleep on the bookshelf.`;
 
 /**
  Faithful rendering of the same original.
- 
+
  THE CONTROL, and the more informative of the two arms. Corroborated findings
  here are false ones by construction, and the rate of them bounds what any
  later reading of this instrument may claim.

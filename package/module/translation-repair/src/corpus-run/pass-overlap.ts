@@ -13,13 +13,13 @@ const PASS_OVERLAP = 4;
 
 /**
  Reads and logs one entry's overlap once before entry work starts.
- 
+
  @param entryId - entry receiving same value across every per-slice driver
- 
+
  @returns Slices each driver may keep in flight
- 
+
  @throws StatedRefusalError when environment value is invalid
- 
+
  @example
  ```ts
  const overlap = readPassOverlap({ entryId: 'XingZ60', },);

@@ -1,12 +1,12 @@
 /**
  Tests the budget reading that waits out a refusal hold before calling every
  provider dry.
- 
+
  THE CASE IS THE PIN PASS OF 2026-09-02: two 429 holds, both meters
  wet, and every remaining entry failed inside one second because the holds
  were read as empty meters. Here the reading waits out the shortest hold and
  reads again, and ends the run only when nothing a wait could change is left.
- 
+
  @module
  */
 
@@ -43,13 +43,13 @@ const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
 /**
  Builds a budget view that reads a scripted sequence of views and reports
  fixed holds.
- 
+
  @param views - what successive reads return, the last repeating
- 
+
  @param holds - what the holds report
- 
+
  @returns Budget view plus counts of reads and hold asks
- 
+
  @example
  ```ts
  const { budgets, reads, } = scriptedBudgets({ views: [ALL_DRY, SYNTHETIC_BACK,], holds: { synthetic: 5, hyper: 20, openrouter: 0, }, },);

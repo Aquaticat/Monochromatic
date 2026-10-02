@@ -7,7 +7,7 @@ import { wordForCount, } from './count-word.ts';
 
 /**
  Lane a ledger belongs to.
- 
+
  @example
  ```ts
  const lane: ComparedLane = 'repair';
@@ -17,7 +17,7 @@ export type ComparedLane = 'repair' | 'translate';
 
 /**
  Why two ledgers cannot be compared slice by slice.
- 
+
  @example
  ```ts
  const fault: LaneComparisonFault = { kind: 'missing-from-translate', sliceIndex: 4, };
@@ -132,11 +132,11 @@ export type LaneComparisonFault = {
 
 /**
  Words a comparison fault from its kinds and numbers.
- 
+
  @param fault - why the ledgers cannot be compared
- 
+
  @returns Sentence written here
- 
+
  @example
  ```ts
  const sentence = comparisonSentence({ fault: { kind: 'different-slicings', }, },);

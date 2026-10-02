@@ -80,7 +80,7 @@ const RETRY_BACKOFF_BASE_MS = 1_000;
 
 /**
  Retry pacing knobs, injectable so tests run on tiny backoffs.
- 
+
  @example
  ```ts
  const policy: RetryPolicy = { limit: 2, baseMs: 10, };
@@ -116,13 +116,13 @@ const l = contextRoot({ tag: 'translation-repair', },);
  half the exponential window fixed, half random,
  so a burst of failing calls decorrelates instead of retrying in
  lockstep and re-triggering the burst gate.
- 
+
  @param baseMs - full window granted before the first retry
- 
+
  @param attempt - zero-based index of the attempt that just failed
- 
+
  @returns Milliseconds to wait before the next attempt
- 
+
  @example
  ```ts
  const backoffMs = backoffDelayMs({ baseMs: 1_000, attempt: 0, },);
@@ -164,7 +164,7 @@ function backoffDelayMs(
  @param policy - retry pacing in force
 
  @returns Milliseconds of the ladder's reach
- 
+
  @example
  ```ts
  longestBackoffMs({ policy: DEFAULT_RETRY_POLICY, },);
@@ -259,7 +259,7 @@ type ExchangeAttemptOutcome =
 /**
  What the ladder hands a caller for one attempt that delivered something and
  then failed.
- 
+
  @example
  ```ts
  const attempt: AbandonedAttempt = { deliveredChars: 812, error, };
@@ -282,22 +282,22 @@ export type AbandonedAttempt = {
  Performs one transport attempt, capturing non-abort throws as data.
  A caller abort rethrows immediately:
  user steering is never a transient failure.
- 
+
  @param transport - HTTP seam performing the attempt
- 
+
  @param exchange - request handed to the transport verbatim
- 
+
  @param verify - caller's read of a reply the status accepted
- 
+
  @param onAbandonedAttempt - told of this attempt before anything else is
  decided about its failure, when it delivered something
- 
+
  @mutates exchange - the delegated transport attempt may invoke getters
  while serializing, and the exchange's `signal` rides into the attempt;
  see the transport's own contract
- 
+
  @returns Reply or captured failure, as data
- 
+
  @example
  ```ts
  const outcome = await attemptExchange({ transport, exchange, },);
@@ -411,29 +411,29 @@ async function attemptExchange(
  try again on an equal-jitter ladder.
  Success and non-retryable statuses return immediately;
  a caller abort stops retrying at the next boundary.
- 
+
  @param transport - HTTP seam performing each attempt
- 
+
  @param exchange - request repeated verbatim on every attempt
- 
+
  @param policy - retry pacing; production default retries four times
- 
+
  @param verify - caller's read of a reply the status accepted, run inside the
  attempt so an incomplete body counts as a failed attempt rather than a
  success the caller has to fail on afterwards. Absent leaves every 200 whole
- 
+
  @param onAbandonedAttempt - told of every attempt that delivered something
  and then failed, the retried ones included, so a caller can record what the
  endpoint billed for it (ledger P1)
- 
+
  @mutates exchange - delegated transport attempts may invoke getters while
  serializing, and the exchange's `signal` rides into each attempt;
  see the transport's own contract
- 
+
  @returns First success or first non-retryable reply
- 
+
  @throws {@link SyntheticHttpError} when retries exhaust on a retryable status
- 
+
  @example
  ```ts
  const reply = await exchangeWithRetry({ transport, exchange, },);

@@ -1,15 +1,15 @@
 /**
  Tests for what happens to a translated slice that fails structural
  validation.
- 
+
  By user decision of 2026-08-15 it is not dropped: it goes back to the model
  that wrote it, in the same exchange, and that model answers with a revision,
  an inability, or a defence of what it produced. Each of those three lands
  differently, and the third is the one no filter could have collected, so all
  three are pinned here.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -101,13 +101,13 @@ type RepairLog = {
 
 /**
  Client answering the follow-up turn from a script.
- 
+
  @param answer - repair reply it returns
- 
+
  @param log - shared record the cases assert on
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = repairClient({ answer, log, },);
@@ -152,16 +152,16 @@ function repairClient(
 
 /**
  Runs one candidate through validation and any follow-up it earns.
- 
+
  @param translation - what the translator returned
- 
+
  @param answer - what it answers when asked about the findings
- 
+
  @param sourceText - original candidate renders
- 
+
  @param incumbentText - translation already in the document, blank by default
  so most cases exercise a slice with none
- 
+
  @param pageText - text the candidate replaces, left to the incumbent by
  default because that is what a translator replaces
 

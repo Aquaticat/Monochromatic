@@ -25,10 +25,10 @@ export const FRONT_MATTER_DECISION_RULE: string = 'The candidates are complete Y
 
 /**
  Separator an alias list is written with in this corpus.
- 
+
  MEASURED 2026-09-04 over the pinned archives: 70 alias values carry a
  comma, one a slash, none a Chinese comma or an enumeration mark.
- 
+
  THE COMMA ALONE, where `ALIAS_SEPARATORS` (`corpus-run/directory-id-name.ts`)
  also splits on the full-width comma and the enumeration mark: that reader
  takes originals, which write both, and this one takes a translation, whose
@@ -38,20 +38,20 @@ const ALIAS_SEPARATOR = ',';
 
 /**
  Whether an alias carries the name among its renderings.
- 
+
  THE OWNER'S DECISION OF 2026-09-04: where the ORIGINAL declares name and
  alias the same, the translated alias may carry the name beside other
  renderings ("鲵鲵, Nini" for the name "Nini"), because seven of the fourteen
  such archives at the pinned corpus already do, and equality would have forced
  every one of them to drop the original-script alias it publishes. Equality
  refused the luxuanwen3 page of that day after a full run.
- 
+
  @param alias - alias value as the candidate writes it
- 
+
  @param name - visible name the alias must carry
- 
+
  @returns Whether some comma-separated rendering equals the name exactly
- 
+
  @example
  ```ts
  const carried = aliasCarriesName({ alias: '鲵鲵, Nini', name: 'Nini', },);
@@ -75,7 +75,7 @@ function aliasCarriesName(
 
 /**
  Visible identity read from standard fields, or another metadata schema.
- 
+
  @example
  ```ts
  const identity: VisibleIdentityReading = { kind: 'present', name: 'Mittens', alias: 'Mittens', };
@@ -109,11 +109,11 @@ type VisibleIdentityReading =
 /**
  Reads standard visible identity fields from parsed metadata, taking an alias
  written as a string or as a list of strings.
- 
+
  @param value - parsed YAML document
- 
+
  @returns Identity pair, or nothing when document uses another schema
- 
+
  @example
  ```ts
  const identity = visibleIdentityOf({ value: { name: 'Mittens', info: { alias: 'Mittens', }, }, });
@@ -163,11 +163,11 @@ function visibleIdentityOf({ value, }: { readonly value: unknown; },): VisibleId
 
 /**
  Structural signature for parsed YAML value.
- 
+
  @param value - parsed YAML value
- 
+
  @returns Stable signature of keys, containers and scalar kinds
- 
+
  @example
  ```ts
  const shape = yamlShape({ value: { name: 'Mittens', }, });
@@ -198,13 +198,13 @@ function yamlShape({ value, }: { readonly value: unknown; }): string {
 
 /**
  Validates syntax and archive-compatible key shape of front matter candidate.
- 
+
  @param sourceText - source front matter whose identity relationships govern
- 
+
  @param pageText - archive front matter candidate replaces
- 
+
  @param candidateText - proposed localized front matter
- 
+
  @returns Translation validation result
 
  @throws Whatever the front-matter splitter throws that is not a YAML

@@ -1,14 +1,14 @@
 /**
  Tests for the second judging a declined slate buys.
- 
+
  Three doors: a first judging that decides is returned as it stands with no
  second ask; a first decline followed by a decision keeps the decision and
  carries both rounds' findings; two declines settle as `no-candidate-backed`.
  The thrown door, for a slice with nothing in the archive, is covered by the
  stage suite.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -134,12 +134,12 @@ type ScriptedBallot = 'reject' | 'dozes' | 'naps' | 'curls' | 'yawns';
 /**
  Client whose translators render in call order and whose judges answer as the
  per-round script says.
- 
+
  @param ballotFor - what the judges say, given how many judgings have been
  asked so far (the first is 1)
- 
+
  @returns Client plus the count of judge calls made
- 
+
  @example
  ```ts
  const rig = scriptedRig({ ballotFor: () => 'reject', },);
@@ -266,14 +266,14 @@ function scriptedRig(
 
 /**
  Judges one freshly produced slate through the retry, under one script.
- 
+
  @param ballotFor - what the judges say per judging
 
  @param laneTexts - lane texts the slate offers beside the proposals, none
  by default
 
  @returns Stage result plus the judge calls it cost
- 
+
  @example
  ```ts
  const { result, } = await judgedUnder({ ballotFor: () => 'dozes', },);

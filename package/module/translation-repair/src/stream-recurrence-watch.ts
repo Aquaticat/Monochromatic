@@ -48,7 +48,7 @@ const QUARTER = HALF * HALF;
 
 /**
  Trailing characters of generated text kept for the recurrence check.
- 
+
  A FEW THOUSAND CHARACTERS, bounded so a stream that never ends costs no
  more to watch this way at any point than it did at the start.
  */
@@ -56,7 +56,7 @@ const BUFFER_CHARS = 4_096;
 
 /**
  Width of the trailing slice searched for earlier in the buffer.
- 
+
  A QUARTER OF {@link BUFFER_CHARS}, not half, and that headroom is
  load-bearing. `.includes()` finds `tail` inside `earlier` only where
  `earlier` is long enough to let the match slide to the right offset: with
@@ -72,7 +72,7 @@ const BUFFER_CHARS = 4_096;
  arithmetic misses. Periods longer than this room stay out of reach of any
  buffer this size, which this package's own decision record accepts: "any
  period shorter than the buffer."
- 
+
  THE SAME HEADROOM ALSO BOUNDS A BACK-TO-BACK DUPLICATION'S FALSE-POSITIVE
  REACH. A block of length L recurring immediately back-to-back is only
  findable while L is at least TAIL_CHARS (so the checked slice sits
@@ -87,7 +87,7 @@ const TAIL_CHARS = BUFFER_CHARS * QUARTER;
 
 /**
  Characters of newly generated text between recurrence checks.
- 
+
  OCCASIONAL RATHER THAN PER CHUNK. A single check is one native substring
  search over a buffer bounded at {@link BUFFER_CHARS}, cheap on its own,
  but a chunk can be a few dozen characters, and checking every one of them
@@ -100,7 +100,7 @@ const CHECK_INTERVAL_CHARS = 512;
 /**
  Consecutive positive checks required before a recurrence reads as a
  verdict rather than a coincidence.
- 
+
  PAST THE PROVEN MAXIMUM A BOUNDED RE-QUOTE CAN PRODUCE, not past a naive
  formula. Per the geometry documented on {@link TAIL_CHARS}, a block
  recurring exactly once, immediately back-to-back, produces hits only while
@@ -128,12 +128,12 @@ const REQUIRED_CONSECUTIVE_HITS = 6;
 
 /**
  What the recurrence watch currently believes about a stream.
- 
+
  TWO STATES ONLY, unlike the ratio detector's `DegenerationVerdict`: this
  detector has no "not enough windows yet" state distinct from "healthy",
  because a check either finds the trailing span recurring or it does not,
  and the caller cares only about the boundary this crosses.
- 
+
  @example
  ```ts
  const verdict: RecurrenceVerdict = { kind: 'continuing', };
@@ -154,7 +154,7 @@ export type RecurrenceVerdict = {
 /**
  A running detector over one stream's generated text, watching for a
  recurring span the windowed ratio detector's arithmetic could miss.
- 
+
  @example
  ```ts
  const detector = watchForRecurrence();
@@ -176,23 +176,23 @@ export type RecurrenceDetector = {
 
 /**
  @internal
- 
+
  Builds a detector that reports when generated text has begun recurring at
  a short lag, regardless of the recurring span's length.
- 
+
  BOUNDED MEMORY AND BOUNDED PER-CHARACTER COST, per `RG2`: the buffer never
  grows past {@link BUFFER_CHARS} and a check runs only once every
  {@link CHECK_INTERVAL_CHARS} characters, so the amortised cost per
  character stays constant regardless of how long the stream runs, which
  matters precisely because the streams this exists to stop are the ones
  that never end.
- 
+
  NO REGEX, per `RG1`: the question is "does this exact slice occur
  earlier in this buffer", which `String.prototype.includes` states
  directly over a bounded input.
- 
+
  @returns Detector fed by `notifyText` and read by `verdict`
- 
+
  @example
  ```ts
  const detector = watchForRecurrence();

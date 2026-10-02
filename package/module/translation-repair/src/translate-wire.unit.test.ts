@@ -1,6 +1,6 @@
 /**
  Tests for what the translator sheet says about the shape of a passage.
- 
+
  WHY THE SHEET AND THE GUARD HAVE TO AGREE. `validateTranslatedSlice` floors a
  candidate on the PAGE AS IT STANDS: every block of the existing translation
  must appear in the rendering, in order. A translator told only that the
@@ -8,9 +8,9 @@
  by following its instructions, fails the guard, and buys a repair round at
  every reshaped slice. The two texts disagree about shape on real entries, so
  this is not a hypothetical.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

@@ -19,14 +19,14 @@ export const CACHED_UNREPORTED = 'unreported';
 
 /**
  Prompt tokens the final chunk says were served from cache.
- 
+
  THE LAST COUNT WINS, as the cost does: the usage block arrives once, on the
  final chunk.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns Cached prompt tokens, or that no chunk reported a count
- 
+
  @example
  ```ts
  const cached = openRouterCachedTokensOf({ bodyText: reply.bodyText, },);

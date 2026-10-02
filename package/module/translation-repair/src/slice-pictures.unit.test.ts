@@ -1,7 +1,7 @@
 /**
  Tests for which pictures one slice is shown, and what a stage is told about
  a picture nobody could corroborate.
- 
+
  WHAT THESE PIN is two claims bolted together. First, that
  `slicePictureNames` takes one section each way exactly the way
  `fidelity-window.ts`'s `neighbouringSource` does, including its RangeError
@@ -11,14 +11,14 @@
  corroborate out of the rendered prompt entirely and names it in `findings`
  instead, since a stage handed a hedge it cannot weigh is worse off than one
  simply not told the picture existed.
- 
+
  BOTH READINGS TRAVEL for a picture that was corroborated, labelled by
  model, which one case here asserts on an exact rendered block: the shorter
  reading vouches for what it carries and the longer carries more, so a stage
  shown only one of them loses either the vouching or the content.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -42,7 +42,7 @@ import { sliceOf, } from './content-slice-of.test-fixture.ts';
 
 /**
  Heading `slicePictures` renders before each picture's transcriptions.
- 
+
  MIRRORS THE MODULE'S OWN CONSTANT, kept private in `slice-pictures.ts`: this
  file states same literal directly rather than importing something not
  exported.
@@ -51,7 +51,7 @@ const PICTURE_HEADING = 'PICTURE';
 
 /**
  Placeholder corpus pages write for an entry's own directory.
- 
+
  AN ESCAPED TEMPLATE LITERAL, so characters landing in a slice's text are
  what corpus text carries rather than an interpolation this file performs
  by accident. Mirrors `photo-reference.unit.test.ts`.
@@ -60,7 +60,7 @@ const ENTRY = `\${path}`;
 
 /**
  Cat-themed stand-in for one vision reader's model id.
- 
+
  A CAST THROUGH `unknown`, since `RosterModelId` is a closed union of
  production identifiers and neither function under test validates one
  against real roster: `slicePictures` only folds a reading's model id into a
@@ -75,11 +75,11 @@ const MARMALADE = 'hf:cat/Marmalade' as unknown as RosterModelId;
 
 /**
  Builds one photo element naming given assets, in corpus's only form.
- 
+
  @param assetNames - file names within entry's photos directory
- 
+
  @returns Element as a page writes it
- 
+
  @example
  ```ts
  const element = photoElement({ assetNames: ['sunbeam.webp',], },);

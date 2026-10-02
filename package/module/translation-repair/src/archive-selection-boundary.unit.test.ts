@@ -1,6 +1,6 @@
 /**
  Locks down the decision boundaries exposed by Mio12's cached archive review.
- 
+
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -22,7 +22,7 @@ import {
 
 /**
  Runs the real stage with a caller-local source/target pair and no provider access.
- 
+
  @param fixture - scripted reviews and independent selection
  @returns Actual stage outcome
  */

@@ -2,7 +2,7 @@
  Tests for the injected-transport Synthetic client:
  request construction, contract enforcement, outcome-as-data JSON handling,
  and per-model concurrency bounds.
- 
+
  @module
  */
 
@@ -73,15 +73,15 @@ const MESSAGES = [
 /**
  Builds a drained SSE body from content deltas plus optional refusal deltas
  and usage, terminated like the provider terminates streams.
- 
+
  @param deltas - content deltas in arrival order
- 
+
  @param refusalDeltas - refusal deltas in arrival order
- 
+
  @param usage - usage block delivered as the final data event
- 
+
  @returns Whole `text/event-stream` body as the transport drains it
- 
+
  @example
  ```ts
  const body = sseBody({ deltas: ['{"a":', '1}',], },);
@@ -152,11 +152,11 @@ type CatVerdict = { readonly verdict: string; };
 
 /**
  Guards parsed model JSON as a verdict.
- 
+
  @param value - parsed candidate
- 
+
  @returns Whether value carries a string verdict
- 
+
  @example
  ```ts
  isCatVerdict({ verdict: 'pass', },);
@@ -426,7 +426,7 @@ await describe({
           fn: async () => {
             /**
              Content whose characters number far fewer than its bytes.
-         
+
              3600000 characters at three UTF-8 bytes each is 10800000 bytes, over the
              10485760 measured to pass, while the character count is barely a third
              of it. The two readings disagree by design.
@@ -565,11 +565,11 @@ await describe({
           fn: async () => {
             /**
              Transport answering after a fixed delay.
-         
+
              @param exchange - request under attempt
-         
+
              @returns Success reply after the delay
-         
+
              @example
              ```ts
              await slowReply(exchange,);
@@ -619,11 +619,11 @@ await describe({
           fn: async () => {
             /**
              Transport that never answers, rejecting only on abort.
-         
+
              @param exchange - request left hanging
-         
+
              @returns Never resolves; rejects with the abort reason
-         
+
              @example
              ```ts
              await hangForever(exchange,);
@@ -674,11 +674,11 @@ await describe({
 
             /**
              Transport dropping its first exchange like a mid-stream reset.
-         
+
              @param exchange - request under attempt
-         
+
              @returns Success reply from the second attempt on
-         
+
              @example
              ```ts
              await dropOnce(exchange,);
@@ -718,11 +718,11 @@ await describe({
 
             /**
              Transport dropping every exchange.
-         
+
              @param exchange - request under attempt
-         
+
              @returns Never; every attempt throws
-         
+
              @example
              ```ts
              await dropAlways(exchange,);
@@ -767,11 +767,11 @@ await describe({
 
             /**
              Transport whose exchange dies under an aborted signal.
-         
+
              @param exchange - request under attempt
-         
+
              @returns Never; the aborted stream always throws
-         
+
              @example
              ```ts
              await tornDown(exchange,);
@@ -871,11 +871,11 @@ await describe({
 
             /**
              Transport that records entry then waits for the gate.
-         
+
              @param exchange - request whose model gets recorded
-         
+
              @returns Recorded completion once the gate opens
-         
+
              @example
              ```ts
              const client = createSyntheticClient({ apiKey: 'test-key', transport: gatedTransport, },);
@@ -946,11 +946,11 @@ await describe({
 
             /**
              Transport that records entry then waits for the gate.
-         
+
              @param exchange - request whose model gets recorded
-         
+
              @returns Recorded completion once the gate opens
-         
+
              @example
              ```ts
              const client = createSyntheticClient({ apiKey: 'test-key', transport: gatedTransport, },);

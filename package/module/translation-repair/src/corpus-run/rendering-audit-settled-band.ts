@@ -17,7 +17,7 @@ import type { AuditRepeatPair, } from './rendering-audit-settled-repeat.ts';
 
 /**
  How far apart two audits of one text landed, over every pair found.
- 
+
  @example
  ```ts
  const band: AuditRepeatBand = { pairs: 6, agreedExactly: 2, widest: 4, ... };
@@ -31,7 +31,7 @@ export type AuditRepeatBand = {
 
   /**
    Pairs where both audits claimed the same number of defects.
-   
+
    NOT THE SAME DEFECTS. This counts agreement of the headline number, which
    is weaker than agreement about the text: two audits can claim three each
    and share none of them.
@@ -51,7 +51,7 @@ export type AuditRepeatBand = {
   /**
    Pairs where the two audits disagreed about whether there was ANYTHING here,
    one claiming nothing and the other claiming something.
-   
+
    The sharpest form of the spread, and the one that matters most to any
    future gate: a threshold reading "claimed at least one" would have flipped
    on these subjects for no reason in the text.
@@ -81,11 +81,11 @@ export type AuditRepeatBand = {
 
 /**
  Adds a list of numbers.
- 
+
  @param values - numbers to add
- 
+
  @returns Total
- 
+
  @example
  ```ts
  const total = sumOf({ values: [1, 2,], },);
@@ -107,11 +107,11 @@ function sumOf(
 
 /**
  Reads the spread over a set of repeat pairs.
- 
+
  @param pairs - texts audited twice
- 
+
  @returns Spread, with zeroes throughout when nothing was paired
- 
+
  @example
  ```ts
  const band = repeatBandOf({ pairs, },);
@@ -122,7 +122,7 @@ export function repeatBandOf(
 ): AuditRepeatBand {
   /**
    Gap between the two sides of each pair.
-   
+
    ABSOLUTE, because neither side is the reference. Both are single readings
    of one text, and calling either of them correct is the assumption this
    measurement exists to avoid.

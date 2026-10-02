@@ -90,18 +90,18 @@ export class ArchiveOriginalCompletenessError extends Error {
 
 /**
  Refuses a page that does not carry every sealed span byte for byte.
- 
+
  @param entryId - entry being published
- 
+
  @param archiveText - complete archive page the spans index into
- 
+
  @param pageText - assembled page candidate
- 
+
  @param spans - spans the preparation sealed, empty when none
- 
+
  @throws {@link ArchiveOriginalCompletenessError} when a span's archive
  bytes appear nowhere on the page
- 
+
  @example
  ```ts
  assertArchiveOriginalComplete({ entryId, archiveText, pageText, spans: prepared.archiveOriginalSpans ?? [], },);

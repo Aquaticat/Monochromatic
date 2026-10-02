@@ -36,18 +36,18 @@ const EDITORIAL_PREFIXES: readonly string[] = [
 
 /**
  Checks exact source support is substantive and inside expected aligned section.
- 
+
  READ THROUGH THE EVIDENCE FOLD (`normalizePunctuation`, ledger B24): a
  reviewer quoting the original writes its 「」 as English quotes as often as
  not, and the words are what the anchor asks about. The minimum is counted in
  characters, not UTF-16 units, as it says.
- 
+
  @param sourceContext - expected source section
- 
+
  @param sourceQuote - provider's exact support claim
- 
+
  @returns Whether quote is long enough and anchored in expected section
- 
+
  @example
  ```ts
  isArchiveSourceQuoteAnchored({ sourceContext: '猫在窗边睡觉。', sourceQuote: '窗边睡觉', });
@@ -81,22 +81,22 @@ export function isArchiveSourceQuoteAnchored(
 /**
  Checks a retention's support is substantive and stated by one page the
  original cites.
- 
+
  A CITED PAGE IS THE ORIGINAL'S OWN SOURCE (the owner's decision of
  2026-09-16, ledger B28): an archive block carrying what a linked page states
  is the translator's knowledge, not an unsupported insertion. The quote is
  looked for in one page's text at a time, with the fold and the minimum the
  source anchor uses; the address, the attestation's lines (each quoting the
  archive) and the lookup's failure notes are never support.
- 
+
  @param referenceContext - reference lines, with any attested lines under them
- 
+
  @param sourceQuote - provider's exact support claim
- 
+
  @returns Whether quote is long enough and stated by one cited page
- 
+
  @throws ReferenceLineHeadError when a reference line has no numbered head
- 
+
  @example
  ```ts
  isArchiveReferenceQuoteAnchored({ referenceContext: '- reference 1 https://cats.example/a: Mittens naps.', sourceQuote: 'Mittens naps', });
@@ -124,11 +124,11 @@ export function isArchiveReferenceQuoteAnchored(
  Whether a line opens with an apparatus label standing as words of its own,
  read by `wordStarts` with both edges bounded, so "Translation byproducts"
  is no "translation by" label (the B23 family).
- 
+
  @param line - one line of a block, its comments blanked
- 
+
  @returns Whether the line, case-folded, opens with a label at word edges
- 
+
  @example
  ```ts
  isLabelLine({ line: 'Translated by Mittens', },); // true
@@ -152,11 +152,11 @@ function isLabelLine({ line, }: { readonly line: string; },): boolean {
 
 /**
  Whether a line holds pictures and nothing else a reader sees.
- 
+
  @param line - one line of a block, its comments blanked
- 
+
  @returns Whether Markdown reads the line as one paragraph of images alone
- 
+
  @example
  ```ts
  isPictureLine({ line: '![A tabby asleep](tabby.png)', },); // true
@@ -188,7 +188,7 @@ function isPictureLine({ line, }: { readonly line: string; },): boolean {
 
 /**
  Deterministically corroborates narrow translation-side apparatus category.
- 
+
  EVERY LINE A READER SEES IS APPARATUS (ledger B81). With the block's
  comments blanked, each line it shows is one the contributor reader takes
  as a declaration, one opening with an apparatus label, or one of pictures
@@ -197,15 +197,15 @@ function isPictureLine({ line, }: { readonly line: string; },): boolean {
  declared contributors, or when it opened with a label, a picture or a
  comment and ended with a closed one, so prose beside them passed with
  them, and a label's words opening a longer word passed as the label.
- 
+
  What a label line says after its label is not read: whether it names a
  person or tells of one is the reviewers' to judge.
- 
+
  @param blockText - exact unclaimed archive block
- 
+
  @returns Whether every line the block shows is contributor, citation, or
  picture apparatus, or the block is closed comments alone
- 
+
  @example
  ```ts
  isVerifiableEditorialArchiveBlock({ blockText: 'Translator: Cat Friend', });

@@ -1,7 +1,7 @@
 /**
  Tests for the router's slot ledger: only a provider with a per-model limit
  is ever saturated, and a take is paired with a release on scope exit.
- 
+
  @module
  */
 

@@ -40,7 +40,7 @@ const DECIMAL_BASE = 10;
 
 /**
  One raw full-width marker found in a source slice.
- 
+
  @example
  ```ts
  const hit: TextMarkerHit = { identifier: '1', localOffset: 2, };
@@ -62,11 +62,11 @@ export type TextMarkerHit = {
  Scans one source slice for `〔N〕` markers in a single linear pass.
  Accepts ASCII and full-width digits;
  brackets without digits between them are ordinary text, not markers.
- 
+
  @param slice - exact source text of one mdast text node
- 
+
  @returns Hits in source order with slice-local offsets
- 
+
  @example
  ```ts
  scanFullwidthMarkers({ slice: '文学上的折扣〔1〕', },);
@@ -129,16 +129,16 @@ export function scanFullwidthMarkers(
 
 /**
  Scans one source slice for literal `[^identifier]` sequences.
- 
+
  micromark consumes every `[^identifier]` whose definition exists into a
  footnoteReference node, so a literal surviving inside a text node is an
  unresolved reference by construction:
  scanning literals is exactly how dropped or mistranslated definitions surface.
- 
+
  @param slice - exact source text of one mdast text node
- 
+
  @returns Hits in source order with slice-local offsets
- 
+
  @example
  ```ts
  scanGfmReferenceLiterals({ slice: '引用[^7]没有定义。', },);
@@ -162,13 +162,13 @@ export function scanGfmReferenceLiterals(
 
 /**
  Composite key joining convention and identifier for grouping.
- 
+
  @param convention - syntax family
- 
+
  @param identifier - normalized identifier
- 
+
  @returns Collision-free grouping key
- 
+
  @example
  ```ts
  graphKey({ convention: 'gfm', identifier: '1', },);
@@ -188,7 +188,7 @@ function graphKey(
 
 /**
  Mutable accumulator threaded through one document walk.
- 
+
  @example
  ```ts
  const acc: GraphAccumulator = { references: [], definitions: [], };
@@ -211,19 +211,19 @@ type GraphAccumulator = {
  collecting GFM footnote references and full-width markers from text nodes.
  Code and inline-code nodes never enter text scanning because only `text` nodes are
  scanned, which is what makes marker look-alikes inside code harmless.
- 
+
  @param block - top-level mdast block to walk
- 
+
  @param blockIndex - index of block among top-level children
- 
+
  @param blockStart - body-relative start offset of block
- 
+
  @param bodyText - body source for faithful slice scanning
- 
+
  @param bodyOffset - absolute offset of body start in full document source
- 
+
  @param acc - accumulator receiving hits
- 
+
  @example
  ```ts
  collectBlockHits({ block, blockIndex: 0, blockStart: 0, bodyText, bodyOffset: 0, acc, },);
@@ -354,13 +354,13 @@ function collectBlockHits(
 
 /**
  Computes integrity findings from collected references and definitions.
- 
+
  @param references - every reference in source order
- 
+
  @param definitions - every definition in source order
- 
+
  @returns Findings for unresolved references, orphan definitions, and duplicates
- 
+
  @example
  ```ts
  computeFindings({ references, definitions, },);
@@ -456,15 +456,15 @@ function computeFindings(
  Builds complete footnote graph of one parsed document:
  GFM reference and definition nodes plus archive-convention `〔N〕` text markers,
  validated as a reference-to-definition graph rather than by marker counting.
- 
+
  @param children - top-level mdast blocks in source order
- 
+
  @param bodyText - body source the blocks were parsed from
- 
+
  @param bodyOffset - absolute offset of body start in full document source
- 
+
  @returns Graph with references, definitions, and integrity findings
- 
+
  @example
  ```ts
  const graph = buildFootnoteGraph({ children: root.children, bodyText: body, bodyOffset, },);

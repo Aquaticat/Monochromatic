@@ -1,16 +1,16 @@
 /**
  Tests for the three ways a directory id may stand as a page's visible name
  although the source names the person otherwise.
- 
+
  WHY. On 2026-09-07 one page was refused for naming the person by the
  pinyin of the name, which is the directory id. The owner's answer was the pinyin check
  and the alias exemption, read on both front matters, since there has to be
  an English rendering of the name in the front matter. Each clause has a case
  that passes and the refusal has a case that stays.
- 
+
  Cat-themed invention throughout; no corpus content appears here. The pinyin
  cases need real characters, and use common ones.
- 
+
  @module
  */
 
@@ -28,11 +28,11 @@ import {
 /**
  Parses a front matter fixture, throwing where it does not parse so a broken
  fixture fails its case rather than passing an undefined through.
- 
+
  @param text - page text starting with front matter
- 
+
  @returns Parsed block
- 
+
  @example
  ```ts
  const block = blockOf({ text: '---\nname: 猫童\n---\n', },);

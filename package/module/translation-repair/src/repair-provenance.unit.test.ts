@@ -2,14 +2,14 @@
  End-to-end test of the repair-provenance chain: slice outcomes into issue
  records, records into artifact JSON, artifact JSON back into grading
  candidates, candidates into both sheets.
- 
+
  Every other suite fixes its own fixture at one module's boundary, so all of
  them can agree with the code they test and disagree with each other. This one
  runs the real path a corpus entry takes, which is the only place a field
  renamed on one side and read on the other actually shows up.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -48,15 +48,15 @@ import {
 
 /**
  Bands a raw byte count, stating the unit explicitly.
- 
+
  These cases probe the band BOUNDARIES, which are byte counts by
  definition and cannot be produced from text, so the assertion is the
  honest way to reach `classifyBand` rather than a cast around its guard.
- 
+
  @param count - UTF-8 byte length under test
- 
+
  @returns Band that count falls in
- 
+
  @example
  ```ts
  expect(bandAt(1_842,),).toBe('small',);
@@ -101,7 +101,7 @@ const PANEL_TALLY = {
 
 /**
  Ballots behind {@link PANEL_TALLY}, one panelist having abstained.
- 
+
  THE ABSTENTION IS THE POINT. It leaves a ballot, while a panelist whose
  reply never arrived leaves none, and a reader holding only the sums cannot
  tell those apart at all.
@@ -193,7 +193,7 @@ const OPERATION: PatchOperation = {
 
 /**
  Checker round behind this fixture's verdict: resolved two to one.
- 
+
  Cat-themed invention. Model ids come from the catalog because that union is
  closed.
  */
@@ -227,7 +227,7 @@ const CHECKER_READING = {
 
 /**
  What the same three said when asked again about the REFINED text.
- 
+
  DELIBERATELY NOT THE SAME SHAPE as `CHECKER_READING`, and one voice changed
  its answer between them. That is the state the second field exists to keep:
  two rounds rule on the same issue id, so a reader holding one merged record
@@ -264,11 +264,11 @@ const RECHECK_READING = {
 
 /**
  Builds the settled slice outcome the way `repairChunk` returns it.
- 
+
  @param accuracyPatchSelected - whether the patched candidate won
- 
+
  @returns Outcome the driver flattens
- 
+
  @example
  ```ts
  const outcome = settledOutcome({ accuracyPatchSelected: true, },);
@@ -314,11 +314,11 @@ function settledOutcome(
 /**
  Runs the whole chain a corpus entry takes: outcome to records, records
  through the artifact JSON the pass writes, artifact back to candidates.
- 
+
  @param accuracyPatchSelected - whether the patched candidate won
- 
+
  @returns Candidates the sheets render
- 
+
  @example
  ```ts
  const candidates = throughArtifact({ accuracyPatchSelected: true, },);
@@ -337,7 +337,7 @@ function throughArtifact(
 
   /**
    Artifact text exactly as the corpus pass writes it to disk.
-   
+
    Serialized and re-read rather than passed as an object on purpose, and NOT
    a deep clone the way `structuredClone` would be: JSON drops what
    `structuredClone` keeps, and every optional field on a repair record

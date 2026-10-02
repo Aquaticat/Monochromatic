@@ -27,7 +27,7 @@ export const REFUSAL_SCAN_WINDOW = 400;
  refusal-shaped.
  Grown from observed failures; scorecard records which marker fired so the list
  stays evidence-driven.
- 
+
  @example
  ```ts
  REFUSAL_MARKERS.includes("i can't assist",);
@@ -58,7 +58,7 @@ export const REFUSAL_MARKERS: readonly string[] = [
 
 /**
  Classification of one model reply's opening window.
- 
+
  @example
  ```ts
  const scan: RefusalScan = { refusalShaped: true, marker: 'as an ai', };
@@ -86,11 +86,11 @@ export type RefusalScan =
 /**
  Scans one reply's opening window for refusal markers.
  Case-insensitive; first marker in list order wins so results are deterministic.
- 
+
  @param text - full model reply
- 
+
  @returns Whether the opening reads as refusal, and which marker fired
- 
+
  @example
  ```ts
  const scan = detectRefusalShape({ text: reply, },);

@@ -55,7 +55,7 @@ export type ChunkProof = {
   readonly repairRegions: ReturnType<typeof collectRepairRegions>;
   /**
    Shadow-mode audit of damage the edit itself caused.
-   
+
    Nothing downstream reads this to decide what ships, on purpose: see
    `introduced-defect-probe.ts` for why an unmeasured probe must not gate.
    */
@@ -65,25 +65,25 @@ export type ChunkProof = {
 /**
  Proves one chunk's patched candidate: the checker stage and the introduced
  defect probe, both on the checker bench the seating names now.
- 
+
  @param client - injected model client
- 
+
  @param models - roster the chunk was seated with
- 
+
  @param reseat - reads the seating as of now (class one hundred nine)
- 
+
  @param sourceText - original of this chunk
- 
+
  @param targetText - archive English of this chunk, the probe's baseline
- 
+
  @param envelopes - envelopes the editor wrote into
- 
+
  @param editor - what the editor stage returned
- 
+
  @param acceptedIssues - issues the panel accepted, the checkers' work list
- 
+
  @param authorship - who wrote the text answering for each issue
- 
+
  @param neighbours - the auditor's window, the very one the critic, panel and
  editor were shown, since a probe without it was measured reporting nothing
  about a duplication whose other half sits in the slice next door, which no
@@ -91,18 +91,18 @@ export type ChunkProof = {
 
  @param identityContext - declared names and handles for the checkers and
  the probe, or the empty string on a page declaring none (ledger H8, L14)
- 
+
  @param referenceContext - what the pages the original links say, for the
  checkers; absent when it links nowhere (ledger L14)
- 
+
  @param signal - caller abort honoured by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Checker proof, replaced regions and the probe's audit
- 
+
  @example
  ```ts
  const { checker, repairRegions, introducedDefects, } = await proveRepairedChunk({ ... },);

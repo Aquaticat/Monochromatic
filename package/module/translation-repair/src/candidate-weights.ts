@@ -13,21 +13,21 @@ import type {
 
 /**
  Counts ballots and weight per candidate.
- 
+
  Every candidate gets a row, including ones nobody named, so a reader can tell
  a candidate that drew nothing from a candidate that was never offered.
- 
+
  @param ballots - ballots as cast, abstentions included
- 
+
  @param candidateCount - candidates the judges were shown
- 
+
  @returns One row per candidate, in slate order
- 
+
  @example
  ```ts
  const perCandidate = countCandidateWeights({ ballots, candidateCount, },);
  ```
- 
+
  @internal
  */
 export function countCandidateWeights(
@@ -53,7 +53,7 @@ export function countCandidateWeights(
       /**
        Ballots that named it, abstentions and out-of-range ballots excluded
        by construction since neither carries a usable index.
-       
+
        THE WEIGHT TEST IS NOT REDUNDANT WITH THAT, though today`s producer
        makes it look so: it sets `best` and weight together, so an in-range
        index always arrives above zero. It stops being so the moment

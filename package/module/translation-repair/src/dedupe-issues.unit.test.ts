@@ -1,13 +1,13 @@
 /**
  Tests for merging accepted issues that name one defect several times.
- 
+
  The measurement behind this is that 13.4% of accepted issues are exact-place
  duplicates, and the human grader independently marked 14% of a 50-item draw
  as duplicates. The cost is not the arithmetic: it is the editor repairing one
  defect twice and cutting two overlapping envelopes for it.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -24,19 +24,19 @@ import {
 
 /**
  Builds an adjudicated issue over one span.
- 
+
  @param issueId - issue identity
- 
+
  @param claimId - single member claim identity
- 
+
  @param category - claimed category
- 
+
  @param startOffset - span start, which distinguishes places
- 
+
  @param status - adjudication status
- 
+
  @returns Issue
- 
+
  @example
  ```ts
  const issue = issueAt({ issueId: 'i/1', claimId: 'c/1', },);

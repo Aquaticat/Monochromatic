@@ -8,7 +8,7 @@ import { wordForCount, } from './count-word.ts';
 
 /**
  Which index set named a slice.
- 
+
  @example
  ```ts
  const set: DeliverySetName = 'withdrawn';
@@ -18,7 +18,7 @@ export type DeliverySetName = 'shipped' | 'withdrawn';
 
 /**
  What a lane's slice reports say that cannot both be true.
- 
+
  @example
  ```ts
  const fault: SliceDeliveryFault = { kind: 'decided-unstated', sliceIndex: 4, };
@@ -208,11 +208,11 @@ export type SliceDeliveryFault = {
 
 /**
  Words a delivery fault from set names, kinds and numbers.
- 
+
  @param fault - what the reports say that cannot both be true
- 
+
  @returns Sentence written here
- 
+
  @example
  ```ts
  const sentence = deliverySentence({ fault: { kind: 'wording-count', wordings: 2, slices: 3, }, },);
@@ -305,10 +305,10 @@ export function deliverySentence({ fault, }: { readonly fault: SliceDeliveryFaul
 
 /**
  Refusal of lane slice reports that cannot both be true.
- 
+
  MARKED: its message is the sentence `deliverySentence` writes from set
  names, kinds and numbers.
- 
+
  @example
  ```ts
  throw new SliceDeliveryError({ fault: { kind: 'decided-unstated', sliceIndex: 2, }, },);

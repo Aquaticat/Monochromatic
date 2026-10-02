@@ -27,7 +27,7 @@ export const MIN_STAGE_VOICES = 2;
 
 /**
  Quorum a gather needs once the seats no provider serves are known.
- 
+
  @example
  ```ts
  const quorum: ReachableQuorum = reachableQuorum({ benchSize: 11, unreachable: 7, },);
@@ -58,14 +58,14 @@ export type ReachableQuorum = {
 
 /**
  Sizes a gather's quorum to the seats that could answer.
- 
+
  @param benchSize - seats the stage seated, unreachable seats included
- 
+
  @param unreachable - seats the router refused for want of a wet provider
- 
+
  @returns Voices needed, the reachable count and bench quorum it was sized
  by, and whether the bench was short
- 
+
  @example
  ```ts
  reachableQuorum({ benchSize: 11, unreachable: 7, },);
@@ -113,15 +113,15 @@ export function reachableQuorum(
  Finding a gather closed short of its bench quorum carries, so an artifact
  decided on a short bench is told apart in its findings rather than only in
  a log line.
- 
+
  @param stage - stage the gather served
- 
+
  @param quorum - quorum the gather applied
- 
+
  @param benchSize - seats the stage seated
- 
+
  @returns Finding in scorecard-stable wording
- 
+
  @example
  ```ts
  shortBenchStageFinding({ stage: 'critic', quorum, benchSize: 11, },);

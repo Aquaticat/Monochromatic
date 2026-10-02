@@ -1,19 +1,19 @@
 /**
  Tests for the Anthropic delta scanner.
- 
+
  WHAT THIS FILE IS REALLY CHECKING is that a second wire format produces the
  SAME `ChannelDelta` stream the OpenAI-shaped one does, because that identity
  is the whole reason the stream guards were not written twice. If this scanner
  files the answer under `reasoning`, every volume bound and degeneration
  verdict downstream reads a call that thought forever and answered nothing.
- 
+
  The case that matters most is `input_json_delta`. Under forced tool use the
  model's entire reply arrives as the tool call's arguments, so a scanner that
  treated those fragments as anything but the answer channel would make every
  schema'd call on this transport look silent.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -31,11 +31,11 @@ import { routeDeltaToDetector, } from './delta-channel-routing.test-fixture.ts';
 
 /**
  Builds one Anthropic event frame, newline-terminated as the wire sends it.
- 
+
  @param body - frame payload, which carries its own `type`
- 
+
  @returns Frame ready to feed a scanner
- 
+
  @example
  ```ts
  const raw = frameOf({ body: { type: 'ping', }, },);
@@ -54,13 +54,13 @@ function frameOf(
 
 /**
  Frame opening a content block of one type at one index.
- 
+
  @param index - position the block occupies
- 
+
  @param type - block type the server declares
- 
+
  @returns Frame ready to feed a scanner
- 
+
  @example
  ```ts
  const raw = blockStart({ index: 0, type: 'thinking', },);
@@ -86,17 +86,17 @@ function blockStart(
 
 /**
  Frame carrying one delta of one kind at one index.
- 
+
  @param index - position the delta belongs to
- 
+
  @param deltaType - kind of delta, which names its text field
- 
+
  @param field - field the text rides in
- 
+
  @param text - text the frame carries
- 
+
  @returns Frame ready to feed a scanner
- 
+
  @example
  ```ts
  const raw = blockDelta({ index: 0, deltaType: 'text_delta', field: 'text', text: 'Biscuit', },);
@@ -129,11 +129,11 @@ function blockDelta(
 
 /**
  Feeds a whole body to a fresh scanner in one chunk.
- 
+
  @param raw - whole stream body
- 
+
  @returns Every delta it yielded, in order
- 
+
  @example
  ```ts
  const deltas = scanAll({ raw, },);

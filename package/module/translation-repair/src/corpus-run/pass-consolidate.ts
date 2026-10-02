@@ -21,43 +21,43 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 
 /**
  Runs production consolidation and final naturalness polish for one entry.
- 
+
  MODEL ROLES, WINDOWS, CACHE AND DOCUMENT FACTS ARE ASSEMBLED HERE so pass
  orchestration makes one call rather than duplicating stage interface details.
  This is same seam at which all four positional maps are simultaneously known.
- 
+
  READS ITS OWN BENCH off every provider's meter as it stands when
  consolidation starts, for the reason `runPassContest` gives: a reading taken
  at the lanes is hours old by now on a long entry (`run-seats.ts`).
- 
+
  @param client - shared provider client
- 
+
  @param prepared - shared source-target preparation
- 
+
  @param projected - both lane ledgers and comparison
- 
+
  @param archiveDisputes - slices whose archive rendering the repair lane's
  adjudicators disputed, whose repair text stands in for the archive (class
  one hundred seven)
- 
+
  @param contests - lane contest records
- 
+
  @param frontMatterSlices - syntax-bearing metadata positions
- 
+
  @param pictureReadings - paired OCR evidence
- 
+
  @param entryCacheDir - per-entry cache root
- 
+
  @param pipelineDigest - generation stamp for cache
- 
+
  @param signal - entry cancellation
- 
+
  @param overlap - most slices in flight
- 
+
  @param l - entry logger
- 
+
  @returns Consolidation records in comparison order
- 
+
  @example
  ```ts
  const slices = await runPassConsolidation({ client, prepared, projected, contests, frontMatterSlices, pictureReadings, entryCacheDir, pipelineDigest, signal, overlap, l, });

@@ -34,12 +34,12 @@ import { wordForCount, } from './count-word.ts';
 
 /**
  What a seat knows about which models answered it at all.
- 
+
  `recorded` carries every model heard with a usable answer at the seat,
  whether or not the answer proposed anything; `unrecorded` says the seat does
  not carry that list out, so silence there is indistinguishable from an
  answer dropped before judging.
- 
+
  @example
  ```ts
  const answered: SeatAnswers = { kind: 'recorded', modelIds: heard, };
@@ -60,12 +60,12 @@ export type SeatAnswers =
 
 /**
  Roster models a standing table does and does not describe.
- 
+
  THE FOUR STATES ARE DISJOINT AND COVER THE SEATED ROSTER, so a reader can
  add the lengths and check the total against the seats a run filled.
  `answeredUnslated` is empty whenever answers were not recorded, and then
  `neverWrote` means only that no candidate reached a slate.
- 
+
  @example
  ```ts
  const { judged, wroteUnjudged, answeredUnslated, neverWrote, } = readStandingCoverage({
@@ -108,7 +108,7 @@ export type StandingCoverage = {
 /**
  Raised when a standing, a slate or an answer names a model the run never
  seated.
- 
+
  @example
  ```ts
  throw new UnseatedStandingError({ modelIds: ['minimax-m3',], },);
@@ -136,23 +136,23 @@ export class UnseatedStandingError extends Error {
 
 /**
  Splits a seated roster by what the standing table can say about each model.
- 
+
  @param roster - seats this run filled
- 
+
  @param standings - what the ballot tally produced
- 
+
  @param produced - models known to have written a candidate, judged or not;
  a caller that cannot tell passes what it can see
- 
+
  @param answered - models heard with a usable answer at this seat, or a
  statement that the seat does not record them
- 
+
  @returns Seated roster split four ways
- 
+
  @throws {@link UnseatedStandingError} when a standing, a produced model or an
  answering model was never seated, since coverage of one roster cannot be
  read off another
- 
+
  @example
  ```ts
  const coverage = readStandingCoverage({ roster: RUN_ROSTER, standings, produced, answered, },);
@@ -233,17 +233,17 @@ export function readStandingCoverage(
 
 /**
  Words for the silent seats, chosen by whether the seat knows who answered.
- 
+
  @param silent - silent models, rendered for the line
- 
+
  @param described - seats the table describes
- 
+
  @param seats - seats the coverage was read over
- 
+
  @param answersRecorded - whether silence here means no usable answer
- 
+
  @returns One report line
- 
+
  @example
  ```ts
  const line = silentSeatLine({ silent, described: 1, seats: 4, answersRecorded: true, },);
@@ -292,15 +292,15 @@ function silentSeatLine(
 
 /**
  Renders what the standing table leaves out, one line per reason.
- 
+
  PRINTS NOTHING WHERE THERE IS NOTHING TO SAY, so a run with the whole roster
  on the table carries no note claiming completeness it would then have to
  keep true.
- 
+
  @param coverage - seated roster split four ways
- 
+
  @returns Report lines, empty where every seated model was judged
- 
+
  @example
  ```ts
  for (const line of coverageGapLines({ coverage, },))

@@ -8,7 +8,7 @@ import type { ArtifactNaturalnessReviewRound, } from './artifact-two-lane-consol
 
 /**
  Parser for one exact candidate review round.
- 
+
  @example
  ```ts
  const parser: RoundParser = ({ value, path, }) => parseRound({ value, path, });
@@ -36,24 +36,24 @@ type ConfirmationMatch = {
 
 /**
  Reads and binds optional acceptance confirmations added within schema nine.
- 
+
  Absence remains readable for historical schema-nine artifacts.
  Presence opts into repeated-acceptance invariant and must confirm final text.
- 
+
  @param value - unknown confirmation array
- 
+
  @param present - whether artifact explicitly carries confirmation key
- 
+
  @param rounds - decisive candidate reviews in correction order
 
  @param final - last of those reviews, which authorizes publication
 
  @param path - artifact review path
- 
+
  @param parseRound - exact schema-nine round parser
- 
+
  @returns Earlier acceptable same-candidate reviews
- 
+
  @example
  ```ts
  const confirmations = parseNaturalnessConfirmations({ value, present: true, rounds, final, path, parseRound, });

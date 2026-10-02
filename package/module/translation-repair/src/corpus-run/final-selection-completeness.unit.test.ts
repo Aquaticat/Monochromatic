@@ -1,8 +1,8 @@
 /**
  Tests for refusing final archive fallback without semantic endorsement.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -36,15 +36,15 @@ const TRANSLATE = 'A cat naps.';
 
 /**
  Builds final-selection source with chosen contest verdict and optional consolidation.
- 
+
  @param verdict - contest result at fixture slice
- 
+
  @param consolidated - whether third rendering settled fresh wording
- 
+
  @param polished - whether polish attempts to rewrite unchanged baseline
- 
+
  @returns Source accepted by would-ship reader
- 
+
  @example
  ```ts
  const source = sourceWith({ verdict: { kind: 'lane-won', lane: 'repair', }, });

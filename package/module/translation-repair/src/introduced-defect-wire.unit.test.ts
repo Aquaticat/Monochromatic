@@ -1,7 +1,7 @@
 /**
  Tests for the introduced-defect probe sheet and its wire guards.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

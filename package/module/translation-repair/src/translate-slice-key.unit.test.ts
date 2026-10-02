@@ -1,15 +1,15 @@
 /**
  Tests for the cross-run key that decides when two runs are looking at the same
  slice.
- 
+
  WHAT THESE PIN is the pair of promises the key has to keep at once. It must
  SEPARATE two questions that can have different answers, or one arm of a
  comparison reads the other's cached result and the two report as identical.
  And it must not separate anything else, or a settled corpus is discarded for
  nothing.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -51,14 +51,14 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
 
 /**
  Key a windowless slice hashes to, pinned rather than recomputed.
- 
+
  WHY A LITERAL RATHER THAN A COMPARISON. Every other case here asks whether two
  keys agree, and a change that moved BOTH sides would pass all of them while
  discarding every settled slice in the pinned corpus, since a resumed record is
  found by this exact string. Only a value written down outside the code catches
  that. It moves when {@link TRANSLATE_SLICE_CACHE_VERSION} moves, which is the
  intended signal: a bump means the corpus is deliberately being rebought.
- 
+
  MOVED on 2026-08-22 when version went to 6 for judge line-structure policy,
  then on 2026-08-28 when version went to 7 for target-authoritative contributor
  spelling in metadata comments and version 8 for body contributor public
@@ -70,7 +70,7 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 14 refuses disputed archive wording and keys the dispute note.
  Version 15 carries every floor, sheet and quorum change made after 14 landed.
  These questions changed without input fields.
- 
+
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
@@ -78,11 +78,11 @@ const LEGACY_WINDOWLESS_KEY = 'b0fd4303a46f20e529823aa8c7f38dd6b975aba443a469569
 
 /**
  One slice's key, with whatever this case wants to vary.
- 
+
  @param neighbouringSourceText - wider window, absent for an ordinary run
- 
+
  @returns Key for that slice under that window
- 
+
  @example
  ```ts
  const key = keyFor({},);
@@ -197,7 +197,7 @@ await describe({
       fn: async () => {
         /**
          Argument a JavaScript caller can build and TypeScript refuses.
-         
+
          `exactOptionalPropertyTypes` rejects this property as `undefined`,
          which is a real guard and is why the cast is here rather than the
          type being loosened to admit it. What the guard does not reach is an

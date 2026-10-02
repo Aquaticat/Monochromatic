@@ -1,24 +1,24 @@
 /**
  Tests for the line that records what one call cost.
- 
+
  TESTED THROUGH ITS RETURN VALUE rather than by capturing a logger's side
  effect, matching `stream-cut.unit.test.ts`: `reportSpend` hands back the exact
  line it logs, so an assertion here reads as a statement about the LINE a
  reader will parse rather than about whatever the logging subsystem did.
- 
+
  THE CASE THIS MODULE EXISTS FOR is the one where the provider reported no
  usage at all. A run whose provider stayed quiet and a run that spent nothing
  total the same, and the only thing that tells them apart is that the line is
  printed anyway, carrying a named absence. Omitting the line would let a reader
  report a cheap run when what happened was an unreported one.
- 
+
  ZERO IS NOT ABSENCE, and it gets its own case beside it. A provider that
  reports zero completion tokens has said something; one that reports nothing
  has not. Collapsing them is the single mistake this shape is built to refuse.
- 
+
  Model identifiers come from the catalog, since a spend line names a seat that
  has to be findable in the roster. No corpus content appears here.
- 
+
  @module
  */
 
@@ -47,13 +47,13 @@ const SYNTHETIC_MODEL = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Completion carrying the usage block a provider fills in when it reports.
- 
+
  @param promptTokens - tokens the request consumed
- 
+
  @param completionTokens - tokens the answer produced, thinking included
- 
+
  @returns Completion shaped as the extractor hands one back
- 
+
  @example
  ```ts
  const extracted = reported({ promptTokens: 8, completionTokens: 2, },);
@@ -79,9 +79,9 @@ function reported(
 
 /**
  Completion from a provider that returned no usage block at all.
- 
+
  @returns Completion with text and nothing said about what it cost
- 
+
  @example
  ```ts
  const extracted = silent();

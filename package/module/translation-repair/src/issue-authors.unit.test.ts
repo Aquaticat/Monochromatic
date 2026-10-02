@@ -1,7 +1,7 @@
 /**
  Tests for who wrote the text a checker stage is about to judge, read off the
  producer the editor stage recorded.
- 
+
  @module
  */
 
@@ -67,13 +67,13 @@ function operationOf(envelopeId: string,): PatchOperation {
 /**
  Builds the record of an envelope whose sole proposal was adopted without a
  vote.
- 
+
  @param envelopeId - envelope adopted
- 
+
  @param slate - its one entry
- 
+
  @returns Adopted round
- 
+
  @example
  ```ts
  const round = adoptedRound({ envelopeId: 'kept', slate: [entry,], },);

@@ -6,7 +6,7 @@
  categories plus source-only anchors never count, and dismissed votes
  take their non-translation claims along with a finding.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

@@ -43,7 +43,7 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  How long one sample may take before it is abandoned.
- 
+
  SET TO THE FRESHNESS WINDOW rather than picked. A reading is trusted for
  sixty seconds, so one that takes longer than that to arrive has aged out
  before it could be used, and a sampler that waits past it is measuring the
@@ -58,7 +58,7 @@ const SAMPLE_TIMEOUT_MS = 60_000;
 
  @throws {@link StatedRefusalError} when any provider's key is absent, since
  a sample of some providers cannot answer a question about the others
- 
+
  @example
  ```ts
  await sampleBudgets();
@@ -123,7 +123,7 @@ async function sampleBudgets(): Promise<void> {
 
   /**
    Budget view over every meter, which logs what it reads.
-   
+
    ITS CACHE CANNOT INTERFERE. A fresh view has never read anything, so the
    first call always reaches the wire, and this process makes exactly one.
    */

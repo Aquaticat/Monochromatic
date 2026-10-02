@@ -70,7 +70,7 @@ export type MeterSample = {
 
   /**
    What the third provider's meter said, or that the record predates it.
-   
+
    `'absent'` IS A READING OF THE LOG, NOT OF THE METER. Every line written
    before 2026-09-03 carries two states, and those samples still say what
    they said about the first two providers; refusing them would lose every
@@ -86,7 +86,7 @@ export type MeterSample = {
 
   /**
    Every field beyond the states, in the order written.
-   
+
    NOT AN ABSENCE SENTINEL WHEN EMPTY. A record written before the levels
    were added carries none, and so does one whose meters both failed to
    answer; those two are told apart by the states beside them, which read
@@ -97,7 +97,7 @@ export type MeterSample = {
 
 /**
  What one log line turned out to be.
- 
+
  The three cases are genuinely different evidence: a line that is not a
  record says nothing, and a record that will not read says the log has a hole
  in it.
@@ -115,7 +115,7 @@ export type MeterLogReading = {
 
   /**
    Records that could not be read.
-   
+
    KEPT SO A HOLE IS VISIBLE. A run whose log was truncated mid-line still
    reports the samples around the hole, and this says the hole is there.
    */
@@ -124,16 +124,16 @@ export type MeterLogReading = {
 
 /**
  Narrows a written word to a meter state.
- 
+
  POSITIONAL RATHER THAN DESTRUCTURED, which the repo's object-parameter
  convention would otherwise ask for: TypeScript refuses a type predicate that
  names an element of a binding pattern (TS1230), so a guard has to take its
  subject directly.
- 
+
  @param value - word read off the line
- 
+
  @returns Whether it names a state a meter can be in
- 
+
  @example
  ```ts
  if (isMeterState(value,)) { ... }
@@ -145,13 +145,13 @@ function isMeterState(value: string,): value is MeterState {
 
 /**
  Reads one `name=state` field out of the text after the marker.
- 
+
  @param tail - everything after the marker
- 
+
  @param name - provider whose field is wanted
- 
+
  @returns That provider's state, or that the record does not carry it
- 
+
  @example
  ```ts
  const state = fieldValue({ tail: 'synthetic=wet hyper=dry', name: 'hyper', },);
@@ -194,16 +194,16 @@ function fieldValue(
 
 /**
  Whether the text after the marker opens with a field a record would carry.
- 
+
  THE GATE BETWEEN A RECORD AND A SENTENCE. Any log line may mention the
  marker in prose, and treating those as records that failed to parse would
  report a hole in an intact log. A record's first field is `name=state`;
  a sentence's first word is not.
- 
+
  @param tail - everything after the marker
- 
+
  @returns Whether the first field names a state a meter can be in
- 
+
  @example
  ```ts
  firstFieldReads({ tail: 'synthetic=wet hyper=dry', },);
@@ -231,16 +231,16 @@ function firstFieldReads(
 
 /**
  Reads every field the record carries that is not one of the two states.
- 
+
  DEFINED BY WHAT A VALUE IS NOT, so a field added to the record later is
  carried through here without this reader being taught its name. The two
  state fields are exactly the ones whose value names a state a meter can be
  in; everything else with a separator is a level.
- 
+
  @param tail - everything after the marker
- 
+
  @returns Level fields verbatim, in the order they were written
- 
+
  @example
  ```ts
  levelFields({ tail: 'synthetic=wet hyper=dry hyperBalance=0', },);
@@ -267,15 +267,15 @@ function levelFields(
 
 /**
  Reads the bracketed timestamp a console record is prefixed with.
- 
+
  The prefix is `[level] [iso] `, so the timestamp is what sits between the
  second pair of brackets.
- 
+
  @param line - whole log line
- 
+
  @returns Epoch milliseconds, or that the bracket holds no stamp as the logger
  writes one (ledger B73)
- 
+
  @example
  ```ts
  const at = stampOf({ line, },);
@@ -330,12 +330,12 @@ function stampOf(
 
 /**
  Reads one log line as a sample, or reports what else it is.
- 
+
  @param line - whole log line
- 
+
  @returns Sample, `'skipped'` for a record that will not read, or
  `'not-a-record'` for an ordinary line
- 
+
  @example
  ```ts
  const read = readMeterLine({ line, },);
@@ -421,15 +421,15 @@ export function readMeterLine(
 
 /**
  Reads every sample a log holds.
- 
+
  TWO LINEAR PASSES RATHER THAN AN ACCUMULATOR. A pass log runs to thousands
  of lines, and rebuilding the sample array once per line would make reading
  one cost the square of its length.
- 
+
  @param text - whole log
- 
+
  @returns Samples in order, plus how many records would not read
- 
+
  @example
  ```ts
  const { samples, skippedLines, } = readMeterLog({ text, },);

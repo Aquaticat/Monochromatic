@@ -51,9 +51,9 @@ export class SpendCeilingOverrideError extends Error {
 
   /**
    Names the variable, what it held, and why that cannot be a ceiling.
-   
+
    @param value - what the variable held, quoted back
-   
+
    @example
    ```ts
    throw new SpendCeilingOverrideError({ value: 'plenty', },);
@@ -72,18 +72,18 @@ export class SpendCeilingOverrideError extends Error {
 
 /**
  Reads the per-run ceiling this invocation runs under.
- 
+
  @param fallback - built-in ceiling, used when nothing overrides it
- 
+
  @param raw - override text; tests pass their own. Unset and empty collapse
  to one value here, as in `cap-override.ts`: neither is an override
- 
+
  @returns USD this run may spend on the metered provider before it stops
  starting entries
- 
+
  @throws {@link SpendCeilingOverrideError} when the override is present and
  is not a finite non-negative number
- 
+
  @example
  ```ts
  const ceiling = resolveSpendCeilingUsd({ fallback: SPEND_CEILING_USD, },);
@@ -120,15 +120,15 @@ export function resolveSpendCeilingUsd(
 /**
  Names the allowance a launch overrode, or says nothing when it kept the
  built-in.
- 
+
  A run must never hide which ceiling it ran under: one that stopped early
  for money reads the same as one that ran out of entries unless the
  allowance is on record.
- 
+
  @param ceilingUsd - allowance this run resolved
- 
+
  @returns Line for the run log, empty when the built-in is in force
- 
+
  @example
  ```ts
  const note = spendCeilingOverrideNote({ ceilingUsd: 50, },);
@@ -143,15 +143,15 @@ export function spendCeilingOverrideNote({ ceilingUsd, }: { readonly ceilingUsd:
 
 /**
  Whether a run has spent its allowance.
- 
+
  AT OR PAST, so a ceiling of zero refuses the first entry.
- 
+
  @param spentUsd - what the run has spent on the metered provider so far
- 
+
  @param ceilingUsd - the run's allowance
- 
+
  @returns Whether no further entry may start
- 
+
  @example
  ```ts
  const stop = spendCeilingReached({ spentUsd: 20.4, ceilingUsd: 20, },);
@@ -171,14 +171,14 @@ export function spendCeilingReached(
 
 /**
  Explains why the run is starting no more entries.
- 
+
  @param spentUsd - what the run has spent on the metered provider
- 
+
  @param ceilingUsd - the run's allowance
- 
+
  @returns Line naming both figures, the provider, and the dial that raises
  the allowance
- 
+
  @example
  ```ts
  console.log(spendCeilingNote({ spentUsd: 20.4, ceilingUsd: 20, },),);

@@ -2,7 +2,7 @@
  Tests for the naturalness phase: when it runs, when it rolls back, and that
  a refinement-only change reaches the shipped text.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -74,7 +74,7 @@ const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
 
 /**
  Editor named as the author of `T1` where a case sets one.
- 
+
  KEPT OUT OF THE REFINER ROSTER so a stored authorship carries two
  distinguishable ids, which is what lets an assertion tell a union of both
  stages apart from either stage alone.
@@ -165,16 +165,16 @@ type RefinerConcurrency = {
 
 /**
  Delays refiner answers so a test can observe driver overlap.
- 
+
  First refiner waits longer than second, making completion order differ from
  input order when both are active.
- 
+
  @param inner - client providing scripted answers
- 
+
  @param activity - mutable test instrument for active refiner calls
- 
+
  @returns Client forwarding every call after measuring refiners
- 
+
  @example
  ```ts
  const client = measuringRefiners({ inner, activity, },);
@@ -466,13 +466,13 @@ function scriptedPhase(
 
 /**
  Runs the phase over one settled outcome.
- 
+
  @param resolvedIssueIds - issues the checkers confirmed in `T1`
- 
+
  @param checkerVerdict - verdict the recheck receives
- 
+
  @param models - roster override, defaulting to the lane-on roster
- 
+
  @param authorship - who wrote `T1`, defaulting to nobody
 
  @param unresolvedIssues - issues the panel ruled on that `T1` does not
@@ -528,18 +528,18 @@ async function runPhase(
 
 /**
  Counts every model call a client is asked to make.
- 
+
  WHAT IT IS FOR: a resumed slice is only resumed if it bought NOTHING. Reading
  the returned text alone cannot tell a cache hit from a rewriter that happened
  to answer the same way twice, and the scripted client here answers the same
  way every time by construction, so the text would match either way.
- 
+
  @param inner - client doing the actual scripted answering
- 
+
  @param calls - counter this bumps on every structured call
- 
+
  @returns Client forwarding to `inner` and counting
- 
+
  @example
  ```ts
  const client = countingClient({ inner, calls, },);
@@ -566,11 +566,11 @@ function countingClient(
 
 /**
  In-memory refinement cache behaving as the disk-backed one does.
- 
+
  @param stored - map surviving between the two runs of a case
- 
+
  @returns Cache resuming from `stored` and writing back into it
- 
+
  @example
  ```ts
  const cache = memoryRefineCache({ stored, },);
@@ -592,11 +592,11 @@ function memoryRefineCache(
 
 /**
  Runs the phase once against a shared cache, counting what it bought.
- 
+
  @param stored - cache contents carried between runs
- 
+
  @returns Phase result beside the number of calls this run made
- 
+
  @example
  ```ts
  const first = await runCachedPhase({ stored, },);

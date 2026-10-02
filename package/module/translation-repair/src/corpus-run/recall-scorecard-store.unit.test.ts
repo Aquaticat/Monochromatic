@@ -1,10 +1,10 @@
 /**
  Tests for where a recall benchmark's scorecard is kept.
- 
+
  WHAT THESE PIN is the loss the store exists to stop: a rerun used to
  overwrite the previous scorecard under one fixed name, so two runs bought to
  be compared left one file. Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -48,11 +48,11 @@ const BASE_RECORD: RecallScorecardRecord = {
 
 /**
  Files the store left under the scorecard directory.
- 
+
  @param runsDir - runs directory
- 
+
  @returns Names in directory order
- 
+
  @example
  ```ts
  const kept = await keptFiles({ runsDir, },);

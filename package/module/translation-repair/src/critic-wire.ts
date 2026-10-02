@@ -29,7 +29,7 @@ import {
 
 /**
  One issue as a critic reports it on the wire.
- 
+
  @example
  ```ts
  const wire: CriticIssueWire = {
@@ -72,7 +72,7 @@ export type CriticIssueWire = {
 
 /**
  Whole critic reply on the wire.
- 
+
  @example
  ```ts
  const report: CriticReportWire = { issues: [], };
@@ -87,11 +87,11 @@ export type CriticReportWire = {
 
 /**
  Guards one wire issue.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value carries the required wire fields
- 
+
  @example
  ```ts
  isCriticIssueWire({ category: 'x', severity: 'y', summary: 'z', },);
@@ -113,11 +113,11 @@ function isCriticIssueWire(value: unknown,): value is CriticIssueWire {
 
 /**
  Guards a whole critic reply.
- 
+
  @param value - parsed model JSON
- 
+
  @returns Whether value is a wire report
- 
+
  @example
  ```ts
  const outcome = await client.chatJson({ ..., validate: isCriticReportWire, },);
@@ -175,7 +175,7 @@ export const CRITIC_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 
 /**
  Outcome of resolving one wire issue into an anchored claim.
- 
+
  @example
  ```ts
  const resolution: CriticIssueResolution = { resolved: false, reason: 'quote-not-found (target)', };
@@ -210,13 +210,13 @@ export type CriticIssueResolution =
  Category and severity must belong to the closed vocabularies;
  each present quote must locate uniquely inside one block;
  the assembled claim must pass deterministic span validation.
- 
+
  @param wire - issue as the critic reported it
- 
+
  @param documents - current pair anchors resolve against
- 
+
  @returns Anchored claim, or the failure reason as data
- 
+
  @example
  ```ts
  const resolution = resolveCriticIssue({ wire, documents, },);

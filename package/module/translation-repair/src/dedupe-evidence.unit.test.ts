@@ -1,6 +1,6 @@
 /**
  Emission deduplication must retain every member's known decision evidence.
- 
+
  @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';

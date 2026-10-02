@@ -1,6 +1,6 @@
 /**
  Tests for grouping an aligned block pair into budget-bounded slice runs.
- 
+
  The grouping had no test. It is read here through `groupNodesSealed` with
  nothing sealed (`group-aligned.test-fixture.ts`, ledger B30), the function
  the slicing calls. Its contract is a coverage claim: the runs
@@ -9,15 +9,15 @@
  its last offset, so a block left out of a run is NOT left out of the text the
  critics read. It is only left out of the record of what the slice was built
  from, which means a claim anchored to it has nowhere to land.
- 
+
  So the coverage invariant gets asserted on every shape in this file rather than
  once, and the module's own stated exception, an entirely one-sided section,
  is asserted as the exception it is.
- 
+
  Fixtures go through `parseDocument`, so the nodes carry the offsets and text
  the aligner really scores on rather than offsets I chose to make a case pass.
  Cat-themed invention throughout.
- 
+
  @module
  */
 
@@ -44,11 +44,11 @@ const WIDE_BUDGET = 100_000;
 
 /**
  Parses a document and hands back its blocks.
- 
+
  @param text - markdown source
- 
+
  @returns Blocks in document order
- 
+
  @example
  ```ts
  const nodes = blocksOf({ text: 'The cat naps.\n', },);
@@ -60,17 +60,17 @@ function blocksOf({ text, }: { readonly text: string; },): readonly DocumentNode
 
 /**
  Asserts the coverage contract: every block appears exactly once, in order.
- 
+
  This is the invariant worth repeating on every shape. A dropped block still
  reaches the critics through the slice text, so its absence shows up only
  later, as a claim that cannot anchor.
- 
+
  @param runs - grouped runs under test
- 
+
  @param sourceNodes - original blocks handed to grouping
- 
+
  @param targetNodes - translation blocks handed to grouping
- 
+
  @example
  ```ts
  expectCoversEveryBlockOnce({ runs, sourceNodes, targetNodes, },);
@@ -163,15 +163,15 @@ const THREE_TARGET_TEXT = 'Cat one sleeps on the windowsill.\n\n'
 
 /**
  Groups a document pair under a roster pairing, at a budget nothing splits.
- 
+
  @param sourceText - whole original
- 
+
  @param targetText - whole translation
- 
+
  @param pairs - correspondences a roster agreed on
- 
+
  @returns Runs, beside the blocks they were built from
- 
+
  @example
  ```ts
  const { runs, } = groupUnderPairing({ sourceText, targetText, pairs, },);

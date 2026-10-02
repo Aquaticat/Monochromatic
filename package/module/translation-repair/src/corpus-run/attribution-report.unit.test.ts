@@ -1,22 +1,22 @@
 /**
  Tests for the reader that turns recorded critic attribution into rates.
- 
+
  Built alongside the writer on purpose. This pipeline's recurring failure is
  telemetry that is recorded and never read, and a data path with no reader is
  indistinguishable from one that was never built. These cases guard the two
  ways a reader can quietly lie about a population.
- 
+
  The first is mixing eligibility with silence. An entry settled before
  attribution existed records no proposer for a claim its critics did raise, so
  averaging it in understates every critic at once, and "this critic raised
  nothing" becomes unreadable against "this entry could not have recorded it".
- 
+
  The second is conflating self-repetition with agreement. One critic saying a
  thing twice and two critics saying it once produce the same claim, and whether
  a duplicate counts against precision turns on which of those it came from.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -57,13 +57,13 @@ const PURR_CLAIM = 'issue/purr';
 
 /**
  Entry carrying attribution, with one chunk both critics were asked.
- 
+
  @param proposers - proposers of the nap claim
- 
+
  @param issueClaimIds - claims the single accepted issue represents
- 
+
  @returns Eligible entry
- 
+
  @example
  ```ts
  const entry = eligibleEntry({ proposers: [{ modelId: TABBY, emissionCount: 1, },], },);

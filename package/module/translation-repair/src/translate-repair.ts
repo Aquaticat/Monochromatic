@@ -44,7 +44,7 @@ import { sameWording, } from './wording-key.ts';
 
 /**
  One translator's final text after validation, with what happened to it.
- 
+
  @example
  ```ts
  const outcome: RepairOutcome = { voice, findings: [], };
@@ -86,29 +86,29 @@ function unrevisedFate({ contributorViolation, }: { readonly contributorViolatio
 
 /**
  Validates one candidate and, when it fails, asks its author about it.
- 
+
  @param client - injected model client
- 
+
  @param voice - this translator's reply
- 
+
  @param sourceText - original slice the candidate renders
- 
+
  @param incumbentText - translation as it stands, which a matching candidate
  collapses into
- 
+
  @param pageText - text this candidate would replace, whose block shape it has
  to carry. The same as `incumbentText` for a translator, and the ARCHIVE
  rather than the winning lane for a consolidator
- 
+
  @param priorMessages - exact messages that produced the candidate
- 
+
  @param signal - caller abort honored by the follow-up exchange
- 
+
  @param perCallTimeoutMs - deadline for it
- 
+
  @param lineStructured - whether the line-structure rule governs this slice,
  which makes merging its lines a fault the author is sent back to fix
- 
+
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
@@ -116,7 +116,7 @@ function unrevisedFate({ contributorViolation, }: { readonly contributorViolatio
  @param disputedWordings - wordings a disputed slice refuses, which a
  candidate copying one is sent back over rather than collapsed into (owner,
  2026-09-27, "No eligible standing")
- 
+
  @param l - stage logger
 
  @returns Final voice for this model plus what was recorded
@@ -264,7 +264,7 @@ async function repairOneCandidate(
   );
   /**
    Characters of finding text this answer has to address.
-   
+
    COUNTED BECAUSE THE REPAIR WIRE EXPLAINS ITSELF. Its `explanation` field
    answers these findings, and the producing wire has no such field, so the
    slice alone does not bound what a correct answer here can run to.
@@ -384,34 +384,34 @@ async function repairOneCandidate(
 /**
  Validates every fresh candidate and gives each failing one back to its
  author.
- 
+
  Candidates are handled CONCURRENTLY, one follow-up call per failing model at
  most, so a slice where every translator diverged costs one extra round rather
  than one extra round each.
- 
+
  @param client - injected model client
- 
+
  @param voices - heard translator replies
- 
+
  @param sourceText - original every candidate renders
- 
+
  @param incumbentText - translation as it stands, so a candidate reproducing
  it is left alone
- 
+
  @param pageText - text these candidates would replace, whose blocks they have
  to carry, defaulting to the incumbent because that is what a translator
  replaces. A consolidator replaces the ARCHIVE while its incumbent is the lane
  that won, and the two are different texts
- 
+
  @param priorMessages - exact messages every translator was given
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param lineStructured - whether the line-structure rule governs this slice,
  which makes merging its lines a fault the author is sent back to fix
- 
+
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
@@ -419,7 +419,7 @@ async function repairOneCandidate(
  @param disputedWordings - wordings a disputed slice refuses, which a
  candidate copying one is sent back over rather than collapsed into (owner,
  2026-09-27, "No eligible standing")
- 
+
  @param l - stage logger
 
  @returns Final voices in the order given, plus every finding

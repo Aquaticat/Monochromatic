@@ -85,7 +85,7 @@ export type WidthInputRefusal = 'no-claims' | 'no-accepted-issues' | 'no-envelop
 
 /**
  A slice with work, or the reason it has none.
- 
+
  @internal
  */
 export type WidthInputOutcome =
@@ -102,27 +102,27 @@ export type WidthInputOutcome =
 
 /**
  Runs the critics and the panel over one slice, as production does.
- 
+
  ROSTERS ARE PRODUCTION'S, not the probe's arms. Whatever the editors are
  later asked at, the work put in front of them has to be the work the corpus
  would really produce; drawing issues from a narrower or wider critic roster
  would change the input alongside the variable under test.
- 
+
  @param client - injected model client
- 
+
  @param slice - drawn slice to find work in
- 
+
  @param signal - cancellation for every call this makes
- 
+
  @param l - logger
- 
+
  @returns Slice with its accepted issues, or why it has none
- 
+
  @example
  ```ts
  const outcome = await gatherWidthInput({ client, slice, signal, l, },);
  ```
- 
+
  @internal
  */
 export async function gatherWidthInput(
@@ -140,7 +140,7 @@ export async function gatherWidthInput(
 ): Promise<WidthInputOutcome> {
   /**
    Both sides parsed, which the critics need for offsets and containers.
-   
+
    The slice stands as its own document here. A bench has no surrounding page
    to place it in, and the critic phase reads these for structure rather than
    for position within a larger file.

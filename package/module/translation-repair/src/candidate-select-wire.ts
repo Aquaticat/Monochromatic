@@ -33,10 +33,10 @@ export {
 
 /**
  Source and baseline material judges compare candidates against.
- 
+
  Carried as label plus text, rather than pre-fenced prose, so the fence is
  chosen once against everything the prompt encloses.
- 
+
  @example
  ```ts
  const evidence: SelectEvidence = { label: 'ORIGINAL (Chinese)', text: sourceText, };
@@ -61,7 +61,7 @@ export const CANDIDATE_NONE = 0;
 
 /**
  One judge's ballot over the candidate set.
- 
+
  @example
  ```ts
  const ballot: CandidateBallotWire = { best: 2, reason: 'keeps the source clause order', };
@@ -82,11 +82,11 @@ export type CandidateBallotWire = {
 
 /**
  Guards untrusted ballots from model JSON.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value is a well-formed ballot
- 
+
  @example
  ```ts
  isCandidateBallotWire({ best: 1, reason: 'most natural', },);
@@ -113,16 +113,16 @@ export function isCandidateBallotWire(value: unknown,): value is CandidateBallot
  Whether text spells a candidate index the way JSON prints the number:
  ASCII digits only, no sign, no leading zero unless the index is exactly
  zero.
- 
+
  A LINEAR SCAN RATHER THAN `Number` OR A REGEX, because `Number` admits
  `' 1'`, `'1e0'`, `'0x1'` and `''`, each of which a model could send while
  meaning something else, and the point of reading a quoted index at all is
  to take only the one shape that cannot be misread.
- 
+
  @param text - ballot field as the model sent it
- 
+
  @returns Whether every character is a digit under the leading-zero rule
- 
+
  @example
  ```ts
  isCanonicalIndexText('8',);
@@ -138,14 +138,14 @@ function isCanonicalIndexText(text: string,): boolean {
 
 /**
  A ballot as a model may send it, before its index is read as a number.
- 
+
  `deepseek-v4-flash-0731` ANSWERS `{"best": "8"}` about one select round in
  ten, a quoted index where the schema asked for an integer, and its recovery
  round answers the same way, so under the strict guard alone those ballots
  were lost (measured 2026-09-01: 8 schema-mismatch lines over 40 producer
  rounds and 4 over six editor slices). A quoted canonical integer means
  exactly one thing, so the boundary reads it and hands the strict shape on.
- 
+
  @example
  ```ts
  const sent: CandidateBallotAsSent = { best: '2', reason: 'keeps the clause order', };
@@ -167,11 +167,11 @@ export type CandidateBallotAsSent = {
 /**
  Guards untrusted ballots from model JSON, admitting a canonical quoted
  index beside the strict shape.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value is a ballot once its index is read
- 
+
  @example
  ```ts
  isCandidateBallotAsSent({ best: '1', reason: 'most natural', },);
@@ -197,11 +197,11 @@ export function isCandidateBallotAsSent(value: unknown,): value is CandidateBall
 
 /**
  Reads a ballot as sent into the strict wire shape.
- 
+
  @param sent - ballot admitted by {@link isCandidateBallotAsSent}
- 
+
  @returns Same ballot with its index as a number
- 
+
  @example
  ```ts
  const ballot = readCandidateBallotWire({ sent: { best: '8', reason: 'the eighth', }, },);
@@ -241,24 +241,24 @@ export const CANDIDATE_SELECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 /**
  Builds the judge prompt: the task, the evidence, and the anonymized
  candidates in caller order.
- 
+
  @param task - what the candidates are attempting, in one sentence
- 
+
  @param criteria - ordered decision rules, most important first
- 
+
  @param evidence - source and baseline material judges compare against
- 
+
  @param rendered - candidate texts in caller-fixed order
- 
+
  @param sourceText - original the candidates render, when the caller has
  it, so a candidate lacking a community rendering is named
- 
+
  @param declineConsequence - what the CALLER does when every judge declines,
  stated to the judges; the default describes a round that has something to
  fall back on, and a caller with nothing must say so
- 
+
  @returns Messages for one judge exchange
- 
+
  @example
  ```ts
  const messages = buildCandidateSelectMessages({ task, criteria, evidence, rendered, },);

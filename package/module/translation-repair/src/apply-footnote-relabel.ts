@@ -11,15 +11,15 @@ import { footnoteRewriteMap, } from './footnote-rewrite-map.ts';
  Applies an injective simultaneous rename to active references and definition openers only.
  Code, metadata, attributes, URLs, comments and escaped openings remain byte-identical.
  Reparsed marker roles and identities must equal the intended renamed graph before text is returned.
- 
+
  @param text - canonical archive or slice bytes
- 
+
  @param map - operational rewrites whose changing source keys occur in the current document
- 
+
  @returns Rewritten text with every unrelated byte retained
- 
+
  @throws FootnoteRewriteError when syntax, map domains, labels, injectivity or the resulting graph cannot be verified
- 
+
  @example
  ```ts
  const rewritten = applyFootnoteRelabel({ text, map: [{ from: '1', to: '2' }, { from: '2', to: '1' }] });

@@ -30,7 +30,7 @@ export type { HyperServedId, } from './roster-id.ts';
 /**
  Marker for a Hyper-origin identity without a Synthetic counterpart.
  It does not exclude an OpenRouter route for the same roster identity.
- 
+
  A NAMED READING rather than a nullish union, matching how the rest of this
  package models absence.
  */
@@ -38,7 +38,7 @@ export const NO_SYNTHETIC_COUNTERPART = 'no-synthetic-counterpart';
 
 /**
  Endpoint one call is POSTed to, measured live on 2026-08-24.
- 
+
  THE MESSAGES API RATHER THAN CHAT COMPLETIONS, for the reason the module
  note records: the OpenAI-shaped endpoint accepts `response_format` and
  ignores it, so structured output has nowhere else to go.
@@ -52,7 +52,7 @@ export const HYPER_CREDITS_URL = 'https://hyper.charm.land/v1/credits';
 
 /**
  Value of the `anthropic-version` header every call carries.
- 
+
  REQUIRED BY THE PROTOCOL rather than chosen: this is the dated contract the
  request and response shapes belong to, and the frames this package parses
  were captured under it.
@@ -61,7 +61,7 @@ export const HYPER_API_VERSION = '2023-06-01';
 
 /**
  Header carrying the key, which is NOT the one the protocol usually uses.
- 
+
  MEASURED, AND THE MEASUREMENT CONTRADICTS THE OBVIOUS GUESS. The Messages
  API is normally keyed by `x-api-key`, and this gateway answers that header
  with `401 missing authorization`. It takes a bearer token instead, so a
@@ -74,7 +74,7 @@ export const HYPER_AUTH_HEADER = 'Authorization';
 
 /**
  Verified per-model facts the router and the request builder read.
- 
+
  @example
  ```ts
  const info: HyperModelInfo = HYPER_MODELS['deepseek-v4.1-flash'];
@@ -88,7 +88,7 @@ export type HyperModelInfo = {
 
   /**
    Same model reached through the other provider, where there is one.
-   
+
    PROVIDER IS NOT PART OF PANELIST IDENTITY. `kimi-k3` here and
    `hf:moonshotai/Kimi-K3` there are one panelist for self-certification
    weighting and for the cache key, so a slice judged by that model counts
@@ -99,7 +99,7 @@ export type HyperModelInfo = {
 
   /**
    Whether this model can be sent an image alongside its text.
-   
+
    READ FROM `capabilities.vision` on this provider's own catalog endpoint.
    Three of the seven report true. The other provider now serves three image
    readers after GLM-5.3-Flash replaced GLM-5.2.
@@ -108,7 +108,7 @@ export type HyperModelInfo = {
 
   /**
    Ceiling this model will emit, from `max_output_tokens` on the catalog.
-   
+
    TWO OF THESE SIT BELOW the measured 32000 answer bound, so the bound
    has to be read per model rather than globally: `gpt-oss-120b` stops at
    13107 and `kimi-k3` at 16000. A request that asks for more than a model can
@@ -151,7 +151,7 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = ser
 
 /**
  Measured bound for answer volume, in tokens.
- 
+
  KEPT HERE BESIDE THE PER-MODEL CEILINGS it has to be reconciled against,
  rather than imported from the guard that enforces it, so a reader comparing
  the two numbers sees both at once.
@@ -160,15 +160,15 @@ const MEASURED_ANSWER_BOUND = 32_000;
 
 /**
  How many tokens to ask one model for, honouring both bounds.
- 
+
  ONE-SIDED ON PURPOSE: this only ever lowers the ask. A model that can emit
  more than was measured is still held to the measured bound, because that
  bound is about what an answer should be rather than what a model can do.
- 
+
  @param modelId - model the request is for
- 
+
  @returns Token ceiling to send, never above either bound
- 
+
  @example
  ```ts
  const maxTokens = answerCeilingFor({ modelId: 'gpt-oss-120b', },);

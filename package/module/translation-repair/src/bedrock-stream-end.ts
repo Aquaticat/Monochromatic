@@ -28,11 +28,11 @@ const DONE_LINE = 'data: [DONE]\n';
 
 /**
  Whether one stream line is a chunk carrying a usage block.
- 
+
  @param rawLine - one line of the drained body
- 
+
  @returns Whether it parses as an object with a `usage` object
- 
+
  @example
  ```ts
  isUsageChunk('data: {"choices":[],"usage":{"completion_tokens":10}}',);
@@ -65,13 +65,13 @@ function isUsageChunk(rawLine: string,): boolean {
 /**
  Refuses a body whose stream never announced it was whole, in the way this
  model's route announces it.
- 
+
  @param bodyText - whole drained body, as the transport returned it
- 
+
  @param streamEnd - how this model's stream ends
- 
+
  @throws {@link MalformedCompletionError} when the terminator never arrived
- 
+
  @example
  ```ts
  requireBedrockStreamEnd({ bodyText, streamEnd: 'usage-chunk', },);
@@ -108,13 +108,13 @@ export function requireBedrockStreamEnd(
 /**
  Body the shared reader accepts: the stream as it came, with the sentinel
  appended where this route ends on a usage chunk instead.
- 
+
  @param bodyText - whole drained body, already checked whole
- 
+
  @param streamEnd - how this model's stream ends
- 
+
  @returns Body ending on the sentinel
- 
+
  @example
  ```ts
  const extracted = extractStreamedCompletion({ bodyText: withDoneSentinel({ bodyText, streamEnd, },), },);

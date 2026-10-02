@@ -37,7 +37,7 @@ const l = contextRoot({ tag: 'translation-repair', },);
 /**
  What one provider's meter said, keeping a meter that could not be read
  distinct from one that answered.
- 
+
  THREE STATES RATHER THAN A BOOLEAN, because routing and measurement want
  different things out of the same read. Routing needs one bit, spend here or
  do not, and an unreachable meter has to fall on the spendable side of it for
@@ -45,27 +45,27 @@ const l = contextRoot({ tag: 'translation-repair', },);
  bit was a guess: a duty cycle counting an unreadable meter as an available
  provider reports an outage as uptime, which is backwards for the one number
  it exists to produce.
- 
+
  @internal
  */
 export type MeterState = 'wet' | 'dry' | 'unreadable';
 
 /**
  Whether a meter state stops us spending on that provider.
- 
+
  ONLY A METER THAT ANSWERED AND SAID DRY holds a provider out, so this file's
  routing policy is unchanged by the third state existing.
- 
+
  @param state - what the meter said, or that it said nothing
- 
+
  @returns Whether the router should treat this provider as out of budget
- 
+
  @example
  ```ts
  const dry = routesAsDry({ state: 'unreadable', },);
  // => false
  ```
- 
+
  @internal
  */
 export function routesAsDry(
@@ -76,11 +76,11 @@ export function routesAsDry(
 
 /**
  What one meter answered: the verdict, and the numbers it was drawn from.
- 
+
  BOTH COME OUT OF ONE READ so they cannot disagree. A verdict rendered from
  one snapshot beside a level rendered from a later one would record a moment
  that never happened, which is worse evidence than recording no level at all.
- 
+
  @internal
  */
 export type MeterLevel = {
@@ -97,7 +97,7 @@ export type MeterLevel = {
 
 /**
  One meter as the availability record should carry it.
- 
+
  @internal
  */
 export type MeterRecord = {
@@ -108,7 +108,7 @@ export type MeterRecord = {
 
   /**
    Numbers behind the state, in the order they should be written.
-   
+
    EMPTY IS NOT AN ABSENCE SENTINEL HERE. A meter that did not answer has no
    numbers to report, and `state` already carries the fact that it did not,
    so nothing is being encoded twice and nothing is lost.
@@ -119,18 +119,18 @@ export type MeterRecord = {
 /**
  Reads one provider's meter, naming an unreachable meter rather than
  flattening it into the answer a working meter would have given.
- 
+
  @param name - provider being read, for the log line
- 
+
  @param readLevel - meter read, which may reject
- 
+
  @returns What that meter said and was reading, or that it could not be read
- 
+
  @example
  ```ts
  const meter = await meterRecordOf({ name: 'hyper', readLevel, },);
  ```
- 
+
  @internal
  */
 export async function meterRecordOf(
@@ -179,7 +179,7 @@ export async function meterRecordOf(
 
 /**
  Meter of a provider that was never configured: dry, with nothing to report.
- 
+
  DRY RATHER THAN UNREADABLE, because absence is known rather than failed: the
  router must never send a call to a provider with no key, and a seat reader
  must count that provider as unable to serve.
@@ -193,19 +193,19 @@ export const UNCONFIGURED_METER: MeterRecord = {
  Reads every configured provider's meter together, so one slow endpoint
  does not serialise behind another, and names a provider that was never
  configured as dry with nothing to report.
- 
+
  @param synthetic - first provider's quota reader, absent when unconfigured
- 
+
  @param hyper - second provider's balance reader, absent when unconfigured
- 
+
  @param bedrock - fourth provider's ledger reader, absent when unconfigured
- 
+
  @param openrouter - third provider's credits reader, absent when unconfigured
- 
+
  @param signal - abort signal of whichever call started this reading
- 
+
  @returns Every provider's meter record, keyed by name
- 
+
  @example
  ```ts
  const meters = await readEveryMeter({ synthetic, hyper, bedrock, openrouter, signal, },);

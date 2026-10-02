@@ -45,7 +45,7 @@ import {
 
 /**
  Client surface the readings need: the router's dryness view and holds.
- 
+
  @example
  ```ts
  const client: SeatReadingClient = createRunClient();
@@ -55,9 +55,9 @@ export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHol
 
 /**
  The view when the budgets could not be read: nothing is dry.
- 
+
  @returns Wet
- 
+
  @example
  ```ts
  const dry = providerRecord({ of: wetWhenUnread, },);
@@ -74,22 +74,22 @@ function wetWhenUnread(): boolean {
  no provider has named its return, the reading says so and seats what it
  read; when a writing bench is below its floor with nothing to wait for, or
  still below it after the wait, the entry stops.
- 
+
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
  leans on cannot write a slate and no hold promises it back
- 
+
  @param client - run client whose dryness view and holds are the router's own
- 
+
  @param phase - phase about to start or continue, which names the benches
- 
+
  @param signal - entry abort the wait honours
- 
+
  @param l - entry logger, which records the shortfall and the wait
- 
+
  @param pollMs - how often the wait checks for abort
- 
+
  @returns Dryness the phase seats on, and how long was waited for it
- 
+
  @example
  ```ts
  const { dry, waitMs, } = await readDrynessPastShortBench({ client, phase, signal, l, pollMs: HOLD_POLL_MS, },);
@@ -115,7 +115,7 @@ async function readDrynessPastShortBench(
 }> {
   /**
    Reads which providers are dry, or none when the view could not be read.
-   
+
    @returns Dryness per provider, holds folded in
    */
   async function readDryness(): Promise<BudgetView> {
@@ -245,19 +245,19 @@ async function readDrynessPastShortBench(
  Reads every provider's dryness and derives the benches for one phase of
  one entry, waiting out a named hold first when a bench the phase leans on
  would otherwise sit short of its quorum.
- 
+
  @param client - run client whose dryness view and holds are the router's own
- 
+
  @param phase - phase about to start, which the reading seats
- 
+
  @param signal - entry abort
- 
+
  @param l - entry logger, which records the reading and the bench
- 
+
  @param pollMs - how often a wait checks for abort
- 
+
  @returns Benches for this phase
- 
+
  @example
  ```ts
  const seats = await readJudgeSeats({ client, phase: 'lanes', signal, l, },);

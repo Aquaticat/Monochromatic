@@ -11,7 +11,7 @@ const LEAKED_ESCAPE = String.raw`\"`;
 
 /**
  Findings for JSON escapes that leaked into a candidate as text.
- 
+
  WHY. A model answering in JSON sometimes escapes the quotation marks inside
  its string twice, and the decoded text then carries a literal backslash
  before each mark. The Carena0442 page published on 2026-09-02 shipped
@@ -19,15 +19,15 @@ const LEAKED_ESCAPE = String.raw`\"`;
  carried it, every structural guard passed it, and the polish kept it. The
  pinned corpus carries no such sequence in any page, so a candidate carrying
  one where neither the original nor the page does is a leak, not a rendering.
- 
+
  @param sourceText - original slice
- 
+
  @param pageText - page slice the candidate would replace
- 
+
  @param candidateText - candidate under validation
- 
+
  @returns One finding when the candidate alone carries the sequence
- 
+
  @example
  ```ts
  leakedEscapeFindings({ sourceText: '“常识”', pageText: '“common sense”', candidateText: '\\"common sense\\"', },);

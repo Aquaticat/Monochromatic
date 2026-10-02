@@ -6,17 +6,17 @@ import { parseNaturalnessReview, } from './artifact-two-lane-read-naturalness-re
 
 /**
  Refuses schema-eight artifact without absolute approval of every consolidated body slice.
- 
+
  Parser recomputes final review verdict and exact-text digest rather than
  trusting writer aggregate. Syntax-bearing front matter remains explicitly
  exempt, an unendorsed standing that shipped with its finding under the
  no-loop design is accepted as recorded, and every other absent review fails
  closed.
- 
+
  @param artifact - in-memory artifact before page or artifact persistence
- 
+
  @throws {@link NaturalnessCompletenessError} when body polish lacks approval
- 
+
  @example
  ```ts
  assertFinalNaturalnessComplete({ artifact, });

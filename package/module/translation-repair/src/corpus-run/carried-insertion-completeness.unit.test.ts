@@ -1,6 +1,6 @@
 /**
  Tests final boundary for passages proven rendered elsewhere before lanes.
- 
+
  @module
  */
 
@@ -44,11 +44,11 @@ const SLICES: readonly ChunkPair[] = [{
 
 /**
  Builds final-stage source selecting one replacement.
- 
+
  @param text - wording final contest selects
- 
+
  @returns Narrow artifact source read by publication assembler
- 
+
  @example
  ```ts
  const artifact = artifactShipping({ text: TARGET, });

@@ -23,7 +23,7 @@ import {
 
 /**
  Fewest characters of a commit ever shown, so short reports stay scannable.
- 
+
  Nine rather than seven because this repository already has commits colliding
  at seven. It is a FLOOR, not the answer: see {@link abbreviate}.
  */
@@ -31,27 +31,27 @@ const MIN_ABBREVIATION = 9;
 
 /**
  Shortens hex ids just enough that the ones being shown stay distinguishable.
- 
+
  Takes ids rather than commits because a report names two kinds of them now:
  the digest identifying a built pipeline, and the commit the pass that ran it
  started under. Both are lowercase hex nobody wants printed in full, and
  sizing them together is the point, since what has to stay distinguishable is
  whatever appears side by side.
- 
+
  A fixed width is a bet that no two ids in a report share a prefix, and the
  bet has already been lost once here at seven characters. Widening to nine
  only moved the bet. Two generations rendering as the same string is worse
  than a long string: a report whose two lines read alike is a report nobody
  can act on, and this one is read precisely when a pool is suspected of
  spanning versions.
- 
+
  Grows from {@link MIN_ABBREVIATION} until every input is unique, so an
  ordinary report is short and only an actual collision pays for length.
- 
+
  @param ids - every hex id that will appear in this report
- 
+
  @returns Function shortening one id to the agreed width
- 
+
  @example
  ```ts
  const short = abbreviate({ ids: census.groups.map(toDigest), },);
@@ -92,7 +92,7 @@ export function abbreviate(
 
   /**
    Shortest width at which no two DISTINCT ids read alike.
-   
+
    Distinct is what the comparison measures, and deliberately: a report
    naming one pipeline twice should print it the same way both times, so a
    repeated id is separated at the floor rather than growing the whole
@@ -120,11 +120,11 @@ export function abbreviate(
 
 /**
  How a reader chose which pipeline generations it would pool.
- 
+
  Recorded rather than inferred from the required commit alone, because the
  three modes are not distinguishable after the fact and they license different
  claims. Only `single-generation` licenses "produced by pipeline X".
- 
+
  @example
  ```ts
  const selection: GenerationSelection = { kind: 'single-generation', digest, };
@@ -134,7 +134,7 @@ export type GenerationSelection =
   | Readonly<{
     /**
      Entries whose recorded pipeline CONTAINS a named commit.
-     
+
      This is an ancestry floor, not a generation. Every descendant tip
      qualifies, and descendants may differ from each other arbitrarily, so a
      pool selected this way is a post-baseline cohort rather than one version.
@@ -173,15 +173,15 @@ export class ArtifactProvenanceError extends Error {
   /**
    Names the artifact, the disagreement, and why it is fatal rather than
    skippable.
-   
+
    @param name - artifact file name as read from disk
-   
+
    @param field - what disagreed
-   
+
    @param expected - value the pool recorded
-   
+
    @param observed - value the loaded bytes carry
-   
+
    @example
    ```ts
    throw new ArtifactProvenanceError({ name, field: 'tip', expected, observed, },);
@@ -244,7 +244,7 @@ export type ExpectedProvenance = Readonly<{
  runs inside `assertArtifactsPlaceable` at pass startup, and a throw there
  would abort an accumulation over a telemetry invariant; a throw here costs
  only the report.
- 
+
  TAKES THE POOL'S RECORD WHOLE, a tip and a digest together or neither. The
  pool admits only placed entries and records both for every one, so a tip
  without a digest was never a record it could hand over; it stood here as a

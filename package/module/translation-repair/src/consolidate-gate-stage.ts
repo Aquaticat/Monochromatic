@@ -40,7 +40,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Voices that must back the consolidation before it replaces anything.
- 
+
  TWO, matching the lane contest and every other agreement rule here.
  */
 export const CONSOLIDATE_GATE_QUORUM = 2;
@@ -63,7 +63,7 @@ export type GateShipped = 'consolidated' | 'standing';
 
 /**
  What the roster settled for one gated slice.
- 
+
  @example
  ```ts
  const outcome: ConsolidateGateOutcome = { choice: 'standing', ships: 'standing', ballots: [], usable: 0, findings: [], };
@@ -98,13 +98,13 @@ export type ConsolidateGateOutcome = {
 
 /**
  Counts how many ballots named one rendering.
- 
+
  @param ballots - usable ballots
- 
+
  @param name - rendering to count votes for
- 
+
  @returns Voice count for that rendering
- 
+
  @example
  ```ts
  const backing = countFor({ ballots, name: 'consolidated', },);
@@ -130,15 +130,15 @@ function countFor(
 
 /**
  Reads what the roster settled on, or the refusal.
- 
+
  SHARED WITH ANY LATER READER of a stored gate record, on the rule the lane
  contest already follows: a recorded verdict nobody can recompute from the
  ballots beside it can quietly become a lie.
- 
+
  @param ballots - usable ballots
- 
+
  @returns Rendering enough voices backed, or the refusal
- 
+
  @example
  ```ts
  const choice = settleGateBallots({ ballots, },);
@@ -171,24 +171,24 @@ export function settleGateBallots(
 
 /**
  Asks the roster whether one consolidation replaces the standing text.
- 
+
  @param client - synthetic chat client
- 
+
  @param modelIds - roster to ask
- 
+
  @param subject - passage, archive rendering and the two renderings
- 
+
  @param signal - abort shared with the rest of the entry
- 
+
  @param exchangeTimeoutMs - per-call ceiling
- 
+
  @param l - logger to tag
- 
+
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
- 
+
  @returns What the roster settled, what ships, and every usable ballot
- 
+
  @example
  ```ts
  const outcome = await gateConsolidatedSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, },);
@@ -272,7 +272,7 @@ export async function gateConsolidatedSlice(
 
   /**
    Rendering that ships, after the rule that only a clear win replaces.
-   
+
    THE QUORUM IS NOT CHECKED TWICE. It used to be repeated here, and removing
    that repetition failed no test, because `settleGateBallots` cannot answer
    `consolidated` on fewer than `CONSOLIDATE_GATE_QUORUM` voices naming it.

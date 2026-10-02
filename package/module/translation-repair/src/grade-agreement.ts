@@ -25,7 +25,7 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 
 /**
  How a pre-grade compared against the human's grades.
- 
+
  @example
  ```ts
  const tally: AgreementTally = {
@@ -59,7 +59,7 @@ export type AgreementTally = {
 
 /**
  Precision over the items a human actually scored.
- 
+
  @example
  ```ts
  const precision: PrecisionTally = { scored: 48, realDefects: 39, unscored: [10,], };
@@ -83,7 +83,7 @@ export type PrecisionTally = {
 
   /**
    Sheet positions the human marked as the same defect as an earlier item.
-   
+
    Reported apart from `unscored` and excluded from every denominator, on the
    user's decision of 2026-08-12. A duplicate is a defect already counted at
    another position, so counting it again measures how often the pipeline
@@ -119,16 +119,16 @@ const KNOWN_VERDICTS = [
 
 /**
  Guards an untrusted verdict string from a recorded pre-grade file.
- 
+
  A guard rather than a membership test plus an assertion: `Set.has` on a set
  of strings proves nothing to the type system, so the assertion it forced was
  the only thing tying the runtime check to the type, and nothing would have
  caught the two drifting apart.
- 
+
  @param value - candidate from parsed JSON
- 
+
  @returns Whether value names one known verdict
- 
+
  @example
  ```ts
  isGradeVerdict('real-defect',);
@@ -143,18 +143,18 @@ function isGradeVerdict(value: unknown,): value is GradeVerdict {
 
 /**
  Parses recorded blind pre-grades.
- 
+
  Strict for the same reason `artifact-read.ts` is strict: this is a
  measurement instrument, and a pre-grade quietly dropped for being malformed
  would shift the agreement denominator without leaving a trace. Every failure
  names the position it happened at.
- 
+
  @param text - pre-grade file contents, as JSON
- 
+
  @returns Pre-graded items in file order
- 
+
  @throws {@link Error} when the file is not an array of usable pre-grades
- 
+
  @example
  ```ts
  const agent = parsePreGrades({ text: await readFile(path, 'utf8',), },);
@@ -206,11 +206,11 @@ export function parsePreGrades(
 
 /**
  Sheet positions the human declined to score.
- 
+
  @param human - human's graded items
- 
+
  @returns Positions carrying no verdict, in sheet order
- 
+
  @example
  ```ts
  const declined = unscoredPositions({ human, },);
@@ -229,16 +229,16 @@ function unscoredPositions(
 
 /**
  Scores a blind pre-grade against the human's grades.
- 
+
  @param agent - pre-grades, keyed by sheet position
- 
+
  @param human - human's graded items off the same sheet
- 
+
  @returns Agreement over the items the human scored
- 
+
  @throws {@link StatedRefusalError} when the two sets cover different sheet positions,
  which would silently compare one round's grades against another's
- 
+
  @example
  ```ts
  const tally = scoreGradeAgreement({ agent, human, },);
@@ -287,7 +287,7 @@ export function scoreGradeAgreement(
   /**
    Items the human scored, which is the only population an agreement rate
    means anything over.
-   
+
    Duplicates are excluded for the same reason declines are, and it is not a
    technicality: on a duplicate the human answered a question about the SHEET,
    that this defect was already graded elsewhere, while the pre-grade answered
@@ -319,11 +319,11 @@ export function scoreGradeAgreement(
 
 /**
  Scores accepted-issue precision off a graded sheet.
- 
+
  @param human - human's graded items
- 
+
  @returns Precision counts over the items carrying a verdict
- 
+
  @example
  ```ts
  const tally = scoreGradedPrecision({ human, },);

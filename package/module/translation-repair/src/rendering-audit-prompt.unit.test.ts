@@ -1,18 +1,18 @@
 /**
  Tests for what one auditor is actually asked.
- 
+
  WHY THESE ARE WORTH PINNING: the taxonomy in this prompt is what decides
  whether two voices describing one defect describe it the same way, and a
  vocabulary that grows without its definition growing too would fragment the
  labels silently. The drift cases in this file fail the moment a category is added to
  the wire and not defined here.
- 
+
  THE FENCE CASE IS ADVERSARIAL: both texts are pasted into a fenced block, and
  a passage carrying its own fence run would otherwise close the block early
  and turn its own tail into instructions.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -42,13 +42,13 @@ const CANDIDATE_TEXT = 'Three cats live in the bookshop attic. They do not eat c
 
 /**
  One turn of one audit call.
- 
+
  @param role - which turn to read
- 
+
  @param subject - what to ask about
- 
+
  @returns Content of that turn
- 
+
  @example
  ```ts
  const asked = turn({ role: 'user', subject, },);

@@ -1,13 +1,13 @@
 /**
  Tests for naming why a voice was lost.
- 
+
  The whole value is SEPARATION. Before this, every abandonment logged the same
  phrase, and three situations wanting opposite remedies were indistinguishable
  in a run log: a call that never got a byte, a call cut off part way through,
  and a call we ended ourselves for repeating itself.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -25,13 +25,13 @@ import {
 
 /**
  Builds a cut carrying a given amount of delivered text.
- 
+
  @param partialText - what the stream delivered
- 
+
  @param firstByteMs - when the first byte arrived, negative when none did
- 
+
  @returns Error as the drain raises it
- 
+
  @example
  ```ts
  const error = cutWith({ partialText: 'It is a cat', firstByteMs: 40, },);

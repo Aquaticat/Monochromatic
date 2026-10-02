@@ -1,6 +1,6 @@
 /**
  Tests the provider-aware judge seats.
- 
+
  THE CASES: Qwen3.8-27B, cut in 30 of 34 translate-lane select rounds when
  Hyper served it (XIEPT2, 2026-09-03) and answering 25 of 28 when Synthetic
  did (Toka_ls, 2026-09-02), withheld while Hyper would serve it; Kimi-K3,
@@ -9,7 +9,7 @@
  with the next served checker of the measured order keeping the bench's
  width; the full bench when
  the view cannot be read; and the static drops holding either way.
- 
+
  @module
  */
 

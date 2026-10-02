@@ -29,20 +29,20 @@ import {
 
 /**
  @internal
- 
+
  Reads what one slice contributes to the document.
- 
+
  @param value - shipped field as the slice carries it
- 
+
  @param terminal - how that slice left the stage
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Wording to write, or a stated absence
- 
+
  @throws {@link ArtifactParseError} when the shipped kind and the terminal
  disagree about whether this slice replaces anything
- 
+
  @example
  ```ts
  const shipped = parseShipped({ value: record.shipped, terminal, path, },);
@@ -156,17 +156,17 @@ export function parseShipped(
 
 /**
  @internal
- 
+
  Reads one voice`s structural verdict on its proposal.
- 
+
  @param value - verdict as the slice carries it
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Verdict this version names
- 
+
  @throws {@link ArtifactParseError} when the verdict is the wrong shape
- 
+
  @example
  ```ts
  const verdict = parseVerdict({ value: entry, path, },);
@@ -219,23 +219,23 @@ export function parseVerdict(
 
 /**
  @internal
- 
+
  Reads one judge`s gate ballot.
- 
+
  THE EVIDENCE FIELDS ARE READ AS CHOICES, not as prose. The gate was once found
  shipping a rendering its own ballots named faultier because nothing counted
  them; a name outside the three would be counted as nothing and would weaken
  that evidence silently.
- 
+
  @param value - ballot as the gate recorded it
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Ballot this version names
- 
+
  @throws {@link ArtifactParseError} when a field is missing or names a
  rendering that does not exist
- 
+
  @example
  ```ts
  const ballot = parseGateBallot({ value: entry, path, },);
@@ -299,15 +299,15 @@ export function parseGateBallot(
 
 /**
  Reads a value that must name one of the renderings or the refusal.
- 
+
  @param value - name as recorded
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Name this version accepts
- 
+
  @throws {@link ArtifactParseError} when it names nothing this gate offers
- 
+
  @example
  ```ts
  const choice = requireGateChoice({ value: record.choice, path, },);
@@ -333,16 +333,16 @@ function requireGateChoice(
 
 /**
  Reads a list of rendering names.
- 
+
  @param value - list as recorded
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Names this version accepts, in the order recorded
- 
+
  @throws {@link ArtifactParseError} when an entry names nothing this gate
  offers
- 
+
  @example
  ```ts
  const named = requireGateChoices({ value: record.dropped, path, },);

@@ -1,13 +1,13 @@
 /**
  Tests for keeping what a quota-spending probe measured.
- 
+
  The defect this module exists to close is not a crash: it is a measurement
  that was bought, printed, and then existed nowhere. So the cases that matter
  most are the ones about NOT LOSING a run, and the sharpest of them is the
  second run of the same probe, which a fixed filename would quietly destroy.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -31,7 +31,7 @@ import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Complete run record every case starts from.
- 
+
  SPREAD AND OVERRIDDEN rather than built by a helper taking optional fields:
  a partial-shaped parameter would reopen exactly the holes this codebase
  closes, and a case that varies one field reads perfectly well as this record
@@ -53,15 +53,15 @@ const BASE_RUN: ProbeRun = {
 
 /**
  Reads a persisted run back as a later reader holding only the file would.
- 
+
  The cast is the claim under test rather than a shortcut: this module wrote
  the bytes, and whether they still parse as the record it was handed is the
  whole round trip.
- 
+
  @param path - file a persist call reported writing
- 
+
  @returns Run as parsed from disk
- 
+
  @example
  ```ts
  const read = await readRun({ path: at, },);
@@ -76,13 +76,13 @@ async function readRun({ path, }: { readonly path: string; },): Promise<ProbeRun
 
 /**
  Lists what one probe's directory holds.
- 
+
  @param runsDir - throwaway runs directory
- 
+
  @param probeName - subdirectory a persist call wrote into
- 
+
  @returns Filenames present
- 
+
  @example
  ```ts
  const kept = await keptFiles({ runsDir, probeName: 'coverage-probe', },);

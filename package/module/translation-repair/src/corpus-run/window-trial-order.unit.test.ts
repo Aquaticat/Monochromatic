@@ -1,6 +1,6 @@
 /**
  Tests for which call position each arm gets.
- 
+
  WHAT THESE PIN is that the wide arm is not always the last call. It used to
  be, on every slice, which put the treatment and the position on the same
  variable: anything drifting across a slice's three back-to-back calls landed
@@ -8,9 +8,9 @@
  degraded round declines and a decline keeps the archive. The two narrow arms
  cannot detect that, because they sit at two positions and the wide arm sits at
  a third neither of them ever occupies.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -33,13 +33,13 @@ const SLICE_COUNT = 60;
 
 /**
  Orders two positions smallest first.
- 
+
  @param left - one position
- 
+
  @param right - other position
- 
+
  @returns Negative when `left` comes first
- 
+
  @example
  ```ts
  const ordered = positions.toSorted(ascending,);
@@ -55,13 +55,13 @@ function ascending(
 /**
  Orders two arm names by code point, the same on every machine; this said
  code unit while it asked the runtime's locale (ledger B95).
- 
+
  @param left - one arm
- 
+
  @param right - other arm
- 
+
  @returns Negative when `left` comes first
- 
+
  @example
  ```ts
  const ordered = arms.toSorted(alphabetical,);

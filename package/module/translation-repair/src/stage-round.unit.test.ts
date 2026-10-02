@@ -2,19 +2,19 @@
  Tests for the round boundary line, the only place a log says how long a
  fan-out took and how much of that was spent waiting after quorum already
  stood.
- 
+
  THE TIMING WORK OPENED ON A LOG THAT COULD NOT ANSWER ITS OWN QUESTION.
  `doc/audit/every-volume-guard-is-blind-to-one-model.md` had to bound the
  straggler cost from above, at the grace window times the number of cut
  events, and recorded that confirming it "needs the dispatch timestamps the
  run does not currently record". These cases pin the line that records them.
- 
+
  BOTH DIRECTIONS ARE COVERED, because only the pair shows the grace figure is
  a measurement rather than a constant: a round that loses a voice spends the
  whole window, and a round whose roster all answers spends almost none of it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -65,13 +65,13 @@ const SLOW_MS = 40;
 
 /**
  Milliseconds a measured wait may fall short of the delay that produced it.
- 
+
  NOT A TOLERANCE ON THE BEHAVIOUR, a tolerance on the CLOCK. `stage-round.ts`
  reads both ends of every figure with `monotonicMs`, which floors to whole
  milliseconds, and Node's timer list may fire a delay fractionally early. The
  two together let a 40 ms wait report 39, which this suite did on 2026-08-25
  under load while the rest of the package was building.
- 
+
  Two rather than one, because each end can lose a fraction and the early fire
  is its own. It leaves every floor here far above the figure it has to be
  distinguished from, which is a round that did not wait at all.
@@ -104,13 +104,13 @@ const ROSTER: readonly RosterModelId[] = [
 /**
  Client answering each model on its own schedule: at once, after a delay, or
  never until the round cuts it.
- 
+
  The never-answering arm has NO TIMER OF ITS OWN, deliberately. A stub that
  also gave up after some duration would report a grace window whether or not
  the cut ever reached the call, which is the one thing these cases measure.
- 
+
  @param slowModelId - model that answers after {@link SLOW_MS}
- 
+
  @param hangingModelId - model that answers only when the round abandons it
 
  @param answeredAt - clock readings of each answer as it is returned, in
@@ -181,17 +181,17 @@ type RoundTimings = {
 
 /**
  Reads the round line back into its numbers.
- 
+
  SCANNED RATHER THAN MATCHED. A pattern would accept a line whose fields had
  drifted into a different order and would say nothing useful when the line is
  absent, while splitting on the separators names the missing field.
- 
+
  @param said - every message the logger kept
- 
+
  @returns Numbers the single round line carried
- 
+
  @throws Error when no round line was logged, or its fields are not readable
- 
+
  @example
  ```ts
  const timings = readRoundLine({ said, },);

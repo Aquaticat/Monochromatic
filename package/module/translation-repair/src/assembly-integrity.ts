@@ -47,7 +47,7 @@ export {
 
 /**
  What the guard settled on for one document.
- 
+
  @example
  ```ts
  const guarded: GuardedAssembly = { assembledText, replacements, revertedChunkIndices: [], findings: [], };
@@ -84,15 +84,15 @@ export type GuardedAssembly = {
 
 /**
  Replacements whose slice changed how often it mentions an identifier.
- 
+
  @param identifierKey - `convention identifier` at fault
- 
+
  @param replacements - replacements still standing
- 
+
  @param incumbentBySlice - incumbent text of every slice, by chunk index
- 
+
  @returns Chunk indices to withdraw
- 
+
  @example
  ```ts
  const culprits = suspectsFor({ identifierKey, replacements, incumbentBySlice, },);
@@ -149,13 +149,13 @@ function suspectsFor(
 
 /**
  Whether a text defines a footnote identifier under either convention.
- 
+
  @param text - original text of one slice
- 
+
  @param identifier - identifier as the footnote graph keys it
- 
+
  @returns Whether the text carries a definition of it
- 
+
  @example
  ```ts
  const owns = definesIdentifier({ text: '[^1]: 那是它最喜欢的位置。', identifier: '1', },);
@@ -179,22 +179,22 @@ function definesIdentifier(
 /**
  Narrows the suspects of a doubled definition to the carriers whose original
  does not define the note.
- 
+
  THE SLICE WHOSE ORIGINAL DEFINES THE NOTE OWNS IT (class forty-nine,
  shi_Yumiaoya3, 2026-09-17): on a skeleton archive both the opening section,
  which wrote the note in beside its reference, and the definitions slice
  changed their count from nothing to one, so both were withdrawn and the
  page lost the section and the note alike. Where every suspect's original
  defines it, or none does, the suspects stand as found.
- 
+
  @param finding - defect under attribution
- 
+
  @param suspects - chunk indices whose mention count moved
- 
+
  @param sourceBySlice - original text of every slice, by chunk index
- 
+
  @returns Chunk indices to withdraw
- 
+
  @example
  ```ts
  const culprits = withoutOwners({ finding, suspects, sourceBySlice, },);
@@ -236,7 +236,7 @@ function withoutOwners(
 /**
  Splices replacements into a document and settles what it can carry, repeating
  until nothing is left to take back.
- 
+
  THREE OUTCOMES, and the name only says the first. A replacement that breaks
  the footnote graph is withdrawn, blamed by the identifier it moved. A
  STRUCTURAL parse regression first tests whether one withdrawal repairs the
@@ -244,7 +244,7 @@ function withoutOwners(
  assembly that reassembles to the archive text is CANONICALIZED rather than
  withdrawn for fault: nobody did anything wrong, and the document simply says
  so. Any reader of `revertedChunkIndices` is reading all three.
- 
+
  ITERATES TO A FIXPOINT rather than checking once. Withdrawing a replacement
  can orphan an identifier a DIFFERENT replacement introduced alongside it:
  one slice renumbers `[^1]` to `[^2]` while another supplies the `[^2]`
@@ -252,12 +252,12 @@ function withoutOwners(
  nothing pointing at it. Each round withdraws at least one replacement or
  trims at least one definition block, so the loop is bounded by their count
  plus the count of definition blocks.
- 
+
  AN ORPHAN DEFINITION IN A DEFINITIONS-ONLY REPLACEMENT is trimmed rather
  than withdrawn with its siblings (`assembly-orphan-trim.ts`): the nineteenth
  `hakureico` pass of 2026-09-09 lost the definition its body needed because
  the one beside it had no reference on the sealed page.
- 
+
  The guard runs at ASSEMBLY, after per-slice records were settled and cached,
  so a withdrawn slice's record still says it changed while the document ships
  the archive's text. That is deliberate: the record says what the judges
@@ -265,24 +265,24 @@ function withoutOwners(
  shipped counts from {@link GuardedAssembly.replacements} rather than from the
  records. The guard is deterministic, so a resumed run withdraws the same
  slices without asking anyone again.
- 
+
  @param targetText - translation as it stands, which is also the fallback
- 
+
  @param slices - prepared slice pairs in document order
- 
+
  @param replacements - accepted replacement per changed slice
- 
+
  @returns Assembled document, surviving replacements, and what was withdrawn
- 
+
  @throws {@link Error} when the loop cannot settle, which its own bound makes
  unreachable and which must never be reported as a clean assembly
- 
+
  @throws AssemblyContractError when a replacement names an unknown slice or
  repeats its own incumbent, checked HERE rather than left to each caller: a
  no-op replacement reassembles to the archive text, so the net-zero
  canonicalization would otherwise adopt it as a legitimate outcome and return
  an empty surviving set, which nothing downstream can tell from an honest one
- 
+
  @example
  ```ts
  const guarded = guardFootnoteAssembly({ targetText, slices, replacements, },);

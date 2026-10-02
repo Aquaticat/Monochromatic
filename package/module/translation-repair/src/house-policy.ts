@@ -39,14 +39,14 @@ import { ARCHIVE_NAME_GLOSS_SCOPE, } from './name-form-policy.ts';
 /**
  Reader-protection and voice rules shared by every stage that judges or
  rewrites this corpus.
- 
+
  Written as prompt-ready lines because every consumer splices it into a system
  prompt. THE LIST OF CONSUMERS IS NOT STATED HERE ANY MORE: it used to name
  the critic, the adjudicator and the editor, and the editor was not one of
  them, which is exactly the stage this block's own header says it exists to
  stop. A comment naming consumers is a claim nothing checks; `rg` on this
  symbol answers it correctly.
- 
+
  @example
  ```ts
  const system = `${BASE_RULES}\n\n${HOUSE_POLICY_BLOCK}`;
@@ -100,12 +100,12 @@ export const HOUSE_POLICY_BLOCK: string = `House rules this corpus is written un
 /**
  What English forces on a translator and Chinese does not, shared by every
  sheet that grades a rendering.
- 
+
  ONE PARAGRAPH, NO CLOSING SENTENCE. The sentence that used to end it, telling
  a reader to hold a forced choice against a CANDIDATE, names a term only the
  judging sheets define, so each consumer supplies its own close in its own
  vocabulary.
- 
+
  @example
  ```ts
  const opening = FORCED_DIFFERENCES;
@@ -116,7 +116,7 @@ const FORCED_DIFFERENCES =
 
 /**
  Judge-facing close of `JUDGE_POLICY_BLOCK`.
- 
+
  SEPARATE FROM `FORCED_DIFFERENCES` because it names a candidate and a
  criterion, and the measuring sheets have neither. They speak of findings,
  issues, regions and the text under review, so a shared close would put two
@@ -125,7 +125,7 @@ const FORCED_DIFFERENCES =
  ITS PRECEDENCE SENTENCE NAMES ANY RULE, NOT ONLY A CRITERION (ledger S6):
  the contest splices this block and asks two questions rather than ranking
  criteria, so a sentence about criteria alone governed nothing on that sheet.
- 
+
  @example
  ```ts
  const tail = JUDGE_POLICY_TAIL;
@@ -139,24 +139,24 @@ WHERE A CRITERION OR ANY OTHER RULE YOU HAVE BEEN GIVEN DISAGREES WITH A HOUSE R
 
 /**
  Measurement-facing close, for sheets that grade or check rather than choose.
- 
+
  WHY THE PRECEDENCE SENTENCE IS RESTATED RATHER THAN SHARED: a measuring sheet
  has no ranked criteria, so a precedence sentence naming `A CRITERION`
  names something that is not in front of it, and a model reading a rule about
  an absent thing may take the whole block as addressed to someone else.
- 
+
  SUPPORTED BY THE ORIGINAL IS SAID OUTRIGHT because `introduced-defect-wire`
  carries the opposite rule in as many words: content the AFTER text drops is
  damage only if the ORIGINAL supports it. On a protected detail the ORIGINAL
  DOES support it, which is the entire point of reader protection, so a spliced
  block that did not name the interaction would leave two live rules in
  disagreement.
- 
+
  VERDICT NAMES ARE NOT HERE. The three consumers have disjoint vocabularies,
  so each splice site adds the one line mapping this principle onto its own
  verdicts. Restating the principle in three places is what would drift; naming
  three different verdicts once each cannot.
- 
+
  @example
  ```ts
  const tail = MEASUREMENT_POLICY_TAIL;
@@ -172,24 +172,24 @@ WHERE AN ISSUE OR FINDING YOU WERE GIVEN ASKS FOR SUCH A DETAIL, THE ISSUE ITSEL
 
 /**
  House rules plus the two things a JUDGE needs that a producer does not.
- 
+
  WHY JUDGES NEEDED THEIR OWN BLOCK. Every producing sheet splices
  `HOUSE_POLICY_BLOCK`; no judging sheet did. So the stages that decide what
  SHIPS were the only ones that had never been told what this corpus is written
  under, and criterion one, "every proposition of the ORIGINAL is rendered,
  nothing left out", contradicts reader protection outright.
- 
+
  AND THE TENSE RULE, which existed only in `critic-prompt.ts`. Chinese leaves
  tense unmarked and English cannot. Measured on the consolidation bed: of the
  four slates a judge refused ENTIRELY, three were refused for tense, one of
  them saying every candidate had altered the time reference by rendering a
  tenseless copula as "was". The rule that answers that was in the codebase and
  out of reach.
- 
+
  PRECEDENCE IS STATED, because a numbered list reads as the standard and
  anything beside it reads as background. Three measured refusals came from
  judges applying a numbered criterion literally.
- 
+
  @example
  ```ts
  const system = \`${task}\n\n${JUDGE_POLICY_BLOCK}\`;
@@ -201,7 +201,7 @@ ${FORCED_DIFFERENCES} ${JUDGE_POLICY_TAIL}`;
 
 /**
  House rules for the sheets that MEASURE rather than write or choose.
- 
+
  The rendering auditor, the resolution checker and the introduced-defect
  prober all grade text against the ORIGINAL, and all three scored a page
  obeying reader protection as a defect because none had ever been told the
@@ -211,7 +211,7 @@ ${FORCED_DIFFERENCES} ${JUDGE_POLICY_TAIL}`;
  roll a rewrite back (ledger L11), and a probe claim the screen admits rolls
  a naturalness rewrite back. The rendering auditor decides which defects get
  worked on next.
- 
+
  @example
  ```ts
  const system = \`${task}\n\n${MEASUREMENT_POLICY_BLOCK}\`;

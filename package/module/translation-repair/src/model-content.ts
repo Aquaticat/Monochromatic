@@ -10,11 +10,11 @@ import { wordForCount, } from './count-word.ts';
  Strips one wrapping markdown code fence when present,
  because models wrap JSON in fences despite instructions.
  Single linear pass over fence positions; inner text is returned trimmed.
- 
+
  @param text - model content possibly wrapped in a fence
- 
+
  @returns Inner text when fenced, trimmed input otherwise
- 
+
  @example
  ```ts
  stripCodeFence({ text: '```json\n{"a":1}\n```', },);
@@ -68,11 +68,11 @@ const THINK_CLOSE = '</think>';
  not reach content. But per-model chat templates may still embed `<think>`
  blocks in content, and a tight token cap truncates mid-thinking;
  both cases must be handled deterministically.
- 
+
  @param text - model content possibly opening with a thinking block
- 
+
  @returns Answer after the block, and whether thinking never closed
- 
+
  @example
  ```ts
  const { answer, truncatedThinking, } = stripThinkBlock({ text: reply.text, },);
@@ -113,11 +113,11 @@ export function stripThinkBlock({ text, }: { readonly text: string; },): {
 /**
  Parse attempt over model-written JSON;
  failure is data because model content defects are ordinary.
- 
+
  @param text - fence-stripped model content
- 
+
  @returns Parsed value, or failure detail
- 
+
  @example
  ```ts
  const attempt = parseModelJson({ text: stripped, },);
@@ -149,11 +149,11 @@ export function parseModelJson({ text, }: { readonly text: string; },):
 
 /**
  Formats the token-usage suffix of a completion log line.
- 
+
  @param extracted - completion whose usage the log line reports
- 
+
  @returns Usage suffix, empty when the server reported none
- 
+
  @example
  ```ts
  rl.debug(`done${formatUsageNote({ extracted, },)}`,);

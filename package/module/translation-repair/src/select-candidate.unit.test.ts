@@ -1,7 +1,7 @@
 /**
  Tests for lexicographic candidate selection.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

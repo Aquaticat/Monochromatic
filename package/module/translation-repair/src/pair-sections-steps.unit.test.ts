@@ -1,15 +1,15 @@
 /**
  Tests for turning a roster's section pairing into alignment steps, and for
  the insertion boundary two paired neighbours pin between them.
- 
+
  THIS IS WHERE THE PROVEN ANCHOR COMES FROM. Measured over the pinned corpus,
  the deterministic aligner never proves one: all 11 of its unpaired source
  sections come back `ambiguous`, every anchor comes back `may-pair`, and the
  insertion path emits nothing at all. A pairing that names the sections either
  side of a gap says where the gap is.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -44,11 +44,11 @@ const TARGET_HEADINGS = [
 
 /**
  Builds steps over the four-by-four fixture.
- 
+
  @param pairs - correspondences a roster agreed on
- 
+
  @returns Steps in the order the aligner emits them
- 
+
  @example
  ```ts
  const steps = stepsFor([{ source: 0, target: 0, },],);
@@ -64,16 +64,16 @@ function stepsFor(pairs: readonly { readonly source: number; readonly target: nu
 
 /**
  Reads one step's anchor, which only a `source-only` step carries.
- 
+
  @param steps - what the conversion produced
- 
+
  @param sourceIndex - original section to read
- 
+
  @returns That section's anchor
- 
+
  @throws Error when the step is not an unpaired original, since a case asking
  for an anchor on a paired section is asking the wrong question
- 
+
  @example
  ```ts
  const anchor = anchorAt({ steps, sourceIndex: 2, },);

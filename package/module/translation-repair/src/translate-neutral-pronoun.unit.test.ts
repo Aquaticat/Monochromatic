@@ -1,16 +1,16 @@
 /**
  Tests for the floor rule refusing a translation that keeps the corpus's
  neutral pronoun in Latin letters.
- 
+
  WHAT THESE PIN: every spelling the sources use counts; the letters inside a
  word, a handle, a path or an address do not; an apostrophe, a han character,
  a dash, an ellipsis, an arrow, emphasis or a slash after han beside the
  pronoun still leaves it a word of its own, in the original and in the
  rendering (ledger B23); the finding names each spelling with its count and
  says what English renders it as; a candidate carrying none yields nothing.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

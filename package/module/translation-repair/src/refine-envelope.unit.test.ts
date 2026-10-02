@@ -1,6 +1,6 @@
 /**
  Tests for collecting a slice's link and footnote definitions.
- 
+
  `collectDefinitions` had no test, and its failure is invisible. The
  refinement gate compares a paragraph before and after a rewrite; a paragraph
  parsed alone cannot resolve a reference whose definition lives elsewhere, so
@@ -8,14 +8,14 @@
  against. If collection returns nothing, both sides of the comparison parse as
  referencing nothing, they still match, and the gate passes a rewrite that
  broke a link.
- 
+
  Every fixture goes through `parseDocument` rather than being hand-built. The
  whole function turns on whether the strings in `DEFINITION_KINDS` equal the
  `kind` values the parser actually emits, and a hand-built node would assert
  my belief about those strings instead of the parser's behavior.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 

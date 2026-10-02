@@ -1,16 +1,16 @@
 /**
  Tests for running items with a bounded number in flight.
- 
+
  WHAT THESE PIN: at overlap 1 the helper is the sequential loop it replaced;
  at a higher overlap items start in item order and never more than the
  overlap at once; results come back in item order whatever order the items
  finished in; a failure stops further items from starting, lets the ones in
  flight finish, and throws the lowest position's error; and an overlap that
  cannot bound anything is refused before any item runs.
- 
+
  Every item waits at a gate the test opens, so completion order is the
  test's to choose rather than the scheduler's.
- 
+
  @module
  */
 
@@ -71,11 +71,11 @@ type Gated = {
 
 /**
  Builds the gated job and the records it fills.
- 
+
  @param count - how many gates to build, one per item
- 
+
  @returns Records and the job
- 
+
  @example
  ```ts
  const run = gatedRun({ count: 3, },);
@@ -132,7 +132,7 @@ function gatedRun({ count, }: { readonly count: number; },): Gated {
 /**
  Lets every settled continuation run, so the records reflect what the
  scheduler did with what the test just opened.
- 
+
  @example
  ```ts
  await settle();
@@ -144,14 +144,14 @@ async function settle(): Promise<void> {
 
 /**
  Resolves with what a run threw, or `undefined` when it finished.
- 
+
  ATTACHED BEFORE ANY GATE IS OPENED in every failing case, so the rejection
  is never unhandled between the moment it happens and the assertion.
- 
+
  @param run - mapping under test
- 
+
  @returns What it threw
- 
+
  @example
  ```ts
  const failure = collected({ run, },);

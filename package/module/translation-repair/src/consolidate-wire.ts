@@ -56,7 +56,7 @@ import { CITED_REFERENCE_CANDIDATE_RULE, } from './cited-reference-rule.ts';
 
 /**
  Instructions every consolidating producer shares.
- 
+
  OPENS BY SAYING NEITHER CANDIDATE IS KNOWN TO BE GOOD. A producer shown two
  renderings and asked to improve on them treats their agreement as settled,
  which is exactly the inherited-invention case: where both lanes carry the
@@ -86,7 +86,7 @@ ${HOUSE_POLICY_BLOCK}`;
 
 /**
  Reply-format instruction, kept LAST in the assembled sheet.
- 
+
  Split out for the same reason the translate sheet splits it: a conditional
  rule has to sit above it, and wire instructions that end up above content
  rules are the ones models drop first.
@@ -125,7 +125,7 @@ export type ConsolidateSubject = {
 
   /**
    Lane contest ballots for this slice, shown as claims to check.
-   
+
    MAY BE EMPTY, and the sheet then carries no findings block at all. A slice
    whose contest never reached quorum still has two candidates worth
    consolidating, and an empty findings heading would read as judges having
@@ -155,12 +155,12 @@ export type ConsolidateSubject = {
   /**
    What the pictures this slice and its neighbours show were read to say, when
    any could be.
-   
+
    OPTIONAL, AND HONESTLY SO, unlike `lineStructured` below it. A slice sitting
    near no picture, or near none any reader could make out, is a slice with
    nothing to say here, so absence is a real state rather than a caller's
    omission.
-   
+
    WHICH IS EXACTLY WHY IT WENT UNWRITTEN FOR SO LONG. From this field's birth
    until 2026-08-22 every consolidating producer read the absence, because no
    caller wrote it and an optional field cannot say whether the caller had
@@ -172,13 +172,13 @@ export type ConsolidateSubject = {
   /**
    Whether the enclosing CHUNK's original is line-structured, decided by the
    caller because a slice is too small a unit to decide it on.
-   
+
    REQUIRED, UNLIKE THE TWO CONTEXTS ABOVE IT, and the difference is the
    whole reason this reads as it does. A slice genuinely may declare no
    names and hold no pictures, so a reader defaulting those is reading a
    real absence. Every slice is either line-structured or not, so an
    optional spelling here could only ever mean a caller forgot.
-   
+
    ONE DID. The field and its reader were born together on 2026-08-21 and
    no writer ever arrived, so for a day every consolidating producer was
    told its passage was prose, verse included. An optional field cannot owe
@@ -201,15 +201,15 @@ export type ConsolidateSubject = {
 
 /**
  Renders one labelled block, or nothing when its text is empty.
- 
+
  @param fence - fence enclosing every block in this sheet
- 
+
  @param label - heading naming what this block is
- 
+
  @param text - block contents
- 
+
  @returns Lines for this block, empty when there is nothing to show
- 
+
  @example
  ```ts
  const lines = renderBlock({ fence: '=====', label: 'DECLARED NAMES', text, },);
@@ -237,21 +237,21 @@ function renderBlock(
 
 /**
  Label for one candidate block, saying so where the candidate IS the archive.
- 
+
  WHY IT HAS TO SAY SO. A lane declining to change the incumbent is a
  legitimate outcome meaning the archive was already right, and it happened at
  5 of the 13 bed slices. Unlabelled, the sheet shows one text twice under two
  headings, and a producer weighing the agreement of the archive with a
  candidate is counting one source twice.
- 
+
  @param name - candidate's name in this contest
- 
+
  @param text - what that lane returned
- 
+
  @param archiveText - rendering already on the page
- 
+
  @returns Label, carrying the identity where there is one
- 
+
  @example
  ```ts
  const label = candidateLabel({ name: 'repair', text, archiveText, },);
@@ -275,11 +275,11 @@ function candidateLabel(
 
 /**
  Builds the sheet asking one producer to consolidate one slice.
- 
+
  @param subject - passage, archive rendering, both candidates and the ballots
- 
+
  @returns Messages for one exchange
- 
+
  @example
  ```ts
  const messages = buildConsolidateMessages({ subject, },);
@@ -367,7 +367,7 @@ export function buildConsolidateMessages(
   /**
    Producer sheet, with the line-structure fact inserted above the reply
    instruction when the enclosing chunk's original is verse.
-   
+
    BORROWED FROM THE TRANSLATE WIRE rather than restated, because this
    producer is a translator and a second wording of the same rule would drift
    from the one `Toka_ls` was measured against.

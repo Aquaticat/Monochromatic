@@ -19,22 +19,22 @@ import { decideBestCandidate, } from './candidate-select.ts';
 
 /**
  Chooses among candidates and records the contest that decided it.
- 
+
  Identical in behaviour to {@link decideBestCandidate}; every caller in this
  package should reach for this one, so that no judged contest goes unrecorded.
- 
+
  THE RECORD IS AWAITED, not fired and forgotten. A contest whose write is
  still in flight when the process exits is a contest missing from the ledger,
  and the whole point is that a later reader finds the evidence. The cost is one
  small file write against a round that just spent several model calls.
- 
+
  @param request - exactly what {@link decideBestCandidate} takes
- 
+
  @returns Whatever it decided, unchanged
- 
+
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when a judge
  appears twice on the roster
- 
+
  @example
  ```ts
  const outcome = await selectBestCandidate({ client, candidates, judgeModelIds, ... },);

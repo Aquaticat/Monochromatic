@@ -2,7 +2,7 @@
  Tests for pinned-commit corpus reads.
  Exercised against a throwaway git repository built in a temp directory;
  fixture content is cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -45,9 +45,9 @@ const TABBY_CRLF_PAGE = '---\r\nname: 小猫-tabby\r\n---\r\n\r\n## 简介\r\n\r
 /**
  Builds a throwaway corpus-shaped git repository with one committed entry,
  removed on dispose.
- 
+
  @returns Clone directory, pinned commit, and async disposer
- 
+
  @example
  ```ts
  await using fixture = await makeThrowawayClone();

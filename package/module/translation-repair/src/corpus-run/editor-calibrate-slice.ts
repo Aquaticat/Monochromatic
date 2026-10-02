@@ -33,7 +33,7 @@ export type SliceRounds = {
   /**
    Whether the naturalness lane found anything on this slice eligible to
    rewrite at all.
-   
+
    THE REFINER STANDING'S DENOMINATOR. A paragraph under the eligibility
    floor is never offered to a rewriter, so a slice can run the whole lane
    and reach no refiner. Without this, an empty refiner standing cannot be
@@ -43,13 +43,13 @@ export type SliceRounds = {
 
   /**
    Models that wrote the repair this slice shipped, BEFORE refinement.
-   
+
    SEPARATE FROM THE ROUNDS, AND NOT A PREFERENCE. Nobody chose between
    alternatives on a slice where every editor proposed the same text, so
    shipping there says the ensemble agreed and says nothing about who would
    have won a vote. Counted anyway, because without it such a slice is
    invisible: it repaired, and the standing records nothing.
-   
+
    READ OFF THE PRE-REFINEMENT OUTCOME ON PURPOSE. `collectRefinedAuthors`
    unions the editors with any refiner whose rewrite won, so the refined
    outcome's authorship credits both seats in one list and cannot be split
@@ -60,7 +60,7 @@ export type SliceRounds = {
 
   /**
    Models whose rewrite is in the text this slice shipped.
-   
+
    THE REFINER SEAT'S EQUIVALENT, and the reason `settleRefinedSlice` returns
    `refinedBy` at all. Empty on every slice where no rewrite shipped, which
    includes a rewrite the recheck rolled back.
@@ -69,7 +69,7 @@ export type SliceRounds = {
 
   /**
    Refiners heard with a usable answer on this slice, proposal or not.
-   
+
    WHAT SEPARATES ANSWERED FROM SILENT in the refiner standing's coverage
    line. Empty on a slice that reached no rewriter.
    */
@@ -78,21 +78,21 @@ export type SliceRounds = {
 
 /**
  Renders the progress line for one finished slice.
- 
+
  NUMBERED BY POSITION IN THE SAMPLE, not by arrival. Above an overlap of one
  these lines arrive out of order, and numbering them by arrival would make two
  lines claim the same slice while none claimed the one still running.
- 
+
  @param position - where the slice sits in the sample, counted from zero
- 
+
  @param total - slices in the sample
- 
+
  @param slice - passage the line is about, for its entry and chunk
- 
+
  @param rounds - what running the slice produced
- 
+
  @returns One line, indented for the report and without its newline
- 
+
  @example
  ```ts
  console.log(sliceProgressLine({ position: 0, total: 4, slice, rounds, },),);
@@ -164,14 +164,14 @@ export function sliceProgressLine(
 
 /**
  Every model credited with writing text that shipped on one slice.
- 
+
  BOTH HALVES OF THE AUTHORSHIP. A model can write a whole chunk or serve one
  issue inside it, and either is having written what shipped.
- 
+
  @param authorship - what the lane recorded about who wrote the repair
- 
+
  @returns Models credited, each once
- 
+
  @example
  ```ts
  const authors = shippedAuthors({ authorship: outcome.authorship, },);

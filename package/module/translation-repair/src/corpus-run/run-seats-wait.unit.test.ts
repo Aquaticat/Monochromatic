@@ -1,13 +1,13 @@
 /**
  Tests for the bench-quorum reading a phase takes before it starts.
- 
+
  THE THIRTEENTH CLASS: on 2026-09-07 Hyper named its return in 538 s and was
  held out for exactly that, Bedrock stayed wet, and so nothing waited. The
  translate lane started with every Hyper-only writer refused in the same
  millisecond, and every consolidation round read `quorum-not-met` at 0 ms.
  A bench that cannot reach quorum among the seats a wet provider serves is
  the phase-level twin of the all-dry case the router already waits on.
- 
+
  @module
  */
 
@@ -60,11 +60,11 @@ const BEDROCK_ALONE: BudgetView = {
 
 /**
  Benches as the seat reader derives them from one view.
- 
+
  @param dry - dryness per provider
- 
+
  @returns Benches keyed by the names the phase table uses
- 
+
  @example
  ```ts
  const benches = benchesUnder({ dry: ALL_WET, },);

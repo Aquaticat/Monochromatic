@@ -1,6 +1,6 @@
 /**
  Tests for which slices the window trial buys.
- 
+
  WHAT THESE PIN are the two ways this draw can quietly ruin the measurement it
  feeds. Buying a slice twice, which relocation candidates invite because they
  are adjacencies, spends quota twice and counts one model's answer twice.
@@ -9,9 +9,9 @@
  the judge-quality bench measured the roster declining on any archive
  imperfection, so that is a
  live possibility.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -31,19 +31,19 @@ import {
 
 /**
  Builds a screen reading with the flags a case wants.
- 
+
  @param sliceCount - slices the document has
- 
+
  @param relocation - adjacent pairs, as high and low index
- 
+
  @param untranslated - slices with a negligible translation
- 
+
  @param targetOnly - slices whose original is negligible
- 
+
  @param otherImbalances - everything else the screen flagged
- 
+
  @returns Reading shaped like one `classifyDisplacement` returns
- 
+
  @example
  ```ts
  const reading = readingFor({ sliceCount: 6, relocation: [[1, 2]], },);

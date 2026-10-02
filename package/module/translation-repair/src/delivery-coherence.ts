@@ -18,7 +18,7 @@ import type { SliceDeliveryRecord, } from './slice-delivery.ts';
 
 /**
  What a delivery row claims that cannot all be true.
- 
+
  @example
  ```ts
  const fault: DeliveryCoherenceFault = { kind: 'gap-with-wording', };
@@ -87,11 +87,11 @@ const COHERENCE_SENTENCES: Record<Exclude<DeliveryCoherenceFault['kind'], 'repla
 
 /**
  Words a coherence fault, after the slice the class prefixes.
- 
+
  @param fault - what the row claims that cannot all be true
- 
+
  @returns Sentence written here, naming at most an outcome kind
- 
+
  @example
  ```ts
  const sentence = coherenceSentence({ fault: { kind: 'gap-with-wording', }, },);
@@ -107,10 +107,10 @@ export function coherenceSentence({ fault, }: { readonly fault: DeliveryCoherenc
 
 /**
  Refusal of a delivery row that contradicts itself.
- 
+
  MARKED: its message is a slice index and the sentence `coherenceSentence`
  writes from a fault kind and, at most, an outcome kind.
- 
+
  @example
  ```ts
  throw new DeliveryCoherenceError({ sliceIndex: 4, fault: { kind: 'gap-with-wording', }, },);
@@ -135,7 +135,7 @@ export class DeliveryCoherenceError extends Error {
 
   /**
    @param sliceIndex - slice whose row contradicts itself
-   
+
    @param fault - what the row claims that cannot all be true
    */
   constructor(
@@ -156,19 +156,19 @@ export class DeliveryCoherenceError extends Error {
 
 /**
  Refuses a shipped or withdrawn row whose decision cannot support it.
- 
+
  Both cases need the same two things and differ only in which text the
  document ends up with, so they are checked together rather than twice.
- 
+
  @param record - row being checked
- 
+
  @param sliceIndex - slice whose row is checked
- 
+
  @param carries - which text this delivery leaves the document with
- 
+
  @throws {@link DeliveryCoherenceError} when the row decided nothing, decided
  the archive's own wording, or carries text the delivery does not allow
- 
+
  @example
  ```ts
  assertReplacementRow({ record, sliceIndex, carries: 'incumbent', },);
@@ -232,14 +232,14 @@ function assertReplacementRow(
 
 /**
  Refuses a row that keeps the archive while hiding a decision to change it.
- 
+
  @param record - row being checked
- 
+
  @param sliceIndex - slice whose row is checked
- 
+
  @throws {@link DeliveryCoherenceError} when a changed decision sits behind an
  unchanged document with nothing saying what took it back
- 
+
  @example
  ```ts
  assertNothingHidden({ record, sliceIndex, },);
@@ -268,12 +268,12 @@ function assertNothingHidden(
 
 /**
  Refuses a delivery row whose four fields cannot describe one slice.
- 
+
  @param record - one row of a delivery ledger, from wherever it came
- 
+
  @throws {@link DeliveryCoherenceError} when the delivery, the outcome, the
  archive state and the shipped text cannot all be true at once
- 
+
  @example
  ```ts
  assertDeliveryCoherent({ record, },);

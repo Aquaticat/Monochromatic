@@ -1,7 +1,7 @@
 /**
  Tests for the bilingual restoration judge wire and ensemble stage.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -49,9 +49,9 @@ const REFERENCES = [
 /**
  Client scripted per model with a fixed verdict list; a model in the
  silent set loses its voice so quorum paths can be exercised.
- 
+
  @param verdictsByModel - verdicts each model casts, seed order
- 
+
  @param silent - models whose calls fail
  */
 function judgingClient(

@@ -1,16 +1,16 @@
 /**
  Tests for reading judged repair rounds back out of a settled artifact.
- 
+
  THE REFUSAL IS THE FEATURE, and half these cases pin it. Version 2 hands the
  lane result back unread, so everything this reader takes it has to check, and
  a model the roster no longer seats has to be NAMED rather than read as
  current. A standing that silently mixed two rosters would be worse than one
  that reported nothing.
- 
+
  Content is cat-themed invention. Model ids are not: they come from the
  catalog, because the whole point of half these cases is which ids the roster
  holds.
- 
+
  @module
  */
 
@@ -53,19 +53,19 @@ const PATH = 'Whiskerfold.lanes.repair.result';
 
 /**
  Builds one ballot, defaulting everything a case does not care about.
- 
+
  @param modelId - judge that cast it
- 
+
  @param best - candidate it named
- 
+
  @param weight - what the ballot counted for
- 
+
  @param selfVote - whether the judge named its own writing
- 
+
  @param reason - what the judge said, which every case but one leaves alone
- 
+
  @returns Ballot as an artifact records one
- 
+
  @example
  ```ts
  const ballot = ballotOf({ modelId: SEATED, best: 1, },);
@@ -97,13 +97,13 @@ function ballotOf(
 
 /**
  Builds one slate position around a producer.
- 
+
  @param index - one-based position judges saw
- 
+
  @param producer - who wrote it
- 
+
  @returns Slate entry as an artifact records one
- 
+
  @example
  ```ts
  const entry = slateOf({ index: 1, producer: { kind: 'model', modelId: SEATED, }, },);
@@ -128,11 +128,11 @@ function slateOf(
 
 /**
  Builds what one slate position drew.
- 
+
  @param index - one-based position
- 
+
  @returns Weight entry as an artifact records one
- 
+
  @example
  ```ts
  const drawn = drawnOf({ index: 1, },);
@@ -158,19 +158,19 @@ function drawnOf(
 
 /**
  Builds one round around a slate and its ballots.
- 
+
  CARRIES EVERY FIELD THE LANE WRITES, including the ones a standing never
  reads. The reader validates the whole round, so a fixture carrying only what
  a standing needs would pin a reader looser than the one that ships.
- 
+
  @param slate - candidates judges were shown
- 
+
  @param ballots - ballots cast over them
- 
+
  @param stage - stage that ran it
- 
+
  @returns Round as an artifact records one
- 
+
  @example
  ```ts
  const round = roundOf({ slate, ballots, },);
@@ -215,11 +215,11 @@ function roundOf(
 /**
  Builds an adopted round as the lane writes it: a slate of one, the index of
  that one, a reason, and nothing a vote would have produced.
- 
+
  @param slate - the one entry
- 
+
  @returns Round as its JSON would parse
- 
+
  @example
  ```ts
  const round = adoptedRoundOf({ slate: [slateOf({ index: 1, },),], },);
@@ -249,13 +249,13 @@ function adoptedRoundOf(
 /**
  Builds a round that decided nothing, which records two fields the other
  outcome does not.
- 
+
  @param slate - candidates judges were shown
- 
+
  @param ballots - ballots cast over them
- 
+
  @returns Declining round as an artifact records one
- 
+
  @example
  ```ts
  const round = declinedRoundOf({ slate, ballots, },);
@@ -297,11 +297,11 @@ function declinedRoundOf(
 
 /**
  Wraps rounds into the raw lane result shape the reader takes.
- 
+
  @param chunks - rounds per chunk, in chunk order
- 
+
  @returns Raw result as an artifact holds one
- 
+
  @example
  ```ts
  const raw = rawOf({ chunks: [[round,],], },);
@@ -1078,7 +1078,7 @@ await describe({
       fn: async () => {
         /**
          What the reader threw when handed a result whose `chunks` is a string.
-         
+
          PRESENT BUT WRONG-SHAPED, which is a different answer from absent: a
          result carrying no `chunks` at all predates the field and is reported
          as {@link RoundsNotRecordedError} rather than as a parse failure.

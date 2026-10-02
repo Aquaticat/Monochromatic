@@ -1,12 +1,12 @@
 /**
  Tests for the OpenRouter client over a recorded transport.
- 
+
  THE STREAM SHAPE IS THE ONE THE PROBE CAPTURED on 2026-09-03 from
  `deepseek/deepseek-v4-flash-0731` via Inceptron: a `: OPENROUTER PROCESSING`
  comment line, reasoning deltas before content, a final chunk carrying
  `usage` with `cost`, and the `[DONE]` sentinel. Fixtures are cat-themed
  invention; no corpus content appears here.
- 
+
  @module
  */
 
@@ -38,13 +38,13 @@ import {
 
 /**
  One chat completion chunk as the gateway sends it.
- 
+
  @param delta - delta fields for the single choice
- 
+
  @param rest - top-level fields beyond the choice, usage included
- 
+
  @returns Event line, newline-terminated
- 
+
  @example
  ```ts
  const raw = chunkOf({ delta: { content: '{"spot":', }, },);
@@ -112,11 +112,11 @@ const SIGNAL = new AbortController().signal;
 
 /**
  Builds a client over a transport that records what it was sent.
- 
+
  @param reply - what the chat endpoint answers
- 
+
  @returns Client plus the exchanges the transport saw
- 
+
  @example
  ```ts
  const { client, exchanges, } = recordedClient({},);

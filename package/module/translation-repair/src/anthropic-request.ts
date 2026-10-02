@@ -47,7 +47,7 @@ type SpeakingRole = 'user' | 'assistant';
 
 /**
  Refusal raised when the messages cannot form a Messages API conversation.
- 
+
  @example
  ```ts
  throw new EmptyConversationError({ detail: 'no message outside the system prompt', },);
@@ -61,9 +61,9 @@ export class EmptyConversationError extends Error {
 
   /**
    Builds failure naming what the conversation was missing.
-   
+
    @param detail - which requirement the message array failed
-   
+
    @example
    ```ts
    new EmptyConversationError({ detail: 'opens on an assistant turn', },);
@@ -79,7 +79,7 @@ export class EmptyConversationError extends Error {
 
 /**
  How the model is told to choose among the tools offered.
- 
+
  @example
  ```ts
  const choice: AnthropicToolChoice = { type: 'tool', name: 'repair', };
@@ -106,7 +106,7 @@ export type AnthropicToolChoice =
 
 /**
  One turn as the Messages API takes it.
- 
+
  @example
  ```ts
  const turn: AnthropicMessage = { role: 'user', content: [{ type: 'text', text, },], };
@@ -126,7 +126,7 @@ export type AnthropicMessage = {
 
 /**
  Whole body of one Messages API call.
- 
+
  @example
  ```ts
  const body: AnthropicRequestBody = buildAnthropicBody({ modelId, messages, },);
@@ -171,14 +171,14 @@ export type AnthropicRequestBody = {
 
 /**
  Joins every system message into the one instruction this protocol takes.
- 
+
  @param messages - conversation as the caller built it
- 
+
  @returns Instruction text, empty where the caller sent no system message
- 
+
  @throws {@link EmptyConversationError} where a system message carries
  pictures, which the `system` field has no shape for
- 
+
  @example
  ```ts
  const instruction = systemTextOf({ messages, },);
@@ -203,17 +203,17 @@ export function systemTextOf(
 
 /**
  Folds one turn into the turns before it, merging a repeated role.
- 
+
  MERGING RATHER THAN REFUSING, because the OpenAI-compatible provider accepts
  consecutive same-role messages and a caller routed to either provider must be
  asked the same question by both.
- 
+
  @param merged - turns folded so far
- 
+
  @param turn - turn to fold in
- 
+
  @returns Turns with this one appended or merged into the last
- 
+
  @example
  ```ts
  const turns = converted.reduce(function fold(merged, turn,) {
@@ -258,14 +258,14 @@ function foldTurn(
 
 /**
  Conversation the Messages API takes, system messages already lifted out.
- 
+
  @param messages - conversation as the caller built it
- 
+
  @returns Turns, opening on a user turn and alternating from there
- 
+
  @throws {@link EmptyConversationError} where nothing is left outside the
  system prompt, or the conversation opens on an assistant turn
- 
+
  @example
  ```ts
  const turns = speakingTurns({ messages, },);
@@ -325,11 +325,11 @@ export function speakingTurns(
 
 /**
  Forces current model to call answer tool.
- 
+
  @param name - answer tool model must call
- 
+
  @returns Forced tool choice
- 
+
  @example
  ```ts
  const choice = toolChoiceFor({ name, },);
@@ -346,18 +346,18 @@ function toolChoiceFor(
 
 /**
  Tool fields of the body, for a call that stated a schema.
- 
+
  BUILDS THE TOOL ONCE and names it in both fields, so `tool_choice` cannot
  force a tool spelled differently from the one offered.
- 
+
  TAKES A SCHEMA RATHER THAN AN ABSENCE. Whether a call has one is decided by
  the caller that also decides the system field, and threading the absence
  through here would put that decision in two places.
- 
+
  @param responseFormat - structured-output constraint caller stated
- 
+
  @returns Both tool fields
- 
+
  @example
  ```ts
  const fields = toolFieldsFor({ responseFormat, },);
@@ -382,31 +382,31 @@ function toolFieldsFor(
 
 /**
  Assembles the whole body of one Messages API call.
- 
+
  @param modelId - model serving this call
- 
+
  @param messages - conversation as the caller built it, system message included
- 
+
  @param responseFormat - structured-output constraint, omitted for free text
- 
+
  @param maxTokens - caller's own ceiling, which only ever lowers the ask
- 
+
  @returns Body to serialise
- 
+
  @throws {@link EmptyConversationError} where the messages cannot form a
  conversation
- 
+
  @example
  ```ts
  const body = buildAnthropicBody({ modelId, messages, responseFormat, },);
  ```
- 
+
  @remarks
  NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
  instruction, 2026-08-25: "Please don't set any thinking parameter or budget
  tokens... These providers and models have known issues with non-default
  thinking or budget tokens and we'd rather not step on the mines."
- 
+
  That covers `reasoning_effort` on the OpenAI-shaped side, which is the same
  lever under the name that provider documents it by. Recorded at the build
  site rather than only in a document, because this is where someone would add

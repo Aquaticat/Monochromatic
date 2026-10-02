@@ -1,16 +1,16 @@
 /**
  Tests for rendering and ordering producer standings.
- 
+
  WHAT THESE PIN is the pair of decisions a reader of a calibration report has
  to trust: that a share always arrives with the denominator behind it, and
  that a model no disinterested judge ever voted on sorts to the END rather
  than to the bottom. The second is the one that changes conclusions. A model
  with no evidence and a model measured at zero are different findings, and a
  ranking that put them side by side would report the first as the second.
- 
+
  Counts are invention. Model ids come from the catalog, since the standing
  type takes a roster id and a made-up one would not type.
- 
+
  @module
  */
 
@@ -35,17 +35,17 @@ import {
 
 /**
  Builds one standing, so each case states only what it is about.
- 
+
  @param modelId - roster model the standing describes
- 
+
  @param candidates - slates carrying a candidate this model helped write
- 
+
  @param disinterestedBallots - ballots cast over those by judges with no stake
- 
+
  @param disinterestedVotes - how many of those named this model's candidate
- 
+
  @returns Standing as the tally produces it
- 
+
  @example
  ```ts
  const standing = standingOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, candidates: 4, disinterestedBallots: 8, disinterestedVotes: 6, },);

@@ -1,13 +1,13 @@
 /**
  Tests for the three states a provider meter can be in, and for which of them
  stops us spending.
- 
+
  THE POINT OF THE THIRD STATE IS THAT IT DOES NOT CHANGE ROUTING. An
  unreachable meter has always routed as spendable and still does; what it
  gains here is a name, so a later reader of the log cannot mistake a
  monitoring failure for a provider that was up. Both halves are pinned in this file,
  because a change breaking either would be silent.
- 
+
  @module
  */
 

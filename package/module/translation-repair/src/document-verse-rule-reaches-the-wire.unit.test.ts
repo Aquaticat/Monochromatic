@@ -2,7 +2,7 @@
  Guard that the verse rule reaches the requests `translateDocument` sends,
  on both halves of a governed round, and reaches neither half of an
  ungoverned one.
- 
+
  WHY THIS FILE EXISTS: until 2026-08-22 the rule reached the translators and
  no judge at all. `judgeTranslateSlate` had no line-structure parameter, so
  there was nothing to forward and nothing to notice missing. The damage was
@@ -13,7 +13,7 @@
  obeying the rule unmerges, and its judge had been handed a reason to prefer
  the merged rival. Measured when wrapping moved before judging:
  211 slices across 34 entries of the 92 pairs are governed.
- 
+
  WHY IT IS NOT ENOUGH TO TEST THE HALVES. `translate-judge.unit.test.ts` and
  `translate-stage.unit.test.ts` each carry a governed and an ungoverned round,
  and both call their function with the flag written out by hand. Neither can
@@ -22,7 +22,7 @@
  `settleTranslateSlice`, which reads `prepared.lineStructuredSliceIndices`, to
  `runTranslateStage`, which hands both halves their copy. Any link dropping it
  leaves every case in those files passing.
- 
+
  WHAT IS PINNED, read off the recorded request rather than off the driver's
  return value: a governed document's JUDGE sheets carry
  `TRANSLATE_LINE_STRUCTURE_CRITERION`, its TRANSLATOR sheets carry
@@ -30,14 +30,14 @@
  neither. The translator half is the control that makes the judge half
  legible: it is the verse-rule wiring and this fixture's governance is
  only a claim until something production decides agrees with it.
- 
+
  READING THE RETURN VALUE WOULD PROVE NOTHING. A judging window was once built,
  keyed, and never passed to the call it was keyed for; nothing failed
  for weeks because every test read what the driver returned, which the missing
  wiring never touched.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -105,7 +105,7 @@ const MODELS: TranslateModels = {
  Original built to trip `isLineStructured`, which needs at least five
  blank-line-separated content blocks with a median length of thirty
  characters or fewer.
- 
+
  NOT A GUESS AT THE PREDICATE. One case here asks the shipped predicate about
  this exact text, so a fixture that stopped being governed would be reported
  as a broken fixture rather than passing as a clean null.
@@ -192,7 +192,7 @@ The cat dozes in the cardboard box, tail draped beside the radiator, too deeply 
 
 /**
  One exchange a run attempted, kept so a case can read what reached the wire.
- 
+
  @example
  ```ts
  const recorded: RecordedRequest = { schema: 'translation_report', content: 'ORIGINAL...', };
@@ -216,13 +216,13 @@ type RecordedRequest = {
  Builds a client that answers every translator call with one fixed rendering,
  ballots for the first candidate on every slate, and appends each exchange to
  `requests` before answering.
- 
+
  @param requests - log this client appends every exchange to, in call order
- 
+
  @param translatorRendering - text every translator call answers with
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = recordingClient({ requests: [], translatorRendering: VERSE_RENDERING, },);
@@ -303,15 +303,15 @@ function recordingClient(
 
 /**
  Drives one document and reports the sheets each half was sent.
- 
+
  @param sourceText - original document
- 
+
  @param targetText - translation as it stands
- 
+
  @param translatorRendering - text every translator call answers with
- 
+
  @returns Sheets the translators received and the sheets the judges received
- 
+
  @example
  ```ts
  const { judgeSheets, } = await sheetsFrom({ sourceText, targetText, translatorRendering, },);

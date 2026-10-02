@@ -34,16 +34,16 @@ import {
 
 /**
  Reads a record's disposition, refusing a value the pipeline never writes.
- 
+
  @param value - candidate disposition from artifact JSON
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Disposition as the pipeline recorded it
- 
+
  @throws {@link ArtifactParseError} when the value is not one the pipeline
  writes, since silently filing it under not-shipped changes a denominator
- 
+
  @example
  ```ts
  const disposition = requireDisposition({ value, path, },);
@@ -81,7 +81,7 @@ function requireDisposition(
 
 /**
  One probe reading together with the issue that owns it.
- 
+
  @example
  ```ts
  const owned: OwnedProbeReading = { issueId: 'adjudicated/nap', reading, };
@@ -100,7 +100,7 @@ export type OwnedProbeReading = {
 
   /**
    Whether the naturalness lane rewrote this issue's slice afterwards.
-   
+
    Carried because it decides whether the reading is about the text that
    SHIPPED. The probe runs inside the accuracy stage, and the naturalness lane
    runs after it over those outcomes, so on a refined slice the probe judged
@@ -113,7 +113,7 @@ export type OwnedProbeReading = {
 
 /**
  Probe readings of one artifact plus what it could not offer.
- 
+
  @example
  ```ts
  const reading: ArtifactProbeReading = { readings: [], repairShippedRecords: 3, repairUnprobedRecords: 1, };
@@ -127,7 +127,7 @@ export type ArtifactProbeReading = {
 
   /**
    The same readings, each paired with the issue whose record carried it.
-   
+
    Ownership cannot be recovered from a reading alone. A reading's regions
    name every issue each region serves, and one replacement can serve several
    accepted issues, so an issue appears in the regions of every reading whose
@@ -140,7 +140,7 @@ export type ArtifactProbeReading = {
   /**
    Repair-lane records seen, probed or not, so a run whose probe never fired
    is distinguishable from one that had nothing to ship.
-   
+
    NOT SPELLED `shippedRecords`, which it was until 2026-08-22. "Shipped" is
    the repair lane's own word for its own output: the record's
    `repairDisposition` says that lane applied this replacement to the document
@@ -156,7 +156,7 @@ export type ArtifactProbeReading = {
 
   /**
    Repair-lane records carrying no probe field at all.
-   
+
    A SUBSET OF the count beside it, computed as that count minus the readings,
    so a zero there forces a zero here and the pair cannot disagree about how
    much there was to read.
@@ -165,7 +165,7 @@ export type ArtifactProbeReading = {
 
   /**
    Readings of the NATURALNESS lane's own rewrites.
-   
+
    Kept as a flat list rather than deduplicated here, because every issue of a
    rewritten slice carries the same report and the region ids are per slice
    (`refinement/<sliceIndex>`). `summarizeProbeTelemetry` already collapses by
@@ -176,7 +176,7 @@ export type ArtifactProbeReading = {
 
   /**
    Stage findings this artifact recorded, verbatim.
-   
+
    Carried so a reader can count what a stage MANAGED, not only what it
    produced. The refine stage writes one finding per slice it was offered,
    naming how many refiners answered, which is the only record that a lane
@@ -192,20 +192,20 @@ export type ArtifactProbeReading = {
 
 /**
  Parses one probe reading, whichever edit produced it.
- 
+
  Shared by the accuracy probe and the naturalness one, because the two audit
  different edits and record the identical shape. Two copies of this would be
  two chances for the readers to drift, and a reader that drifts from its
  writer produces counts rather than errors.
- 
+
  @param value - candidate reading from artifact JSON
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Reading as the summary reads it
- 
+
  @throws {@link ArtifactParseError} when any count or region is malformed
- 
+
  @example
  ```ts
  const reading = parseProbeReading({ value: probe, path, },);
@@ -254,7 +254,7 @@ function parseProbeReading(
 
 /**
  One issue record paired with the position it sat at in the artifact.
- 
+
  Named rather than inferred, because an inferred object literal carries
  writable properties and every later callback reading this list then takes a
  mutable parameter it never mutates.
@@ -262,7 +262,7 @@ function parseProbeReading(
 type IndexedRecord = Readonly<{
   /**
    Issue record as a plain record, already guarded.
-   
+
    Readonly rather than bare `Record`, because a bare index signature is
    itself writable and every later reader would inherit that.
    */
@@ -276,15 +276,15 @@ type IndexedRecord = Readonly<{
 
 /**
  Reads probe telemetry out of one settled artifact.
- 
+
  @param value - parsed artifact JSON
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Readings of its shipped records plus coverage counts
- 
+
  @throws {@link ArtifactParseError} when a present probe field is malformed
- 
+
  @example
  ```ts
  const reading = readArtifactProbe({ value, path: 'Kitten', },);
@@ -302,7 +302,7 @@ export function readArtifactProbe(
   /**
    Repair lane's two record lists, read through the version 2 parser so the
    walk to them is type-checked rather than spelled.
-   
+
    NEITHER IS OPTIONAL ANY MORE. Both used to be read off the artifact root,
    where version 2 writes neither, and both answered their absence with an
    empty list. That reported zero shipped records and zero findings over every
@@ -419,7 +419,7 @@ export function readArtifactProbe(
 
   /**
    Naturalness-rewrite readings, from the shipped records that carry one.
-   
+
    Absent on every record of a slice the lane did not rewrite, and on every
    artifact written before the lane was audited at all, so absence is ordinary
    here exactly as it is for the accuracy probe.

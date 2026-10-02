@@ -8,7 +8,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 
 /**
  Raised when a setting a run depends on is absent from its environment.
- 
+
  @example
  ```ts
  throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);
@@ -23,9 +23,9 @@ export class RunConfigError extends StatedRefusalError {
 
   /**
    Builds refusal naming the variable that could not be read.
-   
+
    @param variable - environment variable name a run cannot start without
-   
+
    @example
    ```ts
    throw new RunConfigError({ variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY', },);

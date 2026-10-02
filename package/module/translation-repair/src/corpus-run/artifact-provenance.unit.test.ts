@@ -1,13 +1,13 @@
 /**
  Tests for proving loaded bytes are the artifact the pool admitted.
- 
+
  The gap these close is structural rather than hypothetical: the pool is built
  from one directory read and each artifact is loaded by a later one, while the
  accumulation keeps writing. Every other outcome of that gap looks like
  ordinary output, so the check refusing is the only way it is ever visible.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

@@ -43,15 +43,15 @@ import {
 /**
  Builds the re-seating the lanes driver calls when the translate lane is
  about to start.
- 
+
  @param client - run client whose dryness view and holds are the router's own
- 
+
  @param signal - entry abort the reading honours
- 
+
  @param entryId - entry the log line is tagged with
- 
+
  @returns Reader of the translate lane's roster as of the moment it is called
- 
+
  @example
  ```ts
  const reseatTranslate = translateReseatFor({ client, signal, entryId: entry.id, },);
@@ -149,7 +149,7 @@ function translateSeatingOf(
  before it starts while a named hold runs, whose roster that lane's next
  slice runs on, kept once read (class one hundred three for the repair lane,
  ledger H5 for the translate lane).
- 
+
  @example
  ```ts
  const hooks: LanesHooks = lanesHooksFor({ client, signal, entryId, },);
@@ -164,15 +164,15 @@ export type LanesHooks = {
 
 /**
  Builds the hooks the lanes driver calls.
- 
+
  @param client - run client whose dryness view and holds are the router's own
- 
+
  @param signal - entry abort the readings honour
- 
+
  @param entryId - entry the log lines are tagged with
- 
+
  @returns Re-seating and per-chunk wait for both lanes
- 
+
  @example
  ```ts
  const hooks = lanesHooksFor({ client, signal, entryId: entry.id, },);
@@ -232,19 +232,19 @@ export function lanesHooksFor(
 /**
  Reads the lanes' benches and builds the lanes driver's hooks in one call,
  so the pass entry names both in one place.
- 
+
  The contest and the consolidation seams read their own benches: XIEPT2 on
  2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
- 
+
  @param client - run client whose dryness view and holds are the router's own
- 
+
  @param signal - entry abort the readings honour
- 
+
  @param entryId - entry the log lines are tagged with
- 
+
  @returns Benches for both lanes as of now, and the hooks for when each
  lane and chunk starts
- 
+
  @example
  ```ts
  const { seats, lanesHooks, } = await readLanesSeats({ client, signal, entryId: entry.id, },);

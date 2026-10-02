@@ -16,7 +16,7 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 
 /**
  Pairing after structural media claims, with count-only findings.
- 
+
  @example
  ```ts
  const claimed: MediaAdjacentClaim = { pairs: [], findings: [], };
@@ -56,13 +56,13 @@ const MEDIA_OWNER_UNRESOLVED: unique symbol = Symbol('media owner unresolved');
 
 /**
  Finds contiguous target-index runs no pair claims.
- 
+
  @param targetCount - target block count
- 
+
  @param claimed - target indices already paired
- 
+
  @returns Unclaimed runs in target order
- 
+
  @example
  ```ts
  const runs = unclaimedRuns({ targetCount: 4, claimed: new Set([0, 3]), });
@@ -118,15 +118,15 @@ function unclaimedRuns(
 
 /**
  Reports whether paired blocks share at least one named picture asset.
- 
+
  @param pair - source and target indices
- 
+
  @param sourceBlocks - source block list
- 
+
  @param targetBlocks - target block list
- 
+
  @returns Whether both blocks name same asset
- 
+
  @example
  ```ts
  const shared = pairSharesMedia({ pair, sourceBlocks, targetBlocks, });
@@ -171,15 +171,15 @@ function pairSharesMedia(
 
 /**
  Reports whether run exactly occupies one details container.
- 
+
  @param run - unclaimed target run
- 
+
  @param targetBlocks - parsed target blocks
- 
+
  @param targetContainers - parsed target containers
- 
+
  @returns Whether run is explicit archive transcript container
- 
+
  @example
  ```ts
  const enclosed = isDetailsRun({ run, targetBlocks, targetContainers, });
@@ -215,15 +215,15 @@ function isDetailsRun(
 
 /**
  Finds one source owning run from media anchors on run boundaries.
- 
+
  @param run - unclaimed target run
- 
+
  @param pairs - roster-agreed pairs
- 
+
  @param mediaPairs - subset sharing media
- 
+
  @returns Source index when every media boundary names same source
- 
+
  @example
  ```ts
  const owner = mediaOwner({ run, pairs, mediaPairs, });
@@ -275,19 +275,19 @@ function mediaOwner(
 
 /**
  Claims unpaired target runs next to source-matched media marker.
- 
+
  @param pairs - roster-agreed block correspondences
- 
+
  @param sourceBlocks - parsed source blocks
- 
+
  @param targetBlocks - parsed target blocks
- 
+
  @param targetContainers - parsed target containers proving transcript boundary
- 
+
  @returns Pairing widened only across unambiguous media transcript gaps
- 
+
  @throws BlockPairingError if widened result is not monotone
- 
+
  @example
  ```ts
  const claim = claimMediaAdjacentTargets({ pairs, sourceBlocks, targetBlocks, targetContainers, });

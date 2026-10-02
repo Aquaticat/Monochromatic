@@ -23,17 +23,17 @@ const BLOCKQUOTE_INDENT_MAX = 3;
 
 /**
  Whether a `>` is a blockquote marker rather than the end of a tag.
- 
+
  A marker sits at the start of its line behind at most three spaces; a tag
  ends where its attributes end, never at a line start in this corpus's markup.
  Read so a tag spanning the lines of a blockquote stays one tag.
- 
+
  @param text - whole replacement
- 
+
  @param index - position of the angle bracket
- 
+
  @returns Whether the line starts here
- 
+
  @example
  ```ts
  isBlockquoteMark({ text: '> <p>', index: 0, },);
@@ -63,14 +63,14 @@ function isBlockquoteMark(
 
 /**
  Marks each character of a replacement as prose or not.
- 
+
  Backtick spans and tags are not prose; everything else is. The mask has one
  entry per UTF-16 unit of the text, so it indexes exactly as `charAt` does.
- 
+
  @param text - replacement to mask
- 
+
  @returns One flag per unit, true where a typography rule may write
- 
+
  @example
  ```ts
  proseMask({ text: 'a <b c="d"> e', },);

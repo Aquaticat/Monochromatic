@@ -72,13 +72,13 @@ import type { TranslateReportWire, } from './translate-wire.ts';
 /**
  How a slice left this stage, as one name rather than as a shape the reader
  has to reconstruct from several optional fields.
- 
+
  `incumbent-only` IS ITS OWN STATE ON PURPOSE. The calibration bed recorded
  the floor's case as `judged`, which is exactly the misreading the floor
  exists to prevent: nothing was judged, because there was nothing valid to
  judge. A reader counting decisions must be able to tell that apart from a
  panel that considered proposals and preferred the standing text.
- 
+
  @example
  ```ts
  const terminal: ConsolidationTerminal = 'incumbent-only';
@@ -96,12 +96,12 @@ export type ConsolidationTerminal =
 
 /**
  Which slate terminal a judged round ends in, per decision.
- 
+
  THE THREE ANSWER DIFFERENT QUESTIONS ABOUT THE ROSTER, which is why one
  name for them could not be counted. A roster that endorses the archive is
  working. A roster that cannot agree is not. A slate carrying one candidate
  says nothing about the roster at all, because no judge was asked.
- 
+
  `no-candidate` JOINS THE UNJUDGED rather than the declined, because nothing
  reached a judge on that path either, and `no-voice-heard` joins it for the
  same reason one step earlier: no judge was asked because there was nothing
@@ -131,7 +131,7 @@ export type { ProposalVerdict, } from './consolidate-settle-context.ts';
 
 /**
  The slice this stage is deciding about, in the archive's terms.
- 
+
  @example
  ```ts
  const subject: ConsolidationSubject = { sourceText: '猫', incumbentText: 'A cat.', };
@@ -181,7 +181,7 @@ export type ConsolidationSubject = {
 
   /**
    What the pictures near this slice were read to say.
-   
+
    DECLARED HERE FROM 2026-08-22, having been PASSED here earlier. The
    driver builds one subject and hands it to both halves, so the field was
    already arriving; only this type and the judging call were unaware of it,
@@ -204,7 +204,7 @@ export type ConsolidationSubject = {
 
 /**
  Everything this stage settled, with every round it did not run named absent.
- 
+
  @example
  ```ts
  const settled: ConsolidationSettlement = { terminal: 'incumbent-only', text: 'A cat.', floor, rewrapped: false, demoted: false, };
@@ -223,7 +223,7 @@ export type ConsolidationSettlement = {
 
   /**
    What the validity floor made of the slate, kept even when it passed.
-   
+
    NAMES REFUSALS ONLY WHEN NOTHING SURVIVED. A slate with one survivor and
    five refusals reports the survivor and says nothing about the five, which
    is right for the floor's own question and wrong for a record of the run.
@@ -258,18 +258,18 @@ export type ConsolidationSettlement = {
 
   /**
    Everything this slice's rounds recorded, as ONE authoritative list.
-   
+
    READ THIS RATHER THAN DIGGING INTO `decided` OR `gate`. Before it existed,
    the produce half's findings reached a reader only where a judged round or
    a gate round happened to run, so the two terminals that end before either
    one, `no-standing-text` and `incumbent-only`, dropped them on every run.
    Those are exactly the terminals whose findings explain themselves: voice
    loss and transport failure are why a slate had nothing valid on it.
-   
+
    EACH FINDING APPEARS ONCE. The produce half's findings are threaded into
    the judged round, so a path carrying `decided` already carries them and
    must not add them again.
-   
+
    PER-PROPOSAL VERDICTS STAY OUT, because `verdicts` already records them
    structurally, and repeating them here would count one refusal twice.
    */
@@ -295,34 +295,34 @@ export type ConsolidationSettlement = {
 
 /**
  Settles one slice's consolidation, from a slate already produced.
- 
+
  @param client - provider client the rounds borrow
- 
+
  @param roster - voices that produced the slate, which the candidates are
  attributed to
- 
+
  @param judgeModelIds - voices seated for the slate's judging round and the
  gate; the producers' roster when not given, and narrower since 2026-09-02
  when the owner unseated GLM-5.3-Flash from every judge seat
- 
+
  @param subject - slice in the archive's terms
- 
+
  @param voices - consolidations gathered and repaired, in any order
- 
+
  @param validity - each voice's structural verdict, keyed by the same model id
- 
+
  @param producedFindings - what gathering and repairing recorded, which every
  exit reports ahead of its own by `ProducedSlate`'s contract
- 
+
  @param standingText - wording in place when this stage began, which is what a
  consolidation has to beat and what ships whenever it does not
- 
+
  @param sliceIndex - prepared position used by naturalness stage records
- 
+
  @param polishConfig - final body polish roles and document guard facts
- 
+
  @param standingMayShip - whether unchanged baseline has prior endorsement
- 
+
  @param standingEligible - whether the standing text passed the deterministic
  publication gate; when it did not, it is withheld from the slate and a
  settlement that would keep it throws instead of shipping it
@@ -544,13 +544,13 @@ export async function settleConsolidation(
 
   /**
    Those same proposals as they would actually ship.
-   
+
    WRAPPED BEFORE THE SLATE IS BUILT rather than after the gate has spoken,
    which is the whole of the fix. Wrapping only the winner leaves both
    deciders judging bytes the run then changes, and it did: over the two most
    recent runs of the band pair 15 of the 16 shipped consolidations came back
    from `wrapConsolidation` altered.
-   
+
    IT ALSO COLLAPSES THE WHITESPACE CASE FOR FREE. A proposal differing from
    an already-wrapped standing text only in where its lines break becomes that
    text exactly, the candidate dedup folds it into the incumbent, and a slate

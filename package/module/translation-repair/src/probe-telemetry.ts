@@ -24,7 +24,7 @@ import type {
 
 /**
  Raised when probe copies for one envelope disagree across records it served.
- 
+
  @example
  ```ts
  throw new ProbeTelemetryError({ message: 'envelope 3 of entry 7 carries disagreeing probe copies', },);
@@ -33,9 +33,9 @@ import type {
 export class ProbeTelemetryError extends Error {
   /**
    Builds refusal carrying what could not hold.
-   
+
    @param message - which envelope contradicts itself, and across which records
-   
+
    @example
    ```ts
    throw new ProbeTelemetryError({ message: 'envelope 3 of entry 7 carries disagreeing probe copies', },);
@@ -49,7 +49,7 @@ export class ProbeTelemetryError extends Error {
 
 /**
  How a region's probers came down on it, once a majority rule is applied.
- 
+
  @example
  ```ts
  const verdict: RegionProbeVerdict = 'majority-introduced';
@@ -62,7 +62,7 @@ export type RegionProbeVerdict =
 
 /**
  One run's probe telemetry, over distinct shipped regions.
- 
+
  @example
  ```ts
  const summary: ProbeTelemetrySummary = summarizeProbeTelemetry({ readings, },);
@@ -129,7 +129,7 @@ const UPHELD_ADMISSIBILITY: ReadonlySet<string> = new Set([
 
 /**
  Counts the distinct PROBERS with at least one upheld claim on a region.
- 
+
  The majority rule weighs voices against a roster size, so its numerator has
  to be voices too. The tally's two upheld counts sum CLAIMS, and one prober may
  file several on a single region, so a three-model roster could reach a
@@ -137,16 +137,16 @@ const UPHELD_ADMISSIBILITY: ReadonlySet<string> = new Set([
  already counts probers rather than claims, since `noneFound` and `uncertain`
  are per-prober, which is what makes the mixed units a defect rather than a
  deliberate choice.
- 
+
  Measured before changing, across the 210 distinct regions settled at the
  time: no prober had ever filed more than one upheld claim on one region, so
  this agrees with the claim count on every region measured so far and revises
  no figure already reported. It removes the case that would have inflated one.
- 
+
  @param tally - screened tally of one region, whose claims carry `modelId`
- 
+
  @returns Distinct probers upholding damage on this region
- 
+
  @example
  ```ts
  const voices = corroboratingProberCount({ tally, },);
@@ -168,23 +168,23 @@ export function corroboratingProberCount(
 
 /**
  Applies the majority rule to one region.
- 
+
  The denominator is the CONFIGURED roster, never the heard one. Under
  retry-to-quorum a six-model roster can settle with three heard, and counting
  a majority of THOSE would let two probers speak for six. Unheard voices count
  as non-confirming, which is the conservative direction for a probe whose
  false positives discard correct repairs.
- 
+
  The numerator counts PROBERS, not claims, so both sides of the comparison are
  voices. See {@link corroboratingProberCount} for why the claim count cannot
  play that role.
- 
+
  @param tally - screened tally of one region
- 
+
  @param configuredProbers - probers asked for that region's chunk
- 
+
  @returns What the region's probers established
- 
+
  @example
  ```ts
  const verdict = judgeRegionProbe({ tally, configuredProbers: 3, },);
@@ -212,7 +212,7 @@ export function judgeRegionProbe(
 
 /**
  One region's evidence paired with the verdict the probe reached on it.
- 
+
  Named rather than inferred from the mapping that builds it, because an
  inferred object literal carries WRITABLE properties, and every reader of the
  judged list then takes a mutable parameter it never mutates.
@@ -241,16 +241,16 @@ type RegionEvidence = {
 
 /**
  Renders one copy of an envelope's evidence as a comparable string.
- 
+
  Identities rather than only counts. Two copies naming DIFFERENT probers or
  serving different issues, in equal numbers, are as much a contradiction as
  two different totals, and comparing totals alone would let them through while
  the invariant claims disagreement is refused.
- 
+
  @param evidence - one record's copy of an envelope's evidence
- 
+
  @returns Fingerprint equal exactly when two copies agree
- 
+
  @example
  ```ts
  const fingerprint = evidenceFingerprint({ evidence, },);
@@ -288,18 +288,18 @@ function evidenceFingerprint(
 
 /**
  Whether two copies of one envelope's evidence say the same thing.
- 
+
  Compares what the summary actually reads: the roster sizes, the five screened
  counts, and the number of distinct probers upholding damage. Claim text is
  not compared because the reader drops it, so comparing it would only ever be
  comparing two empty strings.
- 
+
  @param kept - copy already recorded for the envelope
- 
+
  @param found - copy met on a later record
- 
+
  @returns True when the two agree on every figure the summary uses
- 
+
  @example
  ```ts
  const agrees = sameRegionEvidence({ kept, found, },);
@@ -320,7 +320,7 @@ function sameRegionEvidence(
 
 /**
  Summarizes probe readings over the distinct regions that actually shipped.
- 
+
  Scoped BY CORPUS ENTRY, which is what makes the collapse sound. An envelope
  id is derived from the text the envelope covers, so it is unique inside one
  document and NOT across a corpus: two entries containing the same wording
@@ -328,13 +328,13 @@ function sameRegionEvidence(
  id alone merged unrelated documents' regions, undercounting distinct regions
  wherever two entries shared a paragraph, until the evidence guard met a pair
  whose issue lists disagreed and refused to pick one.
- 
+
  @param entries - one group per settled artifact, each holding that entry's
  probe readings of SHIPPED issue records only; the caller filters, because
  only the caller knows each record's disposition
- 
+
  @returns Counts over envelopes distinct within their own entry
- 
+
  @example
  ```ts
  const summary = summarizeProbeTelemetry({ entries, },);
@@ -360,7 +360,7 @@ export function summarizeProbeTelemetry(
     for (const tally of reading.regions) {
       /**
        Key naming this envelope inside its own entry.
-       
+
        Built through `JSON.stringify` rather than by joining the parts with a
        separator, since an entry id is arbitrary text and one containing the
        separator could otherwise impersonate a different pair.
@@ -423,11 +423,11 @@ export function summarizeProbeTelemetry(
 
   /**
    Counts regions whose verdict matches.
-   
+
    @param wanted - verdict to count
-   
+
    @returns Regions carrying it
-   
+
    @example
    ```ts
    countVerdict({ wanted: 'majority-introduced', },);

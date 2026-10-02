@@ -70,11 +70,11 @@ export type EntryContribution = {
 /**
  Loads one artifact, reconciles its accepted count against the pipeline's own
  tally, bands the entry, and flattens its accepted issues into candidates.
- 
+
  @param artifactsDir - directory holding the artifact JSON files
- 
+
  @param name - artifact file name
- 
+
  @param eligible - resolved pool, whose recorded commit for this entry is
  checked against the bytes actually read
 

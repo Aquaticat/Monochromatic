@@ -30,7 +30,7 @@ import type { AnchorTarget, } from './validate-issue.ts';
 
 /**
  What one coverage question cost and concluded.
- 
+
  @example
  ```ts
  const answer: CoverageAnswer = { verdict, findings: [], };
@@ -52,13 +52,13 @@ export type CoverageAnswer = {
 
 /**
  Asks one roster whether a translation carries one passage.
- 
+
  @param client - injected model client
- 
+
  @param modelIds - roster asked
- 
+
  @param sourcePassage - original-side text whose coverage is in question
- 
+
  @param translation - whole translation, searched and used to anchor quotes
 
  @param foreignRegions - target regions the pairing assigned to other source
@@ -69,18 +69,18 @@ export type CoverageAnswer = {
  @param identityContext - declared names preparation holds, so a name the
  English writes by a declared handle is found as the name the passage writes
  (ledger B28)
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param exchangeTimeoutMs - deadline per exchange
- 
+
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
- 
+
  @param l - logger of the calling driver
- 
+
  @returns Verdict plus any roster findings
- 
+
  @example
  ```ts
  const answer = await runCoverageStage({ client, modelIds, sourcePassage, translation, signal, exchangeTimeoutMs, l, },);

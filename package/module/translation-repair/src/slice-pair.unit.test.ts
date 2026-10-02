@@ -5,7 +5,7 @@
  exact document bytes, mismatched paragraph counts merge
  monotonically, and the global base index lands on every slice.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -196,7 +196,7 @@ const ANCHOR_OFFSET = 120;
 
 /**
  Slice budget these cases measure against.
- 
+
  SCALED DOWN FROM THE PRODUCTION 400 so the fixture can stay short enough to
  read. What matters is the RATIO of section to budget: this section runs 330
  characters over eight blocks, so at 120 it must split about three ways, which

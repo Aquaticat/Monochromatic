@@ -1,26 +1,26 @@
 /**
  Tests for reading a settled run's repair-lane issue records back.
- 
+
  THE ONE CASE THAT EARNS ITS KEEP IS WHERE THE RECORDS ARE READ FROM. This
  reader asked for `artifact.issues`, at the ROOT, which version 2 does not
  write; the issues live under `lanes.repair.result`. Every call therefore
  refused a perfectly well-formed artifact, and the relabel probe could not
  gather a single case. The module's own comment records it.
- 
+
  A ROOT-READING VERSION AND A LANE-READING ONE ARE TOLD APART BY AN ARTIFACT
  WITH NO ROOT `issues` KEY AT ALL, which is what production writes. The lane
  reader answers with the lane's records; a root reader meets `requireArray` on
  an absent field and refuses. So the discriminating fixture is the ordinary
  one, and no malformed input is needed to make the point.
- 
+
  THE RUNS DIRECTORY COMES FROM THE ENVIRONMENT, and `process.env` is
  process-wide, so every case here runs at `concurrency: 1` and puts the
  variable back however it ends. The runner spawns a process per test file, so
  nothing outside this file is touched.
- 
+
  FIXTURES ARE INVENTED AND CAT-THEMED, written into a throwaway directory that
  removes itself. A real run directory holds unlicensed corpus wording.
- 
+
  @module
  */
 
@@ -83,13 +83,13 @@ const PROBER = 'cat-house/tabbyscribe-2';
 
 /**
  Builds the ledger row both lanes carry for the one slice.
- 
+
  @param shipped - wording this lane delivered
- 
+
  @param delivery - how that wording got there
- 
+
  @returns One-row ledger
- 
+
  @example
  ```ts
  const rows = ledger({ shipped: ARCHIVE_WORDING, delivery: { kind: 'incumbent-retained', }, },);
@@ -122,14 +122,14 @@ function ledger(
 
 /**
  Builds a settled version 2 artifact carrying the given repair-lane issues.
- 
+
  NO ROOT `issues` KEY, deliberately, because that is what production writes
  and what tells a lane reader from a root reader.
- 
+
  @param issues - repair-lane issue records, in the shape the lane stores them
- 
+
  @returns Whole artifact value
- 
+
  @example
  ```ts
  const artifact = settledArtifact({ issues: [], },);
@@ -246,12 +246,12 @@ function settledArtifact(
 
 /**
  Builds one repair-lane issue record.
- 
+
  @param withRegions - whether the record carries a replaced region, since an
  older run records none and the reader defaults it
- 
+
  @returns Record as the lane stores one
- 
+
  @example
  ```ts
  const record = issueRecord({ withRegions: true, },);
@@ -343,11 +343,11 @@ function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
  Builds an artifact of the generation before schema versions, the shape the
  round-three draw consists of: no version field and the issue records at the
  root.
- 
+
  @param issues - issue records to place at the root
- 
+
  @returns Artifact as its JSON would parse
- 
+
  @example
  ```ts
  const artifact = legacyArtifact({ issues: [], },);
@@ -374,13 +374,13 @@ function legacyArtifact(
 
 /**
  Writes one artifact into a throwaway run and reads its records back.
- 
+
  @param artifact - whole artifact value
- 
+
  @returns Records the reader made of it
- 
+
  @throws Whatever the reader refuses with
- 
+
  @example
  ```ts
  const records = await recordsOf({ artifact: settledArtifact({ issues: [], },), },);

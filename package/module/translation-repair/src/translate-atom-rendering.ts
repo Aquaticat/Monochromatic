@@ -67,13 +67,13 @@ type KeyedAtom = {
 
 /**
  Keys one side carries and the other does not, keeping copies.
- 
+
  @param atoms - atoms of the side being read
- 
+
  @param other - atoms of the side compared against
- 
+
  @returns Keys absent from the other side, one per copy
- 
+
  @example
  ```ts
  const onlyHere = keysAbsentFrom({ atoms: source, other: page, },);
@@ -109,14 +109,14 @@ function keysAbsentFrom(
 /**
  Pools of atoms the original and the page render differently, one per
  kind that diverges in both directions.
- 
+
  @param page - atoms the text being replaced carries
- 
+
  @param source - atoms the original carries
- 
+
  @returns One pool per kind with members on both sides, in kind order of
  first appearance in the original
- 
+
  @example
  ```ts
  const pools = renderingPoolsOf({ page: page.atoms, source: expected.atoms, },);

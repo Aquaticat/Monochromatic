@@ -53,7 +53,7 @@ import { writerRoundGraceMs, } from './writer-grace-override.ts';
 
 /**
  Everything one slice's refinement decided.
- 
+
  @example
  ```ts
  const { refinedText, changed, } = await runRefineStage({ ... },);
@@ -73,7 +73,7 @@ export type RefineStageResult = {
   /**
    Ballots of this slice's refinement round, empty when it never reached the
    judges.
-   
+
    Recorded on EVERY exit after the round, decline included, because a
    refinement that lost still says what the panel thought of the repaired
    text, and this lane is the one that re-decides text an accuracy verdict
@@ -83,7 +83,7 @@ export type RefineStageResult = {
 
   /**
    Models whose rewrites the shipped text carries, empty when unchanged.
-   
+
    DISCOUNTED RATHER THAN BARRED, which this said the opposite of. The caller
    folds them into the text's `IssueAuthorship`, and `tally-resolution.ts`
    then weights a checker's verdict on text it helped write at
@@ -95,7 +95,7 @@ export type RefineStageResult = {
 
   /**
    Refiners heard with a usable answer, whether or not it proposed a change.
-   
+
    CARRIED OUT SO A STANDING CAN TELL ANSWERED FROM SILENT. A rewriter that
    leaves a paragraph as it stands never reaches a slate, and that was once
    reported as provider silence beside a SEAT line saying the seat had
@@ -111,46 +111,46 @@ export type RefineStageResult = {
 
 /**
  Runs the naturalness lane over one repaired slice.
- 
+
  @param client - injected model client
- 
+
  @param refinerModelIds - rewriters proposing refinements
- 
+
  @param judgeModelIds - whole roster selection draws judges from
- 
+
  @param sourceText - original chunk text, the faithfulness anchor
- 
+
  @param repairedText - `T1`, the text refinement may improve
- 
+
  @param envelopes - eligible paragraphs of `repairedText`, in document order
- 
+
  @param definitions - link and footnote definitions from the whole document,
  so a paragraph's references resolve during gating
- 
+
  @param identityContext - declared names and handles, when any
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param declaredNames - same declarations as strings to compare, since a
  rewrite for naturalness is exactly the edit that drops one
- 
+
  @param mode - comparative improvement or mandatory absolute-quality correction
- 
+
  @param sliceIndex - slice being refined, which a refusal names
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Shipped text plus what decided it
- 
+
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
  roster could not select anything: repeats on either side, no refiner, or
  judges too few to reach the minimum weight
- 
+
  @example
  ```ts
  const refined = await runRefineStage({ ... },);
@@ -346,7 +346,7 @@ export async function runRefineStage(
 
   /**
    Distinct rewrites, each credited to every rewriter that produced it.
-   
+
    Merging matters for the same reason it does in the editor lane: selection
    discounts a judge's ballot for text that judge produced, and it reads that
    off the candidate's producer. Leaving three identical rewrites as three
@@ -435,7 +435,7 @@ export async function runRefineStage(
 
   /**
    Models whose work the winning text carries.
-   
+
    Read through `producerModelIds` rather than by branching on the kind here,
    so a producer variant this lane never emits, the incumbent one the translate
    lane needs, cannot break a stage that has no opinion about it.
@@ -444,7 +444,7 @@ export async function runRefineStage(
 
   /**
    Declared names this refinement would take out of the slice.
-   
+
    CHECKED HERE AS WELL AS AT THE ACCURACY VERDICT, because refinement
    REPLACES the text that verdict accepted. A guard standing only there would
    pass a slice and then let this lane take the name out of it, and

@@ -1,15 +1,15 @@
 /**
  Tests for the rule tying a delivery to the rest of its row.
- 
+
  WHAT THESE PIN is the four-case matrix a row has to satisfy whoever built it.
  `buildSliceDelivery` decides these cases and can only produce coherent ones,
  and it is not the only way a row reaches a consumer: the type is exported,
  the comparison takes ledgers from a caller, and an artifact reader takes them
  from disk. At each of those, the builder's guarantee is somebody else's
  assumption, and a row that contradicts itself is well formed in every field.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -37,17 +37,17 @@ const REWRITE = 'The cat is asleep on the windowsill.';
 
 /**
  Builds one row from the parts each case varies.
- 
+
  @param outcome - what the lane did
- 
+
  @param shippedText - what the document carries
- 
+
  @param delivery - how it came to carry it
- 
+
  @param incumbentKind - whether the archive holds wording here
- 
+
  @returns Row shaped as a delivery ledger holds one
- 
+
  @example
  ```ts
  const record = rowOf({ outcome, shippedText, delivery, },);

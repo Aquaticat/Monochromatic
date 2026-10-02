@@ -27,13 +27,13 @@ export type ArchiveBlocksRepairOutcome = {
 
 /**
  Stable identity over location and exact block wording.
- 
+
  @param block - structured unclaimed block
- 
+
  @param targetText - archive whose offsets block indexes
- 
+
  @returns Identity unaffected by edits after block
- 
+
  @example
  ```ts
  const identity = archiveBlockIdentity({ block, targetText, });
@@ -189,40 +189,40 @@ function removalSpan(
 
 /**
  Reviews unclaimed blocks in reverse offset order and applies selected revisions.
- 
+
  EACH BLOCK IS REVIEWED IN THE PAGE THE REVISIONS ALREADY APPLIED LEAVE
  (ledger B80), so its reviewers, the quote style its revisions are restored
  to, and the footnote check on them all read the page a revision would
  join. Where two blocks' revisions conflict, the later block's, reviewed
  first, stands.
- 
+
  @param client - provider client
- 
+
  @param modelIds - review roster
- 
+
  @param targetText - current archive document
- 
+
  @param sourceContexts - expected source section per exact block identity
- 
+
  @param blocks - unclaimed blocks in current preparation
- 
+
  @param identityContext - declared names preparation holds, for every sheet
  the review asks (ledger B28)
- 
+
  @param referenceContext - what the pages the original links say, with the
  attested lines under them
- 
+
  @param signal - caller cancellation
- 
+
  @param exchangeTimeoutMs - per-call bound
- 
+
  @param l - pass logger
- 
+
  @param beforeBlock - awaited before each block's review, handing it the roster it
  is asked of; none keeps the given one (ledger X12)
- 
+
  @returns Revised text, retained identities, and audit findings
- 
+
  @example
  ```ts
  const repaired = await repairArchiveBlocks(input);

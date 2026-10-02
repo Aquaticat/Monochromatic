@@ -25,7 +25,7 @@ import type { SliceReplacement, } from '../splice-slices.ts';
 
 /**
  Page-level guard outcome recorded in a settled artifact.
- 
+
  @example
  ```ts
  const assembly: ArtifactPageAssembly = { trimmed: [], withdrawn: [], findings: [], };
@@ -84,13 +84,13 @@ const TRIMMED_KEYS: readonly string[] = [
 
 /**
  Reads one trimmed replacement.
- 
+
  @param value - recorded replacement
- 
+
  @param path - where it sits, for the parse error
- 
+
  @returns The replacement
- 
+
  @example
  ```ts
  const replacement = parseTrimmed({ value, path: `${path}.trimmed[0]`, },);
@@ -131,19 +131,19 @@ function parseTrimmed(
 
 /**
  Reads the page assembly section of a settled artifact.
- 
+
  @param value - recorded section, absent on artifacts written before it
- 
+
  @param path - where it sits, for the parse error
- 
+
  @param required - whether this generation writes the section, so its
  absence is a broken file rather than an older one
- 
+
  @returns The section, empty on an older artifact
- 
+
  @throws {@link ArtifactParseError} when a required section is absent or any
  field is the wrong shape
- 
+
  @example
  ```ts
  const assembly = parsePageAssembly({ value: artifact.pageAssembly, path: `${id}.pageAssembly`, required, },);
@@ -226,7 +226,7 @@ export function parsePageAssembly(
 
 /**
  What the page assembly says about one slice.
- 
+
  @example
  ```ts
  const override: PageAssemblyOverride = { kind: 'trimmed', text: '[^1]: one', };
@@ -259,13 +259,13 @@ export type PageAssemblyOverride =
 
 /**
  Reads what the page assembly did to one slice.
- 
+
  @param pageAssembly - recorded section
- 
+
  @param sliceIndex - slice asked about
- 
+
  @returns The override, or that there is none
- 
+
  @example
  ```ts
  const override = pageAssemblyOverrideAt({ pageAssembly, sliceIndex: 14, },);

@@ -5,7 +5,7 @@
  text index the original exactly. The typography fold straightens curly
  quotes only and leaves the corner brackets and the no-break space alone
  (ledger B24).
- 
+
  @module
  */
 

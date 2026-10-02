@@ -34,7 +34,7 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 
 /**
  Half-open range a block owns within its document.
- 
+
  @example
  ```ts
  const extent: BlockExtent = { startOffset: 370, endOffset: 408, };
@@ -54,7 +54,7 @@ export type BlockExtent = {
 
 /**
  Which block indices a container's tags attach to.
- 
+
  @example
  ```ts
  const bound: ContainerBound = { first: 1, last: 2, openerStartOffset: 370, closerEndOffset: 4045, };
@@ -86,17 +86,17 @@ type ContainerBound = {
  Locates blocks a container's tags attach to, by containment rather than by
  order, so nesting needs no separate handling: an inner container's bound is
  computed against the same unwidened extents as its outer one.
- 
+
  Returns nothing for a container holding no blocks at all. Its tags then keep
  belonging to no block, which is safe on its own terms: no slice can reach
  them either, so assembly copies the region through unedited.
- 
+
  @param extents - unwidened block extents in document order
- 
+
  @param container - container whose tags need an owner
- 
+
  @returns Bound naming owning block indices, or nothing when container is empty
- 
+
  @example
  ```ts
  const bound = interiorBound({ extents, container, },);
@@ -148,19 +148,19 @@ function interiorBound(
 
 /**
  Widens block extents so each container's tags fall inside a block.
- 
+
  Nesting composes without a special case, because a block takes the SMALLEST
  opening offset among containers that open at it and the LARGEST closing
  offset among those that close at it. Where an outer container's opener
  region abuts an inner one's, the two regions tile and the minimum swallows
  both.
- 
+
  @param extents - unwidened block extents in document order
- 
+
  @param containers - container spans in the same offset frame as extents
- 
+
  @returns Extents in the same order, each widened over tags it owns
- 
+
  @example
  ```ts
  const owned = widenExtentsToContainers({ extents, containers, },);
@@ -224,21 +224,21 @@ export function widenExtentsToContainers(
 
 /**
  Rewrites document nodes so each owns the container tags it carries.
- 
+
  Text and hash are recomputed rather than carried over, because a node's text
  is defined as the exact slice its offsets name and that invariant has to
  survive the widening rather than be excused from it.
- 
+
  @param nodes - document nodes carrying absolute offsets
- 
+
  @param text - full document source both offsets and slices index
- 
+
  @param containers - container spans in absolute offsets
- 
+
  @returns Nodes in the same order, each spanning tags it owns
- 
+
  @throws {@link Error} when widening returns a different node count than it received
- 
+
  @example
  ```ts
  const owning = widenNodesToContainers({ nodes, text, containers, },);

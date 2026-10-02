@@ -59,7 +59,7 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  What the router lends the re-ask.
- 
+
  @example
  ```ts
  const core: RoutedCore = { reachFor, budgets, ledger, callOn, routedText, };
@@ -99,15 +99,15 @@ export type RoutedCore = {
 /**
  Other providers that also serve this call and have budget, in spending
  order.
- 
+
  @param core - what the router lent
- 
+
  @param request - call that was answered badly
- 
+
  @param served - provider that answered it
- 
+
  @returns Providers to re-ask, empty where there is nowhere else to ask
- 
+
  @example
  ```ts
  const [elsewhere,] = await secondOpinionsFrom({ core, request, served: 'synthetic', },);
@@ -165,21 +165,21 @@ export async function secondOpinionsFrom(
 /**
  Calls one provider, and reads a budget refusal as no reply rather than as
  a fault.
- 
+
  THE RE-ASK IS OPPORTUNISTIC, so a 429 or a 402 on it is the re-ask not
  happening, not the exchange failing: the first answer is what the caller
  gets, the way it does when there is nowhere else to ask. The refusal still
  starts that provider's cooldown on the call it arrived on, rather than one
  call later when the next routing decision meets it.
- 
+
  @param core - what the router lent
- 
+
  @param provider - stack to ask
- 
+
  @param request - exchange to perform
- 
+
  @returns Reply, or the named refusal when the provider was out of budget
- 
+
  @example
  ```ts
  const asked = await replyOrBudgetRefusal({ core, provider: 'hyper', request, },);

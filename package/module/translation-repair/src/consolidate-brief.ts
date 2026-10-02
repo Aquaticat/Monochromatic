@@ -23,9 +23,9 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 /**
  Blank findings a judge may return, dropped before rendering.
- 
+
  @param findings - findings as a judge wrote them
- 
+
  @returns Same findings, trimmed, without the ones showing a reader nothing,
  invisible characters `trim()` keeps among them (ledger B40)
 
@@ -48,13 +48,13 @@ function usableFindings(
 
 /**
  Renders one list of findings under its heading, or nothing.
- 
+
  @param heading - what this list of findings is about
- 
+
  @param findings - findings as that judge wrote them
- 
+
  @returns Lines for this list, empty when the judge listed nothing
- 
+
  @example
  ```ts
  const lines = renderFindingList({ heading: 'Unsupported', findings, },);
@@ -85,13 +85,13 @@ function renderFindingList(
 
 /**
  Renders one judge's reading of the two candidates.
- 
+
  @param ballot - that judge's ballot
- 
+
  @param position - which judge this is, counted from one
- 
+
  @returns Lines for this judge
- 
+
  @example
  ```ts
  const lines = renderBallot({ ballot, position: 1, },);
@@ -129,11 +129,11 @@ function renderBallot(
 
 /**
  Renders every judge's reading as the brief a producer is shown.
- 
+
  @param ballots - usable ballots from the lane contest for this slice
- 
+
  @returns Brief, empty when no judge was heard
- 
+
  @example
  ```ts
  const brief = renderConsolidationBrief({ ballots, },);

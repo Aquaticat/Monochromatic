@@ -40,11 +40,11 @@ import type { DocumentNode, } from './document-node.ts';
 
 /**
  How one side's blocks failed to reach the carved slices.
- 
+
  BLOCK IDS ARE POSITIONS: `document-node.ts` stamps every block `block/N`
  from its place in top-level order, so a list of them names positions and
  never wording, and the sentence may print them.
- 
+
  @example
  ```ts
  const placement: BlockPlacementFault = { kind: 'missing', missing: ['block/6',], expected: 7, };
@@ -89,7 +89,7 @@ export type BlockPlacementFault = {
 
 /**
  Why a chunk's carved slices do not cover it.
- 
+
  @example
  ```ts
  const fault: SliceCoverageFault = { kind: 'declined-reached', sliceIndex: 3, contradicted: ['block/2',], };
@@ -154,11 +154,11 @@ export type SliceCoverageFault = {
 
 /**
  Words a placement fault.
- 
+
  @param placement - how one side's blocks went astray
- 
+
  @returns Sentence composed from counts and block ids
- 
+
  @example
  ```ts
  const sentence = blockPlacementSentence({ placement: { kind: 'repeated', repeated: ['block/2',], }, },);
@@ -212,11 +212,11 @@ export function blockPlacementSentence(
 
 /**
  Words a coverage fault, after the chunk the class prefixes.
- 
+
  @param fault - why the carved slices do not cover the chunk
- 
+
  @returns Sentence composed from a side name, counts and block ids
- 
+
  @example
  ```ts
  const sentence = coverageSentence({ fault, },);
@@ -254,10 +254,10 @@ export function coverageSentence({ fault, }: { readonly fault: SliceCoverageFaul
 
 /**
  Failure of slice coverage: a side's blocks went missing, repeated or moved.
- 
+
  MARKED: its message is a chunk index and the sentence `coverageSentence`
  writes from a side name, counts and positional block ids.
- 
+
  @example
  ```ts
  throw new SliceCoverageError({ fault: { kind: 'declined-reached', sliceIndex: 3, contradicted: ['block/2',], }, },);
@@ -287,11 +287,11 @@ export class SliceCoverageError extends Error {
 
 /**
  Reads the ids of node runs, in the order they were placed.
- 
+
  @param runs - node runs, one per slice
- 
+
  @returns Ids in placement order
- 
+
  @example
  ```ts
  const placed = idsOf({ runs: [pair.source.nodes,], },);
@@ -309,13 +309,13 @@ function idsOf(
 
 /**
  Names how a side's placement departs from the blocks it was given.
- 
+
  @param expected - ids the chunk pair carried, in document order
- 
+
  @param placed - ids the slices carry, in placement order
- 
+
  @returns Every way this side departed, empty when placement is exact
- 
+
  @example
  ```ts
  const faults = describePlacement({ expected: ['block/0',], placed: [], },);
@@ -373,19 +373,19 @@ function describePlacement(
 
 /**
  Asserts that slices carved from a chunk pair carry its blocks exactly once.
- 
+
  @param pair - chunk pair that went in
- 
+
  @param carved - slices it was carved into
- 
+
  @param declined - ids of translation blocks the pairing accounted for
  nowhere, which reach no slice by decision
- 
+
  @param sealed - ids, per side, of the blocks the archive's note seals,
  which reach no slice by the owner's rule of 2026-09-08
- 
+
  @throws SliceCoverageError when either side loses, repeats or reorders a block
- 
+
  @example
  ```ts
  assertSliceCoverage({ pair, carved, },);

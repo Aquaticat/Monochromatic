@@ -21,7 +21,7 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 /**
  Answers a model may give when handed its own candidate's findings.
- 
+
  @example
  ```ts
  const resolution: RepairResolution = 'as-intended';
@@ -43,12 +43,12 @@ const REPAIR_RESOLUTIONS: readonly RepairResolution[] = [
 
 /**
  One repair reply on the wire.
- 
+
  Flat rather than a discriminated union of shapes, because every stage in this
  pipeline sends flat schemas and the providers handle them reliably. The union
  is enforced by {@link isTranslateRepairWire} instead: a `revised` reply
  carrying no translation is not a revision.
- 
+
  @example
  ```ts
  const wire: TranslateRepairWire = {
@@ -77,11 +77,11 @@ export type TranslateRepairWire = {
 
 /**
  Guards a repair reply.
- 
+
  @param value - parsed model JSON
- 
+
  @returns Whether value is a well-formed repair reply
- 
+
  @example
  ```ts
  const ok = isTranslateRepairWire(JSON.parse(text,),);
@@ -126,7 +126,7 @@ export function isTranslateRepairWire(value: unknown,): value is TranslateRepair
 
 /**
  Instructions for the follow-up turn.
- 
+
  Says the checks are MECHANICAL on purpose. A model told only that its work is
  wrong tends to rewrite whatever it can see; told that a specific structural
  comparison produced these lines, it can answer that the comparison is the
@@ -147,15 +147,15 @@ Reply with ONLY a JSON object of shape {"resolution": "...", "translation": "...
 
 /**
  Builds the follow-up turn for one candidate's author.
- 
+
  @param priorMessages - exact messages that produced the candidate
- 
+
  @param priorTranslation - candidate this model returned
- 
+
  @param findings - structural divergences, written for the model
- 
+
  @returns Messages continuing that same exchange
- 
+
  @example
  ```ts
  const messages = buildTranslateRepairMessages({ priorMessages, priorTranslation, findings, },);

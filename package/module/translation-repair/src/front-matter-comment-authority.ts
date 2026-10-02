@@ -8,7 +8,7 @@ import {
 
 /**
  Comment or attribution lookup outcome.
- 
+
  @example
  ```ts
  const reading: CommentReading = { kind: 'found', text: 'Qingyuan, by Mogu', };
@@ -40,11 +40,11 @@ const CONTRIBUTOR_MARKER = ', by ';
 
 /**
  Removes front matter fences before YAML AST parsing.
- 
+
  @param text - complete front matter block
- 
+
  @returns YAML between opening and closing fences
- 
+
  @example
  ```ts
  const yaml = yamlInsideFrontMatter({ text: '---\nname: Mittens\n---\n', });
@@ -69,11 +69,11 @@ function yamlInsideFrontMatter({ text, }: { readonly text: string; },): string {
 
 /**
  Reads inline comment attached to `info.location` scalar by YAML path.
- 
+
  @param text - complete front matter block
- 
+
  @returns Comment text without hash marker, or named absence
- 
+
  @example
  ```ts
  const comment = locationComment({ text, });
@@ -116,11 +116,11 @@ function locationComment({ text, }: { readonly text: string; },): CommentReading
 
 /**
  Reads contributor attribution from location comment.
- 
+
  @param comment - location comment lookup
- 
+
  @returns Contributor spelling after `, by `, or named absence
- 
+
  @example
  ```ts
  const contributor = contributorAttribution({ comment, });
@@ -161,20 +161,20 @@ function contributorAttribution(
 
 /**
  Validates established target contributor spelling in location comment.
- 
+
  SOURCE AND ARCHIVE COMMENTS AT SAME YAML PATH establish relation. When their
  contributor spellings differ, archive form is existing target-language name.
  Candidate may translate surrounding place comment but must not replace that
  established contributor with source-script form or another spelling.
- 
+
  @param sourceText - source front matter
- 
+
  @param pageText - archive front matter
- 
+
  @param candidateText - candidate front matter
- 
+
  @returns Model-facing findings, empty when no enforceable relation exists
- 
+
  @example
  ```ts
  const findings = frontMatterCommentAuthorityFindings({ sourceText, pageText, candidateText, });

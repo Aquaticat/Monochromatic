@@ -1,6 +1,6 @@
 /**
  Tests for whose front matter the page carries.
- 
+
  THE OWNER'S RULE OF 2026-09-08, after one entry's ninth pass renamed the
  person in slice zero while the body kept the archive's name, and a census
  found nine of the last ten read pages rewriting `desc` or `alias`: the
@@ -10,9 +10,9 @@
  them because the source does too, and the other 15 all stand by the
  exemptions of 2026-09-07, so every pinned archive stands and the rendering
  path is kept for the directory-id shape alone.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

@@ -2,13 +2,13 @@ import { wordForCount, } from './count-word.ts';
 
 /**
  Tests whether a recorded wider bench can contain its independently named seats.
- 
+
  @param quorumOver - effective bench size used for exact-half quorum
- 
+
  @param seatCount - requested or recorded distinct seats
- 
+
  @returns Whether runtime and artifact can share this quorum basis
- 
+
  @example
  ```ts
  validNaturalnessQuorum({ quorumOver: 9, seatCount: 6 });
@@ -37,11 +37,11 @@ export class NaturalnessQuorumError extends Error {
 
   /**
    Names only bench counts, never candidate wording.
-   
+
    @param quorumOver - caller-supplied bench size
-   
+
    @param seatCount - independently requested seats
-   
+
    @example
    ```ts
    throw new NaturalnessQuorumError({ quorumOver: 2, seatCount: 3 });

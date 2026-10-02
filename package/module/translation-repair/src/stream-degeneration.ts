@@ -28,7 +28,7 @@
 
 /**
  Width of one sampled window, in characters.
- 
+
  Wide enough that ordinary prose almost never repeats a whole window by
  chance, and narrow enough that a short repeated phrase still fills several.
  */
@@ -36,7 +36,7 @@ const WINDOW_CHARS = 64;
 
 /**
  Distance between the starts of consecutive sampled windows.
- 
+
  Half a window, so every position is covered by a sample without paying for a
  sample at every character.
  */
@@ -45,7 +45,7 @@ const WINDOW_STRIDE = 32;
 /**
  Windows kept in the trailing sample, which at `WINDOW_STRIDE` is about
  131000 characters of recent text.
- 
+
  TRAILING RATHER THAN CUMULATIVE so late-onset degeneration is caught. A
  cumulative ratio over a reply that ran healthy for a long time cannot fall
  far enough to trip, no matter how long it then cycles.
@@ -57,7 +57,7 @@ const TRAILING_WINDOWS = 4_096;
  {@link TRAILING_WINDOWS}: the sample is capped at that size, so a larger
  minimum would make every verdict unreachable and this guard silently inert.
  Equal to it here, so a verdict is offered exactly when the sample is full.
- 
+
  SET SO THAT LENGTH ALONE NEVER CONDEMNS, and so that being verbose is not
  treated as being broken. Some models legitimately write a great deal. The
  ratio is what decides; this constant only decides when there is enough text
@@ -65,12 +65,12 @@ const TRAILING_WINDOWS = 4_096;
  reply. Across all 56 settled artifacts the longest recorded model output is
  8358 characters, so a bar at about 131000 sits roughly fifteen times above
  anything this pipeline has ever legitimately produced.
- 
+
  IT IS ALSO WHAT KEEPS VERSE SAFE. A translated poem carrying a refrain is
  genuinely repetitive, and measured at 116800 characters one scored 0.036,
  which the ratio alone would condemn. No slice translation approaches this
  bar, so such a reply is never judged at all.
- 
+
  DUE A REVISIT, since aborted streams now keep what they delivered. The bar
  is measured in characters of generated text, while the only length
  telemetry in production counts raw server-sent event bytes, envelope
@@ -85,7 +85,7 @@ const MIN_WINDOWS_FOR_VERDICT = 4_096;
  detector fed the same generated text can be gated on the identical
  artifact-evidence bar rather than defining an independent one that could
  drift from it.
- 
+
  DELIBERATELY THE SAME BAR, not merely a similar one. The reasoning that
  keeps verse and ordinary replies unjudged below {@link MIN_WINDOWS_FOR_VERDICT}
  windows applies unchanged to any other measure of the same generated text:
@@ -97,7 +97,7 @@ export const MIN_CHARS_FOR_VERDICT: number = MIN_WINDOWS_FOR_VERDICT * WINDOW_ST
 
 /**
  Share of distinct windows at or below which the sample is called degenerate.
- 
+
  SET WITH A WIDE MARGIN, deliberately. Scanned across all 56 settled
  artifacts, the most repetitive real string scored 0.998 distinct, and a
  synthetic control repeating one phrase scored 0.010. Nothing observed lies
@@ -108,11 +108,11 @@ const DEGENERATE_RATIO = 0.1;
 
 /**
  What the detector currently believes about a stream.
- 
+
  A TAGGED UNION rather than a boolean plus numbers, because "not enough text
  to say" and "enough text, and it looks fine" are different answers and a
  caller that conflates them would abort short replies or trust empty ones.
- 
+
  @example
  ```ts
  const verdict: DegenerationVerdict = { kind: 'undecided', windows: 12, };
@@ -160,7 +160,7 @@ export type DegenerationVerdict = {
 
 /**
  A running detector over one stream's generated text.
- 
+
  @example
  ```ts
  const detector = watchForDegeneration();
@@ -191,17 +191,17 @@ export type DegenerationDetector = {
 
 /**
  Builds a detector that reports when a stream has stopped producing new text.
- 
+
  ONE LINEAR PASS AND BOUNDED MEMORY, per `RG2`: every character is examined a
  fixed number of times, and the sample never grows past `TRAILING_WINDOWS`
  entries regardless of how long the stream runs, which matters precisely
  because the streams this exists to stop are the ones that never end.
- 
+
  NO REGEX, per `RG1`: the rule is "take a fixed-width slice every fixed number
  of characters", which slicing states directly.
- 
+
  @returns Detector fed by `notifyText` and read by `verdict`
- 
+
  @example
  ```ts
  const detector = watchForDegeneration();
@@ -223,7 +223,7 @@ export function watchForDegeneration(): DegenerationDetector {
 
   /**
    Text not yet consumed into a window, plus the running totals.
-   
+
    A RECORD RATHER THAN LOOSE BINDINGS so the factory root holds no mutable
    variable, and so every piece of the detector's state is named in one place.
    */
@@ -240,7 +240,7 @@ export function watchForDegeneration(): DegenerationDetector {
 
   /**
    How many times each window appears in `order`.
-   
+
    Counted rather than merely present, because eviction must know when the
    last copy of a window has left the sample.
    */
@@ -248,7 +248,7 @@ export function watchForDegeneration(): DegenerationDetector {
 
   /**
    Drops the oldest window from the sample, keeping `counts` in step.
-   
+
    @example
    ```ts
    evictOldest();
@@ -277,9 +277,9 @@ export function watchForDegeneration(): DegenerationDetector {
 
   /**
    Adds one sampled window to the trailing sample.
-   
+
    @param window - fixed-width slice of generated text
-   
+
    @example
    ```ts
    admit({ window: 'the cat naps on the mat', },);

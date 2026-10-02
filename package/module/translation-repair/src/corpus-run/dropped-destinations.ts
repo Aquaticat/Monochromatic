@@ -116,7 +116,7 @@ const RUN_TRAILERS: ReadonlySet<string> = new Set([
 
 /**
  What the check found on both sides.
- 
+
  @example
  ```ts
  const check: DestinationCheck = droppedDestinations({ sourceText, pageText, },);
@@ -148,13 +148,13 @@ export type DestinationCheck = {
 /**
  Position of the nearest scheme at or after `from`, or positive infinity when
  none remains.
- 
+
  @param text - text scanned
- 
+
  @param from - offset to scan from
- 
+
  @returns Offset of the scheme that starts first
- 
+
  @example
  ```ts
  const at = nearestScheme({ text, from: 0, },);
@@ -192,15 +192,15 @@ function nearestScheme(
 
 /**
  Bare web addresses in the text, as one linear pass.
- 
+
  COVERS WHAT THE TREE CANNOT: front matter and HTML attributes. A Markdown
  destination shows up here too, because its
  address starts with a scheme like any other; the union dedupes it.
- 
+
  @param text - text scanned
- 
+
  @returns Runs in the order found, repeats kept
- 
+
  @example
  ```ts
  const runs = scanUrlRuns({ text: 'see https://example.org/a, then https://example.org/b', },);
@@ -245,11 +245,11 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
 
 /**
  Where a destination's address ends: its first stopper, or its end.
- 
+
  @param url - destination as the tree or the scan produced it
- 
+
  @returns Offset of the first stopper, exclusive end of the address
- 
+
  @example
  ```ts
  const end = firstStopper({ url: 'https://example.org/a\uff0c', },);
@@ -266,15 +266,15 @@ function firstStopper({ url, }: { readonly url: string; },): number {
 /**
  Destination as a reader would follow it: cut at the first stopper, trailing
  sentence punctuation shed.
- 
+
  A GFM autolink literal runs until whitespace, so in Chinese prose it swallows
  the full-width comma or stop after the address; the scanner never does, and
  the two readers must agree on the address or the union counts one link twice.
- 
+
  @param url - destination as the tree or the scan produced it
- 
+
  @returns Destination ending where a reader's address ends
- 
+
  @example
  ```ts
  const clean = trimDestination({ url: 'https://example.org/a\uff0c', },);
@@ -297,12 +297,12 @@ function trimDestination({ url, }: { readonly url: string; },): string {
 
 /**
  Link, image and definition destinations off the tree the pipeline parses.
- 
+
  @param text - page or source text, front matter included
- 
+
  @returns Destinations in document order, and the downgrade finding when the
  strict grammar refused the body
- 
+
  @example
  ```ts
  const { urls, findings, } = markdownDestinations({ text, },);
@@ -378,13 +378,13 @@ export function markdownDestinations(
 /**
  Every destination a text carries, from both readers, deduped in first-seen
  order.
- 
+
  @param text - page or source text
- 
+
  @param side - which side, for the finding when the strict grammar downgraded
- 
+
  @returns Destinations and any finding
- 
+
  @example
  ```ts
  const { urls, findings, } = collectDestinations({ text, side: 'source', },);
@@ -453,16 +453,16 @@ export function collectDestinations(
 /**
  Source destinations the published page does not carry, an archive's
  rendering of one accepted in its place.
- 
+
  @param sourceText - whole source page
- 
+
  @param pageText - whole published page
- 
+
  @param archiveText - whole archive page before the run, whose renderings the
  page may keep; absent when the page is judged against the source alone
- 
+
  @returns Both sides' destinations, the dropped ones, and any finding
- 
+
  @example
  ```ts
  const check = droppedDestinations({ sourceText, pageText, archiveText, },);

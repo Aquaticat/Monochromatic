@@ -53,13 +53,13 @@ type VerifyManifestItem = {
 
 /**
  Reads the manifest written beside the sheet.
- 
+
  @param path - manifest path
- 
+
  @returns Rows in sheet order
- 
+
  @throws {@link ArtifactParseError} when a field is malformed
- 
+
  @example
  ```ts
  const rows = await readVerifyManifest({ path, },);
@@ -151,11 +151,11 @@ type KindTally = {
 
 /**
  Adds one graded item to its set's tally.
- 
+
  @param tally - tally to add into
- 
+
  @param item - graded sheet item
- 
+
  @example
  ```ts
  addGrade({ tally, item, },);
@@ -183,7 +183,7 @@ function addGrade(
 
 /**
  Reports what the graded sheet says about the unlabelled probe.
- 
+
  @example
  ```ts
  await main();
@@ -238,7 +238,7 @@ async function main(): Promise<void> {
 
   /**
    Tally per label, built from the labels the manifest actually carries.
-   
+
    Built rather than declared because the two sheets partition on different
    things. A fixed pair of keys silently dropped every item whose label was
    not one of them, which would have scored a whole sheet as empty while

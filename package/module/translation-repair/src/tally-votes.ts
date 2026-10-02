@@ -30,7 +30,7 @@ import {
 
 /**
  Everything the panel decided over one chunk's clusters.
- 
+
  @example
  ```ts
  const result: AdjudicationResult = tallyVotes({ clusters, ballots, },);
@@ -52,13 +52,13 @@ export type AdjudicationResult = {
 
 /**
  Status one tally decides under the config thresholds.
- 
+
  @param tally - weighted counts for one claim
- 
+
  @param config - thresholds in force
- 
+
  @returns Fate of the claim
- 
+
  @example
  ```ts
  const status = decideStatus({ tally, config, },);
@@ -130,13 +130,13 @@ function heldIfNeutral(
 /**
  Final severity of one claim:
  upper median over the claimed severity plus supported ballots' re-grades.
- 
+
  @param member - claim under grading
- 
+
  @param ballots - resolved ballots keyed by panelist id
- 
+
  @returns Final severity for the issue record
- 
+
  @example
  ```ts
  const severity = finalSeverity({ member, ballots, },);
@@ -179,15 +179,15 @@ function finalSeverity(
  same-defect weight must strictly exceed distinct weight among opining
  panelists; silence and ties keep claims distinct because a wrong merge
  hides a defect while a wrong split only duplicates work.
- 
+
  @param cluster - cluster under disposition
- 
+
  @param ballots - resolved ballots keyed by panelist id
- 
+
  @param config - weight table
- 
+
  @returns Whether members become one issue
- 
+
  @example
  ```ts
  const merged = disposeMerge({ cluster, ballots, config, },);
@@ -259,21 +259,21 @@ function disposeMerge(
  Aggregates panel ballots over one chunk's clusters into adjudicated
  issues. Pure: same clusters, ballots, and config always produce the same
  issues, so checkpoints can replay adjudication without model calls.
- 
+
  @param clusters - aggregation output, in document order
- 
+
  @param ballots - resolved ballots keyed by panelist id; the shell owns
    panelist identity, claims never carry it
- 
+
  @param configuredPanelists - panelists the run seated, heard or not, which
    the ballots cannot say: a lost voice leaves no entry while an abstention
    leaves one, and those are different evidence
- 
+
  @param config - thresholds and weights; defaults to
    {@link DEFAULT_ADJUDICATION_CONFIG}
- 
+
  @returns Adjudicated issues in cluster document order
- 
+
  @example
  ```ts
  const { issues, } = tallyVotes({ clusters, ballots, configuredPanelists: 6, },);

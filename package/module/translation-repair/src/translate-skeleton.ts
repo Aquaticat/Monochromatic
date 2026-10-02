@@ -54,7 +54,7 @@ import type {
 
 /**
  Atom kinds that must survive a translation.
- 
+
  Every one of them is a machine-readable identity rather than prose: a URL, a
  reference label, a footnote marker, or code the author fenced precisely so it
  would not be rewritten.
@@ -70,7 +70,7 @@ const TRANSLATABLE_ATOM_KINDS: ReadonlySet<AtomKind> = new Set<AtomKind>([
 
 /**
  One top-level block's shape.
- 
+
  @example
  ```ts
  const shape: BlockShape = { kind: 'heading', detail: 'level 2', };
@@ -85,7 +85,7 @@ export type BlockShape = {
 
   /**
    What distinguishes two blocks of the same kind, empty when nothing does.
-   
+
    A heading carries its level and a list carries whether it is ordered,
    because a translation that turns a level-two heading into a level-three one
    or a bulleted list into a numbered one has changed the document while
@@ -96,7 +96,7 @@ export type BlockShape = {
 
 /**
  What one slice carries across a translation.
- 
+
  @example
  ```ts
  const skeleton: SliceSkeleton = { blocks, atoms, explicitBreaks, quotedPassages, };
@@ -132,7 +132,7 @@ export type SliceSkeleton = {
 
 /**
  Outcome of reading one slice.
- 
+
  @example
  ```ts
  const read: SkeletonRead = { kind: 'unparseable', detail: 'unexpected `{`', };
@@ -158,7 +158,7 @@ export type SkeletonRead =
 
 /**
  Recursively readonly mdast root, as this module BORROWS the parse result.
- 
+
  @example
  ```ts
  const root: ReadonlyMdastRoot = parsed.root;
@@ -168,7 +168,7 @@ type ReadonlyMdastRoot = DeepReadonlyData<Root>;
 
 /**
  Recursively readonly mdast content node.
- 
+
  @example
  ```ts
  const node: ReadonlyMdastContent = root.children[0];
@@ -178,13 +178,13 @@ type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
 
 /**
  @internal
- 
+
  Names what distinguishes this block from another of the same kind.
- 
+
  @param node - top-level mdast block
- 
+
  @returns Distinguishing detail, empty when the kind says everything
- 
+
  @example
  ```ts
  const detail = blockDetail({ node, },);
@@ -200,11 +200,11 @@ export function blockDetail({ node, }: { readonly node: ReadonlyMdastContent; },
 
 /**
  Reads one node into the atoms it contributes, if any.
- 
+
  @param node - mdast node at any depth
- 
+
  @returns Atoms this node contributes
- 
+
  @example
  ```ts
  const atoms = atomsOfNode({ node, },);
@@ -336,13 +336,13 @@ export function quotedPassageCount({ root, }: { readonly root: ReadonlyMdastRoot
 
 /**
  Lone container tags of one kind as atoms, in document order.
- 
+
  @param tags - lone tags the mask reported
- 
+
  @param kind - which half of a container to keep
- 
+
  @returns Those tags as `container-tag` atoms
- 
+
  @example
  ```ts
  const openers = tagAtomsOf({ tags, kind: 'open', },);
@@ -371,11 +371,11 @@ function tagAtomsOf(
 
 /**
  Reads one slice into the shape a translation of it has to match.
- 
+
  @param text - exact slice source, original or candidate
- 
+
  @returns Blocks and atoms, or the parser's refusal
- 
+
  @example
  ```ts
  const read = readSliceSkeleton({ text: candidate, },);

@@ -1,13 +1,13 @@
 /**
  Tests for the bench draw and the width sweep it runs.
- 
+
  Both decide what a width comparison MEASURES, and both fail silently: a draw
  that varied between runs would compare widths over different samples and
  still print a clean table, and a sweep that stopped at the old roster length
  would quietly stop measuring the widest case the day a model is added.
- 
+
  Fixtures are invented. No corpus content appears here.
- 
+
  @module
  */
 
@@ -30,15 +30,15 @@ import {
 
 /**
  Builds one drawable slice of a given size.
- 
+
  @param entryId - entry it belongs to
- 
+
  @param index - position within that entry
- 
+
  @param size - source characters
- 
+
  @returns Slice the draw can order
- 
+
  @example
  ```ts
  const slice = sized({ entryId: 'Mittens', index: 0, size: 40, },);

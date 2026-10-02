@@ -32,7 +32,7 @@ import type { ArtifactSectionCorrespondence, } from './artifact-two-lane-contrac
 
 /**
  What an artifact says about how its aligned sections were decided.
- 
+
  @example
  ```ts
  const pairing: ParsedSectionPairing = { kind: 'deterministic', };
@@ -63,19 +63,19 @@ export type ParsedSectionPairing = {
 
 /**
  Refuses a pairing no section round could have agreed.
- 
+
  STRICT ON BOTH SIDES, unlike the block pairing's check: a block pairing
  carries splits and merges, but a section pairing is one target per source
  and `agreePairs` drops any target that does not advance, so standing still
  on either side is a shape the producer never emits.
- 
+
  @param pairs - pairs as recorded
- 
+
  @param path - dotted path for error messages
- 
+
  @throws {@link ArtifactParseError} naming the first position that breaks
  the order the producer guarantees
- 
+
  @example
  ```ts
  assertPairsClimb({ pairs, path, },);
@@ -109,23 +109,23 @@ function assertPairsClimb(
 
 /**
  Reads which decider chose a preparation's aligned sections, or its absence.
- 
+
  @param value - `sectionPairing` as the artifact carries it, possibly absent
- 
+
  @param alignmentPairCount - aligned sections this preparation reports, which
  a supplied pairing cannot exceed: every pair it names becomes one aligned
  section, and insertions only add to the count
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Decider it records, with the pairs where one was supplied, or a
  named absence
- 
+
  @throws {@link ArtifactParseError} when the record is the wrong shape, names
  a decider this version does not know, carries pairs beside the deterministic
  decider or none beside the supplied one, names more pairs than sections were
  aligned, or records a pairing no section round could have agreed
- 
+
  @example
  ```ts
  const pairing = parseSectionPairing({ value: record.sectionPairing, alignmentPairCount, path, },);

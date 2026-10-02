@@ -109,14 +109,14 @@ export class WordingCoherenceError extends Error {
 
 /**
  Refuses a wording whose outcome and incumbent describe different slices.
- 
+
  @param wording - one lane's record of one slice, naming both what the lane
  did and whether the archive holds anything there
- 
+
  @throws {@link WordingCoherenceError} when the lane falls back on an
  incumbent that does not exist, reports a passage the archive translates as
  unfilled, or claims a decision that filled a gap with nothing
- 
+
  @example
  ```ts
  assertWordingCoherent({ wording, },);

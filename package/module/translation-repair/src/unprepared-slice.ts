@@ -9,7 +9,7 @@
 
 /**
  Raised when an outcome names a slice this preparation never produced.
- 
+
  @example
  ```ts
  throw new UnpreparedSliceError({ sliceIndex: 7, },);

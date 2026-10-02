@@ -1,14 +1,14 @@
 /**
  Tests for the stream progress report, the one place that says how a call
  ended.
- 
+
  TESTED THROUGH ITS RETURN VALUE rather than by capturing a logger's side
  effect: `reportStreamProgress` hands back the exact line it logs, so an
  assertion here reads as a statement about the LINE rather than about
  whatever the logging subsystem happened to do with it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

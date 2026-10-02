@@ -1,20 +1,20 @@
 /**
  Tests for the WIRING that keeps each critic's identity attached to the claim
  it raised, as opposed to the fold that counts them once they are attached.
- 
+
  `collectClaimAttributions` is tested on its own, and passing those cases
  proves nothing about whether `runCriticStage` ever calls it with real
  emissions. Measured: deleting the single `emissions.push` in
  `runCriticStage` left the whole suite green, so the exact discard this work
  exists to fix was reintroducible without any test noticing. These cases close
  that, and they are the ones a future edit has to keep passing.
- 
+
  That hole is the same shape as the defect it followed: the stage-call cases
  asserted only that a voice was LOST and never read what the loss recorded,
  which is how an uninformative warning survived having tests.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -93,11 +93,11 @@ const UNANCHORABLE_WIRE = {
 
 /**
  Runs the critic stage against a scripted client.
- 
+
  @param reportFor - report each model returns
- 
+
  @returns Stage result including its attribution
- 
+
  @example
  ```ts
  const critic = await runStage({ reportFor: () => ({ issues: [], }), },);

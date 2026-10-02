@@ -1,17 +1,17 @@
 /**
  Tests for identifying a built pipeline by what its output directory holds.
- 
+
  The digest decides which settled entries may be pooled and whether an
  accumulation may resume, so every property here is load-bearing: an
  order-dependent digest would refuse every resume, and a digest blind to a
  changed file would pool two pipelines as one.
- 
+
  Each case that asserts two directories agree is paired with one that must
  disagree. A sameness claim from a probe that cannot show a difference proves
  nothing at all, which is this package's recurring way of being wrong.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -48,9 +48,9 @@ const BUILT = {
 
 /**
  Writes a throwaway output directory.
- 
+
  @param files - file name to contents, at any depth
- 
+
  @returns Built directory, removed when its `await using` scope ends
 
  @example

@@ -1,22 +1,22 @@
 /**
  Tests for pricing a spend tally.
- 
+
  THE ORDERING CASE IS BUILT TO FAIL IF THE SORT IS INHERITED. `tallySpend`
  already returns seats by completion tokens, so a `priceTally` that kept that
  order would pass any case where the two agree. The seats here disagree on
  purpose: the one with ten times the tokens costs a quarter as much, because
  the output rates it sits between differ by forty times.
- 
+
  THE THREE BUCKETS ARE THE POINT. Metered and priced, metered and unknown to
  the table, and flat-subscription. Only the first has a credit figure, and a
  case for each is what stops the third being converted into a currency it does
  not bill in.
- 
+
  THE ROUND TRIP BINDS THE WHOLE CHAIN: a line `reportSpend` wrote, read by
  `tallySpend`, priced by `priceTally`. That is the path a real report walks.
- 
+
  Model identifiers come from the catalog. No corpus content appears here.
- 
+
  @module
  */
 
@@ -36,11 +36,11 @@ import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '../roster-seats.test-fixture.ts
 
 /**
  Builds a tally from record tails, which is how every case here starts.
- 
+
  @param tails - record text of each line, marker word onward
- 
+
  @returns Tally over those records
- 
+
  @example
  ```ts
  const tally = tallyOf({ tails: ['SPEND provider=hyper model=kimi-k3 prompt=0 completion=1',], },);

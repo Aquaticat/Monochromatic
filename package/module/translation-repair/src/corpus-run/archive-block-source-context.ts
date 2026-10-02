@@ -11,16 +11,16 @@ import { archiveBlockIdentity, } from './archive-block-repair.ts';
 
 /**
  Maps each unclaimed archive block to source section it was expected to render.
- 
+
  Target-only sections map to empty context because no source section can license
  factual wording there.
- 
+
  @param prepared - current paired preparation
- 
+
  @param pictureReadings - completed entry evidence, restricted to each section's references
- 
+
  @returns Exact block identity to source-section text and corroborated picture support
- 
+
  @example
  ```ts
  const contexts = archiveBlockSourceContexts({ prepared, });

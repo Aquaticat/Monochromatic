@@ -1,18 +1,18 @@
 /**
  Tests for the two-lane settled artifact.
- 
+
  WHAT THESE PIN is what the builder DERIVES rather than accepts. Version 1
  took a status and two counts beside the result they described, so a caller
  could state a status the result contradicted and counts nothing had counted.
  The version 2 builder takes only what cannot be computed from the run, and
  everything else, the preparation identity and the whole lane comparison
  included, comes off the preparation and the two ledgers.
- 
+
  They also pin the shape the generation exists for: no lane at the top level,
  and a lane selection that says out loud that nobody has picked one.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -58,9 +58,9 @@ const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as Pipeline
 
 /**
  Two prepared slices: one the archive translates, one it never did.
- 
+
  @returns Pairs shaped as preparation produces them
- 
+
  @example
  ```ts
  const slices = catSlices();
@@ -102,9 +102,9 @@ function catSlices(): readonly ChunkPair[] {
 
 /**
  Preparation both lanes claim to have run over.
- 
+
  @returns Preparation shaped as `prepareDocumentPair` returns one
- 
+
  @example
  ```ts
  const prepared = catPreparation();
@@ -125,9 +125,9 @@ function catPreparation(): PreparedDocumentPair {
 /**
  Name the cat preparation gives itself, which the driver stamps on both
  ledgers it builds.
- 
+
  @returns Identity of {@link catPreparation}'s slicing
- 
+
  @example
  ```ts
  const identity = catIdentity();
@@ -139,9 +139,9 @@ function catIdentity(): PreparationIdentity {
 
 /**
  Repair lane ledger: it mended the first slice and had no work at the anchor.
- 
+
  @returns Two rows, one per prepared slice
- 
+
  @example
  ```ts
  const rows = repairLedger();
@@ -175,9 +175,9 @@ function repairLedger(): readonly SliceDeliveryRecord[] {
 
 /**
  Translate lane ledger: it kept the archive's first slice and filled the gap.
- 
+
  @returns Two rows, one per prepared slice
- 
+
  @example
  ```ts
  const rows = translateLedger();
@@ -214,9 +214,9 @@ function translateLedger(): readonly SliceDeliveryRecord[] {
 
 /**
  What both lanes returned over that preparation.
- 
+
  @returns Driver result shaped as `runDocumentLanes` returns one
- 
+
  @example
  ```ts
  const lanes = catLanes();
@@ -242,9 +242,9 @@ function catLanes(): DocumentLanesResult {
 
 /**
  Builds the artifact these cases read.
- 
+
  @returns Artifact over the cat preparation and both lanes
- 
+
  @example
  ```ts
  const artifact = catArtifact();
@@ -526,12 +526,12 @@ await describe({
         /**
          Renumbers a ledger's anchor row, so BOTH lanes name a slice the
          preparation does not have there and agree with each other about it.
-         
+
          @param records - one lane's rows
-         
+
          @returns Ledger wearing the right name over rows the preparation
          contradicts
-         
+
          @example
          ```ts
          const misfiled = renumbered({ records: repairLedger(), },);

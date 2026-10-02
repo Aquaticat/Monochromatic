@@ -1,14 +1,14 @@
 /**
  Tests for what a roster's coverage replies add up to.
- 
+
  The asymmetry these pin: coverage can be proven, by pointing at the English
  carrying the passage, and absence cannot be, since nothing exhibits text that
  is not there. A claim nobody can anchor is therefore neither proof of coverage
  nor a vote for absence.
- 
+
  Fixtures mirror corpus structure only. Cat-themed invention throughout; no
  corpus content appears here.
- 
+
  @module
  */
 
@@ -45,15 +45,15 @@ const TARGET = {
 
 /**
  Builds one heard voice carrying a coverage reply.
- 
+
  @param modelId - roster member the reply came from
- 
+
  @param coverage - degree it claims
- 
+
  @param quote - English it points at
- 
+
  @returns Voice shaped as the roster returns them
- 
+
  @example
  ```ts
  const voice = voiceOf({ modelId: 'hf:cat/Cat-A' as RosterModelId, coverage: 'none', quote: '', },);

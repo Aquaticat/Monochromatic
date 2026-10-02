@@ -1,11 +1,11 @@
 /**
  Tests for production proof before translating source-only passages.
- 
+
  A live page had one wholly omitted linked factual paragraph, but verbose
  English elsewhere made whole-page length look complete. These cat fixtures
  pin that local destination evidence rescues that class only when whole-page
  coverage independently says the passage is absent.
- 
+
  @module
  */
 
@@ -80,13 +80,13 @@ const LONG_TARGET = `## Cats\n\n${'The cat sleeps in warm sunlight. '.repeat(20,
 
 /**
  Builds one prepared source-only passage.
- 
+
  @param sourcePassage - original with no target wording beside it
- 
+
  @param targetText - whole translation searched by coverage
- 
+
  @returns Preparation holding one insertion slice
- 
+
  @example
  ```ts
  const prepared = preparedGap({ sourcePassage: '猫。', targetText: '' });
@@ -128,13 +128,13 @@ function preparedGap(
 
 /**
  Client returning one scripted coverage reply per seat, or failing that seat.
- 
+
  @param replies - initial roster-order replies
- 
+
  @param followupReplies - replies to prior-verdict challenge
- 
+
  @returns Client serving only coverage stage
- 
+
  @example
  ```ts
  const client = coverageClient({ replies: [{ coverage: 'none', quote: '' }] });
@@ -202,17 +202,17 @@ function coverageClient(
 
 /**
  Runs one admission case.
- 
+
  @param sourcePassage - insertion source
- 
+
  @param targetText - whole target page
- 
+
  @param replies - initial roster replies
- 
+
  @param followupReplies - replies to prior-verdict challenge
- 
+
  @returns Admission from production module
- 
+
  @example
  ```ts
  const admission = await runAdmission({ sourcePassage: '猫。', targetText: '', replies: [] });
@@ -310,11 +310,11 @@ function preparedHalves({ targetText, }: { readonly targetText: string; },): Pre
 
 /**
  Repeats one reply across whole roster.
- 
+
  @param reply - answer every seat gives
- 
+
  @returns One answer per roster seat
- 
+
  @example
  ```ts
  const replies = unanimous({ coverage: 'none', quote: '' });

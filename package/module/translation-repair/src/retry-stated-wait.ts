@@ -117,13 +117,13 @@ const NOT_FOUND = -1;
 
 /**
  Index just past the run of digits starting at `from`.
- 
+
  @param text - text to scan
- 
+
  @param from - where the run may start
- 
+
  @returns `from` itself when no digit sits there
- 
+
  @example
  ```ts
  const end = digitRunEnd({ text: '12s', from: 0, },);

@@ -13,19 +13,19 @@ import type {
 
 /**
  Reads a nonempty reviewed range and refuses any identity or coordinate drift.
- 
+
  @param text - complete pinned file or explicitly identified folded reference
- 
+
  @param span - exact reviewed coordinates and hash
- 
+
  @param referenceId - input named by refusal
- 
+
  @param operation - source of this range
- 
+
  @returns Exact reviewed substring
- 
+
  @throws {@link FidelityReferenceError} for invalid coordinates or hash mismatch
- 
+
  @example
  ```ts
  const sourceText = reviewedText({ text: sourceFile, span: spec.source, referenceId: spec.id, operation: 'source' });
@@ -69,17 +69,17 @@ export function reviewedText({
 /**
  Applies only reviewed, disjoint corrections anchored to the original folded slice.
  Every edit is checked against that same original, not against preceding replacements.
- 
+
  @param reference - folded original archive slice
- 
+
  @param edits - reviewed local changes
- 
+
  @param referenceId - input named by refusal
- 
+
  @returns Corrected reference without changing the corpus
- 
+
  @throws {@link FidelityReferenceError} for overlap, stale text or missing provenance
- 
+
  @example
  ```ts
  const corrected = applyReviewedEdits({ reference, edits: spec.edits, referenceId: spec.id });

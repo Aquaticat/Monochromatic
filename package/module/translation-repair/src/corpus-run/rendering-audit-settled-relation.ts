@@ -37,7 +37,7 @@ import type {
 
 /**
  How one audited rendering relates to what a document would carry today.
- 
+
  @example
  ```ts
  const relation: SettledPageRelation = { kind: 'displaced', decidedBy: 'consolidation', };
@@ -46,7 +46,7 @@ import type {
 export type SettledPageRelation = {
   /**
    No stage has decided this entry, so nothing here is displaced YET.
-   
+
    Says nothing about the wording's quality: it says the contest has not run.
    */
   readonly kind: 'undecided';
@@ -85,7 +85,7 @@ export type SettledPageRelation = {
 } | {
   /**
    Row persisted before this annotation existed.
-   
+
    A TAGGED ABSENCE for the same reason `AuditedTextIdentity` carries one:
    rows come off disk, and a run written by an older build is a valid run
    whose other readings all still answer. Reading a missing field as
@@ -96,20 +96,20 @@ export type SettledPageRelation = {
 
 /**
  Classifies one subject against what would ship at its slice.
- 
+
  ORDER IS THE DESIGN. The undecided answer comes first, before any text is
  compared, because on an artifact the contest never ran over every reading
  names the archive and every comparison would report a displacement that no
  stage performed.
- 
+
  @param laneSelection - whether any stage decided this entry
- 
+
  @param reading - what would stand at this slice
- 
+
  @param candidateText - wording the audit was actually shown
- 
+
  @returns Relation between them
- 
+
  @example
  ```ts
  const relation = pageRelationOf({ laneSelection, reading, candidateText, },);
@@ -147,11 +147,11 @@ export function pageRelationOf(
 
 /**
  Whether a value off disk is a relation this build knows how to read.
- 
+
  @param value - field as persisted
- 
+
  @returns Whether it names one of the four recorded kinds
- 
+
  @example
  ```ts
  const known = isRecordedRelation(row.pageRelation,);
@@ -174,20 +174,20 @@ function isRecordedRelation(value: unknown,): value is SettledPageRelation {
 
 /**
  Reads a row's page relation, including rows written before it existed.
- 
+
  RETURNS `unrecorded` RATHER THAN THROWING, for the reason `textIdentityOf`
  does: an older run is a valid run, and refusing to read the file would cost
  every other reading to serve one.
- 
+
  The runtime check is deliberate and not redundant with the type. Rows come
  off disk through an unchecked cast in `rendering-audit-settled-report.ts`,
  where the declared type is a claim about what this build writes rather than
  about what wrote the file.
- 
+
  @param row - one persisted audit row
- 
+
  @returns Its relation, or a positive statement that nobody recorded one
- 
+
  @example
  ```ts
  const relation = pageRelationFor({ row, },);
@@ -207,7 +207,7 @@ export function pageRelationFor(
 
 /**
  Which of the three things a silence is, as the word a line leads with.
- 
+
  THREE RATHER THAN TWO, because a row off disk can be older than the field.
  `silent` was the only word this column had until 2026-08-24, and it is kept
  for a row that predates the distinction rather than guessed at: a run that
@@ -215,11 +215,11 @@ export function pageRelationFor(
  and printing it would put a removal that nobody observed into a report.
  `isRecordedRelation` checks the discriminant and nothing under it, so this
  reads the field as the unchecked value it is.
- 
+
  @param relation - silence to name
- 
+
  @returns Leading word, one of `gap`, `emptied` or `silent`
- 
+
  @example
  ```ts
  const word = silenceWord({ relation, },);
@@ -246,11 +246,11 @@ function silenceWord(
 
 /**
  Names a relation in one column-width token, for a line being watched.
- 
+
  @param relation - what to name
- 
+
  @returns Padded token
- 
+
  @example
  ```ts
  console.log(pageRelationLabel({ relation, },),);
@@ -268,7 +268,7 @@ export function pageRelationLabel(
 
 /**
  One relation, and how much of the audit describes it.
- 
+
  @example
  ```ts
  const tally: PageRelationTally = { label: 'displaced:consolidation', subjects: 20, claimed: 31, };
@@ -293,7 +293,7 @@ export type PageRelationTally = {
 
 /**
  Counts accumulated for one relation while a run is walked.
- 
+
  @example
  ```ts
  const running: RelationRunning = { subjects: 0, claimed: 0, };
@@ -313,20 +313,20 @@ type RelationRunning = {
 
 /**
  Reads how much of an audit describes wording a later stage overruled.
- 
+
  COUNTS CLAIMS BESIDE SUBJECTS, because those answer different questions.
  A displaced subject the roster said nothing about cost the run a call and
  nothing else; a displaced subject carrying claims means the instrument
  reported defects in wording no reader of a document would meet.
- 
+
  NOT A DEFECT RATE, and it may not be read as one. The instrument's own
  error rate is unmeasured, so a count here says how much of
  its output describes overruled text, never how much of that text is bad.
- 
+
  @param rows - every persisted row of one run
- 
+
  @returns One tally per relation present, largest first
- 
+
  @example
  ```ts
  const tallies = relationTallyOf({ rows, },);

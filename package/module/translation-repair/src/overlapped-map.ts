@@ -28,7 +28,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /**
  Refusal for an overlap that cannot bound anything.
- 
+
  REFUSED HERE AS WELL AS AT THE DIAL. `readOverlap` refuses what an invoker
  mistypes; this refuses what a caller computes, since zero lanes would settle
  a document with no slices in it and report every position missing.
@@ -53,19 +53,19 @@ export class OverlapRefusedError extends Error {
 
 /**
  Refuses an overlap that cannot describe a lane count.
- 
+
  Exposed to drivers with a no-work branch, so disabled stages cannot make an
  invalid overlap valid merely by returning before {@link mapOverlapped}.
- 
+
  @param overlap - value requiring validation
- 
+
  @throws OverlapRefusedError when value is fractional or below one
- 
+
  @example
  ```ts
  assertOverlap({ overlap: 4, },);
  ```
- 
+
  @internal
  */
 export function assertOverlap(
@@ -87,24 +87,24 @@ export type OverlappedRow<Item,> = {
 /**
  Runs `oneItem` over every item with at most `overlap` in flight, starting
  them in item order and returning their results in item order.
- 
+
  @param items - what to run over, in the order results come back
- 
+
  @param overlap - most items in flight at once; one reproduces a sequential
  loop
- 
+
  @param oneItem - job for one item, handed the item and its position; its
  result must not be nullish, since a missing result is indistinguishable from
  a job that never ran
- 
+
  @returns One result per item, in item order
- 
+
  @throws OverlapRefusedError when `overlap` is not a whole number of at least
  one
- 
+
  @throws Whatever the lowest-positioned failing job threw, once every job
  already in flight has finished; no job past it is started
- 
+
  @example
  ```ts
  const records = await mapOverlapped({

@@ -28,10 +28,10 @@ import { codePointCount, } from './code-points.ts';
 /**
  English code points a source page of ordinary completeness renders into, per
  source code point.
- 
+
  THE CORPUS MEDIAN, measured over all 92 pinned pairs rather than chosen.
  Chinese becoming English expands, and this is by how much on this corpus.
- 
+
  Using the median rather than a lower percentile makes the shortfall a
  statement about a TYPICAL page, so a page that is merely terse reads as
  slightly short rather than as missing a passage, and the shortfall budget `admitWithinShortfall` spends keeps
@@ -57,11 +57,11 @@ export type CandidatePassage = {
 
 /**
  English size a source passage of ordinary completeness would render into.
- 
+
  @param sourceText - original-side text
- 
+
  @returns Code points its translation would be expected to occupy
- 
+
  @example
  ```ts
  const points = expectedTranslationPoints({ sourceText, },);
@@ -75,18 +75,18 @@ export function expectedTranslationPoints(
 
 /**
  How much English a page is missing against what its source predicts.
- 
+
  FLOORED AT ZERO rather than reported negative, because a page LONGER than
  predicted is not evidence of anything: translations run long for reasons that
  have nothing to do with coverage, and a negative shortfall would otherwise
  subtract from a later page's budget if these were ever summed.
- 
+
  @param sourceText - whole original page
- 
+
  @param targetText - whole translation as it stands
- 
+
  @returns Code points of English the page lacks, zero when it lacks none
- 
+
  @example
  ```ts
  const shortfall = pageShortfall({ sourceText, targetText, },);
@@ -119,30 +119,30 @@ export function pageShortfall(
 
 /**
  Chooses which absent-voted passages the page has room to be missing.
- 
+
  A BUDGET RATHER THAN A PER-PASSAGE TEST. A page is short by a definite
  amount, and admitting passages whose translations would together exceed it
  would write in more English than the page is missing. On an entry with a
  large shortfall and forty candidates that distinction is the difference
  between restoring a page and rewriting one.
- 
+
  TAKEN IN THE ORDER GIVEN, which callers supply in document order. Ordering by
  some strength of evidence would need a strength this has no way to measure,
  and document order is at least neutral and reproducible.
- 
+
  @param sourceText - whole original page
- 
+
  @param targetText - whole translation as it stands
- 
+
  @param passages - candidates the roster already voted absent on, in document
  order
 
  @param shortfall - English the page is missing, when a caller has read it
  off more than the whole page (the untranslated tail's own budget,
  `coverage-tail.ts`); the whole-page shortfall otherwise
- 
+
  @returns Positions of the passages the shortfall has room for, in the order given
- 
+
  @example
  ```ts
  const admitted = admitWithinShortfall({ sourceText, targetText, passages, },);

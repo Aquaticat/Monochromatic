@@ -1,24 +1,24 @@
 /**
  Tests for where the heading-affinity grid draws its trust line.
- 
+
  WHY THIS FILE EXISTS. It is known what a wrong section pairing costs: on
  one entry every critic call compared the wrong original against the wrong
  translation, so every issue filed was noise and every repair damaged correct
  text. The grid is what stops that, and the type's own words are "pairings AT
  OR ABOVE threshold". On 2026-08-25 moving the comparison so that a pairing
  landing exactly ON the threshold became untrusted failed no test here.
- 
+
  HALF IS NOT A CORNER CASE. Affinity is shared Latin runs over the smaller
  heading's run count, so a Chinese heading carrying a romanised name beside
  one other run, matched against an English heading carrying that name beside
  one other, scores exactly one half. That is the ordinary shape of a memorial
  page's section heading, not a constructed edge.
- 
+
  BOTH SIDES OF THE LINE ARE PINNED, since a grid trusting everything would
  satisfy the first case alone.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

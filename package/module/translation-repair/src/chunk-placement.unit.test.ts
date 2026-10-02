@@ -1,8 +1,8 @@
 /**
  Tests for the two kinds a chunk can be.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

@@ -1,24 +1,24 @@
 /**
  Tests for reading which images a passage shows.
- 
+
  WHAT THESE PIN is the reader that lets the pipeline hand a stage the picture rather
  than the markup naming it. Validated against the pinned corpus before these
  were written: 380 references found, 380 present in the tree, none missing,
  matching an independent count of the same construct.
- 
+
  The stray-space case is not defensiveness. One reference in the corpus writes
  the placeholder with a space before the directory, and a reader that missed it
  would report that entry as showing one image fewer than it does, which is the
  kind of quiet undercount that makes a later measurement wrong rather than
  absent.
- 
+
  The double-quote cases are the same lesson learnt again. Four source pages at
  pin `a41fc607` quote their paths with double marks, seven paths in all, and a
  reader that took single marks only sent one of them (BI4PBV, 2026-09-04)
  through its picture stage with nothing to read and nothing to say about it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -36,7 +36,7 @@ import {
 
 /**
  Placeholder the corpus writes an entry's own directory as.
- 
+
  AN ESCAPED TEMPLATE LITERAL, so the characters are the ones the corpus
  carries without this file appearing to leave a placeholder uninterpolated.
  */
@@ -44,11 +44,11 @@ const ENTRY = `\${path}`;
 
 /**
  Builds one photo element naming the given assets.
- 
+
  @param assets - asset paths as the element carries them
- 
+
  @returns Element as a page writes it
- 
+
  @example
  ```ts
  const element = elementOf({ assets: [`${ENTRY}/photos/tabby.webp`,], },);

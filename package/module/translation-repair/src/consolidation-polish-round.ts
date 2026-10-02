@@ -33,7 +33,7 @@ const FINAL_POLISH_MINIMUM_CHARS = 0;
 
 /**
  Result of one generation, selection, structural check and fidelity gate.
- 
+
  @example
  ```ts
  const result: ConsolidationPolishRoundResult = { text: 'The cat slept.', proposedText: 'The cat slept.', changed: false, refinersHeard: [], contributors: [], rounds: [], findings: [] };
@@ -83,11 +83,11 @@ export type ConsolidationPolishRoundResult = {
 
 /**
  Reads exact structurally correctable body paragraphs in display order.
- 
+
  @param text - would-ship Markdown slice
- 
+
  @returns Paragraph texts reviewer numbers and correction stage envelopes
- 
+
  @example
  ```ts
  const paragraphs = finalPolishParagraphs({ text: 'The cat slept.' });
@@ -109,7 +109,7 @@ export function finalPolishParagraphs(
 /**
  Reads every body block of a would-ship slice in display order, which is
  what the absolute reviewer is shown and may cite.
- 
+
  EVERY BODY BLOCK, NOT ONLY THE REFINABLE ONES. The reviewer judges the whole
  candidate and locates each finding by paragraph number, and the stage
  refuses a finding that names a paragraph it did not show. Numbering only
@@ -119,11 +119,11 @@ export function finalPolishParagraphs(
  findings by stanza were refused as out of range and only the three
  "acceptable" ballots survived. A block the polish may not edit can still be
  judged and cited.
- 
+
  @param text - would-ship Markdown slice
- 
+
  @returns Block texts reviewer numbers, empty for a slice with no body block
- 
+
  @example
  ```ts
  const paragraphs = reviewParagraphsOf({ text: '> A poem.\n\nA paragraph.' });
@@ -145,41 +145,41 @@ export function reviewParagraphsOf(
 
 /**
  Runs exactly one final-polish generation and its existing deterministic gates.
- 
+
  @param client - provider client
- 
+
  @param sourceText - Chinese fidelity anchor
- 
+
  @param archiveText - archived English evidence
- 
+
  @param baseText - exact would-ship input to this round, always body prose:
  the polish returns before any round on front matter, the one syntax role
 
  @param lineStructured - source line-boundary policy
- 
+
  @param identityContext - declared identities and contributor forms
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param archiveDisputeNote - accepted claims against the archive rendering
  on a disputed slice, which the gate reads (ledger S12)
- 
+
  @param disputedWordings - wordings the slice refuses, which the rule refuses
  as the polished text as it does every other text on the slice (ledger B29)
- 
+
  @param mode - comparative polish or correction of what judges objected to
- 
+
  @param sliceIndex - prepared slice position
- 
+
  @param config - model roles and document-wide definitions
- 
+
  @param signal - caller cancellation
- 
+
  @param perCallTimeoutMs - per-exchange deadline
- 
+
  @param l - stage logger
- 
+
  @returns One bounded proposal round after structure and fidelity selection,
  or the base with nobody asked where the floor can compare nothing
 
@@ -315,7 +315,7 @@ export async function runConsolidationPolishRound(
    Refinement as it would ship: wrapped at its semantic boundaries unless the
    line-structure rule governs the slice, in which case as the refiner wrote
    it, on the evidence `wrapConsolidation` cites.
-   
+
    BEFORE THE GATE, on the rule `wrapConsolidationProposals` states: the
    deciders judge the bytes that ship. Measured on keyword233, 2026-09-03: the
    consolidation slate shipped wrapped, this round then handed the refiner's

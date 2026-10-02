@@ -78,7 +78,7 @@ const DIGEST_LENGTH = 64;
 
 /**
  Name of the scheme a recorded digest was produced by.
- 
+
  Carried in the value itself rather than assumed, so a later scheme is a
  DIFFERENT string rather than a same-looking one. Without it, changing what is
  hashed or how it is framed would silently make two incomparable values
@@ -108,7 +108,7 @@ export const PIPELINE_DIGEST_SHAPE: string = `${JSON.stringify(`${DIGEST_FORMAT}
 
 /**
  Suffixes of emitted files that cannot execute, so cannot change behaviour.
- 
+
  TypeScript declarations are excluded deliberately rather than for tidiness.
  The built `.mjs` carries no comments at all, while a `.d.mts` carries every
  TSDoc block verbatim, so including declarations would make a comment-only edit
@@ -123,7 +123,7 @@ const DECLARATION_SUFFIXES = [
 
 /**
  Byte between a path and its hash, chosen because a path cannot contain it.
- 
+
  Without a separator no path can carry, the concatenation is ambiguous: a file
  `ab` hashing to `cd…` and a file `a` hashing to `bcd…` would feed the combined
  hash identical input, so two different builds could claim one identity.
@@ -132,13 +132,13 @@ const PATH_TERMINATOR = '\u0000';
 
 /**
  Digest naming the built pipeline that produced a result.
- 
+
  Branded so it cannot be assigned where a git object id belongs. Both are
  strings to the type system, and the scheme name this one starts with is a
  runtime difference no signature sees; they answer different questions: this
  one is NOT a commit and has no ancestry, no log entry, and nothing to check
  out.
- 
+
  @example
  ```ts
  const { digest, }: { digest: PipelineDigest; } = await digestPipeline({ dir, },);
@@ -148,11 +148,11 @@ export type PipelineDigest = string & { readonly __brand: 'PipelineDigest'; };
 
 /**
  What a pass records about the code that produced its artifacts.
- 
+
  Carries the file count beside the digest so a log line can say what the digest
  was taken over. A digest alone is unfalsifiable in a log: `files=51` next to it
  turns a truncated or empty output directory into something a reader notices.
- 
+
  @example
  ```ts
  const stamp = await digestPipeline({ dir, },);
@@ -182,11 +182,11 @@ export class PipelineDigestError extends Error {
 
   /**
    Names the directory, what was wrong with it, and why that stops a pass.
-   
+
    @param dir - directory the digest was to be taken over
-   
+
    @param reason - what made it unusable, as a clause
-   
+
    @example
    ```ts
    throw new PipelineDigestError({ dir, reason: 'it holds no file that runs', },);
@@ -219,15 +219,15 @@ export class PipelineDigestError extends Error {
 
 /**
  Narrows a string already known to be a digest of the built pipeline.
- 
+
  An assertion function rather than a cast, because `no-unsafe-type-assertion`
  refuses a narrowing `as` and this repository names assertion functions as the
  mechanism for runtime narrowing.
- 
+
  @param value - digest to narrow
- 
+
  @returns Nothing; it narrows `value` in the caller on success
- 
+
  @throws {@link TypeError} when it is not the scheme name, the separator and
  64 lowercase hex characters
 
@@ -245,16 +245,16 @@ export function assertPipelineDigest(
 
 /**
  Whether a string could be a digest this module produced.
- 
+
  Scanned rather than matched with a pattern: the rule is one predicate per
  character over a fixed-length string, a linear pass that cannot backtrack, and
  this codebase forbids a regex where an index scan says the same thing.
- 
+
  @param value - string to test
- 
+
  @returns Whether it is the scheme name, the separator and 64 lowercase hex
  characters
- 
+
  @example
  ```ts
  const usable = isDigestShaped({ value: recorded, },);
@@ -289,11 +289,11 @@ export function isDigestShaped(
 
 /**
  Whether an emitted file is a TypeScript declaration.
- 
+
  @param name - file name as the directory reported it
- 
+
  @returns Whether it carries a declaration suffix
- 
+
  @example
  ```ts
  const skipped = isDeclarationFile({ name: 'index.d.mts', },);
@@ -307,19 +307,19 @@ function isDeclarationFile({ name, }: { readonly name: string; },): boolean {
 
 /**
  Identifies the built pipeline in a directory by what it holds.
- 
+
  Order-independent by construction: each file contributes one line pairing its
  path with the hash of its bytes, and the lines are sorted before the combined
  hash sees them, so a directory read in a different order yields one digest.
- 
+
  @param dir - directory of built output, ordinarily `import.meta.dirname` of a
  runner, which resolves to `dist/final/node`
- 
+
  @returns Digest of the executable files it holds, with how many there were
- 
+
  @throws {@link PipelineDigestError} when the directory holds a symbolic link,
  or holds no file that could execute
- 
+
  @example
  ```ts
  const { digest, fileCount, } = await digestPipeline({ dir: import.meta.dirname, },);

@@ -27,7 +27,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  One roster seat as absolute review accounted for it.
- 
+
  @example
  ```ts
  const seat: AbsoluteNaturalnessReviewSeat = { modelId: 'hf:zai-org/GLM-5.3-Flash', status: 'acceptable', findings: [], reason: 'ready' };
@@ -65,7 +65,7 @@ export type AbsoluteNaturalnessReviewVerdict =
 
 /**
  Auditable absolute review of exact would-ship text.
- 
+
  @example
  ```ts
  const review: AbsoluteNaturalnessReviewOutcome = { quorumOver: 0, unreachable: 0, candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
@@ -134,11 +134,11 @@ export type AbsoluteNaturalnessReviewOutcome = {
  it is the stored artifact version's rule, and the reader refuses a file this
  rule's output disagrees with, so a change here shows up rather than
  rewriting what old artifacts mean.
- 
+
  @param findings - model findings in roster order
- 
+
  @returns First occurrence of each paragraph and problem pair
- 
+
  @example
  ```ts
  uniqueFindings({ findings: [{ paragraph: 1, problem: 'stiff phrasing', }], });
@@ -160,37 +160,37 @@ function uniqueFindings(
 
 /**
  Reviews exact would-ship body text against absolute publication naturalness.
- 
+
  Exact-half quorum starts bounded grace for remaining seats.
  Every usable rejection that arrives before settlement remains decisive,
  while one unreliable provider cannot make whole-roster participation mandatory.
- 
+
  @param client - provider client
- 
+
  @param modelIds - every independent reviewer seat
- 
+
  @param quorumOver - bench size the quorum is taken over, when the seats
  asked are a window of a wider bench; defaults to the seats asked
- 
+
  @param subject - source context and exact candidate
- 
+
  @param perspective - distinct defect-discovery or acceptance-challenge task
- 
+
  @param signal - caller cancellation
- 
+
  @param exchangeTimeoutMs - deadline accounting unavailable seat
- 
+
  @param graceMs - optional test seam for post-quorum abandonment window
- 
+
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
- 
+
  @param l - parent logger
- 
+
  @returns Candidate-bound absolute verdict and every seat status
- 
+
  @throws {@link NaturalnessQuorumError} when quorum basis cannot cover requested seats
- 
+
  @example
  ```ts
  const review = await reviewAbsoluteNaturalness({ client, modelIds, subject, signal, exchangeTimeoutMs, l, });

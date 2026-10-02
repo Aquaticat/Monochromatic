@@ -2,7 +2,7 @@
  Limits the declared-name exemption to references, not language forms being discussed.
  Mio12's judges used the declared name to replace a different questioned character.
  The exception belongs inside faithfulness, where that replacement was defended.
- 
+
  @example
  ```ts
  const criterion = `Faithfulness: ${DECLARED_NAME_REFERENCE_EXEMPTION}`;
@@ -15,7 +15,7 @@ export const DECLARED_NAME_REFERENCE_EXEMPTION =
  Distinguishes referring to an entity from mentioning its written or spoken form.
  Shared inside existing name rules rather than appended as a competing exception.
  Keeps ordinary source-language prose outside the literal-form carve-out.
- 
+
  @example
  ```ts
  const nameCriterion = NAME_FORM_SCOPE_RULE;
@@ -27,7 +27,7 @@ export const NAME_FORM_SCOPE_RULE =
 /**
  Keeps established proper names distinct from generic terms needing explanation.
  The inline-gloss rule still covers ordinary terminology and explicit definitions.
- 
+
  @example
  ```ts
  const vocabularyRule = `${ARCHIVE_NAME_GLOSS_SCOPE} A generic term with no English equivalent ...`;

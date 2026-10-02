@@ -2,18 +2,18 @@ import type { ChunkPair, } from './chunk-document.ts';
 
 /**
  Selects shared source/archive positions without treating a forward heading as its body.
- 
+
  Ordinary immediate neighbors stay unchanged. A standalone following heading
  may bring exactly its next body slice into view. Another heading or metadata
  stops the extension. Backward headings never pull in an earlier section body.
  Media and unknown nonempty slices count as bodies rather than being skipped.
- 
+
  @param slices - paired physical slices in document order
- 
+
  @param slicePosition - current position already validated by the public window reader
- 
+
  @returns Immediate positions plus at most one heading-associated forward body
- 
+
  @example
  ```ts
  const positions = fidelityWindowPositions({ slices, slicePosition: 0 });

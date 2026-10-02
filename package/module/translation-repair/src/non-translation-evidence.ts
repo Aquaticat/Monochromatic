@@ -52,7 +52,7 @@ const MISSING_TRANSLATION_LEAVES: ReadonlySet<string> = new Set([
 
 /**
  Verdict of deterministic evidence over pending non-translation votes.
- 
+
  @example
  ```ts
  const evidence: NonTranslationEvidence = {
@@ -80,13 +80,13 @@ export type NonTranslationEvidence = {
  Counts claims outside the missing-translation leaves that anchor at
  least one span into the target; enough such claims prove the pair is a
  critiquable translation, not a wholly unrelated pairing.
- 
+
  @param votes - wire-level critical non-translation votes heard
- 
+
  @param claims - validated claims across every heard critic
- 
+
  @returns Contradiction verdict plus supporting claim count
- 
+
  @example
  ```ts
  const evidence = assessNonTranslationEvidence({
@@ -136,7 +136,7 @@ export function assessNonTranslationEvidence(
 /**
  Screening result carrying the claims and findings the pipeline
  continues with after vote assessment.
- 
+
  @example
  ```ts
  const screening: NonTranslationScreening = {
@@ -168,13 +168,13 @@ export type NonTranslationScreening = {
 /**
  Screens wire-level non-translation votes against deterministic
  evidence, dismissing contradicted votes together with their claims.
- 
+
  @param votes - wire-level critical non-translation votes heard
- 
+
  @param claims - validated claims across every heard critic
- 
+
  @returns Continuing claims, contradiction findings, and verdict
- 
+
  @example
  ```ts
  const screening = screenNonTranslationVotes({
@@ -240,13 +240,13 @@ export function screenNonTranslationVotes(
  while deterministic evidence has not contradicted them; the floor itself
  carries the participation guard, since that many wire votes cannot come from
  fewer critics heard.
- 
+
  @param votes - wire-level critical non-translation votes heard on the slice
- 
+
  @param contradicted - whether deterministic evidence dismissed the votes
- 
+
  @returns Whether the slice ships unchanged as standing non-translation
- 
+
  @example
  ```ts
  const stands = nonTranslationVotesStand({
@@ -274,11 +274,11 @@ export function nonTranslationVotesStand(
  leaves anchoring a target span). Such an anchor proves the paired document
  is a translation being critiqued, not a wholly unrelated pairing. Callers
  guard slices not yet settled; an unsettled slice anchors nothing.
- 
+
  @param outcome - the slice's settled repair outcome
- 
+
  @returns True when the slice proves translated content
- 
+
  @example
  ```ts
  const anchors = sliceAnchorsTranslation({ outcome, },);
@@ -317,7 +317,7 @@ export function sliceAnchorsTranslation(
 
 /**
  Document-level dominance verdict over standing per-slice votes.
- 
+
  @example
  ```ts
  const dominance: NonTranslationDominance = {
@@ -341,7 +341,7 @@ export type NonTranslationDominance = {
 
   /**
    Target characters across every slice considered so far.
-   
+
    THE SLICED FRACTION, not the translation. A section the aligner refused to
    pair produces no slice, and slicing leaves one-sided sections out
    altogether, so both this and `standingChars` are sums over what was
@@ -368,12 +368,12 @@ export type NonTranslationDominance = {
  anchors); the only true positive (a wholly unrelated invented pair) held
  none, so the anchor veto separates them without a tuned threshold and keeps
  the calibrated err-toward-not-blocking direction.
- 
+
  @param slices - per-slice target sizes with their standing and anchor
  verdicts
- 
+
  @returns Dominance verdict with the character tallies behind it
- 
+
  @example
  ```ts
  const dominance = assessNonTranslationDominance({ slices: tallies, },);

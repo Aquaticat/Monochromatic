@@ -15,21 +15,21 @@ import {
 /**
  Decides whether the pass may start one more entry, and says why not when
  it may not.
- 
+
  SOFT BUDGET FIRST, because it is the older rule and the cheaper check; a run
  past both prints the time reason, which is the one an operator planned.
- 
+
  @param elapsedMs - time since the processing loop began, on `monotonicMs`,
  so setting the system clock neither spends the budget nor refunds it
  (ledger B78)
- 
+
  @param softBudgetMs - time after which no new entry starts
- 
+
  @param ceilingUsd - USD this run may spend on the metered provider before
  no new entry starts
- 
+
  @returns Whether the queue must stop before its next attempt
- 
+
  @example
  ```ts
  const stop = stopBeforeNextEntry({ elapsedMs: monotonicMs() - start, softBudgetMs, ceilingUsd, },);

@@ -69,14 +69,14 @@ const ORDINAL_DIGITS = 6;
 /**
  Stamp naming this launch, fixed at module load: the moment as an ISO time
  with its separators made file-safe, then the process id.
- 
+
  ONE PER PROCESS, so two launches into one runs directory never write the
  same name. The ordinal alone once restarted at zero per process, and a
  relaunch into the same directory, which is the documented resume path,
  overwrote the earlier launch's contests one by one with no reader able to
  tell. Names still sort as text into contest order: launches by their stamp,
  contests within a launch by their ordinal.
- 
+
  @example
  ```ts
  const name = ledgerFileName({ ordinal: 3, launch: LAUNCH_STAMP, },);
@@ -86,9 +86,9 @@ export const LAUNCH_STAMP: string = `${launchMoment()}-${String(process.pid,)}`;
 
 /**
  This launch's moment as an ISO time with its separators made file-safe.
- 
+
  @returns Time text carrying neither colons nor dots
- 
+
  @example
  ```ts
  const moment = launchMoment();
@@ -109,18 +109,18 @@ function launchMoment(): string {
 
 /**
  File name of one recorded contest.
- 
+
  @param ordinal - contest number within the launch, from zero
- 
+
  @param launch - stamp of the launch writing it
- 
+
  @returns Name that sorts by launch, then by ordinal
- 
+
  @example
  ```ts
  const name = ledgerFileName({ ordinal: 0, launch: LAUNCH_STAMP, },);
  ```
- 
+
  @internal
  */
 export function ledgerFileName(
@@ -164,7 +164,7 @@ export function isLedgerFileName({ name, }: { readonly name: string; },): boolea
 
 /**
  Environment variable naming the run directory, matching `run-config.ts`.
- 
+
  READ DIRECTLY RATHER THAN THROUGH `resolveRunsDir`, because that lives in
  `corpus-run/` and this is core pipeline code. A core module reaching into the
  runner family to write telemetry would invert the dependency the rest of the
@@ -174,7 +174,7 @@ const RUNS_DIR_VARIABLE = 'TRANSLATION_REPAIR_RUNS_DIR';
 
 /**
  How many contests this process has recorded, used to order the files.
- 
+
  A HOLDER RATHER THAN A BARE BINDING, matching the `state` object in
  `anthropic-delta-scan.ts`: the count has to change, and a mutable module
  binding is the shape this codebase avoids.
@@ -240,11 +240,11 @@ export type LedgerRound = {
 
 /**
  Names every model behind a candidate, composites expanded.
- 
+
  @param producer - provenance the slate recorded
- 
+
  @returns Model ids, one entry per contributor
- 
+
  @example
  ```ts
  const names = producersOf({ producer, },);
@@ -261,20 +261,20 @@ function producersOf(
 
 /**
  Records one judged contest, text and ballots together.
- 
+
  SWALLOWS EVERY FAILURE. See the module note: telemetry must not be able to
  fail a slice the run already paid for.
- 
+
  @param task - what the judges were asked, used to tell contests apart
- 
+
  @param candidates - slate exactly as the judges saw it
- 
+
  @param ballots - what each judge said, reasons verbatim
- 
+
  @param selectedIndex - winning position, or that the round declined
- 
+
  @param l - pipeline logger
- 
+
  @example
  ```ts
  await recordContest({ task, candidates, ballots, selectedIndex, l, },);

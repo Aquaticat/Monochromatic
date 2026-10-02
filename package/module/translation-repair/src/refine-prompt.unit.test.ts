@@ -1,22 +1,22 @@
 /**
  Tests for the rewriter sheet.
- 
+
  `buildRefineMessages` had no test, and it carries more weight than the
  editor's prompt. The editor works from issues a panel already accepted, and
  checkers afterwards prove each one gone. Refinement has no accepted issue
  behind it, and on a slice with no accepted issues at all, nothing downstream
  re-examines the meaning either. So the sheet's structure is the thing
  standing between an unnecessary rewrite and shipped text.
- 
+
  The fence cases are the point. Both the original chunk and every paragraph
  are interpolated between fences, so a fixed fence is forgeable: enclosed text
  carrying a line of the fence character would close its own block early and
  the rest of that paragraph would read to the model as instructions. The old
  fixed value was `=====`, which is ordinary Markdown, a setext heading
  underline, so this is a shape real documents contain.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -35,13 +35,13 @@ import {
 
 /**
  Builds one eligible paragraph.
- 
+
  @param baseText - paragraph text the sheet shows
- 
+
  @param index - position, so ids differ
- 
+
  @returns Envelope in prompt numbering order
- 
+
  @example
  ```ts
  const envelope = paragraph({ baseText: 'The cat naps.', index: 0, },);
@@ -68,11 +68,11 @@ function paragraph(
 
 /**
  Reads the user message, which is where all enclosed content lives.
- 
+
  @param plan - built prompt plan
- 
+
  @returns User message content
- 
+
  @example
  ```ts
  const sheet = userSheet({ plan, },);

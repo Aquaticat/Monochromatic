@@ -12,7 +12,7 @@
  `neutral` flags findings needing human attention without asserting a defect,
  which is exactly what interpretive ambiguity and suspected source errors are
  before adjudication.
- 
+
  @example
  ```ts
  ISSUE_SEVERITIES.indexOf('major',);
@@ -27,7 +27,7 @@ export const ISSUE_SEVERITIES = [
 
 /**
  Severity of one issue claim, MQM-style.
- 
+
  @example
  ```ts
  const severity: IssueSeverity = 'major';
@@ -41,7 +41,7 @@ export type IssueSeverity = typeof ISSUE_SEVERITIES[number];
  unreliable models drift and cannot feed the scorecard.
  Leaf names under `extension/` match the settled architecture verbatim so
  cross-session references stay greppable.
- 
+
  @example
  ```ts
  ISSUE_CATEGORIES.includes('accuracy/omission',);
@@ -90,7 +90,7 @@ export const ISSUE_CATEGORIES = [
 
 /**
  One category slug of form `family/leaf`.
- 
+
  @example
  ```ts
  const category: IssueCategory = 'extension/suspected-source-error';
@@ -115,11 +115,11 @@ export const ADDITION_CATEGORY: IssueCategory = 'accuracy/addition';
 
 /**
  Guards untrusted category strings from model JSON before they enter typed claims.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value names one listed category
- 
+
  @example
  ```ts
  isIssueCategory('accuracy/omission',);
@@ -135,7 +135,7 @@ export function isIssueCategory(value: unknown,): value is IssueCategory {
 /**
  Category remap outcome as data:
  the unique owning category, or the refusal to guess.
- 
+
  @example
  ```ts
  const remap: CategoryRemap = { remapped: false, };
@@ -160,11 +160,11 @@ export type CategoryRemap =
  (live: `fluency/awkward-phrasing` for `style/awkward-phrasing`);
  a leaf owned by exactly one listed category maps onto that category,
  while unknown and ambiguous leaves stay unmapped for rejection.
- 
+
  @param category - slug that failed the closed-vocabulary guard
- 
+
  @returns Remap outcome as data; never a guess between owners
- 
+
  @example
  ```ts
  remapCategoryLeaf({ category: 'fluency/awkward-phrasing', },);
@@ -206,11 +206,11 @@ export function remapCategoryLeaf(
 
 /**
  Guards untrusted severity strings from model JSON before they enter typed claims.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value names one listed severity
- 
+
  @example
  ```ts
  isIssueSeverity('critical',);

@@ -17,9 +17,9 @@ import { writeFileAtomic, } from './atomic-write.ts';
 
 /**
  Whether a file sits at a path.
- 
+
  @param path - file to look for
- 
+
  @returns Whether it is there
 
  @throws Whatever `access` raised other than the path's absence, since a sheet
@@ -46,21 +46,21 @@ async function exists({ path, }: { readonly path: string; },): Promise<boolean> 
 
 /**
  Writes a sheet and its manifest, refusing to replace either.
- 
+
  @param dir - directory both land in
- 
+
  @param sheetName - sheet file name
- 
+
  @param manifestName - manifest file name
- 
+
  @param sheet - sheet text
- 
+
  @param manifest - manifest text
- 
+
  @returns Path the sheet landed at
- 
+
  @throws {@link StatedRefusalError} when either file is already there
- 
+
  @example
  ```ts
  const at = await writeSheetPair({ dir, sheetName: 'damage-sheet.md', manifestName: 'damage-manifest.json', sheet, manifest, },);

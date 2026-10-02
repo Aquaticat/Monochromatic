@@ -1,15 +1,15 @@
 /**
  Tests for the two verdicts on a standing text and the log line each
  refusal writes.
- 
+
  WHAT THESE PIN: an invalid standing and an unendorsed one are refused
  for different reasons and the log says which, with the deterministic
  findings on the first. One warning covered both on the 2026-09-04
  luxuanwen3 pass, and the cause (a link destination the archive had
  rewritten) had to be read out of the slice records.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -46,9 +46,9 @@ const LINK_DROPPED = 'Her avatar was drawn by the artist.';
 
 /**
  Logger whose warnings are kept for the assertions, the rest forwarded.
- 
+
  @returns Logger and the warnings it received
- 
+
  @example
  ```ts
  const { l, warnings, } = capturing();

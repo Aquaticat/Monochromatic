@@ -4,7 +4,7 @@
  repaired text), seed ids bind by candidate number, and the response
  format names the judgment schema.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

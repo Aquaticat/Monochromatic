@@ -1,14 +1,14 @@
 /**
  Tests for the lane contest: what the roster has to agree on before one
  candidate is called the winner, and what a decline means.
- 
+
  WHY DECLINING IS COUNTED RATHER THAN DISCARDED. A judge answering `neither`
  has said something: that the two candidates differ only in wording. Treating
  that as a lost voice would make an undecidable slice indistinguishable from
  an unanswered one, and those need opposite handling.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -100,13 +100,13 @@ const NEVER_ANSWERS_MS = EXCHANGE_TIMEOUT_MS * 2;
 
 /**
  Builds a client whose models reply in roster order.
- 
+
  @param replyByModel - reply body per model
- 
+
  @param delayByModel - response delay per model position
- 
+
  @returns Client over a canned transport
- 
+
  @example
  ```ts
  const client = cannedClient({ replyByModel: [ballot({ choice: 'repair', },),], },);
@@ -221,9 +221,9 @@ function refusingClient(
  Runs one contest over a canned roster.
 
  @param replyByModel - reply body per model
- 
+
  @returns What the roster settled on
- 
+
  @example
  ```ts
  const outcome = await contest({ replyByModel: [], },);
@@ -246,13 +246,13 @@ async function contest(
 
 /**
  Builds one ballot body that also answers the archive question.
- 
+
  @param choice - candidate this judge names
- 
+
  @param archive - what this judge makes of the archive rendering
- 
+
  @returns Reply body a judge would return
- 
+
  @example
  ```ts
  const body = archiveBallot({ choice: 'neither', archive: 'flawed', },);
@@ -278,11 +278,11 @@ function archiveBallot(
 
 /**
  Runs one contest over a slice whose archive rendering is absent.
- 
+
  @param replyByModel - reply body per model
- 
+
  @returns What the roster settled on
- 
+
  @example
  ```ts
  const outcome = await contestWithNoArchive({ replyByModel: [], },);

@@ -92,7 +92,7 @@ const FOLDS: readonly Fold[] = [
 
 /**
  What folding a text produced.
- 
+
  @example
  ```ts
  const { text, findings, } = foldInvisibleVariants({ text: answer, },);
@@ -113,13 +113,13 @@ export type FoldedText = {
 
 /**
  Counts how often `needle` occurs in `text`, as one linear pass.
- 
+
  @param text - text scanned
- 
+
  @param needle - single character looked for
- 
+
  @returns Occurrences
- 
+
  @example
  ```ts
  const hyphens = occurrences({ text, needle: '\u2011', },);
@@ -156,11 +156,11 @@ function occurrences(
 /**
  Replaces every invisible variant in a model's text with its plain
  counterpart, and says what it replaced.
- 
+
  @param text - text as the model wrote it
- 
+
  @returns Folded text and one finding per code point folded
- 
+
  @example
  ```ts
  const folded = foldInvisibleVariants({ text: 'non\u2011binary', },);

@@ -22,7 +22,7 @@ import type { TranslateSlateEntry, } from './translate-slate.ts';
 
 /**
  How a slice's shipped text was decided.
- 
+
  Kept apart from the origin because "the incumbent shipped" and "the judges
  chose the incumbent" are different facts, and only the second is evidence
  about the incumbent. A tie, a lost round or an empty slate all ship the
@@ -51,7 +51,7 @@ export type TranslateDecision =
 
 /**
  Everything the translate stage decided for one slice.
- 
+
  @example
  ```ts
  const { text, origin, decision, } = await runTranslateStage({ ... },);
@@ -116,7 +116,7 @@ export type TranslateStageResult = {
    Candidates in the order the judges saw them, which is what makes a stored
    ballot readable: ballots name a position, and the slate is rotated per
    slice.
-   
+
    The ASSEMBLED rotated order, whether or not judges were called. A slice
    with one distinct proposal ships it without a round and still records the
    slate, because what was on the ballot is the same question either way and
@@ -166,7 +166,7 @@ export type TranslateStageResult = {
 
 /**
  Tally of a stage that never reached the judges.
- 
+
  @example
  ```ts
  const tally = EMPTY_TALLY;

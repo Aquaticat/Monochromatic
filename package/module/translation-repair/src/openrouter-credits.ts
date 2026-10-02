@@ -17,7 +17,7 @@ import { isJsonRecord, } from './json-guard.ts';
 
 /**
  Credits at one instant, as this provider reports them.
- 
+
  @example
  ```ts
  const credits: OpenRouterCredits = { purchasedUsd: 1913, usedUsd: 1855.38, remainingUsd: 57.62, };
@@ -43,7 +43,7 @@ export type OpenRouterCredits = {
 /**
  Signals a `/credits` body that refused to parse or lacked its fields;
  always a provider protocol failure, never a model defect.
- 
+
  @example
  ```ts
  throw new OpenRouterCreditsShapeError({ detail: 'total_credits is not a number', },);
@@ -57,11 +57,11 @@ export class OpenRouterCreditsShapeError extends Error {
 
   /**
    Builds failure naming the field or parse step at fault.
-   
+
    @param detail - which expectation the body violated
-   
+
    @param cause - underlying parse error when JSON itself failed
-   
+
    @example
    ```ts
    new OpenRouterCreditsShapeError({ detail: 'body is not valid JSON', cause: error, },);
@@ -89,17 +89,17 @@ export class OpenRouterCreditsShapeError extends Error {
 
 /**
  Reads one finite number off a parsed object, refusing anything else.
- 
+
  @param fields - parsed object to read
- 
+
  @param name - field wanted
- 
+
  @returns Its finite value
- 
+
  @throws {@link OpenRouterCreditsShapeError} when the field is missing,
  mistyped, or not finite, since a non-finite figure would compare against
  every threshold as though the budget were unlimited
- 
+
  @example
  ```ts
  const purchased = finiteField({ fields: data, name: 'total_credits', },);
@@ -130,14 +130,14 @@ function finiteField(
 
 /**
  Parses one `/credits` body into the typed credits.
- 
+
  @param bodyText - raw 200-response body
- 
+
  @returns Purchased, used, and what is left
- 
+
  @throws {@link OpenRouterCreditsShapeError} when body is not JSON, lacks
  its `data` envelope, or either figure is missing, mistyped, or not finite
- 
+
  @example
  ```ts
  const credits = parseOpenRouterCredits({ bodyText: reply.bodyText, },);

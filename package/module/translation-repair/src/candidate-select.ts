@@ -63,37 +63,37 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Runs one selection round: judges compare the anonymized set and name a
  winner, and anything short of a clear plurality declines. Every judge on the
  roster is seated, with a ballot for its own work discounted.
- 
+
  Every candidate handed in is judged, including a lone one. A caller that has
  already deduplicated its set and knows one candidate survived may short
  circuit before calling; this function does not assume that on its behalf,
  because a single candidate arriving here is generally the caller's only
  proposal rather than a proven consensus.
- 
+
  @param client - injected model client
- 
+
  @param candidates - proposals in caller-fixed order
- 
+
  @param judgeModelIds - whole roster, producers included
- 
+
  @param task - one sentence naming what candidates attempt
- 
+
  @param criteria - ordered decision rules, most important first
- 
+
  @param evidence - source and baseline material judges compare against
- 
+
  @param declineConsequence - what this caller does when every judge declines,
  omitted where the default holds
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param sourceText - original the candidates render, when the caller has
  it, so the sheet names a candidate lacking a community rendering
- 
+
  @param l - logger of the calling stage
- 
+
  @param runoff - whether this round is the challenge round's run-off over
  finalists a prior round backed and the floor found valid; the leader then
  wins on the ballot floor under the weight minimum, since abstentions on a
@@ -101,11 +101,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
  @returns Winner with the ballot weight it drew, or a decline carrying its
  reason; either way the round's tally and every ballot cast
- 
+
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when a judge
  appears twice on the roster, which would let one model reach the minimum
  weight by itself
- 
+
  @example
  ```ts
  const outcome = await decideBestCandidate({ client, candidates, judgeModelIds, ... },);
@@ -189,18 +189,18 @@ export async function decideBestCandidate<ValueT,>(
 
   /**
    Judges keyed for repeat detection.
-   
+
    A repeated id is one model given two exchanges and two ballots, which is
    enough to reach the minimum weight alone: exactly the single-model
    control the ensemble exists to prevent, arriving as a roster typo rather
    than as a policy change.
-   
+
    Refused HERE as well as in `assertJudgeableProducerRoster`, because that
    guard runs at STAGE entry while `selectPerEnvelope` and `selectChunkPatch`
    are exported and reachable without one. Thrown rather than deduplicated,
    since a caller that passed a repeat believes it has more judges than it
    has, and silently collapsing the roster answers a question it did not ask.
-   
+
    Before the fan-out rather than at the count, so a roster fault costs no
    model calls.
    */

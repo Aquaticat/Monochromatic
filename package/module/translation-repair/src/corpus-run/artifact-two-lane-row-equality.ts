@@ -25,13 +25,13 @@ import type {
 
 /**
  Whether two lane outcomes say the same thing.
- 
+
  @param left - one outcome
- 
+
  @param right - the other
- 
+
  @returns Whether they name the same member carrying the same wording
- 
+
  @example
  ```ts
  const same = outcomesEqual({ left: row.repairOutcome, right: other.repairOutcome, },);
@@ -58,13 +58,13 @@ export function outcomesEqual(
 
 /**
  Whether two deliveries say the same thing.
- 
+
  @param left - one delivery
- 
+
  @param right - the other
- 
+
  @returns Whether they name the same member for the same reason
- 
+
  @example
  ```ts
  const same = deliveriesEqual({ left: row.repairDelivery, right: other.repairDelivery, },);
@@ -88,17 +88,17 @@ export function deliveriesEqual(
 
 /**
  Whether two decision comparisons say the same thing.
- 
+
  `undecidedLanes` is compared IN ORDER, because the order is part of what the
  field says: it is stated as lane order, so a reversed pair is a different
  claim about which lane came first rather than the same set spelled twice.
- 
+
  @param left - one reading
- 
+
  @param right - the other
- 
+
  @returns Whether they name the same member with the same contents
- 
+
  @example
  ```ts
  const same = decisionsEqual({ left: row.decisionComparison, right: other.decisionComparison, },);
@@ -165,16 +165,16 @@ type FieldCheck = {
 /**
  Names of the comparison-row fields that differ between two rows, in the
  order the row is written, empty when the rows agree.
- 
+
  NAMES, NEVER VALUES: the rows carry the archive text and both lanes' output,
  and the callers put this into refusal messages that reach stdout.
- 
+
  @param left - one row
- 
+
  @param right - the other row
- 
+
  @returns Field names that differ
- 
+
  @example
  ```ts
  const differing = comparisonRowDifferences({ left: stored, right: derived, },);

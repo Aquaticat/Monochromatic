@@ -40,11 +40,11 @@ import {
 
 /**
  Every verdict one auditor may cast on one candidate, closed vocabulary.
- 
+
  NO `faithful`, for the same reason the introduced-defect vocabulary has no
  `clean`: a voice reports what it found, and finding nothing is not proof of
  fidelity. `no-defect-found` says exactly that much and no more.
- 
+
  @example
  ```ts
  RENDERING_AUDIT_VERDICTS.includes('defects-found',);
@@ -58,7 +58,7 @@ export const RENDERING_AUDIT_VERDICTS = [
 
 /**
  One verdict, narrowed to the vocabulary.
- 
+
  @example
  ```ts
  const verdict: RenderingAuditVerdict = 'no-defect-found';
@@ -69,7 +69,7 @@ export type RenderingAuditVerdict = typeof RENDERING_AUDIT_VERDICTS[number];
 /**
  Categories provable from the ORIGINAL alone, because the candidate holds
  nothing to quote.
- 
+
  @example
  ```ts
  SOURCE_ONLY_CATEGORIES.includes('omission',);
@@ -80,7 +80,7 @@ export const SOURCE_ONLY_CATEGORIES = ['omission',] as const;
 /**
  Categories provable from the CANDIDATE alone, because the original holds
  nothing to quote.
- 
+
  @example
  ```ts
  CANDIDATE_ONLY_CATEGORIES.includes('unsupported-addition',);
@@ -90,7 +90,7 @@ export const CANDIDATE_ONLY_CATEGORIES = ['unsupported-addition',] as const;
 
 /**
  Categories that change something both sides state, and must quote both.
- 
+
  @example
  ```ts
  PAIRED_CATEGORIES.includes('altered-polarity',);
@@ -110,7 +110,7 @@ export const PAIRED_CATEGORIES = [
 
 /**
  Every category an auditor may name, closed vocabulary.
- 
+
  @example
  ```ts
  RENDERING_AUDIT_CATEGORIES.includes('omission',);
@@ -128,7 +128,7 @@ export const RENDERING_AUDIT_CATEGORIES: readonly (
 
 /**
  One category, narrowed to the vocabulary.
- 
+
  @example
  ```ts
  const category: RenderingAuditCategory = 'omission';
@@ -138,21 +138,21 @@ export type RenderingAuditCategory = typeof RENDERING_AUDIT_CATEGORIES[number];
 
 /**
  One claimed defect as an auditor sent it, before any screening.
- 
+
  FOUR QUOTES, TWO PER SIDE, because one span cannot both identify a place and
  name a change. A LOCATOR says which occurrence is meant and must be unique in
  its text; a FOCUS says what changed and need only be unique inside its own
  locator. The first version asked for one span per side and got both jobs done
  badly: a span wide enough to be unique was too wide to say what changed, so
  two different defects in one sentence arrived as the same quote.
- 
+
  EVERY FIELD ALWAYS PRESENT ON THE WIRE, and empty where the category does not
  use that side. A schema whose required fields varied by category would ask a
  model to satisfy a conditional shape, which is the kind of instruction a
  model follows unevenly; the screen enforces the obligation instead, where it
  is deterministic, in BOTH directions: a missing required side is dropped, and
  so is a quote on a side the category forbids.
- 
+
  @example
  ```ts
  const finding: RenderingAuditFindingWire = {
@@ -200,7 +200,7 @@ export type RenderingAuditFindingWire = {
 
 /**
  One auditor's whole answer about one candidate.
- 
+
  @example
  ```ts
  const report: RenderingAuditReportWire = { verdict: 'no-defect-found', findings: [], };
@@ -221,7 +221,7 @@ export type RenderingAuditReportWire = {
 /**
  Every field a finding carries, named once so the guard and the schema cannot
  drift apart.
- 
+
  @example
  ```ts
  FINDING_FIELDS.includes('sourceFocus',);
@@ -238,11 +238,11 @@ export const FINDING_FIELDS = [
 
 /**
  Reads one wire finding out of an untyped value.
- 
+
  @param value - one element of a reply's finding list
- 
+
  @returns Whether it carries every field this wire requires, as strings
- 
+
  @example
  ```ts
  const usable = isRenderingAuditFindingWire(value,);
@@ -259,16 +259,16 @@ function isRenderingAuditFindingWire(value: unknown,): value is RenderingAuditFi
 
 /**
  Reads one auditor's reply out of an untyped value.
- 
+
  SHAPE ONLY. Whether the words are ones this version knows, and whether the
  quotes prove anything, belong to the screen: a reply that is well shaped and
  unfounded is a different failure from one that did not parse, and reporting
  them as the same thing loses the voice-loss rate.
- 
+
  @param value - parsed reply
- 
+
  @returns Whether it is a report this wire can hand to the screen
- 
+
  @example
  ```ts
  if (isRenderingAuditReportWire(parsed,)) screen({ report: parsed, },);
@@ -290,7 +290,7 @@ export function isRenderingAuditReportWire(value: unknown,): value is RenderingA
 
 /**
  What one audit call is asked about.
- 
+
  @example
  ```ts
  const subject: RenderingAuditSubject = { sourceText, candidateText, };
@@ -321,7 +321,7 @@ export type RenderingAuditSubject = {
 
 /**
  Response format one audit call asks for.
- 
+
  @example
  ```ts
  const format = RENDERING_AUDIT_RESPONSE_FORMAT;

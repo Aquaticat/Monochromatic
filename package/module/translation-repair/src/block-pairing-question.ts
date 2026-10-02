@@ -13,7 +13,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 /**
  The pairing question for one aligned section, with the key its agreed answer is cached under.
  A cache hit reuses the relations a past round agreed on; it is not a fresh vote.
- 
+
  @example
  ```ts
  const question = blockPairingQuestion({ pair, modelIds, });
@@ -41,15 +41,15 @@ export type BlockPairingQuestion = {
 /**
  Constructs the question `prepareBlockPairing` asks the roster and looks the cache up by.
  It buys no calls and does not alter singleton or empty-side dispatch.
- 
+
  @param pair - complete current parent whose parsed nodes define local indexes
- 
+
  @param pictureContext - transcripts the sheet is shown, part of the key when non-empty
 
  @param modelIds - roster that answers the question, part of the key (ledger X13)
- 
+
  @returns Numbered text, definition exemptions and existing cache identity
- 
+
  @example
  ```ts
  const { sourceBlocks, targetBlocks, freeOrder, key, } = blockPairingQuestion({ pair, modelIds, });

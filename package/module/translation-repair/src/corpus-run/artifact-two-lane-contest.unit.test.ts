@@ -1,13 +1,13 @@
 /**
  Tests for the contest record, at the level it is derived rather than through
  a whole artifact.
- 
+
  WHAT IS UNDER TEST is the split the stage does not make for itself: `neither`
  means two unrelated things depending on how many voices were heard, and this
  module is where they stop being one answer.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -77,13 +77,13 @@ const FOR_NEITHER: LaneContestBallot = {
 
 /**
  Builds an outcome the way the stage returns one.
- 
+
  @param ballots - usable ballots
- 
+
  @param choice - candidate the stage settled on
- 
+
  @returns Outcome carrying those ballots
- 
+
  @example
  ```ts
  const outcome = catOutcome({ ballots: [FOR_REPAIR,], choice: 'neither', },);

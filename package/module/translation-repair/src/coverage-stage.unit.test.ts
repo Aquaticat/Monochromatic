@@ -1,14 +1,14 @@
 /**
  Tests for the stage that asks a roster whether a translation carries a
  passage, driven by a scripted client so nothing is bought.
- 
+
  What these pin is the WIRING rather than the arithmetic, which
  `coverage-verdict.unit.test.ts` covers: that the stage takes its threshold
  from the roster it asked rather than from the replies it got, and that a
  roster too quiet to decide produces no decision.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -68,11 +68,11 @@ type CoverageScript = Record<string, {
 
 /**
  Builds a client answering from a script and never reaching a network.
- 
+
  @param script - reply per model, absent for a model that stays silent
- 
+
  @returns Client the stage can be driven with
- 
+
  @example
  ```ts
  const client = scriptedClient({ script, },);

@@ -1,6 +1,6 @@
 /**
  Tests for the two gatherers that rebuild prober inputs from a settled run.
- 
+
  THEY ARE TESTED TOGETHER BECAUSE THEY ARE ONE INSTRUMENT. `gatherRelabelCases`
  builds the arm asking about regions a human read as damaged, and
  `gatherControlCases` builds the arm that says whether the first one means
@@ -8,7 +8,7 @@
  artifact, the same manifest and the same corpus pages, so a fixture that
  serves one serves the other and a divergence between them shows up here
  rather than in a run.
- 
+
  THE CONTROL'S ORDERING IS THE CASE WORTH THE FILE. `byLengthDistance` exists
  because taking whichever unflagged regions came first made the arm answer a
  different question: measured on the first control run, the regions that
@@ -17,16 +17,16 @@
  about how much text there was to damage. This file's fixture puts the SHORTEST
  unflagged region first in document order and requires it to be dropped, so an
  implementation that took document order would return it and fail.
- 
+
  THE PINS ARE INJECTED, which is why any of this runs. Both functions read
  `RUN_CORPUS_PIN` directly until this landed, so exercising either needed the
  unlicensed corpus clone on disk. They now take the pin the way `censusEntry`
  does, and the cases point them at a throwaway git repository.
- 
+
  FIXTURE CONTENT IS CAT-THEMED INVENTION mirroring corpus structure only:
  Simplified Chinese against English, one entry, committed once. The real
  inputs are memorial pages nobody licensed us to copy.
- 
+
  @module
  */
 
@@ -63,7 +63,7 @@ const ENTRY_ID = 'whiskers';
 
 /**
  Sheet position the round-three repair sheet marked damaged.
- 
+
  TAKEN FROM `DAMAGED_CASES` RATHER THAN CHOSEN. `gatherRelabelCases` filters
  the manifest against that constant, so a position invented here would be
  filtered out and every case would pass against an empty result.
@@ -177,7 +177,7 @@ type FixtureRegion = {
 
 /**
  Every edit the fixture run recorded, in DOCUMENT ORDER.
- 
+
  The order matters: {@link FAR_BEFORE} sits second, ahead of both closer
  regions, so a control that took whichever unflagged regions came first would
  return it.
@@ -207,9 +207,9 @@ const REGIONS: readonly FixtureRegion[] = [
 
 /**
  Builds the ledger row the artifact carries for its one slice.
- 
+
  @returns One-row ledger, enough to satisfy the settled parser
- 
+
  @example
  ```ts
  const rows = ledger();
@@ -234,11 +234,11 @@ function ledger(): readonly ArtifactDeliveryRow[] {
 
 /**
  Builds one repair-lane issue record carrying one replaced region.
- 
+
  @param region - edit this record owns
- 
+
  @returns Record as the lane stores one
- 
+
  @example
  ```ts
  const record = issueRecord({ region: REGIONS[0], },);
@@ -268,9 +268,9 @@ function issueRecord({ region, }: { readonly region: FixtureRegion; },): unknown
 
 /**
  Builds the settled version 2 artifact the gatherers read their records from.
- 
+
  @returns Whole artifact value
- 
+
  @example
  ```ts
  const artifact = settledArtifact();
@@ -376,16 +376,16 @@ function settledArtifact(): Record<string, unknown> {
 
 /**
  Builds the drawn manifest the gatherers index positions into.
- 
+
  The undamaged item sits FIRST so the damaged one lands at position
  {@link DAMAGED_POSITION}, which is what the sheet marked and what the parser
  requires to match where the item sits.
- 
+
  @param alsoDrawn - issues drawn after those two, at the positions that
  follow, so a case can draw one edit again
- 
+
  @returns Manifest value, as a draw writes one
- 
+
  @example
  ```ts
  const manifest = drawnManifest({ alsoDrawn: [], },);
@@ -441,16 +441,16 @@ type Rig = AsyncDisposable & {
 /**
  Stands up a throwaway corpus clone, a throwaway runs directory holding one
  settled artifact, and a manifest naming two drawn items.
- 
+
  The runs directory is pointed at through the environment, which is
  process-wide, so every case here runs at `concurrency: 1` and the disposer
  puts the variable back however the case ends.
- 
+
  @param alsoDrawn - issues the manifest draws after its two items, none by
  default
- 
+
  @returns Rig carrying the pin and the manifest path
- 
+
  @example
  ```ts
  await using rig = await gatheringRig();
@@ -629,11 +629,11 @@ async function gatheringRig(
 
 /**
  Reads the envelope ids off a gathered arm, in the order it returned them.
- 
+
  @param cases - what a gatherer returned
- 
+
  @returns Envelope ids, order preserved
- 
+
  @example
  ```ts
  const ids = envelopesOf({ cases, },);

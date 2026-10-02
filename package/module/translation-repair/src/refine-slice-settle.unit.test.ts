@@ -18,7 +18,7 @@
  it exactly as the same slice without the ruling does.
 
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -99,7 +99,7 @@ const MODELS: RepairModels = {
 
 /**
  Client that throws on any exchange, so reaching a model is observable.
- 
+
  NOT A RECORDING CLIENT. A counter would say how many calls happened and
  would let a case pass while quietly buying something; throwing makes the
  first call end the settlement, which is what the assertion is about.
@@ -118,12 +118,12 @@ const REFUSING_CLIENT: SyntheticClient = {
 
 /**
  Builds one settled accuracy outcome, standing as a translation or not.
- 
+
  @param nonTranslationStanding - whether the critics' non-translation ruling
  survived contradiction, which is the one field these cases differ on
- 
+
  @returns Outcome the lane would refine
- 
+
  @example
  ```ts
  const outcome = settledOutcome({ nonTranslationStanding: true, },);
@@ -162,11 +162,11 @@ function settledOutcome(
 
 /**
  Settles one slice against the refusing client.
- 
+
  @param nonTranslationStanding - whether this slice stands as non-translation
- 
+
  @returns What the lane settled on
- 
+
  @example
  ```ts
  const settled = await settleWith({ nonTranslationStanding: true, },);

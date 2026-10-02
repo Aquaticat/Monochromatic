@@ -4,7 +4,7 @@
  numbered reference beside the repaired text, and only listed
  verdicts pass the guard.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

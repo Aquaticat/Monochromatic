@@ -69,30 +69,30 @@ type SettledSlice = {
 
 /**
  Repairs one already prepared document pair.
- 
+
  @param client - injected model client
- 
+
  @param prepared - slices, governance, declared names and alignment findings
- 
+
  @param models - repair role roster
 
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param sliceCache - optional cross-run cache for accuracy outcomes
- 
+
  @param refineCache - optional cross-run cache for naturalness settlements
- 
+
  @param overlap - most repair or refinement slices in flight; one reproduces former loops
- 
+
  @param parentLogger - logger this lane tags under
- 
+
  @returns Repaired candidate plus adjudicated issues and completion status
- 
+
  @throws Whatever `signal.reason` carries once caller aborts with slices still
  unbought; nothing settled under that abort is cached
- 
+
  @example
  ```ts
  const result = await repairPreparedDocument({

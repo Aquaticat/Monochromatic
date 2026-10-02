@@ -1,6 +1,6 @@
 /**
  Tests for the store that resumes a settlement an earlier run bought.
- 
+
  WHY THE SHAPE IS CHECKED AT ALL, and why more strictly than the contest
  store's: a settlement carries `text` that SHIPS. The record built from one
  hands that text to the assembly whenever the terminal says a consolidation
@@ -8,14 +8,14 @@
  corpus text in an artifact. A file that was truncated, hand-edited, or
  written by a different schema would carry them there with nothing else in the
  way. Refusing it costs one re-asked slice.
- 
+
  THE ABSENT GATE IS THE CASE MOST LIKELY TO BE BROKEN BY A STRICTER GUARD, so
  it is pinned here: a slice the validity floor stopped never reached the gate,
  and a store that required the key would refuse every floored slice and
  re-buy it every run.
- 
+
  Fixtures are cat-themed invention written into throwaway directories.
- 
+
  @module
  */
 
@@ -84,11 +84,11 @@ const CAT_SETTLEMENT = {
 
 /**
  Writes one settlement and reads the directory back through a fresh store.
- 
+
  @param settlement - value to persist, valid or not
- 
+
  @returns Whether a second store resumed it
- 
+
  @example
  ```ts
  const resumed = await roundTrip({ settlement, },);
@@ -124,11 +124,11 @@ async function roundTripValue(
 
 /**
  Writes one settlement and reports whether fresh store resumes it.
- 
+
  @param settlement - value to persist, valid or not
- 
+
  @returns Whether second store resumed key
- 
+
  @example
  ```ts
  const resumed = await roundTrip({ settlement, });

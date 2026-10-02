@@ -26,7 +26,7 @@ const TIP_IN_NAME = 8;
 
 /**
  One benchmark run's scorecard as it is kept.
- 
+
  @example
  ```ts
  const record: RecallScorecardRecord = { startedAt, finishedAt, tip, corpusSha, callConfig, entriesPerBand, seedsPerEntry, scorecard, records, };
@@ -81,13 +81,13 @@ export type RecallScorecardRecord = {
 
 /**
  Writes a scorecard under a name no other run can claim.
- 
+
  @param runsDir - runs directory the scorecard subdirectory lives under
- 
+
  @param record - scorecard and the identity it was measured under
- 
+
  @returns Path written
- 
+
  @example
  ```ts
  const keptAt = await persistRecallScorecard({ runsDir, record, },);

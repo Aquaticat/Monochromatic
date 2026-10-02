@@ -35,7 +35,7 @@ import {
 
 /**
  What one side of a repeat said.
- 
+
  @example
  ```ts
  const side: AuditRepeatSide = { runSet, claimed: 5, corroborated: 1, agreed: 1, near: 0, };
@@ -71,7 +71,7 @@ export type AuditRepeatSide = {
 
 /**
  One text audited twice, with what each audit said.
- 
+
  @example
  ```ts
  const pair: AuditRepeatPair = { entryId, sliceIndex: 0, left, right, };
@@ -107,15 +107,15 @@ export type AuditRepeatPair = {
 
 /**
  Names the subject one row describes, run set included.
- 
+
  ONE BUILDER, used by both the map and the lookup. Spelling the key twice is
  how two builders come to disagree, and a disagreement here reports that two
  runs share no subjects at all, which reads exactly like an honest null.
- 
+
  @param row - one audited slice
- 
+
  @returns Key that is equal for one subject across two runs
- 
+
  @example
  ```ts
  const key = subjectKey({ row, },);
@@ -133,11 +133,11 @@ function subjectKey(
 
 /**
  Whether a row says what its audit was shown.
- 
+
  @param row - one audited slice
- 
+
  @returns Whether the run recorded a text identity for it
- 
+
  @example
  ```ts
  const vouched = recorded({ row, },);
@@ -155,11 +155,11 @@ function recorded(
 
 /**
  Reads one row down to what a repeat comparison needs.
- 
+
  @param row - one audited slice
- 
+
  @returns That side of a pair
- 
+
  @example
  ```ts
  const side = repeatSideOf({ row, },);
@@ -227,15 +227,15 @@ function repeatPairOf(
 
 /**
  Finds texts one run audited more than once.
- 
+
  Two artifacts of one entry sit in different run sets, so a repeat here is a
  pair of rows sharing an entry and a slice index across run sets whose
  recorded text identity also matches.
- 
+
  @param rows - every audited slice of one run
- 
+
  @returns One pair per repeated text, in first-seen order
- 
+
  @example
  ```ts
  const repeats = auditRepeatsWithin({ rows, },);
@@ -296,29 +296,29 @@ export function auditRepeatsWithin(
 
 /**
  Pairs two runs of the same population, subject against subject.
- 
+
  KEYED BY RUN SET AS WELL as entry and slice, so two artifacts of one entry
  are never crossed with each other; that pairing is `auditRepeatsWithin`'s job
  and means something different.
- 
+
  THREE OUTCOMES, NOT TWO, and the third is the one that matters most in
  practice. A slot both runs recorded and whose digests DISAGREE means the
  archive changed underneath them, which invalidates that subject as a band
  measurement and is worth saying. A slot either run left UNRECORDED means
  nobody wrote down what was shown, which is a fact about the run and says
  nothing whatever about the archive.
- 
+
  Collapsing those two into one list would report an older run, from before the
  identity field existed, as a population whose every subject changed text
  between the runs. That is a confident statement about the corpus assembled
  out of the absence of evidence about the probe.
- 
+
  @param first - rows of the earlier run
- 
+
  @param second - rows of the later one
- 
+
  @returns Pairs, slots whose text moved, and slots nobody can vouch for
- 
+
  @example
  ```ts
  const { paired, textMoved, unverifiable, } = auditRepeatsAcross({ first, second, },);
@@ -423,11 +423,11 @@ export function auditRepeatsAcross(
 
 /**
  Names one matched slot for a reader.
- 
+
  @param left - row from the earlier run, which carries the naming parts
- 
+
  @returns Slot as a reader would write it
- 
+
  @example
  ```ts
  const name = nameOf({ left, },);

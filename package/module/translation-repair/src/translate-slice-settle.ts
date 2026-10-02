@@ -68,15 +68,15 @@ import {
  Reads what a purchase left for its twins: a record only where the lane
  persisted one, since an in-run twin may reuse only what a warm run would
  have resumed.
- 
+
  AT MODULE SCOPE because it closes over nothing, which is also what makes it
  readable: the rule it states is about purchases in general, not about the
  slice being settled.
- 
+
  @param bought - purchase to read
- 
+
  @returns Record when it was persisted
- 
+
  @example
  ```ts
  const stored = storedRecord({ kind: 'settled', record, persisted: true, },);
@@ -149,45 +149,45 @@ export type TranslateSliceSettlement = {
 /**
  Settles one slice of the translate lane: resumed from disk, reused from a
  twin, or bought.
- 
+
  @param client - injected model client
- 
+
  @param prepared - slices, governance and declared names
- 
+
  @param models - translator and judge rosters
- 
+
  @param slice - slice to settle
- 
+
  @param slicePosition - where it sits in `prepared.slices`, which the window
  is addressed by
- 
+
  @param insertionAdmitted - whether source-only passage may be inserted
- 
+
  @param insertionCarried - whether passage is fully rendered elsewhere
- 
+
  @param pictureReadings - what the document's pictures were read as
- 
+
  @param runShape - what this run asks, folded into the key
- 
+
  @param sliceCache - resumable per-slice cache, absent when a caller wants no
  resumption
- 
+
  @param archiveDispute - dispute over this slice's archive rendering (class
  one hundred seven), whose stand-in keys the question in the archive's place
- 
+
  @param twins - memo of purchases in this run, shared by every slice
- 
+
  @param signal - entry deadline and caller abort
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - lane logger
- 
+
  @returns Outcome beside what the slice reported
- 
+
  @throws Whatever `signal.reason` carries, once the caller aborts with this
  slice still unbought
- 
+
  @example
  ```ts
  const settlement = await resumeReuseOrBuyTranslateSlice({ ..., slice, slicePosition: 0, },);
@@ -293,7 +293,7 @@ export async function resumeReuseOrBuyTranslateSlice(
 
   /**
    Original of the passages either side.
-   
+
    COMPUTED HERE RATHER THAN INSIDE THE ATTEMPT, so the cache key and the
    call are provably given the same window. A key that did not name the
    evidence would let a narrow run's answer be resumed for a wide one.

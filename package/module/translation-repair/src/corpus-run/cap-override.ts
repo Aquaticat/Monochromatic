@@ -36,9 +36,9 @@ export class HardCapOverrideError extends Error {
 
   /**
    Names the variable, what it held, and why that cannot be a ceiling.
-   
+
    @param value - what the variable held, quoted back
-   
+
    @example
    ```ts
    throw new HardCapOverrideError({ value: 'soon', },);
@@ -57,19 +57,19 @@ export class HardCapOverrideError extends Error {
 
 /**
  Reads the per-entry ceiling this invocation runs under.
- 
+
  @param fallback - built-in ceiling, used when nothing overrides it
- 
+
  @param raw - override text; tests pass their own. UNSET AND EMPTY COLLAPSE TO
  ONE VALUE here rather than being distinguished, because this module already
  treats them alike: neither is an override. That is why the parameter is a
  plain string and the environment read supplies `''` for an absent variable
- 
+
  @returns Minutes one entry may run before its exchanges abort
- 
+
  @throws {@link HardCapOverrideError} when the override is present and is not
  a positive finite number
- 
+
  @example
  ```ts
  const minutes = resolveHardCapMinutes({ fallback: HARD_CAP_MINUTES, },);
@@ -106,19 +106,19 @@ export function resolveHardCapMinutes(
 
 /**
  Whether a ceiling leaves room for one full-length model exchange.
- 
+
  MEASURED THE HARD WAY on 2026-08-24. A verification run set the ceiling to
  five minutes while `RUN_PER_CALL_TIMEOUT_MS` allowed six for a single
  exchange. Both attempts were cut mid-exchange, so no exchange ever returned,
  so no slice ever cached, so the queue read no progress and dropped the entry
  as stalled. Nothing in the run said why, and the ceiling looked reasonable.
- 
+
  @param capMs - ceiling one attempt runs under
- 
+
  @param perCallMs - deadline one exchange is allowed
- 
+
  @returns Whether an exchange can finish inside an attempt
- 
+
  @example
  ```ts
  const roomy = capOutlastsOneCall({ capMs, perCallMs, },);
@@ -138,18 +138,18 @@ export function capOutlastsOneCall(
 
 /**
  Explains a ceiling no exchange can finish inside.
- 
+
  WARNED RATHER THAN REFUSED, and the reason is that cutting mid-exchange is
  exactly what a test of the stall path wants. Refusing would have blocked the
  run that found this. An operator who meant it keeps their ceiling and reads
  why every attempt will report no progress.
- 
+
  @param capMs - ceiling one attempt runs under
- 
+
  @param perCallMs - deadline one exchange is allowed
- 
+
  @returns Line naming both numbers and what follows from them
- 
+
  @example
  ```ts
  console.log(capTooTightNote({ capMs, perCallMs, },),);

@@ -107,22 +107,22 @@ export type InsertionCoverageClassification = {
 
 /**
  Classifies latest rows as inserted, carried, or unresolved.
- 
+
  @param candidates - every source-only slice
- 
+
  @param rows - latest semantic coverage evidence for prose candidates
- 
+
  @param frontMatterPositions - metadata positions admitted deterministically
- 
+
  @param sourceText - whole original for shortfall calculation
- 
+
  @param targetText - whole target for shortfall calculation
 
  @param tail - untranslated tail read off the pairing, admitted on its own
  budget (owner, 2026-09-19)
- 
+
  @returns Current insertion resolution and findings
- 
+
  @example
  ```ts
  const state = classifyInsertionCoverage({
@@ -155,7 +155,7 @@ export function classifyInsertionCoverage(
   /**
    Rows latest roster found wholly absent, and rows whose split carried no
    anchored claim of coverage at all.
-   
+
    A SPLIT NOBODY ANCHORED IS ABSENCE SHORT OF A MAJORITY (class forty-eight,
    shi_Yumiaoya2, 2026-09-17): two seats asked on a skeleton archive, one
    voted absent, one claimed partial coverage and quoted the Chinese passage

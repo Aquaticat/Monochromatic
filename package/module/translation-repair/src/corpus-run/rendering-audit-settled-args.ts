@@ -32,7 +32,7 @@ const NO_CAP = -1;
 
 /**
  What the command line asked for.
- 
+
  @example
  ```ts
  const { archiveDir, cloneDir, onlyIds, cap, } = readAuditArguments({ line, },);
@@ -56,7 +56,7 @@ export type AuditArguments = {
 
   /**
    How many subjects to buy, negative for all of them.
-   
+
    ZERO IS MEANINGFUL and is half the reason this exists: it reads and
    verifies the whole archive, prints the population, and asks nobody
    anything. A run that cannot do that has a wiring fault, and finding one
@@ -67,7 +67,7 @@ export type AuditArguments = {
 
 /**
  What the report was told to read and compare.
- 
+
  @example
  ```ts
  const { run, against, } = readReportArguments({ line, },);
@@ -89,18 +89,18 @@ export type ReportArguments = {
 
 /**
  Reads the report's two flags with the same refusal the audit's flags get.
- 
+
  SHARED RATHER THAN COPIED, because the report module had its own reader
  that collapsed absent and valueless into one empty string, which is exactly
  the defect this module records as fixed for `--cap` and `--only`: `--run`
  written last reported the newest run, and `--against` written last printed
  no across-run band, and neither said a word.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`
- 
+
  @returns Named files, each in a one-element list when written
- 
- 
+
+
  @example
  ```ts
  const { run, } = readReportArguments({ line, },);
@@ -126,15 +126,15 @@ export function readReportArguments(
 
 /**
  Reads what the command line asked for.
- 
+
  @param line - the audit's command line, read whole by `reportingRefusals`
  and passed in so this is testable without a subprocess
- 
+
  @returns Archive, clone, entry filter and cap
- 
+
  @throws StatedRefusalError when a cap is not a whole number written in
  digits or is below zero, or an entry filter names no entry
- 
+
  @example
  ```ts
  const asked = readAuditArguments({ line, },);

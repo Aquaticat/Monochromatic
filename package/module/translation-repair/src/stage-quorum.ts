@@ -61,7 +61,7 @@ export const STAGE_RETRY_ROUNDS = 3;
 
 /**
  One heard voice with its speaker.
- 
+
  @example
  ```ts
  const voice: HeardVoice<CriticReportWire> = { modelId, value: report, };
@@ -81,7 +81,7 @@ export type HeardVoice<ValueT,> = {
 
 /**
  Everything a quorum gather produced.
- 
+
  @example
  ```ts
  const { voices, quorumMet, } = await gatherStageVoices({ ... },);
@@ -169,40 +169,40 @@ type RoundsOutcome<ValueT,> = {
  each later round asks the seats not yet asked before the ones it lost,
  on fresh deadlines; the loop stops as soon as half the roster, rounded
  up, is heard, and otherwise ends when the retry rounds are spent.
- 
+
  @param client - injected model client
- 
+
  @param modelIds - stage roster
- 
+
  @param messages - prompt shared by every voice
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param exchangeTimeoutMs - deadline per exchange
- 
+
  @param maxAnswerChars - bound on one answer, when the caller knows how
  large its own input was
- 
+
  @param responseFormat - structured-output constraint
- 
+
  @param validate - client-side schema guard
- 
+
  @param stage - stage label for logging and findings
- 
+
  @param l - logger of the calling stage
- 
+
  @param maxRetryRounds - rounds after the initial fan-out;
  defaults to {@link STAGE_RETRY_ROUNDS}
- 
+
  @param graceMs - window a straggler gets after quorum before the round
  abandons it; defaults to `STRAGGLER_GRACE_MS` and exists so a test can bound
  its own wall time
- 
+
  @param fanOut - whether a round asks the window of quorum plus one, the
  production default, or the whole bench a fixture scripting every seat asks for
- 
+
  @returns Heard voices plus quorum verdict and degradation findings
- 
+
  @example
  ```ts
  const gather = await gatherStageVoices({ ..., stage: 'critic', l, },);
@@ -244,20 +244,20 @@ export async function gatherStageVoices<ValueT,>(
   /**
    Voices a quorum needs: at least half the roster, rounded up, sized on
    the seats a wet provider serves once the router has named the rest.
-   
+
    Was "strictly more than half", which differs only on EVEN rosters and was
    costing a round there. At six models the old rule demanded 4 while this
    demands 3; at seven both demand 4, so odd rosters are unaffected. User
    decision 2026-08-06, taken when the roster shrank to six: exactly half of
    an even panel is a quorum.
-   
+
    SIZED ON THE REACHABLE BENCH SINCE 2026-09-09 (`reachableQuorum`): a
    seat the router refuses for want of a wet provider is not a voice the
    gather can wait for, and counting it cost `hulicaijia` its entry that
    evening.
-   
+
    @param unreachable - seats the router has refused so far
-   
+
    @returns Heard voices the gather needs to close
    */
   function quorumNeededWith(unreachable: number,): number {
@@ -554,18 +554,18 @@ export async function gatherStageVoices<ValueT,>(
   /**
    Naming of every model that went quiet, which the ARTIFACT carries and a
    log line does not.
-   
+
    Voice loss reached only `l.warn` before this. That made every question
    about it, which model, which stage, how often, answerable solely from a
    captured run log, and on 2026-08-13 a run spent twenty minutes writing its
    log into a pipe whose reader had exited: the losses happened and nothing
    recorded them. Findings travel into the per-entry artifact, which is
    written durably and survives whatever spawned the pass.
-   
+
    Emitted even when quorum was MET, which is the case the old findings
    dropped entirely and the one that hides a model degrading quietly while
    the stage still looks healthy.
-   
+
    ONE FINDING PER MODEL rather than one naming a list, so counting the
    findings counts voices lost. A list-valued finding counts GATHERS that
    lost at least one voice, which is a different number, and reading the

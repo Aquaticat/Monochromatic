@@ -29,18 +29,18 @@ import type {
 /**
  Derives the comparison from two ledgers, reporting a refusal as a parse
  failure.
- 
+
  Separate from the caller so the translation happens once and around the one
  call that can raise the comparison's own error type.
- 
+
  @param repair - repair lane's ledger
- 
+
  @param translate - translate lane's ledger
- 
+
  @param path - dotted path of the recorded comparison
- 
+
  @returns Comparison version 2's rules derive
- 
+
  @throws {@link ArtifactParseError} when the two ledgers cannot be compared at
  all, carrying what the comparison said
 
@@ -87,21 +87,21 @@ function deriveComparison(
 
 /**
  Refuses an artifact whose recorded comparison disagrees with its ledgers.
- 
+
  @param recorded - comparison the artifact carries
- 
+
  @param repair - repair lane's ledger
- 
+
  @param translate - translate lane's ledger
- 
+
  @param path - dotted path of the recorded comparison
- 
+
  @returns Comparison derived from the two ledgers, proven equal to the
  recorded one
- 
+
  @throws {@link ArtifactParseError} when the two ledgers cannot be compared at
  all, when the counts differ, or when any row disagrees
- 
+
  @example
  ```ts
  const comparison = assertRecordedComparisonMatches({ recorded, repair, translate, path, },);

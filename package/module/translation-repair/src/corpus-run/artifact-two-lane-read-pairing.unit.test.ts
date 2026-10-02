@@ -1,15 +1,15 @@
 /**
  Tests for reading the pairing a settled preparation was built on.
- 
+
  WHAT THESE PIN is the difference between an artifact that records no pairing
  and one that records an empty one, and the four shapes the reader refuses
  because this pipeline cannot write them. Each refusal mirrors an invariant
  `readBlockPairing` already holds over a roster reply, so a refusal that fired
  on a shape the producer CAN emit would reject valid artifacts, which is the
  failure these are pointed at rather than laxness.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

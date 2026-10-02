@@ -1,6 +1,6 @@
 /**
  Tests caught entry errors map to operational tally and scheduler state.
- 
+
  @module
  */
 

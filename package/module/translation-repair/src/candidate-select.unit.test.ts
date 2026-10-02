@@ -3,7 +3,7 @@
  stop one judge deciding, and the two decline dispositions that tell an
  unranked field apart from a rejected one.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -72,13 +72,13 @@ type BallotScript = Readonly<Record<string, number>>;
 /**
  Client answering every selection ballot from a script, and counting calls so
  a test can prove a round never reached the judges.
- 
+
  @param ballots - one-based candidate index per judge, zero to decline
- 
+
  @param counter - mutable call tally the caller inspects afterwards
- 
+
  @returns Client usable by the selection stage
- 
+
  @example
  ```ts
  const client = scriptedJudges({ ballots, counter, },);
@@ -192,13 +192,13 @@ function patchCandidateFor(
  Client whose listed seats are refused by the router for want of a wet
  provider, the way `judgeSeatsFor` leaves a dry provider's seats on the
  bench, and whose other seats vote from the script.
- 
+
  @param ballots - one-based candidate index per judge, zero to decline
- 
+
  @param unreachable - seats no provider serves
- 
+
  @returns Client usable by the selection stage
- 
+
  @example
  ```ts
  const client = dryBenchJudges({ ballots, unreachable: [SEAT_HYPER_VISION,], },);
@@ -249,13 +249,13 @@ const JUDGES: readonly RosterModelId[] = [
 
 /**
  Runs one selection round over the fixture candidates.
- 
+
  @param ballots - one-based candidate index per judge
- 
+
  @param judgeModelIds - roster to seat; defaults to the fixture roster
- 
+
  @returns Outcome plus how many judge calls it took
- 
+
  @example
  ```ts
  const { outcome, } = await runSelection({ ballots, },);
@@ -317,17 +317,17 @@ async function runSelection(
 
 /**
  Runs one round over a COLLAPSED candidate and its only rival.
- 
+
  The collapsed candidate stands for several models that returned identical
  text, which `buildTranslateCandidates` merges into one entry carrying every
  contributor. Every contributor then votes for it, and every other judge
  abstains, which isolates the question these cases ask: what self votes alone
  can carry.
- 
+
  @param contributors - models the collapsed candidate is credited to
- 
+
  @returns Outcome of that round
- 
+
  @example
  ```ts
  const { outcome, } = await runCollapsedSelection({ contributors, },);
@@ -424,13 +424,13 @@ const DRY_SEATS: readonly RosterModelId[] = [
 
 /**
  Runs one selection round over the wide bench with the dry seats refused.
- 
+
  @param ballots - one-based candidate index per reachable judge
- 
+
  @param unreachable - seats no provider serves; defaults to the dry day
- 
+
  @returns Outcome of that round
- 
+
  @example
  ```ts
  const outcome = await runShortBench({ ballots, },);

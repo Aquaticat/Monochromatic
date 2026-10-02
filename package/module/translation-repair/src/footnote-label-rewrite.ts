@@ -3,7 +3,7 @@
 
 /**
  Operational rewrite of a footnote label, independent of why it moves.
- 
+
  @example
  ```ts
  const rewrite: FootnoteLabelRewrite = { from: '1', to: '4' };
@@ -23,7 +23,7 @@ export type FootnoteLabelRewrite = {
 /**
  Collision-avoidance rename preserving an unmatched archive note.
  `retainedAs` deliberately does not name an original-side correspondence.
- 
+
  @example
  ```ts
  const retained: RetainedArchiveFootnoteLabel = { from: '1', retainedAs: '4' };

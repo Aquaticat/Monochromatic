@@ -36,11 +36,11 @@ const REWRITTEN = 'The tabby sat waiting at the door.';
 
 /**
  Builds an arm offering some text.
- 
+
  @param patchedText - what this arm shipped
- 
+
  @returns Arm shaped as the contest reads it
- 
+
  @example
  ```ts
  const arm = armOffering(UNTOUCHED,);

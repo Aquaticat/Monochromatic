@@ -1,32 +1,32 @@
 /**
  Tests that the editor width control REFUSES a draw it cannot damage.
- 
+
  WHAT THE CONTROL IS FOR. It cuts one sentence out of a translation and asks
  the panel which reads better. A panel that cannot tell the cut version from
  the whole one is not measuring anything, so the probe stops before it spends.
  That question can only be asked of a passage holding MORE THAN ONE sentence:
  cut the only sentence a slice has and nothing is left to judge, which is a
  different question from whether the panel notices a deletion.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting the filter that selects damageable
  slices, so the ones holding a single sentence are the ones kept, failed no
  test in this package. The probe would then have run its control over passages
  it could not damage, and reported whatever the panel said about an empty arm
  as though it were evidence the panel works.
- 
+
  THE FIXTURE IS ASSERTED FIRST. `withoutASentence` decides what damageable
  means, so each fixture is put to it directly before the control sees it. A
  fixture that quietly stopped being a single sentence would otherwise turn
  this into a test that passes for the wrong reason.
- 
+
  NO NETWORK. The refusal happens before any judge is seated, and the client
  there refuses every exchange by name so a control that got past the filter
  would say so rather than quietly buying rounds. The one case that seats a
  panel scripts its judges to back a passage by its text, wherever the seating
  puts it (ledger T8).
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -64,7 +64,7 @@ const l = tagged({ tag: 'editor-width-control-usable-test', },);
 
 /**
  Slice whose translation is one sentence, so cutting it leaves nothing.
- 
+
  The terminator sits at the very end, which is what makes it undamageable:
  there is no text after it to keep.
  */

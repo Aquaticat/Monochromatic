@@ -37,7 +37,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Voices that must name a correspondence before it is kept.
- 
+
  TWO, matching the block stage, and for its reason: a pairing one model
  invented is the risk, and a correspondence two models reached independently
  is not plausibly coincidence when each is choosing from every section on the
@@ -79,7 +79,7 @@ const SECTION_PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 
 /**
  What the roster settled on for one document's sections.
- 
+
  @example
  ```ts
  const outcome: SectionPairingOutcome = { pairs: [], heard: 0, usable: 0, findings: [], };
@@ -109,11 +109,11 @@ export type SectionPairingOutcome = {
 
 /**
  One document's settled section pairing as the cache stores it.
- 
+
  THE FINDINGS ARE HALF THE RECORD, for the reason `PairedSectionRecord` gives
  at block scale: a resumed run makes no calls, so anything this round reported
  the first time is reported by nothing on the second unless it was stored.
- 
+
  @example
  ```ts
  const settled: PairedDocumentRecord = { pairs: [], findings: [], };
@@ -133,22 +133,22 @@ export type PairedDocumentRecord = {
 
 /**
  Reads every heard reply, keeping the usable ones and reporting the rest.
- 
+
  @param outcomes - one round result per voice
- 
+
  @param sourceCount - original sections the sheet numbered
- 
+
  @param targetCount - translation sections the sheet numbered
- 
+
  @param findings - accumulator an unusable reply appends its notice to
- 
+
  @param l - stage logger
- 
+
  @returns Pairings that survived the reader, one per usable voice
- 
+
  @throws Error when a reader raises anything other than a
  `SectionPairingError`, since that is a defect rather than a bad reply
- 
+
  @example
  ```ts
  const pairings = readUsablePairings({ outcomes, sourceCount, targetCount, findings, l, },);
@@ -205,32 +205,32 @@ function readUsablePairings(
 
 /**
  Asks the roster to pair two documents' sections and keeps the agreed ones.
- 
+
  REFUSES RATHER THAN GUESSES. When no voice answers usably the outcome carries
  no pairs and says why, and the caller keeps the deterministic aligner's own
  refusals rather than proceeding on one model's word, by the standing rule:
  a wrong pairing is worse than no pairing, because it manufactures issues
  rather than skipping work.
- 
+
  @param client - injected model client
- 
+
  @param modelIds - roster to ask
- 
+
  @param sourceSections - original sections in document order
- 
+
  @param targetSections - translation sections in document order
- 
+
  @param signal - caller's steering
- 
+
  @param exchangeTimeoutMs - per-call bound
- 
+
  @param l - driver logger
- 
+
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
- 
+
  @returns What the roster agreed on, with what it lost
- 
+
  @example
  ```ts
  const outcome = await pairSectionsWithRoster({ client, modelIds, sourceSections, targetSections, signal, exchangeTimeoutMs, l, },);

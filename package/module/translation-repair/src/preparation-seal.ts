@@ -17,13 +17,13 @@ import type { RepairDocument, } from './parse-document.ts';
  Spans the archive's notes seal, EMPTY when the caller asked for no seal, the
  archive carries no such note, or the note seals the whole page (which is
  the pass's business: it declines the entry before preparing it).
- 
+
  @param document - parsed archive
- 
+
  @param seal - whether the caller asked for the seal at all
- 
+
  @returns Sealed spans in document order
- 
+
  @example
  ```ts
  const spans = archiveOriginalSpansOf({ document: targetDocument, seal: true, },);
@@ -49,13 +49,13 @@ export function archiveOriginalSpansOf(
 
 /**
  Translation blocks of one aligned chunk that a seal covers.
- 
+
  @param pair - aligned chunk
- 
+
  @param sealedTargetIds - ids of every sealed block in the archive
- 
+
  @returns Ids of this chunk's sealed blocks
- 
+
  @example
  ```ts
  const sealedTargets = chunkSealedTargets({ pair, sealedTargetIds, },);
@@ -86,19 +86,19 @@ export function chunkSealedTargets(
  Translation blocks the chunk's pairing accounted for nowhere, LESS the
  sealed ones: a sealed block leaves review by rule, not by the pairing's
  silence, and is not handed to the block correction round.
- 
+
  Derived from the same pairing subdivision was handed, so the assertion and
  the carving cannot drift.
- 
+
  @param pair - aligned chunk
- 
+
  @param blockPairing - correspondences the roster agreed for it, absent when
  it agreed none
- 
+
  @param sealedTargets - this chunk's sealed blocks
- 
+
  @returns Ids of the declined blocks that are not sealed
- 
+
  @example
  ```ts
  const declined = declinedLessSealed({ pair, blockPairing, sealedTargets, },);
@@ -136,15 +136,15 @@ export function declinedLessSealed(
 /**
  Alignment finding recording what one chunk's seal kept out of review, so the
  decision is legible from the artifact alone.
- 
+
  @param pairIndex - aligned chunk
- 
+
  @param sealedTargets - translation blocks sealed
- 
+
  @param sealedSourceIds - originals sealed with them
- 
+
  @returns Finding in the alignment channel's wording
- 
+
  @example
  ```ts
  findings.push(sealedFinding({ pairIndex, sealedTargets, sealedSourceIds, },),);

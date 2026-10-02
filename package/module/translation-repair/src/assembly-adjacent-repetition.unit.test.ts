@@ -1,16 +1,16 @@
 /**
  Tests for the adjacent-slice repetition check: what it names, and the four
  things it must NOT name.
- 
+
  WHY IT EXISTS SEPARATELY from the document-scale check: that one requires two
  words of at least five letters before reporting anything, and the `lintong`
  example carries none, so the check written for that defect cannot see it.
  Adjacency is specific enough to need no content gate, which
  `doc/audit/an-archive-rebuilt-from-the-ledger-is-not-the-archive.md`
  measures at one hit in twenty-two lane readings.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

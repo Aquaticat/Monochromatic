@@ -1,14 +1,14 @@
 /**
  Tests for one editor roster's arm over one slice.
- 
+
  `runArm` is the editor stage plus one reduction, and the reduction is where
  the comparison's two conventions live: an arm that shipped the translation
  untouched reads as blank, and the producer is read off the stage's own answer
  rather than off a slate index. Both are checked here on a scripted client.
- 
+
  Fixtures are cat-themed invention, the same two-sentence chunk the editor
  stage's composite case uses.
- 
+
  @module
  */
 
@@ -135,11 +135,11 @@ const JUDGES = [
 
 /**
  Client answering each seat by model id.
- 
+
  @param answers - reply per model id; a model with no entry is a fixture bug
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = scriptedClient({ answers: { [EDITORS[0]]: { edits: [], }, }, },);

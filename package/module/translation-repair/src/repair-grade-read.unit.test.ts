@@ -2,7 +2,7 @@
  Tests for reading a filled repair sheet back into verdicts, including the
  fence tracking that stops quoted corpus text from fabricating a grade.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

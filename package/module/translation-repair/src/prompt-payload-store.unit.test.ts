@@ -1,6 +1,6 @@
 /**
  Tests durable prompt payload validation and cross-client replay.
- 
+
  @module
  */
 
@@ -52,11 +52,11 @@ const SLEPT = 'The cat slept.';
 /**
  Format version the store writes, read off a record it wrote, so a fixture
  carries the store's own version rather than a copied number.
- 
+
  @returns Version of a freshly written record
- 
+
  @throws Error when the written record carries no numeric version
- 
+
  @example
  ```ts
  const version = await writtenVersion();
@@ -96,11 +96,11 @@ const VERSION = await writtenVersion();
 
 /**
  Record text holding one stored reply under the store's own version.
- 
+
  @param reply - stored reply, one field broken per case
- 
+
  @returns Record text as the store would find it
- 
+
  @example
  ```ts
  const record = storedReply({ reply: { text: 7, }, },);
@@ -115,11 +115,11 @@ function storedReply({ reply, }: { readonly reply: unknown; },): string {
 
 /**
  Message a refused read carries: the record's digest, then what refused.
- 
+
  @param reason - what the store names as refused
- 
+
  @returns Whole message expected
- 
+
  @example
  ```ts
  const message = readRefusal({ reason: 'the record is not a JSON object', },);
@@ -132,13 +132,13 @@ function readRefusal({ reason, }: { readonly reason: string; },): string {
 /**
  What a store call refused with, held so a case can assert its class and the
  text a tally line prints for it.
- 
+
  @param pending - store call expected to refuse
- 
+
  @returns Refusal, unchanged
- 
+
  @throws Error when the call answers instead of refusing
- 
+
  @example
  ```ts
  const refusal = await refusalOf(store.read({ promptDigest, },),);

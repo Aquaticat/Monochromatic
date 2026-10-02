@@ -21,7 +21,7 @@ import { flattenSpace, } from './sheet-line-text.ts';
 
 /**
  What the deterministic check made of one claim.
- 
+
  @example
  ```ts
  const admissibility: ClaimAdmissibility = 'contradicted';
@@ -36,7 +36,7 @@ export type ClaimAdmissibility =
 
 /**
  One prober claim of introduced damage, after screening.
- 
+
  @example
  ```ts
  const claim: ScreenedDefectClaim = { modelId, admissibility: 'corroborated', ... };
@@ -83,11 +83,11 @@ export type ScreenedDefectClaim = {
 
 /**
  Everything screening decided about one replaced region.
- 
+
  The five counts are kept apart rather than reduced to a verdict because the
  question this probe was built to answer is which of them a human agrees with,
  and collapsing them now would destroy the evidence for that.
- 
+
  @example
  ```ts
  const tally: RegionDefectTally = { envelopeId, corroborated: 1, ... };
@@ -133,7 +133,7 @@ export type RegionDefectTally = {
    Claims quoting wording an accepted issue already complained about, so the
    prober is re-reporting the defect the region was cut for rather than
    damage the edit caused.
-   
+
    Counted apart from every other outcome because it is the only one that
    says the claim is about the WRONG THING rather than wrong. Folding it into
    `contradicted` would say the differential refuted the claim, which it did
@@ -187,20 +187,20 @@ function asScreened({ text, }: { readonly text: string; },): string {
  only the first direction would have made every omission claim unanchored,
  which is the failure mode worth guarding hardest against: dropping a clause
  while rewriting is among the likeliest ways an editor causes damage.
- 
+
  A claim carrying BOTH anchors is a wire fault rather than a stronger claim.
  Screening each and taking the better answer would let a prober launder a
  contradicted anchor by attaching a second one.
- 
+
  @param evidence - wording quoted from the replacement, for added damage
- 
+
  @param omittedText - wording quoted from the replaced text, for dropped
  content
- 
+
  @param region - region the claim is about
- 
+
  @returns Admissibility of the claim
- 
+
  @example
  ```ts
  const admissibility = screenEvidence({ evidence, omittedText: '', region, },);
@@ -250,17 +250,17 @@ export function screenEvidence(
 
 /**
  Target-side wording every accepted issue a region serves complained about.
- 
+
  Read from the claims' own evidence rather than from the region, because the
  region records what was REPLACED and an issue records what was WRONG, and a
  replacement is routinely wider than any single complaint it answers.
- 
+
  @param region - region whose served issues are collected
- 
+
  @param issues - accepted issues of the chunk
- 
+
  @returns Flattened target-side quotes, empty strings dropped
- 
+
  @example
  ```ts
  const quotes = collectPriorQuotes({ region, issues, },);
@@ -300,17 +300,17 @@ function collectPriorQuotes(
 
 /**
  Whether an anchored verdict would otherwise count as damage the edit caused.
- 
+
  The pre-existing check only ever DOWNGRADES a claim that survived the
  differential. A contradicted claim has already been refuted mechanically, by
  the stronger fact that its wording was present before the edit, and an
  unanchored one quotes nothing checkable; relabelling either would replace a
  precise verdict with a vaguer one.
- 
+
  @param anchored - what the differential made of the claim
- 
+
  @returns Whether the verdict is one the pre-existing check may replace
- 
+
  @example
  ```ts
  const replaceable = countsAsDamage({ anchored: 'removal-corroborated', },);
@@ -324,7 +324,7 @@ function countsAsDamage(
 
 /**
  Decides whether a claim is pointing at a defect that was already reported.
- 
+
  This is the defence the PROMPT used to provide by listing the accepted issues
  and forbidding a prober from re-reporting them. Listing them measurably
  silenced the stage: with the list shown the probe raised 2 admissible claims
@@ -333,18 +333,18 @@ function countsAsDamage(
  the text without being told what to excuse, which is the split
  `screenNonTranslationVotes` already set as precedent: deterministic evidence
  dismisses a claim rather than a prompt preventing it.
- 
+
  Containment is checked BOTH ways for ADDED wording, because those two quotes
  are cut by different parties. A critic quotes the phrase it objected to, and a
  prober quotes as much of the surrounding wording as it thinks damaged, so
  neither is reliably the longer one.
- 
+
  REMOVAL CLAIMS TAKE ONLY ONE DIRECTION, and the difference is the whole point.
  A removal claim quotes the wording that DISAPPEARED, drawn from the before
  text, which is the same side the critic quoted, on a region that exists
  precisely because the critic quoted something in it. So containment is close
  to guaranteed, and which way it runs is the entire signal:
- 
+
  - Dropped wording INSIDE the prior quote was licensed to disappear. Removing
    the objected-to phrase is what the repair was for, so a prober reporting its
    absence is restating the accepted issue. Discounted.
@@ -352,21 +352,21 @@ function countsAsDamage(
    objected-to phrase AND unrelated content with it. That is the over-deletion
    shape a human grader found as a deleted contributor credit, and it is a NEW
    defect the critic never asked for. It must survive.
- 
+
  Checking both ways here suppressed exactly the second case. Measured:
  removal-corroborated ran 159 across the original 56-entry run and 0 across
  every run after this reclassification landed, while corroborated held its rate
  per region, because added-wording claims quote the AFTER text and never
  collided.
- 
+
  @param quoted - wording the claim anchors on, already flattened
- 
+
  @param priorQuotes - flattened target-side quotes of the served issues
- 
+
  @param removal - whether the claim anchors on wording the edit dropped
- 
+
  @returns Whether the claim restates an accepted issue
- 
+
  @example
  ```ts
  const known = restatesPriorIssue({ quoted, priorQuotes, removal: false, },);
@@ -406,13 +406,13 @@ function restatesPriorIssue(
 
 /**
  Counts screened claims sharing one admissibility.
- 
+
  @param claims - screened claims of one region
- 
+
  @param wanted - admissibility to count
- 
+
  @returns Claims carrying that admissibility
- 
+
  @example
  ```ts
  countAdmissibility({ claims, wanted: 'contradicted', },);
@@ -435,7 +435,7 @@ function countAdmissibility(
 
 /**
  One prober's check on a region, paired with who cast it.
- 
+
  Named rather than inferred from the mapping that builds it: an inferred
  object literal carries writable properties, and every later reader of the
  cast list then takes a mutable parameter it never mutates.
@@ -454,18 +454,18 @@ type CastCheck = Readonly<{
 
 /**
  Screens every prober ballot into one tally per region.
- 
+
  A check naming a region outside the sheet, or carrying a verdict outside the
  closed vocabulary, is dropped rather than counted anywhere: it is a wire
  fault, and folding it into `uncertain` would make schema noise look like
  model doubt.
- 
+
  @param regions - replaced regions in prompt numbering order
- 
+
  @param ballots - checks per prober, keyed by model id
- 
+
  @returns Tally per region, in region order
- 
+
  @example
  ```ts
  const tallies = screenIntroducedDefects({ regions, ballots, },);
@@ -495,7 +495,7 @@ export function screenIntroducedDefects(
     },);
     /**
      One check per prober on this region, paired with its prober.
-     
+
      ONE PER PROBER, THE FIRST WITH A VERDICT THE SCREEN KNOWS. The sheet asks
      for one check per region; a prober answering twice used to count twice
      and a prober skipping the region counted nowhere, so the printed tallies

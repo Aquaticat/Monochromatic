@@ -26,11 +26,11 @@ import type { RosterModelId, } from './roster-id.ts';
 
 /**
  Concurrent calls each provider grants one model.
- 
+
  POSITIVE INFINITY MEANS NO LIMIT, the same reading `HYPER_PER_MODEL_CONCURRENCY`
  and `OPENROUTER_PER_MODEL_CONCURRENCY` give it: a provider that states no
  ceiling takes no slot and is never saturated.
- 
+
  @example
  ```ts
  const limits: SlotLimits = { synthetic: 5, hyper: Number.POSITIVE_INFINITY, openrouter: Number.POSITIVE_INFINITY, };
@@ -40,11 +40,11 @@ export type SlotLimits = ProviderRecord<number>;
 
 /**
  Whether a limit is a real ceiling rather than the no-limit reading.
- 
+
  @param limit - slots a provider grants one model
- 
+
  @returns Whether calls on it should be counted
- 
+
  @example
  ```ts
  const counted = isCeiling({ limit: 5, },);
@@ -58,9 +58,9 @@ function isCeiling(
 
 /**
  Fresh per-model count for one provider.
- 
+
  @returns Empty count map
- 
+
  @example
  ```ts
  const counts = freshCounts();
@@ -72,7 +72,7 @@ function freshCounts(): Map<RosterModelId, number> {
 
 /**
  In-flight accounting for the providers that limit per-model concurrency.
- 
+
  @example
  ```ts
  const ledger: SlotLedger = createSlotLedger({ limits: { synthetic: 5, }, },);
@@ -100,7 +100,7 @@ export type SlotLedger = {
 
   /**
    Hands back the slot {@link SlotLedger.take} took, on scope exit.
-   
+
    A DISPOSABLE RATHER THAN A `finally`, so the release cannot be skipped by
    an early return added later and does not need the caller to remember it.
    */
@@ -112,11 +112,11 @@ export type SlotLedger = {
 
 /**
  Builds the ledger over the providers that limit per-model concurrency.
- 
+
  @param limits - concurrent calls per model each limiting provider grants
- 
+
  @returns Ledger the router reads and writes at the decision
- 
+
  @example
  ```ts
  const ledger = createSlotLedger({ limits: { synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY, }, },);
@@ -132,13 +132,13 @@ export function createSlotLedger(
 
   /**
    Adjusts the in-flight count for one model on one provider.
-   
+
    @param provider - provider whose count moves
-   
+
    @param modelId - model whose count moves
-   
+
    @param by - change to apply
-   
+
    @example
    ```ts
    count({ provider: 'synthetic', modelId, by: 1, },);

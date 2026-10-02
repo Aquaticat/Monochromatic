@@ -1,18 +1,18 @@
 /**
  Tests for the guarded single exchange every pipeline stage runs through.
- 
+
  `attemptStageCall` had no test, and it decides the one thing the ensemble
  design depends on: which failures become a missing voice and which propagate.
  The ensemble tolerates missing panelists and critics, so turning a failure
  into an absent voice is correct. Turning a CALLER ABORT into an absent voice
  would not be: the fan-out would carry on answering after the user asked it to
  stop, and quorum would be reached from voices nobody wanted.
- 
+
  So the cases in this file separate those two, and check that a lost voice is always
  logged rather than silently swallowed.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -49,13 +49,13 @@ const MODEL_ID = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Client answering with one scripted outcome, or throwing one scripted error.
- 
+
  @param outcome - outcome to return, when the client answers
- 
+
  @param thrown - error to throw instead, when the client fails
- 
+
  @returns Client honoring exactly that script
- 
+
  @example
  ```ts
  const client = scriptedClient({ outcome: { kind: 'refusal-shaped', rawText: '', detail: '', }, },);
@@ -102,13 +102,13 @@ function scriptedClient(
 
 /**
  Runs one exchange against a scripted client.
- 
+
  @param client - scripted client
- 
+
  @param signal - caller abort handle
- 
+
  @returns Voice as data
- 
+
  @example
  ```ts
  const voice = await callWith({ client, signal: new AbortController().signal, },);

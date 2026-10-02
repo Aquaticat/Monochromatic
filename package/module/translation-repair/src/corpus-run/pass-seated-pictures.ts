@@ -29,27 +29,27 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 /**
  Seats the picture readers off the meters, then reads every picture with
  the seated ones.
- 
+
  ONE READING OF THE METERS FOR THE STAGE, logged as `JUDGE SEATS
  phase=pictures`, taken here rather than borrowed from the lanes' reading
  that follows: the lanes read theirs after this stage has spent its calls,
  and XIEPT2 on 2026-09-03 showed a provider going dry inside one entry.
- 
+
  @param client - run client, whose dryness view seats the readers and whose
  chat surface reads the pictures
- 
+
  @param slices - prepared entry slices naming assets
- 
+
  @param entryId - corpus entry whose asset directory is read
- 
+
  @param cache - durable paired reading cache
- 
+
  @param signal - entry cancellation
- 
+
  @param l - entry logger, which records the seating line and the readings
- 
+
  @param visualEvidenceReader - optional integration-test evidence seam
- 
+
  @param priorReadings - completed evidence retained within this pinned entry,
  empty before the entry's first reading; required, since the one caller
  ({@link createPassPictureReader}) always holds the entry's map (ledger T8)
@@ -127,15 +127,15 @@ export async function readSeatedPictures(
 
 /**
  Binds one entry's reader so preparation and lanes share completed evidence.
- 
+
  Disk-cache persistence does not refresh its open snapshot. Retaining readings
  here also preserves the evidence already used by archive review if the reader
  roster changes before lanes start. Newly exposed references still get read.
- 
+
  @param input - pinned entry, provider, cache and cancellation boundary
- 
+
  @returns Reader whose evidence belongs to this entry alone
- 
+
  @example
  ```ts
  const readPictures = createPassPictureReader({ client, entryId, cache, signal, l, });
@@ -150,9 +150,9 @@ export function createPassPictureReader(
   const priorReadings = new Map<string, PairedReading>();
   /**
    Reads missing entry pictures and retains the completed result.
-   
+
    @param slices - current prepared source references
-   
+
    @returns Evidence shared by archive review and later lanes
    */
   async function readPictures(

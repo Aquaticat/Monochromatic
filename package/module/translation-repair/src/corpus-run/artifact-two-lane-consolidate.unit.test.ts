@@ -1,6 +1,6 @@
 /**
  Tests for the record one consolidated slice leaves behind.
- 
+
  WHAT THESE PIN is the field that decides what reaches the reader. The stage
  can settle six different ways and exactly one of them produces wording an
  assembly should write; the other five leave the slice with whatever the lane
@@ -8,13 +8,13 @@
  make those indistinguishable, and one of the five, `no-standing-text`,
  carries the EMPTY STRING, so an assembly reading it naively would delete
  every slice whose contest named neither lane.
- 
+
  The named-absence half is therefore the half with teeth: these assert that a
  settlement which changes nothing offers NO text to write, rather than
  offering text that happens to match.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -38,17 +38,17 @@ import {
 
 /**
  Builds a settlement that left the stage the way a case needs.
- 
+
  ONLY THE FIELDS THE RECORD READS are real here. The floor and the judged
  round are whole objects in production and neither is projected into the
  record, so building them would assert nothing this file is about.
- 
+
  @param terminal - how the slice left the stage
- 
+
  @param text - wording the settlement carries, whatever the terminal
- 
+
  @returns Settlement shaped as the stage returns one
- 
+
  @example
  ```ts
  const settlement = settledAs({ terminal: 'consolidated', text: 'The cat naps.', },);

@@ -1,15 +1,15 @@
 /**
  Tests for reading a run's own timing lines back, which is what the timing work built
  so a run could say where its hours went.
- 
+
  THE OVERLAP CASE IS THE POINT. Achieved concurrency is an overlap count over
  call intervals, and before the timing work a completion line said only when a call
  ended, so no interval existed and the question had no answer. The figures
  asserted here are hand-computed from the fixture rather than recorded from a
  run, so a change in the sweep fails the case instead of moving the target.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -164,13 +164,13 @@ const SECOND = 1_000;
 
 /**
  Builds one call interval.
- 
+
  @param endsAtSeconds - seconds past the base instant the call ended
- 
+
  @param ranSeconds - how long the call ran
- 
+
  @returns Call the sweep can read
- 
+
  @example
  ```ts
  const call = callRunning({ endsAtSeconds: 10, ranSeconds: 10, },);
@@ -206,11 +206,11 @@ const PAST_SAFE = String(BigInt(Number.MAX_SAFE_INTEGER,) + 2n,);
 
 /**
  Messages a read threw: its own, then the one it wraps where it wraps one.
- 
+
  @param read - read that must throw
- 
+
  @returns The messages, outermost first
- 
+
  @example
  ```ts
  const texts = refusalTexts({ read: () => readRoundTiming({ line, },), },);

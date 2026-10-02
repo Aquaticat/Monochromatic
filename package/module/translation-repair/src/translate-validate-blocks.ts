@@ -11,11 +11,11 @@ import type { BlockShape, } from './translate-skeleton.ts';
 // them (audit area six, 2026-09-28).
 /**
  Renders one block for a finding.
- 
+
  @param shape - block to describe
- 
+
  @returns Kind with its distinguishing detail
- 
+
  @example
  ```ts
  const label = describeBlock({ kind: 'heading', detail: 'level 2', },);
@@ -27,11 +27,11 @@ function describeBlock(shape: BlockShape,): string {
 
 /**
  Renders a block sequence for a finding.
- 
+
  @param blocks - blocks in document order
- 
+
  @returns Comma-separated description, or a word for none
- 
+
  @example
  ```ts
  const label = describeBlocks({ blocks, },);
@@ -46,16 +46,16 @@ export function describeBlocks({ blocks, }: { readonly blocks: readonly BlockSha
 
 /**
  Whether one block sequence appears inside another, in order.
- 
+
  MATCHED BY KIND AND DETAIL, so a heading of another level does not stand in
  for the one the page carries.
- 
+
  @param floor - sequence that has to appear
- 
+
  @param candidate - sequence to look for it in
- 
+
  @returns Whether every block of `floor` was found, in order
- 
+
  @example
  ```ts
  const held = appearsInOrder({ floor, candidate, },);
@@ -99,13 +99,13 @@ function appearsInOrder(
 /**
  Whether two block sequences are the same shape, kind for kind and detail
  for detail.
- 
+
  @param left - one sequence
- 
+
  @param right - other sequence
- 
+
  @returns Whether every block matches its counterpart
- 
+
  @example
  ```ts
  sameShape({ left: source, right: candidate, },);
@@ -138,13 +138,13 @@ export function sameShape(
 /**
  Whether the floor's blocks are all of kinds the original has, so any surplus
  is a split of the original's blocks rather than something added.
- 
+
  @param floor - blocks the candidate is asked to carry
- 
+
  @param source - original's blocks
- 
+
  @returns Whether every floor block has a kind and detail the original has
- 
+
  @example
  ```ts
  splitOnly({ floor: page.blocks, source: expected.blocks, },);
@@ -169,7 +169,7 @@ function splitOnly(
 
 /**
  Findings for a block skeleton that does not carry the floor's.
- 
+
  THE PAGE IS A FLOOR, NOT A CEILING, and two references are why. Measured over
  68 settled slice records, the archive and the Chinese carry the same block
  sequence at 48, the archive carries more at 11 and fewer at 7, and those
@@ -177,7 +177,7 @@ function splitOnly(
  into a better shape, and an archive simply MISSING blocks the Chinese
  carries. Anchoring to either alone breaks the other case, so a candidate has
  to carry the floor's blocks and may add one only where the Chinese has more.
- 
+
  WITH THE ORIGINAL AS THE FLOOR THIS IS TODAY'S EXACT MATCH. A floor of the
  original with a ceiling of the original's own length admits one sequence, the
  original's.
@@ -195,7 +195,7 @@ function splitOnly(
  html and blockquote against one paragraph, an archive's blockquote that says
  a passage was left by someone) is carrying something a split cannot explain,
  and a candidate shaped as the original would drop it.
- 
+
  THE PAGE'S SUBSTITUTE AND THE ORIGINAL'S OWN KIND (class thirty-two,
  2026-09-16): Mio's archive ends with a farewell paragraph where the original
  ends with a poem in a block quote, the pairing set the two against each
@@ -205,18 +205,18 @@ function splitOnly(
  the ceiling also admits the page's blocks plus every original block of a
  kind the page has no block of. What the page rendered in a kind of its own
  is kept; what it has no block of the kind for may follow.
- 
+
  @param floor - blocks the candidate has to carry, the page's where there is
  one and the original's where there is not
- 
+
  @param floorName - what a finding calls that sequence
- 
+
  @param source - original's blocks, which set the ceiling with the floor
- 
+
  @param candidate - candidate's blocks
- 
+
  @returns One finding per rule the candidate's shape breaks
- 
+
  @example
  ```ts
  const findings = compareBlocks({ floor, floorName, source, candidate, },);

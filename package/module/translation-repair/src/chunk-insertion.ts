@@ -97,21 +97,21 @@ export type InsertionPlacement =
 
 /**
  Turns a proven section boundary into a document offset.
- 
+
  A boundary EQUAL to the section count means the section belongs after
  everything the translation carries, which is the end of the last section
  rather than the start of a section that does not exist.
- 
+
  @param beforeTargetIndex - section the insertion precedes
- 
+
  @param targetChunks - translation sections in document order, never empty
- 
+
  @returns Offset in the translation text
- 
+
  @throws Error when the boundary names no section and is not the end, since a
  silent fallback there would write a whole section at whatever offset happened
  to be reachable
- 
+
  @example
  ```ts
  const offset = offsetOfBoundary({ beforeTargetIndex: 2, targetChunks, },);
@@ -148,19 +148,19 @@ function offsetOfBoundary(
 
 /**
  Decides which untranslated sections get an anchor, and names every refusal.
- 
+
  @param steps - aligner output for the whole document
- 
+
  @param sourceChunks - original sections in document order
- 
+
  @param targetChunks - translation sections in document order, never empty
- 
+
  @param sourceText - whole original page
- 
+
  @param targetText - whole translation as it stands
- 
+
  @returns One decision per untranslated section, in document order
- 
+
  @example
  ```ts
  const placements = placeInsertions({ steps, sourceChunks, targetChunks, sourceText, targetText, },);
@@ -218,7 +218,7 @@ export function placeInsertions(
 
   /**
    Whether the page is short at all.
-   
+
    MEASURED RATHER THAN INFERRED FROM THE ADMISSIONS. Reading "nothing was
    admitted" as "the page is not short" is wrong exactly when the first
    candidate is larger than the whole shortfall: the page is genuinely short,
@@ -264,11 +264,11 @@ export function placeInsertions(
 
 /**
  Names one placement for an alignment finding.
- 
+
  @param placement - what was decided about one section
- 
+
  @returns Sentence a reader can act on
- 
+
  @example
  ```ts
  const detail = describePlacement(placement,);

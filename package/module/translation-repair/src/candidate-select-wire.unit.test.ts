@@ -1,9 +1,9 @@
 /**
  Tests for the judge-ballot wire guard.
- 
+
  `isCandidateBallotWire` is the only check between a malformed judge reply and
  code that reads `best` as an index. It had no test.
- 
+
  One boundary is deliberately absent from the guard and is pinned here so
  nobody adds it: there is no UPPER bound on `best`. A ballot naming a
  candidate that does not exist is admitted on purpose, because
@@ -11,9 +11,9 @@
  whole ballot, and that behavior has its own test. Rejecting the out-of-range
  ballot here would turn an abstention into a lost voice and change what a
  quorum means.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

@@ -78,34 +78,34 @@ function objectionPolishFindings(
 
 /**
  Polishes final body text and lets fidelity-first roster approve replacement.
- 
+
  @param client - shared provider client
- 
+
  @param sourceText - original passage anchoring fidelity
- 
+
  @param archiveText - archive wording shown as supporting evidence
- 
+
  @param baseText - wording already approved by consolidation gate
- 
+
  @param syntax - explicit syntax role; front matter is never polished
- 
+
  @param lineStructured - whether source line boundaries must survive
- 
+
  @param identityContext - names and handles prompts preserve
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param archiveDisputeNote - accepted claims against the archive rendering
  on a disputed slice, for the gate (ledger S12)
- 
+
  @param disputedWordings - wordings the slice refuses, which the polish may
  not land on any more than a proposal may (ledger B29)
- 
+
  @param sliceIndex - prepared slice position
- 
+
  @param config - model roles and document-wide guard facts
- 
+
  @param eligible - whether approved base may cross publication boundary
 
  @param mode - comparative polish, or an objection correction carrying what
@@ -113,13 +113,13 @@ function objectionPolishFindings(
  base stays the fallback either way
 
  @param signal - caller cancellation
- 
+
  @param perCallTimeoutMs - per-exchange ceiling
- 
+
  @param l - stage logger
- 
+
  @returns Auditable polish decision and final text
- 
+
  @example
  ```ts
  const polish = await polishConsolidation({ client, sourceText, archiveText, baseText, lineStructured: false, sliceIndex: 0, config, signal, perCallTimeoutMs, l, });

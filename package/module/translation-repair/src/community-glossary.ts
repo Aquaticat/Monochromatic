@@ -41,7 +41,7 @@ import { withoutHtmlComments, } from './translate-address-drop.ts';
 
 /**
  One community term and how the community renders it.
- 
+
  @example
  ```ts
  const term: CommunityTerm = { term: '自切', renderings: ['self-surgery',], refusedForms: [], why: '...', };
@@ -99,7 +99,7 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
 
 /**
  One text a judge is shown, by the label the sheet gives it.
- 
+
  @example
  ```ts
  const candidate: RenderingCandidate = { label: 'CANDIDATE 1', text, };
@@ -125,11 +125,11 @@ export type RenderingCandidate = {
  matches in any case and spacing, and never inside a longer word (MOD).
 
  @param text - original text to read
- 
+
  @param glossary - terms to look for; defaults to the corpus glossary
- 
+
  @returns Terms present, in glossary order
- 
+
  @example
  ```ts
  communityTermsIn({ text: '在她自切后', },);
@@ -183,11 +183,11 @@ export function communityTermsIn(
 
 /**
  Quotes every accepted rendering for a sheet line.
- 
+
  @param entry - term whose renderings are listed
- 
+
  @returns Renderings quoted and comma-joined
- 
+
  @example
  ```ts
  quotedRenderings({ entry, },);
@@ -207,9 +207,9 @@ function quotedRenderings(
 /**
  Identity-context lines for the terms an entry's source carries, so every
  sheet that carries the declared names carries the community's words.
- 
+
  @param text - whole original document
- 
+
  @param glossary - terms to look for; defaults to the corpus glossary
 
  @param heading - line naming what the terms are, so a glossary of ordinary
@@ -257,11 +257,11 @@ export function communityTermLines(
  "cured" in "secured" nor "Atri" in "atrium" (ledger C3 and C4).
 
  @param text - candidate text
- 
+
  @param entry - term whose renderings are looked for
- 
+
  @returns Whether one rendering occurs
- 
+
  @example
  ```ts
  carriesRendering({ text: 'She attempted self-surgery.', entry, },);
@@ -297,18 +297,18 @@ function carriesRendering(
 /**
  Names each candidate lacking every accepted rendering of a term the source
  carries.
- 
+
  AN EMPTY CANDIDATE IS SKIPPED: an absent archive rendering carries no word
  and is not departing from one.
- 
+
  @param sourceText - original the candidates render
- 
+
  @param candidates - texts the judge is shown, by label
- 
+
  @param glossary - terms to look for; defaults to the corpus glossary
- 
+
  @returns One line per candidate and term, in candidate then glossary order
- 
+
  @example
  ```ts
  const departures = communityRenderingDepartures({ sourceText, candidates, },);
@@ -353,16 +353,16 @@ export function communityRenderingDepartures(
 /**
  Sheet block naming the departures, for the judge to weigh after the
  passages.
- 
+
  @param sourceText - original the candidates render
- 
+
  @param candidates - texts the judge is shown, by label
- 
+
  @param glossary - terms to look for; defaults to the corpus glossary
- 
+
  @returns Heading, one line per departure, the inflection note and a blank
  line; empty when no candidate departs
- 
+
  @example
  ```ts
  const block = communityRenderingsBlock({ sourceText, candidates, },);

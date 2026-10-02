@@ -40,7 +40,7 @@ import { applySeededErrors, } from './seeded-error.ts';
 
 /**
  Which constructed defect a trial carries.
- 
+
  @example
  ```ts
  const damageKind: FidelityDamageKind = 'insertion';
@@ -50,7 +50,7 @@ export type FidelityDamageKind = 'deletion' | 'insertion' | 'alteration';
 
 /**
  One damaged twin, or the fact that this slice admits none.
- 
+
  @example
  ```ts
  const attempt: DamageAttempt = deleteOneSentence({ cleanText, },);
@@ -81,13 +81,13 @@ export type DamageAttempt = {
   /**
    What the edit did, in enough detail to compare two runs without reading
    their prose.
-   
+
    WHY THIS EXISTS. Comparing a narrow-window arm against a wide one required
    knowing that both had damaged the SAME thing, and the only record of that
    was whichever numbers the judges happened to quote in their reasons.
    Recovering picks by parsing judge prose worked three times and was three
    times too many: it can only find what a judge chose to mention.
-   
+
    SAFE TO PRINT, which is why it is a field rather than a log line. Every
    producer writes structure rather than archive prose: the alteration writes
    the two numbers, and the deletion and insertion write lengths alone. No
@@ -110,11 +110,11 @@ export type DamageAttempt = {
 
 /**
  Longest sentence a text admits as an unambiguous needle.
- 
+
  @param text - passage to draw from
- 
+
  @returns Sentence, or empty when the text admits none
- 
+
  @example
  ```ts
  const sentence = anchorSentence({ text: cleanText, },);
@@ -135,11 +135,11 @@ function anchorSentence({ text, }: { readonly text: string; },): string {
 
 /**
  Removes one whole sentence, which is the coverage defect.
- 
+
  @param cleanText - slice English as the archive holds it
- 
+
  @returns Damaged twin and what it cost, or why none could be built
- 
+
  @example
  ```ts
  const attempt = deleteOneSentence({ cleanText, },);
@@ -160,7 +160,7 @@ export function deleteOneSentence(
 
   /**
    Slice with that sentence gone and the join left unmarked.
-   
+
    NOT `applySeededErrors`, which cuts the sentence and leaves both separators:
    that left a double space mid-paragraph and three consecutive newlines where
    a whole paragraph went, either of which a judge can see without reading the
@@ -200,14 +200,14 @@ export function deleteOneSentence(
  Splices a sentence borrowed from elsewhere in the document into the clean
  text, which is the addition defect and the one whose correct answer is the
  SHORTER candidate.
- 
+
  @param cleanText - slice English as the archive holds it
- 
+
  @param donorTexts - English of other slices of the same document, FURTHEST
  FIRST, of which the first usable one donates
- 
+
  @returns Damaged twin and what it cost, or why none could be built
- 
+
  @example
  ```ts
  const attempt = insertBorrowedSentence({ cleanText, donorTexts, },);
@@ -225,7 +225,7 @@ export function insertBorrowedSentence(
   /**
    Sentence to borrow, drawn the same way the deletion draws its own so both
    fixtures move a comparable amount of text.
-   
+
    THE FIRST USABLE DONOR RATHER THAN THE FURTHEST ONE FULL STOP. Measured on
    the corpus, taking only the furthest slice refused fifteen of sixteen
    attempts: the last slice of a memorial entry is often a short list, a
@@ -311,13 +311,13 @@ export function insertBorrowedSentence(
 /**
  Changes a number the original also states, which is the fixture no amount of
  reading the English can decide.
- 
+
  @param cleanText - archive English for this slice
- 
+
  @param sourceText - Chinese original for the same slice
- 
+
  @returns Damaged twin and what it cost, or why none could be built
- 
+
  @example
  ```ts
  const attempt = alterSharedNumber({ cleanText, sourceText, },);

@@ -1,17 +1,17 @@
 /**
  Tests for the provider decision.
- 
+
  THESE CASES ARE THE OWNER'S POLICY, stated as a table. Synthetic first until
  its per-model concurrency limit is taken, then overflow to Hyper, which has
  no such limit; either of Synthetic's two limits emptying is a reason to fail
  over; Hyper dry too sends the call to OpenRouter (2026-09-03); every
  provider empty at once ends the run.
- 
+
  THE ASYMMETRY IS DELIBERATE and worth reading twice: a model that some
  providers do not serve loses its voice when the ones that do are dry, and
  the run continues. Only every budget being empty throws, because only then
  is nothing buyable at all.
- 
+
  @module
  */
 

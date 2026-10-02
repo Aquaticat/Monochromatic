@@ -36,7 +36,7 @@ import { isAsciiAlphanumeric, } from './ascii-letters.ts';
 
 /**
  Longest single marker tail considered.
- 
+
  `<|im_start|>` is twelve characters, so a whole marker of that family fits
  and anything longer is prose that happens to contain the closing characters.
  */
@@ -44,7 +44,7 @@ const MARKER_TAIL_LIMIT = 12;
 
 /**
  Most consecutive markers consumed before the run is treated as prose.
- 
+
  More than one can leak when two tokens straddle the same delta boundary. The
  bound exists so a pathological input cannot turn this into an unbounded scan.
  */
@@ -57,7 +57,7 @@ const MARKER_CLOSE = '|>';
 
 /**
  Characters a whole, untruncated marker begins with.
- 
+
  Optional when matching, precisely because the interesting case is the one
  where the opening did not survive.
  */
@@ -65,7 +65,7 @@ const MARKER_OPEN = '<|';
 
 /**
  Openings that mean the marker run has ended and real content has started.
- 
+
  A fence is included because the fence stripper runs before this and cannot
  see a fence hidden behind a marker; the caller unwraps it afterwards.
  */
@@ -77,14 +77,14 @@ const CONTENT_OPENINGS: readonly string[] = [
 
 /**
  Reports whether a character can appear in a marker's name.
- 
+
  Compared by code point rather than by pattern, since the alphabet is three
  contiguous ranges plus one character and an index scan states that directly.
- 
+
  @param character - single character from the candidate marker
- 
+
  @returns True for ASCII letters, digits and underscore
- 
+
  @example
  ```ts
  const ok = isMarkerBodyCharacter({ character: 'p', },);
@@ -102,11 +102,11 @@ function isMarkerBodyCharacter(
 
 /**
  Measures one marker sitting at the start of the text.
- 
+
  @param text - candidate text, already trimmed at its start
- 
+
  @returns Length of the marker, zero when the text does not open with one
- 
+
  @example
  ```ts
  const width = markerWidth({ text: 'ep|>{"count":2}', },);
@@ -159,11 +159,11 @@ function markerWidth(
 
 /**
  Content with any marker run removed, and the run that was removed.
- 
+
  `marker` is empty when nothing was stripped, rather than absent, because the
  caller logs it and an empty string reads as "nothing to report" at the call
  site without a nullish check.
- 
+
  @example
  ```ts
  const { content, marker, } = stripChannelMarker({ text: 'p|>{"count":2}', },);
@@ -183,17 +183,17 @@ export type ChannelMarkerStrip = {
 
 /**
  Removes truncated provider channel markers sitting in front of content.
- 
+
  Strips only when every leading fragment is shaped like the end of a `<|word|>`
  token AND what follows opens an object, an array or a code fence, so a reply
  that begins with those characters and then says something else still fails to
  parse. The decision is transactional: a run that does not reach real content
  leaves the input untouched rather than partially repaired.
- 
+
  @param text - model content, before or after fence removal
- 
+
  @returns Content without the markers, plus what was removed for logging
- 
+
  @example
  ```ts
  const { content, marker, } = stripChannelMarker({ text: 'ep|>{"count":2}', },);
@@ -221,7 +221,7 @@ export function stripChannelMarker(
 
   /**
    Characters of leading marker consumed.
-   
+
    Folded over a fixed number of slots rather than accumulated in a mutable
    cursor: once the run ends, every remaining slot returns the width
    unchanged, so the bound is expressed by the array length instead of by a

@@ -1,6 +1,6 @@
 /**
  Tests for one slice run at both editor widths.
- 
+
  THREE ARMS RUN, NOT TWO, and that is the property the whole width probe rests
  on. The third arm repeats the NARROW roster so the comparison has a null band
  of its own: without it, the headline number, how often widening changed the
@@ -9,24 +9,24 @@
  `narrowRepeatAgreed: true` would not fail loudly. It would produce a confident
  number from a comparison with no band under it, and every reading of the width
  question would tilt toward width mattering.
- 
+
  SO THE COUNT IS THE ASSERTION. Both fixtures in this file count editor calls per
  seat, and the seats are asymmetric on purpose: two narrow against three wide,
  so three arms cost seven calls where two would cost five. A count is the only
  evidence that separates them, because both shapes return a well-formed row.
- 
+
  THE STUB CLIENT COSTS NO QUOTA. `runWidthSlice` takes its client, so every
  call here is answered in-process, and the replies are validated against the
  live request's own wire guard rather than assumed to fit it.
- 
+
  A PANEL THAT ALWAYS PICKS THE FIRST SEAT IS REPORTED AS `position-decided`,
  never as a win. That is the anti-laundering guard: the head-to-head runs both
  seating orders precisely so a preference for the seat cannot be published as a
  preference for the text, and the churning fixture drives exactly that case.
- 
+
  Fixtures are cat-themed invention, and the model identifiers are real catalog
  seats because a roster is checked against the catalog.
- 
+
  @module
  */
 
@@ -75,7 +75,7 @@ const SOURCE_TEXT = '猫猫在窗台上睡觉。';
 
 /**
  Seats both arms share.
- 
+
  The narrow arm IS these two, so the repeat arm calls exactly these seats
  again and the wide arm calls them plus one more.
  */
@@ -113,7 +113,7 @@ const JUDGES: readonly RosterModelId[] = [
 
 /**
  Editor calls three arms cost at these rosters.
- 
+
  Spelled as the sum it is so the reader can see which arm each term pays for,
  rather than checking a bare seven.
  */
@@ -137,7 +137,7 @@ const ENVELOPES: readonly EditableEnvelope[] = [
 
 /**
  Issues the slice carries: one the panel accepted and one it did not.
- 
+
  BOTH ARE HERE so the row's `acceptedIssues` column has something to be wrong
  about. That column names the work available to the editors, and counting every
  issue instead would report a slice as having twice the work it had.
@@ -174,13 +174,13 @@ const INPUT: WidthProbeInput = {
 
 /**
  Repairs the shared seats propose, one per time each is asked.
- 
+
  KEYED BY HOW OFTEN A SEAT HAS BEEN ASKED, not by arm, so the schedule the
  runner happens to use cannot decide the fixture. Each shared seat is asked
  exactly once per arm, so the narrow arm reads the first entry, the repeat arm
  the second, and the wide arm the third: the lane disagrees with itself every
  time, which is what the null band exists to catch.
- 
+
  Each is a single-word swap, well inside what the preservation gate allows
  without a licensed quote.
  */
@@ -212,9 +212,9 @@ type CallLog = {
 
 /**
  Opens an empty call log.
- 
+
  @returns Fresh log
- 
+
  @example
  ```ts
  const log = freshLog();
@@ -231,16 +231,16 @@ function freshLog(): CallLog {
 /**
  Validates a scripted reply against the live request's wire guard and wraps it
  as an outcome.
- 
+
  @param reply - scripted reply for this call
- 
+
  @param request - live request, whose guard the reply must satisfy
- 
+
  @returns Outcome carrying the validated reply
- 
+
  @throws {@link Error} when the fixture itself fails the guard it is meant to
  satisfy, which is a defect in the fixture rather than in the code under test
- 
+
  @example
  ```ts
  return replyWith({ reply: { edits: [], }, request, },);
@@ -266,11 +266,11 @@ function replyWith<ValueT,>(
 
 /**
  Whether a seat is one of the panel's.
- 
+
  @param modelId - seat that was asked
- 
+
  @returns Whether the panel holds it
- 
+
  @example
  ```ts
  const judging = isJudge({ modelId: request.modelId, },);
@@ -283,18 +283,18 @@ function isJudge({ modelId, }: { readonly modelId: RosterModelId; },): boolean {
 /**
  Builds a client whose editors answer from a script and whose panel always
  names the FIRST candidate on whatever slate it is shown.
- 
+
  A first-seat panel is deliberate rather than lazy: it is the reading the
  head-to-head has to survive, since a preference for the seat must never be
  published as a preference for the text.
- 
+
  @param editorReply - decides what a shared editor seat proposes, given how
  often that seat has already been asked
- 
+
  @param log - call log this client writes to
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = scriptedClient({ editorReply: () => ({ edits: [], }), log, },);
@@ -361,9 +361,9 @@ function scriptedClient(
 
 /**
  Editor script where every seat declines every time.
- 
+
  @returns Empty edit list
- 
+
  @example
  ```ts
  const client = scriptedClient({ editorReply: decliningReply, log, },);
@@ -375,14 +375,14 @@ function decliningReply(): unknown {
 
 /**
  Editor script where a seat proposes different wording every time it is asked.
- 
+
  @param asked - how often this seat has been asked, counting this call
- 
+
  @returns Edit replacing the whole envelope with that round's wording
- 
+
  @throws {@link Error} when a seat is asked more times than the script has
  rounds, which would mean the runner changed how many arms it runs
- 
+
  @example
  ```ts
  const reply = churningReply({ asked: 1, },);

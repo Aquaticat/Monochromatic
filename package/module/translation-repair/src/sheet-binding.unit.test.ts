@@ -2,7 +2,7 @@
  Tests for the check that refuses a graded sheet scored against the wrong
  manifest.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -26,11 +26,11 @@ import {
 
 /**
  Builds one drawn candidate carrying only what the manifest reads.
- 
+
  @param issueId - adjudicated identity
- 
+
  @returns Candidate the manifest records
- 
+
  @example
  ```ts
  const candidate = catCandidate({ issueId: 'adjudicated/nap', },);
@@ -54,11 +54,11 @@ function catCandidate(
 
 /**
  Manifest of a one-item draw, digest included.
- 
+
  @param issueId - issue drawn at position one
- 
+
  @returns Manifest as the draw writes it
- 
+
  @example
  ```ts
  const manifest = catManifest({ issueId: 'adjudicated/nap', },);

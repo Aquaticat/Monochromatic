@@ -1,7 +1,7 @@
 /**
  Tests for the critic phase: the fan-out and the deterministic screen over its
  non-translation votes, together.
- 
+
  This module was extracted from the chunk driver for the file-size budget and
  never covered. Its two halves are each tested elsewhere; what is untested is
  the WIRING, and the wiring is the reason the module exists. The comment at
@@ -9,15 +9,15 @@
  any caller may act on, and keeping the two adjacent is what stops a later
  caller reading `nonTranslationVotes` straight off the critic result and
  blocking a slice on votes the evidence already contradicted.
- 
+
  A block is expensive in one direction only. Blocking a faithful translation
  discards the whole slice unrepaired; failing to block a genuinely
  untranslated pair leaves its issues surfaced. So the cases in this file check that
  `votesStand` is true only when the threshold is met AND nothing contradicted
  it.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -78,7 +78,7 @@ const CRITICS = [
 
 /**
  Wire issue asserting the pair is not a translation at all.
- 
+
  Carries no quotes, so it never resolves into an anchored claim. That is
  faithful to the real case: a degenerate pair defeats anchoring, which is
  exactly why the vote is counted at wire level rather than after resolution.
@@ -104,7 +104,7 @@ const ANCHORED_NON_TRANSLATION = {
 
 /**
  Content critique that anchors into the TARGET and survives screening.
- 
+
  Deliberately not an omission: `MISSING_TRANSLATION_LEAVES` excludes
  `omission`, `untranslated` and `non-translation` from contradiction counting,
  because those anchor happily onto an untranslated target and so prove
@@ -121,13 +121,13 @@ const CONTENT_CRITIQUE = {
 
 /**
  Runs the phase against a scripted client.
- 
+
  @param client - scripted critic client
- 
+
  @param criticModelIds - roster to fan out over
- 
+
  @returns Phase result
- 
+
  @example
  ```ts
  const phase = await runPhase({ client, criticModelIds: CRITICS, },);

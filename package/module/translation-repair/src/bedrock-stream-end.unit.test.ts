@@ -2,10 +2,10 @@
  Tests for how a Bedrock stream is known to be whole: the sentinel on the
  Gemma route, the usage chunk on the gpt-oss route, and the sentinel supplied
  to the shared reader where the route sends none.
- 
+
  Streams are shaped as the probes of 2026-09-07 captured them; the words are
  cat-themed invention.
- 
+
  @module
  */
 

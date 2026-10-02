@@ -21,7 +21,7 @@ import type {
 
 /**
  Position meaning "this text was not on the ballot at all".
- 
+
  Zero rather than a nullish value, matching `CANDIDATE_NONE` on the ballot
  side, so every recorded position is one number a reader compares the same
  way.
@@ -30,7 +30,7 @@ export const NOT_ON_SLATE = 0;
 
 /**
  One position on the ballot, with everything needed to read a vote for it.
- 
+
  @example
  ```ts
  const entry: TranslateSlateEntry = { index: 1, text, hash, origin: 'incumbent', producer, };
@@ -66,11 +66,11 @@ export type TranslateSlateEntry = {
 
 /**
  Records the rotated slate.
- 
+
  @param candidates - candidates in the order the judges were shown them
- 
+
  @returns One entry per position
- 
+
  @example
  ```ts
  const slate = describeSlate({ candidates: rotated, },);
@@ -102,14 +102,14 @@ export function describeSlate(
 
 /**
  Position the shipped text occupies on the slate.
- 
+
  @param slate - rotated slate
- 
+
  @param text - text that shipped
- 
+
  @returns One-based position, or {@link NOT_ON_SLATE} when the shipped text
  was never a candidate, which is what a blank incumbent looks like
- 
+
  @example
  ```ts
  const shippedIndex = positionOf({ slate, text, },);
@@ -144,24 +144,24 @@ const HEX_RADIX = 16;
 /**
  Rotates the candidate slate by a hash of the slice, so the incumbent does not
  sit in the same ballot position on every slice.
- 
+
  Judges receive one caller-fixed order, and the incumbent win rate is the
  measurement this whole lane exists to produce. Pinning the incumbent to
  position one would confound that rate with whatever position preference the
  judges have, and the confound would be invisible: every slice would carry it
  equally.
- 
+
  Rotation rather than shuffling, and keyed on the SOURCE rather than on a
  random draw, because a slice's candidate order has to be identical between a
  fresh run and a resumed one. A cached slice replayed under a different order
  would be a different question asked of the judges.
- 
+
  @param candidates - slate in assembly order
- 
+
  @param sourceText - slice original, the rotation key
- 
+
  @returns Same candidates, rotated
- 
+
  @example
  ```ts
  const ordered = rotateCandidates({ candidates, sourceText, },);

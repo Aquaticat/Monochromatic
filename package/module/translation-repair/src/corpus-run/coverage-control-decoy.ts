@@ -25,7 +25,7 @@ export type DecoyCut = {
 
   /**
    Offset it starts at, or `-1` when there is none.
-   
+
    REPORTED rather than kept private, because a decoy that does change the
    answer needs diagnosing: a cut landing on a title or a frontmatter block is
    structural damage of a different kind, and its offset is what says so.
@@ -58,13 +58,13 @@ type CoveredRegion = {
 
 /**
  Every region of a document covered by one of the named spans.
- 
+
  @param text - document searched
- 
+
  @param spans - spans to locate, every occurrence of each
- 
+
  @returns End offset of each occurrence, keyed by where it starts
- 
+
  @example
  ```ts
  const covered = coveredRegions({ text, spans, },);
@@ -112,19 +112,19 @@ function coveredRegions(
 
 /**
  Finds a cut of the requested size that misses every anchored span.
- 
+
  TAKEN AS LATE IN THE DOCUMENT AS IT FITS, because the front of a page carries
  its frontmatter and title, and deleting those is structural damage rather
  than the ordinary body deletion this control is trying to make.
- 
+
  @param text - document to cut from
- 
+
  @param avoid - spans the roster anchored on, which the cut must not touch
- 
+
  @param chars - size of the cut, matched to the cut it is being compared with
- 
+
  @returns Cut to make, or a blank one when the document has no room for it
- 
+
  @example
  ```ts
  const decoy = decoyCut({ text, avoid, chars, },);

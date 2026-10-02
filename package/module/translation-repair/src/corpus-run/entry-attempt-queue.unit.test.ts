@@ -1,17 +1,17 @@
 /**
  Tests for the order a run attempts its entries in.
- 
+
  `entry-reattempt.ts` decides whether ONE attempt earned another, and its own
  tests cover that arithmetic. This covers the sequence those verdicts produce,
  which is a separate thing that can be wrong on its own: a correct verdict
  driven by a loop that never comes back settles nothing, and a loop that comes
  back too eagerly spends a three-day budget on one entry.
- 
+
  THE ORDERING CASE IS THE ONE THAT WOULD COST MOST IF WRONG. A re-attempt that
  jumped the queue would let the largest entry in the corpus take attempt after
  attempt while entries that fit in one were never tried at all, which is worse
  than the cap this replaced: the cap at least moved on.
- 
+
  Every effect is injected, so no case here reads a corpus, calls a provider,
  or waits on anything.
 
@@ -63,14 +63,14 @@ type Script = {
 
 /**
  Builds a queue harness driving `runAttemptQueue` from a script.
- 
+
  @param scripts - what each entry does, in the order they are pending
- 
+
  @param stopAfter - attempts to allow before the budget ends the run; zero
  allows every attempt
- 
+
  @returns Order attempts were made in, once the queue has drained
- 
+
  @example
  ```ts
  const order = await attemptOrder({ scripts, },);

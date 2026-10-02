@@ -1,24 +1,24 @@
 /**
  Tests for stating a call's own response schema inside its system prompt.
- 
+
  THIS IMPLEMENTS A DIRECT OWNER INSTRUCTION: put the full schema into the
  system prompt, because some model and provider pairs behave badly without a
  detailed one and answer in the wrong shape. Before this, seventeen modules
  built a system message and not one mentioned the shape it expected back.
- 
+
  DERIVED, NEVER COPIED. Every case here renders from the same
  `JsonSchemaResponseFormat` value the request puts on the wire, which is the
  property that makes drift between the two impossible rather than unlikely.
  A test that spelled the expected block out by hand would pass while the two
  diverged, so the cases assert the RELATION between the format and the text.
- 
+
  IDEMPOTENCE IS LOAD-BEARING, not tidiness. A routed call can cross more than
  one seam and a re-route rebuilds its request, so a transform that appended
  unconditionally would state the schema two or three times and spend tokens
  saying the same thing.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -37,7 +37,7 @@ import {
 
 /**
  Response format a case sends, shaped like the ones production sends.
- 
+
  CARRIES AN ARRAY OF OBJECTS deliberately: the measured failure this exists to
  prevent returned a JSON-stringified array where one of these was declared.
  */
@@ -87,11 +87,11 @@ const USER = {
 
 /**
  Text of whichever message carries the system role, joined where it has parts.
- 
+
  @param messages - conversation to read
- 
+
  @returns System prompt as the model would see it, empty where there is none
- 
+
  @example
  ```ts
  expect(systemTextOf({ messages, },),).toContain(SCHEMA_BLOCK_HEADING,);
@@ -127,11 +127,11 @@ function systemTextOf(
 
 /**
  How many times the block heading appears in a conversation's system prompt.
- 
+
  @param messages - conversation to read
- 
+
  @returns Occurrence count
- 
+
  @example
  ```ts
  expect(headingCount({ messages, },),).toBe(1,);

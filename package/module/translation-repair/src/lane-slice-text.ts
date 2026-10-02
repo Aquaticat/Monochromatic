@@ -21,17 +21,17 @@ import { validateNamedSets, } from './lane-slice-sets.ts';
 
 /**
  What became of one slice inside a lane.
- 
+
  A DISCRIMINATED UNION rather than an optional wording, since 2026-08-16. The
  optional field had to mean everything that was not a decision, and four
  different things are not a decision. Two of them, a slice nobody reached and
  a slice everybody failed at, were read as the same fact by every consumer,
  and the second was reported to graders as the archive's wording standing.
- 
+
  Named for the OUTCOME rather than for reach on purpose: three of the four
  mean the lane reached the slice, so a field called `reach` invites the next
  reader to write `reach === 'decided'` and rebuild the defect this replaced.
- 
+
  @example
  ```ts
  const outcome: LaneSliceOutcome = { kind: 'decided', acceptedText: 'The cat is napping.', };
@@ -40,7 +40,7 @@ import { validateNamedSets, } from './lane-slice-sets.ts';
 export type LaneSliceOutcome = {
   /**
    Lane produced a wording for this slice.
-   
+
    Its text equals the incumbent when the lane examined the slice and chose to
    leave it alone, which is a decision rather than an absence.
    */
@@ -53,7 +53,7 @@ export type LaneSliceOutcome = {
 } | {
   /**
    Lane never reached this slice.
-   
+
    The repair lane's whole-document block produces exactly this: it stops at
    the earliest crossing, so every later slice went unexamined.
    */
@@ -62,7 +62,7 @@ export type LaneSliceOutcome = {
   /**
    Lane reached the slice, produced nothing, and had nothing to fall back on
    because the archive holds no wording here either.
-   
+
    The passage is MISSING, which is a different fact from every other member:
    `decided` would claim a wording, `not-evaluated` would claim nobody looked,
    and `incumbent-fallback` would claim something stands here.
@@ -72,7 +72,7 @@ export type LaneSliceOutcome = {
   /**
    Lane reached the slice, produced nothing, and the archive's own wording
    therefore stands BY DEFAULT rather than by anyone's choice.
-   
+
    The translate lane produces this whenever no translator was heard. It was
    recorded as a decision equal to the incumbent until 2026-08-16, so a stage
    that heard nobody read exactly like a panel that examined the slice and
@@ -83,13 +83,13 @@ export type LaneSliceOutcome = {
 } | {
   /**
    Lane reached the slice and the work it does has no input here at all.
-   
+
    The repair lane at a passage the archive never translated is this and
    nothing else: it mends existing English, and there is none, so it never had
    an opinion to record. It reported `decided` with the empty string until
    2026-08-16, which made a lane comparison state that the two lanes chose
    DIFFERENT wordings wherever the translate lane filled the passage.
-   
+
    SEPARATE FROM `unfilled` on purpose, though both leave the passage missing.
    `unfilled` is a lane that tried and produced nothing, which is a rate worth
    measuring; folding this into it would make the repair lane's decline rate
@@ -101,7 +101,7 @@ export type LaneSliceOutcome = {
 
 /**
  One slice's wording as a lane left it.
- 
+
  @example
  ```ts
  const wording: LaneSliceText = {
@@ -120,7 +120,7 @@ export type LaneSliceText = {
 
   /**
    Whether the archive holds any wording at this slice at all.
-   
+
    A SEPARATE AXIS from the outcome, and not inferable from the text: a
    content slice may legitimately be blank, so an empty
    {@link LaneSliceText.incumbentText} cannot answer this. Without it a reader
@@ -142,7 +142,7 @@ export type LaneSliceText = {
 
 /**
  What a builder does about a prepared slice the lane never decided.
- 
+
  @example
  ```ts
  const undecided: UndecidedSlicePolicy = 'refuse';
@@ -163,29 +163,29 @@ export type UndecidedSlicePolicy =
 
 /**
  Names one slice's outcome from what the lane reported about it.
- 
+
  ORDERED DELIBERATELY: a decision wins over both named sets, since a lane
  naming a slice both decided and unreachable is a contradiction the caller
  already refuses, and reading the sets first here would hide it rather than
  let that check speak.
- 
+
  @param sliceIndex - slice being named, for the failure message
- 
+
  @param byIndex - wordings the lane reported, by slice index; every decision
  carries its wording as a string, the empty string included, so a slice the
  map holds is a decided slice
- 
+
  @param unfilledHere - whether the lane named this slice as reached and
  unfillable
- 
+
  @param unheardHere - whether the lane named it as reached with no voice heard
- 
+
  @param undecided - what an unnamed gap means for this lane
- 
+
  @returns Outcome for this slice
- 
+
  @throws {@link LaneSliceCoverageError} when a gap is left under `refuse`
- 
+
  @example
  ```ts
  const outcome = outcomeOf({ sliceIndex, byIndex, unfilledHere, unheardHere, notApplicableHere, undecided, },);
@@ -245,30 +245,30 @@ export { LaneSliceCoverageError, } from './lane-slice-coverage-error.ts';
 
 /**
  Pairs each prepared slice with the wording a lane decided for it.
- 
+
  Built at the DOCUMENT level rather than stored per slice, so neither lane's
  cache schema has to carry it and a resumed slice cannot serve a stale
  incumbent from a preparation that has since changed.
- 
+
  @param slices - prepared slice pairs, which supply both the denominator and
  every incumbent
- 
+
  @param decided - what the lane accepted, keyed by the same global index
- 
+
  @param undecided - what to do about a prepared slice with no decision;
  `refuse` wherever the lane visits every slice, `not-evaluated` only where it
  stops early by design
- 
+
  @param unfilledChunkIndices - slices the lane REACHED and could not decide a
  wording for, which is neither an early stop nor a dropped slice; named one by
  one rather than by policy, so every other gap is still refused
- 
+
  @returns One entry per prepared slice, in document order
- 
+
  @throws LaneSliceCoverageError when a decision names a slice preparation
  never produced, a prepared slice has no decision under `refuse` without being
  named unfilled, or a slice is named unfilled and decided at once
- 
+
  @example
  ```ts
  const wordings = buildLaneSliceTexts({ slices, decided, undecided: 'refuse', },);
@@ -377,7 +377,7 @@ export function buildLaneSliceTexts(
 
   /**
    Whether some earlier slice in document order went undecided.
-   
+
    `not-evaluated` describes ONE shape and no other: a lane that stopped, so
    an evaluated prefix followed by an unevaluated suffix. Decisions for slices
    0 and 2 with 1 unexamined is not that shape, and accepting it would let a

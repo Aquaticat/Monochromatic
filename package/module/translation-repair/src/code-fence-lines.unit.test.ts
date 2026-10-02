@@ -1,10 +1,10 @@
 /**
  Tests for fenced code line flags.
- 
+
  Every case asserts the WHOLE flag array rather than one position, because the
  defect this guards against is a state machine losing track of where a fence
  ends, and that shows up as a run of wrong flags rather than a wrong one.
- 
+
  @module
  */
 
@@ -22,11 +22,11 @@ import {
 
 /**
  Splits a body the way the masker does, so fixtures read as text.
- 
+
  @param text - body with newline terminators
- 
+
  @returns Flag per line
- 
+
  @example
  ```ts
  const flags = flagsOf('```\nx\n```\n',);

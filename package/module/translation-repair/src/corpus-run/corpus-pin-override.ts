@@ -26,7 +26,7 @@ export const CORPUS_COMMIT_VAR = 'TRANSLATION_REPAIR_CORPUS_COMMIT';
 
 /**
  Where each half of a pin came from, for launch logs.
- 
+
  @example
  ```ts
  const source: CorpusPinSource = 'fallback';
@@ -39,7 +39,7 @@ export type CorpusPinSource =
 
 /**
  One resolved pin beside where each half came from.
- 
+
  @example
  ```ts
  const setting: CorpusPinSetting = {
@@ -75,11 +75,11 @@ const COMMIT_SHA_LENGTH = 40;
  Whether written text is one full lowercase hexadecimal commit name.
  Abbreviated names are refused because the pin must stay unambiguous
  across clones that resolve abbreviations differently.
- 
+
  @param written - text as the invoking environment wrote it
- 
+
  @returns Whether every position is lowercase hexadecimal at full length
- 
+
  @example
  ```ts
  isFullCommitSha({ written: 'a'.repeat(40,), },);
@@ -101,16 +101,16 @@ function isFullCommitSha(
 
 /**
  Reads the corpus pin, overriding either half from the environment.
- 
+
  Refuses rather than falls back on invalid input, because a run against
  the wrong corpus records fixture conclusions as pinned-corpus ones.
- 
+
  @param fallback - pin used for any half the environment leaves unset
- 
+
  @returns Valid pin beside a per-half source
- 
+
  @throws StatedRefusalError when the clone dir is not absolute or the commit is not one full lowercase sha
- 
+
  @example
  ```ts
  const setting = readCorpusPinSetting({ fallback: RUN_CORPUS_PIN, },);

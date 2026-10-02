@@ -6,7 +6,7 @@ import { photoReferences, } from '../photo-reference.ts';
 
 /**
  Operational pause when image-dependent slice lacks reviewed visual evidence.
- 
+
  @example
  ```ts
  throw new VisualEvidenceInterruptedError({ unavailableCount: 1, });
@@ -20,9 +20,9 @@ export class VisualEvidenceInterruptedError extends Error {
 
   /**
    Constructs unavailable visual evidence diagnostic.
-   
+
    @param unavailableCount - referenced assets without usable reviewed outcome
-   
+
    @example
    ```ts
    new VisualEvidenceInterruptedError({ unavailableCount, });
@@ -38,13 +38,13 @@ export class VisualEvidenceInterruptedError extends Error {
 
 /**
  Requires every source-referenced asset to be corroborated or confirmed no-text.
- 
+
  @param slices - prepared source slices naming visual assets
- 
+
  @param readings - reviewed paired outcomes by asset name
- 
+
  @throws {@link VisualEvidenceInterruptedError} when any asset is absent or unavailable
- 
+
  @example
  ```ts
  assertVisualEvidenceComplete({ slices, readings, });

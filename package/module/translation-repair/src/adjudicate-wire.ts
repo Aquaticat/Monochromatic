@@ -20,7 +20,7 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 /**
  One verdict as a panelist reports it.
- 
+
  @example
  ```ts
  const wire: PanelVerdictWire = { claim: 1, reason: 'The quote already carries it.', vote: 'unsupported', };
@@ -53,7 +53,7 @@ export type PanelVerdictWire = {
 
 /**
  One group opinion as a panelist reports it.
- 
+
  @example
  ```ts
  const wire: PanelGroupWire = { group: 1, sameDefect: true, };
@@ -73,7 +73,7 @@ export type PanelGroupWire = {
 
 /**
  Whole ballot on the wire.
- 
+
  @example
  ```ts
  const wire: PanelBallotWire = { verdicts: [], groups: [], };
@@ -93,11 +93,11 @@ export type PanelBallotWire = {
 
 /**
  Guards one wire verdict.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value carries the required verdict fields
- 
+
  @example
  ```ts
  isPanelVerdictWire({ claim: 1, vote: 'supported', },);
@@ -124,11 +124,11 @@ function isPanelVerdictWire(value: unknown,): value is PanelVerdictWire {
 
 /**
  Guards one wire group opinion.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value carries the required group fields
- 
+
  @example
  ```ts
  isPanelGroupWire({ group: 1, sameDefect: false, },);
@@ -151,11 +151,11 @@ function isPanelGroupWire(value: unknown,): value is PanelGroupWire {
 
 /**
  Guards a whole ballot.
- 
+
  @param value - parsed model JSON
- 
+
  @returns Whether value is a wire ballot
- 
+
  @example
  ```ts
  const outcome = await client.chatJson({ ..., validate: isPanelBallotWire, },);
@@ -184,7 +184,7 @@ export function isPanelBallotWire(value: unknown,): value is PanelBallotWire {
 /**
  Guard for a ballot the gather may count as a heard voice: a wire ballot
  carrying at least one verdict with a known vote on a claim the packet showed.
- 
+
  LEDGER L8: `isPanelBallotWire` accepts `{"verdicts": []}`, a ballot voting
  only on claim numbers the packet never showed, and one whose only vote is
  no vote at all ("minor"), so each counted as heard and closed a round whose
@@ -192,11 +192,11 @@ export function isPanelBallotWire(value: unknown,): value is PanelBallotWire {
  in needs-human on two votes). Such a ballot carries no voice, so the gather
  reads it as unreadable and the recovery round re-asks the seat. A ballot
  usable on some claims is heard, and abstains on the rest at tally time.
- 
+
  @param claimCount - claims the packet showed, numbered from one
- 
+
  @returns Guard over parsed model JSON
- 
+
  @example
  ```ts
  const gather = await gatherStageVoices({ ..., validate: usablePanelBallotFor({ claimCount: 3, },), },);
@@ -278,15 +278,15 @@ export const ADJUDICATION_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
  votes become findings, an invalid severity drops only the re-grade, a
  missing or blank reason is recorded while its vote still counts, and claims
  left without a verdict are recorded and abstain at tally time.
- 
+
  @param wire - ballot as the panelist reported it
- 
+
  @param claimIds - claim ids in prompt numbering order
- 
+
  @param clusterIds - cluster ids in prompt numbering order
- 
+
  @returns Resolved ballot with findings as data
- 
+
  @example
  ```ts
  const ballot = resolvePanelBallot({ wire, claimIds, clusterIds, },);

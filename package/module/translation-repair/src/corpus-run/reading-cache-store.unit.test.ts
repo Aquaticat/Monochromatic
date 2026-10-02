@@ -1,6 +1,6 @@
 /**
  Tests for the store that lets a resumed run reuse what a picture was read as.
- 
+
  WHY THIS FILE EXISTS. The store's guard checks the DISCRIMINANT before the
  fields, so a reading whose kind it has not been told about is rejected and the
  picture reads as never gathered. That is silent by construction: the run
@@ -8,17 +8,17 @@
  next pass. `no-text` was added to `PairedReading` on 2026-08-19 and not to the
  guard, so for the length of that afternoon every textless picture in the
  corpus, two thirds of them, was re-read on every resume.
- 
+
  THE FIRST FOUR TESTS ARE THE CURE. One per shape a reading can end in, each
  persisted through the real store and read back through a second open, so a
  kind added to the type without being added to the guard fails here rather
  than costing a subprocess per picture per pass forever.
- 
+
  THE REST PIN THE REFUSALS, because a guard that accepts everything resumes a
  malformed record into a translate slice key and is worse than no guard.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -47,20 +47,20 @@ const KEY = 'a1b2c3d4e5f60789';
 
 /**
  Persists one record and reads back whatever a second open resumes for it.
- 
+
  THROUGH THE REAL STORE RATHER THAN THE GUARD DIRECTLY, because the guard is
  private and because what matters is not whether it returns true: it is
  whether a settled reading survives the write, the envelope, the file name and
  the generation marker between one pass and the next.
- 
+
  @param record - value to persist, which may be a shape the guard refuses
- 
+
  @param reopenGeneration - identity the second open runs under, defaulting to
  the one that wrote, so only the generation case has to name it
- 
+
  @returns Every reading the second open resumed, which is empty when it
  resumed none
- 
+
  @example
  ```ts
  const resumed = await roundTrip({ record: { kind: 'no-text', characters: 0, }, },);

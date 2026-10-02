@@ -93,7 +93,7 @@ export function contentWords(
 
 /**
  Lexical restoration grade of one planted deletion.
- 
+
  @example
  ```ts
  const grade: SeedRestoration = {
@@ -132,15 +132,15 @@ export type SeedRestoration = {
  Grades one planted deletion against the repaired text by vocabulary.
  Only vocabulary the deletion actually removed counts:
  a word surviving elsewhere in the seeded text proves nothing.
- 
+
  @param needle - deleted sentence exactly as planted
- 
+
  @param seededText - translation after planting, before repair
- 
+
  @param repairedText - pipeline output under grading
- 
+
  @returns Restoration grade as data
- 
+
  @example
  ```ts
  const grade = measureSeedRestoration({ needle, seededText, repairedText, },);

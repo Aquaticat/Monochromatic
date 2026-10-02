@@ -1,14 +1,14 @@
 /**
  Tests for the generation census over a settled directory.
- 
+
  Each classification the census can answer gets one file, so the guard that
  builds sentences from these answers is shown the whole alphabet: a declared
  generation, an unversioned one, a version the build cannot read, and the two
  shapes that are not artifacts at all. The directory also carries the two
  entries the listing must skip.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -59,15 +59,15 @@ async function censusDirectory({ dir: artifactsDir, }: { readonly dir: string; }
 
 /**
  Row for one entry, or a throw naming the entry the census dropped.
- 
+
  @param rows - census as returned
- 
+
  @param entryId - entry wanted
- 
+
  @returns Its row
- 
+
  @throws {@link Error} when the census carries no row for it
- 
+
  @example
  ```ts
  const row = rowFor({ rows, entryId: 'declared', },);

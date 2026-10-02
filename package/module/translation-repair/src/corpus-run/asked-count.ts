@@ -38,21 +38,21 @@ const AT_LEAST = 1;
 
 /**
  Reads how many units a run was asked for.
- 
+
  @param line - the bench's command line, read whole by `reportingRefusals`,
  whose first position is the count; passed in so this is testable without a
  subprocess
- 
+
  @param fallback - count to run when the person named none
- 
+
  @param asks - what this run calls the things it counts, for the refusal
  sentence; a person reading `slices` should not have to guess
- 
+
  @returns Count asked for, or the fallback when none was named
- 
+
  @throws StatedRefusalError when a count was named that is not a whole number
  written in digits, or is below one
- 
+
  @example
  ```ts
  const wanted = readAskedCount({ line, fallback: 6, asks: 'slices', },);

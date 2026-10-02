@@ -15,17 +15,17 @@
 
 /**
  Recursively exposes structural data through readonly properties.
- 
+
  Intended for records, unions, arrays and tuples: plain parsed or borrowed
  data. Not for stateful class instances, whose methods and private state this
  would misdescribe.
- 
+
  Homomorphic on purpose. Mapping over `keyof Value` preserves arrays and
  tuples as readonly arrays and readonly tuples rather than flattening them
  into objects keyed by index.
 
  @internal
- 
+
  @example
  ```ts
  type Reading = DeepReadonlyData<{ entries: { id: string; }[]; }>;

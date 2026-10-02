@@ -1,20 +1,20 @@
 /**
  Tests for the filter every reader applies between a directory listing and
  the artifacts it opens.
- 
+
  WHAT IT DECIDES. A reader lists the artifacts directory itself, asks the pool
  which entries a draw may use, and then opens only the files those entries
  own. `keepEligible` is that last step, and nothing tested it directly: four
  readers call it, and every one of them reached the suite only through a real
  pool over a throwaway directory, where an eligible entry and a malformed one
  happened never to sit beside an excluded one.
- 
+
  MALFORMED FILES ARE KEPT, which is the half worth pinning. The reader
  downstream is the one that reports a corrupt artifact, so dropping it here
  would make the file vanish from the failure list instead of appearing on it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

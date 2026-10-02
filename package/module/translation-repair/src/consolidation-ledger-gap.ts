@@ -4,7 +4,7 @@
 
 /**
  Raised when a slice the contest names has no repair-ledger row.
- 
+
  @example
  ```ts
  throw new ConsolidationLedgerGapError({ sliceIndex: 3, },);

@@ -1,13 +1,13 @@
 /**
  Tests for the recurrence watch, asked directly rather than through the
  runaway watch that composes it.
- 
+
  WHAT `stream-runaway-watch.unit.test.ts` ALREADY PROVES, and is not repeated
  here: that a long-period loop past the length bar ends the stream, that the
  same loop under the bar finishes, and that a candidate quoted twice back to
  back finishes, including at the length most prone to a false positive. Those
  are the detector's headline claims and they are covered.
- 
+
  WHAT NOTHING COVERED, found by mutation rather than by reading: the BOUNDED
  BUFFER. Removing the trim that keeps only the trailing `BUFFER_CHARS` left
  the whole suite green. That trim is load-bearing twice over. It is what makes
@@ -19,17 +19,17 @@
  quoted near the start and again near the end is ordinary work, and without
  the trim the early copy stays findable forever and the second quotation reads
  as a loop.
- 
+
  SO THE CENTRAL CASE HERE IS A PAIR OF DISTANT QUOTATIONS. The same passage
  appears twice, far enough apart that the first has scrolled out, with unique
  text between and around. It must finish. With the trim removed it does not.
- 
+
  THE EMPTY-TEXT EARLY RETURN IS NOT A BRANCH worth a case: without it the
  counters advance by zero and the buffer gains nothing, so no input can tell
  the two apart. It is a shortcut, and it is left uncovered on purpose.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -66,16 +66,16 @@ const LOOP_PERIOD = 501;
 
 /**
  Builds text that repeats nothing, by spelling a strictly increasing counter.
- 
+
  NON-REPEATING BY CONSTRUCTION rather than by chance: two equal windows would
  need equal counter values at the same offset, and the counter never repeats.
- 
+
  @param units - how many counter values to spell
- 
+
  @param from - first counter value, so two stretches share no content
- 
+
  @returns Text `units * UNIT_CHARS` characters long
- 
+
  @example
  ```ts
  const filler = uniqueText({ units: 100, from: 0, },);
@@ -109,11 +109,11 @@ function uniqueText(
 
 /**
  Feeds text to a fresh detector in fixed-width chunks and reads its verdict.
- 
+
  @param text - whole stream, fed in arrival order
- 
+
  @returns What the detector believed once the stream ended
- 
+
  @example
  ```ts
  expect(verdictOver({ text, },).kind,).toBe('continuing',);

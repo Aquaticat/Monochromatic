@@ -15,7 +15,7 @@
 /**
  What kind of thing an atom is, kept on the atom so a gate failure can say
  what changed rather than only that something did.
- 
+
  @example
  ```ts
  const kind: AtomKind = 'link-url';
@@ -33,7 +33,7 @@ export type AtomKind =
 
 /**
  One thing a rewrite must carry through unchanged and in place.
- 
+
  @example
  ```ts
  const atom: ProtectedAtom = { kind: 'number', value: '1,200', };
@@ -54,7 +54,7 @@ export type ProtectedAtom = {
 /**
  Separators that stay INSIDE a number when digits sit on both sides, so
  `1,200`, `3.5`, and `12:30` are each one token rather than several.
- 
+
  A date like `2019-05-01` is deliberately three tokens: a hyphen is far more
  often prose punctuation than part of a number, and splitting there costs
  nothing because all three parts still have to survive in order.
@@ -71,10 +71,10 @@ const BASIC_PLANE_MAX = 0xFF_FF;
 /**
  Unicode blocks whose characters count as foreign-language content, each named
  so a reader can check a boundary against the standard without decoding hex.
- 
+
  Punctuation blocks are deliberately absent, because corpus prose mixes CJK
  punctuation into English sentences and a rewrite is allowed to repunctuate.
- 
+
  The supplementary range is why the scan walks code points rather than UTF-16
  units: a rare given name in Han Extension B is a surrogate pair, and reading
  it as two units would match neither half against any range here, silently
@@ -132,11 +132,11 @@ const DIGIT_BLOCKS = {
 
 /**
  Whether a code point is a digit in either the ASCII or the full-width form.
- 
+
  @param codePoint - code point under test
- 
+
  @returns Whether it reads as a digit
- 
+
  @example
  ```ts
  isDigit(0x0037,);
@@ -157,11 +157,11 @@ function isDigit(codePoint: number,): boolean {
 
 /**
  Whether a code point falls in a foreign-language run.
- 
+
  @param codePoint - code point under test
- 
+
  @returns Whether it belongs to a protected script
- 
+
  @example
  ```ts
  isForeign('猫'.codePointAt(0,) ?? 0,);
@@ -175,15 +175,15 @@ function isForeign(codePoint: number,): boolean {
 
 /**
  Scans one text leaf for the atoms that are characters rather than nodes.
- 
+
  One linear pass over code points, emitting a token whenever a run ends.
  Separators join a number only when a digit follows, which is what keeps the
  period ending a sentence out of the number before it.
- 
+
  @param text - decoded text of one mdast text leaf
- 
+
  @returns Number and foreign-run atoms in the order they appear
- 
+
  @example
  ```ts
  const atoms = scanTextAtoms({ text: 'she was 17 in 2019', },);
@@ -211,11 +211,11 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
 
   /**
    Closes the open run, if any, into an atom.
-   
+
    A number run always ends on a digit: a separator is only ever appended
    when a digit follows it, and that digit is appended on the next step. So
    nothing here has to strip a trailing separator.
-   
+
    @example
    ```ts
    flush();

@@ -1,21 +1,21 @@
 /**
  Tests for holding target-only English out of translation.
- 
+
  WHAT THESE PIN is that a passage the source cannot account for survives. The
  translate lane writes each slice fresh from its source, so a transcript a
  human added to the English has nothing to produce it: measured on the pool
  settled 2026-08-18, one slice went from 1766 archive characters to 215
  shipped and another from 1228 to 175. Both are memorial pages and the lost
  blocks are the accessible reading of an image.
- 
+
  The second thing they pin is the anchor comparison. A byte-identical
  comparison was written first and it MISSED the very case that prompted this,
  because the source writes two spaces inside a component where the archive
  writes one. That case has its own test, since it is the difference between
  this working and this looking like it works.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

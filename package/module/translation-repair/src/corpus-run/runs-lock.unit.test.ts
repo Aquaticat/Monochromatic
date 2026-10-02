@@ -1,14 +1,14 @@
 /**
  Tests for the one-pass-at-a-time claim on a runs directory.
- 
+
  Two passes sharing a directory never collide loudly. They overwrite each
  other's attempt counts, delete each other's cached slices whenever their
  pipelines differ, and the later write of any entry replaces the earlier one.
  Every one of those looks like ordinary output, which is why the refusal has
  to happen before any of it starts.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

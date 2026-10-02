@@ -34,7 +34,7 @@ const DISPOSITION_FIELD = 'repairDisposition';
 
 /**
  Every field a recorded repair contributes to an issue record.
- 
+
  A record is treated as predating repair recording only when it carries NONE
  of them. Keying that judgement on the disposition alone would read a record
  carrying regions but no disposition as a legacy record, which is the one way
@@ -50,15 +50,15 @@ const REPAIR_FIELDS: readonly string[] = [
 
 /**
  Parses one replaced region.
- 
+
  @param value - region JSON
- 
+
  @param path - dotted path for error message
- 
+
  @returns Region as a grading sheet reads it
- 
+
  @throws {@link ArtifactParseError} when the region is malformed
- 
+
  @example
  ```ts
  const region = parseRepairRegion({ value, path: 'Kitten issues[0].repairRegions[0]', },);
@@ -108,12 +108,12 @@ function parseRepairRegion(
 
 /**
  What reading an issue record's repair provenance found.
- 
+
  A named absence rather than a missing value, because "this run never recorded
  repairs" and "this run recorded that no repair exists" have to stay apart all
  the way to the denominator, and an absent field is the one thing a caller can
  forget to check.
- 
+
  @example
  ```ts
  const reading: RecordRepairReading = { kind: 'unrecorded', };
@@ -140,15 +140,15 @@ export type RecordRepairReading =
 
 /**
  Parses one issue record's repair provenance.
- 
+
  @param record - issue record wrapper holding an issue and its repair
- 
+
  @param path - dotted path for error message
- 
+
  @returns Provenance, or a named absence for a pre-recording artifact
- 
+
  @throws {@link ArtifactParseError} when a recorded repair is malformed
- 
+
  @example
  ```ts
  const reading = parseRecordRepair({ record, path: 'Kitten issues[0]', },);
@@ -189,7 +189,7 @@ export function parseRecordRepair(
    Whether a final wording has to be stated: refinement made the recorded
    replacement stale in a repair the document CARRIES, and that is the record
    a sheet grades. It cannot be graded against wording nothing states.
-   
+
    Not required under any other disposition, because a slice the run took
    back, whether by non-translation dominance or by the assembly guard keeping
    a footnote relation whole, comes back as the archive wrote it and has no

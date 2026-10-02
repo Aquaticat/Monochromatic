@@ -48,11 +48,11 @@ const NOT_IN_PAGE = -1;
 
 /**
  One wording the page was supposed to carry and does not.
- 
+
  SIZED RATHER THAN QUOTED, so a report can be read anywhere. The slice index
  and the length are enough to find it in the artifact, which is where the text
  legitimately lives.
- 
+
  @example
  ```ts
  const missing: MissingWording = { sliceIndex: 12, characters: 344, };
@@ -72,7 +72,7 @@ export type MissingWording = {
 
 /**
  What one page turned out to carry of what its artifact promised.
- 
+
  @example
  ```ts
  const check: PageWordingCheck = { wordings: 9, silentSlices: 1, missing: [], };
@@ -86,7 +86,7 @@ export type PageWordingCheck = {
 
   /**
    Slices where nothing ships, which the page must simply not invent.
-   
+
    COUNTED RATHER THAN CHECKED. An anchor nobody filled leaves the page exactly
    as the archive had it, and a content span the deciders emptied leaves a hole
    where its wording was. Telling those two apart in the page needs the spans
@@ -104,13 +104,13 @@ export type PageWordingCheck = {
 /**
  What a page is expected to weigh and what it weighs, or that it cannot be
  weighed at all.
- 
+
  A TAGGED ABSENCE RATHER THAN A CLEAN RESULT, for the reason
  `ParsedArchiveText` gives for being one itself. An artifact written before
  the archive text was stored gives this check nothing to subtract from, and
  reporting that as agreement would let a whole run of old artifacts read as
  verified. `unweighable` says the arithmetic never ran.
- 
+
  @example
  ```ts
  const weighed: PageLengthCheck = { kind: 'weighed', expected: 3840, actual: 3840, exact: true, };
@@ -139,7 +139,7 @@ export type PageLengthCheck = {
 
   /**
    Whether `expected` is an equality or a floor.
-   
+
    A FILLED ANCHOR MAKES IT A FLOOR. `spliceSlices` composes the separators
    around an inserted rendering rather than carrying them in any row, which
    `delivery-invariants.ts` states in the same words: a concatenation of row
@@ -152,13 +152,13 @@ export type PageLengthCheck = {
 
 /**
  Net characters one slice adds to the archive, negative where it removes.
- 
+
  @param slice - slice and what it would carry
- 
+
  @param incumbentBySlice - archive wording per slice index
- 
+
  @returns Characters this slice adds, negative where it removes
- 
+
  @example
  ```ts
  const delta = sliceDelta({ slice, incumbentBySlice, },);
@@ -204,13 +204,13 @@ function sliceDelta(
 /**
  Whether a slice filled an anchor, which puts separators in the page that no
  row counted.
- 
+
  @param slice - slice and what it would carry
- 
+
  @param incumbentBySlice - archive wording per slice index
- 
+
  @returns Whether wording was inserted where the archive had nothing
- 
+
  @example
  ```ts
  const inserted = filledAnAnchor({ slice, incumbentBySlice, },);
@@ -238,24 +238,24 @@ function filledAnAnchor(
 
 /**
  Weighs a page against its archive and the changes every slice made to it.
- 
+
  ARITHMETIC RATHER THAN SEARCH, which is what makes this cover the text no
  slice names. Splicing replaces each span with its replacement, so the
  document grows by exactly what each slice added and shrinks by what it
  removed, and everything between the spans is carried through untouched. A
  page that lost a paragraph nobody decided on has the wrong length and every
  per-slice check still passes.
- 
+
  @param artifact - settled entry, read for what each slice would carry
- 
+
  @param archive - archive English this entry was published over, or the
  statement that this artifact never recorded it
- 
+
  @param pageText - published page as it sits on disk
- 
+
  @returns Expected length, actual length and whether the two must be equal,
  or that the artifact gave the arithmetic nothing to start from
- 
+
  @example
  ```ts
  const weighed = pageWeighsWhatItShould({ artifact, archive, pageText, },);
@@ -337,17 +337,17 @@ export function pageWeighsWhatItShould(
 
 /**
  Reads a weighing for whether it refutes the page.
- 
+
  ONE-SIDED WHERE THE ARITHMETIC IS, which is the whole reason this is a
  function rather than an equality at each call site. An exact weighing must
  match; an inexact one only sets a floor, because the separators a filled
  anchor composes are real characters this sum never counted. A page shorter
  than its floor lost text either way, and that is the direction that matters.
- 
+
  @param weight - what `pageWeighsWhatItShould` returned
- 
+
  @returns Whether the length refutes the page
- 
+
  @example
  ```ts
  const wrong = pageWeightRefutes({ weight, },);
@@ -366,25 +366,25 @@ export function pageWeightRefutes(
 /**
  Checks that a page carries every wording its artifact says would ship, in
  slice order.
- 
+
  A CURSOR RATHER THAN A SET OF SUBSTRING TESTS, because order is half the
  claim. Slices are contiguous and ordered in the document, so their wordings
  appear in the page in `sliceIndex` order and do not overlap. Searching from
  where the previous one ended enforces both, and a page that carried every
  wording in the wrong order would pass a set test and fail this one.
- 
+
  NECESSARY RATHER THAN SUFFICIENT, and deliberately one-sided. A wording that
  also occurs somewhere it does not belong still satisfies this, so a clean
  result is not proof the page is right. It cannot report a correct page as
  wrong, which is what a standing check has to guarantee before anyone trusts a
  red result enough to stop a release.
- 
+
  @param artifact - settled entry, read for what each slice would carry
- 
+
  @param pageText - published page as it sits on disk
- 
+
  @returns Counts, and every wording the page does not carry in order
- 
+
  @example
  ```ts
  const check = pageCarriesEveryWording({ artifact, pageText, },);
@@ -476,7 +476,7 @@ export function pageCarriesEveryWording(
 
 /**
  Refuses a page that does not carry what its artifact says would ship.
- 
+
  CALLED BEFORE THE PAGE IS WRITTEN, which is what makes the refusal cheap and
  truthful. `pass-entry.ts` already reads its tally line before publishing for
  the same reason: a question that can refuse an entry has to be asked while
@@ -484,24 +484,24 @@ export function pageCarriesEveryWording(
  page on disk that no artifact accounts for. Asked here, a disagreement
  publishes nothing and settles nothing, and the stage caches still hold every
  answer, so a re-run reproduces the contradiction rather than losing it.
- 
+
  ONE-SIDED, WHICH IS WHY IT MAY REFUSE AN ENTRY AT ALL. Neither check can call
  a correct page wrong: the scan asks only that each wording occur in order,
  which a correct page satisfies by construction, and the arithmetic is an
  equality only where no anchor was filled and a floor otherwise. A red result
  is a defect in assembly or publishing rather than a judgement about quality.
- 
+
  @param artifact - settled entry, read for what each slice would carry
- 
+
  @param archive - archive English this entry is published over
- 
+
  @param pageText - assembled page, not yet written
- 
+
  @param entryId - person entry, named in the refusal
- 
+
  @throws {@link PublishedPageDisagreesError} when the page lost, reordered, or
  gained text against what the artifact accounts for
- 
+
  @example
  ```ts
  refusePageThatDisagrees({ artifact, archive, pageText, entryId, },);
@@ -564,7 +564,7 @@ export function refusePageThatDisagrees(
 
 /**
  How one settled entry's artifact and published page line up.
- 
+
  @example
  ```ts
  const pairing: PublishedPairing = { matched: ['lintong'], unpublished: [], unsettled: [], };
@@ -578,7 +578,7 @@ export type PublishedPairing = {
 
   /**
    Entries the run settled and never published.
-   
+
    THE ORDERING IN `pass-entry-persist.ts` IS SUPPOSED TO MAKE THIS EMPTY, and
    that is exactly why it is worth counting. `publishFixedPage` runs BEFORE the
    artifact write so that an artifact existing means a page was written, and a
@@ -603,13 +603,13 @@ export type PublishedPairing = {
 
 /**
  Pairs the entries a run settled against the pages it published.
- 
+
  @param settled - entry ids one artifact each was written for
- 
+
  @param published - entry ids one page each was found for
- 
+
  @returns Which entries have both, and which have only one
- 
+
  @example
  ```ts
  const pairing = pairPublishedPages({ settled, published, },);

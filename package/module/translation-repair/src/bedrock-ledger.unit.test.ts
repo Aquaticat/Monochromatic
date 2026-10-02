@@ -2,9 +2,9 @@
  Tests for the Bedrock ledger, the meter this provider does not have: the
  durable file every priced call appends to, the credit line it is read
  against, and the environment that names both.
- 
+
  Every case writes under a disposable directory and removes it after.
- 
+
  @module
  */
 
@@ -40,11 +40,11 @@ import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  One priced call, cat-themed.
- 
+
  @param usd - what it cost
- 
+
  @returns Entry to note
- 
+
  @example
  ```ts
  await ledger.note(callCosting({ usd: 0.5, },),);
@@ -62,9 +62,9 @@ function callCosting({ usd, }: { readonly usd: number; },) {
 
 /**
  Runs one case inside a disposable directory, removing it after.
- 
+
  @param fn - case body, given the directory
- 
+
  @example
  ```ts
  await inScratch(async function body(dir,) { ... },);

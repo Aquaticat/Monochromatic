@@ -148,27 +148,27 @@ function closedOn(
 /**
  Asks a bench through windowed rounds and returns one outcome per seat
  asked.
- 
+
  @param client - provider client every ask goes through
- 
+
  @param modelIds - bench in roster order
- 
+
  @param messages - prompt every seat is asked, which also fixes the rotation
- 
+
  @param signal - caller cancellation every ask honors
- 
+
  @param exchangeTimeoutMs - deadline per exchange
- 
+
  @param maxAnswerChars - answer volume bound, when the stage sets one
- 
+
  @param responseFormat - schema every reply must fit
- 
+
  @param validate - guard a reply must pass to count as heard
- 
+
  @param stage - stage name for log lines
- 
+
  @param l - stage logger
- 
+
  @param quorumOver - bench the quorum is taken over, when the seats asked are
  part of a wider one; the seats asked by default
 

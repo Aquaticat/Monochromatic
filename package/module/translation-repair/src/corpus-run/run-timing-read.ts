@@ -20,7 +20,7 @@ import {
 
 /**
  Everything a log said about how a run spent its time.
- 
+
  @example
  ```ts
  const reading: RunTiming = readRunTiming({ lines, },);
@@ -55,11 +55,11 @@ export type RunTiming = {
 
 /**
  One endpoint of a call's interval, as the sweep sees it.
- 
+
  NAMED RATHER THAN A PAIR. A tuple of two numbers at a boundary where both are
  numbers invites reading them in the wrong order, and the sort depends on
  which is which.
- 
+
  @example
  ```ts
  const opens: SweepEvent = { at: 1_760_000_000_000, delta: 1, };
@@ -68,7 +68,7 @@ export type RunTiming = {
 type SweepEvent = {
   /**
    Instant this endpoint falls at.
-   
+
    NOT NAMED `at`, which would sit one character from the `Array.at` calls
    that produce these very events and read as the same thing.
    */
@@ -82,7 +82,7 @@ type SweepEvent = {
 
 /**
  How many calls a run had in flight, and over what span.
- 
+
  @example
  ```ts
  const flight: InFlight = measureInFlight({ calls, },);
@@ -113,12 +113,12 @@ export type InFlight = {
 /**
  Refusal to count calls in flight where no interval holds one: no call carried
  a duration, or every timed call took no time at one instant.
- 
+
  ONE REFUSAL FOR BOTH, since both are a division by an empty span. A span of
  zero once reported every call in flight on average while the sweep, which
  takes an end ahead of a start at one instant, counted a peak of none (T8,
  nineteenth batch).
- 
+
  @example
  ```ts
  throw new NothingInFlightError({ reason: 'no-span', },);
@@ -138,7 +138,7 @@ export class NothingInFlightError extends Error {
 
   /**
    Writes the refusal's sentence for the empty span the calls left.
- 
+
    @param reason - no timed call at all, or timed calls that took no time
    */
   constructor({ reason, }: { readonly reason: 'no-call' | 'no-span'; },) {
@@ -154,7 +154,7 @@ export class NothingInFlightError extends Error {
 
 /**
  What a log's rounds spent, folded across every one of them.
- 
+
  @example
  ```ts
  const summary: RoundSummary = summariseRounds({ rounds, },);
@@ -190,16 +190,16 @@ export type RoundSummary = {
 
 /**
  Folds a log's rounds into what they spent.
- 
+
  EVERY ROUND COUNTS, whether its quorum stood or not: a round that never
  reached quorum took its time and lost its voices like any other, and leaving
  it out once undercounted both (T8, nineteenth batch). Only grace is summed
  over the rounds where quorum stood, since only they spent any.
- 
+
  @param rounds - every round the log reported
- 
+
  @returns Counts, time and lost voices across the rounds
- 
+
  @example
  ```ts
  const summary = summariseRounds({ rounds: reading.rounds, },);
@@ -237,11 +237,11 @@ export function summariseRounds(
 
 /**
  Reads every timing line out of a log.
- 
+
  @param lines - log lines, in the order they were written
- 
+
  @returns Rounds, calls, and how many calls could not be timed or placed
- 
+
  @example
  ```ts
  const reading = readRunTiming({ lines: text.split('\n',), },);
@@ -304,19 +304,19 @@ export function readRunTiming(
 
 /**
  Counts how many calls were in flight across a run.
- 
+
  SWEEPS ENDPOINTS rather than sampling a grid: a grid coarse enough to be
  cheap misses every burst shorter than its step, and the peak is exactly the
  thing a burst carries.
- 
+
  @param calls - every call whose line carried a duration
- 
+
  @returns Span, busy time, and the mean and peak in flight
- 
+
  @throws NothingInFlightError when no call can be timed, or every timed call
  took no time at one instant, since every figure would be a division by an
  empty span
- 
+
  @example
  ```ts
  const flight = measureInFlight({ calls, },);
@@ -330,7 +330,7 @@ export function measureInFlight(
 
   /**
    One entry per endpoint: `1` where a call starts, `-1` where it ends.
-   
+
    Sorted with ENDS ahead of STARTS at the same instant, which is what keeps
    two calls that merely abut from counting as one overlap: the earlier call
    is subtracted before the later one is added.

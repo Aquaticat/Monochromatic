@@ -1,19 +1,19 @@
 /**
  Tests for the section-pairing round: what the roster has to agree on before a
  correspondence is kept, and what happens when it agrees on nothing.
- 
+
  WHY AGREEMENT IS PER PAIR, as at block scale: two models can agree on seven
  correspondences and differ on the eighth, and discarding both replies over
  the eighth throws away the seven.
- 
+
  WHY THE FILTER CANNOT BREAK THE STEP BUILDER. Every pairing the reader passed
  is strictly increasing on both sides, and a subsequence of a strictly
  increasing sequence is strictly increasing, so no vote count can produce a
  pairing `sectionPairingToSteps` would refuse. One case here reads that off a
  disagreement rather than trusting the argument.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -96,11 +96,11 @@ const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
  Runs one round over the three-by-three fixture.
- 
+
  @param replyByModel - reply body per model id
- 
+
  @returns What the roster settled on
- 
+
  @example
  ```ts
  const outcome = await roundOf(['{"pairs":[]}',],);

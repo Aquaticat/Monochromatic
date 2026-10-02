@@ -2,7 +2,7 @@
  Tests for the deterministic half of the introduced-defect probe: what a
  prober's quote actually proves about the region it names.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -35,17 +35,17 @@ const REGION: RepairRegion = {
 
 /**
  Builds one prober check with empty text fields unless overridden.
- 
+
  @param verdict - closed-vocabulary verdict, or a wire fault to be dropped
- 
+
  @param evidence - wording quoted from the replacement
- 
+
  @param omittedText - wording quoted from the text the replacement replaced
- 
+
  @param region - one-based region number on the sheet
- 
+
  @returns Check the screen reads
- 
+
  @example
  ```ts
  const check = catCheck({ verdict: 'uncertain', },);
@@ -78,14 +78,14 @@ function catCheck(
 /**
  Wording the critic objected to, quoted target-side, as an accepted issue the
  region serves.
- 
+
  Only the fields `collectPriorQuotes` reads are populated. Widening it would
  make the fixture harder to read without testing anything more.
- 
+
  @param quotedText - target-side wording the critic complained about
- 
+
  @returns Issue shaped as the screen reads it
- 
+
  @example
  ```ts
  const issues = [catIssue({ quotedText: 'is doing the sleeping', },),];

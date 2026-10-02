@@ -34,13 +34,13 @@ const MODELS_URL = `${SYNTHETIC_CHAT_BASE_URL}/models`;
 
 /**
  Fetches the provider's current model list.
- 
+
  @param apiKey - Synthetic key, sent as a bearer token and never printed
- 
+
  @returns Parsed response body
- 
+
  @throws {@link Error} when the provider answers with a non-ok status
- 
+
  @example
  ```ts
  const body = await fetchModels({ apiKey, },);
@@ -74,10 +74,10 @@ async function fetchModels(
 
 /**
  Reports how the provider's current offering differs from the catalog.
- 
+
  @throws {@link Error} when the key is absent, so the failure names the fix
  rather than surfacing as an authentication error
- 
+
  @example
  ```ts
  await main();

@@ -20,7 +20,7 @@ import { selectFence, } from './prompt-fence.ts';
 
 /**
  Every verdict a derivability judge may cast, closed vocabulary.
- 
+
  @example
  ```ts
  DERIVABILITY_VERDICTS.includes('derivable',);
@@ -34,7 +34,7 @@ export const DERIVABILITY_VERDICTS = [
 
 /**
  One derivability verdict.
- 
+
  @example
  ```ts
  const verdict: DerivabilityVerdict = 'derivable';
@@ -44,11 +44,11 @@ export type DerivabilityVerdict = typeof DERIVABILITY_VERDICTS[number];
 
 /**
  Guards untrusted verdict strings from model JSON.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value names one listed verdict
- 
+
  @example
  ```ts
  isDerivabilityVerdict('derivable',);
@@ -79,7 +79,7 @@ Every candidate number must appear exactly once under "reference".`;
 /**
  Messages plus the seed order judgments resolve through:
  candidate number N on the wire means `seedIds[N - 1]`.
- 
+
  @example
  ```ts
  const plan: DerivabilityPlan = buildDerivabilityMessages({
@@ -104,13 +104,13 @@ export type DerivabilityPlan = {
  Builds the probe sheet for one entry:
  Chinese source plus every deleted sentence as a numbered candidate.
  No repaired text appears; the probe grades the SOURCE, not any repair.
- 
+
  @param sourceText - original Chinese document
- 
+
  @param references - deleted sentences with their seed ids
- 
+
  @returns Messages plus seed numbering order
- 
+
  @example
  ```ts
  const plan = buildDerivabilityMessages({ sourceText, references, },);
@@ -204,13 +204,13 @@ export const DERIVABILITY_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
  the plan. Fails closed per item: out-of-range or duplicate candidate
  numbers and unknown verdicts become findings, and candidates left
  unanswered are recorded.
- 
+
  @param wire - report as the judge reported it
- 
+
  @param seedIds - seed ids in candidate numbering order
- 
+
  @returns Verdicts keyed by seed id plus findings as data
- 
+
  @example
  ```ts
  const { verdicts, } = resolveDerivabilityJudgment({ wire, seedIds, },);

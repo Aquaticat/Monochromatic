@@ -1,15 +1,15 @@
 /**
  Tests for locating a claimed defect in a document.
- 
+
  WHAT THESE PIN is the split that the first version of this instrument did not
  have: a LOCATOR says which occurrence is meant, a FOCUS says what changed,
  and the second is allowed to be short and repeated as long as it is unique
  inside the first. The cases in this file are the ones that decide whether that split
  actually buys anything, so each names the reading it would have had under a
  single-span rule.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

@@ -23,7 +23,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Everything one round's ballots add up to.
- 
+
  @example
  ```ts
  const { ranked, abstained, } = countBallots({ voices, stakesByIndex, candidateCount: 2, l, },);
@@ -63,24 +63,24 @@ export type CountedBallots = {
 
 /**
  Weighs every heard ballot and tallies what each candidate drew.
- 
+
  Self-votes are counted rather than prevented: the reason for seating
  producers is that their judgement carries value, and the reason for
  weighing and recording is that self-preference is a known failure of
  exactly this arrangement. A rate nobody can read is an assumption.
- 
+
  @param voices - ballots the gather heard, already validated
- 
+
  @param stakesByIndex - models with a stake in each one-based candidate
  index, for telling a self-vote from an ordinary one
- 
+
  @param candidateCount - how many candidates the judges were shown, so an
  index past the end is an abstention rather than a vote
- 
+
  @param l - logger of the calling round
- 
+
  @returns Ballots, per-candidate weights, the ranking and the counts
- 
+
  @example
  ```ts
  const counted = countBallots({ voices: gather.voices, stakesByIndex, candidateCount: 2, l, },);

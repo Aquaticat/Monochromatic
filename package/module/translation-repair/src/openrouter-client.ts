@@ -84,7 +84,7 @@ import {
 
 /**
  Local representation of this provider's absence of a per-model ceiling.
- 
+
  @example
  ```ts
  const width = OPENROUTER_PER_MODEL_CONCURRENCY;
@@ -99,10 +99,10 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Refusal raised when a roster model has no spelling on this provider.
- 
+
  A THROW RATHER THAN A DATA OUTCOME, because it is a routing mistake in our
  own code and not a thing a model did.
- 
+
  @example
  ```ts
  throw new OpenRouterModelNotServedError({ modelId, },);
@@ -116,9 +116,9 @@ export class OpenRouterModelNotServedError extends Error {
 
   /**
    Builds failure naming the model this provider has no spelling for.
-   
+
    @param modelId - roster model that was addressed here
-   
+
    @example
    ```ts
    new OpenRouterModelNotServedError({ modelId: 'hf:Qwen/Qwen3.8-27B', },);
@@ -132,7 +132,7 @@ export class OpenRouterModelNotServedError extends Error {
 
 /**
  Client surface for the per-token USD provider.
- 
+
  @example
  ```ts
  const client: OpenRouterClient = createOpenRouterClient({ apiKey, transport, },);
@@ -149,21 +149,21 @@ export type OpenRouterClient = ModelCaller & {
 /**
  Refuses a success reply whose server-sent stream carried a provider failure
  or stopped before its terminator.
- 
+
  THE FAILURE IS ASKED FIRST. A stream the upstream failed mid-way carries an
  `error` chunk and no terminator, so the terminator check alone would name
  the framing ("cut off") where the wire named the cause (a code and an
  endpoint); `openrouter-stream-error.ts` records the day that misnaming cost.
- 
+
  @param attemptReply - one attempt's reply, read before the ladder returns it
- 
+
  @throws InStreamProviderError - when a success body carries the gateway's
  error chunk, which puts the failed call on the retry path under its own name
- 
+
  @throws MalformedCompletionError - when a success body stops before
  `[DONE]`, which is what puts a truncated stream on the retry path
  instead of past it
- 
+
  @example
  ```ts
  const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
@@ -205,24 +205,24 @@ function servedIdFor(
 
 /**
  Builds one client over injected transport, speaking chat completions.
- 
+
  @param apiKey - bearer token; never logged
- 
+
  @param transport - HTTP the client calls over: `fetchTransport` in a run, a
  recorded one in a test. REQUIRED, since a test that left it out would reach
  the provider (ledger M43, X24)
- 
+
  @param chatUrl - completion endpoint, overridable for tests
- 
+
  @param creditsUrl - credits endpoint, overridable for tests
- 
+
  @param perModelConcurrency - optional local test or caller bound; normal
  operation is unbounded because the provider states no ceiling
- 
+
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
- 
+
  @returns Client surface with chatText, chatJson, and credits
- 
+
  @example
  ```ts
  const client = createOpenRouterClient({ apiKey: process.env['TRANSLATION_REPAIR_OPENROUTER_API_KEY'] ?? '', transport: fetchTransport, },);
@@ -260,19 +260,19 @@ export function createOpenRouterClient(
 
   /**
    Free-text chat exchange; bounded per model where a bound was given.
-   
+
    @param request - exchange to perform
-   
+
    @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
-   
+
    @returns Content text and usage when reported
-   
+
    @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
-   
+
    @throws {@link SyntheticHttpError} on non-success status
-   
+
    @throws {@link import('./completion-shape.ts').MalformedCompletionError} on a stream that never terminated
-   
+
    @example
    ```ts
    const reply = await client.chatText({ modelId, messages, signal, },);
@@ -355,7 +355,7 @@ export function createOpenRouterClient(
 
       /**
        Exactly what goes on the wire, hoisted so its size can be measured.
-       
+
        NO THINKING PARAMETER AND NO REASONING BUDGET, EVER, the owner's
        standing instruction of 2026-08-25, recorded in full at the Synthetic
        body. `max_tokens` IS ALWAYS SENT since 2026-09-09, at the measured
@@ -493,15 +493,15 @@ export function createOpenRouterClient(
   /**
    Reads credits purchased and used, which is this provider's whole budget
    signal.
-   
+
    @param signal - abort signal honored for the read
-   
+
    @returns Typed credits
-   
+
    @throws {@link SyntheticHttpError} on non-success status
-   
+
    @throws {@link import('./openrouter-credits.ts').OpenRouterCreditsShapeError} on contract-violating bodies
-   
+
    @example
    ```ts
    const { remainingUsd, } = await client.credits({ signal, },);

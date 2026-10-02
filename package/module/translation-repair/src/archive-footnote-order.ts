@@ -19,7 +19,7 @@ import { parseDocument, } from './parse-document.ts';
 
 /**
  What reordering the definitions did.
- 
+
  @example
  ```ts
  const reordered: ReorderedDefinitions = reorderFootnoteDefinitions({ text, order: [ '1', '2', ], },);
@@ -70,11 +70,11 @@ const DEFINITION_ZONE = 'footnote-definition';
 
 /**
  Labels of a text's definitions, in the order the text carries them.
- 
+
  @param text - document to read
- 
+
  @returns Labels in document order
- 
+
  @example
  ```ts
  definitionLabelOrder({ text: sourceText, },);
@@ -95,19 +95,19 @@ export function definitionLabelOrder(
  Moves a text's footnote definition blocks into the order of their labels
  in `order`, labels the order does not name keeping their place after the
  ones it does.
- 
+
  @param text - document whose definitions move
- 
+
  @param order - labels in the order wanted
- 
+
  @param protectedRanges - original-English intervals in current text coordinates
- 
+
  @returns The text, moved or standing, and why it stands: a move that would
  change how the page parses its definitions stands, with a note
- 
+
  @throws FootnoteRewriteError when the moved text's markers disagree with the
  parser's reading of them
- 
+
  @example
  ```ts
  reorderFootnoteDefinitions({ text: 'A[^1] B[^2].\n\n[^2]: two\n\n[^1]: one\n', order: [ '1', '2', ], },);

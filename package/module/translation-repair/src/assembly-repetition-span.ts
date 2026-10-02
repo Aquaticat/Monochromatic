@@ -29,19 +29,19 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /**
  Every window of one length, indexed by where it sits and by what it spells.
- 
+
  BOTH DIRECTIONS ARE NEEDED and neither derives cheaply from the other here.
  Growing a span walks offsets and asks what each spells, while the merge test
  asks where a phrase occurs. Recomputing either side per step would re-slice
  the word list on every window.
- 
+
  @example
  ```ts
  const index: WindowIndex = indexWindows({ words, length: 12, },);
  ```
- 
+
  Shared with the repetition finder; not part of the lane contract.
- 
+
  @internal
  */
 export type WindowIndex = {
@@ -58,14 +58,14 @@ export type WindowIndex = {
 
 /**
  One repeated passage, grown to its full length.
- 
+
  @example
  ```ts
  const span: GrownSpan = { phrase: 'the same thing said twice over', count: 2, };
  ```
- 
+
  Shared with the repetition finder; not part of the lane contract.
- 
+
  @internal
  */
 export type GrownSpan = {
@@ -81,7 +81,7 @@ export type GrownSpan = {
 
   /**
    Whether an earlier span already accounts for every occurrence of this one.
-   
+
    REPORTED RATHER THAN ACTED ON, because the two things a span is used for
    part company here. A derivative span must not become a FINDING, since it
    describes a duplication already named. It must still SUPPRESS the shorter
@@ -95,20 +95,20 @@ export type GrownSpan = {
 
 /**
  Indexes every window of one length over a word list.
- 
+
  @param words - document as a word list
- 
+
  @param length - words per window
- 
+
  @returns Both indexes over the same windows
- 
+
  @example
  ```ts
  const index = indexWindows({ words, length: 12, },);
  ```
- 
+
  Shared with the repetition finder; not part of the lane contract.
- 
+
  @internal
  */
 export function indexWindows(
@@ -163,17 +163,17 @@ export function indexWindows(
 
 /**
  Whether one window's occurrences are another's advanced by exactly one word.
- 
+
  This is the test that makes a merge safe. It holds only when the two windows
  are consecutive pieces of the SAME repeated passage: every place the first
  occurs, the second occurs one word later, and nowhere else.
- 
+
  @param earlier - occurrences of the window on the left
- 
+
  @param later - occurrences of the window one word to its right
- 
+
  @returns Whether the two are one passage rather than two
- 
+
  @example
  ```ts
  const together = advancesByOne({ earlier: [3, 40,], later: [4, 41,], },);
@@ -199,17 +199,17 @@ function advancesByOne(
 
 /**
  Whether reported ranges already hold every occurrence of one passage.
- 
+
  @param covered - ranges an earlier span accounted for, merged and disjoint
- 
+
  @param occurrences - where this passage sits
- 
+
  @param wordCount - words it spans
- 
+
  @returns Whether it describes a duplication already named
- 
+
  @internal
- 
+
  @example
  ```ts
  const derivative = accountedForBy({ covered, occurrences: [8, 27,], wordCount: 22, },);
@@ -277,12 +277,12 @@ function occurrencesAt(
 
 /**
  Grows admitted windows into the maximal passages they belong to.
- 
+
  REPORTS NOTHING ALREADY ACCOUNTED FOR, which is one rule doing two jobs and
  is the generalisation of the containment rule a caller applies to shorter
  phrases. A span whose every occurrence sits inside text an already-reported
  span covers is not a second fact about the document.
- 
+
  It catches the span reached again at its own second occurrence, which would
  otherwise be emitted once per occurrence. It also catches the artifact a
  passage said three or more times produces: in `P P P` the join between two
@@ -290,31 +290,31 @@ function occurrencesAt(
  is itself a repeat, and reporting it beside `P said three times` describes
  one duplication as two. Measured: without this the triple case reported two
  findings rather than one.
- 
+
  A RUN THAT BREAKS EARLY IS NOT AN ERROR. Where a window occurs somewhere the
  rest of its passage does not, the occurrence sets stop advancing together and
  the span ends there. That is two facts rather than one, and reporting them as
  two is right: the shorter phrase really does occur more often than the longer
  one containing it.
- 
+
  @param words - document as a word list
- 
+
  @param length - words per window, which is the shortest span this can emit
- 
+
  @param index - windows of that length over those words
- 
+
  @param admitted - offsets whose window is worth reporting on its own
- 
+
  @returns Maximal spans, in the order their first occurrence appears, each
  saying whether an earlier one already accounts for it
- 
+
  @example
  ```ts
  const spans = grownSpans({ words, length: 12, index, admitted, },);
  ```
- 
+
  Shared with the repetition finder; not part of the lane contract.
- 
+
  @internal
  */
 export function grownSpans(
@@ -434,7 +434,7 @@ export function grownSpans(
 
 /**
  Half-open range of words, `start` inclusive and `end` exclusive.
- 
+
  @example
  ```ts
  const region: WordRegion = { start: 0, end: 19, };
@@ -454,21 +454,21 @@ type WordRegion = {
 
 /**
  Merges ranges into the smallest disjoint set covering the same words.
- 
+
  WITHOUT THIS THE COVERAGE TEST IS WRONG IN THE CASE IT EXISTS FOR. A passage
  said three times covers three ranges that meet end to start, and the junction
  artifact spans the seam between two of them. Asked whether any ONE range
  holds it, the answer is no; asked whether the ranges TOGETHER hold it, the
  answer is yes, and yes is correct. Measured: without merging, the triple case
  still reported two findings.
- 
+
  Touching ranges join, since `[0, 19)` and `[19, 38)` leave no word between
  them.
- 
+
  @param regions - ranges in any order, possibly overlapping
- 
+
  @returns Ranges ascending by start, none touching another
- 
+
  @example
  ```ts
  const union = mergeRegions({ regions: [{ start: 19, end: 38, }, { start: 0, end: 19, },], },);
@@ -510,25 +510,25 @@ function mergeRegions(
 
 /**
  Counts occurrences of one passage in a word list.
- 
+
  WORD-WISE RATHER THAN OVER THE TEXT, so the count means the same thing as the
  window counts it is compared against: whitespace between words differs
  between the archive and the assembled document, and a text search would miss
  a passage that is only rewrapped.
- 
+
  @param words - document as a word list
- 
+
  @param phrase - passage, space-joined as {@link indexWindows} joins
- 
+
  @returns Times that passage occurs
- 
+
  @example
  ```ts
  const times = countSpan({ words: archiveWords, phrase, },);
  ```
- 
+
  Shared with the repetition finder; not part of the lane contract.
- 
+
  @internal
  */
 export function countSpan(

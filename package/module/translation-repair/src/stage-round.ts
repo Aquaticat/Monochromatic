@@ -38,13 +38,13 @@ import { roundLine, } from './stage-round-line.ts';
 
 /**
  Time a voice still in flight is given once quorum stands.
- 
+
  SIXTY SECONDS ORIGINALLY, a user figure of 2026-08-15 chosen between this and
  cutting at quorum outright, and recorded then as not derived from the latency
  distribution and due a revisit against one. That revisit happened on
  2026-08-17 and the window moved; see
  `doc/decision/translation-repair-straggler-grace.md`.
- 
+
  THE WINDOW WAS BELOW THE TWO SLOWEST MODELS' ORDINARY RANGE, which is why it
  cut them and nothing else. Whole-call latency over 602 bench exchanges:
  `hf:openai/gpt-oss-120b` p50 4.4 s, `hf:moonshotai/Kimi-K3` p50 9.5 s,
@@ -52,17 +52,17 @@ import { roundLine, } from './stage-round-line.ts';
  `hf:zai-org/GLM-4.7-Flash` p50 30.5 s with p95 72.9 s and max 88.6 s. Sixty
  seconds sits between the GLM medians and their 95th percentiles, so it cut
  working voices by construction.
- 
+
  IT HAS NEVER CAUGHT WHAT IT EXISTS TO CATCH. Across those 602 exchanges the
  only non-ok outcomes were 8 straggler cuts, all on the two GLM models, and no
  timeout of any other kind. Not one hung call was recorded, so every voice the
  window has taken was a slow-but-working one.
- 
+
  THREE MINUTES FROM 2026-08-17, rather than the observed maximum, deliberately.
  A maximum over a few hundred samples is not a bound, which `STREAM_IDLE_MS`
  in `stream-idle-guard.ts` records this codebase learning the hard way, so
  that figure sat above the 88.6 s maximum by more than a factor of two.
- 
+
  TWO MINUTES SINCE 2026-09-03, THE OWNER'S DECISION ON A MEASURED PAIR. The
  four-entry pass of 2026-09-02 had been launched at the original 60 s by
  dial, and two keyword233 passes on the all-OpenRouter bench, identical but
@@ -75,7 +75,7 @@ import { roundLine, } from './stage-round-line.ts';
  `RUN_PER_CALL_TIMEOUT_MS` of 360_000, so the window still cuts a genuinely
  hung voice long before its own deadline would, which is the whole purpose
  the user's rule of 2026-08-15 gave it.
- 
+
  THE EDITOR CALIBRATION RUNS UNDER 300000 MS INSTEAD (`adoptCalibrationGrace`
  in `grace-override.ts`, the owner's decision of 2026-08-26 on arm D), because
  under four slices in flight the longer window costs nothing measurable and
@@ -88,7 +88,7 @@ export const STRAGGLER_GRACE_MS = 120_000;
 
 /**
  One model's answer, or its silence, from one round.
- 
+
  @example
  ```ts
  const outcome: RoundOutcome<Wire> = { modelId, voice: { heard: false, answered: false, }, };
@@ -108,15 +108,15 @@ export type RoundOutcome<ValueT,> = {
 
 /**
  Waits until enough voices are heard, or until every ask has settled.
- 
+
  Counts HEARD voices rather than settled calls, because a call that came back
  unusable moves the round no closer to a quorum and waiting on it is the same
  waiting this module exists to bound.
- 
+
  @param asks - in-flight asks, one per model
- 
+
  @param heardNeeded - voices this round must hear before the grace starts
- 
+
  @example
  ```ts
  await awaitHeard({ asks, heardNeeded: 2, },);
@@ -205,25 +205,25 @@ function refusedByRouter<ValueT,>(
 /**
  Runs one fan-out round and abandons whatever is still in flight once quorum
  has stood for {@link STRAGGLER_GRACE_MS}.
- 
+
  @param client - injected model client
- 
+
  @param modelIds - models this round asks
- 
+
  @param messages - prompt shared by every voice
- 
+
  @param signal - caller abort, which always wins over the straggler cut
- 
+
  @param exchangeTimeoutMs - deadline per exchange
- 
+
  @param responseFormat - structured-output constraint
- 
+
  @param validate - client-side schema guard
- 
+
  @param stage - stage label for logging
- 
+
  @param l - logger of the calling stage
- 
+
  @param heardNeeded - voices still needed for quorum, which starts the grace
 
  @param reserve - pending seats past this round's window, in the order the
@@ -235,7 +235,7 @@ function refusedByRouter<ValueT,>(
  defaults to {@link STRAGGLER_GRACE_MS}, or to what
  `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` overrides it with, and exists so a
  test can bound its own wall time
- 
+
  @returns One outcome per model asked: the window's in roster order, then
  each reserve seat taken, in the order the round took it
 
@@ -294,7 +294,7 @@ export async function runGatherRound<ValueT,>(
 
   /**
    Outcomes as they arrive, keyed by roster position.
-   
+
    Written from inside each ask so the round can be assembled from whatever
    HAS answered rather than by awaiting calls it has already abandoned. That
    matters more than it looks: awaiting an abandoned call would make this
@@ -305,7 +305,7 @@ export async function runGatherRound<ValueT,>(
 
   /**
    When this round dispatched, so its own line can say how long it took.
-   
+
    THE RUN COULD NOT SAY WHERE ITS HOURS WENT. It was found that the only
    per-call line fires at completion, so a log carries no round boundary at
    all: nothing separates the time a round spent gathering from the time it
@@ -456,7 +456,7 @@ export async function runGatherRound<ValueT,>(
 
   /**
    When quorum stood, which is the instant the grace window opens.
-   
+
    SPLITTING THE ROUND HERE IS THE POINT. Time before this is the round doing
    its work; time after it is the round waiting on voices it may never hear.
    Only the second half is straggler cost, and a single round duration cannot

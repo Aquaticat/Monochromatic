@@ -1,30 +1,30 @@
 /**
  Tests that the bench draw REFUSES a corpus it found no slice in.
- 
+
  WHY REFUSE RATHER THAN RETURN NOTHING. The bench exists to compare roster
  widths on the same slices. Handed an empty sample it would run every width
  over no work, find no difference between them, and print that as a result;
  the widths would be reported indistinguishable on evidence that never
  existed. A width question was settled on 231 rounds, and a silent empty
  draw is exactly how that kind of answer goes wrong.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting this guard so a corpus that DID
  yield slices is the one refused failed no test in this package.
- 
+
  READ AGAINST A THROWAWAY CLONE, never the pinned one. The draw now takes its
  pin as a defaulted parameter, exactly as `censusEntry` already does and for
  the reason stated there: passed rather than read so it is testable against a
  throwaway clone instead of the unlicensed one. Each case here builds a git
  repository in a temporary directory, commits into it, and reads it back at
  that commit.
- 
+
  THE SECOND CASE IS THE CONTROL, and it does two jobs: it separates a guard
  that reads its input from one that refuses everything, and it proves the pin
  is actually threaded, since a draw still reading the run pin would come back
  with the real corpus rather than with one invented cat.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -78,15 +78,15 @@ const TARGET_PAGE = '## The windowsill\n\nThe kitten dozes on the windowsill. '
 
 /**
  Runs git in a directory and refuses if it did not succeed.
- 
+
  @param cwd - directory to run in
- 
+
  @param args - arguments after the binary
- 
+
  @returns Standard output, trimmed
- 
+
  @throws Error naming the arguments when git exits non-zero
- 
+
  @example
  ```ts
  const sha = git({ cwd, args: ['rev-parse', 'HEAD',], },);
@@ -123,9 +123,9 @@ function git(
 /**
  Builds a throwaway git repository holding the named files, and pins it at the
  one commit it carries.
- 
+
  @param files - repository-relative paths mapped to their whole contents
- 
+
  @returns Pin naming that clone and that commit, removed when its
  `await using` scope ends
 

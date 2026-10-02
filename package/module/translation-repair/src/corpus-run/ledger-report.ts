@@ -42,7 +42,7 @@ const NOTHING_TO_READ = 1;
 
 /**
  Exit code left behind when the ledger was read but not all of it.
- 
+
  SEPARATE FROM AN ABSENT LEDGER, on the same grounds `verify-published.ts`
  separates its two: a run that recorded nothing and a run whose record is
  part unreadable answer a roster question differently, and a gate treating
@@ -63,11 +63,11 @@ const PERCENT = 100;
 
 /**
  Prints one candidate a named seat wrote, with what judges said about it.
- 
+
  @param reading - candidate and the remarks about it
- 
+
  @param at - position in this seat's output, so a reader can cite one
- 
+
  @example
  ```ts
  printReading({ reading, at: 0, },);
@@ -104,14 +104,14 @@ function printReading(
 
 /**
  Reports the files that would not read, and what their absence costs.
- 
+
  NAMED AS A SHORTFALL RATHER THAN LISTED AND DROPPED. Every figure this report
  prints is computed over the files that read, so an unreadable contest silently
  lowers a seat's candidate count and its ballot count together. A reader who
  did not know that would take a partial standing for a whole one.
- 
+
  @param reading - what the ledger directory yielded
- 
+
  @example
  ```ts
  printRefusals({ reading, },);
@@ -156,9 +156,9 @@ function printRefusals(
 
 /**
  Prints what every seat did, over the contests that read.
- 
+
  @param reading - what the ledger directory yielded
- 
+
  @example
  ```ts
  printSummary({ reading, },);
@@ -222,11 +222,11 @@ function printSummary(
 
 /**
  Prints one seat's candidates and the reasons judges gave for choosing them.
- 
+
  @param reading - what the ledger directory yielded
- 
+
  @param wanted - seat to read in full
- 
+
  @example
  ```ts
  printSeat({ reading, wanted, },);
@@ -279,11 +279,11 @@ function printSeat(
 
 /**
  Reads a run's ledger and reports what it holds.
- 
+
  Returns nothing: the report on stdout and the exit code ARE the output.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await reportLedger({ line, },);

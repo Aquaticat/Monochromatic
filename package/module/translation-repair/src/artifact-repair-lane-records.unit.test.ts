@@ -1,17 +1,17 @@
 /**
  Tests for reading the repair lane's own records out of a settled artifact.
- 
+
  WHAT THESE PIN is a PATH, not a shape. Version 1 wrote these records at the
  artifact root and version 2 writes them inside the repair lane, and every
  reader kept asking the root. Nothing caught it: raw JSON has no type to
  disagree with, so the retired key answered `undefined` and the reader that
  tolerated absence reported an empty corpus.
- 
+
  So the first case puts DECOY records at the retired key. A reader that still
  asks the root passes every other case here and fails that one.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -55,7 +55,7 @@ const LANE_FINDING = 'stage-quorum-unmet (critic 0/6)';
 
 /**
  Records planted at the RETIRED root key, which nothing may read.
- 
+
  Deliberately different from the lane's own, so a reader still asking the root
  returns these and is caught rather than agreeing by coincidence.
  */
@@ -67,11 +67,11 @@ const DECOY_ISSUE = {
 
 /**
  Repair lane's raw result, with whatever this case changes.
- 
+
  @param over - fields this case replaces, `issues` and `findings` above all
- 
+
  @returns Raw result JSON
- 
+
  @example
  ```ts
  const raw = repairResult({ issues: [], },);
@@ -118,13 +118,13 @@ function repairResult(
 
 /**
  One whole version 2 artifact, with whatever this case changes.
- 
+
  @param repairRaw - repair lane's raw result
- 
+
  @param rest - any top-level field this case adds, the retired keys included
- 
+
  @returns Artifact as JSON
- 
+
  @example
  ```ts
  const artifact = artifactWith({ repairRaw: repairResult({ issues: [], },), },);

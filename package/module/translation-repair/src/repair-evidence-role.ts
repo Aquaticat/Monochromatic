@@ -1,7 +1,7 @@
 /**
  Separates current coverage and edit scope from the source evidence resolving current claims.
  The matched Mio packet probe produced anchored participant corrections under this role boundary.
- 
+
  @example
  ```ts
  const purpose = REPAIR_EVIDENCE_ROLE;

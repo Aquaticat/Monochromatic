@@ -1,15 +1,15 @@
 /**
  Tests for the lifetime of the files one draw writes.
- 
+
  A draw produces three outputs that only mean anything together, and a final
  path is refused once it exists. A fault between writes therefore leaves a
  partial set that the refusal then blocks the next draw on, and the obstacle
  is a file nobody ever graded. These cases pin that a failed draw leaves
  nothing behind and a finished one leaves everything.
- 
+
  Every case runs against a throwaway directory from `mkdtemp`, never the real
  runs directory, because the behaviour under test is file REMOVAL.
- 
+
  @module
  */
 

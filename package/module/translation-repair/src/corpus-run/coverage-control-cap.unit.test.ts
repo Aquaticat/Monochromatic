@@ -1,29 +1,29 @@
 /**
  Tests that the coverage control STOPS AFTER ITS THIRD USABLE CASE.
- 
+
  WHAT THE CONTROL BUYS. Each case it takes costs three rounds of the whole
  roster: the passage as it stands, the passage with its rendering cut out, and
  an equally large cut taken somewhere else as a decoy. Three cases is the
  declared size of the control, and the cap is what keeps a caller handing it a
  long list from paying for the whole list.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, the cap failed no test in this package.
  Nothing throws when it is wrong and nothing looks broken; the control simply
  spends more than it said it would, and the majority it reports is taken over
  a different denominator than the one its own rules describe.
- 
+
  COUNTED ON ROWS, NOT ON CASES, which is the part worth pinning. A case the
  wire already declines to call covered is reported as a refusal and does NOT
  count against the cap, because it never had its rendering damaged and so
  showed nothing about whether damage is noticed. Five cases go in here and all
  five are damageable, so the rows are the cap exactly.
- 
+
  NO NETWORK. One scripted answer serves every round: full coverage, quoting a
  sentence that really is in the translation, which is what makes the standing
  verdict `carried` and its evidence locatable.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

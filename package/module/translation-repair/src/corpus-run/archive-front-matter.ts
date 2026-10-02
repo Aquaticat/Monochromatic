@@ -27,15 +27,15 @@ import {
 /**
  Whether the archive's front matter stands as published, so the lanes leave
  it alone.
- 
+
  @param entryId - directory id of the entry
- 
+
  @param sourceText - whole original page
- 
+
  @param archiveText - whole archive page before any lane ran
- 
+
  @returns Whether the page carries the archive's front matter byte for byte
- 
+
  @example
  ```ts
  const stands = archiveFrontMatterStands({ entryId: 'hakureico', sourceText, archiveText, },);
@@ -95,16 +95,16 @@ export function archiveFrontMatterStands(
 
 /**
  Authority the page's front matter has for one entry.
- 
+
  @param entryId - directory id of the entry
- 
+
  @param sourceText - whole original page
- 
+
  @param archiveText - whole archive page before any lane ran
- 
+
  @returns `archive` where the archive's front matter stands, `rendered`
  where the lanes must render it
- 
+
  @example
  ```ts
  const authority = frontMatterAuthorityOf({ entryId: 'hakureico', sourceText, archiveText, },);

@@ -1,14 +1,14 @@
 /**
  Tests for the assembly's withdrawn and shipped index sets.
- 
+
  A replacement can validate on its own and still break a relation between
  slices: a footnote reference settled apart from its definition. The guard
  withdraws it at assembly, and the two index sets the result carries must say
  so: the slice is withdrawn, not changed, and the document that ships is the
  archive.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -173,15 +173,15 @@ function preparedWithHalves(): PreparedDocumentPair {
 
 /**
  Record for one slice, changed or kept.
- 
+
  @param sliceIndex - slice this settles
- 
+
  @param incumbentText - archive wording of the slice
- 
+
  @param outputText - wording the lane settled on
- 
+
  @returns Record as the lane writes it
- 
+
  @example
  ```ts
  const record = recordFor({ sliceIndex: 0, incumbentText, outputText: incumbentText, },);

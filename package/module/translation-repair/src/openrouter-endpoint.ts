@@ -21,11 +21,11 @@ const ENDPOINT_KEY = 'provider';
 
 /**
  What the stream said about its upstream.
- 
+
  A DISCRIMINATED RECORD RATHER THAN A STRING SENTINEL, unlike the cost
  reader's `number | 'unreported'`: the name is the gateway's free text, so
  any string chosen to mean "none" could one day be an upstream's real name.
- 
+
  @example
  ```ts
  const reading: EndpointReading = { reported: true, name: 'ModelRun', };
@@ -49,16 +49,16 @@ export const ENDPOINT_UNREPORTED: EndpointReading = { reported: false, };
 
 /**
  Upstream endpoint one completed stream says served it.
- 
+
  THE FIRST NAME WINS. The gateway names the same upstream on every chunk of
  one call; a stream that changed upstreams mid-call would be a gateway bug
  this reader has no evidence of, and the first name is the one that
  accepted the request.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns Display name as the gateway spelled it, or that no chunk carried one
- 
+
  @example
  ```ts
  const endpoint = openRouterEndpointOf({ bodyText: reply.bodyText, },);

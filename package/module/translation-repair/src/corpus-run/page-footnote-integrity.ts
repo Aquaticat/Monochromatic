@@ -19,16 +19,16 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 /**
  Refuses a would-ship page that introduces a footnote defect the archive
  did not carry.
- 
+
  @param artifact - final stage decisions used for publication
- 
+
  @param slices - preparation defining replacement spans
- 
+
  @param targetText - archive text the replacement spans address
- 
+
  @throws {@link TranslationRepairInterruptedError} as `page-footnote-integrity`
  naming each introduced defect
- 
+
  @example
  ```ts
  assertPageFootnotesIntact({ artifact, slices, targetText, },);

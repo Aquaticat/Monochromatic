@@ -4,7 +4,7 @@ import { droppedContributorNameForms, } from '../contributor-name-authority.ts';
 
 /**
  Failure raised when final page changes target-authoritative contributor name.
- 
+
  @example
  ```ts
  throw new ContributorCompletenessError({ entryId: 'CatEntry', droppedCount: 1, });
@@ -28,7 +28,7 @@ export class ContributorCompletenessError extends Error {
 
   /**
    @param entryId - entry refused
-   
+
    @param droppedCount - target contributor forms final page lost
    */
   public constructor(
@@ -50,15 +50,15 @@ export class ContributorCompletenessError extends Error {
 /**
  Refuses final page that drops or respells contributor identity established by
  existing English archive attribution line.
- 
+
  @param entryId - corpus entry being published
- 
+
  @param archiveText - complete existing English archive page
- 
+
  @param pageText - assembled final page
- 
+
  @throws {@link ContributorCompletenessError} when target contributor identity changed
- 
+
  @example
  ```ts
  assertContributorNamesComplete({ entryId: 'CatEntry', archiveText, pageText, });

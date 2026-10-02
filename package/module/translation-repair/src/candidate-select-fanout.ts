@@ -22,15 +22,15 @@ import {
 
 /**
  Chooses how many judges a selection round asks.
- 
+
  @param judgeCount - seats on the judge bench
- 
+
  @param requested - what the caller asked for; absent for the production
  default
- 
+
  @returns Whole bench where the window's self-votes alone could not reach
  the minimum; the request otherwise
- 
+
  @example
  ```ts
  const mode = selectionFanOut({ judgeCount: 4, },);

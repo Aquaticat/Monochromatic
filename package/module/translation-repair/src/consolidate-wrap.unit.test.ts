@@ -1,20 +1,20 @@
 /**
  Tests for wrapping a consolidation that ships.
- 
+
  WHAT THESE PIN is the pair of properties `translate-wrap.unit.test.ts` and
  `repair-wrap.unit.test.ts` pin on the two lanes, now on the stage that had
  neither: only wording the consolidation PRODUCED is wrapped, and whether it
  still differs from what stands is re-derived from the wrapped text rather
  than taken from the gate's answer.
- 
+
  The demotion case is the one with teeth. The gate compares an unwrapped
  consolidation against the standing text, so it can call a difference real
  when the only difference is where the lines break. Shipping that would
  report a change nobody decided on, and would put a slice through the whole
  delivery path to arrive at the wording it started with.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -37,11 +37,11 @@ const l = tagged({ tag: 'consolidate-wrap-test', },);
 
 /**
  Builds a gate outcome that settled the way a case needs.
- 
+
  @param ships - rendering the gate settled on
- 
+
  @returns Outcome shaped as the gate produces one
- 
+
  @example
  ```ts
  const outcome = gateSettling({ ships: 'consolidated', },);
@@ -66,7 +66,7 @@ const ONE_LONG_LINE = 'The cat naps in the window. She wakes at four. She asks f
 
 /**
  One line-structured passage as it stands in a page nobody has wrapped.
- 
+
  FLAT ON PURPOSE, and this is the ordinary case rather than a contrived one:
  50 of 64 archive incumbents already violate the line rule, and a retention
  keeps the archive's bytes.

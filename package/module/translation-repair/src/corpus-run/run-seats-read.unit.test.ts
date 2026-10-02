@@ -1,13 +1,13 @@
 /**
  Tests for the seat readings a phase and a chunk take past a named hold.
- 
+
  THE THIRTEENTH CLASS IN BOTH ITS FACES. Before a phase (the third hakureico
  pass of 2026-09-07, translate lane and consolidation on nobody under a
  538 s hold) and inside one (the fourth pass, a 923 s hold two minutes into
  consolidation, slice 5 stopping the entry). The phase reading waits when a
  bench it leans on cannot reach quorum; the chunk reading does the same and
  costs nothing while nothing is held.
- 
+
  @module
  */
 
@@ -86,13 +86,13 @@ const l = tagged({ tag: 'run-seats-read-test', },);
 
 /**
  Builds a client whose dryness view and holds answer as scripted.
- 
+
  @param providerDryness - scripted view
- 
+
  @param providerHolds - scripted holds, none when absent
- 
+
  @returns Client with only the seat reader's surface
- 
+
  @example
  ```ts
  const client = viewClient({ providerDryness: async () => ALL_WET, },);
@@ -115,11 +115,11 @@ function viewClient(
 
 /**
  Dryness views handed out in order, the last one repeated, counting reads.
- 
+
  @param views - views in the order they are read
- 
+
  @returns Reader and the count of reads so far
- 
+
  @example
  ```ts
  const script = scriptedViews({ views: [BEDROCK_ALONE, ALL_WET,], },);

@@ -28,7 +28,7 @@ import type { SliceValidation, } from './translate-validate.ts';
 
 /**
  One proposal's identity beside what the structural guard made of it.
- 
+
  @example
  ```ts
  const checked: ProposalValidity = { modelId: 'hf:cat/Cat-A', validation: { kind: 'valid', pageGrammar: 'strict', }, };
@@ -49,7 +49,7 @@ export type ProposalValidity = {
 
 /**
  What a slate amounts to once the invalid proposals are not in it.
- 
+
  @example
  ```ts
  const floor: SlateFloor = { kind: 'incumbent-only', refusedModelIds: ['hf:cat/Cat-A'], };
@@ -76,20 +76,20 @@ export type SlateFloor =
 
 /**
  Decides whether a consolidation slate has anything the gate can be asked about.
- 
+
  AN EMPTY ROSTER READS AS INCUMBENT-ONLY rather than as an error. A stage that
  bought no voices at all and a stage whose every voice was refused both leave
  the standing text as the only thing that can ship, and the caller that has to
  act on either does the same thing. What separates them is the refused list,
  which is empty in the first case and named in the second.
- 
+
  @param validity - each proposal's identity and structural verdict, after any
  repair round has had its turn
- 
+
  @param l - stage logger
- 
+
  @returns Whether proposals survive, and who they belong to
- 
+
  @example
  ```ts
  const floor = floorConsolidateSlate({ validity, l, },);

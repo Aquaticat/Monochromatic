@@ -30,14 +30,14 @@ import { flattenSpace, } from './sheet-line-text.ts';
 
 /**
  What the neighbouring blocks are for, stated inside the editor sheet.
- 
+
  THE EDITOR IS WHERE THE WINDOW EITHER PAYS OR DOES HARM, so its rule is the
  strictest of the three. The `lintong` damage is an editor outcome: handed
  a one-sentence original against a four-sentence incumbent, it repaired the
  sentence it could match and left the other three in place, and the neighbour's
  own new translation then said them a second time. Seeing next door is what
  lets it recognise that case.
- 
+
  THE OPPOSITE FAILURE IS WORSE AND IS NAMED HERE TOO. An editor that removes a
  passage because it can see it next door, when the neighbouring slice does not
  in fact keep it, deletes content the document had. Removal is therefore
@@ -152,7 +152,7 @@ Rules, strictly enforced by a machine:
 
 /**
  Rule list followed by the rules this corpus is written under.
- 
+
  WHY THE EDITOR NEEDED THEM, and why this is the stage that needed them most.
  `house-policy.ts` names the failure it exists to stop: a critic ignorant of
  reader protection reports a deliberately vague passage as an omission, and
@@ -181,7 +181,7 @@ ${EDITOR_REPLY_BLOCK}`;
 /**
  Messages plus the envelope order edits resolve through:
  region number N on the wire means `envelopes[N - 1]`.
- 
+
  @example
  ```ts
  const plan: EditorPromptPlan = buildEditorMessages({
@@ -206,17 +206,17 @@ export type EditorPromptPlan = {
 
 /**
  One region block of the prompt sheet.
- 
+
  @param envelope - envelope under presentation
- 
+
  @param regionNumber - one-based number on the sheet
- 
+
  @param targetText - full translation for context extraction
- 
+
  @param issues - adjudicated issues for summary lookup
- 
+
  @returns Rendered region block
- 
+
  @example
  ```ts
  regionBlock({ envelope, regionNumber: 1, targetText, issues, },);
@@ -293,26 +293,26 @@ CONTEXT: ...${before}«REGION ${regionNumber}»${after}...`;
  Builds the editor sheet for one chunk:
  documents fenced, envelopes as numbered regions with their issues,
  current text, and disambiguating context.
- 
+
  @param sourceText - original chunk text
- 
+
  @param targetText - translation chunk text the envelopes were cut from
- 
+
  @param envelopes - non-overlapping envelopes in document order
- 
+
  @param issues - adjudicated issues referenced by the envelopes
- 
+
  @param editorRuleAddendum - extra rule line appended to the enforced
  rule list, for prompt calibration experiments
- 
+
  @param identityContext - declared names and handles, which the critic and
  the panel read before the issues reached this sheet (ledger S14)
- 
+
  @param referenceContext - what the pages the original cites say, read by
  the same stages (ledger S14)
- 
+
  @returns Messages plus the envelope numbering order
- 
+
  @example
  ```ts
  const plan = buildEditorMessages({ sourceText, targetText, envelopes, issues, },);

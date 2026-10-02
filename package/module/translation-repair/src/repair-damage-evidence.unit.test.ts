@@ -1,7 +1,7 @@
 /**
  Tests the evidence lines the lane contest is shown from the
  introduced-defect probe.
- 
+
  THE CASE IS keyword233, 2026-09-03: two probers corroborated that the repair
  editor had moved a deceased person's paragraph into the present tense, the
  repair shipped as the design says, and the lane contest chose it 7 of 7
@@ -11,7 +11,7 @@
  accuracy probe was read. Here only corroborated claims become lines, from
  both probes with the edit named, keyed by the slice they concern, and a chunk
  with none contributes nothing.
- 
+
  @module
  */
 
@@ -30,15 +30,15 @@ import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts'
 
 /**
  Builds one screened claim with the given admissibility.
- 
+
  @param admissibility - what the deterministic check made of the quote
- 
+
  @param evidence - wording quoted from the repair text
- 
+
  @param category - defect class in the prober's words
- 
+
  @returns Claim as the screen records it
- 
+
  @example
  ```ts
  const claim = claimOf({ admissibility: 'corroborated', evidence: 'is', },);
@@ -68,11 +68,11 @@ function claimOf(
 
 /**
  Region tally around a set of claims, counts derived from them.
- 
+
  @param claims - screened claims
- 
+
  @returns Tally as the probe records it
- 
+
  @example
  ```ts
  const region = regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'is', },),], },);

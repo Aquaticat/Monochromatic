@@ -1,6 +1,6 @@
 /**
  Tests for which two renderings count as the same wording on a slate.
- 
+
  WHY THIS FILE EXISTS. The slate's key (`wordingKey`) trims the END of a
  rendering and the trailing spaces of blank lines and blank quote lines,
  reads prose quotes straight (ledger B24), and on a slice the line-structure
@@ -12,15 +12,15 @@
  Measured on 2026-08-25, trimming both ends failed no test. Trailing spaces on
  a line carrying content are a Markdown hard break, which 65 of the pinned
  corpus's pages use, so those stay.
- 
+
  READ THROUGH `buildTranslateCandidates` rather than at the key itself,
  because the collapse is only visible as what reaches the ballot: how many
  candidates a judge is offered, and how many stakes each carries. The same
  reading pins that a text showing nothing reaches no ballot at all (ledger
  B40).
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -56,13 +56,13 @@ const TRANSLATORS = [
 
 /**
  Builds one heard reply.
- 
+
  @param at - roster position that answered
- 
+
  @param translation - wording it proposed
- 
+
  @returns Voice shaped as the gather returns one
- 
+
  @example
  ```ts
  const voice = voiceOf({ at: 0, translation: 'The cat naps.', },);

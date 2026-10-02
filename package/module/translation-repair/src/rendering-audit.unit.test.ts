@@ -1,13 +1,13 @@
 /**
  Tests for the rendering audit stage, driven through the whole instrument.
- 
+
  WHY END TO END rather than through the matcher alone: the question this exists
  to answer is whether a defect survives the trip from a scripted reply, through
  anchoring, into an aggregate. The pieces are tested apart in their own files;
  these cases exist to catch a seam between them.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -78,15 +78,15 @@ type ScriptedVoice = {
 
 /**
  One honest polarity finding, located however this voice chose to locate it.
- 
+
  @param sourceLocator - original span this voice quotes
- 
+
  @param candidateLocator - candidate span it quotes
- 
+
  @param reason - what it says the spans amount to
- 
+
  @returns Finding in wire shape
- 
+
  @example
  ```ts
  const finding = polarityFinding({ sourceLocator, candidateLocator, reason, },);
@@ -123,11 +123,11 @@ const QUIET_VOICE: ScriptedVoice = {
 
 /**
  Client answering with one scripted reply per auditor.
- 
+
  @param script - what each auditor answers, keyed by model id
- 
+
  @returns Client the stage calls
- 
+
  @example
  ```ts
  const client = catClient({ script, },);
@@ -172,11 +172,11 @@ function catClient(
 
 /**
  Runs one audit over the flipped rendering.
- 
+
  @param script - what each auditor answers
- 
+
  @returns What the stage reported
- 
+
  @example
  ```ts
  const report = await auditWith({ script, },);

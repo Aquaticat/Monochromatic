@@ -1,29 +1,29 @@
 /**
  Tests for reading one settled artifact into the shape a draw samples from.
- 
+
  THIS READER FEEDS THE PRECISION GATE, which is what makes its refusals worth
  more than its happy path. Every issue it hands back becomes a row a human
  grades, and the rate computed from those rows gets quoted as the pipeline's
  precision. An entry that joins the pool unverified does not produce a wrong
  number visibly; it produces a slightly short denominator, silently, and the
  rate over it still looks like a measurement.
- 
+
  SO THE CASES ARE ALL REFUSALS, and one of them is about ORDER. An artifact can
  be both substituted and short at once, and which refusal comes out decides
  what an operator goes looking for. Provenance is checked first on purpose: a
  file that is not the entry the pool admitted has to be reported as the wrong
  file, not as a file with the wrong number of issues in it.
- 
+
  THE HAPPY PATH READS AN INVENTED SOURCE. `loadEntry` bands an entry by
  reading its source at the pinned corpus commit, and a run reads the unlicensed
  clone; a unit suite that required the clone would pass on one machine and
  fail everywhere else, so the load cases hand `loadEntry` a reader returning a
  fixture page (ledger T8). Every guard this file tests runs BEFORE that read,
  so none of them needs one.
- 
+
  FIXTURES ARE INVENTED AND CAT-THEMED, and every one is written into a
  throwaway directory that is removed when the case ends.
- 
+
  @module
  */
 
@@ -77,11 +77,11 @@ const OTHER_TIP = 'fa27b9046e3d';
 
 /**
  Builds one accepted issue record, in the shape the settled parser takes.
- 
+
  @param issueId - identity of the adjudicated issue
- 
+
  @returns Record shaped as an artifact carries one
- 
+
  @example
  ```ts
  const record = acceptedRecord({ issueId: 'adjudicated/purr', },);
@@ -126,11 +126,11 @@ function acceptedRecord(
 
 /**
  Builds the eligibility result the pool would hand this reader.
- 
+
  @param tip - commit the pool recorded for this entry
- 
+
  @returns Pool carrying that one entry
- 
+
  @example
  ```ts
  const eligible = pooled({ tip: POOL_TIP, },);
@@ -161,9 +161,9 @@ function pooled(
 
 /**
  Writes one artifact into a throwaway directory and reads it back.
- 
+
  @param artifact - whole artifact value, valid or not
- 
+
  @param eligible - pool to check the bytes against
 
  @param readSource - source reader for a load that gets past every refusal;

@@ -51,7 +51,7 @@ const PROBE_ENTRY = 'XingZ60';
 
 /**
  Ratio below which a section counts as barely translated for this probe.
- 
+
  Only picks which section to demonstrate on. Nothing downstream reads it, and
  choosing a threshold for production is exactly the partial-translation question
  the owner rejected, so it is deliberately local to this file.
@@ -65,7 +65,7 @@ const RATIO_DIGITS = 3;
 
 /**
  Slices translated in one probe run.
- 
+
  The first attempt asked for a whole 4641-character section in one call and
  lost two voices of three: one timed out at six minutes, one returned
  schema-invalid output. Editors in this pipeline work on regions of median 75
@@ -77,11 +77,11 @@ const PROBE_SLICES = 3;
 
 /**
  Share of a pair's source blocks the translation covers.
- 
+
  @param pair - aligned section pair
- 
+
  @returns Target blocks divided by source blocks
- 
+
  @example
  ```ts
  const ratio = coverageOf({ pair, },);
@@ -110,7 +110,7 @@ function coverageOf({ pair, }: { readonly pair: ChunkPair; },): number {
 
 /**
  Runs one translator ensemble over the sparsest aligned section.
- 
+
  @example
  ```ts
  await main();

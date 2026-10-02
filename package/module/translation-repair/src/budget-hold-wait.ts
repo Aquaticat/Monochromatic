@@ -38,7 +38,7 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  How often a call waiting out a provider hold checks whether it was aborted.
- 
+
  THE GRANULARITY OF ABORT, NOT A PACING CHOICE: the wait itself is the hold's
  remaining length, which the budget layer measured, and this only bounds how
  long an aborted call keeps sleeping past its abort.
@@ -52,11 +52,11 @@ export const NOBODY_REFUSED = 'nobody';
 
 /**
  Shortest hold still running across the providers, zero when none is.
- 
+
  @param holds - milliseconds of hold left per provider
- 
+
  @returns Milliseconds until the first held provider comes back
- 
+
  @example
  ```ts
  shortestHold({ holds: { synthetic: 0, hyper: 4_000, openrouter: 0, }, },);
@@ -80,13 +80,13 @@ export function shortestHold(
 
 /**
  Sleeps out a hold, waking to check for abort at the poll interval.
- 
+
  @param ms - hold left to wait out
- 
+
  @param signal - the call's abort, which ends the wait with its reason
- 
+
  @param pollMs - how often the abort is checked
- 
+
  @example
  ```ts
  await waitOutHold({ ms: 4_000, signal, pollMs: HOLD_POLL_MS, },);
@@ -123,11 +123,11 @@ export async function waitOutHold(
 
 /**
  Whether every provider reads dry in one view.
- 
+
  @param view - dryness per provider
- 
+
  @returns Whether nothing is buyable anywhere
- 
+
  @example
  ```ts
  const over = everyProviderDry({ view, },);
@@ -144,15 +144,15 @@ function everyProviderDry(
 /**
  States what the budgets read and what held them, for the error that ends
  the run.
- 
+
  @param view - meter reading with holds folded in
- 
+
  @param refused - provider that had just refused this call, or nobody
- 
+
  @param holds - hold left per provider
- 
+
  @returns One clause a reader can tell exhaustion from holds by
- 
+
  @example
  ```ts
  measuredAt({ view, refused: NOBODY_REFUSED, holds: budgets.holds(), },);
@@ -195,24 +195,24 @@ function measuredAt(
 /**
  Reads the budgets, waiting out the shortest hold once when every provider
  reads dry and a refusal hold explains it.
- 
+
  @param budgets - shared budget view
- 
+
  @param modelId - model being routed, for the log line
- 
+
  @param signal - the call's abort
- 
+
  @param refused - provider that has just refused this call, which counts as
  dry for the first reading and not after its hold has been waited out; or
  nobody
- 
+
  @param pollMs - how often the wait checks for abort
- 
+
  @returns Every provider's dryness, holds waited out
- 
+
  @throws {@link EveryProviderDryError} when every provider reads dry with no
  hold left to wait out, or still reads dry after the shortest hold ended
- 
+
  @example
  ```ts
  const view = await readBudgetsPastHolds({ budgets, modelId, signal, refused: NOBODY_REFUSED, pollMs: HOLD_POLL_MS, },);
@@ -292,7 +292,7 @@ export async function readBudgetsPastHolds(
 
   /**
    What the budgets look like once the shortest hold has ended.
-   
+
    THE ROUTING REFUSAL IS NOT FOLDED IN AGAIN. `refused` says a provider
    refused THIS call a moment ago; its hold is what that refusal became, and
    a hold that has just expired is the provider coming back. Folding the

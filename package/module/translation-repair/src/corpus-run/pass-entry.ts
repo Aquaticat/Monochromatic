@@ -61,34 +61,34 @@ import { runPassLanes, } from './pass-lanes.ts';
 
 /**
  Runs one chosen entry as far as its artifact, and says whether it got there.
- 
+
  SEPARATE FROM THE CACHE DISCARD that follows it, which is the whole reason
  this function exists rather than one longer body. The discard is destructive
  and belongs only to the settled path, and a `catch` wide enough to cover both
  cannot tell a pipeline failure from a failed unlink.
- 
+
  @param client - shared model client
- 
+
  @param entry - corpus pair to settle, text already read
- 
+
  @param artifactsDir - directory one JSON per settled entry is written into
- 
+
  @param publishDir - root of the mirrored corpus tree each fixed page is written into
- 
+
  @param declinedDir - directory a decline record is written into when the
  archive's note says the whole page is the author's own English
- 
+
  @param entryCacheDir - this entry's own cache directory
- 
+
  @param tip - repository head recorded into the artifact
- 
+
  @param pipelineDigest - identity of the built pipeline, which also generation
  -stamps the slice cache so a changed pipeline cannot resume foreign slices
- 
+
  @param hardCapMs - time this entry may run before its exchanges abort
- 
+
  @param baseSignal - abort this entry's deadline forwards from
- 
+
  @param overlap - most slices each per-slice driver keeps in flight
 
  @param outsideReads - what preparation reads from outside the pipeline
@@ -140,7 +140,7 @@ async function runEntryPipeline(
    Per-entry hard-cap deadline. Disposal at return defuses the timer and
    detaches its listener; the repo bans try/finally, so cleanup rides on
    `using` instead.
-   
+
    ARMED BEFORE THE CACHE OPENS rather than after. Opening reads and may
    discard a directory of settled slices, and on a large entry that is real
    time; a ceiling armed afterwards would not be counting it, so the cap
@@ -178,7 +178,7 @@ async function runEntryPipeline(
      The four stores this entry opens before its lanes run
      (`pass-entry-caches.ts`); the pairing, contest and consolidation stores
      open where those stages start.
-     
+
      INSIDE the try, because opening touches the filesystem and can fail.
      Opened outside, one unreadable cache directory ended the whole pass at
      whatever entry happened to hold it, which is the opposite of this
@@ -209,16 +209,16 @@ async function runEntryPipeline(
     /**
      Slicing BOTH lanes run over, prepared once here rather than inside
      either.
-     
+
      That is the entire reason the driver exists: one slicing, one alignment
      and one identity block mean a difference between the two documents is a
      difference between the LANES rather than between two runs of the aligner.
-     
+
      No slice budget is passed, and that is checked rather than assumed:
      `prepareDocumentPair` defaults to the same `SLICE_CHAR_BUDGET` that
      `repairTranslation` passed down when it did this itself, so entries
      settled before and after this change were sliced the same way.
-     
+
      THE ROSTER DECIDES WHICH PARAGRAPH RENDERS WHICH, per
      `doc/decision/llm-assisted-block-pairing.md`, because the deterministic
      scorer is exhausted on this corpus: block kind is constant across
@@ -231,7 +231,7 @@ async function runEntryPipeline(
      THE SEATS ARE READ INSIDE (`pass-prepare-reseat.ts`), off the meters
      first of all, and every stage that asks the roster re-seats under a hold
      (ledger X12).
-     
+
      EVERY PREPARATION FINDING RIDES `paired.alignmentFindings` into the
      artifact (ledger B54); a list returned beside it went unread here.
      */
@@ -273,7 +273,7 @@ async function runEntryPipeline(
 
     /**
      Semantic and deterministic proof for every source-only slice.
-     
+
      BOUGHT BEFORE THE LANES so known omission is licensed for translation or
      unresolved placement pauses stage as incomplete. Coverage roster searches
      whole target, independent of pairing;
@@ -351,7 +351,7 @@ async function runEntryPipeline(
 
     /**
      Both ledgers as version 2 rows, beside the comparison they derive.
-     
+
      DERIVED HERE AND HANDED TO THE BUILDER`S OWN CALL rather than passed
      along, because the builder derives it again from the same function. The
      contest needs it first, to know which slices are worth asking about.
@@ -495,37 +495,37 @@ async function runEntryPipeline(
 
 /**
  Runs one chosen entry to settlement, then retires its cache if it settled.
- 
+
  Never throws for a failed entry. A pass over a corpus stops for a broken
  SCHEDULER, not for a broken document: an entry that aborts on its ceiling or
  raises out of a stage records `status=ERROR` and the pass continues to the
  next one. Anything raised here would therefore end the run, which is why
  nothing is.
- 
+
  Returns scheduling disposition so quality interruption cannot masquerade as
  cache-progress reason for fresh whole-entry attempt.
- 
+
  @param client - shared model client
- 
+
  @param entry - corpus pair to settle, text already read
- 
+
  @param artifactsDir - directory one JSON per settled entry is written into
- 
+
  @param publishDir - root of the mirrored corpus tree each fixed page is written into
- 
+
  @param declinedDir - directory a decline record is written into when the
  archive's note says the whole page is the author's own English
- 
+
  @param sliceCacheDir - root under which this entry claims its own cache
  subdirectory
- 
+
  @param tip - repository head recorded into the artifact
- 
+
  @param pipelineDigest - identity of the built pipeline, which also generation
  -stamps the slice cache so a changed pipeline cannot resume foreign slices
- 
+
  @param hardCapMs - time this entry may run before its exchanges abort
- 
+
  @param baseSignal - abort every entry deadline forwards from; the pass never
  aborts it, so only a per-entry timeout ever fires
 

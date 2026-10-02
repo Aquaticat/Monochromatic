@@ -7,7 +7,7 @@ import { wordForCount, } from './count-word.ts';
 
 /**
  Which change set is meant.
- 
+
  @example
  ```ts
  const set: ChangeSetName = 'shipped';
@@ -17,7 +17,7 @@ export type ChangeSetName = 'shipped' | 'withdrawn';
 
 /**
  What an assembly's sets or document contradict.
- 
+
  @example
  ```ts
  const fault: AssemblyContractFault = { kind: 'index-beyond-count', index: 9, sliceCount: 4, };
@@ -122,11 +122,11 @@ export type AssemblyContractFault = {
 
 /**
  Words an assembly contract fault from set names, kinds and numbers.
- 
+
  @param fault - what the sets or document contradict
- 
+
  @returns Sentence written here
- 
+
  @example
  ```ts
  const sentence = assemblySentence({ fault: { kind: 'reassembly-differs', survivors: 0, }, },);

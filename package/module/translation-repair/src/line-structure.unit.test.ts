@@ -1,18 +1,18 @@
 /**
  Tests for the computed line-structure predicate.
- 
+
  Its thresholds were chosen from a corpus measurement rather than by taste,
  and they are measured on the SOURCE side. That is load-bearing: one entry's
  Chinese verse has a median node length of 22 and the English rendering of the
  same chunk has 99, so the same predicate reading the translation would never
  fire. The original's shape is what a repair must preserve.
- 
+
  The case that fixes the thresholds is real: that entry's verse has a median block
  length of 22 while its prose chunks sit at 49 and 87. A threshold of 20 would
  have missed the verse, which is why the boundary is tested here directly.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -31,11 +31,11 @@ import {
 
 /**
  Builds a slice from blocks.
- 
+
  @param blocks - blank-line-separated blocks
- 
+
  @returns Slice text
- 
+
  @example
  ```ts
  const text = slice({ blocks: ['a', 'b',], },);

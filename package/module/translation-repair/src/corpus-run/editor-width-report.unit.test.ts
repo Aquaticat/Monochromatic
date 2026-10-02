@@ -1,12 +1,12 @@
 /**
  Tests for the width probe's written report.
- 
+
  THIS MODULE IS WHY THE COVERAGE MEASURE WAS REBUILT. It was the one exported
  function in the package whose module no test path reached, and it is live:
  `editor-width-probe.ts` calls it, and that probe is an operator entry script
  no test imports, so nothing carried a test to it. See
  `doc/planning/translation-repair-coverage-measure.md`.
- 
+
  THE CASE WORTH THE FILE IS THE FAILED POSITIVE CONTROL. Before a width reading
  means anything, the panel has to be shown able to prefer intact text over the
  same text with a sentence removed. When it cannot, every count in the report is
@@ -14,16 +14,16 @@
  launder a broken instrument into a result. That is the exact failure this
  package keeps finding, so the report has to SAY the numbers are unreadable
  rather than merely omit a tick.
- 
+
  THE SECOND CASE IS ABOUT NOT LOSING A READING. The sample is split in two so a
  result landing near its own null band has a second, untouched half available.
  That only holds if draw B lands beside draw A rather than on top of it, and a
  report writer keying both to one filename would destroy the very thing the
  split exists to preserve, silently, after the calls are paid for.
- 
+
  Rows are invented. They carry no passage text by construction: `WidthRow`
  keeps counts and verdicts precisely because the corpus is unlicensed.
- 
+
  @module
  */
 
@@ -84,15 +84,15 @@ const HEAD_SHA = 'f00dcafe1234';
 /**
  Builds one row, varying only the two bits the paired reading is computed
  from.
- 
+
  @param sliceIndex - position within the entry
- 
+
  @param moved - whether the arms shipped different text
- 
+
  @param churned - whether the narrow arm run twice disagreed with itself
- 
+
  @returns Row shaped as one slice contributes
- 
+
  @example
  ```ts
  const row = rowOf({ sliceIndex: 0, moved: true, churned: false, },);
@@ -196,13 +196,13 @@ function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
 
 /**
  Writes one report and reads back what landed on disk.
- 
+
  @param controlHeld - whether the panel passed its own positive control
- 
+
  @param draw - which half of the split sample this run spent
- 
+
  @returns Path written and the text at it
- 
+
  @example
  ```ts
  const written = await reportFor({ controlHeld: true, draw: 'a', },);
@@ -248,14 +248,14 @@ async function reportFor(
 
 /**
  Writes BOTH draws into ONE runs directory, in sequence.
- 
+
  SHARING THE DIRECTORY IS THE WHOLE POINT. Writing each draw into its own
  throwaway directory would make the two paths differ by directory no matter
  what the writer named them, so the case asking whether draw B lands on top of
  draw A would pass against a writer that gave both the same filename.
- 
+
  @returns Both reports, draw A first
- 
+
  @example
  ```ts
  const [drawA, drawB,] = await bothDraws();

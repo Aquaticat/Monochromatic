@@ -34,7 +34,7 @@ import {
 /**
  Line opening the block, which is also the marker that makes appending it
  idempotent.
- 
+
  SEARCHED FOR RATHER THAN COUNTED: the transform asks whether a system message
  already carries this exact line, so the whole block is added once however many
  seams a request crosses.
@@ -53,7 +53,7 @@ const NO_SYSTEM_MESSAGE = -1;
 
 /**
  Rules stated beside the schema, in the terms the observed failures broke.
- 
+
  THE SECOND RULE IS NOT GENERIC ADVICE. One measured failure returned
  `{"checks": "\n[{\"region\": ...` , a JSON-STRINGIFIED ARRAY where the schema
  declares an array of objects: valid JSON of the wrong shape, which is exactly
@@ -78,11 +78,11 @@ const SCHEMA_RULES: readonly string[] = [
 
 /**
  Turns the response format a call already sends into prompt text.
- 
+
  @param format - response format going on the wire for this same call
- 
+
  @returns Block to place inside a system prompt
- 
+
  @example
  ```ts
  const block = renderSchemaForPrompt({ format: CRITIC_RESPONSE_FORMAT, },);
@@ -115,11 +115,11 @@ export function renderSchemaForPrompt(
 
 /**
  Whether any system message already states a schema.
- 
+
  @param messages - conversation as the caller built it
- 
+
  @returns Whether the block is already present
- 
+
  @example
  ```ts
  if (schemaAlreadyStated({ messages, },)) return messages;
@@ -143,17 +143,17 @@ function schemaAlreadyStated(
 
 /**
  Returns one message with the block added to whatever it already carries.
- 
+
  TAKES BOTH CONTENT SHAPES, because a system message may carry a plain string
  or an array of parts, and a transform that handled only the string would drop
  the schema on exactly the calls that also send a picture.
- 
+
  @param message - system message to extend
- 
+
  @param block - rendered schema block
- 
+
  @returns Message carrying its original content and then the block
- 
+
  @example
  ```ts
  const amended = withBlockAppended({ message, block, },);
@@ -193,21 +193,21 @@ function withBlockAppended(
 
 /**
  States the call's own response schema inside its system prompt.
- 
+
  NO SYSTEM MESSAGE MEANS ONE IS ADDED rather than the schema being dropped.
  A call that asks for a schema and says nothing about it is the case this
  exists to remove, and a caller that deliberately sends no system prompt is
  still asking for a shape it never states.
- 
+
  RETURNS THE SAME ARRAY when there is nothing to add, so a caller can compare
  by identity and skip rebuilding a request.
- 
+
  @param messages - conversation as the caller built it
- 
+
  @param responseFormat - schema this call sends, absent for free text
- 
+
  @returns Conversation whose system prompt states the schema
- 
+
  @example
  ```ts
  const messages = withSchemaInSystemPrompt({ messages: asked, responseFormat, },);

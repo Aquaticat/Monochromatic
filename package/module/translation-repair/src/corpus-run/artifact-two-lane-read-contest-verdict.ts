@@ -14,11 +14,11 @@ import type { ArtifactContestVerdict, } from './artifact-two-lane-contest.ts';
 
 /**
  Names keys a recorded verdict may carry for derived shape.
- 
+
  @param derived - verdict raw ballots settle on
- 
+
  @returns Allowed exact key names
- 
+
  @example
  ```ts
  const keys = allowedVerdictKeys({ derived, });
@@ -44,11 +44,11 @@ function allowedVerdictKeys(
 
 /**
  Names derived verdict in one token.
- 
+
  @param verdict - verdict to render
- 
+
  @returns Kind carrying lane or archive outcome where present
- 
+
  @example
  ```ts
  const token = renderContestVerdict({ verdict, });
@@ -66,15 +66,15 @@ function renderContestVerdict(
 
 /**
  Renders recorded verdict in same one-token form.
- 
+
  @param recorded - verdict record artifact carries
- 
+
  @param path - dotted verdict path
- 
+
  @returns Recorded verdict token
- 
+
  @throws ArtifactParseError when field names unknown outcome
- 
+
  @example
  ```ts
  const token = renderRecordedVerdict({ recorded, path, });
@@ -129,15 +129,15 @@ function renderRecordedVerdict(
 
 /**
  Refuses recorded verdict differing from raw-ballot derivation.
- 
+
  @param value - recorded verdict value
- 
+
  @param derived - verdict raw ballots and eligibility settle
- 
+
  @param path - dotted verdict path
- 
+
  @throws ArtifactParseError when shape or outcome differs
- 
+
  @example
  ```ts
  assertContestVerdictMatches({ value, derived, path, });

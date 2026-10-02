@@ -1,18 +1,18 @@
 /**
  Tests for the stream delta scanner.
- 
+
  The case that matters is the REASONING CHANNEL. A model can degenerate
  entirely inside its thinking, repeating one sentence forever while emitting
  no answer at all, and a scanner that read only `content` would hand the
  detector an empty string. That reads as a short reply rather than a runaway
  one, so the worst case would be the one case nothing caught.
- 
+
  The rest is wire robustness. This runs inside the drain loop for every chunk
  of every call, so anything the provider sends that it cannot read must leave
  a working stream working.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -30,13 +30,13 @@ import { routeDeltaToDetector, } from './delta-channel-routing.test-fixture.ts';
 
 /**
  Builds one server-sent event frame carrying text on one channel.
- 
+
  @param channel - which channel the text arrives on
- 
+
  @param text - text the frame carries
- 
+
  @returns Frame, newline-terminated as the wire sends it
- 
+
  @example
  ```ts
  const raw = frameOf({ channel: 'reasoning', text: 'I will output. ', },);
@@ -72,11 +72,11 @@ function frameOf(
 /**
  Feeds a whole raw stream through a scanner, splitting it at awkward
  boundaries so no frame arrives whole.
- 
+
  @param raw - whole stream body
- 
+
  @returns Every delta it yielded, and how many frames it could not read
- 
+
  @example
  ```ts
  const { deltas, unreadable, } = scanAll({ raw, },);
@@ -123,15 +123,15 @@ function scanAll({ raw, }: { readonly raw: string; },): {
 /**
  Builds one frame whose delta carries exactly the fields given, so a test can
  spell the thinking channel the way a particular model spells it.
- 
+
  SEPARATE FROM `frameOf` because that one encodes a choice this helper exists
  to vary. Folding the spelling into it would make every existing case depend
  on a parameter none of them cares about.
- 
+
  @param delta - delta fields exactly as the wire carries them
- 
+
  @returns Frame, newline-terminated as the wire sends it
- 
+
  @example
  ```ts
  const raw = frameSpelled({ delta: { reasoning: 'The cat considers. ', }, },);

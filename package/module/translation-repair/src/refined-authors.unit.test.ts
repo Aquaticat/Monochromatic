@@ -1,7 +1,7 @@
 /**
  Tests for layering the naturalness lane's rewriters onto the authorship the
  editor stage already established.
- 
+
  @module
  */
 

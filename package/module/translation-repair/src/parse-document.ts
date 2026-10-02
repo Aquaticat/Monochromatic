@@ -38,7 +38,7 @@ import {
  grammar downgrade.
  Findings are the trigger surface for any later repair-the-input stage
  (deterministic or model-driven).
- 
+
  @example
  ```ts
  const finding: ParseFinding = {
@@ -79,16 +79,16 @@ export type ParseFinding = {
 
 /**
  Whether a parse finding marks an HTML comment, closed or left open.
- 
+
  The archive-original seal, the entry's comment notes and the footnote
  protected ranges each kept their own copy of this pair of kinds (audit area
  six, 2026-09-28); a comment kind added to one would have gone unseen by the
  others.
- 
+
  @param finding - one tolerance event from parsing
- 
+
  @returns True for a masked comment and for one that never closed
- 
+
  @example
  ```ts
  const comments = document.parseFindings.filter(function isComment(finding,): boolean {
@@ -104,7 +104,7 @@ export function isCommentFinding({ finding, }: { readonly finding: ParseFinding;
 /**
  Immutable parsed form of one corpus document,
  carrying every anchor later stages validate claims against.
- 
+
  @example
  ```ts
  const doc = parseDocument({ text: source, },);
@@ -135,7 +135,7 @@ export type RepairDocument = {
   /**
    Every container dissolved to produce those nodes, in source order, with
    absolute offsets for both of its tags.
-   
+
    CARRIED BECAUSE THE NODES CANNOT SHOW IT. Container tags belong to none of
    the promoted children, so a reader handed only nodes sees inter-block text
    it has no reason to protect, and a slice range covering one tag and not the
@@ -160,19 +160,19 @@ export type RepairDocument = {
  Parses body text tolerantly:
  strict MDX first, plain markdown on grammar failure.
  The downgrade is never silent; the finding carries the strict reason.
- 
+
  @internal
- 
+
  @param body - body text, comments already masked
- 
+
  @param bodyOffset - absolute offset of body within the full document
- 
+
  @returns mdast root plus downgrade findings when the strict grammar failed
- 
+
  @throws {@link RangeError} when plain markdown refuses the body too, its
  nesting having exhausted the parser's stack (`parse-mdx.ts`
  `requireMarkdownRefusal`)
- 
+
  @example
  ```ts
  const { root, findings, } = parseBodyTolerant({ body: masked, bodyOffset: 0, },);
@@ -223,16 +223,16 @@ export function parseBodyTolerant(
  real-corpus failure class), and a document the MDX grammar still rejects
  reparses as plain markdown;
  both tolerances surface as parse findings, never as thrown errors.
- 
+
  @param text - full document source, front matter included when present
- 
+
  @returns Parsed document with nodes, hashes, footnote graph, and findings
- 
+
  @throws {@link import('./front-matter.ts').FrontMatterParseError} when fenced YAML refuses to parse
- 
+
  @throws {@link RangeError} when plain markdown refuses the body too, its
  nesting having exhausted the parser's stack
- 
+
  @example
  ```ts
  const doc = parseDocument({ text: '---\nname: n\n---\n\n## 简介\n\n正文[^1]\n\n[^1]: 注\n', },);
@@ -246,7 +246,7 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
 
   /**
    Body with every invisible-only line blanked, plus each line blanked.
-   
+
    Runs FIRST, because such a line is not blank to CommonMark and therefore
    welds the paragraphs either side of it into one block. One corpus
    translation parses to 29 blocks that way against the original's 33, and
@@ -269,7 +269,7 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
 
   /**
    Findings for every blanked invisible-only line, in absolute offsets.
-   
+
    Emitted so the tolerance is never silent. Both parser defects this pipeline
    has hit were found by accident rather than from an artifact, and a line
    that vanishes with nothing recording it is exactly the shape that hides the
@@ -319,14 +319,14 @@ export function parseDocument({ text, }: { readonly text: string; },): RepairDoc
 
   /**
    Top-level blocks once disclosure containers are unwrapped.
-   
+
    Computed ONCE and shared, because the node list and the footnote graph have
    to agree both about what counts as a top-level block and about what
    `block/N` names. They did not agree: the graph walked the RAW children, so
    a footnote definition sitting inside a container was invisible to it while
    being promoted for the node list, and every `nodeId` it emitted counted
    containers the node list had already unwrapped.
-   
+
    One corpus translation reported all ten of its references unresolved while
    carrying all ten definitions, because every definition sat inside one.
    */

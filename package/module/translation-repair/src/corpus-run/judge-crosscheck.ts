@@ -23,7 +23,7 @@ import { seatJudges, } from './judge-independence.ts';
 
 /**
  Which side of the crosscheck a claim sits on.
- 
+
  `undecided` is separated from `control` rather than folded into it, and the
  distinction is the difference between a rate and an average over two
  incommensurable things. `rejected` means the panel DECIDED AGAINST the
@@ -46,7 +46,7 @@ export type CrosscheckArm = 'accepted' | 'control' | 'undecided';
 
 /**
  One claim queued for re-examination, with its seating already worked out.
- 
+
  @example
  ```ts
  const item: CrosscheckItem = { entryId: 'Whiskers', claimId, arm: 'accepted', status: 'accepted', proposers, judges, barred, };
@@ -93,7 +93,7 @@ export type CrosscheckItem = {
 
 /**
  The enumerated population, with everything excluded from it counted.
- 
+
  @example
  ```ts
  const census = buildCrosscheckCensus({ entries, roster, },);
@@ -107,7 +107,7 @@ export type CrosscheckCensus = {
 
   /**
    Claims every roster model proposed, so nobody may judge them.
-   
+
    Carried out rather than dropped. A claim the whole roster authored is the
    most corroborated claim in the run, and silently removing it would lift
    every rate by hiding the strongest agreement in the population.
@@ -116,7 +116,7 @@ export type CrosscheckCensus = {
 
   /**
    Claims on entries that predate attribution entirely.
-   
+
    Expected, not a defect. An entry settled before attribution was recorded
    names claims no proposer was ever written for. Counted so a reading can
    see how much of the run the census covers.
@@ -126,7 +126,7 @@ export type CrosscheckCensus = {
   /**
    Claims on entries that DO carry attribution, yet whose id no attribution
    record holds.
-   
+
    A DEFECT IN THE JOIN, and held apart from the legacy count for that
    reason. On an entry whose critics were attributed, every surviving claim
    should have a proposer; one that does not means the two records disagree
@@ -148,7 +148,7 @@ export type CrosscheckCensus = {
 
 /**
  Adjudication statuses that carry a verdict a judge can be asked to confirm.
- 
+
  A table rather than a chain, so adding a status is a data edit and an
  UNKNOWN status is visibly absent rather than silently swept into a default.
  A map rather than a plain object, since the status is the artifact's text:
@@ -177,16 +177,16 @@ const ARM_OF_STATUS: ReadonlyMap<string, CrosscheckArm> = new Map([
 
 /**
  Places one claim in an arm by the verdict its issue carries.
- 
+
  An unrecognized status lands in `undecided` rather than `control`, which is
  the conservative direction: a status this code has never seen is one whose
  meaning it cannot assert, and `undecided` is reported apart from every rate
  instead of quietly becoming a denominator.
- 
+
  @param status - adjudication status verbatim from the artifact
- 
+
  @returns Arm the claim belongs to
- 
+
  @example
  ```ts
  const arm = armOf({ status: 'rejected', },);
@@ -198,13 +198,13 @@ function armOf({ status, }: { readonly status: string; },): CrosscheckArm {
 
 /**
  Enumerates every claim a disinterested judge may re-examine, both arms.
- 
+
  @param entries - settled entries as the attribution reader returns them
- 
+
  @param roster - models available to judge
- 
+
  @returns Census with both arms populated and every exclusion counted
- 
+
  @example
  ```ts
  const { items, unjudgeable, } = buildCrosscheckCensus({ entries, roster: RUN_ROSTER, },);
@@ -366,13 +366,13 @@ export function buildCrosscheckCensus(
 /**
  Claims counted by the status their issue carries, as the crosscheck prints
  them beside the arms.
- 
+
  @param claims - claims outside the accepted arm, each with its issue's status
  verbatim from the artifact
- 
+
  @returns Each status with its count, `status=count`, in the order first met,
  joined by spaces; empty when there are no claims
- 
+
  @example
  ```ts
  const line = statusBreakdown({ claims: [...control, ...undecided,], },); // 'rejected=2 needs-human=1'

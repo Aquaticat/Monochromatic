@@ -28,40 +28,40 @@ import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
 
 /**
  Buys one repair slice and persists it when every stage reached quorum.
- 
+
  @param client - injected model client
- 
+
  @param prepared - document slice belongs to
- 
+
  @param models - repair role roster
- 
+
  @param reseat - reads the seating again at the checker stage, so a chunk
  in flight when a provider runs dry asks the bench a fresh reading seats
  (class one hundred nine)
- 
+
  @param slice - slice being repaired
- 
+
  @param key - cross-run key outcome is stored under
- 
+
  @param neighbouringIncumbentText - archive English of adjacent passages
- 
+
  @param neighbouringSourceText - original of adjacent passages
- 
+
  @param documentSourceText - same-entry source evidence identical to the value used in the cache key
- 
+
  @param sliceCache - optional cross-run cache
- 
+
  @param signal - entry deadline and caller abort
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - repair-lane logger
- 
+
  @returns Settled repair outcome, whether or not cache gate accepted it
- 
+
  @throws Whatever `signal.reason` carries when caller aborts before or during
  purchase
- 
+
  @example
  ```ts
  const outcome = await buyRepairSlice({ ... });

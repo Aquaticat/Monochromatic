@@ -1,7 +1,7 @@
 /**
  Tests for envelope derivation and the deterministic patch gate.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

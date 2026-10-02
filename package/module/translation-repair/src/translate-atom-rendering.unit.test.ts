@@ -1,13 +1,13 @@
 /**
  Tests for the pools of renderings the original and the page disagree on,
  and the findings drawn from them.
- 
+
  WHAT THESE PIN is the owner's rule of 2026-09-04: where the page rendered
  a reference another way, a candidate owes one rendering and not both;
  a kind that diverges one way only stays owed as an addition or a drop.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -26,11 +26,11 @@ import {
 
 /**
  Link atom for a destination.
- 
+
  @param url - destination
- 
+
  @returns Atom as the skeleton reader emits it
- 
+
  @example
  ```ts
  const atom = link('https://a.example');
@@ -45,11 +45,11 @@ function link(url: string,): ProtectedAtom {
 
 /**
  Footnote atom for a marker.
- 
+
  @param marker - footnote label
- 
+
  @returns Atom as the skeleton reader emits it
- 
+
  @example
  ```ts
  const atom = footnote('1');

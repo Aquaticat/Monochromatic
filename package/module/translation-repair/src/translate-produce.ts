@@ -49,7 +49,7 @@ import {
 
 /**
  A slate as the judges will receive it, with what producing it cost and found.
- 
+
  @example
  ```ts
  const slate: ProducedSlate = await produceTranslateSlate({ ... },);
@@ -63,7 +63,7 @@ export type ProducedSlate = {
 
   /**
    Translators that answered usably, out of those seated.
-   
+
    Carried because a decision taken over a thin slate is not the same
    decision, and the judging half has no other way to know.
    */
@@ -78,20 +78,20 @@ export type ProducedSlate = {
 
 /**
  Renders one slice several times and returns the slate to judge.
- 
+
  @param client - injected model client
- 
+
  @param translatorModelIds - models rendering the slice independently
- 
+
  @param sourceText - original slice text
- 
+
  @param incumbentText - translation as it stands, blank where this slice has
  none
- 
+
  @param incumbentKind - caller-established absence allowing a visible source-break view
- 
+
  @param incumbentEligible - whether existing translation passes deterministic source floor
- 
+
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
 
@@ -102,14 +102,14 @@ export type ProducedSlate = {
 
  @param attestedLines - archive details a cited reference states, shown to
  the translators so their renderings carry them (class thirty-nine)
- 
+
  @param syntax - syntax role requiring dedicated preservation rules
- 
+
  @param followupEvidence - latest rejected slate and findings grounding retry
- 
+
  @param lineStructured - whether the enclosing chunk's original is
  line-structured, decided by the caller
- 
+
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
@@ -117,15 +117,15 @@ export type ProducedSlate = {
  @param disputedWordings - wordings a disputed slice refuses, so a translator
  copying the archive there is sent back and then withheld (owner,
  2026-09-27); none elsewhere
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Slate, heard count and findings
- 
+
  @example
  ```ts
  const slate = await produceTranslateSlate({ client, translatorModelIds, sourceText, incumbentText, lineStructured, signal, perCallTimeoutMs, l, },);
@@ -231,7 +231,7 @@ export async function produceTranslateSlate(
   /**
    Candidates after structural validation, with anything that failed handed
    back to its own author.
-   
+
    The INCUMBENT is not among these and is never validated into or out of
    the slate. It is the fallback and the text being defended, so a check
    that could drop it would be a check that could delete the archive.

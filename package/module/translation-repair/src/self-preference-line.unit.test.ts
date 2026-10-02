@@ -1,11 +1,11 @@
 /**
  Tests for how a self-preference result is stated.
- 
+
  WHAT THESE PIN is that the three outcomes read differently. The measurement
  distinguishes "no favouritism" from "nobody was asked" from "nobody was left
  to answer"; a wording that printed a number for all three would collapse them
  again at the only point a human reads.
- 
+
  @module
  */
 

@@ -29,13 +29,13 @@ const FENCE_CHARACTER = '`';
 
 /**
  Longest unbroken run of the fence character anywhere in one text.
- 
+
  Single linear pass, because the input is unbounded corpus prose.
- 
+
  @param text - content that will be fenced
- 
+
  @returns Longest run length, zero when the character never appears
- 
+
  @example
  ```ts
  const longest = longestBacktickRun('a ``` b',);
@@ -50,11 +50,11 @@ export function longestBacktickRun(text: string,): number {
 
 /**
  Wraps text in a fenced block no enclosed content can close.
- 
+
  @param text - content to enclose
- 
+
  @returns Fenced block, opening and closing fences on their own lines
- 
+
  @example
  ```ts
  const block = fenceForMarkdown({ text: '### not a heading here', },);

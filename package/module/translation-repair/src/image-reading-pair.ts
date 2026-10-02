@@ -80,7 +80,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Decimal places an agreement figure is logged to.
- 
+
  THREE, because the measured gap runs from 0.129 to 0.643 and two places would
  round several distinct readings to the same line.
  */
@@ -88,12 +88,12 @@ const LOGGED_OVERLAP_PLACES = 3;
 
 /**
  Reads a picture without a model, which is what gates the model calls.
- 
+
  PASSED IN RATHER THAN REACHED FOR, because the real one shells out to
  `dwebp` and `tesseract`. Injecting it keeps this function testable on a
  machine that has neither, and keeps a test that forgets to supply one a TYPE
  ERROR rather than a slow, machine-dependent pass.
- 
+
  @example
  ```ts
  const readOcr: OcrReader = async () => ({ kind: 'no-text', characters: 0, });
@@ -109,7 +109,7 @@ export type OcrReader = (
 
 /**
  One model's reading of one picture.
- 
+
  @example
  ```ts
  const reading: ModelReading = { modelId: 'hf:moonshotai/Kimi-K3', text: '喵。', };
@@ -129,7 +129,7 @@ export type ModelReading = {
 
 /**
  What reading one picture with the whole sub-roster produced.
- 
+
  @example
  ```ts
  const paired: PairedReading = { kind: 'corroborated', readings, overlap: 0.97, };
@@ -143,7 +143,7 @@ export type PairedReading = {
 
   /**
    Every reading, labelled by its model, in roster order.
-   
+
    BOTH RATHER THAN THE LONGER ONE. Corroboration establishes that the two
    describe the same picture, not that they describe the same AMOUNT of it: on
    `Mio/photo7.webp` one reader returned 178 characters and the other 590. The
@@ -161,7 +161,7 @@ export type PairedReading = {
   /**
    The picture carries no text, so there was nothing to read and no model was
    asked.
-   
+
    A VERDICT RATHER THAN A FAILURE, and the distinction is not cosmetic. Two
    thirds of this corpus's pictures are photographs of people: 119 of 191
    assets return nothing from the deterministic reader. Recording those as
@@ -202,7 +202,7 @@ export type PairedReading = {
    Whether this verdict rests on a reader that produced nothing for a reason
    that may not hold tomorrow: one that threw, answered nothing, answered too
    little, or refused.
-   
+
    WHAT DECIDES WHETHER THE VERDICT IS REMEMBERED. A transient verdict
    describes the provider's evening and is read again on the next run; a
    stable one describes the picture and the roster and is resumed. Until
@@ -227,14 +227,14 @@ export type PairedReading = {
 
   /**
    What the readers said, kept even though none of it may be used.
-   
+
    SO A DISAGREEMENT CAN BE DIAGNOSED RATHER THAN ONLY COUNTED. Discarding
    these left a run reporting `readers-disagree` at some number and nothing
    else, and the first time that happened on a picture already known to read
    well, no evidence survived to say whether the models had genuinely differed
    or something had gone wrong upstream of them. The number alone cannot tell
    those apart.
-   
+
    NOTHING DOWNSTREAM READS THIS. `slicePictures` builds its context from
    corroborated readings only, so these travel into the stored record and no
    further. Absent when no reading arrived at all.
@@ -244,12 +244,12 @@ export type PairedReading = {
 
 /**
  Whether a paired reading is a fact worth resuming on a later run.
- 
+
  @param reading - what reading one picture produced
- 
+
  @returns False only for an unavailable verdict that rests on a transient
  reader failure, which a later run should read again
- 
+
  @example
  ```ts
  if (isResumableReading({ reading: paired, },)) await cache.persist({ key, serialized, },);
@@ -264,31 +264,31 @@ export function isResumableReading({ reading, }: { readonly reading: PairedReadi
 /**
  Reads one picture with every reader and settles whether either reading is
  usable.
- 
+
  @param client - transport to the provider
- 
+
  @param readerModelIds - vision sub-roster, asked in this order
- 
+
  @param readOcr - deterministic reader consulted before any model, which
  decides whether the picture is worth asking about at all
- 
+
  @param bytes - picture as read from disk
- 
+
  @param assetName - its file name, which carries the media type
- 
+
  @param signal - abort honoured for every exchange
- 
+
  @param perCallTimeoutMs - deadline bounding each exchange
- 
+
  @param l - lane logger
- 
+
  @returns Corroborated readings, or why none may be used
- 
+
  @throws {@link DOMException} when `signal` aborts, since a run told to stop
  must not settle a document on the readings that beat the stop. Every other
  failure a reader raises is contained as an unavailable reading for that
  reader alone
- 
+
  @example
  ```ts
  const paired = await readImagePair({ client, readerModelIds, readOcr, bytes, assetName, signal, perCallTimeoutMs, l, },);
@@ -332,7 +332,7 @@ export async function readImagePair(
 
   /**
    What the deterministic reader made of the picture, asked before any model.
-   
+
    A GATE RATHER THAN A THIRD READER, which is the opposite of what it looks
    like it should be and was settled by measurement. Its readings do not
    corroborate the models': on `Word1.webp` it returns 405 characters against
@@ -341,7 +341,7 @@ export async function readImagePair(
    handwritten Chinese recovers the layout and substitutes lookalike glyphs,
    which leaves length intact and destroys trigram overlap. Letting it vote
    would refuse readings that are fine.
-   
+
    WHAT IT IS RELIABLE AT IS PRESENCE, six of six against the models in both
    directions, which is the question worth asking first.
    */
@@ -370,7 +370,7 @@ export async function readImagePair(
 
   /**
    How each reader's exchange ended, asked concurrently.
-   
+
    CONCURRENTLY BECAUSE THE LIMITER IS PER MODEL. Different models hold
    different slots, so asking them in sequence would double a reading's
    latency for nothing.
@@ -404,7 +404,7 @@ export async function readImagePair(
   /**
    What every reader made of the picture, with a reader that failed outright
    carrying its failure rather than taking the others down with it.
-   
+
    A READING IS EVIDENCE, NEVER A GATE, so a reader that throws costs its own
    reading and nothing else. Measured on `wangzihao980` before this changed:
    one reader looped on `picture1.webp`, the client's runaway guard ended the

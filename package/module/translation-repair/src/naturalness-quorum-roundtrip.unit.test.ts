@@ -1,6 +1,6 @@
 /**
  Naturalness review must retain its wider quorum across artifact serialization.
- 
+
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -39,9 +39,9 @@ const WIDE_BENCH = 9;
 
 /**
  Scripts four usable voices, either immediately or only during confirmation.
- 
+
  @param loseOnChallenge - whether discovery first hears every seat
- 
+
  @returns Client with no provider traffic
  */
 function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: boolean; },): SyntheticClient {
@@ -69,9 +69,9 @@ function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: bo
 
 /**
  Uses production whole-bench quorum with the asked-seat window made explicit.
- 
+
  @param client - scripted independent reviewer replies
- 
+
  @returns Shared request for discovery and confirmation
  */
 function requestFor(client: SyntheticClient,): Parameters<typeof reviewAbsoluteNaturalness>[0] {

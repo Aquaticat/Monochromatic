@@ -91,7 +91,7 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = JUDGE_UNMEASURED;
  Roster models no producer calibration has measured, so they hold no
  writing seat: not the translate lane, not the consolidation. The judge
  fidelity probe measures reading, and reading is what they were seated for.
- 
+
  EMPTY SINCE 2026-09-08, AND AGAIN SINCE 2026-09-09. `google.gemma-4-e2b` sat here from its judge seat
  of 2026-09-07 until the 40-round producer calibration of 2026-09-08 measured
  it beside the nine measured writers: 30 of 298 disinterested ballots
@@ -102,7 +102,7 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = JUDGE_UNMEASURED;
  writer, the consolidation seat. The next single-provider candidate the owner
  approves starts here again. Record: the 2026-09-08 addendum of
  `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
- 
+
  `inception/mercury-2.5` SAT HERE ON 2026-09-09 from its judge seat
  (its card in `model-cards.ts`) of 17:00 UTC until the 40-round producer
  calibration launched at 17:06 UTC that day (`producer-calibrate 40
@@ -126,12 +126,12 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wr
  Every model this run may seat, across both providers.
  Critics and the adjudication panel both use the whole roster so coverage
  overlaps across models rather than partitioning the work.
- 
+
  DERIVED RATHER THAN LISTED since 2026-08-24, when the roster stopped being
  one provider's model list. A hand-written copy of a two-catalog union goes
  stale the first time either catalog moves, and it goes stale silently: a
  missing model is a seat nobody notices is empty.
- 
+
  NINE MODELS NOW. `qwen3.8-max` was culled on 2026-08-28 for disproportionate
  metered cost, then Nemotron left every stage on 2026-08-29 after contradictory
  adjacent required-correction reviews, leaving eight. The owner's blocklist
@@ -139,21 +139,21 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wr
  refreshed the catalog under it: `glm-5.3` was admitted on the forced-tool
  probe, GLM-5.3-Flash gained a second route, and two Qwen3.8 routes were
  culled as automatic-only. Remaining seats retain full weight.
- 
+
  TEN SINCE 2026-09-07. Of the two Bedrock-only Gemma 4 sizes the owner
  approved that day, `google.gemma-4-e2b` joined on the judge fidelity probe
  (its card in `model-cards.ts`) and `google.gemma-4-31b` stayed out: over the
  same twelve questions it chose the complete text on 6, declining the rest,
  against a seated median of 9.5 (the planning log of 2026-09-07, "Measuring
  the two Bedrock-only sizes").
- 
+
  ELEVEN SINCE 2026-09-09, when the owner approved Mercury 2.5 on OpenRouter
  and the judge fidelity probe of 17:00 UTC read it at 14 of 14
  (its card in `model-cards.ts`); it wrote nothing until the producer
  calibration read at 20:02 UTC the same day seated it as a writer
  ({@link WRITER_UNMEASURED}); the calibration of 2026-09-19 read it below
  the pooled null and took the translator seat back ({@link TRANSLATOR_DROPPED}).
- 
+
  DeepSeek V4.1 Flash joins on 2026-09-11 after choosing the source-reviewed
  reference on all fourteen distinct comparisons, with no damaged pick or abstention.
  All nine peers answered every question; their median clean count was fourteen
@@ -196,14 +196,14 @@ export const RUN_WRITERS: readonly RosterModelId[] = RUN_ROSTER
  Writers a 40-round producer calibration measured out of the translator
  seat, dropped on the owner's authorization of 2026-09-01 ("drop any model
  from any role, as long as you have evidence").
- 
+
  TWO SAT UNDER THE POOLED NULL WITH FULL AVAILABILITY on 2026-09-01:
  `gpt-oss-120b` took 5 of 207 disinterested ballots (z -4.53 against a
  13.02 percent null) and `deepseek-v4-flash-0731` 5 of 208 (z -4.55), each
  having written 40 of 40 candidates, so the finding is about the writing
  rather than about rounds missed. Record and method:
  `doc/planning/translation-repair-roster-calibration-2026-09-01.md`.
- 
+
  `deepseek-v4-pro-0813` SINCE 2026-09-09, ON ITS SECOND READING BELOW THE
  NULL: 19 of 243 disinterested ballots on 2026-09-08 (z -2.31, Parasail
  serving it with its reasoning) and 13 of 144 over 29 candidates on
@@ -214,7 +214,7 @@ export const RUN_WRITERS: readonly RosterModelId[] = RUN_ROSTER
  on the same fourteen questions, so the endpoint the run buys stays and the
  reading is of what the run buys. Record: the second 2026-09-09 addendum of
  `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
- 
+
  ALL THREE KEPT EVERY OTHER SEAT: nothing here measures judging, critique,
  checking or the consolidation, and the anchor judge stays the anchor judge.
 
@@ -229,7 +229,7 @@ export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 't
 /**
  Models measured out of every nine-wide seat (critic, panel, judge) on the
  same authorization, for wall clock rather than for quality.
- 
+
  `glm-5.3` IS THE SLOWEST VOICE ON THE ROSTER in every role measured: its
  completed streams run p50 61 to 66 s and p90 166 to 172 s against p90s under
  110 s for everyone but GLM-5.3-Flash. It lost 11 of 38 select asks to the
@@ -241,7 +241,7 @@ export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 't
  seats are where a ninth voice adds least: the stage reached quorum without
  it every time. It keeps the translator seat and any editor seat the editor
  standing gives it, where its text is what is being measured.
- 
+
  `hf:zai-org/GLM-5.3-Flash` LEFT EVERY JUDGE SEAT ON 2026-09-02 by the owner's
  decision ("Unseat GLM-5.3-Flash as a judge, keep it as editor"). Its
  reasoning streams run to a million raw characters, and under the 60 s round
@@ -254,7 +254,7 @@ export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 't
  translator seat, where its text is what is being measured. Record:
  `doc/planning/translation-repair-roster-calibration-2026-09-01.md`, "The
  Toka_ls relaunch was killed at 77 minutes, in consolidation".
- 
+
  `hf:Qwen/Qwen3.8-27B` IS NOT DROPPED HERE BUT SEATED PER PROVIDER, the
  owner's decision of 2026-09-03 after a morning in which it left every judge
  seat outright: served by Hyper it reasons past the round window (30 of 34
@@ -425,14 +425,14 @@ export type RunRepairModels = RepairModels & {
  Role roster for a corpus run: SEVEN of the nine critique and adjudicate (six while Synthetic is dry), THREE edit
  against each other, THREE refine the result for naturalness, and three check
  the shipped repair.
- 
+
  THREE refiners rather than the two first proposed, because two does not
  achieve what widening was for. The quorum is `ceil(rosterSize / 2)`, which is
  1 on a roster of two, so a two-refiner lane could still ship on one voice and
  the single-model failure this change exists to prevent would survive it. At
  three the quorum is 2 and a lone survivor cannot carry the stage. The same
  arithmetic is why editors are three and not two.
- 
+
  Editors went from two to three and refiners from one to three on 2026-08-12,
  on the user's rule that the system must not have single-model failures.
  The reason is structural rather than a reaction to one incident:
@@ -441,32 +441,32 @@ export type RunRepairModels = RepairModels & {
  all. So the two-editor pair could ship a repair written by a single model
  while reporting a met quorum, and the single refiner could vanish entirely
  with nothing to report.
- 
+
  Both stages retried to `full-roster` from 2026-08-12 until the user removed
  that target outright on 2026-08-15: waiting for every voice let one model
  degraded for a day spend four deadlines per gather on a voice that was not
  coming. Quorum on a roster of three is two, so the ensemble property survives
  the removal.
- 
+
  WHAT FOLLOWS IS THE HISTORY OF THESE SEATS, kept because each rule in it was
  argued from it. The seats themselves are the measured ones in the constant:
  the roster spans two providers since 2026-08-24 (ten then, nine now), the three editors
  and three refiners were chosen by the 40-round writer calibration of that day
  and reseated by the 40-slice editor calibration of 2026-09-01, and the
  checkers are the three the width measurement settled.
- 
+
  GLM-4.7-Flash took the third editor seat on 2026-08-12 because it was the
  only model not already checking or editing, and the constraints left no
  other choice at the time: checkers had to exclude every editor and refiner,
  judges needed two disinterested seats, and the other three models held the
  checker roster. It left the roster on 2026-08-24.
- 
+
  ONE OF THOSE CONSTRAINTS IS GONE. Producers judge as of 2026-08-15, with a
  ballot for their own work counted at half weight, so seating another producer
  no longer starves selection: the discount applies to a judge's ballot for its
  OWN candidate only, and every producer votes on every other candidate at full
  weight.
- 
+
  What still bounds a producing roster is not that arithmetic. It is checker
  disjointness, which is the binding one: checkers exclude every editor and
  refiner, so a fourth editor would leave two checkers at a quorum of one, the
@@ -479,7 +479,7 @@ export type RunRepairModels = RepairModels & {
  it as a third editor rather than against: a third editor that sometimes
  drops still leaves two, whereas the same model in the checker set would have
  cost proof.
- 
+
  The panel was six rather than seven from 2026-08-05, when the provider
  withdrew two models and only one replacement (Kimi-K3) appeared, and has
  been ten since 2026-08-24, when Charm Hyper's five seats joined, eight after
@@ -487,7 +487,7 @@ export type RunRepairModels = RepairModels & {
  catalog refresh. `gatherStageVoices` computes the stage quorum as
  `voices >= ceil(modelIds.length / 2)`, so seven models need 4 voices, six
  need 3, ten need 5, eight need 4, and nine need 5.
- 
+
  The ISSUE-acceptance gate does move, and the user accepted the move rather
  than it happening unnoticed: `DEFAULT_ADJUDICATION_CONFIG.minBallotWeight` is
  the absolute value 3, so the share of the panel that must cast a non-abstain
@@ -495,7 +495,7 @@ export type RunRepairModels = RepairModels & {
  User decision, 2026-08-06: "50% is okay here." At nine the same absolute 3
  is 3-of-9 (33 percent), inside the range already lived at ten (30 percent)
  and at eight (37.5 percent).
- 
+
  MORE THAN ONE editor, on the user's rule that no single model should control
  any part of the pipeline. Kimi-K3 is one of them because the user reports it
  as much stronger than anything else currently offered, and the editor is
@@ -506,24 +506,24 @@ export type RunRepairModels = RepairModels & {
  a critic one. GLM-5.2 was the second editor, having held the role alone
  before, and GLM-4.7-Flash was the third until 2026-08-24, when the measured
  seats replaced both.
- 
+
  The count was TWO until 2026-08-12, and the paragraph that follows is kept as
  the reasoning for that earlier choice rather than as current policy. Every
  editor was barred from judging its own chunk, so each added editor cost a
  judge as well as its own calls: at two editors four judges remained, at three
  only three, and a plurality got harder to reach exactly as the candidate set
  got wider. Producers judge now, so that arithmetic no longer holds.
- 
+
  That cost was accepted on the quorum argument this block opens with: a stage
  of two is satisfied by a single voice, so a two-editor pair could ship a
  repair written by one model while reporting a met quorum. Losing a judge is
  the smaller harm.
- 
+
  Judges are the WHOLE roster, and since 2026-08-15 selection seats all of it
  rather than removing producers per round. An editor judging a set holding its
  own text is allowed and counts half for that candidate alone; every other
  ballot it casts carries full weight.
- 
+
  Checkers EXCLUDED every editor until 2026-08-24, so nothing checked its own
  work. That dropped GLM-5.2 from the checker set it held while it was also
  editing, and gpt-oss-120b took the seat. GLM-4.7-Flash stayed out: it was
@@ -531,7 +531,7 @@ export type RunRepairModels = RepairModels & {
  stage is where a lost voice costs proof rather than coverage. Since
  2026-08-24 one model both edits and checks, bounded by the half-weight
  discount described at `checkerModelIds`.
- 
+
  The naturalness lane shares two of its three seats with the editors since
  2026-09-01 (GLM-5.3-Flash and deepseek-v4-pro-0813), with minimax-m3 as its
  third. Nothing forbids a refiner also editing: a judge's ballot for its own
@@ -540,7 +540,7 @@ export type RunRepairModels = RepairModels & {
  decided by the model whose text it is. The tradeoff is real and is accepted
  rather than hidden: a model that just wrote a paragraph is a poor judge of
  whether that paragraph reads awkwardly.
- 
+
  This paragraph read "ONE refiner runs the naturalness lane" until 2026-08-13,
  left stale by `eb21ffa6b`, which took the lane from one refiner to three. The
  staleness mattered rather than being cosmetic: a one-model lane loses the
@@ -549,7 +549,7 @@ export type RunRepairModels = RepairModels & {
  `refiner 0/1`. On a roster of three the same failure no longer empties the
  stage, because quorum is two. Recorded in
  `doc/planning/naturalness-lane-reach.md`.
- 
+
  Attribution cost, accepted by the user ("Bundle all the improvements that
  could be made, in"): round three changes the roster, the editor, the checker
  set, and adds a naturalness pass at once, so a precision delta cannot be
@@ -739,7 +739,7 @@ assertCheckerQuorumReachable({
 
 /**
  Roster the translate lane runs under during a corpus pass.
- 
+
  BOTH ROLES TOOK THE WHOLE ROSTER until 2026-09-01, which was a narrower
  claim than it looked. The translate lane has two stages and no third: models
  write a candidate, then models rank the slate. There is no editor stage to
@@ -750,19 +750,19 @@ assertCheckerQuorumReachable({
  producer calibration placed under its pooled null, and {@link RUN_WIDE_SEATS}
  drops the judge that lost a third of its select asks to the production
  window, both on the owner's authorization of that day.
- 
+
  Self-certification is HANDLED RATHER THAN FORBIDDEN: a judge ranking a slate
  that holds its own translation counts half for that candidate alone, exactly
  as the repair lane's selection round does. Whether that weighting is the right
  one is the same open question for both lanes rather than a
  new one this constant introduces.
- 
+
  The width the judge-fidelity probe and the window trial MEASURED was the
  whole roster of their day, six models in both roles. A pass under seven
  translators and eight judges reports on a lane neither measurement covers
  exactly, as every roster change since has, which is one reason the pass's
  own output is read before any readiness claim.
- 
+
  @example
  ```ts
  const lanes = await runDocumentLanes({ translateModels: RUN_TRANSLATE_MODELS, ... },);
@@ -781,13 +781,13 @@ const READER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'reader-un
 
 /**
  Models that read this run's pictures.
- 
+
  DERIVED FROM THE CATALOG rather than listed by hand, so the roster is
  whatever the provider's own `input_modalities` says can be sent an image. A
  hand-written list would go stale the day a model gains or loses the
  capability, and it would go stale silently: a text-only model sent a picture
  answers about nothing, and the call is spent either way.
- 
+
  READING IS ITS OWN STAGE, and the roster's narrowness when the stage was
  built is why. Exactly two models read images while the roster was one
  provider's six; selection needs a minimum weight of two, and a producer's
@@ -800,7 +800,7 @@ const READER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'reader-un
  Bedrock, so a Bedrock-only pass has two reachable readers; the stage stays
  separate because the reasoning in this note is about weights, not about how
  many readers there happen to be.
- 
+
  @example
  ```ts
  const readings = await readDocumentPictures({ readerModelIds: RUN_READER_MODELS, ... },);
@@ -815,7 +815,7 @@ export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
 
 /**
  Deadline granted to one model exchange during a corpus run.
- 
+
  Was 240_000, which measurably clipped real work. Run 013 sampled every call
  unfiltered: 748 succeeded and 35 were cut at the deadline, a 4.5 percent
  censoring rate, while the surviving time-to-first-byte distribution ran p50
@@ -824,13 +824,13 @@ export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
  density right up to the boundary with NO cliff ahead of it. That is the
  signature of clipping, not of connections hanging: a call completing at
  245_000 ms would be unremarkable beside the ones observed at 235_151 ms.
- 
+
  Timeouts still arrive in correlated batches, about five per retry round,
  which once looked like evidence of hangs. It reconciles if the provider slows
  every concurrent call together under load, so a batch crosses the deadline
  together. That explains the correlation without hangs, and it means the added
  waiting falls during congested periods specifically.
- 
+
  360_000 is chosen against the measurement rather than as a round multiple: it
  clears the observed p99 by 64 percent and the observed maximum by 53 percent,
  while keeping a worst-case stage bounded. `STAGE_RETRY_ROUNDS` allows four
@@ -842,7 +842,7 @@ export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
  ledger D6.
  Raising it should also REDUCE retry rounds by losing fewer voices, so the
  worst case gets rarer as well as no worse.
- 
+
  Sampling stays unfiltered, so the next run reports how much tail still gets
  clipped at 360_000 and this can be tuned on evidence again.
  */
@@ -851,7 +851,7 @@ export const RUN_PER_CALL_TIMEOUT_MS = 360_000;
 /**
  Call-timing knobs an artifact was produced under, so a pool spanning more
  than one configuration can still be analyzed per cohort.
- 
+
  @example
  ```ts
  const config: RunCallConfig = {
@@ -880,10 +880,10 @@ export type RunCallConfig = {
 
 /**
  Call-timing configuration stamped into every artifact this pass writes.
- 
+
  The pool it labels is deliberately MIXED, by a decision the user made twice:
  keep already-settled entries rather than discard the compute.
- 
+
  An earlier version of this note promised more than the stamp can deliver: it
  said precision could be split by cohort at analysis time, turning the
  confound into a number. RETRACTED, because the arithmetic does not support
@@ -896,15 +896,15 @@ export type RunCallConfig = {
  available. Claiming the number anyway would repeat the exact error retracted
  from the panel-coverage analysis: pooling across a noisy dimension and
  reading the result as signal.
- 
+
  What the stamp is still for: identifying which cohort any artifact came from,
  so the mixed pool is disclosed QUALITATIVELY with the verdict rather than
  left unstated, and so a later analysis over a larger graded set is possible
  if one is ever funded.
- 
+
  Three cohorts exist in the round-two pool, and the first two are equivalent
  for call timing even though they look different:
- 
+
  -   Ten entries with NO `callConfig` field at all, settled before the field
      existed. Their absence identifies them exactly.
  -   Five entries stamped `perCallTimeoutMs: 240_000`, from run 013. The
@@ -913,7 +913,7 @@ export type RunCallConfig = {
      fifteen as ONE cohort.
  -   Entries stamped `perCallTimeoutMs: 360_000` and later, which are the
      first to run without the deadline clipping roughly 4.5 percent of calls.
- 
+
  Deliberately not surfaced on the grading sheet: a grader who could see which
  cohort an issue came from would be a worse instrument than one who could not.
  */
@@ -950,9 +950,9 @@ export const RUN_CORPUS_PIN: CorpusPin = RUN_CORPUS_PIN_SETTING.pin;
 
 /**
  Worktree root of this checkout, resolved through git from this file's dir.
- 
+
  @returns Absolute path to the worktree top level
- 
+
  @example
  ```ts
  const root = await resolveWorktreeRoot();
@@ -977,9 +977,9 @@ async function resolveWorktreeRoot(): Promise<string> {
 /**
  Current HEAD commit of this worktree, recorded into run artifacts so every
  result names the pipeline tip that produced it.
- 
+
  @returns Full HEAD sha
- 
+
  @example
  ```ts
  const tip = await readHeadSha();
@@ -1005,9 +1005,9 @@ export async function readHeadSha(): Promise<string> {
  Durable, gitignored directory that holds run artifacts, logs, and the
  attempts map. Honors `TRANSLATION_REPAIR_RUNS_DIR`, else defaults under the
  worktree's `node_modules/.monochromatic/`.
- 
+
  @returns Absolute runs directory path
- 
+
  @example
  ```ts
  const runsDir = await resolveRunsDir();
@@ -1032,12 +1032,12 @@ const l = contextRoot({ tag: 'translation-repair', },);
 /* oxlint-disable require-await, typescript/require-await -- compatibility meter contract is asynchronous */
 /**
  Synthetic quota shape used only when Hyper is sole configured provider.
- 
+
  Router receives absent Synthetic as dry directly;
  this compatibility method keeps client surface stable for observational callers.
- 
+
  @returns Explicitly exhausted synthetic quota
- 
+
  @example
  ```ts
  const quota = await unconfiguredSyntheticQuota();
@@ -1062,35 +1062,35 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
 /**
  Builds client every run calls from every configured provider,
  counting every call.
- 
+
  ONE FACTORY, so provider routing reaches every corpus-run entrypoint at once
  rather than each one growing its own configuration.
- 
+
  IT STILL ANSWERS `quotas`, which is the first provider's meter and nothing
  else. The routing client does not offer one, because the two providers meter
  differently and there is no single reading; this wiring layer is where the
  knowledge that `quotas` means the Synthetic meter belongs, and keeping the
  method here leaves every existing caller and the bench recorder untouched.
- 
+
  ONE KEY IS ENOUGH.
  Missing provider is marked dry before routing,
  so its seats become unavailable without unauthorized calls.
  Exact-half participation lets the other providers operate normally;
  no provider family or cross-provider response is mandatory.
  Every key missing remains a launch refusal because no call can run.
- 
+
  THE THIRD KEY IS OPTIONAL AND ITS ABSENCE IS LOUD, as the second one's is:
  OpenRouter is the paid fallback the owner chose on 2026-09-03, and a run
  without its key still starts on the other two.
- 
+
  THE DRYNESS VIEW IS EXPOSED for the seat reader, so the benches are
  derived from the same reading the router routes by.
- 
+
  EVERY CALL IS COUNTED on `RUN_SEATS`, the process-wide tally the refusal
  boundary prints when the command ends, so a seat that produced nothing
  usable is named in the closing lines of every command rather than only in
  the calibration's coverage sentence.
- 
+
  @param env - environment the provider keys, the Hyper pace and the Bedrock
  ledger's place are read from: `process.env` in a run, a test's own otherwise
 

@@ -1,6 +1,6 @@
 /**
  Heading-boundary windows preserve one following body without crossing another section.
- 
+
  @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -17,7 +17,7 @@ const STAMP_STEP = 10;
 
 /**
  Builds independently parsed source slices and distinguishable archive counterparts.
- 
+
  @param texts - physical slice contents in document order
  @returns Paired fixtures whose stamps cannot be mistaken for positions
  @example

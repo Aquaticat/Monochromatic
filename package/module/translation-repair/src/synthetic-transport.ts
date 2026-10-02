@@ -12,7 +12,7 @@ import { armIdleGuard, } from './stream-idle-guard.ts';
 
 /**
  Raw reply from one HTTP exchange, before any parsing.
- 
+
  @example
  ```ts
  const reply: TransportReply = { status: 200, bodyText: '{"choices":[]}', };
@@ -34,7 +34,7 @@ export type TransportReply = {
  One HTTP exchange the client asks a transport to perform.
  `signal` is mandatory so no call can be constructed that user steering
  cannot abort.
- 
+
  @example
  ```ts
  const exchange: TransportExchange = {
@@ -54,7 +54,7 @@ export type TransportExchange = {
   /**
    What this call is FOR, in the caller's own vocabulary, which for a chat
    exchange is the model id.
-   
+
    REQUIRED RATHER THAN OPTIONAL, so no call site can quietly fall back to the
    endpoint. Every chat exchange goes to one URL, so labelling by URL made
    per-model latency unreadable, and reasoning from abandon counts instead is
@@ -92,7 +92,7 @@ export type TransportExchange = {
   /**
    Event grammar this endpoint's stream speaks, which is a property of the
    PROVIDER rather than of the request, and absent means the older one.
-   
+
    NAMED BY THE CALLER because only the client knows which provider it is
    addressing; the transport is one function serving both.
    */
@@ -101,7 +101,7 @@ export type TransportExchange = {
 
 /**
  Transport function the client is parameterized over.
- 
+
  @example
  ```ts
  const recorded: ModelTransport = async () => ({ status: 200, bodyText: '{}', });
@@ -116,13 +116,13 @@ export type ModelTransport = (
  `fetch` receives only locally owned values:
  primitive strings, a fresh headers copy, and a dependent signal,
  so caller-owned objects are never retained by the platform request.
- 
+
  @param exchange - request to perform
- 
+
  @mutates exchange - DOM commit 5796f716 AbortSignal.any dependent-signal relations can retain the exchange signal, and undiciFetch retains the derived signal and may invoke abort listeners through it for the request lifetime.
- 
+
  @returns Status and body text, whatever the status was
- 
+
  @example
  ```ts
  const reply = await fetchTransport({

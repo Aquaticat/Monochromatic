@@ -1,14 +1,14 @@
 /**
  Tests for the walk that decides which entries a pass may work on.
- 
+
  WHAT THESE PIN is the difference between an entry missing a side, which is
  an ordinary state of this corpus and is named, and any other read failure,
  which is a fault in the run and propagates. Until this module every read
  failure was stepped past as a missing side, so a clone that had gone away
  read as a corpus with no entries.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -58,9 +58,9 @@ const HALF_ENTRY = 'tabby';
 /**
  Makes a throwaway corpus clone with two complete entries and one that has
  only its original, at one commit.
- 
+
  @returns Clone directory and commit, removed on dispose
- 
+
  @example
  ```ts
  await using corpus = await throwawayCorpus();

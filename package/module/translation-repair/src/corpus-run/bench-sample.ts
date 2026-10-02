@@ -31,12 +31,12 @@ const SKIP_DETAIL_CHARS = 80;
 
 /**
  One slice the bench translates, with the facts a stage call needs.
- 
+
  @example
  ```ts
  const slice: BenchSlice = { entryId: 'Mittens', index: 3, ... };
  ```
- 
+
  @internal
  */
 export type BenchSlice = {
@@ -69,11 +69,11 @@ export type BenchSlice = {
 
 /**
  Cuts one entry into slices, or returns none when either side is unreadable.
- 
+
  @param entryId - corpus entry
- 
+
  @returns Every slice of that entry
- 
+
  @example
  ```ts
  const slices = await sliceEntry({ entryId: 'Mittens', pin, },);
@@ -148,25 +148,25 @@ async function sliceEntry(
 
 /**
  Draws the bench sample across the whole pinned corpus.
- 
+
  @param count - slices wanted; fewer come back only when the corpus holds
  fewer
- 
+
  @param pin - corpus clone and commit to read: `RUN_CORPUS_PIN` in a run, a
  throwaway clone in a test, since the real one is unlicensed. REQUIRED: a
  default read the clone for any caller that left it out (ledger M43, X24)
- 
+
  @returns Sample ordered by source size, smallest first
- 
+
  @throws Error when the pinned corpus yields no slice at all, since a bench
  drawn over nothing would report widths as indistinguishable while having
  compared them on no work
- 
+
  @example
  ```ts
  const sample = await sampleBenchSlices({ count: 12, pin: RUN_CORPUS_PIN, },);
  ```
- 
+
  @internal
  */
 export async function sampleBenchSlices(
@@ -193,7 +193,7 @@ export async function sampleBenchSlices(
 
   /**
    Every entry sliced, or reported as unreadable.
-   
+
    An entry missing one side is not a bench failure: the census reports the
    same gap, and refusing to draw a sample over it would make the bench depend
    on corpus completeness it does not need.

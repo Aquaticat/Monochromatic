@@ -75,13 +75,13 @@ const ROUND_DISPOSITIONS = [
 
 /**
  Reads one slate position.
- 
+
  @param value - entry as recorded
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Position with its provenance
- 
+
  @example
  ```ts
  const entry = requireSlateEntry({ value, path, },);
@@ -126,17 +126,17 @@ function requireSlateEntry(
 
 /**
  Reads one judged round.
- 
+
  @param value - round as recorded
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Round in the shape the projection reads
- 
+
  @throws {@link ArtifactParseError} when a field is missing or mistyped
- 
+
  @throws {@link OffRosterModelError} when it names a departed model
- 
+
  @example
  ```ts
  const round = requireJudgedRound({ value, path, },);
@@ -213,7 +213,7 @@ function requireJudgedRound(
 
   /**
    Everything both outcomes record, read once.
-   
+
    SPLIT FROM THE PER-OUTCOME BRANCHES because the two outcomes agree on six fields
    and differ on two, and reading the six twice is how one of the copies
    drifts.
@@ -320,12 +320,12 @@ function requireJudgedRound(
 
 /**
  Raised when a repair result predates rounds being recorded at all.
- 
+
  SEPARATE FROM A PARSE FAILURE, and this is the whole point of the class. Such
  a result is complete and correct for the build that wrote it; it just cannot
  answer a question that build was never asked. A reader counting these apart
  from malformed ones reports a schema generation rather than a defect.
- 
+
  @example
  ```ts
  throw new RoundsNotRecordedError({ path: 'Whiskerfold.lanes.repair.result', },);
@@ -353,21 +353,21 @@ export class RoundsNotRecordedError extends Error {
 
 /**
  Reads every round every chunk of one raw repair result recorded.
- 
+
  GROUPED BY CHUNK rather than flattened, because a standing drawn almost
  entirely from one chunk reads the same as one drawn evenly across many, and
  only the grouping tells them apart.
- 
+
  @param raw - lane result exactly as the artifact holds it
- 
+
  @param path - dotted path for error messages
- 
+
  @returns One list of rounds per chunk, in chunk order
- 
+
  @throws {@link ArtifactParseError} when the result or a round is malformed
- 
+
  @throws {@link OffRosterModelError} when any record names a departed model
- 
+
  @example
  ```ts
  const perChunk = readRepairRounds({ raw, path: 'lanes.repair.result', },);

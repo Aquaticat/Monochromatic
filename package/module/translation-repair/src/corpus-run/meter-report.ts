@@ -54,11 +54,11 @@ const UNIT_MS = {
 
 /**
  Renders a duration in hours, minutes and seconds, dropping empty leaders.
- 
+
  @param ms - duration to render
- 
+
  @returns Compact duration, `0s` for nothing
- 
+
  @example
  ```ts
  spanText({ ms: 3_720_000, },);
@@ -98,11 +98,11 @@ function spanText(
 
 /**
  Renders an epoch stamp the way the log wrote it.
- 
+
  @param at - epoch milliseconds
- 
+
  @returns ISO stamp
- 
+
  @example
  ```ts
  stampText({ at, },);
@@ -116,17 +116,17 @@ function stampText(
 
 /**
  Renders what is known about the longest outage, bounds and open ends both.
- 
+
  NAMES AN OPEN END RATHER THAN PRINTING A NUMBER FOR IT. A stretch with no
  wet reading before it may have started before the record; one with none
  after it may still be running now. Either way the upper bound is not a
  number, and printing the confirmed length alone would read as the whole
  outage.
- 
+
  @param span - longest stretch, absent where none was found
- 
+
  @returns Lines describing it
- 
+
  @example
  ```ts
  for (const line of outageLines({ span, },)) console.log(line,);
@@ -186,15 +186,15 @@ type LevelLookup = LevelReading | 'no-level';
 
 /**
  Narrows a lookup to a reading that named something.
- 
+
  POSITIONAL RATHER THAN DESTRUCTURED, for the reason `isMeterState` in
  `meter-sample-read.ts` is: TypeScript refuses a type predicate naming an
  element of a binding pattern.
- 
+
  @param lookup - what one reading yielded
- 
+
  @returns Whether it named a level
- 
+
  @example
  ```ts
  lookups.filter(namedALevel,);
@@ -206,21 +206,21 @@ function namedALevel(lookup: LevelLookup,): lookup is LevelReading {
 
 /**
  Renders what one provider's meter was reading, at both ends of the record.
- 
+
  TWO ENDS RATHER THAN ONE. The last reading answers what the budget is now;
  the first says which way it moved to get there, which is the difference
  between a budget this run drained and one that was empty before it started.
- 
+
  SAYS SO WHEN NOTHING WAS RECORDED. A run written before the levels were
  added carries states and no numbers, and silence there would read as a
  provider whose meter never said anything.
- 
+
  @param samples - every reading, from every log
- 
+
  @param provider - provider to report on
- 
+
  @returns Lines describing what its meter read
- 
+
  @example
  ```ts
  for (const line of levelLines({ samples, provider, },)) console.log(line,);
@@ -237,7 +237,7 @@ function levelLines(
 ): readonly string[] {
   /**
    Readings that named a level for this provider, in time order.
-   
+
    ATTRIBUTED BY NAME PREFIX, which the record's field names are built to
    carry: neither provider's name is a prefix of the other's.
    */
@@ -303,11 +303,11 @@ function levelLines(
 
 /**
  Reports one provider's availability across the whole record.
- 
+
  @param samples - every reading, from every log
- 
+
  @param provider - provider to report on
- 
+
  @example
  ```ts
  reportProvider({ samples, provider: 'hyper', },);
@@ -370,13 +370,13 @@ function reportProvider(
 
 /**
  Reads every named log and reports both providers.
- 
+
  Returns nothing: the report on stdout and the exit code ARE the output.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`,
  which refuses it when no log is named: any log a pass, probe or sample wrote
  will do, and passing several merges them into one record
- 
+
  @example
  ```ts
  await reportMeters({ line, },);

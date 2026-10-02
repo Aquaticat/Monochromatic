@@ -1,6 +1,6 @@
 /**
  Tests the page-level assembly guard over a composed page.
- 
+
  @module
  */
 
@@ -59,11 +59,11 @@ const SLICES: readonly ChunkPair[] = [
 
 /**
  Builds a source whose consolidation wrote the notes at the anchor.
- 
+
  @param notes - what the consolidation wrote at slice 1
- 
+
  @returns Narrow artifact source read by the publication assembler
- 
+
  @example
  ```ts
  const artifact = consolidating({ notes: '[^1]: A note.', },);

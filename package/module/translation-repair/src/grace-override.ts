@@ -30,7 +30,7 @@ export const STRAGGLER_GRACE_VAR = 'TRANSLATION_REPAIR_STRAGGLER_GRACE_MS';
 
 /**
  Straggler window the editor calibration runs under when nobody set one.
- 
+
  FIVE MINUTES, DECIDED ON MEASUREMENT (`doc/decision/translation-repair-calibration-overlap.md`):
  under four slices in flight, arm D ran this window at the same normalized
  cost as arm B's built-in window and cut 2 voices against B's 7, because the
@@ -58,17 +58,17 @@ export type CalibrationGrace = {
 
 /**
  Reads the straggler window this invocation's rounds run under.
- 
+
  @param fallback - built-in window, used when nothing overrides it
- 
+
  @param raw - override text; tests pass their own, and the environment read
  supplies `''` for an absent variable, since unset and empty are alike here
- 
+
  @returns Milliseconds a round keeps waiting on stragglers after quorum
- 
+
  @throws {@link StatedRefusalError} when the override is present and is not
  a positive finite number of milliseconds
- 
+
  @example
  ```ts
  const graceMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },);
@@ -93,7 +93,7 @@ export function resolveStragglerGraceMs(
 
 /**
  Longest delay a JavaScript timer holds, 2^31 - 1 ms, about 24.8 days.
- 
+
  `setTimeout` clamps anything above it to 1 ms with a TimeoutOverflowWarning,
  so a window past it would cut every straggler the instant quorum stood, the
  opposite of what an operator who typed a large number asked for. A fraction
@@ -104,11 +104,11 @@ export const MAX_TIMER_DELAY_MS = 2_147_483_647;
 
 /**
  Whether a number is a window a timer can hold as written.
- 
+
  @param ms - candidate window
- 
+
  @returns Whether it is a whole number of milliseconds a timer holds exactly
- 
+
  @example
  ```ts
  isTimerWindow({ ms: 180_000, },);
@@ -123,30 +123,30 @@ export function isTimerWindow({ ms, }: { readonly ms: number; },): boolean {
 
 /**
  Reads one window dial's text the way every window dial must read it.
- 
+
  ONE READER FOR EVERY DIAL, because the refusal rule is the dial's whole
  value: `writer-grace-override.ts` reads a second variable by the same rule,
  and two hand-copied readers would be two places for `300s` to start meaning
  300 in one and a refusal in the other.
- 
+
  @param variable - environment variable the text came from, named in the
  refusal so the operator corrects the right one
- 
+
  @param fallback - window used when the text is blank; checked too, since a
  caller passing a window no timer holds is a defect this reader must not
  launder into a run
- 
+
  @param raw - override text; blank means unset
- 
+
  @param unsetMeans - what leaving the variable unset does, for the refusal
- 
+
  @returns Milliseconds the dial names, or the fallback when it names nothing
- 
+
  @throws {@link StatedRefusalError} when the text is present and is not a
  whole number of milliseconds a timer can hold
- 
+
  @throws {@link RangeError} when the fallback itself is not such a number
- 
+
  @example
  ```ts
  const ms = readWindowDial({ variable, fallback, raw, unsetMeans: 'run under the built-in window', },);
@@ -195,18 +195,18 @@ export function readWindowDial(
 
 /**
  Explains which window a run is under when it is not the built-in one.
- 
+
  PRINTED BY THE DRIVERS RATHER THAN THE ROUND, because a run must never hide
  which window it ran under: a round's own log names the window only when it
  cuts a voice, and a run that cut nobody under a longer window is exactly the
  run the measurement wants to hear about.
- 
+
  @param effectiveMs - window the rounds run under
- 
+
  @param builtInMs - window the code ships with
- 
+
  @returns Note naming both windows, or nothing when they agree
- 
+
  @example
  ```ts
  const note = graceOverrideNote({ effectiveMs, builtInMs: STRAGGLER_GRACE_MS, },);
@@ -230,7 +230,7 @@ export function graceOverrideNote(
 
 /**
  Puts the editor calibration under its own window unless a launch set one.
- 
+
  THROUGH THE VARIABLE, DELIBERATELY. Every stage round reads its window off
  `resolveStragglerGraceMs` with the built-in fallback, and threading a second
  fallback through every stage the calibration drives would touch a dozen
@@ -238,12 +238,12 @@ export function graceOverrideNote(
  calibration's rounds the decided window by the path a launch already has,
  and a launch that set the variable is honored as an override, refused if
  unreadable, exactly as before.
- 
+
  @returns Window the calibration's rounds run under, and where it came from
- 
+
  @throws {@link StatedRefusalError} when a launch set the variable to
  something that is not a positive finite number of milliseconds
- 
+
  @example
  ```ts
  const grace = adoptCalibrationGrace();

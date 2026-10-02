@@ -1,6 +1,6 @@
 /**
  Tests for the decline records a pass leaves behind and the next pass reads.
- 
+
  @module
  */
 

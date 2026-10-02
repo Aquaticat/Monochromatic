@@ -25,7 +25,7 @@ import { isAsciiLetter, } from '../ascii-letters.ts';
 /**
  Separators an alias list is written with in the corpus: the comma, the
  full-width comma and the enumeration comma.
- 
+
  MORE THAN `ALIAS_SEPARATOR` (`front-matter-translation.ts`) splits a
  translation's alias on, the comma alone: this reads originals too, which
  write the other two (ledger B97).
@@ -40,11 +40,11 @@ const ALIAS_SEPARATORS = [
  Lower-cases a rendering and keeps its Latin letters only, so `Lin Tong`,
  `lintong` and `Lin-Tong` read the same and a name with no Latin letter
  reads as nothing.
- 
+
  @param text - rendering to normalise
- 
+
  @returns Its Latin letters, lower-cased
- 
+
  @example
  ```ts
  latinLettersOf({ text: 'Lan Gou (blue dog)', },);
@@ -74,11 +74,11 @@ function latinLettersOf({ text, }: { readonly text: string; },): string {
 
 /**
  Reads the `name` of a front matter block, empty when absent or not a string.
- 
+
  @param metadata - parsed front matter
- 
+
  @returns Declared name
- 
+
  @example
  ```ts
  nameOf({ metadata, },);
@@ -101,13 +101,13 @@ function nameOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): strin
 
 /**
  Whether metadata still shows the directory id where a person's name goes.
- 
+
  @param metadata - parsed front matter block
- 
+
  @param entryId - directory id of the entry
- 
+
  @returns Whether the visible name is the directory id
- 
+
  @example
  ```ts
  namesDirectoryId({ metadata, entryId: 'Cat', },);
@@ -128,11 +128,11 @@ export function namesDirectoryId(
 /**
  Reads the aliases of a front matter block, split on every separator the
  corpus uses and trimmed; empty when there are none.
- 
+
  @param metadata - parsed front matter
- 
+
  @returns Alias renderings in declared order
- 
+
  @example
  ```ts
  aliasesOf({ metadata, },);
@@ -193,17 +193,17 @@ function aliasesOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): re
 /**
  Whether a Latin string is a pinyin reading of a name, every heteronym of
  every character allowed.
- 
+
  Walks the name one character at a time keeping the set of positions in the
  string each reading could have reached, so the check is linear in the name
  and never enumerates the readings' product.
- 
+
  @param name - name in the source script
- 
+
  @param letters - Latin letters, lower-cased, tone marks absent
- 
+
  @returns Whether some reading of the whole name spells exactly the letters
- 
+
  @example
  ```ts
  readsAs({ name: '林童', letters: 'lintong', },);
@@ -269,19 +269,19 @@ function readsAs(
 /**
  Whether a page may keep the directory id as its visible name although the
  source names the person otherwise.
- 
+
  @param entryId - directory id
- 
+
  @param source - original's front matter
- 
+
  @param page - would-ship page's front matter
- 
+
  @param archives - archive's front matter, the original English, as a list
  that is empty for a source-only insertion
- 
+
  @returns Whether the id is a rendering of the name, the source's own alias,
  or stands beside an English rendering
- 
+
  @example
  ```ts
  directoryIdNameStands({ entryId: 'Huasheng', source, page, archives: [archive,], },);

@@ -37,7 +37,7 @@ export const BOTH_RENDERINGS_FINDING: string = 'destinations-both-renderings';
 
 /**
  What the rendering rule decided about a page.
- 
+
  @example
  ```ts
  const verdict: DestinationRenderingVerdict = judgeDestinationRenderings({ source, page, archive, },);
@@ -58,11 +58,11 @@ export type DestinationRenderingVerdict = {
 /**
  Address with a trailing slash shed, so two spellings of one address compare
  equal.
- 
+
  @param url - address as written
- 
+
  @returns Address without a trailing slash
- 
+
  @example
  ```ts
  const same = sameAddress({ url: 'https://example.org/a/', },) === sameAddress({ url: 'https://example.org/a', },);
@@ -79,11 +79,11 @@ export function sameAddress({ url, }: { readonly url: string; },): string {
 
 /**
  Addresses as a set of comparison keys.
- 
+
  @param urls - addresses as written
- 
+
  @returns Keys with the trailing slash shed
- 
+
  @example
  ```ts
  const keys = addressKeys({ urls, },);
@@ -97,15 +97,15 @@ function addressKeys({ urls, }: { readonly urls: readonly string[]; },): Readonl
 
 /**
  Addresses whose key is (or is not) in a set.
- 
+
  @param urls - addresses filtered
- 
+
  @param keys - keys compared against
- 
+
  @param present - whether to keep the addresses found in the set or the rest
- 
+
  @returns Addresses kept, in their given order
- 
+
  @example
  ```ts
  const rewritten = addressesWhere({ urls: source, keys: archiveKeys, present: false, },);
@@ -130,16 +130,16 @@ function addressesWhere(
 /**
  Source destinations the page owes and lacks, under the either-rendering
  rule.
- 
+
  @param source - distinct destinations the source carries
- 
+
  @param page - distinct destinations the would-ship page carries
- 
+
  @param archive - distinct destinations the archive carried before the run;
  empty when there is no archive
- 
+
  @returns Dropped destinations and the findings the pool raised
- 
+
  @example
  ```ts
  const { dropped, findings, } = judgeDestinationRenderings({ source, page, archive, },);

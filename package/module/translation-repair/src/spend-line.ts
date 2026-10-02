@@ -93,10 +93,10 @@ export function isSpendReckoning(value: unknown,): value is SpendReckoning {
 
 /**
  Marker word a reader finds the line by.
- 
+
  EXPORTED RATHER THAN RESTATED IN THE READER, so the writer and the reader
  cannot drift apart the way two spellings of one literal always eventually do.
- 
+
  NO LEADING SPACE, unlike METERS_MARKER in corpus-run/meter-sample-read.ts.
  That one only ever meets lines carrying a logger tag prefix, so it can demand
  the space in front. This marker opens the line this module RETURNS, and
@@ -108,7 +108,7 @@ export const SPEND_MARKER = 'SPEND ';
 
 /**
  Value written where the provider returned no usage block at all.
- 
+
  NAMED RATHER THAN OMITTED, and the line is printed anyway. A run whose
  provider stayed quiet and a run that spent nothing produce the same total,
  and only this tells them apart. Leaving the line out would let a reader
@@ -118,34 +118,34 @@ const UNREPORTED = 'unreported';
 
 /**
  Records what one completed exchange cost, on its own line.
- 
+
  @param provider - meter this call drew on, since only one of the two is
  priced per token and a reader totalling credits must not add the other
- 
+
  @param label - model as the serving provider names it, matching the label
  `reportStreamProgress` already prints so the two lines can be joined
- 
+
  @param extracted - completion whose `usage` block the provider filled in,
  or did not
- 
+
  @param costUsd - USD the wire reported for this call, on the provider that
  bills in USD and said so
- 
+
  @param endpoint - upstream the gateway named as serving this call, on the
  provider that fronts many; percent-encoded on the line because a display
  name may hold a space and this line's grammar splits on spaces
- 
+
  @param estimated - why the counts and cost are reckoned rather than
  reported, on a call the wire never finished; the line carries it as a
  trailing field so a reader can total such lines beside the others or apart
- 
+
  @param cachedTokens - prompt tokens the upstream served from its cache,
  where the wire reported the count, so the saving price-sorted routing and
  a stable sheet buy can be read off the line
- 
+
  @returns Line that was logged, so a test can assert what a reader will parse
  rather than a paraphrase of it
- 
+
  @example
  ```ts
  reportSpend({ provider: 'hyper', label: 'qwen3.8-max', extracted, },);

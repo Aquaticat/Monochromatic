@@ -31,7 +31,7 @@ import type {
 
 /**
  One metered seat with what its tokens came to.
- 
+
  @example
  ```ts
  const seat: PricedSeat = { ...spend, inputCredits: 3.4, outputCredits: 6.1, totalCredits: 9.5, };
@@ -56,7 +56,7 @@ export type PricedSeat = SeatSpend & {
 
 /**
  Everything a tally cost, with the seats no price could be put on kept apart.
- 
+
  @example
  ```ts
  const cost = priceTally({ tally, },);
@@ -70,7 +70,7 @@ export type SpendCost = {
 
   /**
    Metered seats the price table had no row for.
-   
+
    NAMED RATHER THAN COUNTED AT ZERO. A model the provider added after the
    table was read still bills, and a total that skipped it silently would
    report a cheaper run rather than an incomplete one.
@@ -85,7 +85,7 @@ export type SpendCost = {
   /**
    Seats billed in USD per token, on OpenRouter or on Bedrock, costliest
    first, each carrying the USD its lines reported.
-   
+
    A FOURTH BUCKET AND A SECOND CURRENCY. Hypercredits and USD are never
    summed: `totalCredits` stays a credit figure, and this bucket's
    total is `totalUsd`.
@@ -117,11 +117,11 @@ export type SpendCost = {
 
 /**
  Prices one metered seat, or reports that the table has no row for it.
- 
+
  @param seat - one seat's totals as `tallySpend` summed them
- 
+
  @returns Seat with its credits, or that this model is not in the table
- 
+
  @example
  ```ts
  const priced = priceSeat({ seat, },);
@@ -152,12 +152,12 @@ function priceSeat(
 
 /**
  Puts a price on every metered seat a tally holds.
- 
+
  @param tally - per-seat totals read out of a run log
- 
+
  @returns Priced seats costliest first, the metered seats no price covered,
  the subscription seats, and what the priced ones came to
- 
+
  @example
  ```ts
  const cost = priceTally({ tally: tallySpend({ lines, },), },);
@@ -266,7 +266,7 @@ export function priceTally(
 
   /**
    Calls across every seat whose provider reported no usage at all.
-   
+
    COUNTED OVER EVERY SEAT rather than the priced ones, because a quiet call
    on a subscription seat is just as invisible to a reader as a quiet metered
    one, and the figure exists to say how much went unseen.

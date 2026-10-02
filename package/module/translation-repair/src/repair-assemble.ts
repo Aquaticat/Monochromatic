@@ -35,27 +35,27 @@ import type { RepairTranslationResult, } from './repair-result.ts';
 
 /**
  Assembles settled outcomes into the document and its report.
- 
+
  @param targetText - translation as it stands, which is the fallback
- 
+
  @param slices - prepared slice pairs in document order
- 
+
  @param outcomes - settled per-slice outcomes, refinement included
- 
+
  @param lineStructuredSlices - global indices the line-structure rule governs,
  whose lines the wrap leaves alone
- 
+
  @param findings - alignment and phase findings to carry through
- 
+
  @param l - driver logger
- 
+
  @returns Repaired document with its issue report and status
- 
+
  @example
  ```ts
  const result = assembleRepair({ targetText, slices, outcomes, lineStructuredSlices, findings, l, },);
  ```
- 
+
  @internal
  */
 export function assembleRepair(
@@ -77,7 +77,7 @@ export function assembleRepair(
 ): RepairTranslationResult {
   /**
    Outcomes with produced wording wrapped at its semantic boundaries.
-   
+
    BEFORE ANYTHING READS THEM, because the replacements, the wordings and the
    issue records all come out of this one list, and the delivery invariant
    requires the first two to agree byte for byte.
@@ -91,7 +91,7 @@ export function assembleRepair(
 
   /**
    What this lane wants written, checked before the guard sees it.
-   
+
    A replacement identical to its incumbent survives the footnote guard and
    lands in the shipped set beside a document nobody changed, so it is refused
    here rather than counted there.
@@ -105,7 +105,7 @@ export function assembleRepair(
   /**
    Document rebuilt slice by slice, with any replacement withdrawn that would
    leave the footnote graph worse than the archive's.
-   
+
    A footnote is a relation BETWEEN slices, and every stage works inside one,
    so this is the only layer that can see it. The per-envelope footnote gate
    bounds what one edit does; it cannot see a definition in another slice.
@@ -152,7 +152,7 @@ export function assembleRepair(
 
   /**
    How many slices the document CARRIES a repair for.
-   
+
    Read off the guard's surviving replacements rather than recomputed from the
    outcomes, because the guard is what decides this. Reconstructing it from
    `changed` and the reverted list would agree today and would go on agreeing
@@ -163,7 +163,7 @@ export function assembleRepair(
 
   /**
    Both index sets, checked against each other and put in document order.
-   
+
    The guard returns each in the order it worked, and a reader comparing two
    lanes wants document order for both. Checking them here is also the only
    place that can: it is the one point holding the prepared slice count and

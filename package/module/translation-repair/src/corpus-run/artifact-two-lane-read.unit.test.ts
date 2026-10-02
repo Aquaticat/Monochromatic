@@ -1,18 +1,18 @@
 /**
  Tests for reading one whole version 2 artifact.
- 
+
  EVERY CASE BREAKS ONE VALID ARTIFACT IN EXACTLY ONE WAY, and the artifact's
  comparison is derived by version 2's own frozen rules rather than typed out,
  so a case that changes a ledger gets the comparison that follows from it
  without anyone hand-maintaining a second copy of the rules.
- 
+
  WHAT THEY PIN, beyond shape: the checks that catch a file whose parts
  contradict each other. Every field here parses on its own in each of these
  cases; what fails is a relation between two of them, which is the whole
  reason a reader recomputes rather than believing what it is told.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -62,9 +62,9 @@ const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 /**
  Repair lane's raw result, carrying fields version 2 never described so every
  case runs against a record shaped like a real one.
- 
+
  @returns Raw result JSON
- 
+
  @example
  ```ts
  const raw = repairResult();
@@ -108,26 +108,26 @@ function repairResult(): Record<string, unknown> {
 
 /**
  One whole version 2 artifact, with whatever this case changes.
- 
+
  OVERRIDES RATHER THAN MUTATION, so no case reaches into a nested structure
  and no case can leave one half-edited: a ledger handed in here is the ledger
  both the lane and the comparison are built from.
- 
+
  @param repairDelivery - repair lane's ledger
- 
+
  @param translateDelivery - translate lane's ledger
- 
+
  @param repairRaw - repair lane's raw result
- 
+
  @param translateRaw - translate lane's raw result
- 
+
  @param comparison - comparison to record, which DEFAULTS to what version 2's
  own rules derive from the two ledgers, exactly as the writer does
- 
+
  @param rest - any top-level field this case replaces
- 
+
  @returns Artifact as JSON
- 
+
  @example
  ```ts
  const artifact = artifactWith({ repairDelivery: rows, },);
@@ -195,15 +195,15 @@ function artifactWith(
 
 /**
  A ledger with one row replaced.
- 
+
  @param rows - ledger to change
- 
+
  @param at - position of the row to replace
- 
+
  @param replace - what that row says instead, built from the row it replaces
- 
+
  @returns New ledger, leaving the one passed in alone
- 
+
  @example
  ```ts
  const rows = rowReplaced({ rows: repairLedger(), at: 1, replace: shipIt, },);
@@ -235,9 +235,9 @@ const MENDED_NAP = 'The cat is asleep on the sill.';
 
 /**
  Evidence rows saying the repair lane decided that wording at the first slice.
- 
+
  @returns Raw slice rows for the repair result
- 
+
  @example
  ```ts
  const rows = repairDecidedRows();
@@ -293,11 +293,11 @@ function withdrawByRefusal(row: ArtifactDeliveryRow,): ArtifactDeliveryRow {
 
 /**
  A ledger whose rows all claim the first slice.
- 
+
  @param rows - ledger to collapse
- 
+
  @returns Same rows, every one naming slice 0
- 
+
  @example
  ```ts
  const rows = allNamingSliceZero({ rows: repairLedger(), },);
@@ -317,11 +317,11 @@ function allNamingSliceZero(
 /**
  Raw slice rows collapsed the same way, so a lane still agrees with itself and
  only the repeat is left to catch.
- 
+
  @param rows - raw slice rows to collapse
- 
+
  @returns Same rows, every one naming slice 0
- 
+
  @example
  ```ts
  const rows = evidenceNamingSliceZero({ rows: raw.sliceTexts, },);
@@ -341,17 +341,17 @@ function evidenceNamingSliceZero(
 /**
  Re-spells a generation 4 body as generation 3, which is what the pass wrote
  before the index rename reached the wire.
- 
+
  ONE KEY, EVERYWHERE. A real generation 3 artifact spells the index
  `chunkIndex` in all twenty-odd places it appears: both ledgers, both raw
  results and every array inside them, the comparison, the lane selection and
  the consolidation. The change-set arrays already carried their current names
  in that generation, so nothing else moves.
- 
+
  @param value - generation 4 body to re-spell
- 
+
  @returns Same artifact as generation 3 wrote it
- 
+
  @example
  ```ts
  const older = asGenerationThree(artifactWith(),);
@@ -392,18 +392,18 @@ function asGenerationThree(value: unknown,): unknown {
 
 /**
  Drops each lane's raw result from a reading, leaving what was INTERPRETED.
- 
+
  THE RAW RESULT IS THE FILE'S OWN RECORD, handed back unread so a caller
  wanting a field this version does not describe can still find it. It
  therefore still spells the index the way its own generation wrote it, and
  comparing it across generations would compare the two FILES rather than the
  two readings. Everything else here is parsed through the key vocabulary and
  must come out identical.
- 
+
  @param artifact - reading to strip
- 
+
  @returns Same reading with both raw records gone
- 
+
  @example
  ```ts
  expect(interpretedOf({ artifact: older, },),).toStrictEqual(interpretedOf({ artifact: current, },),);
@@ -1696,7 +1696,7 @@ await describe({
 
         /**
          Artifact as the bytes a settled file holds.
-         
+
          SERIALIZED AND PARSED RATHER THAN CLONED, which is not the same test:
          a clone would preserve values JSON cannot carry, and what this case
          asks is whether the round survives the trip to disk and back.

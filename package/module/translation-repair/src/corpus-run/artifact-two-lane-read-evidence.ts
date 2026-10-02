@@ -32,17 +32,17 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 /**
  Reads a list of slice indices.
- 
+
  @param value - list JSON
- 
+
  @param path - dotted path for error message
- 
+
  @returns Indices in the order the file lists them, which is the order the
  relations read them in
- 
+
  @throws {@link ArtifactParseError} when the value is not an array, or any
  element is not an index any preparation could have produced
- 
+
  @example
  ```ts
  const shipped = requireIndexList({ value: record.changedSliceIndices, path, },);
@@ -122,20 +122,20 @@ function requireEvidenceRows(
 
 /**
  Reads what this shape requires of the repair lane's raw result.
- 
+
  @param value - raw result JSON
- 
+
  @param path - dotted path for error message
- 
+
  @param keys - spelling the artifact's own generation gave the renamed keys,
  so a version 2 file is read under `chunk` and a version 3 file under `slice`
  without either being tried against the other
- 
+
  @returns Evidence core, with the rest of the record left where it is
- 
+
  @throws {@link ArtifactParseError} when a field version 2 checks is missing,
  the wrong shape, or names a status this version does not describe
- 
+
  @example
  ```ts
  const evidence = parseRepairEvidence({ value: raw, path: 'lanes.repair.result', keys, },);
@@ -191,20 +191,20 @@ export function parseRepairEvidence(
 
 /**
  Reads what this shape requires of the translate lane's raw result.
- 
+
  @param value - raw result JSON
- 
+
  @param path - dotted path for error message
- 
+
  @param keys - spelling the artifact's own generation gave the renamed keys,
  so a version 2 file is read under `chunk` and a version 3 file under `slice`
  without either being tried against the other
- 
+
  @returns Evidence core, with the rest of the record left where it is
- 
+
  @throws {@link ArtifactParseError} when a field version 2 checks is missing,
  the wrong shape, or names a status this version does not describe
- 
+
  @example
  ```ts
  const evidence = parseTranslateEvidence({ value: raw, path: 'lanes.translate.result', keys, },);

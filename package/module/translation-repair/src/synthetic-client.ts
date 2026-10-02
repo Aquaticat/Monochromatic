@@ -53,11 +53,11 @@ import type {
 
 /**
  Concurrent requests available to each Synthetic model on current account.
- 
+
  Measured live on 2026-08-30 with two zero-retry aggregate arms:
  5 calls on each of 4 active models completed together,
  while raising gpt-oss alone to 10 produced HTTP 429 responses.
- 
+
  @example
  ```ts
  const slots = SYNTHETIC_PER_MODEL_CONCURRENCY;
@@ -72,14 +72,14 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Raised when a roster model is addressed to Synthetic and Synthetic has no row for it.
- 
+
  BEFORE THE WIRE, NOT AFTER. The provider answers such a request with an HTTP
  400 saying the name should start with `hf:`, which the retry ladder does not
  retry and the stage layer records as one lost voice; over a run that is a
  seat failing every call while quorum is met by the rest. Refusing
  here names the actual condition, and a routed client never reaches it
  because reach is decided before the provider is chosen.
- 
+
  @example
  ```ts
  throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
@@ -98,9 +98,9 @@ export class SyntheticModelNotServedError extends Error {
 
   /**
    Builds the refusal naming the model.
-   
+
    @param modelId - roster model addressed to this provider
-   
+
    @example
    ```ts
    throw new SyntheticModelNotServedError({ modelId: 'minimax-m3', },);
@@ -118,20 +118,20 @@ export class SyntheticModelNotServedError extends Error {
 
 /**
  Refuses a success reply whose server-sent stream stopped before its terminator.
- 
+
  MODULE SCOPE BECAUSE IT CAPTURES NOTHING. The reply handed in is its whole
  input, so nesting it at the call site would make a closure over an empty set.
- 
+
  ONLY A BODY THE STATUS ALREADY ACCEPTED. A non-success reply is reported by
  the status branch at the call site, which names the HTTP code; reading it
  here would replace that with a parse failure about an error page.
- 
+
  @param attemptReply - one attempt's reply, read before the ladder returns it
- 
+
  @throws MalformedCompletionError - when a success body stops before
  `[DONE]`, which is what puts a truncated stream on the retry path
  instead of past it
- 
+
  @example
  ```ts
  const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
@@ -147,25 +147,25 @@ function wholeMessage(attemptReply: TransportReply,): void {
  Requests to the same model flow through a local limiter whose slot count
  matches the account's subscribed pack count;
  different models run fully parallel, matching provider concurrency rules.
- 
+
  @param apiKey - bearer token; never logged
- 
+
  @param transport - HTTP the client calls over: `fetchTransport` in a run, a
  recorded one in a test. REQUIRED, since a test that left it out would reach
  the provider (ledger M43, X24)
- 
+
  @param chatBaseUrl - OpenAI-compatible base, overridable for tests
- 
+
  @param quotasUrl - quota endpoint, overridable for tests
- 
+
  @param perModelConcurrency - concurrent requests granted to each model;
  the provider serves one request per model per subscribed pack at full
  speed and queues the excess server-side, so match this to the pack count
- 
+
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
- 
+
  @returns Client surface with chatText, chatJson, and quotas
- 
+
  @example
  ```ts
  const client = createSyntheticClient({ apiKey: process.env['TRANSLATION_REPAIR_SYNTHETIC_API_KEY'] ?? '', transport: fetchTransport, },);
@@ -203,17 +203,17 @@ export function createSyntheticClient(
 
   /**
    Free-text chat exchange; bounded per model.
-   
+
    @param request - exchange to perform
-   
+
    @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
-   
+
    @returns Content text and usage when reported
-   
+
    @throws {@link SyntheticHttpError} on non-success status
-   
+
    @throws {@link import('./completion-shape.ts').MalformedCompletionError} on contract-violating bodies
-   
+
    @example
    ```ts
    const reply = await client.chatText({ modelId, messages, signal, },);
@@ -276,7 +276,7 @@ export function createSyntheticClient(
       /**
        Messages as they go on the wire, carrying this call's own response
        schema inside the system prompt.
-       
+
        THIS PROTOCOL HAS NOWHERE ELSE TO PUT IT. The Anthropic path states the
        schema in its own `system` field through `renderToolSystemPrompt`; an
        OpenAI-compatible body carries only `response_format`, which a model
@@ -292,11 +292,11 @@ export function createSyntheticClient(
 
       /**
        Exactly what goes on the wire, hoisted so its size can be measured.
-       
+
        MEASURED, NOT ESTIMATED. The gateway caps this body and reports a body
        over the cap as a parse failure naming our JSON, so the only way to tell
        that refusal from a real malformation is to know how big this was.
-       
+
        NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
        instruction, 2026-08-25: "Please don't set any thinking parameter or
        budget tokens... These providers and models have known issues with
@@ -402,15 +402,15 @@ export function createSyntheticClient(
 
   /**
    Reads the current quota snapshot.
-   
+
    @param signal - abort signal honored for the read
-   
+
    @returns Typed budget-relevant quota state
-   
+
    @throws {@link SyntheticHttpError} on non-success status
-   
+
    @throws {@link import('./synthetic-quota.ts').QuotaShapeError} on contract-violating bodies
-   
+
    @example
    ```ts
    const snapshot = await client.quotas({ signal, },);

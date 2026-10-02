@@ -72,19 +72,19 @@ const CONTEST_CANDIDATES = [
 
 /**
  Whether a bought outcome is worth keeping across runs.
- 
+
  SETTLED VERDICTS ONLY. An unheard roster is a transient fact about a provider
  on one night, not a property of the question, and writing it to the cache
  would freeze that night into every later resume of the entry. The ballots
  that did arrive are discarded with it, which is the point: half a panel is
  not an answer, and re-asking is what the quorum is for.
- 
+
  @param outcome - what the roster settled
- 
+
  @param choiceMayShip - whether selected lane passes publication invariants
- 
+
  @returns Whether to persist it
- 
+
  @example
  ```ts
  const keep = worthResuming({ outcome, },);
@@ -104,7 +104,7 @@ function worthResuming(
 
 /**
  Fresh contest outcome beside whether it became warm-run evidence.
- 
+
  @example
  ```ts
  const bought: BoughtLaneContest = { outcome, persisted: true, };
@@ -117,11 +117,11 @@ type BoughtLaneContest = {
 
 /**
  Reads cache-eligible record from fresh contest purchase.
- 
+
  @param bought - fresh result beside persistence status
- 
+
  @returns Record a twin may reuse, or deliberate nothing
- 
+
  @example
  ```ts
  const stored = storedContestOf({ outcome, persisted: true, },);
@@ -141,30 +141,30 @@ function storedContestOf(
 /**
  Persists a bought contest only when caller remains live and quorum made its
  ballots reusable.
- 
+
  Kept as a testable boundary because gather rounds normally surface an abort
  before returning, making the final pre-write defense unreachable in a
  transport fixture.
- 
+
  @param key - exact contest question this outcome answers
- 
+
  @param outcome - bought ballots and their settled choice
- 
+
  @param cache - contest persistence boundary
- 
+
  @param choiceMayShip - whether selected lane passes publication invariants
- 
+
  @param signal - caller abort checked before write
- 
+
  @returns Whether outcome was persisted and may be reused by a twin
- 
+
  @throws Whatever caller abort reason or persistence throws
- 
+
  @example
  ```ts
  await persistLaneContestOutcome({ key, outcome, cache, signal, },);
  ```
- 
+
  @internal
  */
 export async function persistLaneContestOutcome(
@@ -198,17 +198,17 @@ export async function persistLaneContestOutcome(
 /**
  Asks the roster which lane should ship, at every slice the two lanes worded
  differently.
- 
+
  @param client - synthetic chat client
- 
+
  @param projected - both ledgers as version 2 rows, beside their comparison
- 
+
  @param modelIds - roster to ask
- 
+
  @param identityContext - names and handles both documents declare
 
  @param referenceContext - what the pages the original cites say, when any
- 
+
  @param frontMatterSlices - syntax-bearing metadata slice indexes
 
  @param lineStructuredSlices - slice indexes the line-structure rule governs,
@@ -216,15 +216,15 @@ export async function persistLaneContestOutcome(
  lines is neither persisted nor twin-memoized (ledger H2)
 
  @param cache - per-entry store of ballots already bought
- 
+
  @param signal - abort shared with the rest of the entry
- 
+
  @param perCallTimeoutMs - per-call ceiling
- 
+
  @param overlap - most contested slices in flight; one reproduces former loop
- 
+
  @param l - logger to tag
- 
+
  @param fanOut - seats a contest round asks: the window of quorum plus one
  by default, or the whole bench a fixture scripting every seat asks for
 
@@ -232,7 +232,7 @@ export async function persistLaneContestOutcome(
  it runs on; none keeps the given ones
 
  @returns One record per contested slice, in comparison-row order
- 
+
  @example
  ```ts
  const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, lineStructuredSlices, cache, signal, perCallTimeoutMs, l, },);

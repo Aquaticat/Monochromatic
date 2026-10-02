@@ -1,6 +1,6 @@
 /**
  Tests for the resume guard that keeps one accumulation at one artifact shape.
- 
+
  WHAT THIS EXISTS FOR is one narrow case, and the tests say which. The
  pipeline guard already refuses an ordinary mixed-generation resume, because a
  build writing one artifact shape cannot share a digest with a build writing
@@ -8,13 +8,13 @@
  that a rate over the pool stays usable once it names a required commit. That
  promise holds across BUILDS and not across SHAPES: a version 1 artifact
  cannot answer a two-lane question at any commit.
- 
+
  AND ONE CASE THE FIRST VERSION MISSED, which an independent review found: the
  guard read the version LABEL and never the body, so a version 1 artifact
  relabelled as the generation this pass writes passed it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -81,18 +81,18 @@ type Fixture = {
 
 /**
  A complete version 2 artifact describing a document with NO slices.
- 
+
  EMPTY ON PURPOSE. Every per-slice relation the reader runs is vacuous here,
  so this is the smallest body that genuinely satisfies the generation rather
  than merely claiming it, which is what these cases need to tell a real
  artifact from a relabelled one.
- 
+
  @param entryId - entry it settles
- 
+
  @param digest - built pipeline it records
- 
+
  @returns Artifact as JSON
- 
+
  @example
  ```ts
  const artifact = emptyVersionTwoArtifact({ entryId: 'Mittens', digest: DIGEST_A, },);
@@ -227,11 +227,11 @@ async function writeArtifacts(
 
 /**
  Runs the guard and reports what it said, or that it accepted.
- 
+
  @param artifactsDir - directory to check
- 
+
  @returns Refusal text, or a sentinel no assertion here matches
- 
+
  @example
  ```ts
  const said = await refusalOf({ artifactsDir, },);

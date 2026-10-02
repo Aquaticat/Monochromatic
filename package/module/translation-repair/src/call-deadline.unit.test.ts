@@ -3,7 +3,7 @@
  expiry aborts with a labeled timeout, caller aborts always win and
  keep their reason, and disposal defuses both the timer and the
  caller-abort listener.
- 
+
  @module
  */
 

@@ -8,7 +8,7 @@ import { readSliceSkeleton, } from './translate-skeleton.ts';
 
 /**
  Text whose label is the one its receiving sheet actually displays.
- 
+
  @example
  ```ts
  const rendering: BreakRendering = { label: 'Candidate 2', text: candidateText };
@@ -37,11 +37,11 @@ When judging, a candidate that flattens these boundaries cannot beat a faithful 
 
 /**
  Names each rendering's measured breaks without exposing its producer.
- 
+
  @param rendering - exact displayed candidate label and wording
- 
+
  @returns One parse-qualified line of formatting evidence
- 
+
  @example
  ```ts
  const evidence = renderingBreakLine({ label: 'Candidate 1', text: candidateText });
@@ -68,17 +68,17 @@ function renderingBreakLine(rendering: BreakRendering,): string {
  these sheets. Callers pass the actual archive, never a generated standing or
  an eligibility-filtered fallback. Nonempty or whitespace-only archive inputs
  stay outside this rule, even if parsing would yield no blocks.
- 
+
  @param sourceText - exact source slice before supplemental picture/context text
- 
+
  @param archiveText - canonical archive slice, empty only where it has no wording
- 
+
  @param renderings - texts in the actual displayed anonymous order
- 
+
  @param syntax - metadata uses a different grammar and never gets this body rule
- 
+
  @returns Shared instructions and measured facts, or no extra prompt text
- 
+
  @example
  ```ts
  const note = renderedBreakPrompt({ sourceText, archiveText: '', renderings: [] });

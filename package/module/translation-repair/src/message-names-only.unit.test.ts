@@ -1,32 +1,32 @@
 /**
  Guards the claim `messageNamesOnly` makes, by reading the source that makes
  it.
- 
+
  WHAT THE MARKER CLAIMS. `refusalText` repeats the message of any error whose
  class declares `messageNamesOnly`, and drops the message of every other
  class. So the marker says: every part of this message is a sentence we wrote,
  a number this process computed, a name from our own vocabulary, or a value
  the operator handed in. Never a corpus passage, a run file's contents, a
  model's answer, or a provider's response body.
- 
+
  THE RULE THAT DECIDES WHO MAY CARRY IT. A class may declare the marker when
  the CLASS writes the sentence. A class whose constructor forwards a `message`
  parameter to `super` may not, however careful its throw sites are, because
  the claim would then be about thirty call sites rather than about one class,
  and nothing here could check it. `StatedRefusalError` is the deliberate
  exception, and carries its own note saying why.
- 
+
  WHY A SOURCE SCAN RATHER THAN A BEHAVIOURAL TEST. Constructing each class and
  reading its message would pin today's wording, which is not the property
  worth guarding: rewording a sentence is fine, and interpolating a new value
  into it is the thing that needs a second look. This reads exactly that, and
  fails when a marked class's message gains a part the inventory does not name.
- 
+
  WHAT IT CANNOT CATCH. A field the inventory already names, such as `detail`,
  can be handed different text by a new throw site. The inventory records what
  each field holds today, and a change of that kind is caught by reading, not
  by this file.
- 
+
  @module
  */
 
@@ -58,7 +58,7 @@ const SOURCE_DIR = import.meta.dirname;
 
 /**
  Key naming the byte offset a JSON read reports, or nothing when it has none.
- 
+
  SPLIT ACROSS A CONCATENATION so no plain string holds a whole `${}`, which
  `no-template-curly-in-string` reads as a template literal written by mistake.
  The halves join to exactly the expression the scan finds in the source.
@@ -67,7 +67,7 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
   + '{String(at,)}`';
 /**
  Every class permitted to declare the marker, with nothing else allowed to.
- 
+
  ADDING A NAME HERE IS THE DECISION. The list exists so that marking a class
  cannot happen quietly inside an unrelated change: this test fails until the
  name is written down, which is the moment to ask what its message carries.
@@ -191,7 +191,7 @@ const MARKED_CLASSES: readonly string[] = [
 
 /**
  Every expression a marked class interpolates, and what it holds.
- 
+
  A COUNT, A NAME, OR SOMETHING THE OPERATOR TYPED. That is the whole
  permission. An entry whose note cannot be written in those terms is an entry
  whose class should lose the marker instead.
@@ -360,7 +360,7 @@ const NAMED_PARTS: Record<string, string> = {
 
 /**
  Classes that write their own sentence and still may not carry the marker.
- 
+
  RECORDED RATHER THAN LEFT SILENT, because an absent marker looks identical to
  an oversight, and the next reader would have to re-derive each of these.
  */
@@ -389,7 +389,7 @@ const IDENTIFIER_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 
 /**
  What `indexOf` and `findIndex` answer when they found nothing.
- 
+
  NAMED so the comparison carries no bare unary minus, which reads as a mixed
  operator beside an equality test.
  */
@@ -433,11 +433,11 @@ type ScannedClass = {
 
 /**
  Collapses whitespace runs so a reformatted expression compares equal.
- 
+
  @param text - expression as it appears in the source
- 
+
  @returns Same expression on one line with single spaces
- 
+
  @example
  ```ts
  const key = oneLine({ text: 'short({\n  id,\n},)', },);
@@ -463,16 +463,16 @@ function oneLine({ text, }: { readonly text: string; },): string {
 
 /**
  Reads forward from an opening delimiter to its match.
- 
+
  INDEX SCAN RATHER THAN A PATTERN, because the thing being found is nesting,
  which no pattern expresses and which a scan expresses exactly.
- 
+
  @param source - text to read
- 
+
  @param from - index just past the opening delimiter
- 
+
  @returns Text between the delimiters
- 
+
  @example
  ```ts
  const inside = balanced({ source, from: at + 'super('.length, },);
@@ -510,11 +510,11 @@ function balanced(
 
 /**
  Collects every `${...}` body inside one expression.
- 
+
  @param expression - `super()` argument as written
- 
+
  @returns Each interpolated expression, whitespace collapsed
- 
+
  @example
  ```ts
  const parts = interpolationsOf({ expression, },);
@@ -554,15 +554,15 @@ function interpolationsOf(
 
 /**
  Decides whether a `super()` argument is nothing but a forwarded parameter.
- 
+
  SCANNED RATHER THAN MATCHED. The rule is "every character is one an
  identifier may carry", which an index pass states directly and which a
  pattern would restate less clearly.
- 
+
  @param argument - trimmed `super()` argument
- 
+
  @returns Whether it is one lowercase identifier, with an optional comma
- 
+
  @example
  ```ts
  const forwarded = isBareIdentifier({ argument: 'message,', },);
@@ -594,11 +594,11 @@ function isBareIdentifier({ argument, }: { readonly argument: string; },): boole
 
 /**
  Reads every error class one source file declares.
- 
+
  @param source - file contents
- 
+
  @returns One record per class declaration
- 
+
  @example
  ```ts
  const declared = classesIn({ source: await readFile(path, 'utf8',), },);
@@ -673,9 +673,9 @@ function classesIn({ source, }: { readonly source: string; },): readonly Scanned
 
 /**
  Reads every non-test source file and returns the classes they declare.
- 
+
  @returns Every scanned class across the package source
- 
+
  @example
  ```ts
  const declared = await scanSource();

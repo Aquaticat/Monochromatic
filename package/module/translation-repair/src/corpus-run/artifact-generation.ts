@@ -39,7 +39,7 @@ const HERE = import.meta.dirname;
 
 /**
  Exit status `git merge-base --is-ancestor` uses for a clean negative.
- 
+
  Anything else is a real failure: an unknown commit exits 128, and treating
  that as "not eligible" would quietly shrink the denominator.
  */
@@ -47,7 +47,7 @@ const NOT_ANCESTOR_EXIT = 1;
 
 /**
  Settled entries produced by one built pipeline.
- 
+
  @example
  ```ts
  const group: GenerationGroup = { digest: '53b5a4752...', entryIds: ['Acheron',], };
@@ -67,7 +67,7 @@ export type GenerationGroup = Readonly<{
 
 /**
  Every settled entry, partitioned by the pipeline that produced it.
- 
+
  @example
  ```ts
  const census = await censusByGeneration({ artifactsDir, },);
@@ -86,7 +86,7 @@ export type GenerationCensus = Readonly<{
 
   /**
    Repo commit each placed entry recorded, keyed by entry id.
-   
+
    Kept per entry rather than per group because one generation can span
    several commits: a documentation commit moves the tip while the built
    output stays identical, so those runs are one pipeline recorded under two
@@ -96,7 +96,7 @@ export type GenerationCensus = Readonly<{
 
   /**
    Entries whose artifact would not parse at all.
-   
+
    KEPT IN THE POOL DELIBERATELY, and separate from `untaggedIds` for that
    reason. A pass killed at its hard cap can leave one truncated artifact, and
    this package already decided such a file costs its own row and not the
@@ -110,7 +110,7 @@ export type GenerationCensus = Readonly<{
 
   /**
    Entries whose artifact parsed but recorded nothing usable.
-   
+
    EXCLUDED from every pool, because this is a real artifact of unknown
    generation and pooling it is exactly the silent mixing this module exists
    to stop. Named in the report so the exclusion is visible rather than a
@@ -121,7 +121,7 @@ export type GenerationCensus = Readonly<{
   /**
    Entries recording a pipeline this build cannot name: settled before the
    field existed, or recording it in a digest scheme this build does not read.
-   
+
    Also excluded from every pool, and separate from `untaggedIds` because the
    remedy differs. These are sound results whose pipeline can no longer be
    named, so deleting them buys nothing; a directory holding them is finished
@@ -132,9 +132,9 @@ export type GenerationCensus = Readonly<{
 
 /**
  Partitions every settled artifact by the pipeline that produced it.
- 
+
  @param artifactsDir - directory holding one JSON per settled entry
- 
+
  @param names - directory listing the CALLER already took, so census and
  caller classify the same set; omitted only by callers that have not listed
  the directory themselves. It must come from {@link listArtifactFiles}, which
@@ -142,9 +142,9 @@ export type GenerationCensus = Readonly<{
  both views at once. This cannot re-filter the names without taking a second
  view of a directory the accumulation is still writing to, which is the gap
  the shared listing exists to close
- 
+
  @returns Census grouped by built pipeline, largest group first
- 
+
  @example
  ```ts
  const census = await censusByGeneration({ artifactsDir, names, },);
@@ -161,7 +161,7 @@ export async function censusByGeneration(
 ): Promise<GenerationCensus> {
   /**
    Artifact file names, sorted so the census is reproducible.
-   
+
    Accepting the caller's listing matters more than saving one read. A reader
    that lists the directory, censuses it separately, then loads each file is
    taking THREE views of a directory the accumulation is still writing into,
@@ -295,32 +295,32 @@ export async function censusByGeneration(
 
 /**
  Resolves whatever the invoker named into a full commit object id.
- 
+
  A required commit arrives from the environment and was used raw, so `HEAD`
  and `main` were accepted and meant whatever the READER's checkout said at
  read time. Two readers then filtered the same directory differently while
  both reported the same requirement, and a branch that moves silently changes
  which entries a rate covers.
- 
+
  Artifact tips are already held to canonical object ids. This holds the
  requirement to the same standard, at the one place it enters.
- 
+
  Exported through the barrel so the built bundle's tests can hand it a
  throwaway repository; the pool is its only caller.
- 
+
  @internal
- 
+
  @param revision - whatever the invoker named: an id, an abbreviation, a
  branch, or a revision expression
- 
+
  @param repository - checkout to ask, this package's own worktree unless a
  test hands it a throwaway one
- 
+
  @returns Full object id of the commit it names
- 
+
  @throws When it names nothing this repository knows, or names an object that
  is not a commit
- 
+
  @example
  ```ts
  const commit = await resolveCommit({ revision: 'ce130535d', },);
@@ -364,14 +364,14 @@ export async function resolveCommit(
 
 /**
  Whether the repository answering ancestry has a truncated history.
- 
+
  Asked of the same checkout ancestry is resolved against, since that is the
  one whose history can be short.
- 
+
  @param repository - checkout ancestry was just asked of
- 
+
  @returns Whether this is a shallow clone
- 
+
  @example
  ```ts
  if (await isShallowRepository({ repository, },)) throw new Error('cannot decide',);
@@ -397,16 +397,16 @@ async function isShallowRepository(
 
 /**
  Whether a failed git call was a clean "not an ancestor" answer.
- 
+
  Asked as a boolean rather than by returning the status, because the only
  status this module can act on is the one negative git defines. Every other
  exit, and every failure carrying no exit at all, has to reach the caller as a
  fault rather than as a quiet false.
- 
+
  @param error - value a failed spawn threw
- 
+
  @returns Whether git exited with its documented negative
- 
+
  @example
  ```ts
  const answered = isCleanNegative({ error, },);
@@ -423,20 +423,20 @@ function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
 
 /**
  Whether one pipeline commit contains another.
- 
+
  @param tip - commit an artifact recorded
- 
+
  @param commit - commit the draw requires
- 
+
  @param repository - checkout to ask, this package's own worktree unless a
  test hands it a throwaway one
- 
+
  @returns Whether `commit` is an ancestor of `tip`, or the same commit
- 
+
  @throws When either commit is unknown to this repository, or the repository
  is a shallow clone that cannot tell a negative from a cut history, since a
  pool that cannot be partitioned must not be silently narrowed
- 
+
  @example
  ```ts
  const eligible = await tipContains({ tip, commit: 'fc7912929', },);

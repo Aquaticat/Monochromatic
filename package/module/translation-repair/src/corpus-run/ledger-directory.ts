@@ -65,18 +65,18 @@ export type LedgerReading = {
 
 /**
  Says why one file refused, without quoting it.
- 
+
  PASSES OUR OWN CLASSES' MESSAGES THROUGH, AND NO OTHER'S. `RunJsonUnreadableError`
  and `LedgerShapeError` are each built to name a file and a reason rather than
  echo a value, and each records that in its own note. Every other class carries
  a message nobody here wrote, so only its name is reported.
- 
+
  @param error - caught value, of unknown type by construction
- 
+
  @param file - file being read when it was thrown
- 
+
  @returns Refusal safe to print beside a run directory
- 
+
  @example
  ```ts
  const refusal = refusalOf({ error, file: '000001.json', },);
@@ -152,13 +152,13 @@ type FileOutcome =
 
 /**
  Reads every contest a ledger directory holds, keeping what refused.
- 
+
  @param dir - ledger directory to read
- 
+
  @returns Contests in judging order beside the files that would not read
- 
+
  @throws {@link Error} where the directory exists and could not be listed
- 
+
  @example
  ```ts
  const reading = await readLedgerDirectory({ dir, },);
@@ -169,7 +169,7 @@ export async function readLedgerDirectory(
 ): Promise<LedgerReading> {
   /**
    Files the recorder wrote, empty where the directory is not there.
-   
+
    AN ABSENT DIRECTORY IS AN ANSWER, not a fault: a run that wrote no ledger
    is the ordinary case for everything launched before it existed, and the
    caller reports that rather than raising.

@@ -2,10 +2,10 @@
 
 /**
  Refuses slice whose bounded final polish did not meet absolute quality floor.
- 
+
  Message names only slice position. Model findings and corpus wording remain
  in internal settlement and never cross user-facing error boundary.
- 
+
  @example
  ```ts
  throw new NaturalnessCompletenessError({ sliceIndex: 2, });

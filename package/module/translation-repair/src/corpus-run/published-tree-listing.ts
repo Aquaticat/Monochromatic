@@ -39,7 +39,7 @@ import {
 
 /**
  What a run leaves to verify, or why it leaves nothing.
- 
+
  @example
  ```ts
  const run: VerifiableRun = { kind: 'nothing-verified', why: 'no run', };
@@ -76,9 +76,9 @@ export type VerifiableRun =
  republish (ledger B64).
 
  @param runsDir - run directory holding the artifacts
- 
+
  @returns Entry ids, sorted, or why the artifacts directory could not be read
- 
+
  @example
  ```ts
  const settled = await settledEntryIds({ runsDir, },);
@@ -220,7 +220,7 @@ export async function publishedEntryIds(
 
 /**
  Decides whether a run has anything to verify at all.
- 
+
  TWO WAYS TO VERIFY NOTHING, and both have to leave a verdict that says so,
  which is the verifier's one nonzero exit. An artifacts directory that is not
  there means the caller is pointed at something that is not a run. An
@@ -233,13 +233,13 @@ export async function publishedEntryIds(
  started in the runs directory writes its page from the artifact (ledger
  A16c). Reporting that as an empty tree keeps it a finding the caller counts,
  rather than a silence that ends the report.
- 
+
  @param settled - what the artifacts directory listed
- 
+
  @param published - what the published tree listed
- 
+
  @returns Ids to check, or why there are none
- 
+
  @example
  ```ts
  const run = whatThereIsToVerify({ settled, published, },);

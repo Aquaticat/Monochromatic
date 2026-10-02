@@ -1,25 +1,25 @@
 /**
  Tests for reading one picture with the whole vision sub-roster and letting
  the two readers decide whether either reading may be used.
- 
+
  WHAT THESE PIN is that corroboration is the gate. A reading that arrives is
  not a reading that may be used: it has to be matched by a second reader shown
  the same picture and nothing else, and where no second reading exists the
  first is refused rather than passed along with a caveat.
- 
+
  BOTH READINGS TRAVEL when they agree, which one of these asserts directly.
  Agreement establishes that two readers describe the same picture, not the
  same amount of it, so a stage handed only the longer would lose the shorter's
  vouching and a stage handed only the shorter would lose content.
- 
+
  A FAILING READER IS CONTAINED, which three of these pin from both sides. A
  reading is the one output nothing downstream requires, so a reader that
  throws must cost its own reading and nothing else. An ABORT is not such a
  failure and must still travel, because a run told to stop must not settle a
  document on the readings that beat the stop.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -81,7 +81,7 @@ const OTHER_PICTURE = '兽医诊所营业时间：周一至周五上午九点到
 
 /**
  Deterministic reader that finds text, which is what lets the models be asked.
- 
+
  THE REAL ONE SHELLS OUT to `dwebp` and `tesseract`, so every case here supplies
  a stub instead. That is the point of the seam: a test must not depend on which
  command-line tools a machine happens to carry.
@@ -125,11 +125,11 @@ async function missing(): Promise<{
 
 /**
  Bytes standing in for a picture, whose content no rule here reads.
- 
+
  @param length - how many bytes picture occupies
- 
+
  @returns Buffer of that size
- 
+
  @example
  ```ts
  const bytes = bytesOf({ length: 64, },);
@@ -141,12 +141,12 @@ function bytesOf({ length, }: { readonly length: number; },): Uint8Array {
 
 /**
  Client answering each model with whatever that model is scripted to say.
- 
+
  @param byModel - reply per model; a model absent from this map answers with
  nothing, which the reading stage reports as an empty reply
- 
+
  @returns Client and models it was asked, in the order asks arrived
- 
+
  @example
  ```ts
  const { client, asked, } = scriptedClient({ byModel: { [LARGER_READER]: READING, }, },);
@@ -186,17 +186,17 @@ function scriptedClient(
 
 /**
  Client that throws for named models and answers the rest from a script.
- 
+
  THROWS RATHER THAN RETURNING AN ERROR SHAPE, because that is what the
  production client does: the runaway guard, the retry ceiling and a transport
  failure all leave `chatText` by rejecting.
- 
+
  @param failing - models whose exchange throws, and the message it throws with
- 
+
  @param byModel - reply per model that does not throw
- 
+
  @returns Client and models it was asked, in the order asks arrived
- 
+
  @example
  ```ts
  const { client, } = failingClient({ failing: { [LARGER_READER]: 'runaway', }, byModel: {}, },);

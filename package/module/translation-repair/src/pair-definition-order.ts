@@ -28,7 +28,7 @@ const DEFINITION_ZONE = 'footnote-definition';
 
 /**
  One definition the roster paired with one definition, by label.
- 
+
  @example
  ```ts
  const pair: DefinitionLabelPair = { sourceLabel: '2', targetLabel: '1', };
@@ -48,7 +48,7 @@ export type DefinitionLabelPair = {
 
 /**
  What one chunk's pairing splits into.
- 
+
  @example
  ```ts
  const split: SplitDefinitionPairs = splitDefinitionPairs({ pairs, sourceNodes, targetNodes, },);
@@ -74,11 +74,11 @@ export type SplitDefinitionPairs = {
 
 /**
  Indices, among one chunk's nodes, of the footnote definition blocks.
- 
+
  @param nodes - one side of a chunk
- 
+
  @returns Chunk-local indices of the definitions
- 
+
  @example
  ```ts
  const free = { source: definitionIndexes({ nodes: sourceNodes, },), target: definitionIndexes({ nodes: targetNodes, },), };
@@ -104,11 +104,11 @@ export function definitionIndexes(
 /**
  Label a definition block opens with, as a list of one, empty for any other
  block.
- 
+
  @param node - block to read
- 
+
  @returns One opening label or an empty collection; this reader never returns multiple labels
- 
+
  @example
  ```ts
  definitionLabelsOf({ node, },);
@@ -133,11 +133,11 @@ export function definitionLabelsOf(
 /**
  Whether pairs, sorted by original then translation, ever step backwards on
  the translation side.
- 
+
  @param pairs - pairs to read
- 
+
  @returns Whether any two cross
- 
+
  @example
  ```ts
  crosses({ pairs: [ { source: 7, target: 12, }, { source: 8, target: 11, }, ], },);
@@ -188,16 +188,16 @@ type DefinitionBlockPair = {
 
 /**
  The block a pair names on one side.
- 
+
  @param nodes - one side of a chunk
- 
+
  @param index - block a pair names
- 
+
  @returns The block
- 
+
  @throws Error when the index names no block, which would mean the pair was
  read against some other chunk
- 
+
  @example
  ```ts
  const node = blockAt({ nodes: sourceNodes, index: 7, },);
@@ -220,14 +220,14 @@ function blockAt(
 
 /**
  The label a definition block opens with.
- 
+
  @param node - a footnote definition block
- 
+
  @returns Its label
- 
+
  @throws Error when the block opens with no label the marker scanner reads,
  which would mean the scanner and the parser disagree about a label
- 
+
  @example
  ```ts
  const label = openingLabel({ node: sourceNode, },);
@@ -248,15 +248,15 @@ function openingLabel({ node, }: { readonly node: DocumentNode; },): string {
 /**
  Splits one chunk's agreed pairing into what the slicer walks and what the
  relabel reads.
- 
+
  @param pairs - pairs the roster agreed, chunk-local
- 
+
  @param sourceNodes - original side of the chunk
- 
+
  @param targetNodes - archive side of the chunk
- 
+
  @returns The split
- 
+
  @example
  ```ts
  const split = splitDefinitionPairs({ pairs, sourceNodes, targetNodes, },);
@@ -333,11 +333,11 @@ export function splitDefinitionPairs(
 
 /**
  Finding and log line for a chunk whose definition pairs cross.
- 
+
  @param pairIndex - aligned chunk
- 
+
  @returns The line, in the block-pairing findings' wording
- 
+
  @example
  ```ts
  findings.push(crossingFinding({ pairIndex, },),);

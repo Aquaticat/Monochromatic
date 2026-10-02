@@ -1,20 +1,20 @@
 /**
  Tests for saying whether audited wording is wording a document would carry.
- 
+
  THE ORDER OF THE BRANCHES IS THE SUBJECT, not an implementation detail. On an
  artifact no stage has decided, every would-ship reading names the archive, so
  a classifier that compared text before asking whether a decision exists would
  report a displacement on all 227 of the population's undecided subjects. That
  is the exact wrong answer this module was built to avoid, and it is pinned
  first.
- 
+
  THE PERSISTED READER IS TESTED AGAINST ABSENCE. Rows come off disk through an
  unchecked cast, so `unrecorded` is reachable in production and reading a
  missing field as `survives` would assert the strongest claim here from no
  evidence at all.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -61,13 +61,13 @@ const UNDECIDED = {
 
 /**
  Builds a reading carrying wording, defaulting to a later stage's.
- 
+
  @param decidedBy - stage whose decision survived
- 
+
  @param text - what would stand there
- 
+
  @returns Reading as the would-ship reader returns it
- 
+
  @example
  ```ts
  const reading = wordingFrom({ decidedBy: 'contest', },);
@@ -91,14 +91,14 @@ function wordingFrom(
 
 /**
  Builds a persisted row carrying a relation and a number of claims.
- 
+
  @param pageRelation - relation to record, omitted for a row written before
  the field existed
- 
+
  @param claims - how many anchored claims its roster made
- 
+
  @returns Row as a run file carries it
- 
+
  @example
  ```ts
  const row = rowCarrying({ pageRelation: { kind: 'survives', }, claims: 2, },);

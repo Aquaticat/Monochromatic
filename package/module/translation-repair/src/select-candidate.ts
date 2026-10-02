@@ -13,7 +13,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /**
  Raised when a candidate slate cannot say what winning it would mean.
- 
+
  @example
  ```ts
  throw new CandidateSlateError({ message: 'candidate slate must include the unchanged translation', },);
@@ -22,9 +22,9 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 export class CandidateSlateError extends Error {
   /**
    Builds refusal carrying what could not hold.
-   
+
    @param message - what the slate holds that leaves its winner unreadable
-   
+
    @example
    ```ts
    throw new CandidateSlateError({ message: 'candidate slate must include the unchanged translation', },);
@@ -40,7 +40,7 @@ export class CandidateSlateError extends Error {
  Everything measured about one candidate translation.
  Measurements come from deterministic checks and the semantic resolution
  stage; selection itself never calls a model.
- 
+
  @example
  ```ts
  const measurements: CandidateMeasurements = {
@@ -76,7 +76,7 @@ export type CandidateMeasurements = {
 
   /**
    Accepted issues the checkers marked WORSE in the patched candidate.
-   
+
    Named for what it can see. The check reads checker verdicts keyed by
    existing accepted issue ids, so a wholly new defect the patch introduces
    has nowhere to be counted; only a known issue can regress here. Counting
@@ -88,7 +88,7 @@ export type CandidateMeasurements = {
   /**
    Total size of the regions the patch touched, larger side of each;
    smaller is more conservative.
-   
+
    Not a count of differing characters, which the old name
    (`changedCharCount`) claimed: it sums each touched envelope's replaced or
    replacing length, whichever is longer, so a one-word fix inside a merged
@@ -99,7 +99,7 @@ export type CandidateMeasurements = {
 
 /**
  One competing translation with its measurements.
- 
+
  @example
  ```ts
  const candidate: RepairCandidate = {
@@ -157,13 +157,13 @@ export const UNCHANGED_MEASUREMENTS: CandidateMeasurements = {
  counting differing characters); the unchanged candidate wins any remaining
  tie, and candidate id breaks ties between equals otherwise so selection stays
  deterministic.
- 
+
  @param left - one candidate
- 
+
  @param right - other candidate
- 
+
  @returns Comparator value ranking better candidates first
- 
+
  @example
  ```ts
  candidates.toSorted(function rank(left, right,) {
@@ -209,7 +209,7 @@ export function compareCandidates(
 
 /**
  Selection result: the winner plus the full ranking for reporting.
- 
+
  @example
  ```ts
  const { winner, ranking, } = selectRepairCandidate({ candidates, },);
@@ -229,7 +229,7 @@ export type CandidateSelection = {
 
 /**
  Whether a winning candidate actually changed the archive text.
- 
+
  NOT the same question as which candidate won, and the difference is a real
  outcome rather than a formality. The patch gate refuses an operation that
  rewrites its region to itself, but two operations in adjacent envelopes can
@@ -237,12 +237,12 @@ export type CandidateSelection = {
  exactly as two adjacent slices can at the document level. A patch that wins
  selection and writes no byte is a slice nothing happened in, and reporting it
  as changed would put it in the shipped set beside text nobody touched.
- 
+
  Read at the outcome rather than asserted against, so
  `changed === (repairedText !== incumbentText)` holds by construction on this
  lane, as it already does on the translate lane. The assembly assertions stay
  as a backstop for routes nobody has thought of.
- 
+
  THE TEXT IS THE ONLY THING READ, deliberately. An earlier version answered
  `false` whenever the unchanged candidate won, which is the same answer only
  while that candidate really carries the archive wording. If it ever did not,
@@ -250,13 +250,13 @@ export type CandidateSelection = {
  a rewrite no index set names. `selectRepairCandidate` refuses that slate
  outright, and this reads the text regardless, so neither depends on the
  other.
- 
+
  @param winner - candidate selection settled on
- 
+
  @param incumbentText - archive wording of this slice
- 
+
  @returns Whether the returned text differs from the archive's
- 
+
  @example
  ```ts
  const changed = winnerChangedText({ winner: selection.winner, incumbentText, },);
@@ -279,29 +279,29 @@ export function winnerChangedText(
  Callers must include the unchanged translation among the candidates;
  selection throws when it is absent because a slate without the original
  cannot honor the always-competes guarantee.
- 
+
  THE UNCHANGED CANDIDATE MUST ACTUALLY BE UNCHANGED, which is checked rather
  than assumed. Its identifier is what every later reader means by "no repair
  was needed here", and one carrying some other wording would win ties on the
  strength of a name while shipping an edit nobody ranked.
- 
+
  Its MEASUREMENTS are deliberately not checked. `settleChunkVerdict` passes
  `UNCHANGED_MEASUREMENTS`, which is the honest measurement of the archive:
  integrity is relative to the archive, so a malformed archive is intact
  against itself, and a patch keeping its damage ties it on integrity rather
  than losing (ledger E6, which first read the constant as a claim that the
  archive parsed).
- 
+
  @param candidates - competing candidates including the unchanged one
- 
+
  @param incumbentText - archive wording of this slice, which the unchanged
  candidate must carry
- 
+
  @returns Winner plus full ranking
- 
+
  @throws {@link Error} when the unchanged candidate is missing, the slate is
  empty, or the unchanged candidate carries wording other than the archive's
- 
+
  @example
  ```ts
  const { winner, } = selectRepairCandidate({ candidates: [unchanged, repaired,], incumbentText, },);
@@ -318,7 +318,7 @@ export function selectRepairCandidate(
 ): CandidateSelection {
   /**
    Slate entries claiming to be the archive as it stands.
-   
+
    Collected rather than found, because finding the first would let a SECOND
    entry wear the same identifier: it would be ranked, could win on better
    measurements, and would be reported as the candidate that changed nothing

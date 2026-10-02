@@ -1,7 +1,7 @@
 /**
  Tests for how far one author's credit reaches: the per-envelope split a
  shipped composite earns, and the refiners layered on top of it.
- 
+
  @module
  */
 
@@ -46,7 +46,7 @@ const HELPER: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
  What ships in every `collectIssueAuthors` case here.
- 
+
  A COMPOSITE, deliberately: it is the one shipped patch whose parts have
  different authors, so it is the only producer for which the envelope rounds
  are consulted at all.

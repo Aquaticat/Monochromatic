@@ -1,14 +1,14 @@
 /**
  Tests for the runaway watch.
- 
+
  This is the piece the drain calls, so it is tested the way the drain drives
  it: chunk by chunk, stopping at the first runaway verdict rather than reading
  the whole stream and asking afterwards. A watch that only reached the right
  answer at the end would be useless, since the streams it exists to end never
  reach an end.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -30,20 +30,20 @@ import {
 /**
  Builds internally varied cat-themed text of exactly `length` characters,
  so a block built from it is never itself internally repetitive.
- 
+
  THE BLOCK MUST BE VARIED or a test built from it measures the block's own
  repetition rather than whatever pattern the test arranges around it: this
  mirrors the probe kept at `~/temp/agent/degeneration-period-probe.mjs`,
  whose first attempt padded a single sentence and proved nothing for
  exactly this reason.
- 
+
  @param length - exact character count to build
- 
+
  @param from - starting index the generator counts up from, so two blocks
  built from different `from` values share no content
- 
+
  @returns Varied text of exactly `length` characters
- 
+
  @example
  ```ts
  const block = variedBlock({ length: 501, from: 1, },);
@@ -91,14 +91,14 @@ function variedBlock(
 /**
  Builds text that cycles a varied block of the given period, for exactly
  `total` characters.
- 
+
  @param period - length of the repeating block
- 
+
  @param total - exact character count of the whole cycling text
- 
+
  @returns Text repeating a `period`-character varied block for `total`
  characters
- 
+
  @example
  ```ts
  const cycling = cyclingText({ period: 501, total: 200_000, },);
@@ -130,7 +130,7 @@ function cyclingText(
 /**
  Wraps long text as many small frames rather than one, so the scanner
  reading complete lines sees it progressively.
- 
+
  ONE FRAME CANNOT CARRY ARBITRARILY LONG TEXT AND STILL BE READ AS IT
  ARRIVES. `scanStreamDeltas` only extracts a frame's text once it has seen
  that frame's whole line, so a single frame carrying an entire long reply
@@ -138,15 +138,15 @@ function cyclingText(
  very end, which is not how a real stream delivers it and not what any of
  these detectors are checked against. This is the same reason every other
  fixture in this file builds many small frames rather than one large one.
- 
+
  @param channel - which channel the text arrives on
- 
+
  @param text - whole text to frame
- 
+
  @param pieceChars - characters carried by each frame
- 
+
  @returns Raw stream body, one frame per piece
- 
+
  @example
  ```ts
  const raw = framedText({ channel: 'reasoning', text, pieceChars: 501, },);
@@ -182,11 +182,11 @@ function framedText(
 
 /**
  Feeds a raw stream chunk by chunk, stopping at the first runaway verdict.
- 
+
  @param raw - whole stream body
- 
+
  @returns Verdict reached, and how much of the stream had been read
- 
+
  @example
  ```ts
  const { verdict, readBytes, } = drive({ raw, },);

@@ -134,13 +134,13 @@ type OpenSpan = {
 
 /**
  Pulls one provider's column out of the samples, in time order.
- 
+
  @param samples - readings of both providers
- 
+
  @param provider - which column to read
- 
+
  @returns That provider's states, sorted by when they were read
- 
+
  @example
  ```ts
  const series = seriesFor({ samples, provider: 'hyper', },);
@@ -182,11 +182,11 @@ export function seriesFor(
 
 /**
  Counts a provider's readings by state.
- 
+
  @param series - that provider's readings
- 
+
  @returns How many fell in each state
- 
+
  @example
  ```ts
  const counts = countStates({ series, },);
@@ -216,11 +216,11 @@ export function countStates(
 
 /**
  Fraction of answering readings that found budget left.
- 
+
  @param counts - readings by state
- 
+
  @returns Wet fraction, or that no reading answered
- 
+
  @example
  ```ts
  const wetFraction = dutyCycle({ counts, },);
@@ -243,11 +243,11 @@ export function dutyCycle(
 /**
  For each reading, when the nearest wet reading before it was, walking
  forward once.
- 
+
  @param series - that provider's readings
- 
+
  @returns Neighbours aligned to `series`
- 
+
  @example
  ```ts
  const before = wetBefore({ series, },);
@@ -278,11 +278,11 @@ function wetBefore(
 
 /**
  For each reading, when the nearest wet reading after it was.
- 
+
  @param series - that provider's readings
- 
+
  @returns Neighbours aligned to `series`
- 
+
  @example
  ```ts
  const after = wetAfter({ series, },);
@@ -301,13 +301,13 @@ function wetAfter(
 
 /**
  Closes one confirmed stretch into a span.
- 
+
  @param first - reading that first confirmed the outage
- 
+
  @param last - reading that last confirmed it
- 
+
  @returns Stretch with both bounds and whether either end is open
- 
+
  @example
  ```ts
  const span = closeSpan({ first, last, },);
@@ -348,11 +348,11 @@ function closeSpan(
 
 /**
  Every stretch a provider is known to have been out for.
- 
+
  @param series - that provider's readings
- 
+
  @returns Stretches in time order, empty where no reading found it out
- 
+
  @example
  ```ts
  const spans = drySpans({ series, },);
@@ -423,15 +423,15 @@ export function drySpans(
 
 /**
  Longest stretch a provider is known to have been out for.
- 
+
  RANKED BY CONFIRMED LENGTH, not by upper bound, because the upper bound of a
  stretch surrounded by distant readings can exceed the confirmed length of a
  genuinely longer outage that happened to be sampled closely.
- 
+
  @param spans - stretches to rank
- 
+
  @returns Longest stretch, or that the provider was never found out
- 
+
  @example
  ```ts
  const worst = longestDrySpan({ spans, },);

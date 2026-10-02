@@ -38,11 +38,11 @@ import { readFidelityArguments, } from './judge-fidelity-args.ts';
  Runs only source-reviewed, hash-locked comparisons through the production selector.
  Individual ballots are retained; a singleton judge's underweight merged verdict
  is not a quality score. This command never changes role admission itself.
- 
+
  @throws {@link FidelityReferenceError} for unreviewed requests or reference drift
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await main({ line, },);

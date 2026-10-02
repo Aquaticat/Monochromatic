@@ -43,24 +43,24 @@ const POOL_ALL_VALUE = 'yes';
 
 /**
  Resolves which settled entries this reader may pool, and prints the census.
- 
+
  Printing is not optional and not the caller's choice. A rate over a filtered
  pool is only readable beside the lines saying what was filtered, and leaving
  that to each call site is how one of them ends up silently omitting it.
- 
+
  @param artifactsDir - directory holding one JSON per settled entry
- 
+
  @returns Eligible entries, what was excluded, and the printed report
- 
+
  @throws MixedGenerationError when the directory spans pipeline generations
  and neither `TRANSLATION_REPAIR_REQUIRED_COMMIT` nor
  `TRANSLATION_REPAIR_POOL_ALL=yes` was set
- 
+
  @example
  ```ts
  const pool = await resolvePool({ artifactsDir, },);
  ```
- 
+
  @internal
  */
 export async function resolvePool(
@@ -82,7 +82,7 @@ export async function resolvePool(
 
   /**
    Required commit as a plain string, empty when none was set.
-   
+
    An exported-but-empty variable is an ordinary shell accident, so it is
    folded together with absence rather than read as a requirement nobody can
    satisfy.
@@ -103,7 +103,7 @@ export async function resolvePool(
 
   /**
    Settled entries partitioned by the built pipeline each recorded.
-   
+
    Given the caller's own listing when it has one, so census and reader
    classify the same files rather than two views of a directory the
    accumulation is still writing into.
@@ -158,18 +158,18 @@ export async function resolvePool(
 
 /**
  Keeps only the artifact file names an eligible entry owns.
- 
+
  Exported through the barrel so the built bundle's tests can hand it a pool
  directly; the four readers are its callers.
- 
+
  @internal
- 
+
  @param names - artifact file names as read from disk
- 
+
  @param eligible - resolved pool
- 
+
  @returns Names belonging to eligible entries, order preserved
- 
+
  @example
  ```ts
  const kept = keepEligible({ names, eligible, },);
@@ -187,7 +187,7 @@ export function keepEligible(
   /**
    Ids this reader must still see: everything eligible, plus every artifact
    that would not parse.
-   
+
    Malformed files are carried through rather than filtered because the reader
    downstream is the one that reports them, and dropping them here would make
    a corrupt artifact vanish from the failure list instead of appearing on it.

@@ -30,7 +30,7 @@ import type { EditableEnvelope, } from './patch-model.ts';
 /**
  One edit an editor proposes: replace one envelope's content wholesale.
  Replacing a zero-width envelope inserts; an empty replacement deletes.
- 
+
  @example
  ```ts
  const operation: PatchOperation = {
@@ -61,12 +61,12 @@ export type PatchOperation = {
 /**
  Whether this application enforces the preservation gate, and with what
  licence.
- 
+
  A DISCRIMINATED CHOICE rather than an optional map, so every caller states
  its intent. The naturalness lane rewrites whole paragraphs by design and has
  no accepted-issue quotes to license that, so an omitted map would silently
  make the gate reject exactly the work that lane exists to do.
- 
+
  @example
  ```ts
  const preservation: PreservationMode = { mode: 'skip', };
@@ -110,7 +110,7 @@ export type PreservationMode =
 
 /**
  One rejected operation with its scorecard-stable reason.
- 
+
  @example
  ```ts
  const rejection: PatchRejection = { operation, reason: 'stale-base-hash', };
@@ -130,7 +130,7 @@ export type PatchRejection = {
 
 /**
  Everything patch application decided.
- 
+
  @example
  ```ts
  const outcome: PatchOutcome = applyPatchOperations({ targetText, envelopes, operations, },);
@@ -157,7 +157,7 @@ export type PatchOutcome = {
  Thrown when envelopes overlap: derivation guarantees disjoint envelopes,
  so an overlap is a construction bug the caller must fix, not editor
  output to tolerate.
- 
+
  @example
  ```ts
  throw new EnvelopeOverlapError({ leftId: 'envelope/a', rightId: 'envelope/b', },);
@@ -171,9 +171,9 @@ export class EnvelopeOverlapError extends Error {
 
   /**
    Builds the overlap report from the two colliding envelope ids.
-   
+
    @param leftId - envelope earlier in document order
-   
+
    @param rightId - envelope overlapping it
    */
   constructor(
@@ -197,17 +197,17 @@ export class EnvelopeOverlapError extends Error {
  region must still equal the envelope base, and the replacement must
  actually change the region. Accepted operations apply in descending
  document order so earlier offsets stay valid.
- 
+
  @param targetText - full translation the envelopes were derived from
- 
+
  @param envelopes - non-overlapping envelopes in any order
- 
+
  @param operations - editor proposals in wire order
- 
+
  @returns Patched text plus applied and rejected operations as data
- 
+
  @throws {@link EnvelopeOverlapError} when two envelopes overlap
- 
+
  @example
  ```ts
  const { patchedText, rejected, } = applyPatchOperations({ targetText, envelopes, operations, preservation, },);
@@ -327,7 +327,7 @@ export function applyPatchOperations(
      Replacement with the document's quote style restored, which is what
      ships and therefore what the unchanged-region check, `checkPreservation`
      and `markupDelta` read.
-     
+
      RESTORED BEFORE THE CHECKS rather than after them. Editors flatten curly
      quotes to straight ones often enough that a repaired paragraph ends up
      reading differently from every paragraph around it, so the restoration

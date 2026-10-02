@@ -26,7 +26,7 @@ import type { DocumentNode, } from './document-node.ts';
 
 /**
  Raised when a span claims a range it does not cover node for node.
- 
+
  @example
  ```ts
  throw new SpanContiguityError({ message: 'slice 3 covers a block it does not carry', },);
@@ -35,9 +35,9 @@ import type { DocumentNode, } from './document-node.ts';
 export class SpanContiguityError extends Error {
   /**
    Builds the failure naming the slice and what its range holds.
-   
+
    @param message - what the range contains that the nodes do not
-   
+
    @example
    ```ts
    throw new SpanContiguityError({ message: 'slice 3 covers 3 blocks and carries 2', },);
@@ -51,21 +51,21 @@ export class SpanContiguityError extends Error {
 
 /**
  Reads the document nodes one half-open range touches at all.
- 
+
  TOUCHES RATHER THAN CONTAINS, which is the difference between this and what
  it replaced. Counting only whole nodes made a range cutting through one
  invisible: the straddled block is not inside, so it is not counted, and a
  span carrying nothing across a range covering half a paragraph agreed with
  itself. Assembly still writes over that half.
- 
+
  @param nodes - every node of the document, in order
- 
+
  @param startOffset - absolute start of the range
- 
+
  @param endOffset - absolute exclusive end
- 
+
  @returns Nodes sharing any character with the range
- 
+
  @example
  ```ts
  const touched = nodesTouching({ nodes, startOffset, endOffset, },);
@@ -90,19 +90,19 @@ function nodesTouching(
 
 /**
  Refuses an anchor sitting strictly inside a block.
- 
+
  An insertion names a place between two blocks, and every legal such place is
  a block boundary. An offset in the middle of one is a place assembly will
  happily write to, splitting a paragraph around text nobody asked to have
  split, and the layout check cannot see it: an empty span starts where it ends
  and so never overlaps a neighbour.
- 
+
  @param anchor - insertion chunk to place
- 
+
  @param nodes - every block-level node of the translation, in order
- 
+
  @throws {@link SpanContiguityError} when the offset is inside a block
- 
+
  @example
  ```ts
  assertAnchorBetweenBlocks({ anchor, nodes, },);
@@ -131,18 +131,18 @@ function assertAnchorBetweenBlocks(
 
 /**
  Checks that every content span carries exactly the blocks it covers.
- 
+
  CALLED AT PREPARATION, where the document's whole node sequence is in hand.
  Assembly cannot make this check: it is handed slices and a text, and the text
  agrees with the offsets whether or not a block went missing from the run.
- 
+
  @param slices - prepared slice pairs
- 
+
  @param targetNodes - every block-level node of the translation, in order
- 
+
  @throws {@link SpanContiguityError} when a span's range holds a block its
  nodes do not, or its nodes reach outside its range
- 
+
  @example
  ```ts
  assertSpanContiguity({ slices, targetNodes: targetDocument.nodes, },);
@@ -212,7 +212,7 @@ export function assertSpanContiguity(
 
     /**
      Whether every block the range holds is one this slice carries.
-     
+
      Checked by identity rather than by count alone, since a slice carrying a
      block from OUTSIDE its range plus one fewer from inside would count
      correctly and describe two different passages.

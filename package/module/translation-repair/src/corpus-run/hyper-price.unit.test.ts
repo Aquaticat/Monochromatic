@@ -1,22 +1,22 @@
 /**
  Tests for the dated Charm Hyper credit table.
- 
+
  THE CASE THAT EARNS ITS KEEP is the catalog join: every model the pipeline
  can seat on the metered provider must have a row here. Without it, adding a
  seat to `hyper-catalog.ts` drops it silently into the unpriced bucket, and a
  run total reads as complete while missing a whole model's bill.
- 
+
  THE PROTOTYPE CASES ARE NOT DECORATION. Model ids arrive from log lines, and
  an object lookup answers `__proto__` and `constructor` with something that is
  not a rate. `spend-read.ts` had exactly this hole in its field table and it
  was found by writing the reader, not by reading the writer.
- 
+
  RATES ARE ASSERTED AGAINST THE PROVIDER'S OWN QUOTED FIGURES, at round token
  counts chosen so the arithmetic is checkable by eye: a million tokens costs
  exactly the quoted per-million rate.
- 
+
  Model identifiers come from the catalog. No corpus content appears here.
- 
+
  @module
  */
 

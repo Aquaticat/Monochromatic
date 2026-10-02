@@ -1,24 +1,24 @@
 /**
  Wire-level test that the schema reaches the model on the Synthetic path.
- 
+
  SEPARATE FILE BY NECESSITY, not preference: `synthetic-client.unit.test.ts`
  is near its line budget, and `MXL` forbids raising one. The seam under test
  is also narrower than that file's subject, which is the whole client.
- 
+
  WHY ONLY THIS PROVIDER. It was once believed that no system prompt carried
  its schema. Reading the deciding source refuted that for Charm Hyper:
  `buildAnthropicBody` routes every schema-bearing call through
  `renderToolSystemPrompt`, which prints the whole schema into the `system`
  field with its own format rules. The Synthetic path had nothing of the kind,
  sending only the API-level `response_format`, so it is the one that changed.
- 
+
  READS THE BYTES, not the transform. `schema-prompt.unit.test.ts` covers the
  pure function. This asserts the property that actually matters: what the
  provider receives. A transform that worked and a client that ignored it
  would pass every test in the other file.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -77,9 +77,9 @@ const MESSAGES = [
 
 /**
  Records every exchange and replays one completion for each.
- 
+
  @returns Transport to inject, and the list it fills
- 
+
  @example
  ```ts
  const { transport, exchanges, } = recordingTransport();
@@ -108,13 +108,13 @@ function recordingTransport(): {
 
 /**
  System prompt of the body the client actually sent.
- 
+
  @param exchanges - exchanges the transport recorded
- 
+
  @returns Text of the first system message on the wire
- 
+
  @throws {@link Error} when no body or no system message was sent
- 
+
  @example
  ```ts
  expect(sentSystemPrompt({ exchanges, },),).toContain(SCHEMA_BLOCK_HEADING,);

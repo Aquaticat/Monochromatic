@@ -30,7 +30,7 @@ import { selectFence, } from './prompt-fence.ts';
 
 /**
  Signals a section pairing a model returned that cannot be used as one.
- 
+
  @example
  ```ts
  throw new SectionPairingError({ message: 'pairing moves backwards on the original side at position 2', },);
@@ -53,20 +53,20 @@ export class SectionPairingError extends Error {
 /**
  The refusal a catch around `readSectionPairing` holds, for a catch that
  treats an unusable reply as a lost voice.
- 
+
  ONE NARROWING PER CLASS, as `requireBlockPairingRefusal`
  (`pair-blocks-wire.ts`) is for block pairings: the reader raises every
  refusal as a {@link SectionPairingError}, so a rethrow written in the catch
  is a statement only a broken reader reaches. It stands here once, where a
  case reaches it.
- 
+
  @param error - what the catch caught
- 
+
  @returns The refusal
- 
+
  @throws The caught value unchanged when it is anything but a pairing
  refusal, an unexpected state that must keep propagating
- 
+
  @example
  ```ts
  const refusal = requireSectionPairingRefusal({ error, },);
@@ -80,11 +80,11 @@ export function requireSectionPairingRefusal({ error, }: { readonly error: unkno
 
 /**
  One heading-bounded section on one side, as the sheet numbers it.
- 
+
  SEPARATE FROM `NumberedBlock` despite the identical shape, because the two
  are numbered against different documents and handing one to the other's
  reader would validate indices against the wrong counts.
- 
+
  @example
  ```ts
  const section: NumberedSection = { index: 0, text: '## Paws\n\nThe tabby dozed.', };
@@ -106,7 +106,7 @@ export type NumberedSection = {
 
 /**
  One committed correspondence between the two sides' sections.
- 
+
  @example
  ```ts
  const pair: SectionPair = { source: 2, target: 3, };
@@ -126,11 +126,11 @@ export type SectionPair = {
 
 /**
  What a model returns for one document's sections.
- 
+
  Unpaired sections are ABSENT rather than listed against a sentinel, for the
  reason the block wire gives: a sentinel invites a model to pair everything and
  mark the doubtful ones, which is the behaviour this exists to prevent.
- 
+
  @example
  ```ts
  const wire: SectionPairingWire = { pairs: [{ source: 0, target: 0, },], };
@@ -145,13 +145,13 @@ export type SectionPairingWire = {
 
 /**
  Renders one side's sections as a numbered, fenced list.
- 
+
  @param sections - sections in document order
- 
+
  @param fence - fence no section text can reproduce
- 
+
  @returns Sheet section listing every section against its index
- 
+
  @example
  ```ts
  const rendered = renderSections({ sections, fence: '=====', },);
@@ -175,13 +175,13 @@ function renderSections(
 
 /**
  Builds the sheet asking one model to pair two documents' sections.
- 
+
  @param sourceSections - original sections in document order
- 
+
  @param targetSections - translation sections in document order
- 
+
  @returns Messages for one pairing call
- 
+
  @example
  ```ts
  const messages = buildSectionPairingMessages({ sourceSections, targetSections, },);
@@ -198,7 +198,7 @@ export function buildSectionPairingMessages(
 ): readonly ChatMessage[] {
   /**
    Fence chosen against every section this sheet carries.
-   
+
    Both sides are arbitrary prose and either may contain a run of equals
    signs (a setext heading underline is one), so a fixed fence would let a
    section close its own listing and have the rest read as sheet structure.

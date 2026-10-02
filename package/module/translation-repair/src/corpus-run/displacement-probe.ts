@@ -98,14 +98,14 @@ type EntryDisplacement = {
 
 /**
  Reads one entry's slice sizes.
- 
+
  @param entryId - corpus entry to read
- 
+
  @param prepared - slicing the lanes saw, carved through the entry's settled
  recipe
- 
+
  @returns What the screen made of it
- 
+
  @example
  ```ts
  const reading = readEntry({ entryId, prepared, },);
@@ -157,7 +157,7 @@ function readEntry(
       .filter(function donorIsMarkup(candidate,) {
         /**
          Slice the passage would have had to come FROM, which is the low side.
-         
+
          THE LOW SIDE, not the high one, and that is the whole point. A
          transcription suspect is recognised by what the HIGH slice embeds; a
          markup donor is recognised by what the LOW slice never had.
@@ -222,13 +222,13 @@ type CorpusTotals = {
 
 /**
  Adds one entry's counts to a running total.
- 
+
  @param totals - counts so far
- 
+
  @param row - entry to add
- 
+
  @returns Counts including that entry
- 
+
  @example
  ```ts
  const totals = addEntry({ totals: EMPTY_TOTALS, row, },);
@@ -290,11 +290,11 @@ function addEntry(
 
 /**
  Slice positions as one printable line, empty when there are none.
- 
+
  @param indices - slice positions
- 
+
  @returns Positions separated by spaces
- 
+
  @example
  ```ts
  const line = indexList({ indices: row.untranslated, },);
@@ -306,11 +306,11 @@ function indexList({ indices, }: { readonly indices: readonly number[]; },): str
 
 /**
  Whether one entry carries anything worth printing.
- 
+
  @param row - entry to check
- 
+
  @returns Whether any class named it
- 
+
  @example
  ```ts
  if (isNotable({ row, },)) log.info(row.entryId,);
@@ -343,11 +343,11 @@ function isNotable({ row, }: { readonly row: EntryDisplacement; },): boolean {
 
 /**
  Corpus-wide totals, one pass over every entry.
- 
+
  @param rows - every entry's reading
- 
+
  @returns Counts across the corpus
- 
+
  @example
  ```ts
  const totals = corpusTotals({ rows, },);
@@ -380,7 +380,7 @@ function corpusTotals(
 
 /**
  One entry beside its carve, or the reason it has none.
- 
+
  @example
  ```ts
  const entry: EntryCarve = { entryId: 'whiskers', carve: { kind: 'unsettled', }, };
@@ -400,12 +400,12 @@ type EntryCarve = {
 
 /**
  Walks the settled entries and reports what their size anomalies look like.
- 
+
  OVER SETTLED ENTRIES ONLY, carved through the recipe each artifact records,
  since the displacement this reads is a property of the slicing the lanes
  judged. Its first versions carved the whole corpus with the deterministic
  aligner and counted that aligner's own slides as translation displacement.
- 
+
  @example
  ```ts
  await main();

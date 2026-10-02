@@ -58,11 +58,11 @@ export type RepairSliceSettlement = {
 
 /**
  Reads what purchase leaves for twins using same predicate as cache gate.
- 
+
  @param outcome - purchase to classify
- 
+
  @returns Stored outcome only when warm run could resume it
- 
+
  @example
  ```ts
  const stored = storedOutcome(outcome,);
@@ -85,38 +85,38 @@ function storedOutcome(
 
 /**
  Settles one repair slice from cache, twin memo or fresh purchase.
- 
+
  @param client - injected model client
- 
+
  @param prepared - document slice belongs to
- 
+
  @param models - repair role roster
- 
+
  @param reseat - reads the seating again at the checker stage, so a chunk
  in flight when a provider runs dry asks the bench a fresh reading seats
  (class one hundred nine)
- 
+
  @param slice - slice being settled
- 
+
  @param slicePosition - position in prepared slice array
- 
+
  @param runShape - model-facing governance folded into cache key
- 
+
  @param sliceCache - optional cross-run cache
- 
+
  @param twins - shared memo of cache-eligible purchases in this run
- 
+
  @param signal - entry deadline and caller abort
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - repair-lane logger
- 
+
  @returns Outcome and cache-refusal findings
- 
+
  @throws Whatever `signal.reason` carries when caller aborts with this slice
  still unbought
- 
+
  @example
  ```ts
  const settlement = await settleRepairSlice({ ..., slicePosition: 0, });

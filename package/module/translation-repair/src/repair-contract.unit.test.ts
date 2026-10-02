@@ -1,28 +1,28 @@
 /**
  Tests for the producer-roster independence guard.
- 
+
  `assertJudgeableProducerRoster` refuses a roster that could not decide a
  round however its judges voted, and NOTHING ELSE. By the user ruling of
  2026-08-15 self-judging is allowed at reduced weight, so a roster where every
  model both produces and judges is legal; what is not legal is a roster too
  small to reach the minimum selection weight, since one judge contributes at
  most one full-weight ballot.
- 
+
  The cases that used to assert an independence requirement are inverted here
  on purpose: they now assert that the same rosters are ACCEPTED. An earlier
  version of this file recorded the opposite policy, and reading them side by
  side is the clearest statement of what changed.
- 
+
  `assertJudgeableEditorRoster` delegates here and is covered through the
  editor ensemble, so the arithmetic branches already run. What was never
  exercised is the `role` parameter and the second caller that uses it: the
  naturalness lane passes `refiner`, and if `role` were ever dropped a refiner
  roster failure would report itself as an editor failure and send whoever
  reads it to the wrong configuration.
- 
+
  Model ids are real catalog entries because `RosterModelId` is a closed
  union.
- 
+
  @module
  */
 

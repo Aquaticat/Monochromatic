@@ -1,6 +1,6 @@
 /**
  Tests pre-polish baseline contributor authority floor.
- 
+
  @module
  */
 

@@ -1,20 +1,20 @@
 /**
  Tests for the structural comparison between a translated slice and its
  original.
- 
+
  What this can and cannot claim is the whole design, so the cases are chosen
  to pin both edges. It compares what survives a translation, meaning block
  structure, footnote markers, link and image destinations, and inline code. It
  says nothing about wording, and the numbers-and-names atoms that
  `inspect-paragraph.ts` protects are deliberately absent here, because 三只猫
  becomes "three cats" and no digit survives on either side.
- 
+
  Findings are written for the MODEL that produced the candidate rather than
  for a log, since an invalid candidate is handed back to its author rather
  than dropped, so the cases assert on what those sentences say.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

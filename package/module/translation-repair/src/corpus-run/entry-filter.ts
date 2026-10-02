@@ -18,17 +18,17 @@ import type { ReadsFlag, } from './command-line-types.ts';
 
 /**
  Reads the entry allowlist from command-line arguments.
- 
+
  An EMPTY SET MEANS EVERY ENTRY, which keeps the ordinary pass untouched: the
  flag is absent, the set is empty, and no filtering happens. That is why this
  returns a set rather than an optional list; a caller cannot forget to handle
  absence, because absence and "no restriction" are the same value.
- 
+
  @param line - the pass's command line, read whole by `reportingRefusals`,
  which refuses `--only` written with nothing after it (ledger B75)
- 
+
  @returns Ids to run, empty when unrestricted
- 
+
  @example
  ```ts
  const onlyIds = readOnlyIds({ line, },);

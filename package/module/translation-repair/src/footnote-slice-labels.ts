@@ -9,13 +9,13 @@ import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
 /**
  Finds the first marker whose end crosses the requested boundary, or the append position.
  Sorted disjoint marker spans make this a binary search rather than a full scan per slice.
- 
+
  @param markers - source-ordered active reference markers
- 
+
  @param offset - slice opening boundary
- 
+
  @returns First potentially intersecting marker index, including the valid end position
- 
+
  @example
  ```ts
  const start = markerBoundaryIndex({ markers, offset: chunk.startOffset });
@@ -57,17 +57,17 @@ function markerBoundaryIndex(
 /**
  Projects full-document reference evidence into an exact current prepared range.
  A fragment is never reparsed as a complete MDX document or rescued by masking container halves.
- 
+
  @param chunk - prepared canonical range and text
- 
+
  @param documentText - complete current source or archive backing the range
- 
+
  @param markers - active references parsed from that complete document
- 
+
  @returns Distinct raw reference labels in occurrence order
- 
+
  @throws FootnoteRewriteError when text, range bounds or marker containment disagree with the document
- 
+
  @example
  ```ts
  const labels = sliceFootnoteLabels({ chunk: slice.source, documentText: prepared.sourceText, markers });

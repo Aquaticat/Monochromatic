@@ -29,23 +29,23 @@ const SHA256_LENGTH = 64;
 
 /**
  Whether a recorded tip is a canonical full object id.
- 
+
  A nonempty string was the whole test before, which accepted ` `, `HEAD`,
  `main` and any revision expression. Those are not identities: `HEAD` in a
  settled artifact resolves against the READER's checkout at read time rather
  than against whatever produced the artifact, so it silently answers a
  different question than the one asked, and a branch name answers a question
  whose answer changes.
- 
+
  Scanned rather than matched with a pattern: the rule is one predicate per
  character over a fixed-length string, which is a linear pass that cannot
  backtrack, and the codebase forbids a regex where an index scan says the
  same thing.
- 
+
  @param value - tip as the artifact recorded it
- 
+
  @returns Whether it is 40 or 64 lowercase hex characters
- 
+
  @example
  ```ts
  const usable = isObjectId({ value: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379', },);
@@ -68,18 +68,18 @@ function isObjectId({ value, }: { readonly value: string; },): boolean {
 
 /**
  Names a recorded value by its shape alone.
- 
+
  THE VALUE ITSELF IS NEVER PRINTED. A malformed `id` or digest is not an entry
  id, it is whatever bytes a bad file carries, and `readPlacement` runs inside
  the pass as well as in the readers, so its lines reach a pass's stdout. This
  follows `readRunJson`: say what kind of thing was found and how large, which
  is what tells an operator a file was truncated or rewritten, and carry none
  of it across.
- 
+
  @param value - field as the artifact recorded it, possibly absent
- 
+
  @returns Type name, with the length for a string
- 
+
  @example
  ```ts
  const shape = shapeOf({ value: recordedId, },);
@@ -107,7 +107,7 @@ function shapeOf({ value, }: { readonly value: unknown; },): string {
 
 /**
  How one artifact places into a generation.
- 
+
  @example
  ```ts
  const placement: Placement = { kind: 'legacy', tip, };
@@ -135,11 +135,11 @@ export type Placement =
      Artifact records a usable commit, and a pipeline THIS BUILD CANNOT NAME:
      either none at all, from before generation identity existed, or one
      written in a digest scheme this build does not read.
-     
+
      Kept apart from `untagged` because the remedy differs: an untagged file
      is deleted, while these are perfectly good results whose pipeline can no
      longer be named, and the remedy is a fresh directory.
-     
+
      Kept apart from a foreign generation for the same reason in the other
      direction: checking out an old commit does not recreate an identity the
      artifact never carried.
@@ -166,19 +166,19 @@ export type Placement =
 
 /**
  Reads which pipeline one artifact records.
- 
+
  Reports rather than throws, because this package already decided a corrupt
  artifact costs its own row and not the whole run. The failure kinds stay
  distinct because they are handled oppositely: a malformed file belongs to the
  reader that reports malformed files, an untagged one belongs nowhere, and a
  legacy one is a fine result whose pipeline can no longer be named.
- 
+
  @param artifactsDir - directory holding the artifact
- 
+
  @param name - artifact file name
- 
+
  @returns How this artifact places
- 
+
  @example
  ```ts
  const placement = await readPlacement({ artifactsDir, name: 'Acheron.json', },);
@@ -209,7 +209,7 @@ export async function readPlacement(
     // startup now that the resume guard runs the census.
     /**
      Artifact as parsed JSON.
-     
+
      READ AND PARSED THROUGH ONE GUARD. Opening was a bare `readFile` until
      2026-08-25, so a file that would not open arrived at this function's `catch` as an
      ordinary `Error` whose message quotes the whole path, and the only safe

@@ -26,7 +26,7 @@ export const MIN_RESOLUTION_BALLOTS = 2;
 
 /**
  One checker's resolved verdicts over one sheet.
- 
+
  @example
  ```ts
  const report: ResolutionBallot = {
@@ -51,13 +51,13 @@ export type ResolutionBallot = {
  Resolves one wire report into id-keyed verdicts through the prompt plan.
  Fails closed per item: out-of-range or duplicate references and unknown
  verdicts become findings, and issues left unanswered are recorded.
- 
+
  @param wire - report as the checker reported it
- 
+
  @param issueIds - issue ids in prompt numbering order
- 
+
  @returns Resolved ballot with findings as data
- 
+
  @example
  ```ts
  const ballot = resolveResolutionChecks({ wire, issueIds, },);
@@ -117,7 +117,7 @@ export function resolveResolutionChecks(
 
 /**
  Fate of one issue after the checker majority spoke.
- 
+
  @example
  ```ts
  const fate: IssueResolutionTally = {
@@ -157,7 +157,7 @@ export type IssueResolutionTally = {
 
 /**
  One cast verdict with the weight its checker earned on this issue.
- 
+
  @example
  ```ts
  const weighed: WeighedVerdict = { verdict: 'fixed', weight: 1, };
@@ -178,17 +178,17 @@ type WeighedVerdict = {
 
 /**
  Weight standing behind one answer.
- 
+
  SUMMED PER ANSWER RATHER THAN SUBTRACTED FROM A TOTAL. Halves are exact in
  binary so no rounding is at stake, but deriving one figure from the others
  would silently credit an unrecognized answer to whatever was left over.
- 
+
  @param weighed - cast verdicts with their weights
- 
+
  @param answer - verdict being weighed
- 
+
  @returns Summed weight behind that answer
- 
+
  @example
  ```ts
  const backing = weightBehind({ weighed, answer: 'fixed', },);
@@ -223,15 +223,15 @@ function weightBehind(
  text it is judging.
  An issue with no cast verdicts stays unresolved and unregressed:
  silence proves nothing in either direction.
- 
+
  A DISCOUNT RATHER THAN A BAR. A model that wrote a repair is often best placed
  to see whether it worked, so its verdict is heard at {@link SELF_VOTE_WEIGHT}
  rather than discarded.
- 
+
  THE DISCOUNT IS DIRECTION-BLIND. An author calling its own work `not-fixed` is
  halved exactly as one calling it `fixed` is, because what is being weighed is
  the stake in the text, not which way the answer points.
- 
+
  ONE CAST BALLOT RESOLVES NOTHING, whatever its weight, since 2026-09-27
  ({@link MIN_RESOLUTION_BALLOTS}). This was previously accepted, since half a vote
  outweighs none, and it reached far past the lone author: 759 of 8,788
@@ -246,13 +246,13 @@ function weightBehind(
  times over the recent runs and `regressed` never fired (ledger L1).
 
  @param issueIds - issue ids under check
- 
+
  @param ballots - resolved ballots keyed by checker id
- 
+
  @param authorship - who wrote the text under check
- 
+
  @returns Per-issue tallies keyed by issue id
- 
+
  @example
  ```ts
  const tallies = tallyResolutionChecks({ issueIds, ballots, authorship, },);

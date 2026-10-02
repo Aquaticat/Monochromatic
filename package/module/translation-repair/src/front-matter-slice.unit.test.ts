@@ -1,6 +1,6 @@
 /**
  Tests explicit front matter slicing and structural translation validation.
- 
+
  @module
  */
 

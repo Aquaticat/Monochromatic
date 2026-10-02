@@ -1,7 +1,7 @@
 /**
  Tests that the sheets which MEASURE are told what this corpus is written
  under, and told how the rules land on their own verdicts.
- 
+
  WHY THIS FILE EXISTS. The rendering auditor, the resolution checker and the
  introduced-defect prober all grade text against the ORIGINAL, and none had
  ever been shown the house rules. Nothing ships from any of the three, which
@@ -9,18 +9,18 @@
  they do decide is which defects get worked on next. An auditor that has not
  been told reader protection exists scores a deliberately vague passage as an
  omission, and that grade is then quoted as a measurement of the pipeline.
- 
+
  THE VERDICT MAPPING IS ASSERTED SEPARATELY from the shared block. The three
  verdict vocabularies are disjoint, so the block deliberately names none of
  them and each sheet supplies its own line. A splice alone would leave a
  checker knowing the rule and not knowing what to answer.
- 
+
  ONE SENTENCE PER SHEET stands for the block, so rewording the house rules
  does not break three tests at once. The sentence chosen is the one that
  decides the protected case.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -80,11 +80,11 @@ const NAPPING_ISSUE: AdjudicatedIssue = {
 
 /**
  Pulls the standing rules out of one built exchange.
- 
+
  @param messages - exchange as its builder returned it
- 
+
  @returns System half, empty when the builder sent none
- 
+
  @example
  ```ts
  const system = systemOf({ messages, },);

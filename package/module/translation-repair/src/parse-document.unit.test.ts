@@ -2,7 +2,7 @@
  Tests for document parsing over both corpus shapes:
  memorial-shaped MDX with GFM footnotes and JSX,
  and archive-shaped text with full-width bracket markers.
- 
+
  @module
  */
 

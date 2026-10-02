@@ -83,29 +83,29 @@ export function gateObjectionsOf(
 
 /**
  Gates the consolidation the judges chose, wraps what ships, and polishes it.
- 
+
  @param client - provider client the gate borrows
- 
+
  @param judgeModelIds - voices seated for the gate
- 
+
  @param subject - slice in the archive's terms
- 
+
  @param decided - what the slate judges settled, a fresh consolidation
- 
+
  @param standingText - wording the consolidation has to beat
- 
+
  @param lineStructured - whether structural rule forbids merged lines
- 
+
  @param floor - what the validity floor made of the slate
- 
+
  @param verdicts - every voice's verdict without its text
- 
+
  @param sliceIndex - prepared position used by records and refusals
- 
+
  @param polishConfig - final body polish roles and document guard facts
- 
+
  @param standingMayShip - whether unchanged baseline has prior endorsement
- 
+
  @param standingEligible - whether the standing passed the deterministic
  gate; over an ineligible standing every gate verdict ships the proposal
  the slate chose, a preference for the standing or a neither verdict
@@ -113,19 +113,19 @@ export function gateObjectionsOf(
 
  @param standingRefusal - why the deterministic gate refused the standing,
  shown to the gate judges so keeping it is not taken for the safe choice
- 
+
  @param standingFlawedByAll - whether every contest ballot called the
  standing flawed, so an undecided gate ships the slate's choice over it
  (class one hundred seventy-seven)
 
  @param identity - front matter identity as the gate takes it
- 
+
  @param signal - cancellation for the whole settlement
- 
+
  @param perCallTimeoutMs - bound on any single exchange
- 
+
  @param l - stage logger
- 
+
  @returns What ships, and every round that decided it; a gate keeping a
  standing the deterministic rule refused leaves the archive kept (owner,
  2026-09-27, "Keep archive, ship")

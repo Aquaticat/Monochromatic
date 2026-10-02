@@ -1,14 +1,14 @@
 /**
  Tests for reading a provider failure off a success-status OpenRouter stream.
- 
+
  WHAT THESE PIN is the difference between "the reply was cut off" and "the
  upstream failed with code 504": on 2026-09-04, 114 of 115 truncation retries
  in a day's runs were one endpoint's timeouts, and the log could not say so.
  The recorded frame is the shape a direct probe of that endpoint captured the
  same day, with the upstream's free text replaced.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -28,11 +28,11 @@ import {
 
 /**
  One chunk as the gateway frames it.
- 
+
  @param chunk - object to frame
- 
+
  @returns Framed event line
- 
+
  @example
  ```ts
  const line = framed({ chunk: { provider: 'Sill', }, },);

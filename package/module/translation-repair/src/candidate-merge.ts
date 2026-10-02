@@ -17,14 +17,14 @@ import {
 
 /**
  Merges candidates rendering identical text, crediting every producer.
- 
+
  Order is preserved and the FIRST copy holds the position, so a lane that
  assembles candidates in roster order keeps that order.
- 
+
  @param candidates - proposals as their producers made them
- 
+
  @returns Distinct proposals, each carrying every model that wrote it
- 
+
  @example
  ```ts
  const distinct = mergeIdenticalCandidates({ candidates, },);

@@ -65,19 +65,19 @@ const OTHER_DISCLOSURE: PriorIssueDisclosure = (PRODUCTION_PRIOR_ISSUE_DISCLOSUR
 
 /**
  Runs one probe call over one region and returns a printable tally.
- 
+
  @param region - region under test
- 
+
  @param issues - accepted issues the region was cut for; empty when nothing is known
- 
+
  @param disclosure - whether the list is written into the prompt or only known to the screen
- 
+
  @param sourceText - slice original
- 
+
  @param baselineText - slice translation before replacement
- 
+
  @returns One line of counts
- 
+
  @example
  ```ts
  const line = await probeOnce({ region, issues: [], disclosure: 'withheld', sourceText, baselineText, },);
@@ -142,9 +142,9 @@ async function probeOnce(
 
 /**
  Probes one case under both conditions and prints the pair.
- 
+
  @param relabelCase - rebuilt damaged-region case
- 
+
  @example
  ```ts
  await probePair({ relabelCase, },);
@@ -213,7 +213,7 @@ async function probePair(
 
 /**
  Rebuilds every damaged-region case and probes each under both conditions.
- 
+
  @example
  ```ts
  await main();
@@ -245,7 +245,7 @@ async function main(): Promise<void> {
 
   /**
    Regions from the same entries that the reader did NOT flag.
-   
+
    The arm that decides whether the damaged result means anything: every
    damaged region is damaged by construction, so no claim raised there could
    be wrong, and only unflagged regions can show whether the withheld arm is

@@ -61,10 +61,10 @@ export function translateSelectionTask(
 
 /**
  What the faithfulness rule says about a name the documents declare.
- 
+
  NAMED SEPARATELY so it can be asserted on, and so the sentence a judge
  misread cannot be edited without the edit being visible.
- 
+
  SCOPED TO A PASSAGE THAT REFERS TO THE PERSON. The unscoped version told
  judges a declared name is never an addition "however little of it the passage
  itself spells out", which reads as a licence to put the archive's identity
@@ -74,7 +74,7 @@ const DECLARED_NAME_IS_NOT_AN_ADDITION = DECLARED_NAME_REFERENCE_EXEMPTION;
 
 /**
  What the names rule says about a candidate that names nobody.
- 
+
  WHAT THIS REPLACED, and why. The rule used to read "a candidate dropping one
  has left something out". Measured on the consolidation bed: one judge
  abstained from a whole slate because no candidate carried the declared
@@ -87,14 +87,14 @@ const DECLARED_NAME_IS_NOT_OWED_CONTENT =
 
 /**
  What the names rule says when every candidate spells a name the same wrong way.
- 
+
  MEASURED, at `lintong` slice 1, twice. The identity block declares one
  spelling of the handle and the archive's own passage writes another, so both
  lanes and every consolidation built from them carried the archive's form. A
  judge read criterion three literally, found that NO candidate complied, and
  abstained from the entire slate; the slice kept its incumbent and the round
  bought nothing.
- 
+
  A FAULT EVERY CANDIDATE SHARES CANNOT ORDER THEM. Refusing the slate over it
  does not fix the spelling, because the incumbent that survives the decline is
  where the spelling came from. The producers are told separately that the
@@ -105,7 +105,7 @@ const A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES =
 
 /**
  Clause allowing a candidate to carry a shape the ORIGINAL does not have.
- 
+
  NAMED SO TWO CRITERIA CAN SHARE ONE SPELLING. The shape criterion states it
  and {@link TRANSLATE_LINE_STRUCTURE_CRITERION} overrides it by quoting it
  back, which only works while the two spell it identically. Sharing a constant
@@ -117,7 +117,7 @@ const A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT = 'A SHAPE THE ORIGINAL DOES NOT
 
 /**
  What the shape rule can ask of a judge that is never shown the page.
- 
+
  WHAT THIS REPLACED, and why. The rule used to read "Markdown structure of the
  ORIGINAL preserved". Producers are now floored on the PAGE AS IT STANDS
  (`translate-validate.ts`), and that page splits blocks, merges them, and
@@ -125,7 +125,7 @@ const A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT = 'A SHAPE THE ORIGINAL DOES NOT
  shape departs from the ORIGINAL's BY DESIGN. A judge told the ORIGINAL is the
  standard marks down the very candidates the guard demands, at exactly the
  reshaped slices this stage exists for.
- 
+
  WHY IT DOES NOT NAME THE PAGE INSTEAD. The existing translation reaches these
  judges anonymously, as one candidate among the others, and never travels as
  labelled evidence; `translate-judge.ts` says so where it assembles the
@@ -138,12 +138,12 @@ const SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE =
 
 /**
  Decision rules the judges apply, most important first.
- 
+
  COVERAGE AND FAITHFULNESS LEAD, and fluency comes last, which is the ordering
  the whole lane rests on: a candidate that reads better while saying less must
  lose. Whether the judges actually honour that ordering is the open question in
  the judge-quality bench, and it is not answerable from the wording alone.
- 
+
  WHY FAITHFULNESS NAMES DECLARED NAMES ITSELF. A separate criterion has always
  said declared names are used exactly as given, and judges read that as
  spelling guidance rather than as an exemption: `nothing added` is the rule
@@ -166,14 +166,14 @@ export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
 
 /**
  Criterion added where the enclosing chunk's ORIGINAL is line-structured.
- 
+
  WRITTEN FOR A JUDGE RATHER THAN A TRANSLATOR, which is why it is not
  `TRANSLATE_LINE_STRUCTURE_RULE` from `translate-wire.ts`. That one tells a
  producer what to build, in imperatives it can follow: produce one line per
  original line, unmerge what the existing translation merged. A judge builds
  nothing and chooses between candidates already written, so the same fact has
  to arrive as a test it can apply to each one.
- 
+
  IT OVERRIDES CRITERION FOUR RATHER THAN SITTING BESIDE IT. Without this, a
  judge on a verse slice reads
  {@link SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE} and is told that a shape the
@@ -182,7 +182,7 @@ export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
  is what merged it. A producer obeying the verse rule unmerges, and a judge
  reading criterion four alone has been handed a reason to prefer the merged
  rival it was measured against.
- 
+
  THE SAME CONTRADICTION FIXED FOR PRODUCERS, on the other side of the round.
  That fix made the verse rule outrank the page rule for producers and said so in
  the rule text rather than by ordering, because a model resolves a
@@ -207,24 +207,24 @@ export const TRANSLATE_FRONT_MATTER_CRITERIA: readonly string[] = [
 /**
  Decision rules for a slice, carrying the line-structure criterion only where
  the rule governs.
- 
+
  A FUNCTION RATHER THAN A SECOND ARRAY. Two arrays would answer the same
  question in two places and drift the moment either is edited, and the
  ungoverned answer is the one the judge-quality bench measured, so it has to stay exactly what
  it was.
- 
+
  INSERTED BY IDENTITY, NOT BY INDEX. The criterion belongs immediately ahead
  of the shape rule it overrides, and finding that position by searching for
  the rule keeps it there if the list is ever reordered. An index would silently
  put it somewhere else.
- 
+
  @param syntax - syntax role requiring dedicated decision criteria
- 
+
  @param lineStructured - whether the enclosing chunk is governed by the verse
  rule, decided by the caller from the same set that gates the producer sheet
- 
+
  @returns Criteria to give every judge of this slice, most important first
- 
+
  @example
  ```ts
  const criteria = translateSelectionCriteria({ lineStructured: true, },);

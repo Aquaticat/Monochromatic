@@ -44,18 +44,18 @@ type RenderedSpan = {
 
 /**
  Reads the span of the translation block a step consumes.
- 
+
  RETURNS SENTINELS RATHER THAN AN ABSENT NODE, so callers compare numbers
  instead of narrowing, and a step naming only an original reads the same way
  as a position past the end of the walk.
- 
+
  @param step - one walk step
- 
+
  @param targetNodes - translation blocks the steps index
- 
+
  @returns Start and end offsets, both {@link NO_OFFSET} when the step consumes
  no translation block
- 
+
  @example
  ```ts
  const span = renderedSpan({ step, targetNodes, },);
@@ -92,11 +92,11 @@ function renderedSpan(
 
 /**
  Reports whether a step names an original block nothing rendered.
- 
+
  @param step - one walk step
- 
+
  @returns Whether it leaves that original unplaced
- 
+
  @example
  ```ts
  const unplaced = leavesOriginalUnplaced(step,);
@@ -108,26 +108,26 @@ export function leavesOriginalUnplaced(step: AlignmentStep,): boolean {
 
 /**
  Reads where each unplaced original block's translation would be written.
- 
+
  ANCHORED BEFORE THE NEXT RENDERED BLOCK, or after the last one when nothing
  follows. Anchoring after the PREVIOUS block instead would be the same place
  in a document with no gap between blocks and a different one wherever the
  translation carries anything between them, so the two are not
  interchangeable and the forward reading is the one that keeps the insertion
  outside a rendering rather than inside it.
- 
+
  A WALK THAT CONSUMES NO TRANSLATION BLOCK AT ALL yields no anchors. That is a
  section whose translation is empty, which needs a body-insertion boundary
  rather than a block one, and inventing offset zero for it would write into
  whatever the section actually begins with.
- 
+
  @param walk - monotone steps in document order
- 
+
  @param targetNodes - translation blocks the steps index
- 
+
  @returns Walk position of each unplaced original, mapped to the offset its
  rendering would be written at
- 
+
  @example
  ```ts
  const anchors = anchorOffsets({ walk, targetNodes, },);
@@ -159,7 +159,7 @@ export function anchorOffsets(
   /**
    Offset the next rendered block begins at, per walk position, using
    {@link NO_OFFSET} where no rendered block follows.
-   
+
    Filled by scanning BACKWARDS so each position reads the answer the position
    after it already computed, which makes the whole pass linear.
    */

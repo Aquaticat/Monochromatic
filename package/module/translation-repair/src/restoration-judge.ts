@@ -23,7 +23,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  One seed's ensemble verdict.
- 
+
  @example
  ```ts
  const graded: SeedJudgment = { verdict: 'restored', judged: true, votes: 3, };
@@ -50,11 +50,11 @@ export type SeedJudgment = {
 
 /**
  Ordinal rank of a verdict, least to most credited.
- 
+
  @param verdict - verdict to rank
- 
+
  @returns Rank from zero (absent) to two (restored)
- 
+
  @example
  ```ts
  verdictRank({ verdict: 'restored', },);
@@ -75,11 +75,11 @@ function verdictRank(
  Sorting by rank and taking the lower of the two middle elements means an
  even split rounds toward the less-credited verdict, because a wrongly
  credited restoration is the costlier error for a quality metric.
- 
+
  @param cast - verdicts cast on one seed, at least one
- 
+
  @returns Lower-median verdict
- 
+
  @example
  ```ts
  lowerMedianVerdict({ cast: ['restored', 'partial', 'absent',], },);
@@ -110,25 +110,25 @@ function lowerMedianVerdict(
  Judges fan out over the whole entry sheet with retry-to-quorum; a seed
  counts as judged only when quorum was met and at least one judge ruled on
  it, and its verdict is the conservative lower median.
- 
+
  @param client - injected model client
- 
+
  @param judgeModelIds - bilingual judge roster
- 
+
  @param sourceText - original Chinese document
- 
+
  @param repairedText - repaired translation under grading
- 
+
  @param references - deleted sentences with their seed ids
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - benchmark logger
- 
+
  @returns Verdict per seed id
- 
+
  @example
  ```ts
  const judgments = await runRestorationJudge({ ... },);

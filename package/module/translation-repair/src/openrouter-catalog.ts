@@ -38,7 +38,7 @@ export type { OpenRouterServedId, } from './roster-id.ts';
 
 /**
  OpenAI-compatible chat completions endpoint, measured live on 2026-09-03.
- 
+
  CHAT COMPLETIONS RATHER THAN THE MESSAGES OR RESPONSES ENDPOINTS, by the
  probe recorded in `doc/planning/translation-repair-openrouter-2026-09-03.md`:
  it conformed on every attempt and answered fastest on every roster model,
@@ -49,7 +49,7 @@ export const OPENROUTER_CHAT_URL = 'https://openrouter.ai/api/v1/chat/completion
 
 /**
  Endpoint reporting credits purchased and used, measured live on 2026-09-03.
- 
+
  ITS OWN PAGE SAYS A MANAGEMENT KEY IS REQUIRED; the ordinary inference key
  answered `200` with `{"data":{"total_credits":1913,"total_usage":1855.38}}`.
  The meter is built on the live behaviour; should the page become true, the
@@ -66,17 +66,17 @@ export const OPENROUTER_AUTH_HEADER = 'Authorization';
 /**
  Routing preferences every request carries in its `provider` field, before
  the per-model `ignore` list is added by `openRouterProviderPreferencesFor`.
- 
+
  `zdr: true` IS THE OWNER'S DECISION of 2026-09-03: only endpoints with a
  zero-data-retention policy may serve a corpus passage, matching the stance
  taken on Charm Hyper. Every roster model kept at least seven such endpoints
  on the day of measurement.
- 
+
  `require_parameters: true` keeps a request off any endpoint that does not
  support every parameter it carries, which for a schema'd call means
  `response_format`; an endpoint that ignored it would answer prose to a
  schema and cost a lost voice.
- 
+
  `sort: 'price'` SINCE 2026-09-09, on the owner's instruction to stop
  bleeding. Between the top-up of 2026-09-08 and the refusal of 2026-09-09
  the default load balancing sent 3,894 of `deepseek-v4-pro-0813`'s calls
@@ -88,7 +88,7 @@ export const OPENROUTER_AUTH_HEADER = 'Authorization';
  ignore list, zero data retention and `require_parameters` still apply,
  so the cheapest endpoint that keeps nothing and takes every parameter
  serves.
- 
+
  @example
  ```ts
  const body = { model, messages, provider: openRouterProviderPreferencesFor({ servedId, },), };
@@ -103,7 +103,7 @@ export const OPENROUTER_PROVIDER_PREFERENCES = {
 /**
  The `provider` field as it goes on the wire for one model: the shared
  preferences plus that model's ignored endpoints.
- 
+
  @example
  ```ts
  const preferences: OpenRouterProviderPreferences = openRouterProviderPreferencesFor({ servedId, },);
@@ -126,7 +126,7 @@ export type OpenRouterProviderPreferences = typeof OPENROUTER_PROVIDER_PREFERENC
 
 /**
  Verified per-model facts the router and the request builder read.
- 
+
  @example
  ```ts
  const info: OpenRouterModelInfo = OPENROUTER_MODELS['moonshotai/kimi-k3'];
@@ -224,17 +224,17 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
 
 /**
  The `provider` field for one served model.
- 
+
  COPIES THE IGNORE AND ORDER LISTS rather than aliasing the catalog's
  arrays, so the body builder can never hand the catalog's own row to
  `JSON.stringify` callers that might be tempted to push onto it. `order` is
  left off the wire where the row names no endpoint, so the gateway's own
  reading of an empty list never enters into it.
- 
+
  @param servedId - OpenRouter slug the request will name
- 
+
  @returns Shared preferences plus that model's ignored and named endpoints
- 
+
  @example
  ```ts
  const provider = openRouterProviderPreferencesFor({ servedId: 'minimax/minimax-m3', },);
@@ -268,7 +268,7 @@ export function openRouterProviderPreferencesFor(
  Roster seats this provider stopped serving on 2026-09-09, named so the
  seat accounting and the tests can say which seats a dry Synthetic leaves
  unreachable rather than rediscovering it from an absent row.
- 
+
  @example
  ```ts
  const dropped = OPENROUTER_DROPPED_SEATS.has('glm-5.3',);
@@ -280,7 +280,7 @@ export const OPENROUTER_DROPPED_SEATS: ReadonlySet<RosterModelId> = holdSet({ ho
  Roster seats this provider serves and the run does not buy from it, by the
  owner's decision of 2026-09-03 on cost (`moonshotai/kimi-k3` lists at 3 and
  15 USD per million against the anchor judge's 0.58 and 1.74).
- 
+
  HONOURED BY THE REACH SINCE 2026-09-09, not only by the seat reader. Until
  then the seat reader withheld such a model at phase start when OpenRouter
  would serve it, and the router still re-routed a seated model there when its
@@ -290,7 +290,7 @@ export const OPENROUTER_DROPPED_SEATS: ReadonlySet<RosterModelId> = holdSet({ ho
  `reachOf` saying OpenRouter does not serve a withheld model, the router
  refuses the call as `NoProviderForModelError` and the seat is an
  unreachable one, which the select minimum of the same day sizes for.
- 
+
  @example
  ```ts
  const withheld = OPENROUTER_WITHHELD.has('hf:moonshotai/Kimi-K3',);

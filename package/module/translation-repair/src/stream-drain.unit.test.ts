@@ -1,14 +1,14 @@
 /**
  Tests for the stream drain, at the boundary where a call is actually ended.
- 
+
  The composition layer is tested in `stream-runaway-watch.unit.test.ts`. What
  is tested here is the thing that matters to a running pipeline: that a
  degenerating call STOPS, rather than that something correctly formed an
  opinion about it. A verdict nobody acts on ends nothing, and the provider
  ends nothing either.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -45,15 +45,15 @@ const PIECE_CHARS = 4_096;
 /**
  Wraps text in a response whose body arrives in pieces, counting how many
  pieces were actually pulled.
- 
+
  THE COUNT IS THE POINT. A drain that read the whole body and then complained
  would pass every assertion about the error while leaving the socket open for
  the entire runaway, which is the cost this guard exists to avoid.
- 
+
  @param raw - whole body
- 
+
  @returns Response, and a reader of how much of it was consumed
- 
+
  @example
  ```ts
  const { response, pulled, } = streamOf({ raw, },);
@@ -125,7 +125,7 @@ function streamOf({ raw, }: { readonly raw: string; },): {
 
 /**
  What one drain did, as a value.
- 
+
  @example
  ```ts
  const outcome: DrainOutcome = { kind: 'drained', };
@@ -150,17 +150,17 @@ type DrainOutcome = {
 /**
  Drains a response, reporting a throw as a value so the assertion reads as an
  expectation rather than as control flow.
- 
+
  @param response - response to drain
- 
+
  @param guard - silence guard to pass through
- 
+
  @mutates response - its body is drained and cannot be read again
- 
+
  @mutates guard - the drain notifies it per chunk
- 
+
  @returns What the drain did
- 
+
  @example
  ```ts
  const outcome = await drainOutcome({ response, guard, },);

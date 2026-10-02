@@ -1,6 +1,6 @@
 /**
  Tests independent absolute naturalness review settlement and delayed rejection.
- 
+
  @module
  */
 
@@ -72,11 +72,11 @@ const PROVIDER_GROUPED_ROSTER = [
 
 /**
  Builds reviewer client from per-model status and optional delayed rejection.
- 
+
  @param unavailable - models returning no usable structured reply
- 
+
  @param rejecting - model returning actionable rejection
- 
+
  @param delayed - whether rejecting model answers after accepting peers
 
  @param refused - models the router refuses for want of a wet provider
@@ -156,13 +156,13 @@ function reviewClient(
 
 /**
  Runs one invented absolute review.
- 
+
  @param client - scripted reviewer
- 
+
  @param messages - optional destination for operational logging
- 
+
  @param modelIds - reviewer roster, defaulting to three-seat fixture
- 
+
  @param graceMs - bounded time to retain post-quorum responses
 
  @param quorumOver - wider bench the quorum is taken over, absent for the

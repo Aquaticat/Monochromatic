@@ -24,11 +24,11 @@ const THREE_DOTS = '...';
 
 /**
  Which ellipsis form a text shows.
- 
+
  @param text - text to read
- 
+
  @returns `'dots'`, `'unicode'`, `'both'` or `'none'`
- 
+
  @example
  ```ts
  ellipsisFormOf({ text: 'Well... no.', },);
@@ -57,20 +57,20 @@ function ellipsisFormOf(
 
 /**
  Restores the ellipsis form the replaced text and the wider document use.
- 
+
  Converts only when the replaced region and the document together show one
  form and never the other. A run of U+2026, which Chinese writes doubled,
  becomes one three-dot ellipsis; a run of exactly three dots becomes one
  U+2026. Text inside a backtick span or a tag is never touched.
- 
+
  @param replacement - text a stage wrote
- 
+
  @param replaced - text it replaces
- 
+
  @param convention - wider text whose form the replacement should match
- 
+
  @returns Replacement in the document's ellipsis form
- 
+
  @example
  ```ts
  restoreEllipsis({ replacement: 'Well\u{2026} no.', replaced: 'Well... yes.', convention: documentText, },);

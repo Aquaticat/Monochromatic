@@ -50,12 +50,12 @@ const DEFAULT_SLICES = 10;
 
 /**
  One slice run at one width, with everything the report reads.
- 
+
  @example
  ```ts
  const row: BenchRow = { width: 3, entryId: 'Mittens', ... };
  ```
- 
+
  @internal
  */
 export type BenchRow = {
@@ -132,14 +132,14 @@ export type BenchRow = {
   /**
    This round as {@link selfPreference} needs to read it: who wrote each
    candidate, and every ballot cast over that slate.
-   
+
    KEPT RATHER THAN COUNTED, because `selfVotes` cannot answer the
    question it looks like it answers. How often a producer backs its own work
    says nothing alone: a model whose translations are better would do that
    without any favouritism. The paired comparison needs to know what judges
    holding NO stake in the same candidate thought of it, and that needs the
    slate and the ballots rather than a sum.
-   
+
    This is the cheaper of the two routes to that number. The other is the
    per-slice selection field in the settled artifact, which answers it
    corpus-wide instead of on a bench.
@@ -174,15 +174,15 @@ export type BenchRow = {
 
 /**
  Runs one slice at one width and records what it cost.
- 
+
  @param slice - slice to translate
- 
+
  @param width - producers to seat, taken from the head of the roster
- 
+
  @param pass - which pass over this width
- 
+
  @returns Row for the report
- 
+
  @example
  ```ts
  const row = await runOne({ slice, width: 3, pass: 1, },);
@@ -280,9 +280,9 @@ async function runOne(
 
 /**
  Runs the whole bench and writes its report.
- 
+
  @param line - the bench's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await main({ line, },);

@@ -35,7 +35,7 @@ import { assertWordingCoherent, } from './wording-coherence.ts';
 
 /**
  What the two lanes did to one slice.
- 
+
  @example
  ```ts
  const verdict: SliceLaneVerdict = 'both-differ';
@@ -69,7 +69,7 @@ export type SliceLaneVerdict =
   /**
    Neither document carries anything here, and the archive never did either:
    the passage is still MISSING.
-   
+
    Split from `archive-stands` because that word asserts a translation is
    being kept, and at a slice the archive never translated there is none to
    keep. Every anchor neither lane filled read as the archive standing until
@@ -80,10 +80,10 @@ export type SliceLaneVerdict =
 /**
  Whether the two lanes' own decisions can be compared on a slice, and how they
  came out.
- 
+
  NOT DERIVABLE FROM THE VERDICT, which describes the two documents. A slice
  neither lane could decide is not a slice where they agreed.
- 
+
  @example
  ```ts
  const comparison: DecisionComparison = { kind: 'comparable', verdict: 'same', };
@@ -108,7 +108,7 @@ export type DecisionComparison = {
   /**
    Lanes that decided nothing, in lane order, and BOTH of them when neither
    did.
-   
+
    A single free-text reason named only the first lane checked, so a slice
    neither lane decided read as the repair lane's fault alone. What each lane
    did instead is stated on the row itself.
@@ -118,7 +118,7 @@ export type DecisionComparison = {
 
 /**
  One slice as both lanes left it.
- 
+
  @example
  ```ts
  const row: SliceLaneComparison = { sliceIndex: 3, verdict: 'both-differ', ... };
@@ -158,7 +158,7 @@ export type SliceLaneComparison = {
 
   /**
    What the repair lane did about this slice.
-   
+
    THE OUTCOME RATHER THAN A REACHED FLAG. Both documents carrying the archive
    wording says nothing about whether anyone looked, and a boolean says only
    that somebody did: it cannot separate a lane that examined the slice and
@@ -192,12 +192,12 @@ export type SliceLaneComparison = {
 
 /**
  One lane's delivery ledger, carrying the slicing it was built over.
- 
+
  THE IDENTITY TRAVELS WITH THE LEDGER rather than being supplied once beside
  both. Two ledgers loaded from different artifacts are exactly the pair a
  comparison must refuse, and a single identity passed in by the caller is the
  caller's claim about them rather than either ledger's own.
- 
+
  @example
  ```ts
  const ledger: IdentifiedDeliveryLedger = { preparationIdentity, records, };
@@ -217,13 +217,13 @@ export type IdentifiedDeliveryLedger = {
 
 /**
  Every slice as both lanes left it, bound to the slicing it describes.
- 
+
  THE BINDING IS PART OF THE VALUE rather than something a writer remembers to
  record beside it. Rows joined on a slice index mean nothing without the
  slicing that numbered them, and a comparison persisted without it can be read
  against a later preparation of the same entry with every row still looking
  well formed.
- 
+
  @example
  ```ts
  const comparison: LaneComparison = compareDocumentLanes({ preparationIdentity, repair, translate, },);
@@ -243,10 +243,10 @@ export type LaneComparison = {
 
 /**
  Refusal to compare two ledgers that were not built over one preparation.
- 
+
  MARKED: its message is the sentence `comparisonSentence` writes from lane
  names, kinds and numbers.
- 
+
  @example
  ```ts
  throw new LaneComparisonError({ fault: { kind: 'different-slicings', }, },);
@@ -276,19 +276,19 @@ export class LaneComparisonError extends Error {
 
 /**
  Names how the two lanes' DECISIONS relate, where both made one.
- 
+
  SEPARATE FROM THE DELIVERY VERDICT because they answer different questions
  and this file used to answer only the second while claiming the first. Two
  lanes accepting different replacements that are both withdrawn deliver the
  same document and disagree completely; two lanes accepting the same wording
  where only one ships deliver differently and agree exactly.
- 
+
  @param repair - what the repair lane did with this slice
- 
+
  @param translate - what the translate lane did
- 
+
  @returns Whether the two decisions can be compared, and how they came out
- 
+
  @example
  ```ts
  const comparison = compareDecisions({ repair, translate, },);
@@ -324,18 +324,18 @@ function compareDecisions(
 
 /**
  Names how one slice's two carried wordings relate.
- 
+
  @param repairText - wording the repair document carries
- 
+
  @param translateText - wording the translate document carries
- 
+
  @param incumbentKind - whether the archive holds any wording here, which is
  what separates its wording standing from a passage still missing
- 
+
  @param incumbentText - archive wording both fall back to
- 
+
  @returns Verdict for this slice
- 
+
  @example
  ```ts
  const verdict = judgeSlice({ repairText, translateText, incumbentKind, incumbentText, },);
@@ -379,21 +379,21 @@ function judgeSlice(
 
 /**
  Compares what two lanes' documents carry, slice by slice.
- 
+
  @param repair - repair lane's delivery ledger with the slicing it was built
  over, already checked against that lane's own document
- 
+
  @param translate - translate lane's, which must name the SAME slicing
- 
+
  @returns One row per slice, in the order the REPAIR ledger reports them,
  which is document order wherever that lane built it from a preparation and is
  not re-sorted here
- 
+
  @throws {@link LaneComparisonError} when the two name different slicings,
  when either ledger repeats a slice, when they disagree about which slice sits
  at a position, or when they disagree about a slice's original, its archive
  wording, or whether the archive translates it at all
- 
+
  @example
  ```ts
  const comparison = compareDocumentLanes({ repair, translate, },);

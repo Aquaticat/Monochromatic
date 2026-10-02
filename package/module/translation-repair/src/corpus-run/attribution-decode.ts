@@ -26,21 +26,21 @@ import type {
 
 /**
  Reads a value that must be a non-negative safe integer.
- 
+
  `typeof value === 'number'` is not enough: it admits negatives, fractions,
  and `Infinity`, which `JSON.parse` produces from `1e400`. Each of those would
  travel into a count and out again as a rate.
- 
+
  @param value - parsed value
- 
+
  @param path - dotted path for the failure message
- 
+
  @param minimum - smallest acceptable value
- 
+
  @returns Validated integer
- 
+
  @throws ArtifactParseError When not an integer at or above minimum
- 
+
  @example
  ```ts
  const sliceIndex = readCount({ value, path: 'Kitten sliceCritics[0].sliceIndex', minimum: 0, },);
@@ -69,19 +69,19 @@ export function readCount(
 
 /**
  Reads a value that must be an array of distinct strings.
- 
+
  Distinctness is checked rather than assumed. `heardCriticIds` is a SET
  written as an array, and a repeated member would count one critic twice on
  one chunk, inflating the denominator every rate divides by.
- 
+
  @param value - parsed value
- 
+
  @param path - dotted path for the failure message
- 
+
  @returns Validated strings
- 
+
  @throws ArtifactParseError When not an array of distinct strings
- 
+
  @example
  ```ts
  const heard = readDistinctStrings({ value, path: 'Kitten sliceCritics[0].heardCriticIds', },);
@@ -128,19 +128,19 @@ export function readDistinctStrings(
 
 /**
  Decodes the proposers of one attribution.
- 
+
  @param value - parsed proposers value
- 
+
  @param path - dotted path for the failure message
- 
+
  @param heard - critics this slice recorded as heard, so a proposer naming
  anyone else is refused rather than silently credited
- 
+
  @returns Validated proposers
- 
+
  @throws ArtifactParseError When malformed, naming one critic twice, or naming
  a proposer this slice did not record as heard
- 
+
  @example
  ```ts
  const proposers = decodeProposers({
@@ -230,10 +230,10 @@ export function decodeProposers(
 
 /**
  Decodes one chunk's calibration record.
- 
+
  `heardCriticIds` is decoded before `claimAttributions`, because each claim's
  proposers are checked against the heard set.
- 
+
  @param value - parsed record
 
  @param path - dotted path for the failure message
@@ -359,9 +359,9 @@ export function decodeChunkRecord(
 
 /**
  Decodes an artifact's whole critic-record array.
- 
+
  @param value - parsed array
- 
+
  @param entryId - artifact identity, so a failure names the file
 
  @param keys - spelling this artifact's own generation wrote, for both the

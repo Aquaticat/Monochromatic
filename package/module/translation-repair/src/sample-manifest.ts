@@ -30,7 +30,7 @@ import type { GradingCandidate, } from './sample-grading.ts';
 
 /**
  One drawn item's identity at its sheet position.
- 
+
  @example
  ```ts
  const item: SampleManifestItem = { position: 1, entryId: 'Kitten', issueId: 'adjudicated/nap', };
@@ -55,14 +55,14 @@ export type SampleManifestItem = {
 
 /**
  Which built pipeline settled the entries a sample was drawn from.
- 
+
  A TAGGED ABSENCE rather than an optional string, for the reason this whole
  generation runs on: a manifest written before this field existed cannot claim
  a generation, and reading its silence as any particular one would attribute a
  sample to a pipeline nobody checked. The gap is exactly this, that
  `EligibleEntries` already carries the selection and the digests while the
  manifest wrote neither.
- 
+
  @example
  ```ts
  const generation: SampleGeneration = { kind: 'recorded', digest, entries: 15, };
@@ -73,7 +73,7 @@ export type SampleGeneration = {
 
   /**
    Digest of the built output that settled every entry in the pool.
-   
+
    ONE DIGEST FOR THE POOL, not one per entry, because a pool holding two
    generations is refused before a draw can reach it. If that ever stops being
    true this field is the thing that has to grow, and a reader comparing it
@@ -83,7 +83,7 @@ export type SampleGeneration = {
 
   /**
    How many entries the pool offered, which is not how many the sample took.
-   
+
    Kept because a sample of fifty issues drawn from fifteen entries and one
    drawn from ninety are different evidence, and the items alone cannot say
    which, since one entry contributes many issues.
@@ -101,7 +101,7 @@ export type SampleGeneration = {
 
 /**
  Everything needed to join a graded sheet back to the run that produced it.
- 
+
  @example
  ```ts
  const manifest: SampleManifest = buildSampleManifest({ sample, seed, corpusSha, },);
@@ -121,7 +121,7 @@ export type SampleManifest = {
   /**
    Fingerprint of this exact draw, absent on manifests written before the
    binding existed.
-   
+
    Optional rather than defaulted to an empty string, because absence and a
    value are genuinely different states and the scorers act differently on
    them. A manifest drawn before this field existed can still be scored, under
@@ -132,7 +132,7 @@ export type SampleManifest = {
 
   /**
    Pipeline that settled the entries this sample was drawn from.
-   
+
    DELIBERATELY OUTSIDE `drawDigest`. That fingerprint binds seed, corpus pin
    and items, and every sheet already drawn is bound by it; folding a new field
    into it would change the digest of manifests whose sheets are already
@@ -149,15 +149,15 @@ export type SampleManifest = {
 
 /**
  Records what sat at each sheet position.
- 
+
  @param sample - drawn candidates, in the order both sheets render them
- 
+
  @param seed - draw seed
- 
+
  @param corpusSha - pinned corpus commit
- 
+
  @returns Manifest to write beside the sheets
- 
+
  @example
  ```ts
  const manifest = buildSampleManifest({ sample, seed, corpusSha, generation, },);
@@ -205,14 +205,14 @@ export function buildSampleManifest(
 
 /**
  Reads a manifest's generation, naming its absence rather than guessing one.
- 
+
  @param manifest - manifest as a record
- 
+
  @returns Recorded generation, or why there is none
- 
+
  @throws {@link ArtifactParseError} when a present generation is malformed,
  since a half-written one is worse than none: it would be read as evidence
- 
+
  @example
  ```ts
  const generation = readGeneration({ manifest, },);
@@ -259,17 +259,17 @@ function readGeneration(
 
 /**
  Reads a manifest back, throwing rather than skipping a malformed item.
- 
+
  Strict for the reason `artifact-read.ts` is strict: a dropped item shifts
  every later position silently, which turns a join into a mislabelling rather
  than a gap anyone would notice.
- 
+
  @param value - parsed manifest JSON
- 
+
  @returns Manifest as written
- 
+
  @throws {@link ArtifactParseError} when any field is malformed
- 
+
  @example
  ```ts
  const manifest = parseSampleManifest({ value: parseRunJson({ text, from, },), },);

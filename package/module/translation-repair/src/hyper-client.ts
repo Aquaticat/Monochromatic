@@ -74,17 +74,17 @@ import {
 
 /**
  Local representation of Hyper's absence of per-model concurrency ceiling.
- 
+
  Live probes on 2026-08-24 completed widths through 32 on `minimax-m3`.
  A second structured probe on 2026-08-30 completed 64 of 64 calls to
  `deepseek-v4-flash-0731` in 2,147 ms without retry or non-200 status.
  The owner confirmed Hyper has no concurrency ceiling and separately limits
  this account to 1,000 requests per hour.
- 
+
  `p-limit` explicitly accepts positive infinity as unbounded concurrency.
  Keeping that value inside injected limiter seam preserves tests that set
  finite widths without inventing provider serialization in normal operation.
- 
+
  @example
  ```ts
  const width = HYPER_PER_MODEL_CONCURRENCY;
@@ -99,12 +99,12 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Refusal raised when a roster model has no spelling on this provider.
- 
+
  A THROW RATHER THAN A DATA OUTCOME, because it is a routing mistake in our
  own code and not a thing a model did. Every outcome this client returns as
  data describes something a model wrote; a call addressed to a provider that
  does not serve the model never reaches one.
- 
+
  @example
  ```ts
  throw new ModelNotServedError({ modelId, },);
@@ -118,9 +118,9 @@ export class ModelNotServedError extends Error {
 
   /**
    Builds failure naming the model this provider has no spelling for.
-   
+
    @param modelId - roster model that was addressed here
-   
+
    @example
    ```ts
    new ModelNotServedError({ modelId: 'hf:Qwen/Qwen3.8-27B', },);
@@ -134,7 +134,7 @@ export class ModelNotServedError extends Error {
 
 /**
  Client surface for the credit-metered provider.
- 
+
  @example
  ```ts
  const client: HyperClient = createHyperClient({ apiKey, transport, },);
@@ -157,20 +157,20 @@ export type HyperClient = ModelCaller & {
 /**
  Refuses a success reply whose event stream stopped before its terminator
  or reported an error.
- 
+
  MODULE SCOPE BECAUSE IT CAPTURES NOTHING. The reply handed in is its whole
  input, so nesting it at the call site would make a closure over an empty set.
- 
+
  ONLY A BODY THE STATUS ALREADY ACCEPTED. A non-success reply is reported by
  the status branch at the call site, which names the HTTP code; reading it
  here would replace that with a parse failure about an error page.
- 
+
  @param attemptReply - one attempt's reply, read before the ladder returns it
- 
+
  @throws MalformedCompletionError - when a success body stops before
  `message_stop` or carries an error event, which is what puts a truncated
  or failed stream on the retry path instead of past it
- 
+
  @example
  ```ts
  const reply = await exchangeWithRetry({ transport, exchange, policy, verify: wholeMessage, },);
@@ -183,13 +183,13 @@ function wholeMessage(attemptReply: TransportReply,): void {
 
 /**
  Spells one roster model the way this provider names it.
- 
+
  @param modelId - roster model the caller addressed
- 
+
  @returns Wire identifier for the request body
- 
+
  @throws {@link ModelNotServedError} when this provider serves no such model
- 
+
  @example
  ```ts
  const served = servedIdFor({ modelId, },);
@@ -210,29 +210,29 @@ function servedIdFor(
 
 /**
  Builds one client over injected transport, speaking the Messages protocol.
- 
+
  @param apiKey - bearer token; never logged
- 
+
  @param transport - HTTP the client calls over: `fetchTransport` in a run, a
  recorded one in a test. REQUIRED, since a test that left it out would reach
  the provider (ledger M43, X24)
- 
+
  @param messagesUrl - completion endpoint, overridable for tests
- 
+
  @param creditsUrl - balance endpoint, overridable for tests
- 
+
  @param perModelConcurrency - optional local test or caller bound;
  normal operation remains unbounded because provider has no concurrency ceiling
- 
+
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
- 
+
  @param requestsPerHour - request starts allowed in any rolling hour,
  retries and credit reads included; the provider limits this account to
  1,000 and refuses the rest with HTTP 429, so calls queue here instead
  (`request-pace.ts` has the measurement); not positive means unpaced
- 
+
  @returns Client surface with chatText, chatJson, and credits
- 
+
  @example
  ```ts
  const client = createHyperClient({ apiKey: process.env['TRANSLATION_REPAIR_CHARM_HYPER_API_KEY'] ?? '', transport: fetchTransport, },);
@@ -273,11 +273,11 @@ export function createHyperClient(
   /**
    The transport behind the pacer: every attempt, retries included, waits
    for a place in the window before it goes out.
-   
+
    @param exchange - request the retry ladder is sending
-   
+
    @returns The transport's reply
-   
+
    @example
    ```ts
    const reply = await pacedTransport(exchange,);
@@ -301,19 +301,19 @@ export function createHyperClient(
 
   /**
    Free-text chat exchange; bounded per model.
-   
+
    @param request - exchange to perform
-   
+
    @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
-   
+
    @returns Content text and usage when reported
-   
+
    @throws {@link ModelNotServedError} when this provider serves no such model
-   
+
    @throws {@link SyntheticHttpError} on non-success status
-   
+
    @throws {@link import('./completion-shape.ts').MalformedCompletionError} on a stream that never terminated or reported an error
-   
+
    @example
    ```ts
    const reply = await client.chatText({ modelId, messages, signal, },);
@@ -331,7 +331,7 @@ export function createHyperClient(
     /**
      Wire spelling, resolved BEFORE the slot is taken so a misrouted call
      fails at once instead of queueing behind live ones.
-     
+
      REACHED SYNCHRONOUSLY DESPITE THE `async`, because an async body runs up
      to its first `await`, so this still refuses before asking for a slot.
      The `async` is what turns its throw into a rejection rather than a
@@ -377,7 +377,7 @@ export function createHyperClient(
 
       /**
        Exactly what goes on the wire, hoisted so its size can be measured.
-       
+
        THE SCHEMA IS STATED DOWNSTREAM, not here. `buildAnthropicBody` routes
        every schema-bearing call through `renderToolSystemPrompt`, which
        prints the whole schema into this protocol's `system` field along with
@@ -477,15 +477,15 @@ export function createHyperClient(
 
   /**
    Reads the remaining balance, which is this provider's whole budget signal.
-   
+
    @param signal - abort signal honored for the read
-   
+
    @returns Typed balance
-   
+
    @throws {@link SyntheticHttpError} on non-success status
-   
+
    @throws {@link import('./hyper-credits.ts').CreditsShapeError} on contract-violating bodies
-   
+
    @example
    ```ts
    const { balance, } = await client.credits({ signal, },);

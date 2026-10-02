@@ -15,10 +15,10 @@
 
 /**
  Cross-run cache making a large document resumable.
- 
+
  A run aborted at the hard cap resumes from the last settled slice instead of
  recomputing from scratch.
- 
+
  @example
  ```ts
  const cache: SliceCache<string> = {
@@ -37,7 +37,7 @@ export type SliceCache<ValueT,> = {
   /**
    Persists one freshly settled slice under its hash key before the next slice
    starts, so an abort leaves settled slices recoverable.
-   
+
    The lane owns serialization; the store writes exactly these bytes and
    parses them back into {@link SliceCache.resumed} next run.
    */

@@ -38,7 +38,7 @@ export const FANOUT_SPARE = 1;
  which every production stage uses, or the whole bench, which a fixture
  scripting every seat's ballot asks for so its arithmetic reads over the
  bench it wrote.
- 
+
  @example
  ```ts
  const mode: FanOutMode = 'window';
@@ -58,17 +58,17 @@ const FNV_PRIME = 0x01_00_01_93;
 
 /**
  Where the bench's rotation starts for one prompt.
- 
+
  One linear pass over the prompt's code units, FNV-1a, reduced by the bench
  size; a hash rather than a counter so the choice depends on the input and
  not on how many rounds ran before it.
- 
+
  @param messages - prompt shared by every voice of the round
- 
+
  @param size - seats on the bench
- 
+
  @returns Index of the seat asked first, below `size`; zero for an empty bench
- 
+
  @example
  ```ts
  const start = benchRotation({ messages, size: 7, },);
@@ -140,13 +140,13 @@ export function benchRotation(
 
 /**
  The bench in the order this prompt asks it.
- 
+
  @param modelIds - bench in roster order
- 
+
  @param messages - prompt shared by every voice of the round
- 
+
  @returns Same seats, started at the prompt's rotation
- 
+
  @example
  ```ts
  const order = rotatedBench({ modelIds, messages, },);
@@ -180,13 +180,13 @@ export function rotatedBench(
 /**
  Seats one round asks: as many as quorum still needs, plus the spare, from
  the front of what is pending.
- 
+
  @param pending - seats not yet heard, unasked first and lost after
- 
+
  @param needed - voices quorum still lacks
- 
+
  @returns Leading slice of `pending`, never longer than it
- 
+
  @example
  ```ts
  const asking = askingWindow({ pending, needed: 4, },);
@@ -215,11 +215,11 @@ export function askingWindow(
  never more than the bench holds. What a fixture counts when it asserts how
  many calls one round bought, so its arithmetic follows {@link FANOUT_SPARE}
  instead of restating it.
- 
+
  @param benchSize - seats on the bench
- 
+
  @returns Seats the first round asks while nothing has been lost yet
- 
+
  @example
  ```ts
  const asked = firstRoundWindow({ benchSize: 6, },);

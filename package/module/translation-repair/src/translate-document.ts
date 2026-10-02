@@ -60,39 +60,39 @@ import type { TwinMemo, } from './twin-memo.ts';
 
 /**
  Translates every slice of a prepared document pair and reassembles it.
- 
+
  @param client - injected model client
- 
+
  @param prepared - slices, governance and declared names, shared with any
  other lane running over same document
- 
+
  @param models - translator and judge rosters
- 
+
  @param pictureReadings - what document pictures were read as
- 
+
  @param signal - entry deadline and caller abort, honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param sliceCache - resumable per-slice cache, absent when caller wants no
  resumption
- 
+
  @param insertionAdmission - caller's authoritative production evidence for
  source-only slices; absent uses deterministic page shortfall
- 
+
  @param overlap - most slices in flight; one reproduces former sequential loop
- 
+
  @param l - pipeline logger
- 
+
  @returns Reassembled translation, its `status`, one settled record per
  filled slice, and every passage this run left missing
- 
+
  @throws {@link Error} when roster cannot seat a stage, overlap is invalid,
  or caller aborts while this lane is buying
- 
+
  @throws Whatever `signal.reason` carries once caller aborts with slices still
  unbought; nothing settled under that abort is cached
- 
+
  @example
  ```ts
  const result = await translateDocument({
@@ -202,7 +202,7 @@ export async function translateDocument(
 
   /**
    Slices with no translation beside them that page has room to be missing.
-   
+
    Computed once because shortfall belongs to whole page rather than one
    section, and spending it per section admits more than page is missing.
    */

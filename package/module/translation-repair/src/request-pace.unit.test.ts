@@ -1,12 +1,12 @@
 /**
  Tests the sliding-window request pacer.
- 
+
  THE CASE IS XIEPT2 ON HYPER ALONE, 2026-09-03: 1,000 requests in a rolling
  hour is the account's limit, the pass spent them in minutes, every refusal
  retried four more times, the run lost. Here the pacer lets a window's worth
  start at once, makes the next wait for the oldest start to leave the window,
  keeps takes in arrival order, and lets an abort end a wait.
- 
+
  @module
  */
 
@@ -53,11 +53,11 @@ const REAL_WINDOW_MS = 20;
 /**
  Builds a pacer on a scripted clock whose sleeps advance the clock instead of
  waiting.
- 
+
  @param perWindow - starts allowed per window
- 
+
  @returns Pacer plus the clock and the sleeps it asked for
- 
+
  @example
  ```ts
  const { pace, clock, sleeps, } = scriptedPace({ perWindow: 3, },);

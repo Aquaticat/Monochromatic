@@ -24,15 +24,15 @@ import {
 
 /**
  Bands a raw byte count, stating the unit explicitly.
- 
+
  These cases probe the band BOUNDARIES, which are byte counts by
  definition and cannot be produced from text, so the assertion is the
  honest way to reach `classifyBand` rather than a cast around its guard.
- 
+
  @param count - UTF-8 byte length under test
- 
+
  @returns Band that count falls in
- 
+
  @example
  ```ts
  expect(bandAt(1_842,),).toBe('small',);
@@ -151,11 +151,11 @@ function catIssue(
 /**
  Builds a gradable issue from span descriptions, so a case reads as the shape
  it is testing rather than as nested boilerplate.
- 
+
  @param spans - spans across the issue's claims, one claim per span
- 
+
  @returns Issue whose source anchoring is under classification
- 
+
  @example
  ```ts
  const issue = catAnchoredIssue({ spans: [{ side: 'source', quotedText: '猫猫', },], },);

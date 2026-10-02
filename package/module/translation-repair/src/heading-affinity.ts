@@ -24,7 +24,7 @@ import { foldedLatinWords, } from './latin-letters.ts';
 
 /**
  Shortest Latin run worth treating as a name.
- 
+
  One and two letter runs are mostly noise from markup and initials, and they
  match far too freely across unrelated headings.
  */
@@ -32,17 +32,17 @@ const MIN_TOKEN_LENGTH = 3;
 
 /**
  Extracts folded Latin runs from a heading.
- 
+
  Runs come from the shared index scan, which a heading's arbitrary text
  cannot make backtrack, each folded (`foldedLatinWords`) so a handle written
  with its accent, with a separate one or without matches itself: ASCII runs
  alone cut `Mikä` to `mik` on both sides and matched only by that accident,
  and cut `Mika` to a different run (ledger B18).
- 
+
  @param text - heading text
- 
+
  @returns Distinct folded runs of at least {@link MIN_TOKEN_LENGTH} letters
- 
+
  @example
  ```ts
  latinTokens({ text: '### 其八：白毛 suki', },);
@@ -59,19 +59,19 @@ export function latinTokens({ text, }: { readonly text: string; },): ReadonlySet
 
 /**
  Scores how much two headings look like the same section.
- 
+
  Overlap of Latin runs, scaled by the smaller heading's run count, so a
  heading carrying one name and matching it scores as strongly as one carrying
  three and matching all three. Zero when either side offers no runs, which is
  the honest answer for a heading written entirely in Chinese: no evidence is
  not weak evidence.
- 
+
  @param source - original-side heading
- 
+
  @param target - translation-side heading
- 
+
  @returns Affinity from 0 to 1
- 
+
  @example
  ```ts
  headingAffinity({ source: '### 其七：wing', target: '### wing', },);

@@ -28,13 +28,13 @@ type ArchiveSelectionAssessment = {
  Adds the exact unchanged block as a choice only when revisions are available.
  An actual writer echoing the original already supplies that choice and keeps
  its authorship; reviewers merely favoring retention are not treated as authors.
- 
+
  @param revisions - admissible distinct revision candidates
- 
+
  @param blockText - original replacement scope, never surrounding context
- 
+
  @returns Comparison slate, or the existing empty-slate path
- 
+
  @example
  ```ts
  const candidates = withArchiveOriginal({ revisions, blockText });
@@ -72,27 +72,27 @@ export function withArchiveOriginal(
  Preserves review action/category and the archive context a selector needs.
  Only eligible retention assessments enter; inadmissible revision proposals
  remain in the stage's audit findings rather than becoming candidate evidence.
- 
+
  @param sourceText - aligned factual source and corroborated picture support
- 
+
  @param targetText - archive context, not factual source authority
- 
+
  @param blockText - exact block under replacement consideration
- 
+
  @param voices - reviews surviving source-anchor or apparatus verification
- 
+
  @param candidates - actual anonymous order shown to selectors
- 
+
  @param priorFindings - earlier opinions, kept separate from current assessments
- 
+
  @param identityContext - declared names the reviewers read, absent when the
  page declares none (ledger B28)
- 
+
  @param referenceContext - what the pages the original links say, which the
  first criterion counts as support, absent when it links nowhere
- 
+
  @returns Evidence whose reasons retain their proposed meaning
- 
+
  @example
  ```ts
  const evidence = archiveBlockSelectionEvidence({ sourceText, targetText, blockText, voices, candidates, priorFindings: [] });

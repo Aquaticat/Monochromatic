@@ -69,7 +69,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Clause the screen reports for a reading that declined to transcribe.
- 
+
  NAMED HERE RATHER THAN IMPORTED because it is the one clause this file acts
  on, and a rename that silently stopped the re-asking would otherwise leave no
  trace. A mismatch shows up as readings that stop being retried.
@@ -78,7 +78,7 @@ const REFUSAL_CLAUSE = 'reads-as-refusal';
 
 /**
  How many times one model may be asked about one picture.
- 
+
  FOUR, kept on the corpus-wide measurement recorded in the module
  note: over one pass the limit bought 20 extra calls against 119 first asks
  and recovered the one roll case, on the third ask. The bound is not fitted
@@ -90,12 +90,12 @@ export const REFUSAL_ASK_LIMIT = 4;
 
 /**
  Whether a reading is a refusal that asking again might get past.
- 
+
  @param reading - outcome of one ask
- 
+
  @returns True when the model declined to transcribe rather than failing for a
  reason another ask cannot change
- 
+
  @example
  ```ts
  if (isRefusal({ reading, },)) { ask again }
@@ -109,28 +109,28 @@ function isRefusal({ reading, }: { readonly reading: ImageReading; },): boolean 
 
 /**
  Asks one model to read one picture, past a refusal, up to a bounded limit.
- 
+
  @param client - provider client
- 
+
  @param modelId - reader asked, the same one every time, since the refusal is
  this model's roll rather than a fact about the picture
- 
+
  @param bytes - picture as it sits in the corpus
- 
+
  @param assetName - file name, for the log line and the content part
- 
+
  @param signal - abort honoured between asks as well as inside them, so a
  stopped run does not keep re-asking
- 
+
  @param perCallTimeoutMs - ceiling on one exchange, applied per ask rather than
  across all of them
- 
+
  @param l - logger
- 
+
  @returns Reading, or the last refusal when every ask was declined
- 
+
  @throws {@link DOMException} when `signal` aborts between asks
- 
+
  @example
  ```ts
  const reading = await readPastRefusal({ client, modelId, bytes, assetName, signal, perCallTimeoutMs, l, },);

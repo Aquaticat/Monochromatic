@@ -1,19 +1,19 @@
 /**
  Tests for the adjudication panel stage.
- 
+
  `runPanelStage` had no test. It decides which critic claims become accepted
  issues, so it sets the numerator of the precision the milestone is graded on:
  an accepted issue a human later calls wrong is a false positive, and one the
  panel wrongly rejected never reaches the sheet to be counted either way.
- 
+
  The vote arithmetic lives in `tallyVotes`, which has its own suite. What is
  untested here is the wiring: that a heard panelist becomes exactly one
  ballot, that a lost voice shrinks the electorate rather than passing as an
  abstention nobody notices, and that a panelist voting on a claim number it
  was never shown reaches the findings.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -65,11 +65,11 @@ const PANELISTS = [
 
 /**
  Builds one aggregated claim.
- 
+
  @param suffix - id suffix, so claims differ
- 
+
  @returns Claim the panel votes on
- 
+
  @example
  ```ts
  const claim = catClaim({ suffix: 'waking', },);
@@ -98,11 +98,11 @@ function catClaim({ suffix, }: { readonly suffix: string; },): AggregatedClaim {
 
 /**
  Single-member cluster around one claim.
- 
+
  @param suffix - id suffix of the member claim
- 
+
  @returns Cluster the panel is shown
- 
+
  @example
  ```ts
  const cluster = soloCluster({ suffix: 'waking', },);
@@ -118,11 +118,11 @@ function soloCluster({ suffix, }: { readonly suffix: string; },): ClaimCluster {
 
 /**
  Client answering each panelist with a scripted ballot, or losing its voice.
- 
+
  @param ballotFor - ballot per model; returning undefined loses that voice
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = panelClient({ ballotFor: () => ({ verdicts: [], }), },);
@@ -173,13 +173,13 @@ function panelClient(
 
 /**
  Runs the panel stage against a scripted client.
- 
+
  @param client - scripted panel client
- 
+
  @param clusters - clusters the panel is shown
- 
+
  @returns Stage result
- 
+
  @example
  ```ts
  const result = await runStage({ client, clusters, },);

@@ -38,23 +38,23 @@ import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 
 /**
  Audits one slice and keeps what the roster said, whole.
- 
+
  Exported through the barrel so the built bundle's tests can hand it a
  scripted client; `main` is its only caller.
- 
+
  @internal
- 
+
  @param subject - slice under audit, with the identity its producing run had
- 
+
  @param references - what the pages its original links say, as
  `withCitedReferences` read them, or why none are shown; required so no
  caller audits without having asked
- 
+
  @param client - roster client, built once per run by the caller so every
  subject counts into one seat tally
- 
+
  @returns One row: provenance, plus the report uninterpreted
- 
+
  @example
  ```ts
  const row = await auditOne({ subject, references, client, },);
@@ -95,7 +95,7 @@ export async function auditOne(
 
   /**
    What the roster said about this rendering.
-   
+
    The identity block goes in when the pair declared one: the producing judges
    had it, and an auditor without it has every reason to call a declared name
    a fabrication. The references go in for the same reason (ledger B29):
@@ -141,7 +141,7 @@ export async function auditOne(
 
 /**
  One bought subject beside what the pages its original links say.
- 
+
  @example
  ```ts
  const pair: CitedSubject = { subject, references: { kind: 'none', }, };
@@ -162,29 +162,29 @@ export type CitedSubject = {
 /**
  Reads what the pages each bought subject's original links say, once per
  page, and pairs every subject with its own page's.
- 
+
  ONCE PER PAGE rather than once per subject: every slice of one page shares
  one original, so a second read could only cost a fetch or disagree with
  the first. Pages are keyed by their whole text, since two artifacts of one
  entry read at different commits may carry different originals.
- 
+
  ONLY WHAT IS BOUGHT, so the wiring check that buys nothing reads nothing
  and spends nothing. The reader is required rather than defaulted to the
  run's, because a unit test that forgot it would read the environment's
  key and buy a real web read (ledger X19).
- 
+
  Exported through the barrel for the built bundle's tests; `main` is its
  only caller.
- 
+
  @internal
- 
+
  @param subjects - subjects the run will buy, in buying order
- 
+
  @param reader - reads what one original's linked pages say
- 
+
  @returns Every subject with its page's references, in buying order; a page
  that links pages and reads as nothing is `unread`, never `none`
- 
+
  @example
  ```ts
  const cited = await withCitedReferences({ subjects: buying, reader: RUN_OUTSIDE_READS.references, },);
@@ -310,23 +310,23 @@ export async function withCitedReferences(
 
 /**
  Every subject a run could buy, after the entry filter, in archive order.
- 
+
  SEPARATE FROM THE CAP so the fraction a capped run reports is over what was
  SELECTABLE rather than over the whole archive. Reporting `5 of 40` where
  `--only` left 30 selectable overstates what was skipped and understates the
  coverage bought, and the line alone gives a reader no way to tell.
- 
+
  Exported through the barrel for the built bundle's tests; `main` is its
  only caller.
- 
+
  @internal
- 
+
  @param readings - every artifact the archive holds
- 
+
  @param onlyIds - entries to keep, empty for all
- 
+
  @returns Subjects the filter left
- 
+
  @example
  ```ts
  const eligible = eligibleSubjects({ readings, onlyIds, },);
@@ -363,19 +363,19 @@ export function eligibleSubjects(
 
 /**
  Takes the prefix a cap allows.
- 
+
  Exported through the barrel for the built bundle's tests; `main` is its
  only caller. A negative cap reaches here only as the args module's own
  "every subject" sentinel, since `readCap` refuses a typed one.
- 
+
  @internal
- 
+
  @param eligible - subjects the filter left, in a stable order
- 
+
  @param cap - how many to buy, negative for all
- 
+
  @returns Subjects to audit
- 
+
  @example
  ```ts
  const buying = capped({ eligible, cap, },);
@@ -400,14 +400,14 @@ export function capped(
 
 /**
  Reports what the archive holds, before anything is bought.
- 
+
  Exported through the barrel for the built bundle's tests; `main` is its
  only caller.
- 
+
  @internal
- 
+
  @param readings - every artifact the archive holds
- 
+
  @example
  ```ts
  printPopulation({ readings, },);
@@ -438,7 +438,7 @@ export function printPopulation(
     /**
      Slices a later stage overruled, so the audit will read wording no
      reader of an assembled document would meet.
-     
+
      PRINTED HERE because this whole reading is free, and knowing it before
      a roster is woken up is the reason this module is separate from the
      driver that spends quota.

@@ -11,13 +11,13 @@ import type { DocumentNode, } from './document-node.ts';
 /**
  Groups one side's nodes into paragraph-bound runs within budget.
  A node longer than the budget forms its own run; nodes never split.
- 
+
  @param nodes - block nodes of one side in document order
- 
+
  @param budget - characters one run aims for
- 
+
  @returns Node runs partitioning input order without splitting any node
- 
+
  @example
  ```ts
  const runs = groupNodes({ nodes: chunk.nodes, budget: 400, },);

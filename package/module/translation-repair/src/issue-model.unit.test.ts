@@ -1,7 +1,7 @@
 /**
  Tests for issue taxonomy guards and deterministic claim identity.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

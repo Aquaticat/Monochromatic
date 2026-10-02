@@ -1,6 +1,6 @@
 /**
  Tests for the fan-out window: which seats a round asks first.
- 
+
  @module
  */
 

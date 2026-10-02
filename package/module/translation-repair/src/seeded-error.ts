@@ -8,7 +8,7 @@ import type { IssueCategory, } from './issue-taxonomy.ts';
 
 /**
  Edit family of one planted error.
- 
+
  @example
  ```ts
  const kind: SeededErrorKind = 'deletion';
@@ -18,7 +18,7 @@ export type SeededErrorKind = 'deletion' | 'replacement' | 'insertion';
 
 /**
  One planted error: a deterministic edit over the target text.
- 
+
  @example
  ```ts
  const spec: SeededErrorSpec = {
@@ -64,7 +64,7 @@ export type SeededErrorSpec = {
 /**
  One applied seed with its region in seeded-text coordinates.
  Deletion regions are zero-width at the deletion point.
- 
+
  @example
  ```ts
  const application: SeededErrorApplication = {
@@ -93,7 +93,7 @@ export type SeededErrorApplication = {
 
 /**
  Seeded text plus every applied region.
- 
+
  @example
  ```ts
  const { seededText, applications, } = applySeededErrors({ text, specs, },);
@@ -114,7 +114,7 @@ export type SeededDocumentResult = {
 /**
  Signals a seed whose needle is absent or ambiguous at application time;
  always harness misconfiguration, never model fault.
- 
+
  @example
  ```ts
  throw new SeedApplicationError({ seedId: 'seed/omission-0', reason: 'needle absent', },);
@@ -128,11 +128,11 @@ export class SeedApplicationError extends Error {
 
   /**
    Builds failure naming the offending seed.
-   
+
    @param seedId - seed that failed to apply
-   
+
    @param reason - what the needle check found
-   
+
    @example
    ```ts
    new SeedApplicationError({ seedId: 'seed/x', reason: 'needle occurs 2 times', },);
@@ -157,15 +157,15 @@ export class SeedApplicationError extends Error {
  Each needle must occur exactly once in the text as it stands when the seed
  applies; later regions shift earlier ones' coordinates, so regions are
  re-based after every edit.
- 
+
  @param text - clean target text to plant errors into
- 
+
  @param specs - seeds in application order
- 
+
  @returns Seeded text and application regions
- 
+
  @throws {@link SeedApplicationError} when any needle is absent or ambiguous
- 
+
  @example
  ```ts
  const { seededText, applications, } = applySeededErrors({ text, specs, },);
@@ -310,15 +310,15 @@ export const SEED_MATCH_TOLERANCE = 30;
 /**
  Whether one claimed target region hits one seeded region,
  within tolerance.
- 
+
  @param spanStart - claimed region start in seeded coordinates
- 
+
  @param spanEnd - claimed region end (exclusive)
- 
+
  @param application - seeded region under test
- 
+
  @returns Whether the regions overlap within tolerance
- 
+
  @example
  ```ts
  seedHitByRegion({ spanStart: 100, spanEnd: 140, application, },);

@@ -6,7 +6,7 @@ import { devNull, } from 'node:os';
 /**
  Native read flags shared by corpus text, bytes, listings and naming history.
  Lazy object retrieval would mutate the clone and contact a remote.
- 
+
  @example
  ```ts
  const args = [...CORPUS_GIT_FLAGS, '-C', pin.cloneDir, 'show', spec];
@@ -49,11 +49,11 @@ const REPOSITORY_ENVIRONMENT: ReadonlySet<string> = new Set([
  Isolates every corpus subprocess from inherited repository routing and grafts.
  Guards are assigned after inheritance, so callers cannot override them.
  No process-global environment is mutated or logged.
- 
+
  @param environment - inherited process context, injectable for verification
- 
+
  @returns Owned environment with intrinsic-object and no-fetch semantics
- 
+
  @example
  ```ts
  const env = corpusGitEnvironment();

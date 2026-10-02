@@ -1,20 +1,20 @@
 /**
  Tests that the repair DRIVER computes the neighbouring window and hands
  it to the stages, which no prompt-builder test can establish.
- 
+
  WHY THIS IS SEPARATE FROM THE SHEET TEST. `nearby-window-reaches-the-models`
  asserts that `buildCriticMessages` renders a window it is HANDED. Whether
  `repairPreparedDocument` computes one and passes it over is a different
  question, and it is the one that went wrong before: the translate
  lane's window sat unused for weeks because the call site never passed what the
  builder already accepted, and nothing failed.
- 
+
  NO NETWORK. The client is a stub that records every sheet and answers "no
  issues", so each slice raises zero claims and skips every stage after the
  critic.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -116,7 +116,7 @@ const JUDGES = [SEAT_HYPER_VISION,] as const;
 
 /**
  {@inheritDoc CRITICS}
- 
+
  THREE OF THEM BECAUSE FEWER CANNOT DECIDE: `assertCheckerQuorumReachable`
  floors the role at three, since a pair that disagrees resolves nothing.
  Every one of them stays clear of {@link EDITORS}.
@@ -150,14 +150,14 @@ type SplitSheet = {
 /**
  Runs the real driver against a recording stub and returns every sheet it
  asked, split at the fence.
- 
+
  SPLITTING IS THE ATTRIBUTION, and skipping it produces a false failure. A
  sheet for the FIRST slice mentions the middle marker, because the middle slice
  is its neighbour, so filtering sheets by "mentions this marker" credits a
  slice with its neighbours' sheets.
- 
+
  @returns Every sheet the stages asked, in order
- 
+
  @example
  ```ts
  const sheets = await askedSheets();
@@ -253,13 +253,13 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
 
 /**
  Sheets whose REVIEWED half is the slice carrying one marker.
- 
+
  @param sheets - split sheets from {@link askedSheets}
- 
+
  @param marker - marker identifying the slice
- 
+
  @returns Sheets asked about that slice
- 
+
  @example
  ```ts
  const own = about({ sheets, marker: MARK.middle, },);

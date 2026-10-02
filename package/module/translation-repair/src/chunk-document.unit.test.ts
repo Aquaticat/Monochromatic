@@ -3,7 +3,7 @@
  heading-bounded partition, preamble handling, exact offsets, equal-shape
  index pairing, and refusal of sections the headings cannot pair.
  Fixtures are cat-themed invention only.
- 
+
  @module
  */
 

@@ -1,7 +1,7 @@
 /**
  Tests for restoration grading and the milestone-two repair benchmark.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -708,11 +708,11 @@ await describe({
             /**
              Builds the issue anchored at the deletion point, its status left to
              the caller so one fixture covers both declines.
-             
+
              @param status - adjudication status the panel landed on
-             
+
              @returns Issue record covering the seeded region
-             
+
              @example
              ```ts
              const record = issueWithStatus('source-defect',);

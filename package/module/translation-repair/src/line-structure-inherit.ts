@@ -23,7 +23,7 @@ import { isLineStructured, } from './line-structure.ts';
 
 /**
  One aligned chunk and the slices carved from it.
- 
+
  @example
  ```ts
  const chunk: ChunkGovernance = { sourceText, slices: [{ index: 0, sourceText, },], };
@@ -43,7 +43,7 @@ export type ChunkGovernance = Readonly<{
 
 /**
  One slice carved from a chunk.
- 
+
  @example
  ```ts
  const slice: ChunkSlice = { index: 4, sourceText, };
@@ -63,11 +63,11 @@ export type ChunkSlice = Readonly<{
 
 /**
  Reports which slices the line-structure rule governs.
- 
+
  A UNION of two readings, not a replacement of one by the other. The predicate
  only ever answers false when it cannot tell, so a true from either the slice
  or its enclosing chunk is evidence, and neither false is evidence against.
- 
+
  Taking the chunk's answer ALONE loses ground, which is measurable rather than
  hypothetical: across the 92 entries at the pinned corpus commit, chunk-only
  governance covers 195 slices against the slice-only 55, but four entries go
@@ -75,12 +75,12 @@ export type ChunkSlice = Readonly<{
  0. Those are stanzas sitting inside a section whose prose dominates the
  chunk's median, so the slice trips and the chunk does not. The union covers
  both shapes and cannot lose to either.
- 
+
  @param chunks - aligned chunks paired with the slices carved from each
- 
+
  @returns Global indices of slices whose own original, or whose enclosing
  chunk's original, is line-structured
- 
+
  @example
  ```ts
  const governed = governedSliceIndices({ chunks, },);

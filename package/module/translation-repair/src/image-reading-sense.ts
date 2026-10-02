@@ -42,7 +42,7 @@ import { carriesWord, } from './word-bounds.ts';
 
 /**
  Shortest reading worth having, in characters after trimming.
- 
+
  An image nobody could read comes back as an apology or as nothing, and both
  are shorter than any transcript.
  */
@@ -50,7 +50,7 @@ export const MIN_READING_CHARS = 16;
 
 /**
  How much of a reading is examined for a refusal.
- 
+
  A model that cannot read a picture says so immediately; one that says so
  halfway through has read something.
  */
@@ -58,7 +58,7 @@ const REFUSAL_WINDOW_CHARS = 200;
 
 /**
  Wordings a model uses when it cannot read a picture, lowercased.
- 
+
  A HEURISTIC, STATED AS ONE, and NO LONGER THE ONLY ONE. It catches a refusal
  that opens with an apology however long the reply runs. It misses a refusal
  worded unusually, which is not hypothetical: `There is no text visible in this
@@ -83,7 +83,7 @@ const REFUSAL_PHRASES: readonly string[] = [
 
 /**
  Why a reading was refused, or that it was not.
- 
+
  @example
  ```ts
  const verdict: ReadingVerdict = { kind: 'usable', };
@@ -112,20 +112,20 @@ export type ReadingVerdict = {
 
 /**
  Whether what a model returned for a picture is a reading at all.
- 
+
  PER-READING AND NOTHING MORE. Every clause looks only at the text in hand, so
  this can screen a reading before any second one exists, which is what lets
  the pair stage discard a refusal without paying for its partner.
- 
+
  REFUSAL BEFORE LENGTH. A refusal is screened first however short it is, so
  "No text." is an absence report and not a short reading, and a short reply
  that negates nothing ("DE581") is a short reading rather than an apology.
- 
+
  @param reading - what model returned for image
- 
+
  @returns Whether reading may be used, whether it is a short reading two
  readers can confirm a textless picture with, or which clause refused it
- 
+
  @example
  ```ts
  const verdict = readingMakesSense({ reading, },);

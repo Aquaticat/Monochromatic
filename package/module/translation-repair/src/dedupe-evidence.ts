@@ -11,7 +11,7 @@ import type { ClaimPanelReading, } from './panel-reading.ts';
 
 /**
  Duplicate claim identity carrying incompatible decision evidence.
- 
+
  @example
  ```ts
  throw new IssueEvidenceConflictError({ claimId, kind: 'tally' });
@@ -30,9 +30,9 @@ export class IssueEvidenceConflictError extends Error {
 
   /**
    Names the claim whose evidence cannot be merged without loss.
-   
+
    @param claimId - shared identity with conflicting records
-   
+
    @param kind - decision evidence that disagrees
    */
   constructor({
@@ -48,19 +48,19 @@ export class IssueEvidenceConflictError extends Error {
 
 /**
  Unions known evidence in retained claim order, without inventing missing data.
- 
+
  @param claimIds - ordered retained identities
- 
+
  @param first - survivor's known evidence
- 
+
  @param second - duplicate's known evidence
- 
+
  @param kind - diagnostic label for a conflicting record
- 
+
  @returns Exact union of known retained evidence
- 
+
  @throws {@link IssueEvidenceConflictError} when repeated known records disagree
- 
+
  @example
  ```ts
  const tallies = mergeClaimEvidence({ claimIds, first, second, kind: 'tally' });
@@ -115,17 +115,17 @@ function mergeClaimEvidence<const EvidenceT extends VoteTally | ClaimPanelReadin
  Preserves the existing emission representative while joining member evidence.
  Identity and severity retain the survivor policy; this operation does not
  re-adjudicate or count another panel's opinion twice.
- 
+
  @param survivor - first accepted issue for the emission key
- 
+
  @param incoming - accepted duplicate carrying additional members
- 
+
  @param claims - deduplicated members in stable emission order
- 
+
  @returns Survivor with every retained member's known evidence
- 
+
  @throws {@link IssueEvidenceConflictError} when repeated known records disagree
- 
+
  @example
  ```ts
  const merged = mergeDuplicateEvidence({ survivor, incoming, claims });

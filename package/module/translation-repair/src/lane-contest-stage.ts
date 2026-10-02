@@ -37,10 +37,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Voices that must back a candidate before it is called the winner.
- 
+
  TWO, matching every other agreement rule in this package. One judge is an
  opinion; two reaching the same reading of the same original is corroboration.
- 
+
  FROZEN, like the version 2 comparison rules. The settled-artifact reader
  recomputes every recorded verdict against this number, so raising or lowering
  it re-decides every contest already on disk and makes artifacts settled under
@@ -59,7 +59,7 @@ const CONTEST_RESPONSE_FORMAT: JsonSchemaResponseFormat = contestResponseFormat(
 
 /**
  What the roster settled on for one contested slice.
- 
+
  @example
  ```ts
  const outcome: LaneContestOutcome = { choice: 'neither', ballots: [], usable: 0, findings: [], };
@@ -78,7 +78,7 @@ export type LaneContestOutcome = {
 
   /**
    Voices whose answer arrived and could be read as a ballot.
-   
+
    ONE COUNT RATHER THAN TWO. Other stages separate voices heard from voices
    whose reply survived their reader, because those readers can refuse a
    well-shaped reply. This one cannot: anything passing the shape guard reads
@@ -95,11 +95,11 @@ export type LaneContestOutcome = {
 
 /**
  Counts how many ballots named each candidate.
- 
+
  @param ballots - usable ballots
- 
+
  @returns Voice count per candidate name
- 
+
  @example
  ```ts
  const votes = countChoices({ ballots, },);
@@ -122,14 +122,14 @@ function countChoices(
 
 /**
  Reads the winner out of the votes, or `neither`.
- 
+
  A CLEAR WINNER OR NONE. A candidate that ties with the other has not been
  chosen, and shipping either on a tie would be picking by list order.
- 
+
  @param votes - voice count per candidate
- 
+
  @returns Candidate to ship, or `neither`
- 
+
  @example
  ```ts
  const choice = settleVotes({ votes, },);
@@ -156,15 +156,15 @@ function settleVotes(
 
 /**
  Reads the winner out of a set of ballots, or `neither`.
- 
+
  SHARED WITH THE ARTIFACT READER rather than kept private, so a stored verdict
  can be recomputed from the ballots stored beside it and refused when the two
  disagree, exactly as the recorded lane comparison already is.
- 
+
  @param ballots - usable ballots
- 
+
  @returns Candidate to ship, or `neither`
- 
+
  @example
  ```ts
  const choice = settleLaneContestBallots({ ballots, },);
@@ -178,12 +178,12 @@ export function settleLaneContestBallots(
 
 /**
  What the roster made of the archive rendering at one slice.
- 
+
  `unjudged` IS NOT A DECLINE. It covers a roster whose voices omitted the
  field, one too small to settle anything, and one that split evenly. None of
  those say the archive is flawed, and recording them as a decline would
  invent a verdict nobody gave.
- 
+
  @example
  ```ts
  const archive: ArchiveOutcome = 'endorsed';
@@ -193,20 +193,20 @@ export type ArchiveOutcome = 'endorsed' | 'declined' | 'unjudged';
 
 /**
  Reads what the roster made of the archive, or that it settled nothing.
- 
+
  MIRRORS {@link settleVotes} RATHER THAN SETTING ITS OWN BAR. Two voices and
  a strict lead is the agreement rule everywhere else in this package, and a
  second frozen number would be a second thing every stored verdict is
  recomputed against.
- 
+
  SHARED WITH THE ARTIFACT READER, like the choice rule beside it, so a
  recorded archive verdict can be re-derived from the ballots stored with it
  and refused when the two disagree.
- 
+
  @param ballots - usable ballots
- 
+
  @returns What the roster made of the archive
- 
+
  @example
  ```ts
  const archive = settleArchiveBallots({ ballots, },);
@@ -241,7 +241,7 @@ export function settleArchiveBallots(
 
 /**
  A ballot this stage read from a seat it asked, which always names that seat.
- 
+
  SEATED BY CONSTRUCTION. `LaneContestBallot` leaves the seat optional for a
  ballot read back from an artifact settled before seats were recorded; every
  ballot this stage builds comes from a reply its round received from one
@@ -252,17 +252,17 @@ type SeatedBallot = LaneContestBallot & { readonly modelId: string; };
 
 /**
  Drops one ballot's archive answer, keeping everything else it said.
- 
+
  @param ballot - ballot that answered about an archive that was not there
- 
+
  @returns Same ballot with no archive verdict
- 
+
  @remarks
  LISTS THE KEPT FIELDS rather than spreading a rest binding. The rest form
  leaves an unused `archive` binding and a declaration the TSDoc rule has
  nowhere to attach to, and naming the survivors makes the one omission the
  point of the function.
- 
+
  @example
  ```ts
  const stripped = withoutArchiveAnswer({ ballot, },);
@@ -330,26 +330,26 @@ function logBallots(
 
 /**
  Asks the roster which candidate one contested slice should ship.
- 
+
  @param client - synthetic chat client
- 
+
  @param modelIds - roster to ask
- 
+
  @param subject - passage, archive rendering and both candidates
- 
+
  @param signal - abort shared with the rest of the entry
- 
+
  @param exchangeTimeoutMs - per-call ceiling
- 
+
  @param graceMs - optional straggler window seam for deterministic tests
- 
+
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
- 
+
  @param l - logger to tag
- 
+
  @returns What the roster settled on, with every usable ballot
- 
+
  @example
  ```ts
  const outcome = await contestLaneSlice({ client, modelIds, subject, signal, exchangeTimeoutMs, l, },);
@@ -411,7 +411,7 @@ export async function contestLaneSlice(
 
   /**
    Ballots read out of the replies that arrived and validated in shape.
-   
+
    FLAT-MAPPED RATHER THAN FILTERED AND MAPPED, so the narrowing on `heard`
    reaches the value: a filtered array is still typed as the whole union.
    */
@@ -437,7 +437,7 @@ export async function contestLaneSlice(
 
   /**
    Ballots as they will be recorded and counted.
-   
+
    AN ABSENT INCUMBENT LEAVES NOTHING TO JUDGE. `IncumbentKind` admits
    `absent`, and such a slice shows judges an empty archive block while the
    schema still asks whether the archive is publishable, so an answer arrives

@@ -1,8 +1,8 @@
 /**
  Tests for the check that says target spans can be written back.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -27,15 +27,15 @@ const TARGET_TEXT = 'The cat sleeps.\n\nShe purrs.';
 
 /**
  Builds one pair covering a span of {@link TARGET_TEXT}.
- 
+
  @param sliceIndex - position of this slice
- 
+
  @param startOffset - absolute start
- 
+
  @param endOffset - absolute exclusive end
- 
+
  @returns Pair whose target side carries that span
- 
+
  @example
  ```ts
  const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, },);

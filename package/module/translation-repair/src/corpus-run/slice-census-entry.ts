@@ -24,7 +24,7 @@ import type { PairingRecipe, } from './artifact-two-lane-rebuild.ts';
 
 /**
  One entry's measured shape.
- 
+
  @example
  ```ts
  const row: EntryCensus = { entryId, sliceCount: 12, ... };
@@ -48,7 +48,7 @@ export type EntryCensus = {
 
   /**
    Sections the aligner REFUSED to pair, which therefore reach no slice.
-   
+
    Counted from the aligner's own output rather than from the pairs it
    produced. Only a forced pairing becomes a pair, so a refused section is
    absent from `alignment.pairs` entirely rather than present with an empty
@@ -87,7 +87,7 @@ export type EntryCensus = {
   /**
    Size of every target-only block, so a transcription can be told from an
    ordinary paragraph split.
-   
+
    The transcribed-image class is the case where a Chinese page holds a letter
    as a picture and the English page transcribes and translates it. MEASURED
    2026-08-15: that picture is nowhere in the markdown this pipeline reads.
@@ -108,7 +108,7 @@ export type EntryCensus = {
 
 /**
  Which slicing a census row measured.
- 
+
  @example
  ```ts
  const carve: CensusCarve = 'deterministic';
@@ -118,21 +118,21 @@ export type CensusCarve = 'settled-complete' | 'settled-partial' | 'deterministi
 
 /**
  Measures one corpus entry.
- 
+
  @param entryId - corpus id
- 
+
  @returns That entry's shape after slicing
- 
+
  @throws {@link CorpusReadError} when either side is absent
- 
+
  @param pin - corpus clone and commit to read: `RUN_CORPUS_PIN` in a run, a
  throwaway clone in a test, since the real one is unlicensed. REQUIRED: a
  default read the clone for any caller that left it out (ledger M43, X24)
- 
+
  @param recipe - pairing recipe the entry's settled artifact records, which
  makes the slice sizes those of the slicing the lanes judged; absent, the
  deterministic aligner carves and the row says so
- 
+
  @example
  ```ts
  const row = await censusEntry({ entryId: 'Toka_ls', pin: RUN_CORPUS_PIN, },);

@@ -1,15 +1,15 @@
 /**
  Tests for how the window trial's rows are read.
- 
+
  WHAT THESE PIN is the measurement discipline that two design corrections
  produced, both made before any quota was spent. The trial is three-armed
  because two arms cannot separate the window from a resampled slate. The band
  comes from two narrow arms because a single repeat understates the noise it
  is meant to bound. A reader that lost either would report a confident number
  from an instrument that cannot support one.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -31,20 +31,20 @@ const JUDGES_SEATED = 6;
 
 /**
  Builds one completed arm.
- 
+
  @param sliceIndex - slice position
- 
+
  @param arm - which arm
- 
+
  @param shipped - whether this arm replaced the archive
- 
+
  @param sliceClass - class the screen flagged, or a control label
- 
+
  @param judgesHeard - judges whose ballot arrived, short of the seated panel
  when the fan-out lost voices
- 
+
  @returns Row shaped like one the runner appends
- 
+
  @example
  ```ts
  const row = rowFor({ sliceIndex: 0, arm: TRIAL_ARMS.wide, shipped: false, },);
@@ -82,19 +82,19 @@ function rowFor(
 
 /**
  Builds all three arms of one slice.
- 
+
  @param sliceIndex - slice position
- 
+
  @param narrowFirst - whether the first narrow arm replaced
- 
+
  @param narrowSecond - whether the second narrow arm replaced
- 
+
  @param wide - whether the wide arm replaced
- 
+
  @param sliceClass - class or control label
- 
+
  @returns Three rows, one per arm
- 
+
  @example
  ```ts
  const rows = tripleFor({ sliceIndex: 0, narrowFirst: true, narrowSecond: true, wide: false, },);

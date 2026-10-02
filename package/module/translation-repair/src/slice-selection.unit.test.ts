@@ -1,15 +1,15 @@
 /**
  Tests for the per-slice selection ledger.
- 
+
  WHAT THESE PIN is the distinction the ledger exists for: "the judges kept the
  archive" and "the archive was reinstated after the judges replaced it" are
  different facts, and every count the lane reported before this collapsed them.
  Recording who won each slice gives the first; the assembly guard is what makes the second
  possible. A reader holding one number cannot tell them apart, and the
  replacement rate every quality claim rests on is computed from exactly this.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -32,20 +32,20 @@ const CAT_A = 'hf:cat/Cat-A' as unknown as RosterModelId;
 
 /**
  Builds one settled record with the parts this ledger reads.
- 
+
  Everything the ledger ignores is filled with whatever satisfies the type:
  what is under test is which fields travel, not what the stage decided.
- 
+
  @param sliceIndex - slice position
- 
+
  @param origin - whether the winner was the archive's text or fresh
- 
+
  @param decision - how the round ended
- 
+
  @param voteWeight - weight the winner drew
- 
+
  @returns Record shaped like one the driver settles
- 
+
  @example
  ```ts
  const record = recordFor({ sliceIndex: 0, origin: 'fresh', decision: 'judged', voteWeight: 2, },);
@@ -107,15 +107,15 @@ const CAT_B = 'hf:cat/Cat-B' as unknown as RosterModelId;
 /**
  Builds a record carrying a REAL round: two candidates by two producers, and
  two ballots, one of which is a self-vote.
- 
+
  Cat-A wrote candidate 1 and named candidate 2; Cat-B wrote candidate 2 and
  named it. So over these two candidates there is one self-vote out of two
  stakeholder ballots, which is what the measurement case reads.
- 
+
  @param sliceIndex - slice position
- 
+
  @returns Record whose round is worth measuring
- 
+
  @example
  ```ts
  const record = recordWithRound({ sliceIndex: 0, },);

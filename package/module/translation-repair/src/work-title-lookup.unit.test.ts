@@ -1,13 +1,13 @@
 /**
  Tests the cached web lookup of official English titles.
- 
+
  THE TRANSPORT IS A STUB: the real endpoint was exercised once by hand on
  2026-09-02 (《活着》 answered "To Live", 《魔法少女小圆》 answered "Puella Magi
  Madoka Magica", about 1.5 s and $0.007 a query) and these tests cover what
  the module does around it: which titles are asked, how a record is cached
  and read back, how hits become lines, and what a failure or a missing key
  leaves behind.
- 
+
  @module
  */
 
@@ -62,11 +62,11 @@ type SeenCall = {
 
 /**
  Where a fetch input points, whatever form it takes.
- 
+
  @param input - first argument of `fetch`
- 
+
  @returns Its url as text
- 
+
  @example
  ```ts
  urlOf({ input: 'https://x', },);
@@ -82,13 +82,13 @@ function urlOf({ input, }: { readonly input: string | URL | Request; },): string
 
 /**
  Builds a transport answering a fixed body and counting calls.
- 
+
  @param status - HTTP status to answer
- 
+
  @param body - JSON body to answer
- 
+
  @returns Transport plus the calls it saw
- 
+
  @example
  ```ts
  const { fetchFn, calls, } = stubFetch({ status: 200, body: { results: [], }, },);

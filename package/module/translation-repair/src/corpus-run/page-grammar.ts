@@ -16,7 +16,7 @@ import { parseDocument, } from '../parse-document.ts';
 
 /**
  Refusal when a would-ship page does not parse under the MDX grammar.
- 
+
  @example
  ```ts
  throw new UnparseablePageError({ entryId: 'Cat', refusal: 'at 3:12 (mdx-jsx)', },);
@@ -41,7 +41,7 @@ export class UnparseablePageError extends Error {
 
   /**
    @param entryId - affected entry
-   
+
    @param refusal - strict parser's refusal site, positions and rule names only
    */
   public constructor(
@@ -64,14 +64,14 @@ export class UnparseablePageError extends Error {
 
 /**
  Refuses a would-ship page the strict MDX grammar cannot parse.
- 
+
  @param entryId - entry about to publish
- 
+
  @param pageText - whole would-ship page, front matter included
- 
+
  @throws {@link UnparseablePageError} when the strict parse of the page fell
  back to plain markdown
- 
+
  @example
  ```ts
  assertPageParses({ entryId: 'Cat', pageText, },);

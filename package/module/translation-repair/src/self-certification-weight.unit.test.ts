@@ -1,7 +1,7 @@
 /**
  Tests for the self-certification discount: a checker judging text it helped
  write is heard at {@link SELF_VOTE_WEIGHT} rather than at a whole vote.
- 
+
  THE DISCRIMINATING CASE IS `RESOLVES ON ONE INDEPENDENT VOTE`. One author
  against one independent is 1 against 1 unweighted and 1 against a half
  weighted, so that case alone flips when the discount is removed. Every other
@@ -9,7 +9,7 @@
  positive control: identical ballots with nobody named as an author must NOT
  resolve, which is what proves the assertion reads the discount rather than
  the ballots.
- 
+
  @module
  */
 
@@ -79,7 +79,7 @@ const WROTE_THE_CHUNK: IssueAuthorship = {
 
 /**
  One checker id beside the ballot built for it.
- 
+
  @example
  ```ts
  const entry: CheckerBallot = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, { verdicts: {}, findings: [], },];

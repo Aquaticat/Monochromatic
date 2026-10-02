@@ -13,7 +13,7 @@ import type { ProviderRecord, } from '../provider-name.ts';
 
 /**
  Client every corpus-run entrypoint is handed.
- 
+
  @example
  ```ts
  const client: RunClient = createRunClient();
@@ -23,7 +23,7 @@ export type RunClient = SyntheticClient & {
   /**
    Which providers are out of budget right now, holds folded in, as the
    router itself sees them.
-   
+
    READ BEFORE EACH PHASE by `run-seats.ts`, which withholds a judge seat
    while the provider that would serve it is one that serves it too slowly
    for the round window, or one the owner declined to pay that model's rate

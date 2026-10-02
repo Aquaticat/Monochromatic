@@ -1,7 +1,7 @@
 /**
  Tests for the provider router: which provider takes a call, what happens
  when one refuses, and what a picture narrows.
- 
+
  @module
  */
 
@@ -116,18 +116,18 @@ type PerProvider<ValueT,> = {
 
 /**
  Builds stub providers recording which took each call.
- 
+
  @param status - status each provider refuses with, zero to answer
- 
+
  @param refusals - how many calls each provider refuses before answering,
  every call by default when it has a refusing status
- 
+
  @param text - what each provider answers when it answers
- 
+
  @param bodyText - what each provider's refusal says, `refused` by default
- 
+
  @returns Every provider's caller plus the log of who was called
- 
+
  @example
  ```ts
  const { callers, called, } = stubProviders({},);
@@ -173,9 +173,9 @@ function stubProviders(
 
   /**
    Builds one provider's caller.
-   
+
    @param provider - provider this caller stands for
-   
+
    @returns Caller that records itself, refuses as told, then answers
    */
   function callerFor(provider: ProviderName,) {
@@ -207,15 +207,15 @@ function stubProviders(
 
 /**
  Builds a budget view that answers as told and records refusals.
- 
+
  @param dry - which providers read as out of budget
- 
+
  @param holdsMs - what the holds report
- 
+
  @param onHoldEnd - what a read after the holds were asked for does first
- 
+
  @returns Budget view plus the providers marked as having refused us
- 
+
  @example
  ```ts
  const { budgets, refused, } = stubBudgets({},);
@@ -302,11 +302,11 @@ function stubBudgets(
 
 /**
  Guards a routed JSON answer.
- 
+
  @param value - parsed candidate
- 
+
  @returns Whether value carries a string spot
- 
+
  @example
  ```ts
  isNapSpot({ spot: 'windowsill', },);
@@ -319,13 +319,13 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
 /**
  Routes one text call for Qwen3.8-27B by default, which Synthetic and Hyper
  serve and the run buys from each, and reports what happened.
- 
+
  @param client - router under test
- 
+
  @param modelId - model to ask
- 
+
  @returns Reply text, or the error thrown
- 
+
  @example
  ```ts
  const outcome = await ask({ client, },);

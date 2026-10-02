@@ -25,7 +25,7 @@ import { isPlausibleSlice, } from './slice-implausible.ts';
 
 /**
  What a slice's size says about it, before any neighbour is considered.
- 
+
  @example
  ```ts
  const sliceClass: SliceClass = 'untranslated';
@@ -36,14 +36,14 @@ export type SliceClass =
    Long original, negligible translation. The absence verdict's subject: this is the
    positive verdict that a passage was never rendered, and a ratio of 0.01 is
    not an ambiguous one.
-   
+
    THE ONE CASE THIS CLASS READS WRONG is a WHOLE-SECTION move: where a
    translator rendered an entire section inside its neighbour, the emptied
    slice looks untranslated and the neighbour looks high, and the guard that
    refuses an untranslated donor suppresses exactly that pair. So this class is
    decided from the slice alone while its own discriminator sits in the
    neighbour, which is the mistake this file made twice already.
-   
+
    IT IS LEFT AS IT IS BECAUSE THE CORPUS SAYS IT COSTS NOTHING TODAY: at the
    pinned commit, ZERO untranslated slices sit beside a flagged high. Changing
    the rule on no evidence would trade a measured zero for an unmeasured guess.
@@ -62,7 +62,7 @@ export type SliceClass =
 
 /**
  Longest original a slice can carry and still be called untranslated.
- 
+
  Paired with {@link MAX_UNTRANSLATED_TARGET_CHARS} rather than used alone: a
  short original with a short translation is ordinary, and only a SUBSTANTIAL
  original left almost unrendered is evidence. `shi_Yumiaoya` carries 715, 1016
@@ -72,7 +72,7 @@ const MIN_UNTRANSLATED_SOURCE_CHARS = 150;
 
 /**
  Most translation a slice can carry and still be called untranslated.
- 
+
  Set above zero because a heading survives translation even when its section
  does not, and that heading is exactly what the empty slices carry.
  */
@@ -80,14 +80,14 @@ const MAX_UNTRANSLATED_TARGET_CHARS = 60;
 
 /**
  Longest original a slice can carry and still be called target-only.
- 
+
  `Zha_Ke`'s slice 1 carries 41 original characters against 3652 translated.
  */
 const MAX_TARGET_ONLY_SOURCE_CHARS = 80;
 
 /**
  Least translation a slice must carry to be called target-only.
- 
+
  A short original with a moderate translation is an ordinary heading plus
  gloss; the class is for a passage the original does not contain.
  */
@@ -95,7 +95,7 @@ const MIN_TARGET_ONLY_TARGET_CHARS = 400;
 
 /**
  Least deficit, in translated characters, worth calling a donor.
- 
+
  A LENGTH FLOOR ON THE SLICE CANNOT DO THIS JOB, which a draft of this file
  learned the hard way: `lintong`'s verified donor carries 43 original
  characters against 25 translated, so any rule that dismissed short slices
@@ -114,7 +114,7 @@ const HIGH_FACTOR = 2;
 
 /**
  Least surplus, in translated characters, worth calling a relocation.
- 
+
  Below a sentence or so, a surplus is ordinary variation in how a translator
  renders a phrase. `Dethelly/0` carries a surplus of 290 and `lintong/3` one
  of 261.
@@ -123,7 +123,7 @@ const MIN_RELOCATION_SURPLUS = 120;
 
 /**
  How much of a surplus the neighbour's deficit must account for.
- 
+
  MEASURED ON BOTH VERIFIED RELOCATIONS, against the baseline this file computes
  rather than an earlier draft's: `Dethelly` runs a surplus of 297 against a
  deficit of 121, and `lintong` 281 against 99, which are ratios of 0.41 and
@@ -132,7 +132,7 @@ const MIN_RELOCATION_SURPLUS = 120;
  carries the expanded English of both. A symmetric "similar magnitudes" test,
  which is what conservation suggests and what a reviewer proposed, would reject
  both cases this instrument was built from.
- 
+
  A QUARTER RATHER THAN A THIRD, and the margin is thinner than it looks. Both
  candidates verified by hand as TRANSCRIPTIONS rather than moves sit at 0.28,
  and the two verified relocations at 0.35 and 0.41, so the band just above this
@@ -144,7 +144,7 @@ const MIN_CONSERVED_FRACTION = (1 / 2) * (1 / 2);
 
 /**
  One slice, measured and classified.
- 
+
  @example
  ```ts
  const slice: ClassifiedSlice = { slicePosition: 0, sourceChars: 35, targetChars: 403, ratio: 11.51, residual: 290, sliceClass: 'translated', };
@@ -165,7 +165,7 @@ export type ClassifiedSlice = SliceRatio & {
 
 /**
  A slice that took text on beside one that gave text up.
- 
+
  @example
  ```ts
  const candidate: RelocationCandidate = { high: 0, low: 1, surplus: 290, deficit: 149, };
@@ -195,7 +195,7 @@ export type RelocationCandidate = {
 
 /**
  One document's reading, with each class kept apart.
- 
+
  @example
  ```ts
  const reading: DocumentDisplacement = classifyDisplacement({ slices, },);
@@ -241,7 +241,7 @@ export type DocumentDisplacement = {
 
 /**
  Classifies one slice on its own size, before any neighbour is read.
- 
+
  ONLY THE ONE CLASS A NEIGHBOUR CANNOT OVERTURN IS DECIDED HERE. A section with
  a long original and no translation is untranslated whatever sits beside it.
  Everything else waits, because `target-only` and relocation share one shape:
@@ -249,11 +249,11 @@ export type DocumentDisplacement = {
  letter AND `Dethelly/0`'s relocation, and size alone cannot tell them apart.
  A first draft of this file did claim `target-only` here, and it silently
  reclassified the one case this whole instrument was built from.
- 
+
  @param reading - one slice's measured ratio
- 
+
  @returns What that slice's size says about it on its own
- 
+
  @example
  ```ts
  const sliceClass = classifySlice({ reading, },);
@@ -269,13 +269,13 @@ function classifySlice({ reading, }: { readonly reading: SliceRatio; },): SliceC
 
 /**
  Slice positions carrying one class.
- 
+
  @param classified - every slice, already classified
- 
+
  @param sliceClass - class to collect
- 
+
  @returns Positions in slice order
- 
+
  @example
  ```ts
  const untranslated = indicesOf({ classified, sliceClass: 'untranslated', },);
@@ -301,11 +301,11 @@ function indicesOf(
 
 /**
  Reads one document's slice sizes and says what each anomaly looks like.
- 
+
  @param slices - prepared slice pairs, each with both sides' character counts
- 
+
  @returns Baseline used, every slice classified, and each anomaly class apart
- 
+
  @example
  ```ts
  const reading = classifyDisplacement({ slices, },);
@@ -330,7 +330,7 @@ export function classifyDisplacement(
    Expansion read from slices that are plausibly translations, long enough on
    the original side for their ratio to mean something, and not themselves
    implausible.
-   
+
    ALL THREE CONDITIONS ARE LOAD-BEARING, and they were measured separately
    over the 89 documents that offer a baseline at all. Dropping short originals
    moves 62 of them, which is the largest of the three: it stops one slice with
@@ -341,13 +341,13 @@ export function classifyDisplacement(
    stays because its case is definitional rather than statistical: a section
    nobody rendered is not a translation, so it has no standing to say what a
    translation's density is, whatever the number would have done.
-   
+
    THE IMPLAUSIBILITY FILTER IS NOT CIRCULAR, which is the thing to check
    before believing any of this. Every predicate behind it reads fixed
    endpoints and never the baseline, so nothing it removes was chosen by the
    quantity it goes on to compute. A filter that read the baseline would be
    defining the centre in terms of itself.
-   
+
    EVERY EXCLUDED SLICE IS STILL CLASSIFIED. They just do not get to say what
    normal is.
    */
@@ -452,7 +452,7 @@ export function classifyDisplacement(
   /**
    Unpaired surpluses whose original is far too small to have carried them,
    which is content the source side does not contain at all.
-   
+
    DECIDED HERE RATHER THAN ON THE SLICE, because this shape and a relocation's
    are the same shape. `Zha_Ke`'s slice 1 and `Dethelly`'s slice 0 both carry a
    tiny original against a long translation; what separates them is that

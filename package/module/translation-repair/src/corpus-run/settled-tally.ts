@@ -43,11 +43,11 @@ type ShippedSlice = {
 
 /**
  Counts slices whose delivery carries a change.
- 
+
  @param rows - one lane's delivery ledger, as version 2 records it
- 
+
  @returns How many slices that lane's document carries a replacement for
- 
+
  @example
  ```ts
  const changed = changedSlices({ rows: artifact.lanes.repair.delivery, },);
@@ -69,12 +69,12 @@ function changedSlices(
 
 /**
  Renders the TALLY line for one settled entry.
- 
+
  @param artifact - what was written for this entry, which supplies every
  number here rather than being recounted beside it
- 
+
  @returns Single line, no trailing newline
- 
+
  @example
  ```ts
  console.log(settledTallyLine({ artifact, },),);
@@ -154,7 +154,7 @@ export function settledTallyLine(
   /**
    Slices where a document assembled today would carry wording the archive
    did not.
-   
+
    ADDED BESIDE the two lane counts rather than replacing either, per this
    task's decision 1. `repairChanged` and `translateChanged` say what each
    lane PROPOSED, which stays true however the deciders later ruled; this
@@ -162,12 +162,12 @@ export function settledTallyLine(
    it a reader gauging how much an entry changed misses the consolidation
    entirely, and on an entry nobody has decided reads two sets of proposals
    as the outcome.
-   
+
    READ AS THE PAGE CARRIES IT, after the archive's typography (ledger A10):
    counting the reading before typography called a wording that differed from
    the archive only in its quote style a change, and hulicaijia31 logged 34
    changed slices where its page carried 31.
-   
+
    ZERO IS THE HONEST ANSWER on an undecided entry, and it is meant to be
    read beside `selection=pending-human-decision` on the same line: two
    lanes proposed changes and, as things stand, a document would carry none

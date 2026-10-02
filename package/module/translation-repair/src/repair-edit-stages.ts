@@ -35,7 +35,7 @@ import {
 
 /**
  Everything the checker stage produced for one chunk.
- 
+
  @example
  ```ts
  const { tallies, } = await runCheckerStage({ ... },);
@@ -49,7 +49,7 @@ export type CheckerStageResult = {
 
   /**
    Per-issue ballots and seated roster beside those tallies, keyed the same.
-   
+
    Carried so what lands in the artifact is the round rather than its sum. The
    tally inside each reading is the very object {@link CheckerStageResult.tallies}
    holds, so the two cannot disagree.
@@ -69,34 +69,34 @@ export type CheckerStageResult = {
 
 /**
  Runs the resolution checkers over one chunk's patched candidate.
- 
+
  @param client - injected model client
- 
+
  @param checkerModelIds - checker voices
- 
+
  @param sourceText - original chunk text
- 
+
  @param patchedText - candidate text after the apply gate
- 
+
  @param issues - accepted issues the editors addressed
- 
+
  @param authorship - who wrote `patchedText`, so a checker judging its own
  work is heard at a discount rather than at full weight
- 
+
  @param identityContext - declared names and handles the panel judged the
  issues by, absent or empty on a page declaring none (ledger L14)
- 
+
  @param referenceContext - what the pages the original links say, absent or
  empty when it links nowhere (ledger L14)
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Per-issue tallies plus findings
- 
+
  @example
  ```ts
  const checker = await runCheckerStage({ ... },);

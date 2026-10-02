@@ -30,7 +30,7 @@ import type {
 
 /**
  What a reader does about keys the version does not name here.
- 
+
  @example
  ```ts
  const unknownKeys: UnknownKeyPolicy = 'tolerate';
@@ -64,7 +64,7 @@ const OUTCOME_KEYS: Readonly<Record<ArtifactSliceOutcome['kind'], readonly strin
 
 /**
  Fields this version gives a MEANING to on some outcome member.
- 
+
  Checked even where unknown keys are tolerated, because the two cases are not
  alike: a field version 2 never heard of is a later pipeline adding evidence,
  while `acceptedText` on a member that decided nothing is this version's own
@@ -74,21 +74,21 @@ const RESERVED_OUTCOME_KEYS: readonly string[] = ['acceptedText',];
 
 /**
  Reads what a lane did about one slice.
- 
+
  @param value - outcome JSON
- 
+
  @param unknownKeys - what to do about keys this version does not name, which
  differs between the ledger, whose shape version 2 owns, and a raw lane
  result, which the live pipeline owns
- 
+
  @param path - dotted path for error message
- 
+
  @returns Outcome as version 2 describes it
- 
+
  @throws {@link ArtifactParseError} when the discriminator names no member of
  this version, when a member carries a field belonging to another, or when a
  decision carries no wording
- 
+
  @example
  ```ts
  const outcome = parseSliceOutcome({ value, unknownKeys: 'refuse', path, },);
@@ -166,17 +166,17 @@ export function parseSliceOutcome(
 
 /**
  Reads how one lane's document came to carry what it carries.
- 
+
  @param value - delivery JSON
- 
+
  @param path - dotted path for error message
- 
+
  @returns Delivery as version 2 describes it
- 
+
  @throws {@link ArtifactParseError} when the discriminator names no member of
  this version, when a member carries a key belonging to another, or when a
  withdrawal names no mechanism
- 
+
  @example
  ```ts
  const delivery = parseSliceDelivery({ value, path, },);
@@ -243,17 +243,17 @@ export function parseSliceDelivery(
 
 /**
  Reads whether the two lanes' own decisions were comparable.
- 
+
  @param value - decision comparison JSON
- 
+
  @param path - dotted path for error message
- 
+
  @returns Decision comparison as version 2 describes it
- 
+
  @throws {@link ArtifactParseError} when the discriminator names no member of
  this version, when a member carries a key belonging to another, or when an
  undecided lane is named something other than a lane
- 
+
  @example
  ```ts
  const decisions = parseDecisionComparison({ value, path, },);

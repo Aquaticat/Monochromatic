@@ -1,12 +1,12 @@
 /**
  Tests that every sheet deciding or writing English is told what settles tense.
- 
+
  WHAT THIS FILE EXISTS TO STOP, measured rather than imagined. On the sixth
  consolidation bed run the shipped rendering of one slice moved a life told in
  the past into the present, on a page whose neighbouring chunks were both past,
  and the shipped sentence disagreed with ITSELF: it opened in the present and
  finished with a clause in the past.
- 
+
  WHY NO SHEET CAUGHT IT. The rule saying a tense is forced on English by
  English, never chosen from the Chinese, closes with "hold it against a
  candidate only when the choice it made is the WRONG one, and say which reading
@@ -14,15 +14,15 @@
  judge that spotted the drift could not discharge the second half and had no
  ground to stand on. Naming the English as the authority for this one forced
  choice gives the finding its evidence.
- 
+
  WHERE THE RULE LIVES AND WHY. The half needing no page, that one sentence
  holds one tense, sits in the block every tier inherits. The half needing the
  English already on the page is stated again in each producing sheet's own
  vocabulary, because those sheets label that evidence ARCHIVE RENDERING and
  EXISTING TRANSLATION rather than "the passage being replaced".
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 

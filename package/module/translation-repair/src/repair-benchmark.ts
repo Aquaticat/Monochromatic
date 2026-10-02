@@ -57,7 +57,7 @@ export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
 
 /**
  One graded repair attempt over one entry.
- 
+
  @example
  ```ts
  const record: RepairAttemptRecord = {
@@ -94,7 +94,7 @@ export type RepairAttemptRecord = {
 
   /**
    Whether each planted seed was recoverable from the Chinese at all.
-   
+
    Judged against the SOURCE and the deletion, never against the repaired
    text, so it is independent of what the pipeline did. A seed the source
    does not license cannot fairly count against detection.
@@ -139,7 +139,7 @@ export type RepairAttemptRecord = {
 
 /**
  Whole repair benchmark result.
- 
+
  @example
  ```ts
  const { records, scorecard, } = await runRepairBenchmark({ ... },);
@@ -163,33 +163,33 @@ export type RepairBenchmarkResult = {
  against the known deletions. Entries run sequentially inside the run
  budget; what the budget cannot fit records as skipped, and the
  scorecard reports the resulting coverage.
- 
+
  @param client - injected model client
- 
+
  @param entries - corpus entries with derived seeds
- 
+
  @param models - role roster for every repair run
 
  @param signal - abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param runBudgetMs - real time the whole benchmark may take, counted on the
  monotonic clock so setting the system clock neither spends nor refunds it
- 
+
  @param repair - repair driver seam; tests inject a scripted one
- 
+
  @param judge - restoration-judge seam; tests inject a scripted one
- 
+
  @param judgeModelIds - bilingual judge roster, from the caller's seated
  bench; no default, since a hand-listed one outlived the owner's cull
  (ledger P4)
- 
+
  @returns Graded attempts plus the aggregate scorecard
 
  @throws Whatever `signal.reason` carries once the caller aborts; an entry's
  fault under a live signal is recorded as that entry's error instead
- 
+
  @example
  ```ts
  const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, perCallTimeoutMs, judgeModelIds, },);
@@ -312,7 +312,7 @@ export async function runRepairBenchmark(
 
       /**
        Whether each deleted sentence was recoverable from the Chinese at all.
-       
+
        Asked of the SOURCE and the deletion, never of the repaired text, so
        it is independent of whether the pipeline restored anything. A seed the
        source does not license cannot fairly count against detection: there is

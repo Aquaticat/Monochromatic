@@ -28,13 +28,13 @@ import type { ArtifactSectionPairing, } from './artifact-two-lane-contract.ts';
 
 /**
  What an artifact says about the pairing its slicing was built on.
- 
+
  A UNION RATHER THAN AN OPTIONAL LIST, for the same reason the schema reading
  in `artifact-schema-version.ts` is one: the empty list is a real answer here.
  The roster can be asked about every section and commit to nothing, and a
  consumer writing `pairing ?? []` would turn "nobody was asked" into "asked
  and agreed nothing", which is a claim about the run.
- 
+
  @example
  ```ts
  const pairing: ParsedBlockPairing = { kind: 'unrecorded', };
@@ -60,14 +60,14 @@ export type ParsedBlockPairing = {
 
 /**
  Refuses a section whose pairs could not have come from a roster reply.
- 
+
  @param pairs - pairs as recorded
- 
+
  @param path - dotted path for error messages
- 
+
  @throws {@link ArtifactParseError} naming the first position that breaks the
  order the producer guarantees
- 
+
  @example
  ```ts
  assertPairsAdvance({ pairs, path, },);
@@ -111,17 +111,17 @@ function assertPairsAdvance(
 
 /**
  Refuses a list that repeats a section or records them out of order.
- 
+
  ORDER IS CHECKED RATHER THAN IMPOSED, because the writer sorts and a list
  arriving unsorted is therefore not one this pipeline wrote. Sorting it here
  would accept that file and hide which run produced it.
- 
+
  @param sections - sections as recorded
- 
+
  @param path - dotted path for error messages
- 
+
  @throws {@link ArtifactParseError} naming the first section out of place
- 
+
  @example
  ```ts
  assertSectionsAscend({ sections, path, },);
@@ -158,20 +158,20 @@ function assertSectionsAscend(
 
 /**
  Reads the pairing a preparation records, or its absence.
- 
+
  @param value - `blockPairing` as the artifact carries it, possibly absent
- 
+
  @param alignmentPairCount - aligned sections this preparation reports, which
  bounds every section index recorded here
- 
+
  @param path - dotted path for error messages
- 
+
  @returns Pairing it records, or a named absence
- 
+
  @throws {@link ArtifactParseError} when the list is the wrong shape, names a
  section this preparation does not have, repeats a section, records sections
  out of order, or carries a pairing no roster reply could have produced
- 
+
  @example
  ```ts
  const pairing = parseBlockPairing({ value: record.blockPairing, alignmentPairCount, path, },);

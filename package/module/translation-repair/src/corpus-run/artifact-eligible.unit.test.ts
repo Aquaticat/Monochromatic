@@ -1,20 +1,20 @@
 /**
  Tests for pipeline-generation partitioning of settled artifacts.
- 
+
  The failure these exist for is not hypothetical. On 2026-08-13 the
  accumulation directory held 21 settled entries across three recorded tips,
  and every one of the three lacked both behaviour fixes that had landed that
  evening, so the pool of entries settled under the current pipeline was zero
  while the directory looked full. Six readers globbed that directory and none
  of them read the `tip` the artifacts already carried.
- 
+
  A generation is now the BUILT PIPELINE, recorded as `pipelineDigest`, because
  the commit answered the question wrongly in both directions: it moves for a
  documentation commit that changes nothing that runs, and stays put across an
  uncommitted edit that changes everything.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -63,13 +63,13 @@ const TIP_B = '2'.repeat(40,);
 
 /**
  The two commits of this repository ancestry can be asked about safely.
- 
+
  Real commits, because `tipContains` asks git and an invented sha is an
  UNRESOLVABLE commit rather than an excluded one. The root cannot contain
  HEAD, so requiring HEAD excludes anything settled at the root.
- 
+
  @returns Root commit first, HEAD second
- 
+
  @example
  ```ts
  const [root, head,] = await gitBounds();
@@ -114,14 +114,14 @@ async function gitBounds(): Promise<readonly [string, string,]> {
 
 /**
  Writes a throwaway artifacts directory.
- 
+
  Written to a fresh temporary directory every time rather than to the real
  runs directory, which holds hours of ungraded work.
- 
+
  @param entries - one record per artifact; omitting `tip` writes an artifact
  carrying no provenance at all, and omitting `digest` writes one from before
  artifacts recorded which build produced them
- 
+
  @returns Artifacts directory, removed when its `await using` scope ends
 
  @example

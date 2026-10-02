@@ -9,7 +9,7 @@
 
 /**
  One lane's claim on a shared cache directory.
- 
+
  @example
  ```ts
  const namespace: SliceNamespace = { prefix: 'translate.', marker: 'translate-generation.txt', };
@@ -24,7 +24,7 @@ export type SliceNamespace = {
 
   /**
    File recording which pipeline filled this lane's slices.
-   
+
    Deliberately not a `.json` name, so a slice loader cannot mistake a marker
    for a settled slice.
    */
@@ -33,20 +33,20 @@ export type SliceNamespace = {
 
 /**
  Every claim in this package, keyed by the role that owns it.
- 
+
  ONE RECORD RATHER THAN LOOSE CONSTANTS, so that declaring a namespace and
  registering it are the same act. `belongsToNamespace` defines the repair lane
  by SUBTRACTION from the registered prefixes, so a prefix nothing registered
  is one the repair lane adopts, and its next generation change deletes those
  files while reporting that it discarded its own slices.
- 
+
  THAT OMISSION HAPPENED SIX TIMES while the registration was a second,
  separate list. Two were still live when this record replaced it: `contest.`
  and `pairing.` were both unregistered, so a repair-lane generation change
  threw away an entry's contest ballots and its whole block pairing, logging
  "discarding 3 cached slices". Both are bought from the roster, so both cost
  real calls to rebuy.
- 
+
  THE NAMED EXPORTS OF THIS MODULE READ OUT OF HERE and `EVERY_SLICE_NAMESPACE` is this
  record's values, so no namespace can exist for one and not the other. A
  seventh written as a standalone constant escapes that, which is why it must
@@ -112,7 +112,7 @@ const CLAIM_BY_ROLE = {
 
   /**
    Whole-document SECTION pairing, which decides what an aligned section is.
-   
+
    ITS OWN CLAIM RATHER THAN `pairing`'s, because the two are bought in order
    and the first decides the questions the second is asked. Sharing a prefix
    would let a stored block answer be read as a section answer, since both
@@ -128,7 +128,7 @@ const CLAIM_BY_ROLE = {
    Naturalness refinement. NOT A LANE: a refinement is bought after the repair
    lane has already settled a slice, over what its accuracy pass produced, so
    it retires with the entry rather than standing beside the lane's own work.
-   
+
    ITS OWN CLAIM RATHER THAN THE REPAIR LANE'S, so that moving the rewriter
    roster discards refinements without discarding the accuracy pass that fed
    them. Sharing the repair prefix would throw away hours of critic and editor
@@ -153,7 +153,7 @@ const CLAIM_BY_ROLE = {
 
 /**
  Every namespace this package defines, which is what the store subtracts from.
- 
+
  @example
  ```ts
  const prefixes = EVERY_SLICE_NAMESPACE.map(({ prefix, },) => prefix,);

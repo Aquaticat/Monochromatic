@@ -1,15 +1,15 @@
 /**
  Tests for the two constructed defects the judge-quality bench puts on the
  ballot.
- 
+
  What these pin is the property each fixture EXISTS for: the deletion leaves
  the complete text longer, the insertion leaves it shorter, and both leave
  every other word alone. A fixture that quietly failed either would produce a
  number that reads exactly like a good one.
- 
+
  Fixtures mirror corpus structure only. Cat-themed invention throughout; no
  corpus content appears here.
- 
+
  @module
  */
 

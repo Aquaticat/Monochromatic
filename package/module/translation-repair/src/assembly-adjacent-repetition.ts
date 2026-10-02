@@ -30,7 +30,7 @@ import {
 
 /**
  Shortest repeat worth reporting, in words.
- 
+
  Matches {@link MIN_PHRASE_WORDS} in the document-scale check deliberately:
  adjacency relaxes the CONTENT requirement, not the length one, because three
  shared words between neighbouring passages is still ordinary English.
@@ -39,7 +39,7 @@ const MIN_ADJACENT_WORDS = 4;
 
 /**
  Longest repeat looked for, in words.
- 
+
  A repeat longer than this is reported at this length, which is enough to name
  it; the finding carries counts rather than wording, so nothing is gained by
  growing the window further.
@@ -48,7 +48,7 @@ const MAX_ADJACENT_WORDS = 12;
 
 /**
  Archive occurrences at which a repeat stops being ours.
- 
+
  An archive that already says a phrase twice is an author who repeats, and a
  document preserving that is faithful rather than damaged. Measured on
  `lintong`, where a phrase the archive states twice was reported as introduced
@@ -59,7 +59,7 @@ const ARCHIVE_REPEAT_FLOOR = 2;
 
 /**
  One slice's shipped wording, in document order.
- 
+
  @example
  ```ts
  const slice: AdjacentSliceText = { sliceIndex: 3, text: 'the tabby waited', };
@@ -81,11 +81,11 @@ export type AdjacentSliceText = {
 /**
  Wording two neighbouring slices both shipped, which the archive did not
  repeat.
- 
+
  CARRIES NO WORDING. The slice pair and the measurements locate the finding
  well enough to act on, and a findings list travels into logs and artifacts
  where corpus text does not belong.
- 
+
  @example
  ```ts
  const found: AdjacentRepetition = {
@@ -127,7 +127,7 @@ export type AdjacentRepetition = {
 
 /**
  Two slices that sit next to each other in the assembled document.
- 
+
  @example
  ```ts
  const pair: NeighbouringPair = { earlier, later, };
@@ -147,11 +147,11 @@ type NeighbouringPair = {
 
 /**
  Pairs each slice with the one after it, in document order.
- 
+
  @param slices - shipped slice wordings in document order
- 
+
  @returns Neighbouring pairs, one fewer than the slices given
- 
+
  @example
  ```ts
  const pairs = neighbouringPairs({ slices, },);
@@ -186,10 +186,10 @@ function neighbouringPairs(
 
 /**
  One kept repeat, held with the wording that produced it.
- 
+
  The wording is needed only to drop shorter matches contained in one already
  kept, and it never leaves this file.
- 
+
  @example
  ```ts
  const kept: KeptRepeat = { phrase: 'by the garden gate again', found, };
@@ -209,19 +209,19 @@ type KeptRepeat = {
 
 /**
  Names wording both slices of one pair carry, longest first.
- 
+
  MAXIMAL MATCHES ONLY, for the reason {@link findIntroducedRepetitions} gives:
  a shared eight-word passage also shares as five four-word ones, and reporting
  every one buries the finding in its own substrings.
- 
+
  @param earlier - earlier slice of the pair
- 
+
  @param later - later slice of the pair
- 
+
  @param archiveWords - archive document as words, for the faithfulness test
- 
+
  @returns Repeats this pair introduced, longest first
- 
+
  @example
  ```ts
  const found = repeatsInPair({ earlier, later, archiveWords, },);
@@ -318,13 +318,13 @@ function repeatsInPair(
 /**
  Names wording neighbouring slices both shipped that the archive did not
  repeat.
- 
+
  @param archiveText - translation as it stood before the pipeline ran
- 
+
  @param shippedSlices - shipped slice wordings in document order
- 
+
  @returns Adjacent repetitions, in document order and longest first per pair
- 
+
  @example
  ```ts
  const found = findAdjacentRepetitions({ archiveText, shippedSlices, },);
@@ -355,15 +355,15 @@ export function findAdjacentRepetitions(
 
 /**
  Renders adjacent repetitions as assembly findings.
- 
+
  NAMES NO WORDING, for the reason {@link AdjacentRepetition} gives.
- 
+
  @param archiveText - translation as it stood before the pipeline ran
- 
+
  @param shippedSlices - shipped slice wordings in document order
- 
+
  @returns One finding per adjacent repetition
- 
+
  @example
  ```ts
  const findings = adjacentRepetitionFindings({ archiveText, shippedSlices, },);

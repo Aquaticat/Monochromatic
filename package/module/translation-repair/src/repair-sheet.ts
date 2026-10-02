@@ -59,11 +59,11 @@ const DISPOSITION_NOTES: ReadonlyMap<string, string> = new Map([
 /**
  Renders one replaced region, disclosing when the same edit serves other
  accepted issues so a shared replacement is never read as this issue's own.
- 
+
  @param region - replaced region
- 
+
  @param issueId - issue this sheet item is about
- 
+
  @returns Markdown lines for the region
  */
 function renderRegion(
@@ -87,7 +87,7 @@ function renderRegion(
 
   /**
    Sheet positions of the siblings that were also drawn, ascending.
-   
+
    Positions rather than issue ids, because an id is a 64-character hash a
    grader cannot look up, and five of them on one line is a third of a
    kilobyte of noise obscuring the one fact that matters: this same edit is
@@ -139,11 +139,11 @@ function renderRegion(
 /**
  Renders the repair evidence and, when a repair actually shipped, its grade
  box.
- 
+
  @param repair - repair provenance for this issue
- 
+
  @param issueId - issue this sheet item is about
- 
+
  @returns Markdown lines for the repair block
  */
 function renderRepair(
@@ -217,15 +217,15 @@ function renderRepair(
 
 /**
  Joins quotes onto one line, or says why there are none.
- 
+
  Quotes are short anchored spans rather than whole slices, so they stay inline
  rather than fenced; newlines are flattened so one quote cannot break the
  bullet it sits in.
- 
+
  @param quotes - distinct quotes for one side
- 
+
  @returns Display line
- 
+
  @example
  ```ts
  const line = quoteList({ quotes: candidate.sourceQuotes, },);
@@ -245,11 +245,11 @@ function quoteList(
 
 /**
  Renders one candidate as a repair-sheet block.
- 
+
  @param candidate - sampled candidate
- 
+
  @param index - 1-based position, matching the detection sheet exactly
- 
+
  @returns Markdown lines for the candidate
  */
 function renderCandidate(
@@ -296,17 +296,17 @@ function renderCandidate(
  Renders the repair grading sheet: the same sample in the same order as the
  detection sheet, graded on whether the pipeline's text fixes the defect. The
  sheet quotes UNLICENSED corpus text, so callers write it OUTSIDE the repo.
- 
+
  @param sample - drawn candidates, in draw order
- 
+
  @param seed - seed the sample was drawn under, recorded for reproduction
- 
+
  @param corpusSha - pinned corpus commit artifacts were produced against
- 
+
  @param drawDigest - fingerprint binding this sheet to one exact draw
- 
+
  @returns Repair grading sheet as markdown text
- 
+
  @example
  ```ts
  const sheet = formatRepairSheet({

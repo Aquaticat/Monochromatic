@@ -1,27 +1,27 @@
 /**
  Tests that the width head-to-head SWAPS THE SEATS, which is its whole reason
  for existing.
- 
+
  WHAT POSITION BIAS IS. A panel shown two candidates does not weigh them
  evenly; whichever sits first draws votes for sitting first. The comparison
  cancels that by asking the same question twice with the seats exchanged, and
  reading a winner only where both orders agree.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, seating the NARROW arm in BOTH places of
  the first order failed no test in this package. The panel would then have
  been asked to choose between one arm and itself, its answer would have been
  meaningless, and the head-to-head would have gone on reporting agreement
  between two orders of which one asked nothing.
- 
+
  READ OFF THE SHEETS THE JUDGES WERE SENT, not off the verdict. A verdict is a
  value the reader cannot trace back to a slate, and the defect here is
  entirely in what the panel was shown.
- 
+
  NO NETWORK. One judge is seated and answers every ballot with the first
  candidate; the client records the sheet each exchange carried.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -87,11 +87,11 @@ const INPUT: WidthProbeInput = {
 
 /**
  Reduces one text to the arm shape the comparison seats.
- 
+
  @param text - wording that arm shipped
- 
+
  @returns Arm carrying it, with no producers so no judge is discounted
- 
+
  @example
  ```ts
  const narrow = armShipping({ text: NARROW_TEXT, },);
@@ -117,9 +117,9 @@ function armShipping({ text, }: { readonly text: string; },): ArmOutcome {
 
 /**
  Runs one head-to-head and hands back the sheet every judge was sent.
- 
+
  @returns User sheets of the ballot exchanges, in the order they were asked
- 
+
  @example
  ```ts
  const sheets = await ballotSheets();

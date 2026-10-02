@@ -1,10 +1,10 @@
 /**
  Tests for folding a footnote label to the spelling mdast keys its nodes by.
- 
+
  The claim under test is an agreement with another library, so the cases here
  are the ones where a hand-rolled fold and the parser's would part company.
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -22,11 +22,11 @@ import {
 
 /**
  Folds a label the way this module does.
- 
+
  @param identifier - label as written
- 
+
  @returns Folded label
- 
+
  @example
  ```ts
  const folded = fold('Note',);
@@ -38,15 +38,15 @@ function fold(identifier: string,): string {
 
 /**
  Identifier mdast gives a document whose reference carries this label.
- 
+
  Goes through a real parse rather than a restated rule, since the whole point
  of this module is to agree with the parser rather than with a description of
  it.
- 
+
  @param identifier - label to write into both halves of a footnote pair
- 
+
  @returns Identifier mdast keyed the definition by
- 
+
  @example
  ```ts
  const parsed = parsedIdentifier('Note',);

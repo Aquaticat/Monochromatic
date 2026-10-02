@@ -15,7 +15,7 @@ import type {
  Which document of the repair pair a span points into:
  `source` names the original-language document,
  `target` names the translation under repair.
- 
+
  @example
  ```ts
  const side: DocumentSide = 'target';
@@ -31,7 +31,7 @@ export type DocumentSide = 'source' | 'target';
  adjudication.
  Zero-width spans (`startOffset === endOffset`, empty `quotedText`) are insertion
  anchors: they name where omitted content belongs without quoting anything.
- 
+
  @example
  ```ts
  const anchor: SpanAnchor = {
@@ -84,7 +84,7 @@ export type SpanAnchor = {
  Multi-span by design: an omission quotes untranslated source and drops a
  zero-width insertion anchor in the target; an alignment error may span several
  blocks per side.
- 
+
  @example
  ```ts
  const claim: IssueClaim = {
@@ -125,11 +125,11 @@ export type IssueClaim = {
  and steering operations (approve, strike) get stable handles.
  Span order participates in identity because span order carries claim-relevant
  pairing.
- 
+
  @param claim - claim whose stable handle callers need
- 
+
  @returns `issue/<sha256 hex>` identifier
- 
+
  @example
  ```ts
  const id = computeIssueClaimId({ claim, },);

@@ -134,23 +134,23 @@ async function removeLeftoverPage(
  GOES FIRST, before the record: a crash between the two then leaves the page
  gone and the entry still pending, never a recorded decline with a page
  standing that no later pass would revisit.
- 
+
  @param entry - entry declined
- 
+
  @param declinedDir - directory the record is written into
 
  @param publishDir - root of the mirrored tree, where no page may stand for it
 
  @param tip - repository head the pass runs at
- 
+
  @param pipelineDigest - built pipeline that declined it
- 
+
  @param note - the archive's note that decided it
- 
+
  @param startedAt - `monotonicMs` reading when the entry started, for the tally's duration
- 
+
  @returns The declined outcome
- 
+
  @example
  ```ts
  return recordEntryDecline({ entry, declinedDir, publishDir, tip, pipelineDigest, note, startedAt: t0, },);

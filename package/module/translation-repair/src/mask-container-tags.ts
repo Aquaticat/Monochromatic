@@ -19,7 +19,7 @@ import { isAsciiLetter, } from './ascii-letters.ts';
 
 /**
  One container tag standing without its partner inside a slice.
- 
+
  @example
  ```ts
  const tag: LoneContainerTag = { kind: 'close', name: 'details', text: '</details>', startOffset: 12, endOffset: 22, };
@@ -43,7 +43,7 @@ export type LoneContainerTag = {
 
   /**
    Offset of the tag's first character in the text the mask read.
-   
+
    CARRIED SO A READER CUTS AT THE TAG ITSELF (ledger B67). The block
    deficit searched the slice for the tag's text instead, and a whole
    element of the same name beside the container moved the cut.
@@ -90,16 +90,16 @@ type PairingTag = Readonly<{
 
 /**
  Reads one line as a container tag when the line is nothing but one tag.
- 
+
  A line holding an opening tag with attributes counts; a self-closing tag,
  a comment, a line holding a whole element or any other text does not.
- 
+
  @param line - line without its newline
- 
+
  @param lineStart - offset of the line's first character
- 
+
  @returns Tag on that line as a one-element list, or an empty one
- 
+
  @example
  ```ts
  tagOnLine({ line: '</details>', lineStart: 120, },);
@@ -181,11 +181,11 @@ function tagOnLine(
 
 /**
  Tag lines of a text in document order.
- 
+
  @param text - slice to scan
- 
+
  @returns Every line that is exactly one tag
- 
+
  @example
  ```ts
  const lines = tagLinesOf({ text, },);
@@ -227,11 +227,11 @@ function tagLinesOf({ text, }: { readonly text: string; },): readonly TagLine[] 
 /**
  Tag lines left without a partner once openers and closers of one name pair
  up innermost first.
- 
+
  @param lines - tag lines in document order
- 
+
  @returns Unpaired tag lines in document order
- 
+
  @example
  ```ts
  const lone = unpairedOf({ lines, },);
@@ -284,11 +284,11 @@ function unpairedOf<const TagT extends Pick<TagLine, 'kind' | 'name' | 'startOff
 /**
  Masks every container tag standing without its partner to same-length
  whitespace and reports each one.
- 
+
  @param text - slice, comments already masked
- 
+
  @returns Masked slice and the lone tags in document order
- 
+
  @example
  ```ts
  const { masked, tags, } = maskLoneContainerTags({ text: slice, },);

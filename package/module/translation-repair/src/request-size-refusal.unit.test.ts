@@ -1,13 +1,13 @@
 /**
  Tests for the gateway's size refusal, which arrives disguised as a parse
  failure.
- 
+
  THE DISCRIMINATORS ARE THE POINT. Re-raising every `400` as a size problem
  would be worse than saying nothing, because a body we genuinely malformed
  would then be reported as too big and whoever chased it would go looking for
  a limit rather than for their own bug. Three cases here each break one of the
  three signals and demand the plain failure back.
- 
+
  @module
  */
 
@@ -25,7 +25,7 @@ import {
 
 /**
  Largest body measured to pass, mirrored from the module under test.
- 
+
  SPELLED OUT RATHER THAN IMPORTED, deliberately. The module keeps this
  private, and a test that read the same constant it asserts against would
  agree with any value the module happened to hold, including a wrong one.

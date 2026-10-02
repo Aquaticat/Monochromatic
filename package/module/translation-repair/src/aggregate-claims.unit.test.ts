@@ -1,7 +1,7 @@
 /**
  Tests for cross-model claim aggregation into merge-proposal clusters.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

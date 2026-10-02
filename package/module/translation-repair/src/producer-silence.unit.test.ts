@@ -1,6 +1,6 @@
 /**
  Tests for naming who a standing table leaves out.
- 
+
  THE WHOLE POINT IS THE SPLIT. `producerStandings` carries a row only for a
  model somebody voted on, and three very different things put a seated model
  outside that set: a provider that refused it, a slate where every peer
@@ -9,10 +9,10 @@
  three stay apart, that a seat which cannot say who answered says so instead
  of calling the unknown silent, and that a table describing a roster the run
  never seated is refused rather than reported.
- 
+
  Fixtures are model ids and counts, so there is no passage here to invent. The
  ids come from the catalog, since the roster is what this file is about.
- 
+
  @module
  */
 
@@ -60,7 +60,7 @@ const ALSO_ABSENT: RosterModelId = SEAT_HYPER_TEXT_BEDROCK;
 
 /**
  Model the roster dropped on 2026-08-24, which no run seats today.
- 
+
  CAST ON PURPOSE, and this is the only cast here. `RosterModelId` is a closed
  union of models a run may seat, so a departed id cannot be spelled inside it,
  and refusing one is exactly what the refusal cases check. A test that could
@@ -86,11 +86,11 @@ const UNRECORDED: SeatAnswers = { kind: 'unrecorded', };
 
 /**
  Builds one standing row, since only its model id decides coverage.
- 
+
  @param modelId - model the row is about
- 
+
  @returns Row shaped as the tally produces them
- 
+
  @example
  ```ts
  const standings = [standingOf({ modelId: JUDGED, },),];
@@ -109,11 +109,11 @@ function standingOf(
 
 /**
  Builds a recorded answer list, so cases read as what was heard.
- 
+
  @param modelIds - models heard with a usable answer
- 
+
  @returns Recorded seat answers
- 
+
  @example
  ```ts
  const answered = heardFrom([JUDGED, ABSENT,],);

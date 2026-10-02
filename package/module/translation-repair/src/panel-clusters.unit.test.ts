@@ -1,6 +1,6 @@
 /**
  Cluster-local packets retain every claim, merge ballot and independent quorum basis.
- 
+
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -53,7 +53,7 @@ function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird
     chatText: async () => { throw new Error('Unexpected text request',); },
     quotas: async () => { throw new Error('Unexpected quota request',); },
     chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
-      const prompt = JSON.stringify(request.messages.filter(message => message.role === 'user')); 
+      const prompt = JSON.stringify(request.messages.filter(message => message.role === 'user'));
       const present = CLUSTERS.flatMap(cluster => cluster.members).filter(member => prompt.includes(member.claim.summary));
       captures.push({ prompt, modelId: request.modelId, claims: present.map(member => member.claimId), });
       if (input.disjoint === true) {

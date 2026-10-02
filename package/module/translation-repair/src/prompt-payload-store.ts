@@ -28,11 +28,11 @@ export const PROMPT_PAYLOAD_MISSING: unique symbol = Symbol('prompt-payload-miss
 
 /**
  Raised when durable prompt payload cannot be trusted or written.
- 
+
  NAMES WHAT REFUSED (ledger B69). The message is all a tally line prints, and
  one message for every check left an operator unable to tell a corrupted
  record from a format change from a full disk.
- 
+
  WHAT TO DO ABOUT ONE. The record is `<digest>.json` in the run's prompt
  payload directory (`corpus-run/runs-layout.ts`). A read refusal stops the
  entry `INCOMPLETE`, and every later run stops the same way, since the record
@@ -41,7 +41,7 @@ export const PROMPT_PAYLOAD_MISSING: unique symbol = Symbol('prompt-payload-miss
  version wrote reads again under a build of that version. A write refusal
  names the filesystem code; the reply was bought and not kept, so once the
  directory is writable again a rerun asks for it again.
- 
+
  @example
  ```ts
  throw new PromptPayloadStoreError({
@@ -66,15 +66,15 @@ export class PromptPayloadStoreError extends Error {
 
   /**
    Constructs privacy-safe durable payload failure.
-   
+
    @param promptDigest - model-plus-message digest naming record
-   
+
    @param operation - failed store boundary
-   
+
    @param reason - what refused, never quoting a stored value
-   
+
    @param cause - underlying filesystem or parse failure, where there was one
-   
+
    @example
    ```ts
    new PromptPayloadStoreError({ promptDigest, operation: 'write', reason, cause: error, });
@@ -124,13 +124,13 @@ export type PromptPayloadStore = {
 
 /**
  Reads payload text or domain absence sentinel.
- 
+
  @param path - digest-derived payload path
- 
+
  @param promptDigest - identity used in diagnostics
- 
+
  @returns Stored text or missing sentinel
- 
+
  @example
  ```ts
  const text = await readPayloadText({ path, promptDigest, });
@@ -165,13 +165,13 @@ async function readPayloadText(
 
 /**
  Refuses a record that cannot be trusted, naming what refused.
- 
+
  @param promptDigest - record identity
- 
+
  @param reason - what refused, never quoting a stored value
- 
+
  @throws {@link PromptPayloadStoreError} always
- 
+
  @example
  ```ts
  invalidStoredPayload({ promptDigest, reason: 'the record is not a JSON object', },);
@@ -196,15 +196,15 @@ function invalidStoredPayload(
 /**
  Refuses a record holding a field the store would not have written, naming
  the field by its path in the record rather than quoting its value.
- 
+
  @param promptDigest - record identity
- 
+
  @param field - JSON path of field within record
- 
+
  @param expected - what field must be for record to be trusted
- 
+
  @throws {@link PromptPayloadStoreError} always
- 
+
  @example
  ```ts
  invalidStoredField({ promptDigest, field: 'reply.text', expected: 'a string', },);
@@ -229,15 +229,15 @@ function invalidStoredField(
 
 /**
  Validates stored raw reply without admitting arbitrary disk bytes.
- 
+
  @param value - parsed stored reply
- 
+
  @param promptDigest - record identity for refusal
- 
+
  @returns Trusted raw chat reply
- 
+
  @throws {@link PromptPayloadStoreError} naming first field reply could not hold
- 
+
  @example
  ```ts
  const reply = readStoredReply({ value: parsed.reply, promptDigest, },);
@@ -351,15 +351,15 @@ function readStoredReply(
 
 /**
  Parses a record's text, refusing text that is not JSON.
- 
+
  @param text - record text, never quoted back
- 
+
  @param promptDigest - record identity for refusal
- 
+
  @returns Parsed record, of unknown shape for envelope checks
- 
+
  @throws {@link PromptPayloadStoreError} where text is not JSON
- 
+
  @example
  ```ts
  const parsed = parsedRecord({ text, promptDigest, },);
@@ -393,11 +393,11 @@ function parsedRecord(
 
 /**
  Opens privacy-sensitive prompt payload store beneath disposable run root.
- 
+
  @param dir - directory dedicated to prompt payload records
- 
+
  @returns Durable store keyed by canonical prompt digest
- 
+
  @example
  ```ts
  const store = promptPayloadStore({ dir: '/tmp/run/prompt-cache', });

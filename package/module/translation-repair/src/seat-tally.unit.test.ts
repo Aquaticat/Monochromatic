@@ -1,6 +1,6 @@
 /**
  Tests for the seat tally: counting at the client seam and the closing report.
- 
+
  THE COUNTS ARE THE EVIDENCE ONE CALIBRATION LACKED. Five of ten seats failed every
  call of a four-slice calibration and the command exited 0, because quorum was
  met on the nose by the other five and nothing read the whole run. The tally
@@ -8,7 +8,7 @@
  were asked and produced nothing usable, in the closing lines of every
  command. The cases in this file pin what "usable" means on each surface, that the
  wrapped client is otherwise untouched, and the exact lines a reader greps.
- 
+
  @module
  */
 
@@ -63,11 +63,11 @@ type CatVerdict = { readonly verdict: string; };
 
 /**
  Guards parsed JSON as a verdict.
- 
+
  @param value - parsed candidate
- 
+
  @returns Whether it carries a string verdict
- 
+
  @example
  ```ts
  const ok = isCatVerdict({ verdict: 'purr', },);
@@ -90,13 +90,13 @@ const FAILURE = new Error('the cat unplugged the router',);
  Builds an inner client that answers every text call with `text`, answers
  every JSON call with the parse of `text` run through the request's guard,
  and throws `FAILURE` on every call instead when `failing` is set.
- 
+
  @param text - what the fixture says
- 
+
  @param failing - whether every call throws instead
- 
+
  @returns Client with the full surface
- 
+
  @example
  ```ts
  const inner = innerClient({ text: '{"verdict":"purr"}', },);

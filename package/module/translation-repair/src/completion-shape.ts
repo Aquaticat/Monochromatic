@@ -41,7 +41,7 @@ const BODY_EXCERPT_LIMIT = 600;
 
 /**
  Signals a non-success HTTP status from the Synthetic API.
- 
+
  @example
  ```ts
  throw new SyntheticHttpError({ status: 429, bodyText: reply.bodyText, },);
@@ -60,16 +60,16 @@ export class SyntheticHttpError extends Error {
 
   /**
    Builds failure carrying status and body opening.
-   
+
    @param status - non-success HTTP status
-   
+
    @param bodyText - raw response body, excerpted for the message
-   
+
    @param summary - what went wrong, where a subclass knows something this
    class cannot infer from a status. Absent leaves the plain status line.
    The excerpt is appended either way, so no subclass has to know how long
    an excerpt runs or how to label whose words it quotes
-   
+
    @example
    ```ts
    new SyntheticHttpError({ status: 500, bodyText: 'upstream exploded', },);
@@ -113,7 +113,7 @@ export class SyntheticHttpError extends Error {
 
 /**
  Contract each wire format holds a body to, as a refusal names it.
- 
+
  NAMED BY THE READER THAT REFUSED, never assumed here (ledger B90). The
  Anthropic readers throw this class too, and a message naming only the
  OpenAI-compatible contract told a reader holding a failed Hyper call that
@@ -129,7 +129,7 @@ const CONTRACT_NAMES: Readonly<Record<StreamWireFormat, string>> = {
  Signals a success-status completion body that violates the contract of the
  wire format it was read as; always a provider defect, never a
  model-content defect.
- 
+
  @example
  ```ts
  throw new MalformedCompletionError({ wireFormat: 'openai', detail: 'stream event is not valid JSON', },);
@@ -143,13 +143,13 @@ export class MalformedCompletionError extends Error {
 
   /**
    Builds failure naming the violated expectation.
-   
+
    @param wireFormat - format the refusing reader read the body as, which names the contract
-   
+
    @param detail - which contract expectation the body violated
-   
+
    @param cause - underlying parse error when JSON itself failed
-   
+
    @example
    ```ts
    new MalformedCompletionError({ wireFormat: 'anthropic', detail: 'stream event is not JSON', cause: error, },);
@@ -179,7 +179,7 @@ export class MalformedCompletionError extends Error {
 
 /**
  Text and optional usage extracted from one completion body.
- 
+
  @example
  ```ts
  const extracted: ExtractedCompletion = { text: '{"issues":[]}', };
@@ -212,7 +212,7 @@ export type ExtractedCompletion = {
 
   /**
    Why the model stopped, verbatim from `choices[0].finish_reason`.
-   
+
    READ BECAUSE A COMPLETION THAT STOPPED EARLY IS INDISTINGUISHABLE FROM A
    MALFORMED ONE WITHOUT IT. A model cut off mid-answer delivers a whole,
    well-formed stream with no unreadable frames, and the only symptom
@@ -220,7 +220,7 @@ export type ExtractedCompletion = {
    mismatch, that sends a reader to the prompt and the schema; reported as
    `length`, it sends them to the token ceiling instead. Measured on a live
    lane-contest round where one voice stopped mid-string at 287 characters.
-   
+
    ABSENT RATHER THAN DEFAULTED when the provider omits it, since guessing
    `stop` would assert the very thing this exists to establish.
    */
@@ -229,11 +229,11 @@ export type ExtractedCompletion = {
 
 /**
  Reads why one choice stopped, when the provider said.
- 
+
  @param choice - one entry of the choices array
- 
+
  @returns Spreadable fragment carrying the reason, or nothing
- 
+
  @example
  ```ts
  const fragment = readFinishReason({ choice, },);
@@ -253,11 +253,11 @@ export function readFinishReason(
 
 /**
  Reads optional usage block when both component counts are numbers.
- 
+
  @param parsed - whole parsed completion body
- 
+
  @returns Usage block, or nothing when absent or mistyped
- 
+
  @example
  ```ts
  const usage = readUsage({ parsed, },);

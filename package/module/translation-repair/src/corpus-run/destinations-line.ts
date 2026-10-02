@@ -7,14 +7,14 @@ import type { DestinationCheck, } from './dropped-destinations.ts';
 
 /**
  Renders the `DESTINATIONS` line for one published entry.
- 
+
  @param entryId - person entry the line is about
- 
+
  @param destinations - what the publisher found on both sides
- 
+
  @returns One line, `DESTINATIONS <id> source=N page=M dropped=K`, followed by
  any finding
- 
+
  @example
  ```ts
  console.log(destinationsLine({ entryId: 'BookshopCat', destinations, },),);

@@ -45,7 +45,7 @@ import {
 
 /**
  A slate as it leaves the producing half.
- 
+
  @example
  ```ts
  const produced: ProducedConsolidations = { voices: [], validity: [], findings: [], };
@@ -79,24 +79,24 @@ export type ProducedConsolidations = {
 
 /**
  Buys one slate of consolidations, sending invalid ones back to their authors.
- 
+
  @param client - provider client this borrows
- 
+
  @param roster - voices seated to produce
- 
+
  @param subject - slice with both lane renderings and what the contest said
- 
+
  @param standingText - wording in place, which a repair round shows an author
  as the incumbent it must not simply reproduce
- 
+
  @param signal - cancellation for the whole producing half
- 
+
  @param perCallTimeoutMs - bound on any single exchange
- 
+
  @param l - stage logger
- 
+
  @returns Slate, each proposal's verdict before and after repair, and findings
- 
+
  @example
  ```ts
  const produced = await produceConsolidations({ client, roster, subject, standingText, signal, perCallTimeoutMs, l, },);
@@ -164,11 +164,11 @@ export async function produceConsolidations(
 
   /**
    Checks one proposal against the page it would be written into.
-   
+
    @param voice - proposal to check
-   
+
    @returns Identity beside the guard's verdict
-   
+
    @example
    ```ts
    const checked = checkVoice(voice,);

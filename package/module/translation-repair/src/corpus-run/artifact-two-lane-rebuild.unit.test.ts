@@ -1,15 +1,15 @@
 /**
  Tests for carving a document pair the way the run that settled it did.
- 
+
  WHAT THESE PIN is that a recorded recipe reproduces the run's own slicing,
  proved by the identity hash rather than by inspection, and that a missing
  recipe half is named rather than guessed silently. Every rebuild case carries
  a positive control showing the recipe actually moved the slicing, since a
  fixture the deterministic aligner slices identically would pass for the
  wrong reason.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -52,16 +52,16 @@ const BLOCKY_TARGET = '## Section one\n\nThe cat sleeps on the sill.\n\nThe cat 
 
 /**
  Builds an artifact over a preparation and reads it back through JSON.
- 
+
  @param prepared - preparation the artifact records
- 
+
  @param strip - preparation keys to delete before parsing, which is how a
  file written before those fields existed looks to a reader
- 
+
  @param generation - schema generation to label fixture with
- 
+
  @returns Parsed artifact
- 
+
  @example
  ```ts
  const artifact = writeAndRead({ prepared, strip: [], },);

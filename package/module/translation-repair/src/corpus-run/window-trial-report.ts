@@ -19,7 +19,7 @@ import type { WindowTrialRow, } from './window-trial-ledger.ts';
 
 /**
  Arm names the trial buys, and the only ones this report reads.
- 
+
  TWO NARROW ARMS ON PURPOSE. Their difference is the run-to-run band, and
  without it the narrow-to-wide difference has nothing to be judged against.
  */
@@ -31,7 +31,7 @@ export const TRIAL_ARMS = {
 
 /**
  How one arm fared over one class of slice.
- 
+
  @example
  ```ts
  const rates: ArmRate = { arm: 'wide', trials: 22, replaced: 9, };
@@ -56,11 +56,11 @@ export type ArmRate = {
 
 /**
  How the wide arm moved against the first narrow arm, slice by slice.
- 
+
  PAIRED COUNTS RATHER THAN TWO RATES, because two rates that match can hide
  equal traffic in both directions, and traffic in both directions is not the
  window working. This is the shape that distinguishes them.
- 
+
  @example
  ```ts
  const moved: Transitions = { replaceToKeep: 4, keepToReplace: 1, heldReplace: 10, heldKeep: 7, };
@@ -91,7 +91,7 @@ export type Transitions = {
 
 /**
  Everything the trial says about one class of slice.
- 
+
  @example
  ```ts
  const report: ClassReport = { sliceClass: 'relocation-high', arms: [], transitions, bandTransitions, pairedExcess: 0.2, entries: 9, incomplete: 0, degraded: 0, };
@@ -115,7 +115,7 @@ export type ClassReport = {
 
   /**
    How the SECOND NARROW ARM moved against the first.
-   
+
    THIS IS THE BAND, and it is the number `transitions` must beat. Both narrow
    arms were shown the same evidence over the same slate, so every transition
    here is noise by construction. A wide arm that moves no more than this has
@@ -132,7 +132,7 @@ export type ClassReport = {
   /**
    Mean, over the read triples, of the two narrow arms' replacement rate minus
    the wide arm's.
-   
+
    THE PRIMARY NUMBER, and positive means the window reduced replacement. The
    transition counts describe; this estimates. It uses BOTH narrow arms rather
    than privileging the first, which is what the transition counts do, and it
@@ -143,7 +143,7 @@ export type ClassReport = {
 
   /**
    Documents the read triples came from.
-   
+
    CARRIED BECAUSE SLICES ARE NOT INDEPENDENT. Several come from one entry, and
    relocation endpoints overlap by construction, so a spread computed as though
    every slice were its own document would be too narrow. This is the number a
@@ -153,7 +153,7 @@ export type ClassReport = {
 
   /**
    Complete triples excluded because some arm judged on a short panel.
-   
+
    SEPARATE FROM {@link ClassReport.incomplete} because the two say different
    things. A missing arm is a run that stopped. A short panel is a run that
    proceeded on fewer judges than it seated, and the wide arm is the one most
@@ -165,13 +165,13 @@ export type ClassReport = {
 
 /**
  Counts one arm's replacements over a set of complete triples.
- 
+
  @param triples - slices with all three arms
- 
+
  @param arm - arm to count
- 
+
  @returns That arm's trial and replacement counts
- 
+
  @example
  ```ts
  const rate = rateOf({ triples, arm: TRIAL_ARMS.wide, },);
@@ -200,15 +200,15 @@ function rateOf(
 
 /**
  Counts how one arm moved against another, slice by slice.
- 
+
  @param triples - slices with all three arms
- 
+
  @param from - arm the comparison starts at
- 
+
  @param to - arm it moves to
- 
+
  @returns Paired transition counts
- 
+
  @example
  ```ts
  const moved = transitionsBetween({ triples, from: TRIAL_ARMS.narrowFirst, to: TRIAL_ARMS.wide, },);
@@ -264,15 +264,15 @@ function transitionsBetween(
 
 /**
  Mean paired difference between the narrow pair and the wide arm.
- 
+
  PER SLICE FIRST, THEN AVERAGED, which is what makes it paired: each slice
  contributes the difference between what it did with the window and what the
  same slate did twice without it, so anything about the slice cancels.
- 
+
  @param triples - slices with all three arms on a full panel
- 
+
  @returns Positive when the window reduced replacement, zero over nothing
- 
+
  @example
  ```ts
  const excess = pairedExcessOf({ triples, },);
@@ -322,11 +322,11 @@ function pairedExcessOf(
 
 /**
  Documents a set of triples came from.
- 
+
  @param triples - slices with all three arms on a full panel
- 
+
  @returns Count of distinct entries
- 
+
  @example
  ```ts
  const entries = entriesOf({ triples, },);
@@ -346,11 +346,11 @@ function entriesOf(
 
 /**
  Groups one class's rows into per-slice arm maps.
- 
+
  @param rows - rows of one class
- 
+
  @returns One map per slice, keyed by arm
- 
+
  @example
  ```ts
  const bySlice = groupBySlice({ rows, },);
@@ -388,19 +388,19 @@ function groupBySlice(
 
 /**
  Reports what the trial found, one entry per class.
- 
+
  READS ONE PROTOCOL AND NO OTHER. The ledger is append-only and outlives any
  single experiment, so it holds rows bought under rosters, corpus pins and code
  that have since moved. The digest was already keeping those out of RESUMPTION;
  without the same filter here it kept them out of the buying and let them into
  the answer, which is the half that matters.
- 
+
  @param rows - every completed arm, from the ledger
- 
+
  @param protocol - digest to read, which every other row is excluded by
- 
+
  @returns One report per class present in that protocol's rows
- 
+
  @example
  ```ts
  const reports = reportWindowTrial({ rows, protocol, },);
@@ -451,7 +451,7 @@ export function reportWindowTrial(
     /**
      Of those, the ones every arm decided on a full panel, which is the only
      population read.
-     
+
      A SHORT PANEL IS NOT A SMALLER SAMPLE OF THE SAME THING. The fan-out
      proceeds once half the roster answers, so an arm that lost judges still
      returns a decision, and the wide arm sends the longest sheets under the

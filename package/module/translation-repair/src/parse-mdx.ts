@@ -23,16 +23,16 @@ import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 
 /**
  Describes where an MDX refusal stopped, quoting nothing it read.
- 
+
  MOSTLY SAFE ALREADY, and that is why this is narrow rather than absent. Four
  of five measured failure shapes report a position and an expectation. The
  fifth, an unclosed tag, embeds the tag NAME from the source, which is enough
  to carry a page's own markup into a stored finding.
- 
+
  @param cause - caught value, of unknown type by construction
- 
+
  @returns Phrase naming position and rule
- 
+
  @example
  ```ts
  `refused to parse ${mdxRefusalSite({ cause, },)}`;
@@ -80,18 +80,18 @@ type RefusalPlace = {
 /**
  What a parser message says the grammar stopped at: the end of the span it
  names, or the point it names, or the message itself when it names neither.
- 
+
  THE END OF A SPAN, NOT ITS START (ledger B86). `mdast-util-mdx-jsx` raises
  its refusals on leaving the span it names (`onErrorRightIsTag`,
  `exitMdxJsxTag` in 3.2.0), so an element left open in a paragraph stops the
  grammar where the paragraph ends. A `VFileMessage` copies its own `line` and
  `column` from the span's start, which read that refusal at the paragraph's
  first character. Micromark's own refusals name a point.
- 
+
  @param cause - caught error, of unknown shape beyond being an object
- 
+
  @returns Object whose `line` and `column`, when numeric, name the stop
- 
+
  @example
  ```ts
  const stop = stopPointOf({ cause, },);
@@ -116,15 +116,15 @@ function stopPointOf({ cause, }: { readonly cause: object; },): object {
 /**
  Reads the line and column a parser message says the grammar stopped at,
  when it names them.
- 
+
  A micromark message carries the place as numbers; anything else names no
  place. An element still open when the document ends is refused with no
  place at all, since the parser stopped at the end of the document.
- 
+
  @param cause - caught value, of unknown type by construction
- 
+
  @returns Line and column, each absent when unstated
- 
+
  @example
  ```ts
  const { line, column, } = refusalPlace({ cause, },);
@@ -159,10 +159,10 @@ function refusalPlace(
 
 /**
  Signals MDX source that refuses to parse.
- 
+
  Corpus documents compile upstream, so a refusal indicates corruption or a
  construct outside the mirrored grammar.
- 
+
  @example
  ```ts
  throw new MdxParseError({ cause: error, },);
@@ -187,14 +187,14 @@ export class MdxParseError extends Error {
 
   /**
    Builds failure stating where the grammar stopped, never what it read.
-   
+
    DOES NOT CARRY THE PARSER ERROR AS `cause`, for the reason
    `FrontMatterParseError` records: a cause chain is rendered by Node's
    uncaught-exception reporter, and `parse-document.ts` used to stringify this
    one straight into a stored finding.
-   
+
    @param cause - underlying micromark/remark error, read for position and rule
-   
+
    @example
    ```ts
    new MdxParseError({ cause: error, },);
@@ -220,15 +220,15 @@ export class MdxParseError extends Error {
 
 /**
  Parses MDX body text into an mdast tree with positions on every node.
- 
+
  @param body - MDX source with front matter already split away
- 
+
  @returns mdast root whose node positions are body-relative character offsets
- 
+
  @throws {@link MdxParseError} when source refuses to parse as MDX, and for
  any other failure inside the grammar too, a stack overflow on deep nesting
  among them
- 
+
  @example
  ```ts
  const root = parseMdxBody({ body: '# Title\n\nParagraph with[^1]\n\n[^1]: note\n', },);
@@ -251,21 +251,21 @@ export function parseMdxBody({ body, }: { readonly body: string; },): Root {
 /**
  The strict grammar's refusal a catch around {@link parseMdxBody} holds,
  for a catch that acts on the refusal alone.
- 
+
  SHARED RATHER THAN REPEATED (ledger T8, sixth batch). Seven catches around
  the grammar each tested the class and rethrew anything else, and no test
  reached a rethrow: `parseMdxBody` raises every failure as an
  {@link MdxParseError}, and the rest of their bodies throws only where an
  invariant breaks (a parsed node without a position). The narrowing stands
  here once, where a case reaches the rethrow.
- 
+
  @param error - what the catch caught
- 
+
  @returns The refusal
- 
+
  @throws The caught value unchanged when it is anything but the grammar's
  refusal, an unexpected state that must keep propagating
- 
+
  @example
  ```ts
  const refusal = requireMdxRefusal({ error, },);
@@ -282,18 +282,18 @@ export function requireMdxRefusal({ error, }: { readonly error: unknown; },): Md
  Tolerant fallback grammar: markdown has no syntax error,
  so constructs the MDX grammar rejects (raw HTML, brace expressions)
  survive as literal `html` and text nodes instead of failing the document.
- 
+
  NOT TOTAL: the parser descends once per nesting level, so thousands of nested
  quotation markers exhaust its stack (`translate-skeleton-page.ts` reports such
  a page as unread). A catch acting on that refusal alone narrows with
  {@link requireMarkdownRefusal}.
- 
+
  @param body - markdown source with front matter already split away
- 
+
  @returns mdast root whose node positions are body-relative character offsets
- 
+
  @throws {@link RangeError} when nesting exhausts the parser's stack
- 
+
  @example
  ```ts
  const root = parseMarkdownBody({ body: '<!-- note -->\n\nParagraph.\n', },);
@@ -309,20 +309,20 @@ export function parseMarkdownBody({ body, }: { readonly body: string; },): Root 
 /**
  The plain grammar's refusal a catch around {@link parseMarkdownBody} holds,
  for a catch that acts on the refusal alone.
- 
+
  A RANGE ERROR IS THE REFUSAL: plain markdown has no syntax error, so the one
  way it refuses a text is a nesting deep enough to exhaust the stack, which V8
  raises as a `RangeError`. Where the strict grammar turns every failure into
  an {@link MdxParseError}, this one lets any other failure propagate
  (ledger B100).
- 
+
  @param error - what the catch caught
- 
+
  @returns The refusal
- 
+
  @throws The caught value unchanged when it is anything but a `RangeError`,
  an unexpected state that must keep propagating
- 
+
  @example
  ```ts
  const refusal = requireMarkdownRefusal({ error, },);

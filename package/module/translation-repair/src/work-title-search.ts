@@ -37,7 +37,7 @@ export const HIGHLIGHT_CHARACTERS = 300;
 /**
  Raised when the search endpoint refuses or answers in a shape the reader
  cannot use.
- 
+
  @example
  ```ts
  throw new WorkTitleLookupError({ message: 'search responded 401', },);
@@ -46,9 +46,9 @@ export const HIGHLIGHT_CHARACTERS = 300;
 export class WorkTitleLookupError extends Error {
   /**
    Builds the refusal.
-   
+
    @param message - what went wrong, never carrying the key
-   
+
    @example
    ```ts
    throw new WorkTitleLookupError({ message: 'search responded 401', },);
@@ -71,11 +71,11 @@ type SearchResultWire = {
 
 /**
  Hits one wire result yields: one when it carries a url, none otherwise.
- 
+
  @param value - element of the response's results
- 
+
  @returns Zero or one hit, so callers flatten instead of filtering absence
- 
+
  @example
  ```ts
  hitsOf({ value: { title: 'To Live', url: 'https://x', highlights: ['...'], }, },);
@@ -109,20 +109,20 @@ export function hitsOf(
 
 /**
  Asks the search endpoint about one title.
- 
+
  @param apiKey - key sent as `x-api-key`, never logged
- 
+
  @param query - search string
- 
+
  @param signal - the call's abort
- 
+
  @param fetchFn - transport, `fetch` in production and a stub in tests
- 
+
  @returns Hits the endpoint returned
- 
+
  @throws {@link WorkTitleLookupError} when the endpoint answers anything but
  2xx or a body without a results array
- 
+
  @example
  ```ts
  const hits = await searchWorkTitle({ apiKey, query, signal, fetchFn: fetch, },);

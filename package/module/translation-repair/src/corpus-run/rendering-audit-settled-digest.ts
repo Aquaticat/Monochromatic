@@ -36,11 +36,11 @@ const AUDITED_DIGEST_PREFIX = 'sha256-audited-v1:';
 
 /**
  Digests one text the audit was shown.
- 
+
  @param text - exact characters
- 
+
  @returns Prefixed digest
- 
+
  @example
  ```ts
  const digest = auditedDigestOf({ text: sourceText, },);
@@ -59,17 +59,17 @@ function auditedDigestOf({ text, }: { readonly text: string; },): string {
 
 /**
  Digests the exact texts one audit was shown.
- 
+
  @param sourceText - original put in front of the roster
- 
+
  @param candidateText - rendering it judged
- 
+
  @param referenceContext - what the pages the original links say as the
  roster was shown them, empty where it was shown none, which leaves the
  identity keyed as every row written before references were shown
- 
+
  @returns Identity to persist on the row
- 
+
  @example
  ```ts
  const identity = digestAuditedText({ sourceText, candidateText, referenceContext, },);
@@ -96,13 +96,13 @@ export function digestAuditedText(
 
 /**
  Whether a value off disk is a recorded pair of digests.
- 
+
  @param value - field as it came out of the run file, positional because a
  type predicate cannot name a destructured binding
- 
+
  @returns Whether both digests are there and are strings, and the
  references digest is a string wherever it is there
- 
+
  @example
  ```ts
  if (isDigested(value,)) console.log(value.source,);
@@ -130,20 +130,20 @@ function isDigested(value: unknown,): value is {
 
 /**
  Reads a row's text identity, including rows written before it existed.
- 
+
  RETURNS `unrecorded` RATHER THAN THROWING. A run persisted before this field
  was added is a valid run whose other readings are all still answerable; only
  the repeat readings need it. Refusing to read the file would cost every other
  reading to serve one.
- 
+
  The runtime check is deliberate and not redundant with the type. Rows come
  off disk, where the type is a claim about what this code writes today rather
  than about what some older run wrote.
- 
+
  @param row - one persisted audit row
- 
+
  @returns What it was shown, or a positive statement that nobody recorded it
- 
+
  @example
  ```ts
  const identity = textIdentityOf({ row, },);
@@ -154,7 +154,7 @@ export function textIdentityOf(
 ): AuditedTextIdentity {
   /**
    Field as it came off disk.
-   
+
    READ AS `unknown` rather than as the declared type. The declaration says
    what this code writes today; the value came out of a file that an older
    build wrote, where the field is simply not there.
@@ -168,18 +168,18 @@ export function textIdentityOf(
 /**
  Whether two rows were shown identical originals, identical renderings and
  identical references, none counting as identical to none.
- 
+
  TWO UNRECORDED ROWS ARE NOT A MATCH. This is the whole reason the field is a
  tagged union: comparing two absences for equality would pair rows by their
  shared lack of evidence, and every such pair would then be read as one text
  audited twice.
- 
+
  @param left - one row
- 
+
  @param right - another
- 
+
  @returns Whether both sides are recorded and both agree
- 
+
  @example
  ```ts
  const same = sameAuditedText({ left, right, },);

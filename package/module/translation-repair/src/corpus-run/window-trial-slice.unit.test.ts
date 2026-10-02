@@ -1,15 +1,15 @@
 /**
  Tests for one slice's three arms.
- 
+
  WHAT THESE PIN is the property the whole trial rests on: the slate is bought
  ONCE and all three arms judge that same slate. Until the stage was split,
  asking a slice twice resampled the candidates, so two answers differed in the
  slate as well as the evidence and no reading could say which moved the
  verdict. A regression here would not fail loudly; it would produce a
  confident number from a confounded comparison, which is worse.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -86,9 +86,9 @@ const SLICES: readonly ChunkPair[] = [
 
 /**
  Client whose translators drift on every call, so a rebought slate would show.
- 
+
  @returns Client plus the judge sheets and translator call count
- 
+
  @example
  ```ts
  const rig = driftingClient();
@@ -200,15 +200,15 @@ function freshLedger({ dir, }: { readonly dir: string; },): string {
 
 /**
  Arms already bought, keyed the way the ledger keys them.
- 
+
  THROUGH `trialKey` RATHER THAN A LITERAL, because a test that spells the key
  itself agrees with nothing: the runner and the ledger once disagreed on the
  separator and every hand-written fixture passed anyway.
- 
+
  @param arms - arms to mark bought for the slice every case uses
- 
+
  @returns Key set shaped like `completedArms` returns
- 
+
  @example
  ```ts
  const done = doneFor({ arms: [TRIAL_ARMS.wide,], },);

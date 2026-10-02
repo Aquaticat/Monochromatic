@@ -33,7 +33,7 @@ import {
  Every verdict a checker may cast on one issue, closed vocabulary.
  `worse` flags a repair that damaged the region beyond the original
  defect; the no-regression measurement counts it against the candidate.
- 
+
  @example
  ```ts
  RESOLUTION_VERDICTS.includes('fixed',);
@@ -47,7 +47,7 @@ export const RESOLUTION_VERDICTS = [
 
 /**
  One checker verdict on one issue.
- 
+
  @example
  ```ts
  const verdict: ResolutionVerdict = 'fixed';
@@ -57,11 +57,11 @@ export type ResolutionVerdict = typeof RESOLUTION_VERDICTS[number];
 
 /**
  Guards untrusted verdict strings from model JSON.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value names one listed verdict
- 
+
  @example
  ```ts
  isResolutionVerdict('fixed',);
@@ -137,7 +137,7 @@ function resolutionSystemPrompt(
 /**
  Messages plus the issue order checks resolve through:
  issue number N on the wire means `issueIds[N - 1]`.
- 
+
  @example
  ```ts
  const plan: ResolutionPromptPlan = buildResolutionMessages({
@@ -164,21 +164,21 @@ export type ResolutionPromptPlan = {
  accepted issue the editors were asked to fix with its claims' quotes, with
  the declared names before the documents and the cited references after
  them, as the panel that accepted the issues read them (ledger L14).
- 
+
  @param sourceText - original chunk text
- 
+
  @param patchedText - revised translation after patch application
- 
+
  @param issues - accepted issues the editors addressed
- 
+
  @param identityContext - declared names and handles, absent or empty on a
  page declaring none
- 
+
  @param referenceContext - what the pages the original links say, absent or
  empty when it links nowhere
- 
+
  @returns Messages plus issue numbering order
- 
+
  @example
  ```ts
  const plan = buildResolutionMessages({ sourceText, patchedText, issues, },);
@@ -271,7 +271,7 @@ ${fence} END ${fence}`,
 
 /**
  One check as a checker reports it.
- 
+
  @example
  ```ts
  const wire: ResolutionCheckWire = { issue: 1, verdict: 'fixed', };
@@ -291,7 +291,7 @@ export type ResolutionCheckWire = {
 
 /**
  Whole checker reply on the wire.
- 
+
  @example
  ```ts
  const report: ResolutionReportWire = { checks: [], };
@@ -306,11 +306,11 @@ export type ResolutionReportWire = {
 
 /**
  Guards one wire check.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value carries the required check fields
- 
+
  @example
  ```ts
  isResolutionCheckWire({ issue: 1, verdict: 'fixed', },);
@@ -333,11 +333,11 @@ function isResolutionCheckWire(value: unknown,): value is ResolutionCheckWire {
 
 /**
  Guards a whole checker reply.
- 
+
  @param value - parsed model JSON
- 
+
  @returns Whether value is a wire report
- 
+
  @example
  ```ts
  const outcome = await client.chatJson({ ..., validate: isResolutionReportWire, },);
@@ -357,7 +357,7 @@ export function isResolutionReportWire(value: unknown,): value is ResolutionRepo
 /**
  Guard for a report the gather may count as a heard checker: a wire report
  carrying at least one known verdict on an issue the sheet showed.
- 
+
  LEDGER L8: `isResolutionReportWire` accepts `{"checks": []}`, a report
  checking only issue numbers the sheet never showed, and one whose only
  verdict is no verdict at all, so each counted as heard and closed a round
@@ -365,11 +365,11 @@ export function isResolutionReportWire(value: unknown,): value is ResolutionRepo
  report carries no voice, so the gather reads it as unreadable and the
  recovery round re-asks the seat. A report usable on some issues is heard,
  and abstains on the rest at tally time.
- 
+
  @param issueCount - issues the sheet showed, numbered from one
- 
+
  @returns Guard over parsed model JSON
- 
+
  @example
  ```ts
  const gather = await gatherStageVoices({ ..., validate: usableResolutionReportFor({ issueCount: 2, },), },);

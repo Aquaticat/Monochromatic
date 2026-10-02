@@ -1,7 +1,7 @@
 /**
  Tests for the Bedrock cost: usage times the catalog's prices, and the named
  absence where no usage arrived.
- 
+
  @module
  */
 

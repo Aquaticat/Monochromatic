@@ -33,7 +33,7 @@ const IDENTITY_FIELDS = [
 /**
  One side's declared identity, every field optional because corpus metadata
  shapes vary per entry and many pages declare only a name.
- 
+
  @example
  ```ts
  const declared: DeclaredIdentity = { name: 'Acheron', alias: 'Fairy, Acheron', };
@@ -61,11 +61,11 @@ export type DeclaredIdentity = {
  `unknown` by type and hand-edited in practice, so a number, list, or null in
  a name field must be rejected rather than coerced: a coerced value would
  enter the prompt as an authoritative correspondence.
- 
+
  @param value - raw front matter value
- 
+
  @returns Whether the value is a string carrying non-whitespace content
- 
+
  @example
  ```ts
  if (isDeclared('Mittens',)) { }
@@ -83,13 +83,13 @@ function isDeclared(value: unknown,): value is string {
  An undeclared field yields no key at all, which is what `?:` optionality
  means under `exactOptionalPropertyTypes`, so absence never has to travel as
  a value.
- 
+
  @param record - candidate record to read from
- 
+
  @param key - field name to read
- 
+
  @returns Single-entry fragment, empty when the field is not declared
- 
+
  @example
  ```ts
  const fragment = declaredFragment({ record: { name: 'Mittens', }, key: 'name', },);
@@ -117,11 +117,11 @@ function declaredFragment(
  Extracts declared identity from one document's parsed front matter data.
  Reads `name` at the top level and `alias`/`location` from the nested `info`
  record, which is the shape the pinned corpus uses.
- 
+
  @param data - parsed front matter value, `unknown` because shapes vary
- 
+
  @returns Declared identity, empty when nothing is declared
- 
+
  @example
  ```ts
  const identity = extractDeclaredIdentity({
@@ -163,16 +163,16 @@ export function extractDeclaredIdentity(
  side declares it. A one-sided declaration still earns its line: it tells the
  critic the handle is sourced metadata rather than invention, which is exactly
  the judgment that produced the graded false positives.
- 
+
  @param field - identity field to render
- 
+
  @param source - original side's declaration
- 
+
  @param target - translation side's declaration
- 
+
  @returns Single-line list for a declared field, empty when neither side
  declares it, so callers flatten instead of filtering absent values
- 
+
  @example
  ```ts
  const lines = renderField({ field: 'name', source, target, },);
@@ -218,7 +218,7 @@ function renderField(
 /**
  Third-person singular pronouns a Chinese original can use for its subject,
  in the order a tie is broken.
- 
+
  `TA` IS THE NEUTRAL FORM this corpus writes for a person who did not specify,
  in any casing; the word boundary keeps `ta` inside a romanised handle out.
  */
@@ -251,16 +251,16 @@ const COMPOUNDS_HIDING_A_PRONOUN = [
 
 /**
  Counts how often one han pronoun occurs in a text, compounds removed first.
- 
+
  AN INDEX SCAN RATHER THAN A PATTERN, since the needle is a fixed string and
  the count is all that is wanted.
- 
+
  @param text - original document
- 
+
  @param pronoun - fixed form to count
- 
+
  @returns Occurrences outside the compounds
- 
+
  @example
  ```ts
  countHanPronoun({ text: '她走了。她们笑了。', pronoun: '她', },);
@@ -304,7 +304,7 @@ const NOT_FOUND = -1;
 
 /**
  Spellings the sources give the neutral pronoun.
- 
+
  ALL THREE CASINGS ARE THE PRONOUN. Measured over the pinned corpus on
  2026-09-04, after the SS3B_0016 page shipped a bare "Ta" the counter had not
  seen: sources write `TA` in 2 entries, `Ta` in 7 and `ta` in 8, every
@@ -325,13 +325,13 @@ const PLURAL_SUFFIX = '们';
 
 /**
  Whether an occurrence is followed, spaces aside, by the plural suffix.
- 
+
  @param text - original document
- 
+
  @param from - position just after the occurrence
- 
+
  @returns Whether 们 is the next non-space character
- 
+
  @example
  ```ts
  isPluralAfter({ text: 'TA 们来了', from: 2, },);
@@ -362,16 +362,16 @@ function isPluralAfter(
 /**
  Counts how often one spelling of the neutral pronoun stands as a word of
  its own, singular.
- 
+
  ONE LINEAR PASS over the text with the string API: each occurrence is found
  from the previous one and its neighbours are read once.
- 
+
  @param text - original document
- 
+
  @param spelling - fixed form to count
- 
+
  @returns Occurrences bounded by non-letters and not made plural
- 
+
  @example
  ```ts
  countNeutralSpelling({ text: 'TA来了。DATA', spelling: 'TA', },);
@@ -429,11 +429,11 @@ function countNeutralSpelling(
 /**
  Counts how often the neutral pronoun stands as a word of its own, in any of
  its spellings.
- 
+
  @param text - original document
- 
+
  @returns Occurrences across TA, Ta and ta
- 
+
  @example
  ```ts
  countNeutralPronoun({ text: 'TA来了。Ta 走了。DATA', },);
@@ -459,7 +459,7 @@ function countNeutralPronoun(
 
 /**
  Names the pronoun the original uses for its subject, as one identity line.
- 
+
  WHY THIS LINE EXISTS. The Toka_ls relaunch of 2026-09-02 rendered a
  subjectless sentence (偶尔灵感迸发，左右推敲，留下工整的格律) with "they" for a
  person the page calls "she" throughout, and all eight judges passed it
@@ -467,7 +467,7 @@ function countNeutralPronoun(
  times on sixteen lines. Chinese leaves subjects unstated freely, so the pronoun is a fact
  about the document, not about the sentence, and this states it once where
  every sheet already reads the declared identity.
- 
+
  ONE LINE OR NONE. The dominant form is named with its count; a document that
  uses no third-person singular pronoun at all yields nothing, which leaves
  the house rule on neutral pronouns to speak for itself.
@@ -569,13 +569,13 @@ export function sourcePronounLines(
  embed in a critic prompt. An empty result means neither side declared
  anything, so callers omit the block rather than emit an empty heading;
  absence stays a zero-length list instead of travelling as a nullish value.
- 
+
  @param sourceData - original document's parsed front matter value
- 
+
  @param targetData - translation document's parsed front matter value
- 
+
  @returns Rendered lines, empty when no field is declared on either side
- 
+
  @example
  ```ts
  const lines = collectIdentityLines({

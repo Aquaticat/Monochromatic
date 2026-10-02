@@ -4,11 +4,11 @@ import type { AbsoluteNaturalnessReviewOutcome, } from './absolute-naturalness-r
 
 /**
  Renders latest structured findings for stage telemetry.
- 
+
  @param review - exact rejected review feeding correction
- 
+
  @returns Paragraph-located descriptions
- 
+
  @example
  ```ts
  const findings = describeReviewFindings({ review, });

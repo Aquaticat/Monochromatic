@@ -1,20 +1,20 @@
 /**
  Tests for asking one reader again when it declines to read a picture.
- 
+
  WHY THIS EXISTS AT ALL, which is a measurement rather than a preference.
  Asked six times about one picture that plainly carries text, with identical
  input every time, one reader refused four times and read it twice. The
  refusal is a property of the roll. Corroboration needs both readers and the
  provider offers exactly two that read images, so a reader refusing two asks
  in three costs two thirds of the readings, not one third.
- 
+
  WHAT THESE PIN is the scope as much as the retry. Only a refusal is asked
  again: a model that does not read images, a picture too large to send and an
  empty reply are properties of the input or the roster, and asking again
  spends a call to be told the same thing.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -76,9 +76,9 @@ const l = tagged({ tag: 'past-refusal-test', },);
 
 /**
  Bytes standing in for a picture, whose content no rule here reads.
- 
+
  @returns Buffer of a size every case shares
- 
+
  @example
  ```ts
  const bytes = pictureBytes();
@@ -90,18 +90,18 @@ function pictureBytes(): Uint8Array {
 
 /**
  Client that answers one model from a SEQUENCE, one reply per ask.
- 
+
  A SEQUENCE RATHER THAN A FIXED REPLY, which is the whole point: what is under
  test is what happens when the same model answers differently to the same
  question, and a client that maps a model to one reply cannot express that.
  Asks past the end of the script reuse its last entry, so a case that expects
  the limit to stop the asking fails by looping rather than by reading a reply
  nobody wrote.
- 
+
  @param replies - what the reader returns, ask by ask
- 
+
  @returns Client and a live count of asks it received
- 
+
  @example
  ```ts
  const { client, asks, } = sequencedClient({ replies: [REFUSAL, READING,], },);

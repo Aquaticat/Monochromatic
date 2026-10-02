@@ -1,24 +1,24 @@
 /**
  Tests for what assembly SAYS when it takes a repair back.
- 
+
  WHY THIS MATTERS ENOUGH TO PIN. The assembly guard is the only layer that can
  see a footnote, because a footnote is a relation BETWEEN slices and every
  other stage works inside one. When it withdraws a repair the run already paid
  for, the single line it logs is the only place an operator watching a pass
  learns that it happened; the findings say why, and this says that.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, loosening the guard on that warning so it
  fires on every assembly, withdrawal or not, failed no test in this package.
  An operator would then read `withdrew 0 slice repairs` on every clean entry
  of a corpus pass, which is how a real withdrawal stops being noticed.
- 
+
  THE SILENT CASE IS THE ONE THAT PINS IT. Asserting the warning fires when a
  repair is withdrawn cannot see that loosening; asserting nothing is said when
  none is withdrawn is what catches it, and the noisy case is what proves the
  quiet one is not simply a run where the guard never looked.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -99,15 +99,15 @@ const LINE_STRUCTURED: ReadonlySet<number> = new Set([
 
 /**
  Builds one settled outcome.
- 
+
  @param sliceIndex - slice this outcome belongs to
- 
+
  @param repairedText - wording the lane settled on
- 
+
  @param changed - whether that wording replaces the archive
- 
+
  @returns Outcome assembly reads
- 
+
  @example
  ```ts
  const outcome = outcomeOf({ sliceIndex: 0, repairedText: KEPT_REPAIR, changed: true, },);
@@ -159,11 +159,11 @@ function outcomeOf(
 
 /**
  Assembles one repair of the referencing slice.
- 
+
  @param repairedText - wording that slice settled on
- 
+
  @returns Result plus every warning assembly emitted
- 
+
  @example
  ```ts
  const { result, warnings, } = assembleWith({ repairedText: KEPT_REPAIR, },);

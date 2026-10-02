@@ -1,29 +1,29 @@
 /**
  Tests that the coverage control counts a case ONLY WHEN THE VOTE MOVED.
- 
+
  WHAT THE CONTROL IS FOR. It exists to answer one question: can this wire vote
  absence at all? A roster that answers `full` to the undamaged passage and
  `full` again once the rendering it pointed at has been deleted has shown
  exactly nothing, and that is the reading the whole gate was built to refuse.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, relaxing the comparison that counts a case
  from `absentAfter > absentBefore` to `absentAfter >= absentBefore` failed no
  test in this package. Under that relaxation every damaged case counts as a
  case where the wire noticed, including one whose votes never moved, so a wire
  that cannot see damage reports a HELD control and licenses the null it was
  supposed to invalidate.
- 
+
  COUNTED ON VOTES, NOT ON THE VERDICT KIND, which is what the field's own
  documentation says: the recorded null is about ballots rather than about how
  they were rolled up.
- 
+
  NO NETWORK. One scripted answer serves every round: full coverage, quoting a
  sentence really present, so the standing verdict carries, its evidence can be
  located and cut, and the answer after the cut is identical to the answer
  before it. That is a wire blind to damage, spelled out.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

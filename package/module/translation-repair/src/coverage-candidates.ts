@@ -26,7 +26,7 @@ import type { RepairDocument, } from './parse-document.ts';
 
 /**
  One passage no pairing covers.
- 
+
  @example
  ```ts
  const candidate: CoverageCandidate = { scale: 'section', sourceIndex: 12, sourceText, };
@@ -71,16 +71,16 @@ export type CoverageCandidate = {
 
 /**
  Whether two sides pair by index without consulting the matcher.
- 
+
  MIRRORS `alignDocumentSections`, whose fast path this has to reproduce to
  report the same refusals it would.
- 
+
  @param sourceChunks - original-side sections
- 
+
  @param targetChunks - translation-side sections
- 
+
  @returns Whether the counts and leading kinds agree
- 
+
  @example
  ```ts
  const fast = pairsByIndex({ sourceChunks, targetChunks, },);
@@ -110,13 +110,13 @@ function pairsByIndex(
 
 /**
  Lists the sections the matcher paired with nothing.
- 
+
  @param source - original document
- 
+
  @param target - translation
- 
+
  @returns One candidate per unpaired source section
- 
+
  @example
  ```ts
  const sections = unpairedSections({ source, target, },);
@@ -177,13 +177,13 @@ function unpairedSections(
 
 /**
  Lists the blocks the aligner paired with nothing, inside sections that paired.
- 
+
  @param source - original document
- 
+
  @param target - translation
- 
+
  @returns One candidate per unpaired source block
- 
+
  @example
  ```ts
  const blocks = unpairedBlocks({ source, target, },);
@@ -248,15 +248,15 @@ function unpairedBlocks(
 
 /**
  @internal
- 
+
  Lists every passage an aligner reports as unpaired, at both scales.
- 
+
  @param source - original document
- 
+
  @param target - translation
- 
+
  @returns Section candidates first, then block candidates
- 
+
  @example
  ```ts
  const candidates = listCoverageCandidates({ source, target, },);

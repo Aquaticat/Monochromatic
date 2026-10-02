@@ -1,9 +1,9 @@
 /**
  Tests for the orphan-definition trim the assembly guard runs before it
  withdraws.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

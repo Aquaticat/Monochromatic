@@ -73,12 +73,12 @@ const CONTENT_KEY = 'content';
 
 /**
  Fields the thinking channel arrives in, in precedence order.
- 
+
  ORDERED RATHER THAN MERGED, so a provider that begins sending both spellings
  as aliases of one another contributes that text ONCE. Merging them would
  double every thinking character on such a model and push the degeneration
  detector toward a verdict on volume the model never produced.
- 
+
  `reasoning_content` comes first because it is the spelling this repository's
  own notes already name, so a model sending both stays counted as before.
  */
@@ -90,7 +90,7 @@ const REASONING_KEYS = [
 /**
  Top-level field a gateway that fronts many upstreams uses to name the one
  that served this stream.
- 
+
  OPENROUTER PUTS `"provider":"ModelRun"` ON EVERY CHUNK (captured
  2026-09-03); Synthetic and Charm Hyper front one upstream each and send no
  such field, so their streams read as naming none and their progress lines
@@ -104,7 +104,7 @@ const SERVED_BY_KEY = 'provider';
 
 /**
  Which channel a piece of generated text arrived on.
- 
+
  KEPT APART rather than merged into one string, so a degeneration verdict can
  name the channel it happened in. "The model repeated itself while thinking"
  and "the model repeated itself in its answer" are different failures to
@@ -114,7 +114,7 @@ export type StreamChannel = 'content' | 'reasoning';
 
 /**
  One piece of generated text, and where it came from.
- 
+
  @example
  ```ts
  const delta: ChannelDelta = { channel: 'reasoning', text: 'I will output.', };
@@ -134,7 +134,7 @@ export type ChannelDelta = {
 
 /**
  A running scanner over one stream's raw body.
- 
+
  @example
  ```ts
  const scanner = scanStreamDeltas();
@@ -162,7 +162,7 @@ export type DeltaScanner = {
 /**
  One parsed frame's `delta` object, or an empty stand-in for a frame that
  carries none.
- 
+
  READONLY, because a writable index signature is not deeply readonly and this
  value crosses a function boundary that has no business mutating it.
  */
@@ -170,13 +170,13 @@ type DeltaFields = Readonly<Record<string, unknown>>;
 
 /**
  Reads one string field off a delta object, ignoring anything else.
- 
+
  @param fields - parsed `delta` object from a frame
- 
+
  @param key - field to read
- 
+
  @returns Its text, or empty when absent, null, or not a string
- 
+
  @example
  ```ts
  const text = textField({ fields, key: 'reasoning_content', },);
@@ -201,17 +201,17 @@ function textField(
 /**
  Reads the thinking channel off a delta object, whichever field this model
  spells it in.
- 
+
  FIRST NON-EMPTY WINS rather than first present: a model sending
  `reasoning_content` as an empty string alongside a populated `reasoning`
  would otherwise read as having produced no thinking at all, which is the
  failure this function exists to end.
- 
+
  @param fields - parsed `delta` object from a frame
- 
+
  @returns Thinking text, or empty when this frame carried none under any
  spelling
- 
+
  @example
  ```ts
  const thinking = reasoningField({ fields, },);
@@ -234,17 +234,17 @@ function reasoningField({ fields, }: { readonly fields: DeltaFields; },): string
 
 /**
  Reads the `delta` object out of a parsed frame.
- 
+
  GUARDS RATHER THAN ASSERTIONS, using the package's own `isJsonRecord` and
  `isJsonArray`: this walks a value the provider controls, so every step has to
  be checked rather than declared. An assertion here would state a shape the
  wire never promised.
- 
+
  @param frame - parsed payload of one `data:` line
- 
+
  @returns Its first choice's delta, or an empty object when the frame carries
  none, which usage-only frames legitimately do
- 
+
  @example
  ```ts
  const fields = deltaOf({ frame, },);
@@ -279,11 +279,11 @@ function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
 
 /**
  Reads the upstream's name off a parsed frame.
- 
+
  @param frame - parsed payload of one `data:` line
- 
+
  @returns Name as the gateway spelled it, or empty when the frame names none
- 
+
  @example
  ```ts
  const name = servedByOf({ frame, },);
@@ -301,7 +301,7 @@ function servedByOf({ frame, }: { readonly frame: unknown; },): string {
 
 /**
  What one payload line turned out to be.
- 
+
  @example
  ```ts
  const read: ReadPayload = { ok: true, frame: { choices: [], }, };
@@ -326,14 +326,14 @@ type ReadPayload = {
 
 /**
  Parses one payload, reporting failure as a value.
- 
+
  NEVER THROWS, because this runs on every chunk of every call and one
  unreadable frame must leave a working stream working.
- 
+
  @param payload - text after the `data:` prefix
- 
+
  @returns Parsed frame, or why there is none
- 
+
  @example
  ```ts
  const read = readPayload({ payload: '{"choices":[]}', },);
@@ -356,17 +356,17 @@ function readPayload({ payload, }: { readonly payload: string; },): ReadPayload 
 
 /**
  Builds a scanner that turns raw stream chunks into generated text.
- 
+
  INCREMENTAL BY LINE, because a chunk boundary falls wherever the network puts
  it and routinely lands in the middle of a frame. Whatever follows the last
  newline is carried forward rather than parsed, so no frame is read twice and
  none is read in halves.
- 
+
  NO REGEX, per `RG1`: the rule is "split on newlines, keep lines starting with
  a fixed prefix", which string methods state directly.
- 
+
  @returns Scanner fed by `feed`
- 
+
  @example
  ```ts
  const scanner = scanStreamDeltas();
@@ -378,7 +378,7 @@ function readPayload({ payload, }: { readonly payload: string; },): ReadPayload 
 export function scanStreamDeltas(): DeltaScanner {
   /**
    Partial line held back from an earlier chunk, plus the unreadable tally.
-   
+
    A RECORD RATHER THAN LOOSE BINDINGS so the factory root holds no mutable
    variable.
    */
@@ -390,11 +390,11 @@ export function scanStreamDeltas(): DeltaScanner {
 
   /**
    Reads one complete line, returning whatever text it carried.
-   
+
    @param line - one line, without its newline
-   
+
    @returns Deltas it carried, empty for comments and the done marker
-   
+
    @example
    ```ts
    const deltas = readLine({ line: 'data: {"choices":[]}', },);

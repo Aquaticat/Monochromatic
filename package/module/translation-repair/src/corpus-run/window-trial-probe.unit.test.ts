@@ -1,12 +1,12 @@
 /**
  Boundary test for the window trial command.
- 
+
  The command spends quota and is composition over modules with their own
  suites, so what is checked here is the one thing only the built command can
  show: launched without both provider keys it refuses as stated, exits 6, and
  never reaches a call. The environment handed to the child carries no key, so
  the case cannot spend anything whatever the runner's own environment holds.
- 
+
  @module
  */
 
@@ -39,7 +39,7 @@ const COMMAND = join(import.meta.dirname, '../../dist/final/node/window-trial-pr
 
 /**
  What the built command wrote and how it exited.
- 
+
  @example
  ```ts
  const run: CommandRun = { code: 6, stderr: 'window-trial-probe: ...', };
@@ -60,9 +60,9 @@ type CommandRun = {
 /**
  Runs the built command with every provider key withheld and a disposable
  runs directory.
- 
+
  @returns Exit code and stderr
- 
+
  @example
  ```ts
  const run = await runWithoutKeys();

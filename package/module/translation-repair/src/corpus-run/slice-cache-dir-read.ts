@@ -12,16 +12,16 @@ import type { SliceNamespace, } from './slice-cache-claims.ts';
 
 /**
  Reads the pipeline that filled one lane's slices.
- 
+
  @param dir - per-entry cache directory
- 
+
  @param namespace - lane asking
- 
+
  @returns Recorded digest, empty when this lane never wrote here
- 
+
  @throws Error when the marker exists and cannot be read, since treating an
  unreadable marker as absent would DELETE the lane's settled slices
- 
+
  @example
  ```ts
  const cached = await readNamespaceGeneration({ dir, namespace, },);

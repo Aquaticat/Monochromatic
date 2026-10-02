@@ -1,6 +1,6 @@
 /**
  Tests for measuring one corpus entry after slicing.
- 
+
  THE CENSUS IS THE INSTRUMENT EVERY SIZE CLAIM RESTS ON, and its most valuable
  column is the one that used to read zero for the wrong reason.
  `unpairedSourceSections` counts sections the aligner REFUSED to pair, and
@@ -9,16 +9,16 @@
  zero, and zero read as "nothing went unpaired" instead of "this cannot see
  them". The "SEES the sections the aligner refused" case gives the census a page
  whose sections genuinely do not pair and requires a number greater than zero.
- 
+
  THE PIN IS INJECTED, which is why any of this can be tested. `censusEntry`
  read `RUN_CORPUS_PIN` directly, so exercising it meant having the unlicensed
  corpus clone on disk and a suite that passed on one machine only. It now takes
  the pin the way `readAuditArguments` takes `argv`, and the cases in this file point
  it at a throwaway git repository built in a temp directory.
- 
+
  FIXTURE CONTENT IS CAT-THEMED INVENTION mirroring corpus structure only:
  Simplified Chinese against English, one entry, committed once.
- 
+
  @module
  */
 
@@ -147,12 +147,12 @@ const SHORT_TARGET_PAGE = [
 
 /**
  Builds a throwaway corpus-shaped repository holding one entry.
- 
+
  @param targetPage - translation to commit beside the original, which decides
  how many sections pair
- 
+
  @returns Pin naming the clone and its one commit, and an async disposer
- 
+
  @example
  ```ts
  await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);

@@ -3,7 +3,7 @@
  byte-exact hits, punctuation-normalized rescue, ambiguity refusal,
  block-crossing splits, and every failure reason.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

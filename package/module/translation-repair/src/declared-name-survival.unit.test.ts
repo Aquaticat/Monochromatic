@@ -1,13 +1,13 @@
 /**
  Tests for the guard that keeps a declared name from being edited away.
- 
+
  WHY IT IS A GUARD. Measured against the repair lane's own judge sheet and
  roster, six of six judges preferred the candidate that dropped a declared
  alias, and adding a carve-out to the criterion did not flip the vote. The
  check therefore cannot live in a prompt.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

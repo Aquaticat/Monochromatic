@@ -1,8 +1,8 @@
 /**
  Tests final publication contributor identity boundary.
- 
+
  Fixtures are invented and contain no corpus wording.
- 
+
  @module
  */
 

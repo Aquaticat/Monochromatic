@@ -1,8 +1,8 @@
 /**
  Tests for the whitespace assembly owns around an insertion.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

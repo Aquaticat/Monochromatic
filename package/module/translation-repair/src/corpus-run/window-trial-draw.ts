@@ -22,7 +22,7 @@ export const CONTROL_CLASS = 'control-unflagged';
 
 /**
  Labels the two ends of a relocation candidate carry.
- 
+
  SEPARATE CLASSES BECAUSE THE WINDOW CAN ONLY EXPLAIN ONE OF THEM. At the HIGH
  end the archive carries English the original does not account for, and the
  neighbouring Chinese is exactly where that English could have come from, so a
@@ -40,7 +40,7 @@ export const RELOCATION_CLASSES = {
 
 /**
  One slice the trial will buy, with the label its rows carry.
- 
+
  @example
  ```ts
  const pick: TrialSlice = { entryId: 'Mittens', sliceIndex: 7, sliceClass: 'relocation', };
@@ -65,7 +65,7 @@ export type TrialSlice = {
 
 /**
  Flagged slices of one entry, deduplicated, each under one class.
- 
+
  A SLICE FLAGGED TWO WAYS TAKES THE FIRST LABEL IN THIS ORDER, and the order is
  deliberate rather than incidental. The high end of a relocation comes first
  because it is the relocation case itself and the only one the window can reach:
@@ -74,13 +74,13 @@ export type TrialSlice = {
  since a slice that is both ends of two candidates is more informative read as
  the surplus one. The alternative, dropping multiply-flagged slices, would
  discard exactly the ambiguous cases the trial exists to resolve.
- 
+
  @param entryId - entry these slices belong to
- 
+
  @param displacement - what the screen found for it
- 
+
  @returns One entry per flagged slice, no slice twice
- 
+
  @example
  ```ts
  const flagged = flaggedSlices({ entryId, displacement, },);
@@ -157,25 +157,25 @@ export function flaggedSlices(
 
 /**
  Unflagged slices of the same entry, drawn as controls.
- 
+
  DRAWN FROM THE SAME ENTRIES as the flagged ones, deliberately. A control from
  elsewhere in the corpus would differ in author, register and era as well as in
  being unflagged, and any of those could move a judge. Same document, same
  preparation, same everything except the thing under test.
- 
+
  EVENLY SPACED rather than taken from the front, because slices early in a
  document are systematically different: they carry the opening, and several
  entries begin with a heading-plus-stub the screen would not flag but a judge
  reads differently from body prose.
- 
+
  @param entryId - entry to draw from
- 
+
  @param displacement - what the screen found for it
- 
+
  @param wanted - how many controls to draw
- 
+
  @returns Up to `wanted` unflagged slices, evenly spaced
- 
+
  @example
  ```ts
  const controls = controlSlices({ entryId, displacement, wanted: 2, },);
@@ -229,7 +229,7 @@ export function controlSlices(
 
   /**
    Where the first control sits inside its stride.
-   
+
    CENTRED RATHER THAN AT THE START. Taking position zero of every stride puts
    the first control on the FIRST unflagged slice of the document, and at
    `wanted` of one, where the stride is the whole document, that is the only

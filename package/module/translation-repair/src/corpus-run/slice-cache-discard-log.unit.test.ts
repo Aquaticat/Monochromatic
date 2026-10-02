@@ -1,32 +1,32 @@
 /**
  Tests that the slice cache SAYS what it threw away, and only when it did.
- 
+
  WHY THE LINE MATTERS. Slices are bought from the roster, so discarding a
  lane's cache costs real calls to rebuy. The count is the only notice an
  operator gets that a generation change just spent that money, and the module
  beside it records six occasions where an unregistered prefix made the repair
  lane delete another lane's work while reporting it as its own.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting the guard that decides whether to
  print at all failed no test in this package. A cache holding nothing of this
  lane's would then announce that it discarded zero slices on every run, which
  is the line an operator reads as "money was spent" appearing where none was.
- 
+
  THE QUIET CASE IS THE ONE THAT PROVES IT. Any guard at all satisfies "a
  discard says so"; only "a lane owning nothing here says nothing" separates a
  count that is read from a line that is always printed.
- 
+
  OWNERSHIP IS ASSERTED ALONGSIDE, since the same call removes what it names:
  another lane's files and this lane's own marker must survive a discard, and a
  count that was right while the removal was wrong would still be a defect.
- 
+
  THE SUITE RUNS AT `concurrency: 1`, since each case diverts the one global
  `console.log` across an await. Run concurrently they capture each other's
  lines, and the assertions then describe whichever case happened to be inside
  the window rather than the one under test.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -66,11 +66,11 @@ const OTHER_LANE_FILE = 'whiskers.c.json';
 
 /**
  Diverts `console.log` into a list until disposed.
- 
+
  @param lines - where diverted lines are appended
- 
+
  @returns Capture holding those lines, which restores logging on disposal
- 
+
  @example
  ```ts
  using capture = collectingInto({ lines, },);
@@ -131,13 +131,13 @@ async function cacheHolding(
 
 /**
  Discards one lane's slices and reports what was printed and what survived.
- 
+
  @param names - files the cache holds beforehand
- 
+
  @param cached - pipeline stamp the discarded slices were filled by
- 
+
  @returns Printed lines and the names still on disk afterwards
- 
+
  @example
  ```ts
  const { lines, left, } = await discarding({ names, cached: 'nap-3', },);

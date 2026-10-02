@@ -1,18 +1,18 @@
 /**
  Tests for wrapping what the translate lane produced.
- 
+
  WHAT THESE PIN is the same pair of properties `repair-wrap.unit.test.ts`
  pins, on the other lane: only wording this lane PRODUCED is wrapped, and the
  changed flag is re-derived from the wrapped text rather than carried forward.
- 
+
  The retention case matters more here than on the repair side, because this
  lane stands on the archive by two separate routes: the judges preferring the
  incumbent, and no translator answering at all. Both carry the archive's own
  wording in `outputText`, and wrapping either would report a change nobody
  decided on and contradict `sliceRecordAgrees`.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -33,19 +33,19 @@ const l = tagged({ tag: 'translate-wrap-test', },);
 
 /**
  Builds one settled translate record.
- 
+
  MINIMAL BY DESIGN: the wrap reads three fields and carries the rest through
  untouched, so a fixture carrying the whole contract would test the spread
  rather than the decision.
- 
+
  @param sliceIndex - slice index
- 
+
  @param outputText - wording this lane settled on
- 
+
  @param changed - whether it claims to differ from the archive
- 
+
  @returns Record shaped as the lane settles one
- 
+
  @example
  ```ts
  const record = recordOf({ sliceIndex: 0, outputText: 'It naps.', changed: true, },);

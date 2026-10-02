@@ -1,22 +1,22 @@
 /**
  Tests for the editor stage's guards, its early exits, and the composite it
  assembles once judging actually runs.
- 
+
  `runEditorStage` had no test. Its judged path is covered PIECEWISE through
  `selectPerEnvelope` and `selectChunkPatch`, which have their own suites, but
  neither drives the WIRING between them: `applyCandidate` rebuilding
  per-envelope winners into a composite, and that composite then competing at
  chunk level, only happens inside `runEditorStage` itself. The rest of what
  this file adds is the two places the stage decides NOT to go there.
- 
+
  Both of those are cost properties as much as correctness ones. The provider is
  flat-rate but not unlimited, and a run spends its capacity on judge calls it
  did not need or on a fan-out against a roster that could never have been
  judged. Neither shows up as an error; both show up as a pass that ran out of
  budget with fewer entries settled.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -105,13 +105,13 @@ const JUDGES = [
 
 /**
  Client answering every editor with one scripted report, counting calls.
- 
+
  @param report - report each editor returns
- 
+
  @param calls - shared counter the cases assert on
- 
+
  @returns Client honoring that script
- 
+
  @example
  ```ts
  const client = editorClient({ report: { edits: [], }, calls, },);
@@ -150,9 +150,9 @@ function editorClient(
 
 /**
  Client that fails the moment it is called, proving a guard ran first.
- 
+
  @returns Client refusing every exchange
- 
+
  @example
  ```ts
  const client = neverCalledClient();

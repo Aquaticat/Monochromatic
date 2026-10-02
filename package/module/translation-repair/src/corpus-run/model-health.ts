@@ -31,7 +31,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 
 /**
  Question every model is asked.
- 
+
  Deliberately trivial. The point is not to test capability: any model that can
  hold a role in this pipeline can answer it, so a failure here is about the
  response FORMAT rather than about the task.
@@ -53,7 +53,7 @@ const RAW_REPLY_PREVIEW_CHARS = 300;
 
 /**
  Exit code left behind when some model could not be reached at all.
- 
+
  A ROSTER THAT CANNOT BE FULLY PROBED IS A FINDING, and the caller of a
  diagnostic reads its exit code. Preserved from the behaviour this replaced,
  where an unreachable model crashed the probe and produced a non-zero exit as
@@ -86,11 +86,11 @@ const HEALTH_RESPONSE_FORMAT = {
 
 /**
  Accepts a reply carrying both fields, whatever their values.
- 
+
  @param value - parsed reply
- 
+
  @returns Whether the reply has the shape asked for
- 
+
  @example
  ```ts
  const ok = isHealthReply(JSON.parse(text,),);
@@ -107,7 +107,7 @@ function isHealthReply(value: unknown,): value is {
 
 /**
  Asks every roster model the health question and prints what returned.
- 
+
  @example
  ```ts
  await reportModelHealth();
@@ -126,7 +126,7 @@ async function reportModelHealth(): Promise<void> {
 
   /**
    Models whose probe threw before any outcome could be read.
-   
+
    SEPARATE FROM AN UNHEALTHY REPLY, which is the distinction this whole probe
    exists to draw. A model that answered badly is evidence about the model; a
    model that could not be asked is evidence about the provider, and reporting

@@ -40,15 +40,15 @@ export { groupNodes, } from './group-nodes.ts';
 
 /**
  Builds one chunk spanning a node run, slicing text from its document.
- 
+
  @param run - node run backing this chunk
- 
+
  @param documentText - owning document's text for byte-exact slicing
- 
+
  @param sliceIndex - global slice index stamped onto both sides
- 
+
  @returns Chunk spanning exactly this run's offsets
- 
+
  @example
  ```ts
  const chunk = runToChunk({ run, documentText, sliceIndex: 3, },);
@@ -99,27 +99,27 @@ function runToChunk(
  after the drop compared a block against its neighbour. Paragraph-count
  mismatch within a section is ordinary translation freedom, so subdivision
  emits no findings.
- 
+
  @param pair - aligned section pair to subdivide
- 
+
  @param sourceText - whole original document text for slice extraction
- 
+
  @param targetText - whole translation document text for slice extraction
- 
+
  @param baseIndex - global slice index of this pair's first slice
- 
+
  @param budget - target-side characters one slice aims for;
  defaults to {@link SLICE_CHAR_BUDGET}
- 
+
  @param blockPairing - correspondences a roster agreed on, chunk-local; absent
  when the roster agreed none, so the scorer pairs the blocks
- 
+
  @param sealed - ids of translation blocks the archive's note seals, which
  reach no slice and take the originals paired to them along
- 
+
  @returns Slice pairs covering both sides of the section completely but for
  the sealed blocks, beside the ids of the originals sealed with them
- 
+
  @example
  ```ts
  const { slices, sealedSourceIds, } = subdivideSealedChunkPair({
@@ -156,7 +156,7 @@ export function subdivideSealedChunkPair(
   /**
    How much shorter the original runs than its translation, measured over
    the WHOLE documents rather than over this section.
-   
+
    Was measured per section, and that is the defect: the ratio is a fact
    about the language pair, while a section-level estimate is driven by how
    much of THIS section was translated. On 4000 source characters against 20
@@ -164,7 +164,7 @@ export function subdivideSealedChunkPair(
    the section stopped being sliced at all. The worse the incumbent coverage,
    the larger the translation call, which is exactly backwards for a lane
    that exists to translate what nobody translated.
-   
+
    Capped at one for the same reason it is computed at all: Chinese runs
    SHORTER than its English rendering, so a ratio above one is never density.
    It is missing translation, and the cap says so rather than acting on it.
@@ -313,24 +313,24 @@ export function subdivideSealedChunkPair(
 
 /**
  Subdivides one aligned section pair with nothing sealed.
- 
+
  {@inheritDoc subdivideSealedChunkPair}
- 
+
  @param pair - aligned section pair to subdivide
- 
+
  @param sourceText - whole original document text for slice extraction
- 
+
  @param targetText - whole translation document text for slice extraction
- 
+
  @param baseIndex - global slice index of this pair's first slice
- 
+
  @param budget - target-side characters one slice aims for;
  defaults to {@link SLICE_CHAR_BUDGET}
- 
+
  @param blockPairing - correspondences a roster agreed on, chunk-local
- 
+
  @returns Slice pairs covering both sides of the section completely
- 
+
  @example
  ```ts
  const slices = subdivideChunkPair({

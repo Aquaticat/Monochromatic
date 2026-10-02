@@ -33,7 +33,7 @@ import {
 
 /**
  What the ledger and the returned document disagree about.
- 
+
  @example
  ```ts
  const fault: DeliveryInvariantFault = { kind: 'unclaimed', indices: [2, 5,], };
@@ -73,11 +73,11 @@ export type DeliveryInvariantFault = {
 
 /**
  Words a delivery invariant fault.
- 
+
  @param fault - what the ledger and the document disagree about
- 
+
  @returns Sentence composed from slice indices and counts alone
- 
+
  @example
  ```ts
  const sentence = deliveryInvariantSentence({ fault: { kind: 'reassembly-differs', shippedRows: 3, }, },);
@@ -124,10 +124,10 @@ export function deliveryInvariantSentence(
 /**
  Failure of the delivery invariants: the ledger and the returned document
  disagree.
- 
+
  MARKED: its message is the sentence `deliveryInvariantSentence` writes from
  slice indices and counts.
- 
+
  @example
  ```ts
  throw new DeliveryInvariantError({ fault: { kind: 'unclaimed', indices: [4,], }, },);
@@ -157,13 +157,13 @@ export class DeliveryInvariantError extends Error {
 
 /**
  Names the indices one list holds and another does not.
- 
+
  @param held - indices to check
- 
+
  @param against - indices to check them against
- 
+
  @returns Those of `held` that `against` does not name, in the order given
- 
+
  @example
  ```ts
  const extra = indicesMissingFrom({ held: fromLedger, against: claimed, },);
@@ -189,28 +189,28 @@ function indicesMissingFrom(
 
 /**
  Checks a ledger against the document its lane returned.
- 
+
  PASS THE RESULT'S OWN REPORTS, not the values a ledger was built from. Where
  the same index set is handed to both, the first claim holds by construction
  and costs a comparison; it is worth making anyway, because the case it exists
  for is a ledger read back from an artifact, or joined to the wrong result,
  and neither of those can be distinguished from a correct one by reading the
  rows alone. The second claim is not by construction in either case.
- 
+
  @param ledger - delivery rows, one per prepared slice, in document order
- 
+
  @param slices - preparation both the ledger and the document were built over
- 
+
  @param incumbentText - archive's own translation, which the lane wrote into
- 
+
  @param documentText - text that lane returned
- 
+
  @param changedSliceIndices - slices that result names as carrying a change
- 
+
  @throws {@link DeliveryInvariantError} when the rows marked shipped are not
  the slices the result names, or when writing those rows over the archive
  produces some other document
- 
+
  @example
  ```ts
  assertDeliveryAgreesWithDocument({
@@ -303,7 +303,7 @@ export function assertDeliveryAgreesWithDocument(
 
   /**
    Document the rows assemble to, computed here rather than trusted.
-   
+
    Through the same assembly the lane used, which is what makes the comparison
    byte-exact: the separators around an anchored insertion are composed rather
    than carried by any row, so a concatenation of row texts would differ from

@@ -1,6 +1,6 @@
 /**
  Repair selectors need source evidence and the existing English before judging changes.
- 
+
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';

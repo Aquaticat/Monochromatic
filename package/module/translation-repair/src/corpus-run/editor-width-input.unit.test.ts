@@ -1,23 +1,23 @@
 /**
  Tests that the width probe REFUSES a slice its critics filed nothing about.
- 
+
  WHY THIS MATTERS. The probe compares editor rosters on real work, and it buys
  a panel round per slice it carries forward. A slice nobody filed a claim
  about has no work in it, so carrying it forward would put a panel round on
  the bill and then compare two rosters on nothing. On 2026-08-25, inverting
  this guard so an EMPTY claim list is the one that proceeds failed no test in
  this package.
- 
+
  READ OFF THE OUTCOME, not off a call count. The refusal is a named value the
  probe's rows print, and a reader of those rows has to be able to tell a slice
  with no work from a slice the probe never reached.
- 
+
  NO NETWORK. The client answers every critic with a report naming nothing and
  refuses every other stage by name, so a guard that let the empty list through
  would be caught reaching for the panel round it has no business buying.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

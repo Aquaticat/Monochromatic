@@ -1,14 +1,14 @@
 /**
  Tests for never pooling results across builds.
- 
+
  THE WHOLE POINT IS THE SPLIT. `artifact-pool.ts` refuses to pool results
  whose built output differs, and a standing summed across two builds describes
  neither of them. These cases pin that a collection spanning digests is never
  formed in the first place.
- 
+
  Content is cat-themed invention; a digest here is any opaque string, so the
  fixtures spell them as such.
- 
+
  @module
  */
 

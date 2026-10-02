@@ -50,7 +50,7 @@ export const REFINER_ROUND_STAGES: readonly RepairRoundStage[] = ['refine',];
 /**
  Raised when a recorded slate's positions are not the positions judges were
  shown.
- 
+
  A BALLOT IS A NUMBER, so this is the one assumption the projection cannot
  check later. `SelectionRound.producers` is read positionally, a ballot's
  `best` being a one-based index into it, so a slate whose `index` values are
@@ -64,9 +64,9 @@ export class SlatePositionsError extends Error {
 
   /**
    Builds failure naming the positions the slate carried.
-   
+
    @param detail - what the slate claimed, and why that cannot be read
-   
+
    @example
    ```ts
    throw new SlatePositionsError({ detail: 'positions 1,3 over 2 candidates', },);
@@ -82,14 +82,14 @@ export class SlatePositionsError extends Error {
 
 /**
  Projects one recorded round into the shape a standing counts.
- 
+
  @param round - recorded round, selected or declined
- 
+
  @returns Producers in slate order, plus every ballot cast over them
- 
+
  @throws {@link SlatePositionsError} when the slate's positions are not one
  to its length
- 
+
  @example
  ```ts
  const projected = selectionRoundOf({ round, },);
@@ -151,16 +151,16 @@ export function selectionRoundOf(
 
 /**
  Projects every round one role produced.
- 
+
  @param rounds - rounds recorded by a chunk repair
- 
+
  @param stages - stages belonging to the role being ranked
- 
+
  @returns Rounds in the shape a standing counts
- 
+
  @throws {@link SlatePositionsError} when any slate's positions are not one
  to its length
- 
+
  @example
  ```ts
  const rounds = selectionRoundsFor({ rounds: outcome.rounds, stages: EDITOR_ROUND_STAGES, },);

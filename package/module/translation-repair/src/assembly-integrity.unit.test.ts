@@ -1,12 +1,12 @@
 /**
  Tests for the assembly-time footnote guard.
- 
+
  What this covers that no per-slice check can: a footnote is a relation
  BETWEEN slices, so a candidate that drops, renames or invents a marker
  validates perfectly inside its own slice and breaks the document.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -65,11 +65,11 @@ On the windowsill there is being a bird.
 
 /**
  Prepares the fixture pair and returns its slices.
- 
+
  @param targetText - translation to prepare against the fixture original
- 
+
  @returns Slices in document order
- 
+
  @example
  ```ts
  const slices = fixtureSlices({ targetText: TARGET_TEXT, },);
@@ -84,13 +84,13 @@ function fixtureSlices({ targetText, }: { readonly targetText: string; },) {
 
 /**
  Chunk index of the slice whose incumbent text contains a needle.
- 
+
  @param slices - prepared slices
- 
+
  @param needle - text that slice carries
- 
+
  @returns Chunk index of the first slice carrying it
- 
+
  @example
  ```ts
  const index = sliceCarrying({ slices, needle: '[^1]:', },);
@@ -127,11 +127,11 @@ function sliceCarrying(
 /**
  Chunk indices in ascending order, so a comparison says which slices were
  withdrawn rather than which round withdrew them.
- 
+
  @param indices - chunk indices in withdrawal order
- 
+
  @returns Same indices, ascending
- 
+
  @example
  ```ts
  expect(byIndex({ indices: guarded.revertedChunkIndices, },),).toEqual([0, 1,],);

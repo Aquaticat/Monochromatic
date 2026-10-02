@@ -1,14 +1,14 @@
 /**
  Tests for carving an entry the way the pass carved it when it settled.
- 
+
  WHAT THESE PIN is that an instrument reading settled entries gets the slicing
  the artifact records, proved by the identity hash against the artifact's
  own recorded identity, and that the three answers for an entry (settled,
  legacy, unsettled) stay distinct. Every rebuild case carries a positive
  control showing the recipe moved the slicing.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -197,11 +197,11 @@ async function throwawayCorpus(
 
 /**
  Rows that keep every present slice and fill every insertion.
- 
+
  @param prepared - preparation the rows describe
- 
+
  @returns One row per slice
- 
+
  @example
  ```ts
  const rows = rowsFor({ prepared, },);
@@ -257,16 +257,16 @@ function rowsFor(
 
 /**
  Writes a settled artifact for the fixture entry into a runs directory.
- 
+
  @param runsDir - runs directory to write under
- 
+
  @param prepared - preparation the artifact records
- 
+
  @param corpusSha - commit the artifact claims
- 
+
  @param strip - preparation keys to delete, which is how a file written
  before those fields existed looks
- 
+
  @example
  ```ts
  await writeArtifact({ runsDir, prepared, corpusSha, strip: [], },);
@@ -362,11 +362,11 @@ async function writeArtifact(
 
 /**
  Writes any value as the fixture entry's artifact.
- 
+
  @param runsDir - runs directory to write under
- 
+
  @param value - artifact content
- 
+
  @example
  ```ts
  await writeArtifactFile({ runsDir, value: legacyArtifact, },);
@@ -408,9 +408,9 @@ async function writeArtifactFile(
 
 /**
  How a roster run carved the fixture: sections crossed, block rounds asked.
- 
+
  @returns Paired preparation
- 
+
  @example
  ```ts
  const paired = pairedPreparation();

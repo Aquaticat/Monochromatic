@@ -34,7 +34,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Everything the critic phase decided for one chunk.
- 
+
  @example
  ```ts
  const phase = await runChunkCriticPhase({ ... },);
@@ -96,32 +96,32 @@ export type ChunkCriticPhase = {
 
 /**
  Runs the critics over one chunk pair and screens their non-translation votes.
- 
+
  @param client - injected model client
- 
+
  @param criticModelIds - critic fan-out electorate
- 
+
  @param sourceText - original chunk text
- 
+
  @param targetText - translation chunk text
- 
+
  @param documents - parsed chunk pair claims anchor against
- 
+
  @param identityContext - declared names from both sides' front matter
- 
+
  @param referenceContext - what the original's cited pages say (class
  thirty-five)
- 
+
  @param sliceIndex - chunk position, for the dismissal warning
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Screened claims plus the vote accounting
- 
+
  @example
  ```ts
  const phase = await runChunkCriticPhase({ ... },);

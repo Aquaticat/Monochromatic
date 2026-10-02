@@ -1,15 +1,15 @@
 /**
  Tests for the progress line the editor calibration prints per slice.
- 
+
  WHY THE NUMBER IS THE THING UNDER TEST. Above an overlap of one, slices
  finish out of order, and a line numbered by arrival would claim a position
  another slice owns while nothing claimed the one still running. The line is
  numbered by position in the sample, and the cases pin that the number comes
  from the position and from nothing else about the slice.
- 
+
  Fixtures are cat-themed invention: the entry id names no real person and no
  corpus content appears here.
- 
+
  @module
  */
 
@@ -71,18 +71,18 @@ const SHIPPERS: readonly RosterModelId[] = [
 
 /**
  Builds what a slice produced from counts alone.
- 
+
  @param editor - editor rounds judged
- 
+
  @param refiner - refiner rounds judged
- 
+
  @param refineAsked - whether the naturalness lane reached a rewriter
- 
+
  @param shipping - editors credited with shipping text, at most the fixture
  roster's length
- 
+
  @returns Rounds shaped as the driver collects them
- 
+
  @example
  ```ts
  const rounds = roundsOf({ editor: 2, refiner: 1, refineAsked: true, shipping: 2, },);

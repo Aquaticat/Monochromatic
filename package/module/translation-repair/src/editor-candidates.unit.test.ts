@@ -1,6 +1,6 @@
 /**
  Tests for turning heard editor voices into comparable candidates.
- 
+
  `buildEditorCandidates` had no test, and the property it exists to hold is
  determinism. Voices come back in whatever order the provider answered. If the
  candidate list followed arrival order, then the anonymized candidate
@@ -8,14 +8,14 @@
  fallback choice would all vary between runs over identical inputs, and two
  runs of the same chunk could ship different text for no reason anyone could
  reconstruct.
- 
+
  So the cases in this file feed voices in orders that disagree with the roster and
  assert the output does not move.
- 
+
  Envelopes are built with the real `hashContent`, so the patches genuinely
  pass the apply gate rather than arriving pre-rejected. Cat-themed invention
  throughout.
- 
+
  @module
  */
 
@@ -85,15 +85,15 @@ const ROSTER = [
 
 /**
  Builds one heard editor voice proposing a single region rewrite.
- 
+
  @param modelId - editor that answered
- 
+
  @param region - one-based region number from the prompt sheet
- 
+
  @param newText - replacement for that region
- 
+
  @returns Heard voice carrying that reply
- 
+
  @example
  ```ts
  const voice = heard({ modelId: ROSTER[0], region: 1, newText: 'The cat sleeps.', },);

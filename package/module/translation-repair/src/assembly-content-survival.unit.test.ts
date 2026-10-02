@@ -1,14 +1,14 @@
 /**
  Tests for the content-survival check: what counts as a specific, and what
  does not.
- 
+
  WHY IT EXISTS: a slice rewritten into generic prose keeps the document's
  length and structure and loses what it was about, so every other instrument
  in this package reads clean on it. Measured on real output in
  `doc/audit/the-damage-no-instrument-was-catching.md`.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

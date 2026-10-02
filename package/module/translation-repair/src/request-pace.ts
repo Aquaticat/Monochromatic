@@ -72,7 +72,7 @@ export const HYPER_REQUESTS_PER_HOUR = 1_000;
 /**
  What a pacer offers: a turn to start one request, granted when the window
  has room, and a reading of how long that turn is away.
- 
+
  @example
  ```ts
  const pace: RequestPace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
@@ -82,7 +82,7 @@ export const HYPER_REQUESTS_PER_HOUR = 1_000;
 export type RequestPace = {
   /**
    Reserves one start inside the window and waits until it comes.
-   
+
    @throws The signal's reason when the caller aborts while waiting
    */
   readonly take: (input: { readonly signal: AbortSignal; }) => Promise<void>;
@@ -100,13 +100,13 @@ export type RequestPace = {
 
 /**
  Sleeps the given milliseconds unless the caller aborts first.
- 
+
  @param ms - how long to sleep
- 
+
  @param signal - caller's abort, which ends the sleep at once
- 
+
  @throws The timer's abort error when the caller gives up
- 
+
  @example
  ```ts
  await abortableSleep({ ms: 1_000, signal, },);
@@ -130,25 +130,25 @@ async function abortableSleep(
 
 /**
  Builds a pacer over a sliding window.
- 
+
  A TAKE RESERVES ITS START WITHOUT AWAITING ANYTHING, so two calls arriving
  together cannot both read a window with one free place and both start, and
  no caller ever waits behind another caller's wait.
- 
+
  @param perWindow - starts allowed in any window; not positive means no
  pacing, which is what tests and a provider without a rate limit want
- 
+
  @param windowMs - window length
- 
+
  @param now - clock, injectable for tests; `monotonicMs` by default, since a
  window measured on the system clock moved an hour when it was set
  (ledger B78)
- 
+
  @param wait - sleeper that must end when the signal aborts, injectable for
  tests
- 
+
  @returns Pacer
- 
+
  @example
  ```ts
  const pace = createRequestPace({ perWindow: 1_000, windowMs: 3_600_000, },);
@@ -199,7 +199,7 @@ export function createRequestPace(
   /**
    When the next start may happen: now while the window has room, else when
    the start `perWindow` places back leaves the window.
-   
+
    @returns Moment of the next free place
    */
   function nextFreeAt(): number {
@@ -214,7 +214,7 @@ export function createRequestPace(
 
   /**
    Hands a reserved place back when its caller gave up.
-   
+
    @param at - the place's start time
    */
   function release(at: number,): void {
@@ -293,16 +293,16 @@ export function createRequestPace(
 
 /**
  Requests per rolling hour the environment asks for, or the default.
- 
+
  @param env - environment to read
- 
+
  @returns Positive number from the variable, or the default when it is unset,
  empty or blank
- 
+
  @throws {@link StatedRefusalError} when the variable is set and is not a
  positive number, as every other dial refuses (ledger D14): a mistyped rate
  that fell back to the account limit ran a launch at a pace nobody asked for
- 
+
  @example
  ```ts
  const perHour = hyperRequestsPerHour({ env: process.env, },);

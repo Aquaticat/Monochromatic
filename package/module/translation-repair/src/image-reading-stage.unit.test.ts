@@ -1,6 +1,6 @@
 /**
  Tests for reading one picture with one model, and screening what comes back.
- 
+
  WHAT THESE PIN is that every way a reading can fail to arrive is a NAMED
  outcome rather than a thrown error or a caveat attached to usable text.
  Whether a reading is of the RIGHT picture is settled one level up, in
@@ -9,15 +9,15 @@
  stage sits between two things nobody controls, a picture on disk and a model's
  willingness to read it, and a caller that has to distinguish "nobody could
  send this" from "nobody could read it" cannot do so from an empty string.
- 
+
  THE CAPTURED REQUEST IS THE POINT of the first case. The translate lane's judging window
  existed for weeks while production never passed it, and nothing failed,
  because no test asserted on what the call actually carried. A picture that
  never reaches the wire looks exactly like one the model ignored, so the parts
  array is asserted rather than assumed.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -56,13 +56,13 @@ const TEXT_ONLY: RosterModelId = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Bytes past the reading stage's own ceiling of 8388608.
- 
+
  THE CEILING IS NO LONGER PER MODEL and no longer derived from a context. It
  used to be half a model's context converted to base64 characters, which
  measured the wrong thing: sent as they are, both readers accept every asset
  in the corpus, including one of 1274028 bytes that the old derivation refused
  to the smaller of them at 294912.
- 
+
  WHAT REPLACED IT MEASURES THE GATEWAY, since 2026-08-22. A body over the
  gateway's cap returns `400` naming a parse failure, so the ceiling exists to
  keep a picture from turning into an error that describes the wrong thing.
@@ -73,7 +73,7 @@ const OVERSIZED_BYTES = 9_000_000;
 /**
  Size sitting between the ceiling this stage configures and the one it
  configured until 2026-08-22.
- 
+
  BETWEEN THEM ON PURPOSE. 7340032 refuses this and 8388608 admits it, so a
  case built on this size is the only thing in the suite that can tell the two
  numbers apart. `OVERSIZED_BYTES` clears both and would pass under either.
@@ -87,11 +87,11 @@ const A_READING = '虎斑猫 Mittens，2019 年领养，联系方式 @mittenspaw
 
 /**
  Bytes standing in for a picture, whose content no rule here reads.
- 
+
  @param length - how many bytes the picture occupies
- 
+
  @returns Buffer of that size
- 
+
  @example
  ```ts
  const bytes = bytesOf({ length: 64, },);
@@ -104,11 +104,11 @@ function bytesOf({ length, }: { readonly length: number; },): Uint8Array {
 /**
  Client answering every reading with one fixed reply, recording what it was
  asked.
- 
+
  @param text - reply the model returns
- 
+
  @returns Client and the requests it received
- 
+
  @example
  ```ts
  const { client, requests, } = replyingClient({ text: A_READING, },);

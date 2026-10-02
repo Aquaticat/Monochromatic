@@ -19,19 +19,19 @@ import type { ObjectionGroup, } from './refine-selection-context.ts';
 /**
  Applies final body naturalness stage to whichever approved wording survived
  consolidation, including standing text retained before consolidation gate.
- 
+
  @param client - provider client final naturalness rounds borrow
- 
+
  @param settlement - consolidation answer before final naturalness stage
- 
+
  @param subject - original and archive evidence anchoring fidelity
- 
+
  @param lineStructured - whether source line boundaries must survive
- 
+
  @param sliceIndex - prepared position retained in polish records
- 
+
  @param polishConfig - measured naturalness roles and document facts
- 
+
  @param eligible - whether baseline has approval to cross publication boundary
 
  @param objections - what the gate or slate judges held against the text
@@ -40,13 +40,13 @@ import type { ObjectionGroup, } from './refine-selection-context.ts';
  or no group carrying an objection, keeps the comparative polish
 
  @param signal - cancellation for whole settlement
- 
+
  @param perCallTimeoutMs - bound on any single exchange
- 
+
  @param l - stage logger
- 
+
  @returns Settlement carrying auditable final polish and final wording
- 
+
  @example
  ```ts
  const final = await applyFinalPolish({ client, settlement, subject, lineStructured, sliceIndex, polishConfig, eligible: true, signal, perCallTimeoutMs, l, });

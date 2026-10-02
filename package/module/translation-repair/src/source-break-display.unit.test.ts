@@ -1,7 +1,7 @@
 /**
  The model-facing source makes authored breaks visible without changing the
  canonical source or literals that merely look like Markdown break syntax.
- 
+
  @module
  */
 
@@ -13,7 +13,7 @@ const SOURCE = '> 猫醒了。  \n> 鸟唱了。';
 
 /**
  Reads the actual model-facing source message for a writer request.
- 
+
  @param sourceText - exact source passed to the builder
  @returns User message, excluding the instruction that itself mentions br
  */

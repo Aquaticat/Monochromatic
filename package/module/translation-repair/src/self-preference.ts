@@ -31,7 +31,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  One candidate on one slice, with the ballots cast over that slate.
- 
+
  @example
  ```ts
  const round: SelectionRound = { producers: [producer,], ballots, };
@@ -52,7 +52,7 @@ export type SelectionRound = {
 
 /**
  Ballot counts every outcome carries, whether or not a rate could be taken.
- 
+
  @example
  ```ts
  const counts: SelfPreferenceCounts = { opportunities: 4, ownVotes: 3, otherBallots: 12, otherVotes: 5, };
@@ -83,14 +83,14 @@ export type SelfPreferenceCounts = {
 
 /**
  What the paired comparison found.
- 
+
  THREE OUTCOMES RATHER THAN OPTIONAL NUMBERS, because the two ways this fails
  to produce a rate are different facts and a reader has to tell them apart. No
  stakeholder ever voting means the question was never put; every judge holding
  a stake means it was put with no one left to answer it, which is a roster
  shape rather than missing data. Both carry their counts, so a caller can
  report what was seen either way.
- 
+
  @example
  ```ts
  const measured: SelfPreference = selfPreference({ rounds, },);
@@ -113,7 +113,7 @@ export type SelfPreference =
 
     /**
      Own rate minus disinterested rate.
-     
+
      Positive means producers favoured their own work beyond what judges with
      no stake in it thought of the same text. Zero means the half-weight
      discount is correcting nothing this measurement can see.
@@ -138,7 +138,7 @@ export type SelfPreference =
 
 /**
  Ballots a candidate drew, split by whether the judge had a stake in it.
- 
+
  @example
  ```ts
  const drawn: CandidateDraw = { ownVotes: 1, opportunities: 1, otherVotes: 2, otherBallots: 5, };
@@ -168,15 +168,15 @@ type CandidateDraw = {
 
 /**
  Scores one candidate against the slate it stood on.
- 
+
  @param producer - that candidate's provenance
- 
+
  @param candidateIndex - one-based slate position ballots name it by
- 
+
  @param ballots - every ballot cast over the slate
- 
+
  @returns How the candidate fared with stakeholders and with everyone else
- 
+
  @example
  ```ts
  const drawn = drawForCandidate({ producer, candidateIndex: 1, ballots, },);
@@ -214,11 +214,11 @@ function drawForCandidate(
 
   /**
    Whether one ballot named the candidate being scored.
-   
+
    @param ballot - cast over this slate
-   
+
    @returns True when it names this candidate's slate position
-   
+
    @example
    ```ts
    const chose = namedIt(ballot,);
@@ -240,18 +240,18 @@ function drawForCandidate(
 
 /**
  Measures self-preference over a set of selection rounds.
- 
+
  ONLY CANDIDATES WITH A STAKEHOLDER WHO VOTED CONTRIBUTE, on either side. A
  candidate nobody had a stake in cannot express self-preference, and counting
  its disinterested ballots into the baseline would dilute the comparison with
  texts the measurement is not about. That restriction is what keeps the two
  rates paired on the same candidates.
- 
+
  @param rounds - one entry per judged slice, with its slate and its ballots
- 
+
  @returns Own rate, the disinterested rate over the same candidates, and the
  difference
- 
+
  @example
  ```ts
  const measured = selfPreference({ rounds, },);

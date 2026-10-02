@@ -1,15 +1,15 @@
 /**
  Tests for the document-scale repetition check: what it names, and the three
  things it must NOT name.
- 
+
  WHY IT EXISTS: the introduced-defect probe compares one edited
  region against itself, so `lintong`'s duplicated farewell was invisible to it
  at any setting. The duplication lives in no single region, only in the
  assembled document. This check reads the whole document against the archive
  the artifact now stores, which needs no model, no roster and no quota.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -33,7 +33,7 @@ const PASSAGE = 'do come back and visit the tabby by the gate again soon';
 
 /**
  A passage LONGER than the twelve-word window, so it spans several of them.
- 
+
  Every word is at least five letters, so each window clears the content-word
  threshold on its own and the merge rather than the filter is what the test
  measures.
@@ -49,7 +49,7 @@ const FIRST_PASSAGE =
 
 /**
  {@inheritDoc FIRST_PASSAGE}
- 
+
  Shares no twelve-word window with {@link FIRST_PASSAGE}, so any merge between
  the two would have come from adjacency rather than from occurrence.
  */

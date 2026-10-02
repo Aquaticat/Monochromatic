@@ -14,7 +14,7 @@ import type { TelemetryProbeReading, } from './probe-attribution.ts';
 
 /**
  Raised when two shipped records claim one issue id.
- 
+
  @example
  ```ts
  throw new ProbeIssueIndexError({ message: 'two shipped records claim issue 4f2a', },);
@@ -23,9 +23,9 @@ import type { TelemetryProbeReading, } from './probe-attribution.ts';
 export class ProbeIssueIndexError extends Error {
   /**
    Builds refusal carrying what could not hold.
-   
+
    @param message - which id more than one record claims
-   
+
    @example
    ```ts
    throw new ProbeIssueIndexError({ message: 'two shipped records claim issue 4f2a', },);
@@ -39,7 +39,7 @@ export class ProbeIssueIndexError extends Error {
 
 /**
  Indexes readings by the issue that OWNS each one.
- 
+
  Ownership comes from the record the reading was written on, never from the
  issue lists inside its regions. A region names every issue it serves, and one
  replacement can serve several accepted issues, so reading ownership off those
@@ -47,14 +47,14 @@ export class ProbeIssueIndexError extends Error {
  rare collision: it is the ordinary case whenever an envelope served more than
  one issue, and the joint counts would look perfectly normal while describing
  the wrong record.
- 
+
  @param owned - readings paired with their owning issue, across every artifact
- 
+
  @returns Issue-keyed readings
- 
+
  @throws {@link Error} when two records claim one issue id, which would mean
  the identity this join rests on is not unique
- 
+
  @example
  ```ts
  const byIssueId = indexReadingsByIssue({ owned, },);

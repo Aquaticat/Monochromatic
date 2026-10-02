@@ -61,16 +61,16 @@ type AuthorRow = {
 
 /**
  Tallies each author's claims per arm.
- 
+
  Counts a claim once for EVERY author, not once per claim. The question the
  crosscheck asks is per author, so a claim two critics proposed belongs to
  both their populations; summing the column therefore exceeds the claim count
  whenever critics agreed, which on this run they almost never do.
- 
+
  @param items - judgeable claims from the census
- 
+
  @returns One row per author, most accepted claims first
- 
+
  @example
  ```ts
  const rows = tallyAuthors({ items, },);
@@ -143,9 +143,9 @@ function tallyAuthors(
 
 /**
  Renders the author table header.
- 
+
  @returns Header line
- 
+
  @example
  ```ts
  console.log(headerLine(),);
@@ -167,11 +167,11 @@ function headerLine(): string {
 
 /**
  Renders one author's row, saying plainly whether each arm can carry a rate.
- 
+
  @param row - one author's counts
- 
+
  @returns Row line
- 
+
  @example
  ```ts
  console.log(authorLine({ row, },),);
@@ -180,7 +180,7 @@ function headerLine(): string {
 function authorLine({ row, }: { readonly row: AuthorRow; },): string {
   /**
    Which arms hold enough claims for a rate to be reported over them.
-   
+
    Both arms must clear it independently. A crosscheck reports the GAP
    between them, and a gap is only as trustworthy as its thinner side.
    */
@@ -206,7 +206,7 @@ function authorLine({ row, }: { readonly row: AuthorRow; },): string {
 
 /**
  Reads a run's artifacts and prints the crosscheck population.
- 
+
  @example
  ```ts
  await main();

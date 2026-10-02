@@ -1,21 +1,21 @@
 /**
  Tests for the disk-backed slice cache that makes a long entry resumable.
- 
+
  None of these three had a test. Their failure is expensive but silent: if
  `persist` and the resume loader ever disagree about how a key becomes a file
  name, resume simply never hits, every run recomputes every slice from
  scratch, and the only symptom is that a pass costs hours more than it should.
  Nothing errors. So the round trip gets asserted directly rather than each
  half separately.
- 
+
  The stale-schema case matters for the same reason the module comment warns
  about it: the cache stores repair OUTCOMES, so a pipeline change invalidates
  them. A file missing a field the current outcome carries must be treated as
  absent and recomputed, never resumed, or a run would silently mix outputs
  from two versions of the pipeline.
- 
+
  Fixtures are cat-themed invention written into throwaway directories.
- 
+
  @module
  */
 
@@ -49,7 +49,7 @@ import {
 
 /**
  Built pipeline the fixtures are filled under.
- 
+
  Every case that resumes a cache has to agree with the marker, since a cache
  filled by another pipeline is discarded rather than resumed.
  */
@@ -58,11 +58,11 @@ const TEST_GENERATION = `sha256-tree-v1:${'a'.repeat(64,)}`;
 /**
  A complete outcome, carrying every field the loader checks before trusting a
  cache file.
- 
+
  @param sliceIndex - slice position this outcome belongs to
- 
+
  @returns Outcome shaped as the pipeline writes it
- 
+
  @example
  ```ts
  const outcome = catOutcome({ sliceIndex: 0, },);
@@ -103,11 +103,11 @@ function catOutcome({ sliceIndex, }: { readonly sliceIndex: number; },) {
 
 /**
  A complete translate record, carrying every field its loader checks.
- 
+
  @param sliceIndex - slice position this record belongs to
- 
+
  @returns Record shaped as the translate driver writes it
- 
+
  @example
  ```ts
  const record = catTranslateRecord({ sliceIndex: 0, },);

@@ -2,7 +2,7 @@
 
 /**
  Generation shared by section and block roster-pairing question identities.
- 
+
  Version two requires exact-half participation before straggler grace.
  Version one implicitly began grace after two usable voices.
 

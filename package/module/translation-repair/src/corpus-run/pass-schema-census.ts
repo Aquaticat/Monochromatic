@@ -26,7 +26,7 @@ import {
 
 /**
  What one settled file says about its generation.
- 
+
  @example
  ```ts
  const classification: SchemaClassification = { kind: 'declared', version: 2, };
@@ -63,7 +63,7 @@ export type SchemaClassification = {
 } | {
   /**
    File is not an artifact at all: not JSON, or JSON that is not a record.
-   
+
    SEPARATE FROM EVERY OTHER ANSWER because its remedy is the opposite one.
    Another generation's artifact is a sound result to keep; this is a file to
    investigate, and the pipeline guard refuses it first with the advice that
@@ -79,7 +79,7 @@ export type SchemaClassification = {
 
 /**
  One settled entry and the generation its file belongs to.
- 
+
  @example
  ```ts
  const row: SchemaCensusRow = { entryId: 'Mittens', classification: { kind: 'unversioned', }, };
@@ -99,16 +99,16 @@ export type SchemaCensusRow = {
 
 /**
  Classifies one artifact's generation from its parsed body.
- 
+
  @param artifact - artifact as parsed JSON, of any shape
- 
+
  @param entryId - entry the artifact belongs to, for the reader's error paths
- 
+
  @returns Which generation it declares, or why that could not be read
- 
+
  @throws Whatever a reading raised that is not a parse failure, since this
  classifies artifacts rather than swallowing faults
- 
+
  @example
  ```ts
  const classification = classifyArtifact({ artifact, entryId: 'Mittens', },);
@@ -208,12 +208,12 @@ function parsedArtifactText(
 
 /**
  Classifies every settled entry in a directory.
- 
+
  @param artifactsDir - directory holding one JSON per settled entry
- 
+
  @returns One row per artifact, in directory-sorted order so a refusal reads
  the same twice
- 
+
  @example
  ```ts
  const rows = await censusBySchema({ artifactsDir, },);

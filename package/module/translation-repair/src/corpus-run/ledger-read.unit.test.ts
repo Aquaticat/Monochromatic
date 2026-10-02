@@ -1,28 +1,28 @@
 /**
  Tests for reading the judged-contest ledger back.
- 
+
  THE JOIN IS WHAT THESE CHECK. A ballot names a POSITION and the summary
  speaks about MODELS, so every case here is built so a reader that lost the
  `candidates[best - 1]` step would answer differently rather than merely
  answer late.
- 
+
  THE COMPOSITE CANDIDATE IS DELIBERATE. One candidate is written by two
  models at once, so a ballot for it credits both, and a ballot cast BY either
  of them is a self-vote for both. A reader crediting only the first author
  would pass every single-author case and fail here.
- 
+
  THE TWO BALLOT FAULTS ARE SEPARATED ON PURPOSE. One judge names nothing and
  one names a fourth candidate on a three-candidate slate. Both are recorded
  rather than corrected, and a reader folding them together would report one
  count of two where the contest had one of each.
- 
+
  THE DISINTERESTED DENOMINATOR IS CHECKED, not just the numerator. A seat
  every judge could weigh and a seat most judges wrote are different, and only
  the denominator tells them apart.
- 
+
  Model identifiers come from the catalog. Passages are cat-themed invention,
  so no corpus content appears here.
- 
+
  @module
  */
 
@@ -90,15 +90,15 @@ const PAST_THE_END = 4;
 
 /**
  Builds one ballot without restating the fields every case shares.
- 
+
  @param modelId - judge casting it
- 
+
  @param best - one-based position named, or zero for an abstention
- 
+
  @param reason - verbatim stated reason
- 
+
  @returns Ballot as a ledger file records it
- 
+
  @example
  ```ts
  const cast = ballot({ modelId: OUTSIDER, best: 1, reason: 'clearest', },);
@@ -124,7 +124,7 @@ function ballot(
 
 /**
  One contest: three candidates, one of them written by two seats at once.
- 
+
  Position 1 wins. `OUTSIDER` and `THIRD` back it, `JOINT_ONE` backs its own
  joint work, `SOLO` abstains, and `JOINT_TWO` names a fourth candidate the
  slate does not have.
@@ -207,18 +207,18 @@ const DECLINED: ReadRound = {
 
 /**
  Looks one seat up in a summary.
- 
+
  THROWS RATHER THAN RETURNING AN ABSENCE, because every case here names a
  seat that wrote something, so a missing row is the reader losing it.
- 
+
  @param summary - what `summariseLedger` returned
- 
+
  @param model - seat wanted
- 
+
  @returns That seat's counts
- 
+
  @throws {@link Error} when the summary holds no row for that seat
- 
+
  @example
  ```ts
  const seat = seatOf({ summary, model: SOLO, },);
@@ -250,16 +250,16 @@ function seatOf(
 
 /**
  Renders a contest the way a ledger file holds it, then reads it back.
- 
+
  WRITES AND RE-READS RATHER THAN CLONING. A clone would hand the parser the
  very objects the fixture built, which is not what a file does: the parser's
  real input has been through a text form, and surviving that round trip is
  exactly what the recorder promises and what this checks.
- 
+
  @param round - contest to render and read back
- 
+
  @returns Whatever the text form parsed to, still unchecked
- 
+
  @example
  ```ts
  const value = asFileWould({ round: CONTEST, },);
@@ -279,15 +279,15 @@ function asFileWould(
 /**
  Runs the parser over a value that must be refused, and hands back the
  refusal's message.
- 
+
  @param value - malformed contest
- 
+
  @param from - file name the refusal should carry
- 
+
  @returns Message the refusal was raised with
- 
+
  @throws {@link Error} when the parser accepted a value it should refuse
- 
+
  @example
  ```ts
  const message = refusalMessageFor({ value, from, },);

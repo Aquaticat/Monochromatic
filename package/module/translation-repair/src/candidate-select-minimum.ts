@@ -21,7 +21,7 @@ import { rosterQuorumSize, } from './roster-quorum-size.ts';
 
 /**
  Ballots naming the winner a selection needs whatever its weight.
- 
+
  The ballot form of the same floor the absolute minimum stood for: one vote
  deciding is one model deciding, which the ensemble exists to prevent. On a
  bench at quorum a weight of {@link MIN_SELECTION_WEIGHT} already implies it,
@@ -41,7 +41,7 @@ export const RUNOFF_UNDER_MINIMUM_FINDING = 'select-runoff-under-minimum';
 /**
  What a selection round must see before its leader wins, sized to the bench
  that could answer.
- 
+
  @example
  ```ts
  const minimum: SelectionMinimum = { weight: 1, reachable: 3, quorum: 6, short: true, };
@@ -73,14 +73,14 @@ export type SelectionMinimum = {
 
 /**
  Sizes the minimum weight to the seats that could answer.
- 
+
  @param benchSize - judges the round seated, unreachable seats included
- 
+
  @param unreachable - seats the router refused for want of a wet provider
- 
+
  @returns Minimum weight, the reachable count and quorum it was sized by,
  and whether the bench was short
- 
+
  @example
  ```ts
  selectionMinimum({ benchSize: 11, unreachable: 8, },);
@@ -124,13 +124,13 @@ export function selectionMinimum(
 /**
  Finding a round seated short of quorum carries, so a page decided this way
  is told apart in its findings rather than only in a log line.
- 
+
  @param minimum - minimum the round applied
- 
+
  @param benchSize - judges the round seated
- 
+
  @returns Finding in scorecard-stable wording
- 
+
  @example
  ```ts
  shortBenchFinding({ minimum, benchSize: 11, },);

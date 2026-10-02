@@ -1,16 +1,16 @@
 /**
  Tests for turning an archive of settled artifacts into audit subjects.
- 
+
  What matters here is not that the reader parses. It is that every claim a
  persisted audit row will later make about its own provenance is true: that
  the text audited is the text the judges saw, that the corpus commit read is
  the artifact's own rather than whatever the pin says today, that a retained
  slice is marked as the archive's wording rather than a fresh rendering, and
  that a preparation which no longer matches is REPORTED rather than thrown.
- 
+
  Fixtures are cat-themed invention on a throwaway git repository. No corpus
  content appears here.
- 
+
  @module
  */
 
@@ -49,7 +49,7 @@ import { rawResultFor, } from './lane-result-evidence.test-fixture.ts';
 
 /**
  Real git binary every fixture command runs through.
- 
+
  RESOLVED rather than taken from PATH, which in this repository exposes a
  policy shim. The shim rejects fixture staging patterns and settles worktree
  copies against the REAL repository, so a throwaway corpus built through it
@@ -126,13 +126,13 @@ const BARE_TARGET_PAGE = 'The cat waits at the door.\n\nThe cat likes the sun.\n
 
 /**
  Runs one git command inside a fixture repository.
- 
+
  @param cloneDir - repository the command runs in
- 
+
  @param args - arguments after the directory selector
- 
+
  @returns Standard output
- 
+
  @example
  ```ts
  await fixtureGit({ cloneDir, args: ['rev-parse', 'HEAD',], },);
@@ -169,17 +169,17 @@ async function fixtureGit(
 
 /**
  Commits one entry's two pages into a fixture repository.
- 
+
  @param cloneDir - repository to write into
- 
+
  @param entryId - entry directory name
- 
+
  @param sourcePage - original page content
- 
+
  @param targetPage - archive translation content
- 
+
  @returns Commit the write landed in
- 
+
  @example
  ```ts
  const sha = await commitEntry({ cloneDir, entryId, sourcePage, targetPage, },);
@@ -265,9 +265,9 @@ async function commitEntry(
 
 /**
  Throwaway corpus holding the cat pair, removed on dispose.
- 
+
  @returns Clone directory, the commit holding the pair, and a disposer
- 
+
  @example
  ```ts
  await using corpus = await makeCorpus();
@@ -321,14 +321,14 @@ async function makeCorpus(): Promise<
 /**
  Builds a ledger where the lane replaced the archive at the FIRST slice and
  kept it everywhere else.
- 
+
  Both delivery kinds in one artifact, so the retained-versus-replaced split
  has something to separate.
- 
+
  @param prepared - preparation to build rows from
- 
+
  @returns One row per prepared slice, in document order
- 
+
  @example
  ```ts
  const rows = replacedFirstSlice({ prepared, },);
@@ -347,7 +347,7 @@ function replacedFirstSlice(
 
       /**
        Whether the archive holds wording here at all.
-       
+
        A PAIRED PREPARATION LEAVES INSERTIONS: a section the pairing did not
        claim is placed as an insertion slice whose archive wording is absent,
        and the builder refuses a row calling that wording present. Such a
@@ -391,19 +391,19 @@ function replacedFirstSlice(
 
 /**
  Writes one artifact into an archive run set.
- 
+
  @param archiveDir - throwaway archive
- 
+
  @param runSet - subdirectory to write into
- 
+
  @param prepared - preparation both lanes ran over
- 
+
  @param corpusSha - commit the artifact claims its pair was read at
- 
+
  @param entryId - entry the artifact is written for
- 
+
  @returns Nothing; the file is the result
- 
+
  @example
  ```ts
  await writeArtifact({ archiveDir, runSet, prepared, corpusSha, entryId, },);

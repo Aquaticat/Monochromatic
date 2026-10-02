@@ -1,21 +1,21 @@
 /**
  Tests for the judged-contest ledger.
- 
+
  WHAT THIS GUARDS is the reason the module exists: a roster question asked
  after a run should be answerable from what the run already paid for. The
  cases therefore check that the TEXT survives, not merely that a file appears.
- 
+
  THE UNSET CASE IS NOT AN EDGE CASE. Every unit run and every probe sets no
  run directory, so writing nothing there is the ordinary path, and a module
  that threw or wrote into the working tree instead would break both.
- 
+
  THE FAILURE CASE MATTERS MORE THAN THE SUCCESS ONE. Telemetry that can fail a
  slice is worse than no telemetry, so a write into an impossible location must
  leave the caller undisturbed.
- 
+
  Model identifiers come from the catalog. Candidate text here is cat-themed
  invention, never corpus wording.
- 
+
  @module
  */
 
@@ -110,17 +110,17 @@ const BALLOTS: readonly SelectionBallot[] = [
 
 /**
  Points the run directory at a throwaway for as long as the binding lives.
- 
+
  A `Disposable` RATHER THAN `try...finally`, which this codebase bans: the
  restore has to happen even when a case fails, and `using` guarantees it.
- 
+
  `Reflect.deleteProperty` RATHER THAN `delete`, because the key is held in a
  named constant and deleting a computed key is banned.
- 
+
  @param dir - directory the recorder should write under
- 
+
  @returns Directory, plus the handle restoring the previous value
- 
+
  @example
  ```ts
  using pointed = runsDirPointedAt({ dir, },);
@@ -151,9 +151,9 @@ function runsDirPointedAt(
 
 /**
  Clears the run directory for as long as the binding lives.
- 
+
  @returns Whether the variable was cleared, plus the restoring handle
- 
+
  @example
  ```ts
  using cleared = runsDirCleared();
@@ -180,11 +180,11 @@ function runsDirCleared(): Disposable & { readonly cleared: boolean; } {
 
 /**
  Lists the ledger directory, reporting an absent one as empty.
- 
+
  @param dir - run directory written into
- 
+
  @returns File names, empty where nothing was written
- 
+
  @example
  ```ts
  const names = await namesUnder({ dir, },);
@@ -208,11 +208,11 @@ async function namesUnder(
 
 /**
  Reads every ledger file a run directory holds, in judging order.
- 
+
  @param dir - run directory written into
- 
+
  @returns Parsed rounds, empty where nothing was written
- 
+
  @example
  ```ts
  const rounds = await ledgerIn({ dir, },);
@@ -247,13 +247,13 @@ async function ledgerIn(
 
 /**
  Records the shared fixture contest into a directory.
- 
+
  @param selectedIndex - outcome to record for this round
- 
+
  @param mark - names the case, for the throwaway directory
- 
+
  @returns Rounds the recorder left behind
- 
+
  @example
  ```ts
  const rounds = await recordedRounds({ selectedIndex: 2, mark: 'kept', },);

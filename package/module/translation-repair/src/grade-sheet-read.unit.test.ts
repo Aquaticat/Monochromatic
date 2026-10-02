@@ -1,12 +1,12 @@
 /**
  Tests for reading a filled grading sheet, and for scoring a blind pre-grade
  against it.
- 
+
  The fixture shapes are taken from the two sheets a human has actually graded,
  which differ from each other and from anything specified: bracketed and
  unbracketed answers, a verdict letter followed by prose, and answers that are
  not verdicts at all. The prose itself is cat-themed invention.
- 
+
  @module
  */
 
@@ -34,11 +34,11 @@ const LEGEND = '  (Y = real defect · N = false positive)';
 
 /**
  Builds a sheet from raw grade answers, one item per answer.
- 
+
  @param answers - text each grader answer carries, in sheet order
- 
+
  @returns Sheet text the parser reads
- 
+
  @example
  ```ts
  const sheet = catSheet({ answers: ['[Y]', 'N',], },);
@@ -67,11 +67,11 @@ function catSheet(
 
 /**
  Builds pre-grades for positions one upward.
- 
+
  @param verdicts - verdict per position, in sheet order
- 
+
  @returns Pre-graded items
- 
+
  @example
  ```ts
  const agent = catPreGrades({ verdicts: ['real-defect',], },);

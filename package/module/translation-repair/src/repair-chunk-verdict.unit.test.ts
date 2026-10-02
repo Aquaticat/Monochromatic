@@ -1,6 +1,6 @@
 /**
  Tests for the refusal that stops a winning repair dropping a declared name.
- 
+
  WHAT THIS EXISTS TO CATCH. The repair lane's editor judges were shown two
  candidates differing only in a declared alias and chose the one that dropped
  it, six judges out of six, each reasoning that the alias had no basis in the
@@ -8,20 +8,20 @@
  a settled artifact and no reader could have found it. The refusal is
  therefore deterministic, and this file proves the settlement CONSULTS it: a
  guard computed and not consulted looks exactly like a guard that passed.
- 
+
  IT ALSO PINS WHICH VERDICT MOVES. `patchSelected` says the patch beat the
  archive on the measurements, and that stays true through a refusal, because
  it did. Only the text that ships changes. Collapsing the two would make a
  refusal indistinguishable from the case this file's subject already owns, a
  patch that wins selection and whose envelope operations write no byte.
- 
+
  A GUARD PROVES NOTHING UNTIL SHOWN TO FAIL, so the cases come in threes: a
  winning patch accepted, the same shape of patch refused for dropping a
  declared name, and that same dropping patch accepted once nothing is
  declared.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -81,7 +81,7 @@ const DROPS_THE_ALIAS = 'Meowmeow kept the windowsill warm all that winter.';
 
 /**
  Measurements of a patch that beat the archive.
- 
+
  ONE RESOLVED ISSUE AND NOTHING WORSE is the smallest shape that wins
  selection outright, so a case using it is testing the refusal rather than the
  ranking.
@@ -108,15 +108,15 @@ const LOSING_MEASUREMENTS = {
 
 /**
  Settles one slice with a given patch and declaration list.
- 
+
  @param patchedText - wording the editor produced
- 
+
  @param declaredNames - forms preparation found in the front matter
- 
+
  @param measurements - what the checks made of that patch
- 
+
  @returns Verdict the lane settled on
- 
+
  @example
  ```ts
  const verdict = settleWith({ patchedText: DROPS_THE_ALIAS, declaredNames: DECLARED_NAMES, },);

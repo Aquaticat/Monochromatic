@@ -47,18 +47,18 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 
 /**
  Reads one lane's envelope: its raw result and its ledger, unchecked.
- 
+
  @param value - lane JSON
- 
+
  @param path - dotted path of the lane
- 
+
  @param keys - spelling the artifact's own generation gave the renamed keys
- 
+
  @returns Raw record and parsed ledger rows
- 
+
  @throws {@link ArtifactParseError} when the lane carries a key this version
  does not name, or either part is the wrong shape
- 
+
  @example
  ```ts
  const { raw, delivery, } = parseLaneEnvelope({ value, path: 'lanes.repair', keys, },);
@@ -121,16 +121,16 @@ function parseLaneEnvelope(
 
 /**
  Refuses a lane whose ledger does not cover the preparation.
- 
+
  @param delivery - lane's ledger
- 
+
  @param preparation - slicing both lanes ran over
- 
+
  @param path - dotted path of the lane
- 
+
  @throws {@link ArtifactParseError} when the row count differs from the slice
  count the preparation records
- 
+
  @example
  ```ts
  assertLedgerCoversPreparation({ delivery, preparation, path: 'lanes.repair', },);
@@ -159,23 +159,23 @@ function assertLedgerCoversPreparation(
 
 /**
  Reads both lanes and runs every per-lane check.
- 
+
  @param value - lanes JSON
- 
+
  @param preparation - slicing both lanes ran over, which every count is out of
- 
+
  @param path - dotted path of the lanes record
- 
+
  @param keys - spelling the artifact's own generation gave the renamed keys
- 
+
  @returns Both lanes, each with its raw record, its evidence core and its
  ledger
- 
+
  @throws {@link ArtifactParseError} when either lane is malformed, disagrees
  with its own raw result, names an index set its rows do not produce, claims a
  status its deliveries could not have come from, carries a row whose axes
  contradict, or does not cover the preparation
- 
+
  @example
  ```ts
  const lanes = parseLanes({ value: artifact.lanes, preparation, path, keys, },);

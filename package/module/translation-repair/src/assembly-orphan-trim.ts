@@ -26,7 +26,7 @@ import type { SliceReplacement, } from './splice-slices.ts';
 
 /**
  Replacements after the trim, and what the trim did.
- 
+
  @example
  ```ts
  const trimmed: TrimmedReplacements = trimOrphanDefinitions({ findings, replacements, incumbentBySlice, },);
@@ -78,11 +78,11 @@ const LINE_BREAK = '\n';
 /**
  Label a line opens a definition with, empty when the line is anything else
  (prose, a heading, a definition's continuation).
- 
+
  @param line - one line of a replacement
- 
+
  @returns The label alone, or the empty string
- 
+
  @example
  ```ts
  definitionLabelOfLine({ line: '[^2]: the note', },);
@@ -116,7 +116,7 @@ function definitionLabelOfLine({ line, }: { readonly line: string; },): string {
 /**
  One block of a replacement beside the gap that preceded it and the
  definition label it opens with.
- 
+
  @example
  ```ts
  const labelled: LabelledBlock = { gapBefore: '\n\n', block: '[^2]: the note', label: '2', };
@@ -141,7 +141,7 @@ type LabelledBlock = {
 
 /**
  Blocks of a text with the text after the last block.
- 
+
  @example
  ```ts
  const layout: BlockLayout = { blocks, tail: '\n', };
@@ -162,7 +162,7 @@ type BlockLayout = {
 /**
  Where the line walk stands: the open block's span, if any, and the end of
  the last closed one.
- 
+
  @example
  ```ts
  const walk: BlockWalk = { openStart: -1, openEnd: -1, lastEnd: 0, offset: 0, };
@@ -192,15 +192,15 @@ type BlockWalk = {
 
 /**
  Closes the open block into the list, if one is open.
- 
+
  @param text - whole text
- 
+
  @param walk - where the walk stands
- 
+
  @param blocks - list the block joins
- 
+
  @returns The walk with no block open
- 
+
  @example
  ```ts
  const closed = closeBlock({ text, walk, blocks, },);
@@ -245,11 +245,11 @@ function closeBlock(
 /**
  Blocks of a text: a block ends at a blank line or where a definition line
  begins, and every gap between blocks is kept as written.
- 
+
  @param text - replacement text
- 
+
  @returns Blocks in order with the trailing text
- 
+
  @example
  ```ts
  labelledBlocksOf({ text: '[^1]: one\n[^2]: two\n', },);
@@ -329,7 +329,7 @@ function labelledBlocksOf({ text, }: { readonly text: string; },): BlockLayout {
 
 /**
  Kept text and the gap owed before the next kept block.
- 
+
  @example
  ```ts
  const state: KeptText = { text: '[^1]: one', pendingGap: '\n\n', };
@@ -351,16 +351,16 @@ type KeptText = {
 /**
  Cuts every definition block carrying one of the labels out of a text,
  keeping the gaps between the blocks that stay and the trailing text.
- 
+
  A kept block that follows cut blocks takes the gap that stood before the
  first of them, so a paragraph break survives the cut of what followed it.
- 
+
  @param text - replacement text
- 
+
  @param labels - definition labels whose blocks go
- 
+
  @returns Text without those blocks
- 
+
  @example
  ```ts
  cutDefinitionBlocks({ text: '[^1]: one\n\n[^2]: two\n', labels: new Set(['2',],), },);
@@ -420,13 +420,13 @@ export function cutDefinitionBlocks(
  Whether a carried text is a decided text with definition blocks cut and
  nothing else changed, which is the one difference the assembly guard's trim
  makes between what a lane decided and what its document carries.
- 
+
  @param decided - text the lane decided
- 
+
  @param carried - text the document carries
- 
+
  @returns Whether the carried text is the decided text under a definition trim
- 
+
  @example
  ```ts
  isDefinitionTrim({ decided: 'a[^1].\n\n[^1]: one\n\n[^2]: two', carried: 'a[^1].\n\n[^1]: one', },);
@@ -480,11 +480,11 @@ export function isDefinitionTrim(
 /**
  Count of definition blocks across every replacement, the most trims the
  assembly guard can make.
- 
+
  @param replacements - replacements the guard walks
- 
+
  @returns Definition blocks in all of them
- 
+
  @example
  ```ts
  definitionBlockCount({ replacements, },);
@@ -516,16 +516,16 @@ export function definitionBlockCount(
  Cuts the orphan definitions' blocks out of every replacement that is
  nothing but definition blocks, leaving any other replacement for the
  guard to withdraw whole.
- 
+
  @param findings - footnote findings the assembly introduced
- 
+
  @param replacements - replacements standing this round
- 
+
  @param incumbentBySlice - archive text of every slice, by chunk index as a
  string, so a trim that lands on the incumbent is withdrawn rather than shipped
- 
+
  @returns Replacements after the trim
- 
+
  @example
  ```ts
  const trimmed = trimOrphanDefinitions({ findings: introduced, replacements: standing, incumbentBySlice, },);

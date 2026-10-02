@@ -3,7 +3,7 @@
  Every finding kind counts alike, a clean document counts zero, and the count
  rises with damage, which is the only property the gate reads.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

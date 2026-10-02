@@ -1,8 +1,8 @@
 /**
  Tests for the two claims a delivery ledger makes about a document.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -43,17 +43,17 @@ const SECOND_END = SECOND_START + 'She purrs.'.length;
 
 /**
  Builds a pair whose target side covers a span of {@link ARCHIVE}.
- 
+
  @param sliceIndex - position of this slice
- 
+
  @param startOffset - absolute start
- 
+
  @param endOffset - absolute exclusive end
- 
+
  @param sourceText - original this slice renders
- 
+
  @returns Pair covering that span
- 
+
  @example
  ```ts
  const pair = spanAt({ sliceIndex: 0, startOffset: 0, endOffset: 15, sourceText: '猫猫在睡觉。', },);
@@ -95,15 +95,15 @@ function spanAt(
 
 /**
  Builds a pair whose target side names a boundary and covers nothing.
- 
+
  @param sliceIndex - position of this slice
- 
+
  @param offset - boundary the translation belongs at
- 
+
  @param sourceText - original with no translation in the archive
- 
+
  @returns Pair anchored at that boundary
- 
+
  @example
  ```ts
  const pair = anchorAt({ sliceIndex: 1, offset: 15, sourceText: '她伸了个懒腰。', },);
@@ -137,15 +137,15 @@ function anchorAt(
 
 /**
  Builds a ledger the way a lane driver does.
- 
+
  @param slices - preparation the lane ran over
- 
+
  @param wordings - what it decided per slice
- 
+
  @param shipped - slices its document carries a change for
- 
+
  @returns One row per prepared slice
- 
+
  @example
  ```ts
  const ledger = ledgerFor({ slices, wordings, shipped: [0,], },);

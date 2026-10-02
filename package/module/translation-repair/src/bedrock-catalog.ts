@@ -103,7 +103,7 @@ export const BEDROCK_ROUTE_PREFIX: Readonly<Record<BedrockRoute, string>> = {
 
 /**
  Verified per-model facts the router, the request builder and the ledger read.
- 
+
  @example
  ```ts
  const info: BedrockModelInfo = BEDROCK_MODELS['google.gemma-4-e2b'];
@@ -200,13 +200,13 @@ export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>>
 
 /**
  Chat completions URL one model answers on.
- 
+
  @param baseUrl - host, overridable for tests
- 
+
  @param servedId - model whose route decides the path
- 
+
  @returns Absolute URL to POST the body to
- 
+
  @example
  ```ts
  bedrockChatUrlFor({ baseUrl: BEDROCK_MANTLE_BASE_URL, servedId: 'google.gemma-4-e2b', },);

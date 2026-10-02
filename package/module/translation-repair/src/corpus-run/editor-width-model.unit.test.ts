@@ -1,7 +1,7 @@
 /**
  Tests for how an editor-width comparison is read.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -35,16 +35,16 @@ const WIDE_TEXT = 'The cat suns herself on the windowsill each afternoon.';
 
 /**
  Row with everything a summary reads, so a case states only its own field.
- 
+
  @param comparison - how the two arms compared, defaulting to unmoved
- 
+
  @param verdict - head-to-head reading, defaulting to none run
- 
+
  @param narrowRepeatAgreed - whether the repeat judging agreed, defaulting
  to agreement so a case that says nothing contributes no churn
- 
+
  @returns Row carrying those over a settled baseline
- 
+
  @example
  ```ts
  const row = rowWith({ comparison: 'differs', verdict: 'wide-wins', },);

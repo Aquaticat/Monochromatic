@@ -1,15 +1,15 @@
 /**
  Tests for the translate lane's per-slice wordings.
- 
+
  WHAT THESE PIN is the fix this file was written for: a stage that heard NO
  TRANSLATOR keeps the archive's wording as its output text, and passing that
  through as a decision states that the lane examined the passage and chose the
  archive. It did not. Nobody answered. Every lane comparison run before this
  counted those slices as agreement with the archive, which is the window
  trial's lost-judge defect wearing the producing stage's clothes.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -27,13 +27,13 @@ import {
 
 /**
  Builds one prepared slice pair.
- 
+
  @param index - global slice index both sides carry
- 
+
  @param target - archive translation of this slice
- 
+
  @returns Pair shaped as preparation produces
- 
+
  @example
  ```ts
  const pair = pairOf({ index: 0, target: 'The cat naps.', },);
@@ -83,17 +83,17 @@ function pairOf(
 
 /**
  Builds one settled record with the parts this builder reads.
- 
+
  @param sliceIndex - slice this record settles
- 
+
  @param outputText - what the driver accepted for assembly, which for an
  unheard slice is the archive's own wording rather than anything produced
- 
+
  @param heardTranslators - how many voices the producing stage actually heard,
  which is the whole question here
- 
+
  @returns Record shaped as the driver settles one
- 
+
  @example
  ```ts
  const record = recordFor({ sliceIndex: 0, outputText: 'The cat naps.', heardTranslators: 2, },);

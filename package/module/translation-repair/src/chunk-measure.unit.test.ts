@@ -2,7 +2,7 @@
  Tests for the deterministic measurements candidate selection ranks a patched
  chunk by.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -30,13 +30,13 @@ import {
 /**
  Builds one checker tally with the vote counts a majority of that shape would
  have produced; only the two verdict flags are read here.
- 
+
  @param resolved - whether the checkers judged the defect gone
- 
+
  @param regressed - whether they judged the revision damaged the region
- 
+
  @returns Tally the measurement reads
- 
+
  @example
  ```ts
  const tally = catTally({ resolved: true, regressed: false, },);
@@ -67,13 +67,13 @@ const TARGET_TEXT = 'The cat is doing the sleeping.\n';
 
 /**
  Builds one accepted issue at the given severity.
- 
+
  @param issueId - adjudicated identity
- 
+
  @param severity - adjudicated severity
- 
+
  @returns Issue the checkers reported on
- 
+
  @example
  ```ts
  const issue = catIssue({ issueId: 'adjudicated/nap', severity: 'major', },);
@@ -99,11 +99,11 @@ function catIssue(
 
 /**
  Builds one envelope over the given base text.
- 
+
  @param baseText - text occupying the envelope
- 
+
  @returns Envelope the measurement reads lengths from
- 
+
  @example
  ```ts
  const envelope = catEnvelope({ baseText: 'naps', },);
@@ -122,11 +122,11 @@ function catEnvelope({ baseText, }: { readonly baseText: string; },): EditableEn
 
 /**
  Builds one applied operation against the fixture envelope.
- 
+
  @param newText - replacement text
- 
+
  @returns Operation the measurement reads lengths from
- 
+
  @example
  ```ts
  const operation = catOperation({ newText: 'sleeps', },);

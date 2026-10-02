@@ -28,13 +28,13 @@ type BreakSpan = {
 
 /**
  Reads Markdown break spans in source order without interpreting code or attributes.
- 
+
  @param text - exact canonical slice used to establish offsets
- 
+
  @returns Non-overlapping spans, retaining the original line endings
- 
+
  @throws {@link MdxParseError} when the shared slice grammar refuses this input
- 
+
  @example
  ```ts
  const spans = sourceBreakSpans({ text: sourceText });
@@ -79,17 +79,17 @@ function sourceBreakSpans({ text, }: { readonly text: string; },): readonly Brea
  Canonical source and its offsets remain untouched outside this presentation.
  Explicit absent-incumbent provenance is required in addition to empty archive
  wording; omission of that fact conservatively preserves the original view.
- 
+
  @param sourceText - canonical original, never modified in place
- 
+
  @param archiveText - actual archive wording, not a generated standing
- 
+
  @param incumbentKind - caller-established existence of an archival rendering
- 
+
  @param syntax - metadata remains outside this Markdown presentation
- 
+
  @returns Source view with parsed hard breaks spelled visibly as intrinsic br
- 
+
  @example
  ```ts
  const view = sourceBreakDisplay({ sourceText, archiveText: '', incumbentKind: 'absent' });

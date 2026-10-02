@@ -165,13 +165,13 @@ type ProbeRow = {
 
 /**
  Asks the roster about every unpaired passage it is given, up to the cap.
- 
+
  READS THAT FAIL ARE SKIPPED AND LOGGED rather than thrown, since an entry
  with only one side is an ordinary state of this corpus. That also swallows an
  unreadable clone, which shows up as every entry skipping.
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await main({ line, },);
@@ -192,7 +192,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-probe'>;
   /**
    Digest over built output, which is the only identity that moves when the
    code moves but the commit does not.
-   
+
    READ AT THE START, not at the end. A long run gives a developer plenty of
    time to rebuild, and `rendering-audit-settled` was caught doing exactly
    that: `dist` was rebuilt while a run was in flight, so the digest it was

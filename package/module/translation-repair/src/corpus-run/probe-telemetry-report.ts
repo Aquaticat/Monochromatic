@@ -15,11 +15,11 @@ import type { StageRosterCoverage, } from '../stage-roster.ts';
 
 /**
  Probe readings of one artifact, kept under the entry that carried them.
- 
+
  Grouped rather than flattened because envelope ids are derived from the text
  they cover, so two entries sharing a paragraph name one id for regions that
  serve different issues.
- 
+
  @example
  ```ts
  const group: EntryReadings = { entryId: 'Kitten.json', readings: [], };
@@ -39,7 +39,7 @@ export type EntryReadings = {
 
 /**
  Everything a run's artifacts yield, before any human grade is joined.
- 
+
  @example
  ```ts
  const gathered: GatheredProbe = await gatherReadings({ artifactsDir, },);
@@ -88,7 +88,7 @@ export type GatheredProbe = {
 
   /**
    Repair-lane records seen across every artifact read, probed or not.
-   
+
    THE DENOMINATOR EVERY PROBE RATE DIVIDES BY. Named for its lane because
    "shipped" is the repair lane's word for its own output, not a claim that
    any page carries it: the contest and the consolidation both sit downstream
@@ -106,9 +106,9 @@ export type GatheredProbe = {
 /**
  Prints a run's probe telemetry, roster coverage, and the notes that keep
  each number from being read as the wrong thing.
- 
+
  @param gathered - readings and coverage across every settled artifact
- 
+
  @example
  ```ts
  reportProbeTelemetry({ gathered, },);
@@ -159,7 +159,7 @@ export function reportProbeTelemetry(
 
   /**
    Summary over the naturalness lane's own rewrites.
-   
+
    Reported on its own line rather than folded into the accuracy figures,
    because the two audit different edits against different baselines. Its
    region count is rewritten SLICES, not replaced envelopes, so the two are

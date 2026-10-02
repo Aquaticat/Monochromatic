@@ -1,6 +1,6 @@
 /**
  Tests acceptance confirmation uses distinct same-candidate responsibility.
- 
+
  @module
  */
 

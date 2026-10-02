@@ -1,10 +1,10 @@
 /**
  Tests for closing a footnote relabel over the archive's labels.
- 
+
  THE FOURTH YUKI LAUNCH of 2026-09-08 read one definition pair off the
  roster, mapped `[^2]` to `[^1]` alone, and the archive came out with two
  `[^1]` notes.
- 
+
  @module
  */
 

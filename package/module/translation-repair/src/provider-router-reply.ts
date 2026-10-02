@@ -8,10 +8,10 @@ import type { ProviderName, } from './provider-name.ts';
 
 /**
  One answer plus the provider that produced it.
- 
+
  THE PROVIDER TRAVELS WITH THE REPLY because the schema re-ask needs to know
  where NOT to ask again, and nothing in the reply itself records it.
- 
+
  @example
  ```ts
  const answered: RoutedReply = { provider: 'hyper', reply, };
@@ -31,11 +31,11 @@ export type RoutedReply = {
 
 /**
  What a re-ask came back with.
- 
+
  A NAMED REFUSAL RATHER THAN AN ABSENT REPLY, because the two are different
  facts: the provider was asked and said no on budget, which the caller keeps
  the first answer over, as opposed to never having been asked.
- 
+
  @example
  ```ts
  const asked: ReAskReply = { kind: 'budget-refused', };

@@ -22,13 +22,13 @@
 
 /**
  Media type per file extension, for the extensions the corpus uses.
- 
+
  ONE ENTRY PER EXTENSION THE CORPUS'S PICTURES CARRY. Counted over the data
  repository at the pin on 2026-10-01, its image files are 210 `.webp`, 91
  `.jpg`, 6 `.png` and 1 `.jpeg`. An extension not listed is refused rather
  than guessed at, since sending a picture under the wrong media type asks a
  model to decode something it was not given.
- 
+
  A MAP, since the key is read off an asset's file name: a plain object
  answered `tabby.constructor` with the inherited function and sent it as the
  media type (ledger B77).
@@ -74,7 +74,7 @@ const MEDIA_TYPES: ReadonlyMap<string, string> = new Map([
 
 /**
  What encoding one asset produced.
- 
+
  @example
  ```ts
  const encoded: EncodedAsset = { kind: 'usable', dataUri: 'data:image/webp;base64,…', };
@@ -93,7 +93,7 @@ export type EncodedAsset = {
   /**
    Why it cannot be sent, so a finding names the reason rather than the
    absence.
-   
+
    TRANSPORT RATHER THAN MODEL in the size reason, renamed 2026-08-22. The
    ceiling that produces it was derived from what a model would read until
    pictures were read by deterministic OCR first, and is now measured against what the gateway will carry, which are
@@ -105,11 +105,11 @@ export type EncodedAsset = {
 
 /**
  Extension of a file name, lowercased, empty when it has none.
- 
+
  @param assetName - file name
- 
+
  @returns Its extension without the dot
- 
+
  @example
  ```ts
  const extension = extensionOf({ assetName: 'intro.webp', },);
@@ -128,17 +128,17 @@ export function extensionOf({ assetName, }: { readonly assetName: string; },): s
 
 /**
  Encodes one picture for sending, or says why it cannot be sent.
- 
+
  @param bytes - picture as read from disk
- 
+
  @param assetName - its file name, which carries the media type
- 
+
  @param maxBytes - most bytes this picture may occupy, which the CALLER
  decides. Guessing what a provider accepts is not this function's job, and the
  "Image asset" region note records what happened when it was
- 
+
  @returns Data URI, or the reason it was refused
- 
+
  @example
  ```ts
  const encoded = encodeImageAsset({ bytes, assetName, maxBytes, },);

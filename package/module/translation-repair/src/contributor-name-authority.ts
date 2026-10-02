@@ -15,11 +15,11 @@ export const CONTRIBUTOR_LABELS = [
 /**
  Splits comma-delimited contributor forms without splitting Markdown links or
  parenthetical role notes.
- 
+
  @param text - contributor suffix after archive label
- 
+
  @returns Contributor tokens in source order
- 
+
  @example
  ```ts
  const forms = splitContributorForms({ text: 'Mika, [Neko](https://example.test)', });
@@ -80,11 +80,11 @@ function splitContributorForms(
 /**
  Reads visible identity from one contributor token while retaining plain
  unlinked forms and role notes.
- 
+
  @param token - one top-level contributor token
- 
+
  @returns Visible target-authoritative form, empty for empty token
- 
+
  @example
  ```ts
  const form = contributorForm({ token: '[Neko](https://example.test)', });
@@ -121,7 +121,7 @@ function contributorForm({ token, }: { readonly token: string; },): string {
  One archive line the contributor reader takes as a declaration: a line that
  opens with a contributor label, or a line continuing one whose label stands
  alone.
- 
+
  @example
  ```ts
  const declaration: ContributorDeclarationLine = { line: 0, names: 'Mika', };
@@ -142,18 +142,18 @@ export type ContributorDeclarationLine = {
 
 /**
  Lines the contributor reader takes as declarations, in order.
- 
+
  ONE READING FOR EVERY QUESTION ASKED OF A DECLARATION (T8's eighteenth
  batch, ledger B81): which names a block declares, and whether a block is
  declarations and nothing else, read the same lines. A label line declares
  the names after its label; a label standing alone declares the nonblank
  lines that follow it, up to the first blank one. Only a line that opens
  with a label counts, so the same words inside a sentence declare nothing.
- 
+
  @param text - archive text, a page or one block
- 
+
  @returns Each declaring line with the names it carries
- 
+
  @example
  ```ts
  contributorDeclarationLines({ text: 'Contributor for this entry:\nMika', },); // [{ line: 0, names: '' }, { line: 1, names: 'Mika' }]
@@ -218,16 +218,16 @@ export function contributorDeclarationLines(
 
 /**
  Reads target-authoritative contributor names from archive attribution lines.
- 
+
  The source can identify same contributor under another script or handle.
  Existing English archive label is authority because it can carry chosen
  public handle unrelated to literal transliteration. Ordinary prose is not
  inspected, so matching words elsewhere never become protected identities.
- 
+
  @param text - complete existing English archive page
- 
+
  @returns Visible contributor forms, deduplicated, longest first
- 
+
  @example
  ```ts
  const forms = archiveContributorNameForms({ text: 'Contributors for this entry: Mika, [Neko](https://example.test)', });
@@ -270,13 +270,13 @@ export function archiveContributorNameForms(
 
 /**
  Reports whether two contributor spellings project to same complete identity.
- 
+
  @param left - one visible contributor form
- 
+
  @param right - other visible contributor form
- 
+
  @returns Whether forms differ only by supported name separators or markup
- 
+
  @example
  ```ts
  const same = contributorFormsMatch({ left: 'Snow_Cat', right: 'Snow Cat', });
@@ -312,13 +312,13 @@ export function contributorFormsMatch(
 
 /**
  Finds target-authoritative contributor forms missing or respelled in candidate.
- 
+
  @param archiveText - existing English attribution authority
- 
+
  @param candidateText - proposed wording
- 
+
  @returns Missing target forms in archive order
- 
+
  @example
  ```ts
  const dropped = droppedContributorNameForms({ archiveText, candidateText, });

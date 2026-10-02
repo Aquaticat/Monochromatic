@@ -23,7 +23,7 @@ import { sameWording, } from './wording-key.ts';
 
 /**
  Wraps every changed repair outcome, re-deriving whether it still changes.
- 
+
  RE-DERIVED RATHER THAN CARRIED FORWARD. A passage whose only difference from
  the archive was its wrapping becomes identical to the archive once wrapped,
  and an outcome still claiming a change at that point fails the assembly
@@ -35,7 +35,7 @@ import { sameWording, } from './wording-key.ts';
  every changed outcome, including one the wrap leaves as it is, which the
  earlier byte check after the wrap never reached; over the stored artifacts
  186 lane texts were such a proposal.
- 
+
  NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
  producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
  and then broke that work afterwards: over the 211 line-structured slices of
@@ -44,18 +44,18 @@ import { sameWording, } from './wording-key.ts';
  guard and sent back to its author instead of papered over here, because
  `wrapReplacementText` splits and never joins, so it cannot put back a break
  a producer merged away.
- 
+
  @param slices - prepared slice pairs, for the archive wording per index
- 
+
  @param outcomes - settled per-slice outcomes, refinement included
- 
+
  @param lineStructuredSlices - global indices the line-structure rule
  governs, whose lines are the producer's to set
- 
+
  @param l - lane logger
- 
+
  @returns Same outcomes with produced wording wrapped
- 
+
  @example
  ```ts
  const wrapped = wrapRepairOutcomes({ slices, outcomes, lineStructuredSlices, l, },);

@@ -1,6 +1,6 @@
 /**
  Tests for deciding whether a model's reading of a picture may be used.
- 
+
  WHAT THESE PIN is a rule whose two branches cost very different things.
  Trusting a bad reading licenses replacing a human's careful transcription with
  something derived from a misreading, and the judges cannot tell, because the
@@ -9,12 +9,12 @@
  alone, which is where every transcript already stands. So the rule is
  deliberately eager to fall back, and these tests pin that direction rather
  than a balance.
- 
+
  The rule itself is written out in
  `doc/planning/when-an-image-reading-makes-no-sense.md`.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

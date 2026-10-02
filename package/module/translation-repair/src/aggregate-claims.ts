@@ -31,7 +31,7 @@ export const CLUSTER_ANCHOR_TOLERANCE = 30;
  One claim carried with its deterministic identity,
  so downstream stages and steering operations get stable handles
  without recomputing hashes.
- 
+
  @example
  ```ts
  const member: AggregatedClaim = { claimId, claim, };
@@ -53,7 +53,7 @@ export type AggregatedClaim = {
  One proposed merge group.
  A single-member cluster proposes nothing; a multi-member cluster proposes
  that its members describe one defect, for an adjudicator to dispose.
- 
+
  @example
  ```ts
  const merge: ClaimCluster = { clusterId, position: 42, members, };
@@ -80,7 +80,7 @@ export type ClaimCluster = {
 /**
  Complete partition of the deduplicated input claims:
  every claim belongs to exactly one cluster.
- 
+
  @example
  ```ts
  const { clusters, }: ClaimAggregation = aggregateClaims({ claims, },);
@@ -112,11 +112,11 @@ type OffsetInterval = {
  Interval a span occupies for overlap testing.
  Zero-width insertion anchors expand by {@link CLUSTER_ANCHOR_TOLERANCE} on
  both sides because they name a gap, not text; quoted spans stay exact.
- 
+
  @param span - anchored evidence whose neighborhood overlap testing needs
- 
+
  @returns Half-open interval, possibly extending below zero for expanded anchors
- 
+
  @example
  ```ts
  const interval = expandedInterval({ span, },);
@@ -143,13 +143,13 @@ function expandedInterval(
  Offsets are absolute within full document source, so intersection needs no
  node identity check; node labels stay out of it so anchors at node
  boundaries still meet.
- 
+
  @param left - one span under comparison
- 
+
  @param right - other span under comparison
- 
+
  @returns Whether both spans share a side and their intervals intersect
- 
+
  @example
  ```ts
  spansOverlap({ left, right, },);
@@ -190,13 +190,13 @@ function spansOverlap(
  panel judgment) and grade it differently, and the panel's sameDefect
  disposal is the union algorithm's judging half, so proposals maximize
  recall and the panel decides.
- 
+
  @param left - one claim under comparison
- 
+
  @param right - other claim under comparison
- 
+
  @returns Whether a merge between the two is worth proposing
- 
+
  @example
  ```ts
  claimsShareDefect({ left, right, },);
@@ -226,11 +226,11 @@ function claimsShareDefect(
 /**
  Earliest span start across one claim's spans,
  for document-order cluster sorting.
- 
+
  @param claim - claim whose leading position sorting needs
- 
+
  @returns Minimum start offset across spans
- 
+
  @example
  ```ts
  claimPosition({ claim, },);
@@ -263,11 +263,11 @@ function claimPosition(
  Deterministic regardless of input order: members sort by claim id,
  cluster identity hashes the sorted member ids, and clusters sort by
  document position.
- 
+
  @param claims - claims that already passed `validateIssueClaim`
- 
+
  @returns Complete partition; multi-member clusters are the merge proposals
- 
+
  @example
  ```ts
  const { clusters, } = aggregateClaims({ claims: validatedClaims, },);

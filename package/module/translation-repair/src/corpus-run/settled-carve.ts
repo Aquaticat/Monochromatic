@@ -48,7 +48,7 @@ import {
 
 /**
  What the settled artifacts directory says about one entry's recipe.
- 
+
  @example
  ```ts
  const recipe: SettledRecipe = { kind: 'unsettled', };
@@ -90,7 +90,7 @@ export type SettledRecipe = {
 
 /**
  One entry carved through its settled recipe, or why it could not be.
- 
+
  @example
  ```ts
  const carve: SettledCarve = await carveSettled({ entryId, runsDir, cloneDir, },);
@@ -146,11 +146,11 @@ export type SettledCarve = {
 
 /**
  Lists the entries a runs directory holds settled artifacts for.
- 
+
  @param runsDir - runs directory whose `artifacts/` subdirectory is read
- 
+
  @returns Entry ids in sorted order, empty when the directory has none
- 
+
  @example
  ```ts
  const entryIds = await listSettledEntryIds({ runsDir, },);
@@ -188,13 +188,13 @@ export async function listSettledEntryIds(
 /**
  Reads the recipe one entry's settled artifact records, without touching
  the corpus.
- 
+
  @param entryId - corpus entry
- 
+
  @param runsDir - runs directory holding `artifacts/<entryId>.json`
- 
+
  @returns Recipe and commit, or the reason there is none
- 
+
  @example
  ```ts
  const settled = await readSettledRecipe({ entryId, runsDir, },);
@@ -246,15 +246,15 @@ export async function readSettledRecipe(
 /**
  Carves one entry through its settled recipe over the pair at the
  artifact's own commit.
- 
+
  @param entryId - corpus entry
- 
+
  @param runsDir - runs directory holding the artifact
- 
+
  @param cloneDir - corpus clone the artifact's commit is read from
- 
+
  @returns Slicing the lanes saw, or the reason there is none
- 
+
  @example
  ```ts
  const carve = await carveSettled({ entryId, runsDir, cloneDir, },);
@@ -327,11 +327,11 @@ export async function carveSettled(
 
 /**
  Names a recipe's completeness for a log line.
- 
+
  @param recipe - recipe as read
- 
+
  @returns `complete recipe`, or the halves the deterministic default stood in for
- 
+
  @example
  ```ts
  log.info(`${entryId}: carved from its settled artifact (${recipeLabel({ recipe, },)})`,);

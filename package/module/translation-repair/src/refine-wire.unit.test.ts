@@ -1,18 +1,18 @@
 /**
  Tests for the refinement wire guard and its binding step.
- 
+
  Both read untrusted model output. `isRefineReportWire` is the only thing
  standing between a malformed reply and code that assumes `rewrites` is an
  array of well-shaped rewrites, and `resolveRefineRewrites` decides what a
  miscounted paragraph number does. Neither had a test.
- 
+
  The binding step's stated contract is that it drops rather than throws: a
  rewriter miscounting its own list says nothing about the paragraphs it got
  right. So the cases in this file check that a bad item is recorded AND dropped,
  while its well-formed neighbours survive.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -31,15 +31,15 @@ import {
 
 /**
  Builds an eligible paragraph envelope.
- 
+
  @param envelopeId - handle the operation carries
- 
+
  @param startOffset - absolute start of the paragraph
- 
+
  @param baseText - paragraph text the rewrite replaces
- 
+
  @returns Envelope in prompt numbering order
- 
+
  @example
  ```ts
  const envelope = paragraph({ envelopeId: 'envelope/0', startOffset: 0, baseText: 'The cat naps.', },);

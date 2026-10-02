@@ -1,15 +1,15 @@
 /**
  Tests for the checks both lanes run around assembly.
- 
+
  These began as a defence against the slice CACHE, which was trusted on its
  index alone. Both lanes now refuse a contradictory cached record where they
  accept it, so what remains here is a backstop: for a defect in a stage nobody
  has changed yet, for a future caller of the exported guard, and for the one
  relation no single slice can see, which is whether the returned document is
  the one its own surviving replacements assemble to.
- 
+
  Fixtures are invented. No corpus content appears here.
- 
+
  @module
  */
 
@@ -106,15 +106,15 @@ const REWRITTEN_NAP = 'A cat dozes in the window.';
 
 /**
  Runs one change-set case and returns whatever it raised.
- 
+
  @param sliceCount - prepared slices bounding both sets
- 
+
  @param shipped - slices said to carry a change
- 
+
  @param withdrawn - slices said to have had one taken back
- 
+
  @returns Failure raised, or undefined when the case was accepted
- 
+
  @example
  ```ts
  const caught = changeSetFailure({ sliceCount: 2, shipped: [0,], withdrawn: [0,], },);

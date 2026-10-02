@@ -28,7 +28,7 @@ import { monotonicMs, } from './monotonic-clock.ts';
  Silence allowed before the first body byte, set ABOVE
  `RUN_PER_CALL_TIMEOUT_MS` (360_000 in `corpus-run/run-config.ts`) so it
  never fires. The guard measures; the total deadline is what kills.
- 
+
  THE MEDIAN THIS WAS ORIGINALLY SET FROM IS SUPERSEDED, by about eighty
  times, and it was re-derived from first production traffic rather than
  retiring the finding. A full sentinel probe once found 34 of 34 recorded
@@ -41,7 +41,7 @@ import { monotonicMs, } from './monotonic-clock.ts';
  against the same three logs puts the median at 1032, 1207, and 1237 ms,
  a band the 95.6 s figure sits 77 to 93 times above. Working no longer
  looks anything like stalled at the median.
- 
+
  THE TAIL DOES NOT AGREE WITH THE MEDIAN, which is why this constant is
  corrected rather than lowered. The same re-count found a completed (not
  cut) `hf:zai-org/GLM-5.2` stream whose first byte took 183_755 ms, and a
@@ -61,7 +61,7 @@ export const STREAM_FIRST_BYTE_MS = 600_000;
  Silence allowed between body bytes once flowing, also set above
  `RUN_PER_CALL_TIMEOUT_MS` so it never fires, for two independent reasons,
  both narrowed rather than reversed by that re-derivation.
- 
+
  First, it still has almost nothing to catch. The original probe found 34
  of 34 recorded stalls were `first-byte` and none were `body`. Re-counted
  against the three logs
@@ -72,7 +72,7 @@ export const STREAM_FIRST_BYTE_MS = 600_000;
  carried one internal gap of 124_992 ms before finishing normally. Rare is
  no longer zero, and a window anywhere near that size would have cost a
  working voice.
- 
+
  Second, this constant has already been raised once on exactly this
  mistake, and the pattern repeated a third time on re-measurement. An
  earlier 30 s value here was justified by a six-stream sample whose largest
@@ -95,7 +95,7 @@ const l = contextRoot({ tag: 'translation-repair', },);
  Raised when a stream produced no bytes for longer than its idle window.
  Distinct from a caller abort so the retry layer treats it as transient
  weather and re-dispatches, which is the response the measurements support.
- 
+
  @example
  ```ts
  throw new StreamStalledError({ label: 'hf:model', idleMs: 60_000, phase: 'body', },);
@@ -109,11 +109,11 @@ export class StreamStalledError extends Error {
 
   /**
    Builds the stalled-stream failure.
-   
+
    @param label - names the stalled call
-   
+
    @param idleMs - silence window that expired
-   
+
    @param phase - whether the silence preceded the first byte or interrupted
    a flowing stream
    */
@@ -137,7 +137,7 @@ export class StreamStalledError extends Error {
 
 /**
  What one drained stream did over time, for tuning the idle windows.
- 
+
  @example
  ```ts
  const progress: StreamProgress = { firstByteMs: 812, maxGapMs: 43, chars: 9_211, elapsedMs: 4_210, };
@@ -162,7 +162,7 @@ export type StreamProgress = {
 
   /**
    Milliseconds from arming the guard to this reading.
-   
+
    ANSWERS WHERE A RUN'S HOURS WENT, which nothing could before the timing work.
    Read on `monotonicMs`, like the first byte and the gaps, so setting the
    system clock mid-call cannot move it (ledger B78).
@@ -170,7 +170,7 @@ export type StreamProgress = {
    only, so a stream's start time was unrecoverable and the only concurrency
    figure derivable was a clustering of completion timestamps, which cannot
    tell calls that overlapped from calls that merely finished near each other.
-   
+
    CARRIED HERE RATHER THAN LOGGED AT DISPATCH because it answers strictly
    more for no extra lines: start time follows by subtraction, while a
    dispatch line cannot be paired to its completion when one model has
@@ -205,15 +205,15 @@ export type IdleGuard = Disposable & {
  Arms an idle guard. Arm it BEFORE the request so the window also covers a
  provider that never sends response headers at all, which a body-only guard
  would miss entirely.
- 
+
  @param label - names the call in the stall error
- 
+
  @param firstByteMs - silence allowed before first byte
- 
+
  @param idleMs - silence allowed between bytes afterwards
- 
+
  @returns Guard whose disposal clears its timer
- 
+
  @example
  ```ts
  using guard = armIdleGuard({ label: modelId, },);
@@ -251,9 +251,9 @@ export function armIdleGuard(
    Aborts the exchange, naming which silence window expired. The abort reason
    carries the error so the transport can rethrow it instead of the opaque
    abort the platform would otherwise surface.
-   
+
    @param phase - which window expired
-   
+
    @param expiredMs - that window's length
    */
   function trip(
@@ -288,11 +288,11 @@ export function armIdleGuard(
 
   /**
    Starts one silence window, returning its timer handle.
-   
+
    @param phase - window being armed
-   
+
    @param windowMs - silence allowed before tripping
-   
+
    @returns Timer handle to clear when activity arrives
    */
   function armWindow(

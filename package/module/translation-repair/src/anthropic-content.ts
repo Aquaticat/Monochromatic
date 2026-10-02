@@ -38,11 +38,11 @@ const BASE64 = 'base64';
 
 /**
  Refusal raised when a picture's data URI cannot be read.
- 
+
  THROWN RATHER THAN DROPPED. A picture that reaches a model unreadable is a
  defect in our own encoder, not an unreliable answer, and dropping it would
  ask a model to transcribe an image it was never shown.
- 
+
  @example
  ```ts
  throw new MalformedImageUriError({ detail: 'no payload separator', },);
@@ -56,9 +56,9 @@ export class MalformedImageUriError extends Error {
 
   /**
    Builds failure naming what could not be read.
-   
+
    @param detail - which part of the data URI was missing or unexpected
-   
+
    @example
    ```ts
    new MalformedImageUriError({ detail: 'encoding is not base64', },);
@@ -74,7 +74,7 @@ export class MalformedImageUriError extends Error {
 
 /**
  Where the Messages API is told to find one picture.
- 
+
  @example
  ```ts
  const source: AnthropicImageSource = { type: 'base64', media_type: 'image/webp', data, };
@@ -111,7 +111,7 @@ export type AnthropicImageSource =
 
 /**
  One run of content inside an Anthropic message.
- 
+
  @example
  ```ts
  const block: AnthropicContentBlock = { type: 'text', text: 'Count the toebeans.', };
@@ -143,14 +143,14 @@ export type AnthropicContentBlock =
 
 /**
  Reads one picture reference into the source shape the Messages API takes.
- 
+
  @param url - remote address or inline data URI a content part carried
- 
+
  @returns Inline source for a data URI, remote source for anything else
- 
+
  @throws {@link MalformedImageUriError} where a data URI carries no payload
  separator, an empty media type, an encoding other than base64, or no payload
- 
+
  @example
  ```ts
  const source = readImageSource({ url: encoded.dataUri, },);
@@ -185,7 +185,7 @@ export function readImageSource(
 
   /**
    Media type, which every part after the first qualifies.
-   
+
    DEFAULTED because a split always yields a first element and the type cannot
    say so. An empty media type is refused by the `mediaType.length === 0` check either way, so the default
    changes no outcome and asserts nothing.
@@ -217,17 +217,17 @@ export function readImageSource(
 
 /**
  Content blocks one message becomes.
- 
+
  A PLAIN-TEXT MESSAGE STILL BECOMES A BLOCK ARRAY rather than a bare string.
  The Messages API takes either, and one shape means one path to test and no
  branch that only the vision half exercises.
- 
+
  @param message - message in whichever shape the caller built
- 
+
  @returns Blocks in the order the model reads them
- 
+
  @throws {@link MalformedImageUriError} where a picture cannot be read
- 
+
  @example
  ```ts
  const content = contentBlocksFor({ message, },);

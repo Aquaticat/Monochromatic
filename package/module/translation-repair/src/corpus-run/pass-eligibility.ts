@@ -17,7 +17,7 @@ import type { CorpusPair, } from './pass-entry-contract.ts';
 
 /**
  One entry a pass could not pair, with the side that was absent.
- 
+
  @example
  ```ts
  const gap: IncompleteEntry = { id: 'whiskers', side: 'target', detail: 'a41fc60:people/whiskers/page.en.md (missing-object)', };
@@ -43,7 +43,7 @@ export type IncompleteEntry = {
 
 /**
  What a pass found when it walked its entries.
- 
+
  @example
  ```ts
  const { eligible, settled, incomplete, } = await collectEligiblePairs({ ids, done, pin, },);
@@ -69,23 +69,23 @@ export type PassEligibility = {
 /**
  Walks the entries a pass was asked about and sorts them into pairs it can
  work on, pairs already settled, and entries missing a side.
- 
+
  ONLY A MISSING OBJECT IS STEPPED PAST. Any other read failure, an unreadable
  clone, an unknown commit, a spawn failure, an oversized page, propagates:
  those are faults in the run's setup, not facts about the corpus, and a pass
  that swallowed them would report a smaller corpus than exists.
- 
+
  @param ids - entries to walk, in the order they are walked
- 
+
  @param done - entries a previous run already settled
- 
+
  @param pin - clone and commit to read at
- 
+
  @returns Pairs, settled sizes, and the entries that could not be paired
- 
+
  @throws {@link CorpusReadError} for any read failure other than a missing
  object at the pin
- 
+
  @example
  ```ts
  const { eligible, incomplete, } = await collectEligiblePairs({ ids: people, done, pin: RUN_CORPUS_PIN, },);
@@ -203,17 +203,17 @@ type SideRead = {
 
 /**
  Reads one side of an entry, naming absence rather than throwing it.
- 
+
  @param pin - clone and commit to read at
- 
+
  @param id - corpus entry
- 
+
  @param side - which page
- 
+
  @returns Text, or the named absence
- 
+
  @throws {@link CorpusReadError} for any failure other than a missing object
- 
+
  @example
  ```ts
  const source = await readSide({ pin, id, side: 'source', },);

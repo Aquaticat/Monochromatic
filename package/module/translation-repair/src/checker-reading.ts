@@ -16,7 +16,7 @@ import type { IssueResolutionTally, } from './tally-resolution.ts';
 
 /**
  One checker's answer on one issue, beside the fact that sets its weight.
- 
+
  @example
  ```ts
  const ballot: IssueCheckerBallot = {
@@ -39,7 +39,7 @@ export type IssueCheckerBallot = {
 
   /**
    Whether this checker helped write the text it was judging.
-   
+
    THE ONE WEIGHT INPUT THAT IS NOT IN THE VERDICT. `tallyResolutionChecks`
    chooses each weight per issue from the authorship record, so a reader
    holding the verdicts alone cannot reproduce the tally and a reader holding
@@ -50,7 +50,7 @@ export type IssueCheckerBallot = {
 
 /**
  Everything the checker round decided about one issue.
- 
+
  @example
  ```ts
  const reading: IssueCheckerReading = { ballots, configuredCheckers: 3, tally, };
@@ -64,7 +64,7 @@ export type IssueCheckerReading = {
 
   /**
    Checkers the run seated, which is not recoverable from the ballots.
-   
+
    A lost voice leaves no ballot, so two ballots of three seated and two of
    six seated are indistinguishable without this and are very different
    evidence. Same reasoning as `IssueProbeReading.configuredProbers`.
@@ -73,7 +73,7 @@ export type IssueCheckerReading = {
 
   /**
    Weights behind each answer and what they decided, as this run tallied them.
-   
+
    STORED RATHER THAN LEFT DERIVABLE so a reader can check its own arithmetic
    against the run's. The ballots and `wroteTheText` are enough to recompute
    it, and a recomputation that disagrees means the weighting changed under a

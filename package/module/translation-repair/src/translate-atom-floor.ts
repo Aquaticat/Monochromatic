@@ -6,11 +6,11 @@ import type { ProtectedAtom, } from './protected-atom.ts';
 
 /**
  Renders one atom for finding and multiset key.
- 
+
  @param atom - atom to describe
- 
+
  @returns Kind and value
- 
+
  @example
  ```ts
  const label = describeAtom({ kind: 'footnote', value: '1', },);
@@ -38,11 +38,11 @@ type AtomTally = {
 /**
  How many times each atom appears,
  keyed by exact description.
- 
+
  @param atoms - atoms one side carries
- 
+
  @returns One entry per distinct atom and count
- 
+
  @example
  ```ts
  const counted = countAtoms({ atoms, });
@@ -84,11 +84,11 @@ function countAtoms(
 /**
  Atoms candidate owes,
  taking whichever reference asks for more copies.
- 
+
  @param page - atoms text being replaced carries
- 
+
  @param source - atoms original carries
- 
+
  @returns Union with higher count per atom
 
  @example

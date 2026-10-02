@@ -26,7 +26,7 @@ import { admitWithinShortfall, } from './coverage-corroboration.ts';
 
 /**
  Source-only passage already rendered elsewhere in target page.
- 
+
  @example
  ```ts
  const carried: CarriedInsertion = {
@@ -118,17 +118,17 @@ export type InsertionAdmission = {
 
 /**
  Chooses which insertion slices the page has room to be missing.
- 
+
  @param slices - every prepared slice, in document order
- 
+
  @param sourceText - whole original page
- 
+
  @param targetText - whole translation as it stands
- 
+
  @returns Positions in `slices` whose insertion the shortfall admits, so a
  caller can test membership without matching on chunk indices, which name
  different things depending on who stamped them
- 
+
  @example
  ```ts
  const admitted = admitInsertions({ slices, sourceText, targetText, },);

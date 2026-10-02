@@ -2,7 +2,7 @@
  Tests for the draw manifest, the only record of which issue sat at which
  sheet position.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -22,13 +22,13 @@ import {
 
 /**
  Builds one drawn candidate carrying only what the manifest reads.
- 
+
  @param issueId - adjudicated identity
- 
+
  @param entryId - corpus entry it came from
- 
+
  @returns Candidate the manifest records
- 
+
  @example
  ```ts
  const candidate = catCandidate({ issueId: 'adjudicated/nap', },);
@@ -137,7 +137,7 @@ await describe({
             /**
              The same manifest with the generation removed, which is exactly what
              an older draw wrote.
-         
+
              Destructured rather than deleted from a clone, so the field's absence
              is a fact about this binding rather than a mutation a reader has to
              trace.
@@ -173,7 +173,7 @@ await describe({
 
             /**
              Manifest text exactly as the draw writes it beside the sheets.
-         
+
              Serialized and re-read rather than cloned, for the same reason the
              provenance suite is: the file is the boundary under test, and a deep
              clone would keep what a file drops.

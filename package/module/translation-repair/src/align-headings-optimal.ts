@@ -63,17 +63,17 @@ export type OptimalPaths = {
 
 /**
  Fills a lexicographic DP table over the two sequences.
- 
+
  @param grid - affinity and trust
- 
+
  @param rows - source length
- 
+
  @param columns - target length
- 
+
  @param forward - true to fill from the origin, false from the far corner
- 
+
  @returns Table of best scores
- 
+
  @example
  ```ts
  const table = fillTable({ grid, rows, columns, forward: true, },);
@@ -228,20 +228,20 @@ function fillTable(
 
 /**
  Reads every optimal alignment out of the table.
- 
+
  Exported so a probe can ask how WIDE an ambiguity is rather than only that
  there was one. The refusal a caller sees names a kind; the partner and gap
  sets behind it say whether the aligner hesitated between two adjacent
  boundaries or across a whole page, and those want different remedies.
- 
+
  @internal
- 
+
  @param sourceHeadings - original-side unit labels in document order
- 
+
  @param targetHeadings - translation-side unit labels in document order
- 
+
  @returns What some optimal path does with each unit on either side
- 
+
  @example
  ```ts
  const paths = scanOptimalPaths({ sourceHeadings, targetHeadings, },);
@@ -320,11 +320,11 @@ export function scanOptimalPaths(
   /**
    Target columns at which each source unit goes unpaired on SOME optimal
    path.
-   
+
    A SET OF COLUMNS rather than a flag, because a source section with no
    partner still has to be PUT somewhere, and the column is where. Recording
    only that a gap was possible loses the one fact an insertion needs.
-   
+
    Column `c` means the source unit is skipped while the target cursor sits
    before target unit `c`, so an insertion for it lands there.
    */

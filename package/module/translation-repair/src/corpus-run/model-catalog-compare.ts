@@ -20,7 +20,7 @@ import { SYNTHETIC_MODELS, } from '../synthetic-catalog.ts';
 
 /**
  Ids the pipeline compiles against on this provider, read off the catalog.
- 
+
  DERIVED RATHER THAN WRITTEN OUT. The copy this replaced still listed a model
  removed on 2026-08-24, so the instrument built to catch catalog removals
  reported the departed model as expected and would have read a served one as
@@ -32,7 +32,7 @@ export const CATALOG_MODEL_IDS: readonly string[] = Object.keys(SYNTHETIC_MODELS
 
 /**
  One model as the provider describes it.
- 
+
  @example
  ```ts
  const model: ServedModel = { id: 'syn:large:text', huggingFaceId: 'zai-org/GLM-5.2', };
@@ -53,7 +53,7 @@ export type ServedModel = {
 
 /**
  What the comparison found.
- 
+
  @example
  ```ts
  const comparison = compareCatalog({ served, catalog: CATALOG_MODEL_IDS, },);
@@ -62,7 +62,7 @@ export type ServedModel = {
 export type CatalogComparison = {
   /**
    Distinct models the provider serves that the catalog does not list.
-   
+
    The interesting set: a model here holds no role in a run, so it is the
    only kind of model that could judge an issue independently.
    */
@@ -70,7 +70,7 @@ export type CatalogComparison = {
 
   /**
    Catalog ids the provider no longer serves.
-   
+
    Each one costs a lost voice per call, silently, because 404 is not a
    transient status and the retry set does not cover it.
    */
@@ -85,14 +85,14 @@ export type CatalogComparison = {
 
 /**
  Reads one entry of the provider's model list.
- 
+
  @param entry - single list element as parsed
- 
+
  @returns Model, with an empty underlying id when none was stated
- 
+
  @throws {@link Error} when the entry carries no usable id, since a list this
  report trusts must not be half-read
- 
+
  @example
  ```ts
  const model = decodeModel({ entry, },);
@@ -132,13 +132,13 @@ function decodeModel(
 
 /**
  Reads the provider's model-list response.
- 
+
  @param body - parsed response body
- 
+
  @returns Every model listed, in the order given
- 
+
  @throws {@link Error} when the body carries no `data` array
- 
+
  @example
  ```ts
  const served = decodeModelList({ body, },);
@@ -174,13 +174,13 @@ export function decodeModelList(
 
 /**
  Compares what the provider serves against what the pipeline compiles against.
- 
+
  @param served - every model the provider currently lists
- 
+
  @param catalog - ids the pipeline may call
- 
+
  @returns Drift in both directions, and the aliases held out of both
- 
+
  @example
  ```ts
  const comparison = compareCatalog({ served, catalog: CATALOG_MODEL_IDS, },);
@@ -268,11 +268,11 @@ export function compareCatalog(
 
 /**
  Renders the comparison for a human.
- 
+
  @param comparison - what the comparison found
- 
+
  @returns Report text
- 
+
  @example
  ```ts
  console.log(formatCatalogReport({ comparison, },),);

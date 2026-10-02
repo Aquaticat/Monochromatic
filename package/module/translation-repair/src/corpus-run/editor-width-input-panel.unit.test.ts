@@ -1,6 +1,6 @@
 /**
  Tests that the width probe REFUSES a slice whose panel accepted nothing.
- 
+
  WHY THIS MATTERS. The repair lane edits accepted issues and nothing else, so
  a slice whose critics filed claims the panel then threw out has no work in it
  either. It looks different from a silent slice, though: claims were filed, a
@@ -8,18 +8,18 @@
  panel decided. The refusal has to name THAT, because a reader of the probe's
  rows is trying to tell a corpus with nothing wrong in it from a critic roster
  whose claims never survive adjudication, and those are opposite findings.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting the test that keeps only accepted
  issues, so REJECTED ones are the ones an envelope may be cut from, failed no
  test in this package. Under that inversion this slice stops being refused for
  the reason it was refused, and the probe reports the wrong wall.
- 
+
  NO NETWORK. The critics file one anchorable claim and every panelist votes it
  unsupported. Any other stage is refused by name, so a guard that let rejected
  issues through would be caught reaching for the editors.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

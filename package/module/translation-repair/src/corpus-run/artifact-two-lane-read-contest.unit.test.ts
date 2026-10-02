@@ -1,13 +1,13 @@
 /**
  Tests for reading a recorded contest back out of a settled artifact.
- 
+
  WHAT IS UNDER TEST is what the reader refuses. A recorded verdict is a claim
  about ballots stored beside it and a recorded contest is a claim about which
  slices the two lanes worded differently, so both are re-derived here and a
  disagreement is an error rather than a reading.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

@@ -1,16 +1,16 @@
 /**
  Tests for enumerating the claims a disinterested judge may re-examine.
- 
+
  The cases that matter are the ones that would shrink a denominator without
  looking like it: a claim the whole roster proposed, a claim an issue names
  that attribution never covered, and an entry settled before attribution
  existed. Each is a real shape in the current run's artifacts, and each would
  lift every rate above it if it silently vanished.
- 
+
  Entry ids and claim ids are invented and cat-themed. No corpus text is
  involved. Model ids are the real roster, because the rule under test is about
  the relationship between authorship and the seats left over.
- 
+
  @module
  */
 
@@ -47,11 +47,11 @@ const ROSTER = [
 
 /**
  Builds one chunk record carrying the given attributions.
- 
+
  @param claims - claim id paired with its proposing model ids
- 
+
  @returns Chunk view shaped as the artifact carries it
- 
+
  @example
  ```ts
  const chunk = chunkWith({ claims: [['issue/whisker', [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],],], },);

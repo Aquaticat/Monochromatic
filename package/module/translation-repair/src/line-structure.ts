@@ -29,14 +29,14 @@ import { parseSliceBody, } from './parse-slice-body.ts';
 
 /**
  Blocks a slice needs before its shape means anything.
- 
+
  Under this, a slice is too small to tell a stanza from a short paragraph.
  */
 const MIN_BLOCKS = 5;
 
 /**
  Longest median block a line-structured slice may have.
- 
+
  30 rather than 20: `Toka_ls`'s verse has a median of 22, and its prose
  chunks sit at 49 and 87, so the gap is wide and the threshold sits inside it.
  */
@@ -45,12 +45,12 @@ const MAX_MEDIAN_LENGTH = 30;
 /**
  Whether blocks of these lengths read as units rather than paragraphs: enough
  of them, and a short median.
- 
+
  @param lengths - each top-level block's length
- 
+
  @returns Whether the blocks clear `MIN_BLOCKS` and their median sits at or
  under `MAX_MEDIAN_LENGTH`
- 
+
  @example
  ```ts
  const short = shortBlocks({ lengths: [12, 9, 14, 11, 10,], },); // true
@@ -73,17 +73,17 @@ function shortBlocks({ lengths, }: { readonly lengths: readonly number[]; },): b
 
 /**
  Reports whether a slice is line-structured.
- 
+
  BLOCKS ARE THE SLICE GRAMMAR'S TOP-LEVEL NODES, as the floor reads them
  (ledger B68), each measured as its extent in UTF-16 code units, the unit
  `MAX_MEDIAN_LENGTH` was measured in. A slice the grammar refuses is not
  line-structured: it has no blocks to measure, as one under `MIN_BLOCKS` has
  too few.
- 
+
  @param text - full text of one slice
- 
+
  @returns True when each block reads as a unit rather than a paragraph
- 
+
  @example
  ```ts
  const lineStructured = isLineStructured({ text: targetText, },);
@@ -98,7 +98,7 @@ export function isLineStructured(
 ): boolean {
   /**
    Text the slice grammar reads, with each line break one character.
-   
+
    FOLDED FIRST so a block's length counts a line break as the corpus read
    gives it: the grammar reads `\r\n` itself, but a text read by another
    route would otherwise add one to a block's length for each `\r` it holds.

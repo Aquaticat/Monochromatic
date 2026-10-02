@@ -22,7 +22,7 @@ import {
 
 /**
  Opening of the label the wide arm's sheets carry.
- 
+
  SPELLED OUT HERE RATHER THAN IMPORTED FROM THE PROMPT, deliberately. This
  checks the wire, not the code, and a check that reads its expectation from the
  thing under test cannot fail. Renaming the label in `translate-judge.ts` should
@@ -32,7 +32,7 @@ export const WINDOW_LABEL = 'SURROUNDING ORIGINAL';
 
 /**
  Live run disagreeing with what the arms claim they sent.
- 
+
  @example
  ```ts
  throw new WindowEvidenceError({ found: 0, expected: 6, },);
@@ -47,11 +47,11 @@ export class WindowEvidenceError extends Error {
   /**
    Builds failure naming how many sheets carried the window against how many
    the arms bought should have.
-   
+
    @param found - sheets carrying {@link WINDOW_LABEL}
-   
+
    @param expected - sheets that should carry it
-   
+
    @example
    ```ts
    new WindowEvidenceError({ found: 0, expected: 6, },);
@@ -79,7 +79,7 @@ export class WindowEvidenceError extends Error {
 
 /**
  Client recording every sheet it sends, alongside the record.
- 
+
  @example
  ```ts
  const witness = witnessSheets({ client, },);
@@ -99,15 +99,15 @@ export type SheetWitness = {
 
 /**
  Wraps a client so what it sends can be read back.
- 
+
  PASSES EVERY CALL STRAIGHT THROUGH. This observes, it never substitutes: a
  witness that answered on the model's behalf would make the first slice's rows
  unlike every later row, and those rows are kept.
- 
+
  @param client - real client every call is forwarded to
- 
+
  @returns Wrapper plus growing record of what went out
- 
+
  @example
  ```ts
  const witness = witnessSheets({ client, },);
@@ -147,17 +147,17 @@ export function witnessSheets(
 
 /**
  Refuses a run whose wide arms did not carry the window.
- 
+
  COUNTS RATHER THAN CHECKING PRESENCE, because a partial forward is the failure
  that hides: one judge of six seeing the window would move a rate a little in
  the direction the trial expects, and a presence check would pass it.
- 
+
  @param sheets - everything the witness saw
- 
+
  @param expected - sheets that should carry the window, wide arms times judges
- 
+
  @throws WindowEvidenceError when the counts disagree
- 
+
  @example
  ```ts
  assertWindowReachedJudges({ sheets: witness.sheets, expected: 6, },);

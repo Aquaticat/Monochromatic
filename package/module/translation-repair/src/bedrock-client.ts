@@ -82,7 +82,7 @@ import {
 
 /**
  Local representation of this provider's absence of a per-model ceiling.
- 
+
  @example
  ```ts
  const width = BEDROCK_PER_MODEL_CONCURRENCY;
@@ -97,10 +97,10 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Refusal raised when a roster model has no spelling on this provider.
- 
+
  A THROW RATHER THAN A DATA OUTCOME, because it is a routing mistake in our
  own code and not a thing a model did.
- 
+
  @example
  ```ts
  throw new BedrockModelNotServedError({ modelId, },);
@@ -114,9 +114,9 @@ export class BedrockModelNotServedError extends Error {
 
   /**
    Builds failure naming the model this provider has no spelling for.
-   
+
    @param modelId - roster model that was addressed here
-   
+
    @example
    ```ts
    new BedrockModelNotServedError({ modelId: 'hf:Qwen/Qwen3.8-27B', },);
@@ -130,7 +130,7 @@ export class BedrockModelNotServedError extends Error {
 
 /**
  Client surface for the prepaid per-token USD provider.
- 
+
  @example
  ```ts
  const client: BedrockClient = createBedrockClient({ apiKey, ledger, transport, },);
@@ -146,13 +146,13 @@ export type BedrockClient = ModelCaller & {
 
 /**
  Spells one roster model the way this provider names it.
- 
+
  @param modelId - roster model the caller addressed
- 
+
  @returns Wire identifier for the request body
- 
+
  @throws {@link BedrockModelNotServedError} when this provider serves no such model
- 
+
  @example
  ```ts
  const served = servedIdFor({ modelId, },);
@@ -173,21 +173,21 @@ function servedIdFor(
 
 /**
  Builds one client over injected transport, speaking chat completions.
- 
+
  @param apiKey - bearer token; never logged
- 
+
  @param ledger - durable spend record the meter reads and every priced call
  writes
- 
+
  @param transport - HTTP the client calls over: `fetchTransport` in a run, a
  recorded one in a test. REQUIRED, since a test that left it out would reach
  the provider (ledger M43, X24)
- 
+
  @param baseUrl - host both routes hang off, overridable for tests
- 
+
  @param perModelConcurrency - optional local test or caller bound; normal
  operation is unbounded because the provider publishes no ceiling
- 
+
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
 
  @param streamBoundMsOverride - one stream bound for every model this client
@@ -195,7 +195,7 @@ function servedIdFor(
  recorded tests set it so a bound can be crossed in milliseconds
 
  @returns Client surface with chatText, chatJson, and credits
- 
+
  @example
  ```ts
  const client = createBedrockClient({ apiKey: process.env['TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY'] ?? '', ledger, transport: fetchTransport, },);
@@ -235,19 +235,19 @@ export function createBedrockClient(
 
   /**
    Free-text chat exchange; bounded per model where a bound was given.
-   
+
    @param request - exchange to perform
-   
+
    @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
-   
+
    @returns Content text and usage when reported
-   
+
    @throws {@link BedrockModelNotServedError} when this provider serves no such model
-   
+
    @throws {@link SyntheticHttpError} on non-success status
-   
+
    @throws {@link import('./completion-shape.ts').MalformedCompletionError} on a stream that never ended the way its route ends
-   
+
    @example
    ```ts
    const reply = await client.chatText({ modelId, messages, signal, },);
@@ -287,7 +287,7 @@ export function createBedrockClient(
     /**
      Refuses a success reply whose stream never ended the way this route
      ends, so the ladder retries the attempt as the transport failure it is.
-     
+
      @param attemptReply - one attempt's reply, read before the ladder returns it
      */
     function wholeMessage(attemptReply: TransportReply,): void {
@@ -538,13 +538,13 @@ export function createBedrockClient(
   /**
    Reads credit, spend and what is left off the ledger, which is this
    provider's whole budget signal.
-   
+
    @param signal - abort signal honored before the read
-   
+
    @returns Typed credits
-   
+
    @throws {@link import('./bedrock-ledger.ts').BedrockLedgerShapeError} on a ledger line that will not read
-   
+
    @example
    ```ts
    const { remainingUsd, } = await client.credits({ signal, },);

@@ -37,25 +37,25 @@ import {
 
 /**
  Builds the repair lane's per-slice wordings from its settled outcomes.
- 
+
  @param slices - preparation the lane ran over, which supplies every incumbent
  and says which slices the archive never translated
- 
+
  @param outcomes - what the lane settled, anchors included, in any order,
  each carrying who was heard about it
- 
+
  @param undecided - what an unnamed gap means; `refuse` after assembly, where
  every slice was visited, and `not-evaluated` at the blocked exit, which stops
  partway through by design
- 
+
  @returns One wording per prepared slice, in document order
- 
+
  @throws {@link LaneSliceCoverageError} when the outcomes do not cover the
  preparation as the policy requires
- 
+
  @throws {@link RepairUnheardError} when a slice nobody spoke about carries a
  wording that is not the archive's
- 
+
  @example
  ```ts
  const wordings = repairLaneWordings({ slices, outcomes, undecided: 'refuse', },);

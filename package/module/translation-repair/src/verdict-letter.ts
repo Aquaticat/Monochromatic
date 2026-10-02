@@ -23,13 +23,13 @@ export const VERDICT_DELIMITERS: ReadonlySet<string> = new Set(
 
 /**
  Whether an answer opens with a given verdict letter used as a verdict.
- 
+
  @param answer - grader's answer
- 
+
  @param letter - verdict letter to test
- 
+
  @returns True when the letter stands alone or is followed by a delimiter
- 
+
  @example
  ```ts
  const isYes = opensWithVerdict({ answer: 'Y, but softer', letter: 'Y', },);
@@ -54,14 +54,14 @@ export function opensWithVerdict(
 /**
  Drops the punctuation and spacing separating a verdict letter from the prose
  after it.
- 
+
  A linear scan rather than a pattern: the rule is "skip while the character is
  a delimiter", and the delimiter set is already named.
- 
+
  @param text - answer remainder after the verdict letter
- 
+
  @returns Remainder with leading delimiters and surrounding space removed
- 
+
  @example
  ```ts
  const note = trimLeadingDelimiters({ text: ', anchored to the wrong text', },);

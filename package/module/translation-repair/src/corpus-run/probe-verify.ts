@@ -40,15 +40,15 @@ import {
 
 /**
  Admissible claims, which are the only ones worth putting to a human.
- 
+
  A contradicted claim is one the differential already refuted, and an
  unanchored one quotes nothing checkable. Asking about either would spend a
  reader's attention on a claim the deterministic screen has already settled.
- 
+
  @param claims - screened claims of one region
- 
+
  @returns Claims the screen corroborated
- 
+
  @example
  ```ts
  const admissible = keepAdmissible({ claims, },);
@@ -66,11 +66,11 @@ function keepAdmissible(
 
 /**
  Probes one region with the accepted issues withheld.
- 
+
  @param relabelCase - region and its surrounding texts
- 
+
  @returns Admissible claims raised, empty when the probe found nothing
- 
+
  @example
  ```ts
  const claims = await probeWithheld({ relabelCase, },);
@@ -105,13 +105,13 @@ async function probeWithheld(
 
 /**
  Probes every case and keeps the ones the probe flagged.
- 
+
  @param cases - regions to probe
- 
+
  @param kind - which set these came from, for the manifest
- 
+
  @returns Sheet items, one per flagged region
- 
+
  @example
  ```ts
  const items = await collectFlagged({ cases, kind: 'control', },);
@@ -165,7 +165,7 @@ async function collectFlagged(
 
 /**
  Builds the blind verification sheet and its scoring manifest.
- 
+
  @example
  ```ts
  await main();

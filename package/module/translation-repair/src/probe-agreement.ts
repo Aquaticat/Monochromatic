@@ -23,7 +23,7 @@ import type { RepairVerdict, } from './repair-grade-read.ts';
 
 /**
  What the two instruments jointly said about one round's repairs.
- 
+
  @example
  ```ts
  const agreement: ProbeAgreement = scoreProbeAgainstGrades({ items, },);
@@ -44,7 +44,7 @@ export type ProbeAgreement = {
   /**
    Flagged issues the human graded `fixes`, meaning they read the same wording
    and said it breaks nothing nearby.
-   
+
    These are the probe's demonstrable false positives, and the count a gate
    proposal has to answer for: each one is a correct repair the gate would
    have discarded.
@@ -53,7 +53,7 @@ export type ProbeAgreement = {
 
   /**
    Flagged issues the human graded `does-not-fix`.
-   
+
    SUGGESTIVE, NOT CONFIRMING. The sheet's N fires both for a repair that
    failed to fix its target and for one that broke something, so this does not
    establish that the human saw the damage the probe claimed.
@@ -74,7 +74,7 @@ export type ProbeAgreement = {
 
 /**
  One graded issue paired with the probe reading of its chunk.
- 
+
  @example
  ```ts
  const item: ProbeAgreementItem = { verdict: 'fixes', reading, };
@@ -95,14 +95,14 @@ export type ProbeAgreementItem = {
 
 /**
  Whether the probe flagged damage in any region serving one issue.
- 
+
  A single majority-flagged region is enough, because a gate would have
  rejected the candidate on that one region's verdict.
- 
+
  @param reading - probe reading for this issue
- 
+
  @returns Whether a gate would have blocked on this issue's regions
- 
+
  @example
  ```ts
  const flagged = probeFlaggedIssue({ reading, },);
@@ -123,7 +123,7 @@ export function probeFlaggedIssue(
 
 /**
  One graded item reduced to the two facts the agreement table joins on.
- 
+
  Named rather than inferred, because an inferred object literal carries
  writable properties and every cell count reading it then takes a mutable
  parameter it never mutates.
@@ -142,11 +142,11 @@ type JoinedReading = Readonly<{
 
 /**
  Scores the probe against the human repair grades.
- 
+
  @param items - graded issues paired with their probe readings
- 
+
  @returns Joint counts, with the clean cell separated from the ambiguous ones
- 
+
  @example
  ```ts
  const agreement = scoreProbeAgainstGrades({ items, },);
@@ -175,13 +175,13 @@ export function scoreProbeAgainstGrades(
 
   /**
    Counts joined items matching a flag state and verdict.
-   
+
    @param flagged - whether the probe flagged the issue
-   
+
    @param verdict - human verdict to match
-   
+
    @returns Items in that cell
-   
+
    @example
    ```ts
    countCell({ flagged: true, verdict: 'fixes', },);

@@ -1,7 +1,7 @@
 /**
  Tests for what a settled translate document says about slices a GUARD
  refused, which is three different guards wearing one count.
- 
+
  WHY THIS FILE EXISTS. `assembleTranslation` reports `refusedSliceCount` as
  the size of a filter naming three dispositions, and `alignmentRefusals`
  writes one finding per refusal in three shapes. Until this file existed, every
@@ -9,12 +9,12 @@
  either of the other two from the filter would have cost the artifact a
  refusal and failed nothing. The two other kinds were pinned at the slice that
  produces them and nowhere downstream.
- 
+
  A FOURTH SLICE IS SETTLED NORMALLY so the count cannot pass by counting every
  slice, and so the finding list cannot pass by naming every slice.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -85,7 +85,7 @@ const DECLARED_NAME = 'Whiskers';
 /**
  What each slice's stage produced and how its slice was disposed of, in
  document order.
- 
+
  ONE SLICE PER REFUSAL KIND, then one settled slice, so the three counts a
  reader compares (slices, refusals, changes) are three different numbers.
  */
@@ -120,7 +120,7 @@ const PLANNED = [
 
 /**
  Builds one settled record shaped as the driver settles one.
- 
+
  CAST because `TranslateStageResult` carries a producer, a tally and two
  chosen indices this test never reaches: assembly reads `disposition`,
  `sliceIndex`, `outputText`, `changed`, `alignment`, `droppedDeclaredNames`,
@@ -128,16 +128,16 @@ const PLANNED = [
  out here. The
  sibling `translate-lane-wordings.unit.test.ts` builds its records the same
  way and for the same reason.
- 
+
  @param sliceIndex - slice this record settles
- 
+
  @param incumbentText - archive wording at that slice, which every refusal
  here keeps
- 
+
  @param at - position in `PLANNED`, which decides the disposition
- 
+
  @returns Record the assembly can read
- 
+
  @example
  ```ts
  const record = recordFor({ sliceIndex: 0, incumbentText: 'The cat naps.', at: 0, },);
@@ -200,9 +200,9 @@ function recordFor(
 
 /**
  Runs one assembly over the fixture and returns what it said and returned.
- 
+
  @returns Assembled result beside every logged line
- 
+
  @example
  ```ts
  const { result, said, } = await assembledFixture();

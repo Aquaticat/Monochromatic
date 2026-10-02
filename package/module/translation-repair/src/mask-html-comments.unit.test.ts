@@ -2,7 +2,7 @@
  Tests for HTML comment masking:
  length preservation, newline preservation, region offsets, and the
  unterminated tail case. Fixtures are cat-themed invention only.
- 
+
  @module
  */
 

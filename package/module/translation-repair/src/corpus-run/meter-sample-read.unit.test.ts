@@ -1,10 +1,10 @@
 /**
  Tests for reading availability records back out of a log.
- 
+
  THE FIXTURE LINES ARE REAL SHAPES, copied from what the console sink writes:
  `[level] [iso] [tag] [tag] message`. A test built on an invented prefix would
  pass while the reader failed on every line the pipeline actually produces.
- 
+
  @module
  */
 
@@ -29,7 +29,7 @@ const REAL_LINE =
 
 /**
  The sampler's own summary, which mentions the marker in prose.
- 
+
  THIS LINE IS WHY THE GATE EXISTS. Read back off a real sample, it counted
  as a record that would not parse and reported a hole in an intact log.
  */

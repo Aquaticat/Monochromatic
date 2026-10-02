@@ -43,21 +43,21 @@ import { settleShippedPatch, } from './repair-chunk-settle.ts';
 
 /**
  Runs one chunk pair through the whole repair loop.
- 
+
  @param client - injected model client
- 
+
  @param sliceIndex - chunk position carried onto the outcome
- 
+
  @param sourceText - original chunk text
- 
+
  @param targetText - translation chunk text
- 
+
  @param lineStructured - whether the ENCLOSING chunk's original is
  line-structured, decided by the caller because a slice is too small a unit to
  decide it on; see `buildEditorAddendum`
- 
+
  @param models - role roster
- 
+
  @param reseat - reads the seating again at the checker stage, so a chunk
  in flight when a provider runs dry asks the bench a fresh reading seats
  (class one hundred nine)
@@ -65,41 +65,41 @@ import { settleShippedPatch, } from './repair-chunk-settle.ts';
  @param identityContext - declared names from both sides' front matter,
  passed down from the whole document because chunk text carries no front
  matter of its own
- 
+
  @param referenceContext - what the original's cited pages say, shown to
  the critic and the panel so a detail the archive took from a reference is
  not deleted as an addition (class thirty-five), and to the checkers so one
  is not counted as damage (ledger L14)
- 
+
  @param attestedDetails - archive details a cited reference states, attested
  word for word at preparation; an addition claim on one is rejected before
  the panel (class thirty-seven)
- 
+
  @param declaredNames - same declarations as strings to compare rather than
  prose to read, which is a different job: one tells a model what is true, the
  other decides whether a patch may ship
- 
+
  @param neighbouringSourceText - original of the passages either side, shown to
  the critic, panel and editor as CONTEXT they may neither quote against nor
  edit. Relocation is why it exists: shown one slice alone, a critic reads a passage
  the archive carried in from next door as an addition with no source, and the
  editor then removes wording that the document does need, just not here
- 
+
  @param neighbouringIncumbentText - archive English of those same two passages,
  which is the half that shows the relocation rather than merely the subject:
  the original says each thing once in its own place while the archive says it
  next door
- 
+
  @param documentSourceText - same-entry factual evidence for panels and repair selectors, not extra coverage
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Chunk outcome with the winning text
- 
+
  @example
  ```ts
  const outcome = await repairChunk({ ... },);
@@ -264,7 +264,7 @@ export async function repairChunk(
 
   /**
    Panel issues with same-place accepted duplicates merged into one.
-   
+
    Applied HERE, before envelopes are cut, because the cost a duplicate
    imposes is the editor repairing one defect twice and cutting two
    overlapping envelopes for it. Deduplicating after that work is done would

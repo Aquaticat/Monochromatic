@@ -26,12 +26,12 @@ import { tableCell, } from './table-cell.ts';
 
 /**
  Why a heading ended up with no partner.
- 
+
  `forced-gap` means no optimal path pairs it at all, so the other side simply
  has nothing for it. `ambiguous` means several optimal pairings exist and the
  aligner declines to guess, which is the outcome the shipped scorer cannot
  produce.
- 
+
  `roster-unpaired` comes from somewhere else entirely: a model was shown both
  documents and did not name this section in its pairing. It is kept separate
  from the other two because those describe a scorer's table and this describes
@@ -44,7 +44,7 @@ export type UnpairedReason =
 
 /**
  Where an untranslated section's rendering may be written, or why it may not.
- 
+
  THREE ANSWERS RATHER THAN A NULLABLE INDEX, because "we may not insert this"
  has two causes wanting opposite remedies, and collapsing them loses the one
  that matters. A section that MAY PAIR is one an optimal alignment can match
@@ -89,7 +89,7 @@ export type InsertionAnchor =
 
 /**
  One decision about one heading.
- 
+
  @example
  ```ts
  const step: ForcedAlignStep = { kind: 'paired', sourceIndex: 0, targetIndex: 0, affinity: 1, };
@@ -160,13 +160,13 @@ export type ForcedAlignStep =
 
 /**
  Decides where an unpaired source section's rendering could be written.
- 
+
  @param partners - target units this section pairs with on some optimal path
- 
+
  @param gapColumns - target columns it is skipped at on some optimal path
- 
+
  @returns Proven place, or which kind of uncertainty forbids one
- 
+
  @example
  ```ts
  const anchor = anchorFor({ partners, gapColumns, },);
@@ -213,22 +213,22 @@ function anchorFor(
 
 /**
  Aligns two heading sequences, emitting a pairing only when it is forced.
- 
+
  A pairing is forced when it lies on EVERY optimal path. Anything else is
  reported unpaired with `ambiguous`, which is the outcome that lets a caller
  skip a section rather than guess at it.
- 
+
  Exported so the walk can be read directly on corpus pages, which is the only
  way to find out which refusal real pages actually produce.
- 
+
  @internal
- 
+
  @param sourceHeadings - original-side unit labels in document order
- 
+
  @param targetHeadings - translation-side unit labels in document order
- 
+
  @returns One step per source unit, then the unpaired target units
- 
+
  @example
  ```ts
  const steps = alignHeadingsForced({ sourceHeadings, targetHeadings, },);

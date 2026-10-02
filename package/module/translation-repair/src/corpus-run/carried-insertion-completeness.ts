@@ -24,11 +24,11 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 
 /**
  Text as the anchoring reads it: soft breaks folded, punctuation normalized.
- 
+
  @param text - page or region
- 
+
  @returns The folded reading
- 
+
  @example
  ```ts
  asAnchored({ text: 'Zhenli,\nSansan', },);
@@ -41,18 +41,18 @@ function asAnchored({ text, }: { readonly text: string; },): string {
 
 /**
  Verifies final would-ship page retains exact regions proving carried passages.
- 
+
  @param artifact - final stage decisions used for publication
- 
+
  @param slices - preparation defining replacement spans
- 
+
  @param targetText - archive text replacement spans address
- 
+
  @param carried - source-only passages proven rendered elsewhere before lanes
- 
+
  @throws {@link TranslationRepairInterruptedError} when final stages remove
  any region supporting carried-complete decision
- 
+
  @example
  ```ts
  assertCarriedInsertionsRemain({ artifact, slices, targetText, carried: [], });

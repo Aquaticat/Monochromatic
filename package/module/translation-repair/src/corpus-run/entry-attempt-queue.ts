@@ -29,23 +29,23 @@ export type QueueableEntry = {
 
 /**
  Runs every pending entry once, then re-runs the ones that earned it.
- 
+
  RE-ATTEMPTS GO TO THE BACK. Coverage of the corpus is what a first attempt
  buys, so an oversized entry must not spend the run's budget before every
  other entry has been tried at all. A queue gives that ordering for free:
  pushing to the back cannot overtake anything still waiting.
- 
+
  @param pending - entries to attempt, in the order the caller ranked them
- 
+
  @param cachedCountFor - slices one entry holds, asked before and after each
  attempt so progress is measured rather than assumed
- 
+
  @param attempt - runs one attempt, reporting settlement or retry disposition
- 
+
  @param stopBeforeNext - asked before each attempt; true ends the run. Owned
  by the caller so the reason and its wording stay with the budget that knows
  them, and it may log
- 
+
  @example
  ```ts
  await runAttemptQueue({ pending, cachedCountFor, attempt, stopBeforeNext, },);

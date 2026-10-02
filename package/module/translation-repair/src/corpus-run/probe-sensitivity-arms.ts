@@ -46,7 +46,7 @@ import {
 
 /**
  What the prober was told about the prior issue, printed as `list=`.
- 
+
  @example
  ```ts
  const list: PriorIssueList = 'withheld';
@@ -56,7 +56,7 @@ export type PriorIssueList = 'none' | 'withheld' | 'rendered';
 
 /**
  Which accepted issue the arm carries, printed as `issue=`.
- 
+
  @example
  ```ts
  const issue: IssueLabel = 'false-addition';
@@ -66,7 +66,7 @@ export type IssueLabel = 'none' | 'prior' | 'unrelated' | 'false-addition' | 'tr
 
 /**
  One probe call of the sensitivity instrument.
- 
+
  @example
  ```ts
  const first = SENSITIVITY_ARMS[0];
@@ -116,7 +116,7 @@ export type SensitivityArm = {
 
 /**
  List production sends, read off the same constant the pass uses.
- 
+
  @example
  ```ts
  console.log(`production sends list=${PRODUCTION_LIST}`,);
@@ -144,11 +144,11 @@ const LISTS: readonly PriorIssueList[] = [
 /**
  Disclosure a list value sends; `none` has nothing to disclose and sends
  production's, so the prompt is production's prompt with an empty list.
- 
+
  @param list - list the arm is labelled with
- 
+
  @returns Disclosure the probe receives
- 
+
  @example
  ```ts
  const disclosure = disclosureFor('rendered',);
@@ -164,9 +164,9 @@ function disclosureFor(list: PriorIssueList,): PriorIssueDisclosure {
 
 /**
  Accuracy regions under all three lists.
- 
+
  @returns Nine arms, three per region
- 
+
  @example
  ```ts
  const arms = accuracyArms();
@@ -217,9 +217,9 @@ function accuracyArms(): readonly SensitivityArm[] {
  proves nothing about it; its control is the clean region, since the lane
  exists to rephrase and a prober that reads rephrasing as damage would flag
  every refinement the pipeline makes.
- 
+
  @returns Three arms
- 
+
  @example
  ```ts
  const arms = refinementArms();
@@ -269,9 +269,9 @@ function refinementArms(): readonly SensitivityArm[] {
  source-supported clause and differ only in what the list says about it; the
  third deletes content the original genuinely lacks, so silence there is
  correct.
- 
+
  @returns Six arms, two per region
- 
+
  @example
  ```ts
  const arms = labellingArms();
@@ -331,7 +331,7 @@ function labellingArms(): readonly SensitivityArm[] {
 
 /**
  Every arm the instrument runs, in run order.
- 
+
  @example
  ```ts
  for (const arm of SENSITIVITY_ARMS) await probeOne({ arm, },);

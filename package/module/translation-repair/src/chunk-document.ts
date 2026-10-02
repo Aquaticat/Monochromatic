@@ -49,7 +49,7 @@ export {
 
 /**
  Syntax roles requiring rules beyond ordinary Markdown prose.
- 
+
  @example
  ```ts
  const syntax: SliceSyntax = 'front-matter';
@@ -59,10 +59,10 @@ export type SliceSyntax = 'front-matter';
 
 /**
  One source chunk paired with its translation chunk.
- 
+
  Each side is exactly one chunk. Merging several sections into one side was
  the proportional fallback's doing, and that fallback is gone.
- 
+
  @example
  ```ts
  const [pair,] = alignDocumentSections({ source, target, },).pairs;
@@ -71,7 +71,7 @@ export type SliceSyntax = 'front-matter';
 export type ChunkPair = {
   /**
    Syntax role requiring rules beyond ordinary Markdown prose.
-   
+
    Absent for body slices so existing structural consumers stay narrow.
    */
   readonly syntax?: SliceSyntax;
@@ -91,14 +91,14 @@ export type ChunkPair = {
 
 /**
  Where an alignment observation attaches, naming the numbering it counts in.
- 
+
  A UNION RATHER THAN A NUMBER, because the three cases count in three
  different spaces. A refused chunk has only the index it holds on its OWN
  side, and that side's numbering need not line up with the pairs a run
  produced. A whole-document observation has no index at all and used to
  borrow zero. Rendered together as `pair N`, all three read as one space,
  and a reader meeting `pair 0` could not tell which one it lived in.
- 
+
  @example
  ```ts
  const attachedTo: AlignmentAttachment = { kind: 'source-section', index: 2, };
@@ -136,15 +136,15 @@ export type AlignmentAttachment =
 
 /**
  Renders where an observation attaches, in wording naming its numbering.
- 
+
  SPELLS THE SPACE OUT rather than leaving a bare number, so a refusal
  reporting a side index can no longer be read as a pair index. That misread
  is the one that sends a reader to the wrong section of the document.
- 
+
  @param attachedTo - place this observation hangs from
- 
+
  @returns Phrase naming the numbering, and the index where there is one
- 
+
  @example
  ```ts
  const where = describeAlignmentAttachment({ attachedTo: { kind: 'whole-document', }, },);
@@ -163,7 +163,7 @@ export function describeAlignmentAttachment(
 
 /**
  One structural observation from automatic alignment.
- 
+
  @example
  ```ts
  const finding: AlignmentFinding = {
@@ -176,7 +176,7 @@ export function describeAlignmentAttachment(
 export type AlignmentFinding = {
   /**
    Observation class, and there is one: the sides do not correspond.
-   
+
    A `sections-merged` kind existed while the proportional fallback did, and
    went with it. Artifacts settled before 2026-08-15 carry the string in their
    findings, which is prose to every reader here; nothing in this package
@@ -198,11 +198,11 @@ export type AlignmentFinding = {
 /**
  PARTIAL alignment outcome: the pairs the aligner committed to, and what it
  refused.
- 
+
  NOT A COVER. A refused chunk appears in no pair, on either side, which is the
  whole point of refusing it. A consumer counting coverage has to compare the
  pairs against the chunk counts rather than assume them equal.
- 
+
  @example
  ```ts
  const { pairs, findings, } = alignDocumentSections({ source, target, },);
@@ -216,7 +216,7 @@ export type SectionAlignment = {
 
   /**
    Sections the aligner refused, and whole-document observations.
-   
+
    EMPTY DOES NOT MEAN VERIFIED. Two sides of equal shape pair by index
    without the aligner being consulted at all, so a document that dropped one
    section and gained an unrelated one later has equal counts, pairs straight
@@ -232,11 +232,11 @@ export type SectionAlignment = {
  Splits a parsed document into heading-bounded chunks.
  Each `heading` node starts a fresh chunk;
  nodes before the first heading form a preamble chunk.
- 
+
  @param document - parsed document whose nodes carry absolute offsets
- 
+
  @returns Chunks partitioning the document's nodes in order
- 
+
  @example
  ```ts
  const chunks = chunkByHeadings({ document: parseDocument({ text, },), },);
@@ -294,17 +294,17 @@ export function chunkByHeadings(
  Reads the label the aligner reasons over for one chunk: its heading, or
  empty for a preamble. The coverage candidates and the section round kept
  their own copies (audit area six, 2026-09-28); this one serves all three.
- 
+
  A heading chunk carries its heading text; a preamble chunk carries an EMPTY
  label. Building units this way makes UNIT INDEX EQUAL CHUNK INDEX by
  construction, since `chunkByHeadings` emits the preamble as chunk 0 and then
  one chunk per heading. No offset arithmetic remains to get wrong, and offset
  arithmetic is what an earlier adapter got wrong.
- 
+
  @param chunk - chunk to label
- 
+
  @returns Heading text, or empty for a preamble
- 
+
  @example
  ```ts
  const label = chunkLabel(chunk,);
@@ -320,17 +320,17 @@ export function chunkLabel(chunk: ContentChunk,): string {
 
 /**
  Says what became of a section the translation does not carry.
- 
+
  @param placements - every decision this document produced
- 
+
  @param sourceIndex - section to report on
- 
+
  @returns Sentence for a finding's detail
- 
+
  @throws Error when no decision names that section, since both lists are built
  from the same steps and a missing one means the two passes disagree about
  which sections are unpaired. A detail invented to cover that would hide it.
- 
+
  @example
  ```ts
  const detail = describeSourceOnly({ placements, sourceIndex: 3, },);
@@ -363,14 +363,14 @@ function describeSourceOnly(
 /**
  Aligns two parsed documents into critic-sized section pairs, automatically
  and PARTIALLY.
- 
+
  TWO PATHS. Sides of equal shape, meaning equal chunk counts with matching
  leading node kinds, pair by index and report nothing. Everything else goes to
  the forced heading aligner, and only what it pairs becomes a pair: a section
  it refuses is named in a finding and has no pair at all. When one side has no
  content, there are no pairs and the finding says so; the pipeline decides
  what a content-free side means.
- 
+
  WHAT EQUAL SHAPE DOES NOT PROVE. For a document of ordinary heading sections
  every leading kind is `heading`, so that half of the test holds by
  construction and the path reduces to "the counts match". A document that
@@ -378,19 +378,19 @@ function describeSourceOnly(
  pairs straight through with no finding. A roster reading both documents agreed
  with index order on all 56 equal-count entries of the pinned corpus, and
  refusing every equal-count pairing would discard real repair coverage to catch a case nothing here can detect.
- 
+
  @param source - parsed original document
- 
+
  @param target - parsed translation document
- 
+
  @param sectionPairing - correspondences a roster agreed on, when one was
  bought. Supplied, it REPLACES the deterministic decision entirely rather than
  supplementing it: a reading of both documents outranks a token-overlap score
  that reads 0.00 across this language boundary, and mixing the two would let
  an index match the roster rejected survive as a pair.
- 
+
  @returns Pairs the aligner committed to, plus what it refused
- 
+
  @example
  ```ts
  const { pairs, findings, } = alignDocumentSections({
@@ -454,7 +454,7 @@ export function alignDocumentSections(
   /**
    Whether both sides have equal SHAPE: equal counts, and matching leading
    node kinds per index.
-   
+
    Not "mirrored", which is what this was called and what it cannot check. It
    says nothing about whether section 3 on one side is section 3 on the other.
    */

@@ -22,7 +22,7 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 
 /**
  What one slice decided, and what the document did with it.
- 
+
  @example
  ```ts
  const selection: SliceSelection = { sliceIndex: 7, origin: 'fresh', decision: 'judged', voteWeight: 2, shipped: true, producer, };
@@ -56,7 +56,7 @@ export type SliceSelection = {
 
   /**
    Whether the DOCUMENT carries this slice's decision.
-   
+
    False on two different slices and the difference matters: one whose judges
    kept the archive, so there was never anything to ship, and one whose
    replacement the assembly guard withdrew. {@link SliceSelection.origin}
@@ -67,7 +67,7 @@ export type SliceSelection = {
   /**
    The WHOLE round: every candidate's provenance in slate order, and every
    ballot cast over it with its reason and weight.
-   
+
    KEPT IN FULL RATHER THAN SUMMARISED, on the owner's instruction that disk
    is not the constraint. The summary fields (`origin`, `producer`, `decision`,
    `voteWeight`, `shipped`) answer what shipped; only the
@@ -75,12 +75,12 @@ export type SliceSelection = {
    measurements need exactly that. `selfPreference` reads it as-is, which is
    why it is this shape: the artifact carries what the instrument consumes
    rather than something a reader has to reshape.
-   
+
    THE REASONS ARE PART OF IT and are the bulk of the bytes. They earn it: the
    Kimi-K3 channel-marker defect and the `Dethelly` relocation were both found
    by reading what judges said rather than what they chose, and neither is
    recoverable from a tally.
-   
+
    POSITION IS HERE TOO, without a field for it. `producers` is in slate
    order and a ballot names a one-based position into it, so a ballot's
    position and the candidate it fell on are both readable, which is what a
@@ -91,20 +91,20 @@ export type SliceSelection = {
 
 /**
  Pairs every settled record with whether the document carries its decision.
- 
+
  TAKES THE SHIPPED SET RATHER THAN RE-DERIVING IT, because the set is derived
  from the assembled bytes and a second derivation from the records would
  answer a different question: a record says what the slice CHOSE, and the
  document says what it CARRIES. Those disagree exactly where the assembly
  guard intervened, which is the case this ledger exists to make visible.
- 
+
  @param records - settled slice records in document order
- 
+
  @param changedSliceIndices - slices the assembled document carries a
  replacement for
- 
+
  @returns One entry per record, in the order the records arrived
- 
+
  @example
  ```ts
  const selections = buildSliceSelections({ records: settled, changedSliceIndices: ordered.shipped, },);

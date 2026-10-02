@@ -1,18 +1,18 @@
 /**
  Tests for the shell that buys a pairing and hands it to preparation.
- 
+
  WHAT THESE PIN is the two things a settled entry now keeps about its pairing:
  the correspondences themselves, echoed back out of the map preparation
  consumed, and how many voices stood behind them, which was logged and never
  recorded. A section two voices paired and one six voices paired are different
  evidence about the same slicing.
- 
+
  THE VOICE COUNT CARRIES ITS SECTION. The stage is asked one section at a time
  and cannot say which, so counts filed from there would arrive as a run of
  identical-shaped lines naming no section at all.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -75,9 +75,9 @@ const EXCHANGE_TIMEOUT_MS = 5_000;
 
 /**
  Builds client that fails if cache path buys any exchange.
- 
+
  @returns Client refusing every transport call
- 
+
  @example
  ```ts
  const client = refusingClient();
@@ -94,16 +94,16 @@ function refusingClient(): ReturnType<typeof createSyntheticClient> {
 
 /**
  Builds a pairing cache backed by a map that outlives one run.
- 
+
  ROUND-TRIPS THROUGH THE SERIALIZATION rather than storing the record by
  reference, because the defect under test is a record whose findings never
  reached disk. A stub that kept the object would pass while the bytes carried
  only pairs.
- 
+
  @param stored - map surviving between the two runs of a case
- 
+
  @returns Cache resuming from `stored` and writing back into it
- 
+
  @example
  ```ts
  const cache = memoryPairingCache({ stored, },);

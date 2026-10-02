@@ -50,7 +50,7 @@ const SURVIVAL_FORM = 'in the form the house rules give it (a date month first, 
 
 /**
  Messages plus the paragraph numbering they were built from.
- 
+
  @example
  ```ts
  const plan: RefinePromptPlan = { messages, envelopes, };
@@ -71,17 +71,17 @@ export type RefinePromptPlan = {
 
 /**
  Builds the rewriter sheet for one slice.
- 
+
  @param sourceText - original chunk text, the faithfulness anchor
- 
+
  @param envelopes - eligible paragraphs in document order
- 
+
  @param identityContext - declared names and handles from front matter, when
  the document declares any
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param objectionGroups - what the gate or slate judges held against the
  text, by the judges it comes from, to correct where the ORIGINAL supports it
  (owner, 2026-09-27); the text still ships unchanged when none is supported

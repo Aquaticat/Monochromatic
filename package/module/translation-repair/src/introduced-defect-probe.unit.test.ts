@@ -2,7 +2,7 @@
  Tests for the introduced-defect probe stage itself: what it asks, what it
  skips, and how it accounts for probers it could not hear.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -55,17 +55,17 @@ const REGION: RepairRegion = {
 
 /**
  Client answering with one scripted check per region, or refusing.
- 
+
  @param verdict - verdict every prober casts on every region
- 
+
  @param evidence - added-damage quote every prober offers
- 
+
  @param silentModelIds - probers whose voice is always lost
- 
+
  @param prompts - shared log of every user sheet the stage sent
- 
+
  @returns Client the stage calls
- 
+
  @example
  ```ts
  const client = catClient({ verdict: 'uncertain', },);

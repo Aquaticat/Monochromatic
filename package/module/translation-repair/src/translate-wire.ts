@@ -42,7 +42,7 @@ import type {
 
 /**
  Instructions every translator call shares.
- 
+
  The prior translation is described as partial and possibly wrong on purpose.
  Told to "improve" it, a model treats its wording as the baseline and edits
  around it, which is how a passage that was never translated ends up
@@ -68,7 +68,7 @@ ${HOUSE_POLICY_BLOCK}`;
 
 /**
  Reply-format instruction, kept LAST in the assembled sheet.
- 
+
  Split out so a conditional rule can be inserted before it. Wire instructions
  that end up above content rules are the ones models drop first.
  */
@@ -77,29 +77,29 @@ const TRANSLATE_REPLY_RULE =
 
 /**
  Instruction added when the enclosing chunk's ORIGINAL is line-structured.
- 
+
  Written for a translator rather than an editor, which is why it is not
  `LINE_STRUCTURE_RULE` from `line-structure-addendum.ts`. That one asks an
  editor to leave existing lines where they are; here there may be no existing
  lines at all, and the shape has to be built from the original instead.
- 
+
  The failure it answers is `Toka_ls`, whose verse chunk runs 21 source blocks
  at median 22 characters against 18 target blocks at median 101: the existing
  translation already merged the lines. A translator shown that translation and
  told nothing would keep reproducing the merge, since the only shape in front
  of it is the merged one.
- 
+
  SHARED WITH THE CONSOLIDATE WIRE, whose producer is a translator too. A
  second wording of the same rule would drift from the one `Toka_ls` was
  measured against.
- 
+
  SAYS OUTRIGHT THAT IT OUTRANKS THE SHAPE RULE, because the two disagree on
  exactly the case this exists for. `TRANSLATE_RULES` tells a producer to keep
  the existing translation's shape where it merges blocks the ORIGINAL keeps
  apart, and on `Toka_ls` that means keeping 18 blocks where the Chinese has
  21. Both rules arrive in one system prompt and neither used to defer, so a
  producer met a contradiction and resolved it however it liked.
- 
+
  THE GUARD AGREES WITH THIS RULE AND CANNOT ENFORCE IT.
  `validateTranslatedSlice` refuses a candidate that MERGES the page's blocks,
  and allows extra blocks only where the ORIGINAL has them: measured, a
@@ -199,7 +199,7 @@ export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML
 
 /**
  Messages for one translation call.
- 
+
  @example
  ```ts
  const messages = buildTranslateMessages({ sourceText, existingText, },);
@@ -214,7 +214,7 @@ export type TranslatePromptPlan = {
 
 /**
  Latest exact rejected slate and structured findings grounding next rendering.
- 
+
  @example
  ```ts
  const evidence: TranslateFollowupEvidence = {
@@ -243,30 +243,30 @@ export type TranslateFollowupEvidence = {
 
 /**
  Builds the translator sheet for one passage.
- 
+
  @param sourceText - original passage to render
- 
+
  @param existingText - translation as it stands, empty when there is none
- 
+
  @param incumbentKind - explicit source-only provenance for break presentation;
  callers that cannot establish it keep the original view
- 
+
  @param identityContext - declared names and handles, omitted when absent
 
  @param attestedLines - archive details a cited reference states, one line
  each as the sheets carry them, none when nothing was attested
- 
+
  @param syntax - syntax role requiring dedicated preservation rules
- 
+
  @param followupEvidence - latest exact rejected slate and findings when this
  is stage-local repair rather than initial rendering
- 
+
  @param lineStructured - whether the enclosing CHUNK's original is
  line-structured, decided by the caller because a slice is too small a unit to
  decide it on; see `buildEditorAddendum`
- 
+
  @returns Messages for the call
- 
+
  @example
  ```ts
  const plan = buildTranslateMessages({ sourceText, existingText: '', },);
@@ -437,7 +437,7 @@ ${fence} END ${fence}`,
 
 /**
  One translator reply on the wire.
- 
+
  @example
  ```ts
  const wire: TranslateReportWire = { translation: 'The cat naps.', };
@@ -452,7 +452,7 @@ export type TranslateReportWire = {
 
 /**
  Guards a translator reply.
- 
+
  A REPLY THAT SAYS NOTHING IS NOT A REPLY. The structured-output schema is
  satisfied by `{"translation": ""}`, which used to arrive as a heard voice
  proposing to render the passage as nothing and was then dropped further down
@@ -460,7 +460,7 @@ export type TranslateReportWire = {
  it a lost voice instead, so the roster re-asks that model in the next round
  and the loss is reported as one; a slice with no translation in the archive
  has nothing else to fall back on, which is where the difference is felt.
- 
+
  Every source slice says something, so no legitimate reply is blank: an empty
  run cannot become a slice at all.
 

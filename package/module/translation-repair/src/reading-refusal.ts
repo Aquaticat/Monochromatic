@@ -45,7 +45,7 @@ import { carriesWord, } from './word-bounds.ts';
 
 /**
  Longest a refusal runs, in characters after trimming.
- 
+
  A REFUSAL IS A SENTENCE. The two measured run 27 and 41 characters, and the
  six real transcriptions run 976 and up, so this sits far from both rather
  than between two crowded populations. It exists so a long reading that
@@ -56,7 +56,7 @@ const REFUSAL_MAX_CHARS = 160;
 
 /**
  Words that negate, lowercased.
- 
+
  Matched as whole words, so `not` does not fire inside `note` and `no` does
  not fire inside `nothing`, which is listed separately in its own right.
  */
@@ -78,7 +78,7 @@ const NEGATION_WORDS: readonly string[] = [
 
 /**
  Words naming the picture or its text rather than reproducing either.
- 
+
  A TRANSCRIPTION DOES NOT NAME ITS MEDIUM. Somebody's letter says what it
  says; it does not call itself an image. These are the words a model reaches
  for when it is describing its own situation instead of the picture's
@@ -109,15 +109,15 @@ const PICTURE_WORDS: readonly string[] = [
  Whether a character can sit inside one of the `PICTURE_WORDS`: a Latin letter,
  accented or not, a combining mark, or an apostrophe. ASCII letters alone cut
  `café` to `caf` (ledger B18).
- 
+
  APOSTROPHE INCLUDED so `can't` and `isn't` stay single words rather than
  splitting into a fragment that matches nothing. Both the straight and the
  typographic apostrophe count, since a model writing prose reaches for either.
- 
+
  @param character - character to weigh
- 
+
  @returns Whether it continues a word
- 
+
  @example
  ```ts
  const inside = continuesWord({ character: 'a', },);
@@ -132,11 +132,11 @@ function continuesWord({ character, }: { readonly character: string; },): boolea
 /**
  Whether a character can open one of the `PICTURE_WORDS`: a Latin letter or an
  apostrophe, never a combining mark, which belongs to the letter before it.
- 
+
  @param character - character to weigh
- 
+
  @returns Whether a word may start with it
- 
+
  @example
  ```ts
  const opens = opensWord({ character: 'N', },);
@@ -150,18 +150,18 @@ function opensWord({ character, }: { readonly character: string; },): boolean {
 
 /**
  Splits text into lowercased Latin words.
- 
+
  A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "runs of Latin
  letters, combining marks and apostrophes are words, everything else
  separates them", which a scan
  states directly, runs in one pass, and cannot backtrack. The typographic
  apostrophe is folded onto the straight one so a word list needs only one
  spelling of each contraction.
- 
+
  @param text - reading to split
- 
+
  @returns Every word it holds, lowercased, in order
- 
+
  @example
  ```ts
  const words = latinWords({ text: 'No text.', },);
@@ -209,17 +209,17 @@ export function latinWords({ text, }: { readonly text: string; },): readonly str
 
 /**
  Whether a reading is a model declining to read rather than a reading.
- 
+
  SHORT, NEGATING, AND ABOUT THE PICTURE. All three are required, so a long
  transcription is never tested, a description with no negation passes, and a
  negation about something other than the picture passes. Each condition alone
  would refuse real readings; together they describe only the shape a refusal
  takes.
- 
+
  @param reading - what model returned for image, whitespace and all
- 
+
  @returns Whether it declines rather than transcribes
- 
+
  @example
  ```ts
  const declined = readsAsRefusal({ reading: 'No legible text is visible.', },);
@@ -250,7 +250,7 @@ export function readsAsRefusal({ reading, }: { readonly reading: string; },): bo
 /**
  Words naming text itself, which an absence report negates: "no visible
  text", "no words", "nothing written", "no legible characters".
- 
+
  MEASURED ON THE PROBE OF 2026-09-04 over the five pictures every run log had
  ended `unavailable`: 14 of 15 refused replies named text this way, and the
  one that did not ("I cannot read the image.") was the reply of a model told
@@ -326,11 +326,11 @@ const INABILITY_MARKERS: readonly string[] = [
 
 /**
  Whether a reading negates anything at all.
- 
+
  @param reading - what model returned for image
- 
+
  @returns Whether any negation word stands as a word of its own in it
- 
+
  @example
  ```ts
  const negated = negatesSomething({ reading: 'I can't.', },);
@@ -349,7 +349,7 @@ export function negatesSomething({ reading, }: { readonly reading: string; },): 
 /**
  Whether a refusal reports that the picture carries no text, as opposed to
  declining to read it.
- 
+
  ASKED OF A REFUSAL ONLY. This does not decide whether a reply is a refusal;
  `readsAsRefusal` and the phrase list do. It decides which kind: an absence
  report names text and says nothing about the picture's quality or the
@@ -357,11 +357,11 @@ export function negatesSomething({ reading, }: { readonly reading: string; },): 
  The two are answers to different questions, and the pair stage treats them
  differently: two absence reports confirm a textless picture, while an
  inability is asked again and, if it holds, leaves the picture unread.
- 
+
  @param reading - refused reply, whitespace and all
- 
+
  @returns Whether it reports absence rather than inability
- 
+
  @example
  ```ts
  const absent = refusalReportsAbsence({ reading: 'There is no visible text in this image.', },);

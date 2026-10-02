@@ -1,17 +1,17 @@
 /**
  Tests for folding invisible variants out of a model's text.
- 
+
  WHAT THESE PIN: the non-breaking hyphen the reading found becomes a hyphen
  and is named; spaces and joiners fold to what a reader would type; visible
  typography the archive itself uses passes through untouched; and a text with
  nothing to fold comes back byte-identical with no finding.
- 
+
  EVERY FIXTURE IS SPELLED AS AN ESCAPE. The first version of this file wrote
  the characters themselves, and the tool that wrote it dropped two of them,
  which is exactly the invisibility the fold exists to catch.
- 
+
  Fixtures are a sentence about a bookshop cat, so there is no corpus text here.
- 
+
  @module
  */
 

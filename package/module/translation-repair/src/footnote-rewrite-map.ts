@@ -9,15 +9,15 @@ import { gfmMarkerAt, } from './gfm-marker-spans.ts';
 
 /**
  Builds normalized lookups only for destinations encoding exactly one valid marker label.
- 
+
  @param map - simultaneous operational rewrites
- 
+
  @param markers - active input namespace, including unresolved references
- 
+
  @returns Normalized source keys and raw destination spellings
- 
+
  @throws FootnoteRewriteError when map domains are stale, destinations cross syntax boundaries or identifiers would merge
- 
+
  @example
  ```ts
  const lookup = footnoteRewriteMap({ map, markers });

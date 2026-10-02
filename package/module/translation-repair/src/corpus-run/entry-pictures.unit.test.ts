@@ -1,6 +1,6 @@
 /**
  Tests for gathering one entry's pictures off the pinned corpus.
- 
+
  WHAT THESE PIN is the boundary between text and disk. `gatherEntryPictures`
  reads every slice's source text for photo references, dedupes the named
  assets into a set, and reads each one at the pinned commit through
@@ -8,14 +8,14 @@
  failing the whole gather. Exercised against a throwaway git repository
  built in a temp directory, mirroring `corpus-source.unit.test.ts`'s own
  fixture; nothing here reads the real corpus.
- 
+
  CHILDREN RUN SEQUENTIALLY (`concurrency: 1`), matching
  `synthetic-transport.unit.test.ts`'s own reasoning: two tests here spy on
  the shared module-level logger, and an interleaved concurrent run could
  let one test's log calls land inside another test's spy window.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -53,7 +53,7 @@ const l = tagged({ tag: 'entry-pictures-test', },);
 
 /**
  Placeholder corpus pages write for an entry's own directory.
- 
+
  AN ESCAPED TEMPLATE LITERAL, so characters landing in a slice's text are
  what corpus text carries rather than an interpolation this file performs
  by accident. Mirrors `photo-reference.unit.test.ts`.
@@ -83,11 +83,11 @@ type PictureFixture = {
 /**
  Bytes standing in for a picture, whose content no assertion here reads
  beyond exact equality.
- 
+
  @param seed - byte every position carries, so two calls differ by content
- 
+
  @returns Small buffer of that byte
- 
+
  @example
  ```ts
  const bytes = bytesOf({ seed: 7, },);
@@ -99,11 +99,11 @@ function bytesOf({ seed, }: { readonly seed: number; },): Uint8Array {
 
 /**
  Builds one photo element naming given assets, in the corpus's only form.
- 
+
  @param assetNames - file names within the entry's photos directory
- 
+
  @returns Element as a page writes it
- 
+
  @example
  ```ts
  const element = photoElement({ assetNames: ['sunbeam.webp',], },);
@@ -121,14 +121,14 @@ function photoElement({ assetNames, }: { readonly assetNames: readonly string[];
 /**
  Builds a throwaway corpus-shaped git repository committing given
  pictures, removed on dispose.
- 
+
  ON A THROWAWAY, per `THR`: this writes files and runs git, so it gets its
  own directory rather than any path the repository cares about.
- 
+
  @param pictures - assets to commit, one file per entry's photos directory
- 
+
  @returns Pin resolving reads against the committed clone, and an async disposer
- 
+
  @example
  ```ts
  await using fixture = await makeThrowawayCorpus({ pictures: [oneAsset,], },);

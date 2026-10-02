@@ -39,7 +39,7 @@ const DIGEST_ALGORITHM = 'sha256';
 
 /**
  Name of the scheme a recorded identity was produced by.
- 
+
  Carried in the value rather than assumed, so changing what is hashed or how
  it is framed makes a DIFFERENT string rather than a same-looking one. Without
  it, a later scheme would silently make two incomparable values comparable.
@@ -67,11 +67,11 @@ const FORMAT_SEPARATOR = ':';
 
 /**
  Identity of one slicing of one document pair.
- 
+
  Branded so it cannot be assigned where a pipeline digest or a git object id
  belongs. All three are 64 hex characters behind a label and they answer
  different questions: this one names WHAT WAS SLICED, not what ran or when.
- 
+
  @example
  ```ts
  const identity: PreparationIdentity = preparationIdentity({ prepared, },);
@@ -202,17 +202,17 @@ export function assertPreparationIdentity(
 
 /**
  Frames one field so no field's content can forge another's boundary.
- 
+
  LENGTH PREFIXED rather than separated by a byte assumed absent from the text.
  Slice text is arbitrary document content: it can hold any separator anyone
  might pick, including newlines and null bytes, so a separator scheme would be
  forgeable by a document that contained it. A byte count cannot be forged by
  the bytes it counts.
- 
+
  @param value - field content
- 
+
  @returns Byte count, a colon, then the content
- 
+
  @example
  ```ts
  const framed = framed({ value: 'The cat naps.', },);
@@ -232,11 +232,11 @@ function framed({ value, }: { readonly value: string; },): string {
 
 /**
  Frames a number, so a count and a string cannot collide.
- 
+
  @param value - number to frame
- 
+
  @returns Framed decimal form
- 
+
  @example
  ```ts
  const framedIndex = framedNumber({ value: 3, },);
@@ -248,19 +248,19 @@ function framedNumber({ value, }: { readonly value: number; },): string {
 
 /**
  Canonical form of one prepared slice.
- 
+
  BOTH SIDES IN ONE ROW, which is what records the pairing: two preparations
  that produced the same passages and paired them differently have the same
  fields in a different order, and hashing rows rather than two lists is what
  makes that a different identity.
- 
+
  @param slice - prepared pair
- 
+
  @param lineStructured - whether this slice is governed line by line, which
  changes what every stage is allowed to do to it
- 
+
  @returns Framed fields of this slice, in fixed order
- 
+
  @example
  ```ts
  const row = sliceRow({ slice, lineStructured: false, },);
@@ -310,12 +310,12 @@ function sliceRow(
 
 /**
  Names the slicing a prepared pair represents.
- 
+
  @param prepared - preparation to name, read as it stands rather than from any
  record derived from it
- 
+
  @returns Identity of this slicing, stable across runs and resumptions
- 
+
  @example
  ```ts
  const identity = preparationIdentity({ prepared, },);
@@ -333,7 +333,7 @@ export function preparationIdentity(
   /**
    Whole preparation payload, framed field by field in a fixed order under
    the selected identity scheme.
-   
+
    Both document texts are hashed beside the slices rather than trusted to be
    implied by them: a section neither side sliced appears in no row, so two
    preparations differing only outside every slice would otherwise agree.

@@ -28,7 +28,7 @@ import { refusalText, } from './refusal-text.ts';
 
 /**
  Threshold below which a first byte never arrived at all.
- 
+
  The guard reports a negative time rather than zero when nothing came, so a
  call cut during its very first millisecond still reads as having started.
  */
@@ -42,15 +42,15 @@ const RATIO_DIGITS = 4;
 
 /**
  Names why a voice was lost, in a phrase a log can be grouped by.
- 
+
  FALLS BACK TO THE ERROR'S OWN TEXT rather than to a catch-all name, because
  an unrecognised failure that all read `other` would be invisible in exactly
  the way this exists to prevent.
- 
+
  @param error - whatever the call threw
- 
+
  @returns Short cause, safe to put in a log line
- 
+
  @example
  ```ts
  const cause = describeAbandon({ error, },);

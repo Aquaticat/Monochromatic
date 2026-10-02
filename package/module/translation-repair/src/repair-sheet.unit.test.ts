@@ -2,7 +2,7 @@
  Tests for the repair grading sheet, including the property that matters most
  for comparing rounds: the DETECTION sheet still shows no repair text.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -34,11 +34,11 @@ const REPLACED = 'The cat is doing the sleeping on the windowsill.';
 
 /**
  Builds one sampled candidate, optionally carrying repair provenance.
- 
+
  @param repair - provenance, omitted to model a pre-recording artifact
- 
+
  @returns Candidate both sheets render
- 
+
  @example
  ```ts
  const candidate = catCandidate({},);
@@ -63,18 +63,18 @@ function catCandidate(
 
 /**
  Builds repair provenance with one region.
- 
+
  @param disposition - what became of the repair
- 
+
  @param issueIds - issues the region serves
- 
+
  @param refined - whether the naturalness lane rewrote the slice
- 
+
  @param rewriteReachedReader - whether the returned document carries that
  rewrite, which is what decides whether a final wording was recorded at all
- 
+
  @returns Provenance the repair sheet renders
- 
+
  @example
  ```ts
  const repair = catRepair({ disposition: 'shipped', },);
@@ -117,14 +117,14 @@ const FENCE_MIN = 3;
 /**
  Removes every fenced block from a sheet, leaving only text a Markdown reader
  would interpret as sheet structure.
- 
+
  Tracks the opening fence and drops lines until a fence at least as long
  closes it, which is how a Markdown reader resolves the same question.
- 
+
  @param sheet - rendered sheet
- 
+
  @returns Sheet text outside every fenced block
- 
+
  @example
  ```ts
  const structure = stripFences({ sheet, },);

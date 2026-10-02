@@ -8,11 +8,11 @@
  let through read as an event naming no type, a resumable cache record, or
  answers keyed "0" and "1" (ledger B92). The package's other checks for an
  object call this one, which a source scan holds (`record-checks.unit.test.ts`).
- 
+
  @param value - candidate from parsed JSON
- 
+
  @returns Whether value can be probed for properties
- 
+
  @example
  ```ts
  if (isJsonRecord(parsed,)) probe(parsed['choices'],);
@@ -27,11 +27,11 @@ export function isJsonRecord(value: unknown,): value is Record<string, unknown> 
 /**
  Narrows unknown JSON to an element-unknown array,
  avoiding the `any[]` that bare `Array.isArray` narrowing introduces.
- 
+
  @param value - candidate from parsed JSON
- 
+
  @returns Whether value is an array of unknowns
- 
+
  @example
  ```ts
  if (isJsonArray(parsed,)) probe(parsed[0],);

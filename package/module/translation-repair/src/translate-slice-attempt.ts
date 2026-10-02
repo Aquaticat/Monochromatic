@@ -35,7 +35,7 @@ import { settleTranslateSlice, } from './translate-slice.ts';
 
 /**
  What one slice's round produced.
- 
+
  @example
  ```ts
  const attempt: SliceAttempt = { kind: 'settled', record, };
@@ -71,29 +71,29 @@ export type SliceAttempt = {
 
 /**
  Runs one slice and reports which of the two endings it reached.
- 
+
  @param client - injected model client
- 
+
  @param slice - prepared slice pair
- 
+
  @param prepared - document the slice came from
- 
+
  @param models - translator and judge rosters
- 
+
  @param archiveDispute - dispute over this slice's archive rendering, passed on
- 
+
  @param signal - entry abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - driver logger
- 
+
  @returns Settled record, or the fact that this passage stays missing
- 
+
  @throws Whatever the slice throws that is not an absence refusal over an
  insertion slice (a refusal over a slice the archive translates among them),
  and the caller's abort reason by identity when the signal fired
- 
+
  @example
  ```ts
  const attempt = await attemptTranslateSlice({ client, slice, prepared, models, signal, ... },);

@@ -15,22 +15,22 @@ import { parsePolishGate, } from './artifact-two-lane-read-polish-gate.ts';
 
 /**
  Reads generation-six post-consolidation polish record.
- 
+
  @param value - unknown polish field
- 
+
  @param path - artifact path
- 
+
  @param reviewRequired - whether generation carries exact-text absolute review
- 
+
  @param correctionChainRequired - whether review requires digest-bound corrections
- 
+
  @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  block rather than the refinable paragraphs alone
- 
+
  @param quorumBasisRequired - whether generation records its wider review quorum
- 
+
  @returns Parsed polish record
- 
+
  @example
  ```ts
  const polish = parseConsolidationPolish({ value, path, });

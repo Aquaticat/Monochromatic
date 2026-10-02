@@ -1,23 +1,23 @@
 /**
  Tests for the refusal that stops a translate replacement dropping a name the
  archive itself declared.
- 
+
  WHAT THIS EXISTS TO CATCH. Asked whether a rendering that removed a
  front-matter alias had left anything out, every judge on the roster said it
  had not, and rewording their criteria moved half of them. A rule half a panel
  disagrees with is not a rule, so {@link findDroppedDeclaredNames} decides this
  one without asking anybody. That makes the wiring the whole question: a guard
  that is computed and not consulted looks identical to a guard that passed.
- 
+
  A GUARD PROVES NOTHING UNTIL SHOWN TO FAIL, so the cases come in threes. One
  settlement accepts a replacement, one refuses the same shape of replacement
  for dropping a declared name, and one accepts that same dropping replacement
  once nothing is declared. The outer two are what say the refusal came from
  the declared list rather than from a run that fell over before deciding
  anything.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -158,13 +158,13 @@ const SLICE: ChunkPair = {
 
 /**
  Finds where a run of digits ends.
- 
+
  @param text - sheet being read
- 
+
  @param from - offset the digits start at
- 
+
  @returns Offset of first character that is not a digit
- 
+
  @example
  ```ts
  const end = firstNonDigit({ text: sheet, from: 12, },);
@@ -186,21 +186,21 @@ function firstNonDigit(
 
 /**
  Reads which numbered candidate on a sheet carries some wording.
- 
+
  JUDGES VOTE BY POSITION AND THE SLATE IS ROTATED PER SLICE, so a fixture that
  always answered 1 would be voting for whichever candidate the rotation
  happened to put there. This finds the candidate by its text instead, which is
  what a judge does.
- 
+
  @param sheet - whole sheet one judge received
- 
+
  @param sentinel - wording only one candidate carries
- 
+
  @returns Candidate number, or {@link DECLINE} when no candidate carries it
- 
+
  @throws When a candidate heading is not followed by its number, which means
  the sheet no longer numbers candidates the way this fixture reads them
- 
+
  @example
  ```ts
  const best = candidateNumberCarrying({ sheet, sentinel: FRESH_SENTINEL, },);
@@ -240,15 +240,15 @@ function candidateNumberCarrying(
 /**
  Builds a client whose translators all return one rendering and whose judges
  all choose it.
- 
+
  EVERY TRANSLATOR RETURNS THE SAME TEXT on purpose. The slate then holds
  exactly two candidates, the archive's and the fresh one, which is the
  comparison the guard sits in front of.
- 
+
  @param rendering - translation every translator proposes
- 
+
  @returns Client answering both roles
- 
+
  @example
  ```ts
  const client = judgingClient({ rendering: DROPS_THE_ALIAS, },);
@@ -308,14 +308,14 @@ function judgingClient({ rendering, }: { readonly rendering: string; },): Synthe
 
 /**
  Settles the slice once with one rendering and one declared-name list.
- 
+
  @param rendering - translation every translator proposes and every judge
  chooses
- 
+
  @param declaredNames - forms preparation found in the front matter
- 
+
  @returns Record the lane settled on
- 
+
  @example
  ```ts
  const record = await settleWith({ rendering: DROPS_THE_ALIAS, declaredNames: DECLARED_NAMES, },);

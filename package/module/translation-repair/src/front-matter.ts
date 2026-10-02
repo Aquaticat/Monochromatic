@@ -15,7 +15,7 @@ import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 
 /**
  Verbatim YAML front matter block split from a corpus MDX document.
- 
+
  @example
  ```ts
  const block: FrontMatterBlock = { raw: '---\nname: x\n---\n', data: { name: 'x', }, };
@@ -36,7 +36,7 @@ export type FrontMatterBlock = {
 
 /**
  Result of splitting optional front matter from remaining MDX body.
- 
+
  @example
  ```ts
  const split: SplitMdxDocument = { frontMatter: undefined, body: '# t', bodyOffset: 0, };
@@ -66,7 +66,7 @@ export type SplitMdxDocument = {
 
 /**
  Describes where a YAML refusal stopped, quoting nothing it read.
- 
+
  READ THROUGH THE PARSER'S OWN CLASS, whose position and code are typed.
  `yaml` raises a syntax refusal as a `YAMLError` carrying both, its position
  always set from the line counter `parse` creates, and an anchor fault (an
@@ -75,14 +75,14 @@ export type SplitMdxDocument = {
  unknown value stood here, and their stand-ins for a value not an `Error`
  and for a malformed position answered states the parser never produces,
  where a changed parser should fail loudly instead (T8, twenty-third batch).
- 
+
  @param cause - the parser's refusal
- 
+
  @returns Phrase naming position and fault code
- 
+
  @throws {@link Error} when a syntax refusal carries no position, which the
  parser's own `parse` never leaves unset
- 
+
  @example
  ```ts
  `refused to parse ${yamlRefusalSite({ cause, },)}`;
@@ -102,7 +102,7 @@ function yamlRefusalSite({ cause, }: { readonly cause: Readonly<Error>; },): str
 /**
  Signals YAML inside a front matter fence pair that refuses to parse;
  corpus metadata parses upstream, so failure here indicates corruption.
- 
+
  @example
  ```ts
  throw new FrontMatterParseError({ cause: error, },);
@@ -117,18 +117,18 @@ export class FrontMatterParseError extends Error {
 
   /**
    Builds failure stating where YAML stopped, never what it read.
-   
+
    DOES NOT CARRY THE PARSER ERROR AS `cause`, deliberately. A
    `YAMLParseError` message embeds a source code frame, measured on five
    failure shapes and present in all five, and Node's uncaught-exception
    reporter renders a cause chain. Front matter names a person, so carrying
    the original would publish it through any printer that never asked to.
-   
+
    Nothing is lost for diagnosis: the position and the parser's own code are
    what a reader acts on, and the file is on disk to open at that line.
-   
+
    @param cause - underlying YAML parser error, read for position and code
-   
+
    @example
    ```ts
    new FrontMatterParseError({ cause: error, },);
@@ -214,7 +214,7 @@ type FenceSet = {
 
 /**
  Fences matching the line ending this document actually uses.
- 
+
  The fences were fixed to `\n`, so a document written with CRLF failed
  `startsWith` and reported NO front matter at all. One corpus original does
  exactly that, and the consequence is not a missing field: the whole YAML
@@ -222,14 +222,14 @@ type FenceSet = {
  `name: Ara` becomes a setext heading. The critics receive the metadata as
  content to compare, and the identity context built from front matter is
  empty for the one entry whose names most needed declaring.
- 
+
  Matching rather than rewriting, because every offset downstream indexes the
  original text and normalising line endings would move all of them.
- 
+
  @param text - whole document text
- 
+
  @returns Fence strings to match with
- 
+
  @example
  ```ts
  const fences = fencesFor({ text, },);
@@ -257,13 +257,13 @@ function fencesFor({ text, }: { readonly text: string; },): FenceSet {
 
 /**
  Parses YAML between fences, converting parser failures into domain errors.
- 
+
  @param yamlSource - text between fence lines
- 
+
  @returns Parsed YAML value; corpus shapes vary, so no schema is imposed here
- 
+
  @throws {@link FrontMatterParseError} when YAML refuses to parse
- 
+
  @example
  ```ts
  parseFrontMatterYaml({ yamlSource: 'name: mittens', },);
@@ -287,20 +287,20 @@ function parseFrontMatterYaml(
 
 /**
  Builds split result once closing fence position is known.
- 
+
  @param text - full document source
- 
+
  @param closeStart - index of newline beginning closing fence sequence
- 
+
  @param rawEnd - end index (exclusive) of raw front matter slice
- 
+
  @param openLength - length of the opening fence line, newline included, which
  is where the YAML starts
- 
+
  @returns Split with parsed front matter and offset-adjusted body
- 
+
  @throws {@link FrontMatterParseError} when YAML between fences refuses to parse
- 
+
  @example
  ```ts
  buildSplit({ text: '---\nname: n\n---\n', closeStart: 11, rawEnd: 16, openLength: 4, },);
@@ -345,17 +345,17 @@ function buildSplit(
 /**
  Splits optional YAML front matter from MDX body without regex,
  mirroring how upstream strips metadata before MDX compilation.
- 
+
  Unterminated fences are treated as body text:
  remark parses stray `---` lines as thematic breaks,
  so returning whole input preserves that interpretation instead of guessing.
- 
+
  @param text - full document source possibly opening with YAML front matter
- 
+
  @returns Split parts plus body offset for absolute position anchoring
- 
+
  @throws {@link FrontMatterParseError} when fences exist but YAML refuses to parse
- 
+
  @example
  ```ts
  const { frontMatter, body, bodyOffset, } = splitFrontMatter({

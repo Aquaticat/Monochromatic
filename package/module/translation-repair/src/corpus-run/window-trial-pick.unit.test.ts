@@ -1,15 +1,15 @@
 /**
  Tests for how one drawn slice's refusal is handled.
- 
+
  WHAT THESE PIN is that a slice which cannot be tried does not end the run. A
  refusal leaves no ledger row, so a walk that aborted on one would redraw the
  same slice on every resumption, reach it, and die at it again, never getting
  to the slices behind it. The distinction matters more than it looks: a
  refusal and a completed slice that owed nothing are both empty, and only one
  of them is a fault.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -64,11 +64,11 @@ const LONE: readonly ChunkPair[] = [
 
 /**
  Client that raises on every exchange.
- 
+
  @param error - failure every exchange raises
- 
+
  @returns Client the pick calls through
- 
+
  @example
  ```ts
  const client = throwingClient({ error: new Error('provider refused', ), },);

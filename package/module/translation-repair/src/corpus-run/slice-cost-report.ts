@@ -62,7 +62,7 @@ const HUGE_SLICE_CHARS = 2_000;
 
 /**
  Buckets slices are grouped into, by size of their original.
- 
+
  BOUNDARIES ARE ROUND NUMBERS CHOSEN BEFORE READING ANY DATA, so a reader can
  see they were not fitted to make a curve look like anything. They exist to
  spread the corpus's slices across several groups, nothing more.
@@ -122,7 +122,7 @@ const LANES = [
 
 /**
  What one size bucket amounts to.
- 
+
  @example
  ```ts
  const bucket: CostBucket = { upTo: 200, slices: 12, chars: 1400, ms: 90000, };
@@ -152,15 +152,15 @@ type CostBucket = {
 
 /**
  Groups rows by the size of the original they translated.
- 
+
  ONLY `computed` ROWS COUNT. A cached slice reports the microseconds it took to
  read a file and a skipped one reports nothing worth pricing; averaging those
  in would report a pipeline far cheaper than the one that runs.
- 
+
  @param rows - every parsed cost line
- 
+
  @returns One bucket per size band, smallest first
- 
+
  @example
  ```ts
  const buckets = bucketBySize({ rows, },);
@@ -227,9 +227,9 @@ function bucketBySize(
 
 /**
  Prints one bucket, with the two figures that separate the explanations.
- 
+
  @param bucket - one size band
- 
+
  @example
  ```ts
  printBucket({ bucket, },);
@@ -279,7 +279,7 @@ function printBucket({ bucket, }: { readonly bucket: CostBucket; },): void {
 
 /**
  Reports the widest gap between two slices, and what sizes they were.
- 
+
  WHY THE BANDS ALONE CAN MISLEAD, and the reason this exists. The bands answer
  "does cost scale with size" by averaging within a size range, which is only
  meaningful when slices of one size cost roughly alike. On the first entry
@@ -287,15 +287,15 @@ function printBucket({ bucket, }: { readonly bucket: CostBucket; },): void {
  14 seconds and a 141-character slice cost 11.3 minutes, a factor of 48 in the
  WRONG DIRECTION for size. The cheap one raised no critic claims, so it never
  reached the editor, the panel, the judge or the checker.
- 
+
  So the cost driver is HOW MUCH A SLICE TURNS OUT TO NEED, which no size band
  can show, and a run with few slices can put one such outlier in a band and
  produce a shape that looks like an answer. This line makes that visible in
  the same breath as the bands rather than in a document nobody reads next to
  them.
- 
+
  @param rows - every parsed cost line
- 
+
  @example
  ```ts
  printSpread({ rows, },);
@@ -399,12 +399,12 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
 
 /**
  Reads a pass log and reports what its slices cost.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`,
  which refuses it when no log is named
- 
+
  @throws StatedRefusalError when the log is named as an empty argument
- 
+
  @example
  ```ts
  await main({ line, },);

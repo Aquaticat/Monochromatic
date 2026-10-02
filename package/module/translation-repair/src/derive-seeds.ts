@@ -34,11 +34,11 @@ const MDX_DELIMITERS = [
  Splits text into sentences by terminator scan.
  Single linear pass; a sentence is the slice from the previous terminator
  (exclusive) through its own terminator.
- 
+
  @param text - body text to segment
- 
+
  @returns Trimmed sentences in source order
- 
+
  @example
  ```ts
  const sentences = splitSentences({ text: body, },);
@@ -85,13 +85,13 @@ export function splitSentences({ text, }: { readonly text: string; },): readonly
  as are sentences carrying MDX expression or JSX delimiters
  (deleting half of a paired construct breaks the seeded parse);
  results are deterministic for a given text.
- 
+
  @param text - target body text (front matter excluded by the caller)
- 
+
  @param maxSeeds - ceiling on derived seeds
- 
+
  @returns Omission seeds in descending sentence length order
- 
+
  @example
  ```ts
  const seeds = deriveOmissionSeeds({ text: body, maxSeeds: 3, },);

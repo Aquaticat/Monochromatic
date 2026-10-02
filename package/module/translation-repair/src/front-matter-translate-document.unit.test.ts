@@ -1,6 +1,6 @@
 /**
  Integration test for front matter through translate ensemble and assembly.
- 
+
  @module
  */
 
@@ -59,9 +59,9 @@ const ROSTER: readonly RosterModelId[] = [
 
 /**
  Client returning corrected metadata and selecting it.
- 
+
  @param prompts - model prompts captured for rule reach assertion
- 
+
  @returns Scripted client
  */
 function frontMatterClient({ prompts, }: { readonly prompts: string[]; }): SyntheticClient {

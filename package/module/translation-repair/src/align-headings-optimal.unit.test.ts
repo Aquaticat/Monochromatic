@@ -1,24 +1,24 @@
 /**
  Tests for reading every optimal alignment out of the heading table.
- 
+
  WHY THIS ONE IS WORTH PINNING DIRECTLY. It is known what a wrong answer here
  costs: facing 14 source sections and 12 target ones, the old aligner slid
  every pairing by two, so every critic call afterwards compared the wrong
  original against the wrong translation and every issue it filed was noise. A
  gap belongs where it is, and the sections around it keep their partners.
- 
+
  The other half is WIDTH. This is exported so a probe can ask how wide an
  ambiguity is rather than only that there was one, and hesitating between two
  adjacent boundaries wants a different remedy from hesitating across a page.
  Width shows up as a partner set larger than one.
- 
+
  THIS TABLE ANSWERS "what does SOME optimal alignment do", not "what may we
  claim". Two headings sharing nothing still pair here, and the caller decides
  whether that pairing is admissible. A case at the end pins that boundary so a
  reader does not mistake this for the policy.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

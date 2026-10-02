@@ -1,19 +1,19 @@
 /**
  Tests for listing every passage a pairing covers with nothing.
- 
+
  WHAT THESE PIN is that both scales answer one question. A source section the
  matcher paired with nothing and a source block inside a paired section that
  the aligner paired with nothing are the same finding at two sizes, and the
  coverage stage asks about both. A lister that reported only one would leave
  the other class of passage unasked about, which reads as a translation that
  covers everything.
- 
+
  THE POSITIVE CONTROL COMES FIRST, because every case here is a list and an
  empty list satisfies the ones that expect nothing. The first case pins that
  this lister does report something, so the empty answers mean what they say.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -78,13 +78,13 @@ const BLOCK_MISSING_TEXT = [
 
 /**
  Lists candidates for one pair of texts, so each case states only its shapes.
- 
+
  @param sourceText - original document text
- 
+
  @param targetText - translation text
- 
+
  @returns Candidates the lister reported
- 
+
  @example
  ```ts
  const candidates = candidatesFor({ sourceText: SOURCE_TEXT, targetText: MATCHING_TEXT, },);

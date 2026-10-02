@@ -35,42 +35,42 @@ import { wordForCount, } from '../count-word.ts';
 
 /**
  Runs the arms one slice still owes, appending each as it completes.
- 
+
  SKIPS THE WHOLE SLICE when the ledger already holds all three arms, without
  producing a slate. Producing is the expensive half, and a resumed run that
  bought a slate only to throw it away would pay most of the cost of the work it
  is skipping.
- 
+
  @param client - injected model client
- 
+
  @param slices - every prepared slice of this entry, for the window
- 
+
  @param sliceIndex - position of the slice under trial
- 
+
  @param sliceClass - class the screen flagged, or the control label
- 
+
  @param entryId - entry the slice belongs to
- 
+
  @param protocol - digest this run buys under
- 
+
  @param ledgerPath - where completed arms are appended
- 
+
  @param done - arms already bought, as keys
- 
+
  @param models - translator and judge rosters
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - run logger
- 
+
  @returns Rows this call appended, empty when the slice was already complete
- 
+
  @throws Whatever the stage throws; a slice that cannot be judged is a defect
  rather than a datum, and recording it as a keep would report a failed arm as
  the judges preserving the archive
- 
+
  @example
  ```ts
  const rows = await runSliceArms({ client, slices, sliceIndex, ... },);
@@ -171,7 +171,7 @@ export async function runSliceArms(
 
   /**
    Neighbouring original, which only the wide arm is shown.
-   
+
    Computed BEFORE any call, so a slice whose window turns out empty is
    refused here rather than after two thirds of its quota is spent.
    */
@@ -192,14 +192,14 @@ export async function runSliceArms(
 
   /**
    Whether this bed treats its slices as governed by the verse rule.
-   
+
    IT DOES NOT, and the value is named rather than written twice so the
    producer and the judges provably agree. This trial varies ONE thing, the
    width of the window, and every other input has to be identical across the
    arms and between the halves. A slate built under the verse rule and judged
    without it would vary two things and the difference would be credited to
    the window.
-   
+
    NOT DERIVED FROM THE SLICE, deliberately. Production decides this per
    enclosing CHUNK, from a set this bed does not carry, so deriving it here
    from the slice text alone would answer a different question than

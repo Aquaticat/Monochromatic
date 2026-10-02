@@ -35,11 +35,11 @@ const NO_BOUNDARY = -1;
 
 /**
  Reads, for each run, where the nearest translation blocks AFTER it start.
- 
+
  @param runs - settled runs in document order
- 
+
  @returns Offset per run, {@link NO_BOUNDARY} where nothing follows
- 
+
  @example
  ```ts
  const starts = nextTargetStarts({ runs, },);
@@ -77,11 +77,11 @@ function nextTargetStarts(
 
 /**
  Reads, for each run, where the nearest translation blocks BEFORE it end.
- 
+
  @param runs - settled runs in document order
- 
+
  @returns Offset per run, {@link NO_BOUNDARY} where nothing precedes
- 
+
  @example
  ```ts
  const ends = previousTargetEnds({ runs, },);
@@ -116,11 +116,11 @@ function previousTargetEnds(
 
 /**
  Rewrites every insertion's anchor as a boundary between the runs beside it.
- 
+
  @param runs - settled runs in document order
- 
+
  @returns Same runs, each insertion anchored where it can actually be written
- 
+
  @example
  ```ts
  const placeable = reanchorInsertions({ runs, },);

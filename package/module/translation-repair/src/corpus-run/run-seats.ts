@@ -80,7 +80,7 @@ export const HYPER_SLOW_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModel
  slate select and the consolidation slate), and fast enough everywhere else:
  withheld from the select seats while Hyper would serve them, kept as
  critics, panel, contest judges and gate.
- 
+
  THE CASE IS `hf:moonshotai/Kimi-K3`, 2026-09-03: cut in 0 of 69 select
  rounds when Synthetic served it (Toka_ls, 2026-09-02) and in 43 of 83 and 38
  of 101 when Hyper mostly or wholly did (XIEPT2 rerun5, 55 of its 61 cut
@@ -94,7 +94,7 @@ export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = holdSet({ ho
 
 /**
  Every bench one entry runs with, derived from one reading.
- 
+
  @example
  ```ts
  const seats: JudgeSeats = judgeSeatsFor({ dry, },);
@@ -187,12 +187,12 @@ export type JudgeSeats = {
 
 /**
  Derives the benches for one reading of every provider's meter.
- 
+
  @param dry - which providers have nothing buyable, holds folded in
- 
+
  @returns Benches, with each withholding applied where its provider would
  serve the seat, and the checker floor kept
- 
+
  @example
  ```ts
  const seats = judgeSeatsFor({ dry: { synthetic: true, hyper: true, openrouter: false, }, },);
@@ -203,9 +203,9 @@ export function judgeSeatsFor(
 ): JudgeSeats {
   /**
    Provider the router would send one model's calls to, or none.
-   
+
    @param modelId - seat under question
-   
+
    @returns First provider in order that serves it and reads wet
    */
   function servedBy(modelId: RosterModelId,): ProviderName | typeof NO_PROVIDER {
@@ -217,14 +217,14 @@ export function judgeSeatsFor(
   /**
    Keeps a seat unless the provider that would serve it is one the seat is
    withheld on.
-   
+
    A SEAT WITHHELD ON OPENROUTER READS AS UNSERVED THERE since 2026-09-09
    (`reachOf`), so the router can never re-route it there mid-phase; what
    this reader withholds is the seat whose only wet provider would have been
    OpenRouter, which is the same seat as before.
-   
+
    @param modelId - seat under question
-   
+
    @returns Whether the seat is asked this phase
    */
   function seated(modelId: RosterModelId,): boolean {
@@ -245,9 +245,9 @@ export function judgeSeatsFor(
   /**
    Keeps a select seat unless Hyper would serve it and serves its slate
    answers too slowly, on top of {@link seated}.
-   
+
    @param modelId - select seat under question
-   
+
    @returns Whether the seat judges slates this phase
    */
   function seatedForSelect(modelId: RosterModelId,): boolean {

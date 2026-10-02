@@ -31,7 +31,7 @@ import type { RelabelCase, } from './probe-relabel-case.ts';
 
 /**
  Control regions taken per entry.
- 
+
  Two rather than one so a single unusual region cannot decide the arm, and not
  more because each costs two prober calls and the comparison it feeds is a
  rate, not a ranking.
@@ -40,7 +40,7 @@ const CONTROL_REGIONS_PER_ENTRY = 2;
 
 /**
  One shipped region paired with the record that owns it.
- 
+
  Named rather than inferred, because an inferred object literal carries
  writable properties and the ordering and filtering callbacks that read this
  list then take mutable parameters they never mutate.
@@ -65,20 +65,20 @@ type OwnedRegion = Readonly<{
 /**
  Orders an entry's unflagged regions by how closely they match the damaged
  region's replaced length.
- 
+
  Taking whichever regions appear first makes the arm answer the wrong
  question. Measured on the first control run, the unflagged regions that
  happened to come first replaced 12 to 63 characters while the damaged regions
  replaced 60 to 268, and a short replacement has less room to drop anything,
  so a quiet control would have been partly a statement about length. Matching
  length leaves the human verdict as the thing that differs.
- 
+
  @param regions - unflagged regions of one entry, with their replaced lengths
- 
+
  @param targetLength - replaced length of that entry's damaged region
- 
+
  @returns Same regions, closest length first
- 
+
  @example
  ```ts
  const ordered = byLengthDistance({ regions, targetLength: 189, },);
@@ -117,19 +117,19 @@ function byLengthDistance<Region extends { readonly before: string; },>(
 
 /**
  Builds control cases from regions the reader did not flag.
- 
+
  @param manifestPath - sample manifest naming the drawn entries
- 
+
  @param damaged - damaged cases, whose envelopes are excluded
- 
+
  @param pin - corpus commit to read the pages at: `RUN_CORPUS_PIN` in a run, a
  throwaway clone in a test. REQUIRED: a default read the clone for any caller
  that left it out (ledger M43, X24)
- 
+
  @returns Control cases, at most {@link CONTROL_REGIONS_PER_ENTRY} per entry
- 
+
  @throws {@link ArtifactParseError} when an artifact or manifest is malformed
- 
+
  @example
  ```ts
  const controls = await gatherControlCases({ manifestPath, damaged, pin: RUN_CORPUS_PIN, },);

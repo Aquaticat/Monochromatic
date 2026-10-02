@@ -1,6 +1,6 @@
 /**
  Tests for reading cached prompt tokens off an OpenRouter stream.
- 
+
  @module
  */
 
@@ -14,11 +14,11 @@ import { openRouterCachedTokensOf, } from '../dist/final/node/index.mjs';
 
 /**
  One stream chunk carrying the given usage block.
- 
+
  @param usage - usage block as the gateway sends it
- 
+
  @returns Event line, newline-terminated
- 
+
  @example
  ```ts
  const line = withUsage({ usage: { prompt_tokens: 10, }, },);

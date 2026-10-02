@@ -22,15 +22,15 @@ const LF = '\n';
 
 /**
  Folds every CRLF to LF, counting how many there were.
- 
+
  A lone carriage return is left alone: it is not a line ending this corpus
  writes, and folding it would be a guess about text nobody has measured.
- 
+
  @param text - text as read
- 
+
  @returns Folded text and the number of endings folded, zero for text that
  was already LF
- 
+
  @example
  ```ts
  const { text: folded, folded: count, } = foldCarriageReturns({ text: page, },);

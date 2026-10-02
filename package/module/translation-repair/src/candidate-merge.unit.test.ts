@@ -1,13 +1,13 @@
 /**
  Tests for collapsing identical candidates while keeping every author.
- 
+
  The defect these exist for is silent in every log: when duplicates stand as
  separate candidates, the ballot splits and the self-vote discount stops
  applying, because each copy is credited to one model and the others look
  disinterested in text they wrote themselves.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -42,13 +42,13 @@ const OTHER = 'The cat is napping on the windowsill.';
 
 /**
  Builds one model's candidate.
- 
+
  @param modelId - model credited with it
- 
+
  @param text - what it wrote
- 
+
  @returns Candidate as a lane would assemble it
- 
+
  @example
  ```ts
  const candidate = from({ modelId: 'hf:x', text: SHARED, },);

@@ -1,7 +1,7 @@
 /**
  Tests for the blind sheet that decides whether the probe finds damage or
  invents it.
- 
+
  THE SHEET AND ITS MANIFEST ARE WRITTEN BY TWO FUNCTIONS THAT EACH SORT, and
  everything the measurement produces rests on those two sorts agreeing. The
  sheet numbers its items and the manifest numbers its rows, and a scorer reads
@@ -9,20 +9,20 @@
  If the orders ever diverged, every grade would land on the wrong item and the
  result would still look like a clean measurement. The case asserting the two
  orders agree is the one that matters most in this file.
- 
+
  THE BLINDNESS IS THE OTHER HALF. `kind` says which partition an item came
  from, and a grader who can see it is answering a different question. It rides
  in the manifest and must never reach the sheet, so one case searches the whole
  rendered sheet for both partition names.
- 
+
  ORDER IS BY DIGEST OF IDENTITY, WHICH IS NOT A DETAIL. Insertion order would
  leak the partition whenever the caller built one partition before the other,
  which is how both callers build them.
- 
+
  FIXTURES ARE INVENTED AND CAT-THEMED. The real sheet quotes unlicensed corpus
  text and is written outside the repository; nothing resembling it belongs in a
  committed test.
- 
+
  @module
  */
 
@@ -44,7 +44,7 @@ import {
 
 /**
  Partition an item came from when a reader had already flagged it.
- 
+
  NOT SPELLED THE WAY PRODUCTION SPELLS IT. `probe-verify.ts` passes `damaged`
  and `control`, and the sheet's own instructions ask a grader to judge
  "whether the EDIT damaged the translation". Searching a rendered sheet for
@@ -76,17 +76,17 @@ const DROPPED_WORDING = 'and the kitten watched from the stairs';
 
 /**
  Builds one item for the sheet.
- 
+
  @param entryId - entry the region belongs to
- 
+
  @param envelopeId - region inside that entry
- 
+
  @param kind - partition this item came from
- 
+
  @param claims - what the probe said, empty when it said nothing
- 
+
  @returns Item shaped as the formatters take one
- 
+
  @example
  ```ts
  const item = verifyItem({ entryId: 'whiskers', envelopeId: 'e1', kind: FIRST_PARTITION, claims: [], },);
@@ -145,12 +145,12 @@ function verifyItem(
 
 /**
  Builds a spread of items across both partitions.
- 
+
  Enough of them that a sort has something to do, and interleaved partitions so
  an order that followed insertion would be visibly grouped.
- 
+
  @returns Items in insertion order
- 
+
  @example
  ```ts
  const items = household();
@@ -179,11 +179,11 @@ function household(): readonly VerifyItem[] {
 
 /**
  Reads the entry ids off items, in the order they stand.
- 
+
  @param items - items to read
- 
+
  @returns Entry ids in order
- 
+
  @example
  ```ts
  const order = idsOf({ items, },);
@@ -199,11 +199,11 @@ function idsOf(
 
 /**
  Reads the manifest back as the scorer does.
- 
+
  @param items - items the manifest was built from
- 
+
  @returns Rows the manifest carries
- 
+
  @example
  ```ts
  const rows = manifestRows({ items, },);

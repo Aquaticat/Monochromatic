@@ -71,11 +71,11 @@ export const BEDROCK_LEDGER_PATH_VAR = 'TRANSLATION_REPAIR_BEDROCK_LEDGER';
 /**
  Where the ledger lives when nothing says otherwise: under the home the
  process runs as, never a spelled-out username.
- 
+
  @param home - home directory, injectable so a test uses a disposable one
- 
+
  @returns Absolute path of the ledger file
- 
+
  @example
  ```ts
  defaultBedrockLedgerPath({ home: homedir(), },);
@@ -95,7 +95,7 @@ export function defaultBedrockLedgerPath(
 
 /**
  Raised when the credit override is present but is not a usable amount.
- 
+
  @example
  ```ts
  throw new BedrockCreditOverrideError({ value: 'plenty', },);
@@ -110,9 +110,9 @@ export class BedrockCreditOverrideError extends Error {
 
   /**
    Names the variable, what it held, and why that cannot be a credit.
-   
+
    @param value - what the variable held, quoted back
-   
+
    @example
    ```ts
    new BedrockCreditOverrideError({ value: '', },);
@@ -128,7 +128,7 @@ export class BedrockCreditOverrideError extends Error {
 
 /**
  Raised when a ledger line will not read as a spend entry.
- 
+
  @example
  ```ts
  throw new BedrockLedgerShapeError({ line: 3, detail: 'usd is not a number', },);
@@ -143,11 +143,11 @@ export class BedrockLedgerShapeError extends Error {
 
   /**
    Names the line and what was wrong with it.
-   
+
    @param line - one-based line number in the ledger file
-   
+
    @param detail - authored phrase naming the broken expectation
-   
+
    @example
    ```ts
    new BedrockLedgerShapeError({ line: 3, detail: 'not a JSON object', },);
@@ -169,7 +169,7 @@ export class BedrockLedgerShapeError extends Error {
 
 /**
  One priced call, as the ledger keeps it.
- 
+
  @example
  ```ts
  const entry: BedrockLedgerEntry = { at: '2026-09-07T20:00:00.000Z', model: 'google.gemma-4-e2b', usd: 0.0001, promptTokens: 90, completionTokens: 10, };
@@ -212,7 +212,7 @@ export type BedrockLedgerEntry = {
 
 /**
  What the ledger says is left, which is this provider's whole budget signal.
- 
+
  @example
  ```ts
  const credits: BedrockCredits = { creditUsd: 200, spentUsd: 1.5, reckonedUsd: 0.2, remainingUsd: 198.5, calls: 12, };
@@ -251,7 +251,7 @@ export type BedrockCredits = {
 
 /**
  The durable spend record and the meter read off it.
- 
+
  @example
  ```ts
  const ledger: BedrockLedger = createBedrockLedger({ path, creditUsd: 200, },);
@@ -276,14 +276,14 @@ export type BedrockLedger = {
 
 /**
  Credit line the environment names, or the owner's figure.
- 
+
  @param env - process environment
- 
+
  @returns Credit in USD
- 
+
  @throws {@link BedrockCreditOverrideError} when the variable is set to
  something that is not a non-negative number
- 
+
  @example
  ```ts
  const creditUsd = bedrockCreditUsdFrom({ env: process.env, },);
@@ -318,13 +318,13 @@ export function bedrockCreditUsdFrom(
 
 /**
  Where the ledger lives: the variable's path, or the default under the home.
- 
+
  @param env - process environment
- 
+
  @param home - home directory the default hangs off
- 
+
  @returns Absolute path
- 
+
  @example
  ```ts
  const path = bedrockLedgerPathFrom({ env: process.env, home: homedir(), },);
@@ -350,15 +350,15 @@ export function bedrockLedgerPathFrom(
 
 /**
  Reads one ledger line as an entry, naming the line when it will not read.
- 
+
  @param text - one line of the file
- 
+
  @param line - its one-based number, for the error
- 
+
  @returns Entry the line holds
- 
+
  @throws {@link BedrockLedgerShapeError} when the line is not an entry
- 
+
  @example
  ```ts
  const entry = entryOf({ text, line: 1, },);
@@ -455,13 +455,13 @@ function entryOf(
 
 /**
  Builds the ledger over one file and one credit line.
- 
+
  @param path - ledger file, created on the first note
- 
+
  @param creditUsd - credit line the spend is measured against
- 
+
  @returns Ledger surface
- 
+
  @example
  ```ts
  const ledger = createBedrockLedger({ path: bedrockLedgerPathFrom({ env: process.env, home: homedir(), },), creditUsd: bedrockCreditUsdFrom({ env: process.env, },), },);
@@ -478,7 +478,7 @@ export function createBedrockLedger(
 ): BedrockLedger {
   /**
    Appends one line, creating the directory on the way.
-   
+
    @param entry - priced call
    */
   async function note(entry: BedrockLedgerEntry,): Promise<void> {
@@ -495,7 +495,7 @@ export function createBedrockLedger(
 
   /**
    Sums the file, absent for a file that was never written.
-   
+
    @returns Credit, spend and what is left
    */
   async function read(): Promise<BedrockCredits> {
@@ -592,11 +592,11 @@ export function createBedrockLedger(
 
 /**
  Ledger at the path and credit the environment names.
- 
+
  @param env - process environment
- 
+
  @returns Ledger surface
- 
+
  @example
  ```ts
  const ledger = bedrockLedgerFromEnv({ env: process.env, },);

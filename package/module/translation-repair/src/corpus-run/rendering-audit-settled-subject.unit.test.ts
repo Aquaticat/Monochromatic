@@ -1,23 +1,23 @@
 /**
  Tests for which lane the settled audit reads its subjects from.
- 
+
  WHY THIS FILE EXISTS. The audit measures what a READER of the published page
  would meet, and a settled artifact carries two lanes that both delivered
  text. On 2026-08-25, reading the repair lane's ledger instead of the
  translate lane's failed no test in this package, so nothing said which of two
  plausible ledgers the instrument is pointed at. An audit run against the
  wrong one would report a denominator over slices no page ever carried.
- 
+
  THE TWO LANES DIFFER IN EVERY FIELD THE SUBJECT COPIES, deliberately: the
  count of decided rows, the accepted wording, and the delivery kind that
  decides `auditsArchiveText`. One assertion each way would have passed on
  either lane.
- 
+
  Fixtures are cast, since this reads a handful of fields off a whole parsed
  artifact, following `would-ship-text.unit.test.ts` beside it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -77,15 +77,15 @@ const IDENTITY: SettledIdentity = {
 
 /**
  Builds one comparison row, which is what the would-ship reader walks.
- 
+
  @param sliceIndex - stamped index of this slice
- 
+
  @param translateText - what the translate lane wrote here
- 
+
  @param repairText - what the repair lane wrote here
- 
+
  @returns Row as the parsed artifact carries it
- 
+
  @example
  ```ts
  const row = comparisonRow({ sliceIndex: 0, translateText, repairText, },);
@@ -128,17 +128,17 @@ function comparisonRow(
 
 /**
  Builds one delivery row of one lane's ledger.
- 
+
  @param sliceIndex - stamped index of this slice
- 
+
  @param sourceText - original passage at it
- 
+
  @param outcome - what the lane decided, or a state that is not a decision
- 
+
  @param delivery - what the lane's document ended up carrying
- 
+
  @returns Row as the parsed artifact carries it
- 
+
  @example
  ```ts
  const row = deliveryRow({ sliceIndex: 0, sourceText, outcome, delivery, },);
@@ -170,7 +170,7 @@ function deliveryRow(
 
 /**
  Artifact whose two lanes disagree about count, wording and delivery kind.
- 
+
  The translate lane decided ONE slice and left the second unreached; the
  repair lane decided BOTH, retaining the archive at the first. So a reader
  pointed at the wrong ledger differs in every field a subject copies.

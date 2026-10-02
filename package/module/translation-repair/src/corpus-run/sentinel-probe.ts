@@ -45,14 +45,14 @@ const ERROR_MESSAGE_CAP = 200;
  Probes each corpus entry asked for through the pipeline, printing a PROBE
  line per entry, in the order the corpus lists them. With no ids named on the
  command line, probes {@link DEFAULT_SENTINELS}.
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
- 
+
  @throws {@link Error} when the API key env var is unset
- 
+
  @throws StatedRefusalError when an id to probe, named or default, is no
  entry in the corpus at the pin, before anything is spent
- 
+
  @example
  ```ts
  await probeCorpusEntries({ line, },);

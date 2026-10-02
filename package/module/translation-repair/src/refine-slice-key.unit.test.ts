@@ -1,29 +1,29 @@
 /**
  Tests for what makes two runs' refinements the same refinement.
- 
+
  WHAT THESE PIN is the half of a cache that fails silently. A key that is too
  WIDE discards settled work on an unrelated change, which is expensive and
  obvious. A key that is too NARROW returns a rewrite reached under a different
  question, and nothing looks wrong: the slice text matches, so the key
  matches, and a run publishes wording it never bought.
- 
+
  The INCUMBENT is the member that looks wrong. It reaches no prompt in this
  stage at all, and it is in the key because the settlement stores a `changed`
  flag computed against it and drops the confirmed set wherever a rewrite
  lands back on the archive wording. A key blind to it returns a verdict
  reached against wording this run no longer carries, and the resume then
  throws rather than correcting itself.
- 
+
  The DEFINITIONS are the case this stage adds over the others. They are
  collected from the whole assembled document rather than from this slice, so a
  neighbouring slice settling differently changes what this rewriter is shown.
  A key blind to that resumes a stale rewrite after its neighbour moves, which
  is the failure already recorded once at the accuracy window.
- 
+
  Content fixtures are cat-themed invention. No corpus content appears here.
  Model identifiers come from the catalog, because `RosterModelId` is a
  closed union and an invented one does not typecheck.
- 
+
  @module
  */
 

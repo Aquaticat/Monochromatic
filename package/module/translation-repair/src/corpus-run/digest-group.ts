@@ -34,19 +34,19 @@ export type DigestGroup<TReading,> = {
 
 /**
  Splits readings into one group per built output, largest group first.
- 
+
  ORDER WITHIN A GROUP IS THE READING ORDER, so a caller that read an archive
  in a stable order gets a stable report.
- 
+
  @param readings - everything read, in any digest order
- 
+
  @returns One group per digest, most readings first
- 
+
  @example
  ```ts
  const groups = groupByDigest({ readings, },);
  ```
- 
+
  @internal
  */
 export function groupByDigest<const TReading extends DigestBearing,>(

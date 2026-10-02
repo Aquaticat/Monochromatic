@@ -27,13 +27,13 @@ const POLISH_CHOICES: readonly PolishChoice[] = [
 
 /**
  Reads polish candidate choice.
- 
+
  @param value - unknown candidate name
- 
+
  @param path - artifact path
- 
+
  @returns Narrow choice
- 
+
  @example
  ```ts
  const choice = parsePolishChoice({ value, path, });
@@ -64,13 +64,13 @@ function parsePolishChoice(
 
 /**
  Reads one fidelity-first naturalness ballot.
- 
+
  @param value - unknown ballot
- 
+
  @param path - artifact path
- 
+
  @returns Parsed ballot
- 
+
  @example
  ```ts
  const ballot = parsePolishBallot({ value, path, });
@@ -160,13 +160,13 @@ function parsePolishBallot(
 
 /**
  Reads generation-six naturalness gate outcome.
- 
+
  @param value - unknown gate
- 
+
  @param path - artifact path
- 
+
  @returns Parsed gate outcome
- 
+
  @example
  ```ts
  const gate = parsePolishGate({ value, path, });

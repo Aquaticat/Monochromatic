@@ -38,7 +38,7 @@ import {
 /**
  Share of unlicensed content tokens that may vanish before an edit reads as a
  deletion rather than a rewrite.
- 
+
  0.8 sits in a measured gap rather than at a round number: across the graded
  repairs the highest loss among sound edits is 0.57, the highest among edits
  that merely reworded is 0.67, and the deletion this gate exists to stop loses
@@ -48,7 +48,7 @@ const LOSS_FRACTION_LIMIT = 0.8;
 
 /**
  Unlicensed content tokens required before the bulk rule applies at all.
- 
+
  Under this, a single substituted word reads as total loss and the fraction
  says nothing. Distinctive-token loss still applies at any size.
  */
@@ -56,7 +56,7 @@ const MIN_RESIDUAL_TOKENS = 5;
 
 /**
  What the preservation gate concluded about one edit.
- 
+
  @example
  ```ts
  const verdict: PreservationVerdict = { preserved: true, lostDistinctive: [], lossFraction: 0, residualTokens: 4, };
@@ -89,13 +89,13 @@ export type PreservationVerdict = {
 /**
  Removes the quoted defects from the replaced text, leaving what the edit had
  no licence to change.
- 
+
  @param before - text the edit replaced
- 
+
  @param licensedQuotes - fragments accepted issues quoted as defective
- 
+
  @returns Text with every licensed fragment blanked out
- 
+
  @example
  ```ts
  const residual = unlicensedText({ before, licensedQuotes, },);
@@ -133,15 +133,15 @@ function unlicensedText(
 
 /**
  Decides whether an edit preserved everything it was not asked to change.
- 
+
  @param before - exact text the edit replaced
- 
+
  @param after - exact text the edit wrote, empty for a deletion
- 
+
  @param licensedQuotes - fragments accepted issues quoted as the defect
- 
+
  @returns Verdict, with the evidence behind it
- 
+
  @example
  ```ts
  const verdict = checkPreservation({ before, after, licensedQuotes: [quote,], },);

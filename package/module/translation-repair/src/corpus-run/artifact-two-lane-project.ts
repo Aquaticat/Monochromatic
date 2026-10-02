@@ -39,24 +39,24 @@ import type {
 
 /**
  Reports a live union member no version 2 projection describes.
- 
+
  Unreachable while the projections stay exhaustive, which the `never` binding
  at each of their tails is what guarantees: this runs only if someone widens a
  live union and silences that binding with an assertion.
- 
+
  NAMES THE SHAPE AND NOT THE VALUE. The unions this guards carry text fields
  (`acceptedText`, and the ledger rows around them), and this message reaches
  the pass's stdout through the refusal path, so the member is described by
  its discriminant and its field names only. Stringifying it would print
  corpus wording on the day a union grows.
- 
+
  @param what - which union was being projected, for the message
- 
+
  @param member - unhandled value, typed `never` so a widened union fails to
  compile at the call site rather than throwing here
- 
+
  @throws {@link Error} always
- 
+
  @example
  ```ts
  return refuseUnknownMember({ what: 'lane outcome', member: outcome, },);
@@ -104,11 +104,11 @@ function refuseUnknownMember(
 
 /**
  Rebuilds one lane outcome as version 2 records it.
- 
+
  @param outcome - what the lane did, in the live vocabulary
- 
+
  @returns Same outcome carrying only fields this schema describes
- 
+
  @example
  ```ts
  const outcome = toArtifactOutcome({ outcome: record.outcome, },);
@@ -139,11 +139,11 @@ export function toArtifactOutcome(
 
 /**
  Rebuilds one delivery as version 2 records it.
- 
+
  @param delivery - how a document came to carry what it carries, live
- 
+
  @returns Same delivery carrying only fields this schema describes
- 
+
  @example
  ```ts
  const delivery = toArtifactDelivery({ delivery: record.delivery, },);
@@ -172,11 +172,11 @@ export function toArtifactDelivery(
 
 /**
  Rebuilds one decision comparison as version 2 records it.
- 
+
  @param decisionComparison - how the two lanes' own decisions relate, live
- 
+
  @returns Same reading carrying only fields this schema describes
- 
+
  @example
  ```ts
  const decisions = toArtifactDecisions({ decisionComparison: row.decisionComparison, },);
@@ -209,11 +209,11 @@ export function toArtifactDecisions(
 
 /**
  Rebuilds one delivery ledger row as version 2 records it.
- 
+
  @param record - row one lane's ledger builder produced
- 
+
  @returns Same row carrying only fields this schema describes
- 
+
  @example
  ```ts
  const rows = records.map(function project(record,) { return toArtifactRow({ record, },); },);
@@ -235,11 +235,11 @@ export function toArtifactRow(
 
 /**
  Rebuilds one comparison row as version 2 records it.
- 
+
  @param row - row `compareDocumentLanes` produced
- 
+
  @returns Same row carrying only fields this schema describes
- 
+
  @example
  ```ts
  const rows = comparison.slices

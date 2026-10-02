@@ -28,7 +28,7 @@ import type { SectionPair, } from './pair-sections-wire.ts';
 
 /**
  Reason a section carries when the roster was asked about it and left it out.
- 
+
  Not `forced-gap`, which means no optimal alignment pairs it, and not
  `ambiguous`, which means several do. Those describe a scorer's table. This
  describes a reading, and the two disagree often enough that collapsing them
@@ -38,7 +38,7 @@ const ROSTER_UNPAIRED = 'roster-unpaired';
 
 /**
  Target index standing for "no paired section on that side of this one".
- 
+
  Before the first target rather than a nullish union, so the boundary
  arithmetic reads the same whether or not a paired neighbour exists.
  */
@@ -46,16 +46,16 @@ const BEFORE_FIRST_TARGET = -1;
 
 /**
  Where an unpaired original section could sit, given its paired neighbours.
- 
+
  @param previousTarget - translation section the nearest EARLIER paired
  original renders as, or {@link BEFORE_FIRST_TARGET} when none precedes it
- 
+
  @param nextTarget - translation section the nearest LATER paired original
  renders as, or the translation section count when none follows it
- 
+
  @returns Proven boundary when the neighbours pin exactly one, the whole span
  otherwise
- 
+
  @example
  ```ts
  const anchor = anchorBetween({ previousTarget: 2, nextTarget: 3, },);
@@ -72,7 +72,7 @@ function anchorBetween(
 ): InsertionAnchor {
   /**
    Every boundary the section could be written at, in document order.
-   
+
    It sits after whatever the earlier neighbour renders as and before whatever
    the later one does, so each unclaimed translation section between them is
    one more place it could go.
@@ -99,13 +99,13 @@ function anchorBetween(
 
 /**
  Translation section each original renders as, at every original index.
- 
+
  @param pairs - correspondences the roster agreed on
- 
+
  @param sourceCount - original sections
- 
+
  @returns Target index per original, {@link BEFORE_FIRST_TARGET} where unpaired
- 
+
  @example
  ```ts
  const targets = targetsBySource({ pairs, sourceCount: 8, },);
@@ -145,18 +145,18 @@ function targetsBySource(
 
 /**
  Nearest paired target passed before each section, in scan order.
- 
+
  ONE SCAN in whichever direction the caller hands it, because "the paired
  neighbour before this section" and "the paired neighbour after it" are the
  same walk read from opposite ends.
- 
+
  @param targets - target per original, in the order to scan
- 
+
  @param start - answer for the first section scanned, which is where a section
  with no paired neighbour on that side belongs
- 
+
  @returns Nearest paired target per section, in the order scanned
- 
+
  @example
  ```ts
  const nearest = scanNearest({ targets, start: BEFORE_FIRST_TARGET, },);
@@ -191,18 +191,18 @@ function scanNearest(
 
 /**
  Converts a roster's section pairing into the aligner's step vocabulary.
- 
+
  @param pairs - correspondences the roster agreed on, strictly increasing on
  both sides
- 
+
  @param sourceHeadings - original section labels in document order, which also
  count the sections
- 
+
  @param targetHeadings - translation section labels in document order
- 
+
  @returns One step per original section, then every unclaimed translation
  section, matching what `alignHeadingsForced` emits
- 
+
  @example
  ```ts
  const steps = sectionPairingToSteps({ pairs, sourceHeadings, targetHeadings, },);

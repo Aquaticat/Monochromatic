@@ -17,7 +17,7 @@ import type { GateBallot, } from '../consolidate-gate-wire.ts';
 
 /**
  What the gate settled, or why it was never asked.
- 
+
  @example
  ```ts
  const gate: ArtifactConsolidateGate = { kind: 'not-asked', };
@@ -52,7 +52,7 @@ export type ArtifactConsolidateGate =
 
 /**
  Wording this slice contributes to the assembled document.
- 
+
  NAMED ABSENCE RATHER THAN AN UNCONDITIONAL STRING, because exactly one
  terminal state produces text an assembly must apply. Every other one leaves
  the slice with whatever the lane contest settled, and one of them,
@@ -61,7 +61,7 @@ export type ArtifactConsolidateGate =
  slice and writing it into the document would delete every declined-contest
  slice outright. This shape makes that unrepresentable rather than warning
  against it.
- 
+
  @example
  ```ts
  const shipped: ArtifactConsolidateShipped = { kind: 'unchanged', };
@@ -122,21 +122,21 @@ export type ArtifactConsolidateShipped =
 
 /**
  Terminal as an ARTIFACT may name it, which is wider than what a run writes.
- 
+
  CARRIES ONE RETIRED SPELLING. `slate-kept-standing` named three states at
  once: judges endorsing the archive, a slate carrying one candidate nobody
  judged, and judges refusing to settle. It was split because a tally over it
  added a working roster to a failing one to a slate that measured neither.
- 
+
  THE OLD ROWS CANNOT BE RECLASSIFIED, and this type is how that is said out
  loud rather than guessed at. Eleven rows across four settled entries carry
  the spelling, every one of them with the same key set and no record of the
  judged round, so which of the three each was is not recoverable from the
  artifact, from a log, or from a cache that no longer resumes.
- 
+
  A RUN NEVER WRITES IT. `ConsolidationTerminal` carries only the three new
  names, so this widening reaches the reader and stops there.
- 
+
  @example
  ```ts
  const terminal: ArtifactConsolidationTerminal = 'slate-kept-standing';
@@ -148,7 +148,7 @@ export type ArtifactConsolidationTerminal =
 
 /**
  Paragraph-located absolute naturalness defect.
- 
+
  @example
  ```ts
  const finding: ArtifactNaturalnessFinding = { paragraph: 1, problem: 'Replace stiff syntax.' };
@@ -168,7 +168,7 @@ export type ArtifactNaturalnessFinding = {
 
 /**
  One roster seat in absolute naturalness review.
- 
+
  @example
  ```ts
  const seat: ArtifactNaturalnessReviewSeat = { modelId: 'hf:cat/Cat-A', status: 'acceptable', findings: [], reason: 'ready' };
@@ -198,7 +198,7 @@ export type ArtifactNaturalnessReviewSeat = {
 
 /**
  Candidate-bound absolute naturalness review round.
- 
+
  @example
  ```ts
  const round: ArtifactNaturalnessReviewRound = { candidateDigest: 'sha256:abc', paragraphCount: 0, seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
@@ -259,7 +259,7 @@ export type ArtifactNaturalnessReviewRound = {
 
 /**
  Digest-bound rejected-input to gated-correction transition.
- 
+
  @example
  ```ts
  const correction: ArtifactNaturalnessCorrection = { inputDigest, findingsDigest, gatedTextDigest, };
@@ -284,7 +284,7 @@ export type ArtifactNaturalnessCorrection = {
 
 /**
  Absolute naturalness review audit added in artifact generation eight.
- 
+
  @example
  ```ts
  const review: ArtifactNaturalnessReview = { correctionCount: 0, corrections: [], rounds: [], confirmations: [] };
@@ -308,7 +308,7 @@ export type ArtifactNaturalnessReview = {
 
   /**
    Earlier acceptable same-candidate readings before decisive reviews.
-   
+
    Absent on artifacts written before acceptance confirmation.
    */
   readonly confirmations?: readonly ArtifactNaturalnessReviewRound[];
@@ -316,7 +316,7 @@ export type ArtifactNaturalnessReview = {
 
 /**
  Auditable post-consolidation body polish record.
- 
+
  @example
  ```ts
  const polish: ArtifactConsolidationPolish = { kind: 'not-run', reason: 'front-matter', };
@@ -393,7 +393,7 @@ export type ArtifactConsolidationPolish =
 
 /**
  One consolidated slice as stage left it.
- 
+
  @example
  ```ts
  const slice: ArtifactConsolidateSlice = { sliceIndex: 0, terminal: 'incumbent-only', shipped: { kind: 'unchanged', }, rewrapped: false, demoted: false, verdicts: [], gate: { kind: 'not-asked', }, };
@@ -429,7 +429,7 @@ export type ArtifactConsolidateSlice = {
 
   /**
    Every voice's structural verdict, survivors and refusals alike.
-   
+
    CARRIES NO PROPOSAL TEXT. The proposals are corpus renderings and only the
    one that ships belongs in a record; who was refused and why is what a later
    reader cannot recover any other way.
@@ -449,7 +449,7 @@ export type ArtifactConsolidateSlice = {
 
 /**
  Projects internal polish settlement into artifact audit shape.
- 
+
  @param settlement - consolidation result carrying optional polish
 
  @returns Artifact polish record, naming disabled stage when absent
@@ -549,15 +549,15 @@ function shippedBy(
  Reads the artifact's record out of what the consolidation stage returned.
 
  @param sliceIndex - slice this answers
- 
+
  @param settlement - what the stage settled
- 
+
  @param incumbentStandsIn - whether the standing the settlement ran against
  was the incumbent standing in for an ineligible lane standing, so a kept
  standing is text to write rather than nothing to change
- 
+
  @returns Record for one consolidated slice
- 
+
  @example
  ```ts
  const slice = describeConsolidateSlice({ sliceIndex: 0, settlement, },);
@@ -602,12 +602,12 @@ export function describeConsolidateSlice(
 
 /**
  What the consolidation stage did over one document, or that it did not run.
- 
+
  A STATED ABSENCE rather than an empty list, following `laneSelection` for the
  same reason: a pass that never asked for a third rendering and a document
  where no slice was eligible are different facts, and an empty `slices` array
  would be the only record of either.
- 
+
  @example
  ```ts
  const consolidation: ArtifactConsolidation = { kind: 'not-run', };

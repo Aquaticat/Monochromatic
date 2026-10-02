@@ -32,7 +32,7 @@ import type { AnchorTarget, } from './validate-issue.ts';
 
 /**
  Everything the critic fan-out produced for one chunk.
- 
+
  @example
  ```ts
  const { claims, nonTranslationVotes, } = await runCriticStage({ ... },);
@@ -58,7 +58,7 @@ export type CriticStageResult = {
 
   /**
    WHICH critics answered, sorted by model id.
-   
+
    This is the denominator attribution needs and cannot supply. A critic that
    was heard and raised nothing produces no attribution entry, and so does a
    critic that was never heard at all; without the roster those two are
@@ -73,7 +73,7 @@ export type CriticStageResult = {
    Built here because `aggregateClaims` collapses structurally identical
    claims later, and after that collapse a second emitter is unrecoverable.
    Calibration only; adjudication never sees it.
-   
+
    BEFORE SCREENING: collected at resolution time, so this includes claims
    `screenNonTranslationVotes` may still drop. Callers must filter with
    `retainAttributions` against the surviving claim ids, or a critic ends up
@@ -89,31 +89,31 @@ export type CriticStageResult = {
 
 /**
  Runs the critic fan-out for one chunk pair.
- 
+
  @param client - injected model client
- 
+
  @param criticModelIds - critics to fan out to
- 
+
  @param sourceText - original chunk text
- 
+
  @param targetText - translation chunk text
- 
+
  @param documents - parsed chunk pair claims anchor against
- 
+
  @param identityContext - declared names from both sides' front matter,
  carried whole-document because chunk text never contains front matter
- 
+
  @param referenceContext - what the original's cited pages say (class
  thirty-five), carried whole-document likewise
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Validated claims plus wire-level non-translation votes
- 
+
  @example
  ```ts
  const critic = await runCriticStage({ ... },);

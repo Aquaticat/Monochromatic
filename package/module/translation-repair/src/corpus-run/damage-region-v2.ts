@@ -45,7 +45,7 @@ import {
 
 /**
  Raised when a slice that shipped is named by no comparison row.
- 
+
  @example
  ```ts
  throw new DamageRegionError({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
@@ -54,9 +54,9 @@ import {
 export class DamageRegionError extends Error {
   /**
    Builds refusal carrying what could not hold.
-   
+
    @param message - which slice and lane no row accounts for
-   
+
    @example
    ```ts
    throw new DamageRegionError({ message: 'slice 4 shipped in the repair lane and is named by no comparison row', },);
@@ -83,7 +83,7 @@ export type DamageLane = typeof DAMAGE_LANES[number];
 
 /**
  One region where a lane shipped replacement text.
- 
+
  @example
  ```ts
  const region: ShippedRegion = {
@@ -138,7 +138,7 @@ export type ShippedRegion = {
 
   /**
    Whether a later stage overruled that wording.
-   
+
    BESIDE THE LANE MEANING, never instead of it, and the measurement is why.
    A region exists where a lane REPLACED an incumbent, which stays true
    however the contest and the consolidation later ruled. Rebuilding this
@@ -146,7 +146,7 @@ export type ShippedRegion = {
    30 and delete every region from 33 of 47 artifacts, since on an entry
    nobody has decided the archive stands and nothing replaces anything. The
    draw would not be corrected, it would be emptied.
-   
+
    A DISPLACED REGION IS STILL A REAL EDIT. The lane made it, and asking
    whether it damaged the text is still answerable; what the annotation adds
    is that no reader of a document would meet the result.
@@ -156,13 +156,13 @@ export type ShippedRegion = {
 
 /**
  What one pool of artifacts held.
- 
+
  THE SKIPPED COUNT IS REPORTED RATHER THAN DROPPED. A slice whose incumbent is
  absent was filled where the archive had no English at all, so nothing was
  replaced and no edit could have damaged anything: the honest question there is
  whether the rendering is correct, which is a different sheet. Counting them
  keeps that visible instead of letting the pool look smaller than the run.
- 
+
  @example
  ```ts
  const census: ShippedRegionCensus = { regions: [], filledWithoutIncumbent: 0, };
@@ -182,13 +182,13 @@ export type ShippedRegionCensus = {
 
 /**
  Builds a region's identity within its entry.
- 
+
  @param lane - lane that shipped it
- 
+
  @param sliceIndex - slice index
- 
+
  @returns Identity, stable across runs of one pipeline
- 
+
  @example
  ```ts
  const id = regionIdOf({ lane: 'translate', sliceIndex: 4, },);
@@ -208,28 +208,28 @@ export function regionIdOf(
 
 /**
  Turns one lane's delivery ledger into the regions a damage draw can use.
- 
+
  EXPORTED FOR ITS TESTS, per `XPT`. Every judgement this module makes lives
  here: which rows count, which are set aside, and what identifies one. The
  reader around it only lists files and hands them to a parser that has its own
  tests, so testing it through the filesystem would exercise that parser again
  and this decision once.
- 
+
  @param entryId - corpus entry
- 
+
  @param lane - lane the rows came from
- 
+
  @param rows - that lane's delivery ledger
- 
+
  @param laneSelection - whether any stage decided this entry
- 
+
  @param readings - what would stand at each slice, by chunk index
- 
+
  @returns Regions, and how many rows had no incumbent to damage
- 
+
  @throws {@link Error} when a shipped row is named by no comparison row,
  which is a contradiction inside one artifact rather than a missing answer
- 
+
  @example
  ```ts
  const found = regionsOfLane({ entryId, lane: 'repair', rows, laneSelection, readings, },);
@@ -272,7 +272,7 @@ export function regionsOfLane(
     regions: replaced.map(function toRegion(row,): ShippedRegion {
       /**
        What would stand at this slice.
-       
+
        THROWN ON RATHER THAN SKIPPED, since the comparison is derived from
        the same slicing this ledger delivered: a shipped row no comparison
        row names is a contradiction, and dropping it would shrink the draw
@@ -308,18 +308,18 @@ export function regionsOfLane(
 
 /**
  Reads every shipped region out of a pool of version 2 artifacts.
- 
+
  ONE FILE AT A TIME, on purpose: an artifact runs to hundreds of kilobytes and
  holding a whole pool open at once buys nothing a sequential read does not.
- 
+
  @param artifactsDir - directory the settled artifacts sit in
- 
+
  @param files - artifact file names already filtered to the eligible pool
- 
+
  @returns Every region the damage question can be asked about, entry order
- 
+
  @throws {@link ArtifactParseError} when an artifact is malformed
- 
+
  @example
  ```ts
  const census = await collectTwoLaneShippedRegions({ artifactsDir, files, },);

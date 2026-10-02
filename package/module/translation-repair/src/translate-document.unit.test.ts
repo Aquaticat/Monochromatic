@@ -1,13 +1,13 @@
 /**
  Tests for the translate lane's document driver.
- 
+
  What this covers that the stage tests cannot: that EVERY slice is visited,
  that the alignment guard protects archive text the source cannot account for,
  that a cached slice costs no calls, and that the document reassembles from
  per-slice decisions rather than from one whole-document rewrite.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -98,7 +98,7 @@ const MISSING_FRESH = '## Section three\n\nThe cat also likes basking in sunligh
 
 /**
  Original of a page whose translation is measurably too short to hold it.
- 
+
  ITS OWN PAIR rather than {@link SOURCE_TEXT}. The corroboration gate admits
  an insertion only where the page LACKS about as much English as the passage
  would render into, and {@link TARGET_TEXT} is deliberately verbose: it runs
@@ -132,7 +132,7 @@ A bird sits outside, and the cat watches it.
 /**
  Stand-in for "no slice is silenced", which every case but the anchored one
  uses.
- 
+
  A NEEDLE NO PROMPT CARRIES rather than an empty string, since every prompt
  contains an empty string and every translator would fall silent.
  */
@@ -140,14 +140,14 @@ const SILENT_FOR_NOTHING = 'a passage no fixture contains';
 
 /**
  Renders one slice the way a translator that respected block structure would.
- 
+
  A slice carries its heading, so a rendering that dropped it would fail
  structural validation rather than test the driver.
- 
+
  @param content - translator prompt, which carries the slice original
- 
+
  @returns Rendering for that slice
- 
+
  @example
  ```ts
  const rendering = renderingFor({ content, },);
@@ -170,7 +170,7 @@ function renderingFor({ content, }: { readonly content: string; },): string {
 
 /**
  Exactly the failure an entry deadline trips with.
- 
+
  HELD AT MODULE SCOPE so the fixture that aborts and the case that asserts
  name one object. The driver's contract is that it surfaces the abort reason
  ITSELF; a wording assertion is satisfied by any lookalike, including a
@@ -231,26 +231,26 @@ type TranslateConcurrency = {
 
 /**
  Client serving both stages of the lane from one script.
- 
+
  @param calls - shared call log the cases assert on
- 
+
  @param controller - abort the script may fire, standing in for the entry
  deadline the corpus pass imposes
- 
+
  @param abortAfterTranslateCalls - translate calls served before the script
  aborts; absent means it never does
- 
+
  @param silentTranslators - whether every translate call fails, standing in for
  a provider that is down while the signal stays live
- 
+
  @param silentForSource - original whose slice every translator fails on,
  absent when none does; this is how one slice is made unfillable while the
  rest of the document translates normally
- 
+
  @param translateConcurrency - optional successful-call overlap instrument
- 
+
  @returns Client honoring the script
- 
+
  @example
  ```ts
  const client = laneClient({ calls, controller, },);
@@ -377,33 +377,33 @@ function laneClient(
 
 /**
  Runs the driver over a document pair.
- 
+
  @param sourceText - original document
- 
+
  @param targetText - translation as it stands
- 
+
  @param resumed - records a previous run settled, keyed as the driver keys
  them
- 
+
  @param abortAfterTranslateCalls - translate calls served before the script
  aborts the run
- 
+
  @param silentTranslators - whether every translate call fails while the signal
  stays live
- 
+
  @param overlap - most slices the driver may run at once
- 
+
  @param insertionAdmission - caller evidence overriding deterministic insertion gate
- 
+
  @param translateConcurrency - optional successful-call overlap instrument
- 
+
  @param persisted - map the run writes settled records into; passed in so a
  case that expects a REJECTION can still read what reached the cache
- 
+
  @param calls - log the run counts into, passed in for the same reason
- 
+
  @returns Result, the call log, and everything persisted
- 
+
  @example
  ```ts
  const { result, calls, } = await runDriver({},);
@@ -467,7 +467,7 @@ async function runDriver(
   /**
    That preparation, with one source section the archive never translated
    appended as an anchor at the end of the document.
-   
+
    BUILT BY HAND so the case does not depend on a producer: the section-scale
    and block-scale insertion producers are tested on their own, and this
    driver has to refuse a wrong answer whatever produced it.
@@ -1000,7 +1000,7 @@ await describe({
 
         /**
          Records the poisoning actually put in a contradictory state.
-         
+
          Not every record reaches one: rewriting the wording of a record that
          already claimed no change leaves it consistent. Counted rather than
          assumed, so the case says exactly how many slices should be bought
@@ -1387,7 +1387,7 @@ The cat is doing the sleeping on the windowsill.
 
           /**
            One slice, which calibrates what asking once costs.
-           
+
            Measured rather than assumed: roster retries a lost voice, so count
            per slice is property of gather rather than translator list length.
            */

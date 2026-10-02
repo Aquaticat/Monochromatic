@@ -23,14 +23,14 @@ import type {
 
 /**
  Paragraphs a generation showed its reviewers, re-derived from the text.
- 
+
  @param text - reviewed candidate text
- 
+
  @param everyBodyBlockReviewed - whether the writing generation showed every
  body block (generation ten) rather than the refinable paragraphs alone
- 
+
  @returns Paragraph texts in display order
- 
+
  @example
  ```ts
  const paragraphs = reviewedParagraphsOf({ text, everyBodyBlockReviewed: true, },);
@@ -57,9 +57,9 @@ const SHA256_HEX_LENGTH = 64;
 
 /**
  Checks lowercase hexadecimal SHA-256 shape without regular expression.
- 
+
  @param value - candidate digest
- 
+
  @returns Whether exact ASCII digest shape matches
  */
 function isLowerHexDigest(
@@ -76,13 +76,13 @@ function isLowerHexDigest(
 
 /**
  Requires one lowercase hexadecimal SHA-256 digest.
- 
+
  @param value - unknown digest
- 
+
  @param path - artifact path
- 
+
  @returns Validated digest
- 
+
  @example
  ```ts
  const digest = requireNaturalnessDigest({ value, path, });
@@ -115,15 +115,15 @@ export function requireNaturalnessDigest(
 
 /**
  Reads reviewed paragraph identity digests.
- 
+
  @param value - unknown digest array
- 
+
  @param path - artifact path
- 
+
  @param paragraphCount - exact number of reviewed paragraphs
- 
+
  @returns Validated paragraph digests
- 
+
  @example
  ```ts
  const digests = parseParagraphDigests({ value, path, paragraphCount, });
@@ -173,13 +173,13 @@ export function parseParagraphDigests(
 
 /**
  Reads one generation-nine digest-bound correction transition.
- 
+
  @param value - unknown transition
- 
+
  @param path - artifact path
- 
+
  @returns Validated transition digests
- 
+
  @example
  ```ts
  const correction = parseNaturalnessCorrection({ value, path, });
@@ -228,13 +228,13 @@ export function parseNaturalnessCorrection(
 
 /**
  Verifies correction transitions against adjacent exact review rounds.
- 
+
  @param corrections - stored digest transitions
- 
+
  @param rounds - stored exact candidate reviews
- 
+
  @param path - artifact review path
- 
+
  @example
  ```ts
  assertNaturalnessCorrectionChain({ corrections, rounds, path, });
@@ -285,17 +285,17 @@ export function assertNaturalnessCorrectionChain(
 
 /**
  Verifies one reviewed candidate and paragraph identity list from exact text.
- 
+
  @param candidateText - exact reviewed candidate
- 
+
  @param candidateDigest - stored candidate digest
- 
+
  @param paragraphCount - stored correctable paragraph count
- 
+
  @param paragraphDigests - stored correctable paragraph identities
- 
+
  @param path - review round path
- 
+
  @example
  ```ts
  assertReviewedCandidateDigests({ candidateText, candidateDigest, paragraphCount, paragraphDigests, path, });

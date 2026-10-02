@@ -2,10 +2,10 @@
 
 /**
  Operational stop when an absent passage cannot form another unique repair task.
- 
+
  This preserves latest findings for resumed stage work.
  It is not quality verdict and does not authorize publication.
- 
+
  @example
  ```ts
  throw new TranslationRepairInterruptedError({
@@ -35,11 +35,11 @@ export class TranslationRepairInterruptedError extends Error {
 
   /**
    Constructs operation-only interruption without source or candidate wording.
-   
+
    @param reason - named stage state preventing unique continuation
-   
+
    @param findings - latest structured evidence for resumed repair
-   
+
    @example
    ```ts
    new TranslationRepairInterruptedError({

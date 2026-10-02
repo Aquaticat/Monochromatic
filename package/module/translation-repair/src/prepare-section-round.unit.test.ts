@@ -1,14 +1,14 @@
 /**
  Tests for when a section-pairing round is bought at all, and for what a
  resumed one republishes.
- 
+
  ASKED ONLY WHERE THE DETERMINISTIC ALIGNER REFUSED. Measured over the pinned
  corpus, 85 of 92 entries have equal section shape and never reach the aligner,
  and 5 of the remaining 7 align with no refusal. Two entries are ever asked, so
  a gate that leaked would multiply this stage's cost by forty-six.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -99,14 +99,14 @@ type StoredRound = {
 
 /**
  Reads one stored record back, refusing anything the cache would not write.
- 
+
  @param serialized - bytes the round persisted
- 
+
  @returns That round
- 
+
  @throws Error when the bytes are not a stored round, since a resume built on
  a guess would test the guess rather than the round
- 
+
  @example
  ```ts
  const stored = storedRoundOf('{"pairs":[],"findings":[]}',);
@@ -159,11 +159,11 @@ const AGREED_REPLY = '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]
 
 /**
  Builds a client that counts calls and answers each with the same pairing.
- 
+
  @param reply - body every model returns
- 
+
  @returns Client over a canned transport, beside the call log
- 
+
  @example
  ```ts
  const { client, calls, } = countingClient({ reply: AGREED_REPLY, },);
@@ -222,21 +222,21 @@ function sectionTextsOf({ text, }: { readonly text: string; },): readonly string
 
 /**
  Runs the round over a document pair.
- 
+
  @param sourceText - whole original
- 
+
  @param targetText - whole translation
- 
+
  @param reply - what every canned voice answers
- 
+
  @param resumed - pairings an earlier run stored
- 
+
  @param persisted - store this run writes into
 
  @param modelIds - roster the round asks
- 
+
  @returns What the round settled, beside how many calls it cost
- 
+
  @example
  ```ts
  const { round, calls, } = await runRound({},);

@@ -19,13 +19,13 @@ import type {
 
 /**
  Weight one panelist's vote on one claim carries.
- 
+
  @param panelistId - panelist whose weight is read
- 
+
  @param config - weight table
- 
+
  @returns Configured weight, defaulting to one
- 
+
  @example
  ```ts
  const weight = panelistWeight({ panelistId, config, },);
@@ -45,13 +45,13 @@ function panelistWeight(
 
 /**
  Vote one panelist cast on one claim, with a missing verdict abstaining.
- 
+
  @param claimId - claim under tally
- 
+
  @param ballot - that panelist's whole ballot
- 
+
  @returns Vote state to count
- 
+
  @example
  ```ts
  const vote = castVote({ claimId, ballot, },);
@@ -74,17 +74,17 @@ function castVote(
 /**
  Weight behind one vote state on one claim across every ballot;
  a missing verdict abstains.
- 
+
  @param claimId - claim under tally
- 
+
  @param ballots - resolved ballots keyed by panelist id
- 
+
  @param config - weight table
- 
+
  @param state - vote state whose mass is summed
- 
+
  @returns Weighted vote mass for the state
- 
+
  @example
  ```ts
  const mass = voteWeight({ claimId, ballots, config, state: 'supported', },);
@@ -126,15 +126,15 @@ function voteWeight(
 
 /**
  Weighted tally of one claim across every ballot.
- 
+
  @param claimId - claim under tally
- 
+
  @param ballots - resolved ballots keyed by panelist id
- 
+
  @param config - weight table and thresholds
- 
+
  @returns Weighted counts per vote state
- 
+
  @example
  ```ts
  const tally = tallyClaim({ claimId, ballots, config, },);
@@ -186,22 +186,22 @@ function tallyClaim(
 
 /**
  Everything the panel said about one claim, ballots included.
- 
+
  ABSTENTIONS ARE RECORDED AS BALLOTS, because a panelist that answered the
  sheet and declined this claim is different evidence from one whose reply
  never arrived, and only the first leaves an entry in `ballots`. Together with
  `configuredPanelists` that separates all three states a run can be in.
- 
+
  @param claimId - claim under tally
- 
+
  @param ballots - resolved ballots keyed by panelist id
- 
+
  @param configuredPanelists - panelists the run seated, heard or not
- 
+
  @param config - weight table and thresholds
- 
+
  @returns Ballots, seated count, and the tally they sum to
- 
+
  @example
  ```ts
  const reading = panelReadingForClaim({ claimId, ballots, configuredPanelists: 6, config, },);

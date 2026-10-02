@@ -41,7 +41,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 
 /**
  How a repair run ended, as version 2 froze it.
- 
+
  @example
  ```ts
  const status: ArtifactRepairStatus = 'blocked-non-translation';
@@ -54,7 +54,7 @@ export type ArtifactRepairStatus =
 
 /**
  Whether a translate run produced a whole translation, as version 2 froze it.
- 
+
  @example
  ```ts
  const status: ArtifactTranslateStatus = 'unfilled';
@@ -66,12 +66,12 @@ export type ArtifactTranslateStatus =
 
 /**
  One slice as a lane's RAW result describes it.
- 
+
  The evidence behind one ledger row, parsed out of the open raw record and
  checked against that row by position. Deliberately the same four fields the
  ledger repeats, since the check is whether the two agree; everything else the
  raw row carries stays in the raw record, unread and unrequired.
- 
+
  @example
  ```ts
  const row: ArtifactEvidenceRow = { sliceIndex: 0, incumbentKind: 'present', ... };
@@ -101,7 +101,7 @@ export type ArtifactEvidenceRow = {
 
 /**
  What version 2 requires of the repair lane's raw result.
- 
+
  @example
  ```ts
  const evidence: ArtifactRepairEvidence = { status: 'unchanged', sliceCount: 2, ... };
@@ -136,11 +136,11 @@ export type ArtifactRepairEvidence = {
 
 /**
  What version 2 requires of the translate lane's raw result.
- 
+
  Carries two counts the repair result has no equivalent of, and they are here
  because they are CHECKABLE: each equals the length of a list stored beside
  it, so a result whose count and list disagree is caught rather than believed.
- 
+
  @example
  ```ts
  const evidence: ArtifactTranslateEvidence = { status: 'complete', sliceCount: 2, ... };
@@ -187,11 +187,11 @@ export type ArtifactTranslateEvidence = {
 /**
  One lane as a reader gets it: the whole raw record, what version 2 requires
  of it, and the ledger.
- 
+
  THE RAW RECORD IS RETURNED rather than discarded once the core is out of it,
  because a reader that wanted a field this version does not check should get
  it from the artifact rather than from a later generation of this parser.
- 
+
  @example
  ```ts
  const lane: ParsedLane<ArtifactRepairEvidence> = { raw, evidence, delivery, };
@@ -218,14 +218,14 @@ export type ParsedLane<TEvidence,> = {
 /**
  Archive English an artifact carries, or a positive statement that it carries
  none.
- 
+
  A TAGGED ABSENCE RATHER THAN AN OPTIONAL STRING, for the reason
  `sample-manifest.ts` gives for the same shape: a file written before the
  field existed cannot claim a value, and reading its silence as the empty
  string would say the entry HAD no English, which is a different and false
  claim. `unrecorded` says the file predates the field; `stored` says what it
  held.
- 
+
  @example
  ```ts
  const archive: ParsedArchiveText = { kind: 'unrecorded', };
@@ -244,7 +244,7 @@ export type ParsedArchiveText = {
 
 /**
  The slicing both lanes ran over, as a reader gets it.
- 
+
  @example
  ```ts
  const preparation: ParsedPreparation = { identity, sliceCount: 12, ... };
@@ -322,11 +322,11 @@ export type ParsedPreparation = {
 
 /**
  One version 2 artifact as a reader gets it.
- 
+
  NO SINGULAR STATUS, output, winner, issue list or change set, which version 1
  had and this generation deliberately does not: both lanes are here, neither
  is the output, and a reader wanting one answer has to say which lane it means.
- 
+
  @example
  ```ts
  const artifact: ParsedTwoLaneArtifact = parseSettledTwoLaneArtifact({ value, },);

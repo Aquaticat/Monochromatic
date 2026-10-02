@@ -23,13 +23,13 @@ import type { StreamChannel, } from './stream-delta-scan.ts';
 /**
  Raised when a call is ended because it produced far more text than any
  legitimate call.
- 
+
  ITS OWN CLASS RATHER THAN A FLAG on `StreamDegenerateError`, because the
  evidence differs: that one reports how little of the text was distinct, and
  this one reports how much text there was. Reporting a volume overrun as a
  distinct-window share would put a number in that field which was never
  computed.
- 
+
  @example
  ```ts
  throw new StreamOverrunError({ label, channel: 'content', charsSeen: 40_000, cap: 32_000, rawChars: 3_600_000, },);
@@ -43,7 +43,7 @@ export class StreamOverrunError extends Error {
 
   /**
    Model or endpoint whose stream overran.
-   
+
    CARRIED AS A PROPERTY for the reason `StreamDegenerateError` carries it:
    every chat-completions call shares one endpoint across the roster, so
    attributing a stream to the endpoint makes a per-model figure unreadable.
@@ -76,15 +76,15 @@ export class StreamOverrunError extends Error {
 
   /**
    @param label - what was being called, for the message
-   
+
    @param channel - channel that exceeded its bound
-   
+
    @param charsSeen - characters produced on that channel
-   
+
    @param cap - bound that was exceeded
-   
+
    @param rawChars - raw wire characters delivered before the end
-   
+
    @example
    ```ts
    const error = new StreamOverrunError({
@@ -126,16 +126,16 @@ export class StreamOverrunError extends Error {
 
 /**
  Says whether a failure is one this system chose rather than one it suffered.
- 
+
  THE ONE PLACE THAT LIST LIVES. A caller abort is steering and a stall is
  weather; both of those are somebody else's decision. These two are ours, and
  every one of them is a decision not to spend more on this call, so retrying
  any of them buys back exactly what the guard just refused.
- 
+
  @param error - whatever the call threw
- 
+
  @returns True when a stream guard ended the call deliberately
- 
+
  @example
  ```ts
  if (isSelfEndedStream({ error, },))

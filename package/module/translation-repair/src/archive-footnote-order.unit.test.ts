@@ -1,9 +1,9 @@
 /**
  Tests for moving the archive's footnote definitions into the original's
  order.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

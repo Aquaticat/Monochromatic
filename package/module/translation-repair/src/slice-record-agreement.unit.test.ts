@@ -1,15 +1,15 @@
 /**
  Tests for the one check a slice record can be held to on its own.
- 
+
  Both lanes store a decided text beside a boolean saying whether it differs
  from the archive's, and nothing but this compares them. From a CACHE a
  contradiction is not a model failure: it is a file, and files get truncated,
  hand-edited, and written under a slicing that has since moved. From a STAGE
  it is a derivation reading something other than the text, and the two want
  opposite answers: discard the file, refuse the stage.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

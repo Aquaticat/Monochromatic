@@ -32,7 +32,7 @@ import { tallyVotes, } from './tally-votes.ts';
 
 /**
  Everything the panel produced for one chunk.
- 
+
  @example
  ```ts
  const { issues } = await runPanelStage(input);
@@ -58,7 +58,7 @@ export type PanelStageResult = {
 
 /**
  Immutable review unit materialized before the panel makes any provider call.
- 
+
  @example
  ```ts
  const packet: PanelPacket = { cluster, plan };
@@ -78,7 +78,7 @@ type PanelPacket = {
 
 /**
  Independent tally and provenance from one packet.
- 
+
  @example
  ```ts
  const ids = packetResult.heardIds;
@@ -190,37 +190,37 @@ function describePanelReasons(issue: AdjudicatedIssue,): readonly string[] {
  Ballots cannot create another packet or change its membership. Sequential
  packet execution bounds provider fan-out; the existing model window and
  recovery policy remain inside each packet.
- 
+
  @param client - injected provider client
- 
+
  @param panelModelIds - unchanged configured electorate for every packet
- 
+
  @param sourceText - current source slice defining coverage
- 
+
  @param targetText - current translation being reviewed
- 
+
  @param clusters - original merge proposals, fixed before any panel call
 
  @param neighbouringSourceText - nearby factual evidence for current claims
- 
+
  @param neighbouringIncumbentText - nearby archive placement context
- 
+
  @param documentSourceText - optional complete same-entry source evidence, not extra coverage
- 
+
  @param referenceContext - what the original's cited pages say (class
  thirty-five), evidence for addition claims
- 
+
  @param identityContext - declared names and handles, which the panel judges
  a claim against a declared name by (ledger S4)
- 
+
  @param signal - caller cancellation
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - parent logger
- 
+
  @returns Ordered issue decisions with independent per-claim readings
- 
+
  @example
  ```ts
  const panel = await runPanelStage(input);

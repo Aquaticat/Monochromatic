@@ -1,7 +1,7 @@
 /**
  Tests for the editor prompt sheet and its wire resolution.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

@@ -1,8 +1,8 @@
 /**
  Tests for attaching archive transcript blocks to source-matched media.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -38,11 +38,11 @@ const PORTRAIT = `<PhotoScroll photos={[ '${PATH_TOKEN}/photos/portrait.webp']} 
 
 /**
  Parses fixture blocks separated as document paragraphs.
- 
+
  @param texts - block text in document order
- 
+
  @returns Parsed fixture document
- 
+
  @example
  ```ts
  const document = parsed(['Cats nap.']);

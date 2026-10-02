@@ -1,14 +1,14 @@
 /**
  Tests for the cross-provider roster lookup.
- 
+
  EACH PROVIDER'S CATALOG REMAINS AUTHORITATIVE for its own serving stack.
  GLM-5.3-Flash is verified only on Synthetic and reads images there; no
  predecessor route or modality may be inherited from GLM-5.2.
- 
+
  THE COUNTS ARE PINNED ON PURPOSE. A roster that silently gains or loses a
  seat changes what a quorum means, and this derivation is exactly where such a
  change would enter without anyone writing it down.
- 
+
  @module
  */
 

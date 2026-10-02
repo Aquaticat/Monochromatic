@@ -1,6 +1,6 @@
 /**
  Tests for where an insertion is anchored once the runs have settled.
- 
+
  THE ANCHOR AND THE SPAN USED TO DESCRIBE THE SAME BYTES. `anchorOffsets`
  reads the monotone walk, which describes the layout right up until
  `mergeOneSidedRuns` folds an unclaimed translation block into a neighbour. A
@@ -8,13 +8,13 @@
  stretches the span over it, and an anchor naming its start then points into
  the middle of a passage. `assertPlacementLayout` refused the whole document:
  431 of 910 randomised reader-legal pairings over the pinned corpus.
- 
+
  THE SMALLEST CASE IS TWO PARAGRAPHS AGAINST TWO, which is what these use.
  Pair only the first, and the second original becomes an insertion while the
  second translation folds into the first run.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

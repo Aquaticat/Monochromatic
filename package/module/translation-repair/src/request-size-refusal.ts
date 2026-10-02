@@ -13,7 +13,7 @@ import { wordForCount, } from './count-word.ts';
 
 /**
  Largest request body measured to reach the gateway intact.
- 
+
  EXACT, UNLIKE ITS COUNTERPART. This size was sent and accepted. The failing
  size opposite it is reported as approximate and the boundary between them has
  never been bisected, so this is the only number here that may be compared
@@ -23,7 +23,7 @@ const PASSING_BODY_BYTES = 10_485_760;
 
 /**
  Opening of the message the gateway returns for a body over its cap.
- 
+
  MATCHED BY PREFIX rather than whole, because the tail carries the byte offset
  where the truncated body stopped parsing and that offset differs per request.
  */
@@ -37,13 +37,13 @@ const HTTP_BAD_REQUEST = 400;
 /**
  Signals a request the gateway refused for its size while naming something
  else.
- 
+
  A SUBCLASS RATHER THAN A SIBLING, so every caller branching on
  {@link SyntheticHttpError} or reading its `status` keeps working. This is one
  kind of HTTP failure, not a separate failure mode, and a caller that does not
  care why a `400` arrived should not have to learn about this to keep catching
  it.
- 
+
  @example
  ```ts
  throw new SyntheticRequestTooLargeError({
@@ -73,14 +73,14 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
 
   /**
    Builds failure naming size, replacing the message its parent composed.
-   
+
    @param status - status returned, carried through so `instanceof` callers
    branching on it see what they always saw
-   
+
    @param bodyText - raw response body, excerpted by the parent constructor
-   
+
    @param bodyBytes - measured wire size of what was sent
-   
+
    @example
    ```ts
    new SyntheticRequestTooLargeError({
@@ -133,31 +133,31 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
 
 /**
  Names why a non-success reply failed, re-reading the gateway's size refusal.
- 
+
  THREE SIGNALS TOGETHER, and the conjunction is the point. Status alone would
  catch every malformed request we ever send; the message alone would catch a
  body we genuinely broke; the size alone would catch an oversize request the
  gateway happened to accept and then fail for its own reasons. Only all three
  describe a body refused for being too big, and any one of them missing leaves
  a plain {@link SyntheticHttpError} saying exactly what it always said.
- 
+
  AFTER THE FACT, NEVER BEFORE IT. Nothing here refuses a request. Only the
  passing size is exact, so a client-side guard at that number would reject
  bodies between it and the true boundary that the gateway may well carry.
  Reading an answer that already arrived cannot cost a call that would have
  worked.
- 
+
  @param status - status returned
- 
+
  @param bodyText - raw response body, read for its message and excerpted into
  whichever failure is built
- 
+
  @param requestBodyBytes - wire size of what was sent, which must be measured
  in bytes: this corpus is Chinese, and character counts run about a third of
  the bytes their UTF-8 costs
- 
+
  @returns Failure to throw, size-naming only where all three signals agree
- 
+
  @example
  ```ts
  throw failureForReply({

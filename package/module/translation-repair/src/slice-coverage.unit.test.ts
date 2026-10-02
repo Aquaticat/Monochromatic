@@ -1,13 +1,13 @@
 /**
  Tests for the block-coverage check on carved slices.
- 
+
  THE FAILURE IT EXISTS FOR is silent: a block that reached no slice leaves the
  document, and no range disagrees with itself, so `assertSpanContiguity` sees
  nothing wrong. Every case here is therefore built by carving blocks AWAY from
  a pair rather than by malforming one, which is what production did.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -38,13 +38,13 @@ type Block = {
 
 /**
  Builds a document node standing in for one block.
- 
+
  @param id - block id, unique within its side
- 
+
  @param at - start offset, with the node one character long
- 
+
  @returns Node shaped as the parser emits them
- 
+
  @example
  ```ts
  const node = blockNode({ id: 'block/0', at: 0, },);
@@ -83,11 +83,11 @@ type Side = {
 
 /**
  Builds one side of a chunk from a run of blocks.
- 
+
  @param nodes - blocks this side carries
- 
+
  @returns Chunk side shaped as slicing produces it
- 
+
  @example
  ```ts
  const side = chunkSide({ nodes: [FIRST_ORIGINAL,], },);
@@ -146,14 +146,14 @@ const SECOND_RENDERING = blockNode({
 /**
  Reads the fault a carving's refusal names, after checking it is a coverage
  refusal at all.
- 
+
  THE FAULT RATHER THAN THE CLASS ALONE, since every check here throws the
  same class: a case asserting the class passes whichever check fired.
- 
+
  @param carve - call that should refuse
- 
+
  @returns Fault the refusal carries
- 
+
  @example
  ```ts
  const fault = coverageFault({ carve: function carve() { assertSliceCoverage({ pair: PAIR, carved: [], },); }, },);

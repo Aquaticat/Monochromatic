@@ -115,11 +115,11 @@ const ZHIHU_PEOPLE = '/people/';
 /**
  Whether a parsed link is a person's profile rather than a page that says
  something.
- 
+
  @param link - parsed link
- 
+
  @returns Whether it is a profile
- 
+
  @example
  ```ts
  isProfile({ link: new URL('https://github.com/someone',), },);
@@ -154,11 +154,11 @@ function isProfile({ link, }: { readonly link: URL; },): boolean {
 /**
  Whether a link is not a page to buy: the corpus's own site, a person's
  profile, or a link that does not parse at all.
- 
+
  @param url - link as written
- 
+
  @returns Whether it points into the corpus site, at a profile, or nowhere
- 
+
  @example
  ```ts
  isOwnHost({ url: 'https://one-among.us/people/x', },);

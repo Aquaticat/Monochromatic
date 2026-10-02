@@ -18,13 +18,13 @@ const ROSTER = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OP
 
 /**
  Builds one complete parser-backed parent without transport.
- 
+
  @param sourceText - original fixture
- 
+
  @param targetText - incumbent fixture
- 
+
  @returns Corresponding first parent
- 
+
  @example
  ```ts
  const pair = parent({ sourceText: '猫。', targetText: 'Cat.', });

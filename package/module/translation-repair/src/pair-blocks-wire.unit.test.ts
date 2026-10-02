@@ -1,14 +1,14 @@
 /**
  Tests for block pairing: what the sheet carries, and what the reader refuses.
- 
+
  WHY REFUSAL MATTERS MORE THAN ACCEPTANCE HERE. A wrong pairing puts two
  passages that were never about the same thing in front of the critics, which
  then report differences between them and are right to. It is known that a
  wrong pairing is worse than no pairing for exactly this reason, so every
  malformed reply in this file must throw rather than be tidied into something usable.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -149,7 +149,7 @@ await describe({
 
             /**
              Delimiter the sheet chose.
-         
+
              The sheet reads header, blank, `[0]`, fence, so the fence is the
              fourth line. Reading the second returns the blank line, and
              `includes('')` is true of everything, which is a test that cannot fail.

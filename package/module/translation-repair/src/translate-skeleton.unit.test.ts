@@ -1,30 +1,30 @@
 /**
  Tests for reading one slice into the shape a translation of it has to match.
- 
+
  WHAT THIS MODULE IS FOR, and why its branches are worth asking about
  directly. Structure and references survive a translation and wording does
  not: 三只猫 becomes "three cats" and no digit is left on either side, so a
  gate anchored to prose would fire on every correct rendering. What a
  candidate must still carry is the sequence of blocks and the machine-readable
  identities inside them, and that is exactly what this reads.
- 
+
  THE DETAIL FIELD IS THE PART A KIND CHECK MISSES. Two headings are both
  `heading` and a level-two turned into a level-three has changed the document;
  two lists are both `list` and a bulleted turned into a numbered has too. Four
  cases pin what distinguishes them, and one pins that everything else says
  nothing rather than inventing a difference.
- 
+
  ATOMS ARE FILTERED, NOT COLLECTED. `atomsOfNode` reads seven node types and
  the walk keeps five kinds, so a case per kind is a case per arm.
- 
+
  ONE ARM IS NOT REACHABLE FROM HERE: the rethrow of an error that is not an
  `MdxParseError`. Every input this function accepts is a string, and the
  grammar answers a string with either a tree or its own refusal, so reaching
  the rethrow needs a seam this module does not have. It is left uncovered
  deliberately rather than by oversight.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -42,14 +42,14 @@ import {
 
 /**
  Reads a slice and returns its blocks, refusing anything unparseable.
- 
+
  @param text - slice source
- 
+
  @returns Block shapes in document order
- 
+
  @throws {@link Error} when the slice did not parse, so a case that meant to
  read blocks cannot silently assert about a refusal instead
- 
+
  @example
  ```ts
  expect(blocksOf({ text: '## Cats', },),).toEqual([{ kind: 'heading', detail: 'level 2', },],);
@@ -71,13 +71,13 @@ function blocksOf(
 
 /**
  Reads a slice and returns its atoms, refusing anything unparseable.
- 
+
  @param text - slice source
- 
+
  @returns Protected atoms in document order
- 
+
  @throws {@link Error} when the slice did not parse
- 
+
  @example
  ```ts
  expect(atomsOf({ text: 'Run `catnip` now.', },),).toEqual([{ kind: 'inline-code', value: 'catnip', },],);

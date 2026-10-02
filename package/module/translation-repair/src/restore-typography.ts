@@ -93,14 +93,14 @@ function possessiveClitic(
 
 /**
  Counts straight double quotes without building a character array.
- 
+
  @param text - text to scan
 
  @param mask - which units of the text are prose rather than code or markup;
  a quote outside prose is not counted, since it is not the text's typography
 
  @returns How many straight double quotes its prose holds
- 
+
  @example
  ```ts
  countStraightDoubles({ text: 'a "b" c', mask: proseMask({ text: 'a "b" c', },), },);
@@ -131,17 +131,17 @@ function countStraightDoubles(
 /**
  Counts straight single quotes shaped like an opening quote: a non-word
  character before, a word character after.
- 
+
  One such quote anywhere in the replacement means a trailing straight quote
  elsewhere may be closing it, so the trailing rule then leaves every one
  alone rather than curl half of a quoted phrase.
- 
+
  @param text - text to scan
- 
+
  @param mask - which units are prose
- 
+
  @returns How many opening-shaped singles it holds
- 
+
  @example
  ```ts
  countOpeningSingles({ text: "rock 'n' roll", mask, },);
@@ -196,7 +196,7 @@ function countOpeningSingles(
 
 /**
  Restores the quote style the replaced text used.
- 
+
  Only ever converts straight to curly, and only where the replaced text or the
  surrounding document shows that convention, so a document written with
  straight quotes throughout is left alone. An apostrophe converts only between
@@ -204,22 +204,22 @@ function countOpeningSingles(
  quote converts only when the replacement's straight doubles are balanced, and
  then in open-close order, since an odd count means the quote is doing
  something this rule cannot read.
- 
+
  Text inside a backtick span or a tag is never touched, because a straight
  quote there is code or markup rather than prose. A trailing apostrophe, a
  word character before it and none after, converts only when the replacement
  holds no straight single quote shaped like an opening one. The ellipsis form
  follows the same reading through `restoreEllipsis`.
- 
+
  @param replacement - text the editor wrote
- 
+
  @param replaced - text it replaces
- 
+
  @param convention - wider text whose quote style the replacement should
  match, ordinarily the whole document being repaired
- 
+
  @returns Replacement with the document's quote style restored
- 
+
  @example
  ```ts
  restoreTypography({
@@ -242,13 +242,13 @@ export function restoreTypography(
 ): string {
   /**
    Whether curly apostrophes are this text's convention.
-   
+
    Asked of the REPLACED region and of the wider document alike, because the
    region alone answers the wrong question. Editor regions run to a median of
    75 characters, so most hold no quote at all, while English prose is full of
    apostrophes; a region-only test therefore stays silent exactly when the
    editor writes a fresh contraction into a curly-quoted document.
-   
+
    Measured over 56 settled entries before this was widened: 40 of the 51
    whose input carried curly quotes came out worse, 99 curly characters lost
    against 163 straight ones gained.
@@ -272,7 +272,7 @@ export function restoreTypography(
   /**
    Straight doubles in the prose of the replacement, which must pair up to be
    convertible.
-   
+
    Counted by scanning rather than by building a character array. Splitting a
    string into characters is what the two lint rules here disagree about, and
    the disagreement has no correct answer at the surface: one forbids

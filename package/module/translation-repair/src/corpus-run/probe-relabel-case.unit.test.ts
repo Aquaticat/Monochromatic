@@ -1,6 +1,6 @@
 /**
  Tests for finding the slice a recorded replacement was made in.
- 
+
  THE PROBE RE-CARVES WHAT THE RUN CARVED, which is the only reason this
  function exists: a relabelling asks a fresh reader about a region production
  already edited, and if the re-carve landed on different text the reader would
@@ -8,7 +8,7 @@
  rather than by index, and the two returned halves must come from ONE slice.
  A function that returned the whole document for both would satisfy a
  careless test and quietly widen every prompt the probe sends.
- 
+
  THE REFUSAL IS A SECURITY BOUNDARY, not just a diagnostic.
  `ArtifactParseError` carries `messageNamesOnly`, which `reportingRefusals`
  reads as permission to print the whole message, and the marker's justification
@@ -19,10 +19,10 @@
  and into the run's log. Sweeping the package found it was the only one of 47
  interpolating paths that quoted text rather than a structural position. The
  "REFUSES to quote the text it could not find" case is that guard, and it is the reason this file is worth its length.
- 
+
  FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
  because the real inputs are unlicensed corpus pages.
- 
+
  @module
  */
 
@@ -89,7 +89,7 @@ const SECOND_SOURCE = '## 第二节\n\n小猫在楼梯上看着。';
 
 /**
  Wording no slice carries, standing in for a re-carve that drifted.
- 
+
  Written as a sentence a search can find whole, so a message that quoted it
  back could not be mistaken for a coincidence.
  */

@@ -43,13 +43,13 @@ const AFTER_ARCHIVE = 'She joined *Starlit Paws*.\n';
 
 /**
  Runs native Git hermetically inside a disposable fixture.
- 
+
  @param cloneDir - owned fixture directory
- 
+
  @param args - literal Git arguments
- 
+
  @returns Captured metadata without Git's final output newline
- 
+
  @example
  ```ts
  const sha = await namingFixtureGit({ cloneDir, args: ['rev-parse', 'HEAD'] });
@@ -91,15 +91,15 @@ export async function namingFixtureGit({
 
 /**
  Commits one invented archive version at its literal path.
- 
+
  @param cloneDir - owned fixture repository
- 
+
  @param relPath - archive path inside the fixture
- 
+
  @param text - next invented archive snapshot
- 
+
  @returns Commit containing that snapshot
- 
+
  @example
  ```ts
  const sha = await commitNamingArchive({ cloneDir, relPath: ARCHIVE_PATH, text: AFTER_ARCHIVE });
@@ -157,15 +157,15 @@ async function commitNamingArchive({
 
 /**
  Creates a pinned two-version archive and exposes its owned repository for controls.
- 
+
  @param before - invented predecessor
- 
+
  @param after - invented current snapshot
- 
+
  @param relPath - literal path, including unusual-path controls
- 
+
  @returns Fixture with complete cleanup and immutable current pin
- 
+
  @example
  ```ts
  await using fixture = await makeNamingArchive({});

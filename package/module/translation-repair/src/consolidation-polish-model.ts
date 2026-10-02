@@ -8,7 +8,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Model roles and document facts needed by final body polish.
- 
+
  @example
  ```ts
  const config: ConsolidationPolishConfig = { refinerModelIds, judgeModelIds, gateModelIds, declaredNames: [], definitions: '', };
@@ -49,7 +49,7 @@ export type ConsolidationPolishConfig = {
 
 /**
  One rejected-input to gated-correction digest transition.
- 
+
  @example
  ```ts
  const correction: ConsolidationNaturalnessCorrectionAudit = { inputDigest, findingsDigest, gatedTextDigest, };
@@ -74,7 +74,7 @@ export type ConsolidationNaturalnessCorrectionAudit = {
 
 /**
  Absolute review rounds binding publication approval to exact final wording.
- 
+
  @example
  ```ts
  const review: ConsolidationNaturalnessAudit = { correctionCount: 0, corrections: [], rounds: [], confirmations: [] };
@@ -104,7 +104,7 @@ export type ConsolidationNaturalnessAudit = {
 
 /**
  Auditable final polish decision for one consolidated slice.
- 
+
  @example
  ```ts
  const polish: ConsolidationPolish = { kind: 'not-run', reason: 'front-matter', };

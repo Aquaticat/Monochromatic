@@ -24,11 +24,11 @@ import {
 
 /**
  Builds the identity two accepted issues must share to be one defect.
- 
+
  @param issue - adjudicated issue
- 
+
  @returns Stable key over category and the exact spans claimed
- 
+
  @example
  ```ts
  const key = duplicateKey({ issue, },);
@@ -68,7 +68,7 @@ function duplicateKey(
 
 /**
  Everything deduplication changed.
- 
+
  @example
  ```ts
  const { issues, findings, } = dedupeAcceptedIssues({ issues: panel.issues, },);
@@ -89,17 +89,17 @@ export type DedupeOutcome = {
 
 /**
  Merges accepted issues that name the same defect in the same place.
- 
+
  Leaves every non-accepted issue untouched and in place: a rejected duplicate
  costs no repair budget, and collapsing rejections would change what the
  precision denominator counts.
- 
+
  @param issues - adjudicated issues for one chunk, in panel order
- 
+
  @returns Merged issues and a finding per merge
- 
+
  @throws {@link IssueEvidenceConflictError} when repeated claim evidence conflicts
- 
+
  @example
  ```ts
  const { issues, findings, } = dedupeAcceptedIssues({ issues, },);

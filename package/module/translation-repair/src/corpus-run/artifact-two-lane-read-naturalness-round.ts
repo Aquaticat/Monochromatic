@@ -29,20 +29,20 @@ import {
 
 /**
  Reads one candidate-bound absolute review round.
- 
+
  @param value - unknown round
- 
+
  @param path - artifact path
- 
+
  @param paragraphDigestsRequired - whether generation binds reviewed paragraph identities
- 
+
  @param everyBodyBlockReviewed - whether reviewed paragraphs are every body
  block (generation ten) rather than the refinable paragraphs alone
- 
+
  @param quorumBasisRequired - whether generation records its wider quorum basis
- 
+
  @returns Cross-validated review round
- 
+
  @example
  ```ts
  const round = parseNaturalnessReviewRound({ value, path, paragraphDigestsRequired: true, });

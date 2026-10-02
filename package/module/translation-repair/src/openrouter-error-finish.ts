@@ -45,7 +45,7 @@ const NATIVE_FINISH_REASON_KEY = 'native_finish_reason';
 
 /**
  Whether a choice stopped on an error finish, and how the upstream named it.
- 
+
  @example
  ```ts
  const reading: ErrorFinishReading = { found: true, nativeReason: 'upstream_error', };
@@ -69,11 +69,11 @@ export const ERROR_FINISH_ABSENT: ErrorFinishReading = { found: false, };
 
 /**
  Every choice of every chunk, in arrival order.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns Choice objects the chunks carried
- 
+
  @example
  ```ts
  const choices = choicesOf({ bodyText, },);
@@ -98,15 +98,15 @@ function choicesOf(
 
 /**
  Reads whether a stream's choice stopped on an error finish.
- 
+
  THE FIRST SUCH CHOICE WINS, as the error-chunk reader's first object does:
  the gateway closes the choice once.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns That a choice stopped on an error finish with the upstream's own
  reason when forwarded, or that none did
- 
+
  @example
  ```ts
  const reading = openRouterErrorFinishOf({ bodyText: reply.bodyText, },);

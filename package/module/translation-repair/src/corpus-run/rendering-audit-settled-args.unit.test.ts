@@ -1,26 +1,26 @@
 /**
  Tests for the rendering audit's command line surface.
- 
+
  EVERY CASE HERE IS ABOUT A FLAG THE OPERATOR GOT WRONG, because the cases
  where they got it right were never the risk. A reader of a command line has
  exactly one dangerous failure mode: reading a typo as a default and running
  anyway. This one had two of those.
- 
+
  `--cap once` PARSED TO `NaN`. `capped` in `rendering-audit-settled.ts` returns
  every subject when the cap is negative and `slice(0, cap)` otherwise; `NaN
  < 0` is false and `slice(0, NaN)` is empty, so a mistyped cap audited zero
  subjects, printed the archive population it had read, and exited clean. The
  operator would have read that as an audit of the whole archive.
- 
+
  `--cap` AT THE END OF THE LINE PARSED TO "buy everything", which is the
  opposite of a cap, because a flag written with nothing after it and a flag
  never written both came back as the empty string. `--only` at the end of the
  line had the same shape and the same opposite meaning: audit every entry.
- 
+
  ALL THREE NOW REFUSE IN OUR OWN WORDS, at exit code 6 through
  `reportingRefusals`, and the message may repeat the operator's own argument
  because `StatedRefusalError` is exactly the marker for text they typed.
- 
+
  @module
  */
 
@@ -100,13 +100,13 @@ const READ_ONLY_BUY = 0;
 
 /**
  The settled audit's command line, read as `reportingRefusals` reads it.
- 
+
  @param typed - what the operator wrote after the script path
- 
+
  @returns The line the audit's body receives
- 
+
  @throws StatedRefusalError when the line itself is refused (ledger B75)
- 
+
  @example
  ```ts
  const line = auditLine({ typed: ['--cap', '4',], },);
@@ -124,13 +124,13 @@ function auditLine(
 /**
  The settled audit report's command line, read as `reportingRefusals` reads
  it.
- 
+
  @param typed - what the operator wrote after the script path
- 
+
  @returns The line the report's body receives
- 
+
  @throws StatedRefusalError when the line itself is refused (ledger B75)
- 
+
  @example
  ```ts
  const line = reportLine({ typed: ['--run', '/tmp/tabby.json',], },);

@@ -1,16 +1,16 @@
 /**
  Tests for the map that joins a graded sheet position to a probe verdict.
- 
+
  This is the join the gate's probe comparison rests on: sheet position to
  issue id through the manifest, then issue id to reading here. A wrong answer
  does not fail, it mislabels, and every count downstream still looks ordinary.
- 
+
  The defect this pins was live. The map used to be built from each reading's
  `regions[].issueIds`, which names every issue a region serves, and one
  replacement can serve several accepted issues. A shared envelope therefore
  appeared in the readings of every record it served, and the last one indexed
  won. Ownership now comes from the record itself.
- 
+
  @module
  */
 
@@ -28,13 +28,13 @@ import {
 
 /**
  Builds a region tally naming the issues it serves.
- 
+
  @param envelopeId - envelope the region replaced
- 
+
  @param issueIds - every issue this one region serves
- 
+
  @returns Tally shaped as a reading carries it
- 
+
  @example
  ```ts
  const tally = catTally({ envelopeId: 'envelope/nap', issueIds: [], },);
@@ -65,11 +65,11 @@ function catTally(
 
 /**
  Builds a probe reading over the given regions.
- 
+
  @param regions - screened tallies for the regions serving this issue
- 
+
  @returns Reading shaped as a record carries it
- 
+
  @example
  ```ts
  const reading = catReading({ regions: [], },);

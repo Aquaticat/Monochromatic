@@ -31,7 +31,7 @@ import { readClosedRelabel, } from './pass-footnote-relabel-read.ts';
 /**
  Archive text after the relabel and the reorder, with whether anything
  changed and what the artifact's findings should say about it.
- 
+
  @example
  ```ts
  const relabel: RelabelledArchive = { archiveText, changed: false, findings: [], };
@@ -65,21 +65,21 @@ export type RelabelledArchive = {
  Rewrites the archive's footnote labels to the original's and moves its
  definitions into the original's order, logging what moved or why the
  archive stands.
- 
+
  @param entryId - entry being prepared, for the log
- 
+
  @param slices - first preparation's slices
- 
+
  @param definitionPairs - definitions the roster paired, by label
- 
+
  @param sourceText - original page, whose definition order the archive takes
- 
+
  @param archiveText - archive text the first preparation was over
- 
+
  @param l - entry logger
- 
+
  @returns Archive text to prepare again over when changed
- 
+
  @example
  ```ts
  const relabel = attemptArchiveFootnoteRelabel({ entryId, slices, definitionPairs, sourceText, archiveText, l, },);
@@ -282,11 +282,11 @@ function attemptArchiveFootnoteRelabel(
 /**
  Applies the complete archive-footnote operation or retains the original bytes with a structured refusal.
  Unexpected failures propagate; only named rewrite-validation failures become withheld operations.
- 
+
  @param input - canonical pages, initial pairing evidence and entry logger
- 
+
  @returns Complete candidate or unchanged archive, with actual applied provenance only
- 
+
  @example
  ```ts
  const result = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l });

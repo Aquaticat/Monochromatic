@@ -74,53 +74,53 @@ import { wordForCount, } from './count-word.ts';
  Asks the roster for a third rendering at every slice the contest was asked
  about, settled or not; a slice the contest left with no standing text is
  settled as `no-standing-text` without a producer being asked.
- 
+
  @param client - synthetic chat client
- 
+
  @param projected - both ledgers as version 2 rows, beside their comparison
- 
+
  @param contests - one record per contested slice, as the contest wrote them
  for the artifact
- 
+
  @param modelIds - roster to ask for consolidations
- 
+
  @param judgeModelIds - roster that judges each slate and gates its winner;
  `modelIds` when not given
- 
+
  @param identityContext - names and handles both documents declare
 
  @param referenceContext - what the pages the original cites say, when any
- 
+
  @param polishConfig - final body naturalness roles and document guard facts
- 
+
  @param frontMatterSlices - syntax-bearing metadata slice indexes
- 
+
  @param lineStructuredSlices - chunk indices whose original is verse or
  otherwise line-structured, which decides whether a producer is shown the rule
  against merging lines
- 
+
  @param pictureContextBySlice - what the pictures near each slice were read to
  say, keyed by chunk index and already windowed by the caller, since the window
  is positional in the prepared slices and this driver holds none of them
- 
+
  @param neighbourContextBySlice - passages either side of each slice, keyed the
  same way and computed by the same caller for the same reason
- 
+
  @param cache - per-entry store of settlements already bought
- 
+
  @param signal - abort shared with the rest of the entry
- 
+
  @param perCallTimeoutMs - per-call ceiling
- 
+
  @param overlap - most contested slices in flight; one reproduces former loop
- 
+
  @param l - logger to tag
- 
+
  @returns One record per consolidated slice, in comparison-row order
- 
+
  @throws Error - when a contested slice has no row in the repair ledger, which
  means the comparison and the ledger disagree about which slices exist
- 
+
  @example
  ```ts
  const slices = await consolidateDocument({ client, projected, contests, modelIds, frontMatterSlices, lineStructuredSlices, pictureContextBySlice, neighbourContextBySlice, cache, signal, perCallTimeoutMs, l, },);
@@ -341,7 +341,7 @@ export async function consolidateDocument(
           },);
           /**
            Whether the line-structure rule governs this slice.
-           
+
            READ ONCE, because four places need this same answer: the sheet
            the producers are shown, the guard that reads their proposals, the key
            the settlement resumes under, and the wrap. Asking the set four times
@@ -405,7 +405,7 @@ export async function consolidateDocument(
           /**
            What the pictures near this slice were read to say, empty where none
            were.
-           
+
            MISSING AND EMPTY ARE ONE STATE, folded here on purpose. A slice near no
            readable picture gets an empty block from the windowing, and a slice the
            map never mentions is a slice in exactly that position, so distinguishing

@@ -58,10 +58,10 @@ type QuoteMark = (typeof QUOTE_MARKS)[number];
 
 /**
  Where the next quoted string opens, or that none opens before the limit.
- 
+
  A NAMED OUTCOME rather than a nullish union, which this repository does not
  model absence with.
- 
+
  @example
  ```ts
  const opening: QuoteOpening = { kind: 'opened', quote: '"', at: 12, };
@@ -85,20 +85,20 @@ type QuoteOpening = {
 
 /**
  Finds the nearest opening quote of either mark before a limit.
- 
+
  EITHER MARK, NEAREST FIRST: a caption in double quotes beside paths in
  single quotes, or the reverse, must be read string by string in page order,
  or the caption's closing mark would be taken for a path's opening one.
- 
+
  @param text - passage to read
- 
+
  @param from - offset to search from
- 
+
  @param limit - offset the element's attributes end at, exclusive
- 
+
  @returns Nearest opening mark and which mark it is, or that none precedes
  the limit
- 
+
  @example
  ```ts
  const opening = nextQuoteOpening({ text, from: 0, limit: text.length, },);
@@ -153,7 +153,7 @@ const ENTRY_PLACEHOLDER = `\${path}`;
 
 /**
  One image a passage shows.
- 
+
  @example
  ```ts
  const shown: PhotoReference = { assetName: 'intro.webp', };
@@ -168,13 +168,13 @@ export type PhotoReference = {
 
 /**
  Reads every quoted string inside one element's attributes.
- 
+
  @param text - passage to read
- 
+
  @param from - offset of the element's opening
- 
+
  @returns Quoted strings, and where the element ended
- 
+
  @example
  ```ts
  const found = quotedWithin({ text, from, },);
@@ -254,10 +254,10 @@ function quotedWithin(
 
 /**
  What one quoted attribute string turned out to name.
- 
+
  A NAMED OUTCOME rather than a nullish union, which this repository does not
  model absence with.
- 
+
  @example
  ```ts
  const read: AssetNameRead = { kind: 'asset', assetName: 'intro.webp', };
@@ -276,15 +276,15 @@ type AssetNameRead = {
 
 /**
  Turns one quoted asset path into the file name it names.
- 
+
  TOLERATES WHITESPACE AFTER THE PLACEHOLDER, because one reference in the
  corpus writes `${path} /photos/…`. Reading it as a different prefix would
  report that entry as showing one image fewer than it does.
- 
+
  @param quoted - quoted string from a photo element
- 
+
  @returns Asset file name, or a note that the string names something else
- 
+
  @example
  ```ts
  const name = assetNameOf({ quoted: '${path}/photos/intro.webp', },);
@@ -316,11 +316,11 @@ function assetNameOf({ quoted, }: { readonly quoted: string; },): AssetNameRead 
 
 /**
  Every image one passage shows, in the order it shows them.
- 
+
  @param text - passage to read
- 
+
  @returns Images it names, empty when it names none
- 
+
  @example
  ```ts
  const shown = photoReferences({ text: slice.target.text, },);
@@ -375,13 +375,13 @@ export function photoReferences({ text, }: { readonly text: string; },): readonl
 
 /**
  Where an entry's asset sits within the corpus.
- 
+
  @param entryId - corpus entry
- 
+
  @param assetName - file name within its photos directory
- 
+
  @returns Repository-relative path
- 
+
  @example
  ```ts
  const path = photoPath({ entryId: 'Tabby', assetName: 'intro.webp', },);

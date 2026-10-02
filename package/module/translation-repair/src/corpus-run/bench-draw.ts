@@ -13,7 +13,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /**
  Raised when no bench sample can be drawn from what was offered.
- 
+
  @example
  ```ts
  throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
@@ -22,9 +22,9 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 export class BenchDrawError extends Error {
   /**
    Builds refusal carrying what could not hold.
-   
+
    @param message - what was offered in place of slices to draw from
-   
+
    @example
    ```ts
    throw new BenchDrawError({ message: 'a bench sample cannot be drawn from no slices', },);
@@ -45,7 +45,7 @@ const HALF = 1 / 2;
 /**
  What the draw needs of a slice: something to order by and something to break
  ties with.
- 
+
  @example
  ```ts
  const slice: DrawableSlice = { entryId: 'Mittens', index: 3, sourceText, };
@@ -70,15 +70,15 @@ export type DrawableSlice = {
 
 /**
  Orders slices by source size, smallest first.
- 
+
  Ties fall back to entry then position, so two slices of equal size never swap
  places between runs. `toSorted` is stable, but the input order is the corpus
  listing order, which is not a property worth depending on.
- 
+
  @param slices - slices to order
- 
+
  @returns Same slices, ordered
- 
+
  @example
  ```ts
  const ordered = orderBySourceSize({ slices, },);
@@ -127,20 +127,20 @@ export function orderBySourceSize<SliceT extends DrawableSlice,>(
 
 /**
  Draws a sample spread evenly across the size range.
- 
+
  Takes the MIDPOINT of each stratum rather than its first member. Taking the
  first starts the draw at the corpus minimum, and the smallest slice in this
  corpus is a 3-character source against a 226-character translation, which
  measures the aligner rather than the judges.
- 
+
  @param slices - every candidate slice, in any order
- 
+
  @param count - slices wanted; fewer come back only when fewer exist
- 
+
  @returns Sample ordered by source size, smallest first
- 
+
  @throws Error when there is nothing to draw from
- 
+
  @example
  ```ts
  const sample = pickSpreadSample({ slices, count: 10, },);

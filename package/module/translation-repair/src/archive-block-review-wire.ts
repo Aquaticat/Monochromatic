@@ -24,7 +24,7 @@ export type ArchiveBlockDisposition = 'editorial-context' | 'revise' | 'source-s
 
 /**
  One archive-block review reply.
- 
+
  @example
  ```ts
  const report: ArchiveBlockReviewWire = {
@@ -71,24 +71,24 @@ export const ARCHIVE_BLOCK_IDENTITY_RULE: string = '- A name, handle or place na
 
 /**
  Builds distinct initial or continuation review messages.
- 
+
  @param sourceText - aligned source section and corroborated readings of its pictures
- 
+
  @param targetText - whole archive providing editorial context
- 
+
  @param blockText - exact unclaimed block under review
- 
+
  @param priorFindings - latest unsuccessful review evidence
- 
+
  @param identityContext - declared names preparation holds, absent when the
  page declares none; the house rules this sheet carries read a pronoun line
  and footnote vocabulary in it (ledger B28)
- 
+
  @param referenceContext - what the pages the original links say, with the
  attested lines under them, absent when it links nowhere
- 
+
  @returns Review request messages
- 
+
  @example
  ```ts
  buildArchiveBlockReviewMessages({ sourceText, targetText, blockText, priorFindings: [], });
@@ -183,11 +183,11 @@ Reply with JSON only: {"disposition":"source-supported"|"editorial-context"|"rev
 
 /**
  Guards archive-block review JSON.
- 
+
  @param value - parsed provider value
- 
+
  @returns Whether required fields and disposition agree
- 
+
  @example
  ```ts
  isArchiveBlockReviewWire(JSON.parse(text,));

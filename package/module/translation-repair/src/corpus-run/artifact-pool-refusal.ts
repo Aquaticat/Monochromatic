@@ -27,16 +27,16 @@ export const ENTRY_NOUN_WIDTH: number = 'entries'.length;
 
 /**
  Names a count of entries with the matching noun.
- 
+
  @param count - how many entries
- 
+
  @returns Singular noun at one, plural otherwise
- 
+
  @example
  ```ts
  const noun = pluralEntries({ count: 1, },);
  ```
- 
+
  @internal
  */
 export function pluralEntries(
@@ -52,11 +52,11 @@ export function pluralEntries(
 /**
  Every built pipeline a census holds, for sizing an abbreviation that cannot
  collide.
- 
+
  @param census - what the directory holds
- 
+
  @returns Digests in group order
- 
+
  @example
  ```ts
  const short = abbreviate({ ids: censusDigests({ census, },), },);
@@ -73,18 +73,18 @@ export function censusDigests(
 
 /**
  Renders one line per generation: its pipeline and how many entries it holds.
- 
+
  @param census - what the directory holds
- 
+
  @param short - abbreviator sized over everything this report prints
- 
+
  @returns One line per generation, largest first
- 
+
  @example
  ```ts
  const lines = generationLines({ census, short, },);
  ```
- 
+
  @internal
  */
 export function generationLines(
@@ -113,7 +113,7 @@ export function generationLines(
 /**
  Artifacts excluded for one reason, named together so a refusal lists them by
  remedy rather than as one undifferentiated pile.
- 
+
  @example
  ```ts
  const group: ExclusionGroup = { reason: 'unreadable', entryIds: ['Mittens',], };
@@ -133,16 +133,16 @@ type ExclusionGroup = Readonly<{
 
 /**
  Explains a census that placed nothing, distinguishing empty from excluded.
- 
+
  `total` counts PLACED entries only, so a directory holding nothing but
  unplaceable artifacts reports zero. Saying "nothing has settled yet" there
  would be false in the one case an operator most needs the truth: the files
  are present, and every one of them was excluded for a reason with a remedy.
- 
+
  @param census - what the directory holds, having placed no entry
- 
+
  @returns Lines naming what is present, or that nothing is
- 
+
  @example
  ```ts
  const lines = emptyCensusLines({ census, },);
@@ -231,9 +231,9 @@ export class MixedGenerationError extends Error {
 
   /**
    Names every generation present and how to proceed.
-   
+
    @param census - what the pool actually holds
-   
+
    @example
    ```ts
    throw new MixedGenerationError({ census, },);
@@ -289,11 +289,11 @@ export class EmptyPoolError extends Error {
 
   /**
    Names why the pool came out empty and what would refill it.
-   
+
    @param census - what the directory actually holds
-   
+
    @param requiredCommit - commit that was required, absent when none was
-   
+
    @example
    ```ts
    throw new EmptyPoolError({ census, requiredCommit, },);

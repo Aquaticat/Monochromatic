@@ -1,7 +1,7 @@
 /**
  Guard that a picture's transcription, once corroborated, actually reaches
  the requests `translateDocument` sends, not merely its return value.
- 
+
  WHY THIS FILE EXISTS: the translate lane's judging window was fully built, wired into
  the cache key, and sat in production for weeks unused. Nothing failed and no
  test broke, because nothing asserted what the driver actually SENT to a
@@ -11,7 +11,7 @@
  same `pictures.context` value computed once in `translate-document.ts`, so
  the same gap is possible here, and this file is the guard against it
  repeating.
- 
+
  WHAT IS PINNED, per exchange the recording client double captures before it
  answers: a corroborated reading's own transcription text reaches the
  TRANSLATOR sheet (`translate-wire.ts`'s "WHAT THE PICTURES HERE SAY" block)
@@ -23,14 +23,14 @@
  finding naming its asset on the slice record while reaching neither sheet,
  since `slice-pictures.ts` treats a refused reading as evidence for a person
  to read rather than a hedge for a model to weigh.
- 
+
  Every assertion reads the RECORDED REQUEST the client double captured,
  never `translateDocument`'s return value: the return value is exactly what
  the judging-window gap left intact, and reading it again would prove nothing this
  file exists to prove.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -101,12 +101,12 @@ const ENTRY_PLACEHOLDER = `\${path}`;
 /**
  Builds one `<PhotoScroll />` element naming a single asset, the only shape
  `photo-reference.ts` reads and the only shape the pinned corpus writes.
- 
+
  @param assetName - file name the element names within an entry's photos
  directory, which is also the key `pictureReadings` looks it up under
- 
+
  @returns Element exactly as a page in the corpus writes it
- 
+
  @example
  ```ts
  const element = photoElement({ assetName: 'tuna-tin-nap.webp', },);
@@ -244,7 +244,7 @@ ${photoElement({ assetName: UNAVAILABLE_ASSET_NAME, },)}
 /**
  One exchange a run attempted, kept so a case can inspect exactly what
  reached the wire rather than trusting the driver's return value.
- 
+
  @example
  ```ts
  const recorded: RecordedRequest = { schema: 'translation_report', content: 'ORIGINAL...', };
@@ -269,13 +269,13 @@ type RecordedRequest = {
  call, always ballots for the first candidate on a judge's slate, and
  appends every exchange it receives to `requests` before answering, so a
  case can inspect what was SENT rather than only what the driver returned.
- 
+
  @param requests - log this client appends every exchange to, in call order
- 
+
  @param translatorRendering - text every translator call answers with
- 
+
  @returns Client honoring the script its parameters describe
- 
+
  @example
  ```ts
  const client = recordingClient({ requests: [], translatorRendering: FRESH_RENDERING, },);
@@ -365,18 +365,18 @@ function recordingClient(
 /**
  Drives `translateDocument` once over one document pair, with every exchange
  it attempts recorded rather than only its return value kept.
- 
+
  @param sourceText - original document
- 
+
  @param targetText - translation as it stands
- 
+
  @param translatorRendering - text every translator call answers with
- 
+
  @param pictureReadings - picture readings handed to the driver; omitted for
  a run that gathers none, which is `translateDocument`'s own default
- 
+
  @returns Result the driver settled on, and every exchange it attempted
- 
+
  @example
  ```ts
  const { requests, } = await runDocument({ sourceText, targetText, translatorRendering: FRESH_RENDERING, },);
@@ -437,11 +437,11 @@ async function runDocument(
 /**
  Picks the requests naming the translator schema out of everything one run
  attempted, which is what a translator actually received.
- 
+
  @param requests - every exchange one run attempted
- 
+
  @returns Requests asking for a rendered translation
- 
+
  @example
  ```ts
  const sent = translatorRequestsOf({ requests, },);
@@ -458,11 +458,11 @@ function translatorRequestsOf(
 /**
  Picks the requests naming the judge schema out of everything one run
  attempted, which is what a judge actually received.
- 
+
  @param requests - every exchange one run attempted
- 
+
  @returns Requests asking for a ballot
- 
+
  @example
  ```ts
  const sent = judgeRequestsOf({ requests, },);

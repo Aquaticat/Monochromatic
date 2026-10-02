@@ -69,9 +69,9 @@ import {
 
 /**
  Prints one audited slice as it lands, so a long run can be watched.
- 
+
  @param row - what the roster said about one slice
- 
+
  @example
  ```ts
  printRow({ row, },);
@@ -91,7 +91,7 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
 
   /**
    Whether a later stage overruled the wording just audited.
-   
+
    PRINTED BESIDE the archive-versus-fresh token rather than replacing it.
    `FRESH` says the lane produced this wording, which stays true however
    the contest and the consolidation later ruled; without the relation
@@ -112,7 +112,7 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
 
   /**
    Claims that anchored, across the whole roster.
-   
+
    PRINTED BESIDE THE TIERS because the difference between them is the
    measurement: voices that claimed plenty and agreed on none says something
    about the matcher, and a silent roster says something else entirely.
@@ -146,13 +146,13 @@ function printRow({ row, }: { readonly row: SettledAuditRow; },): void {
 
 /**
  Reads the archive, audits what was asked for, and keeps the answers.
- 
+
  @throws {@link StatedRefusalError} when the archive holds nothing to audit,
  which means the run was pointed somewhere wrong rather than that everything
  is clean
- 
+
  @param line - the audit's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await main({ line, },);
@@ -168,7 +168,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-s
   /**
    Digest over built output, which is the only identity that moves when the
    code moves but the commit does not.
-   
+
    READ AT THE START, not at the end, and that ordering is the whole point.
    A long run gives a developer plenty of time to rebuild, and this probe was
    caught doing exactly that: `dist` was rebuilt while a 40-subject run was in
@@ -227,7 +227,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'rendering-audit-s
 
   /**
    What the roster said about each, in order.
-   
+
    SEQUENTIAL rather than concurrent: these share one roster, and interleaved
    progress lines would make the stream unreadable, which is the only thing a
    long run offers a watcher.

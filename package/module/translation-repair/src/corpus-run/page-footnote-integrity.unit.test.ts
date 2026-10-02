@@ -1,6 +1,6 @@
 /**
  Tests the page-level footnote guard and the page guards it runs beside.
- 
+
  @module
  */
 
@@ -31,11 +31,11 @@ const DANGLING = 'The cat sleeps in warm sunlight[^1].\n';
 
 /**
  One content slice spanning the whole target.
- 
+
  @param targetText - archive the slice covers
- 
+
  @returns Single-slice preparation
- 
+
  @example
  ```ts
  const slices = slicesOver({ targetText: TARGET, },);
@@ -64,13 +64,13 @@ function slicesOver({ targetText, }: { readonly targetText: string; },): readonl
 
 /**
  Builds a final-stage source selecting one replacement over one slice.
- 
+
  @param incumbent - archive text of the slice
- 
+
  @param text - wording the final contest selects
- 
+
  @returns Narrow artifact source read by the publication assembler
- 
+
  @example
  ```ts
  const artifact = artifactShipping({ incumbent: TARGET, text: TARGET, });
@@ -114,11 +114,11 @@ function artifactShipping(
 
 /**
  Reads the interruption a guard throws, or fails the case.
- 
+
  @param run - guard call under test
- 
+
  @returns The interruption thrown
- 
+
  @example
  ```ts
  const error = interruptionOf({ run: () => assertPageFootnotesIntact({ ... },), },);

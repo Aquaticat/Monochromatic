@@ -1,9 +1,9 @@
 /**
  Tests for the roster bench report writer.
- 
+
  The report is the only durable record of a width sweep, and it is written
  atomically under the runs directory; the write was unproven until this suite.
- 
+
  @module
  */
 

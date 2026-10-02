@@ -35,12 +35,12 @@ import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 
 /**
  What listing one directory produced.
- 
+
  ABSENCE IS A KIND rather than an empty list of names, because the two decide
  different things. A directory that holds nothing and a directory that is not
  there both yield nothing to work on, but only one of them says the caller
  was pointed somewhere real.
- 
+
  TYPED BY THE NAMES A READER TAKES, so a listing of artifacts reads as
  artifact file names (`artifact-file-name.ts`) through the same union.
 
@@ -69,15 +69,15 @@ export type DirectoryReading<NameT extends string = string,> =
 
 /**
  Narrows a caught value to one carrying a filesystem error code.
- 
+
  POSITIONAL BY NECESSITY, against the house preference for a destructured
  parameter: a type guard narrows the binding it names, and a parameter
  destructured out of an object narrows nothing the caller holds.
- 
+
  @param error - caught value, of unknown type by construction
- 
+
  @returns Whether a `code` string can be read off it
- 
+
  @example
  ```ts
  if (carriesFilesystemCode(error,))
@@ -93,11 +93,11 @@ function carriesFilesystemCode(error: unknown,): error is { readonly code: strin
 
 /**
  Names why an operation on a path failed, for a reader deciding what to do.
- 
+
  @param error - caught value, of unknown type by construction
- 
+
  @returns Filesystem code, falling back to the class where there is none
- 
+
  @example
  ```ts
  console.log(filesystemReason({ error, },),);

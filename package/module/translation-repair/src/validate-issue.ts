@@ -17,7 +17,7 @@ import type {
  Minimal document surface anchors validate against;
  `RepairDocument` satisfies it structurally,
  and the narrower shape keeps validation decoupled from parsing.
- 
+
  @example
  ```ts
  const target: AnchorTarget = parseDocument({ text, },);
@@ -39,7 +39,7 @@ export type AnchorTarget = {
  Defect class of one rejected anchor.
  `quote-mismatch` also covers non-empty quotes on zero-width spans,
  because a zero-width slice is always empty.
- 
+
  @example
  ```ts
  const kind: AnchorRejectionKind = 'quote-mismatch';
@@ -56,7 +56,7 @@ export type AnchorRejectionKind =
 
 /**
  One reason a claim failed deterministic validation.
- 
+
  @example
  ```ts
  const rejection: AnchorRejection = {
@@ -89,15 +89,15 @@ export type AnchorRejection = {
  Validates one span against current documents, first defect wins:
  later checks presume earlier ones (range needs an existing node,
  quotes mean nothing against a drifted base).
- 
+
  @param span - anchor under validation
- 
+
  @param spanIndex - position within owning claim for diagnostics
- 
+
  @param documents - current pair anchors must hold against
- 
+
  @returns Empty when span holds; exactly one rejection otherwise
- 
+
  @example
  ```ts
  const rejections = validateSpanAnchor({ span, spanIndex: 0, documents, },);
@@ -219,13 +219,13 @@ function validateSpanAnchor(
  returning every rejection as data;
  empty result admits the claim to adjudication.
  Spans are checked independently so retry feedback covers all defects at once.
- 
+
  @param claim - atomic claim from one critic
- 
+
  @param documents - current pair anchors must hold against
- 
+
  @returns Rejections in span order; empty when claim anchors hold
- 
+
  @example
  ```ts
  const rejections = validateIssueClaim({

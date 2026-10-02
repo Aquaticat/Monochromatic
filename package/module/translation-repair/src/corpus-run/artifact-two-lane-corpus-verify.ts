@@ -28,15 +28,15 @@ import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.t
 
 /**
  Refuses a measurement the preparation does not agree with.
- 
+
  @param recorded - what the artifact says
- 
+
  @param actual - what the preparation says
- 
+
  @param path - dotted path of the recorded measurement
- 
+
  @throws {@link ArtifactParseError} when they differ, naming both
- 
+
  @example
  ```ts
  assertMeasured({ recorded: preparation.sliceCount, actual: prepared.slices.length, path, },);
@@ -81,14 +81,14 @@ function assertMeasured(
  rebuild whose rows reproduce the run's carve
  (`artifact-two-lane-rebuild-rows.ts`) is verified by these measurements
  instead.
- 
+
  @param artifact - artifact as the version 2 reader returned it
- 
+
  @param prepared - preparation to measure against
- 
+
  @throws {@link ArtifactParseError} when a recorded measurement is not this
  preparation's
- 
+
  @example
  ```ts
  verifyArtifactMeasurements({ artifact, prepared: rebuilt.prepared, },);

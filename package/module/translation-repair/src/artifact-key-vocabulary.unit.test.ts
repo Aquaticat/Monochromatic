@@ -1,20 +1,20 @@
 /**
  Tests for which spelling of the renamed keys each artifact generation used.
- 
+
  THE POSITIVE CONTROL COMES FIRST here, because every other case in this file
  is a lookup and a lookup table that returned the same row for everything
  would satisfy all of them. The first case pins that the two named tables
  actually disagree, on every field, so the dispatch has something to decide.
- 
+
  GENERATION 3 IS THE INTERESTING ONE, and it is why a table exists at all
  rather than a boolean. It spells the change-set keys the new way and the
  slice index the old way, because the array rename forced a wire change on
  artifacts whose lane result is passed through whole while the index rename
  did not. A reader holding one flag would read every generation 3 artifact's
  slice index as ABSENT.
- 
+
  Fixtures are version numbers and key names. There is no passage here.
- 
+
  @module
  */
 

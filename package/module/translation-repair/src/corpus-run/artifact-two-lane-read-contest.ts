@@ -42,24 +42,24 @@ import {
 
 /**
  Reads one contested slice and re-derives its verdict from its own ballots.
- 
+
  @param value - recorded slice
- 
+
  @param path - dotted path of that slice
- 
+
  @param keys - field spellings this artifact's generation uses, so an older
  file is read by its own names rather than by today's
- 
+
  @param generation - artifact generation deciding eligibility field support
- 
+
  @param comparison - recomputed lane rows eligibility is checked against
- 
+
  @returns Slice record, proven to agree with the ballots it carries
- 
+
  @throws {@link ArtifactParseError} when a field is unreadable, when the usable
  count disagrees with the ballots, or when the stored verdict is not the one
  those ballots settle on
- 
+
  @example
  ```ts
  const slice = parseContestSlice({ value, path, keys, generation, comparison, },);
@@ -202,16 +202,16 @@ function parseContestSlice(
 /**
  Refuses a contest that does not answer exactly the slices where the two lanes
  left different wording.
- 
+
  @param slices - records the contest carries
- 
+
  @param comparison - rows the reader recomputed from both ledgers
- 
+
  @param path - dotted path of the recorded slices
- 
+
  @throws {@link ArtifactParseError} when the answered slices are not the
  eligible ones, in eligible order
- 
+
  @example
  ```ts
  assertContestCoversEligible({ slices, comparison, path, },);
@@ -253,23 +253,23 @@ function assertContestCoversEligible(
 /**
  Reads which lane ships, and refuses a contest that does not cover exactly the
  slices where the two lanes left different wording.
- 
+
  @param value - recorded selection
- 
+
  @param comparison - rows the reader recomputed from both ledgers
- 
+
  @param path - dotted path of the recorded selection
- 
+
  @param keys - field spellings this artifact's generation uses, so an older
  file is read by its own names rather than by today's
- 
+
  @param generation - artifact generation deciding eligibility field support
- 
+
  @returns Selection, proven to agree with the ballots and the comparison
- 
+
  @throws {@link ArtifactParseError} when the kind is unknown, when any slice is
  unreadable, or when the slices covered are not the eligible ones
- 
+
  @example
  ```ts
  const selection = parseLaneSelection({ value, comparison, path, keys, },);

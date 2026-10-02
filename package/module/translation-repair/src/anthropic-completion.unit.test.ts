@@ -1,14 +1,14 @@
 /**
  Tests for the Anthropic completion extractor.
- 
+
  THE CASE THAT DECIDES EVERYTHING is the tool call. On this provider a schema'd
  answer arrives entirely as `input_json_delta` fragments of a tool's arguments
  and the model emits no prose at all, so an extractor that read only text
  would return the empty string for every successful call and every stage would
  record a lost voice.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -25,11 +25,11 @@ import {
 
 /**
  Builds one event line as the wire sends it.
- 
+
  @param body - frame payload, which carries its own `type`
- 
+
  @returns Frame, newline-terminated
- 
+
  @example
  ```ts
  const raw = frameOf({ body: { type: 'message_stop', }, },);
@@ -43,11 +43,11 @@ function frameOf(
 
 /**
  Opening frame, whose usage sits nested inside `message`.
- 
+
  @param inputTokens - prompt tokens the provider reports
- 
+
  @returns Frame ready to feed the extractor
- 
+
  @example
  ```ts
  const raw = startOf({ inputTokens: 41, },);
@@ -74,13 +74,13 @@ function startOf(
 
 /**
  Closing pair: the stop reason and usage, then the terminator.
- 
+
  @param stopReason - why the model stopped
- 
+
  @param outputTokens - completion tokens the provider reports
- 
+
  @returns Frames ready to feed the extractor
- 
+
  @example
  ```ts
  const raw = endOf({ stopReason: 'tool_use', outputTokens: 12, },);
@@ -106,15 +106,15 @@ function endOf(
 
 /**
  One delta frame of a given kind.
- 
+
  @param deltaType - kind of delta
- 
+
  @param field - field the text rides in
- 
+
  @param text - text the frame carries
- 
+
  @returns Frame ready to feed the extractor
- 
+
  @example
  ```ts
  const raw = deltaOf({ deltaType: 'text_delta', field: 'text', text: 'Biscuit', },);

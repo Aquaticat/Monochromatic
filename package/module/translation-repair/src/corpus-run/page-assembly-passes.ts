@@ -26,7 +26,7 @@ import { unifyTitleReferences, } from './title-reference-unify.ts';
 
 /**
  What the passes made of the page.
- 
+
  @example
  ```ts
  const outcome: PagePassesOutcome = { replacements, restored, findings, };
@@ -51,19 +51,19 @@ export type PagePassesOutcome = {
 
 /**
  Runs every page-assembly pass over one set of replacements.
- 
+
  @param slices - preparation defining replacement spans
- 
+
  @param sourceText - the original document
- 
+
  @param targetText - archive text the replacement spans address
- 
+
  @param replacements - rows the page would write
- 
+
  @param archiveOriginalSpans - spans sealed as the English original
- 
+
  @returns Replacements, rewritten rows and findings
- 
+
  @example
  ```ts
  const passes = runPagePasses({ slices, sourceText, targetText, replacements, archiveOriginalSpans, },);

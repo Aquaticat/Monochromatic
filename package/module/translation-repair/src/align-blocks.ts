@@ -67,19 +67,19 @@ export const GAP_PENALTY = -1.5;
  pair itself gives no better estimate. Chinese is written without spaces and
  packs more meaning per character, so an English rendering runs longer; this
  judges plausibility and never rejects.
- 
+
  A FIXED CONSTANT IS WRONG FOR THIS CORPUS, measured 2026-08-20. Entry medians
  of English characters per Chinese character run from 1.49 to 4.10, because how
  far a translation expands is a property of the TRANSLATOR, not of the language
  pair: a plain rendering stays close and a literary one runs long.
- 
+
  On `saurikissa`, whose median is 4.10, every CORRECT pair scored as implausible
  against 1.8, which destroyed the only signal the walk had. Chinese and English
  prose share no Latin tokens, and block kind is constant when every block is a
  paragraph, so length was carrying the alignment alone and pointing the wrong
  way. Six of eleven slices then paired unrelated paragraphs.
  `doc/audit/the-critics-are-shown-the-wrong-paragraph.md` records the reading.
- 
+
  @internal
  */
 export const FALLBACK_EXPANSION = 1.8;
@@ -166,7 +166,7 @@ const OVERLAP_HALF_POINT = 2;
 /**
  Overlap between two token sets, measured on the ABSOLUTE number of shared
  tokens with diminishing returns rather than as a share of either set.
- 
+
  Sharing a set-relative measure was tried and is wrong: dividing by the
  smaller set lets a block carrying a single token score a perfect match
  against any long block containing that token, so a block with MORE evidence
@@ -174,13 +174,13 @@ const OVERLAP_HALF_POINT = 2;
  skipping the block that genuinely corresponded. Jaccard fails the opposite
  way here, since a short original against its longer rendering has a large
  union and vanishing overlap however well the two correspond.
- 
+
  @param source - original block's tokens
- 
+
  @param target - translation block's tokens
- 
+
  @returns Overlap from zero (nothing shared) toward one, never reaching it
- 
+
  @example
  ```ts
  const overlap = tokenOverlap({ source, target, },);
@@ -209,15 +209,15 @@ function tokenOverlap(
  How plausible the two blocks' lengths are as a translation pair, from zero
  to one. Peaks when the target runs about `expansion` times the source and
  decays smoothly, so it nudges rather than decides.
- 
+
  @param sourceLength - original block's character count
- 
+
  @param targetLength - translation block's character count
- 
+
  @param expansion - characters this translation produces per source character
- 
+
  @returns Plausibility from zero to one
- 
+
  @example
  ```ts
  const fit = lengthPlausibility({ sourceLength: 10, targetLength: 18, expansion: 1.8, },);
@@ -283,23 +283,23 @@ function charsAcross({ nodes, }: { readonly nodes: readonly DocumentNode[]; },):
 /**
  Estimates how far THIS translation expands, in characters per source
  character.
- 
+
  Measured over the whole block lists rather than per pair, because a single
  block is exactly the thing whose pairing is in question and cannot be used to
  judge itself.
- 
+
  @param sourceNodes - original blocks
- 
+
  @param targetNodes - translation blocks
- 
+
  @returns Characters produced per source character, or
  {@link FALLBACK_EXPANSION} when either side is empty
- 
+
  @example
  ```ts
  const expansion = estimateExpansion({ sourceNodes, targetNodes, },);
  ```
- 
+
  @internal
  */
 export function estimateExpansion(
@@ -327,16 +327,16 @@ export function estimateExpansion(
 
 /**
  Scores one candidate pairing. Higher is a better partnership.
- 
+
  @param source - original block
- 
+
  @param target - translation block
- 
+
  @param expansion - characters this translation produces per source character,
  defaulting to {@link FALLBACK_EXPANSION} when the caller has no estimate
- 
+
  @returns Pairing score, unbounded below and above
- 
+
  @example
  ```ts
  const score = scorePairing({ source, target, },);

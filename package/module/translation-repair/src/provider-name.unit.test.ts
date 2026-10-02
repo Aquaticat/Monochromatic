@@ -1,7 +1,7 @@
 /**
  Tests for the provider identity: the order the owner prefers to spend in,
  and the record helpers every provider-keyed shape is built from.
- 
+
  @module
  */
 

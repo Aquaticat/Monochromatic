@@ -1,18 +1,18 @@
 /**
  Tests for version 2's own comparison rules.
- 
+
  WHAT THESE PIN is what version 2 MEANS, which is a different question from
  what the pipeline currently computes. The rules are duplicated from the live
  comparator on purpose: the vocabulary froze the words a row may use and this
  freezes how a row is decided, so a later change to the pipeline's verdicts
  cannot reinterpret artifacts already on disk under an unchanged version.
- 
+
  They also pin the pair the rules exist to keep apart, which equal text cannot:
  a blank slice the archive does translate and a passage it never translated
  both carry the empty string.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -48,21 +48,21 @@ const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
  Builds one delivery row, defaulting everything a case does not care about.
- 
+
  @param sliceIndex - slice this row is for
- 
+
  @param incumbentKind - whether the archive holds wording here
- 
+
  @param incumbentText - archive's own wording
- 
+
  @param shippedText - what this lane's document carries
- 
+
  @param outcome - what this lane did
- 
+
  @param delivery - how the document came to carry what it carries
- 
+
  @returns Row shaped as version 2 records one
- 
+
  @example
  ```ts
  const row = row({ sliceIndex: 0, shippedText: ARCHIVE_NAP, },);
@@ -98,11 +98,11 @@ function deliveryRow(
 
 /**
  One row where the lane kept the archive's wording after examining it.
- 
+
  @param sliceIndex - slice this row is for
- 
+
  @returns Row carrying a decision that matches the archive
- 
+
  @example
  ```ts
  const kept = keptArchive({ sliceIndex: 0, },);
@@ -124,13 +124,13 @@ function keptArchive({ sliceIndex, }: { readonly sliceIndex: number; },): Artifa
 
 /**
  One row where the lane shipped a replacement.
- 
+
  @param sliceIndex - slice this row is for
- 
+
  @param text - wording it shipped
- 
+
  @returns Row carrying a shipped replacement
- 
+
  @example
  ```ts
  const shipped = shippedText({ sliceIndex: 0, text: 'The cat naps.', },);

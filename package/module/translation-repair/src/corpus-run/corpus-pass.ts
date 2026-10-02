@@ -103,31 +103,31 @@ const MS_PER_MINUTE = 60_000;
  per-entry hard cap's timer, so setting the system clock neither spends the
  budget nor refunds it, and time the machine spends suspended does not count
  (ledger B78).
- 
+
  Was 25, which throttled the whole accumulation to about one entry per launch.
  The interaction that caused it: `BANDS` puts the large band first within a
  rank, so a run starts a large entry, that entry alone runs past 25 minutes,
  and this check then refuses to start anything else. Runs 010 and 011 both
  show exactly that, one settling a single entry and one settling none.
- 
+
  A long budget lets a run chain several entries instead. It is scheduling
  only: it changes when a run stops starting work, never what the pipeline
  finds, so unlike the per-call deadline it can move without splitting the pool
  into incomparable cohorts. The per-entry hard cap still bounds any single
  runaway, and slice-level resumability means an entry cut by that cap resumes
  on the next run rather than restarting.
- 
+
  Raised from 240 alongside the hard cap, and for the same measured reason.
  Recall run 001 spent 252 minutes settling SEVEN of nine entries under a
  four-hour budget and recorded the other two as skipped, coverage 0.778. The
  ensemble and the naturalness lane only make each entry slower, so holding
  240 would have shrunk that further. Twelve hours leaves room for a full
  nine-entry pass.
- 
+
  A skipped entry is lost coverage in the verdict, not saved money: the plan
  is flat rate, quota regenerates faster than runs spend, and the user
  confirmed cost does not matter.
- 
+
  Raised from 720 because twelve hours could not clear the corpus in ONE
  invocation, and every extra invocation was fragmenting the pool. Measured
  from artifact mtimes across an evening: about 27 minutes per entry over a
@@ -137,7 +137,7 @@ const MS_PER_MINUTE = 60_000;
  resumes. Each resume re-reads HEAD, so under a policy of restarting whenever
  a fix lands, each one stamped a new commit: that is precisely how one
  directory came to hold 22 entries across four tips.
- 
+
  Three days covers the pessimistic rate with room to spare. It is not a
  prediction that a run will take three days; the resume guards at startup
  (`assertArtifactsPlaceable`, `assertResumableSchemaGeneration`,
@@ -157,7 +157,7 @@ const SOFT_BUDGET_MINUTES = 4_320;
  time. Entries far larger than the cap clears (aiyysk 77 slices,
  hulicaijia 65, ...) still exceed any single-run ceiling and need
  slice-level resumability, tracked separately.
- 
+
  Raised from 90 on measurement rather than on feel. Recall run 001 timed
  seven entries end to end: per-slice rate ran 3.25 min at best, 5.56 at the
  median, and 8.56 at the worst, and its longest entry took 74.7 minutes for
@@ -165,13 +165,13 @@ const SOFT_BUDGET_MINUTES = 4_320;
  changed anything: at the worst observed rate a 12-slice entry needs 103
  minutes and would have been cut. The measured median also confirms the
  ~5.5 min/slice figure the old comment claimed.
- 
+
  That rate is PRE-ENSEMBLE. It predates per-envelope judge rounds, the
  chunk-level round, and the whole naturalness lane, every one of which only
  adds. How much they add is unmeasured, so this is a bound against runaway
  rather than a tuned value: 180 clears 21 slices even at the worst observed
  rate, and 32 at the median.
- 
+
  Cost is not the constraint being traded here. The plan is flat rate and
  quota regenerates faster than runs spend, and the user confirmed cost does
  not matter, so the thing a low cap actually costs is entries covered per
@@ -196,7 +196,7 @@ const SOFT_BUDGET_MS = SOFT_BUDGET_MINUTES * MS_PER_MINUTE;
 
 /**
  Hard ceiling in milliseconds, after any environment override.
- 
+
  OVERRIDABLE so the re-attempt queue can be exercised against an entry that
  fits in one run: the queue only does anything to an entry the cap CUTS, and
  the shipped ceiling means the smallest such entry needs thirteen hours.
@@ -225,11 +225,11 @@ const PLAN_PREVIEW_COUNT = 5;
  Runs one accumulation pass over the corpus, writing artifacts and TALLY lines.
  Reads config and the API key from the environment; performs model calls unless
  `--plan` is passed, which verifies setup at zero quota and returns.
- 
+
  @param line - the pass's command line, read whole by `reportingRefusals`
- 
+
  @throws {@link Error} when the API key env var is unset
- 
+
  @example
  ```ts
  await runCorpusPass({ line, },);
@@ -238,7 +238,7 @@ const PLAN_PREVIEW_COUNT = 5;
 async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-pass'>; },): Promise<void> {
   /**
    Note naming the straggler window when it is not the built-in one.
-   
+
    RESOLVED FIRST, before the lock and before anything is read, so an
    unreadable override refuses the pass before it claims a directory or
    spends anything. Printed after START, where the cap note is.
@@ -290,7 +290,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
   /**
    Identity of the built pipeline this invocation is running, taken over the
    directory the runner was loaded from.
-   
+
    `tip` cannot answer this and never could: it moves for a documentation
    commit that changes nothing that runs, and stays put across an uncommitted
    edit that changes everything. Every corpus-run task builds before it runs
@@ -307,7 +307,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
   // then refuse the lot.
   /**
    What every placeable artifact records, read once for both guards.
-   
+
    THE THREE REFUSALS RUN IN ORDER OF HOW LITTLE CHOICE THE OPERATOR HAS.
    First an artifact nothing can place, which no opt-in is an opinion about.
    Then the SHAPE, which no commit can reconcile. Only then the BUILD, whose
@@ -371,7 +371,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
    ranking runs over the REMAINING entries, so without knowing what each band
    already settled every run would restart each band at rank zero), and the
    entries missing a side at the pin.
-   
+
    ONLY A MISSING OBJECT DROPS OUT, and it is printed. Any other read
    failure propagates: until 2026-08-26 every read failure read as the
    expected missing side, so a clone that had gone away shrank the corpus
@@ -425,7 +425,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
    Ids with cached slices from an earlier aborted run. These resume first so
    an in-flight large document finishes before a fresh entry starts, rather
    than every large entry taking one partial attempt while none settles.
-   
+
    NO PROGRESS GUARANTEE IS CLAIMED HERE, and one used to be: this said a
    cap-abort always completes at least one new slice, which is false. An abort
    can land before the first persistence, and the slices a lane deliberately

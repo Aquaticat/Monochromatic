@@ -1,26 +1,26 @@
 /**
  Tests for the consolidation over one document.
- 
+
  WHAT THESE PIN is the driver's own reasoning, which is the part no stage test
  reaches: which slices it asks about at all, what it resumes rather than
  rebuys, what it is willing to write to the cache, and what it refuses to
  proceed past.
- 
+
  ALMOST EVERY CASE HERE BUYS NOTHING. The client those hand over throws on any
  call, which is the assertion: a driver that reached the roster on a resumed
  slice, or on a slice the contest never settled, fails loudly instead of
  quietly costing a run its budget. The rounds themselves are covered by
  `consolidate-settle.unit.test.ts`.
- 
+
  THE TWO SHEET CASES ARE THE EXCEPTION, and deliberately so. They let the calls
  through to a client that records what it was sent and answers each with content
  no sheet can parse, because what they ask is what the driver SENT rather than
  what a roster would say back. Every voice is lost, which the validity floor
  already handles, so the driver settles on the standing text having bought
  nothing usable.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -186,16 +186,16 @@ function countingRefusingClient(): {
 
 /**
  Builds a client that records every request body and answers none of them.
- 
+
  ANSWERS WITH UNREADABLE CONTENT rather than throwing, which matters more than
  it looks. A thrown transport error is retried five times and then propagates
  out of the driver, so a case built that way spends seconds failing on the
  refusal instead of reading the sheet. A well-formed reply carrying content no
  sheet can parse loses the voice instead, which is an outcome the validity floor
  is already built for.
- 
+
  @returns Client to drive with, beside the bodies it recorded
- 
+
  @example
  ```ts
  const { client, bodies, } = recordingClient();
@@ -236,7 +236,7 @@ function recordingClient(): {
 
 /**
  Marker the gate's own sheet carries and no other round does.
- 
+
  READ OFF `consolidate-gate-wire.ts`. The gate and the slate judges share the
  ballot schema, so the schema name alone cannot tell them apart and a case
  reading `the judges' sheet` would otherwise be reading the gate's half the time.
@@ -245,15 +245,15 @@ const GATE_MARKER = 'unsupported and dropped each a list';
 
 /**
  Builds a client that records every request and answers each role usefully.
- 
+
  WHY NOT {@link recordingClient}. That one answers content no sheet can parse,
  so every voice is lost and the driver settles on the standing text having
  bought nothing. That is exactly right for reading what a PRODUCER was sent,
  since the producer round happens before anything can be lost, and useless for
  reading a judge's sheet, because no judging round ever runs.
- 
+
  @returns Client to drive with, beside the judge requests it recorded
- 
+
  @example
  ```ts
  const { client, judgeSheets, } = answeringClient();
@@ -280,7 +280,7 @@ function answeringClient(): {
         /**
          Which of the three rounds this call is, decided once so the answer and
          the recording cannot disagree about it.
-         
+
          THE GATE IS CHECKED BEFORE THE BALLOT, because both ask for the same
          schema and only the gate's own wording separates them.
          */
@@ -334,13 +334,13 @@ function answeringClient(): {
 
 /**
  Finds numbered candidate carrying scripted wording in serialized request.
- 
+
  @param sent - serialized request body
- 
+
  @param needle - candidate wording marker
- 
+
  @returns One-based candidate index, or zero when absent
- 
+
  @example
  ```ts
  const best = candidateCarrying({ sent, needle: 'rests naturally', });
@@ -372,9 +372,9 @@ function candidateCarrying(
 
 /**
  Reads only messages from serialized provider request.
- 
+
  @param body - serialized provider request
- 
+
  @returns Serialized messages without provider model field
  */
 function requestMessages({ body, }: { readonly body: string; }): string {
@@ -476,9 +476,9 @@ function scriptedClient(
 
 /**
  Builds both ledgers for a document of two slices.
- 
+
  @returns Projection shaped as the lanes leave one
- 
+
  @example
  ```ts
  const projected = twoSliceDocument();
@@ -514,9 +514,9 @@ function twoSliceDocument(): ProjectedLanes {
 
 /**
  Builds two rows asking an identical consolidation question.
- 
+
  @returns Projection whose position-free consolidation keys match
- 
+
  @example
  ```ts
  const projected = twinSliceDocument();
@@ -551,13 +551,13 @@ function twinSliceDocument(): ProjectedLanes {
 
 /**
  Builds one contest record, as the contest wrote it for the artifact.
- 
+
  @param sliceIndex - slice this answers
- 
+
  @param lane - lane the contest backed
- 
+
  @returns Record shaped as the contest stage produces one
- 
+
  @example
  ```ts
  const record = contestSettling({ sliceIndex: 0, lane: 'repair', },);
@@ -585,11 +585,11 @@ function contestSettling(
 
 /**
  Builds a settlement as the stage returns one, for the cache to hand back.
- 
+
  @param terminal - how the slice left the stage
- 
+
  @returns Settlement shaped as `settleConsolidation` returns one
- 
+
  @example
  ```ts
  const settled = settlementReaching({ terminal: 'incumbent-only', },);
@@ -614,31 +614,31 @@ function settlementReaching(
 
 /**
  Runs the driver over a document, collecting what it tried to persist.
- 
+
  @param contests - what the contest settled, keyed by slice
- 
+
  @param resumed - settlements an earlier run already bought
- 
+
  @param projected - both ledgers, overridable to test a ledger gap
- 
+
  @param frontMatterSlices - syntax-bearing metadata positions
- 
+
  @param judgeModelIds - starting slate judges, the writers when not given
 
  @param polishConfig - starting naturalness roles, none when not given
 
  @param overlap - most contested slices in flight
- 
+
  @param activity - optional successful-call overlap instrument
- 
+
  @param messages - optional destination for operational logging
- 
+
  @param writes - optional external persistence capture
- 
+
  @param signal - optional caller cancellation
- 
+
  @returns Records the driver produced beside the keys it wrote
- 
+
  @example
  ```ts
  const { slices, written, } = await driveWith({ contests: [], },);
@@ -771,16 +771,16 @@ async function driveWith(
 
 /**
  Builds a judged round that settled the way a resume case needs.
- 
+
  WHOLE AND HONEST rather than cast, because the predicate reads a field OFF
  this object and a fixture narrowed to that field would stop the compiler
  noticing if the field moved or was renamed. Everything else is the emptiest
  value its type admits.
- 
+
  @param decision - what the judges settled on
- 
+
  @returns Round shaped as the judge returns one
- 
+
  @example
  ```ts
  const decided = judgedAs({ decision: 'judged', },);
@@ -817,20 +817,20 @@ function judgedAs(
 
 /**
  Builds a settlement that left the stage the way a resume case needs.
- 
+
  ONLY THE FIELDS THE PREDICATE READS are real here. It looks at the terminal,
  at how many ballots the gate could read, and at what the judges decided;
  everything else on a settlement is carried for the record rather than for
  this decision.
- 
+
  @param terminal - how the slice left the stage
- 
+
  @param usable - ballots the gate could read, absent where it never ran
- 
+
  @param decision - what the judges decided, absent where none were asked
- 
+
  @returns Settlement shaped as the stage returns one
- 
+
  @example
  ```ts
  const settlement = settlementFor({ terminal: 'consolidated', usable: 4, },);

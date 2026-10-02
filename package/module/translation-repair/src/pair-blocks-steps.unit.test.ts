@@ -1,12 +1,12 @@
 /**
  Tests for converting a roster's pairing into alignment steps.
- 
+
  THE PROPERTY THAT MATTERS: every block appears exactly once on its own side.
  The grouper measures characters per step, so a block counted twice inflates a
  run past its budget and cuts the document somewhere it should not.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -19,13 +19,13 @@ import { blockPairingToSteps, } from '../dist/final/node/index.mjs';
 
 /**
  Counts how often each index appears on one side of the steps.
- 
+
  @param steps - converted steps
- 
+
  @param side - which side to count
- 
+
  @returns Appearances per index
- 
+
  @example
  ```ts
  const seen = appearances({ steps, side: 'source', },);

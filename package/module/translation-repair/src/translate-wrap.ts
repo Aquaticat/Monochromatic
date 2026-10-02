@@ -21,7 +21,7 @@ import { sameWording, } from './wording-key.ts';
 
 /**
  Wraps every changed translate record, re-deriving whether it still changes.
- 
+
  RE-DERIVED RATHER THAN CARRIED FORWARD, for the reason `wrapRepairOutcomes`
  gives: a passage differing from the archive only in its wrapping becomes the
  archive once wrapped, and a record still claiming a change there fails the
@@ -29,7 +29,7 @@ import { sameWording, } from './wording-key.ts';
  `sameWording`), asked of every changed record including one the wrap leaves
  as it is, and a record that is the archive in all but layout keeps the
  archive's own bytes.
- 
+
  NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
  producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
  and then broke that work afterwards: over the 211 line-structured slices of
@@ -38,18 +38,18 @@ import { sameWording, } from './wording-key.ts';
  guard and sent back to its author instead of papered over here, because
  `wrapReplacementText` splits and never joins, so it cannot put back a break
  a producer merged away.
- 
+
  @param slices - prepared slice pairs, for the archive wording per index
- 
+
  @param settled - settled per-slice records in document order
- 
+
  @param lineStructuredSlices - global indices the line-structure rule
  governs, whose lines are the producer's to set
- 
+
  @param l - lane logger
- 
+
  @returns Same records with produced wording wrapped
- 
+
  @example
  ```ts
  const wrapped = wrapTranslateRecords({ slices, settled, lineStructuredSlices, l, },);

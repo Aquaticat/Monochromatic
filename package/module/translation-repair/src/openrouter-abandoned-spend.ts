@@ -64,7 +64,7 @@ const TOKENS_PER_MILLION = 1_000_000;
 
 /**
  What an abandoned call is reckoned to have cost.
- 
+
  @example
  ```ts
  const estimate: AbandonedSpendEstimate = { promptTokens: 1000, completionTokens: 10, usd: 0.0006, };
@@ -89,18 +89,18 @@ export type AbandonedSpendEstimate = {
 
 /**
  Reckons an abandoned call's cost from what it delivered and what it sent.
- 
+
  @param servedId - model as this provider spells it
- 
+
  @param deliveredChars - raw stream characters read before the end
- 
+
  @param requestBodyBytes - size of the request body that was sent
- 
+
  @param maxTokens - `max_tokens` the call sent, past which the endpoint bills
  nothing, so neither does the reckoning (ledger P7)
- 
+
  @returns Token halves and their price
- 
+
  @example
  ```ts
  const estimate = estimateAbandonedSpend({ servedId, deliveredChars: 3860, requestBodyBytes: 4000, maxTokens: 1149, },);

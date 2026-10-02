@@ -1,6 +1,6 @@
 /**
  Tests for deterministic refusal-shape detection.
- 
+
  @module
  */
 

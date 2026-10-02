@@ -1,19 +1,19 @@
 /**
  Tests for what makes two runs' consolidations the same consolidation.
- 
+
  WHAT THESE PIN is the half of a cache that fails silently. A key that is too
  WIDE discards settled work on an unrelated change, which is expensive and
  obvious. A key that is too NARROW returns a settlement reached under a
  different question, and nothing looks wrong: the texts match, so the key
  matches, and a run reports a decision it never bought.
- 
+
  The contest ballots are the case this stage adds over the others. They are
  prompt content here, shown to the producers as claims about each lane, so two
  consolidations over identical candidates and different ballots are different
  questions.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

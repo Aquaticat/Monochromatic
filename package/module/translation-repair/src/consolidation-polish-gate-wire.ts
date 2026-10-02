@@ -120,7 +120,7 @@ ${HOUSE_CORRECTION_IS_AN_IMPROVEMENT}`;
 
 /**
  Subject shown to naturalness gate.
- 
+
  @example
  ```ts
  const subject: ConsolidationPolishGateSubject = { sourceText: '猫睡了。', archiveText: 'The cat slept.', baseText: 'The cat slept.', polishedText: 'The cat was asleep.', mode: { kind: 'comparative' }, lineStructured: false };
@@ -206,11 +206,11 @@ export type ConsolidationPolishBallot = {
 
 /**
  Narrows candidate name.
- 
+
  @param value - reply candidate name
- 
+
  @returns Whether value names polish candidate or refusal
- 
+
  @example
  ```ts
  if (isPolishChoice(value)) use(value);
@@ -225,11 +225,11 @@ function isPolishChoice(value: unknown,): value is PolishChoice {
 
 /**
  Checks shape of polish gate reply.
- 
+
  @param value - parsed provider value
- 
+
  @returns Whether reply can be read as ballot
- 
+
  @example
  ```ts
  const usable = isConsolidationPolishGateWire(value);
@@ -248,11 +248,11 @@ export function isConsolidationPolishGateWire(
 
 /**
  Reads validated provider reply as naturalness ballot.
- 
+
  @param wire - reply passing shape guard
- 
+
  @returns Narrow ballot preserving raw findings
- 
+
  @example
  ```ts
  const ballot = readConsolidationPolishBallot({ wire, });
@@ -287,11 +287,11 @@ export function readConsolidationPolishBallot(
 
 /**
  Builds fidelity-first final naturalness question.
- 
+
  @param subject - original, archive, base and proposed polish
- 
+
  @returns Messages for one polish judge
- 
+
  @example
  ```ts
  const messages = buildConsolidationPolishGateMessages({ subject, });

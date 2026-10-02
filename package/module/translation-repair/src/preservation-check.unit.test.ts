@@ -1,14 +1,14 @@
 /**
  Tests for the deterministic gate against edits that delete what nobody
  complained about.
- 
+
  Every threshold this guards was calibrated on 50 real graded repairs rather
  than chosen, and two of the cases in this file are bugs that calibration run caught
  in earlier drafts of the gate. Both would have rejected repairs a human
  graded sound, which for a gate is the expensive direction.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 

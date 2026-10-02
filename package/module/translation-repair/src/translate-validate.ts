@@ -57,7 +57,7 @@ import type { PageGrammar, } from './translate-skeleton-page.ts';
 
 /**
  What comparing a candidate against its original found.
- 
+
  @example
  ```ts
  const validation: SliceValidation = { kind: 'valid', pageGrammar: 'strict', };
@@ -69,7 +69,7 @@ export type SliceValidation =
 
     /**
      Grammar that read the page behind this pass.
-     
+
      ON THE PASS AND NOT THE REFUSAL, because a refusal already names the
      blocks it compared and shows which reading produced them, while a pass
      carries no evidence at all. A pass resting on the relaxed grammar is
@@ -180,23 +180,23 @@ function grammarFreeVerdict(
 /**
  Checks one candidate translation against the original and the page it
  replaces.
- 
+
  @param sourceText - original slice
- 
+
  @param candidateText - proposed translation of it
- 
+
  @param pageText - text this candidate would replace, empty where the slice
  has none. Its shape is a floor the candidate carries rather than a ceiling,
  so a rendering restoring what the page left out stays valid
- 
+
  @param syntax - explicit syntax role, absent for ordinary Markdown
- 
+
  @param lineStructured - whether the line-structure rule governs this slice,
  which makes merging its lines a fault. Defaults to false, so a caller that
  cannot say leaves the check off rather than guessing at it from the slice
  alone: the decision is a union over the slice AND its enclosing chunk, and
  the slice half alone covers 55 slices where the union covers 211
- 
+
  @param declared - name pairs the front matter declares, so a linked title
  naming a declared person is held to the declared form (class one hundred
  fourteen). Defaults to none, which leaves that floor silent

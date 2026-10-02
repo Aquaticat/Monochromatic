@@ -9,9 +9,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
  Converts located naturalness findings to continuation evidence.
- 
+
  @param findings - reviewer findings
- 
+
  @returns Prompt-safe evidence without model identity
  */
 function describeNaturalnessFindings(
@@ -27,32 +27,32 @@ function describeNaturalnessFindings(
 
 /**
  Records defect discovery and distinct acceptance challenge for a retained block.
- 
+
  Verdicts are evidence, never withholding authority:
  a rejection or an unheard review roster becomes located findings on the
  settlement while the block ships,
  because reviewer opinion after a completed review round must not pause an
  entry that a producing stage already settled.
- 
+
  @param client - provider client
- 
+
  @param modelIds - independent review roster
- 
+
  @param sourceText - aligned source context
- 
+
  @param blockText - exact retained English wording
- 
+
  @param identityContext - declared names the block's reviewers read, so a
  name in its declared form is not read as awkward English (ledger B28)
- 
+
  @param signal - caller cancellation
- 
+
  @param exchangeTimeoutMs - per-call bound
- 
+
  @param l - stage logger
- 
+
  @returns Findings from both responsibilities, located evidence on rejection
- 
+
  @example
  ```ts
  const findings = await recordArchiveBlockNaturalness(input);

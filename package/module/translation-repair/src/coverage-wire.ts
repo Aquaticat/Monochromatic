@@ -48,7 +48,7 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 /**
  Instructions every coverage call shares.
- 
+
  SEARCHING, NOT TRANSLATING, is the whole discipline here, and models offered a
  Chinese passage and an English document reach for translation by default. The
  rules say so three ways: what the task is, what a wrong answer looks like, and
@@ -96,7 +96,7 @@ export const COVERAGE_IDENTITY_RULE: string = '- A name, handle or place name th
 
 /**
  Messages for one coverage call.
- 
+
  @example
  ```ts
  const plan: CoveragePromptPlan = { messages, };
@@ -111,7 +111,7 @@ export type CoveragePromptPlan = {
 
 /**
  Latest structured verdict that did not resolve insertion placement.
- 
+
  @example
  ```ts
  const evidence: CoverageFollowupEvidence = {
@@ -168,19 +168,19 @@ export type CoverageFollowupEvidence = {
 
 /**
  Builds the sheet asking whether a translation carries one passage.
- 
+
  @param sourcePassage - original-side text whose coverage is in question
- 
+
  @param translationText - translation searched, whole rather than neighbouring
- 
+
  @param followupEvidence - latest unresolved verdict and deterministic evidence
- 
+
  @param identityContext - declared names preparation holds; a passage whose
  most specific content is a name reads as uncovered to a judge who cannot tell
  the English handle is that name (ledger B28)
- 
+
  @returns Messages for the call
- 
+
  @example
  ```ts
  const plan = buildCoverageMessages({ sourcePassage, translationText, },);
@@ -255,7 +255,7 @@ export type CoverageDegree = 'full' | 'partial' | 'none';
 
 /**
  One coverage reply on the wire.
- 
+
  @example
  ```ts
  const wire: CoverageReportWire = { coverage: 'none', quote: '', reason: 'nothing renders it', };
@@ -289,20 +289,20 @@ const COVERAGE_DEGREES: readonly string[] = [
 
 /**
  Guards a coverage reply.
- 
+
  A CLAIM OF COVERAGE WITHOUT A QUOTE IS REFUSED HERE rather than discounted
  later, because the roster treats a refusal as a lost voice and asks that model
  again. The quote is the only part of this reply anything downstream can check,
  so a reply without one carries no evidence at all, and a model that answers
  that way has not done the task.
- 
+
  A claim of NO coverage with a quote is refused for the mirror reason: the two
  fields contradict each other, and neither can be trusted over the other.
- 
+
  @param value - parsed model JSON
- 
+
  @returns Whether value is a coverage reply whose fields agree
- 
+
  @example
  ```ts
  const ok = isCoverageReportWire(JSON.parse(text,),);

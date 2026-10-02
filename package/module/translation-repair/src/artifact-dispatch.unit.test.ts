@@ -1,13 +1,13 @@
 /**
  Tests for choosing which generation's reader an artifact belongs to.
- 
+
  WHAT THESE PIN is that the answer names the generation. A reader that
  returned one merged shape would have to pick a lane for a version 2 artifact,
  which is the question nobody has decided, and a caller that cannot tell which
  generation it is holding cannot ask a question either one can answer.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -32,9 +32,9 @@ const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 
 /**
  A version 1 artifact, which records one lane at the top level.
- 
+
  @returns Artifact as JSON
- 
+
  @example
  ```ts
  const artifact = versionOneArtifact();

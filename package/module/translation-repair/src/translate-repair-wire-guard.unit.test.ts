@@ -1,23 +1,23 @@
 /**
  Tests for the guard that admits a repair reply onto the ballot.
- 
+
  WHY A SIBLING FILE rather than more children beside
  `translate-repair-wire.unit.test.ts`: that file reads the SHEET, this one
  reads the GUARD, and `await describe` throws, so a failure in the first suite
  of a file aborts the rest before it runs.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, making the guard ACCEPT a reply whose
  `resolution` is not a string at all failed no test in this package. Nothing
  said the field is required to be one, so a reply carrying a number, an object
  or nothing there would have reached the union check with a value it cannot
  name, and the guard's whole job is to keep such a reply off the ballot.
- 
+
  EVERY REFUSAL IS PINNED SEPARATELY, since they are the guard: the union is
  enforced here rather than in the type, per the module's own note, and a
  revision carrying no translation is not a revision.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -38,11 +38,11 @@ const REVISED_NAP = 'Mittens naps on the windowsill.[^1]';
 
 /**
  Builds a reply, defaulting to a well-formed revision.
- 
+
  @param over - fields this case replaces
- 
+
  @returns Reply as a model would send it, before the guard reads it
- 
+
  @example
  ```ts
  const reply = replyWith({ resolution: 'unable', },);

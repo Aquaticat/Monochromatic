@@ -64,7 +64,7 @@ import {
 
 /**
  Separator between alternate handles inside one declared field.
- 
+
  Corpus front matter writes `alias` as a comma-joined list, so one field can
  declare several handles and each is a name in its own right.
  */
@@ -72,11 +72,11 @@ const HANDLE_SEPARATOR = ',';
 
 /**
  Shortest form worth checking, counted in letters and digits.
- 
+
  A one or two character handle collides with ordinary words often enough that
  its survival cannot be told from an accident, and this guard is only useful
  while its answer means something.
- 
+
  COUNTED ON THE PROJECTION rather than the declaration, since the projection
  is what collides. `a_b` reads as three characters and compares as two. No
  form in the pinned corpus falls between the two readings, so this is the
@@ -86,11 +86,11 @@ const SHORTEST_CHECKABLE_FORM = 3;
 
 /**
  Every name form one side declares, as separate strings.
- 
+
  @param identity - one side's declared identity
- 
+
  @returns Declared forms, deduplicated, longest first
- 
+
  @example
  ```ts
  const forms = declaredNameForms({ identity: { name: 'Mittens', alias: 'Blossom, Patch', }, },);
@@ -101,7 +101,7 @@ export function declaredNameForms(
 ): readonly string[] {
   /**
    Declared fields that can carry a name, in declaration order.
-   
+
    LOCATION IS DELIBERATELY ABSENT. A place is not a name for this purpose,
    and a translation may legitimately render or omit one.
    */
@@ -145,11 +145,11 @@ export function declaredNameForms(
 
 /**
  One declared form paired with the key it is compared under.
- 
+
  BOTH ARE CARRIED because they answer to different readers: the key decides
  survival, and the form as declared is what a finding must name, since an
  operator reading `mittensthecat` cannot look it up anywhere.
- 
+
  @example
  ```ts
  const keyed: KeyedForm = { form: 'Mittens the Cat', key: 'mittensthecat', };
@@ -175,15 +175,15 @@ type KeyedForm = {
 
 /**
  Declared names the base text carried and the candidate does not.
- 
+
  @param forms - declared name forms to check
- 
+
  @param baseText - text being replaced, which sets what must survive
- 
+
  @param candidateText - proposed replacement
- 
+
  @returns Forms present in base and absent from candidate, longest first
- 
+
  @example
  ```ts
  const dropped = findDroppedDeclaredNames({ forms, baseText, candidateText, },);
@@ -274,13 +274,13 @@ export function findDroppedDeclaredNames(
 
 /**
  Renders a declared-name refusal as a finding.
- 
+
  @param sliceIndex - slice the refusal names
- 
+
  @param dropped - declared forms the replacement no longer carries
- 
+
  @returns Finding in scorecard-stable wording
- 
+
  @example
  ```ts
  const finding = declaredNameRefusalFinding({ sliceIndex: 3, dropped: [ 'Blossom', ], },);
@@ -308,23 +308,23 @@ export function declaredNameRefusalFinding(
 
 /**
  Everything one refusal contributes to a settled slice.
- 
+
  GATHERED IN ONE PLACE because a refusal has to show up in three: the record
  field a reader queries, the finding a scorecard counts, and the log an
  operator watches. Spelled out at each call site, the three drift apart, and a
  refusal missing from any one of them is a refusal nobody can audit.
- 
+
  @example
  ```ts
  const report = declaredNameRefusalReport({ sliceIndex: 3, dropped, },);
  ```
- 
+
  @internal
  */
 export type DeclaredNameRefusalReport = {
   /**
    Fragment to spread into the settled record.
-   
+
    ALWAYS NAMES THE FIELD, empty array when nothing was refused, because the
    repair outcome requires it: a reader of a settled slice should never have
    to tell "dropped nothing" from "nobody wrote the field".
@@ -339,19 +339,19 @@ export type DeclaredNameRefusalReport = {
 
 /**
  Gathers what a refusal owes the record, the findings and the log.
- 
+
  @param sliceIndex - slice the refusal names
- 
+
  @param dropped - declared forms the replacement no longer carries, empty when
  it dropped none
- 
+
  @returns Record fragment and findings, both empty when nothing was refused
- 
+
  @example
  ```ts
  const { record, findings, } = declaredNameRefusalReport({ sliceIndex, dropped, },);
  ```
- 
+
  @internal
  */
 export function declaredNameRefusalReport(

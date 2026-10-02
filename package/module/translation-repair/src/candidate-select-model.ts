@@ -14,26 +14,26 @@ export const FULL_VOTE_WEIGHT = 1;
 /**
  Weight a judge's ballot carries when it names a candidate that judge helped
  write.
- 
+
  Self-judging is ALWAYS allowed, by user decision on 2026-08-15: these models
  have different blind spots, and a producer's reading of its own text is a
  weaker instrument than a disinterested reading, not a worthless one. Barring
  producers threw that reading away and, on a six-model roster with three
  producers, halved the panel to do it.
- 
+
  What the discount corrects is a TILT rather than a declared preference. The
  judge sheet is anonymized and says so, so a producer does not know which
  candidate is its own and cannot set out to back it; it is only somewhat more
  likely to land there. Sizing this as though every self-vote were deliberate
  would overcorrect a bias nobody has measured on this roster yet, which is
  what the judge-quality bench is for.
- 
+
  A half rather than some tuned fraction, and the arithmetic is the argument:
  one author draws at most this much for its own text and three authors at most
  three halves, both short of {@link MIN_SELECTION_WEIGHT}, while FOUR reach it
  exactly. So up to three stakeholders a candidate needs a judge with no stake
  in it, and at four it does not.
- 
+
  That four-stakeholder case is reached by COLLAPSE rather than by a wide
  producing role: models returning byte-identical text merge into one candidate
  carrying every author, so four models writing the same sentence can ship it
@@ -42,12 +42,12 @@ export const FULL_VOTE_WEIGHT = 1;
  and the three-author case that falls short are pinned by
  `runCollapsedSelection` in `candidate-select.unit.test.ts`, so retuning either
  weight fails there rather than moving the bound in silence.
- 
+
  STATED PRECISELY, because a looser version of this sentence was written into
  four documents and was wrong: the discount attaches to a JUDGE AND CANDIDATE
  PAIR, not to a judge. A producer voting for someone else's candidate carries
  full weight, which is the whole point of seating it.
- 
+
  Exactly representable in binary floating point, which the tie comparison
  depends on: two halves sum to one with no residue, so a tie between a
  self-supported candidate and an equally supported rival still reads as a tie.
@@ -56,7 +56,7 @@ export const SELF_VOTE_WEIGHT: number = 1 / 2;
 
 /**
  Summed ballot weight a winner must draw before a selection counts.
- 
+
  One vote deciding is one model deciding, which is the exact thing the
  ensemble exists to prevent: a round where every other judge abstained or was
  lost would otherwise hand the whole chunk to whichever single judge answered.
@@ -67,24 +67,24 @@ export const MIN_SELECTION_WEIGHT = 2;
 
 /**
  Who produced a candidate.
- 
+
  A composite is text NO model wrote or read as a whole, so it names its
  contributors instead of borrowing one model's identity. Reporting stitched
  text under a single model's name would misstate who is answerable for it, and
  every contributor still has a stake in it.
- 
+
  The composite variant also carries the case where several models
  independently produced the SAME text and their candidates were collapsed:
  more than one model has a stake either way, and every one of them holds it.
  What the variant means precisely is "more than one model has a stake in this
  text", with stitching the usual reason.
- 
+
  The incumbent variant is text that was ALREADY THERE: a human translation the
  translate lane offers as one candidate among the fresh ones. Nobody on the
  roster wrote it, so no judge is discounted for it, and the alternative of
  giving it a stand-in model id would both discount a model that never saw it
  and count a producer the roster guard is arithmetic over.
- 
+
  @example
  ```ts
  const producer: CandidateProducer = { kind: 'model', modelId, };
@@ -139,11 +139,11 @@ export type CandidateProducer =
 /**
  Every model with a stake in a candidate, so callers can weigh or exclude all
  of them without knowing how the candidate was assembled.
- 
+
  @param producer - candidate's provenance
- 
+
  @returns Model ids whose ballots for this candidate are self-votes
- 
+
  @example
  ```ts
  const barred = producerModelIds({ kind: 'composite', contributors, },);
@@ -159,11 +159,11 @@ export function producerModelIds(producer: CandidateProducer,): readonly RosterM
 
 /**
  Renders a producer for logs and scorecard findings.
- 
+
  @param producer - candidate's provenance
- 
+
  @returns Model id, or the contributor list for a composite
- 
+
  @example
  ```ts
  const label = describeProducer(candidate.producer,);
@@ -197,20 +197,20 @@ export function describeProducer(producer: CandidateProducer,): string {
 /**
  Combines the stakes of two candidates whose text turned out identical, so
  collapsing a duplicate never drops a model from the discounted set.
- 
+
  Without this, an editor could judge its own words at full weight: if the
  composite carries one model's operation while another model's whole-chunk text
  happens to match it exactly, keeping either candidate alone would leave the
  other voting on text it wrote as though it were a stranger's.
- 
+
  @param left - producer of the candidate being kept
- 
+
  @param right - producer of the duplicate being collapsed into it
- 
+
  @returns Incumbent carrying every stake when either side is the incumbent,
  single-model producer when both name the same one model, else a composite
  over the union in first-seen order
- 
+
  @example
  ```ts
  const producer = mergeProducers({ left: kept.producer, right: duplicate.producer, },);
@@ -283,7 +283,7 @@ export function mergeProducers(
 /**
  One proposed candidate with the provenance that bars its authors from
  judging it.
- 
+
  @example
  ```ts
  const candidate: Candidate<string> = {
@@ -312,11 +312,11 @@ export type Candidate<ValueT,> = {
 
 /**
  What a selection round counted, recorded whether or not it chose anything.
- 
+
  Kept on BOTH outcomes because the decline rate is the measurement that says
  whether an ensemble does any work at all: a stage that always declines buys
  several times the tokens for a result identical to one model's.
- 
+
  @example
  ```ts
  const tally: SelectionTally = { judgesAvailable: 4, ballots: 3, abstentions: 1, };
@@ -341,7 +341,7 @@ export type SelectionTally = {
 
   /**
    Ballots naming a candidate their own judge helped write.
-   
+
    Counted on every round because seating producers is a deliberate trade of
    independence for coverage, and a trade nobody measures is an assumption. A
    stage where this approaches the ballot count is one where the discount is
@@ -352,7 +352,7 @@ export type SelectionTally = {
 
 /**
  One judge's ballot as cast.
- 
+
  Kept because the tally answers how many judges preferred something and never
  why. Ballot reasons reached a log line and nothing durable, so a run whose log
  was lost, which happened on 2026-08-13 when a pass wrote twenty minutes of
@@ -360,7 +360,7 @@ export type SelectionTally = {
  made. That is tolerable while selection only ranks repairs of text the
  pipeline keeps either way, and not once selection decides whether a human
  translation is replaced.
- 
+
  @example
  ```ts
  const ballot: SelectionBallot = { modelId, best: 2, reason: 'renders the omitted clause', };
@@ -394,7 +394,7 @@ export type SelectionBallot = {
 
   /**
    Whether this judge named text it produced.
-   
+
    Recorded rather than derived from the weight, because deriving it would
    make every self-preference measurement depend on the two weights staying
    different from each other. Those are tuning knobs; this is a fact about
@@ -405,11 +405,11 @@ export type SelectionBallot = {
 
 /**
  What one candidate drew, so a decline is as auditable as a win.
- 
+
  A round tally says the leader was short of the minimum without saying by how
  much or against what, and a short leader is the commonest outcome of a judged
  round. This is the per-candidate half of that account.
- 
+
  @example
  ```ts
  const drawn: CandidateWeight = { index: 2, ballots: 3, fullVotes: 2, selfVotes: 1, weight: 2.5, };
@@ -444,10 +444,10 @@ export type CandidateWeight = {
 
 /**
  Which kind of failure a decline was.
- 
+
  The two are not interchangeable, and treating them alike is how a pipeline
  either overrides its judges or throws away work over a coin flip:
- 
+
  -   `indecision` means judges answered but did not converge, by tying or by
      leaving the leader short of the minimum votes. Every candidate may be
      perfectly good; nobody said otherwise. This is a failure to rank.
@@ -455,7 +455,7 @@ export type CandidateWeight = {
      acceptable, or that no judge could be seated at all. This
      is a substantive negative verdict, and shipping over it would be
      overruling the judges rather than routing around their silence.
- 
+
  @example
  ```ts
  const disposition: SelectionDisposition = 'indecision';
@@ -467,7 +467,7 @@ export type SelectionDisposition =
 
 /**
  What a selection round decided.
- 
+
  @example
  ```ts
  const outcome: SelectionOutcome<string> = { kind: 'declined', reason: 'judges tied', tally, };
@@ -495,7 +495,7 @@ export type SelectionOutcome<ValueT,> =
 
     /**
      One-based index of the winner in the slate the judges were shown.
-     
+
      Without it a ballot saying `best: 2` cannot be joined to any text later:
      the caller may rotate the slate before showing it, so the position is the
      only thing a ballot and a candidate have in common, and nothing recorded
@@ -511,7 +511,7 @@ export type SelectionOutcome<ValueT,> =
     /**
      Degradation findings from the judge fan-out, for the caller to carry
      into the artifact.
-     
+
      The tally already counts how many judges answered, and that is not the
      same thing: it says how many voices were lost without saying WHICH model
      went silent, and the identity is what every voice-loss diagnosis has

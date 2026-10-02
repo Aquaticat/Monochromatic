@@ -7,7 +7,7 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 
 /**
  Unique block reach and relation count for one pairing.
- 
+
  @example
  ```ts
  const counts: BlockPairCounts = { source: 1, target: 2, relations: 2, };
@@ -32,11 +32,11 @@ export type BlockPairCounts = {
 
 /**
  Counts unique blocks separately from many-to-many relations.
- 
+
  @param pairs - committed block correspondences
- 
+
  @returns Unique reach on each side beside relation count
- 
+
  @example
  ```ts
  const counts = countPairedBlocks({

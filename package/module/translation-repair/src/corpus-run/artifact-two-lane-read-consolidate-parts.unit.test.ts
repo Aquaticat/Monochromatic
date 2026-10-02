@@ -1,6 +1,6 @@
 /**
  Tests for the leaf shapes one consolidated slice is built from.
- 
+
  WHY THE SHIPPED FIELD IS STRICT AND THE OTHERS ARE NOT. Every other field
  here is evidence ABOUT a decision; `shipped` is the decision's OUTPUT, and a
  consumer writes its text into the document. So the terminal and the shipped
@@ -8,23 +8,23 @@
  disagreeing with itself about that would either ship a passage nobody settled
  on or silently drop one that was, and both are wrong at the page rather than
  in a report.
- 
+
  FOUR CASES MAKE THAT A TABLE rather than a rule: consolidated-with-text and
  unchanged-without are the two agreements, and the two crossings are the two
  refusals. A check reading either field alone would accept all four.
- 
+
  WHY THE BALLOT'S EVIDENCE FIELDS ARE CHOICES AND NOT PROSE. The gate was once
  found shipping a rendering its own ballots named faultier, because nothing
  counted them. A name outside the three would be counted as nothing and would
  weaken that evidence silently, so the lists are parsed as names rather than
  as strings.
- 
+
  `artifact-two-lane-read-consolidate.ts` is the only caller, and it asks these
  about whole valid artifacts. Every refusal here is a branch no valid fixture
  reaches.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -74,9 +74,9 @@ const VERDICT_MODEL = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Ballot every gate case departs from one field at a time.
- 
+
  @returns Ballot as the gate records one
- 
+
  @example
  ```ts
  const ballot = validBallot();

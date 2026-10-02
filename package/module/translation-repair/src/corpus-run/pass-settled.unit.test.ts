@@ -1,13 +1,13 @@
 /**
  Tests for what the scheduler counts as settled.
- 
+
  The module note records a past silent defect: a directory or a symlink named
  `<id>.json` once marked the entry settled, and the entry was never run again.
  These cases hold that line, and the agreement between the id set and the
  count that the against-target line reads.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 

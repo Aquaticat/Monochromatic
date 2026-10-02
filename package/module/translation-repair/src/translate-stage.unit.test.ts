@@ -2,20 +2,20 @@
  Tests for the translate lane: several models render one slice from its
  original, the translation already in the archive stands among them, and
  judges choose.
- 
+
  What these lock down is mostly what the stage does when something is MISSING,
  because that is the whole reason the lane exists. A slice with no translation
  must still produce one; a translator that answers with nothing must not put an
  empty candidate on the ballot; a lost voice must be named rather than reduce
  quietly to a smaller slate.
- 
+
  Judges are scripted BY THE TEXT they see rather than by candidate number, on
  purpose: the stage rotates the slate per slice so the incumbent does not sit
  in one position, and a test that pinned index 1 would be asserting the
  rotation rather than the decision.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -100,7 +100,7 @@ const JUDGE_WINDOW = firstRoundWindow({ benchSize: JUDGES.length, },);
 
 /**
  What each model returns when asked to translate.
- 
+
  A model absent from the map answers with prose wrapped around its JSON, which
  fails the wire guard and costs the stage that voice.
  */
@@ -116,25 +116,25 @@ type CallLog = {
 
 /**
  Client serving both stages of the lane from a script.
- 
+
  @param translations - what each translator returns
- 
+
  @param followupTranslations - alternate renderings after exact rejection evidence
- 
+
  @param needle - text the judges vote for, absent when they should abstain
- 
+
  @param needleAfterRetry - text the judges vote for once the panel has been
  asked a second time, so a case can script a panel that declines and then
  agrees; without it the panel answers the same way every round
- 
+
  @param calls - shared call log the cases assert on
- 
+
  @param judgeSheets - every judge sheet this run produced, so a case can read
  what judges were actually told rather than what the prompt builder is
  believed to say
- 
+
  @returns Client honoring the script
- 
+
  @example
  ```ts
  const client = laneClient({ translations, needle: 'dozes', calls, },);
@@ -277,21 +277,21 @@ function laneClient(
 
 /**
  Runs the lane over the fixture slice.
- 
+
  @param translations - what each translator returns
- 
+
  @param followupTranslations - alternate outputs for stage-local repair
- 
+
  @param needle - text the judges vote for, empty to make them decline
- 
+
  @param incumbentText - translation as it stands
- 
+
  @param sourceText - original passage, defaulting to shared fixture
 
  @param messages - log the stage's lines are kept in, absent to log as usual
 
  @returns Stage result plus the call log
- 
+
  @example
  ```ts
  const { result, } = await runLane({ translations, needle: 'dozes', },);

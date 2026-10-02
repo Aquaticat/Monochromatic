@@ -62,12 +62,12 @@ const CONTAINER_TYPE = 'mdxJsxFlowElement';
 
 /**
  Where a dissolved container's two tags sit, in body-relative offsets.
- 
+
  BOTH HALVES ARE REPORTED SEPARATELY rather than as one whole-element span,
  because the damage they permit is asymmetric: a range covering one tag and
  not the other destroys the element, while a range covering both or neither
  leaves it intact. Only the halves can express that.
- 
+
  @example
  ```ts
  const span: ContainerSpan = {
@@ -112,7 +112,7 @@ export type ContainerSpan = {
 
 /**
  Blocks a walk produced, beside the containers it dissolved to get them.
- 
+
  @example
  ```ts
  const { blocks, containers, } = flattenContainers({ children: root.children, },);
@@ -132,12 +132,12 @@ export type FlattenedBlocks = {
 
 /**
  Raised when a container due to be dissolved carries no offsets.
- 
+
  Parsed trees always carry positions, so this means a constructed tree reached
  a walk that reports spans. Reporting nothing for it would be worse than
  refusing: the tags would go back to belonging to no block and being guarded
  by nothing, which is the defect this walk exists to close.
- 
+
  @example
  ```ts
  throw new UnpositionedContainerError({ name: 'details', },);
@@ -151,9 +151,9 @@ export class UnpositionedContainerError extends Error {
 
   /**
    Builds the failure naming which element could not be located.
-   
+
    @param name - element name as written, empty for a fragment
-   
+
    @example
    ```ts
    throw new UnpositionedContainerError({ name: 'BlurBlock', },);
@@ -173,11 +173,11 @@ export class UnpositionedContainerError extends Error {
  Whether a node carries the position offsets every later stage anchors
  against. Parsed trees always do; a constructed one does not, and promoting
  an unpositioned child would produce a block that cannot anchor an issue.
- 
+
  @param node - candidate mdast node
- 
+
  @returns Whether both start and end offsets are present
- 
+
  @example
  ```ts
  if (isPositioned(child,)) { }
@@ -197,7 +197,7 @@ function isPositioned(node: ForeignBorrowed<RootContent>,): boolean {
  A JSX flow element carrying block children. mdast's own `RootContent` union
  has no member for JSX elements (they arrive from the MDX extension), so the
  shape is named structurally, which is also all the walk needs.
- 
+
  @example
  ```ts
  const container = node as BlockContainer;
@@ -206,7 +206,7 @@ function isPositioned(node: ForeignBorrowed<RootContent>,): boolean {
 type BlockContainer = {
   /**
    Element name as written.
-   
+
    DECLARED OPTIONAL RATHER THAN NULLABLE, though the MDX extension does write
    null here for a fragment. The property is foreign, so its absence is read
    at the boundary with a type check rather than modelled as a union this repo
@@ -222,7 +222,7 @@ type BlockContainer = {
 
 /**
  Whether a value read off a foreign node is a list of mdast nodes.
- 
+
  A PREDICATE RATHER THAN AN ASSERTION, which is the whole point of it. The
  `in` check that proves `children` exists types it `unknown`, and naming the
  element type with `as` claims two things at once: that the value is an array,
@@ -231,11 +231,11 @@ type BlockContainer = {
  runtime and lets the predicate carry the second, so neither
  `no-unsafe-type-assertion` nor `prefer-readonly-parameter-types` has anything
  to object to.
- 
+
  @param value - property value read from a foreign node
- 
+
  @returns Whether it is an array this walk can read as nodes
- 
+
  @example
  ```ts
  if (isNodeList(children,)) { }
@@ -250,11 +250,11 @@ function isNodeList(value: unknown,): value is BlockContainer['children'] {
  element holding at least one real block, every child positioned. A
  self-closing component such as a photo scroll has no children and stays a
  block, which is correct: it is content, not packaging.
- 
+
  @param node - candidate mdast node
- 
+
  @returns Whether the node packages blocks rather than being one
- 
+
  @example
  ```ts
  if (isUnwrappableContainer(node,)) { }
@@ -286,18 +286,18 @@ function isUnwrappableContainer(
 
 /**
  Reads where a container's two tags sit, from its own span and its children's.
- 
+
  The tags are never nodes of their own, so they can only be named as what is
  left of the element once its promoted children are taken out of it: the head
  before the first child, and the tail after the last.
- 
+
  @param container - container about to be dissolved, children positioned
- 
+
  @returns Both tag spans, body-relative
- 
+
  @throws {@link UnpositionedContainerError} when the element carries no
  offsets of its own
- 
+
  @example
  ```ts
  const span = containerSpanOf({ container, },);
@@ -354,18 +354,18 @@ function containerSpanOf(
  disclosure nested inside a disclosure also flattens. Walks with an explicit
  work stack rather than recursion, and preserves document order: a
  container's children take its place exactly where it stood.
- 
+
  REPORTS WHAT IT DISSOLVED, because after this walk nothing else can. The tags
  belong to no promoted block, so a later reader handed only the blocks cannot
  tell a page carrying containers from one that never had any.
- 
+
  @param children - top-level mdast blocks in source order
- 
+
  @returns Blocks in source order beside every container dissolved to get them
- 
+
  @throws {@link UnpositionedContainerError} when a dissolved container carries
  no offsets of its own
- 
+
  @example
  ```ts
  const { blocks, containers, } = flattenContainers({ children: root.children, },);

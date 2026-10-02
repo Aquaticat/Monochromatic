@@ -1,14 +1,14 @@
 /**
  Tests for reading which decider chose a settled preparation's sections.
- 
+
  WHAT THESE PIN is the three-way reading, unrecorded against deterministic
  against supplied, and the shapes the reader refuses because this pipeline
  cannot write them. Each refusal mirrors an invariant the section round
  already holds, so a refusal that fired on a shape the producer CAN emit
  would reject valid artifacts, which is the failure these are pointed at.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

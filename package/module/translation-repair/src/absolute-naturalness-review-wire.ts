@@ -11,7 +11,7 @@ import { foldSoftBreaks, } from './soft-break-fold.ts';
 
 /**
  One paragraph-located material naturalness defect.
- 
+
  @example
  ```ts
  const finding: AbsoluteNaturalnessFinding = { paragraph: 1, problem: 'Replace source-language word order.' };
@@ -31,7 +31,7 @@ export type AbsoluteNaturalnessFinding = {
 
 /**
  Provider reply judging one whole English candidate against absolute publication quality.
- 
+
  @example
  ```ts
  const reply: AbsoluteNaturalnessReviewWire = { acceptable: true, findings: [], reason: 'publication-ready English' };
@@ -56,7 +56,7 @@ export type AbsoluteNaturalnessReviewWire = {
 
 /**
  Candidate and context shown to absolute reviewer.
- 
+
  @example
  ```ts
  const subject: AbsoluteNaturalnessReviewSubject = { sourceText: '猫睡了。', candidateText: 'The cat slept.', paragraphs: ['The cat slept.'] };
@@ -144,11 +144,11 @@ export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseForm
 
 /**
  Checks reviewer reply shape and verdict-to-findings consistency.
- 
+
  @param value - parsed provider value
- 
+
  @returns Whether value is usable absolute review
- 
+
  @example
  ```ts
  if (isAbsoluteNaturalnessReviewWire(value)) consume(value);
@@ -205,13 +205,13 @@ export function isAbsoluteNaturalnessReviewWire(
 
 /**
  Builds independent absolute-quality question over exact would-ship wording.
- 
+
  @param subject - source context, exact candidate and declared identities
- 
+
  @param perspective - distinct first review or prior-acceptance challenge task
- 
+
  @returns Fenced reviewer conversation
- 
+
  @example
  ```ts
  const messages = buildAbsoluteNaturalnessReviewMessages({ subject, perspective: 'defect-discovery', });

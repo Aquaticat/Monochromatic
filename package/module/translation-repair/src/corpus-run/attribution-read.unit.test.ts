@@ -1,20 +1,20 @@
 /**
  Tests for the parser that reads attribution out of settled artifacts.
- 
+
  These exist because the report's own tests hand `sliceCritics` in by hand, so
  they exercise the FOLD and never the WIRING. The eligible-versus-ineligible
  decision the whole report rests on is not made there at all: it is made in
  `attributionEntryOf`, by OMITTING the key for an artifact that carries no
  attribution.
- 
+
  The distinction these guard is ABSENT versus MALFORMED. Only an absent key
  means the entry predates attribution. A key that is present but corrupt must
  fail loudly, because letting it fall through to the same omission would move
  a broken artifact into the pre-feature population on the strength of its own
  breakage, and the population is what every number divides by.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -41,7 +41,7 @@ import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 
 /**
  Pipeline commit every fixture artifact carries unless its case sets one.
- 
+
  Invented, and shared, so the fixture directory is one generation and the
  generation guard passes without these parsing cases having to think about it.
  */
@@ -49,7 +49,7 @@ const SHARED_TIP = 'f000000000000000000000000000000000000000';
 
 /**
  Built pipeline every fixture artifact carries unless its case sets one.
- 
+
  Shared for the same reason as {@link SHARED_TIP}, and separate from it
  because this is the field the pool actually partitions by: a commit says
  where code came from, this says which build ran.
@@ -75,11 +75,11 @@ const NAP = 'issue/nap';
 
 /**
  Writes artifacts into a fresh throwaway directory that removes itself.
- 
+
  @param artifacts - file name to artifact body
- 
+
  @returns Directory holding them, disposable
- 
+
  @example
  ```ts
  await using scratch = await writeArtifacts({ artifacts: { 'a.json': {}, }, },);
@@ -136,15 +136,15 @@ async function writeArtifacts(
 
 /**
  Builds an artifact carrying attribution and one accepted issue.
- 
+
  Deliberately NOT empty. Fixtures whose `claimAttributions` and `issues` are
  both empty are satisfied by parsers that always return nothing, so they
  constrain neither the proposer path nor the issue path.
- 
+
  @param sliceCritics - calibration to record
- 
+
  @returns Artifact body
- 
+
  @example
  ```ts
  const body = artifactWith({ sliceCritics, },);
@@ -180,12 +180,12 @@ function artifactWith(
 
 /**
  Gathers a directory and keys its refusals by the file each one names.
- 
+
  @param artifactsDir - directory the case wrote its artifacts into
- 
+
  @returns Refusal reason per file, absent for a file the gather accepted, so
  a shape a check let through reads as a missing key
- 
+
  @example
  ```ts
  const reasons = await refusalsByFile({ artifactsDir: scratch.dir, },);
@@ -736,14 +736,14 @@ await describe({
             /**
              One artifact per shape a decoder refuses, each paired with the path
              AND the reason its refusal has to carry.
-             
+
              BOTH HALVES, because a path alone is a prefix of the path the next
              check down would name: with the record checks removed, reading a
              field off a string yields `undefined`, the field's own check refuses that
              instead, and `proposers[0]` is satisfied by a refusal naming
              `proposers[0].modelId`. Three of these passed against three missing
              guards before the reason was pinned beside the path.
-             
+
              `heardCriticIds` is decoded before `claimAttributions`, since a
              proposer's `modelId` is now checked against it, so the shapes aimed
              at `claimAttributions` carry a valid `heardCriticIds: [TABBY]`: a
@@ -822,7 +822,7 @@ await describe({
              All nine written into one directory, so a single gather answers them
              together and a shape that was quietly accepted shows up as a missing
              row rather than as a passing case.
-             
+
              Each artifact records the id its file is named for, because the pool
              treats a file whose recorded id is not its file name as unplaceable,
              and one readable artifact rides along because a pool with nothing

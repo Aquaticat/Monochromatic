@@ -33,17 +33,17 @@ const SETTLED_WITHOUT_A_GATE: readonly ConsolidationTerminal[] = [
 
 /**
  Whether settlement is worth keeping across runs.
- 
+
  SETTLED VERDICTS ONLY. Thin panel is transient provider fact. Settlement
  retaining unendorsed baseline is nonterminal even when its own panel reached
  quorum, because final-selection guard will refuse same result.
- 
+
  @param settlement - what stage settled
- 
+
  @param standingMayShip - whether standing baseline has prior endorsement
- 
+
  @returns Whether to persist it
- 
+
  @example
  ```ts
  const keep = consolidationWorthResuming({ settlement, standingMayShip: true, });
@@ -117,21 +117,21 @@ export function consolidationWorthResuming(
 /**
  Persists bought consolidation only while caller remains live and settlement
  is stable enough for warm run.
- 
+
  @param key - exact consolidation question
- 
+
  @param settlement - complete stage answer
- 
+
  @param cache - consolidation persistence boundary
- 
+
  @param standingMayShip - whether unchanged baseline may become final output
- 
+
  @param signal - caller abort checked before write
- 
+
  @returns Whether settlement persisted and may be reused
- 
+
  @throws Whatever caller abort reason or persistence throws
- 
+
  @example
  ```ts
  await persistConsolidationSettlement({ key, settlement, cache, standingMayShip: true, signal, });

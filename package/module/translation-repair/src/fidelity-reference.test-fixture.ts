@@ -39,11 +39,11 @@ export const REVIEW_DONOR: string = 'On a winter holiday she travelled to a dist
 
 /**
  Narrows a fixture builder result without pretending an undamageable case is usable.
- 
+
  @param damage - builder output for invented content
- 
+
  @returns Definite fixture mutation
- 
+
  @example
  ```ts
  const built = fixtureDamage(deleteOneSentence({ cleanText }));
@@ -57,9 +57,9 @@ function fixtureDamage(damage: DamageAttempt,): Extract<DamageAttempt, { readonl
 
 /**
  Builds disjoint original-coordinate edits, including a length-changing first edit.
- 
+
  @returns Invented files and independently declared reference identity
- 
+
  @example
  ```ts
  const fixture = reviewedFixture();

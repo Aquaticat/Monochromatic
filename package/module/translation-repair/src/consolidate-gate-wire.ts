@@ -51,11 +51,11 @@ const GATE_NAMES: readonly GateChoice[] = [
 
 /**
  Whether a value is one of the names a judge may use.
- 
+
  @param value - candidate name from a reply
- 
+
  @returns Whether it names a rendering or the refusal
- 
+
  @example
  ```ts
  const named = isGateChoice('standing',);
@@ -70,7 +70,7 @@ export function isGateChoice(value: unknown,): value is GateChoice {
 
 /**
  One judge's reading of the consolidation against the standing text.
- 
+
  @example
  ```ts
  const ballot: GateBallot = { choice: 'standing', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: 'x', };
@@ -133,15 +133,15 @@ export type GateWire = {
 
 /**
  Whether a reply carries the shape a ballot is read from.
- 
+
  SHAPE ONLY, on the lane contest's rule: whether the findings are consistent
  with the choice is the reader's question, because an inconsistent ballot is
  still a ballot that was cast.
- 
+
  @param value - parsed reply
- 
+
  @returns Whether it can be read as a ballot
- 
+
  @example
  ```ts
  const usable = isConsolidateGateWire(reply,);
@@ -161,11 +161,11 @@ export function isConsolidateGateWire(value: unknown,): value is GateWire {
 
 /**
  Reads a validated reply as a ballot.
- 
+
  @param wire - reply that passed the shape guard
- 
+
  @returns Ballot with its findings narrowed
- 
+
  @example
  ```ts
  const ballot = readConsolidateGateBallot({ wire, },);
@@ -254,7 +254,7 @@ export type ConsolidateGateSubject = {
 
   /**
    Names and handles both documents' front matter declares, when either does.
-   
+
    WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION,
    which is the defect measured on `Zha_Ke` slice 0 and fixed for every other
    model-facing stage.
@@ -270,11 +270,11 @@ export type ConsolidateGateSubject = {
 
 /**
  Builds the exchange asking one judge to gate one consolidation.
- 
+
  @param subject - passage, archive rendering and the two renderings
- 
+
  @returns Messages for one exchange
- 
+
  @example
  ```ts
  const messages = buildConsolidateGateMessages({ subject, },);
@@ -372,7 +372,7 @@ export function buildConsolidateGateMessages(
 
   /**
    Size note and its separating blank line, or nothing at all.
-   
+
    PLACED AFTER THE PASSAGES so a judge reads the texts before their
    sizes, rather than being handed a number to confirm.
    */

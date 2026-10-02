@@ -99,7 +99,7 @@ const HEADING_KIND = 'heading';
 
 /**
  One span of the archive that ships as it stands.
- 
+
  @example
  ```ts
  const span: ArchiveOriginalSpan = { startOffset: 3966, endOffset: 4561, note: '这段话以下全部...', };
@@ -124,7 +124,7 @@ export type ArchiveOriginalSpan = {
 
 /**
  What one archive's notes say about whose text the page carries.
- 
+
  @example
  ```ts
  const reading: ArchiveOriginalReading = { kind: 'none', };
@@ -197,11 +197,11 @@ type PlacedNote = {
 
 /**
  Reads one note by the marks it carries.
- 
+
  @param note - note text, folded
- 
+
  @returns Whether it seals the page, a span, or nothing
- 
+
  @example
  ```ts
  readNote({ note: '这篇文章的原文即英文，请翻译时不要动本篇。', },);
@@ -240,11 +240,11 @@ export function readNote(
 
 /**
  Every editor comment of a document with where it ends, in document order.
- 
+
  @param document - parsed archive
- 
+
  @returns Folded note text beside the offset the seal would start at
- 
+
  @example
  ```ts
  const notes = documentNotes({ document, },);
@@ -300,13 +300,13 @@ export function archiveNoteReadingsOf(
 
 /**
  Where a span opened at one offset ends: the next heading, or the document.
- 
+
  @param document - parsed archive
- 
+
  @param startOffset - where the seal starts
- 
+
  @returns Exclusive end offset
- 
+
  @example
  ```ts
  spanEnd({ document, startOffset: 3966, },);
@@ -337,16 +337,16 @@ function spanEnd(
 
 /**
  Reads what an archive's notes say about whose text the page carries.
- 
+
  A whole-page note outranks every span: the entry is declined and no seal
  matters. Spans that overlap (a second span note inside the first's reach)
  are merged by taking the earlier start, since the seal is the same either
  way.
- 
+
  @param document - parsed archive, before any lane ran
- 
+
  @returns The reading
- 
+
  @example
  ```ts
  const reading = archiveOriginalReadingOf({ document: parseDocument({ text: archiveText, },), },);

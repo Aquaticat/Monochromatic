@@ -27,11 +27,11 @@ import {
 /**
  Declared names and handles a run licensed, or a positive statement that the
  pair declared none.
- 
+
  A TAGGED ABSENCE rather than an optional string, so a reader of a persisted
  row can tell "this pair declared nothing" from "nobody recorded whether it
  did". The two mean opposite things when a name-shaped finding turns up.
- 
+
  @example
  ```ts
  const identity: SettledIdentity = { kind: 'declared', context: '- name: ...', };
@@ -57,13 +57,13 @@ export type SettledIdentity = {
 /**
  What the pages a subject's original links say, as the audit reads them, or
  a positive statement of why it shows none (ledger B29).
- 
+
  THREE KINDS, NOT AN EMPTY STRING. An empty read means the page links
  nowhere, or that it links pages nobody read: `citedReferenceBlock` returns
  nothing for linked pages when no key is set. Recorded as one value, a row
  audited without references its page cites would read as a page that cites
  nothing.
- 
+
  @example
  ```ts
  const references: SettledReferences = { kind: 'cited', context: 'Reference 1 (...): ...', };
@@ -100,7 +100,7 @@ export type SettledReferences = {
 /**
  One slice put in front of the audit, carrying everything a later reader needs
  to say which decision it describes.
- 
+
  @example
  ```ts
  const subject: SettledAuditSubject = { runSet, entryId, sliceIndex, ... };
@@ -142,7 +142,7 @@ export type SettledAuditSubject = {
   /**
    Whether the text under audit is the ARCHIVE's own English rather than a
    fresh rendering.
-   
+
    SEPARATED because the instrument was built for output with no BEFORE text,
    and a retained slice is the opposite case. Reading both in one denominator
    would blur the first real measurement it produces.
@@ -161,7 +161,7 @@ export type SettledAuditSubject = {
 
   /**
    Whole original page the slice was cut from, at the artifact's commit.
-   
+
    CARRIED FOR ITS LINKS (ledger B29). The producing run read what the
    pages the WHOLE original links say and showed every critic and panel
    that block, so the audit reads the same page's links rather than the
@@ -172,7 +172,7 @@ export type SettledAuditSubject = {
 
   /**
    Whether any later stage overruled that rendering.
-   
+
    ADDED BESIDE the lane-scoped fields rather than replacing them, for the
    reason `rendering-audit-settled-relation.ts` gives. The audit still reads what the judges
    really decided; this says whether a reader of an assembled document
@@ -188,7 +188,7 @@ export type SettledAuditSubject = {
 
 /**
  Names the delivery kind whose text is the archive's own wording.
- 
+
  A retained slice ships the incumbent unchanged, so auditing it audits the
  archive. Anything else ships something the lane produced.
  */
@@ -196,15 +196,15 @@ const ARCHIVE_TEXT_DELIVERY: ArtifactSliceDelivery['kind'] = 'incumbent-retained
 
 /**
  Reads the identity block a preparation produced into a tagged answer.
- 
+
  Empty counts as none, matching what `buildCriticMessages` does with it: a
  zero-length block is rendered as no block at all, so recording it as declared
  would claim the stages saw something they did not.
- 
+
  @param prepared - preparation recomputed from the corpus
- 
+
  @returns Declared block, or a positive none
- 
+
  @example
  ```ts
  const identity = identityOf({ prepared, },);
@@ -228,21 +228,21 @@ export function identityOf({ prepared, }: { readonly prepared: PreparedDocumentP
 
 /**
  Turns one artifact's translate-lane delivery into audit subjects.
- 
+
  @param artifact - parsed artifact
- 
+
  @param runSet - archive subdirectory it came from
- 
+
  @param identity - names its producing run licensed
- 
+
  @param pageSourceText - whole original at the artifact's commit, whose
  links the audit reads
- 
+
  @returns One subject per decided slice
- 
+
  @throws {@link Error} when a row that passed the decided filter is not
  decided, which cannot happen and is never swallowed if it does
- 
+
  @example
  ```ts
  const subjects = subjectsOf({ artifact, runSet, identity, pageSourceText, },);
@@ -269,7 +269,7 @@ export function subjectsOf(
 
   /**
    What would stand at each slice, by the index every stage names it by.
-   
+
    DERIVED ONCE PER ARTIFACT rather than once per subject, since the reader
    walks every comparison row to answer any single one of them.
    */
@@ -312,7 +312,7 @@ export function subjectsOf(
 
       /**
        What would stand at this slice.
-       
+
        THROWN ON RATHER THAN SKIPPED. The comparison is derived from the same
        slicing the lane delivered, so a delivered slice no comparison row
        names is a contradiction inside one artifact. Dropping it would

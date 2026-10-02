@@ -3,7 +3,7 @@
  issue ids bind by sheet number, claim lines render per issue, both
  documents fence verbatim, and only listed verdicts pass the guard.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

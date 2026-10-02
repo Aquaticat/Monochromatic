@@ -93,7 +93,7 @@ function attestationVotesNeeded({ heard, }: { readonly heard: number; },): numbe
 /**
  Puts every verified detail to the bench as a yes-or-no candidate and keeps
  those enough voices confirm.
- 
+
  EXTRACTION PROPOSES, CONFIRMATION DISPOSES. A voice that answered the open
  question with an empty list never said the detail is false; it said it
  found none, which on Mio26 four of five voices did in a handful of tokens.
@@ -101,37 +101,37 @@ function attestationVotesNeeded({ heard, }: { readonly heard: number; },): numbe
  there is nothing to ask, and when nobody answers the confirmation the
  extraction's own quorum stands, so a silent hour cannot lose a detail the
  open question already carried.
- 
+
  @param client - provider client
- 
+
  @param modelIds - bench asked, the extraction's
- 
+
  @param sourceText - the original document
- 
+
  @param archiveText - the archive rendering as inherited
- 
+
  @param referenceContext - reference lines, one per page
- 
+
  @param candidates - verified details from any voice, numbered in this order
- 
+
  @param extracted - details the extraction quorum alone kept, the fallback
- 
+
  @param signal - the entry's abort
- 
+
  @param exchangeTimeoutMs - per-call timeout
- 
+
  @param l - stage logger
- 
+
  @param fanOut - seats a round asks: the window of quorum plus one by
  default, or the whole bench a fixture scripting every seat asks for
- 
+
  @returns Details to attest and the findings of the round
- 
+
  @example
  ```ts
  const { details, confirmFindings, } = await confirmCandidates({ client, modelIds, sourceText, archiveText, referenceContext, candidates, extracted, signal, exchangeTimeoutMs, l, },);
  ```
- 
+
  @internal
  */
 async function confirmCandidates(

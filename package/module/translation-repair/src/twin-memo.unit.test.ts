@@ -1,16 +1,16 @@
 /**
  Tests for the in-run memo of slices asking the same question.
- 
+
  WHAT THESE PIN: a slice with no twin buying its key buys and registers; a
  twin arriving during that buy waits and reuses what was stored; a twin
  arriving during a buy that stored nothing asks for itself; a third twin
  waits for the second rather than buying beside it; a failed buy withdraws
  its entry, warns, and leaves the waiting twin to ask for itself; and a
  different key never waits.
- 
+
  Every purchase finishes when the test opens its gate, so which twin is
  still buying when another arrives is the test's to choose.
- 
+
  @module
  */
 
@@ -71,9 +71,9 @@ type Buyer = {
 
 /**
  Builds a gated buyer.
- 
+
  @returns Buyer with empty records
- 
+
  @example
  ```ts
  const shop = buyer();
@@ -111,11 +111,11 @@ function buyer(): Buyer {
 
 /**
  Reads what a purchase left for its twins.
- 
+
  @param bought - purchase
- 
+
  @returns Record when stored
- 
+
  @example
  ```ts
  persistedOf({ record: 'r', persisted: true, },);
@@ -132,15 +132,15 @@ function persistedOf(bought: Purchase,): TwinStored<string> {
 
 /**
  Asks under the memo with the fixture's buyer.
- 
+
  @param memo - shared memo
- 
+
  @param shop - buyer
- 
+
  @param key - question asked
- 
+
  @returns What came of asking
- 
+
  @example
  ```ts
  const first = asking({ memo, shop, },);
@@ -168,7 +168,7 @@ async function asking(
 
 /**
  Lets every settled continuation run.
- 
+
  @example
  ```ts
  await settle();
@@ -180,11 +180,11 @@ async function settle(): Promise<void> {
 
 /**
  Resolves with what a run threw, or `undefined` when it finished.
- 
+
  @param run - promise under test
- 
+
  @returns What it threw
- 
+
  @example
  ```ts
  const failure = collected({ run, },);

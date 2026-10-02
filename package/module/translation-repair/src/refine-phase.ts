@@ -41,7 +41,7 @@ import { spliceSlices, } from './splice-slices.ts';
 
 /**
  Outcomes after refinement, with phase telemetry.
- 
+
  @example
  ```ts
  const result: RefinePhaseResult = {
@@ -71,47 +71,47 @@ export type RefinePhaseResult = {
 
 /**
  Runs naturalness lane over every accuracy-settled slice.
- 
+
  @param client - injected model client
- 
+
  @param targetText - archive translation used to assemble accuracy text
- 
+
  @param slices - prepared pairs in document order
- 
+
  @param outcomes - accuracy settlements in aggregation order
- 
+
  @param models - role roster; absent refiners turn lane off
- 
+
  @param reseat - reads the checker seating as of now, so the recheck and the
  rewrite probe run on the bench a hold that began inside the lane re-seats
  (class one hundred thirteen); the standing seating when absent
- 
+
  @param identityContext - declared names and handles model prompts preserve
- 
+
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
- 
+
  @param declaredNames - exact declarations deterministic guard preserves
- 
+
  @param refineCache - naturalness namespace for resume and persistence
- 
+
  @param signal - caller abort honored by exchanges and persistence guard
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param overlap - most slices in flight; one reproduces former loop
- 
+
  @param l - pipeline logger
- 
+
  @returns Final outcomes, ordered findings, and current-run purchase signal
- 
+
  @throws OverlapRefusedError when overlap is fractional or below one, even
  when lane is configured off
- 
+
  @throws UnpreparedSliceError when an outcome names no prepared slice
- 
+
  @throws Whatever model, cache, or caller abort throws
- 
+
  @example
  ```ts
  const phase = await runRefinePhase({

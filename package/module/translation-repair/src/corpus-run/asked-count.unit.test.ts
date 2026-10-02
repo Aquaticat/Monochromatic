@@ -1,6 +1,6 @@
 /**
  Tests for reading how many units a bench or calibration was asked for.
- 
+
  THE REFUSAL IS THE POINT, and it replaced four copies of a silent fallback.
  `editor-calibrate`, `producer-calibrate`, `roster-bench` and
  `editor-width-probe` each spelled this `Number(process.argv[2] ?? default)`
@@ -8,15 +8,15 @@
  `pickSpreadSample` with a count of `NaN` returns nothing, measured: `count
  NaN -> picked 0`. So a typo ran the whole calibration over an empty sample,
  printed its roster and its totals, and exited zero.
- 
+
  WHY REFUSING BEATS FALLING BACK. A fallback also hides the typo, and it
  spends a roster while hiding it. The operator who typed `fourty` wanted forty
  slices, and would read a clean six-slice default as the forty they asked for.
- 
+
  ZERO IS REFUSED, WHICH THE AUDIT'S `--cap 0` IS NOT. That cap reads a whole
  archive and buys nothing, which is a real use. A bench over zero slices asks
  nobody anything, so there is nothing for it to mean.
- 
+
  @module
  */
 
@@ -64,15 +64,15 @@ const WHOLE_NUMBER_RULE = `a whole number written in digits, at most ${String(Nu
 /**
  Reads a count off a bench's command line carrying only what was typed, read
  as `reportingRefusals` reads it (ledger B75).
- 
+
  @param typed - what the operator wrote after the script path
- 
+
  @param asks - what the counted things are called
- 
+
  @returns Count the reader settled on
- 
+
  @throws StatedRefusalError when the line or the reader refuses what was typed
- 
+
  @example
  ```ts
  const wanted = countFrom({ typed: ['40',], asks: ASKS, },);

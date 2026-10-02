@@ -43,9 +43,9 @@ const FIRST_CORRECTION_TEXT = 'The cat was sleeping peacefully upon the windowsi
 
 /**
  One acceptable reviewer seat.
- 
+
  @param modelId - invented distinct reviewer id
- 
+
  @returns Schema-eight acceptable seat
  */
 function acceptableSeat(
@@ -61,9 +61,9 @@ function acceptableSeat(
 
 /**
  One unavailable requested reviewer seat.
- 
+
  @param modelId - invented distinct reviewer id
- 
+
  @returns Accounted seat without usable verdict
  */
 function unusableSeat(
@@ -97,11 +97,11 @@ const REVIEW = {
 
 /**
  Builds one rejecting seat for located fixture finding.
- 
+
  @param modelId - invented distinct reviewer id
- 
+
  @param problem - actionable defect
- 
+
  @returns Unacceptable seat with one paragraph finding
  */
 function unacceptableSeat(
@@ -241,9 +241,9 @@ const THREE_CORRECTION_REVIEW = {
 
 /**
  Builds acceptable schema-nine reading of exact candidate.
- 
+
  @param text - exact candidate independently reviewed
- 
+
  @returns Candidate and paragraph-bound acceptable round
  */
 function acceptableRound({ text, }: { readonly text: string; },) {

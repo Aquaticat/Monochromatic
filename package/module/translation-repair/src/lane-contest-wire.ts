@@ -47,7 +47,7 @@ import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 
 /**
  Which candidate a judge chose, or that it could not choose.
- 
+
  DECLINING IS A VERDICT, not a failure to answer. Two candidates that differ
  only in wording have no better one, and a judge forced to pick would be
  inventing a preference the evidence does not carry.
@@ -56,12 +56,12 @@ export type LaneChoice = 'repair' | 'translate' | 'neither';
 
 /**
  What a judge thinks of the archive rendering shown beside the candidates.
- 
+
  ORTHOGONAL TO {@link LaneChoice}, not a fourth member of it. The choice asks
  which candidate to ship; this asks whether the text already published is fit
  to keep. A slice can have a clear winner AND a sound archive, or no winner
  and a sound archive, and one field cannot say both.
- 
+
  TWO VALUES, matching the two questions the candidates are judged on. A judge
  that cannot tell omits the field rather than answering a third way, and the
  settling rule reads that absence as a voice that did not speak.
@@ -70,7 +70,7 @@ export type ArchiveVerdict = 'publishable' | 'flawed';
 
 /**
  One judge's reading of one contested slice.
- 
+
  @example
  ```ts
  const ballot: LaneContestBallot = { choice: 'repair', unsupported: [], unsupportedRaw: [], dropped: [], droppedRaw: [], reason: 'x', };
@@ -89,7 +89,7 @@ export type LaneContestBallot = {
 
   /**
    Unsupported findings exactly as this judge wrote them.
-   
+
    KEPT BESIDE THE NARROWED LIST rather than instead of it. A judge that
    answers with the offending phrases rather than with candidate names has
    still said something, and keeping only the narrowed list would leave an
@@ -114,7 +114,7 @@ export type LaneContestBallot = {
 
   /**
    Whether this judge would publish the archive rendering as it stands.
-   
+
    OPTIONAL BECAUSE ITS ABSENCE IS NOT A FAULT. The schema asks for it on
    every ballot, but a judge that omits it has still chosen between the
    candidates, and refusing the whole ballot over a missing archive answer
@@ -176,11 +176,11 @@ const CANDIDATE_NAMES: readonly LaneChoice[] = [
 
 /**
  Whether a value is one of the names a judge may use.
- 
+
  @param value - candidate name from a reply
- 
+
  @returns Whether it names a lane or the refusal
- 
+
  @example
  ```ts
  const named = isLaneChoice('repair',);
@@ -203,11 +203,11 @@ const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
 
 /**
  Whether a value is one of the archive verdicts.
- 
+
  @param value - archive answer from a reply
- 
+
  @returns Whether it names a verdict
- 
+
  @example
  ```ts
  const named = isArchiveVerdict('publishable',);
@@ -222,7 +222,7 @@ function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
 
 /**
  Whether a reply carries the shape a ballot is read from.
- 
+
  A READABLE CHOICE AND REASON ONLY. Whether the findings are consistent with
  the choice is the reader's question, because an inconsistent ballot is still
  a ballot that was cast and is worth recording as one; and since 2026-09-30
@@ -230,9 +230,9 @@ function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
  read as none, where they used to cost the whole ballot.
 
  @param value - parsed reply
- 
+
  @returns Whether it can be read as a ballot
- 
+
  @example
  ```ts
  const usable = isLaneContestWire(reply,);
@@ -246,11 +246,11 @@ export function isLaneContestWire(value: unknown,): value is LaneContestWire {
 
 /**
  Reads a validated reply as a ballot.
- 
+
  @param wire - reply that passed the shape guard
- 
+
  @returns Ballot with its findings narrowed
- 
+
  @example
  ```ts
  const ballot = readLaneContestBallot({ wire, },);
@@ -261,7 +261,7 @@ export function readLaneContestBallot(
 ): LaneContestBallot {
   /**
    Archive answer this judge gave, present only when it gave a readable one.
-   
+
    SPREAD RATHER THAN SET TO UNDEFINED, because the property is optional
    under `exactOptionalPropertyTypes` and an explicit `undefined` would not
    typecheck against it.
@@ -328,7 +328,7 @@ export type LaneContestSubject = {
 
   /**
    Candidates deterministic syntax guard has already made unpublishable.
-   
+
    Judges still see bytes for comparison and cast raw ballots, but are told
    these names cannot be selected. Driver independently excludes violating
    choices, so prompt is liveness guidance rather than publication guard.
@@ -337,7 +337,7 @@ export type LaneContestSubject = {
 
   /**
    Names and handles both documents' front matter declares, when either does.
-   
+
    WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION.
    Front matter is document-level while this stage sees one slice, so a name
    the source document declares appears, to a judge shown only the slice, in
@@ -347,7 +347,7 @@ export type LaneContestSubject = {
    front matter declares an alias, the archive renders it, the repair lane
    keeps it, the translate lane drops it, and the contest chose the lane that
    dropped it.
-   
+
    Every other model-facing stage in this package is already given this:
    critics, refiners, translators, translate judges and the rendering audit.
    This stage was the only one that was not.
@@ -384,7 +384,7 @@ export type LaneContestSubject = {
   /**
    Corroborated added-damage claims the introduced-defect probe raised
    against the repair candidate, one line each, absent when none.
-   
+
    EVIDENCE, NOT A VERDICT. The probe runs in shadow mode because its
    precision is measured at six of ten (2026-09-03), so nothing acts on a
    claim; the judges that choose between the lanes are shown it and check it
@@ -396,11 +396,11 @@ export type LaneContestSubject = {
 
 /**
  Builds the exchange asking one judge to settle one contested slice.
- 
+
  @param subject - passage, archive rendering and both candidates
- 
+
  @returns Messages for one exchange
- 
+
  @example
  ```ts
  const messages = buildLaneContestMessages({ subject, },);
@@ -431,7 +431,7 @@ export function buildLaneContestMessages(
 
   /**
    Declared names and their fence, or nothing when neither side declares any.
-   
+
    PLACED BEFORE THE PASSAGES, as in the critic prompt, so the declarations
    read as given facts rather than as a footnote to evidence already weighed.
    */
@@ -494,7 +494,7 @@ export function buildLaneContestMessages(
 
   /**
    Size note and its separating blank line, or nothing at all.
-   
+
    PLACED AFTER THE PASSAGES so a judge reads the texts before their
    sizes, rather than being handed a number to confirm.
    */
@@ -530,7 +530,7 @@ export function buildLaneContestMessages(
   /**
    Those claims as a block the judge reads after both candidates and before
    the sizes, or nothing at all.
-   
+
    PLACED AFTER THE PASSAGES, like the size note, so a judge reads the texts
    before being handed a complaint about one of them.
    */

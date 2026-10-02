@@ -1,6 +1,6 @@
 /**
  Tests for the two git questions the pool asks, on throwaway repositories.
- 
+
  WHY THROWAWAY REPOSITORIES. `resolveCommit` and `tipContains` ask git, and
  the only suite that reached them before asked about this repository's own
  root and HEAD, which can never produce the two failures worth a test: a
@@ -9,7 +9,7 @@
  `--depth 2` clone of them. Nothing here reads the pinned corpus clone or this worktree,
  and the identity every commit is written under is passed per call, so the
  fixtures never read this machine's git configuration.
- 
+
  THE SHALLOW GUARD IS THE ONE WORTH A TEST. `git merge-base --is-ancestor`
  exits 1 both for "not an ancestor" and for "history stops before the answer",
  so in a shallow clone a clean negative would quietly drop every entry produced
@@ -18,9 +18,9 @@
  asking whether the second commit contains the third exits 1 and
  `rev-parse --is-shallow-repository` prints true; in the full clone the same
  question exits 1 and the flag prints false; an invented id exits 128 in both.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -83,13 +83,13 @@ const UNKNOWN_COMMIT = '0'.repeat(OBJECT_ID_LENGTH,);
 
 /**
  Runs one git command against a throwaway repository and returns its stdout.
- 
+
  @param repository - checkout to run in
- 
+
  @param args - subcommand and its arguments
- 
+
  @returns Trimmed stdout
- 
+
  @example
  ```ts
  const head = await git({ repository, args: ['rev-parse', 'HEAD',], },);
@@ -118,11 +118,11 @@ async function git(
 
 /**
  Writes one empty commit, so the history has shape and no content.
- 
+
  @param repository - checkout to commit in
- 
+
  @param subject - commit message
- 
+
  @example
  ```ts
  await commitEmpty({ repository, subject: 'first', },);
@@ -177,7 +177,7 @@ type ThrowawayHistory = Readonly<{
 /**
  Builds a three-commit history and a depth-2 clone of it, in temporary
  directories.
- 
+
  @returns Both checkouts and the commits they share, removed when its
  `await using` scope ends
 
@@ -289,11 +289,11 @@ async function throwawayHistory(): Promise<ThrowawayHistory & AsyncDisposable> {
 
 /**
  Runs a call expected to refuse, returning what it said.
- 
+
  @param act - call expected to reject
- 
+
  @returns Refusal text, or an empty string where the call resolved
- 
+
  @example
  ```ts
  const said = await refusalOf({ act: () => resolveCommit({ revision: 'nope', repository, },), },);

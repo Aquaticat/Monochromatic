@@ -1,35 +1,35 @@
 /**
  Tests that every place reporting a caught failure names it rather than
  repeating what it said.
- 
+
  SEPARATE FROM `message-names-only.unit.test.ts`, which asks the other half of
  the same question. That one reads the CLASSES and decides which may repeat
  their message. This one reads the SINKS: the four places that catch a failure
  while reading an artifact, a lock file or a run file, and print or record a
  reason for it. A marked class is only safe if the sink actually asks.
- 
+
  WHY AN UNREADABLE FILE AND NOT A MALFORMED ONE. A malformed file reaches
  every sink through `parseRunJson`, which already wraps it in a marked class,
  so `refusalText` and a bare `error.message` return the same string and no
  case here could tell them apart. Reverting all four sinks to the bare message
  and running the whole suite proved exactly that: 686 of 686 still passed.
- 
+
  A file that will not OPEN is the case that separates them. It used to arrive
  as an ordinary `Error` reading
- 
+
    EACCES: permission denied, open '/tmp/attribution-read-XXXX/Basket.json'
- 
+
  and a run directory path names the run, while under `artifacts/` a file's own
  stem is a person's entry id. So these cases mode a fixture to `000` and pin
  what comes back.
- 
+
  EACH CASE CHECKS ITS OWN FIXTURE FIRST. A run as root opens a mode-`000` file
  regardless, which would leave every assertion of the case testing the happy path
  while reporting a pass, so the helper reads the file back and refuses if it
  succeeded.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -74,20 +74,20 @@ type CommandStreams = {
 
 /**
  Runs one command and returns both its streams, whatever it exited with.
- 
+
  A NON-ZERO EXIT IS NOT A FAILURE TO RUN HERE. `editor-standing-read` exits 1
  on a fixture that recorded no judged rounds, which is its own verdict and has
  nothing to do with the refusal these cases read. `spawnSync` reports a status
  rather than throwing on one, which is why it is used instead of a promisified
  `execFile`: that one rejects on any non-zero exit and hides the streams on the
  rejection.
- 
+
  @param args - argv the command receives, entry point first
- 
+
  @returns Both streams as the command left them
- 
+
  @throws Error where the command never started at all
- 
+
  @example
  ```ts
  const { stderr, } = streamsOf({ args: [STANDING_ENTRY, dir,], },);
@@ -136,7 +136,7 @@ const STANDING_COMMAND = 'editor-standing-read';
 
 /**
  Built entry point for {@link STANDING_COMMAND}.
- 
+
  The module exports nothing, so its sink is reachable only by running it,
  which is also how an operator meets it.
  */
@@ -152,7 +152,7 @@ const STANDING_ENTRY = join(
 
 /**
  Opening a filesystem error used to print, which must appear nowhere.
- 
+
  Kept as its own constant so each case asserts against the exact shape that
  leaked rather than against a paraphrase of it.
  */
@@ -160,15 +160,15 @@ const LEAKED_OPENING = "permission denied, open '";
 
 /**
  Refusal every sink is expected to report for a file that will not open.
- 
+
  BUILT PER FILE rather than shared as one constant, because the lock case
  cannot choose its file name: `lockRunsDir` competes for `pass.lock` and takes
  only the directory.
- 
+
  @param file - base name the sink should report, never a path
- 
+
  @returns Sentence the guarded reader builds for an unopenable file
- 
+
  @example
  ```ts
  expect(reason,).toBe(namedRefusal({ file: UNREADABLE, },),);
@@ -192,7 +192,7 @@ const SHARED_GENERATION = `sha256-tree-v1:${'f'.repeat(64,)}`;
 
 /**
  One artifact that parses, so a reader has a pool to place it in.
- 
+
  The attribution reader throws rather than returning an empty pool, so a
  directory holding only the broken fixture never reaches the sink at all.
  */
@@ -213,17 +213,17 @@ const SOUND_ARTIFACT = JSON.stringify({
 
 /**
  Writes a file nothing may open, and proves it cannot be opened.
- 
+
  @param dir - directory to write into
- 
+
  @param name - file to write
- 
+
  @param body - contents, which no case should ever get to see
- 
+
  @returns Path written
- 
+
  @throws Error where the file opened anyway, which a run as root would do
- 
+
  @example
  ```ts
  const path = await unopenable({ dir, name: UNREADABLE, body: '{}', },);
@@ -303,15 +303,15 @@ const CONSOLE_METHODS = [
 /**
  Collects what would have gone to the console on any of those methods,
  restoring the real ones on disposal.
- 
+
  THE LOGGER IS CAPTURED TOO, because the lock speaks through a tagged logger
  since provider-12, whose console sink resolves `console.warn` lazily and
  flushes on a microtask, so a wrapper installed before the call sees the line.
- 
+
  @param lines - collector the caller reads afterwards
- 
+
  @returns Collected lines, and the restore that disposal runs
- 
+
  @example
  ```ts
  using printed = collectingLogs({ lines: [], },);

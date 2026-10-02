@@ -1,15 +1,15 @@
 /**
  Tests for the archive verdict the lane contest settles beside its choice.
- 
+
  WHAT IS UNDER TEST is a gap once found: a contest that backs neither
  candidate used to say nothing at all about the text already published, even
  though that text is what ships when both candidates lose. The verdict is an
  ORTHOGONAL BALLOT FIELD, so these cases check that it settles by the same
  rule as the choice, and that its absence stays indistinguishable from an
  artifact written before the question existed.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -32,11 +32,11 @@ import {
 
 /**
  Ballot that backed neither candidate and gave the archive a verdict.
- 
+
  @param archive - what this judge made of the archive
- 
+
  @returns Ballot carrying that verdict
- 
+
  @example
  ```ts
  const ballot = judged({ archive: 'flawed', },);
@@ -58,13 +58,13 @@ function judged(
 
 /**
  Ballot that backed neither candidate and said nothing about the archive.
- 
+
  STANDS FOR TWO SITUATIONS AT ONCE, deliberately: a model that ignored the
  schema field, and a ballot stored before the field existed. The settling
  rule must not be able to tell them apart.
- 
+
  @returns Ballot with no archive answer
- 
+
  @example
  ```ts
  const ballot = silent();
@@ -83,11 +83,11 @@ function silent(): LaneContestBallot {
 
 /**
  Ballot that backed one lane, so the contest has a winner.
- 
+
  @param archive - what this judge made of the archive
- 
+
  @returns Ballot naming the repair lane
- 
+
  @example
  ```ts
  const ballot = backsRepair({ archive: 'flawed', },);
@@ -109,11 +109,11 @@ function backsRepair(
 
 /**
  Wraps ballots as the outcome the record builder takes.
- 
+
  @param ballots - ballots this slice heard
- 
+
  @returns Outcome carrying them, settled by the stage`s own rule
- 
+
  @example
  ```ts
  const outcome = outcomeOf({ ballots, },);

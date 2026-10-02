@@ -16,19 +16,19 @@ import type { LaneContestBallot, } from './lane-contest-wire.ts';
 /**
  Whether every usable contest ballot called the archive flawed on a contest
  that settled on neither lane.
- 
+
  EVERY BALLOT, NOT THE SETTLED VERDICT. `settled-neither` with
  `archive: 'declined'` needs two flawed voices and a strict lead, which one
  publishable ballot among three still satisfies; the owner's rule is that no
  judge would publish the archive as it stands. A ballot that did not answer
  about the archive is not a flawed one.
- 
+
  @param verdict - what the contest recorded for this slice
- 
+
  @param ballots - every usable ballot of that contest
- 
+
  @returns Whether the slate over this slice's standing is run off on a tie
- 
+
  @example
  ```ts
  const runoffOverStanding = archiveFlawedByAll({ verdict: contest.verdict, ballots: contest.ballots, },);

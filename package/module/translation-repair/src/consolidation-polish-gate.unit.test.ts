@@ -1,8 +1,8 @@
 /**
  Tests fidelity-first naturalness gate policy and settlement.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -25,11 +25,11 @@ import {
 
 /**
  Ballot choosing requested candidate.
- 
+
  @param choice - candidate selected
- 
+
  @returns Usable polish ballot
- 
+
  @example
  ```ts
  const value = ballot({ choice: 'polished', });

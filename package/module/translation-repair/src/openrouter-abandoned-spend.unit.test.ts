@@ -1,6 +1,6 @@
 /**
  Tests for the reckoned spend line an abandoned OpenRouter stream writes.
- 
+
  Between the top-up of 2026-09-08 and the refusal of 2026-09-09 the log
  summed 141.62 USD where the meter moved 199.92, the difference being
  streams the rounds abandoned and no line recorded. These cases pin the
@@ -13,7 +13,7 @@
  decoded count, so those two read about a hundredth of what they cost
  (`completion=5` for 1,633 content characters on shihai4h2). And no call is
  billed past the `max_tokens` it sent, so neither is the reckoning.
- 
+
  @module
  */
 

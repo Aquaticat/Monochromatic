@@ -23,7 +23,7 @@ import {
 
 /**
  Refusal raised when a ledger file does not hold a contest.
- 
+
  @example
  ```ts
  throw new LedgerShapeError({ from: 'ledger/000001.json', field: 'ballots', },);
@@ -38,13 +38,13 @@ export class LedgerShapeError extends Error {
 
   /**
    Names the file and the field rather than quoting either.
-   
+
    NAMES, NEVER QUOTES. A ledger file holds corpus wording, so a refusal that
    echoed the offending value could carry a passage into a log that a run
    directory's own access rules do not cover.
-   
+
    @param from - file the value came from
-   
+
    @param field - field that was missing or the wrong type
    */
   constructor(
@@ -63,7 +63,7 @@ export class LedgerShapeError extends Error {
 
 /**
  One candidate as a ledger file records it.
- 
+
  @example
  ```ts
  const shown: ReadCandidate = { index: 1, producers: ['minimax-m3',], rendered: 'text', };
@@ -88,7 +88,7 @@ export type ReadCandidate = {
 
 /**
  One ballot as a ledger file records it.
- 
+
  @example
  ```ts
  const cast: ReadBallot = { modelId: 'minimax-m3', best: 2, reason: 'clearest', };
@@ -114,7 +114,7 @@ export type ReadBallot = {
 
 /**
  One judged contest as a ledger file records it.
- 
+
  @example
  ```ts
  const round = parseLedgerRound({ value, from, },);
@@ -149,13 +149,13 @@ export type ReadRound = {
 
 /**
  Reads one field off a value that may not be an object at all.
- 
+
  @param value - candidate object
- 
+
  @param field - field wanted
- 
+
  @returns Its value, absent where the value is not an object holding it
- 
+
  @example
  ```ts
  const task = fieldOf({ value, field: 'task', },);
@@ -180,17 +180,17 @@ function fieldOf(
 
 /**
  Reads a required string field.
- 
+
  @param value - candidate object
- 
+
  @param field - field wanted
- 
+
  @param from - file being read, named in any refusal
- 
+
  @returns Its value
- 
+
  @throws {@link LedgerShapeError} where the field is absent or not a string
- 
+
  @example
  ```ts
  const task = stringField({ value, field: 'task', from, },);
@@ -226,17 +226,17 @@ function stringField(
 
 /**
  Reads a required finite number field.
- 
+
  @param value - candidate object
- 
+
  @param field - field wanted
- 
+
  @param from - file being read, named in any refusal
- 
+
  @returns Its value
- 
+
  @throws {@link LedgerShapeError} where the field is absent or not a number
- 
+
  @example
  ```ts
  const index = numberField({ value, field: 'index', from, },);
@@ -272,17 +272,17 @@ function numberField(
 
 /**
  Reads a required array field.
- 
+
  @param value - candidate object
- 
+
  @param field - field wanted
- 
+
  @param from - file being read, named in any refusal
- 
+
  @returns Its elements, still unread
- 
+
  @throws {@link LedgerShapeError} where the field is absent or not an array
- 
+
  @example
  ```ts
  const ballots = arrayField({ value, field: 'ballots', from, },);
@@ -318,15 +318,15 @@ function arrayField(
 
 /**
  Reads one candidate.
- 
+
  @param value - candidate object
- 
+
  @param from - file being read, named in any refusal
- 
+
  @returns Candidate as recorded
- 
+
  @throws {@link LedgerShapeError} on any field that is absent or wrongly typed
- 
+
  @example
  ```ts
  const candidate = readCandidate({ value, from, },);
@@ -371,15 +371,15 @@ function readCandidate(
 
 /**
  Reads one ballot.
- 
+
  @param value - ballot object
- 
+
  @param from - file being read, named in any refusal
- 
+
  @returns Ballot as recorded
- 
+
  @throws {@link LedgerShapeError} on any field that is absent or wrongly typed
- 
+
  @example
  ```ts
  const ballot = readBallot({ value, from, },);
@@ -415,15 +415,15 @@ function readBallot(
 
 /**
  Reads the winning position, which is either one or a refusal to pick.
- 
+
  @param value - contest object
- 
+
  @param from - file being read, named in any refusal
- 
+
  @returns Winning position, or that the panel declined
- 
+
  @throws {@link LedgerShapeError} where it is neither
- 
+
  @example
  ```ts
  const selected = readSelected({ value, from, },);
@@ -458,19 +458,19 @@ function readSelected(
 
 /**
  Reads one contest, refusing a file that does not hold one.
- 
+
  REFUSES RATHER THAN FILLING IN. A ledger read to settle a roster question
  that quietly treated a truncated file as a contest with no ballots would
  report a seat as unjudged when the truth is that the record was lost.
- 
+
  @param value - parsed JSON of one ledger file
- 
+
  @param from - file it came from, named in any refusal
- 
+
  @returns Contest as recorded
- 
+
  @throws {@link LedgerShapeError} on any field that is absent or wrongly typed
- 
+
  @example
  ```ts
  const round = parseLedgerRound({ value: parseRunJson({ text, from, },), from, },);

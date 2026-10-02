@@ -27,13 +27,13 @@ export const FENCE_CHARACTER = '=';
 
 /**
  Longest unbroken run of the fence character anywhere in one text.
- 
+
  Single linear pass, because the input is unbounded corpus prose.
- 
+
  @param text - content that will be fenced
- 
+
  @returns Longest run length, zero when the character never appears
- 
+
  @example
  ```ts
  const longest = longestFenceRun('a ==== b',);
@@ -48,11 +48,11 @@ export function longestFenceRun(text: string,): number {
 
 /**
  Chooses a fence no enclosed text can reproduce.
- 
+
  @param texts - every text this prompt will fence
- 
+
  @returns Fence strictly longer than any run inside them
- 
+
  @example
  ```ts
  const fence = selectFence({ texts: [sourceText, ...rendered,], },);

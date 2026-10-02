@@ -1,15 +1,15 @@
 /**
  Tests for the one-line rendering of a deterministic verdict on a standing
  text, written for the run log.
- 
+
  WHAT THESE PIN: each of the verdict's three kinds renders on its own line,
  so a consolidation warning names the rule that refused a standing rather
  than saying only that it "fails publication eligibility", which is what
  the 2026-09-04 luxuanwen3 log said about a link destination the archive
  had rewritten.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

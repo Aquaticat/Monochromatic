@@ -41,11 +41,11 @@ import {
 
 /**
  Runs one arm and prints what the probe said about it.
- 
+
  @param arm - region, list, issue, and framing to send
- 
+
  @param client - client shared by every arm
- 
+
  @example
  ```ts
  await probeOne({ arm: SENSITIVITY_ARMS[0], client, },);
@@ -109,7 +109,7 @@ async function probeOne(
 
 /**
  Runs every arm in order and prints how to read the lines.
- 
+
  @example
  ```ts
  await main();

@@ -1,7 +1,7 @@
 /**
  Tests for critic wire guarding and quote-to-anchor resolution.
  Fixtures are cat-themed invention only.
- 
+
  @module
  */
 

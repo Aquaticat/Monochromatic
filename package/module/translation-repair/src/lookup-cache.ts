@@ -34,7 +34,7 @@ export const LOOKUP_CACHE_DIR_VAR = 'TRANSLATION_REPAIR_LOOKUP_CACHE_DIR';
 
 /**
  One result the lookup keeps.
- 
+
  @example
  ```ts
  const hit: LookupHit = { title: 'To Live (novel) - Wikipedia', url: 'https://en.wikipedia.org/wiki/To_Live_(novel)', highlight: 'To Live is a novel by Yu Hua...', };
@@ -48,7 +48,7 @@ export type LookupHit = {
 
 /**
  What the cache stores for one query.
- 
+
  @example
  ```ts
  const record: LookupRecord = { query: '《活着》 official English title', fetchedAt: '2026-09-02T10:00:00.000Z', hits: [], };
@@ -62,7 +62,7 @@ export type LookupRecord = {
 
 /**
  What a cache read answers: the record, or that there is none.
- 
+
  @example
  ```ts
  const answer: CachedLookup = { kind: 'miss', };
@@ -139,13 +139,13 @@ export function lookupCacheDir(
 
 /**
  Cache file for one query.
- 
+
  @param dir - cache directory
- 
+
  @param query - query the record answers
- 
+
  @returns Path named by the query's digest
- 
+
  @example
  ```ts
  lookupCachePath({ dir, query: '《活着》 official English title', },);
@@ -177,11 +177,11 @@ export function lookupCachePath(
 
 /**
  Whether a parsed value is one hit.
- 
+
  @param value - element of a record's hits
- 
+
  @returns Whether it carries the three strings
- 
+
  @example
  ```ts
  isLookupHit({ title: 'a', url: 'https://x', highlight: '', },);
@@ -206,11 +206,11 @@ export function isLookupHit(value: unknown,): value is LookupHit {
 
 /**
  Whether a parsed value is a cache record.
- 
+
  @param value - parsed JSON
- 
+
  @returns Whether it carries a query, a time and hits of the right shape
- 
+
  @example
  ```ts
  if (isLookupRecord(JSON.parse(text,),)) { }
@@ -240,11 +240,11 @@ export function isLookupRecord(value: unknown,): value is LookupRecord {
 
 /**
  File text, or nothing when the file cannot be read.
- 
+
  @param path - file to read
- 
+
  @returns Text, or an empty string for a file that is not there
- 
+
  @example
  ```ts
  const text = await textOrNothing({ path, },);
@@ -273,13 +273,13 @@ async function textOrNothing(
 
 /**
  Reads the cached record for a query.
- 
+
  @param dir - cache directory
- 
+
  @param query - query to look for
- 
+
  @returns The record, or a miss when the file is absent or is not a record
- 
+
  @example
  ```ts
  const cached = await readCachedLookup({ dir, query, },);
@@ -330,11 +330,11 @@ export async function readCachedLookup(
 
 /**
  Writes a record for its query.
- 
+
  @param dir - cache directory, created when missing
- 
+
  @param record - record to keep
- 
+
  @example
  ```ts
  await writeCachedLookup({ dir, record, },);

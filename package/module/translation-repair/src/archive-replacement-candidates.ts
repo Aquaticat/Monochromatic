@@ -21,20 +21,20 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Collapses byte-identical replacement proposals while preserving authorship,
  withholding every revision whose shape is not the block's own (class
  seventy-seven) or that leaves the page a footnote defect (class eighty-four).
- 
+
  @param voices - review replies eligible to revise
- 
+
  @param blockText - archive block under review, verbatim, whose declared
  contributors and shape a revision must keep
- 
+
  @param targetText - page the block stands in, as the revisions already
  applied leave it: the quote style a revision is restored to, and the page
  its footnote check reads (ledger B80)
- 
+
  @returns Distinct replacement candidates, with a finding per revision withheld
- 
+
  @throws BlockOutsideArchiveError when the page does not carry the block
- 
+
  @example
  ```ts
  const { candidates, withheld, } = replacementCandidates({ voices, blockText, targetText, },);

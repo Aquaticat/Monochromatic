@@ -79,13 +79,13 @@ const NOTHING_WAS_VERIFIED = 2;
 
 /**
  Reads one entry's artifact and page, or names the class that refused them.
- 
+
  @param runsDir - run directory both halves live under
- 
+
  @param entryId - person entry to read
- 
+
  @returns Both halves, or the refusal
- 
+
  @example
  ```ts
  const read = await readEntry({ runsDir, entryId, },);
@@ -148,15 +148,15 @@ async function readEntry(
 
 /**
  Renders the length column, which says three different things.
- 
+
  NAMES AN UNWEIGHED ENTRY RATHER THAN PRINTING ITS SIZE, so a run of
  artifacts written before the archive text was stored cannot be read as a run
  that was checked and agreed.
- 
+
  @param weight - what `pageWeighsWhatItShould` returned
- 
+
  @returns Column text for the entry line
- 
+
  @example
  ```ts
  console.log(weighedAs({ weight, },),);
@@ -185,9 +185,9 @@ function weighedAs(
 
 /**
  Reports one entry, returning whether its page agreed with its artifact.
- 
+
  @param runsDir - run directory both halves live under
- 
+
  @param entryId - person entry to read
 
  @param thisBuild - build doing the reading, so a disagreement over an
@@ -289,9 +289,9 @@ async function reportEntry(
 /**
  Reads a run's published tree back and reports whether it agrees with its
  artifacts.
- 
+
  Returns nothing: the report on stdout and the exit code ARE the output.
- 
+
  @example
  ```ts
  await verifyPublished();

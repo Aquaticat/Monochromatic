@@ -1,14 +1,14 @@
 /**
  Tests for the lane contest`s cache key.
- 
+
  THE KEY HAS NO OTHER WITNESS. Persist and resume both call the same function,
  so a change to how it is derived produces no failure anywhere: every run
  simply misses the cache and buys every contested slice again, and the only
  symptom is quota. The golden hash in this file is the witness, and it exists to fail
  when the derivation moves without the version moving with it.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -57,9 +57,9 @@ const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 
 /**
  Every input to the key, in one place, so a case changes exactly one of them.
- 
+
  @returns Key inputs for the `SOURCE_NAP` slice
- 
+
  @example
  ```ts
  const key = laneContestSliceKey(catInputs(),);

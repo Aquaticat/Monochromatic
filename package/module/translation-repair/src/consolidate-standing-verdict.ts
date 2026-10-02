@@ -69,25 +69,25 @@ export type StandingVerdict = {
 
 /**
  Reads both verdicts on a standing text and logs a refusal by name.
- 
+
  @param sourceText - original slice
- 
+
  @param standingText - wording in place when consolidation begins
- 
+
  @param incumbentText - page text this slice replaces
- 
+
  @param syntax - explicit syntax role, absent for ordinary prose
- 
+
  @param lineStructured - whether line-structure rule governs this slice
- 
+
  @param choice - lane the contest chose
- 
+
  @param contestVerdict - how the contest ended
- 
+
  @param sliceIndex - prepared position of the slice, for the log line
- 
+
  @param l - logger a refusal is written through
- 
+
  @param declared - name pairs the front matter declares, which the rule
  reads for a linked title naming a declared person (class one hundred
  fourteen); none leaves that floor silent
@@ -99,7 +99,7 @@ export type StandingVerdict = {
  @returns Deterministic eligibility and contest endorsement of the wording
  the settlement runs against, that wording, and the replacement finding
  when the incumbent stands in
- 
+
  @example
  ```ts
  const { standingValid, standingMayShip, settlementText, } = readStandingVerdict({

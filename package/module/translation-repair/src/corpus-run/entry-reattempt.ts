@@ -100,13 +100,13 @@ export type ReattemptVerdict =
 
 /**
  Counts slices one entry has cached, across every lane sharing its directory.
- 
+
  COUNTS ALL LANES DELIBERATELY. Progress is progress whichever lane made it,
  and an entry whose repair lane is capped while its translate lane advances is
  moving forward exactly as much as one where both do.
- 
+
  @param dir - per-entry cache directory, absent before its first slice
- 
+
  FILES ONLY: a directory named like a slice was bought by no attempt (ledger
  B65).
 
@@ -132,20 +132,20 @@ export async function countCachedSlices(
 
 /**
  Slices one attempt bought, which is not always the difference in counts.
- 
+
  A COUNT THAT FELL MEANS THE CACHE WAS RESET rather than that work was lost.
  An entry carrying slices from an earlier build has them discarded when its
  lane opens under this invocation's digest, so every slice present afterwards
  was bought by this attempt and the plain difference reads as negative.
  Subtracting alone would call that attempt stalled and drop the entry at
  precisely the moment it had started paying for a fresh generation.
- 
+
  @param cachedBefore - slices present when this attempt started
- 
+
  @param cachedAfter - slices present when it stopped
- 
+
  @returns Slices this attempt is responsible for
- 
+
  @example
  ```ts
  const bought = slicesBought({ cachedBefore: 45, cachedAfter: 64, },);
@@ -167,20 +167,20 @@ function slicesBought(
 
 /**
  Reads one attempt into the decision of whether to make another.
- 
+
  TAKES SETTLEMENT AS AN INPUT rather than inferring it from the cache, because
  a settled entry DISCARDS its slice cache on the way out. Inferring would read
  that discard as the sharpest possible stall and would be wrong about the one
  outcome the whole pass exists to reach.
- 
+
  @param outcome - scheduling disposition from entry pipeline
- 
+
  @param cachedBefore - slices present when this attempt started
- 
+
  @param cachedAfter - slices present when it stopped
- 
+
  @returns Verdict naming what happened and what it earns
- 
+
  @example
  ```ts
  const verdict = readAttemptOutcome({ outcome: { kind: 'resumable-failure' }, cachedBefore: 45, cachedAfter: 64, },);

@@ -1,25 +1,25 @@
 /**
  Tests for how a persisted rendering audit reads on a terminal.
- 
+
  THESE NUMBERS EXIST TO BE QUOTED INTO A DOCUMENT, which is what makes their
  wording load-bearing rather than cosmetic. The module says so itself: a count
  with no denominator is the single most quotable wrong number a telemetry probe
  can emit. Every case in this file therefore asserts the denominator beside the count,
  not just that a number reached the page.
- 
+
  `printBand` CARRIES THE ONE REAL DECISION IN THE FILE. A band of zero over
  zero pairs and a band of zero over forty pairs are opposite findings, and a
  row of zeroes reads as the second. So an empty band says NOTHING PAIRED and
  prints no numbers at all, and both halves of that get a case: the refusal must
  appear, and the numbers must not.
- 
+
  CAPTURING `console.log` IS PROCESS-WIDE, which is why this file runs at
  `concurrency: 1`. `describe` runs children concurrently by default, and two
  cases swapping the same reporter interleave: one reads lines a sibling wrote,
  or reads none because a sibling already restored the real one. The runner
  spawns a process per test file, so nothing outside this file is touched and
  nothing inside it may overlap.
- 
+
  @module
  */
 
@@ -61,11 +61,11 @@ const RUN_SET = 'naptime-20260825';
 
 /**
  Collects what would have gone to stdout, restoring the real one on disposal.
- 
+
  @param lines - collector the caller reads afterwards
- 
+
  @returns Collected lines, and the restore that disposal runs
- 
+
  @example
  ```ts
  using printed = collectingLines({ lines: [], },);
@@ -93,11 +93,11 @@ function collectingLines(
 
 /**
  Builds one half of the audited population.
- 
+
  @param audits - which text this half was audited against
- 
+
  @returns Half, summed
- 
+
  @example
  ```ts
  const split = half({ audits: 'archive', },);
@@ -120,11 +120,11 @@ function half(
 
 /**
  Builds a band over a stated number of paired texts.
- 
+
  @param pairs - how many texts were audited twice
- 
+
  @returns Band carrying that many pairs
- 
+
  @example
  ```ts
  const band = spread({ pairs: 0, },);

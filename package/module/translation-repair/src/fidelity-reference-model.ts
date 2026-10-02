@@ -8,7 +8,7 @@ import type {
 
 /**
  Exact UTF-16 range in a pinned file or explicitly identified local reference.
- 
+
  @example
  ```ts
  const span: FidelityReferenceSpan = { startOffset: 0, endOffset: text.length, hash };
@@ -31,7 +31,7 @@ export type FidelityReferenceSpan = {
 
 /**
  Reviewed local correction, never an edit to the corpus or a production translation filter.
- 
+
  @example
  ```ts
  const edited = applyReviewedEdits({ reference, edits, referenceId });
@@ -66,7 +66,7 @@ export type FidelityReferenceEdit = {
 
 /**
  One reviewed deterministic damage variant.
- 
+
  @example
  ```ts
  const expected: FidelityExpectedDamage = { kind: 'deletion', hash, changedChars };
@@ -89,7 +89,7 @@ export type FidelityExpectedDamage = {
 
 /**
  Reviewed reference specification, containing provenance rather than full corpus passages.
- 
+
  @example
  ```ts
  const reference = await readFidelityReference({ pin, spec });
@@ -144,7 +144,7 @@ export type FidelityReferenceSpec = {
 
 /**
  Materialized reviewed comparison data; a generic untouched archive is not this type of evidence.
- 
+
  @example
  ```ts
  const trial = { sourceText: reference.sourceText, cleanText: reference.referenceText, ... };

@@ -1,7 +1,7 @@
 /**
  Tests for restoring the quote style an editor flattened.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -30,18 +30,18 @@ const CLOSE = '\u{201D}';
 
 /**
  Restores using the replaced region as its own convention.
- 
+
  Every case in this file was written before the convention widened to the whole
  document, and each asserts REGION-scoped behaviour, so passing the replaced
  text as the convention keeps each assertion testing what it was written to
  test.
- 
+
  @param replacement - text the editor wrote
- 
+
  @param replaced - text it replaces, standing as its own convention
- 
+
  @returns Restored replacement
- 
+
  @example
  ```ts
  restoreFromRegion({ replacement: "didn't", replaced: "did not", },);

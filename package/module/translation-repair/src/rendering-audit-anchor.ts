@@ -36,7 +36,7 @@ const NOT_FOUND = -1;
 
 /**
  One span of a document, located.
- 
+
  @example
  ```ts
  const span: AnchoredSpan = { text: '不吃罐头', start: 12, end: 16, };
@@ -62,7 +62,7 @@ export type AnchoredSpan = {
 
 /**
  What locating one claim's two spans in one text found.
- 
+
  @example
  ```ts
  const anchor: RenderingAuditSpanAnchor = { anchored: false, reason: 'ambiguous-locator (source)', };
@@ -97,15 +97,15 @@ export type RenderingAuditSpanAnchor = {
 
 /**
  One text in the broadest form the anchoring accepts.
- 
+
  @param text - text to canonicalize
- 
+
  @returns Same text with punctuation variants folded and sole line breaks read
  as spaces
- 
+
  @throws {@link Error} when canonicalization changed the length, since every
  offset here indexes the stored text through the canonical one
- 
+
  @example
  ```ts
  const canonical = canonicalize({ text: quote, },);
@@ -134,17 +134,17 @@ function canonicalize({ text, }: { readonly text: string; },): string {
 
 /**
  Locates one span inside another, both already canonical.
- 
+
  @param haystack - canonical text being searched
- 
+
  @param needle - canonical span to find
- 
+
  @param from - where to start, so a focus is searched inside its locator only
- 
+
  @param to - where to stop, exclusive
- 
+
  @returns Where it occurs uniquely, or which check refused
- 
+
  @example
  ```ts
  const found = locateUnique({ haystack, needle, from: 0, to: haystack.length, },);
@@ -190,17 +190,17 @@ function locateUnique(
 
 /**
  Locates one claim's locator and focus in the text it names.
- 
+
  @param text - side the claim names
- 
+
  @param locator - span identifying which occurrence is meant
- 
+
  @param focus - smallest span carrying the claimed change
- 
+
  @param side - which side this is, for the refusal wording
- 
+
  @returns Both spans as the text holds them, or why nothing was located
- 
+
  @example
  ```ts
  const anchor = anchorLocatedSpan({ text: sourceText, locator, focus, side: 'source', },);

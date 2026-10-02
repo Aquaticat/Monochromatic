@@ -1,20 +1,20 @@
 /**
  Tests for the degeneration detector.
- 
+
  The cases that matter are the two ways this can be wrong in production, and
  they pull in opposite directions. Missing a cycling model leaves the failure
  this exists to stop; calling healthy output degenerate aborts good work and
  costs a voice, which is the exact harm the straggler-grace decision spent a
  whole document avoiding.
- 
+
  So the false-positive cases carry as much weight here as the detection ones,
  and three of them are real rather than imagined. Stages ask for structured
  replies, so repeated field names are ordinary output. Some models simply
  write a great deal, so length must never condemn on its own. And this corpus
  contains verse, so a refrain is content rather than a symptom.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -28,11 +28,11 @@ import { watchForDegeneration, } from '../dist/final/node/index.mjs';
 
 /**
  Feeds text to a fresh detector and reads what it says.
- 
+
  @param chunks - text pieces, in arrival order
- 
+
  @returns Verdict after the last piece
- 
+
  @example
  ```ts
  const verdict = verdictAfter({ chunks: ['a cat ', 'and a mat',], },);
@@ -53,11 +53,11 @@ function verdictAfter({ chunks, }: { readonly chunks: readonly string[]; },): Re
 
 /**
  Builds varied prose, every sentence differing from every other.
- 
+
  @param lines - how many sentences to write
- 
+
  @returns Text with no repetition in it
- 
+
  @example
  ```ts
  const prose = variedProse({ lines: 2_000, },);
@@ -78,13 +78,13 @@ function variedProse({ lines, }: { readonly lines: number; },): string {
 
 /**
  Splits text into small pieces, the way a network delivers it.
- 
+
  @param text - whole reply
- 
+
  @param size - characters per piece
- 
+
  @returns Pieces in order
- 
+
  @example
  ```ts
  const pieces = inPieces({ text, size: 17, },);

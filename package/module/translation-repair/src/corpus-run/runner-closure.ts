@@ -26,7 +26,7 @@ import { basename, } from 'node:path';
 /**
  Import specifiers a built entry can carry, in both the spaced form a reader
  writes and the tight form a minifier emits.
- 
+
  THE TIGHT FORM IS THE ONE THAT MATTERS and the one that gets forgotten. The
  built runners here are minified onto a single line, so their imports read
  `from"./chunk.mjs"` with no space. A scan expecting `from './` finds nothing
@@ -42,12 +42,12 @@ const IMPORT_MARKERS = [
 
 /**
  What a run executed, or a positive statement that it could not be read.
- 
+
  A TAGGED ABSENCE rather than an empty list, because an entry that imports
  nothing and an entry nobody could read are opposite findings. The first is a
  self-contained bundle whose closure is itself; the second says nothing at all,
  and comparing two of them for equality would call two unknown builds the same.
- 
+
  @example
  ```ts
  const closure: RunnerClosure = { kind: 'read', entry: 'probe.mjs', chunks: [], };
@@ -65,7 +65,7 @@ export type RunnerClosure = {
   /**
    Chunks the entry imports, sorted and deduplicated so two runs of one build
    compare equal regardless of import order.
-   
+
    EMPTY IS A REAL ANSWER: an entry with everything inlined imports nothing,
    and its closure is itself.
    */
@@ -81,13 +81,13 @@ export type RunnerClosure = {
 
 /**
  Reads one import specifier that begins just past a marker.
- 
+
  @param text - whole entry file
- 
+
  @param from - index of the first character of the specifier
- 
+
  @returns Specifier up to its closing quote, empty when the quote never closes
- 
+
  @example
  ```ts
  const chunk = specifierAt({ text, from: 12, },);
@@ -136,15 +136,15 @@ function specifierAt(
 
 /**
  Reads an entry file, reporting failure as a value.
- 
+
  ITS OWN FUNCTION so the caller has no mutable binding at its root: a `let`
  assigned inside a `try` leaks scope to every statement after it, and the
  failure it exists to carry is exactly the one this returns instead.
- 
+
  @param entryPath - built entry to read
- 
+
  @returns Its text, or why there is none
- 
+
  @example
  ```ts
  const source = await readEntryText({ entryPath, },);
@@ -178,16 +178,16 @@ async function readEntryText(
 
 /**
  Reads the chunks a built entry imports.
- 
+
  A LINEAR SCAN RATHER THAN A REGEX, per `RG1`: the rule is "a specifier begins
  after one of four fixed markers and ends at the next quote", which `indexOf`
  states directly and a pattern would only obscure.
- 
+
  @param entryPath - built entry the run is executing, ordinarily
  the script the runtime ran, as the command line reader hands it on (`line.script`)
- 
+
  @returns Its closure, or why it could not be read
- 
+
  @example
  ```ts
  const closure = await readRunnerClosure({ entryPath: line.script, },);

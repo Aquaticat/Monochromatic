@@ -3,7 +3,7 @@
  Fence and thinking-block handling is covered beside the client in
  `synthetic-client.unit.test.ts`; this file covers the two helpers
  that had only indirect coverage.
- 
+
  @module
  */
 

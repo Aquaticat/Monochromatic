@@ -1,6 +1,6 @@
 /**
  Tests syntax-bearing lane winner publication eligibility.
- 
+
  @module
  */
 
@@ -39,11 +39,11 @@ const TRANSLATED = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
  Builds contest outcome with chosen lane.
- 
+
  @param choice - lane panel selected
- 
+
  @returns Quorum-complete synthetic outcome
- 
+
  @example
  ```ts
  const outcome = outcomeFor({ choice: 'repair', });
@@ -69,11 +69,11 @@ function outcomeFor(
 
 /**
  Builds raw contest ballot choosing one lane.
- 
+
  @param choice - unmodified model choice
- 
+
  @returns Complete ballot fixture
- 
+
  @example
  ```ts
  const ballot = ballotFor({ choice: 'translate', });

@@ -40,7 +40,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 
 /**
  Size at which a translate call is known to be at risk.
- 
+
  The translate probe asked for a 4641-character section in one call and lost
  two voices of three: one timed out at six minutes, one returned
  schema-invalid output. That is the only measured point on this curve, so it
@@ -57,13 +57,13 @@ const UNPAIRED_ENTRIES_LISTED = 5;
 
 /**
  Counts the rows whose sizes describe one carve.
- 
+
  @param rows - census rows
- 
+
  @param carve - carve to count
- 
+
  @returns How many rows carry it
- 
+
  @example
  ```ts
  const complete = countCarve({ rows, carve: 'settled-complete', },);
@@ -87,11 +87,11 @@ function countCarve(
 
 /**
  One entry with the largest single slice it produced.
- 
+
  Named rather than inferred, because an inferred object literal carries
  writable properties and the comparator that sorts these then takes mutable
  parameters it never mutates.
- 
+
  @example
  ```ts
  const widest: WidestSlice = { entryId: 'shihai4h', largest: 10_959, };
@@ -111,7 +111,7 @@ type WidestSlice = Readonly<{
 
 /**
  Measures every complete pair at the pin and prints the census.
- 
+
  @example
  ```ts
  await main();

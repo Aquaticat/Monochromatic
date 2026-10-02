@@ -21,7 +21,7 @@ import { selectFence, } from './prompt-fence.ts';
 
 /**
  Every verdict a restoration judge may cast, closed vocabulary.
- 
+
  @example
  ```ts
  RESTORATION_JUDGE_VERDICTS.includes('restored',);
@@ -35,7 +35,7 @@ export const RESTORATION_JUDGE_VERDICTS = [
 
 /**
  One restoration verdict.
- 
+
  @example
  ```ts
  const verdict: RestorationVerdict = 'restored';
@@ -45,11 +45,11 @@ export type RestorationVerdict = typeof RESTORATION_JUDGE_VERDICTS[number];
 
 /**
  Guards untrusted verdict strings from model JSON.
- 
+
  @param value - candidate from unvalidated model output
- 
+
  @returns Whether value names one listed verdict
- 
+
  @example
  ```ts
  isRestorationVerdict('restored',);
@@ -84,7 +84,7 @@ Every reference number must appear exactly once.`;
 
 /**
  One reference to grade: its planted seed id and the deleted sentence.
- 
+
  @example
  ```ts
  const reference: JudgeReference = { seedId: 'seed/omission-0', deletedText: '...', };
@@ -105,7 +105,7 @@ export type JudgeReference = {
 /**
  Messages plus the seed order judgments resolve through:
  reference number N on the wire means `seedIds[N - 1]`.
- 
+
  @example
  ```ts
  const plan: RestorationJudgePlan = buildRestorationJudgeMessages({
@@ -131,15 +131,15 @@ export type RestorationJudgePlan = {
  Builds the judge sheet for one entry:
  Chinese source, repaired translation, and every deleted sentence as a
  numbered reference.
- 
+
  @param sourceText - original Chinese document
- 
+
  @param repairedText - repaired translation under grading
- 
+
  @param references - deleted sentences with their seed ids
- 
+
  @returns Messages plus seed numbering order
- 
+
  @example
  ```ts
  const plan = buildRestorationJudgeMessages({ sourceText, repairedText, references, },);
@@ -202,7 +202,7 @@ ${fence} END ${fence}`,
 
 /**
  One judgment as a judge reports it.
- 
+
  @example
  ```ts
  const wire: RestorationJudgmentWire = { reference: 1, verdict: 'restored', };
@@ -222,7 +222,7 @@ export type RestorationJudgmentWire = {
 
 /**
  Whole judge reply on the wire.
- 
+
  @example
  ```ts
  const report: RestorationJudgeWire = { judgments: [], };
@@ -237,11 +237,11 @@ export type RestorationJudgeWire = {
 
 /**
  Guards one wire judgment.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value carries the required judgment fields
- 
+
  @example
  ```ts
  isRestorationJudgmentWire({ reference: 1, verdict: 'restored', },);
@@ -264,11 +264,11 @@ function isRestorationJudgmentWire(value: unknown,): value is RestorationJudgmen
 
 /**
  Guards a whole judge reply.
- 
+
  @param value - parsed model JSON
- 
+
  @returns Whether value is a wire report
- 
+
  @example
  ```ts
  const outcome = await client.chatJson({ ..., validate: isRestorationJudgeWire, },);
@@ -323,13 +323,13 @@ export const RESTORATION_JUDGE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
  Resolves one wire report into seed-keyed verdicts through the plan.
  Fails closed per item: out-of-range or duplicate references and unknown
  verdicts become findings, and references left unanswered are recorded.
- 
+
  @param wire - report as the judge reported it
- 
+
  @param seedIds - seed ids in reference numbering order
- 
+
  @returns Verdicts keyed by seed id plus findings as data
- 
+
  @example
  ```ts
  const { verdicts, } = resolveRestorationJudgment({ wire, seedIds, },);

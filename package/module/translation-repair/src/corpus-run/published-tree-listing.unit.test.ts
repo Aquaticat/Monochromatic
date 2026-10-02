@@ -1,32 +1,32 @@
 /**
  Tests for whether a run left anything to verify, and how it says so.
- 
+
  THIS IS THE WHOLE POINT. `verify-published.ts` answered an absent
  artifacts directory with an empty list and printed the absence on stderr, so
  a directory that was never a run printed the same stdout summary as a run
  whose every page agreed, and left the same exit code behind. Anything using
  the check as a gate passed the run that was never examined.
- 
+
  THREE POPULATIONS HAVE TO STAY APART, and no two of them may collapse: a run
  that is not there, a run that settled nothing, and a run with entries to
  check. The first two are both "nothing verified" and the third is not, but
  the first two still differ in what an operator does next, so the reason
  rides along in the verdict rather than being thrown away.
- 
+
  THE REASON IS A FILESYSTEM CODE, NOT A CLASS NAME. `errorName` answers
  `Error` for every filesystem failure, so the report used to separate
  "pointed at the wrong directory" from "cannot read this directory" not at
  all. Two cases here pin `ENOENT` against `ENOTDIR` for exactly that.
- 
+
  AN ABSENT PUBLISHED TREE IS DELIBERATELY NOT SILENCE. Beside real artifacts
  it means every settled entry was never published, which is this check's most
  serious finding, so it stays checkable with an empty tree.
- 
+
  DISPOSABLE FIXTURES ONLY: every case writes into its own `scratchDir`
  directory, and nothing here reads a real run.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -119,9 +119,9 @@ async function runSettling(
 
 /**
  Writes a run directory whose published tree holds exactly these entries.
- 
+
  @param runsDir - run directory to publish into
- 
+
  @param entryIds - entries to write a page for under the people directory
 
  @example
@@ -165,14 +165,14 @@ async function publishInto(
 
 /**
  Names read off a listing, or a marker saying it was not readable.
- 
+
  Keeps every case's assertion one line, and fails loudly rather than
  silently reading `[]` off a refusal, which is the defect under test.
- 
+
  @param reading - what a listing returned
- 
+
  @returns Its names, or a marker naming the refusal
- 
+
  @example
  ```ts
  expect(namesOf({ reading, },),).toEqual(['Mittens',],);

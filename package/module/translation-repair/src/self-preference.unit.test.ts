@@ -1,14 +1,14 @@
 /**
  Tests for the paired self-preference measurement.
- 
+
  WHAT THESE PIN is that the instrument can move in BOTH directions and that
  the pairing is real. A measurement that only ever returns zero would agree
  with the half-weight discount correcting nothing, and would agree just as
  readily if the discount were correcting a great deal; the positive control
  here is what separates those.
- 
+
  Model ids are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -42,18 +42,18 @@ const CAT_C = 'hf:cat/Cat-C' as unknown as RosterModelId;
 
 /**
  Builds one ballot.
- 
+
  @param modelId - judge casting it
- 
+
  @param best - one-based candidate it names
- 
+
  @param selfVote - whether that candidate is one this judge helped write.
  Set explicitly rather than derived, matching what selection records: the
  field is a fact about the ballot, kept so a self-preference measurement never
  has to infer it from the weights, which are tuning knobs
- 
+
  @returns Ballot at full weight, since weight is not what this file measures
- 
+
  @example
  ```ts
  const ballot = ballotFor({ modelId: CAT_A, best: 1, selfVote: true, },);

@@ -15,7 +15,7 @@ import type { EditableEnvelope, } from './patch-model.ts';
 
 /**
  One edit as an editor reports it.
- 
+
  @example
  ```ts
  const wire: EditorEditWire = { region: 1, newText: 'The cat naps at noon.', };
@@ -35,7 +35,7 @@ export type EditorEditWire = {
 
 /**
  Whole editor reply on the wire.
- 
+
  @example
  ```ts
  const report: EditorReportWire = { edits: [], };
@@ -50,11 +50,11 @@ export type EditorReportWire = {
 
 /**
  Guards one wire edit.
- 
+
  @param value - candidate from parsed model JSON
- 
+
  @returns Whether value carries the required edit fields
- 
+
  @example
  ```ts
  isEditorEditWire({ region: 1, newText: 'text', },);
@@ -77,11 +77,11 @@ function isEditorEditWire(value: unknown,): value is EditorEditWire {
 
 /**
  Guards a whole editor reply.
- 
+
  @param value - parsed model JSON
- 
+
  @returns Whether value is a wire report
- 
+
  @example
  ```ts
  const outcome = await client.chatJson({ ..., validate: isEditorReportWire, },);
@@ -134,7 +134,7 @@ export const EDITOR_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 
 /**
  Edits resolved into patch operations plus wire irregularities.
- 
+
  @example
  ```ts
  const { operations, findings, } = resolveEditorEdits({ wire, envelopes, },);
@@ -159,13 +159,13 @@ export type EditorEditResolution = {
  onto the operation because the plan that numbered the regions is the
  plan that cut the envelopes; the apply gate still re-proves the region
  against the document.
- 
+
  @param wire - reply as the editor reported it
- 
+
  @param envelopes - envelopes in prompt numbering order
- 
+
  @returns Operations plus findings as data
- 
+
  @example
  ```ts
  const resolution = resolveEditorEdits({ wire, envelopes, },);

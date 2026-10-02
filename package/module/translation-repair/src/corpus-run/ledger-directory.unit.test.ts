@@ -1,23 +1,23 @@
 /**
  Tests for reading a run's ledger directory without raising on a bad file.
- 
+
  THE PARTITION IS WHAT THESE CHECK. A directory holding one good file beside
  two unreadable ones is the case the reader exists for, and a reader that threw
  on the first refusal would answer nothing about the rest while looking exactly
  like a run that recorded nothing.
- 
+
  ORDER IS CHECKED TOO. Files are named by a zero-padded ordinal and that
  ordering is contest order, so a reader that partitioned correctly but lost the
  sequence would still misreport which contest came first.
- 
+
  THE REFUSAL TEXT IS CHECKED FOR WHAT IT DOES NOT SAY. A ledger file holds
  corpus wording, so a refusal that forwarded a foreign class's message could
  carry a passage into a log.
- 
+
  Model identifiers are cat-themed invention rather than catalog entries here,
  because nothing in this file judges a seat; passages are invention too, so no
  corpus content appears.
- 
+
  @module
  */
 
@@ -339,7 +339,7 @@ await describe({
           fn: async () => {
             /**
              Wording a foreign error carries, which must not reach the report.
-         
+
              A CLASS FROM OUTSIDE THIS PACKAGE writes whatever it likes into its
              message, and a run directory is full of text nobody here chose. The
              "FORWARDS a RunJsonUnreadableError message" and "FORWARDS a

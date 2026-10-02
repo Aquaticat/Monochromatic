@@ -115,13 +115,13 @@ export const NO_VALID_WORDING_FINDING: string = 'no-valid-wording: no wording fo
 /**
  What the slate offers as its incumbent: the standing text when it may
  ship, nothing when the gate has refused it.
- 
+
  @param standingEligible - whether the standing passed the deterministic gate
- 
+
  @param standingText - wording in place when the stage began
- 
+
  @returns Incumbent text and kind as the slate builder and the judges take them
- 
+
  @example
  ```ts
  const incumbent = slateIncumbentFor({ standingEligible: false, standingText, },);
@@ -358,18 +358,18 @@ export function shipPastForfeitStanding(
 /**
  One line saying why the deterministic gate refused a standing text, for
  the run log.
- 
+
  WRITTEN FOR THE READING, not the judges: on 2026-09-04 the luxuanwen3 log
  said only that a standing "fails publication eligibility", and learning
  that the cause was a link destination the archive had rewritten took
  opening the slice records. A refusal the log names is a defect class the
  next reading finds in one grep.
- 
+
  @param validation - deterministic verdict on the standing text
- 
+
  @returns Findings joined into one line, the reason no comparison was
  possible, or a word for a pass
- 
+
  @example
  ```ts
  dl.warn(`slice 1: ${describeStandingVerdict({ validation, },)}`,);

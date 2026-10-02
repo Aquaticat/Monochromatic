@@ -1,6 +1,6 @@
 /**
  Tests for naming the one built pipeline a draw's pool was settled under.
- 
+
  THE FUNCTION IS KEYED ON THE KEPT NAMES, NOT ON THE LOOKUP, and that is the
  property most worth pinning. `EligibleEntries.digestByEntry` answers for every
  entry the pool ADMITTED, while a draw keeps a subset of those; reading the
@@ -23,7 +23,7 @@
  collapsing the two counts would understate the pool a graded sheet was drawn
  from. A manifest that recorded no generation is the gap this closes, and that
  asymmetry is the closing.
- 
+
  @module
  */
 
@@ -118,17 +118,17 @@ const HOUSEHOLD_SIZE = WHOLE_HOUSEHOLD.length;
 /**
  Builds an eligibility result carrying one digest lookup and nothing else the
  function reads.
- 
+
  The other fields are filled with what an empty pool would carry rather than
  with the kept names, precisely because `poolGeneration` must not consult
  them: a fixture that agreed with the kept names could not tell a reader of
  `entryIds` from a reader of `names`.
- 
+
  @param digests - what each admitted entry recorded, keyed by entry id as the
  census keys it
- 
+
  @returns Eligibility result shaped for this function's one question
- 
+
  @example
  ```ts
  const eligible = pooled({ digests: [[WHISKERS, SETTLED_UNDER,],], },);

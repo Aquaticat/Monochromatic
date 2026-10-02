@@ -2,7 +2,7 @@
  Tests for flattening slice outcomes into the whole-document issue report,
  and for the disposition that says what became of each issue's repair.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -41,11 +41,11 @@ const REPLACEMENT = 'The cat is asleep.';
 
 /**
  Builds one region serving the given issues.
- 
+
  @param issueIds - accepted issues the envelope was cut for
- 
+
  @returns Region the report filters by issue
- 
+
  @example
  ```ts
  const region = catRegion({ issueIds: ['adjudicated/nap',], },);
@@ -64,19 +64,19 @@ function catRegion(
 
 /**
  Builds one settled slice outcome.
- 
+
  @param issues - adjudicated issues of this slice
- 
+
  @param repairRegions - regions the accuracy stage replaced
- 
+
  @param accuracyPatchSelected - whether the patched candidate won its slice
- 
+
  @param resolvedIssueIds - issues the checkers confirmed fixed
- 
+
  @param refined - whether the naturalness lane rewrote this slice
- 
+
  @returns Outcome the builder flattens
- 
+
  @example
  ```ts
  const outcome = catOutcome({ issues: [], repairRegions: [], },);

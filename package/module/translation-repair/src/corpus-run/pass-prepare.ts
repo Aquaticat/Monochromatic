@@ -104,29 +104,29 @@ function carryingPassFindings(
 
 /**
  Prepares one pass entry with cached roster pairing and publication safety.
- 
+
  @param client - shared provider client
- 
+
  @param entryId - corpus entry being settled
- 
+
  @param entryCacheDir - entry cache root
- 
+
  @param pipelineDigest - cache generation
- 
+
  @param modelIds - pairing roster
- 
+
  @param sourceText - source page
- 
+
  @param targetText - archive page
- 
+
  @param signal - entry deadline
- 
+
  @param exchangeTimeoutMs - per-call ceiling
- 
+
  @param l - entry logger
- 
+
  @param readPictures - shared entry reader supplying picture support before archive review
- 
+
  @param beforeItem - one per-item hook for every stage that asks the roster, so
  once a hold re-seats it the later stages stay re-seated (ledger X12)
 
@@ -345,14 +345,14 @@ export async function preparePassEntry(
    authority each time: once over the archive as inherited, once more where
    the relabel rewrote it, and once more where the block correction round
    did.
-   
+
    @param targetText - archive text to prepare over
-   
+
    @param pictureReadings - what reading produced per picture, once they are
    read, so the pairing sheets see them (class thirty-four)
-   
+
    @returns Prepared slices and pairing findings
-   
+
    @example
    ```ts
    const paired = await prepareOver({ targetText: archiveText, },);

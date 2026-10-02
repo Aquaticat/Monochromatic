@@ -65,13 +65,13 @@ const DEFECTIVE_TEXT = 'The cat is doing the sleeping on the windowsill, and she
 
 /**
  Asks the checkers about one candidate and reports the tally.
- 
+
  @param label - case name for the verdict line
- 
+
  @param patchedText - candidate the checkers judge
- 
+
  @param expectation - what a discriminating checker should answer
- 
+
  @example
  ```ts
  await checkOne({ label: 'unfixed', patchedText: DEFECTIVE_TEXT, expectation: 'not-fixed', },);
@@ -143,7 +143,7 @@ const MEANING_ISSUE: AdjudicatedIssue = {
 /**
  Third accepted issue of the mixed sheet: a fabricated defect that is not in
  the text at all.
- 
+
  Nothing in either version mentions a dog. A checker reading the revision can
  only answer `not-fixed` or refuse; one that answers `fixed` is agreeing with
  the sheet rather than reading.
@@ -168,14 +168,14 @@ const ABSENT_ISSUE: AdjudicatedIssue = {
 
 /**
  Asks the checkers about a SHEET of issues at once, as production does.
- 
+
  The single-issue cases establish that the stage can discriminate at all. This
  one asks whether it still discriminates when the sheet is mixed, which is the
  only shape the 98.1 percent rate was ever measured on: production passes
  every accepted issue of a chunk in one call, so a checker that keeps up on
  one issue and agrees with everything on seven would produce that rate while
  proving nothing.
- 
+
  @example
  ```ts
  await checkMixedSheet();
@@ -240,14 +240,14 @@ async function checkMixedSheet(): Promise<void> {
 
 /**
  Asks the checkers about a sheet of three issues that were ALL fixed.
- 
+
  Isolates the variable the mixed sheet left confounded. That sheet changed two
  things at once against the single-issue case: it grew to three issues AND its
  candidate carried a loud unfixed defect, so under-crediting there could have
  come from either. Here the sheet is the same size and every issue really is
  repaired. Continued under-crediting indicts SHEET SIZE; correct crediting
  points at contamination from the unfixed defect instead.
- 
+
  @example
  ```ts
  await checkAllFixedSheet();
@@ -301,7 +301,7 @@ async function checkAllFixedSheet(): Promise<void> {
 /**
  Runs the three cases that separate a discriminating checker from a
  rubber-stamping one.
- 
+
  @example
  ```ts
  await main();

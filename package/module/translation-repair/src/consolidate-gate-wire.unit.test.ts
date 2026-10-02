@@ -1,15 +1,15 @@
 /**
  Tests for the sheet and the ballot reading of the consolidation gate.
- 
+
  WHAT THIS FILE EXISTS TO STOP. The gate asks the lane contest's question over
  a different pair of names, and the pieces it shares with that contest are
  shared rather than copied. These tests hold the shared reading to the same
  behaviour on this vocabulary: a finding written as a phrase never costs a
  voice, and an annotated name still names its candidate.
- 
+
  Fixtures mirror corpus structure only. Cat-themed invention throughout; no
  corpus content appears here.
- 
+
  @module
  */
 
@@ -49,11 +49,11 @@ const SUBJECT: GateSubject = {
 
 /**
  Joins the content of every message in one exchange.
- 
+
  @param subject - what the judge is shown
- 
+
  @returns Every message's content, joined
- 
+
  @example
  ```ts
  const shown = exchangeFor({ subject: SUBJECT, },);
@@ -71,15 +71,15 @@ function exchangeFor(
 
 /**
  Joins only what the judge is shown, leaving out the instructions.
- 
+
  SEPARATE FROM THE WHOLE EXCHANGE, because the shared policy names declared
  names as a rule whether or not this slice has any, so a test asking whether
  the block was rendered would pass on the rule's own wording.
- 
+
  @param subject - what the judge is shown
- 
+
  @returns User content
- 
+
  @example
  ```ts
  const shown = shownFor({ subject: SUBJECT, },);

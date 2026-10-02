@@ -1,15 +1,15 @@
 /**
  Tests for the document-level either-rendering rule over destinations.
- 
+
  WHAT THESE PIN: a source destination the archive rendered another way is
  owed as one rendering from either side; carrying neither drops it, carrying
  both is a finding; a destination both sides carry as written stays owed
  outright; with no archive every source destination is owed, as the check
  always demanded; and an archive addition the page lost is not a source
  destination and is not reported.
- 
+
  Fixtures are invented addresses, so there is no corpus text here.
- 
+
  @module
  */
 

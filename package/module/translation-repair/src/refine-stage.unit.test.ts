@@ -1,7 +1,7 @@
 /**
  Tests for the naturalness refinement stage over a scripted client.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -68,9 +68,9 @@ const REFINERS: readonly RosterModelId[] = [SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 
 /**
  Envelopes and definitions of the repaired fixture slice.
- 
+
  @returns Refinable slice derived from the fixture
- 
+
  @example
  ```ts
  const slice = fixtureSlice();
@@ -82,15 +82,15 @@ function fixtureSlice() {
 
 /**
  Client scripting one rewriter reply and one ballot per judge.
- 
+
  @param newText - replacement or per-model replacement, absent to propose none
- 
+
  @param ballot - fixed or per-model one-based choice, zero to decline
- 
+
  @param selectionSheets - optional sink receiving selector conversations
- 
+
  @returns Client usable by the refinement stage
- 
+
  @example
  ```ts
  const client = scriptedRefiner({ newText: SMOOTH_TEXT, ballot: 1, },);
@@ -170,11 +170,11 @@ function scriptedRefiner(
 
 /**
  Runs the stage over the fixture slice.
- 
+
  @param client - scripted client
- 
+
  @returns Stage result
- 
+
  @example
  ```ts
  const result = await runFixture(scriptedRefiner({ ballot: 1, },),);

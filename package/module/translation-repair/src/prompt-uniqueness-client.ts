@@ -40,11 +40,11 @@ type PromptValue =
 /**
  Narrows a prompt value to a list, keeping its items typed as prompt values
  where `Array.isArray` alone would widen them.
- 
+
  @param value - prompt value of either compound shape, or a string
- 
+
  @returns Whether value is a list
- 
+
  @example
  ```ts
  const isList = isPromptList(value,);
@@ -56,18 +56,18 @@ function isPromptList(value: PromptValue,): value is readonly PromptValue[] {
 
 /**
  Serializes prompt value with stable object-key order.
- 
+
  Arrays preserve semantic order while object construction order does not affect identity.
- 
+
  KEYS SORT BY UTF-16 CODE UNIT, as canonical JSON (RFC 8785) sorts them, and as
  the default `toSorted` compares strings. `localeCompare` follows the host's
  locale, and this digest names a durable payload record that a run on another
  host may read.
- 
+
  @param value - prompt value composed from protocol strings
- 
+
  @returns Stable structural serialization
- 
+
  @example
  ```ts
  const serialized = canonicalPromptValue({ role: 'user', content: 'Hello', },);
@@ -102,16 +102,16 @@ function canonicalPromptValue(value: PromptValue,): string {
 
 /**
  Canonical model and ordered-message identity shared by text and JSON calls.
- 
+
  Request metadata is deliberately excluded.
  Changing response schema,
  timeout,
  or output cap does not turn same substantive conversation into independent evidence.
- 
+
  @param request - model request whose exact message bytes form prompt
- 
+
  @returns Privacy-safe digest used only for duplicate accounting
- 
+
  @example
  ```ts
  const digest = modelPromptDigest({ request, });
@@ -140,20 +140,20 @@ export function modelPromptDigest(
 
 /**
  Prevents one model and one completed prompt from being sampled twice.
- 
+
  Concurrent and completed duplicates reuse first payload before second provider call.
  Provider-level delivery retries remain inside wrapped call;
  when wrapped call throws without outcome,
  identity is released so operational recovery may retry it.
  Any returned outcome claims identity permanently for client lifetime,
  including schema mismatch or refusal.
- 
+
  @param inner - routed provider client performing first unique call
- 
+
  @param store - optional durable raw-payload checkpoint across invocations
- 
+
  @returns Client enforcing model-prompt uniqueness by reuse
- 
+
  @example
  ```ts
  const client = promptUniqueClient({ inner, });

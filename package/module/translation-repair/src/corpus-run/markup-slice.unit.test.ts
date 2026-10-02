@@ -1,17 +1,17 @@
 /**
  Tests for the markup-only slice reading.
- 
+
  This class was named by hand: a slice that is entirely a photo component
  sits near ratio 1.00 whatever the translator did, so it is below baseline for
  a reason unrelated to giving a passage up and pairs with any high neighbour.
- 
+
  The cases that matter are the two NULLS. A screen that called ordinary prose
  markup would suppress real relocation candidates, which is a worse failure
  than the one it was built to fix, because a suppressed candidate leaves no
  trace to audit.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

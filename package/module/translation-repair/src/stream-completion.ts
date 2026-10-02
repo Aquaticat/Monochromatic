@@ -53,11 +53,11 @@ type StreamFold = {
 
 /**
  Folds one parsed stream event into the accumulator.
- 
+
  @param fold - accumulated channels
- 
+
  @param chunk - parsed event payload
- 
+
  @example
  ```ts
  foldChunk({ fold, chunk, },);
@@ -98,7 +98,7 @@ function foldChunk(
 
   /**
    Why the model stopped, on the event that closes the stream.
-   
+
    READ BEFORE THE DELTA CHECK, because the closing event of an
    OpenAI-compatible stream carries an EMPTY delta beside the reason. Folding
    it after that check would discard exactly the event worth reading.
@@ -131,15 +131,15 @@ function foldChunk(
 
 /**
  Refuses a body whose event stream never reached its terminator.
- 
+
  SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO, on the same grounds as the
  Anthropic side: a stream that stopped early comes back as 200, so a check
  that runs after the retry returned is a check no retry ever sees.
- 
+
  @param bodyText - whole drained body, as the transport returned it
- 
+
  @throws {@link MalformedCompletionError} when the terminator never arrived
- 
+
  @example
  ```ts
  requireStreamTerminator({ bodyText, },);
@@ -169,13 +169,13 @@ export function requireStreamTerminator(
  Reassembles one drained SSE body into a completion.
  Requires the `[DONE]` terminator: a stream that ended without it was cut
  off, and silently returning truncated content would poison every consumer.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns Reassembled content, refusal, and usage
- 
+
  @throws {@link MalformedCompletionError} when an event is not JSON or the terminator is missing
- 
+
  @example
  ```ts
  const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);

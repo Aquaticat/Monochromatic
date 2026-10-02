@@ -1,16 +1,16 @@
 /**
  Tests for the check that every container tag is owned whole by the block and
  range that reach it.
- 
+
  A dissolved container leaves its opening and closing tags belonging to no
  block, and every range here is minted from block offsets, so a boundary could
  fall between an opener and its closer while satisfying every node-level rule.
  `container-extents.ts` fixes that by handing each tag to the block beside it;
  this check asks whether that still happened, and is expected to fire only on
  a regression in how extents or ranges are derived.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -64,12 +64,12 @@ const TARGET_CONTAINERS = TARGET.containers;
 
 /**
  Single container of the fixture, which every case is stated against.
- 
+
  @returns Its two tag spans
- 
+
  @throws {@link Error} when the fixture parsed no container, which would make
  every case here pass for the wrong reason
- 
+
  @example
  ```ts
  const container = onlyContainer();
@@ -85,13 +85,13 @@ function onlyContainer(): ContainerSpan {
 /**
  Finds the block that owns one offset, which is how each case names a slice
  boundary without hard-coding a number the fixture could drift away from.
- 
+
  @param offset - absolute offset the wanted block covers
- 
+
  @returns Block covering that offset
- 
+
  @throws {@link Error} when no block covers it
- 
+
  @example
  ```ts
  const node = blockAt({ offset: container.openerStartOffset, },);
@@ -112,13 +112,13 @@ function blockAt({ offset, }: { readonly offset: number; },): DocumentNode {
 
 /**
  Builds one pair whose target side covers the given range.
- 
+
  @param startOffset - absolute start of range assembly would replace
- 
+
  @param endOffset - absolute exclusive end
- 
+
  @returns Pair carrying that span
- 
+
  @example
  ```ts
  const pair = rangeOf({ startOffset: 0, endOffset: 20, },);
@@ -160,9 +160,9 @@ function rangeOf(
 /**
  Rebuilds the fixture's blocks as they looked BEFORE tags were handed out, so
  one case can state the regression this check exists to catch.
- 
+
  @returns Blocks whose edges stop at the container's tags instead of covering them
- 
+
  @example
  ```ts
  const orphaning = blocksWithoutTags();

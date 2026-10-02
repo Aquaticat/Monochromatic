@@ -117,13 +117,13 @@ const LINE_BREAK_CANON: ReadonlyMap<string, string> = new Map([
  Rewrites each UTF-16 unit through one canonicalization map.
  Length-preserving by construction, since every mapping replaces one unit
  with one unit, so a position found in the result indexes the input exactly.
- 
+
  @param text - text whose units canonicalize
- 
+
  @param map - canonical replacement per unit, absent units left alone
- 
+
  @returns Same-length text with mapped units replaced
- 
+
  @example
  ```ts
  canonicalize({ text: 'father’s', map: PUNCTUATION_CANON, },);
@@ -162,11 +162,11 @@ function canonicalize(
  Length-preserving by construction:
  every mapping replaces one UTF-16 unit with one UTF-16 unit,
  so offsets in the result index the input exactly.
- 
+
  @param text - text whose punctuation variants collapse
- 
+
  @returns Same-length text with canonical punctuation
- 
+
  @example
  ```ts
  normalizePunctuation({ text: 'father’s shop', },);
@@ -245,15 +245,15 @@ export function straightenProseQuotes({ text, }: { readonly text: string; },): s
  Collapses every line break onto a plain space.
  Shares the length guarantee of `normalizePunctuation`, so a position found
  in the result still indexes the input.
- 
+
  FOR DISPLAY, NOT FOR MATCHING: this flattens a paragraph break as readily as
  a soft wrap, which is right for a one-line diagnostic and wrong for deciding
  whether a quote occurs. Matching uses {@link collapseSoftLineBreaks}.
- 
+
  @param text - text whose line breaks collapse
- 
+
  @returns Same-length text reading line breaks as spaces
- 
+
  @example
  ```ts
  collapseLineBreaks({ text: 'her\nshop', },);
@@ -268,13 +268,13 @@ export function collapseLineBreaks({ text, }: { readonly text: string; },): stri
 
 /**
  Whether one position holds a line-break unit.
- 
+
  @param text - text being scanned
- 
+
  @param index - position to read, which may sit outside the text
- 
+
  @returns Whether that position holds a line break
- 
+
  @example
  ```ts
  const breaks = isLineBreakAt({ text: 'a\nb', index: 1, },);
@@ -295,7 +295,7 @@ function isLineBreakAt(
 /**
  Collapses only SOLE line breaks onto plain spaces, leaving a run of them as
  it stands.
- 
+
  WHY A RUN IS LEFT ALONE: a lone break inside a paragraph is a soft wrap, and
  a model quoting across it writes a space, so the two forms mean the same text.
  A run of breaks is a STRUCTURAL boundary. Collapsing those too made a blank
@@ -303,19 +303,19 @@ function isLineBreakAt(
  a paragraph boundary the document keeps: safe only for as long as every model
  joined lines with exactly one space, which is not a property this pipeline can
  assume of its inputs. A run now matches nothing but itself.
- 
+
  WHAT IT STILL DOES NOT PROTECT: boundaries a single line break represents,
  inside fenced code, between list items, and between table rows, plus a
  Markdown hard break, whose two trailing spaces plus a wrap read as three
  spaces. Those need the parse rather than the characters, and stay unprotected
  here.
- 
+
  Length-preserving like everything here, so offsets still index the input.
- 
+
  @param text - text whose soft wraps collapse
- 
+
  @returns Same-length text reading sole line breaks as spaces
- 
+
  @example
  ```ts
  collapseSoftLineBreaks({ text: 'her\nshop', },);

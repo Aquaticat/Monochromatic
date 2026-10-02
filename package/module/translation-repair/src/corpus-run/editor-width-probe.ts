@@ -40,7 +40,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 
 /**
  Slices drawn when the caller names no count.
- 
+
  The sample is HALVED into two disjoint draws, so this is the size of the
  whole sample rather than of the draw that runs.
  */
@@ -53,14 +53,14 @@ const DEFAULT_DRAW: WidthDraw = 'a';
 
 /**
  Position the draw name is read from among the arguments after the flags.
- 
+
  Second, after the slice count (`command-lines.ts`).
  */
 const DRAW_POSITION = 1;
 
 /**
  Position within the sample each draw takes.
- 
+
  Alternate positions rather than a front and back half, so both draws stay as
  evenly spread across the corpus as the whole sample was.
  */
@@ -71,15 +71,15 @@ const DRAW_POSITIONS: Readonly<Record<WidthDraw, number>> = {
 
 /**
  Runs the whole probe and writes its report.
- 
+
  @throws Error when the panel fails the positive control, since every number
  the draw would produce is unreadable once that happens
- 
+
  @throws Error when the named draw is neither half, rather than quietly
  spending draw A and reporting it under whatever was asked for
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await main({ line, },);
@@ -159,7 +159,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
 
   /**
    Positions this draw takes out of the sample.
-   
+
    SPLIT RATHER THAN REDRAWN, so the other half exists already if this one
    lands near its own null band. Taking alternate positions out of one spread
    sample keeps both halves as evenly spread as the whole.
@@ -221,13 +221,13 @@ async function main({ line, }: { readonly line: CommandLineOf<'editor-width-prob
 
   /**
    Rewrites the report over everything settled so far.
-   
+
    CALLED AFTER EVERY SLICE, not once at the end. A draw of twenty slices runs
    for hours, and a run killed at slice eighteen with the write still ahead of
    it would throw away every hour it had already spent. Rewriting a few
    kilobytes of markdown twenty times costs nothing worth measuring against
    that.
-   
+
    @returns Path written
    */
   async function publish(): Promise<string> {

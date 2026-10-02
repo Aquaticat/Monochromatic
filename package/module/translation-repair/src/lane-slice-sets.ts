@@ -23,9 +23,9 @@ import {
 
 /**
  @internal
- 
+
  One list of slices a lane names, beside what makes the list legal.
- 
+
  @example
  ```ts
  const set: NamedSliceSet = {
@@ -72,14 +72,14 @@ type NamedIndices = {
 
 /**
  Refuses a list that repeats a slice, and turns it into a set.
- 
+
  @param set - list being checked, for its label and indices
- 
+
  @returns Distinct indices it names
- 
+
  @throws {@link LaneSliceCoverageError} when an index appears twice, since the
  set would still be the right shape and one slice would be named once
- 
+
  @example
  ```ts
  const unfilled = distinctIndices({ set, },);
@@ -114,18 +114,18 @@ function distinctIndices(
 /**
  Refuses a named slice the preparation never produced, one already decided, or
  one whose archive state contradicts what the list means.
- 
+
  @param set - list being checked
- 
+
  @param indices - its indices, already proven distinct
- 
+
  @param slices - prepared pairs, which answer both membership and archive
  state
- 
+
  @param decidedIndices - slices the lane also reported a wording for
- 
+
  @throws {@link LaneSliceCoverageError} on any of the three
- 
+
  @example
  ```ts
  assertNamesLegalSlices({ set, indices, slices, decidedIndices, },);
@@ -177,20 +177,20 @@ function assertNamesLegalSlices(
 
 /**
  Refuses a named slice sitting on the wrong side of the archive.
- 
+
  Checked LAST of the per-list rules, so a slice named by two lists reports the
  contradiction between them rather than whichever archive rule the first list
  happens to break.
- 
+
  @param set - list being checked
- 
+
  @param indices - its indices
- 
+
  @param slices - prepared pairs, which are the only thing that knows
- 
+
  @throws {@link LaneSliceCoverageError} when a list about missing passages
  names one the archive translates, or the other way around
- 
+
  @example
  ```ts
  assertArchiveAllows({ set, indices, slices, },);
@@ -236,21 +236,21 @@ function assertArchiveAllows(
 
 /**
  @internal
- 
+
  Validates every list a lane names, and refuses any slice on two of them.
- 
+
  @param sets - lists to validate, in the order their messages should be tried
- 
+
  @param slices - prepared pairs
- 
+
  @param decidedIndices - slices the lane reported a wording for
- 
+
  @returns One index set per list, in the order given
- 
+
  @throws {@link LaneSliceCoverageError} when a list repeats a slice, names one
  the preparation never produced, names one already decided, names one another
  list also names, or names one whose archive state the list forbids
- 
+
  @example
  ```ts
  const [unfilled, unheard,] = validateNamedSets({ sets, slices, decidedIndices, },);

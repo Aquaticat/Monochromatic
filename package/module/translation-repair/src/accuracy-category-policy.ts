@@ -3,7 +3,7 @@
  The category is an input to repair, so duplicate addition diagnoses can steer
  an author to delete an event that instead needs its participant corrected.
  Genuine addition and omission controls remain actionable under this policy.
- 
+
  @example
  ```ts
  const criticRule = ACCURACY_CATEGORY_SCOPE;
@@ -15,7 +15,7 @@ export const ACCURACY_CATEGORY_SCOPE =
 /**
  Requires category validity as well as a real defect before a claim gains repair authority.
  This is review guidance, not deterministic claim suppression or reclassification.
- 
+
  @example
  ```ts
  const panelRule = ADJUDICATION_CATEGORY_CHECK;

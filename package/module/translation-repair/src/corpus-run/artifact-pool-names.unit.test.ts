@@ -1,28 +1,28 @@
 /**
  Tests that the pool CENSUSES THE CALLER'S OWN LISTING when it was given one.
- 
+
  WHY THE LISTING IS PASSED AT ALL. A reader that lists the artifacts directory
  and then lets the census list it again is looking at two views of a directory
  an accumulation may still be writing into, so an entry can be in the reader's
  listing and absent from the census, or the other way round. The caller's
  listing is forwarded precisely so both halves classify the same files.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting the condition that forwards that
  listing, so the names are dropped exactly when a caller supplied them, failed
  no test in this package. Nothing throws: the census silently widens to
  whatever is on disk, and a rate is then reported over a population its own
  reader never saw.
- 
+
  READ OFF THE POOL, not off a call count, because the pooled ids are what
  every downstream rate divides by.
- 
+
  NO NETWORK AND NO REAL ARTIFACTS. Two throwaway files are written to a
  temporary directory, both tagged with the same commit and the same pipeline
  digest so they form ONE generation and no ambiguity refusal can fire. The
  pool is then asked for one of them by name.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -72,13 +72,13 @@ const UNASKED = 'whiskers';
 
 /**
  Writes one settled-looking artifact carrying the provenance the pool reads.
- 
+
  @param artifactsDir - directory to write into
- 
+
  @param entryId - id the file is named for and claims inside
- 
+
  @returns Nothing; the file is the effect
- 
+
  @example
  ```ts
  await placeArtifact({ artifactsDir, entryId: 'mittens', },);
@@ -107,9 +107,9 @@ async function placeArtifact(
 /**
  Clears both generation-policy variables for the duration of one case, so a
  shell that exported either cannot decide what this test measures.
- 
+
  @returns Disposable restoring whatever was there before
- 
+
  @example
  ```ts
  using quiet = withoutPoolPolicy();

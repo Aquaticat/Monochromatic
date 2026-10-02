@@ -13,7 +13,7 @@ import { hashContent, } from './document-node.ts';
  One region of the translation an editor may rewrite.
  Zero-width envelopes (`startOffset === endOffset`, empty base) are
  insertion points for omitted content.
- 
+
  @example
  ```ts
  const envelope: EditableEnvelope = {
@@ -61,7 +61,7 @@ export type EditableEnvelope = {
 
 /**
  Envelopes plus the accepted issues no envelope could serve.
- 
+
  @example
  ```ts
  const plan: EnvelopePlan = deriveEditableEnvelopes({ issues, targetText, },);
@@ -107,13 +107,13 @@ type IssueInterval = {
  issue, and non-accepted issues contribute nothing.
  Merging keeps envelopes non-overlapping by construction, which the
  deterministic apply gate relies on.
- 
+
  @param issues - adjudicated issues; only accepted ones contribute
- 
+
  @param targetText - full translation the envelopes cut from
- 
+
  @returns Envelopes in document order plus unenveloped accepted issues
- 
+
  @example
  ```ts
  const { envelopes, unenveloped, } = deriveEditableEnvelopes({ issues, targetText, },);

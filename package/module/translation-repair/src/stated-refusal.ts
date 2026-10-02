@@ -26,11 +26,11 @@
 
 /**
  A refusal whose message this package wrote, and may therefore repeat.
- 
+
  SEPARATE FROM A FAULT. `reportingRefusals` reports one of these as the
  command declining to run, with no frames and no talk of a bug, because
  nothing here is broken: a usage line is an answer, not a crash.
- 
+
  @example
  ```ts
  throw new StatedRefusalError({

@@ -1,18 +1,18 @@
 /**
  Tests for where run artifacts are written.
- 
+
  `resolveRunsDir` had no test. Everything durable a run produces lands under
  the path it returns: artifacts, logs, the attempts map, and the grading
  sheets a human spends hours on. The sheet-path guard refuses to overwrite a
  final sheet, but that guard only protects paths under whatever this function
  resolved, so a wrong answer here relocates the entire protected area rather
  than defeating one check.
- 
+
  The empty-string case is the one worth having. An exported-but-empty
  environment variable is a normal shell accident, and a bare truthiness check
  would treat it as an override, resolving every artifact path relative to the
  process working directory instead of the runs directory.
- 
+
  The override is injected as a disposable so the variable is restored however
  a case ends, following the pattern in
  `package/pi-plugin/morph-compact/src/api-key.unit.test.ts`.
@@ -64,11 +64,11 @@ const RUNS_DIR_VAR = 'TRANSLATION_REPAIR_RUNS_DIR';
 
 /**
  Sets the override for the life of a scope and restores it on exit.
- 
+
  @param value - override to install; the empty string is meaningful here
- 
+
  @returns Disposable restoring the previous value, including its absence
- 
+
  @example
  ```ts
  using _override = withRunsDir({ value: '/tmp/whiskers', },);
@@ -92,9 +92,9 @@ function withRunsDir({ value, }: { readonly value: string; },): Disposable {
 
 /**
  Removes the override for the life of a scope and restores it on exit.
- 
+
  @returns Disposable restoring the previous value
- 
+
  @example
  ```ts
  using _unset = withoutRunsDir();
@@ -236,11 +236,11 @@ const ANSWERED = 200;
 
 /**
  Whether a URL is the first provider's chat endpoint.
- 
+
  @param url - URL the transport was asked
- 
+
  @returns Whether a chat exchange went to the first provider
- 
+
  @example
  ```ts
  const askedFirst = urls.some(isFirstProviderChat,);
@@ -257,9 +257,9 @@ function isFirstProviderChat(url: string,): boolean {
  (quotas, credits) refuses too. AN UNREADABLE METER READS AS SPENDABLE, which
  is the documented failover in `provider-budget.ts`, so the routing these
  cases observe is decided on serving capability alone, never on budget.
- 
+
  @returns Transport plus the URLs it was asked, in call order
- 
+
  @example
  ```ts
  const { transport, urls, } = recordingTransport();
@@ -293,9 +293,9 @@ function recordingTransport(): {
 /**
  Empties the run-wide seat tally for the life of a scope and again on exit,
  so a case reads only what it caused and leaves nothing for the next one.
- 
+
  @returns Disposable emptying the tally again
- 
+
  @example
  ```ts
  using _fresh = withFreshRunSeats();
@@ -341,13 +341,13 @@ const SECOND_ONLY_SEAT = SEAT_HYPER_VISION;
  Asks one seat through the client and hands back whatever came of it, the
  reply or the failure, because half of the wiring cases expect the call to
  fail and care only about where it went and how it was counted.
- 
+
  @param client - client under test
- 
+
  @param modelId - seat to ask
- 
+
  @returns Reply when the call answered, otherwise what it threw
- 
+
  @example
  ```ts
  const came = await askSeat({ client, modelId: SECOND_ONLY_SEAT, },);
@@ -377,11 +377,11 @@ async function askSeat(
 /**
  Moves the process working directory for the life of a scope and restores it
  on exit.
- 
+
  @param path - directory to move to
- 
+
  @returns Disposable restoring the previous working directory
- 
+
  @example
  ```ts
  using _elsewhere = inDirectory({ path: tmpdir(), },);

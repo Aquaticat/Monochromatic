@@ -1,19 +1,19 @@
 /**
  Tests for the band ordering a corpus pass starts entries in.
- 
+
  This module had no test at all, and it decides which entries a pass reaches
  first. A defect here does not crash anything: it quietly fills one band
  faster than the others, so the stratified sample drawn later is biased toward
  whichever band the ordering favored, and the precision number the milestone
  gate reads is measured on the wrong population.
- 
+
  The rank offset is the subtle part and gets the most attention in this file. Without
  it every run restarts each band at zero, the within-rank tiebreak hands every
  run to the same band, and the starvation this ordering exists to prevent
  comes back.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -41,15 +41,15 @@ import {
 
 /**
  Bands a raw byte count, stating the unit explicitly.
- 
+
  This case sweeps byte counts around the band cuts, which are byte
  counts by definition and cannot be produced from text, so the
  assertion is the honest way to reach `classifyBand`.
- 
+
  @param count - UTF-8 byte length under test
- 
+
  @returns Band that count falls in
- 
+
  @example
  ```ts
  expect(bandAt(1_842,),).toBe('small',);
@@ -63,13 +63,13 @@ function bandAt(count: number,): SizeBand {
 
 /**
  Builds an entry reduced to what ordering reads.
- 
+
  @param id - corpus entry id
- 
+
  @param sourceBytes - page source size in UTF-8 bytes
- 
+
  @returns Sized entry
- 
+
  @example
  ```ts
  const entry = sized({ id: 'Mittens', sourceBytes: 900, },);

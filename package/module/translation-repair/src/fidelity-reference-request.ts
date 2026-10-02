@@ -9,25 +9,25 @@ import { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
 
 /**
  Validates the fixed calibration request without reading files or creating a model client.
- 
+
  @param specs - reviewed manifest, defaulting to the checked-in set
- 
+
  @param corpusSha - configured corpus revision, checked without reading any files
- 
+
  @param onlyEntryIds - explicit reviewed population filter
- 
+
  @param damageKinds - requested reviewed defect families
- 
+
  @param judgeModelIds - distinct identities that will judge the comparisons
- 
+
  @param cap - nonnegative finite trial bound; zero means preflight only
- 
+
  @param withContext - refused until context is independently reviewed with the fixtures
- 
+
  @returns Owned selected specifications
- 
+
  @throws {@link FidelityReferenceError} for unreviewed inputs or a correction author judging their own fixture
- 
+
  @example
  ```ts
  const specs = reviewedFidelityRequest({ corpusSha, onlyEntryIds: [], damageKinds, judgeModelIds, cap: 0, withContext: false });

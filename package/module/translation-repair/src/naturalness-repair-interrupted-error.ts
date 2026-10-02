@@ -2,10 +2,10 @@
 
 /**
  Operational stop when current naturalness evidence cannot form another unique correction task.
- 
+
  This is incomplete work,
  not quality verdict and not publication authorization.
- 
+
  @example
  ```ts
  throw new NaturalnessRepairInterruptedError({ reason: 'contributor-structure', });
@@ -19,9 +19,9 @@ export class NaturalnessRepairInterruptedError extends Error {
 
   /**
    Constructs operation-only interruption without candidate wording.
-   
+
    @param reason - named stage state preventing unique next correction
-   
+
    @example
    ```ts
    new NaturalnessRepairInterruptedError({ reason: 'contributor-structure', });

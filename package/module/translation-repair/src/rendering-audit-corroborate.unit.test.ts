@@ -1,22 +1,22 @@
 /**
  Tests for when two auditors are talking about the same defect.
- 
+
  THE CASES THAT DECIDE THIS INSTRUMENT are here, and both were live defects in
  the version this replaces:
- 
+
  -   The FALSE SPLIT: two voices locating one dropped negation at different
      widths were counted as two lone opinions, because the key was the text
      they typed.
  -   The FALSE MERGE, which is worse: two voices finding DIFFERENT changed
      numbers in one sentence were counted as one twice-confirmed defect,
      because a character floor had forced both to quote the whole sentence.
- 
+
  A matcher that fixes only the first by loosening the key re-creates the
  second, so the tests for both sit in one file where neither can be relaxed
  without the other failing.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -69,21 +69,21 @@ const COUNT_SENTENCE_CANDIDATE = 'At night three cats sleep on the windowsill, t
 
 /**
  Builds one screened claim by anchoring it the way the screen would.
- 
+
  @param modelId - voice making the claim
- 
+
  @param category - what it calls the defect
- 
+
  @param sourceLocator - original span identifying the occurrence
- 
+
  @param sourceFocus - original span carrying the change
- 
+
  @param candidateLocator - candidate span identifying the occurrence
- 
+
  @param candidateFocus - candidate span carrying the change
- 
+
  @returns Claim in the shape the matcher reads
- 
+
  @example
  ```ts
  const claim = claimOf({ modelId: 'a', category: 'altered-number', ... },);

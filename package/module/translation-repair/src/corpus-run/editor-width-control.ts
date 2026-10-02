@@ -25,7 +25,7 @@ import { bothOrders, } from './editor-width-contest.ts';
 
 /**
  Slices the control is tried on.
- 
+
  Three rather than one so a single unlucky pair cannot condemn a working
  panel, and rather than ten because this is a gate on spending, not a
  measurement in its own right.
@@ -51,23 +51,23 @@ const TERMINATORS = [
 
 /**
  Removes one whole sentence, or reports that there was none to remove.
- 
+
  DELETION RATHER THAN CORRUPTION is the damage of choice because
  dropped page content is already a named fault the pipeline cares about, so a
  panel that misses it is missing something the corpus rules already say
  matters.
- 
+
  Exported so the cut can be tested directly. This function decides what the
  positive control is actually asking the panel about, and a version of it that
  quietly returned the passage unchanged, or blank on everything, would turn the
  gate into a formality that passes whatever it is handed.
- 
+
  @internal
- 
+
  @param text - passage to damage
- 
+
  @returns Passage with a sentence gone, or blank when it holds only one
- 
+
  @example
  ```ts
  const damaged = withoutASentence(text,);
@@ -108,14 +108,14 @@ export function withoutASentence(text: string,): string {
 
 /**
  Presents one text as an arm, so the contest machinery can judge it.
- 
+
  @param text - passage this arm offers
- 
+
  @param producers - models credited with it, empty for fixture text nobody
  wrote, which keeps every ballot at full weight
- 
+
  @returns Arm the contest can seat
- 
+
  @example
  ```ts
  const arm = asArm({ text, producers: [], },);
@@ -144,19 +144,19 @@ function asArm(
 
 /**
  Asks whether the panel prefers intact text over text missing a sentence.
- 
+
  @param client - injected model client
- 
+
  @param slices - drawn sample, of which the first usable few are damaged
- 
+
  @param judgeModelIds - the panel the draw will use
- 
+
  @param signal - cancellation
- 
+
  @param l - logger
- 
+
  @returns Whether intact text won more of the tried pairs than it lost
- 
+
  @example
  ```ts
  const held = await widthControlHolds({ client, slices, judgeModelIds, signal, l, },);

@@ -67,15 +67,15 @@ type TranslateRoundInput = ForeignBorrowed<{
 
 /**
  Produces one slate and judges it, optionally under rejection evidence.
- 
+
  @param input - round configuration shared by both fixed rounds
- 
+
  @param followupEvidence - located rejection evidence, absent on the initial round
- 
+
  @returns Settled text and evidence
- 
+
  @throws {@link TranslateAbsenceError} when judging leaves an absent passage unwritten
- 
+
  @example
  ```ts
  const result = await produceAndJudgeOnce({ input, },);
@@ -187,24 +187,24 @@ async function produceAndJudgeOnce(
 
 /**
  Produces and judges an absent passage at fixed depth two.
- 
+
  The follow-up round carries the judges' located rejection evidence,
  the form the redesign measured as the one safe re-ask shape;
  a second rejection rethrows so the slice settles unfilled,
  never as a thrown entry.
- 
+
  @param client - injected model client
- 
+
  @param translatorModelIds - models rendering each task independently
- 
+
  @param judgeModelIds - models judging each produced slate
- 
+
  @param sourceText - original passage to render
- 
+
  @param incumbentText - existing translation, blank for absent passage
- 
+
  @param incumbentKind - whether fallback text exists and passes deterministic source floor
- 
+
  @param incumbentEligible - whether existing text may appear on candidate slate
 
  @param incumbentWithheld - whether the absent incumbent is wording that
@@ -215,11 +215,11 @@ async function produceAndJudgeOnce(
  (owner, 2026-09-27, "No eligible standing")
 
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Settled text and evidence, the first round's findings and the
  follow-up's named before the follow-up's own where there was one (ledger B41)
 

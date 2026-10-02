@@ -1,18 +1,18 @@
 /**
  Tests for the line a settled entry prints once both lanes have run.
- 
+
  WHAT THESE PIN is that the line reports SETTLEMENT rather than a lane. The
  version 1 line named one lane's status as the run's status, because there was
  one lane; keeping that shape and appending translate counts beside it would
  tell every later log reader that the repair lane is the outcome and the other
  is commentary, which is the question this generation exists to leave open.
- 
+
  They also pin that every number comes off the artifact rather than being
  recounted beside it, since a log line that disagrees with the file it
  describes is worse than no log line.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -60,13 +60,13 @@ const EMPTY_BOWL = 'The cat\'s bowl is empty.';
 
 /**
  Artifact these cases render.
- 
+
  Built as a literal rather than through the builder, because what is under
  test is the RENDERING: a fixture assembled by the thing whose output it
  describes could hide a field the renderer reads from the wrong place.
- 
+
  @returns Artifact of a two-slice entry where the lanes differ
- 
+
  @example
  ```ts
  const artifact = catArtifact();
@@ -275,9 +275,9 @@ function trimmedArtifact({ trimmedText, }: { readonly trimmedText: string; },): 
 
 /**
  Splits the line into its `key=value` pairs.
- 
+
  @returns Every field of the rendered line, keyed
- 
+
  @example
  ```ts
  const fields = renderedFields();

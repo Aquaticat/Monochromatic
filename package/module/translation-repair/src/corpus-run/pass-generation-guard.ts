@@ -37,14 +37,14 @@ const ALLOW_DRIFT_VALUE = 'yes';
 
 /**
  Whether this process was started with the drift opt-in.
- 
+
  Separated from the guard so the environment is read in exactly one place. The
  environment is process-wide, so a guard that read it internally could not be
  exercised by two callers at once, and its own tests had to mutate a shared
  variable to reach either branch.
- 
+
  @returns Whether the variable carries the exact opt-in
- 
+
  @example
  ```ts
  const driftAllowed = readDriftOptIn();
@@ -65,11 +65,11 @@ export class GenerationDriftError extends Error {
 
   /**
    Names what is already there, what would be added, and every way forward.
-   
+
    @param digests - built pipelines the settled entries already record
-   
+
    @param digest - built pipeline this invocation would stamp
-   
+
    @example
    ```ts
    throw new GenerationDriftError({ digests: ['53b5a4752...',], digest, },);
@@ -137,9 +137,9 @@ export class LegacyPipelineError extends Error {
 
   /**
    Names the entries that predate generation identity and what to do.
-   
+
    @param entryIds - entries recording a commit but no build
-   
+
    @example
    ```ts
    throw new LegacyPipelineError({ entryIds: ['Mittens',], },);
@@ -186,9 +186,9 @@ export class UnplaceableArtifactError extends Error {
 
   /**
    Names every unplaceable artifact and what removing it restores.
-   
+
    @param entryIds - entries whose artifact carries nothing usable
-   
+
    @example
    ```ts
    throw new UnplaceableArtifactError({ entryIds: ['Mittens',], },);
@@ -230,23 +230,23 @@ export class UnplaceableArtifactError extends Error {
 /**
  Refuses a directory holding an artifact nothing can place, and reports what
  the rest record.
- 
+
  THE FIRST HALF of the resume guard, split out because something has to run
  BETWEEN the two halves. The second half's refusal is overridable, and its
  message tells an operator so; a schema check that refuses after they take
  that advice makes the first message a lie and the second run's "resuming
  across a foreign pipeline" line describe a resume that never happens. These
  refusals are not overridable and belong before it.
- 
+
  @param artifactsDir - directory holding one JSON per settled entry
- 
+
  @returns What every placeable artifact records, so the second half need not
  read the directory again
- 
+
  @throws UnplaceableArtifactError when an artifact records nothing usable
- 
+
  @throws LegacyPipelineError when artifacts predate generation identity
- 
+
  @example
  ```ts
  const census = await assertArtifactsPlaceable({ artifactsDir, },);
@@ -305,23 +305,23 @@ export async function assertArtifactsPlaceable(
 
 /**
  Refuses a resume that would add a second BUILD to one pool.
- 
+
  THE SECOND HALF, and the overridable one. It says nothing about artifacts
  that cannot be placed, which the first half already refused, and nothing
  about their SHAPE, which is a third question with a third remedy.
- 
+
  @param census - what the first half read off the directory
- 
+
  @param digest - built pipeline this invocation would stamp on everything it
  settles
- 
+
  @param driftAllowed - whether a mixed directory was asked for; the pass
  passes {@link readDriftOptIn}, and a test states it rather than inheriting
  whatever this process's environment holds (ledger B30)
- 
+
  @throws GenerationDriftError when settled entries record any other build and
  the caller has not opted into drift
- 
+
  @example
  ```ts
  assertBuildGenerationResumable({ census, digest, driftAllowed: readDriftOptIn(), },);

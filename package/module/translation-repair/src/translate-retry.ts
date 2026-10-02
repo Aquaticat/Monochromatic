@@ -54,7 +54,7 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 /**
  Declines worth buying a second judging for.
- 
+
  `no-candidate` is deliberately absent: it means nothing usable was ever
  proposed, so a second judging would be handed the same empty slate and cost a
  full panel to reach the same answer.
@@ -78,11 +78,11 @@ const RETRY_FINDING = 'translate-declined-retried';
 
 /**
  What one judging round produced.
- 
+
  NAMED because a decline leaves by two doors and both have to be carried
  together to the point where the retry decides: an inline union at the call
  site would have to be repeated at every place that reads it.
- 
+
  @example
  ```ts
  const round: JudgeRound = { kind: 'returned', result, };
@@ -114,11 +114,11 @@ type JudgeRound = {
 
 /**
  Whether a reason is one a second judging might change.
- 
+
  @param reason - why the first judging gave up
- 
+
  @returns Whether to buy another round
- 
+
  @example
  ```ts
  const worthRetrying = isRetriedDecline({ reason: 'declined-indecision', },);
@@ -213,13 +213,13 @@ async function askJudges(
 
  @param judging - everything {@link judgeTranslateSlate} needs, forwarded
  unchanged so this cannot drift from the half it wraps
- 
+
  @returns What the panel decided, from whichever round decided it
- 
+
  @throws {@link TranslateAbsenceError} when a slice with no incumbent is
  declined twice, carrying `no-candidate-backed` rather than either round's own
  reason
- 
+
  @example
  ```ts
  const decided = await judgeSlateWithRetry({ judging, },);
@@ -241,7 +241,7 @@ export async function judgeSlateWithRetry(
 
   /**
    What the first round reported, whichever door it left by.
-   
+
    Read ONCE rather than per field, so the two shapes are reconciled in one
    place and every later line reads the same record regardless of which door
    this was.

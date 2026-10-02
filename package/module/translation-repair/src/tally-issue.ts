@@ -18,7 +18,7 @@ import type { ClaimPanelReading, } from './panel-reading.ts';
 
 /**
  One member after voting under the caller's actual thresholds and weights.
- 
+
  @example
  ```ts
  const grades: readonly GradedMember[] = [];
@@ -50,11 +50,11 @@ export type GradedMember = {
 /**
  Upper median under the taxonomy's least-to-most severity order.
  Even splits retain the more severe grade, matching existing adjudication.
- 
+
  @param severities - nonempty severity opinions
- 
+
  @returns Upper-median grade
- 
+
  @example
  ```ts
  severityUpperMedian({ severities: ['minor', 'major'] });
@@ -79,11 +79,11 @@ export function severityUpperMedian(
  Partitions a panel-approved merge by already-decided member status.
  First occurrence determines partition order. A source-defect status keeps
  the entire merged cluster blocked, preserving protective-minority policy.
- 
+
  @param graded - members in stable cluster order
- 
+
  @returns Uniform-status groups, or one protected heterogeneous group
- 
+
  @example
  ```ts
  const groups = partitionGradedMembers({ graded });
@@ -113,11 +113,11 @@ export function partitionGradedMembers(
  Assembles one nonempty partition produced by {@link partitionGradedMembers},
  or one unmerged member. Only source-defect-protected groups mix statuses.
  Per-member evidence keysets exactly follow the retained claims.
- 
+
  @param graded - uniform-status or source-defect-protected group
- 
+
  @returns Issue whose repair authority cannot exceed its member decisions
- 
+
  @example
  ```ts
  const issue = assembleGradedIssue({ graded: group });

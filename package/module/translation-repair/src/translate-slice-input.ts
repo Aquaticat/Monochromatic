@@ -19,7 +19,7 @@ import type { IncumbentKind, } from './translate-absence.ts';
 /**
  Text and governance supplied before the translation stage computes its messages and seat windows.
  Provider clients, electorates, deadlines and publication disposition remain caller-owned.
- 
+
  @example
  ```ts
  const result = await runTranslateStage({ ...surface.stageInput, client, translatorModelIds, judgeModelIds, signal, perCallTimeoutMs, l });
@@ -92,7 +92,7 @@ export type TranslateSliceStageInput = {
 
 /**
  Rewritable stage inputs beside archive content the stage must not grade or regenerate.
- 
+
  @example
  ```ts
  const { stageInput, protectedText, } = translateSliceInput({ slice, prepared });
@@ -119,17 +119,17 @@ export type TranslateSliceInput = {
  Protection excludes a known target-only run from both writing and judging;
  reattaching it only after selection would still put protected material into the comparison.
  Callers retain logging, restore protected text and decide separately whether wording may publish.
- 
+
  @param slice - prepared source/target pair whose target index selects governance
- 
+
  @param prepared - owning preparation supplying identity context and child line flags
- 
+
  @param neighbouringSourceText - already-built source context passed through unchanged
- 
+
  @param neighbouringIncumbentText - already-built incumbent context passed through unchanged
- 
+
  @param pictureContext - already-acquired corroborated picture context passed through unchanged
- 
+
  @param archiveStandIn - repair lane's text standing in for a disputed archive
  rendering (class one hundred seven), judged and restored as though it were
  the archive so the disputed wording is neither a candidate nor the fallback
@@ -141,9 +141,9 @@ export type TranslateSliceInput = {
  @param disputedWordings - wordings a disputed slice refuses, where the
  stand-in may not stand; the judged part of the archive is refused with
  them when a target-only run was held out (owner, 2026-09-27)
- 
+
  @returns Stage surface and protected archive material without changing the operation being measured
- 
+
  @example
  ```ts
  const surface = translateSliceInput({ slice, prepared, pictureContext });

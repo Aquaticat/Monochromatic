@@ -33,20 +33,20 @@ import {
 
 /**
  What the neighbouring blocks are for, stated inside the prompt.
- 
+
  SAID IN THE PROMPT RATHER THAN ASSUMED, because the failure it prevents is
  the one the window itself creates: a critic handed more text can start
  reporting the neighbours as untranslated or as surplus, which would turn one
  relocation into claims against passages that are perfectly correct where they
  are. The blocks exist to be RECOGNISED IN, never judged.
- 
+
  THE QUOTE SENTENCE WAS ADDED AFTER MEASURING, and it is the half that was
  missing. Forbidding claims ABOUT the neighbours does not forbid QUOTING them
  as evidence for a claim about this slice, and a quote from next door cannot
  anchor here, so the claim is discarded whole. Measured on `saurikissa`
  settled with the window against the same entry without it, at an identical
  roster of 11 critic stages and 65 voices heard:
- 
+
  ```text
                         without window   with window
  quote-not-found                     9            16
@@ -55,7 +55,7 @@ import {
  issues shipped                     26             7
  issues resolved                    23             6
  ```
- 
+
  A claim that cannot anchor costs everything downstream of it, so nearly
  doubling the unanchorable share is what took the lane from nine shipped
  slices to three.
@@ -116,20 +116,20 @@ An empty issues array is a valid answer when the translation is faithful.`;
 
 /**
  Builds the message list for one critic call.
- 
+
  @param sourceText - original document, front matter included
- 
+
  @param targetText - translation under review, front matter included
- 
+
  @param identityContext - declared names and handles from both sides' front
  matter; omitted when neither side declares any, so the block never appears
  empty
- 
+
  @param referenceContext - what the pages the original links say (class
  thirty-five); omitted when it links nowhere
- 
+
  @returns Messages ready for `chatJson`
- 
+
  @example
  ```ts
  const messages = buildCriticMessages({ sourceText, targetText, },);
@@ -187,19 +187,19 @@ export function buildCriticMessages(
 
   /**
    The passages either side, or nothing when this slice stands alone.
-   
+
    PLACED AFTER THE PAIR BEING JUDGED, unlike the identity block, and the
    order carries meaning. Identity is a given fact and is read first; this is
    evidence ABOUT the pair, and putting it first would invite a critic to
    treat the neighbours as part of what it was asked to judge.
-   
+
    WHY A CRITIC NEEDS IT AT ALL: where the archive carried a
    passage across a section boundary, the translation here holds English with
    no original to support it, and the original next door holds Chinese with no
    English. Shown this slice alone, the only available readings are invention
    and omission, both of which are wrong and both of which lead the editor to
    damage text. Shown the neighbours, the passage is locatable.
-   
+
    BOTH SIDES OR THE WINDOW IS HALF BLIND. The neighbouring original says what
    the passage next door is ABOUT; the neighbouring archive says where the
    English actually went. A relocation is only visible in the second.

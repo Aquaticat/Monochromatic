@@ -49,15 +49,15 @@ const ALONE_FLAG = '--candidates-alone';
 
 /**
  Reads seatable ids named after `--candidates`.
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
  and passed in so this is testable without a subprocess
- 
+
  @returns Candidate ids in the order written, none when the flag is absent
- 
+
  @throws StatedRefusalError when the flag carries no id, or names one the
  roster does not know
- 
+
  @example
  ```ts
  const candidates = readCandidateIds({ line, },);
@@ -94,12 +94,12 @@ export function readCandidateIds(
 
 /**
  Reads whether `--candidates-alone` was written.
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`
  and passed in so this is testable without a subprocess
- 
+
  @returns Whether the candidates run without the seated roster
- 
+
  @example
  ```ts
  const alone = readCandidatesAlone({ line, },);
@@ -115,18 +115,18 @@ export function readCandidatesAlone(
  Roster a probe runs: the seated roster, then every candidate it does not
  already seat, in the order the candidates were named; or the candidates by
  themselves when asked to run alone.
- 
+
  @param candidates - ids read by {@link readCandidateIds}
- 
+
  @param alone - whether the seated roster stays out,
  read by {@link readCandidatesAlone}
- 
+
  @returns Seated roster followed by the candidates new to it, or the
  candidates each once
- 
+
  @throws StatedRefusalError when asked to run the candidates alone and none
  was named, since a probe over nobody measures nothing
- 
+
  @example
  ```ts
  const roster = probeRosterWith({

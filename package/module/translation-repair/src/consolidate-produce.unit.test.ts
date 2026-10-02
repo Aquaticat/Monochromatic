@@ -1,13 +1,13 @@
 /**
  Tests for the producing half of the consolidation.
- 
+
  Three branches, each asserted on its own rather than through the driver:
  every proposal valid, so the repair round changes nothing; a proposal
  refused for shape, so the verdicts before and after the repair diverge; and
  the findings of the gather ahead of the repair's.
- 
+
  Fixtures are cat-themed invention.
- 
+
  @module
  */
 
@@ -56,11 +56,11 @@ const SUBJECT: ConsolidateSubject = {
 
 /**
  Client answering each producer call with the next scripted translation.
- 
+
  @param answers - translations, one per call in order; the last repeats
- 
+
  @returns Client plus the count of calls made
- 
+
  @example
  ```ts
  const rig = scriptedProducer({ answers: ['The cat sleeps.\nThe cat wakes at dusk.',], },);
@@ -118,14 +118,14 @@ function scriptedProducer(
 
 /**
  Produces the fixture slate under one script.
- 
+
  @param answers - translations per call
- 
+
  @param subject - consolidation evidence,
  defaulting to line-structure fixture
- 
+
  @returns Slate plus the calls it cost
- 
+
  @example
  ```ts
  const { produced, } = await producedUnder({ answers: [PAGE_TEXT,], },);

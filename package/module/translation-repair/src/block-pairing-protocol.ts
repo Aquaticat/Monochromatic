@@ -42,7 +42,7 @@ const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 /**
  Messages and response format for one pairing question, the same whichever model is asked.
  Which models are asked, and each provider's request body, stay with the stage and the client.
- 
+
  @example
  ```ts
  const protocol = blockPairingProtocol({ sourceBlocks, targetBlocks, });
@@ -62,15 +62,15 @@ export type BlockPairingProtocol = {
 /**
  Constructs the pairing question's messages and response format for `pairBlocksWithRoster`.
  Definition-order exemptions affect how replies are read, not the messages sent.
- 
+
  @param sourceBlocks - current original blocks in their emitted numbering
- 
+
  @param targetBlocks - current archive blocks in their emitted numbering
- 
+
  @param pictureContext - transcripts of the section's pictures for the sheet, absent when it shows none
- 
+
  @returns Messages and a schema copy the caller owns; no client is created and nothing is bought
- 
+
  @example
  ```ts
  const { messages, responseFormat, } = blockPairingProtocol({ sourceBlocks, targetBlocks, });

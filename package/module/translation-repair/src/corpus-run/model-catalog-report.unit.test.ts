@@ -1,20 +1,20 @@
 /**
  Tests for the catalog report an operator reads before changing the roster.
- 
+
  WHAT THESE PIN is which list each section is rendered from. The report has
  three sections built from three arrays whose members are the same shape, so
  rendering the aliases where the unlisted models belong produces a report that
  reads perfectly and tells an operator to seat an alias. Its own comparison
  says what that costs: one model would vote twice on a panel, and a single
  opinion would read as two independent confirmations.
- 
+
  SEPARATE FROM `model-catalog-compare.unit.test.ts` on purpose. `await
  describe` throws, so a failing suite aborts its whole file, and a `GFP` round
  over this report must not depend on the suites above it having passed.
- 
+
  Fixtures are cat-themed invention in the shape of provider ids. No corpus
  content appears here.
- 
+
  @module
  */
 

@@ -18,7 +18,7 @@ import type {
 
 /**
  Both ledgers projected into version 2, beside the comparison they derive.
- 
+
  @example
  ```ts
  const projected: ProjectedLanes = projectLanes({ lanes, },);
@@ -38,17 +38,17 @@ export type ProjectedLanes = {
 
 /**
  Projects both ledgers and derives the comparison version 2 records.
- 
+
  PROJECTED rather than assigned, because assignment freezes only half of what
  the frozen vocabulary claims: a live union that gains a MEMBER fails to
  assign, and a live row that gains a FIELD assigns cleanly and then gets
  serialized, into artifacts the version 2 parser refuses for carrying keys the
  schema does not name.
- 
+
  @param lanes - what both drivers returned
- 
+
  @returns Version 2 rows and the comparison derived from them
- 
+
  @example
  ```ts
  const { delivery, comparison, } = projectLanes({ lanes, },);

@@ -1,6 +1,6 @@
 /**
  Tests distinct coverage follow-up task and syntax-boundary encoding.
- 
+
  @module
  */
 

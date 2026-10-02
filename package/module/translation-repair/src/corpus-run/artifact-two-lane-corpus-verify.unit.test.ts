@@ -9,13 +9,13 @@
  recorded measurements against it, as the rendering audit does. They tested an
  identity check nothing called until 2026-09-29 (ledger B30), and the
  measurements check the audit runs had no case of its own.
- 
+
  The preparation here is a REAL one from `prepareDocumentPair` rather than a
  hand-built stand-in, so the identity, the slices and every measurement come
  from the same code a corpus pass runs.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -69,11 +69,11 @@ const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as Pipeline
 /**
  One lane ledger over a real preparation, where the lane examined every slice
  and kept what the archive already said.
- 
+
  @param prepared - preparation to build rows from
- 
+
  @returns One row per prepared slice, in document order
- 
+
  @example
  ```ts
  const rows = keptEverything({ prepared, },);
@@ -108,11 +108,11 @@ function keptEverything(
 
 /**
  What one lane's raw result reports about those rows.
- 
+
  @param rows - ledger the result describes
- 
+
  @returns Raw result fields version 2 requires, shared by both lanes here
- 
+
  @example
  ```ts
  const raw = rawResultFor({ rows, },);
@@ -139,15 +139,15 @@ function rawResultFor(
 
 /**
  Builds one artifact over a real preparation and reads it back.
- 
+
  THROUGH JSON on the way, because that is what a reader holds: the writer's
  object and the file are two different things, and a check that skipped the
  serialization would not be reading an artifact at all.
- 
+
  @param prepared - preparation both lanes ran over
- 
+
  @returns Artifact as the version 2 reader returns it
- 
+
  @example
  ```ts
  const artifact = writeAndRead({ prepared, },);

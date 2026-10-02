@@ -39,11 +39,11 @@ import {
 /**
  Whether a parsed cache file is a usable repair outcome. A half-written or
  stale file that misses these fields is treated as absent and recomputed.
- 
+
  @param value - parsed JSON of a cache file
- 
+
  @returns True when the value carries the outcome's own fields
- 
+
  @example
  ```ts
  if (isChunkRepairOutcome(parsed,)) resumed.set(key, parsed,);
@@ -71,7 +71,7 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
 
 /**
  Whether a parsed cache file is a usable translate record.
- 
+
  Checks the LANE and the SCHEMA before anything else. A repair outcome carries
  neither, so it can never be resumed as a translation however the file is
  named, and a record written under an older schema is recomputed rather than
@@ -84,9 +84,9 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
  (ledger B42).
 
  @param value - parsed JSON of a cache file
- 
+
  @returns True when the value is this schema's translate record
- 
+
  @example
  ```ts
  if (isTranslateSliceRecord(parsed,)) resumed.set(key, parsed,);
@@ -116,7 +116,7 @@ function isTranslateSliceRecord(
  Lists entries under the slice-cache root that carry at least one settled
  slice in EITHER lane, so the pass can resume an in-flight document to
  completion before starting fresh ones.
- 
+
  A settled entry (directory discarded) or one that aborted before settling
  anything (empty directory) contributes nothing, and neither does anything
  the pass never writes there: a file under the root, or a symlink, which
@@ -124,9 +124,9 @@ function isTranslateSliceRecord(
  B65).
 
  @param dir - slice-cache root holding one subdirectory per entry
- 
+
  @returns Set of entry ids carrying resumable progress, empty when none
- 
+
  @example
  ```ts
  const resumable = await listResumableEntries({ dir: sliceCacheDir, },);
@@ -178,13 +178,13 @@ export async function listResumableEntries(
 
 /**
  Opens an entry's REPAIR slice cache.
- 
+
  @param dir - per-entry slice-cache directory
- 
+
  @param generation - digest of the built pipeline this pass runs
- 
+
  @returns Cache resuming settled repair slices and persisting new ones
- 
+
  @example
  ```ts
  const sliceCache = await openSliceCache({ dir: entryCacheDir, generation, },);
@@ -209,14 +209,14 @@ export async function openSliceCache(
 
 /**
  Whether a parsed value is a list of correspondences.
- 
+
  SHAPE ONLY. What a pairing must satisfy against the blocks it describes is
  `readBlockPairing`'s question, and a cached pairing is re-read through it.
- 
+
  @param value - candidate list, still unknown in type
- 
+
  @returns Whether every entry names two integer block indices
- 
+
  @example
  ```ts
  const ok = isPairList([{ source: 0, target: 0, },],);
@@ -258,18 +258,18 @@ function isCachedPairingRecord(value: unknown,): value is PairedSectionRecord & 
 
 /**
  Opens an entry's block-pairing cache.
- 
+
  PAIRING IS BOUGHT ONCE PER DOCUMENT PAIR AND NEVER AGAIN. Without this a
  resumed entry that buys nothing else still spends a round per section, which
  `pass-entry`'s own test caught: it asserts a fully cached resume makes no
  calls at all.
- 
+
  @param dir - per-entry slice-cache directory
- 
+
  @param generation - digest of the built pipeline this pass runs
- 
+
  @returns Cache resuming settled pairings and persisting new ones
- 
+
  @example
  ```ts
  const pairingCache = await openPairingCache({ dir: entryCacheDir, generation, },);
@@ -294,17 +294,17 @@ export async function openPairingCache(
 
 /**
  Opens an entry's whole-document SECTION-pairing cache.
- 
+
  ITS OWN NAMESPACE beside the block one. Both records carry a list of
  `{source, target}` and a list of findings, so nothing in the stored shape
  separates a section answer from a block answer and only the key space can.
- 
+
  @param dir - per-entry slice-cache directory
- 
+
  @param generation - digest of the built pipeline this pass runs
- 
+
  @returns Cache resuming a settled section pairing and persisting a new one
- 
+
  @example
  ```ts
  const sectionCache = await openSectionPairingCache({ dir: entryCacheDir, generation, },);
@@ -329,13 +329,13 @@ export async function openSectionPairingCache(
 
 /**
  Opens an entry's TRANSLATE slice cache, beside the repair one.
- 
+
  @param dir - per-entry slice-cache directory
- 
+
  @param generation - digest of the built pipeline this pass runs
- 
+
  @returns Cache resuming settled translate slices and persisting new ones
- 
+
  @example
  ```ts
  const translateCache = await openTranslateSliceCache({ dir: entryCacheDir, generation, },);
@@ -361,13 +361,13 @@ export async function openTranslateSliceCache(
 /**
  Discards a settled entry's whole slice cache, bounding the cache directory to
  documents still in flight.
- 
+
  Takes the DIRECTORY rather than one lane, because it runs when the entry is
  finished: every lane is done with it, and leaving one lane's files behind
  would keep the entry listed as resumable forever.
- 
+
  @param dir - per-entry slice-cache directory
- 
+
  @example
  ```ts
  await discardSliceCache({ dir: entryCacheDir, },);
@@ -387,16 +387,16 @@ export async function discardSliceCache(
 
 /**
  Whether a parsed cache file is a usable refinement settlement.
- 
+
  CHECKS THE OUTCOME INSIDE rather than only the wrapper, because bytes off
  disk become published text here: a settlement whose outcome is malformed
  would splice a broken slice into the document with no later stage able to
  tell it from a fresh one.
- 
+
  @param value - parsed JSON of a cache file
- 
+
  @returns True when it carries a settlement over a well-formed outcome
- 
+
  @example
  ```ts
  if (isRefinedSliceSettlement(parsed,)) resumed.set(key, parsed,);
@@ -412,11 +412,11 @@ function isRefinedSliceSettlement(value: unknown,): value is RefinedSliceSettlem
  Whether a stored repair outcome may be resumed: the shape is right AND every
  stage that settled it was heard. A record written while a stage fell short
  of quorum is an outage frozen as a decision, and is recomputed.
- 
+
  @param value - parsed cache file
- 
+
  @returns True when the value is an outcome worth resuming
- 
+
  @example
  ```ts
  if (isResumableRepairOutcome(parsed,)) resumed.set(key, parsed,);
@@ -429,11 +429,11 @@ function isResumableRepairOutcome(value: unknown,): value is ChunkRepairOutcome 
 /**
  Whether a stored refinement may be resumed, on the same rule as the repair
  outcome: right shape, every stage heard.
- 
+
  @param value - parsed cache file
- 
+
  @returns True when the value is a settlement worth resuming
- 
+
  @example
  ```ts
  if (isResumableRefinement(parsed,)) resumed.set(key, parsed,);
@@ -445,18 +445,18 @@ function isResumableRefinement(value: unknown,): value is RefinedSliceSettlement
 
 /**
  Opens an entry's REFINEMENT cache.
- 
+
  Separate from the repair lane's own cache because the naturalness lane runs
  after the accuracy pass has already persisted, so its answers cannot ride in
  a record written before it was asked. Without this the lane was rebought on
  every resumed run and published different text on identical inputs.
- 
+
  @param dir - per-entry slice-cache directory
- 
+
  @param generation - digest of the built pipeline this pass runs
- 
+
  @returns Cache resuming settled refinements and persisting new ones
- 
+
  @example
  ```ts
  const refineCache = await openRefineSliceCache({ dir: entryCacheDir, generation, },);

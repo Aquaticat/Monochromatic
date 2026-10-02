@@ -1,30 +1,30 @@
 /**
  Tests that the refinement step HANDS ITS CACHE DOWN to the phase that fills
  it.
- 
+
  WHY THE CACHE IS LOAD-BEARING. The naturalness lane buys a rewriter round, a
  ballot and a defect check per refinable slice. Without a cache,
  a resumed run republishes nothing and rebuys all of it, and
  every cached stage now republishes its findings rather than going quiet.
  The cache is how a run that was interrupted costs what it already paid.
- 
+
  WHAT WAS MEASURED. On 2026-08-25, inverting this step's conditional spread so
  the cache is forwarded only when it is ABSENT failed no test in this package.
  The lane would then settle correctly, log correctly, and persist nothing, so
  the defect shows up only on the next run and only as a bill.
- 
+
  READ OFF THE CACHE, not off the settlement. A step that forwarded nothing
  still returns the right text; what it stops doing is writing.
- 
+
  THE SECOND CASE IS THE ABSENT ONE, since a step that manufactured a cache of
  its own would satisfy the first on its own. A lane given none must still
  settle rather than refuse.
- 
+
  NO NETWORK. Each stage is scripted by the schema it asks for, and the cache
  records the keys it was asked to persist rather than writing any file.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -156,11 +156,11 @@ const OUTCOMES: readonly ChunkRepairOutcome[] = [
 
 /**
  Runs the step and reports what its cache was asked to keep.
- 
+
  @param withCache - whether to hand the step a cache at all
- 
+
  @returns Keys the step persisted, empty when it was given no cache
- 
+
  @example
  ```ts
  const kept = await keysKept({ withCache: true, },);

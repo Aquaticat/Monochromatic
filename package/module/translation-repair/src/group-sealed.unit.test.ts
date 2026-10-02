@@ -2,9 +2,9 @@
  Tests for grouping with sealed blocks: the blocks the archive's note seals
  reach no run, take their paired originals with them, and stand as
  boundaries for the originals either side of them.
- 
+
  Cat-themed invention throughout; no corpus content appears here.
- 
+
  @module
  */
 
@@ -42,11 +42,11 @@ const TARGET_TEXT = 'She put a letter by the door.\n\n> The cans are in the seco
 
 /**
  Blocks of a text.
- 
+
  @param text - document
- 
+
  @returns Its top-level blocks
- 
+
  @example
  ```ts
  const nodes = blocksOf({ text: SOURCE_TEXT, },);
@@ -58,13 +58,13 @@ function blocksOf({ text, }: { readonly text: string; },): readonly DocumentNode
 
 /**
  Node at a position, or a thrown absence.
- 
+
  @param nodes - blocks
- 
+
  @param at - position
- 
+
  @returns The block
- 
+
  @example
  ```ts
  const letter = nodeAt({ nodes: targetNodes, at: 1, },);
@@ -90,11 +90,11 @@ function nodeAt(
 
 /**
  Ids a list of runs carries on the translation side, in order.
- 
+
  @param runs - settled runs
- 
+
  @returns Target ids
- 
+
  @example
  ```ts
  const ids = targetIdsOf({ runs, },);
@@ -113,11 +113,11 @@ function targetIdsOf({ runs, }: { readonly runs: readonly AlignedRun[]; },): rea
 
 /**
  Ids a list of runs carries on the original side, in order.
- 
+
  @param runs - settled runs
- 
+
  @returns Source ids
- 
+
  @example
  ```ts
  const ids = sourceIdsOf({ runs, },);

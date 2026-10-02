@@ -1,18 +1,18 @@
 /**
  Tests for the content volume bound and the shared self-ended predicate.
- 
+
  The bound exists because repetition cannot see this failure: a model writing
  ten times more answer than any legitimate call is not repeating itself, so
  every window is distinct and both detectors report a healthy stream while it
  runs to its deadline.
- 
+
  The reasoning half of the same idea was measured and REFUSED, and one test
  here pins that refusal so it cannot be reintroduced by someone reading only
  the symmetry. `doc/decision/translation-repair-runaway-call-termination.md`
  carries the numbers.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -35,16 +35,16 @@ import { frameOf, } from './sse-frame.test-fixture.ts';
 
 /**
  Builds internally varied cat-themed text of at least `length` characters.
- 
+
  VARIED BY CONSTRUCTION, so a volume test measures volume rather than
  tripping the repetition detectors on the way past the bound. A padded single
  sentence would end the stream as degenerate long before the bound was
  reached, and the test would pass while proving nothing about volume.
- 
+
  @param length - characters to reach
- 
+
  @returns Varied text of at least that many characters
- 
+
  @example
  ```ts
  const answer = variedText({ length: 11_000, },);
@@ -80,20 +80,20 @@ function variedText({ length, }: { readonly length: number; },): string {
 
 /**
  Feeds text to a watch on one channel and returns the last verdict.
- 
+
  FED IN PIECES, the way the drain feeds it, so a bound that only reads a
  whole-stream total would fail here rather than pass.
- 
+
  @param watch - watch under test
- 
+
  @param channel - channel to feed
- 
+
  @param text - text to deliver
- 
+
  @param pieceSize - characters per frame
- 
+
  @returns Verdict after the last piece, or the first non-continuing one
- 
+
  @example
  ```ts
  const verdict = feed({ watch, channel: 'content', text, pieceSize: 500, },);
@@ -240,7 +240,7 @@ await describe({
             /**
              A model thinking one sentence forever, which is the case the ratio
              detector was built for and still owns.
-         
+
              SIZED PAST 131072 CHARACTERS on purpose: that is where the detector
              actually fires, measured, and it is the same figure the two real
              degenerate calls reached before anything stopped them.

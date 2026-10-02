@@ -10,11 +10,11 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 /**
  Reason a call is forfeited at its deadline.
- 
+
  A CLASS RATHER THAN A BARE ERROR, so a bench row or a log line can carry the
  deadline through `refusalText` and still say what happened: the message
  names the call's label, which is a model id or a stage name, and a count.
- 
+
  @example
  ```ts
  controller.abort(new CallTimeoutError({ label: modelId, timeoutMs: 600_000, },),);
@@ -29,7 +29,7 @@ export class CallTimeoutError extends Error {
 
   /**
    @param label - what the call was for, a model id or a stage name
-   
+
    @param timeoutMs - deadline the call exceeded
    */
   constructor(
@@ -66,21 +66,21 @@ export type CallDeadline = Disposable & {
  exchange on its per-model limiter slot,
  so a plain timer aborts the controller and tears the stream down.
  Disposal clears the timer and detaches the caller-abort listener.
- 
+
  @param signal - caller signal whose abort forwards into the call
- 
+
  @param timeoutMs - deadline granted to this call
- 
+
  @param label - names the call in the deadline's abort reason
- 
+
  @mutates signal - one abort listener registers via
  signal.addEventListener and detaches on dispose via
  signal.removeEventListener, and forwarding an abort into the call
  controller retains the caller's reason per
  DOM commit 5796f716 AbortController abort steps retain reason
- 
+
  @returns Call signal plus disposal of timer and listener
- 
+
  @example
  ```ts
  using deadline = armCallDeadline({ signal, timeoutMs: 600_000, label: modelId, },);

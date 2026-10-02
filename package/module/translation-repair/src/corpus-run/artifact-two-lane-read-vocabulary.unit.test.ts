@@ -1,21 +1,21 @@
 /**
  Tests for reading version 2's unions and rows back off disk.
- 
+
  WHAT THESE PIN is the schema-ownership rule, which decides where reading is
  strict and where it is tolerant. Version 2 owns the ledger and the
  comparison, so a key it does not name there means a file this reader cannot
  read. The raw lane results belong to the live pipeline, which has added
  fields before and will again, so a key version 2 does not name THERE is
  evidence a later lane recorded and not a later version of this artifact.
- 
+
  The pair that is easy to get wrong sits in the middle: inside a raw result, a
  field version 2 never heard of is tolerated, while `acceptedText` on an
  outcome that decided nothing is refused. One is a later pipeline adding
  evidence; the other is this version's own vocabulary used to say something it
  cannot mean.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 

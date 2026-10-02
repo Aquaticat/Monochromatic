@@ -26,7 +26,7 @@ import { selectFence, } from './prompt-fence.ts';
 
 /**
  Signals a pairing a model returned that cannot be used as one.
- 
+
  @example
  ```ts
  throw new BlockPairingError({ message: 'pair 3 moves backwards on the original side', },);
@@ -49,19 +49,19 @@ export class BlockPairingError extends Error {
 /**
  The refusal a catch around {@link readBlockPairing} holds, for a catch that
  treats an unusable reply as a lost voice.
- 
+
  ONE NARROWING PER CLASS, as `requireFrontMatterRefusal` (`front-matter.ts`)
  is for its splitter: the reader raises every refusal as a
  {@link BlockPairingError}, so a rethrow written in the catch is a statement
  only a broken reader reaches. It stands here once, where a case reaches it.
- 
+
  @param error - what the catch caught
- 
+
  @returns The refusal
- 
+
  @throws The caught value unchanged when it is anything but a pairing
  refusal, an unexpected state that must keep propagating
- 
+
  @example
  ```ts
  const refusal = requireBlockPairingRefusal({ error, },);
@@ -75,7 +75,7 @@ export function requireBlockPairingRefusal({ error, }: { readonly error: unknown
 
 /**
  One block on one side, as the sheet numbers it.
- 
+
  @example
  ```ts
  const block: NumberedBlock = { index: 0, text: 'The tabby dozed by the stove.', };
@@ -95,7 +95,7 @@ export type NumberedBlock = {
 
 /**
  One committed correspondence between the two sides.
- 
+
  @example
  ```ts
  const pair: BlockPair = { source: 2, target: 3, };
@@ -115,11 +115,11 @@ export type BlockPair = {
 
 /**
  What a model returns for one document pair.
- 
+
  Unpaired blocks are ABSENT rather than listed against a sentinel, because a
  sentinel invites a model to pair everything and mark the doubtful ones, which
  is the behaviour this exists to prevent.
- 
+
  @example
  ```ts
  const wire: BlockPairingWire = { pairs: [{ source: 0, target: 0, },], };
@@ -134,13 +134,13 @@ export type BlockPairingWire = {
 
 /**
  Renders one side's blocks as a numbered, fenced list.
- 
+
  @param blocks - blocks in document order
- 
+
  @param fence - fence no block text can reproduce
- 
+
  @returns Sheet section listing every block against its index
- 
+
  @example
  ```ts
  const section = renderBlocks({ blocks, fence: '=====', },);
@@ -164,7 +164,7 @@ function renderBlocks(
 
 /**
  Builds the sheet asking one model to pair two documents' blocks.
- 
+
  WHAT THE PICTURES SAY TRAVELS WITH THE QUESTION (class thirty-four,
  2026-09-16). An archive block that translates a picture's words (a chat, a
  post, a note) has no counterpart among the original's blocks, and a sheet
@@ -174,17 +174,17 @@ function renderBlocks(
  one blockquote, and the entry stopped. Only 2 of the 49 picture pages label
  such a block, so the sheet is shown the pictures' transcripts and told what
  they mean for pairing.
- 
+
  @param sourceBlocks - original blocks in document order
- 
+
  @param targetBlocks - translation blocks in document order
- 
+
  @param pictureContext - transcripts of the pictures this section shows,
  rendered the way every other sheet carries them, absent or empty when the
  section shows none or nobody read them
- 
+
  @returns Messages for one pairing call
- 
+
  @example
  ```ts
  const messages = buildBlockPairingMessages({ sourceBlocks, targetBlocks, },);
@@ -203,7 +203,7 @@ export function buildBlockPairingMessages(
 ): readonly ChatMessage[] {
   /**
    Fence chosen against every block this sheet carries.
-   
+
    Both sides are arbitrary prose and either may contain a run of equals
    signs (a setext heading underline is one), so a fixed fence would let a
    block close its own listing and have the rest read as sheet structure.
@@ -275,14 +275,14 @@ export function buildBlockPairingMessages(
 
 /**
  Whether a parsed value has the shape of a pairing.
- 
+
  SHAPE ONLY. Whether the pairing is usable is
  {@link readBlockPairing}'s question, because that needs the block counts.
- 
+
  @param value - parsed model reply
- 
+
  @returns Whether it is a {@link BlockPairingWire}
- 
+
  @example
  ```ts
  const ok = isBlockPairingWire({ pairs: [], },);
@@ -295,7 +295,7 @@ export function isBlockPairingWire(value: unknown,): value is BlockPairingWire {
 /**
  Chunk-local indices of the blocks whose order carries no meaning: the
  footnote definitions on each side.
- 
+
  @example
  ```ts
  const freeOrder: FreeOrderBlocks = { source: new Set([ 7, 8, ],), target: new Set([ 11, 12, ],), };
@@ -323,13 +323,13 @@ const NO_FREE_ORDER: FreeOrderBlocks = {
 
 /**
  Whether a pair joins two definitions, two body blocks, or one of each.
- 
+
  @param pair - pair to classify
- 
+
  @param freeOrder - definition indices, empty when the caller named none
- 
+
  @returns The class
- 
+
  @example
  ```ts
  pairClass({ pair: { source: 7, target: 12, }, freeOrder, },);
@@ -364,27 +364,27 @@ function pairClass(
 
 /**
  Reads a model's pairing, refusing anything that cannot be used as one.
- 
+
  REFUSES RATHER THAN REPAIRS. A pairing that runs backwards, names a block
  that does not exist, or pairs one translation block with two different
  originals is not a near-miss to be tidied up: it is evidence the model did
  not do the task, and using part of it would put mismatched passages in front
  of the critics exactly as before.
- 
+
  ONE ORIGINAL MAY APPEAR TWICE, because a translation splitting a paragraph is
  the correspondence this exists to express. One TRANSLATION block may not,
  since a single passage renders one place in the original.
- 
+
  @param value - parsed model reply
- 
+
  @param sourceCount - original blocks the sheet numbered
- 
+
  @param targetCount - translation blocks the sheet numbered
- 
+
  @returns Pairs in document order
- 
+
  @throws BlockPairingError when the reply is not a usable pairing
- 
+
  @example
  ```ts
  const pairs = readBlockPairing({ value, sourceCount: 4, targetCount: 5, },);

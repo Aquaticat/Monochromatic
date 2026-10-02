@@ -1,10 +1,10 @@
 /**
  Tests for the capped failure text a pass prints.
- 
+
  WHAT THESE PIN: a class that may be quoted is quoted up to the cap and no
  further, and a class that may not be quoted is named, which is the refusal
  rule every stdout printer follows.
- 
+
  @module
  */
 

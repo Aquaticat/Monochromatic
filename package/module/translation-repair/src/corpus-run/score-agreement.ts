@@ -38,11 +38,11 @@ import { resolveRunsDir, } from './run-config.ts';
 
 /**
  File name pattern for the blind pre-grades of one draw.
- 
+
  @param seed - draw seed the pre-grades belong to
- 
+
  @returns File name beside the sheet
- 
+
  @example
  ```ts
  const name = preGradeName({ seed: DEFAULT_SAMPLE_SEED, },);
@@ -54,7 +54,7 @@ function preGradeName({ seed, }: { readonly seed: string; },): string {
 
 /**
  What reading an optional file found.
- 
+
  @example
  ```ts
  const reading: FileReading = { found: false, };
@@ -81,14 +81,14 @@ type FileReading =
 
 /**
  Reads a file, naming its absence rather than returning nothing.
- 
+
  @param path - file to read
- 
+
  @returns Contents, or a named absence when the file does not exist
- 
+
  @throws Whatever `readFile` raised when the failure was not a plain absence,
  because a permissions or IO fault must not read as "no pre-grades recorded"
- 
+
  @example
  ```ts
  const reading = await readOptional({ path, },);
@@ -116,7 +116,7 @@ async function readOptional(
 
 /**
  Decimal places every printed rate carries.
- 
+
  Three, because the gate bar is quoted to one place (0.9) and a reading has to
  be comparable across rounds without a tie at the bar reading as a pass.
  */
@@ -125,13 +125,13 @@ const RATE_DECIMALS = 3;
 /**
  Renders one rate to three places, naming an empty denominator rather than
  printing a division by zero.
- 
+
  @param numerator - items counted in favor
- 
+
  @param denominator - items the rate is taken over
- 
+
  @returns Rate text
- 
+
  @example
  ```ts
  const text = rate({ numerator: 37, denominator: 47, },);
@@ -154,9 +154,9 @@ function rate(
 
 /**
  Prints precision and, when pre-grades exist, agreement against them.
- 
+
  @param line - the report's command line, read whole by `reportingRefusals`
- 
+
  @example
  ```ts
  await reportGrades({ line, },);
@@ -190,7 +190,7 @@ async function reportGrades({ line, }: { readonly line: CommandLineOf<'score-agr
   /**
    Draw this sheet declares, which decides which pre-grades may be joined to
    it.
-   
+
    Read off the sheet rather than assumed from {@link DEFAULT_SAMPLE_SEED}.
    `--sheet` can point anywhere, and a fixed default seed meant an earlier
    round's graded sheet could be scored against THIS round's pre-grades, by

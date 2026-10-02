@@ -35,7 +35,7 @@ import {
 
 /**
  What a draw may read, and what it must say about what it excluded.
- 
+
  @example
  ```ts
  const eligible = await selectEligible({ census, requiredCommit, },);
@@ -60,7 +60,7 @@ export type EligibleEntries = Readonly<{
 
   /**
    Repo commit recorded by each pooled entry, keyed by entry id.
-   
+
    Structured rather than left implicit in {@link EligibleEntries.report},
    because a reader cannot build a truthful record of what it sampled out of
    prose, and because it lets a reader check the bytes it loaded against the
@@ -71,7 +71,7 @@ export type EligibleEntries = Readonly<{
 
   /**
    Built pipeline recorded by each pooled entry, keyed by entry id.
-   
+
    The half of the same check that actually answers "same pipeline". A reader
    comparing only tips accepts an artifact rewritten by a different build
    under the same commit, which is the substitution this whole module exists
@@ -109,11 +109,11 @@ type GenerationContribution = Readonly<{
 
 /**
  Built pipeline each placed entry recorded, for the whole census.
- 
+
  @param census - what the directory holds
- 
+
  @returns Lookup from entry id to recorded digest
- 
+
  @example
  ```ts
  const digestByEntry = mapDigests({ census, },);
@@ -144,20 +144,20 @@ function mapDigests(
 
 /**
  Narrows a per-entry lookup to the entries a pool actually admitted.
- 
+
  The census answers for every PLACED entry, including ones a required commit
  later excluded. Handing that whole map to a reader contradicts what
  {@link EligibleEntries.tipByEntry} promises, and it does so in the unsafe
  direction: a reader that loaded an excluded artifact would find a value here
  and check against it, rather than meeting the refusal an unadmitted entry is
  supposed to meet.
- 
+
  @param entryIds - entries the pool admitted
- 
+
  @param byEntry - census-wide lookup
- 
+
  @returns Lookup carrying only admitted entries
- 
+
  @example
  ```ts
  const tipByEntry = keepAdmitted({ entryIds, byEntry: census.tipByEntry, },);
@@ -191,14 +191,14 @@ function keepAdmitted(
 
 /**
  Renders the lines naming artifacts no generation could hold.
- 
+
  Always rendered when there are any, because an excluded artifact that goes
  unmentioned is exactly a silently smaller denominator.
- 
+
  @param census - what the pool actually holds
- 
+
  @returns One line per kind of exclusion that occurred, none otherwise
- 
+
  @example
  ```ts
  const lines = unplaceableLines({ census, },);
@@ -267,17 +267,17 @@ function unplaceableLines(
 
 /**
  Whether each recorded commit contains the required one.
- 
+
  Asked per distinct COMMIT rather than per generation, because a generation
  can hold several commits, and per commit rather than per entry, because many
  entries share one.
- 
+
  @param census - what the directory holds
- 
+
  @param requiredCommit - commit an entry's pipeline must contain
- 
+
  @returns Verdict for every commit the census placed
- 
+
  @example
  ```ts
  const verdicts = await verdictsByTip({ census, requiredCommit, },);
@@ -328,24 +328,24 @@ async function verdictsByTip(
 
 /**
  Selects the entries one draw may pool.
- 
+
  @param census - every settled entry, partitioned by built pipeline
- 
+
  @param requiredCommit - commit an entry's pipeline must contain, absent when
  the caller has not chosen one
- 
+
  @param pooledDeliberately - whether the caller has explicitly asked to read
  every generation at once, which is legitimate for a census but never for a
  rate
- 
+
  @returns Eligible entries, what was excluded, and the lines to print above
  any number drawn from them
- 
+
  @throws MixedGenerationError when the pool spans generations and neither a
  required commit nor deliberate pooling was named
- 
+
  @throws EmptyPoolError when filtering leaves nothing to compute a rate over
- 
+
  @example
  ```ts
  const eligible = await selectEligible({ census, requiredCommit: 'fc7912929', },);

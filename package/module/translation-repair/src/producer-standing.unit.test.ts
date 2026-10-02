@@ -1,7 +1,7 @@
 /**
  Tests for the per-producer standing: what counts as a disinterested ballot,
  who a candidate credits, and what an empty denominator means.
- 
+
  @module
  */
 
@@ -33,16 +33,16 @@ const FULL = 1;
 
 /**
  Builds one ballot with the fields the standing reads.
- 
+
  @param modelId - judge casting it
- 
+
  @param best - one-based candidate it named
- 
+
  @param selfVote - whether it named text it produced; the standing does not
  read this, and a case proving that passes it deliberately wrong
- 
+
  @returns Ballot for a selection round
- 
+
  @example
  ```ts
  const ballot = ballotOf({ modelId: SEAT_HYPER_VISION, best: 1, },);
@@ -70,13 +70,13 @@ function ballotOf(
 
 /**
  Reads one model's standing out of a list, refusing an absent one.
- 
+
  @param standings - what the tally produced
- 
+
  @param modelId - model wanted
- 
+
  @returns That model's counts
- 
+
  @example
  ```ts
  const standing = standingOf({ standings, modelId: SEAT_HYPER_VISION, },);

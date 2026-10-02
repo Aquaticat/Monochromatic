@@ -1,7 +1,7 @@
 /**
  Tests for quota snapshot parsing.
  Fixture mirrors the live-verified `/quotas` body shape with altered values.
- 
+
  @module
  */
 

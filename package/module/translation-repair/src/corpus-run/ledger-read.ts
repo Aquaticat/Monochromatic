@@ -34,10 +34,10 @@ const CANDIDATE_NONE = 0;
 
 /**
  One ballot beside the slate it was cast over.
- 
+
  Named rather than inferred so the pair is readonly all the way down: the
  counts taken over it only ever read.
- 
+
  @example
  ```ts
  const entry: BallotInContest = { ballot, candidates, };
@@ -57,7 +57,7 @@ type BallotInContest = {
 
 /**
  What one model did across a set of contests.
- 
+
  @example
  ```ts
  const work: ModelWork = { model: 'minimax-m3', candidates: 12, wins: 3, votes: 9, ballots: 84, selfVotes: 2, };
@@ -97,7 +97,7 @@ export type ModelWork = {
 
 /**
  What a set of contests came to.
- 
+
  @example
  ```ts
  const summary = summariseLedger({ rounds, },);
@@ -121,7 +121,7 @@ export type LedgerSummary = {
 
   /**
    Ballots naming a position the slate did not have.
-   
+
    KEPT SEPARATE FROM ABSTENTIONS, because a judge naming a candidate that is
    not there is a defect in the judge and an abstention is not.
    */
@@ -130,7 +130,7 @@ export type LedgerSummary = {
 
 /**
  One candidate a model wrote, with what judges said about it.
- 
+
  @example
  ```ts
  const shown: CandidateReading = { task: 'render this passage', rendered: '...', won: false, remarks: [], };
@@ -160,14 +160,14 @@ export type CandidateReading = {
 
 /**
  Names the models behind the candidate a ballot picked.
- 
+
  @param candidates - slate as the judges saw it
- 
+
  @param best - one-based position the ballot named
- 
+
  @returns Models behind it, empty where the ballot named nothing or named a
  position the slate did not have
- 
+
  @example
  ```ts
  const named = producersNamed({ candidates, best: 2, },);
@@ -195,11 +195,11 @@ function producersNamed(
 
 /**
  Folds one contest into a running per-model tally.
- 
+
  @param tally - running counts, mutated in place
- 
+
  @param round - contest to fold in
- 
+
  @example
  ```ts
  foldRound({ tally, round, },);
@@ -276,11 +276,11 @@ function foldRound(
 
 /**
  Totals what every model did across a set of contests.
- 
+
  @param rounds - contests as the ledger recorded them
- 
+
  @returns Per-model counts, plus the two ballot faults kept apart
- 
+
  @example
  ```ts
  const summary = summariseLedger({ rounds, },);
@@ -370,17 +370,17 @@ export function summariseLedger(
 
 /**
  Pulls out everything one model wrote, with what judges said about each piece.
- 
+
  THE QUESTION THIS ANSWERS is whether a seat's low standing comes from writing
  something wrong or from writing something unremarkable. Only the text and the
  reasons can tell those apart.
- 
+
  @param rounds - contests as the ledger recorded them
- 
+
  @param model - seat to read
- 
+
  @returns Its candidates, in the order they were judged
- 
+
  @example
  ```ts
  const written = workOfModel({ rounds, model: 'minimax-m3', },);

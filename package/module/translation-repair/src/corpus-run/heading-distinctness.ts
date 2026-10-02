@@ -27,7 +27,7 @@ const HEADING_KIND = 'heading';
 
 /**
  Refusal when a would-ship page renders distinct source headings as one.
- 
+
  @example
  ```ts
  throw new CollapsedHeadingError({ entryId: 'Cat', sourceDistinct: 2, pageDistinct: 1, },);
@@ -56,9 +56,9 @@ export class CollapsedHeadingError extends Error {
 
   /**
    @param entryId - affected entry
-   
+
    @param sourceDistinct - distinct heading count in the source
-   
+
    @param pageDistinct - distinct heading count on the page
    */
   public constructor(
@@ -85,11 +85,11 @@ export class CollapsedHeadingError extends Error {
 
 /**
  Words of every heading in one document, in document order.
- 
+
  @param text - whole document, front matter included
- 
+
  @returns Heading words, marks stripped
- 
+
  @example
  ```ts
  headingWordsOf({ text: '## 简介\n\n正文。\n', },);
@@ -184,16 +184,16 @@ function collapsedAtPositions(
 /**
  Refuses a would-ship page on which two different source headings read the
  same.
- 
+
  @param entryId - entry about to publish
- 
+
  @param sourceText - whole original
- 
+
  @param pageText - whole would-ship page
- 
+
  @throws {@link CollapsedHeadingError} when two headings that differ in the
  source are identical on the page
- 
+
  @example
  ```ts
  assertHeadingsStayDistinct({ entryId: 'Cat', sourceText, pageText, },);

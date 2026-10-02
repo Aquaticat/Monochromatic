@@ -16,7 +16,7 @@ import type { RootContent, } from 'mdast';
  Front matter never appears here (preserved verbatim outside node list);
  footnote definitions separate from body so chunking can pair them with referencing
  blocks.
- 
+
  @example
  ```ts
  const zone: DocumentZone = 'body';
@@ -27,7 +27,7 @@ export type DocumentZone = 'body' | 'footnote-definition';
 /**
  One block-level node of a parsed document,
  carrying everything later stages need to anchor and validate claims against it.
- 
+
  @example
  ```ts
  const node: DocumentNode = {
@@ -88,11 +88,11 @@ export type DocumentNode = {
 
 /**
  Hashes content for anchor-staleness detection.
- 
+
  @param content - exact UTF-8 text to fingerprint
- 
+
  @returns Lowercase hex SHA-256 digest
- 
+
  @example
  ```ts
  hashContent({ content: 'paragraph text', },);
@@ -112,7 +112,7 @@ export function hashContent({ content, }: { readonly content: string; },): strin
  remark always emits positions when parsing source text,
  so absence means the tree was constructed rather than parsed and cannot anchor
  issues.
- 
+
  @example
  ```ts
  throw new UnpositionedNodeError({ kind: 'paragraph', index: 3, },);
@@ -126,11 +126,11 @@ export class UnpositionedNodeError extends Error {
 
   /**
    Builds failure naming offending node.
-   
+
    @param kind - mdast node type lacking positions
-   
+
    @param index - top-level block index of offending node
-   
+
    @example
    ```ts
    new UnpositionedNodeError({ kind: 'paragraph', index: 3, },);
@@ -155,13 +155,13 @@ export class UnpositionedNodeError extends Error {
 
 /**
  Readonly mdast fields this module reads while constructing document nodes.
- 
+
  The FULL node view rather than a narrow projection of the fields read here.
  A narrow Pick is assignable from real mdast values but rejects object
  LITERALS through excess-property checking, which broke the footnote-graph
  test fixtures. This view exists to borrow without copying, so it has to
  accept what callers already hold.
- 
+
  @example
  ```ts
  const child: DocumentNodeChild = root.children[0];
@@ -171,17 +171,17 @@ type DocumentNodeChild = DeepReadonlyData<RootContent>;
 
 /**
  Builds anchor-ready document nodes from top-level mdast children.
- 
+
  @param children - top-level mdast blocks in source order
- 
+
  @param bodyText - body source the children were parsed from
- 
+
  @param bodyOffset - absolute offset of body start within full document source
- 
+
  @returns Block nodes in source order with absolute offsets and content hashes
- 
+
  @throws {@link UnpositionedNodeError} when any child lacks position offsets
- 
+
  @example
  ```ts
  const nodes = buildDocumentNodes({ children: root.children, bodyText: body, bodyOffset, },);

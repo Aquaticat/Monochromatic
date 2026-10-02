@@ -77,11 +77,11 @@ import type { CommandLineOf, } from './command-lines.ts';
 
 /**
  Wording one side of a finding rests on, empty where it rests on none.
- 
+
  @param reading - one side of a screened finding
- 
+
  @returns Focus wording, or empty for a side the category does not use
- 
+
  @example
  ```ts
  const quoted = focusText({ reading: finding.source, },);
@@ -97,13 +97,13 @@ function focusText({ reading, }: { readonly reading: SideReading; },): string {
 
 /**
  Whether one quoted span and the oracle span are about the same wording.
- 
+
  @param span - oracle wording
- 
+
  @param quoted - wording the auditor pointed at
- 
+
  @returns Whether either contains the other
- 
+
  @example
  ```ts
  const near = meetsOracle({ span: ORACLE_SOURCE_SPAN, quoted, },);
@@ -126,11 +126,11 @@ function meetsOracle(
 
 /**
  Wording to print for one side, or a dash where it rests on none.
- 
+
  @param reading - one side of a screened finding
- 
+
  @returns Focus wording, or a dash
- 
+
  @example
  ```ts
  const shown = shownText({ reading: defect.source, },);
@@ -147,16 +147,16 @@ function shownText({ reading, }: { readonly reading: SideReading; },): string {
 
 /**
  Whether one screened finding points at the planted defect.
- 
+
  BY CONTAINMENT EITHER WAY, deliberately loose: this is not the matcher and
  must not inherit its strictness. The question here is whether the auditor
  looked in the right place at all, so a voice quoting the whole clause and one
  quoting the negator both count.
- 
+
  @param finding - claim to check
- 
+
  @returns Whether either side's focus meets the oracle span
- 
+
  @example
  ```ts
  const hit = pointsAtOracle({ finding, },);
@@ -185,11 +185,11 @@ function pointsAtOracle({ finding, }: { readonly finding: ScreenedFinding; },): 
 /**
  Prints one voice's row, so a failed arm can be attributed rather than guessed
  at.
- 
+
  @param row - one auditor's screened answer
- 
+
  @param arm - which arm this row came from
- 
+
  @example
  ```ts
  reportVoice({ row, arm: 'flipped', },);
@@ -239,12 +239,12 @@ function reportVoice(
 
 /**
  What one arm produced, kept whole so a later reader can rescore it.
- 
+
  `oracleVoices` is carried beside the report rather than left to be recomputed,
  because deciding whether a claim points at the planted defect depends on the
  oracle spans in `audit-sensitivity-input.ts`, and a fixture edit would silently
  change what an old run appears to have said.
- 
+
  @example
  ```ts
  const row: AuditArmRow = { arm: 'flipped', expectation: '...', oracleVoices: 3, report, };
@@ -275,17 +275,17 @@ type AuditArmRow = {
 
 /**
  Runs one arm and reports what the instrument said about it.
- 
+
  @param candidateText - rendering under audit
- 
+
  @param arm - label for the arm
- 
+
  @param expectation - what a working instrument should conclude, printed only;
  nothing branches on it
- 
+
  @returns Arm's whole result, for the record rather than for a caller to
  branch on
- 
+
  @example
  ```ts
  const row = await auditOne({ candidateText: FLIPPED_CANDIDATE, arm: 'flipped', expectation: 'defect', },);
@@ -421,10 +421,10 @@ async function auditOne(
 
 /**
  Runs both arms and keeps what they said.
- 
+
  @param line - the probe's command line, read whole by `reportingRefusals`, which
  refuses any argument, since this probe reads none; it names the script run
- 
+
  @example
  ```ts
  await main({ line, },);
@@ -440,7 +440,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'audit-sensitivity
   /**
    Digest over built output, which is the only identity that moves when the
    code moves but the commit does not.
-   
+
    READ AT THE START, not at the end. A long run gives a developer plenty of
    time to rebuild, and `rendering-audit-settled` was caught doing exactly
    that: `dist` was rebuilt while a run was in flight, so the digest it was
@@ -459,7 +459,7 @@ async function main({ line, }: { readonly line: CommandLineOf<'audit-sensitivity
 
   /**
    Both arms, in the order they ran.
-   
+
    SEQUENTIAL rather than concurrent, because the two arms share one roster
    and interleaving their progress lines would make the stream unreadable,
    which is the whole point of printing it.

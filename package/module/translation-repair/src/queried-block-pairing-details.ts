@@ -13,7 +13,7 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 
 /**
  Existing queried-parent normalization and persistence eligibility.
- 
+
  @example
  ```ts
  const details = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers });
@@ -37,19 +37,19 @@ export type QueriedBlockPairingDetails = {
 
 /**
  Derives the current queried handoff without persisting or changing its ordering.
- 
+
  @param outcome - current pairing stage result
- 
+
  @param pair - current complete parent
- 
+
  @param pairIndex - original alignment position used in findings
- 
+
  @param targetContainers - complete target parser's media ownership spans
- 
+
  @returns Production normalization and unchanged cache gate
- 
+
  @throws Error when existing structural media validation fails
- 
+
  @example
  ```ts
  const { pairs, findings, canPersistPairing, } = queriedBlockPairingDetails({ outcome, pair, pairIndex, targetContainers });

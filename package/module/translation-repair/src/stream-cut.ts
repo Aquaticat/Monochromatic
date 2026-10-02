@@ -45,7 +45,7 @@ const OPENING_CHARS = 80;
 
 /**
  How a stream ended.
- 
+
  FOUR VALUES rather than two, so a termination THIS SYSTEM CHOSE reads as
  its own outcome rather than as `cut`. A stall and a runaway call for
  opposite responses, a stall is worth retrying and a model that has begun
@@ -53,7 +53,7 @@ const OPENING_CHARS = 80;
  lines to measure stalls would otherwise count every deliberate termination
  among them, which is the same conflation `StreamDegenerateError` was given
  its own class to avoid, one layer further out.
- 
+
  THE TWO CHOSEN ENDINGS STAY APART for the same reason they are apart from
  `cut`: `degenerate` is a stream that stopped saying anything new, and
  `overrun` is one that said far more than any legitimate call ever did.
@@ -64,12 +64,12 @@ export type StreamOutcome = 'completed' | 'cut' | 'degenerate' | 'overrun';
 
 /**
  Raised when a stream was cut off, carrying what it had already delivered.
- 
+
  WRAPS RATHER THAN REPLACES. The original failure is the `cause`, so a stall
  still reads as a stall and steering still reads as steering, and the message
  repeats the cause's own text so anything printing this error with `String`
  says what it used to say.
- 
+
  @example
  ```ts
  throw new StreamCutShortError({
@@ -99,13 +99,13 @@ export class StreamCutShortError extends Error {
 
   /**
    @param label - model or endpoint
-   
+
    @param partialText - text delivered before the cut
-   
+
    @param progress - what the stream did
-   
+
    @param cause - original failure, kept so its identity survives
-   
+
    @example
    ```ts
    const error = new StreamCutShortError({ label, partialText, progress, cause, },);
@@ -144,14 +144,14 @@ export class StreamCutShortError extends Error {
 /**
  Reports what one stream did, on the path that finished and the path that did
  not.
- 
+
  ONE FUNCTION FOR BOTH, which is the point: two call sites drifted before, and
  the one that never logged was the one carrying the calls worth measuring.
- 
+
  RETURNS THE LINE IT LOGS, so the formatting is testable directly rather than
  only by capturing a logger's side effect. The caller is not expected to use
  the return value; `void`-typed call sites remain valid.
- 
+
  REPORTS GENERATED CHARACTERS, NOT RAW ONES, both for the per-channel count
  and for the opening excerpt. `progress.chars` already names itself `raw
  chars` and keeps counting wire bytes, envelope included; nothing else here
@@ -160,28 +160,28 @@ export class StreamCutShortError extends Error {
  whatever follows, because every frame's JSON wrapper is identical by
  construction, and the count would repeat `progress.chars` under a new
  name rather than saying how much the model actually produced.
- 
+
  @param label - model or endpoint
- 
+
  @param progress - what the stream did
- 
+
  @param unreadableFrames - payload lines the scanner could not read
- 
+
  @param outcome - whether the stream finished, was cut, or was ended by this
  system's own degeneration guard
- 
+
  @param openingText - generated text delivered, combined across channels in
  arrival order, used only for its opening
- 
+
  @param generatedChars - decoded characters produced on each channel, from
  the same detectors the degeneration guard already keeps running totals in
- 
+
  @param servedBy - upstream the gateway named for this stream, so a cut or a
  slow finish can be pinned on one endpoint of a many-endpoint provider;
  empty, and left off the line, where the wire names none
- 
+
  @returns The line that was logged
- 
+
  @example
  ```ts
  reportStreamProgress({

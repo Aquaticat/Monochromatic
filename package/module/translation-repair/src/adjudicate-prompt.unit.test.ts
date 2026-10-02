@@ -1,7 +1,7 @@
 /**
  Tests for the panel prompt sheet builder and its index maps.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

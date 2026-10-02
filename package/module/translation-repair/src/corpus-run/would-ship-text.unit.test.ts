@@ -1,19 +1,19 @@
 /**
  Tests for deriving what one slice would ship, across every decider.
- 
+
  ONE CASE PER PATH THROUGH THE DECIDERS, because the whole point of this
  reader is that no single field answers the question and every stage above a
  lane may replace what it left. A reader that got any one branch wrong would
  report wording no reader would ever see, which is exactly the failure the
  `repairDisposition: 'shipped'` name produced before it.
- 
+
  NO READING MAY CARRY AN EMPTY STRING AS WORDING. `standingTextFor` returns
  `''` at a declined contest by design, so a reader that mirrored it would
  delete every declined slice from any document assembled off these readings.
  Both declines and the archive-silent case are pinned separately.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -57,11 +57,11 @@ const CONSOLIDATED_NAP = 'The cat is napping on the windowsill.';
 
 /**
  Builds one comparison row, defaulting to a slice where the lanes differ.
- 
+
  @param over - fields this case replaces
- 
+
  @returns Row as the parsed artifact carries it
- 
+
  @example
  ```ts
  const row = rowWith({ incumbentKind: 'absent', },);
@@ -95,11 +95,11 @@ function rowWith(over: Record<string, unknown> = {},): Record<string, unknown> {
 
 /**
  Builds one consolidation slice under a terminal that replaced nothing.
- 
+
  @param terminal - how the slice left the stage
- 
+
  @returns Slice as the parsed artifact carries it
- 
+
  @example
  ```ts
  const slice = keptStanding({ terminal: 'gate-kept-standing', },);
@@ -121,11 +121,11 @@ function keptStanding(
 
 /**
  Builds one contested slice under a verdict.
- 
+
  @param verdict - what the roster settled
- 
+
  @returns Slice as the parsed artifact carries it
- 
+
  @example
  ```ts
  const slice = contestedWith({ verdict: { kind: 'settled-neither', }, },);
@@ -144,15 +144,15 @@ function contestedWith(
 
 /**
  Builds the three fields a reading is derived from.
- 
+
  @param row - comparison row to read, defaulting to differing lanes
- 
+
  @param consolidation - what the third rendering says, defaulting to unasked
- 
+
  @param laneSelection - which lane ships, defaulting to unasked
- 
+
  @returns Source the reader accepts
- 
+
  @example
  ```ts
  const source = sourceWith({ row: rowWith(), },);
@@ -178,11 +178,11 @@ function sourceWith(
 
 /**
  Reads the first slice of a built source.
- 
+
  @param source - three fields to read
- 
+
  @returns What that slice would contribute
- 
+
  @example
  ```ts
  const reading = firstReadingOf({ source, },);

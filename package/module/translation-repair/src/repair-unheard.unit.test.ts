@@ -1,10 +1,10 @@
 /**
  Tests for the repair lane's silence check.
- 
+
  A slice nobody spoke about must carry the archive's own wording and claim no
  change; anything else is a contradiction, and the two ways it can happen are
  refused apart. Fixtures are cat-themed invention.
- 
+
  @module
  */
 

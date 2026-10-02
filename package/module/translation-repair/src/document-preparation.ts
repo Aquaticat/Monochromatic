@@ -65,51 +65,51 @@ import { unclaimedOutsideAlignment, } from './preparation-unclaimed.ts';
 
 /**
  Parses, aligns and subdivides a document pair.
- 
+
  @param sourceText - whole original document
- 
+
  @param targetText - whole translation as it stands
- 
+
  @param sliceCharBudget - target characters a slice may carry; defaults to
  {@link SLICE_CHAR_BUDGET}
- 
+
  @param includeFrontMatter - whether visible metadata becomes explicit slice;
  false only when rebuilding pre-generation-5 artifacts
- 
+
  @param frontMatterAuthority - whose front matter the page carries: under
  `archive` no metadata slice is made and the archive's bytes ship as they
  stand (the owner's rule of 2026-09-08); under `rendered` slice zero is the
  lanes' to write
- 
+
  @param blockPairings - correspondences a roster agreed on WITHIN each aligned
  section, keyed by section index
- 
+
  @param sectionPairing - correspondences a roster agreed on BETWEEN the two
  sides' sections, which decides what the aligned sections are in the first
  place. Kept apart from `blockPairings` because the two answer different
  questions and are bought in that order: which sections correspond, and then
  which blocks within one do.
- 
+
  @param contextLines - evidence lines a caller bought outside preparation
  (web lookups of the works the original names), appended to the identity
  context after the notes both documents carry
- 
+
  @param referenceContext - what the pages the original links say, passed
  through untouched to the prepared pair for the critic and panel sheets
  (class thirty-five); empty means the original links nowhere
- 
+
  @param attestedDetails - archive details a cited reference states, passed
  through untouched for the repair lane's claim screen (class thirty-seven);
  none when nothing was attested
- 
+
  @param sealArchiveOriginal - whether a span the archive's translators' note
  calls the English original is sealed out of every slice so it ships as it
  stands (the owner's rule of 2026-09-08, `archive-original-note.ts`); false
  when rebuilding an artifact written before generation twelve, whose slicing
  sealed nothing
- 
+
  @returns Slices, governance, declared names and alignment findings
- 
+
  @example
  ```ts
  const { slices, lineStructuredSliceIndices, } = prepareDocumentPair({ sourceText, targetText, },);
@@ -256,13 +256,13 @@ export function prepareDocumentPair(
   /**
    One finding per chunk whose pairing accounted for translation blocks
    nowhere, so the decision is legible from the artifact alone.
-   
+
    `Zha_Ke` settled with this list EMPTY while two of its six English blocks,
    2943 characters of dense text between them, had been declined.
    Reconstructing that took the pairing cache and the parser. Recording it
    here puts it at the one place that already knows both the
    pairing and the blocks.
-   
+
    The finding itself counts OFFSET SPANS, which run wider than dense text
    because they carry the markdown a block is written in.
    */
@@ -298,7 +298,7 @@ export function prepareDocumentPair(
 
   /**
    Slices whose enclosing CHUNK's original is line-structured.
-   
+
    Decided on the chunk and inherited by its slices, because the predicate
    needs at least five blocks and subdivision routinely leaves fewer. Measured
    on `Toka_ls`: the verse chunk trips at 21 blocks, median 22, then
@@ -316,7 +316,7 @@ export function prepareDocumentPair(
     /**
      Correspondences the roster agreed for this chunk, ABSENT when it agreed
      none.
-     
+
      ABSENCE HAS TO STAY ABSENCE all the way to subdivision. A section the
      roster could not pair is left OUT of the map, and `prepare-with-pairing`
      says what it means by that: it records `fell back to scoring` and logs
@@ -443,7 +443,7 @@ export function prepareDocumentPair(
 
     /**
      Those slices renamed by where they actually landed.
-     
+
      Subdivision was handed a base index and added its own offset, which is
      the same answer this produces until an insertion precedes. It stops being the same answer the
      moment a section contributes a slice the base index did not count, which

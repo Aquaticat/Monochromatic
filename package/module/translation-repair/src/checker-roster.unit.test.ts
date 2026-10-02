@@ -1,7 +1,7 @@
 /**
  Tests for what a checker roster may look like: when a checker is allowed to
  have written the text it grades, and how small the roster may get.
- 
+
  TWO REFUSALS BEHAVE DIFFERENTLY AND THE DIFFERENCE IS THE POINT. Overlap is a
  question about evidence quality, and `tallyResolutionChecks` can answer it by
  halving a self-vote per issue, so the owner's ruling of 2026-08-23 sent it to
@@ -9,9 +9,9 @@
  are not that kind of question: the first makes the quorum count disagree with
  the ballot count, and the second makes disagreement return nothing at all.
  Neither is rescued by any weighting, so neither honours the switch.
- 
+
  Model ids come from the catalog because `RosterModelId` is a closed union.
- 
+
  @module
  */
 

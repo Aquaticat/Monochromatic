@@ -1,7 +1,7 @@
 /**
  Tests that the produced-volume bound REACHES THE WIRE on every producing
  call the translate lane makes, the re-ask included.
- 
+
  WHY THIS IS SEPARATE FROM `produced-volume-bound.unit.test.ts`. That one hands
  `maxAnswerChars` straight to `drainBody` and watches the drain refuse, which
  proves the LAST hop and nothing above it. Between the producer and the drain
@@ -11,18 +11,18 @@
  production silently returns to the state the bound existed to end, where the
  seam exists and nothing passes anything through it. Only a test that reads
  what the CLIENT was handed can see that.
- 
+
  THE SECOND THING IT PINS IS THE PRODUCING RE-ASK. An invalid candidate is
  sent back to its author for a fresh rendering of the same slice, which is a
  producing call by every measure that matters, and it was left unbounded when
  the bound landed. It is also the busiest one: measured over 32 artifacts, the
  re-ask fired on 96 of 175 slices.
- 
+
  NO NETWORK. The client is a stub scripting one invalid rendering and one
  revision, recording every request it is handed.
- 
+
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -77,7 +77,7 @@ const TRANSLATOR = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
  Characters the runaway that prompted the bound emitted for a 56-character slice.
- 
+
  Named here so the widened re-ask bound can be shown to still catch it: a
  bound generous enough to never refuse a legitimate repair is worth nothing if
  it is also generous enough to let that emission through.
@@ -94,17 +94,17 @@ type SeenRequest = {
 
 /**
  Client that answers from a script and records what it was asked.
- 
+
  ORDER IS THE DISCRIMINATOR, and one translator is configured so that order is
  unambiguous: the first call produces, the second re-asks. Reading the stage
  off the request is not possible, because a request carries no stage.
- 
+
  @param seen - collector each request is appended to
- 
+
  @param answers - scripted values, one per call in order
- 
+
  @returns Client suitable for one producing pass
- 
+
  @example
  ```ts
  const client = recordingClient({ seen, answers: [rendering, revision,], },);
@@ -163,9 +163,9 @@ function recordingClient(
 /**
  Runs one producing pass whose only candidate is invalid, so both the
  producing call and the re-ask happen.
- 
+
  @returns Every request the client saw, in order
- 
+
  @example
  ```ts
  const seen = await produceOnce();

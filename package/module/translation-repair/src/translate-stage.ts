@@ -49,24 +49,24 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 
 /**
  Translates one slice from its original and returns the text that ships.
- 
+
  @param client - injected model client
- 
+
  @param translatorModelIds - models rendering the slice independently
- 
+
  @param judgeModelIds - whole roster selection seats, translators included;
  a ballot for the judge's own rendering counts for less
- 
+
  @param sourceText - original slice text
- 
+
  @param incumbentText - translation as it stands, blank where this slice has
  none
- 
+
  @param incumbentKind - whether there is a translation to fall back on,
  decided by the caller from the target chunk rather than from the text being
  blank: a content span holding only whitespace is the archive's own wording,
  and an anchor is a place where a rendering belongs and none exists
- 
+
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
 
@@ -75,7 +75,7 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 
  @param referenceContext - what the pages the original cites say, omitted
  when it cites none
- 
+
  @param neighbouringSourceText - original of the sections either side, shown as
  CONTEXT the candidates are not expected to render. Absent by default, so a
  caller that does not ask for it gets the sheet production has always sent.
@@ -83,16 +83,16 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  boundary, a judge shown one slice pair sees invention on one side and omission
  on the other, and the judge-quality bench's alteration arm went from 12 of 16 to 15 of 16 when
  the same trial was given exactly this
- 
+
  @param neighbouringIncumbentText - archive English of the sections either
  side, shown so a passage missing here can be recognised next door rather than
  read as one the archive never had
- 
+
  @param syntax - syntax role requiring dedicated production and judging rules
- 
+
  @param lineStructured - whether the enclosing CHUNK's original is
  line-structured, decided by the caller
- 
+
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
@@ -100,22 +100,22 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  @param disputedWordings - wordings a disputed slice refuses, which excludes
  the archive as incumbent and withholds a translator copying it (owner,
  2026-09-27, "No eligible standing"); none elsewhere
- 
+
  @param signal - caller abort honored by every exchange
- 
+
  @param perCallTimeoutMs - deadline per exchange
- 
+
  @param l - pipeline logger
- 
+
  @returns Shipped text with how it was decided
- 
+
  @throws {@link import('./repair-contract.ts').ProducerRosterError} when the
  roster could not select anything: repeats on either side, no translator, or
  judges too few to reach the minimum weight
- 
+
  @throws {@link import('./translation-repair-interrupted-error.ts').TranslationRepairInterruptedError}
  when absent-passage correction repeats exact task or providers remain unavailable
- 
+
  @throws {@link BlankSelectionError} when selection chose text that says
  nothing for a source that says something, in EITHER mode, since that is a
  deletion rather than an outcome
@@ -124,7 +124,7 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  carrying `unfloored`, before any call, where the archive holds no
  translation and the floor can compare nothing written for the slice
  (ledger B43); where the archive holds one, it stands with nobody asked
- 
+
  @example
  ```ts
  const translated = await runTranslateStage({ ... },);

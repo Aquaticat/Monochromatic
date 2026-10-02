@@ -1,6 +1,6 @@
 /**
  Distorted source-grounded content must not acquire a duplicate deletion diagnosis.
- 
+
  @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';

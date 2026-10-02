@@ -17,16 +17,16 @@ import { ssePayloadOf, } from './sse-data-line.ts';
 /**
  Every chunk of one drained stream that parses as a JSON object, in arrival
  order.
- 
+
  NOTHING HERE THROWS: a chunk that does not parse was already refused or
  accepted by the completion reader, and this scan reports nothing about it.
  The `[DONE]` sentinel, blank keep-alives and comment lines carry no JSON and
  are skipped by the opening-brace check.
- 
+
  @param bodyText - whole drained `text/event-stream` body
- 
+
  @returns Parsed chunks that are objects
- 
+
  @example
  ```ts
  const chunks = openRouterChunksOf({ bodyText: reply.bodyText, },);

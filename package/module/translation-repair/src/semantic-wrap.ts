@@ -64,7 +64,7 @@ const WRAP_RULES: readonly Rule[] = [RULE,];
 
 /**
  Wraps one passage at its semantic boundaries.
- 
+
  NEVER APPLIED TO TEXT A LANE DECIDED TO KEEP. Wrapping a retained passage
  would turn a decision to change nothing into a change, which the delivery
  coherence check and the assembly assertion both refuse by design, and it
@@ -72,11 +72,11 @@ const WRAP_RULES: readonly Rule[] = [RULE,];
  judge. Callers that ship the result pass only wording a lane produced;
  `wordingKey` wraps both sides of a comparison, retained text included, and
  ships neither (ledger B26).
- 
+
  @param text - passage as the lane produced it
- 
+
  @returns Same passage with semantic line breaks inserted
- 
+
  @example
  ```ts
  const wrapped = wrapReplacementText({ text: 'It naps. It wakes.', },);

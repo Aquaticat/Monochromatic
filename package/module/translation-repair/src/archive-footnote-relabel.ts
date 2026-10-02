@@ -44,7 +44,7 @@ export { applyFootnoteRelabel, } from './apply-footnote-relabel.ts';
 
 /**
  One label the archive carries and the original's label for the same note.
- 
+
  @example
  ```ts
  const relabel: FootnoteRelabel = { from: '1', to: '2', };
@@ -64,7 +64,7 @@ export type FootnoteRelabel = {
 
 /**
  What the paired slices say about the archive's labels.
- 
+
  @example
  ```ts
  const reading: FootnoteRelabelReading = { kind: 'unchanged', correspondences: [], skipped: [], };
@@ -142,7 +142,7 @@ export type LabelCorrespondence = {
 /**
  Folds correspondences into one map, refusing as ambiguous the first that
  contradicts an earlier one on either side.
- 
+
  THE DETAIL NAMES THE EARLIER CLAIM AS IT WAS MADE (ledger T8, eighteenth
  batch): its place, which side the label it names stands on, and that label
  as the document spells it. It once ended "where an earlier slice mapped
@@ -150,13 +150,13 @@ export type LabelCorrespondence = {
  label when two met one, and in either case the parser's case-folded key
  rather than the document's spelling, and "slice" was the later claim's kind
  of place, so a slice contradicting a definition pair blamed a slice.
- 
+
  @param correspondences - claims in reading order
- 
+
  @param skipped - places that said nothing, carried into the reading
- 
+
  @returns The reading
- 
+
  @example
  ```ts
  mapLabels({ correspondences: [ { from: '1', to: '2', where: 'slice 3', }, ], skipped: [], },);
@@ -263,17 +263,17 @@ export function mapLabels(
 /**
  Reads, off the paired slices, how the archive's labels map to the
  original's.
- 
+
  @param slices - preparation's slices, both sides' canonical texts included
- 
+
  @param sourceText - complete original backing the prepared ranges
- 
+
  @param targetText - complete archive backing the prepared ranges
- 
+
  @returns The map, that nothing changes, or why the archive must stand
- 
+
  @throws {@link import('./footnote-rewrite-error.ts').FootnoteRewriteError} when document syntax or slice scope cannot establish current evidence
- 
+
  @example
  ```ts
  const reading = footnoteRelabelOf(prepared);
@@ -375,11 +375,11 @@ export function footnoteRelabelOf(
  Reads the map off the definitions the roster paired by content, the exact
  evidence: the archive's definition of a note carries the archive's label
  for it, and the original's carries the original's.
- 
+
  @param pairs - definition pairs, by label
- 
+
  @returns The map, that nothing changes, or why the archive must stand
- 
+
  @example
  ```ts
  footnoteRelabelOfDefinitions({ pairs: [ { sourceLabel: '2', targetLabel: '1', }, { sourceLabel: '1', targetLabel: '2', }, ], },);

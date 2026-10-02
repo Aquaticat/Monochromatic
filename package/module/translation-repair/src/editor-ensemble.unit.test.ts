@@ -2,7 +2,7 @@
  Tests for the editor ensemble: candidate assembly, producer provenance,
  roster invariants, judge prompt fencing, and the two decline dispositions.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 

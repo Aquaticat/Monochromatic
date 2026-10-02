@@ -44,21 +44,21 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Record for one title, from the cache or bought and cached.
- 
+
  @param title - title with its marks
- 
+
  @param apiKey - key for the endpoint
- 
+
  @param dir - cache directory
- 
+
  @param signal - the call's abort
- 
+
  @param fetchFn - transport
- 
+
  @param now - clock, for the record's time
- 
+
  @returns Record, cached from now on
- 
+
  @example
  ```ts
  const record = await lookupWorkTitle({ title: '《活着》', apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), },);
@@ -120,13 +120,13 @@ export async function lookupWorkTitle(
 
 /**
  Lines a record contributes to the identity context.
- 
+
  @param title - title with its marks
- 
+
  @param record - record for it
- 
+
  @returns One line per hit, or one line saying the web returned nothing
- 
+
  @example
  ```ts
  lookupLinesOf({ title: '《活着》', record, },);
@@ -183,7 +183,7 @@ export function lookupLinesOf(
     const tail = (highlight === '') ? '' : `: ${highlight}`;
     /**
      Warning where the result never names the work asked about.
-     
+
      THE TOKA_LS RERUN OF 2026-09-02: the five results for 《奇妙漂流》 were
      奇幻漂流 neighbours (喵的奇幻漂流, the film released in English as "Flow"),
      none naming the work, and the judges renamed the person's own work "Flow".
@@ -200,11 +200,11 @@ export function lookupLinesOf(
 
 /**
  The title without its 《…》 marks.
- 
+
  @param title - title with its marks
- 
+
  @returns Title as a plain string
- 
+
  @example
  ```ts
  bareTitleOf({ title: '《活着》', },);
@@ -234,11 +234,11 @@ export function bareTitleOf(
  Chinese writes none, so a Han title is still found inside a longer run.
 
  @param hit - one result
- 
+
  @param bare - title without its marks
- 
+
  @returns Whether the bare title occurs in the result
- 
+
  @example
  ```ts
  namesWork({ hit, bare: '活着', },);
@@ -275,24 +275,24 @@ export function namesWork(
 /**
  Evidence lines for every work an original names, each title looked up once
  and cached; a failed lookup is logged and contributes no line.
- 
+
  @param sourceText - original document
- 
+
  @param apiKey - key for the endpoint; empty means no lookups at all
- 
+
  @param dir - cache directory
- 
+
  @param signal - the entry's abort
- 
+
  @param fetchFn - transport
- 
+
  @param now - clock
- 
+
  @param logger - entry logger
- 
+
  @returns Lines in title order, empty when the original names no work or no
  key is set
- 
+
  @example
  ```ts
  const lines = await workTitleLookupLines({ sourceText, apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), logger: l, },);

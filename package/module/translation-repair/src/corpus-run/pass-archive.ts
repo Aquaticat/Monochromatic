@@ -16,14 +16,14 @@ import {
 
 /**
  Normalizes archive bytes before preparation and every downstream decision.
- 
+
  @param text - archive English as stored in corpus
- 
+
  @param l - entry logger, which records every stub marker removed so a run's
  log witnesses it
- 
+
  @returns Normalized text and retained pinned-line coordinates
- 
+
  @example
  ```ts
  const { text, lines, } = passArchiveWithOrigins({ text: 'non‑binary', l, });
@@ -68,7 +68,7 @@ export function passArchiveWithOrigins(
 
 /**
  {@inheritDoc passArchiveWithOrigins}
- 
+
  @returns Normalized archive text without exposing provenance metadata to existing callers
  */
 export function passArchiveText({

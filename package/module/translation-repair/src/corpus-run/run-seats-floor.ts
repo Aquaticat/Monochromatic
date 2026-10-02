@@ -42,7 +42,7 @@ export const WRITING_BENCH_FLOOR = 2;
 /**
  Stops an entry whose phase cannot write: a writing bench it leans on has
  fewer reachable seats than the floor and no provider has named its return.
- 
+
  @example
  ```ts
  throw new WritingBenchUnreachableError({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },);
@@ -61,9 +61,9 @@ export class WritingBenchUnreachableError extends Error {
 
   /**
    Names the phase that could not write and each bench below the floor.
-   
+
    @param phase - phase the reading was taken for
-   
+
    @param clauses - one clause per bench below the floor
    */
   public constructor(
@@ -87,12 +87,12 @@ export class WritingBenchUnreachableError extends Error {
 /**
  Every bench the shortfall readings look at, keyed by the name the seats
  line prints, from one derivation of the seats.
- 
+
  @param seats - benches as derived for one reading
- 
+
  @returns Bench per name, the writing benches taken from the repair and
  translate lane rosters
- 
+
  @example
  ```ts
  const benches = benchesOf({ seats: judgeSeatsFor({ dry, },), },);
@@ -123,16 +123,16 @@ export function benchesOf(
 /**
  Writing benches among the named ones that cannot reach the floor among the
  seats a wet provider serves.
- 
+
  @param benches - each bench the phase leans on, keyed by name
- 
+
  @param names - benches the phase leans on, in the order the line prints them
- 
+
  @param dry - dryness per provider, holds folded in
- 
+
  @returns One clause per writing bench below the floor, empty when every
  writing bench can write a slate or the phase leans on none
- 
+
  @example
  ```ts
  unreachableWritingBenches({ benches, names: phaseBenches({ phase: 'lanes', },), dry, },);

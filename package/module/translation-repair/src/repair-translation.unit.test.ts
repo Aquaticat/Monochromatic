@@ -3,7 +3,7 @@
  The stub discriminates stages by response-format schema name, so one
  scripted client walks the whole loop without a network.
  Fixtures are cat-themed invention mirroring corpus structure only.
- 
+
  @module
  */
 
@@ -62,7 +62,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 
 /**
  Role roster; identities only matter as distinct voices.
- 
+
  THREE CHECKERS BECAUSE FEWER CANNOT DECIDE. `assertCheckerQuorumReachable`
  floors the role at three, since resolution needs more weight behind `fixed`
  than behind `not-fixed` and `worse` together and a pair that disagrees
@@ -83,7 +83,7 @@ const MODELS: RepairModels = {
 
 /**
  Exactly the failure an entry deadline trips with.
- 
+
  HELD AT MODULE SCOPE so the fixtures that abort and the cases that assert
  name one object. The driver's contract is that it surfaces the abort reason
  ITSELF; a wording assertion is satisfied by any lookalike, including a
@@ -147,18 +147,18 @@ function countMarker(
 /**
  Stub client scripted per stage; the schema name on the response format
  names the stage.
- 
+
  @param criticIssues - wire issues every critic reports, or a function
  choosing issues per request so slices script differently
- 
+
  @param checkerVerdict - verdict every checker casts on every issue
- 
+
  @param proberVerdict - verdict every prober casts on every replaced region
- 
+
  @param proberEvidence - wording every prober quotes as introduced damage;
  the screen decides what it proves, so a quote lifted from the replacement
  corroborates while one lifted from the baseline is contradicted
- 
+
  @param proberOmittedText - wording every prober quotes as content the edit
  dropped, checked in the opposite direction
  */
@@ -314,28 +314,28 @@ function trackingChatJson(
  Wraps a scripted client with the two failures a long run actually meets: a
  caller abort part way through a document, and a critic roster that answers
  nothing while the run is still live.
- 
+
  Modelled on the real transport, which propagates the torn-down stream
  untouched under an aborted signal rather than returning an outcome.
- 
+
  @param base - scripted client serving every stage
- 
+
  @param controller - run steering the wrapper may abort
- 
+
  @param calls - critic calls attempted, shared with the case
- 
+
  @param abortAfterCriticCalls - critic calls served before the wrapper aborts;
  absent means it never does
- 
+
  @param silentCritics - whether every critic call fails while the signal stays
  live
- 
+
  @param criticConcurrency - optional successful-critic overlap instrument
- 
+
  @param refinerConcurrency - optional successful-refiner overlap instrument
- 
+
  @returns Client honoring the steering
- 
+
  @example
  ```ts
  const client = steeringClient({ base, controller, calls, silentCritics: true, },);
@@ -1467,11 +1467,11 @@ Meow meow meow meow.
 
         /**
          Client counting every exchange it serves into one of those tallies.
-         
+
          @param key - which run this client serves
-         
+
          @returns Counting client over the scripted one
-         
+
          @example
          ```ts
          const client = countingClient({ key: 'plain', },);
