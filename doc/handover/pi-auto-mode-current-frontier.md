@@ -138,10 +138,45 @@ cancellation,
 stale context,
 or assessment failure.
 
+Prepared-input dispatch passed 16 controls in `proc_0340`,
+including native preparation,
+extension transformations,
+after hooks,
+updates,
+and execution-entry staleness.
+Private Pi 1.0.0 host copies passed nine controls in `proc_669f`
+and 13 controls in `proc_75fb`.
+The latter keeps one admission for a declared group even when member execution is serialized.
+No installed Pi source was edited.
+
+`proc_1819` then passed two real SDK session controls using the first private host/Agent copy
+and native `AgentSession`,
+`SessionManager`,
+`DefaultResourceLoader`,
+and extension hooks.
+Each two-tool batch received one assessment after input transformations.
+The allow case executed both inert tools;
+the deny case executed neither.
+Both own sessions completed,
+reached idle,
+and freshly persisted their final and tool-result entries.
+Extension contexts returned the exact supplied manager;
+the session retained the supplied loader and its prompt marker.
+No remote model,
+genuine human input,
+current permission,
+or represented action was involved.
+The historical SDK-session ledger is not reconciled by these two new completions.
+
 Production extension integration is unfinished.
 Nested calls need an explicit complete group boundary;
 a shared parent ID or timing window is not enough.
-Final effective inputs and later argument mutations still need qualification.
+Final effective inputs and later argument mutations have finite prepared-dispatch controls,
+not arbitrary-tool qualification.
+The serial-mode change has host-level controls,
+not a new full SDK session run.
+Private `contract/diagnostic/parallel-tool-batch/integration-frontier.json`
+is the detailed result and next-work receipt.
 Do not implement a barrier that waits inside the first per-call hook for sibling hooks:
 the current host prepares those hooks serially before parallel execution.
 
@@ -173,8 +208,13 @@ while preserving actual verification and authorization constraints.
 
 ## Next work
 
-- Finish real parallel-group integration at the host/extension/orchestration seam.
-- Connect the qualified manager mechanics to actual agent/session/resource-loader producers.
+- Finish the real policy consumer and explicit nested-group orchestration seam.
+  Existing private host and SDK session controls do not integrate production auto-mode.
+- Extend the measured agent/session/resource-loader identity bridge to full instruction collection,
+  root snapshotting,
+  freshness,
+  and finalization.
+  The native-manager phase remains its separate frozen 0.87.1 qualification.
 - Then prepare the new frozen SDK-linked configured-host confirmation,
   naming the planned not-yet-constructed root.
   Earlier witnesses are not reusable current permission.

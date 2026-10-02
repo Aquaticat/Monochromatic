@@ -86,6 +86,72 @@ human approval,
 or provider calls.
 No `AgentSession` was constructed.
 
+## Prepared inputs and private host integration
+
+The prepared dispatcher validates the complete declared set,
+finishes native argument preparation and extension hooks,
+seals the resulting inputs,
+and obtains one shared decision before execution.
+`proc_0340` exited 0 for 16 controls,
+including after-result hooks,
+partial updates,
+cancellation,
+invalid members,
+late mutation,
+and execution-entry freshness.
+A stale execution throws while retaining its prior assessment and native outcomes;
+it does not return an accepted group result.
+
+A private copy of the Pi 1.0.0 dispatcher then passed nine host controls in `proc_669f`.
+The strengthened copy passed 13 controls in `proc_75fb`,
+also with exit 0.
+The strengthened path keeps one admission for a declared group even when a host setting or member forces serial execution.
+It preserves ordered serial execution,
+blocks the entire group on denial,
+and fails closed when required batch admission is unavailable.
+The original unprotected dispatch path remains only when batch admission is not requested.
+Start,
+update,
+end,
+and result-delivery behavior was checked in the finite fixtures.
+No installed Pi file was edited;
+the copies retain Pi's MIT notice.
+
+## Actual SDK session consumer
+
+`proc_1819` exited 0 for two new SDK session controls:
+combined allow and combined deny.
+The fixture used the private host/Agent forwarding copy with native Pi 1.0.0 `AgentSession`,
+`SessionManager`,
+`DefaultResourceLoader`,
+and extension hooks.
+The environment was cleared and the home was disposable.
+
+Each two-member group received one code-owned assessment after native and extension input transformations.
+The allow case executed both inert tools;
+the deny case executed neither.
+Both sessions completed their own scripted final response,
+returned from `prompt`,
+reached idle,
+and persisted their own final and tool-result entries.
+The observed extension contexts returned the exact supplied session manager.
+The session retained the supplied resource loader,
+and the effective prompt contained that loader's marker.
+
+These are two newly observed own completed sessions,
+not a reconciliation of the historical session ledger.
+The SDK session controls used the first private host copy;
+the later serial-mode change has host-level controls but has not been repeated through a full SDK session.
+No remote model call,
+genuine human confirmation,
+current permission,
+or represented tool action occurred.
+The production auto-mode extension and arbitrary nested grouping remain unintegrated.
+
+Private receipts are `sdk-integration-result.json` and `integration-frontier.json`
+in `contract/diagnostic/parallel-tool-batch/`.
+The latter supersedes the older progress observations in `prepared-controls-frontier.json`.
+
 ## Deciding source and integration gap
 
 `package/pi-plugin/auto-mode/src/index.ts:478` copies `currentTurnBatch`
@@ -148,7 +214,8 @@ The orchestration seam must supply the actual complete parallel set.
 ## Remaining verification
 
 - Integrate the qualified batch-admission seam into the real extension rather than only the private prototype.
-- Preserve the demonstrated real-scheduler serial preparation and parallel execution behavior.
+- Preserve the required native hook and result behavior while preparing complete effective inputs before admission.
+- Keep declared-group admission independent of whether member execution is parallel or serial.
 - Verify zero execution on group denial,
   changed inputs,
   cancellation,
