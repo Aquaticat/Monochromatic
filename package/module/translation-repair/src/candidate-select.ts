@@ -3,6 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { selectionFanOut, } from './candidate-select-fanout.ts';
 import {
@@ -389,17 +390,20 @@ export async function decideBestCandidate<ValueT,>(
     };
   }
   /**
-   What the leader drew, absent only if the tally and the per-candidate
-   count disagree.
+   What the leader drew. ALWAYS FOUND: `countBallots` ranks only ballots of
+   nonzero weight, which its `usable` test gives only a `best` from 1 to the
+   candidate count, and `countCandidateWeights` gives each such index a row.
    */
-  const leaderDrawn = perCandidate.find(function isLeader(drawn,): boolean {
-    return drawn.index === leader[0];
-  },);
+  const leaderDrawn = nonNullishOrThrow(
+    perCandidate.find(function isLeader(drawn,): boolean {
+      return drawn.index === leader[0];
+    },),
+  );
 
   /**
    Ballots naming the leader, self-votes included.
    */
-  const leaderBallots = leaderDrawn?.ballots ?? 0;
+  const leaderBallots = leaderDrawn.ballots;
 
   /**
    Whether the leader stands under the weight minimum.
@@ -456,20 +460,11 @@ export async function decideBestCandidate<ValueT,>(
   }
 
   /**
-   Winning candidate, indexed back from the one-based ballot.
+   Winning candidate, indexed back from the one-based ballot. ALWAYS FOUND:
+   `countBallots` ranks only a `best` from 1 to the candidate count, the
+   length of `candidates`.
    */
-  const winner = candidates[leader[0] - 1];
-  if (winner === undefined) {
-    return {
-      kind: 'declined',
-      reason: 'winning index out of range',
-      disposition: 'rejection',
-      tally: counted,
-      findings: roundFindings,
-      ballots,
-      perCandidate,
-    };
-  }
+  const winner = nonNullishOrThrow(candidates[leader[0] - 1],);
   if (runoffDecides) {
     sl.info(
       `run-off: candidate ${String(leader[0],)} (ballots naming it: ${String(leaderBallots,)}) at weight `

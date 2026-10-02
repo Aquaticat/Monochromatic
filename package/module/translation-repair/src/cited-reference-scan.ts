@@ -152,8 +152,8 @@ function isProfile({ link, }: { readonly link: URL; },): boolean {
 }
 
 /**
- Whether a link is not a page to buy: the corpus's own site, a person's
- profile, or a link that does not parse at all.
+ Whether a link is left out rather than bought: the corpus's own site, a
+ person's profile, or a link that does not parse at all.
 
  @param url - link as written
 
@@ -161,11 +161,11 @@ function isProfile({ link, }: { readonly link: URL; },): boolean {
 
  @example
  ```ts
- isOwnHost({ url: 'https://one-among.us/people/x', },);
+ isLeftOut({ url: 'https://one-among.us/people/x', },);
  // => true
  ```
  */
-function isOwnHost({ url, }: { readonly url: string; },): boolean {
+function isLeftOut({ url, }: { readonly url: string; },): boolean {
   if (!URL.canParse(url,))
     return true;
   /**
@@ -248,7 +248,11 @@ function stopFrom(
 
  @param url - link run as cut at its stop
 
- @returns Link without trailing punctuation, empty when it was nothing else
+ @returns Link without trailing punctuation
+
+ @throws Error when `url` is all trailing punctuation, which no caller
+ passes: `citedReferenceUrlsOf` cuts every run where `schemeAt` matched, so
+ each opens with the scheme's letters
 
  @example
  ```ts
@@ -267,7 +271,10 @@ function withoutTrailingPunctuation({ url, }: { readonly url: string; },): strin
         cut,
       );
   }
-  return '';
+  throw new Error(
+    `unreachable: ${JSON.stringify(url,)} is entirely trailing punctuation, but every link run opens with `
+      + 'the scheme\'s letters',
+  );
 }
 
 /**
@@ -335,9 +342,9 @@ export function citedReferenceUrlsOf(
       ),
     },);
     /**
-     Whether this link is new and points off the corpus site.
+     Whether this link is new and a page worth buying.
      */
-    const wanted = (!taken.has(url,)) && (!isOwnHost({ url, },));
+    const wanted = (!taken.has(url,)) && (!isLeftOut({ url, },));
     if (wanted) {
       taken.add(url,);
       found.push(url,);

@@ -175,6 +175,55 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a doubled pair in a paragraph, whose block ends at a blank line before it and a quote after it, '
+        + 'and ACCEPTS the pair carried once',
+      fn: async () => {
+        /** Original whose pair is a paragraph between a closing line and a quoted farewell. */
+        const sourceText = ['好了。', '', '猫睡在窗台上。', 'The cat sleeps on the sill.', '> 晚安。',].join('\n',);
+        /** Page carrying the pair once. */
+        const pageText = ['All right.', '', 'The cat sleeps on the sill.', '> Good night.',].join('\n',);
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText,
+          candidateText: ['All right.', '', 'The cat dozes on the sill.', 'The cat sleeps on the sill.', '> Good night.',]
+            .join('\n',),
+          pageText,
+        },),).toEqual([
+          'This slice is LINE-STRUCTURED and the ORIGINAL gives the line `The cat sleeps on the sill.` twice, once in '
+            + 'Chinese and once in English directly beside it; that pair is ONE line whose English is already its '
+            + 'rendering, and the EXISTING TRANSLATION carries the block holding it as 1 line. Yours carries 2. Drop '
+            + 'the second rendering of the pair (the Chinese line, or a second English wording of it), keeping the '
+            + 'wording you chose elsewhere.',
+        ],);
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText,
+          candidateText: pageText,
+          pageText,
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'STAYS SILENT where the page reworded both English lines of the quote, or keeps the Chinese lines too, '
+        + 'since then the page does not show the pair carried once',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: BILINGUAL,
+          candidateText: DOUBLED,
+          pageText: PAGE
+            .replace('May every cat find a sunbeam that’s all its own.', 'Let every cat find its very own sunbeam.',)
+            .replace('From *The Cat Show*', 'Taken from *The Cat Show*',),
+        },),).toEqual([],);
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: BILINGUAL,
+          candidateText: DOUBLED,
+          pageText: ['愿每只猫都能找到属于它的阳光。', '', '出自《猫的世界》', '', PAGE,].join('\n',),
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'STAYS SILENT on a slice with no pair however long the rendering runs, the shortfall check\'s own blind spot kept',
       fn: async () => {
         expect(compareLineCounts({

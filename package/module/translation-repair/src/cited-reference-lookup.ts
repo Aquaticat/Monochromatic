@@ -144,7 +144,7 @@ export function referenceLineOf(
   // The failure tag is the endpoint's text, folded like the rest so the
   // block stays one line per reference (ledger B25).
   if (record.status === 'error')
-    return `${head}: ${REFERENCE_UNFETCHED} (${foldedLine({ text: record.failure ?? 'error', },)})`;
+    return `${head}: ${REFERENCE_UNFETCHED} (${foldedLine({ text: record.failure, },)})`;
   /**
    Text on one line.
    */

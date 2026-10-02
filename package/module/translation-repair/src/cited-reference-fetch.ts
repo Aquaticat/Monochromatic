@@ -51,31 +51,51 @@ export class CitedReferenceFetchError extends Error {
 
 /**
  What one fetch yields: the page's title and text on success, the endpoint's
- error tag on failure. `failure` is present exactly when `status` is error.
+ error tag on failure.
+
+ A UNION ON `status`: the tag is present exactly when the fetch failed, as
+ `fetchedOf` has always built it, so a reader needs no fallback for an error
+ without one (ledger T8).
 
  @example
  ```ts
  const fetched: FetchedReference = { status: 'success', title: 'In Memory', text: '...', };
  ```
  */
-export type FetchedReference = {
-  /**
-   Whether the endpoint could read the page.
-   */
-  readonly status: 'success' | 'error';
-  /**
-   Page title, empty when the endpoint gave none.
-   */
-  readonly title: string;
-  /**
-   Page text up to `REFERENCE_TEXT_CHARACTERS`, empty on failure.
-   */
-  readonly text: string;
-  /**
-   Endpoint's error tag, present only on failure.
-   */
-  readonly failure?: string;
-};
+export type FetchedReference =
+  | {
+    /**
+     The endpoint read the page.
+     */
+    readonly status: 'success';
+    /**
+     Page title, empty when the endpoint gave none.
+     */
+    readonly title: string;
+    /**
+     Page text up to `REFERENCE_TEXT_CHARACTERS`.
+     */
+    readonly text: string;
+  }
+  | {
+    /**
+     The endpoint could not read the page.
+     */
+    readonly status: 'error';
+    /**
+     Page title, empty when the endpoint gave none.
+     */
+    readonly title: string;
+    /**
+     Page text, empty on failure.
+     */
+    readonly text: string;
+    /**
+     Endpoint's error tag, `error` when it named none, `no result` when it
+     answered nothing at all.
+     */
+    readonly failure: string;
+  };
 
 /**
  String field of a record, empty when absent or not text.

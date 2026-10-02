@@ -85,5 +85,40 @@ await describe({
         ),).toBe(true,);
       },
     },),
+
+    it({
+      name: 'READS a result as successful when `statuses` carries no entry at all, rather than reading '
+        + 'past the empty array into a status record that is not there',
+      fn: async () => {
+        expect(fetchedOf({
+          parsed: {
+            results: [{ title: 'Clean Catch', text: 'The cat read quietly.', },],
+            statuses: [],
+          },
+        },),).toEqual({
+          status: 'success',
+          title: 'Clean Catch',
+          text: 'The cat read quietly.',
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES the failure the bare word "error" when the endpoint reports an error status with no '
+        + 'error detail of its own',
+      fn: async () => {
+        expect(fetchedOf({
+          parsed: {
+            results: [],
+            statuses: [{ status: 'error', },],
+          },
+        },),).toEqual({
+          status: 'error',
+          title: '',
+          text: '',
+          failure: 'error',
+        },);
+      },
+    },),
   ],
 },);

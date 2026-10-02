@@ -46,8 +46,10 @@ import {
   referenceCachePath,
   referenceLineOf,
   type ReferenceRecord,
+  textsInCodePointOrder,
   writeCachedReference,
 } from '../dist/final/node/index.mjs';
+import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
@@ -233,6 +235,14 @@ await describe({
               .join(' ',);
             expect(citedReferenceUrlsOf({ text: many, },).length,).toBe(MAX_CITED_REFERENCES,);
             expect(citedReferenceUrlsOf({ text: many, },).at(0,),).toBe('https://cats.example/p/0',);
+          },
+        },),
+        it({
+          name: 'PASSES OVER an http that opens no scheme and a bare scheme that parses as no link, and keeps the page after them',
+          fn: async () => {
+            expect(citedReferenceUrlsOf({ text: 'httpd 的日志见 https:// 与 https://cats.example/p/nap', },),).toEqual([
+              'https://cats.example/p/nap',
+            ],);
           },
         },),
       ],
@@ -448,6 +458,26 @@ await describe({
             },),).toBe(true,);
           },
         },),
+        it({
+          name: 'REFUSES an error record without its failure tag and a success record carrying one, the two shapes no fetch writes',
+          fn: async () => {
+            expect(isReferenceRecord({
+              url: POST_URL,
+              fetchedAt: NOW.toISOString(),
+              status: 'error',
+              title: '',
+              text: '',
+            },),).toBe(false,);
+            expect(isReferenceRecord({
+              url: POST_URL,
+              fetchedAt: NOW.toISOString(),
+              status: 'success',
+              title: 'In memory of Mittens',
+              text: 'Mittens had an older sister.',
+              failure: 'CRAWL_NOT_FOUND',
+            },),).toBe(false,);
+          },
+        },),
       ],
     },),
 
@@ -586,6 +616,61 @@ await describe({
               now: () => NOW,
               logger: l,
             },),).toBe(`- reference 1 ${POST_URL}: could not be fetched`,);
+          },
+        },),
+        it({
+          name: 'READS a page the cache already holds without asking the transport, BUYS only the one it lacks, '
+            + 'and says which was which on its lines',
+          fn: async () => {
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            await using scratch = await scratchDir({ prefix: 'reference-block-held-', },);
+            const dir = scratch.path;
+            await writeCachedReference({
+              dir,
+              record: {
+                url: POST_URL,
+                fetchedAt: NOW.toISOString(),
+                status: 'success',
+                title: 'Already read',
+                text: 'Mittens napped by the stove.',
+              },
+            },);
+            const {
+              fetchFn,
+              seen,
+            } = stubTransport({
+              status: 200,
+              body: READABLE_BODY,
+            },);
+            expect((await citedReferenceBlock({
+              sourceText: SOURCE_TEXT,
+              apiKey: 'whisker-key',
+              dir,
+              signal: SIGNAL,
+              fetchFn,
+              now: () => NOW,
+              logger,
+            },)).split('\n',),).toEqual([
+              `- reference 1 ${POST_URL} ("Already read"): Mittens napped by the stove.`,
+              `- reference 2 ${ARCHIVE_URL} ("In memory of Mittens"): Mittens had an older sister. The sister was also a tabby.`,
+            ],);
+            expect(seen.length,).toBe(1,);
+            expect(JSON.parse(seen.at(0,)?.body ?? '{}',),).toEqual({
+              urls: [ARCHIVE_URL,],
+              text: { maxCharacters: REFERENCE_TEXT_CHARACTERS, },
+            },);
+            // In code-point order: the two pages are looked up at once, so
+            // which line lands first is not part of the contract.
+            expect(textsInCodePointOrder({ texts: logged, },),).toEqual(textsInCodePointOrder({
+              texts: [
+                `[citedReferenceBlock] REFERENCE 1 ${POST_URL}: success, 28 chars, cached`,
+                `[citedReferenceBlock] REFERENCE 2 ${ARCHIVE_URL}: success, 57 chars, bought`,
+                '[citedReferenceBlock] REFERENCES cited=2 cached=1 bought=1',
+              ],
+            },),);
           },
         },),
       ],

@@ -102,15 +102,15 @@ export type InsertionPlacement =
  everything the translation carries, which is the end of the last section
  rather than the start of a section that does not exist.
 
+ ONLY THOSE TWO ARRIVE HERE: `anchorFor` (`align-headings-forced.ts`) and
+ `anchorBetween` (`pair-sections-steps.ts`) build `beforeTargetIndex` from a
+ boundary between 0 and the translation's section count, both included.
+
  @param beforeTargetIndex - section the insertion precedes
 
  @param targetChunks - translation sections in document order, never empty
 
  @returns Offset in the translation text
-
- @throws Error when the boundary names no section and is not the end, since a
- silent fallback there would write a whole section at whatever offset happened
- to be reachable
 
  @example
  ```ts
@@ -134,15 +134,12 @@ function offsetOfBoundary(
     return following.startOffset;
 
   /**
-   Last section, whose end is where a trailing insertion lands.
+   Last section, whose end is where a trailing insertion lands. ALWAYS
+   PRESENT: `following` is absent only at `beforeTargetIndex ===
+   targetChunks.length`, and `alignDocumentSections` returns before placing
+   anything when the translation has no sections.
    */
-  const last = targetChunks.at(-1,);
-  if ((beforeTargetIndex !== targetChunks.length) || (last === undefined))
-    throw new Error(
-      `insertion boundary ${String(beforeTargetIndex,)} names no section of a translation `
-        + `carrying ${String(targetChunks.length,)}, and is not its end either`,
-    );
-
+  const last = nonNullishOrThrow(targetChunks.at(-1,),);
   return last.endOffset;
 }
 

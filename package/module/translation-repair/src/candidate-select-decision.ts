@@ -54,7 +54,7 @@ type EvidenceBlock = {
 export const TYPED_BALLOT_REASON = 'typed decision';
 
 /**
- What a chosen index reads as when the answer carries no distribution.
+ What a distribution or a confidence reads as when the answer carries none.
  */
 const UNREPORTED = 'unreported';
 
@@ -87,11 +87,14 @@ function readTypedBallot(
   const { best, } = answers;
   if ((best === undefined) || (best.type !== 'choice'))
     return NO_TYPED_ANSWER;
+  // AN ABSENT DISTRIBUTION READS AS UNREPORTED, like an absent confidence: an
+  // empty object said the seat reported a distribution with nothing in it,
+  // which no answer said (ledger T8).
   return {
     best: best.choice,
-    reason: `${TYPED_BALLOT_REASON}: probabilities ${JSON.stringify(best.probabilities ?? {},)}, confidence ${
-      (best.confidence === undefined) ? UNREPORTED : String(best.confidence,)
-    }`,
+    reason: `${TYPED_BALLOT_REASON}: probabilities ${
+      (best.probabilities === undefined) ? UNREPORTED : JSON.stringify(best.probabilities,)
+    }, confidence ${(best.confidence === undefined) ? UNREPORTED : String(best.confidence,)}`,
   };
 }
 

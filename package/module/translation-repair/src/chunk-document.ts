@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { alignHeadingsForced, } from './align-headings-forced.ts';
 import {
   describePlacement,
@@ -267,15 +269,14 @@ export function chunkByHeadings(
     sliceIndex,
   ): ContentChunk {
     /**
-     First node of the group, guaranteed by construction.
+     First node of the group. ALWAYS PRESENT: every pushed group starts with
+     `[node,]`, a single-element array, so `groups` never holds an empty one.
      */
-    const [first,] = nodes;
+    const first = nonNullishOrThrow(nodes[0],);
     /**
-     Last node of the group, guaranteed by construction.
+     Last node of the group, present by the same construction as `first`.
      */
-    const last = nodes.at(-1,);
-    if ((first === undefined) || (last === undefined))
-      throw new Error('unreachable: every chunk group carries at least one node',);
+    const last = nonNullishOrThrow(nodes.at(-1,),);
     return {
       sliceIndex,
       nodes,
@@ -346,16 +347,14 @@ function describeSourceOnly(
   },
 ): string {
   /**
-   Decision for that section.
+   Decision for that section. ALWAYS FOUND: `placeInsertions` returns one
+   placement per `source-only` step, keyed by that step's own `sourceIndex`,
+   and `alignDocumentSections` builds the placements and the findings from
+   the same steps.
    */
-  const found = placements.find(function atIndex(placement,): boolean {
+  const found = nonNullishOrThrow(placements.find(function atIndex(placement,): boolean {
     return placement.sourceIndex === sourceIndex;
-  },);
-  if (found === undefined)
-    throw new Error(
-      `unreachable: source section ${String(sourceIndex,)} is unpaired but carries no placement `
-        + 'decision, so the alignment steps and the placement pass disagree',
-    );
+  },),);
 
   return describePlacement(found,);
 }
@@ -481,11 +480,10 @@ export function alignDocumentSections(
         index,
       ): ChunkPair {
         /**
-         Target chunk at the same index, present by the count check.
+         Target chunk at the same index, always present: `equalShape` has
+         already checked the two counts equal.
          */
-        const targetChunk = targetChunks[index];
-        if (targetChunk === undefined)
-          throw new Error('unreachable: counts were checked equal',);
+        const targetChunk = nonNullishOrThrow(targetChunks[index],);
         return {
           source: sourceChunk,
           target: targetChunk,
@@ -566,21 +564,19 @@ export function alignDocumentSections(
     pairs: steps.flatMap(function toPair(step,): readonly ChunkPair[] {
       if (step.kind === 'source-only') {
         /**
-         Whether this section earned a place to be written at.
+         Whether this section earned a place to be written at. ALWAYS FOUND:
+         `placeInsertions` returns one placement per `source-only` step, keyed
+         by its `sourceIndex`.
          */
-        const placement = placementBySource.get(step.sourceIndex,);
-
-        /**
-         Original-side chunk with nothing beside it.
-         */
-        const sourceChunk = sourceChunks[step.sourceIndex];
-        if ((placement === undefined)
-          || (placement.kind !== 'placed')
-          || (sourceChunk === undefined))
+        const placement = nonNullishOrThrow(placementBySource.get(step.sourceIndex,),);
+        if (placement.kind !== 'placed')
           return [];
 
         return [{
-          source: sourceChunk,
+          // Present: a step's `sourceIndex` is a section both deciders scan,
+          // one per original section (`alignHeadingsForced`'s rows,
+          // `sectionPairingToSteps`'s `targets`).
+          source: nonNullishOrThrow(sourceChunks[step.sourceIndex],),
           target: makeInsertionChunk({
             sliceIndex: step.sourceIndex,
             offset: placement.offset,
@@ -591,21 +587,13 @@ export function alignDocumentSections(
       if (step.kind !== 'paired')
         return [];
 
-      /**
-       Original-side chunk of this pair.
-       */
-      const sourceChunk = sourceChunks[step.sourceIndex];
-
-      /**
-       Translation-side chunk of this pair.
-       */
-      const targetChunk = targetChunks[step.targetIndex];
-      if ((sourceChunk === undefined) || (targetChunk === undefined))
-        throw new Error('unreachable: the aligner paired an index outside its own input',);
-
+      // BOTH CHUNKS PRESENT: `alignHeadingsForced` pairs only a row and a
+      // column it scanned, and `sectionPairingToSteps` only a pair the stage
+      // read against both sides' counts (`readSectionPairing`,
+      // `assertIndicesExist`); the headings both read are one per chunk.
       return [{
-        source: sourceChunk,
-        target: targetChunk,
+        source: nonNullishOrThrow(sourceChunks[step.sourceIndex],),
+        target: nonNullishOrThrow(targetChunks[step.targetIndex],),
       },];
     },),
     findings: steps.flatMap(function toFinding(step,): readonly AlignmentFinding[] {

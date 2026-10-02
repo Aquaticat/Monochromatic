@@ -241,6 +241,22 @@ await describe({
     },),
 
     it({
+      name: 'READS the value a reply opens with when the model trails more text after a complete object '
+        + '(ledger P8), rather than refusing the whole answer as unparseable',
+      fn: async () => {
+        /**
+         Answer whose object a sentence follows.
+         */
+        const text = '{"verdict":"nap"} and that is final.';
+        expect(read({ text, },),).toEqual({
+          kind: 'ok',
+          value: { verdict: 'nap', },
+          rawText: text,
+        },);
+      },
+    },),
+
+    it({
       name: 'names why the model stopped when content will not parse',
       fn: async () => {
         // A non-truncating stop reason stays on the unparseable path; the

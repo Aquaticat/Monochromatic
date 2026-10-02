@@ -17,6 +17,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import type { FetchedReference, } from './cited-reference-fetch.ts';
 import { contextRoot, } from './log-context.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { lookupCacheDir, } from './lookup-cache.ts';
@@ -48,23 +49,7 @@ export type ReferenceRecord = {
    When it was bought.
    */
   readonly fetchedAt: string;
-  /**
-   Whether the endpoint could read the page.
-   */
-  readonly status: 'success' | 'error';
-  /**
-   Page title, empty when none.
-   */
-  readonly title: string;
-  /**
-   Page text, empty on failure.
-   */
-  readonly text: string;
-  /**
-   Endpoint's error tag, present only on failure.
-   */
-  readonly failure?: string;
-};
+} & FetchedReference;
 
 /**
  What a cache read answers: the record, or that there is none.
@@ -147,7 +132,7 @@ export function referenceCachePath(
  @param value - parsed JSON
 
  @returns Whether it carries a url, a time, a status, a title and text of
- the right shapes
+ the right shapes, and a failure tag exactly when its status is error
 
  @example
  ```ts
@@ -158,9 +143,12 @@ export function isReferenceRecord(value: unknown,): value is ReferenceRecord {
   if (!isJsonRecord(value,))
     return false;
   /**
-   Whether the optional failure is text when present.
+   Whether the failure tag is text on an error record and absent on any
+   other, which every record this package writes holds.
    */
-  const failureShaped = (value.failure === undefined) || ((typeof value.failure) === 'string');
+  const failureShaped = (value.status === 'error')
+    ? ((typeof value.failure) === 'string')
+    : (value.failure === undefined);
   return ((typeof value.url) === 'string')
     && ((typeof value.fetchedAt) === 'string')
     && ((value.status === 'success') || (value.status === 'error'))

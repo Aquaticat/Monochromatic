@@ -153,6 +153,10 @@ function everyProviderDry(
 
  @returns One clause a reader can tell exhaustion from holds by
 
+ @throws Error when a provider reads wet, which no call reaches:
+ `readBudgetsPastHolds` calls this only after `everyProviderDry` held over
+ the same view with the same refusal folded in
+
  @example
  ```ts
  measuredAt({ view, refused: NOBODY_REFUSED, holds: budgets.holds(), },);
@@ -179,7 +183,13 @@ function measuredAt(
      Whether this provider reads dry once the refusal is folded in.
      */
     const dry = view[provider] || (refused === provider);
-    return `${provider} ${dry ? 'dry' : 'wet'}${
+    if (!dry) {
+      throw new Error(
+        `unreachable: ${provider} read wet inside measuredAt, which runs only once every provider has `
+          + 'read dry',
+      );
+    }
+    return `${provider} dry${
       (refused === provider) ? ' (just refused this call)' : ''
     }`;
   },);

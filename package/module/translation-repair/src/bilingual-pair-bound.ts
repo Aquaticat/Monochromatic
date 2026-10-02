@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { wordForCount, } from './count-word.ts';
 import {
   carriesContent,
@@ -207,9 +209,10 @@ function blockStart(
 ): number {
   for (let start = at; start > 0; start -= 1) {
     /**
-     Line before the cursor.
+     Line before the cursor. ALWAYS PRESENT: `start` runs down from `at`, an
+     index of `lines`, and stays above 0, and a `split` leaves no hole.
      */
-    const before = lines[start - 1] ?? '';
+    const before = nonNullishOrThrow(lines[start - 1],);
     if (!belongsToBlock({
       line: before,
       quoted,
@@ -248,9 +251,10 @@ function blockEnd(
 ): number {
   for (let end = at + 1; end < lines.length; end += 1) {
     /**
-     Line at the cursor.
+     Line at the cursor. ALWAYS PRESENT: the loop stops at `lines.length`,
+     and a `split` leaves no hole.
      */
-    const here = lines[end] ?? '';
+    const here = nonNullishOrThrow(lines[end],);
     if (!belongsToBlock({
       line: here,
       quoted,
@@ -285,9 +289,11 @@ function blockAround(
   },
 ): LineBlock {
   /**
-   Whether the block is a quote.
+   Whether the block is a quote. The line at `at` is ALWAYS PRESENT:
+   `pairBoundFindings` passes only a `lineAt` answer it has checked is not
+   negative, an index of these same lines.
    */
-  const quoted = isQuoted({ line: lines[at] ?? '', },);
+  const quoted = isQuoted({ line: nonNullishOrThrow(lines[at],), },);
   /**
    First index of the block.
    */

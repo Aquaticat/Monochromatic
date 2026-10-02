@@ -330,10 +330,12 @@ export function routeProviderFor(
   },)) {
     // THE READING IT DECIDED ON, cited (ledger P12): this refusal said "no
     // reading cited" where the router had the whole dryness record in hand.
+    // EVERY PROVIDER READS DRY HERE: this branch runs only when `isDry` held
+    // for every provider in `PROVIDER_ORDER`, so each clause says "dry".
     throw new EveryProviderDryError({
       measured: `meters read ${
         PROVIDER_ORDER.map(function stateOf(provider,): string {
-          return `${provider} ${dry[provider] ? 'dry' : 'wet'}`;
+          return `${provider} dry`;
         },)
           .join(', ',)
       }; no holds read at this decision`,

@@ -113,6 +113,30 @@ await describe({
     },),
 
     it({
+      name: 'NAMES BOTH UNREPORTED when a choice carries neither a distribution nor a confidence, which the '
+        + 'endpoint reports only when it chooses to, rather than writing an empty distribution nobody sent',
+      fn: async () => {
+        const decision = selectDecision({
+          task: 'Pick the best rendering.',
+          criteria: ['faithful to the original',],
+          evidence: [{ label: 'ORIGINAL (Chinese)', text: '猫在窗台上打盹。', },],
+          rendered: CANDIDATES.map(function toRendered(candidate,) {
+            return candidate.rendered;
+          },),
+        },);
+        expect(decision.read({
+          best: {
+            type: 'choice',
+            choice: '2',
+          },
+        },),).toEqual({
+          best: '2',
+          reason: `${TYPED_BALLOT_REASON}: probabilities unreported, confidence unreported`,
+        },);
+      },
+    },),
+
+    it({
       name: 'SEATS a decision seat beside written judges: its typed answer is one ballot at full '
         + 'weight and the contest counts it',
       fn: async () => {

@@ -162,6 +162,9 @@ export function readAppliedEnvelopes(
 
  @returns Measurements selection ranks by
 
+ @throws Error when an applied operation names no envelope here, which no
+ patch applied over these envelopes holds
+
  @example
  ```ts
  const measurements = measurePatchedCandidate({ ... },);
@@ -230,15 +233,23 @@ export function measurePatchedCandidate(
         operation,
       ): number {
         /**
-         Envelope of this operation, for its base length.
+         Envelope of this operation, for its base length. Always found: an
+         applied operation passed `applyPatchOperations` over these same
+         envelopes, which refuses one naming no envelope (`unknown-envelope`)
+         before applying anything.
          */
         const envelope = envelopes.find(function matches(candidate,) {
           return candidate.envelopeId === operation.envelopeId;
         },);
+        if (envelope === undefined) {
+          throw new Error(
+            `unreachable: applied operation names envelope ${operation.envelopeId}, which is not among the `
+              + 'envelopes the patch was applied over',
+          );
+        }
         return sum + Math.max(
-          envelope?.baseText
-            .length
-            ?? 0,
+          envelope.baseText
+            .length,
           operation.newText
             .length,
         );
