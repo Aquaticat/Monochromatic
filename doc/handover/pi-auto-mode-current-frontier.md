@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-01.
+Updated 2026-10-02.
 
 ## Settled design and authorization
 
@@ -46,8 +46,17 @@ Updated 2026-10-01.
   and represented actions remain unauthorized.
 
 The [batching contract](../planning/pi-auto-mode-batched-assessment.md) is the focused design reference.
-`AGENTS.md` remains unchanged at SHA-256
+The completed qualification phases pinned `AGENTS.md` at SHA-256
 `1f5c31c969c5a18aa994465baf7afe25f00a7a9ab11d6190bcab56746732bd4b`.
+Concurrent commit `6adccddd80c7717904daad6d0529131e814e06f1`,
+dated 2026-10-02,
+added the historical-identifier annotation rule `WR6`.
+The freshly read current policy hashes to
+`15890c665cdb1c054f8c56c2f212cb75297292b812dc0a2e8065e21156483c39`.
+This migration did not edit or revert the protected policy.
+`proc_75be` stopped before document rendering because its historical policy pin no longer matched.
+A new document-only verification phase uses the reviewed current bytes;
+it does not qualify current guard semantics or reinterpret earlier experiments.
 
 ## Native-manager qualification completed in finite scope
 
