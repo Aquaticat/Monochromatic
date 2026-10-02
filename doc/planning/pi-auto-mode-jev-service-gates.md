@@ -169,6 +169,13 @@ The vendor's suggestion to filter irrelevant state does not authorize truncating
 
 ## Aggregate call cap and deadline
 
+This section records the historical two-client-call contract used by the completed Jev study.
+The later [batched-assessment contract](pi-auto-mode-batched-assessment.md#judgment-unit-and-cost-target)
+permits at most three client attempts for a complete combined live judgment,
+with earliest termination and the same preparation-inclusive five-second deadline.
+That newer ceiling does not authorize replaying this study or treating the cap as a mandatory pipeline.
+The original study evidence and its historical limits remain unchanged.
+
 The [accepted Q10 and Q11 boundaries](pi-auto-mode-axioms.md#q10a-five-second-total-assessment-budget)
 apply to the whole assessment:
 five seconds before yielding to manual approval,
