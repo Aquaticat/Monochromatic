@@ -28,6 +28,7 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"

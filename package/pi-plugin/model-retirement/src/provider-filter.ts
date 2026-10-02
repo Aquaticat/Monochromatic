@@ -90,7 +90,31 @@ export type FilterPlanning = {
    refused to order.
    */
   readonly abstentions: AbstentionCounts;
+  /**
+   Providers the rule retired models for but that cannot be re-registered from catalog
+   metadata, so their models stay visible.
+   */
+  readonly skippedProviders: readonly SkippedProvider[];
 };
+
+/**
+ One provider this pass could not filter.
+ */
+export type SkippedProvider = {
+  /**
+   Provider left untouched.
+   */
+  readonly provider: string;
+  /**
+   What stopped the re-registration, naming the offending model.
+   */
+  readonly reason: string;
+};
+
+/**
+ Sentinel meaning a model carries everything a re-registration needs.
+ */
+export const REGISTERABLE: unique symbol = Symbol('model can be re-declared faithfully',);
 
 //endregion Types
 
@@ -131,6 +155,70 @@ export function toModelConfig(model: ForeignBorrowed<AnyModel>,): ProviderModelC
     ...model,
     type: 'chat',
   };
+}
+
+/**
+ Find what stops one model being re-declared.
+
+ pi's `extensionModelFromDefinition` throws when a definition resolves neither an `api`
+ nor a `baseUrl`, and one throw aborts the whole pass, so both are checked here first.
+ Measured exposure: `azure-openai-responses` carries an empty `baseUrl` on all 44 of
+ its chat models.
+
+ @param model - configuration a plan would register
+
+ @returns {@link REGISTERABLE}, or text naming the missing field and model
+
+ @example
+ ```typescript
+ registrationGap(azureModel); // 'model gpt-4.1 carries no baseUrl'
+ ```
+ */
+function registrationGap(
+  model: ForeignBorrowed<ProviderModelConfig>,
+): string | typeof REGISTERABLE {
+  if (((typeof model.api) !== 'string') || (model.api
+    .length
+    === 0))
+    return `model ${model.id} carries no api`;
+  if (((typeof model.baseUrl) !== 'string') || (model.baseUrl
+    .length
+    === 0))
+    return `model ${model.id} carries no baseUrl`;
+  return REGISTERABLE;
+}
+
+/**
+ Find the first reason one provider's plan cannot be registered.
+
+ A provider is all-or-nothing: registering a partial list deletes every model missing
+ from it, so one unregisterable model disqualifies the whole provider.
+
+ @param models - every model the plan would carry
+
+ @returns {@link REGISTERABLE}, or the first gap found
+
+ @example
+ ```typescript
+ planGap({ models }); // REGISTERABLE
+ ```
+ */
+function planGap(
+  {
+    models,
+  }: {
+    readonly models: readonly ForeignBorrowed<ProviderModelConfig>[];
+  },
+): string | typeof REGISTERABLE {
+  for (const model of models) {
+    /**
+     Gap for the current model, when it has one.
+     */
+    const gap = registrationGap(model,);
+    if (gap !== REGISTERABLE)
+      return gap;
+  }
+  return REGISTERABLE;
 }
 
 //endregion Model configuration
@@ -198,6 +286,10 @@ export function planProviderFilters(
    Plans in first-seen provider order.
    */
   const plans: ProviderFilterPlan[] = [];
+  /**
+   Providers whose models cannot be re-declared from catalog metadata.
+   */
+  const skippedProviders: SkippedProvider[] = [];
   for (const [provider, retired,] of retiredByProvider) {
     /**
      Chat models this provider still serves.
@@ -222,6 +314,17 @@ export function planProviderFilters(
       ...imageModels.map(toModelConfig,),
       ...classifierModels.map(toModelConfig,),
     ];
+    /**
+     First reason this provider cannot be re-registered, when there is one.
+     */
+    const gap = planGap({ models, },);
+    if (gap !== REGISTERABLE) {
+      skippedProviders.push({
+        provider,
+        reason: gap,
+      },);
+      continue;
+    }
     plans.push({
       provider,
       models,
@@ -235,6 +338,7 @@ export function planProviderFilters(
     plans,
     retirements: decision.retirements,
     abstentions: decision.abstentions,
+    skippedProviders,
   };
 }
 

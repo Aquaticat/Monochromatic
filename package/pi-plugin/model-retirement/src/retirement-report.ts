@@ -199,4 +199,54 @@ export function formatLiveModelWarning(
   return `session model ${retirement.provider}/${retirement.retiredId} is retired in favor of ${retirement.keeperId}; leaving the session on it`;
 }
 
+/**
+ Format the warning for a provider whose models cannot be re-declared.
+
+ @param skipped - provider the planner refused to build a plan for, and why
+
+ @returns line naming the provider, the missing field, and the consequence
+
+ @example
+ ```typescript
+ formatSkippedProvider({ skipped: { provider: 'azure-openai-responses', reason: 'model gpt-4.1 carries no baseUrl' } });
+ ```
+ */
+export function formatSkippedProvider(
+  {
+    skipped,
+  }: {
+    readonly skipped: {
+      readonly provider: string;
+      readonly reason: string;
+    };
+  },
+): string {
+  return `skipped ${skipped.provider}: ${skipped.reason}, so pi cannot re-declare its models and its retired entries stay listed`;
+}
+
+/**
+ Format the warning for a provider pi refused to re-register.
+
+ @param failed - provider whose registration threw, and the caught text
+
+ @returns line naming the provider, the failure, and the consequence for this session
+
+ @example
+ ```typescript
+ formatFailedProvider({ failed: { provider: 'azure-openai-responses', reason: '"baseUrl" is required' } });
+ ```
+ */
+export function formatFailedProvider(
+  {
+    failed,
+  }: {
+    readonly failed: {
+      readonly provider: string;
+      readonly reason: string;
+    };
+  },
+): string {
+  return `pi refused to re-register ${failed.provider}: ${failed.reason}; its retired entries stay listed for this session`;
+}
+
 //endregion Lines

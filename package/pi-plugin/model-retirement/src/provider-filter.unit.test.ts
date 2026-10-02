@@ -44,7 +44,9 @@ const CLASSIFIER_API: ClassifierApi = 'typesafe-system-one';
  @param api - API type the model is served under
  
  @param samplingParams - sampling overrides to prove optional metadata survives
- 
+
+ @param baseUrl - endpoint the model reports, empty to prove the planner skips it
+
  @returns chat model shaped like a registry read
  */
 function chatModel(
@@ -53,11 +55,13 @@ function chatModel(
     id,
     api = CHAT_API,
     samplingParams,
+    baseUrl = 'https://example.invalid',
   }: {
     readonly provider: string;
     readonly id: string;
     readonly api?: Api;
     readonly samplingParams?: Record<string, unknown>;
+    readonly baseUrl?: string;
   },
 ): Model<Api> {
   return {
@@ -65,7 +69,7 @@ function chatModel(
     name: id,
     api,
     provider,
-    baseUrl: 'https://example.invalid',
+    baseUrl,
     input: ['text'],
     cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
     reasoning: true,
@@ -269,6 +273,31 @@ await describe({
             },);
             expect(planning.plans,).toEqual([],);
             expect(planning.abstentions.keeperAmbiguity > 0,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'skips a provider whose kept model carries no baseUrl',
+          fn: async function runSkippedProvider() {
+            /**
+             Planning over a pair whose winner cannot be re-declared.
+             */
+            const planning = planProviderFilters({
+              read: readOf({
+                chat: [
+                  chatModel({ provider: 'azure-openai-responses', id: 'gpt-4.1', },),
+                  chatModel({
+                    provider: 'azure-openai-responses',
+                    id: 'gpt-5.5',
+                    baseUrl: '',
+                  },),
+                ],
+              },),
+            },);
+            expect(planning.plans,).toEqual([],);
+            expect(planning.retirements.length,).toBe(1,);
+            expect(planning.skippedProviders.length,).toBe(1,);
+            expect(planning.skippedProviders[0]?.provider,).toBe('azure-openai-responses',);
+            expect(planning.skippedProviders[0]?.reason.includes('baseUrl',),).toBe(true,);
           },
         },),
         it({

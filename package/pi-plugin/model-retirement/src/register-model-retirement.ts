@@ -23,6 +23,7 @@ import type {
   ImageModel,
   Model,
 } from '@earendil-works/pi-ai';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   tagged,
   type Logger,
@@ -31,12 +32,15 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import {
   planProviderFilters,
   type CatalogRead,
+  type SkippedProvider,
 } from './provider-filter.ts';
 import type { Retirement, } from './retirement-rule.ts';
 import {
+  formatFailedProvider,
   formatLiveModelWarning,
   formatPlanningSummary,
   formatRetirementLine,
+  formatSkippedProvider,
 } from './retirement-report.ts';
 
 //region Types
@@ -126,6 +130,20 @@ export type LiveModelIdentity = {
 };
 
 /**
+ One provider pi refused to re-register.
+ */
+export type FailedProvider = {
+  /**
+   Provider whose registration threw.
+   */
+  readonly provider: string;
+  /**
+   Text of the caught failure.
+   */
+  readonly reason: string;
+};
+
+/**
  Outcome of one retirement pass, returned so tests can assert without a logger.
  */
 export type RetirementPassSummary = {
@@ -137,6 +155,14 @@ export type RetirementPassSummary = {
    Providers whose model list was replaced.
    */
   readonly registeredProviders: readonly string[];
+  /**
+   Providers the rule retired models for but that cannot be re-declared.
+   */
+  readonly skippedProviders: readonly SkippedProvider[];
+  /**
+   Providers pi refused to re-register.
+   */
+  readonly failedProviders: readonly FailedProvider[];
   /**
    Retirement matching the session's live model, when there is one.
    */
@@ -238,12 +264,24 @@ export function applyRetirements(
    Providers whose model list this pass replaced.
    */
   const registeredProviders: string[] = [];
+  /**
+   Providers pi refused to re-register, each reported and then skipped so one bad
+   provider cannot leave the rest of the catalog unfiltered.
+   */
+  const failedProviders: FailedProvider[] = [];
   for (const plan of planning.plans) {
-    registerProvider({
-      name: plan.provider,
-      config: { models: [...plan.models], },
-    },);
-    registeredProviders.push(plan.provider,);
+    try {
+      registerProvider({
+        name: plan.provider,
+        config: { models: [...plan.models], },
+      },);
+      registeredProviders.push(plan.provider,);
+    } catch (error) {
+      failedProviders.push({
+        provider: plan.provider,
+        reason: caughtValueText(error,),
+      },);
+    }
   }
   log.info(formatPlanningSummary({
     counts: {
@@ -256,6 +294,10 @@ export function applyRetirements(
   },),);
   for (const retirement of planning.retirements)
     log.debug(formatRetirementLine({ retirement, },),);
+  for (const skipped of planning.skippedProviders)
+    log.warn(formatSkippedProvider({ skipped, },),);
+  for (const failed of failedProviders)
+    log.warn(formatFailedProvider({ failed, },),);
   /**
    Retirement matching the session's live model, when the session started on one.
    */
@@ -271,6 +313,8 @@ export function applyRetirements(
   return {
     retirements: planning.retirements,
     registeredProviders,
+    skippedProviders: planning.skippedProviders,
+    failedProviders,
     ...(liveModelRetirement === undefined ? {} : { liveModelRetirement, }),
   };
 }

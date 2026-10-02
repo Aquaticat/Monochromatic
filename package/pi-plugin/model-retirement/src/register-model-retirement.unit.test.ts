@@ -399,6 +399,44 @@ await describe({
           },
         },),
         it({
+          name: 'records a provider pi refused and still filters the rest',
+          fn: async function runRegistrationFailure() {
+            /**
+             Capture arrays for this pass.
+             */
+            const captured = emptyCapture();
+            /**
+             Provider registrations the pass made.
+             */
+            const registrations: RecordedRegistration[] = [];
+            /**
+             Pass summary where one provider throws on registration.
+             */
+            const summary = applyRetirements({
+              read: readOf({
+                chat: [
+                  chatModel({ provider: 'azure-openai-responses', id: 'gpt-4.1', },),
+                  chatModel({ provider: 'azure-openai-responses', id: 'gpt-5.5', },),
+                  chatModel({ provider: 'hyper', id: 'glm-5.2', },),
+                  chatModel({ provider: 'hyper', id: 'glm-5.3', },),
+                ],
+              },),
+              registerProvider: function refusingRegistration({ name, config, },) {
+                if (name === 'azure-openai-responses')
+                  throw new Error('"baseUrl" is required when defining custom models',);
+                registrations.push({ name, config, },);
+              },
+              log: fakeLog(captured,),
+            },);
+            expect(summary.registeredProviders,).toEqual(['hyper'],);
+            expect(summary.failedProviders.length,).toBe(1,);
+            expect(summary.failedProviders[0]?.provider,).toBe('azure-openai-responses',);
+            expect(summary.failedProviders[0]?.reason.includes('baseUrl',),).toBe(true,);
+            expect(registrations.length,).toBe(1,);
+            expect(captured.warn.length,).toBe(1,);
+          },
+        },),
+        it({
           name: 'registers nothing when no family is superseded',
           fn: async function runNoRetirement() {
             /**

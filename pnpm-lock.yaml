@@ -4310,6 +4310,9 @@ importers:
 
   package/pi-plugin/model-retirement:
     dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

@@ -11,9 +11,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   formatAbstentions,
+  formatFailedProvider,
   formatLiveModelWarning,
   formatPlanningSummary,
   formatRetirementLine,
+  formatSkippedProvider,
   type AbstentionCounts,
 } from '../dist/final/node/index.mjs';
 
@@ -166,6 +168,42 @@ await describe({
               },
             },),).toBe(
               'session model opencode-go/glm-5.2 is retired in favor of glm-5.3; leaving the session on it',
+            );
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: formatSkippedProvider.name,
+      children: [
+        it({
+          name: 'names the provider, the missing field, and the consequence',
+          fn: async function runSkippedLine() {
+            expect(formatSkippedProvider({
+              skipped: {
+                provider: 'azure-openai-responses',
+                reason: 'model gpt-4.1 carries no baseUrl',
+              },
+            },),).toBe(
+              'skipped azure-openai-responses: model gpt-4.1 carries no baseUrl, so pi cannot re-declare its models and its retired entries stay listed',
+            );
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: formatFailedProvider.name,
+      children: [
+        it({
+          name: 'names the provider, the caught failure, and the session consequence',
+          fn: async function runFailedLine() {
+            expect(formatFailedProvider({
+              failed: {
+                provider: 'azure-openai-responses',
+                reason: '"baseUrl" is required',
+              },
+            },),).toBe(
+              'pi refused to re-register azure-openai-responses: "baseUrl" is required; its retired entries stay listed for this session',
             );
           },
         },),

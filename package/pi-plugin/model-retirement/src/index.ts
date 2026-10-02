@@ -20,6 +20,7 @@ export {
   registerModelRetirement,
   type ChatModelReader,
   type ClassifierModelReader,
+  type FailedProvider,
   type ImageModelReader,
   type LiveModelIdentity,
   type ProviderRegistrar,
@@ -28,10 +29,12 @@ export {
 } from './register-model-retirement.ts';
 export {
   planProviderFilters,
+  REGISTERABLE,
   toModelConfig,
   type CatalogRead,
   type FilterPlanning,
   type ProviderFilterPlan,
+  type SkippedProvider,
 } from './provider-filter.ts';
 export {
   classifyToken,
@@ -57,9 +60,11 @@ export {
 } from './retirement-order.ts';
 export {
   formatAbstentions,
+  formatFailedProvider,
   formatLiveModelWarning,
   formatPlanningSummary,
   formatRetirementLine,
+  formatSkippedProvider,
   type PlanningCounts,
 } from './retirement-report.ts';
 
