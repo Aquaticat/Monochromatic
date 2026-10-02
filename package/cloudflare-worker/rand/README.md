@@ -111,6 +111,73 @@ because an unknown path is not a malformed request.
 Every method other than `GET`,
 `HEAD` and `OPTIONS` is a 405 carrying `Allow`.
 
+## Measured against the origin
+
+Verified live on 2026-10-02 against Worker version
+`516e019e-e8e1-46e2-981e-5131e235e37d`,
+with `rand.c.aquati.cat` probed over the same run as the comparison.
+
+Parity with the origin,
+each measured rather than assumed:
+
+- The charset is all 62 of `0-9A-Za-z`,
+  every character observed across 25 requests of 64 characters.
+- Every length from 1 to 64 returns exactly that many characters,
+  and the root path returns 64.
+- Served bodies carry no trailing newline.
+- Paths match case-insensitively,
+  so `/UUIDV4` and `/INT` serve.
+- `HEAD` returns 200 with the real `Content-Length` and an empty body,
+  matching the origin's `Content-Length: 36` on `HEAD /uuidv4`.
+- `Content-Type` is `text/plain; charset=utf-8`.
+
+Differences that are the point of the port,
+measured on both endpoints in the same run:
+
+- `/int?min=abc&max=5`:
+  origin 200 with a value from a range the caller never asked for,
+  Worker 400.
+- `/int?min=0&max=2&max=6`:
+  origin 200 with a constant `0`,
+  Worker 400.
+- `/int?min=5&max=4`:
+  origin 500 with an empty body,
+  Worker 400 naming the reversed bounds.
+- `/int?min=0&max=100000000000000000000`:
+  origin 500,
+  Worker 400.
+- `/nope`:
+  origin 501,
+  Worker 404 listing the served routes.
+- `/65` and `/0`:
+  origin 501,
+  Worker 400 giving the valid range.
+- `POST /uuidv4`:
+  origin 200,
+  Worker 405 advertising the allowed methods.
+
+Two differences are the platform's,
+not this package's choices:
+
+- The origin's `close` option cannot be reproduced.
+  Over HTTP/2,
+  which is how the Worker answers by default,
+  `Connection` is forbidden and absent.
+  Over HTTP/1.1 the edge sends `Connection: keep-alive` where the origin sent
+  `Connection: close`.
+  A Worker handler does not control connection reuse,
+  so this was measured rather than worked around.
+- `Content-Length` is set on every response,
+  but a client that advertises `Accept-Encoding` gets a compressed response
+  instead,
+  and the edge then uses chunked transfer encoding,
+  which has no length header.
+  Measured:
+  `zstd` for Node's default `Accept-Encoding`,
+  `gzip` for `curl --compressed`,
+  and `Content-Length: 64` present for `Accept-Encoding: identity`.
+  This is edge behaviour that any origin behind Cloudflare would see.
+
 ## Design notes
 
 ### Widest accepted interval
