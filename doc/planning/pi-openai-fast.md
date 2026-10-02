@@ -643,5 +643,52 @@ The final `mise run //package/pi-plugin/openai-fast:verify:extension` task also 
 The rebuilt installed local package is ready for pi reload or restart.
 No live new-provider verification has been performed.
 
+## Source-configuration visibility correction
+
+The user reported that a fast virtual provider remains visible when its own base provider is unconfigured.
+This is a defect in the extension's readiness declaration,
+ not a request to restrict authentication methods or change billing behavior.
+
+A committed CLI matrix in `d60df7fae` reproduces the symptom in disposable homes:
+
+- Both sources configured:
+   the control passes.
+- Only native OpenAI configured:
+   the legacy fast provider incorrectly appears.
+- Only legacy Codex configured:
+   the native fast provider incorrectly appears.
+- Neither configured:
+   both fast providers incorrectly appear.
+
+The reproduction command rebuilds the package,
+ checks types,
+ and runs `startup.unit.test.ts` through the scoped task.
+Inherited provider credentials are excluded from the child environment.
+
+Installed pi-ai `dist/models.js:262` authenticates providers before applying availability filters.
+Installed coding-agent `dist/core/virtual-models.js:114` retains virtual entries after filtering physical models.
+The extension's `src/keyless-auth.ts:19` declares readiness unconditionally.
+Fresh CLI homes disprove stale user cache as the cause of the startup symptom.
+
+The correction will make adapter availability depend on a fresh native source-only check.
+Startup will use pi's native authentication/configuration handling;
+ after session binding,
+ the active registry will own that check.
+Request authentication remains in the original provider.
+No fast credential will be copied or stored.
+
+The earlier verification covered authenticated sources but omitted unconfigured-source visibility.
+Proposed `AGENTS.md` tightening of the existing test-coverage rule:
+
+> TCV:
+> Tests cover every branch and configured/unconfigured states,
+> not just happy paths;
+> compare test names against branches and availability conditions before claiming completeness.
+
+Next actions:
+implement readiness gating,
+ verify stored/configured/environment authentication and login/logout transitions with disposable state,
+ then rerun scoped package and consumer checks.
+
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
