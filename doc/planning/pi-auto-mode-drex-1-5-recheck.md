@@ -696,6 +696,58 @@ Code can combine resolved narrow claims for diagnostics without multiplying inde
 creating grants,
 or adopting verdict thresholds.
 
+## Call-site reachability and payload decomposition
+
+The next phase retained complete source and parent context,
+adding parsed potential-call records with argument spans and enclosing syntax.
+Independent questions estimated reachability,
+protected-path identity,
+request target,
+payload provenance,
+and marker value.
+Code combined diagnostic three-valued claims with conjunction/disjunction,
+not probability multiplication or final-policy decisions.
+
+Offline controls `proc_37fd` passed the revised inventory and 45 truth-table cases.
+The changed variable-bundle runner passed its 11 fault controls in `proc_a0bb`.
+The paid phase completed ten requests with zero retries;
+`proc_dff7` reconciled all 41 records with exit 0.
+Each request contained five or seven questions depending on its candidate sites.
+
+At 90/10,
+actual-observable heads were 44 correct,
+four wrong,
+and two unresolved out of 50.
+The 12 diagnostic counterfactual heads were all correct,
+reported separately rather than inflating actual-observable accuracy.
+Counterfactual references retained the activated source bodies locally;
+wrong labels at unreached sites were proven unable to change composed effects.
+
+Matched-site composed effects were 24 correct,
+four wrong,
+and two unresolved at 80/20 and 90/10.
+At 95/05,
+22 were correct,
+two wrong,
+and six unresolved.
+The public-file payload and computed marker cases matched their references in this run.
+The unrelated constant payload remained unresolved at 0.7266.
+The uncalled function still had incorrect read-site and transfer-site reachability estimates,
+0.9631 and 0.9222.
+These residual errors remain disqualifying evidence for this unqualified broader profile.
+
+Mean modeled cost was US$0.00051826 per request;
+the phase totaled US$0.0051826.
+Accumulated composed-program research spend is US$0.0354227.
+Elapsed preparation-through-freshness times ranged from 322.165027 to 967.776807 ms,
+with the same initial-import and complete-handback exclusions.
+Evidence is `contract/research/composed-callsite-diagnostic/`.
+
+The next comparison uses the previously approved Jev/Gateway qualification route with the same inputs and questions,
+not another wording variant or a new production provider decision.
+Recheck current model metadata and retain gateway-internal retry/cost uncertainty separately.
+No old Jev study or original reserved scenario is reopened.
+
 ## Remaining work
 
 - Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.

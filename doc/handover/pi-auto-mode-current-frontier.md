@@ -332,8 +332,25 @@ Mean modeled cost was US$0.00047017 per request.
 Evidence is `contract/research/composed-child-semantics/`.
 
 The original-case successes do not qualify this broader profile.
-Next isolate call-site reachability from argument/payload origin,
-using source-bound potential-call records rather than declaring those calls executed.
+The call-site decomposition subsequently completed ten requests with five or seven questions per case.
+`proc_37fd` passed inventory/claim controls,
+`proc_a0bb` passed the changed runner's fault controls,
+and `proc_dff7` completed offline reconciliation with exit 0.
+Actual-observable heads at 90/10 were 44 correct,
+four wrong,
+and two unresolved;
+12 counterfactual heads were reported separately and all matched their scoped references.
+Matched-site effects were 24 correct,
+four wrong,
+and two unresolved.
+The uncalled function still had incorrect reachability estimates;
+the unrelated constant upload payload remained unresolved.
+Mean modeled cost was US$0.00051826 per request.
+Evidence is `contract/research/composed-callsite-diagnostic/`.
+
+Next compare the previously approved Jev/Gateway qualification route using the same inputs and questions,
+with fresh metadata and separate gateway-internal retry/cost uncertainty.
+This is not a new provider-adoption decision or a replay of historical Jev studies.
 Preserve all failed results and avoid threshold changes or probability multiplication.
 No subagent extension is used.
 
