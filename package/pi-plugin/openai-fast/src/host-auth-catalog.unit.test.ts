@@ -62,6 +62,14 @@ await describe({ name: registerOpenAIFast.name, children: [
     for (const call of host.source.state.calls)
       expect(call.options,).toHaveProperty('apiKey', HOST_TOKEN,);
     await host.runtime.logout(CODEX_PROVIDER,);
+    /** Availability follows the original logout rather than a cached adapter-ready flag. */
+    expect(await host.runtime.getAvailable(FAST_PROVIDER,),).toEqual([],);
+    expect((await host.runtime.getAvailable()).some(function orphanedFast(model: ForeignBorrowed<Model<Api>>) {
+      return model.provider === FAST_PROVIDER;
+    },),).toBe(false,);
+    expect(host.ctx.modelRegistry.getAvailable().some(function cachedFast(model: ForeignBorrowed<Model<Api>>) {
+      return model.provider === FAST_PROVIDER;
+    },),).toBe(false,);
     /** Logged-out priority request must fail without dispatch or ordinary fallback. */
     const denied = await host.runtime.completeSimple(companion, fixtureContext(), { reasoning: 'high', },);
     expect(denied.stopReason,).toBe('error',);
@@ -69,6 +77,18 @@ await describe({ name: registerOpenAIFast.name, children: [
     expect(host.source.state.calls,).toHaveLength(3,);
     expect(host.source.state.oauthRefreshes,).toBe(1,);
     expect(await host.credentials.list(),).toEqual([],);
+    /** Reconfiguration becomes visible in the same bound session without copied fast credentials. */
+    await host.credentials.modify(CODEX_PROVIDER, function restoreLogin() { return Promise.resolve({
+      type: 'oauth' as const, access: HOST_TOKEN, refresh: 'fixture-reconfigured', expires: Date.now() + 3_600_000,
+    },); },);
+    expect((await host.runtime.getAvailable(FAST_PROVIDER,)).some(function restoredFast(model: ForeignBorrowed<Model<Api>>) {
+      return (model.id === host.base.id) && (model.api === 'pi-virtual');
+    },),).toBe(true,);
+    await host.runtime.refresh({ allowNetwork: false, },);
+    expect(host.ctx.modelRegistry.getAvailable().some(function visibleAgain(model: ForeignBorrowed<Model<Api>>) {
+      return (model.provider === FAST_PROVIDER) && (model.id === host.base.id);
+    },),).toBe(true,);
+    expect(await host.credentials.read(FAST_PROVIDER,),).toBeUndefined();
   }, },),
   it({ name: 'adds, updates, and removes virtual companions when the actual native source catalog refreshes', fn: async function verifyNativeCatalogRefresh() {
     /** Native runtime refresh and all catalog writes remain in disposable storage. */

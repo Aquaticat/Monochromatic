@@ -685,10 +685,21 @@ Proposed `AGENTS.md` tightening of the existing test-coverage rule:
 > not just happy paths;
 > compare test names against branches and availability conditions before claiming completeness.
 
-Next actions:
-implement readiness gating,
- verify stored/configured/environment authentication and login/logout transitions with disposable state,
- then rerun scoped package and consumer checks.
+Readiness gating is committed in `bea0d23af`.
+The original CLI matrix now passes all configured/unconfigured cases.
+Both startup and bound-session checks query source-only chat availability using native authentication handling.
+The startup check uses the original native auth path;
+ the bound check uses the active registry,
+ so custom in-memory credentials and runtime configuration remain host-owned.
+Metadata-only catalog bootstrap stays credential-free.
+
+The expanded fixtures cover stored OAuth,
+ stored API keys,
+ environment keys,
+ configuration keys,
+ command-backed keys without execution,
+ and source logout/reconfiguration.
+The complete verification sequence is pending.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821

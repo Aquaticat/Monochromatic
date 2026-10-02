@@ -121,6 +121,18 @@ await describe({ name: '', children: [
       expect(host.settings.getDefaultModel(),).toBe(host.base.id,);
       expect(host.settings.getEnabledModels(),).toEqual([`${CODEX_PROVIDER}/${host.base.id}`,],);
       expect(host.ctx.scopedModels,).toEqual([{ model: host.base, thinkingLevel: 'high', },],);
+      /** Native logout must hide only its own fast namespace while legacy remains configured. */
+      await host.runtime.logout(OPENAI_PROVIDER,);
+      expect(await host.runtime.getAvailable('openai-fast',),).toEqual([],);
+      expect((await host.runtime.getAvailable(FAST_PROVIDER,)).some(function legacyStillAvailable(model: ForeignBorrowed<Model<Api>>) {
+        return (model.id === host.base.id) && (model.api === 'pi-virtual');
+      },),).toBe(true,);
+      /** Fresh native credentials restore availability in the same bound host. */
+      await host.credentials.modify(OPENAI_PROVIDER, function restoreNative() { return Promise.resolve(fixtureCredential(),); },);
+      expect((await host.runtime.getAvailable('openai-fast',)).some(function nativeRestored(model: ForeignBorrowed<Model<Api>>) {
+        return (model.id === host.base.id) && (model.api === 'pi-virtual');
+      },),).toBe(true,);
+      expect(await host.credentials.read('openai-fast',),).toBeUndefined();
     }, },),
   ], },),
   describe({ name: 'direct native OpenAI priority streams', children: [streamPriority, streamSimplePriority,].map(function nativeEntryPoint(entryPoint,) {
