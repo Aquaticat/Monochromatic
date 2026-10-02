@@ -209,5 +209,47 @@ await describe({
         expect(textsOf({ rows: restored.replacements, },),).toEqual(['We napped at the café Maowu Yarn Hall[^1] around noon.',],);
       },
     },),
+    it({
+      name: 'KEEPS the other-casing veto and RESTORES a row on a page holding a letter whose lower case is longer '
+        + 'than itself: İ (U+0130) lowers to two UTF-16 units, and one anywhere made the occurrence scan read the '
+        + 'whole text past, so the archive\'s lower-case "yarn hall" vetoed nothing and a row naming İpek was '
+        + 'never restored',
+      fn: async () => {
+        /**
+         The page's slices with one more naming a neighbour İpek; the archive
+         still writes "yarn hall" in lower case once, which must veto that name.
+         */
+        const dotted = [
+          ...SLICES,
+          pair({
+            sliceIndex: 4,
+            target: 'Our neighbour İpek visited.',
+          },),
+        ];
+        const restored = restoreArchiveNameCasing({
+          slices: dotted,
+          replacements: [
+            {
+              sliceIndex: 2,
+              replacementText: 'The kittens liked the Yarn hall too.',
+            },
+            {
+              sliceIndex: 0,
+              replacementText: 'We napped on the Maowu fish street[^1] with İpek.',
+            },
+          ],
+        },);
+        expect([
+          textsOf({ rows: restored.replacements, },),
+          restored.findings,
+        ],).toEqual([
+          [
+            'The kittens liked the Yarn hall too.',
+            'We napped on the Maowu Fish Street[^1] with İpek.',
+          ],
+          ['archive-name-casing-restored (slice 0: "Maowu fish street" to "Maowu Fish Street")',],
+        ],);
+      },
+    },),
   ],
 },);
