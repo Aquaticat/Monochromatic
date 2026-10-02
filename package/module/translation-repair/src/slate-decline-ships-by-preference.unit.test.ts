@@ -39,6 +39,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_DECISIONS,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
@@ -229,6 +230,9 @@ function rejectingClient(
  @param rejection - reason every judge gives, the fixture's rejection when
  left out
 
+ @param decide - typed exchange a decision seat on the bench answers
+ through, absent where none sits
+
  @returns What the retry settled on
 
  @example
@@ -242,21 +246,27 @@ async function judgedRejecting(
     judgeSheets,
     judgeModelIds = JUDGES,
     rejection,
+    decide,
   }: {
     readonly withheldStanding?: boolean;
     readonly judgeSheets: string[];
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly rejection?: string;
+    readonly decide?: SyntheticClient['decide'];
   },
 ): Promise<TranslateStageResult> {
   /**
    Client every judge rejects under.
    */
-  const client = rejectingClient({
-    judgeSheets,
-    refinerSheets: [],
-    ...((rejection === undefined) ? {} : { rejection, }),
-  },);
+  const client: SyntheticClient = {
+    ...rejectingClient({
+      judgeSheets,
+      refinerSheets: [],
+      ...((rejection === undefined) ? {} : { rejection, }),
+    },),
+    // Conditional spread keeps the exchange absent where no decision seat sits.
+    ...((decide === undefined) ? {} : { decide, }),
+  };
   /**
    Slate the translators produced.
    */
@@ -435,6 +445,48 @@ await describe({
         expect(result.shippedPastDecline,).toEqual({
           basis: 'repair lane',
           objections: [],
+        },);
+      },
+    },),
+    it({
+      name: 'RECORDS NO OBJECTION from a decision seat\'s decline, whose reason is a distribution and objects to '
+        + 'nothing in words, beside the written judges\' rejection (ledger B125)',
+      fn: async () => {
+        /**
+         Every typed question the decision seat was asked.
+         */
+        const asked: RosterModelId[] = [];
+        const result = await judgedRejecting({
+          withheldStanding: true,
+          judgeSheets: [],
+          judgeModelIds: [
+            ...JUDGES,
+            SEAT_OPENROUTER_DECISIONS,
+          ],
+          decide: async (request,) => {
+            asked.push(request.modelId,);
+            return {
+              model: SEAT_OPENROUTER_DECISIONS,
+              answers: {
+                best: {
+                  type: 'choice',
+                  choice: '0',
+                  probabilities: { '0': 0.9, '1': 0.1, },
+                  confidence: 0.8,
+                },
+              },
+            };
+          },
+        },);
+        expect({
+          asked: asked.length > 0,
+          shippedPastDecline: result.shippedPastDecline,
+        },).toEqual({
+          asked: true,
+          shippedPastDecline: {
+            basis: 'repair lane',
+            objections: [REJECTION,],
+          },
         },);
       },
     },),
