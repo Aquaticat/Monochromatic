@@ -647,7 +647,7 @@ await describe({
 
         it({
           name: 'DECLINES the same shape one contributor short, which is what '
-            + 'keeps the previous case from being a hole: three halves fall below '
+            + 'keeps the four-model collapsed case from being a hole: three halves fall below '
             + 'the minimum, so a candidate three models wrote and nobody else '
             + 'endorsed does not ship',
           fn: async () => {

@@ -485,6 +485,15 @@ Two cache-account paragraphs written for B24 said "same cache check as the parag
 which names nothing once a paragraph is added between them (M60),
 and a census found hundreds more references by position in the package and the living docs (D33),
 five of them pointing the wrong way after the text around them moved.
+A read-only agent's comments named a guard as "the check just made" (T8,
+twenty-fourth batch),
+and a search for that shape found five more code pointers by sequence in the tests
+("the next check",
+"the NEXT check down",
+"the next line can show",
+"the previous case",
+"reaching the next line"),
+which D33's scan does not read.
 
 The rule:
 a reference names something a later reader can open:
@@ -497,7 +506,9 @@ or the finding itself in words,
 and never a position
 ("above",
 "the paragraph before",
-"the case before this"),
+"the case before this",
+"the next check",
+"the check just made"),
 which a later insertion silently repoints.
 Open work goes in the ledger,
 not only on a task list.
@@ -538,6 +549,22 @@ and on an exemption that no longer names a reference.
 Its first version read positions only after a listed noun
 and passed a couple of hundred after nouns the list lacked;
 a guard built on a word list is measured against a broader scan before it closes an entry.
+Nothing enforces the sequence form:
+of the 33 lines in `src` matching "just" before a verb of reading or making,
+or "the previous",
+"preceding",
+"next" or "following" before a line,
+check,
+statement,
+block,
+call,
+case or loop,
+the five fixed ones pointed at code;
+the other 28 name a document's lines or blocks,
+a parser's input
+or a run's order,
+which a word list cannot tell apart from a pointer.
+A reviewer reads new comments and case names for them.
 
 ## Dates and clock times
 

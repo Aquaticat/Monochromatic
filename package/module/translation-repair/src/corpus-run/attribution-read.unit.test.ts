@@ -348,7 +348,8 @@ await describe({
              One artifact per shape `attributionEntryOf` or `recordsHolderOf` must refuse,
              each paired with a substring its refusal has to carry. Carrying BOTH
              the path and the reason, as the `decodeSliceCritics` table does, since a path
-             alone is a prefix the NEXT check down would also satisfy.
+             alone is carried by every refusal raised on that path, so it cannot tell
+             which check refused.
              */
             const broken: readonly {
               readonly id: string;

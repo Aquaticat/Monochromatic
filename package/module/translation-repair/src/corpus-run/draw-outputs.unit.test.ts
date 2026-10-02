@@ -156,7 +156,7 @@ await describe({
           ),
         },);
 
-        // Disposing must not throw; reaching the next line is the assertion.
+        // Disposing must not throw: reaching the `readdir` expectation after it is the assertion.
         await outputs[Symbol.asyncDispose]();
         expect(await readdir(scratch.path,),).toEqual([],);
       },

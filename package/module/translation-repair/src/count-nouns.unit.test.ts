@@ -517,7 +517,7 @@ await describe({
             `export const soundAsleep = \`\${String(8,)} fast asleep naps\`;`,
             // STOPPED: a preposition right after the count ends the read, so the noun past it is never reached.
             `export const referred = \`\${String(9,)} of these naps\`;`,
-            // A many-form shaped like a verb, declared so the next line can show it is never read as a noun.
+            // A many-form shaped like a verb, declared so `recordsLine` can show it is never read as a noun.
             'export function status(count: number,): string {',
             `  return wordForCount({ count, one: 'is', many: 'are', },);`,
             '}',

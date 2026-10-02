@@ -176,7 +176,8 @@ await describe({
               sheet.indexOf('\n', sheet.indexOf('[0]\n',) + '[0]\n'.length,),
             );
             // THE LINE READ IS THE FENCE AROUND THE HOSTILE SECTION, or a wrong
-            // line read would pass the next check for a reason unrelated to it.
+            // line read would let the check that `opener` fences the hostile text
+            // pass for a reason unrelated to it.
             expect(sheet.includes(`${opener}\n${String(hostile[0]?.text,)}\n${opener}`,),).toBe(true,);
             expect(hostile[0]
               ?.text
