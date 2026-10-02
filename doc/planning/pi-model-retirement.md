@@ -57,6 +57,8 @@ Each item below was decided by the user during the grilling session.
 
 All paths are relative to the installed
 `@earendil-works/pi-coding-agent@1.0.0` and `@earendil-works/pi-ai@1.0.0`.
+The same findings, with runnable harnesses and the full catalog of what works and what
+fails, are in `doc/troubleshooting/pi-extension-model-catalog.md`.
 
 - `enabledModels` does not hide models.
   `dist/modes/interactive/components/model-selector.js:39,52,119,201-219` shows the
@@ -509,16 +511,84 @@ pi install /var/home/user/Monochromatic/package/pi-plugin/model-retirement
 6. Manual check in the interactive TUI: the picker no longer offers a retired id, and
    Tab to `all` does not bring it back.
 
+## Delivery status
+
+Implemented at `package/pi-plugin/model-retirement` as `@monochromatic-dev/pi-plugin-model-retirement`.
+Nothing is installed into pi settings yet.
+
+Source modules: `id-tokens.ts` (tokenizer and date classification), `retirement-order.ts`
+(recency ordering and the `UNORDERED` sentinel), `retirement-rule.ts` (family grouping and
+the decision), `registration-gap.ts` (per-model endpoint validation and the model-config
+mapping), `provider-filter.ts` (planning), `retirement-report.ts` (log wording),
+`register-model-retirement.ts` (the session-start pass), `index.ts` (entry point),
+`disposable-host.ts` and `verify-host.ts` (the gated host task), `verify-probe.ts` (the
+companion probe pi loads from source), and `mise.verify-extension.ts` (the built-artifact
+check).
+
+Checks, all green: oxlint reports 0 warnings and 0 errors across the package, `tsc`
+reports no errors, 22 unit and characterization groups pass against the built bundle,
+`verify:extension` passes, and `verify:host` passes all ten assertions.
+The characterization fixture pins 1604 catalog entries, 551 retirements, and the
+abstention tally, and was shown to fail by mutating the pinned count before restoring it.
+
+### Defect the real host caught
+
+The disposable host could not see it, because it loads no other packages.
+In the real host, `radius` is registered by another package with a `streamSimple` handler,
+and `hyper`, `openai-fast`, and `openai-codex-fast` are native provider objects whose
+configuration `getRegisteredProviderConfig` does not return.
+Re-registering any of them with only a model list replaces that owner's streaming and
+auth, and `radius` was already being filtered.
+
+The planner now skips a provider that pi lists in `getRegisteredProviderIds()` but exposes
+no configuration for, and spreads the incumbent configuration under the filtered model
+list when there is one, so `api`, `baseUrl`, `apiKey`, `headers`, `oauth`, and
+`streamSimple` survive.
+Endpoint validation also accepts provider-level `api` and `baseUrl` as fallbacks, matching
+how pi resolves them.
+
+Measured in the real host, before and after one pass:
+
+- `radius` configuration: 2 keys with `streamSimple`, then 3 keys with `streamSimple`.
+  The added key is the filtered model list.
+- `synthetic` configuration: 4 keys before and after, credentials intact.
+- `hyper`: absent configuration, skipped rather than clobbered.
+- Chat models 1677 to 1110. Image 57 and classifier 15 unchanged.
+- 597 retirements across 35 providers, with 4 providers skipped: `azure-openai-responses`
+  for a missing `baseUrl`, and `hyper`, `openai-codex-fast`, and `openai-fast` as native
+  registrations.
+- No `extension_error` record from pi.
+
+An earlier real-host run, before per-provider isolation existed, showed why the skip
+matters: pi threw `Provider azure-openai-responses: "baseUrl" is required when defining
+custom models`, the pass aborted at the third provider, and only 83 of 538 retirements
+applied.
+
+### Override risk, closed
+
+`models.json` `modelOverrides` cannot be lost by re-registration, because pi applies them
+after extension model replacement: `composeModelProvider` maps the override over the list
+`applyExtension` returned (`dist/core/provider-composer.js:337-353`).
+The disposable host confirms it empirically: `openai-codex/gpt-6-luna` reports 750000 both
+before and after filtering, against a bundled 272000.
+
+The pass still awaits `ModelRegistry.refresh({ allowNetwork: false })` before reading, since
+pi documents awaiting a refresh before synchronous registry reads.
+A real-host reading of 272000 for that model is not evidence against any of this: the
+override for `openai-codex` no longer exists in the local `models.json`, whose overrides now
+live under `openai` and `openai-fast`, and the legacy `openai-codex` login was removed.
+
 ## Open questions
 
-1. Should the filter re-run on `resources_discover` as well as `session_start`, given
-   the probe measured it firing 1ms later against the same registry, or is one pass per
-   session enough?
-2. Which credential may the gated `verify:host` task use, since the picker check needs
-   an authenticated provider and the disposable host must not read the real agent
-   directory?
-3. Is `radius` in scope at all, given it serves the advisor and MCP transports rather
-   than interactive picks, and that 9 of its entries are retired by the rule?
-4. Should `synthetic` and `hyper` be filtered in the first release, given their
-   metadata can only be read at runtime and their owning packages re-register their
-   own models?
+1. Should a native-provider skip be reported once per session, or only when the set of
+   skipped providers changes?
+   Four providers skip on this machine today, so four warning lines per session is the
+   current cost of the honest option.
+2. Is `radius` in scope at all, given it serves the advisor and MCP transports rather
+   than interactive picks?
+   It is filtered today, with its `streamSimple` preserved, and 9 of its entries retire.
+3. Should `synthetic` stay filtered and `hyper` stay skipped, or should the package ask
+   `hyper`'s owner to register a configuration pi can return?
+   Both are extension-registered; only `synthetic` exposes one.
+4. Should the fixture regeneration task also record the pi and pi-ai versions it ran
+   against, so a failing characterization test names the upgrade that caused it?
