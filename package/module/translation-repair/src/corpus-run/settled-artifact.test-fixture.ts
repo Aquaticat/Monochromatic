@@ -40,12 +40,12 @@ assertPipelineDigest(DIGEST_TEXT,);
 /**
  Digest every fixture artifact claims.
  */
-export const FIXTURE_DIGEST: PipelineDigest = DIGEST_TEXT;
+const FIXTURE_DIGEST: PipelineDigest = DIGEST_TEXT;
 
 /**
  Wording a lane writes where the archive holds none.
  */
-export const FRESH_LINE = 'The cat has been given a line.';
+const FRESH_LINE = 'The cat has been given a line.';
 
 /**
  Rows that keep every slice the archive has wording for, and fill every
@@ -64,7 +64,7 @@ export const FRESH_LINE = 'The cat has been given a line.';
  const rows = keptEverything({ prepared, },);
  ```
  */
-export function keptEverything(
+function keptEverything(
   { prepared, }: { readonly prepared: PreparedDocumentPair; },
 ): readonly SliceDeliveryRecord[] {
   return prepared.slices
@@ -118,7 +118,7 @@ export function keptEverything(
  const lanes = keptLanes({ prepared, },);
  ```
  */
-export function keptLanes(
+function keptLanes(
   { prepared, }: { readonly prepared: PreparedDocumentPair; },
 ): DocumentLanesResult {
   /**

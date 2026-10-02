@@ -31,7 +31,7 @@ import {
  const finding: ExampleFinding = { name: 'purr', line: 12, problem: 'calls another function', };
  ```
  */
-export type ExampleFinding = {
+type ExampleFinding = {
   /**
    Function the example documents.
    */

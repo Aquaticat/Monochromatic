@@ -21,7 +21,7 @@ import type { DisposableSandbox, } from '@monochromatic-dev/module-test/ts';
  What a capture hands its case: the lines printed so far, and a disposer
  restoring console.log.
  */
-export type ConsoleLogCapture = {
+type ConsoleLogCapture = {
   /**
    Lines printed since the capture began, in order, read afresh each time.
    */

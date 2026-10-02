@@ -19,7 +19,7 @@ import { RENDERING_GLOSSARY, } from '../dist/final/node/index.mjs';
  const seeded = isSeeded('fandom',);
  ```
  */
-export function isSeeded(term: string,): boolean {
+function isSeeded(term: string,): boolean {
   return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {
     return entry.term === term;
   },);

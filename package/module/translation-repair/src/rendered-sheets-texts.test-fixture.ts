@@ -62,7 +62,7 @@ export const REFERENCES = '- reference 1 https://example.org/mittens ("Mittens")
 /**
  Opening sentence of the invented original, which the invented claim quotes.
  */
-export const SOURCE_QUOTE = '那晚小猫咪在窗台上睡着了。';
+const SOURCE_QUOTE = '那晚小猫咪在窗台上睡着了。';
 
 /**
  Opening sentence of the invented archive rendering, which the invented

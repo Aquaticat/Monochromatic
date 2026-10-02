@@ -29,25 +29,17 @@ const l = tagged({ tag: 'archive-naming-fixture', },);
  */
 const REAL_GIT = await resolveGit();
 /**
- Exact-half quorum rounded up for this fixture's configured electorate.
- */
-const SUPPORTING_READERS = 6;
-/**
  Invented entry path shared by ordinary fixtures.
  */
-export const ARCHIVE_PATH = 'people/starlit-cat/page.en.md';
+const ARCHIVE_PATH = 'people/starlit-cat/page.en.md';
 /**
  Invented prior reference, without any licensed corpus text.
  */
-export const BEFORE_ARCHIVE = 'She joined 星猫亭.\n';
+const BEFORE_ARCHIVE = 'She joined 星猫亭.\n';
 /**
  Invented current reference whose entire markup is replaced in history.
  */
-export const AFTER_ARCHIVE = 'She joined *Starlit Paws*.\n';
-/**
- Whole marked occurrence used by default controls.
- */
-export const NAME_QUOTE = '*Starlit Paws*';
+const AFTER_ARCHIVE = 'She joined *Starlit Paws*.\n';
 
 /**
  Runs native Git hermetically inside a disposable fixture.
@@ -113,7 +105,7 @@ export async function namingFixtureGit({
  const sha = await commitNamingArchive({ cloneDir, relPath: ARCHIVE_PATH, text: AFTER_ARCHIVE });
  ```
  */
-export async function commitNamingArchive({
+async function commitNamingArchive({
   cloneDir,
   relPath,
   text,

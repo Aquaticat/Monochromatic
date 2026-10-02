@@ -64,11 +64,11 @@ export const ARCHIVE_TEST_ROSTER: readonly RosterModelId[] = [
 /**
  Review shapes vary evidence, never the configured quorum.
  */
-export type ArchiveReviewFixtureMode = 'mixed' | 'retention-only' | 'unavailable' | 'all-anchored' | 'single' | 'echo';
+type ArchiveReviewFixtureMode = 'mixed' | 'retention-only' | 'unavailable' | 'all-anchored' | 'single' | 'echo';
 /**
  Selector can deliberately choose original or lose quorum.
  */
-export type ArchiveSelectionFixtureMode = 'revision' | 'original' | 'unavailable';
+type ArchiveSelectionFixtureMode = 'revision' | 'original' | 'unavailable';
 
 /**
  Locates an actual numbered candidate rather than assuming proposal order.

@@ -12,12 +12,12 @@ import type { ArtifactDeliveryRow, } from '../dist/final/node/index.mjs';
 /**
  Original of the slice both lanes work on.
  */
-export const SOURCE_NAP = '猫猫在窗台上睡觉。';
+const SOURCE_NAP = '猫猫在窗台上睡觉。';
 
 /**
  Original of the passage the archive never translated.
  */
-export const SOURCE_BIRD = '窗台上有一只鸟。';
+const SOURCE_BIRD = '窗台上有一只鸟。';
 
 /**
  Archive's own English for the first slice.
@@ -27,7 +27,7 @@ export const ARCHIVE_NAP = 'The cat sleeps on the sill.';
 /**
  Wording the translate lane decided for it.
  */
-export const FRESH_NAP = 'The cat naps on the windowsill.';
+const FRESH_NAP = 'The cat naps on the windowsill.';
 
 /**
  Repair lane's ledger: it kept the archive's wording, and had nothing to do at

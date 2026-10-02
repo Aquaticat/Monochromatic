@@ -37,7 +37,7 @@ import { join, } from 'node:path';
  await using scratch = await scratchDir({ prefix: 'whiskers-cache-', },);
  ```
  */
-export type ScratchDir = {
+type ScratchDir = {
   /**
    Absolute path of the fresh directory.
    */

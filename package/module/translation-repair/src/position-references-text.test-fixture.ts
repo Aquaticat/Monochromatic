@@ -17,7 +17,7 @@ import { CONTINUATION_MARKERS, } from './position-references-vocabulary.test-fix
  const joined: JoinedText = { flat: 'the case above', lineStarts: [0,], };
  ```
  */
-export type JoinedText = {
+type JoinedText = {
   /**
    Lines joined by one space, each continuation line stripped of the comment
    or string markup that opened it.

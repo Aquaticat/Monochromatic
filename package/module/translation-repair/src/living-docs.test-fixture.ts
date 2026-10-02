@@ -49,7 +49,7 @@ const CURRENT_PLANNING: readonly string[] = [
 /**
  The living repository-level docs, as paths from the repository root.
  */
-export type LivingRepositoryDocs = {
+type LivingRepositoryDocs = {
   /**
    Every `doc/decision/translation-repair*.md`.
    */

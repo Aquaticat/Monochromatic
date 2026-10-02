@@ -49,7 +49,7 @@ export type TreeNode = Readonly<Record<string, unknown>> & {
 /**
  A parsed file: its program and its comments, in order.
  */
-export type ParsedSource = {
+type ParsedSource = {
   /**
    Program node.
    */

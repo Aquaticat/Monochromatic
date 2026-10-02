@@ -47,41 +47,6 @@ const DONOR_TEXT = [
  */
 const BORROWED = 'Her favourite place in the whole building turned out to be the top of the filing cabinet.';
 
-/**
- Builds a slice pair carrying the given English.
- 
- AN EMPTY STRING IS AN INSERTION ANCHOR, which is how the real type spells a
- boundary where translation is not: both members of `DocumentChunk` declare
- `text`, so "no English here" arrives as empty rather than as absent.
- 
- @param text - English the slice carries, empty for an insertion anchor
- 
- @returns Slice pair shaped as preparation produces
- 
- @example
- ```ts
- const slice = sliceCarrying({ text: DONOR_TEXT, },);
- ```
- */
-function sliceCarrying({ text, }: { readonly text: string; },) {
-  return {
-    source: {
-      sliceIndex: 0,
-      startOffset: 0,
-      endOffset: 2,
-      nodes: [],
-      text: '小猫',
-    },
-    target: {
-      sliceIndex: 0,
-      startOffset: 0,
-      endOffset: text.length,
-      nodes: [],
-      text,
-    },
-  };
-}
-
 await describe({
   name: '',
   concurrency: 1,

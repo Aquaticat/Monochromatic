@@ -27,7 +27,7 @@ export const WALL_START_MS = 1_790_812_800_000;
 /**
  A wall clock a case sets, which the runner restores when the case ends.
  */
-export type WallClockStub = {
+type WallClockStub = {
   /**
    Sets the clock by a signed span, as setting the system time does.
 

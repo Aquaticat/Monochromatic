@@ -19,7 +19,7 @@ const FIXTURE_COMMIT_WIDTH = 40;
 /**
  Invented source carrying the deliberately shared year.
  */
-export const REVIEW_SOURCE: string = '2023年，灰白相间的小猫搬到旧书店楼上的安静公寓。她每天早上浇灌窗边的花，'
+const REVIEW_SOURCE: string = '2023年，灰白相间的小猫搬到旧书店楼上的安静公寓。她每天早上浇灌窗边的花，'
   + '晚上在图书馆读书。她喜欢与邻居分享故事，也喜欢给来访的朋友准备茶点。书店里的角落明亮而温暖，'
   + '朋友们常在那里讨论书籍和花园。她认真保管明信片，记得每位朋友喜欢的图案。';
 

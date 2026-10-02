@@ -47,7 +47,7 @@ const WORD_THEN_POSITION = 2;
  const found: PositionReference = { path: 'src/cat.ts', line: 3, phrase: 'case above', window: '...', };
  ```
  */
-export type PositionReference = {
+type PositionReference = {
   /**
    File it stands in.
    */

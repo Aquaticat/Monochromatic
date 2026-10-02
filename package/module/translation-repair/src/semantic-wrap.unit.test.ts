@@ -26,24 +26,6 @@ import {
 import { wrapReplacementText, } from '../dist/final/node/index.mjs';
 
 /**
- Characters of a passage other than its line breaks, which an add-only fix may
- only grow, by the continuation prefixes it inserts.
- 
- @param text - passage to weigh
- 
- @returns Its length with newlines removed
- 
- @example
- ```ts
- const size = withoutBreaks({ text: 'a\nb', },);
- ```
- */
-function withoutBreaks({ text, }: { readonly text: string; },): number {
-  return text.split('\n',)
-    .join('',).length;
-}
-
-/**
  Reads a passage as content alone, with spacing and block markers discounted.
  
  WHITESPACE GOES because a break replaces the space that separated two
