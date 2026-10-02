@@ -118,7 +118,6 @@ function createAskUserQuestionTool(
     promptSnippet: 'Ask the user one free-form question and wait for a multiline answer',
     promptGuidelines: [
       'Use ask_user_question when work requires a user decision or free-form information that cannot be measured from available evidence.',
-      'Ask one complete question per ask_user_question call. The user can inspect the full Pi transcript while answering.',
       'Never request passwords, tokens, credentials, or other secrets through ask_user_question.',
     ],
     parameters: AskUserQuestionParameters,
