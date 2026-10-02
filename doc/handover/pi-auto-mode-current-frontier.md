@@ -537,7 +537,25 @@ The owner SDK documentation passed lint/render/readback in `proc_9613` before th
 Next qualify actual SDK/root lifecycle mutation ownership rather than the fixture epoch counter.
 Current Pi 1.0.0 routes session replacement through `AgentSessionRuntime`;
 `AgentSession.navigateTree` handles in-session tree navigation.
-Their actual source and manager mutation surfaces require inspection before choosing invalidation wiring.
+The actual tree diagnostic subsequently passed `proc_1da7` in `contract/collector/request-tree-lifecycle/`:
+six completed SDK sessions,
+six injected requests,
+no tools or external model requests.
+Stop-response lookup was fresh after normal completion.
+No-op and cancelled navigation preserved the receipt as expected.
+Unwired real navigation and direct manager branching changed/restored the leaf while the constant-epoch observer
+still reported freshness.
+A `session_tree` invalidator rejected the receipt and prevented revival after restoration,
+but the receipt remained usable after native mutation until that callback invalidated it.
+Direct `SessionManager.branch()` calls emitted no tree events.
+No production transition-window or direct-manager coverage is established.
+
+The existing native-manager registry owns per-manager epochs and issuer-local branch snapshots,
+but requires a fixed planned session ID and persistent path and only advances epochs through explicit invalidation.
+Do not duplicate that ownership responsibility without inspecting its existing contract.
+Next exercise runtime replacement/new/fork and same-manager in-memory reuse through real service/runtime factories.
+Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
+The group documentation passed lint/render/readback in `proc_97af` before this tree update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
 
 ## Tooling and workflow

@@ -687,6 +687,45 @@ complete producer coverage,
 instruction authority,
 and current human permission remain open.
 
+## Actual tree lifecycle observations
+
+The stock SDK diagnostic `contract/collector/request-tree-lifecycle/` completed as `proc_1da7`,
+exit 0:
+six SDK sessions,
+six injected requests,
+no tools executed,
+and no external model requests.
+A stop-response receipt matched its serialized request and remained fresh after normal SDK completion.
+
+The no-op tree target emitted no tree event and preserved the receipt.
+A cancelled navigation emitted only `session_before_tree`,
+kept the original leaf,
+and preserved the receipt.
+With the fixture epoch fixed at zero,
+actual navigation away and back also left the observer reporting freshness.
+The manager identity and observed prompt/resource/policy surfaces remained unchanged.
+Those checks did not substitute for a lifecycle epoch.
+
+Wiring `observer.invalidate()` to `session_tree` rejected the old receipt after the callback ran.
+Restoring the original leaf did not revive it.
+However,
+the receipt was still usable inside that callback before invalidation,
+after the native leaf had already changed.
+This demonstrates post-event rejection,
+not closure of the transition window.
+
+Calling `SessionManager.branch()` directly changed and restored the actual leaf without emitting extension tree events.
+The constant-epoch observer remained fresh.
+An event-only implementation therefore cannot claim direct-manager mutation coverage from these tree-hook controls.
+These are limits of the tested observer configuration,
+not an installed SDK fix or a grant of authority to recorded messages.
+
+Private streams and all mode records reconciled with empty worker stderr.
+The selected source and mandatory policy hashes remained unchanged.
+Runtime replacement,
+including same-manager in-memory forks,
+remains the next separate surface to exercise before choosing lifecycle wiring.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
