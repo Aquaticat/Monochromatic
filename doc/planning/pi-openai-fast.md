@@ -709,11 +709,22 @@ The full suite exposed a stale logout assertion:
  pi rejects the stale virtual route with `which has no credentials`
  before reaching original-provider request authentication.
 The assertion now checks that native routing diagnostic and still forbids dispatch or fallback.
-Lint findings are being resolved with native callback return-type aliases,
+Lint findings were resolved with native callback return-type aliases,
  explicit fixture scope,
+ literal-space parsing of CLI columns,
  and declaration formatting,
  without suppressions or rule changes.
-The complete verification sequence is pending.
+The fresh rebuilt package type check,
+ complete offline suite,
+ and source lint passed.
+The bound-session tests verify disappearance after source logout,
+ independent native/legacy visibility,
+ and reappearance after source credentials are restored.
+The final extension-host task also passed.
+The source-configuration visibility correction is complete;
+ documentation checks remain pending for the final record.
+The source trace and verified credential matrix are documented in
+[the troubleshooting record](../troubleshooting/pi-virtual-priority-options.md#pi-10-fast-providers-remain-visible-without-source-configuration).
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821

@@ -702,6 +702,219 @@ entitlement,
 actual quota consumption,
 and latency remain unverified.
 
+## Pi 1.0 fast providers remain visible without source configuration
+
+### Symptom
+
+`openai-fast` and `openai-codex-fast` appeared in available-model lists even when their own base providers
+had no configured authentication.
+The committed real-CLI matrix passed with both sources configured,
+ but failed with only native OpenAI,
+ only legacy Codex,
+ or neither configured.
+The failing assertions reported `expected true to equal false` for the orphan fast provider.
+
+This was an extension defect.
+The initial integration tests covered configured sources,
+ but omitted unconfigured-source visibility.
+
+### Root cause
+
+Pi `v1.0.0` source was cloned read-only at release commit
+`a13d35a742c6ef8462812a28fbe1d8c8b7431c32`.
+Upstream source paths in this section are relative to that clone.
+The installed coding-agent and pi-ai packages also report `1.0.0`.
+
+The extension's historical `package/pi-plugin/openai-fast/src/keyless-auth.ts:19`
+returned a configured auth check unconditionally:
+
+```ts
+// package/pi-plugin/openai-fast/src/keyless-auth.ts before commit bea0d23af
+function check(): Promise<AuthCheck> {
+  return Promise.resolve({
+    type: 'api_key' as const,
+    source: 'routes-to-original-provider',
+  });
+}
+```
+
+That descriptor belonged to `KEYLESS_AUTH`
+(replaced by `createKeylessAuth` on 2026-10-02).
+It correctly avoided adapter-owned request credentials,
+ but incorrectly declared independent availability.
+
+Pi authenticates each provider before filtering its models.
+Upstream `packages/ai/src/models.ts:682` checks the credential under the provider's own identity:
+
+```ts
+// Upstream packages/ai/src/models.ts:682
+const credential = await this.readCredential(provider.id, signal);
+return { provider, credential, auth: await this.checkProviderAuth(provider, credential, signal) };
+// The authenticated-provider result retains only checks whose auth is defined.
+return checks.filter((entry) => entry.auth !== undefined);
+```
+
+The installed equivalent is
+`package/pi-plugin/openai-fast/node_modules/@earendil-works/pi-ai/dist/models.js:296`.
+The adapter's unconditional check therefore admitted the fast provider without considering its source.
+
+Filtering physical targets does not hide virtual selections.
+Upstream `packages/coding-agent/src/core/virtual-models.ts:226` preserves them after the physical filter:
+
+```ts
+// Upstream packages/coding-agent/src/core/virtual-models.ts:226
+filterModels: (models, credential) => {
+  const real = physical(models);
+  return [...(filterModels?.(real, credential) ?? real), ...virtual(models)];
+},
+```
+
+The installed equivalent is
+`package/pi-plugin/openai-fast/node_modules/@earendil-works/pi-coding-agent/dist/core/virtual-models.js:114`.
+The extension's empty physical filter and correct target hiding did not imply correct virtual-provider visibility.
+Fresh disposable homes reproduced the failure,
+ excluding retained user cache as the startup cause.
+
+### Verification
+
+The regression was committed in `d60df7fae` and failed against the existing built extension before the fix.
+Run it from the repository root:
+
+```sh
+# Repository root
+mise run //package/pi-plugin/openai-fast:build:js:node
+mise run //package/pi-plugin/openai-fast:lint:types
+mise run //package/pi-plugin/openai-fast:test:unit -- package/pi-plugin/openai-fast/src/startup.unit.test.ts
+```
+
+The verified working catalog after correction includes:
+
+- Both sources configured:
+   both fast namespaces are available.
+- Only native OpenAI configured:
+   only `openai-fast` is available.
+- Only legacy Codex configured:
+   only `openai-codex-fast` is available.
+- Neither source configured:
+   neither fast namespace is available.
+- Stored OAuth:
+   each native source and its fast namespace match,
+   including expired synthetic credentials whose request-time refresh is not invoked by this check.
+- Stored native API key,
+   environment key,
+   configuration key,
+   and command-backed configuration key:
+   native OpenAI and its companion share availability.
+
+Before correction,
+ the native-only,
+ legacy-only,
+ and neither-configured cases formed the failing catalog:
+ every fast namespace was incorrectly advertised.
+The both-configured positive control passed before and after correction.
+
+Every child uses disposable settings and auth files,
+ excludes inherited provider credentials,
+ and sends no inference request.
+The stored auth bytes remain unchanged.
+The command-backed-key fixture first proves its marker is observable,
+ then confirms availability checks do not execute the command.
+`host-auth-catalog.unit.test.ts` and `native-openai.unit.test.ts` also verify disappearance after logout,
+ independent source visibility,
+ and reappearance after reconfiguration in the same bound session.
+The full rebuilt package suite and zero-warning source lint pass.
+
+### Verified correction and tradeoffs
+
+The correction belongs at the consumer auth-check boundary.
+`package/pi-plugin/openai-fast/src/keyless-auth.ts:66` now returns native absence when the source is unavailable:
+
+```ts
+// package/pi-plugin/openai-fast/src/keyless-auth.ts:66
+if (!await isConfigured(signal)) {
+  inner.debug('original provider is unavailable; hiding priority companions');
+  return undefined;
+}
+return { type: 'api_key', source: 'routes-to-original-provider' };
+```
+
+Startup uses the native runtime's source-scoped availability check at
+`package/pi-plugin/openai-fast/src/index.ts:189`.
+After binding,
+ the active registry owns the check at `package/pi-plugin/openai-fast/src/original-dispatch.ts:115`:
+
+```ts
+// package/pi-plugin/openai-fast/src/original-dispatch.ts:115
+const available = await state.registry.getAvailableOfType('chat', provider.id, { signal });
+return available.length > 0;
+```
+
+Both paths use source-only chat availability,
+ not a different authentication-method policy.
+Request auth remains delegated to the original provider;
+ no fast credential is stored or copied.
+
+Tradeoffs:
+startup requires a native source-readiness view using pi's original auth path,
+ and availability checks enumerate the source's available chat models.
+The complete registry still contains registered definitions and internal targets;
+ this correction controls filtered availability,
+ not complete-catalog metadata.
+A saved virtual selection can remain recorded after logout.
+Pi then rejects its stale route with `which has no credentials`,
+ rather than silently selecting an ordinary model.
+
+### What does not work
+
+- Hiding only physical targets:
+   pi preserves virtual entries after that filter.
+- Declaring the keyless adapter always configured:
+   request-auth delegation does not establish source readiness.
+- A one-time login Boolean after session binding:
+   it would miss logout and reconfiguration.
+- Checking either source collectively:
+   a configured native provider must not expose legacy companions,
+   and a configured legacy provider must not expose native companions.
+- Copying original credentials under the fast provider identity:
+   it would create a second auth owner and is unnecessary.
+
+Only the physical-filter and unconditional-readiness approaches were present in the failed implementation.
+The remaining rejected mechanisms were excluded by the native source trace and the live-bound fixture contract,
+ not represented as separately executed patches.
+
+### Upstream filing decision
+
+1.  Fault:
+    the extension declared readiness unconditionally.
+    The native filter and auth-check behavior were corroborated by the release source and consumer reproduction.
+2.  Fixability:
+    the public native auth-check boundary supports the consumer correction;
+    no upstream change is needed.
+3.  Supported use case:
+    `packages/ai/src/models.ts:645` implements optional API-key availability checks and native OAuth presence checks.
+    The source trace explains both verified credential paths.
+4.  Contribution policy:
+    the release clone's `CONTRIBUTING.md:23` auto-closes new-contributor reports,
+    and line 43 requires the author's own voice or an explicitly labeled follow-up.
+    No report or patch is proposed.
+5.  Direction and duplicates:
+    read-only issue searches for `virtual provider auth configured`
+    and `virtual model availability credentials` returned no matches.
+    This does not establish the absence of other related reports.
+    The failed upstream-fault gate independently makes filing unnecessary.
+6.  Prototype:
+    the consumer implementation,
+    committed failing regression,
+    credential matrix,
+    and bound-session checks are verified.
+    No upstream source was modified.
+
+Checked `.out-of-scope/codex-harness.md` and `.out-of-scope/pi-gpt55-long-context.md`.
+Neither applies to this local pi-provider availability correction.
+Upstream filing artifact:
+nothing to add,
+ because the defect was in this repository's adapter readiness declaration.
+
 [tier-issue]: https://github.com/earendil-works/pi/issues/4643
 [profile-issue]: https://github.com/earendil-works/pi/issues/6738
 [config-issue]: https://github.com/earendil-works/pi/issues/5840
