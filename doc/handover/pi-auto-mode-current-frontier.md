@@ -574,9 +574,24 @@ It must account for pre-mutation windows,
 direct manager mutation,
 and mutable references returned by native getters,
 without invalidating every normal model/tool-result append or treating IDs as authority.
+The getter/dispatch matrix passed `proc_152e` with 18 native managers,
+no SDK sessions,
+and no external requests.
+All tested getter paths and the original `appendMessage` argument shared the native message object;
+controlled mutation changed active graph and projection without changing persistent JSONL bytes.
+An in-place method hook did intercept same-object property calls,
+but cached pre-install methods and prototype dispatch bypassed it.
+Positive property-call controls proved interception was working.
+Evidence is `contract/collector/manager-mutation-coverage/`.
+
 No production mechanism is adopted.
+The [private lifecycle-only lease proposal](../planning/pi-auto-mode-root-lifecycle-lease.md)
+is separate from unresolved writer custody.
+Its implementation awaits explicit acceptance;
+do not treat the proposed lease as proof that every native mutation is observed.
+The user-facing decision is whether to prototype that contract first or investigate SDK state encapsulation first.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
-The tree documentation passed lint/render/readback in `proc_62cd` before this runtime update.
+The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
 
 ## Tooling and workflow

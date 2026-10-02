@@ -776,6 +776,42 @@ The existing registry's fixed-session branch snapshots must not be confused with
 survives normal message appends but expires on root changes.
 Direct mutations and borrowed mutable entry references still need an explicit coverage contract.
 
+## Borrowed manager values and interception limits
+
+The private `contract/collector/manager-mutation-coverage/` phase passed `proc_152e`,
+exit 0,
+with 18 owned native managers,
+no `AgentSession` construction,
+and no model or network requests.
+Persistent and in-memory fixtures exercised `getEntry`,
+`getEntries`,
+`getBranch`,
+`getTree`,
+`buildSessionProjection`,
+and the message object supplied to `appendMessage`.
+
+Every tested path shared the native message object.
+Changing its controlled `content` field changed both the active graph and its projection.
+Existing persistent JSONL bytes did not change.
+Restoring the field restored the graph;
+all mutation stayed inside disposable fixtures.
+A fresh outer array or tree wrapper therefore did not provide immutable nested values.
+
+The method-dispatch controls distinguished mechanisms that must not be conflated.
+An in-place instance hook intercepted an ordinary `branch()` call through another reference to that same manager.
+A cached pre-install method and `SessionManager.prototype.branch.call(...)` each moved and restored the leaf
+without invoking the instance hook.
+Every route then passed a property-call positive control,
+proving the hook was installed and capable of observing a call.
+
+This narrows the conclusion:
+raw-manager exposure alone does not bypass an in-place hook,
+but the measured cached/prototype routes and mutable message aliases defeat a complete-coverage claim.
+Method wrapping,
+post-mutation events,
+and persisted-file comparison are not interchangeable ownership guarantees.
+No native getter behavior or installed implementation was changed.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
