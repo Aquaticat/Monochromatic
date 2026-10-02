@@ -41,6 +41,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { toLaneCandidate, } from './lane-text-candidate.test-fixture.ts';
 
 /**
  Logger the stages write through, whose output is not under test.
@@ -280,19 +281,8 @@ async function judgedRejecting(
       ...[
         REPAIR_LANE,
         TRANSLATE_LANE,
-      ].map(function toLaneCandidate(laneText,): (typeof produced.candidates)[number] {
-        return {
-          producer: {
-            kind: 'lane',
-            lane: laneText.lane,
-            matched: [],
-          },
-          value: {
-            text: laneText.text,
-            origin: 'fresh',
-          },
-          rendered: laneText.text,
-        };
+      ].map(function asLaneCandidate(laneText,) {
+        return toLaneCandidate(laneText,);
       },),
     ],
   };

@@ -32,6 +32,7 @@ import {
   prepareDocumentPair,
   type SeededErrorSpec,
 } from '../dist/final/node/index.mjs';
+import { sliceCoversApplication, } from './slice-covers-application.test-fixture.ts';
 
 /**
  Deletion seed removing the butterfly sentence.
@@ -97,8 +98,7 @@ await describe({
          Slice whose target region covers the planted seed.
          */
         const slicePosition = slices.findIndex(function covers(slice,): boolean {
-          return (slice.target.startOffset <= application.startOffset)
-            && (application.startOffset < slice.target.endOffset);
+          return sliceCoversApplication({ slice, application, },);
         },);
         // The front-matter slice leads, so the seed's slice is not the first.
         expect(slicePosition,).toBeGreaterThan(0,);

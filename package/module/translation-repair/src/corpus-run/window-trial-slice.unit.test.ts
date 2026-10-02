@@ -36,6 +36,7 @@ import {
   trialKey,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
 
 /**
  Logger the arms write to.
@@ -63,65 +64,20 @@ const MODELS = {
 };
 
 /**
- Builds one slice pair carrying given texts.
- 
- @param sliceIndex - position in the document
- 
- @param source - original wording
- 
- @param target - archive wording
- 
- @returns Pair shaped like one preparation produces
- 
- @example
- ```ts
- const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
- ```
- */
-function pairOf(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
-
-/**
  Three-slice document, so the middle slice has a neighbour either way.
  */
 const SLICES: readonly ChunkPair[] = [
-  pairOf({
+  slicePairOf({
     sliceIndex: 0,
     source: '小猫在窗台上睡觉。',
     target: 'The cat sleeps on the windowsill.',
   },),
-  pairOf({
+  slicePairOf({
     sliceIndex: 1,
     source: '猫猫在窗台上打盹，尾巴垂在暖气片旁边。',
     target: 'The cat is doing the sleeping, with tail by the radiator.',
   },),
-  pairOf({
+  slicePairOf({
     sliceIndex: 2,
     source: '傍晚她回到炉火旁。',
     target: 'In the evening she returns to the fire.',

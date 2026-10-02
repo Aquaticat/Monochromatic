@@ -23,56 +23,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import {
-  type ChunkPair,
-  wrapTranslateRecords,
-} from '../dist/final/node/index.mjs';
+import { wrapTranslateRecords, } from '../dist/final/node/index.mjs';
+import { preparedPairAt, } from './prepared-pair-at.test-fixture.ts';
 
 /**
  Logger these hand to the lane, whose output is not what is under test.
  */
 const l = tagged({ tag: 'translate-wrap-test', },);
-
-/**
- Builds one prepared pair carrying the archive's wording at an index.
- 
- @param sliceIndex - slice index
- 
- @param incumbentText - archive wording there
- 
- @returns Pair shaped as preparation produces one
- 
- @example
- ```ts
- const pair = pairOf({ sliceIndex: 0, incumbentText: 'The cat naps.', },);
- ```
- */
-function pairOf(
-  {
-    sliceIndex,
-    incumbentText,
-  }: {
-    readonly sliceIndex: number;
-    readonly incumbentText: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 1,
-      text: `source of slice ${String(sliceIndex,)}`,
-    },
-    target: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: incumbentText.length,
-      text: incumbentText,
-    },
-  } as ChunkPair;
-}
 
 /**
  Builds one settled translate record.
@@ -128,7 +85,7 @@ await describe({
         + 'each slice fresh from its source and a model returns that as one line',
       fn: async () => {
         const wrapped = wrapTranslateRecords({
-          slices: [pairOf({
+          slices: [preparedPairAt({
             sliceIndex: 0,
             incumbentText: 'The cat sleeps on the sill.',
           },),],
@@ -157,7 +114,7 @@ await describe({
         const incumbentText = 'The cat sleeps on the sill. It wakes at dusk.';
 
         const wrapped = wrapTranslateRecords({
-          slices: [pairOf({
+          slices: [preparedPairAt({
             sliceIndex: 0,
             incumbentText,
           },),],
@@ -185,7 +142,7 @@ await describe({
         const incumbentText = 'It naps.\nIt wakes.';
 
         const wrapped = wrapTranslateRecords({
-          slices: [pairOf({
+          slices: [preparedPairAt({
             sliceIndex: 0,
             incumbentText,
           },),],
@@ -213,7 +170,7 @@ await describe({
          */
         const incumbentText = 'The cat naps on the mat\nall afternoon.';
         const wrapped = wrapTranslateRecords({
-          slices: [pairOf({
+          slices: [preparedPairAt({
             sliceIndex: 0,
             incumbentText,
           },),],
@@ -240,7 +197,7 @@ await describe({
          */
         const incumbentText = '> The cat naps. The dog waits.';
         const wrapped = wrapTranslateRecords({
-          slices: [pairOf({
+          slices: [preparedPairAt({
             sliceIndex: 0,
             incumbentText,
           },),],
@@ -268,11 +225,11 @@ await describe({
         const incumbentText = 'The cat wakes.\nSun is warm.';
         const wrapped = wrapTranslateRecords({
           slices: [
-            pairOf({
+            preparedPairAt({
               sliceIndex: 0,
               incumbentText,
             },),
-            pairOf({
+            preparedPairAt({
               sliceIndex: 1,
               incumbentText,
             },),
@@ -309,11 +266,11 @@ await describe({
       fn: async () => {
         const wrapped = wrapTranslateRecords({
           slices: [
-            pairOf({
+            preparedPairAt({
               sliceIndex: 0,
               incumbentText: 'One.',
             },),
-            pairOf({
+            preparedPairAt({
               sliceIndex: 1,
               incumbentText: 'Two.',
             },),
@@ -358,7 +315,7 @@ await describe({
         + 'adds breaks, so running it here would break work every decider had already approved',
       fn: async () => {
         const wrapped = wrapTranslateRecords({
-          slices: [pairOf({
+          slices: [preparedPairAt({
             sliceIndex: 0,
             incumbentText: 'The cat sleeps on the sill.',
           },),],

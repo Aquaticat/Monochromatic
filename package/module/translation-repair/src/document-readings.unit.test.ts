@@ -45,6 +45,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { sliceOf, } from './content-slice-of.test-fixture.ts';
 
 /**
  Logger the gather writes its progress to.
@@ -119,47 +120,6 @@ const AGREEING_READING = '走失猫咪 Mittens，虎斑，2019 年出生，请�
  */
 function showing({ assetName, }: { readonly assetName: string; },): string {
   return `小猫在窗台上睡觉。\n\n<PhotoScroll photos={[ '${ENTRY_PLACEHOLDER}/photos/${assetName}' ]} />\n`;
-}
-
-/**
- One slice pair whose original side carries given text.
- 
- @param text - original-side text this slice covers
- 
- @param sliceIndex - position of this slice in its document
- 
- @returns Pair whose original side carries that text
- 
- @example
- ```ts
- const pair = sliceOf({ text: showing({ assetName: 'a.webp', },), sliceIndex: 0, },);
- ```
- */
-function sliceOf(
-  {
-    text,
-    sliceIndex,
-  }: {
-    readonly text: string;
-    readonly sliceIndex: number;
-  },
-): ChunkPair {
-  return {
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: text.length,
-      text,
-    },
-    target: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 0,
-      text: '',
-    },
-  };
 }
 
 /**

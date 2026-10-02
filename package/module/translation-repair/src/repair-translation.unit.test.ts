@@ -36,6 +36,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { proposerIdsOf, } from './claim-attribution-proposer-ids.test-fixture.ts';
 
 /**
  Deadline per exchange: the driver's former default, which every call here ran
@@ -523,10 +524,7 @@ await describe({
           .flatMap(function toProposerIds(record,) {
           return record.claimAttributions
             .flatMap(function toIds(attribution,) {
-            return attribution.proposers
-              .map(function toModelId(proposer,) {
-              return proposer.modelId;
-            },);
+            return proposerIdsOf(attribution,);
           },);
         },),);
 

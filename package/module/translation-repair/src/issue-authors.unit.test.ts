@@ -16,7 +16,6 @@ import {
   appliedIssuesByEnvelope,
   collectIssueAuthors,
   NOBODY_WROTE_IT,
-  type EditableEnvelope,
   type EditorStageResult,
   type PatchOperation,
   type RepairJudgedRound,
@@ -24,6 +23,11 @@ import {
   type RosterModelId,
   type ShippedProducer,
 } from '../dist/final/node/index.mjs';
+import {
+  envelopeOf,
+  selectedRound,
+  slateEntryOf,
+} from './issue-author-fixtures.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -50,28 +54,6 @@ const AUTHOR: RosterModelId = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 const HELPER: RosterModelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 
 /**
- Builds an editable envelope carrying the issues it serves.
- */
-function envelopeOf(
-  {
-    envelopeId,
-    issueIds,
-  }: {
-    readonly envelopeId: string;
-    readonly issueIds: readonly string[];
-  },
-): EditableEnvelope {
-  return {
-    envelopeId,
-    startOffset: 0,
-    endOffset: 1,
-    baseText: 'the cat naps',
-    baseHash: `hash-${envelopeId}`,
-    issueIds,
-  };
-}
-
-/**
  Builds an applied patch operation against one envelope.
  */
 function operationOf(envelopeId: string,): PatchOperation {
@@ -79,62 +61,6 @@ function operationOf(envelopeId: string,): PatchOperation {
     envelopeId,
     baseHash: `hash-${envelopeId}`,
     newText: 'the cat dozes',
-  };
-}
-
-/**
- Builds one slate entry, whose `index` is the ONE-BASED number judges saw and
- need not match its position in the array.
- */
-function slateEntryOf(
-  {
-    index,
-    modelId,
-  }: {
-    readonly index: number;
-    readonly modelId: RosterModelId;
-  },
-): RepairSlateEntry {
-  return {
-    index,
-    rendered: `candidate ${String(index,)}`,
-    hash: `slate-${String(index,)}`,
-    producer: {
-      kind: 'model',
-      modelId,
-    },
-  };
-}
-
-/**
- Builds an envelope round that picked the candidate carrying `selectedIndex`.
- */
-function selectedRound(
-  {
-    envelopeId,
-    slate,
-    selectedIndex,
-  }: {
-    readonly envelopeId: string;
-    readonly slate: readonly RepairSlateEntry[];
-    readonly selectedIndex: number;
-  },
-): RepairJudgedRound {
-  return {
-    kind: 'selected',
-    stage: 'envelope',
-    envelopeId,
-    slate,
-    ballots: [],
-    tally: {
-      judgesAvailable: 3,
-      ballots: 3,
-      abstentions: 0,
-      selfVotes: 0,
-    },
-    perCandidate: [],
-    selectedIndex,
-    voteWeight: 2,
   };
 }
 

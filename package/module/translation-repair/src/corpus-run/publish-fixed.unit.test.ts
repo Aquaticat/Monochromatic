@@ -61,6 +61,7 @@ import {
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { artifactWithAnUnfilledAnchor, } from './would-ship-unfilled-anchor.test-fixture.ts';
 
 //region The archive this entry starts from
 
@@ -346,57 +347,6 @@ function artifactShipping(
             kind: 'lane-won',
             lane: 'translate',
           },
-          ballots: [],
-          usable: 3,
-        },
-      ],
-    },
-  } as unknown as WouldShipSource;
-}
-
-/**
- Builds an artifact whose one slice is an ANCHOR nobody filled.
- 
- REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
- NOTHING. `XIEPT2` reached exactly this state live: its translate lane backed
- no candidate at slice 12 and recorded the slice unfilled, which left the
- contest two blank lanes to choose between and no archive wording to fall back
- on.
- 
- @returns Artifact whose one slice is an unfilled anchor
- 
- @example
- ```ts
- const artifact = artifactWithAnUnfilledAnchor();
- ```
- */
-function artifactWithAnUnfilledAnchor(): WouldShipSource {
-  return {
-    comparison: [
-      {
-        sliceIndex: 1,
-        incumbentKind: 'absent',
-        incumbentText: '',
-        repairText: '',
-        translateText: '',
-        laneRelation: 'both-differ',
-        repairOutcome: { kind: 'unfilled', },
-        translateOutcome: { kind: 'unfilled', },
-        decisionComparison: {
-          kind: 'comparable',
-          verdict: 'same',
-        },
-        repairDelivery: { kind: 'gap-remains', },
-        translateDelivery: { kind: 'gap-remains', },
-      },
-    ],
-    consolidation: { kind: 'not-run', },
-    laneSelection: {
-      kind: 'contested',
-      slices: [
-        {
-          sliceIndex: 1,
-          verdict: { kind: 'settled-neither', },
           ballots: [],
           usable: 3,
         },

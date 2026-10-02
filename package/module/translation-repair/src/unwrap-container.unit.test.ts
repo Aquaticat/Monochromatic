@@ -11,6 +11,10 @@ import {
   parseMdxBody,
   UnpositionedContainerError,
 } from '../dist/final/node/index.mjs';
+import {
+  nodeOwnsCloser,
+  nodeOwnsOpener,
+} from './container-tag-ownership.test-fixture.ts';
 
 //region Container unwrapping tests
 // Fixtures are cat-themed inventions that reproduce the STRUCTURE read off the
@@ -156,13 +160,11 @@ await describe({
                 for (const container of containers) {
                   expect(nodes
                     .some(function ownsOpener(node,): boolean {
-                      return (node.startOffset <= container.openerStartOffset)
-                        && (node.endOffset >= container.openerEndOffset);
+                      return nodeOwnsOpener({ node, container, },);
                     },),).toBe(true,);
                   expect(nodes
                     .some(function ownsCloser(node,): boolean {
-                      return (node.startOffset <= container.closerStartOffset)
-                        && (node.endOffset >= container.closerEndOffset);
+                      return nodeOwnsCloser({ node, container, },);
                     },),).toBe(true,);
                 }
               },

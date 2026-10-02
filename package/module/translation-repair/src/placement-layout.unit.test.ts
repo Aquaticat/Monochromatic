@@ -15,10 +15,10 @@ import {
 import {
   assertPlacementLayout,
   type ChunkPair,
-  makeInsertionChunk,
   PlacementLayoutError,
   prepareDocumentPair,
 } from '../dist/final/node/index.mjs';
+import { anchorAt, } from './insertion-anchor-pair.test-fixture.ts';
 
 /**
  Document the spans index into.
@@ -68,44 +68,6 @@ function spanAt(
   return {
     source: side,
     target: side,
-  };
-}
-
-/**
- Builds one pair whose target is an anchor at an offset.
- 
- @param sliceIndex - position of this slice
- 
- @param offset - boundary it names
- 
- @returns Pair whose target names that boundary
- 
- @example
- ```ts
- const pair = anchorAt({ sliceIndex: 1, offset: 17, },);
- ```
- */
-function anchorAt(
-  {
-    sliceIndex,
-    offset,
-  }: {
-    readonly sliceIndex: number;
-    readonly offset: number;
-  },
-): ChunkPair {
-  return {
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 0,
-      text: '猫',
-    },
-    target: makeInsertionChunk({
-      sliceIndex,
-      offset,
-    },),
   };
 }
 

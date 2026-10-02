@@ -23,7 +23,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { isAsciiAlphanumeric, } from '../dist/final/node/index.mjs';
 import {
   childNodes,
   parseSource,
@@ -31,28 +30,12 @@ import {
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
+import { isIdentifierCharacter, } from './source-text-scan.test-fixture.ts';
 
 /**
  What opens a TSDoc link.
  */
 const LINK_OPENER = '{@link ';
-
-/**
- Whether a character continues a JavaScript identifier, in the ASCII the
- package's names are spelled in.
-
- @param character - one character
-
- @returns True for a letter, digit, `_` or `$`
-
- @example
- ```ts
- const continues = continuesName({ character: '_', },); // true
- ```
- */
-function continuesName({ character, }: { readonly character: string; },): boolean {
-  return isAsciiAlphanumeric({ character, },) || (character === '_') || (character === '$');
-}
 
 /**
  Names the file's TSDoc links point at: the identifier after each
@@ -85,7 +68,7 @@ function linkedNames({ text, }: { readonly text: string; },): ReadonlySet<string
      One past the linked name's last character.
      */
     let end = start;
-    while ((end < text.length) && continuesName({ character: text.charAt(end,), },))
+    while ((end < text.length) && isIdentifierCharacter({ character: text.charAt(end,), },))
       end += 1;
     if (end > start)
       names.add(text.slice(start, end,),);

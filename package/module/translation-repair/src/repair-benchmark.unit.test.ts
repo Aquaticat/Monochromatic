@@ -35,6 +35,7 @@ import {
   stubWallClock,
   WALL_START_MS,
 } from './wall-clock-stub.test-fixture.ts';
+import { sliceCoversApplication, } from './slice-covers-application.test-fixture.ts';
 
 /**
  Deadline per exchange; the scripted repair and judge seams never wait on it.
@@ -607,8 +608,7 @@ await describe({
 
             /** Slice whose target region covers the planted seed. */
             const slicePosition = slices.findIndex(function covers(slice,) {
-              return (slice.target.startOffset <= application.startOffset)
-                && (application.startOffset < slice.target.endOffset);
+              return sliceCoversApplication({ slice, application, },);
             },);
             // The whole point of the fixture: the seed must NOT be in slice zero,
             // because slice zero is the one case the old pair indexing got right.

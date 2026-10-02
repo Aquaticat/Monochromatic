@@ -20,47 +20,8 @@ import {
   type ChunkPair,
   CONTAINER_HALF_ADMITTED_FINDING,
   type InsertionCoverageRow,
-  makeInsertionChunk,
 } from '../../dist/final/node/index.mjs';
-
-/**
- Builds one source-only slice.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text with no rendering beside it
-
- @returns Slice whose target is an insertion
-
- @example
- ```ts
- const slice = insertion({ sliceIndex: 0, source: '<details>', },);
- ```
- */
-function insertion(
-  {
-    sliceIndex,
-    source,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: makeInsertionChunk({
-      sliceIndex,
-      offset: 0,
-    },),
-  };
-}
+import { insertion, } from './insertion-only-slice.test-fixture.ts';
 
 /**
  Opening half of the disclosure block: the tag and its summary.

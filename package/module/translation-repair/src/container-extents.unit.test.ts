@@ -24,6 +24,10 @@ import {
   parseDocument,
   widenExtentsToContainers,
 } from '../dist/final/node/index.mjs';
+import {
+  nodeOwnsCloser,
+  nodeOwnsOpener,
+} from './container-tag-ownership.test-fixture.ts';
 
 /**
  Builds a container span from its two tag ranges.
@@ -327,13 +331,11 @@ await describe({
           throw new Error('fixture reported no container, so this case would pass for the wrong reason',);
         expect(parsed.nodes
           .some(function ownsOpener(node,): boolean {
-            return (node.startOffset <= container.openerStartOffset)
-              && (node.endOffset >= container.openerEndOffset);
+            return nodeOwnsOpener({ node, container, },);
           },),).toBe(true,);
         expect(parsed.nodes
           .some(function ownsCloser(node,): boolean {
-            return (node.startOffset <= container.closerStartOffset)
-              && (node.endOffset >= container.closerEndOffset);
+            return nodeOwnsCloser({ node, container, },);
           },),).toBe(true,);
       },
     },),

@@ -22,9 +22,9 @@ import {
   type ChunkPair,
   CORPUS_EXPANSION,
   interiorShortfall,
-  makeInsertionChunk,
   readUntranslatedTail,
 } from '../dist/final/node/index.mjs';
+import { insertion, } from './corpus-run/insertion-only-slice.test-fixture.ts';
 
 /**
  Source paragraph the archive translated.
@@ -74,32 +74,6 @@ function pairedSlice({ sliceIndex, }: { readonly sliceIndex: number; },): ChunkP
   };
 }
 
-/**
- Builds one source-only slice.
-
- @param sliceIndex - slice position and index alike
-
- @returns Slice with an insertion anchor on the target side
-
- @example
- ```ts
- const slice = insertionSlice({ sliceIndex: 1, },);
- ```
- */
-function insertionSlice({ sliceIndex, }: { readonly sliceIndex: number; },): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: TAIL_SOURCE.length,
-      text: TAIL_SOURCE,
-    },
-    target: makeInsertionChunk({ sliceIndex, offset: 0, },),
-  };
-}
-
 await describe({
   name: 'the untranslated tail read off the pairing',
   children: [
@@ -110,10 +84,10 @@ await describe({
         const tail = readUntranslatedTail({
           slices: [
             pairedSlice({ sliceIndex: 0, },),
-            insertionSlice({ sliceIndex: 1, },),
+            insertion({ sliceIndex: 1, source: TAIL_SOURCE, },),
             pairedSlice({ sliceIndex: 2, },),
-            insertionSlice({ sliceIndex: 3, },),
-            insertionSlice({ sliceIndex: 4, },),
+            insertion({ sliceIndex: 3, source: TAIL_SOURCE, },),
+            insertion({ sliceIndex: 4, source: TAIL_SOURCE, },),
           ],
         },);
         expect([...tail.positions,],).toEqual([
@@ -137,7 +111,7 @@ await describe({
         const tail = readUntranslatedTail({
           slices: [
             pairedSlice({ sliceIndex: 0, },),
-            insertionSlice({ sliceIndex: 1, },),
+            insertion({ sliceIndex: 1, source: TAIL_SOURCE, },),
           ],
         },);
         expect([...tail.positions,],).toEqual([1,],);
@@ -157,7 +131,7 @@ await describe({
       fn: async () => {
         expect([...readUntranslatedTail({
           slices: [
-            insertionSlice({ sliceIndex: 0, },),
+            insertion({ sliceIndex: 0, source: TAIL_SOURCE, },),
             pairedSlice({ sliceIndex: 1, },),
           ],
         },).positions,],).toEqual([],);
@@ -166,8 +140,8 @@ await describe({
          */
         const unpaired = readUntranslatedTail({
           slices: [
-            insertionSlice({ sliceIndex: 0, },),
-            insertionSlice({ sliceIndex: 1, },),
+            insertion({ sliceIndex: 0, source: TAIL_SOURCE, },),
+            insertion({ sliceIndex: 1, source: TAIL_SOURCE, },),
           ],
         },);
         expect([...unpaired.positions,],).toEqual([],);
@@ -183,8 +157,8 @@ await describe({
         const tail = readUntranslatedTail({
           slices: [
             pairedSlice({ sliceIndex: 0, },),
-            insertionSlice({ sliceIndex: 1, },),
-            insertionSlice({ sliceIndex: 2, },),
+            insertion({ sliceIndex: 1, source: TAIL_SOURCE, },),
+            insertion({ sliceIndex: 2, source: TAIL_SOURCE, },),
           ],
         },);
         /**

@@ -35,6 +35,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
+import { replyWith, } from '../scripted-reply-outcome.test-fixture.ts';
 
 /**
  Logger for the arms under test.
@@ -131,42 +132,6 @@ const JUDGES = [
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
-
-/**
- Validates a scripted reply against the live request's wire guard and wraps
- it as an outcome.
- 
- @param report - scripted reply for this call
- 
- @param request - live request, whose guard the reply must satisfy
- 
- @returns Outcome carrying the validated reply
- 
- @throws {@link Error} when the fixture itself fails the guard it is meant
- to satisfy
- 
- @example
- ```ts
- return replyWith({ report: { edits: [], }, request, },);
- ```
- */
-function replyWith<ValueT,>(
-  {
-    report,
-    request,
-  }: {
-    readonly report: unknown;
-    readonly request: ChatJsonRequest<ValueT>;
-  },
-): ChatJsonOutcome<ValueT> {
-  if (!request.validate(report,))
-    throw new Error('scripted reply failed the wire guard',);
-  return {
-    kind: 'ok',
-    value: report,
-    rawText: JSON.stringify(report,),
-  };
-}
 
 /**
  Client answering each seat by model id.

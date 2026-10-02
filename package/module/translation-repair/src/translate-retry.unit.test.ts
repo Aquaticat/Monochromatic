@@ -34,6 +34,7 @@ import {
   TranslateAbsenceError,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
+import { toLaneCandidate, } from './lane-text-candidate.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 
 /**
@@ -360,19 +361,8 @@ async function judgedUnder(
     ...produced,
     candidates: [
       ...produced.candidates,
-      ...laneTexts.map(function toLaneCandidate(laneText,): (typeof produced.candidates)[number] {
-        return {
-          producer: {
-            kind: 'lane',
-            lane: laneText.lane,
-            matched: [],
-          },
-          value: {
-            text: laneText.text,
-            origin: 'fresh',
-          },
-          rendered: laneText.text,
-        };
+      ...laneTexts.map(function asLaneCandidate(laneText,) {
+        return toLaneCandidate(laneText,);
       },),
     ],
   };

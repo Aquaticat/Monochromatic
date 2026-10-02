@@ -21,7 +21,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  makeInsertionChunk,
   repairReplacements,
   SliceIndexingError,
   type SliceReplacement,
@@ -29,6 +28,7 @@ import {
   spliceSlices,
   type ChunkRepairOutcome,
 } from '../dist/final/node/index.mjs';
+import { anchorAt, } from './insertion-anchor-pair.test-fixture.ts';
 
 /**
  Translation the slices are cut from.
@@ -106,50 +106,6 @@ function chunkAt(
   };
 }
 
-
-/**
- Builds one pair whose target side is an INSERTION ANCHOR at an offset.
- 
- Zero-length spans used to be written as ordinary chunks covering nothing,
- which is exactly the ambiguity `chunk-placement.ts` removes: a span covering
- no text and a place where text is missing look identical from their offsets
- alone, and only one of them may be written into.
- 
- @param sliceIndex - position of this slice
- 
- @param offset - boundary in {@link TARGET_TEXT} new text is written at
- 
- @returns Pair whose target names that boundary
- 
- @example
- ```ts
- const pair = anchorAt({ sliceIndex: 2, offset: FINAL_START, },);
- ```
- */
-function anchorAt(
-  {
-    sliceIndex,
-    offset,
-  }: {
-    readonly sliceIndex: number;
-    readonly offset: number;
-  },
-) {
-  return {
-    // Never read by splicing, which writes into the target side only.
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 0,
-      text: '猫',
-    },
-    target: makeInsertionChunk({
-      sliceIndex,
-      offset,
-    },),
-  };
-}
 
 /**
  Paragraph separator the fixture text uses.

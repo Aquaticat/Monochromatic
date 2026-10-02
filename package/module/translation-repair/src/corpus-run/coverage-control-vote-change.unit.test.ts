@@ -33,14 +33,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { coverageControlHolds, } from '../../dist/final/node/index.mjs';
 import {
-  coverageControlHolds,
-  parseDocument,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type CoverageControlCase,
-  type SyntheticClient,
-} from '../../dist/final/node/index.mjs';
+  coverageControlCasesAt,
+  coverageControlClient,
+} from './coverage-control-cases.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -84,59 +81,17 @@ const MODEL_IDS = [
 /**
  Three damageable cases, distinguished only by where they sit.
  */
-const CASES: readonly CoverageControlCase[] = [
-  'slice-0',
-  'slice-1',
-  'slice-2',
-].map(function caseAt(where,): CoverageControlCase {
-  return {
-    where,
-    sourcePassage: SOURCE_PASSAGE,
-    translation: parseDocument({ text: TRANSLATION, },),
-  };
+const CASES = coverageControlCasesAt({
+  where: ['slice-0', 'slice-1', 'slice-2',],
+  sourcePassage: SOURCE_PASSAGE,
+  translationText: TRANSLATION,
 },);
 
 /**
  Client answering EVERY round the same way, damaged or not: a wire whose votes
  do not move is the one the control has to refuse.
  */
-const BLIND_CLIENT: SyntheticClient = {
-  chatText: async () => {
-    throw new Error('chatText unused by the coverage control',);
-  },
-  chatJson: async <ValueT,>(
-    request: ChatJsonRequest<ValueT>,
-  ): Promise<ChatJsonOutcome<ValueT>> => {
-    /**
-     Stage name from the structured-output constraint.
-     */
-    const stage = request.responseFormat
-      ?.json_schema
-      .name
-      ?? '';
-    if (stage !== 'coverage_report')
-      throw new Error(`the coverage control asks about coverage and nothing else, and this asked ${stage}`,);
-
-    /**
-     Reply claiming the passage is carried, quoting text really present.
-     */
-    const scripted: unknown = {
-      coverage: 'full',
-      quote: QUOTED,
-      reason: 'fixture',
-    };
-    if (!request.validate(scripted,))
-      throw new Error('scripted reply failed the coverage guard',);
-    return {
-      kind: 'ok',
-      value: scripted,
-      rawText: JSON.stringify(scripted,),
-    };
-  },
-  quotas: async () => {
-    throw new Error('quotas unused by the coverage control',);
-  },
-};
+const BLIND_CLIENT = coverageControlClient({ quote: QUOTED, },);
 
 //endregion Fixtures
 

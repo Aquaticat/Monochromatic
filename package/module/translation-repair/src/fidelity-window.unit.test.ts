@@ -35,6 +35,7 @@ import {
   type SyntheticClient,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
+import { sliceOf, } from './content-slice-of.test-fixture.ts';
 
 /**
  Logger the trial writes its progress to.
@@ -64,51 +65,6 @@ const ROSTER = [
 ].map(function toModelId(id,): RosterModelId {
   return id as unknown as RosterModelId;
 },);
-
-/**
- Builds one slice pair carrying given original text.
- 
- Offsets and nodes are named directly rather than parsed, which
- {@link ContentChunk} documents as a legitimate value of the type: what this
- function is under test for is which TEXTS come back, and from where.
- 
- @param text - original-side text this slice covers
- 
- @param sliceIndex - position of this slice in its document
- 
- @returns Pair whose original side carries that text
- 
- @example
- ```ts
- const pair = sliceOf({ text: '## 简介\n', sliceIndex: 0, },);
- ```
- */
-function sliceOf(
-  {
-    text,
-    sliceIndex,
-  }: {
-    readonly text: string;
-    readonly sliceIndex: number;
-  },
-): ChunkPair {
-  return {
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: text.length,
-      text,
-    },
-    target: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 0,
-      text: '',
-    },
-  };
-}
 
 /**
  Three-slice document, so a middle slice has a neighbour either way.

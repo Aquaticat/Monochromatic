@@ -35,6 +35,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 } from './roster-seats.test-fixture.ts';
 import { criticClient, } from './critic-scripted-client.test-fixture.ts';
+import { proposerIdsOf, } from './claim-attribution-proposer-ids.test-fixture.ts';
 
 /**
  Logger for the stage under test.
@@ -238,10 +239,7 @@ await describe({
          */
         const raisers = new Set(critic.claimAttributions
           .flatMap(function toIds(attribution,) {
-          return attribution.proposers
-            .map(function toModelId(proposer,) {
-            return proposer.modelId;
-          },);
+          return proposerIdsOf(attribution,);
         },),);
 
         // The silent critic is in the roster and absent from attribution, which

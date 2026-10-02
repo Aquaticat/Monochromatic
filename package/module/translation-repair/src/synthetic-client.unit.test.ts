@@ -25,7 +25,6 @@ import {
   SyntheticHttpError,
   SyntheticModelNotServedError,
   SyntheticRequestTooLargeError,
-  type ModelTransport,
   type RosterModelId,
   type TransportExchange,
   type TransportReply,
@@ -38,6 +37,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { recordedTransport, } from './recorded-transport.test-fixture.ts';
 
 /**
  Milliseconds granted for queued microtasks and limiter slots to settle.
@@ -164,48 +164,6 @@ type CatVerdict = { readonly verdict: string; };
  */
 function isCatVerdict(value: unknown,): value is CatVerdict {
   return isJsonRecord(value,) && ((typeof value.verdict) === 'string');
-}
-
-/**
- Builds a transport replaying recorded replies in order while recording every
- exchange for assertions.
- 
- @param replies - replies replayed in call order, last one repeating
- 
- @returns Transport plus its recorded exchanges
- 
- @example
- ```ts
- const { transport, exchanges, } = recordedTransport({ replies: [reply,], },);
- ```
- */
-function recordedTransport(
-  { replies, }: { readonly replies: readonly TransportReply[]; },
-): {
-  readonly transport: ModelTransport;
-  readonly exchanges: TransportExchange[];
-} {
-  /**
-   Every exchange the client performed, in order.
-   */
-  const exchanges: TransportExchange[] = [];
-
-  return {
-    transport: async function replay(exchange,) {
-      exchanges.push(exchange,);
-      /**
-       Reply for this exchange; the last recorded reply repeats.
-       */
-      const reply = replies[Math.min(
-        exchanges.length - 1,
-        replies.length - 1,
-      )];
-      if (reply === undefined)
-        throw new Error('recordedTransport needs at least one reply',);
-      return reply;
-    },
-    exchanges,
-  };
 }
 
 await describe({

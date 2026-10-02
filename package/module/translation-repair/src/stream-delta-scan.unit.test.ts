@@ -26,6 +26,7 @@ import {
   scanStreamDeltas,
   watchForDegeneration,
 } from '../dist/final/node/index.mjs';
+import { routeDeltaToDetector, } from './delta-channel-routing.test-fixture.ts';
 
 /**
  Builds one server-sent event frame carrying text on one channel.
@@ -347,10 +348,7 @@ await describe({
         const answering = watchForDegeneration();
 
         scanner.feed({ chunk: raw, },).forEach(function route(delta,): void {
-          if (delta.channel === 'reasoning')
-            thinking.notifyText({ text: delta.text, },);
-          else
-            answering.notifyText({ text: delta.text, },);
+          routeDeltaToDetector({ delta, thinking, answering, },);
         },);
 
         expect(thinking.verdict().kind,).toBe('degenerate',);
@@ -439,10 +437,7 @@ await describe({
         const answering = watchForDegeneration();
 
         scanner.feed({ chunk: `${frames}data: [DONE]\n\n`, },).forEach(function route(delta,): void {
-          if (delta.channel === 'reasoning')
-            thinking.notifyText({ text: delta.text, },);
-          else
-            answering.notifyText({ text: delta.text, },);
+          routeDeltaToDetector({ delta, thinking, answering, },);
         },);
 
         expect(thinking.verdict().kind,).toBe('degenerate',);

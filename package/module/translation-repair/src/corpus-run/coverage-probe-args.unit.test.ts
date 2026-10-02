@@ -20,6 +20,7 @@ import {
   readCoverageProbeArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { capNotDigits, } from './cap-argument-refusal.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
@@ -48,23 +49,6 @@ function askedFrom(
       typed,
     },),
   },);
-}
-
-/**
- Refusal a cap draws when it is no whole number written in digits.
-
- @param cap - cap as typed
-
- @returns The refusal's sentence
-
- @example
- ```ts
- const said = capNotDigits({ cap: 'fourty', },);
- ```
- */
-function capNotDigits({ cap, }: { readonly cap: string; },): string {
-  return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-    + `and ${JSON.stringify(cap,)} is not one`;
 }
 
 await describe({

@@ -714,6 +714,10 @@ under thirteen names,
 while each fixture's header said new cases import it;
 the duplicate-body scan reads production source alone,
 so no copy could fail it (ledger B103).
+Hoisting those copies again left lint findings only the moved code met,
+orphaned four type imports in their callers,
+kept two type assertions the literals never needed,
+and left two test helpers nothing called (ledger B115).
 
 The rule:
 before writing a helper,
@@ -763,6 +767,11 @@ the source scans and the TSDoc attachment probe before any review of it is trust
 A helper that writes a process global moves into a fixture only by stubbing through the case's own sandbox;
 one that assigns the global directly stays in the file of the sequenced suites that call it,
 where the global-writes scan can follow it to its cases (ledger B111).
+A caller that passed a local helper to `map` passes a named wrapper once the helper is imported,
+since the callback-arity rule reads the parameters of a function declared in the same file only.
+A move that leaves a caller without a use for an import removes that import in the same change,
+and an assertion a patch keeps because its author could not compile is tried without the assertion
+(ledger B115).
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
@@ -791,7 +800,11 @@ among the source scans,
 fails on a production module with neither a unit test of its own nor a line in its allowlist.
 Nothing yet fails on a helper copied between test files:
 the duplicate-body scan widens to them once the copies it would find there are hoisted or listed (ledger B101),
-58 groups after ledger B111.
+20 groups after ledger B115,
+each one classified there.
+`src/unused-imports.unit.test.ts` (ledger B32),
+among the source scans,
+fails on an import a move left unread.
 
 ## Text by code point
 

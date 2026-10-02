@@ -27,6 +27,7 @@ import {
   scanAnthropicDeltas,
   watchForDegeneration,
 } from '../dist/final/node/index.mjs';
+import { routeDeltaToDetector, } from './delta-channel-routing.test-fixture.ts';
 
 /**
  Builds one Anthropic event frame, newline-terminated as the wire sends it.
@@ -818,10 +819,7 @@ await describe({
             type: 'thinking',
           },) + frames,
         },).forEach(function route(delta,): void {
-          if (delta.channel === 'reasoning')
-            thinking.notifyText({ text: delta.text, },);
-          else
-            answering.notifyText({ text: delta.text, },);
+          routeDeltaToDetector({ delta, thinking, answering, },);
         },);
 
         expect(thinking.verdict().kind,).toBe('degenerate',);

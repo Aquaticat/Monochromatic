@@ -19,11 +19,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type BudgetView,
   createRoutingClient,
   type ProviderName,
   type ProviderRecord,
 } from '../dist/final/node/index.mjs';
+import { stubWetBudgets, } from './provider-router-wet-budgets.test-fixture.ts';
 import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_VISION,
@@ -97,45 +97,6 @@ function stubProviders(): {
 }
 
 /**
- Budget view where every provider but Synthetic reads wet, as in the run
- that found the class.
-
- @returns Budgets that never mark anything refused
-
- @example
- ```ts
- const budgets = stubBudgets();
- ```
- */
-function stubBudgets(): {
-  readonly read: () => Promise<BudgetView>;
-  readonly markRefused: (args: { readonly provider: ProviderName; },) => Promise<void>;
-  readonly holds: () => ProviderRecord<number>;
-} {
-  return {
-    read: async function read(): Promise<BudgetView> {
-      return {
-        synthetic: true,
-        hyper: false,
-        bedrock: false,
-        openrouter: false,
-      };
-    },
-    markRefused: async function markRefused(): Promise<void> {
-      // Nothing refuses in these cases.
-    },
-    holds: function holds(): ProviderRecord<number> {
-      return {
-        synthetic: 0,
-        hyper: 0,
-        bedrock: 0,
-        openrouter: 0,
-      };
-    },
-  };
-}
-
-/**
  Routes one call over the stubs with Hyper's window reading the given wait.
 
  @param modelId - model to ask
@@ -161,7 +122,7 @@ async function routedWith(
   const { callers, asked, } = stubProviders();
   const client = createRoutingClient({
     callers,
-    budgets: stubBudgets(),
+    budgets: stubWetBudgets(),
     paces: {
       hyper: {
         waitMs: function waitMs(): number {

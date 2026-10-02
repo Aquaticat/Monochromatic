@@ -18081,6 +18081,91 @@ Recurrence:
 `mistake-prevention.md`,
 "Copies of shared code".
 
+### B115: test files kept helper bodies in two or more files
+
+Queued by B111,
+fixed in the commit adding this entry.
+A read-only agent wrote the patch for the groups B114 left that span files:
+17 new `.test-fixture.ts` files hold the hoisted helpers
+(delta routing,
+container tag ownership,
+coverage-control cases,
+the cap refusal,
+scripted replies,
+wet budgets,
+a recorded transport,
+issue-author builders,
+slice and anchor pairs,
+attribution proposer ids,
+seed coverage,
+insertion slices,
+an unfilled-anchor artifact
+and lane candidates),
+and 41 test files import them.
+Helpers that shared a name but built different things get names of their own
+(`preparedPairAt` and `slicePairOf` for two different `pairOf`).
+Three of the 41 files had changed under B114 after the agent read them;
+those three were merged three-way against the commit it read,
+with no conflict.
+The grouping over the tree with this change finds 20 groups and 55 copies over 985 files.
+
+`consolidate-proposal-wrap.unit.test.ts` held six helpers nothing called:
+its one suite tests the wrapper alone,
+and the helpers drove the stage,
+which `consolidate-slate-carries-shipping-text.unit.test.ts` covers with live copies.
+The agent deleted four with their constants and imports;
+two more,
+`asSent` and `judgeBallot`,
+named only in their own TSDoc examples,
+are deleted here.
+No configured check reports a declaration nothing reads,
+the same gap B32 closed for imports;
+a census of the package's test files for more is open.
+
+The patch needed more than its review found,
+as B111's did.
+Lint over the patched tree reported 13 warnings and an error,
+all in the new fixtures or in callers of them:
+the callback-arity rule resolves a local function's parameters but not an imported one's,
+so two `map(toLaneCandidate)` calls now pass a named wrapper;
+stubs with no `await` return a settled promise instead,
+the budget stubs as module functions,
+as `pass-outside-reads.test-fixture.ts` writes them;
+a void function carried `@returns`,
+and two expressions broke the one-step-per-line and one-property-per-line rules.
+The unused-imports scan then found four type imports the hoists had orphaned,
+`ModelTransport` in two client tests and `BudgetView` in two router tests,
+which lint does not report.
+The agent kept two type assertions it could not check without a compiler,
+`as ChunkPair` and `as unknown as WouldShipSource`;
+both literals type-check without them,
+and both are gone.
+
+The 20 groups left are not helpers waiting to move.
+Six are the split scenarios B114 kept,
+and three are B114's literal-whitespace groupings.
+Two are the glossary cases B111 named,
+each reading its own file's term list.
+Five replace a process global
+(`console.log` collectors and environment restores),
+which the global-writes scan follows only within one file.
+Four have the same text over different bindings:
+`refusalOf` asks a different command-line reader in each file,
+`ask` sends each file's own messages,
+`sliceOf` cuts each file's own document,
+and `capturingLogger` wraps each file's own tagged logger,
+the pair `capturing-logger.test-fixture.ts` already names as kept apart.
+
+Open:
+the duplicate-body scan widens to test files,
+comparing literals as written
+and listing the remaining groups with their reasons;
+the census of test declarations nothing reads.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

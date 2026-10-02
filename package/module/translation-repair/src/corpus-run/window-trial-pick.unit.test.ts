@@ -31,6 +31,7 @@ import {
   trialKey,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
 
 /**
  Logger the pick writes to.
@@ -51,55 +52,10 @@ const MODELS = {
 };
 
 /**
- Builds one slice pair carrying given texts.
- 
- @param sliceIndex - position in the document
- 
- @param source - original wording
- 
- @param target - archive wording
- 
- @returns Pair shaped like one preparation produces
- 
- @example
- ```ts
- const pair = pairOf({ sliceIndex: 0, source: '猫。', target: 'Cat.', },);
- ```
- */
-function pairOf(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
-
-/**
  Lone slice, which has no neighbour to widen to and so must refuse.
  */
 const LONE: readonly ChunkPair[] = [
-  pairOf({
+  slicePairOf({
     sliceIndex: 0,
     source: '猫猫在窗台上打盹。',
     target: 'The cat naps on the windowsill.',

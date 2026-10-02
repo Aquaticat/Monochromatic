@@ -18,7 +18,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type BudgetView,
   createRoutingClient,
   NoProviderForModelError,
   type ProviderName,
@@ -26,6 +25,7 @@ import {
   StreamBoundError,
   StreamCutShortError,
 } from '../dist/final/node/index.mjs';
+import { stubWetBudgets, } from './provider-router-wet-budgets.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_TEXT_BEDROCK,
@@ -128,45 +128,6 @@ function stubProviders({ slow, }: { readonly slow: readonly string[]; },): {
 }
 
 /**
- Budget view where every provider but Synthetic reads wet, as in the run
- that found the class.
-
- @returns Budgets that never mark anything refused
-
- @example
- ```ts
- const budgets = stubBudgets();
- ```
- */
-function stubBudgets(): {
-  readonly read: () => Promise<BudgetView>;
-  readonly markRefused: (args: { readonly provider: ProviderName; },) => Promise<void>;
-  readonly holds: () => ProviderRecord<number>;
-} {
-  return {
-    read: async function read(): Promise<BudgetView> {
-      return {
-        synthetic: true,
-        hyper: false,
-        bedrock: false,
-        openrouter: false,
-      };
-    },
-    markRefused: async function markRefused(): Promise<void> {
-      // A stream bound is never a budget refusal; nothing to record.
-    },
-    holds: function holds(): ProviderRecord<number> {
-      return {
-        synthetic: 0,
-        hyper: 0,
-        bedrock: 0,
-        openrouter: 0,
-      };
-    },
-  };
-}
-
-/**
  Routes one text call and reports what happened.
 
  @param client - router under test
@@ -227,7 +188,7 @@ function routerOver({ slow, }: { readonly slow: readonly string[]; },): {
     clock,
     client: createRoutingClient({
       callers,
-      budgets: stubBudgets(),
+      budgets: stubWetBudgets(),
       modelHoldMs: HOLD_MS,
       now: function now(): number {
         return clock.now;

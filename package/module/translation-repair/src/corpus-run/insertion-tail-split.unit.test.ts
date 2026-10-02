@@ -22,9 +22,9 @@ import {
   type ChunkPair,
   classifyInsertionCoverage,
   type InsertionCoverageRow,
-  makeInsertionChunk,
   readUntranslatedTail,
 } from '../../dist/final/node/index.mjs';
+import { insertion, } from './insertion-only-slice.test-fixture.ts';
 
 /**
  Source paragraph the archive translated, the last agreed pair.
@@ -69,35 +69,6 @@ function pairedSlice(): ChunkPair {
       endOffset: PAIRED_TARGET.length,
       text: PAIRED_TARGET,
     },
-  };
-}
-
-/**
- Builds one source-only tail slice.
-
- @param sliceIndex - where the slice stands
-
- @returns Slice with no rendering beside it
-
- @example
- ```ts
- const slice = insertionSlice({ sliceIndex: 1, },);
- ```
- */
-function insertionSlice({ sliceIndex, }: { readonly sliceIndex: number; },): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: TAIL_SOURCE.length,
-      text: TAIL_SOURCE,
-    },
-    target: makeInsertionChunk({
-      sliceIndex,
-      offset: 0,
-    },),
   };
 }
 
@@ -170,8 +141,8 @@ function classifyTail({ second, }: { readonly second: InsertionCoverageRow; },) 
     tail: readUntranslatedTail({
       slices: [
         pairedSlice(),
-        insertionSlice({ sliceIndex: 1, },),
-        insertionSlice({ sliceIndex: 2, },),
+        insertion({ sliceIndex: 1, source: TAIL_SOURCE, },),
+        insertion({ sliceIndex: 2, source: TAIL_SOURCE, },),
       ],
     },),
   },);

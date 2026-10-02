@@ -41,6 +41,7 @@ import {
   readReportArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { capNotDigits, } from './cap-argument-refusal.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 
 //region Settled rendering audit argument tests
@@ -247,8 +248,7 @@ await describe({
               expect(refusal,).toBeInstanceOf(StatedRefusalError,);
               return (refusal as Error).message;
             },),).toEqual(caps.map(function expectedOf(cap,): string {
-              return `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-                + `and ${JSON.stringify(cap,)} is not one`;
+              return capNotDigits({ cap, },);
             },),);
           },
         },),

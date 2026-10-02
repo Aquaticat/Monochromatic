@@ -29,6 +29,7 @@ import {
   shippableReplacements,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
+import { artifactWithAnUnfilledAnchor, } from './would-ship-unfilled-anchor.test-fixture.ts';
 
 /**
  Archive's own wording at the slice every case reads.
@@ -95,63 +96,6 @@ function artifactShipping(
             kind: 'lane-won',
             lane: 'translate',
           },
-          ballots: [],
-          usable: 3,
-        },
-      ],
-    },
-  } as unknown as WouldShipSource;
-}
-
-/**
- Builds an artifact whose one slice is an ANCHOR nobody filled.
- 
- REACHES THE SILENCE THROUGH A DECLINED CONTEST OVER AN ARCHIVE THAT HOLDS
- NOTHING. This is the state `XIEPT2` reached live: its translate lane recorded
- slice 12 unfilled after the judges backed no candidate, the contest then had
- two blank lanes to choose between, and the archive had no wording to fall
- back on either.
- 
- PAIRED WITH {@link artifactWhoseLanesRemovedTheWording}, which is silent at a
- span the archive DOES render. The two silences assemble differently and the
- pair is what proves the builder reads `incumbentKind` rather than the reason
- name: these two carry different reasons and the same reason would not
- separate them.
- 
- @returns Artifact whose one slice is an unfilled anchor
- 
- @example
- ```ts
- const artifact = artifactWithAnUnfilledAnchor();
- ```
- */
-function artifactWithAnUnfilledAnchor(): WouldShipSource {
-  return {
-    comparison: [
-      {
-        sliceIndex: 1,
-        incumbentKind: 'absent',
-        incumbentText: '',
-        repairText: '',
-        translateText: '',
-        laneRelation: 'both-differ',
-        repairOutcome: { kind: 'unfilled', },
-        translateOutcome: { kind: 'unfilled', },
-        decisionComparison: {
-          kind: 'comparable',
-          verdict: 'same',
-        },
-        repairDelivery: { kind: 'gap-remains', },
-        translateDelivery: { kind: 'gap-remains', },
-      },
-    ],
-    consolidation: { kind: 'not-run', },
-    laneSelection: {
-      kind: 'contested',
-      slices: [
-        {
-          sliceIndex: 1,
-          verdict: { kind: 'settled-neither', },
           ballots: [],
           usable: 3,
         },

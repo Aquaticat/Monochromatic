@@ -24,8 +24,8 @@ import {
   CONTAINER_DEFICIT_UNREAD_FINDING,
   type ChunkPair,
   type InsertionCoverageRow,
-  makeInsertionChunk,
 } from '../../dist/final/node/index.mjs';
+import { insertion, } from './insertion-only-slice.test-fixture.ts';
 import { pair, } from './title-reference.test-fixture.ts';
 
 /**
@@ -62,45 +62,6 @@ const CLOSE_SOURCE = '猫不喜欢洗澡。\n\n</details>';
  Archive's rendering of the closing half.
  */
 const CLOSE_TARGET = 'The cat does not like baths.\n\n</details>';
-
-/**
- Builds one source-only slice.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text with no rendering beside it
-
- @returns Slice whose target is an insertion
-
- @example
- ```ts
- const slice = insertion({ sliceIndex: 2, source: MISSING_SOURCE, },);
- ```
- */
-function insertion(
-  {
-    sliceIndex,
-    source,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: makeInsertionChunk({
-      sliceIndex,
-      offset: 0,
-    },),
-  };
-}
 
 /**
  Unresolved row for the missing paragraph at slice 2.

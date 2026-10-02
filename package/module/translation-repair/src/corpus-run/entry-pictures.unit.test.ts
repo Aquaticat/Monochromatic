@@ -44,6 +44,7 @@ import {
   type CorpusPin,
   gatherEntryPictures,
 } from '../../dist/final/node/index.mjs';
+import { sliceOf, } from '../content-slice-of.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
 
 /**
@@ -116,51 +117,6 @@ function photoElement({ assetNames, }: { readonly assetNames: readonly string[];
     },)
       .join(', ',)
   } ]} />`;
-}
-
-/**
- Builds one slice pair carrying given original text, target side empty.
- 
- Offsets and nodes are named directly rather than parsed, mirroring
- `slice-pictures.unit.test.ts`: what is under test here is which pictures a
- gather reads off a pinned corpus, not how a slice was carved.
- 
- @param text - original-side text this slice covers
- 
- @param sliceIndex - position of this slice in its document
- 
- @returns Pair whose original side carries that text
- 
- @example
- ```ts
- const pair = sliceOf({ text: 'Mittens naps.\n', sliceIndex: 0, },);
- ```
- */
-function sliceOf(
-  {
-    text,
-    sliceIndex,
-  }: {
-    readonly text: string;
-    readonly sliceIndex: number;
-  },
-): ChunkPair {
-  return {
-    source: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: text.length,
-      text,
-    },
-    target: {
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: 0,
-      text: '',
-    },
-  };
 }
 
 /**
