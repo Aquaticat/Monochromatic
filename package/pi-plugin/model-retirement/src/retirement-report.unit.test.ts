@@ -14,17 +14,17 @@ import {
   formatLiveModelWarning,
   formatPlanningSummary,
   formatRetirementLine,
-} from './retirement-report.ts';
-import type { AbstentionCounts, } from './retirement-rule.ts';
+  type AbstentionCounts,
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 
 /**
- * Build an abstention tally with only the given reasons set.
- *
- * @param overrides - reasons to set, all others zero
- *
- * @returns tally with every reason present
+ Build an abstention tally with only the given reasons set.
+
+ @param overrides - reasons to set, all others zero
+
+ @returns tally with every reason present
  */
 function tally(overrides: Partial<AbstentionCounts>,): AbstentionCounts {
   return {
@@ -43,37 +43,25 @@ await describe({
   name: '',
   children: [
     describe({
-      name: formatRetirementLine.name,
-      children: [
-        it({
-          name: 'names the provider, the retired id, and the keeper',
-          fn: async function runRetirementLine() {
-            expect(formatRetirementLine({
-              retirement: {
-                provider: 'hyper',
-                api: 'openai-completions',
-                retiredId: 'glm-5.2',
-                keeperId: 'glm-5.3',
-              },
-            },),).toBe('retired hyper/glm-5.2 in favor of glm-5.3',);
-          },
-        },),
-      ],
-    },),
-    describe({
       name: formatAbstentions.name,
       children: [
         it({
           name: 'says nothing was declined when every reason is zero',
           fn: async function runEmptyTally() {
-            expect(formatAbstentions({ abstentions: tally({},), },),).toBe('declined nothing',);
+            expect(formatAbstentions({
+              abstentions: tally({},),
+            },),).toBe('declined nothing',);
           },
         },),
         it({
           name: 'lists non-zero reasons in a fixed order',
           fn: async function runOrderedTally() {
             expect(formatAbstentions({
-              abstentions: tally({ versionlessProtected: 3, keeperAmbiguity: 1, unorderedPair: 2, },),
+              abstentions: tally({
+                versionlessProtected: 3,
+                keeperAmbiguity: 1,
+                unorderedPair: 2,
+              },),
             },),).toBe('declined keeperAmbiguity=1 unorderedPair=2 versionlessProtected=3',);
           },
         },),
@@ -81,7 +69,9 @@ await describe({
           name: 'omits reasons that did not occur',
           fn: async function runPartialTally() {
             expect(formatAbstentions({
-              abstentions: tally({ duplicateIdentity: 1, },),
+              abstentions: tally({
+                duplicateIdentity: 1,
+              },),
             },),).toBe('declined duplicateIdentity=1',);
           },
         },),
@@ -94,27 +84,60 @@ await describe({
           name: 'reports counts of retired models and re-registered providers',
           fn: async function runSummary() {
             expect(formatPlanningSummary({
-              planning: {
-                plans: [{ provider: 'hyper', models: [], retirements: [], }],
-                retirements: [
-                  {
-                    provider: 'hyper',
-                    api: 'openai-completions',
-                    retiredId: 'glm-5.2',
-                    keeperId: 'glm-5.3',
-                  },
-                ],
-                abstentions: tally({ unorderedPair: 1, },),
+              counts: {
+                planCount: 1,
+                retirementCount: 1,
+                abstentions: tally({
+                  unorderedPair: 1,
+                },),
               },
-            },),).toBe('retired 1 models across 1 providers; declined unorderedPair=1',);
+            },),).toBe('retired 1 model across 1 provider; declined unorderedPair=1',);
           },
         },),
         it({
-          name: 'reports an empty pass without a provider count',
+          name: 'pluralizes a pass that retired several models',
+          fn: async function runPluralSummary() {
+            expect(formatPlanningSummary({
+              counts: {
+                planCount: 2,
+                retirementCount: 6,
+                abstentions: tally({},),
+              },
+            },),).toBe('retired 6 models across 2 providers; declined nothing',);
+          },
+        },),
+        it({
+          name: 'reports an empty pass',
           fn: async function runEmptySummary() {
             expect(formatPlanningSummary({
-              planning: { plans: [], retirements: [], abstentions: tally({},), },
+              counts: {
+                planCount: 0,
+                retirementCount: 0,
+                abstentions: tally({},),
+              },
             },),).toBe('retired 0 models across 0 providers; declined nothing',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: formatRetirementLine.name,
+      children: [
+        it({
+          name: 'names the provider, the retired id, and the keeper',
+          fn: async function runRetirementLine() {
+            /**
+             Line for one measured retirement.
+             */
+            const line = formatRetirementLine({
+              retirement: {
+                provider: 'hyper',
+                api: 'openai-completions',
+                retiredId: 'glm-5.2',
+                keeperId: 'glm-5.3',
+              },
+            },);
+            expect(line,).toBe('retired hyper/glm-5.2 in favor of glm-5.3',);
           },
         },),
       ],

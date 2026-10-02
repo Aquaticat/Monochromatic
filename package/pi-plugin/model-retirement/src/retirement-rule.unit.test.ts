@@ -12,12 +12,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { parseModelId, } from './id-tokens.ts';
 import {
   compareRecency,
   decideRetirements,
+  parseModelId,
   type CatalogEntry,
-} from './retirement-rule.ts';
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 
@@ -38,15 +38,15 @@ type RetirementCase = {
 };
 
 /**
- * Build one catalog entry with the common API type.
- *
- * @param provider - provider id owning the entry
- *
- * @param modelId - model id exactly as a catalog carries it
- *
- * @param api - API type the entry is served under
- *
- * @returns catalog entry for a fixture set
+ Build one catalog entry with the common API type.
+ 
+ @param provider - provider id owning the entry
+ 
+ @param modelId - model id exactly as a catalog carries it
+ 
+ @param api - API type the entry is served under
+ 
+ @returns catalog entry for a fixture set
  */
 function entry(
   {
@@ -63,9 +63,9 @@ function entry(
 }
 
 /**
- * Retirement controls taken from the measured catalog, including the three `radius`
- * inversions that the alias-wins tiebreak in
- * `@monochromatic-dev/pi-shared-model-selection` produced and this rule must not.
+ Retirement controls taken from the measured catalog, including the three `radius`
+ inversions that the alias-wins tiebreak in
+ `@monochromatic-dev/pi-shared-model-selection` produced and this rule must not.
  */
 const RETIREMENT_CASES: readonly RetirementCase[] = [
   {
@@ -150,8 +150,8 @@ const RETIREMENT_CASES: readonly RetirementCase[] = [
 ];
 
 /**
- * Keep controls: pairs the rule must abstain on, each one a measured false positive
- * of a more aggressive ordering.
+ Keep controls: pairs the rule must abstain on, each one a measured false positive
+ of a more aggressive ordering.
  */
 const KEEP_CASES: readonly RetirementCase[] = [
   {
@@ -317,7 +317,7 @@ await describe({
             },);
             expect(decision.retirements,).toEqual([],);
             expect(
-              decision.abstentions.unorderedPair + decision.abstentions.keeperAmbiguity > 0,
+              (decision.abstentions.unorderedPair + decision.abstentions.keeperAmbiguity) > 0,
             ).toBe(true,);
           },
         },),

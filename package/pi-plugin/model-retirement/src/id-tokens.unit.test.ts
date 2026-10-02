@@ -14,7 +14,7 @@ import {
   isDateShapedRaw,
   parseModelId,
   stripOrganizationPrefix,
-} from './id-tokens.ts';
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 
@@ -29,9 +29,9 @@ type TokenCase = {
 };
 
 /**
- * Classification controls covering every branch of {@link classifyToken}:
- * whole-token numerics, `v` prefixes, alphabetic prefixes with dotted digits,
- * trailing letters, parameter sizes, and an empty token.
+ Classification controls covering every branch of {@link classifyToken}:
+ whole-token numerics, `v` prefixes, alphabetic prefixes with dotted digits,
+ trailing letters, parameter sizes, and an empty token.
  */
 const TOKEN_CASES: readonly TokenCase[] = [
   { token: '5.2', raws: ['5', '2'], },
@@ -63,8 +63,8 @@ type DateCase = {
 };
 
 /**
- * Date controls for every accepted width and for the near misses that must stay
- * version numbers, including the leading-zero pair `0813` and `813`.
+ Date controls for every accepted width and for the near misses that must stay
+ version numbers, including the leading-zero pair `0813` and `813`.
  */
 const DATE_CASES: readonly DateCase[] = [
   { raw: '0813', expected: true, },
@@ -99,9 +99,9 @@ type ParseCase = {
 };
 
 /**
- * Parse controls pinning the shapes that decide retirements: tier words and
- * parameter sizes stay in the name shape, alias markers and Hugging Face
- * organizations are dropped, and glued versions split.
+ Parse controls pinning the shapes that decide retirements: tier words and
+ parameter sizes stay in the name shape, alias markers and Hugging Face
+ organizations are dropped, and glued versions split.
  */
 const PARSE_CASES: readonly ParseCase[] = [
   {
@@ -184,14 +184,14 @@ const PARSE_CASES: readonly ParseCase[] = [
   {
     modelId: 'gpt-4o-2024-11-20',
     nameShape: 'gpt-4o',
-    versionParts: [2024, 11, 20],
+    versionParts: [2_024, 11, 20],
     versionRaws: ['2024', '11', '20'],
     dateRaws: [],
   },
   {
     modelId: 'anthropic.claude-opus-4-1-20250805-v1:0',
     nameShape: 'anthropic.claude-opus',
-    versionParts: [4, 1, 20250805, 1, 0],
+    versionParts: [4, 1, 20_250_805, 1, 0],
     versionRaws: ['4', '1', '20250805', '1', '0'],
     dateRaws: ['20250805'],
   },

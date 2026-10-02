@@ -26,7 +26,7 @@ import {
   readsFromRegistry,
   registerModelRetirement,
   type RetirementLog,
-} from './register-model-retirement.ts';
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 
@@ -34,13 +34,13 @@ import {
 const CHAT_API: Api = 'openai-completions';
 
 /**
- * Build one chat model fixture.
- *
- * @param provider - provider id owning the model
- *
- * @param id - model id
- *
- * @returns chat model shaped like a registry read
+ Build one chat model fixture.
+ 
+ @param provider - provider id owning the model
+ 
+ @param id - model id
+ 
+ @returns chat model shaped like a registry read
  */
 function chatModel(
   {
@@ -60,19 +60,19 @@ function chatModel(
     input: ['text'],
     cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
     reasoning: true,
-    contextWindow: 128000,
-    maxTokens: 4096,
+    contextWindow: 128_000,
+    maxTokens: 4_096,
   };
 }
 
 /**
- * Build one image model fixture.
- *
- * @param provider - provider id owning the model
- *
- * @param id - model id
- *
- * @returns image model shaped like a registry read
+ Build one image model fixture.
+ 
+ @param provider - provider id owning the model
+ 
+ @param id - model id
+ 
+ @returns image model shaped like a registry read
  */
 function imageModel(
   {
@@ -97,13 +97,13 @@ function imageModel(
 }
 
 /**
- * Build one classifier model fixture.
- *
- * @param provider - provider id owning the model
- *
- * @param id - model id
- *
- * @returns classifier model shaped like a registry read
+ Build one classifier model fixture.
+ 
+ @param provider - provider id owning the model
+ 
+ @param id - model id
+ 
+ @returns classifier model shaped like a registry read
  */
 function classifierModel(
   {
@@ -123,7 +123,7 @@ function classifierModel(
     input: ['text'],
     cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
     type: 'classifier',
-    contextWindow: 8000,
+    contextWindow: 8_000,
   };
 }
 
@@ -135,11 +135,11 @@ type CapturedLog = {
 };
 
 /**
- * Build a fake logger that captures every message.
- *
- * @param captured - arrays the fake appends to
- *
- * @returns logger surface the pass accepts
+ Build a fake logger that captures every message.
+ 
+ @param captured - arrays the fake appends to
+ 
+ @returns logger surface the pass accepts
  */
 function fakeLog(captured: CapturedLog,): RetirementLog {
   return {
@@ -156,9 +156,9 @@ function fakeLog(captured: CapturedLog,): RetirementLog {
 }
 
 /**
- * Build an empty capture triple.
- *
- * @returns fresh capture arrays
+ Build an empty capture triple.
+ 
+ @returns fresh capture arrays
  */
 function emptyCapture(): CapturedLog {
   return { info: [], debug: [], warn: [], };
@@ -178,11 +178,11 @@ type FakeHostState = {
 };
 
 /**
- * Build a fake pi host recording events and provider registrations.
- *
- * @param state - mutable state the fake writes to
- *
- * @returns fake extension API and its recorded state
+ Build a fake pi host recording events and provider registrations.
+ 
+ @param state - mutable state the fake writes to
+ 
+ @returns fake extension API and its recorded state
  */
 function fakeHost(state: FakeHostState,): ExtensionAPI {
   /**
@@ -205,15 +205,15 @@ function fakeHost(state: FakeHostState,): ExtensionAPI {
 }
 
 /**
- * Build a catalog read over three fixture lists.
- *
- * @param chat - chat models to report
- *
- * @param images - image models to report
- *
- * @param classifiers - classifier models to report
- *
- * @returns reads the pass consumes
+ Build a catalog read over three fixture lists.
+ 
+ @param chat - chat models to report
+ 
+ @param images - image models to report
+ 
+ @param classifiers - classifier models to report
+ 
+ @returns reads the pass consumes
  */
 function readOf(
   {
@@ -240,11 +240,11 @@ function readOf(
 }
 
 /**
- * Read the ids one registration would install.
- *
- * @param config - configuration a fake host recorded, absent when nothing registered
- *
- * @returns model ids in registration order
+ Read the ids one registration would install.
+ 
+ @param config - configuration a fake host recorded, absent when nothing registered
+ 
+ @returns model ids in registration order
  */
 function registeredIds(config: ProviderConfig | undefined,): readonly string[] {
   return (config?.models ?? []).map(function toId(model,) {

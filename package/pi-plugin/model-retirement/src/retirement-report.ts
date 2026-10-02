@@ -9,8 +9,35 @@
  @module
  */
 
-import type { AbstentionCounts, Retirement, } from './retirement-rule.ts';
-import type { FilterPlanning, } from './provider-filter.ts';
+import type {
+  AbstentionCounts,
+  Retirement,
+} from './retirement-rule.ts';
+
+//region Types
+
+/**
+ Counts one retirement pass produced.
+
+ Deliberately free of pi's model objects: a formatter that received the plans would
+ carry foreign mutable metadata it never reads.
+ */
+export type PlanningCounts = {
+  /**
+   How many providers the pass re-registers.
+   */
+  readonly planCount: number;
+  /**
+   How many models the pass retires.
+   */
+  readonly retirementCount: number;
+  /**
+   Declined retirements grouped by reason.
+   */
+  readonly abstentions: AbstentionCounts;
+};
+
+//endregion Types
 
 //region Lines
 
@@ -86,29 +113,67 @@ export function formatAbstentions(
 }
 
 /**
+ Format a count with an English plural noun.
+
+ @param count - how many items the line names
+
+ @param noun - singular noun to pluralize
+
+ @returns count and noun agreeing in number
+
+ @example
+ ```typescript
+ pluralize({ count: 1, noun: 'model' }); // '1 model'
+ ```
+ */
+function pluralize(
+  {
+    count,
+    noun,
+  }: {
+    readonly count: number;
+    readonly noun: string;
+  },
+): string {
+  return `${String(count)} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+/**
  Format the whole planning outcome as one summary line.
 
- @param planning - plans, retirements, and abstentions
+ @param counts - retirement and provider counts plus the abstention tally
 
  @returns line stating how many models were retired across how many providers
 
  @example
  ```typescript
- formatPlanningSummary({ planning }); // 'retired 6 models across 2 providers; declined nothing'
+ formatPlanningSummary({ counts }); // 'retired 6 models across 2 providers; declined nothing'
  ```
  */
 export function formatPlanningSummary(
   {
-    planning,
+    counts,
   }: {
-    readonly planning: FilterPlanning;
+    readonly counts: PlanningCounts;
   },
 ): string {
   /**
    Provider count phrase.
    */
-  const providers = `across ${String(planning.plans.length)} providers`;
-  return `retired ${String(planning.retirements.length)} models ${providers}; ${formatAbstentions({ abstentions: planning.abstentions, },)}`;
+  const providers = pluralize({
+    count: counts.planCount,
+    noun: 'provider',
+  },);
+  /**
+   Retirement count phrase.
+   */
+  const models = pluralize({
+    count: counts.retirementCount,
+    noun: 'model',
+  },);
+  return `retired ${models} across ${providers}; ${formatAbstentions({
+    abstentions: counts.abstentions,
+  },)}`;
 }
 
 /**

@@ -21,7 +21,7 @@ import {
   planProviderFilters,
   toModelConfig,
   type CatalogRead,
-} from './provider-filter.ts';
+} from '../dist/final/node/index.mjs';
 
 //region Fixtures
 
@@ -35,17 +35,17 @@ const IMAGE_API: ImageApi = 'openrouter-images';
 const CLASSIFIER_API: ClassifierApi = 'typesafe-system-one';
 
 /**
- * Build one chat model fixture.
- *
- * @param provider - provider id owning the model
- *
- * @param id - model id
- *
- * @param api - API type the model is served under
- *
- * @param thinkingLevelMap - thinking map to prove optional metadata survives
- *
- * @returns chat model shaped like a registry read
+ Build one chat model fixture.
+ 
+ @param provider - provider id owning the model
+ 
+ @param id - model id
+ 
+ @param api - API type the model is served under
+ 
+ @param thinkingLevelMap - thinking map to prove optional metadata survives
+ 
+ @returns chat model shaped like a registry read
  */
 function chatModel(
   {
@@ -69,20 +69,20 @@ function chatModel(
     input: ['text'],
     cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
     reasoning: true,
-    contextWindow: 128000,
-    maxTokens: 4096,
+    contextWindow: 128_000,
+    maxTokens: 4_096,
     ...(thinkingLevelMap === undefined ? {} : { thinkingLevelMap, }),
   };
 }
 
 /**
- * Build one image model fixture.
- *
- * @param provider - provider id owning the model
- *
- * @param id - model id
- *
- * @returns image model shaped like a registry read
+ Build one image model fixture.
+ 
+ @param provider - provider id owning the model
+ 
+ @param id - model id
+ 
+ @returns image model shaped like a registry read
  */
 function imageModel(
   {
@@ -107,13 +107,13 @@ function imageModel(
 }
 
 /**
- * Build one classifier model fixture.
- *
- * @param provider - provider id owning the model
- *
- * @param id - model id
- *
- * @returns classifier model shaped like a registry read
+ Build one classifier model fixture.
+ 
+ @param provider - provider id owning the model
+ 
+ @param id - model id
+ 
+ @returns classifier model shaped like a registry read
  */
 function classifierModel(
   {
@@ -133,20 +133,20 @@ function classifierModel(
     input: ['text'],
     cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
     type: 'classifier',
-    contextWindow: 8000,
+    contextWindow: 8_000,
   };
 }
 
 /**
- * Build the injected catalog read from three fixture lists.
- *
- * @param chat - chat models the registry reports
- *
- * @param images - image models the registry reports
- *
- * @param classifiers - classifier models the registry reports
- *
- * @returns reads the planner consumes
+ Build the injected catalog read from three fixture lists.
+ 
+ @param chat - chat models the registry reports
+ 
+ @param images - image models the registry reports
+ 
+ @param classifiers - classifier models the registry reports
+ 
+ @returns reads the planner consumes
  */
 function readOf(
   {
@@ -173,11 +173,11 @@ function readOf(
 }
 
 /**
- * Read the ids a plan carries, in order.
- *
- * @param models - configurations one plan would register
- *
- * @returns ids in registration order
+ Read the ids a plan carries, in order.
+ 
+ @param models - configurations one plan would register
+ 
+ @returns ids in registration order
  */
 function planIds(models: readonly { readonly id: string; }[],): readonly string[] {
   return models.map(function toId(model,) {

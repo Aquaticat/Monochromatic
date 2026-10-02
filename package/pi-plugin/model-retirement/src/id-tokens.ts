@@ -41,12 +41,12 @@ const LARGEST_DAY = 31;
 /**
  Smallest plausible four-digit year in a date-shaped token.
  */
-const SMALLEST_YEAR = 2000;
+const SMALLEST_YEAR = 2_000;
 
 /**
  Largest plausible four-digit year in a date-shaped token.
  */
-const LARGEST_YEAR = 2099;
+const LARGEST_YEAR = 2_099;
 
 /**
  Marker some router catalogs prefix onto rolling alias entries.
@@ -142,7 +142,7 @@ type NumericRun = {
  ```
  */
 export function isAsciiDigit(character: string,): boolean {
-  return character >= '0' && character <= '9';
+  return (character >= '0') && (character <= '9');
 }
 
 /**
@@ -161,7 +161,7 @@ export function isAsciiDigit(character: string,): boolean {
  ```
  */
 export function isLowerAsciiLetter(character: string,): boolean {
-  return character >= 'a' && character <= 'z';
+  return (character >= 'a') && (character <= 'z');
 }
 
 /**
@@ -182,7 +182,7 @@ export function isLowerAsciiLetter(character: string,): boolean {
 export function isTokenCharacter(character: string,): boolean {
   return isAsciiDigit(character,)
     || isLowerAsciiLetter(character,)
-    || character === '.';
+    || (character === '.');
 }
 
 //endregion Character predicates
@@ -258,7 +258,7 @@ export function stripOrganizationPrefix(modelId: string,): string {
    Index of the slash closing the organization segment, or -1 when absent.
    */
   const slashIndex = unmarked.indexOf('/',);
-  if (slashIndex < 0)
+  if (slashIndex === (-1))
     return unmarked;
   return unmarked.slice(slashIndex + 1,);
 }
@@ -291,29 +291,38 @@ export function readNumericRun(
    Cursor walking the run.
    */
   let cursor = start;
-  while (cursor < text.length && isAsciiDigit(text[cursor] as string,))
+  while ((cursor < text.length) && isAsciiDigit(text[cursor] as string,))
     cursor += 1;
   if (cursor === start)
     return undefined;
   /**
    Raw components collected so far.
    */
-  const raws: string[] = [text.slice(start, cursor,),];
+  const raws: string[] = [text.slice(
+    start,
+    cursor,
+  ),];
   for (;;) {
-    if (cursor >= text.length || text[cursor] !== '.')
+    if ((cursor >= text.length) || (text[cursor] !== '.'))
       break;
     /**
      Index just past the dot.
      */
     const componentStart = cursor + 1;
     cursor = componentStart;
-    while (cursor < text.length && isAsciiDigit(text[cursor] as string,))
+    while ((cursor < text.length) && isAsciiDigit(text[cursor] as string,))
       cursor += 1;
     if (cursor === componentStart)
       return undefined;
-    raws.push(text.slice(componentStart, cursor,),);
+    raws.push(text.slice(
+      componentStart,
+      cursor,
+    ),);
   }
-  return { end: cursor, raws, };
+  return {
+    end: cursor,
+    raws,
+  };
 }
 
 //endregion Token scanning
@@ -346,33 +355,86 @@ export function isDateShapedRaw(raw: string,): boolean {
     /**
      First two digits, read as a month by one convention and as a year by the other.
      */
-    const first = Number.parseInt(raw.slice(0, 2,), 10,);
+    const first = Number.parseInt(
+      raw.slice(
+        0,
+        2,
+      ),
+      10,
+    );
     /**
      Last two digits, read as a day by one convention and as a month by the other.
      */
-    const second = Number.parseInt(raw.slice(2,), 10,);
-    const readsAsMonthDay = first >= 1 && first <= LARGEST_MONTH
-      && second >= 1 && second <= LARGEST_DAY;
-    const readsAsYearMonth = first <= LARGEST_DAY
-      && second >= 1 && second <= LARGEST_MONTH;
+    const second = Number.parseInt(
+      raw.slice(2,),
+      10,
+    );
+    const readsAsMonthDay = (first >= 1) && (first <= LARGEST_MONTH)
+      && (second >= 1)
+      && (second <= LARGEST_DAY);
+    const readsAsYearMonth = (first <= LARGEST_DAY)
+      && (second >= 1)
+      && (second <= LARGEST_MONTH);
     return readsAsMonthDay || readsAsYearMonth;
   }
   if (raw.length === MEDIUM_DATE_DIGIT_COUNT) {
-    return Number.parseInt(raw.slice(2, 4,), 10,) >= 1
-      && Number.parseInt(raw.slice(2, 4,), 10,) <= LARGEST_MONTH
-      && Number.parseInt(raw.slice(4,), 10,) >= 1
-      && Number.parseInt(raw.slice(4,), 10,) <= LARGEST_DAY;
+    return (Number.parseInt(
+      raw.slice(
+        2,
+        4,
+      ),
+      10,
+    ) >= 1)
+      && (Number.parseInt(
+        raw.slice(
+          2,
+          4,
+        ),
+        10,
+      ) <= LARGEST_MONTH)
+      && (Number.parseInt(
+        raw.slice(4,),
+        10,
+      ) >= 1)
+      && (Number.parseInt(
+        raw.slice(4,),
+        10,
+      ) <= LARGEST_DAY);
   }
   if (raw.length === LONG_DATE_DIGIT_COUNT) {
     /**
      Four-digit year prefix.
      */
-    const year = Number.parseInt(raw.slice(0, 4,), 10,);
-    return year >= SMALLEST_YEAR && year <= LARGEST_YEAR
-      && Number.parseInt(raw.slice(4, 6,), 10,) >= 1
-      && Number.parseInt(raw.slice(4, 6,), 10,) <= LARGEST_MONTH
-      && Number.parseInt(raw.slice(6,), 10,) >= 1
-      && Number.parseInt(raw.slice(6,), 10,) <= LARGEST_DAY;
+    const year = Number.parseInt(
+      raw.slice(
+        0,
+        4,
+      ),
+      10,
+    );
+    return (year >= SMALLEST_YEAR) && (year <= LARGEST_YEAR)
+      && (Number.parseInt(
+        raw.slice(
+          4,
+          6,
+        ),
+        10,
+      ) >= 1)
+      && (Number.parseInt(
+        raw.slice(
+          4,
+          6,
+        ),
+        10,
+      ) <= LARGEST_MONTH)
+      && (Number.parseInt(
+        raw.slice(6,),
+        10,
+      ) >= 1)
+      && (Number.parseInt(
+        raw.slice(6,),
+        10,
+      ) <= LARGEST_DAY);
   }
   return false;
 }
@@ -406,26 +468,35 @@ export function classifyToken(token: string,): TokenClassification {
   /**
    Numeric run covering the whole token, when the token is purely numeric.
    */
-  const bareRun = readNumericRun({ text: token, start: 0, },);
-  if (bareRun !== undefined && bareRun.end === token.length)
+  const bareRun = readNumericRun({
+    text: token,
+    start: 0,
+  },);
+  if ((bareRun !== undefined) && (bareRun.end === token.length))
     return { raws: bareRun.raws, };
-  if (token[0] === 'v') {
+  if (token.startsWith('v')) {
     /**
      Numeric run behind the `v` prefix.
      */
-    const prefixedRun = readNumericRun({ text: token, start: 1, },);
-    if (prefixedRun !== undefined && prefixedRun.end === token.length)
+    const prefixedRun = readNumericRun({
+      text: token,
+      start: 1,
+    },);
+    if ((prefixedRun !== undefined) && (prefixedRun.end === token.length))
       return { raws: prefixedRun.raws, };
   }
   /**
    Length of the leading alphabetic run.
    */
   let prefixLength = 0;
-  while (prefixLength < token.length
+  while ((prefixLength < token.length)
     && isLowerAsciiLetter(token[prefixLength] as string,))
     prefixLength += 1;
   if (prefixLength === 0)
-    return { word: token, raws: [], };
+    return {
+      word: token,
+      raws: [],
+    };
   /**
    Index where digits may start after the alphabetic prefix and an optional `v`.
    */
@@ -435,14 +506,23 @@ export function classifyToken(token: string,): TokenClassification {
   /**
    Numeric run trailing the alphabetic prefix.
    */
-  const trailingRun = readNumericRun({ text: token, start: digitStart, },);
-  if (trailingRun !== undefined && trailingRun.end === token.length) {
+  const trailingRun = readNumericRun({
+    text: token,
+    start: digitStart,
+  },);
+  if ((trailingRun !== undefined) && (trailingRun.end === token.length)) {
     return {
-      word: token.slice(0, prefixLength,),
+      word: token.slice(
+        0,
+        prefixLength,
+      ),
       raws: trailingRun.raws,
     };
   }
-  return { word: token, raws: [], };
+  return {
+    word: token,
+    raws: [],
+  };
 }
 
 /**
@@ -487,7 +567,10 @@ export function parseModelId(modelId: string,): ModelIdParse {
     if (classification.word !== undefined)
       words.push(classification.word,);
     for (const raw of classification.raws) {
-      versionParts.push(Number.parseInt(raw, 10,),);
+      versionParts.push(Number.parseInt(
+        raw,
+        10,
+      ),);
       versionRaws.push(raw,);
       if (isDateShapedRaw(raw,))
         dateRaws.push(raw,);

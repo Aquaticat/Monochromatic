@@ -55,6 +55,7 @@ export {
   formatLiveModelWarning,
   formatPlanningSummary,
   formatRetirementLine,
+  type PlanningCounts,
 } from './retirement-report.ts';
 
 //region Extension entry point

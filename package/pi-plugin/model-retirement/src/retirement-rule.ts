@@ -192,11 +192,17 @@ function compareDateSequences(
     /**
      Left component at the current position.
      */
-    const left = Number.parseInt(leftDates[index] as string, 10,);
+    const left = Number.parseInt(
+      leftDates[index] as string,
+      10,
+    );
     /**
      Right component at the current position.
      */
-    const right = Number.parseInt(rightDates[index] as string, 10,);
+    const right = Number.parseInt(
+      rightDates[index] as string,
+      10,
+    );
     if (left === right)
       continue;
     return left > right ? 'left' : 'right';
@@ -227,16 +233,30 @@ function compareEqualLengthDates(
     readonly right: ModelIdParse;
   },
 ): Recency {
-  if (left.dateRaws.length === right.dateRaws.length
-    && left.dateRaws.every(function matchesSameDate(raw, index) {
+  if ((left.dateRaws
+    .length
+    === right.dateRaws
+    .length)
+    && left.dateRaws
+    .every(function matchesSameDate(
+      raw,
+      index
+    ) {
       return raw === right.dateRaws[index];
     },))
     return undefined;
-  if (left.dateRaws.length === 0)
+  if (left.dateRaws
+    .length
+    === 0)
     return 'left';
-  if (right.dateRaws.length === 0)
+  if (right.dateRaws
+    .length
+    === 0)
     return 'right';
-  if (left.dateRaws.length !== right.dateRaws.length)
+  if (left.dateRaws
+    .length
+    !== right.dateRaws
+    .length)
     return undefined;
   return compareDateSequences({
     leftDates: left.dateRaws,
@@ -274,7 +294,9 @@ function comparePrefix(
   /**
    Raw components the longer parse carries past the shared prefix.
    */
-  const extras = longer.versionRaws.slice(shorter.versionRaws.length,);
+  const extras = longer.versionRaws
+    .slice(shorter.versionRaws
+      .length,);
   /**
    Date classification of every extra component.
    */
@@ -318,12 +340,21 @@ export function compareRecency(
 ): Recency {
   if (left.nameShape !== right.nameShape)
     return undefined;
-  if (left.versionParts.length === 0 || right.versionParts.length === 0)
+  if ((left.versionParts
+    .length
+    === 0) || (right.versionParts
+      .length
+      === 0))
     return undefined;
   /**
    Count of positions both vectors cover.
    */
-  const shared = Math.min(left.versionParts.length, right.versionParts.length,);
+  const shared = Math.min(
+    left.versionParts
+      .length,
+    right.versionParts
+      .length,
+  );
   for (let index = 0; index < shared; index += 1) {
     /**
      Left component at the current position.
@@ -342,20 +373,38 @@ export function compareRecency(
       return undefined;
     return leftPart > rightPart ? 'left' : 'right';
   }
-  if (left.versionParts.length === right.versionParts.length)
-    return compareEqualLengthDates({ left, right, },);
+  if (left.versionParts
+    .length
+    === right.versionParts
+    .length)
+    return compareEqualLengthDates({
+      left,
+      right,
+    },);
   /**
    Prefix comparison result, expressed in caller terms.
    */
-  const prefixOutcome = left.versionParts.length < right.versionParts.length
-    ? comparePrefix({ shorter: left, longer: right, },)
-    : comparePrefix({ shorter: right, longer: left, },);
+  const prefixOutcome = left.versionParts
+    .length
+    < right.versionParts
+    .length
+    ? comparePrefix({
+      shorter: left,
+      longer: right,
+    },)
+    : comparePrefix({
+      shorter: right,
+      longer: left,
+    },);
   if (prefixOutcome === undefined)
     return undefined;
   /**
    Whether the newer side of the prefix comparison is the left parse.
    */
-  const shorterIsLeft = left.versionParts.length < right.versionParts.length;
+  const shorterIsLeft = left.versionParts
+    .length
+    < right.versionParts
+    .length;
   if (prefixOutcome === 'shorter')
     return shorterIsLeft ? 'left' : 'right';
   return shorterIsLeft ? 'right' : 'left';
@@ -388,7 +437,11 @@ function familyKey(
     readonly parse: ModelIdParse;
   },
 ): string {
-  return JSON.stringify([entry.provider, entry.api, parse.nameShape],);
+  return JSON.stringify([
+    entry.provider,
+    entry.api,
+    parse.nameShape
+  ],);
 }
 
 /**
@@ -410,25 +463,40 @@ function chooseKeeper(
     candidates,
     tally,
   }: {
-    readonly candidates: readonly { readonly entry: CatalogEntry; readonly parse: ModelIdParse; }[];
+    readonly candidates: readonly {
+      readonly entry: CatalogEntry;
+      readonly parse: ModelIdParse
+    }[];
     readonly tally: AbstentionTally;
   },
-): { readonly entry: CatalogEntry; readonly parse: ModelIdParse; } | undefined {
+): {
+  readonly entry: CatalogEntry;
+  readonly parse: ModelIdParse
+} | undefined {
   if (candidates.length < 2)
     return undefined;
   /**
    Newest candidate seen so far.
    */
-  let keeper = candidates[0] as { readonly entry: CatalogEntry; readonly parse: ModelIdParse; };
+  let keeper = candidates[0] as {
+    readonly entry: CatalogEntry;
+    readonly parse: ModelIdParse
+  };
   for (let index = 1; index < candidates.length; index += 1) {
     /**
      Candidate being compared against the current keeper.
      */
-    const candidate = candidates[index] as { readonly entry: CatalogEntry; readonly parse: ModelIdParse; };
+    const candidate = candidates[index] as {
+      readonly entry: CatalogEntry;
+      readonly parse: ModelIdParse
+    };
     /**
      Recency comparison between keeper and candidate.
      */
-    const outcome = compareRecency({ left: keeper.parse, right: candidate.parse, },);
+    const outcome = compareRecency({
+      left: keeper.parse,
+      right: candidate.parse,
+    },);
     if (outcome === undefined) {
       tally.keeperAmbiguity += 1;
       continue;
@@ -461,7 +529,10 @@ export function decideRetirements(
   /**
    Family members grouped by provider, API, and name shape.
    */
-  const families = new Map<string, { readonly entry: CatalogEntry; readonly parse: ModelIdParse; }[]>();
+  const families = new Map<string, {
+    readonly entry: CatalogEntry;
+    readonly parse: ModelIdParse
+  }[]>();
   /**
    Abstention tally for this pass.
    */
@@ -480,13 +551,22 @@ export function decideRetirements(
     /**
      Family this entry belongs to.
      */
-    const key = familyKey({ entry, parse, },);
+    const key = familyKey({
+      entry,
+      parse,
+    },);
     /**
      Members collected for that family so far.
      */
     const members = families.get(key,) ?? [];
-    members.push({ entry, parse, },);
-    families.set(key, members,);
+    members.push({
+      entry,
+      parse,
+    },);
+    families.set(
+      key,
+      members,
+    );
   }
   /**
    Retirements in catalog order.
@@ -497,38 +577,60 @@ export function decideRetirements(
      Members carrying version evidence, the only ones eligible to keep or lose.
      */
     const candidates = members.filter(function hasVersionEvidence(member,) {
-      return member.parse.versionParts.length > 0;
+      return member.parse
+        .versionParts
+        .length
+        > 0;
     },);
     /**
      Newest member of this family.
      */
-    const keeper = chooseKeeper({ candidates, tally, },);
+    const keeper = chooseKeeper({
+      candidates,
+      tally,
+    },);
     if (keeper === undefined)
       continue;
     /**
      Identities already retired or kept in this family, so a repeated catalog row
      cannot retire itself.
      */
-    const seen = new Set<string>([JSON.stringify([keeper.entry.api, keeper.entry.modelId],)],);
+    const seen = new Set<string>([JSON.stringify([
+      keeper.entry
+        .api,
+      keeper.entry
+        .modelId
+    ],)],);
     for (const member of members) {
       /**
        Identity of the member under consideration.
        */
-      const identity = JSON.stringify([member.entry.api, member.entry.modelId],);
+      const identity = JSON.stringify([
+        member.entry
+          .api,
+        member.entry
+          .modelId
+      ],);
       if (seen.has(identity,)) {
         if (member !== keeper)
           tally.duplicateIdentity += 1;
         continue;
       }
       seen.add(identity,);
-      if (member.parse.versionParts.length === 0) {
+      if (member.parse
+        .versionParts
+        .length
+        === 0) {
         tally.versionlessProtected += 1;
         continue;
       }
       /**
        Recency comparison between the member and the family keeper.
        */
-      const outcome = compareRecency({ left: member.parse, right: keeper.parse, },);
+      const outcome = compareRecency({
+        left: member.parse,
+        right: keeper.parse,
+      },);
       if (outcome === 'left') {
         tally.loserNewerThanKeeper += 1;
         continue;
@@ -538,14 +640,21 @@ export function decideRetirements(
         continue;
       }
       retirements.push({
-        provider: member.entry.provider,
-        api: member.entry.api,
-        retiredId: member.entry.modelId,
-        keeperId: keeper.entry.modelId,
+        provider: member.entry
+          .provider,
+        api: member.entry
+          .api,
+        retiredId: member.entry
+          .modelId,
+        keeperId: keeper.entry
+          .modelId,
       },);
     }
   }
-  return { retirements, abstentions: { ...tally, }, };
+  return {
+    retirements,
+    abstentions: { ...tally, },
+  };
 }
 
 //endregion Decision

@@ -103,7 +103,10 @@ export type ProviderRegistrar = {
   /**
    Replace one provider's model list.
    */
-  readonly registerProvider: (name: string, config: ProviderConfig,) => void;
+  readonly registerProvider: (
+    name: string,
+    config: ProviderConfig,
+  ) => void;
 };
 
 /**
@@ -174,10 +177,16 @@ export function readsFromRegistry(
       return chatReader.getAll();
     },
     readImageModels: function readImageModels(provider,) {
-      return imageReader.getModelsOfType('image', provider,);
+      return imageReader.getModelsOfType(
+        'image',
+        provider,
+      );
     },
     readClassifierModels: function readClassifierModels(provider,) {
-      return classifierReader.getModelsOfType('classifier', provider,);
+      return classifierReader.getModelsOfType(
+        'classifier',
+        provider,
+      );
     },
   };
 }
@@ -228,10 +237,21 @@ export function applyRetirements(
    */
   const registeredProviders: string[] = [];
   for (const plan of planning.plans) {
-    registerProvider(plan.provider, { models: [...plan.models], },);
+    registerProvider(
+      plan.provider,
+      { models: [...plan.models], },
+    );
     registeredProviders.push(plan.provider,);
   }
-  log.info(formatPlanningSummary({ planning, },),);
+  log.info(formatPlanningSummary({
+    counts: {
+      planCount: planning.plans
+        .length,
+      retirementCount: planning.retirements
+        .length,
+      abstentions: planning.abstentions,
+    },
+  },),);
   for (const retirement of planning.retirements)
     log.debug(formatRetirementLine({ retirement, },),);
   /**
@@ -239,9 +259,10 @@ export function applyRetirements(
    */
   const liveModelRetirement = liveModel === undefined
     ? undefined
-    : planning.retirements.find(function matchesLiveModel(retirement,) {
-      return retirement.provider === liveModel.provider
-        && retirement.retiredId === liveModel.id;
+    : planning.retirements
+      .find(function matchesLiveModel(retirement,) {
+      return (retirement.provider === liveModel.provider)
+        && (retirement.retiredId === liveModel.id);
     },);
   if (liveModelRetirement !== undefined)
     log.warn(formatLiveModelWarning({ retirement: liveModelRetirement, },),);
@@ -285,7 +306,10 @@ export function registerModelRetirement(
       /**
        Logger tagged for this handler, so records name the package and the entry point.
        */
-      const scoped = tagged({ tag: onSessionStart.name, l: logger, },);
+      const scoped = tagged({
+        tag: onSessionStart.name,
+        l: logger,
+      },);
       /**
        Registry the session started against.
        */
@@ -296,12 +320,23 @@ export function registerModelRetirement(
           imageReader: registry,
           classifierReader: registry,
         },),
-        registerProvider: function registerProvider(name, config,) {
-          pi.registerProvider(name, config,);
+        registerProvider: function registerProvider(
+          name,
+          config,
+        ) {
+          pi.registerProvider(
+            name,
+            config,
+          );
         },
         liveModel: ctx.model === undefined
           ? undefined
-          : { provider: ctx.model.provider, id: ctx.model.id, },
+          : {
+            provider: ctx.model
+              .provider,
+            id: ctx.model
+              .id,
+          },
         log: {
           info: function reportInfo(message,) {
             scoped.info(message,);

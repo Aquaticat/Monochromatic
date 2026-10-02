@@ -19,6 +19,7 @@ import type {
   ImageModel,
   Model,
 } from '@earendil-works/pi-ai';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   decideRetirements,
   type AbstentionCounts,
@@ -30,20 +31,28 @@ import {
 
 /**
  Registry reads this extension needs, injected so tests can fake them.
+
+ Every element is marked {@link ForeignBorrowed} because model objects are owned by
+ pi's registry: this package reads them and spreads them into configurations, and
+ never mutates them.
  */
 export type CatalogRead = {
   /**
    Chat models the registry knows, in registry order.
    */
-  readonly readChatModels: () => readonly Model<Api>[];
+  readonly readChatModels: () => readonly ForeignBorrowed<Model<Api>>[];
   /**
    Image models one provider serves.
    */
-  readonly readImageModels: (provider: string,) => readonly ImageModel<ImageApi>[];
+  readonly readImageModels: (
+    provider: string,
+  ) => readonly ForeignBorrowed<ImageModel<ImageApi>>[];
   /**
    Classifier models one provider serves.
    */
-  readonly readClassifierModels: (provider: string,) => readonly ClassifierModel<ClassifierApi>[];
+  readonly readClassifierModels: (
+    provider: string,
+  ) => readonly ForeignBorrowed<ClassifierModel<ClassifierApi>>[];
 };
 
 /**
@@ -98,7 +107,7 @@ export type FilterPlanning = {
  The discriminant is read off the model itself rather than through an alias, because
  only a direct `model.type` comparison narrows pi's `AnyModel` union.
 
- @param model - live model object read from the registry
+ @param model - live model object read from the registry, owned by pi
 
  @returns configuration pi accepts inside `ProviderConfig.models`
 
@@ -107,12 +116,21 @@ export type FilterPlanning = {
  toModelConfig(chatModel); // { ...chatModel, type: 'chat' }
  ```
  */
-export function toModelConfig(model: AnyModel,): ProviderModelConfig {
+export function toModelConfig(model: ForeignBorrowed<AnyModel>,): ProviderModelConfig {
   if (model.type === 'image')
-    return { ...model, type: 'image', };
+    return {
+      ...model,
+      type: 'image',
+    };
   if (model.type === 'classifier')
-    return { ...model, type: 'classifier', };
-  return { ...model, type: 'chat', };
+    return {
+      ...model,
+      type: 'classifier',
+    };
+  return {
+    ...model,
+    type: 'chat',
+  };
 }
 
 //endregion Model configuration
@@ -151,7 +169,11 @@ export function planProviderFilters(
    Rule input built from the chat catalog, which is the only type pi versions by id.
    */
   const entries: CatalogEntry[] = chatModels.map(function toEntry(model,) {
-    return { provider: model.provider, api: model.api, modelId: model.id, };
+    return {
+      provider: model.provider,
+      api: model.api,
+      modelId: model.id,
+    };
   },);
   /**
    Rule outcome for the whole chat catalog.
@@ -167,7 +189,10 @@ export function planProviderFilters(
      */
     const retired = retiredByProvider.get(retirement.provider,) ?? new Set<string>();
     retired.add(`${retirement.api}\u0000${retirement.retiredId}`,);
-    retiredByProvider.set(retirement.provider, retired,);
+    retiredByProvider.set(
+      retirement.provider,
+      retired,
+    );
   }
   /**
    Plans in first-seen provider order.
@@ -178,8 +203,8 @@ export function planProviderFilters(
      Chat models this provider still serves.
      */
     const keptChat = chatModels.filter(function isKept(model,) {
-      return model.provider === provider
-        && !retired.has(`${model.api}\u0000${model.id}`,);
+      return (model.provider === provider)
+        && (!retired.has(`${model.api}\u0000${model.id}`,));
     },);
     /**
      Image models this provider serves, which the rule never retires.
@@ -200,7 +225,8 @@ export function planProviderFilters(
     plans.push({
       provider,
       models,
-      retirements: decision.retirements.filter(function onProvider(retirement,) {
+      retirements: decision.retirements
+        .filter(function onProvider(retirement,) {
         return retirement.provider === provider;
       },),
     },);
