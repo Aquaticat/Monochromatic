@@ -7,6 +7,7 @@ import {
   describeProducer,
   type SelectionOutcome,
 } from './candidate-select-model.ts';
+import { isDecisionSeat, } from './model-card-derive.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 import {
   type TranslateAbsenceReason,
@@ -43,8 +44,9 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // or the adjudicators disputed. hulicaijia14 stopped its entry on such a
 // slate, declined twice with valid proposals on it. A challenge round
 // declined there with nothing left to narrow ships its preferred candidate,
-// and the reasons of the ballots that did not back it travel with the record
-// for the consolidation's polish to check against the ORIGINAL. A passage
+// and the reasons of the written ballots that did not back it travel with the
+// record for the consolidation's polish to check against the ORIGINAL; a
+// decision seat's distribution is no such reason (ledger B125). A passage
 // with no wording at all still raises.
 
 /**
@@ -268,8 +270,10 @@ export function breakRunoffTie<ValueT,>(
 /**
  Ships the preferred candidate of a challenge round the judges declined over
  wording that cannot ship (owner, 2026-09-27, "Preference + polish"), with
- the reasons of every ballot that did not back it as objections for a later
- correction round.
+ the reasons of every written ballot that did not back it as objections,
+ which the final polish reads where the round was the consolidation slate's
+ (`TranslateStageResult`'s `shippedPastDecline` says which reads them). A
+ decision seat's ballot objects to nothing: its reason is a distribution.
 
  @param outcome - the declined challenge round
 
@@ -324,22 +328,28 @@ function shipPreferredPastDecline(
    */
   const chosen = nonNullishOrThrow(first,);
   /**
-   What the ballots that did not back the shipped candidate said, once each.
+   What the written ballots that did not back the shipped candidate said,
+   once each.
    */
   const objections = [
     ...new Set(
       outcome.ballots
         .filter(function backedOther(ballot,): boolean {
           /**
-           What the judge named and why.
+           Who judged, what it named and why.
            */
           const {
+            modelId,
             best,
             reason,
           } = ballot;
           // A reason showing a reader nothing objects to nothing, invisible
-          // characters `trim()` keeps among it (ledger B40).
-          return (best !== chosen.index) && (!rendersAsNothing({ text: reason, },));
+          // characters `trim()` keeps among it (ledger B40); nor does a decision
+          // seat's, which is a distribution over the candidate numbers and no
+          // words a refiner could check against the ORIGINAL (ledger B125).
+          return (best !== chosen.index)
+            && (!rendersAsNothing({ text: reason, },))
+            && (!isDecisionSeat({ modelId, },));
         },)
         .map(function reasonOf(ballot,): string {
           return ballot.reason;

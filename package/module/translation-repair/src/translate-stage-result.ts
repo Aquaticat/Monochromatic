@@ -143,8 +143,13 @@ export type TranslateStageResult = {
    How a slate declined in its challenge round shipped anyway over wording
    that cannot ship (owner, 2026-09-27, "Preference + polish"): the
    preference that chose the candidate, and the reasons of the ballots that
-   did not back it, which a later correction round checks against the
-   ORIGINAL. Absent wherever the judges chose or a tie was broken.
+   did not back it. Absent wherever the judges chose or a tie was broken.
+
+   READ ONLY FOR THE CONSOLIDATION SLATE, whose reasons the final polish
+   checks against the ORIGINAL (`consolidate-settle-gate.ts`). The translate
+   lane's record carries them too and nothing reads them. Neither carries a
+   decision seat's reason, a distribution rather than an objection (ledger
+   B125).
    */
   readonly shippedPastDecline?: {
     readonly basis: TieBasis;

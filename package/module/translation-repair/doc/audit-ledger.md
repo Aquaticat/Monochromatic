@@ -18710,6 +18710,50 @@ Recurrence:
 `mistake-prevention.md`,
 "Two layers reading one refusal".
 
+### B125: a decision seat's distribution recorded as an objection
+
+Red in `1faf181ae`.
+Found reading the T8 bundle 2 change to the typed ballot's reason.
+A typed decision seat answers the select ballot with a number and a distribution,
+and `readTypedBallot` (`candidate-select-decision.ts`) writes
+`typed decision: probabilities ..., confidence ...` as the ballot's `reason`.
+`shipPreferredPastDecline` (`translate-runoff-tie.ts`) took the reason of every ballot
+that did not back the shipped candidate as an objection,
+so a decision seat's numbers entered `shippedPastDecline.objections`
+beside the written judges' words.
+The red case seats the three written judges and `SEAT_OPENROUTER_DECISIONS` on a slate
+declined over wording that cannot ship,
+and the objections read the rejection and the distribution.
+
+No page was harmed,
+measured as far as the stores reach:
+only the consolidation slate's objections reach a refiner (`consolidate-settle-gate.ts`),
+and that slate seats no decision seat
+(a probe on the built package,
+`t8-par/b125/seated.mjs` in the audit scratch,
+printed `late judges include a decision seat: false`,
+with the decision seat among the eight select judges);
+the translate lane's objections have no reader.
+Of the `.log` files under the agent scratch,
+174 outside the audit's own scratch record a typed ballot,
+and none outside unit-test runs records a decline shipped by preference;
+no stored JSON but coverage maps carries `shippedPastDecline`,
+and the 290 JSON files in the worktree's runs directory hold no typed reason.
+
+The fix:
+`shipPreferredPastDecline` leaves out the ballot of a decision seat,
+named by `isDecisionSeat` on its model rather than by the reason's label,
+which a written judge's words could begin with.
+A `run-seats.unit.test.ts` case pins that the consolidation slate seats no decision seat
+under any reading,
+with the select benches seating it as the control;
+adding the decision seats to `slateJudges` turned it and two older cases red,
+and the seating was restored.
+
+Recurrence:
+`mistake-prevention.md`,
+"One field carrying two kinds of text".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

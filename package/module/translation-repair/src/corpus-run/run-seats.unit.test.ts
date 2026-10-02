@@ -221,6 +221,29 @@ await describe({
     },),
 
     it({
+      name: 'SEATS NO DECISION SEAT ON THE CONSOLIDATION SLATE under any reading: its judges\' reasons are the '
+        + 'objections the final polish checks against the ORIGINAL, and a decision seat\'s reason is a '
+        + 'distribution (ledger B125)',
+      fn: async () => {
+        for (const view of [
+          ALL_WET,
+          SYNTHETIC_DRY,
+          OPENROUTER_ONLY,
+        ]) {
+          /**
+           Seats under this reading.
+           */
+          const seats = judgeSeatsFor({ dry: view, },);
+          expect(seats.slateJudges.filter(function decides(modelId,): boolean {
+            return RUN_DECISION_JUDGES.includes(modelId,);
+          },),).toEqual([],);
+        }
+        // The positive control: the select benches do seat it while OpenRouter reads wet.
+        expect(judgeSeatsFor({ dry: ALL_WET, },).selectJudges.includes(SEAT_OPENROUTER_DECISIONS,),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'KEEPS EVERY WRITER A PRODUCER CALIBRATION MEASURED OUT OF THE TRANSLATOR SEAT in its judge seats '
         + 'and the consolidation seat, unless the owner culled it from every role: gpt-oss-120b (2026-09-01, '
         + 'z -4.5) held those seats until the cull of 2026-09-24; the two DeepSeek V4 models measured '

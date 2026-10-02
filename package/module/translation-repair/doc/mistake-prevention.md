@@ -2645,6 +2645,37 @@ What enforces it:
 which runs the refusal through the real budget layer and the router;
 `budget-hold-wait.unit.test.ts` holds the reading for a refuser with no hold.
 
+## One field carrying two kinds of text
+
+What happened:
+a ballot's `reason` holds a judge's own words from a chat seat,
+and a distribution over the candidate numbers from a typed decision seat,
+which answers with no words.
+The decline that ships by preference gathered every reason
+of a ballot that did not back the shipped candidate as an objection for the polish,
+so a typed seat's numbers entered the objections
+(ledger B125).
+Nothing harmed a page,
+because only the consolidation slate's objections reach a refiner
+and that slate seats no decision seat;
+the translate lane's carry them and nothing reads them.
+
+The rule:
+where one field holds text of two kinds,
+every reader that passes it to a model or a person
+names the kind it accepts and filters by the source,
+here `isDecisionSeat` on the ballot's model,
+not by parsing the text's own label,
+which a judge's words could happen to begin with.
+Where a reader is safe only because a seating keeps one kind away,
+a case pins that seating too.
+
+What enforces it:
+`slate-decline-ships-by-preference.unit.test.ts` holds
+"RECORDS NO OBJECTION from a decision seat's decline",
+and `run-seats.unit.test.ts` holds
+"SEATS NO DECISION SEAT ON THE CONSOLIDATION SLATE under any reading".
+
 ## Counts in printed text
 
 What happened:
