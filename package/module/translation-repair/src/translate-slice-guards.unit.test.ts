@@ -330,6 +330,32 @@ await describe({
             expect(settled.record.changed,).toBe(true,);
           },
         },),
+
+        it({
+          name: 'READS NO QUOTE IN FRONT MATTER (ledger B113): a YAML block scalar line that opens with `>` is no '
+            + 'quoted passage, and the front-matter floor checks YAML, so a rendering without that line ships '
+            + 'rather than standing refused for a quote the page never had',
+          fn: async () => {
+            /**
+             Archive front matter whose motto is a block scalar holding a
+             line that opens with `>`.
+             */
+            const archive = '---\nname: Xiaohua\nmotto: |\n  > Meow\n---\n';
+
+            /**
+             What every translator offers: the motto as a plain scalar.
+             */
+            const rendering = '---\nname: Xiaohua\nmotto: Meow\n---\n';
+            const settled = await settle({
+              sourceText: '---\nname: 小花\nmotto: |\n  > 喵\n---\n',
+              targetText: archive,
+              rendering,
+            },);
+            expect(settled.unplanned,).toEqual([],);
+            expect(settled.record.disposition,).toBe('stage-result',);
+            expect(settled.record.changed,).toBe(true,);
+          },
+        },),
       ],
     },),
 
