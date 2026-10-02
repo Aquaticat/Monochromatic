@@ -160,6 +160,39 @@ export function titleRuns(
 }
 
 /**
+ Lower case read one code point at a time, keeping as written any code point
+ whose lower case has another UTF-16 length, so every offset in the result
+ is the same offset in the text.
+
+ WHY NOT `text.toLowerCase()`: one İ (U+0130) lowers to two units, after
+ which no offset lines up, and the scan that read the whole text past
+ found no occurrence anywhere on the page (ledger B121). A code point kept
+ as written still matches itself, since the phrase is lowered the same way.
+
+ @param text - text to lower
+
+ @returns Text of the same length, lowered wherever lowering keeps the length
+
+ @example
+ ```ts
+ lengthKeepingLowerCase({ text: 'İpek on Maowu Street', },); // 'İpek on maowu street'
+ ```
+ */
+function lengthKeepingLowerCase({ text, }: { readonly text: string; },): string {
+  return Array.from(
+    text,
+    function lowered(character,): string {
+      /**
+       This code point's lower case, which may be longer than it.
+       */
+      const lower = character.toLowerCase();
+      return (lower.length === character.length) ? lower : character;
+    },
+  )
+    .join('',);
+}
+
+/**
  Every prose occurrence of a phrase in any casing, bounded by non-letters and
  off heading lines.
 
@@ -184,16 +217,13 @@ export function phraseOccurrences(
   },
 ): readonly number[] {
   /**
-   The text in lower case; a text whose lower case changes its length is
-   read past, since offsets would no longer line up.
+   The text in lower case, offset for offset.
    */
-  const lowered = text.toLowerCase();
-  if (lowered.length !== text.length)
-    return [];
+  const lowered = lengthKeepingLowerCase({ text, },);
   /**
-   The phrase in lower case.
+   The phrase lowered the same way.
    */
-  const needle = phrase.toLowerCase();
+  const needle = lengthKeepingLowerCase({ text: phrase, },);
   /**
    The text's non-prose ranges.
    */
