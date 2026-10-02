@@ -620,6 +620,52 @@ await describe({
       },
     },),
     it({
+      name: 'FOLLOWS a writer a fixture exports to every file importing it by name, under an alias or not, '
+        + 'leaves a case run alone that calls it, finds one run beside others, and reports a writer no file '
+        + 'imports',
+      fn: async () => {
+        expect(unconfinedWrites({
+          files: [
+            {
+              path: 'den.test-fixture.ts',
+              isTest: true,
+              text: [
+                'export function pointDen(path: string): Disposable {',
+                '  process.env.DEN = path;',
+                '  return { [Symbol.dispose]: function restoreDen(): void { delete process.env.DEN; }, };',
+                '}',
+                'export function strayDen(): void { process.env.STRAY = \'yarn\'; }',
+              ].join('\n',),
+            },
+            {
+              path: 'corpus-run/den-alone.unit.test.ts',
+              isTest: true,
+              text: [
+                'import { pointDen as point, } from \'../den.test-fixture.ts\';',
+                'await describe({ name: \'alone\', concurrency: 1, children: [',
+                '  it({ name: \'points\', fn: async () => { using pointed = point(\'/den\'); await nap(); }, },),',
+                '], },);',
+              ].join('\n',),
+            },
+            {
+              path: 'den-beside.unit.test.ts',
+              isTest: true,
+              text: [
+                'import { pointDen, } from \'./den.test-fixture.ts\';',
+                'await describe({ name: \'beside\', children: [',
+                '  it({ name: \'points\', fn: async () => { using pointed = pointDen(\'/den\'); await nap(); }, },),',
+                '], },);',
+              ].join('\n',),
+            },
+          ],
+        },),).toEqual([
+          'den.test-fixture.ts: process assigned, in a suite that runs cases beside it',
+          'den.test-fixture.ts: process assigned, in strayDen, which no call by name reaches',
+          'den.test-fixture.ts: process deleted, in a suite that runs cases beside it',
+        ],);
+      },
+    },),
+    it({
       name: 'WRITES NO PROCESS GLOBAL in this package\'s tests outside a case run one at a time',
       fn: async () => {
         /**
