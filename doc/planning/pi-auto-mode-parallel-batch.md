@@ -17,6 +17,35 @@ This is an admission requirement,
 not a promise to roll back tools that later fail during execution.
 A batch decision does not make filesystem or network operations transactional.
 
+## Composed effects before dispatch details
+
+Assess the enclosing program and relevant dataflow,
+not isolated concrete argument objects.
+A write that creates `a.js` containing `console.log('meow')`,
+followed by `node('a.js')`,
+illustrates the distinction:
+the execution's effect depends on the preceding write,
+not just its filename argument.
+Qualified inspected-form semantic effect estimates remain eligible under Q13 B.
+This does not require code-only proof of all program effects.
+
+A result-derived value is not automatically missing decision-relevant information.
+First determine whether the parent program,
+context,
+and established scope already cover its effects.
+Likewise,
+a worker queue drain or another nested callback is a transport event,
+not by itself a new judgment or a new model-call budget.
+Preserve combined interactions and the original assessment scope.
+Unresolved required effect coverage still cannot yield approval.
+
+The proposed blanket choice between assessing overlapping successors separately and rejecting them is withdrawn.
+Neither option was adopted.
+The runtime-value control `proc_ad78` showed that a later argument can be absent from parent source;
+it did not show that the parent lacked information needed for judgment.
+The native host and SDK controls remain finite dispatch-mechanics evidence,
+not proof of where semantic judgment boundaries belong.
+
 ## Reproduction
 
 The provider-free probe invoked the real built auto-mode extension's registered `tool_call` handler

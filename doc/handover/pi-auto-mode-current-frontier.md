@@ -21,6 +21,11 @@ Updated 2026-10-01.
   as clarified by the user.
 - Parallel tool calls must receive one combined judgment before any member executes.
   Interacting effects belong in that judgment.
+  Preserve the parent program and dataflow;
+  isolated concrete arguments can omit effects established by preceding operations.
+  Runtime value arrival or a worker queue drain does not itself create a new judgment or budget.
+  The blanket nested-overlap A/B question is withdrawn,
+  not an adopted policy.
 - At most three client decision-model attempts per combined judgment,
   with earliest possible termination.
   The preparation-inclusive five-second total deadline remains.
@@ -230,6 +235,8 @@ while preserving actual verification and authorization constraints.
 
 ## Next work
 
+- Establish the composed operation and relevant effect scope before mapping nested transport groups to judgments.
+  Do not infer missing safety information merely from a runtime-dependent value.
 - Finish the real policy consumer and explicit nested-group orchestration seam.
   Existing private host and SDK session controls do not integrate production auto-mode.
 - Extend the measured agent/session/resource-loader identity bridge to full instruction collection,

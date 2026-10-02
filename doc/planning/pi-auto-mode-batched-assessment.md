@@ -32,6 +32,12 @@ Parallel tool calls are one combined judgment,
 not separately budgeted per-call approvals.
 The [parallel batch fix](pi-auto-mode-parallel-batch.md) records the reproduced bug and required admission seam.
 The complete execution group and its interacting effects must be assessed before any member starts.
+Include the enclosing parent program and relevant dataflow:
+concrete arguments alone do not describe composed effects such as writing a script and then executing it.
+A runtime-derived value,
+nested callback,
+or worker queue drain does not by itself establish another judgment or reset the shared call budget.
+First establish whether the combined operation's relevant effects are already covered.
 
 The user requested an average cost no greater than US$0.001 per judgment,
 and wants to be told if that appears unattainable.
