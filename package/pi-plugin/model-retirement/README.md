@@ -20,6 +20,8 @@ Design, measurements, and every rejected alternative:
   model of all three types plus all of its metadata: `contextWindow`, `maxTokens`,
   `reasoning`, `thinkingLevelMap`, `promptCache`, `compat`, `samplingParams`, and
   `inputLimits`.
+- Spreads the incumbent configuration of a provider another extension registered, so its
+  `api`, `baseUrl`, `apiKey`, `headers`, `oauth`, and `streamSimple` survive the pass.
 - Logs one summary line per session, one debug line per retirement, and one warning per
   provider it could not filter.
 - Warns when the session started on a model this pass retired, naming the successor.
@@ -76,15 +78,23 @@ and no retirement whose keeper is not strictly newer.
 
 ## Providers it cannot filter
 
-Re-registration replaces a provider's whole model list, so pi must be able to rebuild
-every kept model from the configuration this package supplies. pi throws when a model
-definition resolves neither an `api` nor a `baseUrl`, and one throw would abort the whole
-pass, so every plan is validated first and any provider with an unregisterable model is
-skipped and reported instead.
+Two rules keep the pass from breaking providers it does not own.
 
-Measured exposure in the bundled catalog: `azure-openai-responses` carries an empty
-`baseUrl` on all 44 of its chat models, so its 23 retirements do not apply. Every other
-provider is filterable.
+A provider another extension registered as a native object is skipped. Pi lists those
+providers in `getRegisteredProviderIds()` but returns no configuration for them, so
+re-registering one would replace its streaming, auth, and image handlers with a plain
+catalog list.
+
+A provider whose models cannot all be re-declared is skipped. Pi throws when a model
+definition resolves neither an `api` nor a `baseUrl`, counting the provider-level values
+as fallbacks, and one throw would abort the whole pass, so every plan is validated first.
+
+Measured in the real host: 597 retirements applied across 35 providers, with 4 skipped.
+`azure-openai-responses` was skipped because all 44 of its chat models carry an empty
+`baseUrl`, and `hyper`, `openai-codex-fast`, and `openai-fast` were skipped as native
+registrations.
+The same run left `radius` with its `streamSimple` handler and `synthetic` with its
+credentials, which is what the incumbent-configuration rule buys.
 
 Per-model `headers` do not survive re-registration: pi's `extensionModelFromDefinition`
 sets them to `undefined` for all three model types. In the bundled catalog only
@@ -144,6 +154,8 @@ The run asserts that the chat catalog shrank, that a retired id disappeared, tha
 family winner survived, that the `models.json` override still reports 750000 rather
 than the bundled 272000, that thinking levels survived, and that image and classifier
 counts did not move.
+The same probe, run against the real agent directory, is what reported the incumbent
+configuration key counts before and after filtering.
 
 `retirement-table.characterization.unit.test.ts` pins the full retirement table over
 the bundled catalog. A pi upgrade that changes any single retirement fails that test
