@@ -21,6 +21,13 @@ Each registered base chat model gets a selectable virtual companion:
 
 Companions are discovered from each source provider's configured native catalog,
  not a manually maintained compatibility list.
+`openai-fast` appears in available-model lists only when native `openai` chat models are available.
+`openai-codex-fast` appears only when legacy `openai-codex` chat models are available.
+Each namespace follows its own source's configuration,
+ including startup,
+ logout,
+ and reconfiguration;
+ one configured provider does not make the other provider's companions available.
 Selecting an unsupported model in fast mode surfaces the provider error.
 The extension does not silently change the model or retry with an ordinary tier.
 Normal native transient retries and transport recovery remain pi behavior.
@@ -135,7 +142,7 @@ Live probes do not prove acceleration,
 - `virtual-registration.ts` derives native virtual definitions and synchronizes catalog changes.
 - `priority-provider.ts` creates keyless targets while leaving the original native provider untouched.
 - `priority-target.ts` maps local target identities and omits authentication headers.
-- `keyless-auth.ts` declares adapter readiness without a separate credential.
+- `keyless-auth.ts` gates adapter readiness on fresh native source availability without a separate credential.
 - `priority-stream.ts` reuses native option conversion and each original wire API's full streaming.
 - `priority-payload.ts` composes payload callbacks while preserving the priority request.
 - `original-dispatch.ts` owns the live registry binding and resolves original-model authentication and headers.

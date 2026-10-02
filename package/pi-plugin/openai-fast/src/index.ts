@@ -174,7 +174,7 @@ export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>
     return await loadOriginalProvider({ providerId, },);
   },),);
   /**
-   Native source readiness uses the original pi auth path without resolving tokens or refreshing over the network.
+   Native source readiness uses the original pi auth path without OAuth refresh or network catalog updates.
    */
   const availability = await ModelRuntime.create({
     refreshOnCreate: false,

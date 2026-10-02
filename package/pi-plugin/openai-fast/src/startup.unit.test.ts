@@ -90,7 +90,7 @@ await describe({ name: 'built default extension startup', children: scenarios.ma
     expect(result.status,).toBe(0,);
     /** Real CLI rows expose precisely the available provider identities. */
     const providers = new Set(result.stdout.split('\n',).map(function providerColumn(line,) {
-      return line.trim().split(/\s+/u,)[0];
+      return line.trim().split(' ',)[0];
     },));
     expect(providers.has(OPENAI_PROVIDER,),).toBe(nativeConfigured,);
     expect(providers.has(CODEX_PROVIDER,),).toBe(legacyConfigured,);
