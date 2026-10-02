@@ -36,7 +36,7 @@ export type OriginalDispatchCapabilities = {
   /**
    Native callback shape owns the externally dictated positional arguments.
    */
-  readonly stream: StreamFunction<PriorityApi, StreamOptions>;
+  readonly stream: StreamFunction<PriorityApi>;
 };
 
 //endregion

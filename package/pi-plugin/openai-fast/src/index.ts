@@ -13,7 +13,10 @@ import type {
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { loadOriginalProvider, } from './catalog.ts';
-import { CODEX_PROVIDER, OPENAI_PROVIDER, } from './constants.ts';
+import {
+  CODEX_PROVIDER,
+  OPENAI_PROVIDER,
+} from './constants.ts';
 import { createOriginalDispatch, } from './original-dispatch.ts';
 import { createPriorityProvider, } from './priority-provider.ts';
 import { createFastModelRegistration, } from './virtual-registration.ts';
@@ -95,7 +98,10 @@ export function registerOpenAIFast({
   /**
    Structural registration guard prevents getter-triggered reentrant catalog recursion.
    */
-  const synchronize = createFastModelRegistration({ pi, fastProvider: `${provider.id}-fast`, },);
+  const synchronize = createFastModelRegistration({
+    pi,
+    fastProvider: `${provider.id}-fast`,
+  },);
   pi.registerProvider(createPriorityProvider({
     provider,
     getProvider: binding.getProvider,
@@ -153,7 +159,10 @@ export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>
   /**
    Bootstrap uses metadata only; real request auth stays in the active original provider.
    */
-  const providers = await Promise.all([CODEX_PROVIDER, OPENAI_PROVIDER,].map(async function loadProvider(providerId,) {
+  const providers = await Promise.all([
+    CODEX_PROVIDER,
+    OPENAI_PROVIDER,
+  ].map(async function loadProvider(providerId,) {
     return await loadOriginalProvider({ providerId, },);
   },),);
   for (const provider of providers) {

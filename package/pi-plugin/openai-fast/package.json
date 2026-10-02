@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic-dev/pi-plugin-openai-fast",
-  "description": "Native pi virtual Codex companions requesting priority through the existing login",
+  "description": "Native pi virtual OpenAI companions requesting priority through existing provider authentication",
   "type": "module",
   "private": true,
   "version": "0.0.1",

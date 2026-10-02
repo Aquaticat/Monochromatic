@@ -1,6 +1,6 @@
 # pi-plugin-openai-fast
 
-Genuine pi virtual models that request priority through the existing Codex login.
+Genuine pi virtual models that request priority through existing native OpenAI authentication.
 Build,
  type checking,
  and the complete offline suite pass against pi `1.0.0`.
@@ -10,14 +10,14 @@ Ordinary and priority-request live checks passed on pi `1.0.0`,
 
 ## Model selection
 
-Each registered base Codex model gets a selectable virtual companion:
+Each registered base chat model gets a selectable virtual companion:
 
-- Ordinary:
-   `openai-codex/<model-id>`.
-- Priority request:
-   `openai-codex-fast/<model-id>`.
+- Native OpenAI:
+   `openai/<model-id>` becomes `openai-fast/<model-id>`.
+- Legacy Codex:
+   `openai-codex/<model-id>` becomes `openai-codex-fast/<model-id>`.
 
-Companions are discovered from pi's configured native Codex catalog,
+Companions are discovered from each source provider's configured native catalog,
  not a manually maintained compatibility list.
 Selecting an unsupported model in fast mode surfaces the provider error.
 The extension does not silently change the model or retry with an ordinary tier.
@@ -25,7 +25,7 @@ Normal native transient retries and transport recovery remain pi behavior.
 
 The original upstream model ID is sent with `service_tier: "priority"`.
 No invented `-fast` upstream model ID is sent.
-Assistant history retains the original Codex model identity;
+Assistant history retains the original source provider and model identity;
  pi keeps the virtual selection separately.
 
 Defaults and `enabledModels` are not changed.
@@ -39,15 +39,19 @@ Pi's standard virtual-model presentation remains host behavior.
 
 ## Authentication and transport
 
-Reuse the native `openai-codex` login.
-There is no separate login or copied credential store for fast models.
-Public OpenAI API-key inference is outside this package's scope.
+`openai-fast` reuses the native `openai` provider's ChatGPT sign-in or API-key authentication.
+`openai-codex-fast` continues to reuse the legacy `openai-codex` login.
+There is no separate fast login,
+ copied credential store,
+ authentication-method restriction,
+ or extension-owned billing logic.
+Native credential precedence remains pi behavior.
 
 The native provider still owns OAuth refresh,
  logout,
  ordinary model dispatch,
  and transport behavior.
-Priority requests use the native Codex stream implementation,
+Priority requests use the source provider's native stream implementation,
  preserving reasoning,
  tools,
  callback replacement payloads,
@@ -61,7 +65,7 @@ Priority requests use the native Codex stream implementation,
 Priority targets are local physical entries under the fast adapter provider,
  excluded from normal filtered availability lists.
 Their IDs start with `__pi_openai_fast__/` and are never sent upstream.
-Do not use that reserved prefix for configured Codex models.
+Do not use that reserved prefix for configured OpenAI models.
 The complete registry and pi's own routing display can still expose physical target identities.
 
 ## Backend contract
@@ -86,7 +90,9 @@ Keep installation in global `~/.pi/agent/settings.json`,
 The package manifest loads `dist/final/node/index.mjs`.
 The verified replacement is installed globally.
 Restart pi or run `/reload`,
- then select `openai-codex-fast/<model-id>` through the standard model picker.
+ then select `openai-fast/<model-id>` or `openai-codex-fast/<model-id>` through the standard model picker.
+An existing installation of this local package needs only a rebuild and reload,
+ not a new package declaration.
 Pi may store the package declaration relative to its settings directory.
 
 ## Development verification
@@ -120,13 +126,13 @@ Live probes do not prove acceleration,
 
 ## Source boundaries
 
-- `catalog.ts` restores configured and cached native metadata without network access.
+- `catalog.ts` restores configured and cached metadata for both native providers without network access.
 - `catalog-credentials.ts` supplies frozen empty read-only credential capabilities.
 - `virtual-registration.ts` derives native virtual definitions and synchronizes catalog changes.
 - `priority-provider.ts` creates keyless targets while leaving the original native provider untouched.
 - `priority-target.ts` maps local target identities and omits authentication headers.
 - `keyless-auth.ts` declares adapter readiness without a separate credential.
-- `priority-stream.ts` reuses native option conversion and full streaming.
+- `priority-stream.ts` reuses native option conversion and each original wire API's full streaming.
 - `priority-payload.ts` composes payload callbacks while preserving the priority request.
 - `original-dispatch.ts` owns the live registry binding and resolves original-model authentication and headers.
 - `index.ts` registers the adapter and virtual entries without another request-mode switch.

@@ -22,7 +22,11 @@ import {
   stream as nativeOpenAIStream,
   streamSimple as nativeOpenAISimple,
 } from '@earendil-works/pi-ai/api/openai-responses';
-import { CODEX_PROVIDER, OPENAI_PROVIDER, OPENAI_API, } from '../dist/final/node/index.mjs';
+import {
+  CODEX_PROVIDER,
+  OPENAI_PROVIDER,
+  OPENAI_API,
+} from '../dist/final/node/index.mjs';
 import { requireCodexModel, } from './host-fixture-model.ts';
 import { fixtureProvider, } from './host-fixture-provider.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -189,10 +193,13 @@ export type FixtureHttpCall = {
  const http = fixtureHttp({ responses: [nativeResponse] });
  ```
  */
-export function fixtureHttp({ responses = [
+export function fixtureHttp({
+  responses = [
   nativeResponse,
   nativeResponse,
-], providerId = CODEX_PROVIDER, }: {
+],
+  providerId = CODEX_PROVIDER,
+}: {
   readonly responses?: readonly (() => Response)[];
   readonly providerId?: typeof CODEX_PROVIDER | typeof OPENAI_PROVIDER;
 } = {},): {
@@ -204,8 +211,16 @@ export function fixtureHttp({ responses = [
    */
   const source = fixtureProvider({ dynamic: false, },);
   if (providerId === OPENAI_PROVIDER) {
-    source.state.models = source.state.models.map(function nativeOpenAIModel(model: ForeignBorrowed<Model<Api>>,) {
-      return { ...model, provider: OPENAI_PROVIDER, api: OPENAI_API, baseUrl: 'https://api.openai.com/v1', };
+    source.state
+      .models = source.state
+        .models
+        .map(function nativeOpenAIModel(model: ForeignBorrowed<Model<Api>>,) {
+      return {
+        ...model,
+        provider: OPENAI_PROVIDER,
+        api: OPENAI_API,
+        baseUrl: 'https://api.openai.com/v1',
+      };
     },);
   }
   /**
@@ -286,7 +301,11 @@ export function fixtureHttp({ responses = [
   const provider: Provider = {
     ...source.provider,
     id: providerId,
-    ...(providerId === OPENAI_PROVIDER ? { auth: openaiProvider().auth, baseUrl: 'https://api.openai.com/v1', } : {}),
+    ...(providerId === OPENAI_PROVIDER ? {
+      auth: openaiProvider()
+        .auth,
+      baseUrl: 'https://api.openai.com/v1',
+    } : {}),
     stream: function stream(
       model: ForeignBorrowed<Model<Api>>,
       context: ForeignBorrowed<TranscriptContext>,
@@ -300,8 +319,19 @@ export function fixtureHttp({ responses = [
           context,
           ...(options === undefined ? {} : { options, }),
         },);
-      if (hasApi(model, OPENAI_API,))
-        return nativeOpenAIStream(model, context, { ...options, fetch: transport.fetch, maxRetries: 0, },);
+      if (hasApi(
+        model,
+        OPENAI_API,
+      ))
+        return nativeOpenAIStream(
+          model,
+          context,
+          {
+            ...options,
+            fetch: transport.fetch,
+            maxRetries: 0,
+          },
+        );
       return nativeStream(
         requireCodexModel(model,),
         context,
@@ -326,8 +356,19 @@ export function fixtureHttp({ responses = [
           context,
           ...(options === undefined ? {} : { options, }),
         },);
-      if (hasApi(model, OPENAI_API,))
-        return nativeOpenAISimple(model, context, { ...options, fetch: transport.fetch, maxRetries: 0, },);
+      if (hasApi(
+        model,
+        OPENAI_API,
+      ))
+        return nativeOpenAISimple(
+          model,
+          context,
+          {
+            ...options,
+            fetch: transport.fetch,
+            maxRetries: 0,
+          },
+        );
       return nativeSimple(
         requireCodexModel(model,),
         context,

@@ -93,7 +93,7 @@ await describe({ name: '', children: [
         apiKey: 'sk-native-fixture', reasoning: 'high', headers: { 'x-request-fixture': 'caller', },
         onPayload: async function replaceTier(payload: unknown, model: ForeignBorrowed<Model<Api>>) {
           expect(model,).toMatchObject({ provider: OPENAI_PROVIDER, api: OPENAI_API, id: host.base.id, },);
-          if ((typeof payload !== 'object') || (payload === null) || Array.isArray(payload,))
+          if (((typeof payload) !== 'object') || (payload === null) || Array.isArray(payload,))
             throw new Error('Native OpenAI fixture expected an object payload.',);
           return await Promise.resolve({ ...payload, service_tier: 'default', },);
         },
@@ -122,8 +122,7 @@ await describe({ name: '', children: [
       expect(host.ctx.scopedModels,).toEqual([{ model: host.base, thinkingLevel: 'high', },],);
     }, },),
   ], },),
-  describe({ name: 'direct native OpenAI priority streams', children: [
-    ...[streamPriority, streamSimplePriority,].map(function nativeEntryPoint(entryPoint,) {
+  describe({ name: 'direct native OpenAI priority streams', children: [streamPriority, streamSimplePriority,].map(function nativeEntryPoint(entryPoint,) {
       return it({ name: `${entryPoint.name} uses native OpenAI preparation before caller cancellation`, fn: async function nativePreparation(ctx) {
         /** Original native identity is required for ChatGPT-specific request preparation. */
         const model = { ...fixtureModel(), provider: OPENAI_PROVIDER, api: OPENAI_API,
@@ -146,8 +145,7 @@ await describe({ name: '', children: [
         expect(result.errorMessage,).toContain(stop.message,);
         expect(fetch,).not.toHaveBeenCalled();
       }, },);
-    },),
-  ], },),
+    },), },),
 ], },);
 
 //endregion Native provider bootstrap and actual host dispatch.

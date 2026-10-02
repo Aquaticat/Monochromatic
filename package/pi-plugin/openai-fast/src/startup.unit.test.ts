@@ -3,11 +3,10 @@
 
  @module
  */
-import { execFile, } from 'node:child_process';
+import { spawnSync, } from 'node:child_process';
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import { promisify, } from 'node:util';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { CODEX_PROVIDER, OPENAI_PROVIDER, } from '../dist/final/node/index.mjs';
 import { fixtureHome, } from './host-fixture-home.ts';
@@ -20,8 +19,6 @@ await describe({ name: 'built default extension startup', children: [
   it({ name: 'discovers both fast namespaces through pi list-models without inference or personal settings', fn: async function startupDiscovery() {
     /** Every child-created file stays in this fixture's independently disposable home. */
     await using home = await fixtureHome();
-    /** Native CLI execution is bounded without terminal automation or a shell wrapper. */
-    const run = promisify(execFile,);
     /** Resolved host entry anchors the installed CLI and its native resource directory. */
     const hostEntry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent'),);
     /** Only the consumer artifact is loaded, not package TypeScript implementation. */
@@ -36,14 +33,17 @@ await describe({ name: 'built default extension startup', children: [
     await writeFile(join(home.agentDir, 'settings.json',), JSON.stringify({ packages: [],
       enableAnalytics: false, enableInstallTelemetry: false, },),);
     /** Listing initializes the real factory but sends no inference request. */
-    const result = await run(process.execPath, [fileURLToPath(new URL('./cli.js', hostEntry,),),
+    const result = spawnSync(process.execPath, [fileURLToPath(new URL('cli.js', hostEntry,),),
       '--offline', '--no-approve', '--no-extensions', '--extension', extension,
       '--no-skills', '--no-themes', '--no-prompt-templates', '--no-context-files',
       '--list-models', model.id,], {
-      cwd: home.cwd, timeout: 15_000, maxBuffer: 1_048_576,
+      cwd: home.cwd, timeout: 15_000, maxBuffer: 1_048_576, encoding: 'utf8',
       env: { ...process.env, HOME: home.root, PI_CODING_AGENT_DIR: home.agentDir,
         PI_PACKAGE_DIR: fileURLToPath(new URL('../', hostEntry,),), PI_OFFLINE: '1', },
     },);
+    if (result.error !== undefined)
+      throw result.error;
+    expect(result.status,).toBe(0,);
     expect(result.stdout,).toContain('openai-fast',);
     expect(result.stdout,).toContain('openai-codex-fast',);
     expect(result.stdout,).toContain(model.id,);

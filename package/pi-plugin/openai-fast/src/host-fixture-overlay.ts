@@ -16,7 +16,10 @@ import type {
   ForeignBorrowed,
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { createPriorityProvider, type PriorityApi, } from '../dist/final/node/index.mjs';
+import {
+  createPriorityProvider,
+  type PriorityApi,
+} from '../dist/final/node/index.mjs';
 import {
   fixtureAssistant,
   fixtureStream,

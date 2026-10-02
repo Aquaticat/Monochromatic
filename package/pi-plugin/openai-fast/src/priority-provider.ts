@@ -51,7 +51,7 @@ export type PriorityProviderOptions = {
   readonly provider: ForeignHostCapability<Provider>;
   readonly getProvider?: () => ForeignHostCapability<Provider>;
   readonly lookup: OriginalModelLookup;
-  readonly dispatch: StreamFunction<PriorityApi, StreamOptions>;
+  readonly dispatch: StreamFunction<PriorityApi>;
   readonly onCatalog: (models: readonly Model<Api>[]) => void;
 };
 

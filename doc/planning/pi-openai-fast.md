@@ -605,6 +605,11 @@ The first lint run reported declaration,
  and formatting findings;
  these are being corrected without rule changes.
 A disposable CLI startup check now exercises the built default factory rather than manual registration.
+Installed `openai-responses.js:177` confirms that native simple streaming uses `buildBaseOptions`,
+ passes through `toolChoice`,
+ and converts clamped reasoning into `reasoningEffort`.
+The shared priority bridge retains that conversion;
+ the new host assertions check serialized high reasoning and exact default/scope preservation.
 The complete verification sequence remains pending.
 No live new-provider verification has been performed.
 

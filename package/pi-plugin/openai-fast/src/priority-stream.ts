@@ -23,7 +23,11 @@ import { buildBaseOptions, } from '@earendil-works/pi-ai/api/simple-options';
 import { clampThinkingLevel, } from '@earendil-works/pi-ai/models';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { CODEX_API, OPENAI_API, type PriorityApi, } from './constants.ts';
+import {
+  CODEX_API,
+  OPENAI_API,
+  type PriorityApi,
+} from './constants.ts';
 import { PriorityRequestError, } from './priority-error.ts';
 import { forcePriorityPayload, } from './priority-payload.ts';
 
@@ -45,19 +49,42 @@ const l = tagged({ tag: 'openai-fast/priority-stream', },);
 
  @returns native stream without model or transport translation
  */
-function nativeStream(
-  model: ForeignHostCapability<Model<PriorityApi>>,
-  context: ForeignHostCapability<TranscriptContext>,
-  options?: ForeignHostCapability<StreamOptions>,
-): AssistantMessageEventStream {
-  /** Direct transport logger records only the original API identity. */
-  const innerL = tagged({ tag: nativeStream.name, l, },);
+function nativeStream({
+  model,
+  context,
+  options,
+}: {
+  readonly model: ForeignHostCapability<Model<PriorityApi>>;
+  readonly context: ForeignHostCapability<TranscriptContext>;
+  readonly options?: ForeignHostCapability<StreamOptions>;
+},): AssistantMessageEventStream {
+  /**
+   Direct transport logger records only the original API identity.
+   */
+  const innerL = tagged({
+    tag: nativeStream.name,
+    l,
+  },);
   innerL.debug(`delegating direct request to ${model.api}`,);
-  if (hasApi(model, CODEX_API,))
-    return streamCodex(model, context, options,);
-  if (!hasApi(model, OPENAI_API,))
+  if (hasApi(
+    model,
+    CODEX_API,
+  ))
+    return streamCodex(
+      model,
+      context,
+      options,
+    );
+  if (!hasApi(
+    model,
+    OPENAI_API,
+  ))
     throw new PriorityRequestError({ message: `Unsupported native priority API: ${model.api}`, },);
-  return streamOpenAI(model, context, options,);
+  return streamOpenAI(
+    model,
+    context,
+    options,
+  );
 }
 
 /**
@@ -96,7 +123,7 @@ export function streamPriority<const TApi extends PriorityApi>({
   readonly model: ForeignHostCapability<Model<TApi>>;
   readonly context: ForeignHostCapability<TranscriptContext>;
   readonly options?: ForeignHostCapability<StreamOptions | OpenAICodexResponsesOptions | OpenAIResponsesOptions>;
-  readonly stream?: ForeignHostCapability<StreamFunction<TApi, StreamOptions>>;
+  readonly stream?: ForeignHostCapability<StreamFunction<TApi>>;
 },): AssistantMessageEventStream {
   /**
    Function logger records delegation without sensitive request data.
@@ -148,7 +175,17 @@ export function streamPriority<const TApi extends PriorityApi>({
       },);
     },
   };
-  return (stream ?? nativeStream)(model, context, priorityOptions,);
+  if (stream !== undefined)
+    return stream(
+      model,
+      context,
+      priorityOptions,
+    );
+  return nativeStream({
+    model,
+    context,
+    options: priorityOptions,
+  },);
 }
 
 //endregion Full stream
@@ -177,7 +214,7 @@ export function streamPriority<const TApi extends PriorityApi>({
 
  @mutates stream - full dispatch may invoke or retain transport and runtime authentication capabilities
 
- @throws {@link PriorityRequestError} when direct native dispatch has no resolved API key
+ @throws {@link PriorityRequestError} when direct native Codex dispatch has no resolved credential
 
  @example
  ```ts
@@ -193,7 +230,7 @@ export function streamSimplePriority<const TApi extends PriorityApi>({
   readonly model: ForeignHostCapability<Model<TApi>>;
   readonly context: ForeignHostCapability<TranscriptContext>;
   readonly options?: ForeignHostCapability<SimpleStreamOptions>;
-  readonly stream?: ForeignHostCapability<StreamFunction<TApi, StreamOptions>>;
+  readonly stream?: ForeignHostCapability<StreamFunction<TApi>>;
 },): AssistantMessageEventStream {
   /**
    Function logger records conversion without exposing authentication data.
@@ -207,7 +244,8 @@ export function streamSimplePriority<const TApi extends PriorityApi>({
    Direct native dispatch requires a token; injected registry dispatch resolves it later.
    */
   const apiKey = options?.apiKey;
-  if ((stream === undefined) && (model.api === CODEX_API) && ((apiKey === undefined) || (apiKey === ''))) {
+  if ((stream === undefined) && (model.api === CODEX_API)
+    && ((apiKey === undefined) || (apiKey === ''))) {
     innerL.error('resolved native Codex credential is missing',);
     throw new PriorityRequestError({ message: `No API key for provider: ${model.provider}`, },);
   }
