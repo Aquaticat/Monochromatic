@@ -496,7 +496,81 @@ not real provider encoding,
 complete producer coverage,
 current permission,
 or governing-instruction authority.
-The next probe targets the built-in provider's final serialization boundary without external network access.
+The [built-in OpenAI serialization probe](#built-in-openai-serialization-boundary)
+subsequently exercised a real provider adapter without external network access.
+
+## Built-in OpenAI serialization boundary
+
+The private `contract/collector/request-wire-controls/` phase completed as `proc_3c50`,
+exit 0,
+with seven new owned SDK completions and seven captured `openai-completions` requests.
+It registered model metadata only,
+not a custom stream implementation.
+A wrapper around the SDK's public `agent.streamFunction` supplied an injected fetch implementation while delegating
+through the original SDK and `ModelRuntime` pipeline.
+Global fetch remained a failing tripwire.
+No hosted model or external network was used.
+
+Installed Pi AI 1.0.0 `dist/api/openai-completions.js:186` supplies `options.fetch` to its OpenAI client.
+The request hook precedes actual client serialization:
+
+```javascript
+// @earendil-works/pi-ai/dist/api/openai-completions.js:186
+const client = createClient(model, normalizedContext, apiKey, options?.headers, options?.fetch, cacheSessionId, compat);
+let params = buildParams(model, normalizedContext, options, compat, cacheRetention, grammarToolInputProperties);
+const nextParams = await options?.onPayload?.(params, model);
+if (nextParams !== undefined) {
+    params = nextParams;
+}
+```
+
+The client sends those parameters through `chat.completions.create` at line 197.
+The injected fetch captured the serialized JSON body,
+not an invented payload field or a copy taken inside an earlier extension handler.
+It returned owned OpenAI SSE frames,
+which the built-in adapter decoded through normal SDK completion.
+The central OpenAI 7.19.0 package,
+ESM entry/client,
+and streaming files were hashed alongside the listed Pi sources.
+Full transitive attestation remains outside the claim.
+
+The base,
+forced,
+request-local,
+payload,
+combined,
+and omitted-hook observations matched the synthetic-payload phase.
+An asynchronous first payload handler completed before the second handler ran.
+A separate escaping case preserved quotes,
+backslashes,
+line breaks,
+Unicode,
+and literal SSE sentinel text through request serialization and response decoding.
+The payload validator was reused only after checking byte identity and its existing intact/removal receipt.
+Unchanged guard controls were not replayed.
+
+Complete private worker streams and every outcome matched;
+worker stderr was empty.
+The worker retained its cleared environment and 60-second bound.
+Native JSON-value persistence again retained only the base marker,
+not forced,
+request-local,
+or payload additions.
+Omitting `onPayload` forwarding produced a normally completed SDK request but failed the final-payload coverage check.
+Matching a getter to an encoded prompt is therefore insufficient to prove that every required producer ran.
+
+This establishes the observed serialization boundary for the tested text-only `openai-completions` configuration
+and injected transport.
+It does not establish hosted behavior,
+all provider/transport families,
+instruction authority,
+current human permission,
+or production-ready collection.
+The next consumer component must own immutable request observations,
+associate them with the correct SDK response/root,
+and reject missing,
+foreign,
+or stale observations.
 
 ## Verified workarounds and limits
 

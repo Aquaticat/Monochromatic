@@ -473,10 +473,24 @@ The ordinary collector remained fresh on its observations while retaining all th
 The omitted-payload-hook control was rejected by the exact final-payload validator;
 a disposable removal of that validator caused its consumer test to fail.
 
-These are synthetic native-payload observations,
-not built-in provider encoding or complete instruction authority.
-The next probe uses the real built-in serializer with an injected local response transport,
-keeping external network blocked.
+The built-in serializer follow-up completed as `proc_3c50`,
+exit 0,
+with seven new SDK completions and captured `openai-completions` requests.
+It delegated through the stock SDK/ModelRuntime/OpenAI 7.19.0 client,
+used injected fetch responses,
+and kept global fetch blocked.
+Context/forced/payload differences persisted at the actual serialized JSON boundary.
+Async payload-handler order and quote/backslash/newline/Unicode/SSE-sentinel boundaries passed.
+The omitted-hook case was again rejected by the final-payload validator after normal SDK completion.
+
+Evidence is `contract/collector/request-wire-controls/`.
+This qualifies the finite text-only serialization observation,
+not hosted behavior,
+all providers,
+instruction authority,
+or current permission.
+Next build the consumer-owned immutable observation interface,
+with SDK response/root association and missing/foreign/stale rejection controls.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
 
 ## Tooling and workflow
