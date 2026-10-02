@@ -3,8 +3,8 @@
 
  Superseded models leave the live catalog at `session_start`, the earliest point an
  extension can read the catalog at all, so the model picker stops offering them and
- `find` stops resolving them. `pi --list-models` and the startup model choice are
- settled before this handler runs; both consequences are recorded in
+ `ModelRegistry.find` stops resolving them. `pi --list-models` and the startup model choice
+ are settled before this handler runs; both consequences are recorded in
  `doc/planning/pi-model-retirement.md`.
 
  @module
@@ -21,28 +21,43 @@ export {
   type CatalogRefresher,
   type ChatModelReader,
   type ClassifierModelReader,
+  type ComposedProviderReader,
   type FailedProvider,
   type ImageModelReader,
   type LiveModelIdentity,
   type ProviderConfigReader,
-  type ProviderIdReader,
   type ProviderRegistrar,
+  type RegisteredProvider,
   type RetirementLog,
   type RetirementPassSummary,
+  type SessionRegistry,
 } from './register-model-retirement.ts';
 export {
   planProviderFilters,
   type CatalogRead,
+  type ComposedProvider,
+  type ConfigPlan,
   type FilterPlanning,
   type IncumbentConfig,
   type ProviderFilterPlan,
   type SkippedProvider,
+  type WrapperPlan,
 } from './provider-filter.ts';
 export {
   planGap,
   REGISTERABLE,
   toModelConfig,
 } from './registration-gap.ts';
+export {
+  isComposedProvider,
+  wrapProvider,
+} from './provider-wrapper.ts';
+export {
+  buildRetiredIndex,
+  identityKey,
+  isRetired,
+  type RetiredIndex,
+} from './retired-index.ts';
 export {
   classifyToken,
   isDateShapedRaw,
@@ -86,8 +101,8 @@ export {
 
  @param pi - pi extension API
 
- @mutates pi - `registerModelRetirement` registers the session-start handler that
- replaces provider model lists
+ @mutates pi - `registerModelRetirement` registers the session-start handler that replaces
+ provider model lists
 
  @example
  ```typescript

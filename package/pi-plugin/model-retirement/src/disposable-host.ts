@@ -52,6 +52,21 @@ export const RETIRED_MODEL = 'gpt-6-sol';
 export const KEEPER_MODEL = 'gpt-6.1-sol';
 
 /**
+ Provider whose models carry no endpoint, so only wrapping can filter it.
+ */
+export const WRAPPED_PROVIDER = 'azure-openai-responses';
+
+/**
+ Model the rule retires inside the endpoint-less provider.
+ */
+export const WRAPPED_RETIRED = 'gpt-4.1';
+
+/**
+ Model the rule keeps inside the endpoint-less provider.
+ */
+export const WRAPPED_KEPT = 'gpt-5.5';
+
+/**
  Marker the probe prefixes onto every record it emits.
  */
 const PROBE_MARKER = '"probe":"model-retirement"';
@@ -96,6 +111,14 @@ export type Snapshot = {
    Whether the family winner was still listed.
    */
   readonly hasKeeper: boolean;
+  /**
+   Whether the model retired inside the endpoint-less provider was still listed.
+   */
+  readonly hasWrappedRetired: boolean;
+  /**
+   Whether the family winner inside the endpoint-less provider was still listed.
+   */
+  readonly hasWrappedKeeper: boolean;
 };
 
 /**
@@ -323,7 +346,9 @@ function isSnapshot(value: unknown,): value is Snapshot {
     && ((typeof value.targetContextWindow) === 'number')
     && ((typeof value.targetThinkingLevels) === 'number')
     && ((typeof value.hasRetired) === 'boolean')
-    && ((typeof value.hasKeeper) === 'boolean');
+    && ((typeof value.hasKeeper) === 'boolean')
+    && ((typeof value.hasWrappedRetired) === 'boolean')
+    && ((typeof value.hasWrappedKeeper) === 'boolean');
 }
 
 /**

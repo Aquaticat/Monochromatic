@@ -20,16 +20,18 @@ import type {
   ImageApi,
   ImageModel,
   Model,
+  Provider,
 } from '@earendil-works/pi-ai';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   applyRetirements,
   readsFromRegistry,
   registerModelRetirement,
   type CatalogRead,
+  type ComposedProvider,
   type IncumbentConfig,
   type RetirementLog,
 } from '../dist/final/node/index.mjs';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 //region Fixtures
 
@@ -38,11 +40,11 @@ const CHAT_API: Api = 'openai-completions';
 
 /**
  Build one chat model fixture.
- 
+
  @param provider - provider id owning the model
- 
+
  @param id - model id
- 
+
  @returns chat model shaped like a registry read
  */
 function chatModel(
@@ -61,7 +63,12 @@ function chatModel(
     provider,
     baseUrl: 'https://example.invalid',
     input: ['text'],
-    cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
+    cost: {
+      input: 1,
+      output: 2,
+      cacheRead: 0,
+      cacheWrite: 0,
+    },
     reasoning: true,
     contextWindow: 128_000,
     maxTokens: 4_096,
@@ -70,11 +77,11 @@ function chatModel(
 
 /**
  Build one image model fixture.
- 
+
  @param provider - provider id owning the model
- 
+
  @param id - model id
- 
+
  @returns image model shaped like a registry read
  */
 function imageModel(
@@ -93,7 +100,12 @@ function imageModel(
     provider,
     baseUrl: 'https://example.invalid',
     input: ['text', 'image'],
-    cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
+    cost: {
+      input: 1,
+      output: 2,
+      cacheRead: 0,
+      cacheWrite: 0,
+    },
     type: 'image',
     output: ['image'],
   };
@@ -101,11 +113,11 @@ function imageModel(
 
 /**
  Build one classifier model fixture.
- 
+
  @param provider - provider id owning the model
- 
+
  @param id - model id
- 
+
  @returns classifier model shaped like a registry read
  */
 function classifierModel(
@@ -124,10 +136,50 @@ function classifierModel(
     provider,
     baseUrl: 'https://example.invalid',
     input: ['text'],
-    cost: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, },
+    cost: {
+      input: 1,
+      output: 2,
+      cacheRead: 0,
+      cacheWrite: 0,
+    },
     type: 'classifier',
     contextWindow: 8_000,
   };
+}
+
+/**
+ Build one composed provider fixture.
+
+ @param provider - provider id
+
+ @param models - chat models its listing returns
+
+ @returns composed provider shaped like a registry read
+ */
+function composedProvider(
+  {
+    provider,
+    models,
+  }: {
+    readonly provider: string;
+    readonly models: readonly Model<Api>[];
+  },
+): Provider {
+  /**
+   Object implementing the members wrapping reads and spreads.
+   */
+  const fixture = {
+    id: provider,
+    name: provider,
+    auth: { name: 'fixture-auth', },
+    stream: function fixtureStream(): string {
+      return 'stream';
+    },
+    getModels: function listModels() {
+      return models;
+    },
+  };
+  return fixture as unknown as Provider;
 }
 
 /** Log records captured by a fake logger. */
@@ -138,10 +190,23 @@ type CapturedLog = {
 };
 
 /**
+ Build an empty capture triple.
+
+ @returns fresh capture arrays
+ */
+function emptyCapture(): CapturedLog {
+  return {
+    info: [],
+    debug: [],
+    warn: [],
+  };
+}
+
+/**
  Build a fake logger that captures every message.
- 
+
  @param captured - arrays the fake appends to
- 
+
  @returns logger surface the pass accepts
  */
 function fakeLog(captured: CapturedLog,): RetirementLog {
@@ -159,76 +224,88 @@ function fakeLog(captured: CapturedLog,): RetirementLog {
 }
 
 /**
- Build an empty capture triple.
- 
- @returns fresh capture arrays
- */
-function emptyCapture(): CapturedLog {
-  return { info: [], debug: [], warn: [], };
-}
-
-/** Registration recorded by a fake pi host. */
-type RecordedRegistration = {
-  readonly name: string;
-  readonly config: ProviderConfig;
-};
-
-/** State a fake pi host accumulates. */
-type FakeHostState = {
-  readonly events: string[];
-  readonly registrations: RecordedRegistration[];
-  handler?: (payload: unknown, ctx: unknown,) => Promise<void>;
-};
-
-/**
- Build a fake pi host recording events and provider registrations.
- 
- @param state - mutable state the fake writes to
- 
- @returns fake extension API and its recorded state
- */
-function fakeHost(state: FakeHostState,): ExtensionAPI {
-  /**
-   Object implementing only the two members this extension touches.
-   */
-  const fake = {
-    on(
-      event: string,
-      handler: (payload: unknown, ctx: unknown,) => Promise<void>,
-    ): void {
-      state.events.push(event,);
-      state.handler = handler;
-    },
-    registerProvider(name: string, config: ProviderConfig,): void {
-      state.registrations.push({ name, config, },);
-    },
-  };
-  return fake as unknown as ExtensionAPI;
-}
-
-/**
  Refresh stub that resolves immediately.
 
  @returns resolved promise, so a pass can await it
-
- @example
- ```typescript
- await noopRefresh();
- ```
  */
 function noopRefresh(): Promise<void> {
   return Promise.resolve();
 }
 
+/** One configuration registration recorded by a fake registrar. */
+type RecordedConfig = {
+  readonly name: string;
+  readonly config: ProviderConfig;
+};
+
+/** One wrapper registration recorded by a fake registrar. */
+type RecordedWrapper = {
+  readonly provider: Provider;
+};
+
+/** Everything a fake registrar recorded. */
+type RecordedRegistrations = {
+  readonly configs: RecordedConfig[];
+  readonly wrappers: RecordedWrapper[];
+};
+
 /**
- Build a catalog read over three fixture lists.
- 
+ Build a fake registrar that records both registration forms.
+
+ @param recorded - arrays the fake appends to
+
+ @param rejectProvider - provider whose configuration registration should throw
+
+ @returns registrar surface the pass accepts
+ */
+function fakeRegistrar(
+  {
+    recorded,
+    rejectProvider,
+  }: {
+    readonly recorded: RecordedRegistrations;
+    readonly rejectProvider?: string;
+  },
+) {
+  return {
+    registerConfig: function recordConfig(
+      {
+        name,
+        config,
+      }: {
+        readonly name: string;
+        readonly config: ProviderConfig;
+      },
+    ) {
+      if (name === rejectProvider)
+        throw new Error('"baseUrl" is required when defining custom models',);
+      recorded.configs.push({ name, config, },);
+    },
+    registerProviderObject: function recordWrapper(
+      {
+        provider,
+      }: {
+        readonly provider: Provider;
+      },
+    ) {
+      recorded.wrappers.push({ provider, },);
+    },
+  };
+}
+
+/**
+ Build a catalog read over fixture lists.
+
  @param chat - chat models to report
- 
+
  @param images - image models to report
- 
+
  @param classifiers - classifier models to report
- 
+
+ @param configs - incumbent configurations by provider
+
+ @param composed - composed providers by provider
+
  @returns reads the pass consumes
  */
 function readOf(
@@ -236,14 +313,14 @@ function readOf(
     chat,
     images = [],
     classifiers = [],
-    registeredIds = [],
     configs = {},
+    composed = {},
   }: {
     readonly chat: readonly Model<Api>[];
     readonly images?: readonly ImageModel<ImageApi>[];
     readonly classifiers?: readonly ClassifierModel<ClassifierApi>[];
-    readonly registeredIds?: readonly string[];
     readonly configs?: Readonly<Record<string, ProviderConfig>>;
+    readonly composed?: Readonly<Record<string, Provider>>;
   },
 ): CatalogRead {
   return {
@@ -256,12 +333,9 @@ function readOf(
     readClassifierModels: function readClassifierModels() {
       return classifiers;
     },
-    readRegisteredProviderIds: function readRegisteredProviderIds() {
-      return registeredIds;
-    },
     readProviderConfig: function readProviderConfig(provider,): IncumbentConfig {
       /**
-       Incumbent configuration for this provider, when the fixture supplies one.
+       Incumbent configuration for this fixture provider, when one was supplied.
        */
       const config = configs[provider];
       if (config === undefined)
@@ -271,20 +345,120 @@ function readOf(
         config,
       };
     },
+    readComposedProvider: function readComposedProvider(provider,): ComposedProvider {
+      /**
+       Composed provider for this fixture provider, when one was supplied.
+       */
+      const found = composed[provider];
+      if (found === undefined)
+        return { kind: 'absent', };
+      return {
+        kind: 'present',
+        provider: found,
+      };
+    },
   };
 }
 
 /**
- Read the ids one registration would install.
- 
- @param config - configuration a fake host recorded, absent when nothing registered
- 
+ Read the ids one configuration registration would install.
+
+ @param config - configuration a fake registrar recorded
+
  @returns model ids in registration order
  */
 function registeredModelIds(config: ProviderConfig,): readonly string[] {
   return (config.models ?? []).map(function toId(model,) {
     return model.id;
   },);
+}
+
+/** State a fake pi host accumulates. */
+type FakeHostState = {
+  readonly events: string[];
+  readonly configs: RecordedConfig[];
+  readonly wrappers: RecordedWrapper[];
+  handler?: (payload: unknown, ctx: unknown,) => Promise<void>;
+};
+
+/**
+ Build a fake pi host recording events and both registration forms.
+
+ @param state - mutable state the fake writes to
+
+ @returns fake extension API
+ */
+function fakeHost(state: FakeHostState,): ExtensionAPI {
+  /**
+   Object implementing only the members this extension touches.
+   */
+  const fake = {
+    on(
+      event: string,
+      handler: (payload: unknown, ctx: unknown,) => Promise<void>,
+    ): void {
+      state.events.push(event,);
+      state.handler = handler;
+    },
+    registerProvider(
+      nameOrProvider: string | Provider,
+      config?: ProviderConfig,
+    ): void {
+      if ((typeof nameOrProvider) === 'string') {
+        state.configs.push({
+          name: nameOrProvider,
+          config: nonNullishOrThrow(config,),
+        },);
+        return;
+      }
+      state.wrappers.push({ provider: nameOrProvider, },);
+    },
+  };
+  return fake as unknown as ExtensionAPI;
+}
+
+/**
+ Build a session-start context over one fixture catalog.
+
+ @param chat - chat models the registry reports
+
+ @param composed - composed provider the registry returns, when any
+
+ @param model - live model the session runs, when any
+
+ @returns context shaped like the one pi passes
+ */
+function sessionContext(
+  {
+    chat,
+    composed,
+    model,
+  }: {
+    readonly chat: readonly Model<Api>[];
+    readonly composed?: Provider;
+    readonly model?: Model<Api>;
+  },
+): unknown {
+  return {
+    modelRegistry: {
+      getAll: function getAll() {
+        return chat;
+      },
+      getModelsOfType: function getModelsOfType() {
+        return [];
+      },
+      refresh: function refresh() {
+        return Promise.resolve({});
+      },
+      getRegisteredProviderConfig: function getRegisteredProviderConfig() {
+        return undefined;
+      },
+      getProvider: function getProvider() {
+        return composed;
+      },
+    },
+    model,
+  };
 }
 
 //endregion Fixtures
@@ -311,7 +485,11 @@ await describe({
              */
             const classifier = classifierModel({ provider: 'hyper', id: 'judge', },);
             /**
-             Reads adapted from three single-method fakes.
+             Composed provider the fake registry reports.
+             */
+            const composed = composedProvider({ provider: 'hyper', models: [chat], },);
+            /**
+             Reads adapted from single-method fakes.
              */
             const read = readsFromRegistry({
               chatReader: {
@@ -329,33 +507,29 @@ await describe({
                   return [classifier];
                 },
               },
-              idReader: {
-                getRegisteredProviderIds: function readIds() {
-                  return ['hyper'];
+              configReader: {
+                getRegisteredProviderConfig: function readConfig() {
+                  return { api: 'pi-messages', };
                 },
               },
-              configReader: {
-                getRegisteredProviderConfig: function readAbsentConfig() {
-                  return undefined;
+              composedReader: {
+                getProvider: function readComposed() {
+                  return composed;
                 },
               },
             },);
             expect(read.readChatModels(),).toEqual([chat],);
             expect(read.readImageModels('hyper',),).toEqual([image],);
             expect(read.readClassifierModels('hyper',),).toEqual([classifier],);
-            expect(read.readRegisteredProviderIds(),).toEqual(['hyper'],);
-            expect(read.readProviderConfig('hyper',),).toEqual({ kind: 'absent', },);
+            expect(read.readProviderConfig('hyper',).kind,).toBe('present',);
+            expect(read.readComposedProvider('hyper',).kind,).toBe('present',);
           },
         },),
         it({
-          name: 'marks a readable incumbent configuration present',
-          fn: async function runPresentConfig() {
+          name: 'reports absence for a provider pi describes nowhere',
+          fn: async function runReadAbsence() {
             /**
-             Incumbent configuration the fake registry returns.
-             */
-            const incumbent = { api: 'pi-messages', };
-            /**
-             Reads adapted from a registry that exposes one provider configuration.
+             Reads adapted from fakes that return nothing.
              */
             const read = readsFromRegistry({
               chatReader: {
@@ -373,21 +547,19 @@ await describe({
                   return [];
                 },
               },
-              idReader: {
-                getRegisteredProviderIds: function readIds() {
-                  return ['radius'];
-                },
-              },
               configReader: {
-                getRegisteredProviderConfig: function readPresentConfig() {
-                  return incumbent;
+                getRegisteredProviderConfig: function readConfig() {
+                  return undefined;
+                },
+              },
+              composedReader: {
+                getProvider: function readComposed() {
+                  return undefined;
                 },
               },
             },);
-            expect(read.readProviderConfig('radius',),).toEqual({
-              kind: 'present',
-              config: incumbent,
-            },);
+            expect(read.readProviderConfig('hyper',),).toEqual({ kind: 'absent', },);
+            expect(read.readComposedProvider('hyper',),).toEqual({ kind: 'absent', },);
           },
         },),
       ],
@@ -403,9 +575,9 @@ await describe({
              */
             const captured = emptyCapture();
             /**
-             Provider registrations the pass made.
+             Registrations the pass made.
              */
-            const registrations: RecordedRegistration[] = [];
+            const recorded: RecordedRegistrations = { configs: [], wrappers: [], };
             /**
              Pass summary over one superseded pair.
              */
@@ -416,26 +588,63 @@ await describe({
                   chatModel({ provider: 'hyper', id: 'glm-5.2', },),
                   chatModel({ provider: 'hyper', id: 'glm-5.3', },),
                 ],
+                composed: {
+                  hyper: composedProvider({
+                    provider: 'hyper',
+                    models: [
+                      chatModel({ provider: 'hyper', id: 'glm-5.2', },),
+                      chatModel({ provider: 'hyper', id: 'glm-5.3', },),
+                    ],
+                  },),
+                },
               },),
-              registerProvider: function recordRegistration({ name, config, },) {
-                registrations.push({ name, config, },);
-              },
+              registrar: fakeRegistrar({ recorded, },),
               log: fakeLog(captured,),
             },);
-            expect(registrations.length,).toBe(1,);
-            expect(registrations[0]?.name,).toBe('hyper',);
-            expect(
-              registeredModelIds(nonNullishOrThrow(registrations[0]?.config,),),
-            ).toEqual([
-              'glm-5.3',
-            ],);
-            expect(summary.registeredProviders,).toEqual(['hyper'],);
+            expect(recorded.wrappers.length,).toBe(1,);
+            expect(summary.registeredProviders,).toEqual([{
+              provider: 'hyper',
+              kind: 'wrapper',
+            }],);
             expect(summary.retirements.length,).toBe(1,);
             expect(captured.info.length,).toBe(1,);
             expect(captured.debug.length,).toBe(1,);
             expect(captured.debug[0]?.includes('glm-5.2'),).toBe(true,);
             expect(captured.warn,).toEqual([],);
             expect(summary.liveModelRetirement,).toBe(undefined,);
+          },
+        },),
+        it({
+          name: 'uses the configuration mechanism when pi exposes one',
+          fn: async function runConfigRegistration() {
+            /**
+             Registrations the pass made.
+             */
+            const recorded: RecordedRegistrations = { configs: [], wrappers: [], };
+            /**
+             Pass summary over a configuration-registered provider.
+             */
+            const summary = await applyRetirements({
+              refresh: noopRefresh,
+              read: readOf({
+                chat: [
+                  chatModel({ provider: 'synthetic', id: 'glm-5.2', },),
+                  chatModel({ provider: 'synthetic', id: 'glm-5.3', },),
+                ],
+                configs: { synthetic: { api: 'openai-completions', }, },
+              },),
+              registrar: fakeRegistrar({ recorded, },),
+              log: fakeLog(emptyCapture(),),
+            },);
+            expect(recorded.configs.length,).toBe(1,);
+            expect(recorded.wrappers,).toEqual([],);
+            expect(registeredModelIds(nonNullishOrThrow(recorded.configs[0],).config,),).toEqual([
+              'glm-5.3',
+            ],);
+            expect(summary.registeredProviders,).toEqual([{
+              provider: 'synthetic',
+              kind: 'config',
+            }],);
           },
         },),
         it({
@@ -446,6 +655,10 @@ await describe({
              */
             const captured = emptyCapture();
             /**
+             Registrations the pass made.
+             */
+            const recorded: RecordedRegistrations = { configs: [], wrappers: [], };
+            /**
              Pass summary with a live model the rule retires.
              */
             const summary = await applyRetirements({
@@ -455,8 +668,14 @@ await describe({
                   chatModel({ provider: 'hyper', id: 'glm-5.2', },),
                   chatModel({ provider: 'hyper', id: 'glm-5.3', },),
                 ],
+                composed: {
+                  hyper: composedProvider({
+                    provider: 'hyper',
+                    models: [chatModel({ provider: 'hyper', id: 'glm-5.3', },)],
+                  },),
+                },
               },),
-              registerProvider: function discardRegistration() {},
+              registrar: fakeRegistrar({ recorded, },),
               liveModel: { provider: 'hyper', id: 'glm-5.2', },
               log: fakeLog(captured,),
             },);
@@ -473,6 +692,10 @@ await describe({
              */
             const captured = emptyCapture();
             /**
+             Registrations the pass made.
+             */
+            const recorded: RecordedRegistrations = { configs: [], wrappers: [], };
+            /**
              Pass summary with a live model the rule keeps.
              */
             const summary = await applyRetirements({
@@ -482,52 +705,19 @@ await describe({
                   chatModel({ provider: 'hyper', id: 'glm-5.2', },),
                   chatModel({ provider: 'hyper', id: 'glm-5.3', },),
                 ],
+                composed: {
+                  hyper: composedProvider({
+                    provider: 'hyper',
+                    models: [chatModel({ provider: 'hyper', id: 'glm-5.3', },)],
+                  },),
+                },
               },),
-              registerProvider: function discardRegistration() {},
+              registrar: fakeRegistrar({ recorded, },),
               liveModel: { provider: 'hyper', id: 'glm-5.3', },
               log: fakeLog(captured,),
             },);
             expect(captured.warn,).toEqual([],);
             expect(summary.liveModelRetirement,).toBe(undefined,);
-          },
-        },),
-        it({
-          name: 'records a provider pi refused and still filters the rest',
-          fn: async function runRegistrationFailure() {
-            /**
-             Capture arrays for this pass.
-             */
-            const captured = emptyCapture();
-            /**
-             Provider registrations the pass made.
-             */
-            const registrations: RecordedRegistration[] = [];
-            /**
-             Pass summary where one provider throws on registration.
-             */
-            const summary = await applyRetirements({
-              refresh: noopRefresh,
-              read: readOf({
-                chat: [
-                  chatModel({ provider: 'azure-openai-responses', id: 'gpt-4.1', },),
-                  chatModel({ provider: 'azure-openai-responses', id: 'gpt-5.5', },),
-                  chatModel({ provider: 'hyper', id: 'glm-5.2', },),
-                  chatModel({ provider: 'hyper', id: 'glm-5.3', },),
-                ],
-              },),
-              registerProvider: function refusingRegistration({ name, config, },) {
-                if (name === 'azure-openai-responses')
-                  throw new Error('"baseUrl" is required when defining custom models',);
-                registrations.push({ name, config, },);
-              },
-              log: fakeLog(captured,),
-            },);
-            expect(summary.registeredProviders,).toEqual(['hyper'],);
-            expect(summary.failedProviders.length,).toBe(1,);
-            expect(summary.failedProviders[0]?.provider,).toBe('azure-openai-responses',);
-            expect(summary.failedProviders[0]?.reason.includes('baseUrl',),).toBe(true,);
-            expect(registrations.length,).toBe(1,);
-            expect(captured.warn.length,).toBe(1,);
           },
         },),
         it({
@@ -549,10 +739,10 @@ await describe({
                 readClassifierModels: function readClassifierModels() {
                   return [];
                 },
-                readRegisteredProviderIds: function readRegisteredProviderIds() {
-                  return [];
-                },
                 readProviderConfig: function readProviderConfig(): IncumbentConfig {
+                  return { kind: 'absent', };
+                },
+                readComposedProvider: function readComposedProvider(): ComposedProvider {
                   return { kind: 'absent', };
                 },
               },
@@ -560,7 +750,9 @@ await describe({
                 order.push('refresh',);
                 return Promise.resolve();
               },
-              registerProvider: function discardRegistration() {},
+              registrar: fakeRegistrar({
+                recorded: { configs: [], wrappers: [], },
+              },),
               log: fakeLog(emptyCapture(),),
             },);
             expect(order,).toEqual(['refresh', 'read'],);
@@ -574,6 +766,10 @@ await describe({
              */
             const captured = emptyCapture();
             /**
+             Registrations the pass made.
+             */
+            const recorded: RecordedRegistrations = { configs: [], wrappers: [], };
+            /**
              Pass summary over a refresh that rejects.
              */
             const summary = await applyRetirements({
@@ -585,50 +781,64 @@ await describe({
                   chatModel({ provider: 'hyper', id: 'glm-5.2', },),
                   chatModel({ provider: 'hyper', id: 'glm-5.3', },),
                 ],
+                composed: {
+                  hyper: composedProvider({
+                    provider: 'hyper',
+                    models: [chatModel({ provider: 'hyper', id: 'glm-5.3', },)],
+                  },),
+                },
               },),
-              registerProvider: function discardRegistration() {},
+              registrar: fakeRegistrar({ recorded, },),
               log: fakeLog(captured,),
             },);
-            expect(summary.registeredProviders,).toEqual(['hyper'],);
+            expect(summary.registeredProviders.length,).toBe(1,);
             expect(captured.warn.length,).toBe(1,);
             expect(captured.warn[0]?.includes('models.json unreadable',),).toBe(true,);
           },
         },),
         it({
-          name: 'warns about a provider another extension owns natively',
-          fn: async function runNativeOwnerWarning() {
+          name: 'records a provider pi refused and still filters the rest',
+          fn: async function runRegistrationFailure() {
             /**
              Capture arrays for this pass.
              */
             const captured = emptyCapture();
             /**
-             Provider registrations the pass made.
+             Registrations the pass made.
              */
-            const registrations: RecordedRegistration[] = [];
+            const recorded: RecordedRegistrations = { configs: [], wrappers: [], };
             /**
-             Pass summary over a provider pi lists as extension-registered with no
-             readable configuration.
+             Pass summary where one provider throws on registration.
              */
             const summary = await applyRetirements({
               refresh: noopRefresh,
               read: readOf({
                 chat: [
-                  chatModel({ provider: 'hyper', id: 'glm-5.2', },),
-                  chatModel({ provider: 'hyper', id: 'glm-5.3', },),
+                  chatModel({ provider: 'azure-openai-responses', id: 'gpt-4.1', },),
+                  chatModel({ provider: 'azure-openai-responses', id: 'gpt-5.5', },),
+                  chatModel({ provider: 'synthetic', id: 'glm-5.2', },),
+                  chatModel({ provider: 'synthetic', id: 'glm-5.3', },),
                 ],
-                registeredIds: ['hyper'],
+                configs: {
+                  'azure-openai-responses': {},
+                  synthetic: {},
+                },
               },),
-              registerProvider: function recordRegistration({ name, config, },) {
-                registrations.push({ name, config, },);
-              },
+              registrar: fakeRegistrar({
+                recorded,
+                rejectProvider: 'azure-openai-responses',
+              },),
               log: fakeLog(captured,),
             },);
-            expect(registrations,).toEqual([],);
-            expect(summary.retirements.length,).toBe(1,);
-            expect(summary.skippedProviders.length,).toBe(1,);
-            expect(summary.skippedProviders[0]?.provider,).toBe('hyper',);
+            expect(summary.registeredProviders,).toEqual([{
+              provider: 'synthetic',
+              kind: 'config',
+            }],);
+            expect(summary.failedProviders.length,).toBe(1,);
+            expect(summary.failedProviders[0]?.provider,).toBe('azure-openai-responses',);
+            expect(summary.failedProviders[0]?.reason.includes('baseUrl',),).toBe(true,);
+            expect(recorded.configs.length,).toBe(1,);
             expect(captured.warn.length,).toBe(1,);
-            expect(captured.warn[0]?.includes('native provider',),).toBe(true,);
           },
         },),
         it({
@@ -639,9 +849,9 @@ await describe({
              */
             const captured = emptyCapture();
             /**
-             Provider registrations the pass made.
+             Registrations the pass made.
              */
-            const registrations: RecordedRegistration[] = [];
+            const recorded: RecordedRegistrations = { configs: [], wrappers: [], };
             /**
              Pass summary over two models in different families.
              */
@@ -652,13 +862,13 @@ await describe({
                   chatModel({ provider: 'hyper', id: 'glm-5.3', },),
                   chatModel({ provider: 'hyper', id: 'glm-5.3-flash', },),
                 ],
+                configs: { hyper: {}, },
               },),
-              registerProvider: function recordRegistration({ name, config, },) {
-                registrations.push({ name, config, },);
-              },
+              registrar: fakeRegistrar({ recorded, },),
               log: fakeLog(captured,),
             },);
-            expect(registrations,).toEqual([],);
+            expect(recorded.configs,).toEqual([],);
+            expect(recorded.wrappers,).toEqual([],);
             expect(summary.retirements,).toEqual([],);
             expect(captured.info.length,).toBe(1,);
           },
@@ -674,10 +884,15 @@ await describe({
             /**
              State the fake host records into.
              */
-            const state: FakeHostState = { events: [], registrations: [], };
+            const state: FakeHostState = {
+              events: [],
+              configs: [],
+              wrappers: [],
+            };
             registerModelRetirement({ pi: fakeHost(state,), },);
             expect(state.events,).toEqual(['session_start'],);
-            expect(state.registrations,).toEqual([],);
+            expect(state.configs,).toEqual([],);
+            expect(state.wrappers,).toEqual([],);
           },
         },),
         it({
@@ -686,68 +901,50 @@ await describe({
             /**
              State the fake host records into.
              */
-            const state: FakeHostState = { events: [], registrations: [], };
+            const state: FakeHostState = {
+              events: [],
+              configs: [],
+              wrappers: [],
+            };
             registerModelRetirement({ pi: fakeHost(state,), },);
             /**
-             Session-start context carrying a registry and a live model.
+             Chat models the session registry reports.
              */
-            const ctx = {
-              modelRegistry: {
-                getAll: function getAll() {
-                  return [
-                    chatModel({ provider: 'hyper', id: 'glm-5.2', },),
-                    chatModel({ provider: 'hyper', id: 'glm-5.3', },),
-                  ];
-                },
-                getModelsOfType: function getModelsOfType() {
-                  return [];
-                },
-                refresh: noopRefresh,
-                getRegisteredProviderIds: function readIds() {
-                  return [];
-                },
-                getRegisteredProviderConfig: function readConfig() {
-                  return undefined;
-                },
-              },
+            const chat = [
+              chatModel({ provider: 'hyper', id: 'glm-5.2', },),
+              chatModel({ provider: 'hyper', id: 'glm-5.3', },),
+            ];
+            await state.handler?.({ type: 'session_start', }, sessionContext({
+              chat,
+              composed: composedProvider({ provider: 'hyper', models: chat, },),
               model: chatModel({ provider: 'hyper', id: 'glm-5.3', },),
-            };
-            await state.handler?.({ type: 'session_start', }, ctx,);
-            expect(state.registrations.length,).toBe(1,);
-            expect(
-              registeredModelIds(nonNullishOrThrow(state.registrations[0]?.config,),),
-            ).toEqual([
-              'glm-5.3',
-            ],);
+            },),);
+            expect(state.wrappers.length,).toBe(1,);
+            expect(state.configs,).toEqual([],);
+            expect(nonNullishOrThrow(state.wrappers[0],).provider.getModels().map(
+              function toId(model,) {
+                return model.id;
+              },
+            ),).toEqual(['glm-5.3'],);
           },
         },),
         it({
-          name: 'tolerates a session without a live model',
+          name: 'tolerates a session without a live model or a composed provider',
           fn: async function runHandlerWithoutModel() {
             /**
              State the fake host records into.
              */
-            const state: FakeHostState = { events: [], registrations: [], };
+            const state: FakeHostState = {
+              events: [],
+              configs: [],
+              wrappers: [],
+            };
             registerModelRetirement({ pi: fakeHost(state,), },);
-            await state.handler?.({ type: 'session_start', }, {
-              modelRegistry: {
-                getAll: function getAll() {
-                  return [chatModel({ provider: 'hyper', id: 'glm-5.3', },)];
-                },
-                getModelsOfType: function getModelsOfType() {
-                  return [];
-                },
-                refresh: noopRefresh,
-                getRegisteredProviderIds: function readIds() {
-                  return [];
-                },
-                getRegisteredProviderConfig: function readConfig() {
-                  return undefined;
-                },
-              },
-              model: undefined,
-            },);
-            expect(state.registrations,).toEqual([],);
+            await state.handler?.({ type: 'session_start', }, sessionContext({
+              chat: [chatModel({ provider: 'hyper', id: 'glm-5.3', },)],
+            },),);
+            expect(state.configs,).toEqual([],);
+            expect(state.wrappers,).toEqual([],);
           },
         },),
       ],

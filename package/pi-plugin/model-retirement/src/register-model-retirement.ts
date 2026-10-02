@@ -1,11 +1,10 @@
 /**
  Registration of the retirement pass against pi's session lifecycle.
 
- The host probe in `doc/planning/pi-model-retirement.md` settled where this can run:
- an extension factory has no catalog read at all, and `session_start` is the earliest
- event carrying `ctx.modelRegistry`. Everything here therefore happens in that
- handler, which is after startup model resolution and after `pi --list-models` has
- already exited.
+ The host probe in `doc/planning/pi-model-retirement.md` settled where this can run: an
+ extension factory has no catalog read at all, and `session_start` is the earliest event
+ carrying `ctx.modelRegistry`. Everything here therefore happens in that handler, which is
+ after startup model resolution and after `pi --list-models` has already exited.
 
  @module
  */
@@ -22,6 +21,7 @@ import type {
   ImageApi,
   ImageModel,
   Model,
+  Provider,
 } from '@earendil-works/pi-ai';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
@@ -32,9 +32,11 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import {
   planProviderFilters,
   type CatalogRead,
+  type ComposedProvider,
   type IncumbentConfig,
   type SkippedProvider,
 } from './provider-filter.ts';
+import { isComposedProvider, } from './provider-wrapper.ts';
 import type { Retirement, } from './retirement-rule.ts';
 import {
   formatFailedProvider,
@@ -50,8 +52,8 @@ import {
 /**
  Logger surface this extension writes to.
 
- Structural rather than imported so a test can fake it without a sink, while the
- default stays a tagged logger from `@monochromatic-dev/module-logger`.
+ Structural rather than imported so a test can fake it without a sink, while the default
+ stays a tagged logger from `@monochromatic-dev/module-logger`.
  */
 export type RetirementLog = {
   /**
@@ -63,7 +65,7 @@ export type RetirementLog = {
    */
   readonly debug: (message: string,) => void;
   /**
-   Report a session running on a retired model.
+   Report a provider this pass could not filter, or a session running a retired model.
    */
   readonly warn: (message: string,) => void;
 };
@@ -105,21 +107,11 @@ export type ClassifierModelReader = {
 };
 
 /**
- Provider-id read side of pi's registry.
- */
-export type ProviderIdReader = {
-  /**
-   Providers another extension registered.
-   */
-  readonly getRegisteredProviderIds: () => readonly string[];
-};
-
-/**
  Provider-config read side of pi's registry.
 
  Typed as returning `unknown` because pi returns `undefined` for a provider it holds no
- extension configuration for, and this package models absence with a discriminant rather
- than a nullish union.
+ configuration for, and this package models absence with a discriminant rather than a
+ nullish union.
  */
 export type ProviderConfigReader = {
   /**
@@ -129,15 +121,38 @@ export type ProviderConfigReader = {
 };
 
 /**
+ Composed-provider read side of pi's registry.
+
+ Typed as returning `unknown` for the same reason: `getProvider` returns `undefined` for a
+ provider nothing defines.
+ */
+export type ComposedProviderReader = {
+  /**
+   Composed provider object for one provider, when there is one.
+   */
+  readonly getProvider: (name: string,) => unknown;
+};
+
+/**
  Provider re-registration side of pi's extension API.
+
+ Pi overloads `registerProvider` on the argument shape, so both forms are exposed: a
+ configuration merges over the previous registration, while a provider object replaces the
+ native registration for that id.
  */
 export type ProviderRegistrar = {
   /**
-   Replace one provider's model list.
+   Merge one configuration over a provider's previous registration.
    */
-  readonly registerProvider: (options: {
+  readonly registerConfig: (options: {
     readonly name: string;
     readonly config: ProviderConfig;
+  }) => void;
+  /**
+   Replace one provider with a wrapped provider object.
+   */
+  readonly registerProviderObject: (options: {
+    readonly provider: Provider;
   }) => void;
 };
 
@@ -147,8 +162,8 @@ export type ProviderRegistrar = {
  Pi reloads `models.json` asynchronously and its registry documents awaiting `refresh`
  before synchronous reads, so the pass awaits an offline refresh first.
  `modelOverrides` cannot be lost either way: pi applies them after extension model
- replacement (`dist/core/provider-composer.js:337-353`), which the disposable host
- confirms by reporting the overridden 750000 both before and after filtering.
+ replacement (`dist/core/provider-composer.js:337-353`), which the disposable host confirms
+ by reporting the overridden 750000 both before and after filtering.
  */
 export type CatalogRefresher = {
   /**
@@ -158,6 +173,15 @@ export type CatalogRefresher = {
     readonly allowNetwork?: boolean;
   }) => Promise<unknown>;
 };
+
+/**
+ Registry sides the session-start handler reads.
+
+ An intersection of the narrow structural readers, so pi's `ModelRegistry` satisfies it
+ without this package mirroring a class that carries private members.
+ */
+export type SessionRegistry = ChatModelReader & ImageModelReader & ClassifierModelReader
+  & CatalogRefresher & ProviderConfigReader & ComposedProviderReader;
 
 /**
  Identity of the model a session is currently running.
@@ -171,6 +195,20 @@ export type LiveModelIdentity = {
    Model id.
    */
   readonly id: string;
+};
+
+/**
+ One provider this pass filtered, and how.
+ */
+export type RegisteredProvider = {
+  /**
+   Provider whose models were filtered.
+   */
+  readonly provider: string;
+  /**
+   Mechanism used, which decides what pi preserves.
+   */
+  readonly kind: 'config' | 'wrapper';
 };
 
 /**
@@ -196,11 +234,11 @@ export type RetirementPassSummary = {
    */
   readonly retirements: readonly Retirement[];
   /**
-   Providers whose model list was replaced.
+   Providers this pass filtered, with the mechanism used for each.
    */
-  readonly registeredProviders: readonly string[];
+  readonly registeredProviders: readonly RegisteredProvider[];
   /**
-   Providers the rule retired models for but that cannot be re-declared.
+   Providers the rule retired models for but that cannot be filtered.
    */
   readonly skippedProviders: readonly SkippedProvider[];
   /**
@@ -217,22 +255,6 @@ export type RetirementPassSummary = {
 
 //region Registry adaptation
 
-/**
- Adapt pi's registry into the three narrow reads the planner takes.
-
- @param chatReader - registry side returning chat models
-
- @param imageReader - registry side returning image models
-
- @param classifierReader - registry side returning classifier models
-
- @returns reads the planner consumes
-
- @example
- ```typescript
- readsFromRegistry({ chatReader: ctx.modelRegistry, imageReader: ctx.modelRegistry, classifierReader: ctx.modelRegistry });
- ```
- */
 /**
  Test whether an unknown value is a provider configuration this pass can spread.
 
@@ -258,15 +280,15 @@ function isProviderConfig(value: unknown,): value is ForeignBorrowed<ProviderCon
 
  @param classifierReader - registry side returning classifier models
 
- @param idReader - registry side naming extension-registered providers
-
  @param configReader - registry side returning one provider's incumbent configuration
+
+ @param composedReader - registry side returning one provider's composed object
 
  @returns reads the planner consumes
 
  @example
  ```typescript
- readsFromRegistry({ chatReader, imageReader, classifierReader, idReader, configReader });
+ readsFromRegistry({ chatReader, imageReader, classifierReader, configReader, composedReader });
  ```
  */
 export function readsFromRegistry(
@@ -274,14 +296,14 @@ export function readsFromRegistry(
     chatReader,
     imageReader,
     classifierReader,
-    idReader,
     configReader,
+    composedReader,
   }: {
     readonly chatReader: ChatModelReader;
     readonly imageReader: ImageModelReader;
     readonly classifierReader: ClassifierModelReader;
-    readonly idReader: ProviderIdReader;
     readonly configReader: ProviderConfigReader;
+    readonly composedReader: ComposedProviderReader;
   },
 ): CatalogRead {
   return {
@@ -300,9 +322,6 @@ export function readsFromRegistry(
         provider,
       );
     },
-    readRegisteredProviderIds: function readRegisteredProviderIds() {
-      return idReader.getRegisteredProviderIds();
-    },
     readProviderConfig: function readProviderConfig(provider,): IncumbentConfig {
       /**
        Whatever pi holds for this provider.
@@ -315,6 +334,18 @@ export function readsFromRegistry(
         config: incumbent,
       };
     },
+    readComposedProvider: function readComposedProvider(provider,): ComposedProvider {
+      /**
+       Whatever the registry composed for this provider.
+       */
+      const composed = composedReader.getProvider(provider,);
+      if (!isComposedProvider(composed,))
+        return { kind: 'absent', };
+      return {
+        kind: 'present',
+        provider: composed,
+      };
+    },
   };
 }
 
@@ -323,38 +354,38 @@ export function readsFromRegistry(
 //region Retirement pass
 
 /**
- Run one retirement pass: plan, re-register, and log.
+ Run one retirement pass: plan, register, and log.
 
  @param read - catalog reads for this pass
 
  @param refresh - awaited before reading, so `models.json` overrides are applied
 
- @param registerProvider - provider re-registration side of pi
+ @param registrar - provider re-registration side of pi
 
  @param liveModel - identity of the model the session is running, when it has one
 
  @param log - logger the pass reports through
 
- @returns what the pass retired, registered, and found running live
+ @returns what the pass retired, registered, skipped, and found running live
 
- @mutates registerProvider - replaces the model list of every provider that loses a model
+ @mutates registrar - replaces the model list of every provider that loses a model
 
  @example
  ```typescript
- await applyRetirements({ read, refresh, registerProvider, log });
+ await applyRetirements({ read, refresh, registrar, log });
  ```
  */
 export async function applyRetirements(
   {
     read,
     refresh,
-    registerProvider,
+    registrar,
     liveModel,
     log,
   }: {
     readonly read: CatalogRead;
     readonly refresh: () => Promise<void>;
-    readonly registerProvider: ProviderRegistrar['registerProvider'];
+    readonly registrar: ProviderRegistrar;
     readonly liveModel?: LiveModelIdentity;
     readonly log: RetirementLog;
   },
@@ -369,21 +400,27 @@ export async function applyRetirements(
    */
   const planning = planProviderFilters({ read, },);
   /**
-   Providers whose model list this pass replaced.
+   Providers this pass filtered, with the mechanism used for each.
    */
-  const registeredProviders: string[] = [];
+  const registeredProviders: RegisteredProvider[] = [];
   /**
-   Providers pi refused to re-register, each reported and then skipped so one bad
-   provider cannot leave the rest of the catalog unfiltered.
+   Providers pi refused to re-register, each reported and then skipped so one bad provider
+   cannot leave the rest of the catalog unfiltered.
    */
   const failedProviders: FailedProvider[] = [];
   for (const plan of planning.plans) {
     try {
-      registerProvider({
-        name: plan.provider,
-        config: plan.config,
+      if (plan.kind === 'config')
+        registrar.registerConfig({
+          name: plan.provider,
+          config: plan.config,
+        },);
+      else
+        registrar.registerProviderObject({ provider: plan.wrapped, },);
+      registeredProviders.push({
+        provider: plan.provider,
+        kind: plan.kind,
       },);
-      registeredProviders.push(plan.provider,);
     } catch (error) {
       failedProviders.push({
         provider: plan.provider,
@@ -413,9 +450,9 @@ export async function applyRetirements(
     ? undefined
     : planning.retirements
       .find(function matchesLiveModel(retirement,) {
-      return (retirement.provider === liveModel.provider)
-        && (retirement.retiredId === liveModel.id);
-    },);
+        return (retirement.provider === liveModel.provider)
+          && (retirement.retiredId === liveModel.id);
+      },);
   if (liveModelRetirement !== undefined)
     log.warn(formatLiveModelWarning({ retirement: liveModelRetirement, },),);
   return {
@@ -452,27 +489,34 @@ export function registerModelRetirement(
   },
 ): void {
   /**
-   Provider re-registration forwarded to pi, hoisted so its scope is the one holding the
-   borrowed API handle.
-
-   @param name - provider whose model list pi replaces
-
-   @param config - configuration carrying every model the provider keeps
+   Both provider registration forms forwarded to pi, hoisted so their scope is the one
+   holding the borrowed API handle.
    */
-  function registerProvider(
-    {
-      name,
-      config,
-    }: {
-      readonly name: string;
-      readonly config: ProviderConfig;
+  const registrar: ProviderRegistrar = {
+    registerConfig: function registerConfig(
+      {
+        name,
+        config,
+      }: {
+        readonly name: string;
+        readonly config: ProviderConfig;
+      },
+    ): void {
+      pi.registerProvider(
+        name,
+        config,
+      );
     },
-  ): void {
-    pi.registerProvider(
-      name,
-      config,
-    );
-  }
+    registerProviderObject: function registerProviderObject(
+      {
+        provider,
+      }: {
+        readonly provider: Provider;
+      },
+    ): void {
+      pi.registerProvider(provider,);
+    },
+  };
 
   pi.on(
     'session_start',
@@ -488,9 +532,9 @@ export function registerModelRetirement(
         l: logger,
       },);
       /**
-       Registry the session started against, narrowed to the surface this pass uses.
+       Registry the session started against.
        */
-      const registry: ChatModelReader & ImageModelReader & ClassifierModelReader & CatalogRefresher & ProviderIdReader & ProviderConfigReader = ctx.modelRegistry;
+      const registry: SessionRegistry = ctx.modelRegistry;
       /**
        Identity of the model the session runs, absent when none is resolved yet.
        */
@@ -507,13 +551,13 @@ export function registerModelRetirement(
           chatReader: registry,
           imageReader: registry,
           classifierReader: registry,
-          idReader: registry,
           configReader: registry,
+          composedReader: registry,
         },),
         refresh: async function refreshCatalog() {
           await registry.refresh({ allowNetwork: false, },);
         },
-        registerProvider,
+        registrar,
         ...(liveModel === undefined ? {} : { liveModel, }),
         log: {
           info: function reportInfo(message,) {

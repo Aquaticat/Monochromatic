@@ -20,6 +20,9 @@ import {
   RETIRED_MODEL,
   runDisposableHost,
   TARGET_PROVIDER,
+  WRAPPED_KEPT,
+  WRAPPED_PROVIDER,
+  WRAPPED_RETIRED,
   type Snapshot,
 } from './disposable-host.ts';
 
@@ -180,6 +183,24 @@ function assertSnapshots(
     ok: after.classifierCount === before.classifierCount,
     detail: `${String(before.classifierCount,)} -> ${String(after.classifierCount,)}`,
   },);
+  check({
+    checks,
+    label: 'endpoint-less provider present before wrapping',
+    ok: before.hasWrappedRetired,
+    detail: `${WRAPPED_PROVIDER}/${WRAPPED_RETIRED} present=${String(before.hasWrappedRetired,)}`,
+  },);
+  check({
+    checks,
+    label: 'wrapping filters a provider whose models carry no baseUrl',
+    ok: !after.hasWrappedRetired,
+    detail: `${WRAPPED_PROVIDER}/${WRAPPED_RETIRED} present=${String(after.hasWrappedRetired,)}`,
+  },);
+  check({
+    checks,
+    label: 'endpoint-less provider keeps its family winner',
+    ok: after.hasWrappedKeeper,
+    detail: `${WRAPPED_PROVIDER}/${WRAPPED_KEPT} present=${String(after.hasWrappedKeeper,)}`,
+  },);
 }
 
 //endregion Assertions
@@ -285,6 +306,19 @@ async function verifyInDisposableHost(): Promise<string[]> {
     checks,
     before,
     after,
+  },);
+  /**
+   Whether any provider was left unfiltered, which the pass reports as a skip warning.
+   */
+  const skipped = run.stderr
+    .includes('skipped ',);
+  check({
+    checks,
+    label: 'no provider was skipped',
+    ok: !skipped,
+    detail: skipped
+      ? 'a provider was skipped'
+      : 'every provider with retirements was filtered',
   },);
   if (checks.failures
     .length

@@ -33,6 +33,21 @@ const RETIRED_MODEL = 'gpt-6-sol';
 const KEEPER_MODEL = 'gpt-6.1-sol';
 
 /**
+ Provider whose models carry no endpoint, so only the wrapper mechanism can filter it.
+ */
+const WRAPPED_PROVIDER = 'azure-openai-responses';
+
+/**
+ Model the rule retires inside the endpoint-less provider.
+ */
+const WRAPPED_RETIRED = 'gpt-4.1';
+
+/**
+ Model the rule keeps inside the endpoint-less provider.
+ */
+const WRAPPED_KEPT = 'gpt-5.5';
+
+/**
  Providers whose configuration another package owns, reported before and after
  filtering so a lost `streamSimple` or credential is visible.
  */
@@ -191,6 +206,12 @@ function snapshot(
     },),
     hasKeeper: chat.some(function isKeeper(model,) {
       return (model.provider === TARGET_PROVIDER) && (model.id === KEEPER_MODEL);
+    },),
+    hasWrappedRetired: chat.some(function isWrappedRetired(model,) {
+      return (model.provider === WRAPPED_PROVIDER) && (model.id === WRAPPED_RETIRED);
+    },),
+    hasWrappedKeeper: chat.some(function isWrappedKeeper(model,) {
+      return (model.provider === WRAPPED_PROVIDER) && (model.id === WRAPPED_KEPT);
     },),
     ownerConfigs: describeOwnerConfigs(registry,),
   },);
