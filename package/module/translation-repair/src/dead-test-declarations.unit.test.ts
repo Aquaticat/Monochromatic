@@ -55,6 +55,7 @@ import {
   parentsOf,
   parseSource,
   readPackageSource,
+  resolveSpecifier,
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
@@ -479,39 +480,6 @@ function namesReadIn({ program, }: { readonly program: TreeNode; },): ReadonlySe
     .map(function nameOf(node,): string {
       return identifierName({ node, },);
     },),);
-}
-
-/**
- Resolves a relative module specifier against the file that holds it.
-
- @param fromPath - importing file's path, relative to `src`
-
- @param specifier - relative specifier the import or re-export names
-
- @returns The path it names, relative to `src`
-
- @example
- ```ts
- resolveSpecifier({ fromPath: 'corpus-run/a.test.ts', specifier: '../b.test-fixture.ts', },); // 'b.test-fixture.ts'
- ```
- */
-function resolveSpecifier({ fromPath, specifier, }: { readonly fromPath: string; readonly specifier: string; },): string {
-  /**
-   Directory segments of the importing file, its own file name dropped.
-   */
-  const resolved = fromPath
-    .split('/',)
-    .slice(
-      0,
-      -1,
-    );
-  for (const segment of specifier.split('/',)) {
-    if (segment === '..')
-      resolved.pop();
-    else if ((segment !== '.') && (segment !== ''))
-      resolved.push(segment,);
-  }
-  return resolved.join('/',);
 }
 
 /**

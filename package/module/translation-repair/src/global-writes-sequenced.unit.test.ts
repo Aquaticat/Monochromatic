@@ -16,14 +16,18 @@
  `Reflect.defineProperty`, `Object.defineProperty` and `Object.assign` whose
  first argument is one of those or a chain on one; and `process.chdir` and
  `process.umask` called with an argument. A write inside a function declared
- by name is placed at every call of that name, followed out until a case or
- the file's top; a write inside a method or a callback is placed where that
+ by name is placed at every call of that name in its own file, and at every
+ call in another test file that imports it by name from that file, under
+ whatever name the import binds (ledger B120), followed out until a case or
+ a file's top; a write inside a method or a callback is placed where that
  function was made. A case's stub through its own sandbox, `ctx.sinon`, is no
  write here, since module-test answers it to that case alone.
 
  OUT OF THE SCAN'S REACH: a write through an alias (`const env =
- process.env`), a global shadowed by a local of the same name, and a case
- made by a function the suite's text only calls. A writer that no call by
+ process.env`), a global shadowed by a local of the same name, a case
+ made by a function the suite's text only calls, and a writer reached
+ through a namespace import or a re-export (the package's tests use
+ neither; `dead-test-declarations.unit.test.ts` fails a namespace import). A writer that no call by
  name reaches, such as one kept in a table and called through it, is
  reported rather than passed.
 
@@ -42,11 +46,14 @@ import {
 
 import {
   ancestorsOf,
+  childNodes,
   identifierName,
   isTreeNode,
+  literalText,
   parentsOf,
   parseSource,
   readPackageSource,
+  resolveSpecifier,
   type SourceText,
   type TreeNode,
   unwrapped,
@@ -385,30 +392,209 @@ function declaredName(
 }
 
 /**
+ A name one file imports by name from a relative path.
+ */
+type ImportedName = {
+  /**
+   Name the import binds in the importing file.
+   */
+  readonly local: string;
+
+  /**
+   Path of the file it comes from, relative to `src`.
+   */
+  readonly from: string;
+
+  /**
+   Name that file exports it under.
+   */
+  readonly imported: string;
+};
+
+/**
+ One test file as the scan follows writes through it.
+ */
+type FileSyntax = {
+  /**
+   File read.
+   */
+  readonly file: SourceText;
+
+  /**
+   Each node's parent.
+   */
+  readonly parents: ReadonlyMap<TreeNode, TreeNode>;
+
+  /**
+   Calls of a plain name, by the name called.
+   */
+  readonly calls: ReadonlyMap<string, readonly TreeNode[]>;
+
+  /**
+   Names the file imports by name from a relative path.
+   */
+  readonly imports: readonly ImportedName[];
+};
+
+/**
+ A place a write is followed out of.
+ */
+type Place = {
+  /**
+   File holding it.
+   */
+  readonly syntax: FileSyntax;
+
+  /**
+   Node there.
+   */
+  readonly node: TreeNode;
+};
+
+/**
+ One test file's parents, calls by name and imports by name.
+
+ @param file - file read
+
+ @returns Its syntax as the scan follows writes through it
+
+ @example
+ ```ts
+ const syntax = syntaxOf({ file, },);
+ ```
+ */
+function syntaxOf({ file, }: { readonly file: SourceText; },): FileSyntax {
+  /**
+   The file's program and each node's parent there.
+   */
+  const { program, } = parseSource({ file, },);
+  const parents = parentsOf({ program, },);
+  /**
+   Calls in this file, by the name called.
+   */
+  const calls = new Map<string, TreeNode[]>();
+  for (const node of parents.keys()) {
+    /**
+     Name called, for a call of a plain name.
+     */
+    const name = (node.type === 'CallExpression') ? identifierName({ node: node.callee, },) : '';
+    if (name === '')
+      continue;
+    if (!calls.has(name,))
+      calls.set(name, [],);
+    calls.get(name,)
+      ?.push(node,);
+  }
+  return {
+    file,
+    parents,
+    calls,
+    imports: childNodes({ node: program, },)
+      .filter(function importsRelative(statement,): boolean {
+        return (statement.type === 'ImportDeclaration') && literalText({ node: statement.source, },)
+          .startsWith('.',);
+      },)
+      .flatMap(function named(statement,): readonly ImportedName[] {
+        /**
+         Path the statement imports from.
+         */
+        const from = resolveSpecifier({
+          fromPath: file.path,
+          specifier: literalText({ node: statement.source, },),
+        },);
+        return childNodes({ node: statement, },)
+          .filter(function isNamed(specifier,): boolean {
+            return specifier.type === 'ImportSpecifier';
+          },)
+          .map(function imported(specifier,): ImportedName {
+            return {
+              local: identifierName({ node: specifier.local, },),
+              from,
+              imported: identifierName({ node: specifier.imported, },),
+            };
+          },);
+      },),
+  };
+}
+
+/**
+ Every call of a function declared by name: in its own file under its name,
+ and in each test file importing it by name from that file under the name
+ the import binds.
+
+ @param name - name the function is declared by
+
+ @param syntax - file declaring it
+
+ @param all - every test file read
+
+ @returns The calls, each with its file
+
+ @example
+ ```ts
+ const callers = callersOf({ name, syntax, all, },);
+ ```
+ */
+function callersOf(
+  {
+    name,
+    syntax,
+    all,
+  }: {
+    readonly name: string;
+    readonly syntax: FileSyntax;
+    readonly all: readonly FileSyntax[];
+  },
+): readonly Place[] {
+  return all.flatMap(function callsIn(other,): readonly Place[] {
+    /**
+     Names the function is called by in this file.
+     */
+    const locals = (other === syntax)
+      ? [name,]
+      : other.imports
+        .filter(function fromDeclarer(entry,): boolean {
+          return (entry.from === syntax.file.path) && (entry.imported === name);
+        },)
+        .map(function local(entry,): string {
+          return entry.local;
+        },);
+    return locals.flatMap(function placesOf(local,): readonly Place[] {
+      return (other.calls.get(local,) ?? []).map(function place(node,): Place {
+        return {
+          syntax: other,
+          node,
+        };
+      },);
+    },);
+  },);
+}
+
+/**
  Why a write is not confined to cases that run alone, along every path out.
 
  @param write - write read
 
- @param parents - each node's parent
+ @param syntax - file holding it
 
- @param calls - calls in the file, by the name called
+ @param all - every test file read, for calls of a writer other files import
 
  @returns One reason per path out that does not end in a case run alone
 
  @example
  ```ts
- const reasons = unconfined({ write, parents, calls, },);
+ const reasons = unconfined({ write, syntax, all, },);
  ```
  */
 function unconfined(
   {
     write,
-    parents,
-    calls,
+    syntax,
+    all,
   }: {
     readonly write: TreeNode;
-    readonly parents: ReadonlyMap<TreeNode, TreeNode>;
-    readonly calls: ReadonlyMap<string, readonly TreeNode[]>;
+    readonly syntax: FileSyntax;
+    readonly all: readonly FileSyntax[];
   },
 ): readonly string[] {
   /**
@@ -422,16 +608,25 @@ function unconfined(
   /**
    Places still to follow out of: the write, then calls and made functions.
    */
-  const pending: TreeNode[] = [write,];
+  const pending: Place[] = [
+    {
+      syntax,
+      node: write,
+    },
+  ];
   for (let at = pending.pop(); at !== undefined; at = pending.pop()) {
+    /**
+     Each node's parent in the file holding this place.
+     */
+    const { parents, } = at.syntax;
     /**
      The function holding this place, if any.
      */
-    const fn = ancestorsOf({ node: at, parents, },).find(function opensFunction(node,): boolean {
+    const fn = ancestorsOf({ node: at.node, parents, },).find(function opensFunction(node,): boolean {
       return FUNCTION_KINDS.has(node.type,);
     },);
     if (fn === undefined) {
-      reasons.push((at === write) ? 'outside any case' : 'in a function no case reaches',);
+      reasons.push((at.node === write) ? 'outside any case' : 'in a function no case reaches',);
       continue;
     }
     if (followed.has(fn,))
@@ -457,13 +652,20 @@ function unconfined(
      */
     const name = declaredName({ fn, parents, },);
     if (name === '') {
-      pending.push(fn,);
+      pending.push({
+        syntax: at.syntax,
+        node: fn,
+      },);
       continue;
     }
     /**
-     Calls of that name.
+     Calls of that name, in its file and in the files importing it.
      */
-    const callers = calls.get(name,) ?? [];
+    const callers = callersOf({
+      name,
+      syntax: at.syntax,
+      all,
+    },);
     if (callers.length === 0)
       reasons.push(`in ${name}, which no call by name reaches`,);
     pending.push(...callers,);
@@ -489,37 +691,25 @@ function unconfinedWrites({ files, }: { readonly files: readonly SourceText[]; }
    Keys found so far.
    */
   const found: string[] = [];
-  for (const file of files.filter(function testFile({ isTest, },): boolean {
-    return isTest;
-  },)) {
-    /**
-     Each node's parent in this file.
-     */
-    const parents = parentsOf({ program: parseSource({ file, },).program, },);
-    /**
-     Calls in this file, by the name called.
-     */
-    const calls = new Map<string, TreeNode[]>();
-    for (const node of parents.keys()) {
-      /**
-       Name called, for a call of a plain name.
-       */
-      const name = (node.type === 'CallExpression') ? identifierName({ node: node.callee, },) : '';
-      if (name === '')
-        continue;
-      if (!calls.has(name,))
-        calls.set(name, [],);
-      calls.get(name,)
-        ?.push(node,);
-    }
-    for (const write of parents.keys()) {
+  /**
+   Every test file's syntax, read once.
+   */
+  const all = files
+    .filter(function testFile({ isTest, },): boolean {
+      return isTest;
+    },)
+    .map(function read(file,): FileSyntax {
+      return syntaxOf({ file, },);
+    },);
+  for (const syntax of all) {
+    for (const write of syntax.parents.keys()) {
       /**
        The write this node makes, if any.
        */
       const form = writeOf({ node: write, },);
       if (form !== '') {
-        found.push(...unconfined({ write, parents, calls, },).map(function keyed(reason,): string {
-          return `${file.path}: ${form}, ${reason}`;
+        found.push(...unconfined({ write, syntax, all, },).map(function keyed(reason,): string {
+          return `${syntax.file.path}: ${form}, ${reason}`;
         },),);
       }
     }
