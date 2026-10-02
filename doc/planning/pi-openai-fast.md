@@ -10,7 +10,7 @@ This document tracks the accepted requirements,
  evidence,
  and implementation progress.
 
-A new `/grill-me` interview requests additional support for the non-legacy `openai` sign-in.
+An additional `/grill-me` interview requested support for the non-legacy `openai` sign-in.
 The original confirmation applies to the delivered Codex extension.
 The user subsequently answered "Yes."
  to Q9,
@@ -560,19 +560,18 @@ The user answered "Yes."
 The original provider identity must survive dispatch.
 Ordinary regression checks do not require a separate live API-key or billing campaign.
 
-### Next actions and verification boundaries
+### Delivery and verification boundaries
 
-- Provider mapping:
-   implement only the additional native provider mapping and necessary stream changes.
-- Regression verification:
-   run package-scoped build,
+- Provider mapping is complete:
+   the additional native provider mapping reuses the existing registration and request machinery.
+- Regression verification is complete:
+   package-scoped build,
    types,
    lint,
    tests,
-   and consumer-host checks.
-- Documentation and delivery:
-   update package documentation and record verification results.
-- Extend existing scoped tests and host fixtures for the additional mapping,
+   and consumer-host checks passed.
+- Documentation is updated and verification results are recorded.
+- Existing scoped tests and host fixtures were extended for the additional mapping,
    identical model IDs across providers,
    native priority payloads,
    and unchanged legacy and ordinary requests.
@@ -640,7 +639,8 @@ A read-only global settings probe confirmed that the installed relative declarat
 No reinstall,
  real authentication change,
  or personal settings edit was needed.
-The final extension-host task is pending.
+The final `mise run //package/pi-plugin/openai-fast:verify:extension` task also passed.
+The rebuilt installed local package is ready for pi reload or restart.
 No live new-provider verification has been performed.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
