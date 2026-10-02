@@ -354,6 +354,66 @@ and `contract/research/drex-composed-wording-v3/`.
 The original results and wording remain intact.
 No production threshold or provider was adopted.
 
+## Source-selection and effect decomposition
+
+A new diagnostic separated the tasks instead of paraphrasing whole-program effect questions.
+Each request retained full policy and parent-program context,
+then asked the existing direct effect questions,
+a categorical source-occurrence selection question,
+and hypothetical effects for each candidate source.
+Initial and written occurrences remained distinct even when their bytes matched.
+Code retained references and interpretation;
+no model answer granted permission.
+
+Two predetermined passes over the same five synthetic programs completed:
+10 POSTs,
+zero retries,
+and terminal exit 0.
+Offline reconciliation `proc_01ca` exited 0 and verified all 41 records,
+source/request/response identities,
+usage,
+and complete private streams.
+
+At 90/10,
+the source-specific hypothetical questions produced 60 correct scalar estimates,
+zero wrong,
+and zero unresolved.
+At 95/05,
+56 were correct and four unresolved,
+with zero wrong.
+The source-selection label was correct six times and wrong four times.
+Both passes incorrectly selected the written source for the unrelated-file and write-after-execution programs,
+with selected-label probabilities 0.9989 and 0.9992 respectively.
+Direct whole-program estimates remained 18 correct,
+10 wrong,
+and two unresolved at every recorded band.
+
+The observed errors separate source selection from source-effect recognition on these inspected bodies.
+They do not establish an internal model mechanism,
+general code-understanding ability,
+or trustworthy production source selection.
+Asking a model about a mechanically knowable fact here was diagnostic,
+not delegating authoritative facts away from code.
+No independent-head probabilities were multiplied or used as policy verdicts.
+
+Both passes returned identical scalar estimates and choice probabilities.
+This is a preliminary observation,
+not evidence of deterministic uncached inference or calibration.
+Adding candidate-source records also changed input representation,
+so comparisons with the archived wording trials do not isolate a wording or decomposition effect.
+
+Mean modeled cost was US$0.00047233 per one-call diagnostic request;
+the phase totaled US$0.0047233.
+Preparation-through-freshness elapsed times ranged from 309.925306 to 956.542212 ms.
+Accumulated composed-program development spend is US$0.011289,
+reported separately from operational cost.
+A representative production workload mean remains unmeasured.
+
+Evidence lives in the private qualification repository at `contract/research/drex-composed-methods/`.
+The next complementary diagnostic adds a losslessly reconstructed ordered view of the write/node inputs,
+while retaining the entire parent program and excluding reference effects.
+That tests representation rather than repeating the completed phase or using only isolated arguments.
+
 ## Remaining work
 
 - Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.

@@ -189,6 +189,35 @@ while retaining full composed context and code-owned decisions.
 Measure unchanged-input variability before claiming a design improves scores.
 See the [Drex recheck](../planning/pi-auto-mode-drex-1-5-recheck.md#composed-program-effects-and-wording-development).
 
+## Factorized diagnostic result
+
+The subsequent diagnostic tested source selection separately from hypothetical source effects,
+not just alternative wording.
+Ten requests covered two predetermined passes over the five known programs,
+with zero retries.
+The caller exited 0;
+offline reconciliation `proc_01ca` exited 0 with all 41 records and private streams verified.
+
+At 90/10,
+all 60 hypothetical effect estimates matched their references.
+Source selection was wrong four times:
+both passes selected the written source for the unrelated-file and write-after-execution cases.
+Direct whole-program estimates remained 18 correct,
+10 wrong,
+and two unresolved.
+This locates observed task errors,
+not an internal mechanism or general model capability.
+Source-occurrence selection remains code-owned when mechanically established;
+this diagnostic did not adopt model authority over it.
+
+Mean modeled cost was US$0.00047233 per one-call diagnostic request.
+Both passes returned identical estimates;
+uncached determinism and calibration are not established.
+The private evidence directory is `contract/research/drex-composed-methods/`.
+Next compare a lossless ordered operation representation,
+keeping full composed context and local references out of model inputs.
+No production adoption or threshold choice follows from these results.
+
 ## Parallel-tool bug and private prototype
 
 The actual built extension reproduced two judgments for a parallel two-call group.
