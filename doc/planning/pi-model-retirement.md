@@ -19,10 +19,10 @@ Each item below was decided by the user during the grilling session.
 1. Scope is within-family superseded models only.
    Whole-provider removal is out of scope, so the 399 `openrouter` rows stay except
    where a family inside that provider is superseded.
-2. Mechanism is per-provider re-registration with a filtered model list at extension
-   factory time.
-   Rationale: it is the only catalog mutation pi exposes, and factory registration
-   precedes startup scope resolution and `--list-models`.
+2. Mechanism is per-provider re-registration with a filtered model list.
+   Rationale: it is the only catalog mutation pi exposes.
+   The registration point is not settled by this decision, because the typed
+   `ExtensionAPI` cannot read the catalog; see the first implementation risk.
 3. Retirement is automatic at every load, with no approval step and no curated
    retirement list.
 4. There is no runtime escape hatch: no allowlist, no environment override.
@@ -35,8 +35,10 @@ Each item below was decided by the user during the grilling session.
    `syn:large:text`, and `openai/gpt-4o`.
 8. There is no context-window regression guard.
    A newer model with a smaller context window still retires the older larger one.
-9. Every retirement is logged through a tagged logger, and a package task prints the
-   same table without booting pi.
+9. Every retirement is logged through a tagged logger.
+   There is no audit task.
+   The load-time log and the pinned characterization fixture are the only two surfaces
+   for the retirement table.
 10. A session that starts on a retired model is not corrected and not switched.
     The consequence is recorded under "Implementation risks".
 11. The package must be installed last in the global `packages` array, and a
@@ -329,7 +331,26 @@ defaults rather than settled decisions.
 
 ## Implementation risks, ordered by severity
 
-1. Losing `models.json` overrides on re-registration.
+1. The factory cannot read the catalog, so the registration point is unsettled.
+   `ExtensionAPI` spans `dist/core/extensions/types.d.ts:1143-1363` and exposes no
+   model read at all: no registry getter, no `getAll`, no `getAvailable`, no `find`.
+   Its only model members are `setModel`, `registerProvider`, `unregisterProvider`,
+   `registerVirtualModel`, `unregisterVirtualModel`, and the `model_select` event.
+   Registry reads live on `ExtensionContext.modelRegistry`
+   (`dist/core/extensions/types.d.ts:225`), which is only reachable from event handlers
+   and tool execution, so after the factory has returned.
+   Re-registering a provider needs that provider's current models, since `models`
+   replaces the whole list.
+   The candidates are therefore: read the bundled catalog from `@earendil-works/pi-ai`
+   directly in the factory, which sees neither `models.json` overrides nor models
+   registered by other extensions; or register from an event handler that carries
+   `ctx.modelRegistry`, which sees the composed catalog but runs after startup model
+   resolution and possibly not at all under `--list-models`.
+   Decisive probe, required before implementation: in a disposable host, log the
+   factory's own property names, log which events fire and in what order, and compare
+   `ctx.modelRegistry.getAll()` against the bundled value for a model whose
+   `contextWindow` is overridden in `models.json`.
+2. Losing `models.json` overrides on re-registration.
    Composition is `applyExtension(providerId, applyModelsJson(providerId, base,
    modelsConfig), extension)` at `dist/core/provider-composer.js:329`, and
    `applyExtension` returns only the extension's own list (`:171-178`).
@@ -349,7 +370,7 @@ defaults rather than settled decisions.
    Decisive probe, required before implementation: in a disposable host, log
    `getAll()` inside an extension factory and compare `contextWindow` for
    `openai-codex/gpt-6-luna` against 750000.
-2. Per-model headers are dropped.
+3. Per-model headers are dropped.
    `extensionModelFromDefinition` returns `{ ...definition, api, provider, baseUrl,
    headers: undefined }` for all three model types
    (`dist/core/provider-composer.js:119-136`).
@@ -359,26 +380,26 @@ defaults rather than settled decisions.
    cannot be inspected from the bundled catalog and must be checked in the same host
    probe.
    Provider-level headers survive, since `ProviderConfig.headers` is passed through.
-3. Whole-list replacement.
+4. Whole-list replacement.
    `applyExtension` discards every model not present in the extension's list, so a
    partial read deletes models.
    Mitigated by adopted default 3.
-4. Type-aware re-declaration.
+5. Type-aware re-declaration.
    Chat, image, and classifier models need different config shapes, and image models
    require `output`.
    A chat-only mapping would silently delete image and classifier models, which
    `codemode` classifiers and openrouter image routes depend on.
-5. Startup leak, accepted by decision 10.
+6. Startup leak, accepted by decision 10.
    pi keeps a removed model object when the registry lookup fails, so a session that
    resolved a retired model before the flush keeps serving from it.
    Today's `defaultModel`, `mimo-v2.6-pro` on `opencode-go`, is a keeper under the
    rule, so nothing leaks now; the exposure begins the day the default drifts.
-6. No extension API stability guarantee.
+7. No extension API stability guarantee.
    pi's `CHANGELOG.md` carries 59 `BREAKING` mentions and the docs name source as the
    contract.
    Mitigated by the characterization suite, `verify:extension`, and a gated host probe.
-7. No escape hatch, accepted by decision 4.
-   Mitigations are abstention, per-retirement logging, the audit task, and the
+8. No escape hatch, accepted by decision 4.
+   Mitigations are abstention, per-retirement logging, and the
    characterization suite.
    None of them restores a model mid-session.
 
@@ -398,7 +419,7 @@ src/
   id-tokens.ts                               # single-pass tokenizer, no regex
   provider-filter.ts                         # getAll to ProviderModelConfig per type
   retirement-log.ts                          # tagged logger output
-  audit-report.ts                            # printable table shared by task and log
+  retirement-report.ts                       # formats the retirement table for the log
   retirement-rule.unit.test.ts
   id-tokens.unit.test.ts
   provider-filter.unit.test.ts
@@ -415,10 +436,9 @@ src/
 Rationale for the peer shape: `doc/troubleshooting/pi-extension-peer-deps.md`.
 
 `mise.toml` carries the 12 tasks shared by `package/pi-plugin/thinking-default` and
-`package/pi-plugin/ask-user-question`, plus three of its own: `verify:extension`
-depending on `build`, `audit` printing the retirement table for the bundled catalog,
-and `verify:host` gated by an environment variable in a `[tasks."verify:host".env]`
-block, following `package/pi-plugin/advisor/mise.toml`.
+`package/pi-plugin/ask-user-question`, plus two of its own: `verify:extension`
+depending on `build`, and `verify:host` gated by an environment variable in a
+`[tasks."verify:host".env]` block, following `package/pi-plugin/advisor/mise.toml`.
 
 Installation goes in the README, matching the sibling convention:
 
@@ -447,18 +467,21 @@ pi install /var/home/user/Monochromatic/package/pi-plugin/model-retirement
    the expected count, that a retired id is no longer findable, that
    `openai-codex/gpt-6-luna` still reports `contextWindow` 750000, and that image and
    classifier model counts are unchanged.
-   This is the probe that resolves risk 1 and risk 2, and it must run before the
-   filtering code is written, not after.
+   This is the probe that resolves the factory-read risk and the `models.json`
+   override risk, and it must run before the filtering code is written, not after.
 6. Manual check in the interactive TUI: the picker no longer offers a retired id, and
    Tab to `all` does not bring it back.
 
 ## Open questions
 
-1. Does a factory-time `getAll()` already reflect `~/.pi/agent/models.json`
-   `modelOverrides`?
-   Risk 1 turns on this, and only the host probe answers it.
-2. Should the audit task also write a machine-readable artifact so retirement diffs
-   can be compared across pi upgrades without reading test output?
+1. Which surface can read the composed catalog early enough to filter it, and does the
+   factory's `pi` object carry an undocumented registry handle that the typed
+   interface omits?
+   The first implementation risk turns on this, and only the host probe answers it.
+2. Does `--list-models` fire any event that carries `ctx.modelRegistry`?
+   If it does not, and the filter must move to an event handler, then `--list-models`
+   keeps printing the unfiltered catalog and the shrunk picker becomes the only
+   user-visible evidence that the extension loaded.
 3. Is `radius` in scope at all, given it serves the advisor and MCP transports rather
    than interactive picks, and that 9 of its entries are retired by the rule?
 4. Should `synthetic` and `hyper` be filtered in the first release, given their
