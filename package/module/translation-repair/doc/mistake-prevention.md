@@ -1902,6 +1902,11 @@ an error event)
 is read off the parsed frame's `type`,
 never found as a word in the payload's text,
 and a reader is checked against every frame kind its protocol's current documentation lists.
+A text is parsed in its own grammar:
+a front-matter slice is YAML,
+where a line opening with `>` is a scalar's content,
+so a Markdown reading of structure skips it,
+as the declared-name guard and the floor already did (ledger B113).
 
 What enforces it:
 `blank-line-splits.unit.test.ts`,
@@ -1916,7 +1921,8 @@ a reader walking lines and treating an empty one as a boundary is out of its rea
 and is left to review.
 `quote-preservation.unit.test.ts` carries both disagreeing shapes,
 and `quoteBlockCount` no longer exists to be reached for;
-`translate-validate.unit.test.ts` and `archive-revision-shape.unit.test.ts` carry a container tag whose nested quote is dropped and one where it is kept;
+`translate-validate.unit.test.ts` and `archive-revision-shape.unit.test.ts` carry a container tag whose nested quote is dropped and one where it is kept,
+and `translate-slice-guards.unit.test.ts` a front-matter block scalar line opening with `>`;
 `insertion-container-deficit.unit.test.ts` carries loose against tight lists and a fenced block with a blank line;
 `emphasis-spans.unit.test.ts` and `archive-italic-title-restore.unit.test.ts` carry the inline shapes a split misreads:
 a comment,

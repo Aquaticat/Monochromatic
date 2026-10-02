@@ -340,11 +340,22 @@ export async function settleTranslateSlice(
   // against this same `incumbentText`, read by the same `readPageSkeleton`,
   // so on a Markdown slice a winner that passed the floor carries as many.
   // Since ledger B112 the floor reads each answer folded, as it ships, so a
-  // fold after the floor no longer reaches here either. The guard still
-  // answers where the floor does not read quotes that way: a front-matter
-  // slice, whose floor checks YAML and counts no quotes. No pinned front
-  // matter carries a line Markdown reads as a quote (ledger B110).
-  if (guardsThisSlice) {
+  // fold after the floor no longer reaches here either.
+  //
+  // NOT ON FRONT MATTER (ledger B113). Front matter is YAML, where a line
+  // opening with `>` is a scalar's content, not a quoted passage; counted as
+  // Markdown it refused a rendering its own floor, which checks YAML, had
+  // passed. So no slice the pipeline settles reaches this refusal now. It
+  // stays as one that ships the whole archive, the outcome a run must reach
+  // whatever fails (owner, 2026-09-27), rather than a throw that would fail
+  // the entry, for any future path that skips the floor's count.
+  /**
+   Whether the quote guard reads this slice: Markdown only.
+   */
+  const guardQuotedPassages = (slice.syntax === 'front-matter')
+    ? false
+    : guardsThisSlice;
+  if (guardQuotedPassages) {
     /**
      Quoted passages on both sides, as the floor reads a page.
      */

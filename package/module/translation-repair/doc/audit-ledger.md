@@ -17817,13 +17817,18 @@ which no measurement has looked at.
 
 Open:
 whether the quote guard should read front matter at all,
-since the declared-name guard beside it skips it;
+since the declared-name guard beside it skips it
+(it should not,
+and does not since B113);
 whether the floor should read the folded text that ships rather than the text before the fold
 (it should,
 and does since B112);
 and,
 once both are settled,
-whether the guard becomes a throwing invariant or keeps a case that reaches it.
+whether the guard becomes a throwing invariant or keeps a case that reaches it
+(neither:
+B113 keeps it as a refusal that ships the archive,
+which no settled slice reaches).
 No case reaches its `refused-quote-loss` branch since this fix.
 
 Reach:
@@ -17984,6 +17989,49 @@ and every check before it would then have read other bytes.
 Recurrence:
 `mistake-prevention.md`,
 "Checks on the bytes that ship".
+
+### B113: the quote guard read front matter as Markdown
+
+Found 2026-10-02 (UTC) while settling B110's open question on front matter,
+red in `146039a2f`,
+fixed in the commit adding this entry.
+`settleTranslateSlice`'s quote guard counted quoted passages with the page parser on every slice it guarded,
+front matter included,
+while the declared-name guard beside it skipped front matter
+and the front-matter floor checks YAML.
+In YAML a line opening with `>` inside a block scalar is the scalar's content.
+A probe against the build of `7314a8606`:
+a page of front matter alone prepares into one front-matter slice;
+`countQuotedPassages` reads a block scalar line `  > Meow` as one quoted passage on the archive's side
+and none on a rendering that writes the motto as a plain scalar;
+`validateTranslatedSlice` passes that rendering.
+Driven through `settleTranslateSlice`,
+the slice settled as `refused-quote-loss` and kept the whole archive.
+No pinned verdict moves:
+no pinned front matter carries such a line
+(276 of 276 people pages read for B110).
+
+The guard now reads Markdown slices only,
+as the declared-name guard does.
+With B110's any-depth count in the floor and B112's fold at intake,
+no slice the pipeline settles reaches `refused-quote-loss` now.
+
+Decided for quality and open to veto:
+the refusal stays,
+shipping the whole archive,
+rather than becoming a throw,
+since a throw would fail the entry where the owner's rule is that a run always ships;
+no case reaches it,
+so the coverage census reads that branch cold,
+expected and recorded here.
+
+The cache versions do not move:
+the audit run for B112 found no slice-cache record newer than any version,
+so the change rides inside translate 15.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
 
 ## Process mistakes in this audit
 
