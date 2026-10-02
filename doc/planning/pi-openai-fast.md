@@ -721,8 +721,10 @@ The bound-session tests verify disappearance after source logout,
  independent native/legacy visibility,
  and reappearance after source credentials are restored.
 The final extension-host task also passed.
-The source-configuration visibility correction is complete;
- documentation checks remain pending for the final record.
+The source-configuration visibility correction is complete.
+Scoped Markdown lint and rendered checks passed for the package README,
+ planning record,
+ and troubleshooting record.
 The source trace and verified credential matrix are documented in
 [the troubleshooting record](../troubleshooting/pi-virtual-priority-options.md#pi-10-fast-providers-remain-visible-without-source-configuration).
 
