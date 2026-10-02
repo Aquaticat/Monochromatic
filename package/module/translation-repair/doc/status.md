@@ -471,18 +471,26 @@ against `census-3G9C58` at `d0cca211d`,
 since B106 and B107 had cased the `corpus-run/attribution` arms queued before it,
 and library source stood at 590 stretches in 242 files.
 That batch is done too (`dc9f0449b`),
-and four clusters of the same census now go to four agents at once
+and six clusters of the same census went to agents at once
 (`corpus-run/archive`,
 `stream`,
-`critic`
-and `absolute`,
-47 stretches in 16 files none of whose sources changed since `d0cca211d`).
+`critic`,
+`absolute`,
+`corpus-run/runs`
+and `reference`),
+all merged after review (ledger T8).
+The census's other 509 stretches,
+with 14 functions never called,
+are cut into 19 file-disjoint bundles;
+the first five are with five agents.
 B118 (test declarations nothing read,
 and fixture exports nothing imported)
 and B119 (16,856 lines ending in whitespace,
 which `.editorconfig` forbids and nothing checked;
 issue 585 asks for the repository-wide rule)
-closed with a scan each.
+closed with a scan each,
+B120 lets the global-writes scan follow a writer into the test files importing it,
+and B121 (one İ on a page switched off the archive-name casing veto) is fixed.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,

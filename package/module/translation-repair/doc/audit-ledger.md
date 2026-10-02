@@ -5320,6 +5320,68 @@ and `absolute`,
 The whitespace normalization in `7f529468e` (B119) moved no line,
 so the census's line numbers hold.
 
+The four landed as `23fc6144b` (`critic`),
+`265249d09` (`absolute`),
+`37bab0e34` (`stream`)
+and `9d6cde01a` (`corpus-run/archive`),
+and two more clusters run the same way landed as `a87311e65` (`corpus-run/runs`)
+and `de3a2f7b3` (`reference`).
+Each agent's files were checked unchanged between the commit it read and the merge's parent,
+and each patch was reviewed before it was applied.
+
+The review changed every patch.
+In `critic`,
+the agent made two comparators answer 1 for equal keys,
+which breaks the comparator contract;
+all four comparators and `heardCriticIds` now order through `compareCodePoints` (B95).
+In `absolute`,
+the refusal cases lacked a case accepting their shared valid reply,
+without which each refusal could pass on a base that was invalid all along.
+In `stream`,
+a case pinned `readPayload` passing a frame that parses to an array or a number on as a frame naming nothing;
+it now counts such a frame as unreadable,
+as `anthropic-delta-scan.ts` does.
+The same patch copied the Anthropic frame builders into `stream-drain.unit.test.ts`;
+they moved into `anthropic-frames.test-fixture.ts`,
+and the constant thinking-runaway callbacks the duplicate-body scan grouped became `String.prototype.repeat` over one frame.
+In `reference`,
+`mergedAttestations` filtered out an item it could not place,
+while its own comment said verification guarantees placement.
+The comment held:
+the stage runs `quoteIsIn` on every archive quote against the same archive text under the same fold,
+so the filter could only drop an unverified item unseen,
+and it now throws an `unreachable:` error instead.
+In `corpus-run/archive`,
+one case pinned `phraseOccurrences` reading past a row whose lower case changes length,
+the defect B121 then queued;
+the case was held back and the defect fixed.
+In `corpus-run/runs`,
+a rethrow lacked its `cause`.
+The unrecorded-identity arms there stay uncased,
+since they need this host's own `/proc` reads to fail,
+and so does the race-loss arm with an unreadable winner,
+which needs the loser to read between the winner's create and write.
+That arm may run in some runs of the two-takeovers case and not others
+(inference from the code,
+not measured).
+
+With the twenty-fourth batch's `page`,
+those six closed 81 of the census's 590 stretches.
+The other 509,
+with 14 of the 15 functions never called,
+went into 19 file-disjoint bundles of about 30 stretches each
+(`make-bundles.mjs` in the session's scratch);
+none of their files changed beyond whitespace since `d0cca211d`
+(`git diff --ignore-all-space --ignore-blank-lines --name-only`,
+which lists the changed `stream-delta-scan.ts` as a control).
+The fifteenth,
+`toKind` in `critic-wire.ts`,
+sits in no bundle,
+since `critic` closed before the bundles were cut.
+The first five bundles went to five agents reading `9d6cde01a`,
+each told to case only in test files of its own modules,
+so no two agents write one file.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -18457,6 +18519,76 @@ Recurrence:
 `mistake-prevention.md`,
 "Lint and edits".
 
+### B120: the global-writes scan followed a writer only within its own file
+
+Red in `c9639c9ff`,
+fixed in `dbefa8aec`.
+B116 left it open:
+the scan placed a write inside a function declared by name at the calls of that name in the writer's own file,
+so a writer moved into a shared fixture read as one no call by name reaches wherever it was used,
+and three groups of environment writers stayed copied between test files
+(`GLOBAL_WRITER_COPIES` in `duplicate-bodies.unit.test.ts`).
+Each test file is now read once into its parents,
+its calls by name
+and the names it imports by name from a relative path.
+A named writer's callers are its own file's calls of the name,
+plus the calls of the name an import binds,
+alias or not,
+in every test file importing it from the writer's file.
+Out of reach,
+and named in the scan's module header:
+a writer reached through a namespace import or a re-export.
+The package's tests use neither,
+and the dead-declaration scan already fails a namespace import.
+`resolveSpecifier` moved into `source-scan.test-fixture.ts`,
+which both scans import.
+The three `GLOBAL_WRITER_COPIES` groups can now move into a fixture;
+that move is queued.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
+### B121: one length-changing lower case on a page switched off the archive-name casing veto
+
+Red in `545d9a416`,
+fixed in `69816085b`.
+`phraseOccurrences` (`corpus-run/archive-name-runs.ts`) lowered the whole text
+and returned no occurrence at all when the lower case came out longer,
+since its offsets would no longer line up.
+One İ (U+0130),
+which lowers to two UTF-16 units,
+anywhere on a page does that.
+`restoreArchiveNameCasing` checks "never in another casing" with `.every` over those occurrences,
+which holds over none,
+so the veto stopped applying to the whole page,
+and a row holding an İ was never restored.
+On the red case's page,
+a row writing the name "Yarn hall" was rewritten to title case
+though the archive also writes the name in lower case,
+and the row naming İpek kept its lowered street name.
+
+The scan now lowers one code point at a time (`lengthKeepingLowerCase`),
+keeping as written any code point whose lower case has another length,
+and lowers the phrase the same way,
+so offsets always line up and a kept code point still matches itself.
+Measured reach:
+none of the 2,837 `.md`,
+`.mdx`,
+`.json` and `.txt` files of the pinned corpus holds such a code point
+(the probe found U+0130 in a control file holding it),
+so no pinned archive triggered the defect;
+shipped wording still could.
+The package's other whole-text lowerings search or fold within the lowered copy
+and map no offset back to the original,
+so none shares it.
+A read-only agent's T8 case had pinned the read-past as intended behaviour;
+it was held back.
+
+Recurrence:
+`mistake-prevention.md`,
+"Which fold for which question".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -19598,6 +19730,10 @@ happened 2026-10-02 (UTC),
 while reading the PASS lines of two source-scan logs in one call,
 and recorded here;
 no file was changed by it.
+It happened again the same day,
+two `diff` runs appending to one review file joined by `;`;
+the second run's exit status went unread,
+and a third diff in its own call followed.
 The session's shell rule allows at most three `&&`-chained steps and no `;`,
 since a `;` runs the next step whatever the last one returned,
 so a failed read reads as an empty one.
@@ -19624,6 +19760,38 @@ Prevention:
 a check written to come back empty is first run on a case that must not
 (here a line whose added content is not whitespace),
 and a check over diff text strips the diff's markers before reading content.
+
+### M109: an edit and the command reading it sent in one parallel batch
+
+Status:
+happened 2026-10-02 (UTC),
+and recorded here.
+A line was cut from a named-test list by Edit
+in the same parallel batch as the test run that reads the list.
+The run's log names no test from the cut line,
+so the edit landed first and no result was wrong,
+but parallel calls may run in either order,
+and the other order would have run a list naming a file that does not exist.
+Prevention:
+a command that reads a fresh edit is sent after the edit returns,
+never beside it.
+
+### M110: a package task run from the main checkout
+
+Status:
+happened 2026-10-02 (UTC),
+caught at once and recorded here.
+The lint and the source scans were started from the repository's main checkout,
+where this package's tasks do not exist,
+and both printed `mise`'s task list with exit 1 instead of a result.
+Nothing was concluded from them;
+both were rerun from the worktree.
+Prevention:
+every package task starts with `cd --` into the worktree,
+and a task's log is read for its own result line
+(the lint's `Found N warnings and N errors.`,
+the scans' `[PASS]` count)
+before its exit status is believed either way.
 
 ### M79: a coverage census measuring compressed code
 

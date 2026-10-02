@@ -817,6 +817,19 @@ A patch an agent cut is merged three-way against the commit the agent read,
 recorded when it starts;
 a diff it takes against the files as they stand when it finishes cannot show a change it undid,
 and every file a commit touched since that start is checked line by line for undone work (ledger B117).
+An agent's new case is a claim that the behaviour it pins is right:
+before it merges,
+each expectation is read against what the code should do,
+and a case pinning a defect is held back while the defect is fixed or queued
+(ledger B121,
+and T8's `stream` cluster,
+whose case pinned a frame reader passing a non-object frame on).
+Agents working at once each write only the test files of their own modules,
+so no two patches touch one file,
+and their rules file carries every lint and scan rule a merge has had to fix
+(`rules-t8.md` in the session's scratch).
+A writer moved into a fixture is followed by the global-writes scan to the files importing it by name (ledger B120),
+so the env writers it once kept copied can move.
 A test's expectation is never the module's own body restated:
 it states the result,
 or a relation between values the module exports,
@@ -1051,6 +1064,14 @@ a phrase or a document span compared with another document span needs no fold.
 Offsets taken in folded text are used only in folded text:
 every fold here maps one unit to one unit,
 and the comparison states which text its offsets index.
+A case fold read back as offsets in the original maps one unit to one unit too:
+`lengthKeepingLowerCase` (`corpus-run/archive-name-runs.ts`) lowers a code point only where its lower case keeps the length,
+since a whole-text `toLowerCase` grows at an İ,
+and a scan that then reads the text past finds nothing on the whole page (ledger B121).
+A check written as `.every` over what a scan found holds over nothing,
+so it first asks what makes that list empty,
+and a scan that gives up returns a refusal its caller must read,
+never an empty list.
 A mark the pages never use is refused by a floor,
 not left to the judges:
 a judge who names it does not keep it off the page.
@@ -1079,7 +1100,8 @@ both lane wraps,
 the consolidation wrap,
 the polish round,
 the lane offer,
-the repair turn's copy check and the archive block review each hold a layout-only twin.
+the repair turn's copy check and the archive block review each hold a layout-only twin;
+`archive-name-casing.unit.test.ts` holds a page with an İ that must still veto a name and restore a row.
 
 ## Checks on the bytes that ship
 
