@@ -5,8 +5,10 @@ Build,
  type checking,
  and the complete offline suite pass against pi `1.0.0`.
 Lint and extension-host verification also pass.
-Ordinary and priority-request live checks passed on pi `1.0.0`,
+Legacy Codex ordinary and priority-request live checks passed on pi `1.0.0`,
  including discovery of the globally installed replacement.
+The additional native OpenAI mapping passes offline native HTTP and real CLI startup checks.
+No live new-sign-in or API-key billing verification was added.
 
 ## Model selection
 
@@ -119,6 +121,8 @@ Live validation must use isolated pi settings and synthetic prompts,
 `verify:installed` resolves the global declaration,
  preserves its resource filters,
  and exercises native relative package discovery in disposable settings.
+The live tasks target legacy Codex.
+The full offline suite also exercises native OpenAI dispatch and both namespaces through the built default factory.
 Live probes do not prove acceleration,
  live OAuth refresh,
  network catalog refresh,

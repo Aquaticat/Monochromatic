@@ -630,7 +630,17 @@ The committed fixture failed before this lifecycle correction;
 
 A reasoning assertion was corrected to check the exact `reasoning.effort` property,
  without rejecting native `reasoning.summary: "auto"`.
-The complete verification sequence remains pending.
+The corrected package-scoped build,
+ type check,
+ complete offline suite,
+ and source lint passed.
+The real CLI startup check now discovers both companion namespaces without stderr diagnostics.
+Scoped Markdown lint and local rendered-document checks passed.
+A read-only global settings probe confirmed that the installed relative declaration still resolves to this local package.
+No reinstall,
+ real authentication change,
+ or personal settings edit was needed.
+The final extension-host task is pending.
 No live new-provider verification has been performed.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
