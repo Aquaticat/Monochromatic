@@ -254,6 +254,17 @@ import type { SliceReplacement, } from './splice-slices.ts';
  runs, where a control from 00:00 UTC that day finds 494, once a throwaway
  checkout and a worktree-copy payload holding copies are set aside.
 
+ Rides inside 15 too: the floor compares quoted passages at every depth
+ against the page, or the original where there is none, and refuses a
+ candidate carrying fewer (ledger B110, `quotedPassageFloorFindings` in
+ `translate-validate-blocks.ts`), so a candidate keeping every top-level
+ block while turning a blockquote nested inside a container tag into prose
+ is refused before any judge, where it passed; over 1,277 pinned
+ archive-against-original slices and 5,520 settled would-ship slices no
+ verdict moves. Checked on 2026-10-01: the newest of 13,714 slice-cache
+ records under 391 runs directories is still the one of 04:26 UTC on
+ 2026-09-27 (`cache-account-audit` with the agent runs added).
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

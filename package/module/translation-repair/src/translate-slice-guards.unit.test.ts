@@ -35,7 +35,6 @@ import {
   describeArchiveDispute,
   messageText,
   prepareDocumentPair,
-  quoteLossRefusalFinding,
   type RosterModelId,
   settleTranslateSlice,
   type SyntheticClient,
@@ -274,9 +273,10 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'REFUSES A WINNER THAT DROPS A QUOTE FROM INSIDE A CONTAINER TAG, which the floor passes because '
-            + 'the container is still there, keeping the archive and storing the counts the guard compared '
-            + '(ledger B42)',
+          name: 'NO LONGER REACHES THIS GUARD for a rendering that drops a quote from inside a container tag '
+            + '(ledger B110): the floor reads the same any-depth count and refuses that rendering at every '
+            + 'translator\'s repair turn, before any judge, so the slice settles on the untouched archive through '
+            + 'the ordinary `stage-result` path rather than this guard\'s `refused-quote-loss` one',
           fn: async () => {
             /**
              Archive wording, one quote inside a folded block.
@@ -284,7 +284,9 @@ await describe({
             const archive = '<details>\n\n> Feed me at noon.\n\n</details>';
 
             /**
-             Winner, the same block with the quote made prose.
+             What every translator still offers, the same block with the
+             quote made prose: the floor refuses it at the repair turn now,
+             where it passed through to the judges before.
              */
             const rendering = '<details>\n\nShe asked to be fed at noon.\n\n</details>';
             const settled = await settle({
@@ -292,29 +294,20 @@ await describe({
               targetText: archive,
               rendering,
             },);
-            expect(settled.unplanned,).toEqual([],);
-            expect(settled.record.stageResult.text,).toBe(rendering,);
-            expect(settled.record.disposition,).toBe('refused-quote-loss',);
+            // EVERY TRANSLATOR'S REPAIR TURN IS ASKED, since each one's
+            // candidate now fails the floor, and the scripted client has no
+            // reply for that schema: the rendering stands unrevised, fails
+            // the floor again, and all three are withheld, leaving the
+            // archive as the sole remaining candidate, shipped unjudged.
+            expect(settled.unplanned,).toEqual([
+              'translation_repair_report',
+              'translation_repair_report',
+              'translation_repair_report',
+            ],);
+            expect(settled.record.stageResult.text,).toBe(archive,);
+            expect(settled.record.disposition,).toBe('stage-result',);
             expect(settled.record.outputText,).toBe(archive,);
             expect(settled.record.changed,).toBe(false,);
-
-            /**
-             Counts the refusal stores.
-             */
-            const quotedPassages = (settled.record.disposition === 'refused-quote-loss')
-              ? settled.record.quotedPassages
-              : undefined;
-            expect(quotedPassages,).toEqual({
-              archive: 1,
-              replacement: 0,
-            },);
-            expect(settled.said,).toContain(quoteLossRefusalFinding({
-              sliceIndex: 0,
-              quotedPassages: {
-                archive: 1,
-                replacement: 0,
-              },
-            },),);
           },
         },),
 

@@ -20,6 +20,12 @@ import {
 // already hold their candidates to (`translate-validate.ts`): a revision of
 // one paragraph is one paragraph, a revised blockquote is a blockquote. A
 // removal (an empty revision) is a shape of its own the review allows.
+//
+// A QUOTED PASSAGE NESTED BELOW THE TOP LEVEL IS COMPARED TOO (ledger B110).
+// `sameShape` reads only the top-level block sequence, so a revision keeping
+// the block's own shape could still turn a blockquote nested inside a
+// container tag, a list, a footnote, or another blockquote into prose;
+// `quotedPassageRevisionFindings` reads the parse's own any-depth count.
 
 /**
  Finding prefix a revision withheld on shape is recorded under.
@@ -54,8 +60,59 @@ function countedBlocks({ blocks, }: { readonly blocks: readonly BlockShape[]; },
 }
 
 /**
+ Findings for a revision that carries fewer quoted passages, at every depth,
+ than the block it revises.
+
+ ASKED ONLY OF A REVISION WITH THE BLOCK'S OWN SHAPE. `sameShape` compares
+ only the top-level block sequence, so a revision may keep it kind for kind
+ while a blockquote nested inside a container tag, a list, a footnote, or
+ another blockquote is turned into prose underneath it (ledger B110, the
+ twin of the translate floor's `quotedPassageFloorFindings`); a revision of
+ another shape is already withheld for its shape.
+
+ @param modelId - reviewer who wrote the revision, named in the finding
+
+ @param blockQuotedPassages - block's blockquotes at every depth
+
+ @param revisionQuotedPassages - revision's blockquotes at every depth
+
+ @returns One finding where the revision carries fewer, empty otherwise
+
+ @example
+ ```ts
+ const findings = quotedPassageRevisionFindings({ modelId, blockQuotedPassages: 1, revisionQuotedPassages: 0, },);
+ ```
+ */
+function quotedPassageRevisionFindings(
+  {
+    modelId,
+    blockQuotedPassages,
+    revisionQuotedPassages,
+  }: {
+    readonly modelId: string;
+    readonly blockQuotedPassages: number;
+    readonly revisionQuotedPassages: number;
+  },
+): readonly string[] {
+  if (revisionQuotedPassages >= blockQuotedPassages)
+    return [];
+  return [
+    `${REVISION_SHAPE_REFUSED} (${modelId}): the block carries ${String(blockQuotedPassages,)} ${
+      wordForCount({
+        count: blockQuotedPassages,
+        one: 'quoted passage',
+        many: 'quoted passages',
+      },)
+    } and the revision carries ${
+      String(revisionQuotedPassages,)
+    }; a revision keeps every quoted passage the block carries, including one nested inside a container tag, a `
+      + 'list, a footnote, or another blockquote',
+  ];
+}
+
+/**
  Why a revision cannot replace the block it revises, when its shape is not
- the block's own.
+ the block's own or it carries fewer quoted passages at any depth.
 
  A RULE THAT CANNOT READ THE BLOCK SAYS NOTHING: an archive block the slice
  grammar refuses has no shape to hold a revision to, so the revision passes
@@ -115,18 +172,26 @@ export function revisionShapeFindings(
    */
   const revisionShapes = revision.skeleton
     .blocks;
-  if (sameShape({
+  if (!sameShape({
     left: blockShapes,
     right: revisionShapes,
   },))
-    return [];
-  return [
-    `${REVISION_SHAPE_REFUSED} (${modelId}): the block is ${
-      countedBlocks({ blocks: blockShapes, },)
-    } and the revision is ${
-      countedBlocks({ blocks: revisionShapes, },)
-    }; a revision keeps the block's own shape`,
-  ];
+  {
+    return [
+      `${REVISION_SHAPE_REFUSED} (${modelId}): the block is ${
+        countedBlocks({ blocks: blockShapes, },)
+      } and the revision is ${
+        countedBlocks({ blocks: revisionShapes, },)
+      }; a revision keeps the block's own shape`,
+    ];
+  }
+  return quotedPassageRevisionFindings({
+    modelId,
+    blockQuotedPassages: block.skeleton
+      .quotedPassages,
+    revisionQuotedPassages: revision.skeleton
+      .quotedPassages,
+  },);
 }
 
 //endregion Archive revision shape

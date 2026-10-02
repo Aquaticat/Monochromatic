@@ -333,9 +333,17 @@ export async function settleTranslateSlice(
   // catch different things. The alignment guard refuses above sixteen times the
   // source length, and the two transcripts measured on 2026-08-18 sat at 15.49
   // and 8.71: a near miss and nowhere near. Counting quoted passages catches
-  // both, and over sixty-nine natural rows it caught nothing else. It reaches
-  // what the floor does not: the floor compares top-level blocks, and a quote
-  // inside a container tag or another quote is none of them (ledger B42).
+  // both, and over sixty-nine natural rows it caught nothing else.
+  //
+  // THE FLOOR ASKS THIS FIRST NOW (ledger B110): `floorTranslateVoices`
+  // compares every translator candidate's quoted passages, at every depth,
+  // against this same `incumbentText`, read by the same `readPageSkeleton`,
+  // so on a Markdown slice a winner that passed the floor carries as many.
+  // The guard still answers where the floor does not read quotes that way:
+  // a front-matter slice, whose floor checks YAML and counts no quotes, and a
+  // winner the invisible-variant fold (`translate-candidates.ts`) changed
+  // after the floor read it. No pinned front matter carries a line Markdown
+  // reads as a quote, and the fold case is unmeasured (ledger B110).
   if (guardsThisSlice) {
     /**
      Quoted passages on both sides, as the floor reads a page.

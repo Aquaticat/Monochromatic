@@ -113,11 +113,8 @@ await describe({
          */
         const block = '<CatBox>\n\n> Feed me at noon.\n\n</CatBox>';
 
-        /**
-         Revision, the same container with the quote made prose.
-         `sameShape` sees one `mdxJsxFlowElement` on each side and returns
-         no finding for it.
-         */
+        // A revision of the same container with the quote made prose:
+        // `sameShape` sees one `mdxJsxFlowElement` on each side.
         expect(revisionShapeFindings({
           modelId: REVIEWER,
           blockText: block,

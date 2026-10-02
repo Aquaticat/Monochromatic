@@ -262,6 +262,13 @@ import type { LaneText, } from './translate-candidates.ts';
  was written after 04:27 UTC on 2026-09-27, where a control from midnight
  that day finds 494.
 
+ Rides inside 20 too: the floor every consolidation validity check calls
+ compares quoted passages at every depth and refuses a wording carrying
+ fewer than its page (ledger B110, `translate-validate-blocks.ts`), which
+ changes which candidates and standings a slate holds; checked on
+ 2026-10-01: the newest of 13,714 slice-cache records under 391 runs
+ directories is still the one of 04:26 UTC on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

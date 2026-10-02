@@ -24,7 +24,10 @@ import {
   readSliceSkeleton,
   type SliceSkeleton,
 } from './translate-skeleton.ts';
-import { compareBlocks, } from './translate-validate-blocks.ts';
+import {
+  compareBlocks,
+  quotedPassageFloorFindings,
+} from './translate-validate-blocks.ts';
 import type { PageGrammar, } from './translate-skeleton-page.ts';
 
 //region Translate validation
@@ -44,6 +47,13 @@ import type { PageGrammar, } from './translate-skeleton-page.ts';
 // back to its own author with these sentences, and that model answers with a
 // revision, an inability, or a defence of what it produced. So each finding
 // names what the original has, what the candidate has, and nothing else.
+//
+// A QUOTED PASSAGE NESTED BELOW THE TOP LEVEL IS COMPARED TOO (ledger B110).
+// The block comparison reads only the top-level block sequence, so a
+// candidate keeping every top-level block while turning a blockquote nested
+// inside a container tag, a list, a footnote, or another blockquote into
+// prose passed here before; `quotedPassageFloorFindings` reads the parse's
+// own any-depth count and refuses that candidate before any judge sees it.
 
 /**
  What comparing a candidate against its original found.
@@ -441,6 +451,15 @@ export function validateTranslatedSlice(
       floorName,
       source: expected.blocks,
       candidate: actual.blocks,
+    },),
+    // QUOTED PASSAGES AT EVERY DEPTH, against the same floor (ledger B110):
+    // `compareBlocks` reads only the top-level sequence, so a quote nested
+    // inside a container tag, a list, a footnote, or another blockquote
+    // could be made prose under a matching top level.
+    ...quotedPassageFloorFindings({
+      floorName,
+      floorQuotedPassages: hasPage ? page.quotedPassages : expected.quotedPassages,
+      candidateQuotedPassages: actual.quotedPassages,
     },),
     ...sourceOnlyBreakFindings({
       pageText,

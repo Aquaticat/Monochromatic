@@ -1809,6 +1809,10 @@ the size classifier and the address floor counted a fence with a blank line insi
 the suicide floor read a quotation written on the line after a paragraph as the paragraph's own words,
 and the page passes closed a stray backtick past a heading
 and took a capital opening a paragraph after a heading for a name (ledger B100).
+The translate floor and the archive-revision shape check compared only the top-level block sequence,
+so a candidate keeping a container tag while turning the quote inside it into prose passed both,
+and only the quote guard after judging caught it,
+keeping the whole archive where a floor finding would have sent the candidate back to its translator (ledger B110).
 
 The rule:
 a question about what a passage's blocks are
@@ -1835,6 +1839,11 @@ a block opening on the line after a paragraph's,
 and one inside a container tag.
 Before calling a guard behind the floor unreachable,
 check that both read the structure one way.
+A floor comparing top-level blocks answers nothing about what they contain,
+so a property a page has to keep inside its blocks,
+its quoted passages among them,
+is compared at every depth beside the top-level comparison,
+not inside it.
 Where a count is compared across two sides and then spent,
 one reading serves all three:
 the deficit's passages cost the blocks the container counted for their slices.
@@ -1866,6 +1875,7 @@ a reader walking lines and treating an empty one as a boundary is out of its rea
 and is left to review.
 `quote-preservation.unit.test.ts` carries both disagreeing shapes,
 and `quoteBlockCount` no longer exists to be reached for;
+`translate-validate.unit.test.ts` and `archive-revision-shape.unit.test.ts` carry a container tag whose nested quote is dropped and one where it is kept;
 `insertion-container-deficit.unit.test.ts` carries loose against tight lists and a fenced block with a blank line;
 `emphasis-spans.unit.test.ts` and `archive-italic-title-restore.unit.test.ts` carry the inline shapes a split misreads:
 a comment,

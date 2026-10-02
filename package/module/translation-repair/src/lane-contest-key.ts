@@ -140,6 +140,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  on 2026-09-30: no slice-cache file was written after 04:27 UTC on
  2026-09-27, where a control from midnight that day finds 494.
 
+ Rides inside 6 too: the validator that decides each lane's eligibility
+ compares quoted passages at every depth and refuses a candidate carrying
+ fewer than its page (ledger B110, `translate-validate-blocks.ts`), which
+ changes which lanes reach a contest; checked on 2026-10-01: the newest of
+ 13,714 slice-cache records under 391 runs directories is still the one of
+ 04:26 UTC on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 6 was set
  in `d614a0c1d` at 04:30 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

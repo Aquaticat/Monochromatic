@@ -13018,6 +13018,7 @@ where a floor finding would send it back to its translator first.
 Moving the count into the floor changes every lane's floor,
 so it lands after the replay over the pinned human archives and settled pages that every floor had before landing
 shows what it would refuse there.
+Landed as B110.
 
 ### B43: where the floor compares nothing, the stage withholds the archive and lets a candidate stand
 
@@ -17750,6 +17751,90 @@ the source scans and lint pass at this commit.
 Recurrence:
 `mistake-prevention.md`,
 "Counts in printed text" and "Readers of the package's own log lines".
+
+### B110: the floor compared top-level blocks only, so a quote nested in a container could be dropped
+
+Queued by B42,
+red in `734f7da63`,
+fixed in the commit adding this entry.
+The translate floor (`validateTranslatedSlice`) and the archive-revision shape check (`revisionShapeFindings`)
+compared only the top-level block sequence,
+so a candidate keeping a container tag,
+a list,
+a footnote or a blockquote
+while turning a quote nested inside it into prose passed both.
+In the translate lane only the quote guard after judging caught it,
+keeping the whole archive where a floor finding would have sent the candidate back to its translator first;
+in the archive block review nothing caught it.
+
+The floor now compares quoted passages at every depth,
+read off the strict parse the floor already makes (`SliceSkeleton.quotedPassages`),
+against the page as it stands,
+or the original where there is none
+(`quotedPassageFloorFindings` in `translate-validate-blocks.ts`),
+beside the block comparison rather than inside it;
+its finding states both counts and asks for every quoted passage to stay one.
+A revision with the block's own shape is withheld when it carries fewer quoted passages than the block;
+one of another shape is already withheld for its shape,
+so it gets one finding,
+not two.
+
+Before landing,
+a replay counted what the any-depth comparison refuses
+over 1,277 pinned archive-against-original slices and 5,520 settled would-ship slices,
+none unreadable.
+Every slice it refuses there the block comparison already refuses:
+5 against the original in the first population,
+and in the second 3 against the original and 1 against the page,
+each a top-level kind or count change.
+No slice drops a nested quote under a matching top level,
+and a positive control,
+the one nested quote in `hakureico` slice 0 stripped of its markers in memory,
+is caught.
+So no pinned or settled verdict moves.
+
+The cache versions do not move:
+translate 15,
+consolidation 20 and lane contest 6 were each set after the newest slice-cache record,
+and the cache-account audit with the agent runs added finds the newest of 13,714 records still the one of 04:26 UTC on 2026-09-27,
+so each account records the change as riding inside its number.
+The patch that prepared this fix bumped all three,
+against the accounts' own convention.
+
+The quote guard after judging (`settleTranslateSlice`) stays.
+A read of every path a winner takes to `stageResult.text` found each fresh candidate floored against the same `incumbentText`,
+read by the same `readPageSkeleton` the guard reads,
+so on a Markdown slice the guard no longer refuses anything the floor passed,
+and the B42 case that reached it now settles on the archive through the floor
+(`translate-slice-guards.unit.test.ts`).
+Two paths still reach it:
+a front-matter slice,
+whose floor checks YAML and counts no quotes,
+though no pinned front matter carries a line Markdown reads as a quote
+(276 of 276 people pages read);
+and a winner the invisible-variant fold changes after the floor read it,
+which no measurement has looked at.
+
+Open:
+whether the quote guard should read front matter at all,
+since the declared-name guard beside it skips it;
+whether the floor should read the folded text that ships rather than the text before the fold;
+and,
+once both are settled,
+whether the guard becomes a throwing invariant or keeps a case that reaches it.
+No case reaches its `refused-quote-loss` branch since this fix.
+
+Reach:
+both red cases fail at the build of `734f7da63` and pass here.
+That red commit carried a TSDoc block on an `expect` statement in each of its two cases,
+which the TSDoc attachment scan refused when the full suite first ran over this fix;
+both are line comments here.
+The red commit had been checked by lint and its two test files alone,
+not by the source scans.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
 
 ## Process mistakes in this audit
 

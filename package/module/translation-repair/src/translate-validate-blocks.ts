@@ -324,5 +324,57 @@ export function compareBlocks(
   ];
 }
 
+/**
+ Findings for a candidate that carries fewer quoted passages, at every
+ depth, than its floor.
+
+ READ OFF THE PARSE RATHER THAN THE TOP-LEVEL BLOCK LIST (ledger B110).
+ `compareBlocks` compares only the top-level block sequence, so a candidate
+ may keep every top-level block, same kind and same order, while a
+ blockquote nested inside a container tag, a list, a footnote, or another
+ blockquote is turned into prose underneath it. The strict parse already
+ counts blockquotes at every depth (`SliceSkeleton.quotedPassages`), so the
+ check is one comparison, called beside `compareBlocks` rather than inside
+ it so that it answers whatever the block comparison found.
+
+ @param floorName - what a finding calls the reference the candidate has to
+ carry
+
+ @param floorQuotedPassages - reference's blockquotes at every depth
+
+ @param candidateQuotedPassages - candidate's blockquotes at every depth
+
+ @returns One finding where the candidate carries fewer, empty otherwise
+
+ @example
+ ```ts
+ const findings = quotedPassageFloorFindings({ floorName: 'PAGE AS IT STANDS', floorQuotedPassages: 1, candidateQuotedPassages: 0, },);
+ ```
+ */
+export function quotedPassageFloorFindings(
+  {
+    floorName,
+    floorQuotedPassages,
+    candidateQuotedPassages,
+  }: {
+    readonly floorName: string;
+    readonly floorQuotedPassages: number;
+    readonly candidateQuotedPassages: number;
+  },
+): readonly string[] {
+  if (candidateQuotedPassages >= floorQuotedPassages)
+    return [];
+  return [
+    `The ${floorName} carries ${String(floorQuotedPassages,)} ${
+      wordForCount({
+        count: floorQuotedPassages,
+        one: 'quoted passage',
+        many: 'quoted passages',
+      },)
+    } (blockquotes at any depth, including inside a container tag, a list, a footnote, or another blockquote) `
+      + `and your translation carries ${String(candidateQuotedPassages,)}. Every quoted passage of the ${floorName} `
+      + 'has to stay a quoted passage in your translation, where it stands.',
+  ];
+}
 
 //endregion Translate validation block comparison

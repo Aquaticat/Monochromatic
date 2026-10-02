@@ -726,10 +726,8 @@ In the morning it dozes on the windowsill.
           (dropped.kind === 'invalid') ? dropped.findings.join('\n',) : '',
         ).toContain('quoted passage',);
 
-        /**
-         Control: the same container tag, the nested quote kept rather than
-         dropped, which must still pass.
-         */
+        // Control: the same container tag, the nested quote kept rather than
+        // dropped, which must still pass.
         expect(validateTranslatedSlice({
           sourceText: '<details>\n\n> 中午喂我。\n\n</details>',
           pageText: '<details>\n\n> Feed me at noon.\n\n</details>',
