@@ -24,6 +24,7 @@
     "src"
   ],
   "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*"
   },
   "devDependencies": {
+    "@earendil-works/pi-ai": "catalog:",
     "@earendil-works/pi-coding-agent": "catalog:",
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
