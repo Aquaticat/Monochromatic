@@ -1,12 +1,12 @@
 /**
- Session-owned binding to the unchanged original Codex provider. @module
+ Session-owned binding to the unchanged original OpenAI provider. @module
  */
 
 import type {
   Api,
   AssistantMessageEventStream,
   Model,
-  OpenAICodexResponsesOptions,
+  StreamOptions,
   Provider,
   TranscriptContext,
 } from '@earendil-works/pi-ai';
@@ -16,10 +16,7 @@ import {
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import {
-  CODEX_PROVIDER,
-  type CODEX_API,
-} from './constants.ts';
+import type { PriorityApi, } from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
 import type {
   OriginalDispatchCapabilities,
@@ -95,9 +92,9 @@ export function createOriginalDispatch({
      Live lookup reflects every source configuration and catalog change.
      */
     const original = state.registry
-      .getProvider(CODEX_PROVIDER,);
+      .getProvider(provider.id,);
     if (original === undefined)
-      throw new FastModelError('The original Codex provider is no longer registered. Restore it or select another provider.',);
+      throw new FastModelError(`The original ${provider.id} provider is no longer registered. Restore it or select another provider.`,);
     return original;
   }
 
@@ -116,12 +113,12 @@ export function createOriginalDispatch({
       tag: lookup.name,
       l: logger,
     },);
-    inner.trace(`looking up original Codex model ${id}`,);
+    inner.trace(`looking up original ${provider.id} model ${id}`,);
     if (state.registry !== undefined)
       return state.registry
         .getModelOfType(
           'chat',
-          CODEX_PROVIDER,
+          provider.id,
           id,
         );
     return provider.getModels()
@@ -150,9 +147,9 @@ export function createOriginalDispatch({
     context,
     options,
   }: {
-    readonly model: ForeignHostCapability<Model<typeof CODEX_API>>;
+    readonly model: ForeignHostCapability<Model<PriorityApi>>;
     readonly context: ForeignHostCapability<TranscriptContext>;
-    readonly options?: ForeignHostCapability<OpenAICodexResponsesOptions>;
+    readonly options?: ForeignHostCapability<StreamOptions>;
   },): AssistantMessageEventStream {
     /**
      Stream logger records identity without request options or authentication.
@@ -163,7 +160,7 @@ export function createOriginalDispatch({
     },);
     inner.debug(`dispatching priority request for ${model.id}`,);
     if (state.registry === undefined)
-      throw new FastModelError('Codex fast dispatch requires an initialized pi session. Start or reload the session before requesting a fast model.',);
+      throw new FastModelError(`${provider.id} fast dispatch requires an initialized pi session. Start or reload the session before requesting a fast model.`,);
     return state.registry
       .stream(
         model,
@@ -180,9 +177,9 @@ export function createOriginalDispatch({
      {@inheritDoc dispatch}
      */
     stream: function stream(
-      model: ForeignHostCapability<Model<typeof CODEX_API>>,
+      model: ForeignHostCapability<Model<PriorityApi>>,
       context: ForeignHostCapability<TranscriptContext>,
-      options?: ForeignHostCapability<OpenAICodexResponsesOptions>,
+      options?: ForeignHostCapability<StreamOptions>,
     ): AssistantMessageEventStream {
       return dispatch({
         model,

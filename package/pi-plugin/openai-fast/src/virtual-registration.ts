@@ -1,5 +1,5 @@
 /**
- Genuine virtual selections derived from every current physical Codex model. @module
+ Genuine virtual selections derived from every current physical OpenAI model. @module
  */
 
 import {
@@ -33,6 +33,8 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.virtual-registration',
  Create a guarded synchronizer whose registration state belongs to this extension factory.
  
  @param pi - host registration capability
+
+ @param fastProvider - companion namespace bound to its original provider
  
  @returns synchronizer without a compatibility list or request-global fast flag
  
@@ -40,11 +42,17 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.virtual-registration',
 
  @example
  ```ts
- const synchronize = createFastModelRegistration(pi);
+ const synchronize = createFastModelRegistration({ pi });
  synchronize(originalModels);
  ```
  */
-export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionAPI>,): (models: readonly Model<Api>[]) => void {
+export function createFastModelRegistration({
+  pi,
+  fastProvider = FAST_PROVIDER,
+}: {
+  readonly pi: ForeignHostCapability<ExtensionAPI>;
+  readonly fastProvider?: string;
+},): (models: readonly Model<Api>[]) => void {
   /**
    Factory logger owns the catalog synchronization boundary.
    */
@@ -103,14 +111,14 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
         if (model.id
           .startsWith(PRIORITY_TARGET_PREFIX,)
           || ids.has(`${PRIORITY_TARGET_PREFIX}${model.id}`,)) {
-          throw new FastModelError(`Codex model "${model.id}" conflicts with the fast extension's internal routing namespace. Rename the configured model or remove the fast extension.`,);
+          throw new FastModelError(`OpenAI model "${model.id}" conflicts with the fast extension's internal routing namespace. Rename the configured model or remove the fast extension.`,);
         }
       }
       for (const previous of signatures.keys()) {
         if (!ids.has(previous,)) {
           signatures.delete(previous,);
           pi.unregisterVirtualModel(
-            FAST_PROVIDER,
+            fastProvider,
             previous,
           );
           sl.debug(`removed companion for ${previous}`,);
@@ -125,7 +133,7 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
          Virtual capabilities follow the original catalog rather than a compatibility list.
          */
         const definition = {
-          provider: FAST_PROVIDER,
+          provider: fastProvider,
           id: model.id,
           name: `${model.name} Fast`,
           thinkingLevels: getSupportedThinkingLevels(model,),
@@ -167,11 +175,11 @@ export function createFastModelRegistration(pi: ForeignHostCapability<ExtensionA
               const target = ctx.modelRegistry
                 .getModelOfType(
                   'chat',
-                  FAST_PROVIDER,
+                  fastProvider,
                   targetId,
                 );
               if (target === undefined)
-                throw new FastModelError(`Codex fast model "${model.id}" has no current priority target. Refresh models or select an available ordinary model.`,);
+                throw new FastModelError(`${fastProvider} model "${model.id}" has no current priority target. Refresh models or select an available ordinary model.`,);
               rl.debug(`routing ${request.reason} request for ${model.id}`,);
               return {
                 model: target,

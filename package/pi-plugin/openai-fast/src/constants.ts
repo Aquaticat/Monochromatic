@@ -24,4 +24,19 @@ export const FAST_PROVIDER = 'openai-codex-fast';
  */
 export const PRIORITY_TARGET_PREFIX = '__pi_openai_fast__/';
 
+/**
+ Native provider that owns ChatGPT sign-in and API-key authentication.
+ */
+export const OPENAI_PROVIDER = 'openai';
+
+/**
+ Native OpenAI wire API used after internal target translation.
+ */
+export const OPENAI_API = 'openai-responses';
+
+/**
+ Native transport families accepted by priority routing.
+ */
+export type PriorityApi = typeof CODEX_API | typeof OPENAI_API;
+
 //endregion

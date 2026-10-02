@@ -10,13 +10,13 @@ import type {
   Provider,
   RefreshModelsContext,
   TranscriptContext,
-  OpenAICodexResponsesOptions,
+  StreamOptions,
 } from '@earendil-works/pi-ai';
 import type {
   ForeignBorrowed,
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { createPriorityProvider, } from '../dist/final/node/index.mjs';
+import { createPriorityProvider, type PriorityApi, } from '../dist/final/node/index.mjs';
 import {
   fixtureAssistant,
   fixtureStream,
@@ -71,9 +71,9 @@ export function fixtureOverlay(provider: ForeignHostCapability<Provider>,): Fixt
     context,
     options,
   }: {
-    readonly model: ForeignBorrowed<Model<'openai-codex-responses'>>;
+    readonly model: ForeignBorrowed<Model<PriorityApi>>;
     readonly context: ForeignBorrowed<TranscriptContext>;
-    readonly options?: ForeignBorrowed<OpenAICodexResponsesOptions>;
+    readonly options?: ForeignBorrowed<StreamOptions>;
   },): AssistantMessageEventStream {
     dispatched.push({
       kind: 'full',
@@ -89,9 +89,9 @@ export function fixtureOverlay(provider: ForeignHostCapability<Provider>,): Fixt
   const overlay = createPriorityProvider({
     provider,
     dispatch: function dispatchOriginal(
-      model: ForeignBorrowed<Model<'openai-codex-responses'>>,
+      model: ForeignBorrowed<Model<PriorityApi>>,
       context: ForeignBorrowed<TranscriptContext>,
-      options?: ForeignBorrowed<OpenAICodexResponsesOptions>,
+      options?: ForeignBorrowed<StreamOptions>,
     ): AssistantMessageEventStream {
       return dispatch({
         model,

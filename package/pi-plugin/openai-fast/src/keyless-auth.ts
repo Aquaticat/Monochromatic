@@ -19,7 +19,7 @@ import type {
 function check(): Promise<AuthCheck> {
   return Promise.resolve({
     type: 'api_key' as const,
-    source: 'routes-to-openai-codex',
+    source: 'routes-to-original-provider',
   },);
 }
 
@@ -31,7 +31,7 @@ function check(): Promise<AuthCheck> {
 function resolve(): Promise<AuthResult> {
   return Promise.resolve({
     auth: {},
-    source: 'routes-to-openai-codex',
+    source: 'routes-to-original-provider',
   },);
 }
 
@@ -40,7 +40,7 @@ function resolve(): Promise<AuthResult> {
  */
 export const KEYLESS_AUTH: ProviderAuth = Object.freeze({
   apiKey: {
-    name: 'Routes to existing Codex login',
+    name: 'Routes to existing OpenAI authentication',
     check,
     resolve,
   },

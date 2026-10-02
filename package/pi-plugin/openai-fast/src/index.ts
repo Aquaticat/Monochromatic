@@ -1,5 +1,5 @@
 /**
- Native virtual Codex fast entries using the unchanged original provider. @module
+ Native virtual OpenAI fast entries using the unchanged original provider. @module
  */
 
 import type { Provider, } from '@earendil-works/pi-ai';
@@ -12,7 +12,8 @@ import type {
   ForeignBorrowed,
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { loadCodexProvider, } from './catalog.ts';
+import { loadOriginalProvider, } from './catalog.ts';
+import { CODEX_PROVIDER, OPENAI_PROVIDER, } from './constants.ts';
 import { createOriginalDispatch, } from './original-dispatch.ts';
 import { createPriorityProvider, } from './priority-provider.ts';
 import { createFastModelRegistration, } from './virtual-registration.ts';
@@ -20,12 +21,16 @@ import { createFastModelRegistration, } from './virtual-registration.ts';
 export {
   createCatalogCredentials,
   loadCodexProvider,
+  loadOriginalProvider,
 } from './catalog.ts';
 export {
   CODEX_API,
   CODEX_PROVIDER,
   FAST_PROVIDER,
+  OPENAI_API,
+  OPENAI_PROVIDER,
   PRIORITY_TARGET_PREFIX,
+  type PriorityApi,
 } from './constants.ts';
 export { FastModelError, } from './fast-model-error.ts';
 export {
@@ -90,7 +95,7 @@ export function registerOpenAIFast({
   /**
    Structural registration guard prevents getter-triggered reentrant catalog recursion.
    */
-  const synchronize = createFastModelRegistration(pi,);
+  const synchronize = createFastModelRegistration({ pi, fastProvider: `${provider.id}-fast`, },);
   pi.registerProvider(createPriorityProvider({
     provider,
     getProvider: binding.getProvider,
@@ -125,7 +130,7 @@ export function registerOpenAIFast({
 //region Extension factory
 
 /**
- Initialize configured Codex companions before startup model selection.
+ Initialize both configured OpenAI companion families before startup model selection.
  
  @param pi - native registration capability
  
@@ -144,16 +149,20 @@ export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>
     tag: openAIFast.name,
     l: moduleLogger,
   },);
-  l.debug('initializing virtual Codex fast extension',);
+  l.debug('initializing virtual OpenAI fast extension',);
   /**
    Bootstrap uses metadata only; real request auth stays in the active original provider.
    */
-  const provider = await loadCodexProvider();
-  registerOpenAIFast({
-    pi,
-    provider,
-  },);
-  l.debug('virtual Codex fast extension initialized',);
+  const providers = await Promise.all([CODEX_PROVIDER, OPENAI_PROVIDER,].map(async function loadProvider(providerId,) {
+    return await loadOriginalProvider({ providerId, },);
+  },),);
+  for (const provider of providers) {
+    registerOpenAIFast({
+      pi,
+      provider,
+    },);
+  }
+  l.debug('virtual OpenAI fast extension initialized',);
 }
 
 //endregion

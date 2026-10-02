@@ -1,23 +1,29 @@
 /**
- Priority entry points delegate transport and accounting to native Codex streaming. @module
+ Priority entry points delegate transport and accounting to native OpenAI streaming. @module
  */
-import type {
-  Api,
-  AssistantMessageEventStream,
-  Model,
-  SimpleStreamOptions,
-  StreamFunction,
-  StreamOptions,
-  TranscriptContext,
+import {
+  hasApi,
+  type Api,
+  type AssistantMessageEventStream,
+  type Model,
+  type SimpleStreamOptions,
+  type StreamFunction,
+  type StreamOptions,
+  type TranscriptContext,
 } from '@earendil-works/pi-ai';
 import {
   type OpenAICodexResponsesOptions,
   stream as streamCodex,
 } from '@earendil-works/pi-ai/api/openai-codex-responses';
+import {
+  type OpenAIResponsesOptions,
+  stream as streamOpenAI,
+} from '@earendil-works/pi-ai/api/openai-responses';
 import { buildBaseOptions, } from '@earendil-works/pi-ai/api/simple-options';
 import { clampThinkingLevel, } from '@earendil-works/pi-ai/models';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { CODEX_API, OPENAI_API, type PriorityApi, } from './constants.ts';
 import { PriorityRequestError, } from './priority-error.ts';
 import { forcePriorityPayload, } from './priority-payload.ts';
 
@@ -29,8 +35,30 @@ import { forcePriorityPayload, } from './priority-payload.ts';
 const l = tagged({ tag: 'openai-fast/priority-stream', },);
 
 /**
- Delegate full native Codex options with priority in both the options and final request body.
- Model must be the live base Codex model, not a virtual routing model.
+ Delegate directly to the original model's native API when no registry dispatch is injected.
+
+ @param model - original native model whose API determines transport
+
+ @param context - normalized transcript retained by native streaming
+
+ @param options - original options including provider-specific runtime fields
+
+ @returns native stream without model or transport translation
+ */
+const nativeStream: StreamFunction<PriorityApi, StreamOptions> = function nativeStream(model, context, options,) {
+  /** Direct transport logger records only the original API identity. */
+  const innerL = tagged({ tag: nativeStream.name, l, },);
+  innerL.debug(`delegating direct request to ${model.api}`,);
+  if (hasApi(model, CODEX_API,))
+    return streamCodex(model, context, options,);
+  if (!hasApi(model, OPENAI_API,))
+    throw new PriorityRequestError({ message: `Unsupported native priority API: ${model.api}`, },);
+  return streamOpenAI(model, context, options,);
+};
+
+/**
+ Delegate full native OpenAI options with priority in both the options and final request body.
+ Model must be the live base OpenAI model, not a virtual routing model.
 
  @param model - original base model used by native request building and accounting
 
@@ -40,7 +68,7 @@ const l = tagged({ tag: 'openai-fast/priority-stream', },);
 
  @param stream - full native-compatible dispatch, optionally through the original model registry
 
- @returns native Codex event stream without an alternate transport or model fallback
+ @returns native OpenAI event stream without an alternate transport or model fallback
 
  @mutates model - native stream and caller callbacks may inspect or retain live model data
 
@@ -55,16 +83,16 @@ const l = tagged({ tag: 'openai-fast/priority-stream', },);
  const events = streamPriority({ model: baseModel, context, options });
  ```
  */
-export function streamPriority({
+export function streamPriority<const TApi extends PriorityApi>({
   model,
   context,
   options,
-  stream = streamCodex,
+  stream,
 }: {
-  readonly model: ForeignHostCapability<Model<'openai-codex-responses'>>;
+  readonly model: ForeignHostCapability<Model<TApi>>;
   readonly context: ForeignHostCapability<TranscriptContext>;
-  readonly options?: ForeignHostCapability<StreamOptions | OpenAICodexResponsesOptions>;
-  readonly stream?: ForeignHostCapability<StreamFunction<'openai-codex-responses', OpenAICodexResponsesOptions>>;
+  readonly options?: ForeignHostCapability<StreamOptions | OpenAICodexResponsesOptions | OpenAIResponsesOptions>;
+  readonly stream?: ForeignHostCapability<StreamFunction<TApi, StreamOptions>>;
 },): AssistantMessageEventStream {
   /**
    Function logger records delegation without sensitive request data.
@@ -73,17 +101,14 @@ export function streamPriority({
     tag: streamPriority.name,
     l,
   },);
-  innerL.debug('delegating priority request to native Codex stream',);
+  innerL.debug(`delegating priority request to native ${model.api} stream`,);
   /**
    Capture caller customization when options are composed, before registry dispatch can defer it.
    */
   const onPayload = options?.onPayload;
-  return stream(
-    model,
-    context,
-    {
+  const priorityOptions = {
     ...options,
-    serviceTier: 'priority',
+    serviceTier: 'priority' as const,
     /**
      Native callback signature retains native model and payload identity for caller customization.
 
@@ -115,8 +140,8 @@ export function streamPriority({
         onPayload,
       },);
     },
-  },
-  );
+  };
+  return (stream ?? nativeStream)(model, context, priorityOptions,);
 }
 
 //endregion Full stream
@@ -127,7 +152,7 @@ export function streamPriority({
  Use native simple-option preparation and reasoning clamping, then delegate to the full priority stream.
  Converting through native streamSimple would discard the priority accounting option.
 
- @param model - original base Codex model carrying current reasoning capabilities
+ @param model - original base OpenAI model carrying current reasoning capabilities
 
  @param context - normalized native transcript
 
@@ -135,7 +160,7 @@ export function streamPriority({
 
  @param stream - full native-compatible dispatch, optionally through the original model registry
 
- @returns native Codex event stream with priority request and accounting intent
+ @returns native OpenAI event stream with priority request and accounting intent
 
  @mutates model - native option preparation and streaming may inspect or retain model data
 
@@ -152,16 +177,16 @@ export function streamPriority({
  const events = streamSimplePriority({ model: baseModel, context, options });
  ```
  */
-export function streamSimplePriority({
+export function streamSimplePriority<const TApi extends PriorityApi>({
   model,
   context,
   options,
   stream,
 }: {
-  readonly model: ForeignHostCapability<Model<'openai-codex-responses'>>;
+  readonly model: ForeignHostCapability<Model<TApi>>;
   readonly context: ForeignHostCapability<TranscriptContext>;
   readonly options?: ForeignHostCapability<SimpleStreamOptions>;
-  readonly stream?: ForeignHostCapability<StreamFunction<'openai-codex-responses', OpenAICodexResponsesOptions>>;
+  readonly stream?: ForeignHostCapability<StreamFunction<TApi, StreamOptions>>;
 },): AssistantMessageEventStream {
   /**
    Function logger records conversion without exposing authentication data.
@@ -170,13 +195,13 @@ export function streamSimplePriority({
     tag: streamSimplePriority.name,
     l,
   },);
-  innerL.debug('preparing native simple Codex options',);
+  innerL.debug(`preparing native simple ${model.api} options`,);
   /**
    Direct native dispatch requires a token; injected registry dispatch resolves it later.
    */
   const apiKey = options?.apiKey;
-  if ((stream === undefined) && ((apiKey === undefined) || (apiKey === ''))) {
-    innerL.error('resolved Codex API key is missing',);
+  if ((stream === undefined) && (model.api === CODEX_API) && ((apiKey === undefined) || (apiKey === ''))) {
+    innerL.error('resolved native Codex credential is missing',);
     throw new PriorityRequestError({ message: `No API key for provider: ${model.provider}`, },);
   }
   /**

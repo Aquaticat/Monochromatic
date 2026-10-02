@@ -138,7 +138,7 @@ await describe({ name: createPriorityProvider.name, children: [
         return Promise.resolve(false,);
       },
     }, signal: new AbortController().signal, },);
-    expect(auth,).toEqual({ auth: {}, source: 'routes-to-openai-codex', },);
+    expect(auth,).toEqual({ auth: {}, source: 'routes-to-original-provider', },);
     expect(source.state.oauthRefreshes,).toBe(0,);
   }, },),
 ], },);

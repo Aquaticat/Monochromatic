@@ -25,7 +25,7 @@ await describe({ name: createFastModelRegistration.name, children: [
     /** Registration-only host avoids plugin-driven lazy synchronization. */
     using host = await fixtureHost({ home, },);
     /** Built synchronizer installs virtual selections through the real SDK. */
-    const synchronize = createFastModelRegistration(host.pi,);
+    const synchronize = createFastModelRegistration({ pi: host.pi, },);
     synchronize(host.source.provider.getModels(),);
     /** Unrecognized native IDs and text-only capability variations need companions. */
     const models = [fixtureModel({ id: 'unknown-future-model', },),
@@ -60,7 +60,7 @@ await describe({ name: createFastModelRegistration.name, children: [
     /** Removal count verifies disappeared aliases are actually unregistered. */
     const unregister = ctx.sinon.spy(host.pi, 'unregisterVirtualModel',);
     /** Built synchronizer owns structural signatures and virtual entries. */
-    const synchronize = createFastModelRegistration(host.pi,);
+    const synchronize = createFastModelRegistration({ pi: host.pi, },);
     /** Original native metadata anchors the duplicate-registration control. */
     const base = fixtureModel();
     /** Added native identity must produce an additional companion. */
@@ -91,7 +91,7 @@ await describe({ name: createFastModelRegistration.name, children: [
         /** Host exposes native registration without plugin catalog reads. */
         using host = await fixtureHost({ home, },);
         /** Built synchronizer must reject impossible routing identities. */
-        const synchronize = createFastModelRegistration(host.pi,);
+        const synchronize = createFastModelRegistration({ pi: host.pi, },);
         /** Native identity whose generated target can collide with another base. */
         const base = fixtureModel();
         /** Upstream fixture in the extension-owned namespace must never be routed. */
@@ -112,7 +112,7 @@ await describe({ name: createFastModelRegistration.name, children: [
     /** Removed physical target identity must not be substituted with an ordinary model. */
     const absent = fixtureModel({ id: 'removed-routing-target', },);
     /** Built synchronizer installs the deliberately unroutable virtual selection. */
-    const synchronize = createFastModelRegistration(host.pi,);
+    const synchronize = createFastModelRegistration({ pi: host.pi, },);
     synchronize([absent,],);
     /** Actual native virtual selection triggers the built route callback. */
     const companion = host.runtime.getModel(FAST_PROVIDER, absent.id,);

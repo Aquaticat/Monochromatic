@@ -1,5 +1,5 @@
 /**
- Read-only bootstrap of the host's configured Codex catalog and native provider. @module
+ Read-only bootstrap of the host's configured OpenAI catalogs and native providers. @module
  */
 
 import type { Provider, } from '@earendil-works/pi-ai';
@@ -19,30 +19,36 @@ export { createCatalogCredentials, } from './catalog-credentials.ts';
 const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.catalog', },);
 
 /**
- Load configured Codex metadata and persisted catalogs without real credentials or network refresh.
+ Load original provider metadata and persisted catalogs without real credentials or network refresh.
  
  @param modelsPath - optional disposable model configuration for tests
+
+ @param providerId - original provider whose native metadata remains authoritative
  
- @returns effective native Codex provider whose auth resolves later in the real host
+ @returns effective native provider whose auth resolves later in the real host
  
  @throws FastModelError when the model configuration or native provider is unavailable
 
  @example
  ```ts
- const provider = await loadCodexProvider();
+ const provider = await loadOriginalProvider();
  ```
  */
-export async function loadCodexProvider({
+export async function loadOriginalProvider({
   modelsPath,
-}: { readonly modelsPath?: string; } = {},): Promise<Provider> {
+  providerId = CODEX_PROVIDER,
+}: {
+  readonly modelsPath?: string;
+  readonly providerId?: string;
+} = {},): Promise<Provider> {
   /**
    Catalog logger excludes credential and header values.
    */
   const l = tagged({
-    tag: loadCodexProvider.name,
+    tag: loadOriginalProvider.name,
     l: moduleLogger,
   },);
-  l.debug('loading configured Codex model metadata without credential access',);
+  l.debug(`loading configured ${providerId} model metadata without credential access`,);
   /**
    Disposable metadata runtime has no access to stored real credentials.
    */
@@ -57,30 +63,37 @@ export async function loadCodexProvider({
    */
   const refresh = await catalog.refresh({
     allowNetwork: false,
-    providers: [CODEX_PROVIDER,],
+    providers: [providerId,],
   },);
   /**
    Cache restoration errors remain explicit initialization failures.
    */
   const refreshError = refresh.errors
-    .get(CODEX_PROVIDER,);
+    .get(providerId,);
   if (refreshError !== undefined)
-    throw new FastModelError(`Cannot restore the Codex model catalog: ${String(refreshError,)}. Correct the cached catalog or model configuration.`,);
+    throw new FastModelError(`Cannot restore the ${providerId} model catalog: ${String(refreshError,)}. Correct the cached catalog or model configuration.`,);
   /**
    Configuration diagnostics prevent registering misleading companion entries.
    */
   const problem = catalog.getError();
   if (problem !== undefined)
-    throw new FastModelError(`Cannot initialize Codex fast models: ${problem}. Correct the model configuration before loading the fast extension.`,);
+    throw new FastModelError(`Cannot initialize ${providerId} fast models: ${problem}. Correct the model configuration before loading the fast extension.`,);
   /**
    Effective source includes configured metadata and restored native cache data.
    */
-  const provider = catalog.getProvider(CODEX_PROVIDER,);
+  const provider = catalog.getProvider(providerId,);
   if (provider === undefined)
-    throw new FastModelError('The native openai-codex provider is unavailable. Restore the native provider before loading the fast extension.',);
+    throw new FastModelError(`The native ${providerId} provider is unavailable. Restore the native provider before loading the fast extension.`,);
   l.debug(`loaded ${provider.getModels()
-    .length} base Codex models`,);
+    .length} base ${providerId} models`,);
   return provider;
+}
+
+/**
+ {@inheritDoc loadOriginalProvider}
+ */
+export async function loadCodexProvider(options: { readonly modelsPath?: string; } = {},): Promise<Provider> {
+  return await loadOriginalProvider(options,);
 }
 
 //endregion

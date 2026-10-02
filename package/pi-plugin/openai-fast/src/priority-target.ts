@@ -11,8 +11,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   CODEX_API,
-  FAST_PROVIDER,
+  OPENAI_API,
+  OPENAI_PROVIDER,
   PRIORITY_TARGET_PREFIX,
+  type PriorityApi,
 } from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
 import type { OriginalModelLookup, } from './original-dispatch-types.ts';
@@ -79,7 +81,7 @@ export function priorityTarget(model: ForeignBorrowed<Model<Api>>, ): Model<Api>
   } = model;
   return {
     ...metadata,
-    provider: FAST_PROVIDER,
+    provider: `${model.provider}-fast`,
     id: `${PRIORITY_TARGET_PREFIX}${model.id}`,
   };
 }
@@ -91,7 +93,7 @@ export function priorityTarget(model: ForeignBorrowed<Model<Api>>, ): Model<Api>
  
  @param lookup - live original-model lookup
  
- @returns original native Codex model
+ @returns original native OpenAI model
  
  @throws FastModelError when input is not a target, the original disappeared, or its API is unsupported
  
@@ -108,7 +110,7 @@ export function resolvePriorityBase({
 }: {
   readonly model: ForeignBorrowed<Model<Api>>;
   readonly lookup: OriginalModelLookup;
-},): Model<typeof CODEX_API> {
+},): Model<PriorityApi> {
   /**
    Original-model logger keeps translation visible without request data.
    */
@@ -117,7 +119,7 @@ export function resolvePriorityBase({
     l: moduleLogger,
   },);
   if (!isPriorityTarget(model,))
-    throw new FastModelError(`Model "${model.id}" is not an internal Codex priority target. Select its fast virtual entry instead.`,);
+    throw new FastModelError(`Model "${model.id}" is not an internal OpenAI priority target. Select its fast virtual entry instead.`,);
   /**
    Fixed prefix removal recovers the original catalog identity.
    */
@@ -128,12 +130,16 @@ export function resolvePriorityBase({
    */
   const base = lookup(id,);
   if (base === undefined)
-    throw new FastModelError(`Codex fast model "${id}" no longer exists. Refresh models or select an available model.`,);
+    throw new FastModelError(`OpenAI fast model "${id}" no longer exists. Refresh models or select an available model.`,);
+  /**
+   Each original provider retains its own native wire API.
+   */
+  const expectedApi = base.provider === OPENAI_PROVIDER ? OPENAI_API : CODEX_API;
   if (!hasApi(
     base,
-    CODEX_API,
+    expectedApi,
   )) {
-    throw new FastModelError(`Codex fast model "${id}" uses "${base.api}" instead of the native Codex transport. Correct its model configuration or select its ordinary entry.`,);
+    throw new FastModelError(`OpenAI fast model "${id}" uses "${base.api}" instead of its native "${expectedApi}" transport. Correct its model configuration or select its ordinary entry.`,);
   }
   l.debug(`resolved priority target to ${base.id}`,);
   return base;

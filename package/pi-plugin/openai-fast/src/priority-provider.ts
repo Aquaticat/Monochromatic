@@ -1,11 +1,11 @@
 /**
- Keyless priority targets leave the original Codex provider untouched. @module
+ Keyless priority targets leave each original OpenAI provider untouched. @module
  */
 import type {
   Api,
   ApiStreamOptions,
   Model,
-  OpenAICodexResponsesOptions,
+  StreamOptions,
   Provider,
   StreamFunction,
   TranscriptContext,
@@ -19,10 +19,7 @@ import type {
   ForeignBorrowed,
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import {
-  FAST_PROVIDER,
-  type CODEX_API,
-} from './constants.ts';
+import type { PriorityApi, } from './constants.ts';
 import type { OriginalModelLookup, } from './original-dispatch-types.ts';
 import {
   isPriorityTarget,
@@ -54,7 +51,7 @@ export type PriorityProviderOptions = {
   readonly provider: ForeignHostCapability<Provider>;
   readonly getProvider?: () => ForeignHostCapability<Provider>;
   readonly lookup: OriginalModelLookup;
-  readonly dispatch: StreamFunction<typeof CODEX_API, OpenAICodexResponsesOptions>;
+  readonly dispatch: StreamFunction<PriorityApi, StreamOptions>;
   readonly onCatalog: (models: readonly Model<Api>[]) => void;
 };
 
@@ -128,7 +125,7 @@ export function createPriorityProvider({
         return model.api !== 'pi-virtual';
       },);
     onCatalog(models,);
-    ml.trace(`read ${models.length} original Codex models`,);
+    ml.trace(`read ${models.length} original ${provider.id} models`,);
     return models;
   }
 
@@ -146,8 +143,8 @@ export function createPriorityProvider({
 
   l.debug('creating keyless priority adapter',);
   return {
-    id: FAST_PROVIDER,
-    name: 'OpenAI Codex Fast',
+    id: `${provider.id}-fast`,
+    name: `${provider.name} Fast`,
     auth: KEYLESS_AUTH,
     getModels,
     getAllModels: getModels,

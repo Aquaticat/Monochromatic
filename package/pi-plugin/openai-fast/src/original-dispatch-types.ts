@@ -2,13 +2,13 @@
  Original host request capabilities and externally defined lookup absence semantics. @module
  */
 import type {
-  OpenAICodexResponsesOptions,
+  StreamOptions,
   Provider,
   StreamFunction,
 } from '@earendil-works/pi-ai';
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import type { CODEX_API, } from './constants.ts';
+import type { PriorityApi, } from './constants.ts';
 
 //region Native callback contracts
 
@@ -36,7 +36,7 @@ export type OriginalDispatchCapabilities = {
   /**
    Native callback shape owns the externally dictated positional arguments.
    */
-  readonly stream: StreamFunction<typeof CODEX_API, OpenAICodexResponsesOptions>;
+  readonly stream: StreamFunction<PriorityApi, StreamOptions>;
 };
 
 //endregion
