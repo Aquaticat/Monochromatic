@@ -64,6 +64,27 @@ await describe({
         },),
 
         it({
+          name: 'ignores a usage-only event that names no choices array at all, not only one that '
+            + 'names an empty one, while still folding its usage',
+          fn: async () => {
+            /** Drained stream whose usage event carries no `choices` key whatsoever. */
+            const body = [
+              'data: {"choices":[{"delta":{"content":"x"}}]}',
+              'data: {"usage":{"prompt_tokens":3,"completion_tokens":1}}',
+              'data: [DONE]',
+              '',
+            ].join('\n\n',);
+            expect(extractStreamedCompletion({ bodyText: body, },),).toEqual({
+              text: 'x',
+              usage: {
+                prompt_tokens: 3,
+                completion_tokens: 1,
+              },
+            },);
+          },
+        },),
+
+        it({
           name: 'throws when the stream ends without its terminator',
           fn: async () => {
             /** Value caught from a cut-off stream. */
@@ -137,6 +158,22 @@ await describe({
             const extracted = extractStreamedCompletion({ bodyText: body, },);
             expect(extracted.finishReason,).toBe('length',);
             expect(extracted.text,).toBe('{"a":',);
+          },
+        },),
+        it({
+          name: 'READS the reason off a closing event that carries no delta FIELD at all, which the '
+            + 'case beside this one cannot reach: that one sends an empty delta object, still a JSON '
+            + 'record, while this sends none',
+          fn: async () => {
+            const body = [
+              'data: {"choices":[{"delta":{"content":"y"}}]}',
+              'data: {"choices":[{"finish_reason":"stop"}]}',
+              'data: [DONE]',
+              '',
+            ].join('\n\n',);
+            const extracted = extractStreamedCompletion({ bodyText: body, },);
+            expect(extracted.finishReason,).toBe('stop',);
+            expect(extracted.text,).toBe('y',);
           },
         },),
         it({

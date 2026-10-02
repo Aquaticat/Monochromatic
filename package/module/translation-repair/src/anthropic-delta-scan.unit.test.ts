@@ -28,104 +28,11 @@ import {
   watchForDegeneration,
 } from '../dist/final/node/index.mjs';
 import { routeDeltaToDetector, } from './delta-channel-routing.test-fixture.ts';
-
-/**
- Builds one Anthropic event frame, newline-terminated as the wire sends it.
-
- @param body - frame payload, which carries its own `type`
-
- @returns Frame ready to feed a scanner
-
- @example
- ```ts
- const raw = frameOf({ body: { type: 'ping', }, },);
- ```
- */
-function frameOf(
-  { body, }: { readonly body: Readonly<Record<string, unknown>>; },
-): string {
-  /**
-   Event name, which every Anthropic frame repeats inside its own payload.
-   */
-  const { type, } = body;
-
-  return `event: ${String(type,)}\ndata: ${JSON.stringify(body,)}\n\n`;
-}
-
-/**
- Frame opening a content block of one type at one index.
-
- @param index - position the block occupies
-
- @param type - block type the server declares
-
- @returns Frame ready to feed a scanner
-
- @example
- ```ts
- const raw = blockStart({ index: 0, type: 'thinking', },);
- ```
- */
-function blockStart(
-  {
-    index,
-    type,
-  }: {
-    readonly index: number;
-    readonly type: string;
-  },
-): string {
-  return frameOf({
-    body: {
-      type: 'content_block_start',
-      index,
-      content_block: { type, },
-    },
-  },);
-}
-
-/**
- Frame carrying one delta of one kind at one index.
-
- @param index - position the delta belongs to
-
- @param deltaType - kind of delta, which names its text field
-
- @param field - field the text rides in
-
- @param text - text the frame carries
-
- @returns Frame ready to feed a scanner
-
- @example
- ```ts
- const raw = blockDelta({ index: 0, deltaType: 'text_delta', field: 'text', text: 'Biscuit', },);
- ```
- */
-function blockDelta(
-  {
-    index,
-    deltaType,
-    field,
-    text,
-  }: {
-    readonly index: number;
-    readonly deltaType: string;
-    readonly field: string;
-    readonly text: string;
-  },
-): string {
-  return frameOf({
-    body: {
-      type: 'content_block_delta',
-      index,
-      delta: {
-        type: deltaType,
-        [field]: text,
-      },
-    },
-  },);
-}
+import {
+  anthropicBlockDelta,
+  anthropicBlockStart,
+  anthropicFrameOf,
+} from './anthropic-frames.test-fixture.ts';
 
 /**
  Feeds a whole body to a fresh scanner in one chunk.
@@ -153,10 +60,10 @@ await describe({
         + 'unforced call takes',
       fn: async () => {
         const deltas = scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'text',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'text_delta',
             field: 'text',
@@ -176,10 +83,10 @@ await describe({
         + 'cannot recur through a typed block',
       fn: async () => {
         const deltas = scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'thinking',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'thinking_delta',
             field: 'thinking',
@@ -199,10 +106,10 @@ await describe({
         + 'anywhere else leaves every schema\'d call on this transport looking silent',
       fn: async () => {
         const deltas = scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'tool_use',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'input_json_delta',
             field: 'partial_json',
@@ -222,10 +129,10 @@ await describe({
         + 'model\'s private deliberation as its answer',
       fn: async () => {
         const deltas = scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'thinking',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'text_delta',
             field: 'text',
@@ -249,18 +156,18 @@ await describe({
         // declaration, so this case fails outright unless the answer channel is
         // exempt from the block-type override.
         const deltas = scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 1,
             type: 'tool_use',
-          },) + blockStart({
+          },) + anthropicBlockStart({
             index: 1,
             type: 'thinking',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 1,
             deltaType: 'thinking_delta',
             field: 'thinking',
             text: 'Comparing the three.',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 1,
             deltaType: 'input_json_delta',
             field: 'partial_json',
@@ -283,18 +190,18 @@ await describe({
         + 'thinking and answer blocks and both carry deltas under their own index',
       fn: async () => {
         const deltas = scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'thinking',
-          },) + blockStart({
+          },) + anthropicBlockStart({
             index: 1,
             type: 'text',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'thinking_delta',
             field: 'thinking',
             text: 'Hmm.',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 1,
             deltaType: 'text_delta',
             field: 'text',
@@ -314,16 +221,16 @@ await describe({
         + 'short reply and would each read as an empty answer',
       fn: async () => {
         expect(scanAll({
-          raw: frameOf({ body: { type: 'message_start', }, },)
-            + frameOf({ body: { type: 'ping', }, },)
-            + frameOf({
+          raw: anthropicFrameOf({ body: { type: 'message_start', }, },)
+            + anthropicFrameOf({ body: { type: 'ping', }, },)
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_stop',
                 index: 0,
               },
             },)
-            + frameOf({ body: { type: 'message_delta', }, },)
-            + frameOf({ body: { type: 'message_stop', }, },),
+            + anthropicFrameOf({ body: { type: 'message_delta', }, },)
+            + anthropicFrameOf({ body: { type: 'message_stop', }, },),
         },).length,).toBe(0,);
       },
     },),
@@ -333,10 +240,10 @@ await describe({
         + 'new delta kind cannot inject text into either channel unannounced',
       fn: async () => {
         expect(scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'text',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'citations_delta',
             field: 'citation',
@@ -352,10 +259,10 @@ await describe({
         + 'named by the empty string (ledger B91)',
       fn: async () => {
         expect(scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'thinking',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'signature_delta',
             field: '',
@@ -377,10 +284,10 @@ await describe({
         /**
          Whole body, to be cut at a point inside its delta frame.
          */
-        const raw = blockStart({
+        const raw = anthropicBlockStart({
           index: 0,
           type: 'text',
-        },) + blockDelta({
+        },) + anthropicBlockDelta({
           index: 0,
           deltaType: 'text_delta',
           field: 'text',
@@ -413,10 +320,10 @@ await describe({
         + 'permits and what a proxy may rewrite a body into',
       fn: async () => {
         const deltas = scanAll({
-          raw: (blockStart({
+          raw: (anthropicBlockStart({
             index: 0,
             type: 'text',
-          },) + blockDelta({
+          },) + anthropicBlockDelta({
             index: 0,
             deltaType: 'text_delta',
             field: 'text',
@@ -442,10 +349,10 @@ await describe({
          Deltas surviving a payload no parser could read.
          */
         const deltas = scanner.feed({
-          chunk: `${blockStart({
+          chunk: `${anthropicBlockStart({
             index: 0,
             type: 'text',
-          },)}data: {not json at all\n\n${blockDelta({
+          },)}data: {not json at all\n\n${anthropicBlockDelta({
             index: 0,
             deltaType: 'text_delta',
             field: 'text',
@@ -499,10 +406,10 @@ await describe({
          Deltas that frame yielded, which must be none.
          */
         const deltas = scanner.feed({
-          chunk: blockStart({
+          chunk: anthropicBlockStart({
             index: 0,
             type: 'text',
-          },) + frameOf({
+          },) + anthropicFrameOf({
             body: {
               type: 'content_block_delta',
               index: 0,
@@ -525,11 +432,11 @@ await describe({
          after a thinking block at index 0.
          */
         const deltas = scanAll({
-          raw: blockStart({
+          raw: anthropicBlockStart({
             index: 0,
             type: 'thinking',
           },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_delta',
                 delta: {
@@ -538,7 +445,7 @@ await describe({
                 },
               },
             },)
-            + blockDelta({
+            + anthropicBlockDelta({
               index: 3,
               deltaType: 'text_delta',
               field: 'text',
@@ -574,26 +481,26 @@ await describe({
          Deltas those frames yielded.
          */
         const deltas = scanner.feed({
-          chunk: frameOf({
+          chunk: anthropicFrameOf({
             body: {
               type: 'content_block_start',
               content_block: { type: 'thinking', },
             },
           },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_start',
                 index: 0,
               },
             },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_start',
                 index: 0,
                 content_block: { type: 7, },
               },
             },)
-            + blockDelta({
+            + anthropicBlockDelta({
               index: 0,
               deltaType: 'text_delta',
               field: 'text',
@@ -615,13 +522,13 @@ await describe({
         + 'the block there is now of no known type (ledger B93)',
       fn: async () => {
         for (const unreadableStart of [
-          frameOf({
+          anthropicFrameOf({
             body: {
               type: 'content_block_start',
               index: 0,
             },
           },),
-          frameOf({
+          anthropicFrameOf({
             body: {
               type: 'content_block_start',
               index: 0,
@@ -630,12 +537,12 @@ await describe({
           },),
         ]) {
           expect(scanAll({
-            raw: blockStart({
+            raw: anthropicBlockStart({
               index: 0,
               type: 'thinking',
             },)
               + unreadableStart
-              + blockDelta({
+              + anthropicBlockDelta({
                 index: 0,
                 deltaType: 'text_delta',
                 field: 'text',
@@ -662,11 +569,11 @@ await describe({
          Deltas that fragment yielded, which must be none.
          */
         const deltas = scanner.feed({
-          chunk: blockStart({
+          chunk: anthropicBlockStart({
             index: 0,
             type: 'tool_use',
           },)
-            + blockDelta({
+            + anthropicBlockDelta({
               index: 0,
               deltaType: 'input_json_delta',
               field: 'partial_json',
@@ -693,21 +600,21 @@ await describe({
          Deltas those frames yielded, which must be none.
          */
         const deltas = scanner.feed({
-          chunk: blockStart({
+          chunk: anthropicBlockStart({
             index: 0,
             type: 'thinking',
           },)
-            + blockStart({
+            + anthropicBlockStart({
               index: 1,
               type: 'text',
             },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_delta',
                 index: 1,
               },
             },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_delta',
                 index: 1,
@@ -717,14 +624,14 @@ await describe({
                 },
               },
             },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_delta',
                 index: 1,
                 delta: { type: 'text_delta', },
               },
             },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_delta',
                 index: 0,
@@ -747,11 +654,11 @@ await describe({
          */
         const scanner = scanAnthropicDeltas();
         scanner.feed({
-          chunk: blockStart({
+          chunk: anthropicBlockStart({
             index: 0,
             type: 'thinking',
           },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_delta',
                 index: 0,
@@ -761,7 +668,7 @@ await describe({
                 },
               },
             },)
-            + frameOf({
+            + anthropicFrameOf({
               body: {
                 type: 'content_block_delta',
                 index: 0,
@@ -794,17 +701,13 @@ await describe({
         /**
          A model that thinks the same thing forever and never answers.
          */
-        const frames = Array.from(
-          { length: 9_000, },
-          function think(): string {
-            return blockDelta({
-              index: 0,
-              deltaType: 'thinking_delta',
-              field: 'thinking',
-              text: 'I will output. ',
-            },);
-          },
-        ).join('',);
+        const frames = anthropicBlockDelta({
+          index: 0,
+          deltaType: 'thinking_delta',
+          field: 'thinking',
+          text: 'I will output. ',
+        },)
+          .repeat(9_000,);
 
         /**
          Scanner and one detector per channel, wired as the drain will wire them.
@@ -814,7 +717,7 @@ await describe({
         const answering = watchForDegeneration();
 
         scanner.feed({
-          chunk: blockStart({
+          chunk: anthropicBlockStart({
             index: 0,
             type: 'thinking',
           },) + frames,
@@ -924,10 +827,10 @@ await describe({
           field,
         },) {
           return scanAll({
-            raw: blockStart({
+            raw: anthropicBlockStart({
               index: 0,
               type: 'text',
-            },) + blockDelta({
+            },) + anthropicBlockDelta({
               index: 0,
               deltaType,
               field,

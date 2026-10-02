@@ -62,6 +62,22 @@ await describe({
             expect(isStreamBoundCut({ error: bound.callSignal.reason, },),).toBe(false,);
           },
         },),
+        it({
+          name: 'FORWARDS AN ALREADY-ABORTED CALLER SIGNAL IMMEDIATELY, without waiting on the '
+            + '\'abort\' event: a retry ladder can hand this a signal that aborted before the next '
+            + 'attempt was even armed',
+          fn: async () => {
+            const caller = new AbortController();
+            caller.abort(new Error('the cat left before the call',),);
+            using bound = armStreamBound({
+              signal: caller.signal,
+              boundMs: SHORT_BOUND_MS * 1_000,
+              label: 'cats/whisker-1',
+            },);
+            expect(bound.callSignal.aborted,).toBe(true,);
+            expect(isStreamBoundCut({ error: bound.callSignal.reason, },),).toBe(false,);
+          },
+        },),
       ],
     },),
 

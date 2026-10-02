@@ -26,6 +26,10 @@ import {
   StreamOverrunError,
 } from '../dist/final/node/index.mjs';
 import {
+  anthropicBlockDelta,
+  anthropicBlockStart,
+} from './anthropic-frames.test-fixture.ts';
+import {
   frameOf,
   longVariedStream,
 } from './sse-frame.test-fixture.ts';
@@ -155,6 +159,9 @@ type DrainOutcome = {
 
  @param guard - silence guard to pass through
 
+ @param wireFormat - event grammar to name to the drain, absent for the
+ module's own default
+
  @mutates response - its body is drained and cannot be read again
 
  @mutates guard - the drain notifies it per chunk
@@ -171,10 +178,12 @@ async function drainOutcome(
     response,
     guard,
     callerSignal = new AbortController().signal,
+    wireFormat,
   }: {
     readonly response: Response;
     readonly guard: Parameters<typeof drainBody>[0]['guard'];
     readonly callerSignal?: AbortSignal;
+    readonly wireFormat?: Parameters<typeof drainBody>[0]['wireFormat'];
   },
 ): Promise<DrainOutcome> {
   try {
@@ -185,6 +194,8 @@ async function drainOutcome(
         guard,
         callerSignal,
         label: 'hf:whiskers',
+        // Conditional spread keeps the knob absent instead of undefined.
+        ...(wireFormat === undefined ? {} : { wireFormat, }),
       },),
     };
   }
@@ -250,15 +261,11 @@ await describe({
          A model thinking the same sentence forever.
          */
         const repeating = streamOf({
-          raw: Array.from(
-            { length: 30_000, },
-            function think(): string {
-              return frameOf({
-                channel: 'reasoning',
-                text: 'I will output. ',
-              },);
-            },
-          ).join('',),
+          raw: frameOf({
+            channel: 'reasoning',
+            text: 'I will output. ',
+          },)
+            .repeat(30_000,),
         },);
 
         using degenerateGuard = armIdleGuard({
@@ -299,15 +306,11 @@ await describe({
           response,
           pulled,
         } = streamOf({
-          raw: Array.from(
-            { length: 30_000, },
-            function think(): string {
-              return frameOf({
-                channel: 'reasoning',
-                text: 'I will output. ',
-              },);
-            },
-          ).join('',),
+          raw: frameOf({
+            channel: 'reasoning',
+            text: 'I will output. ',
+          },)
+            .repeat(30_000,),
         },);
 
         using guard = armIdleGuard({
@@ -344,6 +347,92 @@ await describe({
          */
         const whole = Math.ceil((30_000 * 60) / 4_096,);
         expect(pulled(),).toBeLessThan(whole,);
+      },
+    },),
+
+    it({
+      name: 'SWALLOWS A FAILED CANCEL rather than reporting it in place of the runaway diagnosis: '
+        + 'the socket is released before the error is thrown, and releasing it failing must not '
+        + 'replace the reason the call was ended with a reason it could not be torn down',
+      fn: async () => {
+        /**
+         A model thinking the same sentence forever, same shape as the other
+         runaway cases, so the ending is reached the same way.
+         */
+        const raw = frameOf({
+          channel: 'reasoning',
+          text: 'I will output. ',
+        },)
+          .repeat(30_000,);
+
+        /**
+         Pieces the body hands over one at a time.
+         */
+        const width = 4_096;
+        const pieces = Array.from(
+          { length: Math.ceil(raw.length / width,), },
+          function piece(
+            _unused,
+            at,
+          ): string {
+            return raw.slice(
+              at * width,
+              (at + 1) * width,
+            );
+          },
+        );
+
+        /**
+         How many times the underlying source's own `cancel` ran.
+         */
+        const cancelled = { count: 0, };
+
+        /**
+         Encoder, since a body carries bytes.
+         */
+        const encoder = new TextEncoder();
+
+        /**
+         A body whose own cancellation always fails, the way a socket that
+         will not tear down cleanly behaves.
+         */
+        const body = new ReadableStream<Uint8Array>({
+          pull(controller,): void {
+            const next = pieces.shift();
+            if (next === undefined) {
+              controller.close();
+              return;
+            }
+            controller.enqueue(encoder.encode(next,),);
+          },
+          cancel(reason,): never {
+            cancelled.count += 1;
+            throw new Error(`refused to cancel: ${String(reason,)}`,);
+          },
+        },);
+
+        using guard = armIdleGuard({
+          label: 'hf:whiskers',
+          firstByteMs: ROOMY_MS,
+          idleMs: ROOMY_MS,
+        },);
+
+        const outcome = await drainOutcome({
+          response: new Response(body, { headers: { 'content-type': 'text/event-stream', }, },),
+          guard,
+        },);
+
+        expect(outcome.kind,).toBe('raised',);
+        if (outcome.kind !== 'raised')
+          throw new Error('raised by construction',);
+
+        // The runaway diagnosis survives the cancel failure: had the catch at
+        // `stopReading` not swallowed it, this would have surfaced as a
+        // StreamCutShortError wrapping the cancel's own error instead.
+        if (!(outcome.error instanceof StreamDegenerateError))
+          throw new Error('a degeneration error by construction',);
+        expect(outcome.error.channel,).toBe('reasoning',);
+        expect(cancelled.count,).toBe(1,);
       },
     },),
 
@@ -498,6 +587,50 @@ await describe({
         if (outcome.kind !== 'drained')
           throw new Error('drained by construction',);
         expect(outcome.body,).toBe(raw,);
+      },
+    },),
+
+    it({
+      name: 'READS AN ANTHROPIC-SHAPED STREAM WHEN TOLD ITS WIRE FORMAT, ending a thinking-trace '
+        + 'runaway the default OpenAI-shaped scanner could never read a single character of: an '
+        + 'Anthropic frame carries no `choices` key at all, so left unset the same body yields no '
+        + 'delta and the call simply completes',
+      fn: async () => {
+        /**
+         A model thinking the same sentence forever, spelled the way the
+         Anthropic Messages wire spells a thinking delta.
+         */
+        const raw = anthropicBlockStart({
+          index: 0,
+          type: 'thinking',
+        },) + anthropicBlockDelta({
+          index: 0,
+          deltaType: 'thinking_delta',
+          field: 'thinking',
+          text: 'I will output. ',
+        },)
+          .repeat(30_000,);
+
+        const { response, } = streamOf({ raw, },);
+
+        using guard = armIdleGuard({
+          label: 'hf:sable',
+          firstByteMs: ROOMY_MS,
+          idleMs: ROOMY_MS,
+        },);
+
+        const outcome = await drainOutcome({
+          response,
+          guard,
+          wireFormat: 'anthropic',
+        },);
+
+        expect(outcome.kind,).toBe('raised',);
+        if (outcome.kind !== 'raised')
+          throw new Error('raised by construction',);
+        if (!(outcome.error instanceof StreamDegenerateError))
+          throw new Error('a degeneration error by construction',);
+        expect(outcome.error.channel,).toBe('reasoning',);
       },
     },),
   ],

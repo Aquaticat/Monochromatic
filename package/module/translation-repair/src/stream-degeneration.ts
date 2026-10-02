@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 //region Stream degeneration
 // WHETHER A MODEL HAS STOPPED SAYING ANYTHING NEW, which is a different failure
 // from the one `stream-idle-guard.ts` watches for and is invisible to it.
@@ -249,6 +251,13 @@ export function watchForDegeneration(): DegenerationDetector {
   /**
    Drops the oldest window from the sample, keeping `counts` in step.
 
+   CALLED ONLY FROM `admit` UNDER `order.length > TRAILING_WINDOWS`, so
+   `order` holds at least one entry here and `order.shift()` always returns
+   one: `admit` pushes before calling this, so the array it reads from is
+   never empty. The window it returns is therefore always one `admit` just
+   counted into `counts`, so `counts.get(gone)` is its positive remaining
+   count, never undefined.
+
    @example
    ```ts
    evictOldest();
@@ -256,16 +265,15 @@ export function watchForDegeneration(): DegenerationDetector {
    */
   function evictOldest(): void {
     /**
-     Window leaving the sample.
+     Window leaving the sample, which `order` always has one of here.
      */
-    const gone = order.shift();
-    if (gone === undefined)
-      return;
+    const gone = nonNullishOrThrow(order.shift(),);
 
     /**
-     Copies of it that remain after this one leaves.
+     Copies of it that remain after this one leaves, read from the count
+     `admit` set when it pushed this very occurrence.
      */
-    const left = (counts.get(gone,) ?? 1) - 1;
+    const left = nonNullishOrThrow(counts.get(gone,),) - 1;
     if (left <= 0)
       counts.delete(gone,);
     else

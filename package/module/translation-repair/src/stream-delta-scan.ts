@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   isJsonArray,
   isJsonRecord,
@@ -240,7 +242,8 @@ function reasoningField({ fields, }: { readonly fields: DeltaFields; },): string
  be checked rather than declared. An assertion here would state a shape the
  wire never promised.
 
- @param frame - parsed payload of one `data:` line
+ @param frame - parsed payload of one `data:` line, an object, since
+ `readPayload` counts any other as unreadable
 
  @returns Its first choice's delta, or an empty object when the frame carries
  none, which usage-only frames legitimately do
@@ -250,10 +253,7 @@ function reasoningField({ fields, }: { readonly fields: DeltaFields; },): string
  const fields = deltaOf({ frame, },);
  ```
  */
-function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
-  if (!isJsonRecord(frame,))
-    return {};
-
+function deltaOf({ frame, }: { readonly frame: Readonly<Record<string, unknown>>; },): DeltaFields {
   /**
    Choices array, absent on the final usage frame.
    */
@@ -280,7 +280,8 @@ function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
 /**
  Reads the upstream's name off a parsed frame.
 
- @param frame - parsed payload of one `data:` line
+ @param frame - parsed payload of one `data:` line, an object, since
+ `readPayload` counts any other as unreadable
 
  @returns Name as the gateway spelled it, or empty when the frame names none
 
@@ -289,9 +290,7 @@ function deltaOf({ frame, }: { readonly frame: unknown; },): DeltaFields {
  const name = servedByOf({ frame, },);
  ```
  */
-function servedByOf({ frame, }: { readonly frame: unknown; },): string {
-  if (!isJsonRecord(frame,))
-    return '';
+function servedByOf({ frame, }: { readonly frame: Readonly<Record<string, unknown>>; },): string {
   /**
    Whatever sits at the field, of unknown type until checked.
    */
@@ -311,9 +310,10 @@ type ReadPayload = {
   readonly ok: true;
 
   /**
-   Parsed frame, whose shape the provider controls and nothing here assumes.
+   Parsed frame, an object; every field's shape is the provider's and is
+   checked where it is read.
    */
-  readonly frame: unknown;
+  readonly frame: Readonly<Record<string, unknown>>;
 } | {
   readonly ok: false;
 
@@ -330,6 +330,12 @@ type ReadPayload = {
  NEVER THROWS, because this runs on every chunk of every call and one
  unreadable frame must leave a working stream working.
 
+ A PAYLOAD THAT PARSES TO ANYTHING BUT AN OBJECT IS UNREADABLE TOO: an array,
+ a number or `null` carries no field this scanner reads, so it is counted
+ with the frames that did not parse, as the Anthropic scanner
+ (`anthropic-delta-scan.ts`) counts it, rather than read as a frame naming
+ nothing.
+
  @param payload - text after the `data:` prefix
 
  @returns Parsed frame, or why there is none
@@ -341,9 +347,19 @@ type ReadPayload = {
  */
 function readPayload({ payload, }: { readonly payload: string; },): ReadPayload {
   try {
+    /**
+     Whatever the payload parsed to, before any shape is assumed.
+     */
+    const frame: unknown = JSON.parse(payload,);
+    if (!isJsonRecord(frame,)) {
+      return {
+        ok: false,
+        reason: 'parsed to something other than a JSON object',
+      };
+    }
     return {
       ok: true,
-      frame: JSON.parse(payload,),
+      frame,
     };
   }
   catch (error) {
@@ -470,8 +486,10 @@ export function scanStreamDeltas(): DeltaScanner {
        */
       const lines = buffer.split('\n',);
 
-      // Hold the trailing fragment back until its newline arrives.
-      state.carry = lines.at(-1,) ?? '';
+      // Hold the trailing fragment back until its newline arrives. A SPLIT
+      // ALWAYS YIELDS ONE PIECE AT LEAST, the empty string included, so there
+      // is always a last line here to hold back.
+      state.carry = nonNullishOrThrow(lines.at(-1,),);
 
       /**
        Lines that are complete, the trailing fragment excluded.

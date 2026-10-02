@@ -24,9 +24,13 @@
  appears twice, far enough apart that the first has scrolled out, with unique
  text between and around. It must finish. With the trim removed it does not.
 
- THE EMPTY-TEXT EARLY RETURN IS NOT A BRANCH worth a case: without it the
- counters advance by zero and the buffer gains nothing, so no input can tell
- the two apart. It is a shortcut, and it is left uncovered on purpose.
+ THE EMPTY-TEXT EARLY RETURN IS A PROVEN NO-OP, cased by "IGNORES AN EMPTY
+ TEXT ARRIVAL" rather than through `verdictOver`: without it the counters
+ would advance by zero and the buffer would gain nothing, so no verdict can
+ ever tell the two apart. `verdictOver({ text: '', },)` cannot reach it
+ either, since its loop runs zero times on an empty string and never calls
+ `notifyText` at all; that case calls `notifyText({ text: '', },)` directly
+ and pins that the verdict before and after is identical.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -239,6 +243,33 @@ await describe({
         + 'treating an empty buffer as a document that repeats itself',
       fn: async () => {
         expect(verdictOver({ text: '', },).kind,).toBe('continuing',);
+      },
+    },),
+
+    it({
+      name: 'IGNORES AN EMPTY TEXT ARRIVAL exactly, leaving the verdict identical to what it was '
+        + 'before: a scanner never emits an empty delta, but `notifyText` is this detector\'s own '
+        + 'public contract and an empty arrival through it must change nothing',
+      fn: async () => {
+        /**
+         Detector carrying some unique text, short of either threshold.
+         */
+        const detector = watchForRecurrence();
+        detector.notifyText({
+          text: uniqueText({
+            units: 10,
+            from: 42,
+          },),
+        },);
+
+        /**
+         Verdict just before the empty arrival.
+         */
+        const before = detector.verdict();
+
+        detector.notifyText({ text: '', },);
+
+        expect(detector.verdict(),).toEqual(before,);
       },
     },),
   ],

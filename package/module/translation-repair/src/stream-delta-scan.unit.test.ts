@@ -316,6 +316,45 @@ await describe({
     },),
 
     it({
+      name: 'COUNTS A FRAME THAT PARSES TO SOMETHING OTHER THAN AN OBJECT AS UNREADABLE, as the Anthropic '
+        + 'scanner does, and reads neither a delta nor an upstream name from it, while the frame after it '
+        + 'still reads',
+      fn: async () => {
+        /**
+         Scanner fed an array frame, then a number, then a working frame, the
+         array first so no upstream name is settled before it.
+         */
+        const scanner = scanStreamDeltas();
+        const deltas = scanner.feed({
+          chunk: `data: [1,2,3]\n\ndata: 7\n\n${
+            frameOf({
+              channel: 'content',
+              text: 'still purring ',
+            },)
+          }`,
+        },);
+
+        expect(deltas.map(function textOf({ text, },): string {
+          return text;
+        },),).toEqual(['still purring ',],);
+        expect(scanner.servedBy(),).toBe('',);
+        expect(scanner.unreadableFrames(),).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'READS A FRAME WHOSE FIRST CHOICE IS NOT AN OBJECT as carrying no delta, rather than '
+        + 'reading past the array or primitive entry a provider could send in its place',
+      fn: async () => {
+        const scanner = scanStreamDeltas();
+        const deltas = scanner.feed({ chunk: 'data: {"choices":[null]}\n\n', },);
+
+        expect(deltas.length,).toBe(0,);
+        expect(scanner.unreadableFrames(),).toBe(0,);
+      },
+    },),
+
+    it({
       name: 'CATCHES A THINKING-TRACE RUNAWAY while leaving the answer channel unjudged, which is '
         + 'the whole reason both channels are scanned: a model repeating one sentence forever '
         + 'inside its reasoning emits no answer, so an answer-only scan would see an empty string '
