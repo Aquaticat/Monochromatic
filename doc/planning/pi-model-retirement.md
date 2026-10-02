@@ -593,6 +593,9 @@ after extension model replacement: `composeModelProvider` maps the override over
 `applyExtension` returned (`dist/core/provider-composer.js:337-353`).
 The disposable host confirms it empirically: `openai-codex/gpt-6-luna` reports 750000 both
 before and after filtering, against a bundled 272000.
+The wrapper path is covered too, in the real host: `openai/gpt-6-luna` and
+`openai/gpt-6.1-sol` report their configured 750000 before and after a pass that wraps the
+`openai` provider as a native registration.
 
 The pass still awaits `ModelRegistry.refresh({ allowNetwork: false })` before reading, since
 pi documents awaiting a refresh before synchronous registry reads.

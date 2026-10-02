@@ -262,6 +262,9 @@ Real host, same command without `--no-extensions`, so all configured packages lo
   `stream`, `streamSimple`, and `auth` intact and still registered as native.
 - Wrapping a builtin whose models carry no endpoint: `azure-openai-responses` went from
   44 chat models to 21, with `gpt-4.1` removed and `gpt-5.5` kept.
+- Keeping `models.json` overrides through a wrapper: `openai/gpt-6-luna` and
+  `openai/gpt-6.1-sol` reported their configured 750000 both before and after a pass that
+  wrapped `openai` as a native registration.
 - Passing image and classifier models through: 57 and 15 before and after.
 - Metadata fidelity: a filtered model still carries `thinkingLevelMap` (7 levels),
   `compat`, `promptCache`, `samplingParams`, and `inputLimits`.
