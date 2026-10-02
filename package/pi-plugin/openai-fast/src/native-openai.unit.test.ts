@@ -46,7 +46,9 @@ await describe({ name: '', children: [
       expect(provider.id,).toBe(OPENAI_PROVIDER,);
       expect(provider.auth.oauth?.loginLabel,).toBe('Sign in with ChatGPT',);
       expect(provider.auth.apiKey,).toBeDefined();
-      expect(provider.getModels(),).toContainEqual(custom,);
+      expect(provider.getModels().find(function configuredModel(model: ForeignBorrowed<Model<Api>>) {
+        return model.id === custom.id;
+      },),).toMatchObject(custom,);
       expect(fetch,).not.toHaveBeenCalled();
     }, },),
   ], },),
@@ -101,7 +103,7 @@ await describe({ name: '', children: [
       expect(native.requests[0]?.payload,).not.toHaveProperty('service_tier',);
       for (const request of native.requests.slice(1,)) {
         expect(request.url,).toBe('https://api.openai.com/v1/responses',);
-        expect(request.payload,).toMatchObject({ model: host.base.id, service_tier: 'priority', },);
+        expect(request.payload,).toMatchObject({ model: host.base.id, service_tier: 'priority', reasoning: { effort: 'high', }, },);
       }
       expect(native.requests[1]?.headers.get('authorization',),).toBe(`Bearer ${HOST_TOKEN}`,);
       expect(native.requests[2]?.headers.get('authorization',),).toBe('Bearer sk-native-fixture',);
@@ -114,7 +116,10 @@ await describe({ name: '', children: [
       expect(legacy.requests[1]?.payload,).toMatchObject({ model: host.base.id, service_tier: 'priority', },);
       expect(host.session.model?.provider,).toBe(FAST_PROVIDER,);
       expect(host.settings.getSettings(),).toEqual(settings,);
-      expect(host.ctx.scopedModels,).toHaveLength(1,);
+      expect(host.settings.getDefaultProvider(),).toBe(CODEX_PROVIDER,);
+      expect(host.settings.getDefaultModel(),).toBe(host.base.id,);
+      expect(host.settings.getEnabledModels(),).toEqual([`${CODEX_PROVIDER}/${host.base.id}`,],);
+      expect(host.ctx.scopedModels,).toEqual([{ model: host.base, thinkingLevel: 'high', },],);
     }, },),
   ], },),
   describe({ name: 'direct native OpenAI priority streams', children: [

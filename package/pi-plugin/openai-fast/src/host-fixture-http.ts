@@ -3,20 +3,20 @@
  */
 import { promisify, } from 'node:util';
 import { zstdDecompress, } from 'node:zlib';
-import type {
-  Provider,
-  StreamOptions,
-  Api,
-  Model,
-  TranscriptContext,
-  AssistantMessageEventStream,
-  SimpleStreamOptions,
+import {
+  hasApi,
+  type Provider,
+  type StreamOptions,
+  type Api,
+  type Model,
+  type TranscriptContext,
+  type AssistantMessageEventStream,
+  type SimpleStreamOptions,
 } from '@earendil-works/pi-ai';
 import {
   stream as nativeStream,
   streamSimple as nativeSimple,
 } from '@earendil-works/pi-ai/api/openai-codex-responses';
-import { hasApi, } from '@earendil-works/pi-ai';
 import { openaiProvider, } from '@earendil-works/pi-ai/providers/openai';
 import {
   stream as nativeOpenAIStream,
@@ -204,7 +204,7 @@ export function fixtureHttp({ responses = [
    */
   const source = fixtureProvider({ dynamic: false, },);
   if (providerId === OPENAI_PROVIDER) {
-    source.state.models = source.state.models.map(function nativeOpenAIModel(model,) {
+    source.state.models = source.state.models.map(function nativeOpenAIModel(model: ForeignBorrowed<Model<Api>>,) {
       return { ...model, provider: OPENAI_PROVIDER, api: OPENAI_API, baseUrl: 'https://api.openai.com/v1', };
     },);
   }

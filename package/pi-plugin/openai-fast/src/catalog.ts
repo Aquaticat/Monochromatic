@@ -91,9 +91,13 @@ export async function loadOriginalProvider({
 
 /**
  {@inheritDoc loadOriginalProvider}
+
+ @param options - optional disposable model configuration for tests
+
+ @returns original legacy provider whose authentication remains host-owned
  */
-export async function loadCodexProvider(options: { readonly modelsPath?: string; } = {},): Promise<Provider> {
-  return await loadOriginalProvider(options,);
+export function loadCodexProvider(options: { readonly modelsPath?: string; } = {},): ReturnType<typeof loadOriginalProvider> {
+  return loadOriginalProvider(options,);
 }
 
 //endregion

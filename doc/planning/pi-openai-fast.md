@@ -595,7 +595,17 @@ The additional fixture exercises native request construction,
  equal upstream IDs across providers,
  caller overrides,
  and ordinary/priority separation without external HTTP.
-The complete verification sequence is pending.
+The first full test run passed the new native dispatch and direct-stream checks,
+ plus the existing legacy scenarios.
+The configured-catalog test failed because its exact-equality assertion did not account for native optional-property normalization.
+It now compares the configured model's declared metadata after resolving its identity.
+The first lint run reported declaration,
+ foreign-boundary,
+ documentation,
+ and formatting findings;
+ these are being corrected without rule changes.
+A disposable CLI startup check now exercises the built default factory rather than manual registration.
+The complete verification sequence remains pending.
 No live new-provider verification has been performed.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed

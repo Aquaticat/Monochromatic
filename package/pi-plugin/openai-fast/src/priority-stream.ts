@@ -45,7 +45,11 @@ const l = tagged({ tag: 'openai-fast/priority-stream', },);
 
  @returns native stream without model or transport translation
  */
-const nativeStream: StreamFunction<PriorityApi, StreamOptions> = function nativeStream(model, context, options,) {
+function nativeStream(
+  model: ForeignHostCapability<Model<PriorityApi>>,
+  context: ForeignHostCapability<TranscriptContext>,
+  options?: ForeignHostCapability<StreamOptions>,
+): AssistantMessageEventStream {
   /** Direct transport logger records only the original API identity. */
   const innerL = tagged({ tag: nativeStream.name, l, },);
   innerL.debug(`delegating direct request to ${model.api}`,);
@@ -54,7 +58,7 @@ const nativeStream: StreamFunction<PriorityApi, StreamOptions> = function native
   if (!hasApi(model, OPENAI_API,))
     throw new PriorityRequestError({ message: `Unsupported native priority API: ${model.api}`, },);
   return streamOpenAI(model, context, options,);
-};
+}
 
 /**
  Delegate full native OpenAI options with priority in both the options and final request body.
@@ -106,6 +110,9 @@ export function streamPriority<const TApi extends PriorityApi>({
    Capture caller customization when options are composed, before registry dispatch can defer it.
    */
   const onPayload = options?.onPayload;
+  /**
+   Composed native options retain all caller fields while enforcing request intent.
+   */
   const priorityOptions = {
     ...options,
     serviceTier: 'priority' as const,
