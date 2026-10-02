@@ -27,6 +27,8 @@ import {
   readCallTiming,
   readRoundTiming,
   readRunTiming,
+  reportStreamProgress,
+  roundLine,
   summariseRounds,
   TimingFieldError,
   TimingLineError,
@@ -37,31 +39,114 @@ import {
 } from '../iso-stamp-text.test-fixture.ts';
 
 //region Fixtures
+// Every fixture in this region that stands for a line the current writers
+// still produce is BUILT BY CALLING THOSE WRITERS (`reportStreamProgress` in
+// `stream-cut.ts`, which returns its own line, and `roundLine` in
+// `stage-round-line.ts`, extracted from `runGatherRound` for exactly this),
+// the way `cap-census.unit.test.ts`'s `streamLine` already does, rather than
+// retyped by hand. Only the logger's own tag-chain prefix is a literal,
+// since neither writer controls or returns it.
 
 /**
- A round line exactly as `runGatherRound` writes it.
+ A round line as a real corpus pass's repair lane writes it for the editor
+ stage, prefix and payload both.
+
+ THE PREFIX IS A TRACED TAG CHAIN, NOT A GUESS (ledger B82). `l` is a
+ `ForeignBorrowed` parameter everywhere between `runGatherRound` and its
+ caller, so `stage-round.ts` adds no tag of its own; the chain actually
+ logged is whichever caller built `l`. Followed from a real corpus pass:
+ `corpus-run/pass-lanes.ts` tags the entry (`tagged({ tag: entryId, },)`);
+ `document-lanes.ts` wraps that with `tagged({ tag: runDocumentLanes.name,
+ },)`; `repair-translation.ts` wraps it again with `tagged({ tag:
+ repairPreparedDocument.name, },)` and, through `sliceTagged`, adds whatever
+ `<lane> slice <n>` the live log context carries around the slice being
+ settled (`log-context.ts`); and `repair-slice-settle.ts`, `repair-chunk.ts`,
+ `repair-editor-stage.ts` and `stage-quorum.ts` each forward that same
+ logger untouched on the way to `runGatherRound`. `tagged`'s own composition
+ puts the outermost wrap's tag closest to the message
+ (`module-logger/src/tagged.ts`), so {@link ROUND_LINE}'s tag order is entry,
+ then `runDocumentLanes`, then `repairPreparedDocument`, then the slice
+ context.
+
+ NO CALLER TAGS A ROUND WITH ITS STAGE NAME. `editor` in the payload is
+ `roundLine`'s own `stage` argument, interpolated into the text, not a
+ logger tag; grepping this package for `tag: 'editor'` finds nothing. The
+ line this fixture replaced had invented an `[editor]` tag that no source
+ file writes.
+
+ THE ENTRY NAME AND SLICE INDEX ARE INVENTED (`Tabby`, slice 3): which entry
+ and which slice is data a real run supplies, not text any source file
+ fixes, so a cat-themed stand-in names them here the way the rest of this
+ module's fixtures are cat-themed.
  */
-const ROUND_LINE = '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
-  + 'editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace';
+const ROUND_LINE = `[info] [2026-08-25T10:00:30.000Z] [Tabby] [runDocumentLanes] [repairPreparedDocument] [repair slice 3] ${
+  roundLine({
+    stage: 'editor',
+    heard: 6,
+    asked: 7,
+    totalMs: 91_402,
+    quorum: {
+      kind: 'stood',
+      toQuorumMs: 61_401,
+      inGraceMs: 30_001,
+    },
+  },)
+}`;
 
 /**
- A round line as `runGatherRound` writes it when quorum never stood (ledger
- P12): no time to quorum and no grace, since the round stopped once every
- ask settled.
+ A round line off the same traced chain as {@link ROUND_LINE}, when quorum
+ never stood (ledger P12): no time to quorum and no grace, since the round
+ stopped once every ask settled.
  */
-const NO_QUORUM_LINE = '[info] [2026-08-25T10:00:40.000Z] [translation-repair] [editor] '
-  + 'editor round: 1/7 heard, 120000ms total, no quorum (1 of 4 needed), every ask settled';
+const NO_QUORUM_LINE = `[info] [2026-08-25T10:00:40.000Z] [Tabby] [runDocumentLanes] [repairPreparedDocument] [repair slice 3] ${
+  roundLine({
+    stage: 'editor',
+    heard: 1,
+    asked: 7,
+    totalMs: 120_000,
+    quorum: {
+      kind: 'never',
+      needed: 4,
+    },
+  },)
+}`;
 
 /**
- A completion line as `reportStreamProgress` writes it since the timing work.
+ A completion line as `reportStreamProgress` writes it since the timing
+ work: the logger's own prefix (`contextRoot({ tag: 'translation-repair',
+ },)` in `stream-cut.ts`, then `tagged({ tag: reportStreamProgress.name,
+ },)`, outside any entry or slice context), then the payload the function
+ itself returns.
  */
-const TIMED_CALL_LINE = '[info] [2026-08-25T10:00:10.000Z] [translation-repair] '
-  + '[reportStreamProgress] stream hf:whiskers: completed, elapsed 10000ms, firstByte 40ms, '
-  + 'maxGap 4ms, 512 raw chars, 0 unreadable frames, 40 content chars, 7 reasoning chars';
+const TIMED_CALL_LINE = `[info] [${WRITTEN_STAMP}] [translation-repair] [reportStreamProgress] ${
+  reportStreamProgress({
+    label: 'hf:whiskers',
+    progress: {
+      firstByteMs: 40,
+      maxGapMs: 4,
+      chars: 512,
+      elapsedMs: 10_000,
+    },
+    unreadableFrames: 0,
+    outcome: 'completed',
+    openingText: '',
+    generatedChars: {
+      content: 40,
+      reasoning: 7,
+    },
+  },)
+}`;
 
 /**
- A completion line as every log written before the timing work carries it, with no
- duration anywhere on it.
+ A completion line as every log written before the timing work carries it,
+ with no duration anywhere on it.
+
+ DELIBERATELY AN OLD LINE SHAPE, kept as a literal rather than built through
+ `reportStreamProgress`: the writer has carried an `elapsed` field on every
+ line since the timing work and has no argument that omits it, so this shape
+ is one `reportStreamProgress` can no longer produce. It stands for an
+ archive written before that work, which `readCallTiming` must still read as
+ `untimed` rather than refuse.
  */
 const UNTIMED_CALL_LINE = '[info] [2026-08-25T10:00:11.000Z] [translation-repair] '
   + '[reportStreamProgress] stream hf:mittens: completed, firstByte 40ms, maxGap 4ms, '
@@ -205,12 +290,15 @@ await describe({
             + 'log still being written ends mid-line, and a round whose grace field was cut off '
             + 'would report a straggler cost of whatever the parse happened to reach',
           fn: async () => {
-            expect(
-              readRoundTiming({
-                line: '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
-                  + 'editor round: 6/7 heard, 91402ms total, 61401ms to q',
-              },).kind,
-            ).toBe('other-line',);
+            /**
+             {@link ROUND_LINE} cut off mid-field, as a log still being
+             written would leave it.
+             */
+            const truncated = ROUND_LINE.slice(
+              0,
+              ROUND_LINE.indexOf(' to quorum',) + ' to q'.length,
+            );
+            expect(readRoundTiming({ line: truncated, },).kind,).toBe('other-line',);
           },
         },),
 
@@ -227,8 +315,8 @@ await describe({
           fn: async () => {
             expect(function readsBroken(): void {
               readRoundTiming({
-                line: '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
-                  + 'editor round: 6/7 heard, ninety total, 61401ms to quorum, 30001ms in grace',
+                // {@link ROUND_LINE} with its total field's unit stripped off.
+                line: ROUND_LINE.replace('91402ms total', 'ninety total',),
               },);
             },).toThrow(Error,);
           },
@@ -240,14 +328,14 @@ await describe({
           fn: async () => {
             expect(function readsWordCount(): void {
               readRoundTiming({
-                line: '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
-                  + 'editor round: six/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace',
+                // {@link ROUND_LINE} with its heard count spelled out.
+                line: ROUND_LINE.replace('6/7 heard', 'six/7 heard',),
               },);
             },).toThrow(Error,);
             expect(function readsNoSlash(): void {
               readRoundTiming({
-                line: '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [editor] '
-                  + 'editor round: 6 heard, 91402ms total, 61401ms to quorum, 30001ms in grace',
+                // {@link ROUND_LINE} with its ratio's slash and asked count dropped.
+                line: ROUND_LINE.replace('6/7 heard', '6 heard',),
               },);
             },).toThrow(Error,);
           },

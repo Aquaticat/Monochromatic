@@ -16,6 +16,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 import { describeAbandon, } from './abandon-kind.ts';
 import { resolveStragglerGraceMs, } from './grace-override.ts';
 import { monotonicMs, } from './monotonic-clock.ts';
+import { roundLine, } from './stage-round-line.ts';
 
 //region Stage round
 // ONE fan-out round, and the rule that a stage never finishes later than its
@@ -533,23 +534,33 @@ export async function runGatherRound<ValueT,>(
    */
   const finishedAt = monotonicMs();
 
-  /**
-   The round's timing after its total: time to quorum and in grace where
-   quorum stood, and that it never stood otherwise (ledger P12). A round that
-   never reaches quorum stops waiting once nothing is pending, so its
-   "quorum" mark is only when the last ask settled, and the grace after it
-   is nothing.
-   */
-  const timing = (heard >= heardNeeded)
-    ? `${String(quorumAt - startedAt,)}ms to quorum, ${String(finishedAt - quorumAt,)}ms in grace`
-    : `no quorum (${String(heard,)} of ${String(heardNeeded,)} needed), every ask settled`;
-
   // IDS, COUNTS AND DURATIONS ONLY, like every other line a corpus run emits:
   // the stage label, the roster size and the clock. A run directory holds
   // unlicensed corpus wording, and this line is written on every gather.
+  //
+  // BUILT THROUGH `roundLine` (`stage-round-line.ts`) rather than assembled
+  // here, so a reader's own test can build this exact text by calling the
+  // same function this call does, instead of retyping its template by hand.
   l.info(
-    `${stage} round: ${String(heard,)}/${String(outcomes.length,)} heard, `
-      + `${String(finishedAt - startedAt,)}ms total, ${timing}`,
+    roundLine({
+      stage,
+      heard,
+      asked: outcomes.length,
+      totalMs: finishedAt - startedAt,
+      // A round that never reaches quorum stops waiting once nothing is
+      // pending, so its "quorum" mark is only when the last ask settled
+      // (ledger P12).
+      quorum: (heard >= heardNeeded)
+        ? {
+          kind: 'stood',
+          toQuorumMs: quorumAt - startedAt,
+          inGraceMs: finishedAt - quorumAt,
+        }
+        : {
+          kind: 'never',
+          needed: heardNeeded,
+        },
+    },),
   );
 
   return outcomes;

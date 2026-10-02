@@ -16063,6 +16063,16 @@ the fixture lines are copies of the writers' templates,
 so a case that builds each line through `stage-round.ts` and `reportStreamProgress` themselves
 would catch a new shape the copies miss.
 
+Landed 2026-10-02 (UTC):
+`runGatherRound`'s line is built by `roundLine` (`stage-round-line.ts`),
+which its own unit test pins for a round whose quorum stood and one whose quorum never did,
+and the run-timing fixtures build every line the current writers still produce through `roundLine` and `reportStreamProgress`.
+Their tag prefix is the chain a real corpus pass logs,
+traced from `corpus-run/pass-lanes.ts` to the round;
+the replaced fixtures carried an `[editor]` tag no caller writes.
+The one line still typed by hand is the pre-timing completion shape,
+which `reportStreamProgress` can no longer produce.
+
 Recurrence:
 a reader of a log line the package itself writes
 reads every shape that writer writes,
