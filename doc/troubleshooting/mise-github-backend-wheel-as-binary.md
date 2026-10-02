@@ -314,6 +314,15 @@ mise exec 'github:openinterpreter/openinterpreter@rust-v0.0.55' -- i --version
 
 ### Narrow asset selection with `matching` (verified)
 
+Status (2026-10-02):
+ applied to `~/.config/mise/config.toml` as the live global entry,
+ with
+ `mise uninstall` of the wheel install,
+ `mise install`,
+ and `mise reshim`;
+ `interpreter --version` and `i --version` both print `interpreter 0.0.55`
+ from the shims.
+
 ```toml
 # ~/.config/mise/config.toml
 [tools]
