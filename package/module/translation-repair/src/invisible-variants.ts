@@ -17,9 +17,13 @@
 //
 // APPLIED AT INTAKE, NOT AT PUBLISH. Both deciders judge the bytes that ship;
 // folding after judging would ship bytes nobody judged. The fold is
-// therefore applied where each lane turns an answer into a candidate, and the
-// corpus pass folds archive English before preparation. Candidate, incumbent,
-// artifact and page all carry bytes the deciders saw.
+// therefore applied where each lane first holds an answer, before any check
+// reads it: the repair lane's wire readers, and `translator-answer-fold.ts`
+// for the translate and consolidation lanes, which until ledger B112 folded
+// only when building the slate, after the publication rule and the floor had
+// read the unfolded answer. The corpus pass folds archive English before
+// preparation. Candidate, incumbent, artifact and page all carry bytes the
+// deciders and the checks saw.
 
 /**
  Code point folded to its visible counterpart, with the reason.

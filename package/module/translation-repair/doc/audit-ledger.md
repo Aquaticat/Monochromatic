@@ -17818,7 +17818,9 @@ which no measurement has looked at.
 Open:
 whether the quote guard should read front matter at all,
 since the declared-name guard beside it skips it;
-whether the floor should read the folded text that ships rather than the text before the fold;
+whether the floor should read the folded text that ships rather than the text before the fold
+(it should,
+and does since B112);
 and,
 once both are settled,
 whether the guard becomes a throwing invariant or keeps a case that reaches it.
@@ -17908,6 +17910,80 @@ Recurrence:
 `mistake-prevention.md`,
 "Copies of shared code"
 and "Globals a case replaces".
+
+### B112: the translate and consolidation lanes checked an answer before folding it
+
+Found 2026-10-02 (UTC) while answering B110's open question about the fold after the floor,
+red in `4092757d3`,
+fixed in the commit adding this entry.
+The invisible-variant fold (U+2011 to a hyphen,
+U+00A0 and U+202F to a space,
+U+00AD,
+U+200B,
+U+2060 and U+FEFF dropped)
+ran in `buildTranslateCandidates`,
+after the publication rule,
+the repair turn and the floor had read each translator's answer as written.
+The consolidation lane read the same way:
+its verdicts before and after the repair round,
+which the validity floor reads,
+saw the unfolded proposal.
+The repair lane folds at its wire readers (`edit-wire.ts`,
+`refine-wire.ts`),
+and `invisible-variants.ts` said each lane folds where an answer becomes a candidate.
+
+What it let through,
+measured against the build of the red commit with `validateTranslatedSlice`:
+a one-paragraph rendering whose middle line holds only U+00A0,
+U+202F or U+200B is valid as written and invalid once folded,
+against a one-paragraph page,
+since a line holding only such a character is no blank line to the parser;
+the one-paragraph and blank-line controls read the same both ways.
+So such an answer passed every check and reached the slate as two paragraphs.
+A disputed wording written with U+2011 for its hyphen passed the disputed-wording check,
+which strips whitespace only,
+and stood on the slate as the refused wording.
+The repair turn's copy check read the unfolded text too,
+so a copy of the incumbent differing only in U+2011 was validated and could be sent back rather than collapsing into it.
+The run caches hold 294 fold findings
+(over every slice cache under the agent runs folder,
+three folders unreadable;
+cached records repeat across copied runs,
+so this counts findings,
+not answers):
+136 single U+2011,
+the rest U+2011,
+U+202F,
+U+00A0 and U+FEFF.
+Which of them changed a verdict is not measured.
+
+The fix folds every answer where the lane first holds it (`translator-answer-fold.ts`):
+after the translate gather,
+after the consolidation gather,
+and an author's revision in the repair turn before its recheck.
+The fold findings move with it,
+from the slate's findings to the producing half's,
+after the gather's.
+`buildTranslateCandidates` folds nothing now and throws `UnfoldedTranslationError` on a voice the fold would still change,
+as B43 and B45 make callers rule out a floor that compared nothing;
+every production caller folds first,
+and the two candidate tests that handed it unfolded voices fold them first.
+`corpus-run/translate-probe.ts` still prints each answer as the model wrote it,
+which is what that probe is for.
+
+The cache versions do not move:
+the cache-account audit with the agent runs added finds the newest of 13,714 records still the one of 04:26 UTC on 2026-09-27,
+and all 7 versions were set after it,
+so the change rides inside each.
+
+Decided for quality and open to veto:
+the throw in `buildTranslateCandidates` rather than a second fold,
+since a second fold would hide a caller that skipped the first,
+and every check before it would then have read other bytes.
+
+Recurrence:
+`mistake-prevention.md`,
+"Checks on the bytes that ship".
 
 ## Process mistakes in this audit
 

@@ -339,11 +339,11 @@ export async function settleTranslateSlice(
   // compares every translator candidate's quoted passages, at every depth,
   // against this same `incumbentText`, read by the same `readPageSkeleton`,
   // so on a Markdown slice a winner that passed the floor carries as many.
-  // The guard still answers where the floor does not read quotes that way:
-  // a front-matter slice, whose floor checks YAML and counts no quotes, and a
-  // winner the invisible-variant fold (`translate-candidates.ts`) changed
-  // after the floor read it. No pinned front matter carries a line Markdown
-  // reads as a quote, and the fold case is unmeasured (ledger B110).
+  // Since ledger B112 the floor reads each answer folded, as it ships, so a
+  // fold after the floor no longer reaches here either. The guard still
+  // answers where the floor does not read quotes that way: a front-matter
+  // slice, whose floor checks YAML and counts no quotes. No pinned front
+  // matter carries a line Markdown reads as a quote (ledger B110).
   if (guardsThisSlice) {
     /**
      Quoted passages on both sides, as the floor reads a page.

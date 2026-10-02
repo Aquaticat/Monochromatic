@@ -18,6 +18,7 @@ import {
 import type { DisputedWording, } from './disputed-wording.ts';
 import { floorTranslateVoices, } from './translate-floor.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
+import { foldTranslatorVoices, } from './translator-answer-fold.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import { writerRoundGraceMs, } from './writer-grace-override.ts';
 import {
@@ -221,6 +222,13 @@ export async function produceTranslateSlate(
   },);
 
   /**
+   Translator replies as they would ship, folded before anything reads them,
+   so the publication rule, the repair turn and the floor judge the bytes the
+   judges see and the page gets (ledger B112).
+   */
+  const intake = foldTranslatorVoices({ voices: gather.voices, },);
+
+  /**
    Candidates after structural validation, with anything that failed handed
    back to its own author.
    
@@ -230,7 +238,7 @@ export async function produceTranslateSlate(
    */
   const repaired = await repairInvalidCandidates({
     client,
-    voices: gather.voices,
+    voices: intake.voices,
     sourceText,
     incumbentText,
     // STATED, NOT DEFAULTED (ledger B29): a translator replaces the incumbent
@@ -281,6 +289,7 @@ export async function produceTranslateSlate(
      */
     findings: [
       ...gather.findings,
+      ...intake.findings,
       ...repaired.findings,
       ...floored.findings,
       ...built.findings,

@@ -25,6 +25,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -32,9 +33,11 @@ import {
 
 import {
   buildTranslateCandidates,
+  foldTranslatorVoices,
   type HeardVoice,
   type RosterModelId,
   type TranslateReportWire,
+  UnfoldedTranslationError,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -275,10 +278,14 @@ await describe({
     },),
 
     it({
-      name: 'FOLDS an invisible variant out of a translation at intake, names it with its author, '
-        + 'and collapses the folded rendering into a plain one that says the same',
+      name: 'COLLAPSES a rendering the intake fold made plain into the plain one that says the same, '
+        + 'and REFUSES a voice that skipped the fold, since every check before the slate then read '
+        + 'bytes that will not ship (ledger B112)',
       fn: async () => {
-        const set = buildTranslateCandidates({
+        /**
+         Both replies as the lane holds them after its intake fold.
+         */
+        const intake = foldTranslatorVoices({
           voices: [
             voiceOf({
               at: 0,
@@ -289,6 +296,9 @@ await describe({
               translation: 'A part-time shop cat.',
             },),
           ],
+        },);
+        const set = buildTranslateCandidates({
+          voices: intake.voices,
           translatorModelIds: TRANSLATORS,
           incumbentText: '',
           lineStructured: false,
@@ -296,28 +306,53 @@ await describe({
 
         expect(set.candidates,).toHaveLength(1,);
         expect(set.candidates[0]?.rendered,).toBe('A part-time shop cat.',);
-        expect(set.findings,).toStrictEqual([
-          `invisible-variant-folded (U+2011 x1) (${TRANSLATORS[0] ?? ''})`,
+        expect(set.findings,).toStrictEqual([],);
+
+        /**
+         What building a slate from the unfolded reply threw.
+         */
+        const refusal = caught(function buildUnfolded(): unknown {
+          return buildTranslateCandidates({
+            voices: [
+              voiceOf({
+                at: 1,
+                translation: 'A part-time shop cat.',
+              },),
+              voiceOf({
+                at: 0,
+                translation: 'A part\u2011time shop cat.',
+              },),
+            ],
+            translatorModelIds: TRANSLATORS,
+            incumbentText: '',
+            lineStructured: false,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(UnfoldedTranslationError,);
+        expect((refusal instanceof UnfoldedTranslationError) ? refusal.modelIds : [],).toStrictEqual([
+          TRANSLATORS[0],
         ],);
       },
     },),
 
     it({
       name: 'OFFERS NO CANDIDATE for a text that shows nothing (ledger B40): a reply of a zero-width space, '
-        + 'which the fold empties, one of a Hangul filler, which no fold touches, and an incumbent or lane '
-        + 'text of invisible characters alone, naming each blank reply with its author',
+        + 'which the intake fold empties, one of a Hangul filler, which no fold touches, and an incumbent '
+        + 'or lane text of invisible characters alone, naming each blank reply with its author',
       fn: async () => {
         const set = buildTranslateCandidates({
-          voices: [
-            voiceOf({
-              at: 0,
-              translation: '\u{200B}',
-            },),
-            voiceOf({
-              at: 1,
-              translation: '\u{3164}',
-            },),
-          ],
+          voices: foldTranslatorVoices({
+            voices: [
+              voiceOf({
+                at: 0,
+                translation: '\u{200B}',
+              },),
+              voiceOf({
+                at: 1,
+                translation: '\u{3164}',
+              },),
+            ],
+          },).voices,
           translatorModelIds: TRANSLATORS,
           incumbentText: '\u{2060}',
           lineStructured: false,

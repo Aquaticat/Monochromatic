@@ -24,6 +24,7 @@ import {
 import { requireComparedVerdict, } from './translate-floor-ground.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
+import { foldTranslation, } from './translator-answer-fold.ts';
 import { sameWording, } from './wording-key.ts';
 
 //region Translate repair
@@ -328,13 +329,22 @@ async function repairOneCandidate(
   }
 
   /**
+   The revision as it would ship, folded before the recheck reads it, as the
+   lane folded the answer it revises (ledger B112).
+   */
+  const revision = foldTranslation({
+    modelId: voice.modelId,
+    translation,
+  },);
+
+  /**
    Whether the revision actually resolved what was found, a pass or a
    refusal on the ground the first verdict was read on.
    */
   const rechecked = requireComparedVerdict({
     verdict: validateTranslatedSlice({
       sourceText,
-      candidateText: translation,
+      candidateText: revision.translation,
       pageText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
@@ -352,6 +362,7 @@ async function repairOneCandidate(
       ...((contributorViolation) ? {} : { voice, }),
       findings: [
         ...found,
+        ...revision.findings,
         `translate-repair-unresolved (${voice.modelId}): ${explanation}`,
       ],
     };
@@ -360,10 +371,11 @@ async function repairOneCandidate(
   return {
     voice: {
       modelId: voice.modelId,
-      value: { translation, },
+      value: { translation: revision.translation, },
     },
     findings: [
       ...found,
+      ...revision.findings,
       `translate-repair-revised (${voice.modelId})`,
     ],
   };

@@ -17,6 +17,7 @@ import {
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
+import { foldTranslatorVoices, } from './translator-answer-fold.ts';
 import { writerRoundGraceMs, } from './writer-grace-override.ts';
 import {
   isTranslateReportWire,
@@ -155,6 +156,13 @@ export async function produceConsolidations(
   },);
 
   /**
+   Proposals as they would ship, folded before anything reads them, so the
+   verdicts, the repair round and the validity floor judge the bytes the
+   judges see and the page gets (ledger B112).
+   */
+  const intake = foldTranslatorVoices({ voices: gather.voices, },);
+
+  /**
    Checks one proposal against the page it would be written into.
    
    @param voice - proposal to check
@@ -185,7 +193,7 @@ export async function produceConsolidations(
   /**
    Verdicts as the roster first answered.
    */
-  const validityBefore = gather.voices
+  const validityBefore = intake.voices
     .map(checkVoice,);
 
   // SENT BACK TO ITS OWN AUTHOR rather than dropped, which is the treatment an
@@ -196,7 +204,7 @@ export async function produceConsolidations(
    */
   const repaired = await repairInvalidCandidates({
     client,
-    voices: gather.voices,
+    voices: intake.voices,
     sourceText: subject.sourceText,
     incumbentText: standingText,
     pageText: subject.incumbentText,
@@ -219,6 +227,7 @@ export async function produceConsolidations(
     validityBefore,
     findings: [
       ...gather.findings,
+      ...intake.findings,
       ...repaired.findings,
     ],
   };

@@ -34,6 +34,14 @@ export {
   foldInvisibleVariants,
 } from './invisible-variants.ts';
 export {
+  type FoldedTranslation,
+  type FoldedVoices,
+  foldTranslation,
+  foldTranslatorVoices,
+  requireFoldedVoices,
+  UnfoldedTranslationError,
+} from './translator-answer-fold.ts';
+export {
   type DocumentLanesResult,
   runDocumentLanes,
 } from './document-lanes.ts';

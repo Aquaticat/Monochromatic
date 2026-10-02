@@ -1019,6 +1019,37 @@ the polish round,
 the lane offer,
 the repair turn's copy check and the archive block review each hold a layout-only twin.
 
+## Checks on the bytes that ship
+
+What happened:
+the translate and consolidation lanes folded invisible variants only when building the slate,
+after the publication rule,
+the repair turn and the floor had read each answer as the model wrote it (ledger B112).
+A line holding only a no-break space is no blank line to the page parser,
+so an answer in two paragraphs passed against a one-paragraph page and shipped as two;
+a disputed wording written with a non-breaking hyphen passed the disputed-wording check
+and stood on the slate as that wording once folded.
+The repair lane had folded at its wire readers all along,
+and the fold module's header said every lane folded where an answer becomes a candidate,
+which was true and was the wrong place.
+
+The rule:
+a change made to a model's answer before it ships is made where the lane first holds the answer,
+before any check reads it,
+so every check reads the bytes that ship.
+A step that must change the text after the checks (a wrap)
+is held by a test to layout alone,
+or the checks run again after it.
+A module that says where it is applied names each call site,
+and a lane that starts reading a wire adds itself there.
+
+What enforces it:
+`translator-answer-fold.unit.test.ts` drives the translate slate,
+the consolidation and the repair turn with an answer whose hidden paragraph break only the fold reveals,
+and the translate slate with a disputed wording carrying a non-breaking hyphen;
+`buildTranslateCandidates` throws `UnfoldedTranslationError` on a voice the fold would still change,
+which `translate-candidates-collapse.unit.test.ts` holds.
+
 ## Which seats a quorum counts
 
 What happened:

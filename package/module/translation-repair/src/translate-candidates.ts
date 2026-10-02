@@ -3,14 +3,11 @@ import {
   mergeProducers,
   producerModelIds,
 } from './candidate-select-model.ts';
-import {
-  type FoldedText,
-  foldInvisibleVariants,
-} from './invisible-variants.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
+import { requireFoldedVoices, } from './translator-answer-fold.ts';
 import { wordingKey, } from './wording-key.ts';
 
 //region Translate candidate assembly
@@ -126,7 +123,9 @@ export type TranslateCandidateSet = {
  paragraph's soft line breaks fall (ledger B26). A model whose rendering is
  the incumbent's in all but those is reported as matching it.
 
- @param voices - heard translator replies in arrival order
+ @param voices - heard translator replies in arrival order, each folded where
+ its lane first held it (`foldTranslatorVoices`), so every check before this
+ read the bytes that ship
 
  @param translatorModelIds - roster, fixing candidate order
 
@@ -141,6 +140,10 @@ export type TranslateCandidateSet = {
  eligible (class forty, 2026-09-17); none on a translate slate
 
  @returns Distinct candidates, how many collapsed, and what that revealed
+
+ @throws {@link import('./translator-answer-fold.ts').UnfoldedTranslationError}
+ when a voice arrives with a translation the fold would still change, which
+ every lane's intake rules out (ledger B112)
 
  @example
  ```ts
@@ -174,21 +177,12 @@ export function buildTranslateCandidates(
       - translatorModelIds.indexOf(right.modelId,);
   },);
 
-  /**
-   Every translator's reply with its translation folded at intake, so the
-   judges see the bytes that would ship and the blank test reads them
-   too.
-   */
-  const foldedReplies = ordered.map(function foldedVoice(voice,): {
-    readonly voice: HeardVoice<TranslateReportWire>;
-    readonly fold: FoldedText;
-  } {
-    return {
-      voice,
-      fold: foldInvisibleVariants({ text: voice.value
-        .translation, },),
-    };
-  },);
+  // FOLDED BEFORE THIS, NOT HERE (ledger B112). Each lane folds an answer
+  // where it first holds it (`translator-answer-fold.ts`), so the publication
+  // rule, the repair turn and the floor read the bytes the judges see and the
+  // page gets. A voice the fold would still change means a caller skipped
+  // that, and the checks before this read other bytes; it is refused.
+  requireFoldedVoices({ voices: ordered, },);
 
   // A BACKSTOP SINCE THE WIRE GUARD TIGHTENED, asked of the FOLDED bytes. The
   // guard refuses a reply that shows nothing, so the ordinary path brings
@@ -200,19 +194,17 @@ export function buildTranslateCandidates(
   /**
    Translators that answered with nothing to ship.
    */
-  const blank = foldedReplies
-    .filter(function isBlank({ fold, },): boolean {
-      return rendersAsNothing({ text: fold.text, },);
-    },)
-    .map(function voiceOf({ voice, },): HeardVoice<TranslateReportWire> {
-      return voice;
-    },);
+  const blank = ordered.filter(function isBlank(voice,): boolean {
+    return rendersAsNothing({ text: voice.value
+      .translation, },);
+  },);
 
   /**
-   Translators that proposed text, folded.
+   Translators that proposed text.
    */
-  const folded = foldedReplies.filter(function isUsable({ fold, },): boolean {
-    return !rendersAsNothing({ text: fold.text, },);
+  const folded = ordered.filter(function isUsable(voice,): boolean {
+    return !rendersAsNothing({ text: voice.value
+      .translation, },);
   },);
 
   /**
@@ -263,20 +255,19 @@ export function buildTranslateCandidates(
           rendered: laneText.text,
         };
       },),
-    ...folded.map(function toCandidate({
-      voice,
-      fold,
-    },): Candidate<TranslateCandidateValue> {
+    ...folded.map(function toCandidate(voice,): Candidate<TranslateCandidateValue> {
       return {
         producer: {
           kind: 'model',
           modelId: voice.modelId,
         },
         value: {
-          text: fold.text,
+          text: voice.value
+            .translation,
           origin: 'fresh',
         },
-        rendered: fold.text,
+        rendered: voice.value
+          .translation,
       };
     },),
   ];
@@ -338,16 +329,6 @@ export function buildTranslateCandidates(
       },),
       ...matchedIncumbent.map(function toMatchFinding(modelId,): string {
         return `translate-matched-incumbent (${modelId})`;
-      },),
-      ...folded.flatMap(function toFoldFindings({
-        voice,
-        fold,
-      },): readonly string[] {
-        return fold
-          .findings
-          .map(function named(finding,): string {
-            return `${finding} (${voice.modelId})`;
-          },);
       },),
     ],
   };
