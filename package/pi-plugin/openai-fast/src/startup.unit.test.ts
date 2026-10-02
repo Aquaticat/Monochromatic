@@ -15,8 +15,8 @@ import { HOST_TOKEN, } from './host-fixture-provider.ts';
 
 //region Startup discovery uses the built default factory, never manual registration.
 
-await describe({ name: 'built default extension startup', children: [
-  it({ name: 'discovers both fast namespaces through pi list-models without inference or personal settings', fn: async function startupDiscovery() {
+await describe({ name: 'built default extension startup', children: ['both', 'native', 'legacy', 'none',].map(function configurationCase(configuration,) {
+  return it({ name: `shows fast providers only for configured sources: ${configuration}`, fn: async function startupDiscovery() {
     /** Every child-created file stays in this fixture's independently disposable home. */
     await using home = await fixtureHome();
     /** Resolved host entry anchors the installed CLI and its native resource directory. */
@@ -25,9 +25,13 @@ await describe({ name: 'built default extension startup', children: [
     const extension = fileURLToPath(new URL('../dist/final/node/index.mjs', import.meta.url,),);
     /** A shared model ID detects missing registration for either independent namespace. */
     const model = fixtureModel({ id: 'startup-openai-fixture', },);
+    /** Native and legacy configuration are independent inputs to availability. */
+    const nativeConfigured = (configuration === 'both') || (configuration === 'native');
+    /** Legacy readiness must not be inferred from the native provider's authentication. */
+    const legacyConfigured = (configuration === 'both') || (configuration === 'legacy');
     await writeFile(home.modelsPath, JSON.stringify({ providers: {
-      [CODEX_PROVIDER]: { apiKey: HOST_TOKEN, models: [model,], },
-      [OPENAI_PROVIDER]: { apiKey: 'sk-startup-fixture', models: [{ ...model, api: 'openai-responses',
+      [CODEX_PROVIDER]: { ...(legacyConfigured ? { apiKey: HOST_TOKEN, } : {}), models: [model,], },
+      [OPENAI_PROVIDER]: { ...(nativeConfigured ? { apiKey: 'sk-startup-fixture', } : {}), models: [{ ...model, api: 'openai-responses',
         provider: OPENAI_PROVIDER, baseUrl: 'https://api.openai.com/v1', },], },
     }, },),);
     await writeFile(join(home.agentDir, 'settings.json',), JSON.stringify({ packages: [],
@@ -38,17 +42,22 @@ await describe({ name: 'built default extension startup', children: [
       '--no-skills', '--no-themes', '--no-prompt-templates', '--no-context-files',
       '--list-models', model.id,], {
       cwd: home.cwd, timeout: 15_000, maxBuffer: 1_048_576, encoding: 'utf8',
-      env: { ...process.env, HOME: home.root, PI_CODING_AGENT_DIR: home.agentDir,
+      env: { PATH: process.env.PATH ?? '', HOME: home.root, PI_CODING_AGENT_DIR: home.agentDir,
         PI_PACKAGE_DIR: fileURLToPath(new URL('../', hostEntry,),), PI_OFFLINE: '1', },
     },);
     if (result.error !== undefined)
       throw result.error;
     expect(result.status,).toBe(0,);
-    expect(result.stdout,).toContain('openai-fast',);
-    expect(result.stdout,).toContain('openai-codex-fast',);
-    expect(result.stdout,).toContain(model.id,);
+    /** Real CLI rows expose precisely the available provider identities. */
+    const providers = result.stdout.split('\n',).map(function providerColumn(line,) {
+      return line.trim().split(/\s+/u,)[0];
+    },);
+    expect(providers.includes(OPENAI_PROVIDER,),).toBe(nativeConfigured,);
+    expect(providers.includes(CODEX_PROVIDER,),).toBe(legacyConfigured,);
+    expect(providers.includes('openai-fast',),).toBe(nativeConfigured,);
+    expect(providers.includes('openai-codex-fast',),).toBe(legacyConfigured,);
     expect(result.stderr,).toBe('',);
-  }, timeout: 30_000, },),
-], },);
+  }, timeout: 30_000, },);
+},), },);
 
 //endregion Startup discovery.
