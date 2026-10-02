@@ -311,6 +311,36 @@ await describe({
         },),
 
         it({
+          name: 'GOES BACK TO A REFUSER THE BUDGETS GAVE NO HOLD, at once, when only the routing refusal reads it '
+            + 'dry: a hold of nothing has already ended, so the refuser is back (ledger B124; Uekawakuyuurei, '
+            + '2026-09-04: 166 calls ended "every provider dry" while Synthetic\'s meter read wet)',
+          fn: async () => {
+            /**
+             The refuser wet by meter and unheld, the others dry by meter.
+             */
+            const refuserBack: BudgetView = {
+              synthetic: false,
+              hyper: true,
+              bedrock: true,
+              openrouter: true,
+            };
+            const { budgets, reads, holdAsks, } = scriptedBudgets({
+              views: [refuserBack,],
+              holds: NO_HOLDS,
+            },);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              signal: SIGNAL,
+              refused: 'synthetic',
+              pollMs: 1,
+            },),).toEqual(refuserBack,);
+            expect(reads.count,).toBe(1,);
+            expect(holdAsks.count,).toBe(0,);
+          },
+        },),
+
+        it({
           name: 'ENDS THE RUN when every provider reads dry with no hold to wait out, and when they still '
             + 'read dry after the shortest hold ended, waiting at most once',
           fn: async () => {
