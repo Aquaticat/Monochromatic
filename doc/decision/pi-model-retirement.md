@@ -29,10 +29,17 @@ One package, `package/pi-plugin/model-retirement`, filters the catalog at `sessi
 the earliest point an extension can read it, by re-registering each affected provider with
 the models it keeps.
 
-Registration carries every kept model of all three types, because `ModelRegistry.getAll()`
-reports chat models only, and it spreads the incumbent configuration underneath, so a
-provider another extension registered keeps its `api`, `baseUrl`, `apiKey`, `headers`,
-`oauth`, and `streamSimple`.
+Filtering picks a mechanism per provider. Where `getRegisteredProviderConfig` returns a
+configuration, the pass registers a configuration carrying every kept model of all three
+types, because `ModelRegistry.getAll()` reports chat models only; pi merges defined values
+over the previous registration, so that owner's `apiKey`, `oauth`, and `streamSimple`
+survive. Everywhere else the pass wraps the composed provider from `getProvider` and
+registers the wrapper, which spreads the original object and replaces only its model
+listing. Wrapping needs no endpoint metadata, loses no model field, and filters live, so a
+catalog refresh is filtered on the next read.
+
+A provider is skipped only when pi exposes neither a configuration nor a composed provider
+for it.
 
 Retirement is decided from model ids alone.
 A family is one provider, one API, and one name shape, where the name shape is every
@@ -81,6 +88,13 @@ use.
 That helper also treats 4-digit snapshots as versions, takes only the first digit run of a
 token, and discards leading zeros.
 
+Rebuilding configurations for every provider, with no wrapper path.
+Rejected on measurement: it left four of thirty-nine providers unfiltered, because pi
+throws when a model definition resolves no `baseUrl`, which is true of all 44
+`azure-openai-responses` chat models, and returns no configuration for a provider another
+extension registered as a native object, which is how `hyper`, `openai-fast`, and
+`openai-codex-fast` appear.
+
 A curated `keep` list for known false positives.
 Rejected in favor of abstention, which needs no curation and errs toward keeping models.
 
@@ -89,10 +103,12 @@ Rejected as impossible: the factory argument exposes no catalog read at all.
 
 ## Consequences
 
-Measured in the real host after installation: chat models 1677 to 1109, 597 retirements
-across 35 providers, image 57 and classifier 15 unchanged, `openai-codex/gpt-6-luna`
-keeping its overridden 750000 context window in the disposable host, `radius` keeping
+Measured in the real host after installation: chat models 1677 to 1080, 597 retirements
+across all 39 providers with retirements, no provider skipped, image 57 and classifier 15
+unchanged, `azure-openai-responses` filtered through the wrapper path, `radius` keeping
 `streamSimple`, `synthetic` keeping its credentials, and no `extension_error` record.
+The disposable host confirms `openai-codex/gpt-6-luna` keeps its overridden 750000 context
+window through filtering.
 
 `models.json` overrides cannot be lost by re-registration, because pi applies them after
 extension model replacement (`dist/core/provider-composer.js:337-353`).
@@ -102,13 +118,13 @@ Accepted costs:
 - `pi --list-models` fires no extension event, so it keeps printing the unfiltered catalog.
 - Startup model resolution precedes the filter, so a session can start on a retired model
   and keeps running on it; the pass warns and does not switch.
-- Four providers are unfilterable today: `azure-openai-responses` for a missing `baseUrl`,
-  and `hyper`, `openai-fast`, and `openai-codex-fast` as native registrations pi will not
-  describe.
-- Per-model `headers` are dropped by `extensionModelFromDefinition`, which affects
-  `github-copilot` and `nvidia` in the bundled catalog and neither in the live set.
-- A catalog refresh mid-session can reintroduce retired models, since pi exposes no
-  model-changed event; the filter reapplies at the next session start.
+- Per-model `headers` are dropped on the configuration path, because
+  `extensionModelFromDefinition` sets them to `undefined`. The wrapper path preserves them
+  by passing model objects through by reference. In the bundled catalog only
+  `github-copilot` and `nvidia` carry per-model headers, and neither is in the live set.
+- A catalog refresh mid-session is filtered on the next read for wrapped providers, but a
+  configuration-registered provider keeps its snapshot until the next session start, since
+  pi exposes no model-changed event.
 - With no override, a wrong retirement is recoverable only by rebuilding or removing the
   package.
 
@@ -119,8 +135,8 @@ reviewed and the fixture is regenerated with
 Pi's extension API carries no stability guarantee and its changelog records 59 breaking
 changes, so that fixture and the two verification tasks are the early-warning system.
 
-Still open, recorded in `doc/planning/pi-model-retirement.md`: whether skip warnings should
-stay at warn for every session, whether `radius` belongs in scope given it serves advisor
-and MCP rather than interactive picks, whether `hyper`'s owner should register a
-configuration pi can return, and whether the fixture should also record the pi and pi-ai
-versions it was generated against.
+Still open, recorded in `doc/planning/pi-model-retirement.md`: whether `radius` belongs in
+scope given it serves advisor and MCP rather than interactive picks, whether `hyper`'s owner
+should register a configuration pi can return so that provider takes the configuration path
+too, and whether the fixture should also record the pi and pi-ai versions it was generated
+against.

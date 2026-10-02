@@ -399,24 +399,23 @@ defaults rather than settled decisions.
    `ProviderClassifierModelConfig` requires `contextWindow`
    (`dist/core/extensions/types.d.ts:1422-1470`).
    A chat-only mapping would silently break `codemode` classifiers and image routes.
-2. A mid-session catalog refresh can reintroduce retired models.
+2. A mid-session catalog refresh can reintroduce retired models on the configuration path.
    `ModelRegistry.refresh()` reloads `models.json`
    (`dist/core/model-registry.d.ts:25`) and pi fetches a remote overlay from pi.dev on
    a 4-hour interval (`dist/core/remote-catalog-provider.js:5,49,76`).
    No `modelsChanged` event exists, so nothing notifies the extension.
-   Mitigation: re-run the filter on every registry-carrying event that is cheap to
-   handle, and accept that a refresh between two such events leaves retired entries
-   visible until the next one.
-3. Per-model headers are dropped.
+   The wrapper path is immune, because it filters on every read of the original listing
+   rather than from a snapshot; the configuration path is not, and needs the next session
+   start.
+3. Per-model headers are dropped on the configuration path.
    `extensionModelFromDefinition` returns `{ ...definition, api, provider, baseUrl,
    headers: undefined }` for all three model types
    (`dist/core/provider-composer.js:119-136`).
    Measured exposure in the bundled catalog: `github-copilot` 34 models and `nvidia`
    19, neither in the live set.
-   The extension-registered providers `synthetic`, `hyper`, and `openai-codex-fast`
-   cannot be inspected from the bundled catalog and must be checked in an
-   authenticated host probe.
-   Provider-level headers survive, since `ProviderConfig.headers` is passed through.
+   The wrapper path preserves them, since it passes model objects through by reference.
+   Provider-level headers survive both paths, since `ProviderConfig.headers` is passed
+   through.
 4. Whole-list replacement.
    `applyExtension` discards every model not present in the extension's list, so a
    partial read deletes models.
@@ -524,19 +523,20 @@ Pi stores a local package path relative to the home directory, so the recorded e
 `../../../../var/home/user/Monochromatic/package/pi-plugin/model-retirement`, the same form
 the existing `openai-fast` entry uses; `pi remove` accepts the absolute path anyway.
 
-One pass in the real host after installation: chat models 1677 to 1109, 597 retirements
-across 35 providers, 4 skipped with a warning each, image 57 and classifier 15 unchanged,
-`radius` keeping `streamSimple`, `synthetic` keeping its credentials, and no
-`extension_error` record.
+One pass in the real host after installation: chat models 1677 to 1080, 597 retirements
+across all 39 providers with retirements, no provider skipped, image 57 and classifier 15
+unchanged, `azure-openai-responses` filtered through the wrapper path, `radius` keeping
+`streamSimple`, `synthetic` keeping its credentials, and no `extension_error` record.
 
 Source modules: `id-tokens.ts` (tokenizer and date classification), `retirement-order.ts`
 (recency ordering and the `UNORDERED` sentinel), `retirement-rule.ts` (family grouping and
-the decision), `registration-gap.ts` (per-model endpoint validation and the model-config
-mapping), `provider-filter.ts` (planning), `retirement-report.ts` (log wording),
-`register-model-retirement.ts` (the session-start pass), `index.ts` (entry point),
-`disposable-host.ts` and `verify-host.ts` (the gated host task), `verify-probe.ts` (the
-companion probe pi loads from source), and `mise.verify-extension.ts` (the built-artifact
-check).
+the decision), `retired-index.ts` (per-provider retired identities), `registration-gap.ts`
+(per-model endpoint validation and the model-config mapping), `provider-wrapper.ts` (the
+wrapping mechanism), `provider-filter.ts` (planning and mechanism choice),
+`retirement-report.ts` (log wording), `register-model-retirement.ts` (the session-start
+pass), `index.ts` (entry point), `disposable-host.ts` and `verify-host.ts` (the gated host
+task), `verify-probe.ts` (the companion probe pi loads from source), and
+`mise.verify-extension.ts` (the built-artifact check).
 
 Checks, all green: oxlint reports 0 warnings and 0 errors across the package, `tsc`
 reports no errors, 22 unit and characterization groups pass against the built bundle,
@@ -544,38 +544,47 @@ reports no errors, 22 unit and characterization groups pass against the built bu
 The characterization fixture pins 1604 catalog entries, 551 retirements, and the
 abstention tally, and was shown to fail by mutating the pinned count before restoring it.
 
-### Defect the real host caught
+### Two defects the real host caught
 
-The disposable host could not see it, because it loads no other packages.
-In the real host, `radius` is registered by another package with a `streamSimple` handler,
-and `hyper`, `openai-fast`, and `openai-codex-fast` are native provider objects whose
-configuration `getRegisteredProviderConfig` does not return.
-Re-registering any of them with only a model list replaces that owner's streaming and
-auth, and `radius` was already being filtered.
+The disposable host could not see either, because it loads no other packages.
 
-The planner now skips a provider that pi lists in `getRegisteredProviderIds()` but exposes
-no configuration for, and spreads the incumbent configuration under the filtered model
-list when there is one, so `api`, `baseUrl`, `apiKey`, `headers`, `oauth`, and
-`streamSimple` survive.
-Endpoint validation also accepts provider-level `api` and `baseUrl` as fallbacks, matching
-how pi resolves them.
+The first was a missing endpoint. In the real host, pi threw
+`Provider azure-openai-responses: "baseUrl" is required when defining custom models`, the
+pass aborted at the third provider, and only 83 of 538 retirements applied. Plans are now
+validated per provider and each registration is isolated, so one failure cannot stop the
+rest.
+
+The second was ownership. `radius` is registered by another package with a `streamSimple`
+handler, and `hyper`, `openai-fast`, and `openai-codex-fast` are native provider objects
+whose configuration `getRegisteredProviderConfig` does not return. Re-registering any of
+them with only a model list replaces that owner's streaming and auth, and `radius` was
+already being filtered when this was found.
+
+The first response was to spread the incumbent configuration and skip what pi would not
+describe, which cost four skipped providers. The better response was to notice that
+`ModelRegistry.getProvider` returns a composed provider for every provider, and that
+`pi.registerProvider` also accepts a whole `Provider` object, which
+`registerNativeProvider` stores ahead of the builtin (`dist/core/model-runtime.js:626-634`,
+`dist/core/model-runtime.js:152`). Wrapping that object and replacing only its model
+listing needs no endpoint metadata, loses no model field, keeps per-model headers, keeps
+auth and streaming by reference, and filters live rather than from a snapshot.
+
+So the planner now merges a configuration where pi exposes one, because pi merges defined
+values over the previous registration (`dist/core/model-runtime.js:656-673`), and wraps
+everywhere else, falling back to wrapping when a configuration path cannot re-declare a
+model. Skipping is left only for a provider pi describes nowhere.
 
 Measured in the real host, before and after one pass:
 
+- No provider skipped: 597 retirements across all 39 providers with retirements, and no
+  warning lines.
+- Chat models 1677 to 1080. Image 57 and classifier 15 unchanged.
+- `azure-openai-responses` filtered through the wrapper path, with its retired `gpt-4.1`
+  gone and its keeper `gpt-5.5` present.
 - `radius` configuration: 2 keys with `streamSimple`, then 3 keys with `streamSimple`.
   The added key is the filtered model list.
 - `synthetic` configuration: 4 keys before and after, credentials intact.
-- `hyper`: absent configuration, skipped rather than clobbered.
-- Chat models 1677 to 1110. Image 57 and classifier 15 unchanged.
-- 597 retirements across 35 providers, with 4 providers skipped: `azure-openai-responses`
-  for a missing `baseUrl`, and `hyper`, `openai-codex-fast`, and `openai-fast` as native
-  registrations.
 - No `extension_error` record from pi.
-
-An earlier real-host run, before per-provider isolation existed, showed why the skip
-matters: pi threw `Provider azure-openai-responses: "baseUrl" is required when defining
-custom models`, the pass aborted at the third provider, and only 83 of 538 retirements
-applied.
 
 ### Override risk, closed
 

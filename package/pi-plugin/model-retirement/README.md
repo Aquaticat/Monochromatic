@@ -16,12 +16,16 @@ Design, measurements, and every rejected alternative:
   through `getModelsOfType`, because `getAll()` reports chat models only.
 - Groups entries into families by provider, API, and name shape, then keeps the newest
   member of each family and retires the rest.
-- Re-registers a provider only when it loses at least one model, carrying every kept
-  model of all three types plus all of its metadata: `contextWindow`, `maxTokens`,
-  `reasoning`, `thinkingLevelMap`, `promptCache`, `compat`, `samplingParams`, and
-  `inputLimits`.
-- Spreads the incumbent configuration of a provider another extension registered, so its
-  `api`, `baseUrl`, `apiKey`, `headers`, `oauth`, and `streamSimple` survive the pass.
+- Filters a provider only when it loses at least one model, and picks a mechanism per
+  provider.
+- Merges a configuration where pi exposes one, carrying every kept model of all three
+  types plus all of its metadata: `contextWindow`, `maxTokens`, `reasoning`,
+  `thinkingLevelMap`, `promptCache`, `compat`, `samplingParams`, and `inputLimits`. Pi
+  merges defined values over the previous registration, so that owner's `apiKey`,
+  `oauth`, and `streamSimple` survive.
+- Wraps the composed provider object otherwise, replacing only its model listing. That
+  needs no endpoint metadata, loses no model field, keeps per-model `headers`, and
+  filters live, so a catalog refresh mid-session is filtered on the next read.
 - Logs one summary line per session, one debug line per retirement, and one warning per
   provider it could not filter.
 - Warns when the session started on a model this pass retired, naming the successor.
@@ -76,30 +80,30 @@ costs a single row in the picker.
 Measured over pi-ai's bundled catalog of 1604 entries: 551 retirements, 29 abstentions,
 and no retirement whose keeper is not strictly newer.
 
-## Providers it cannot filter
+## How each provider is filtered
 
-Two rules keep the pass from breaking providers it does not own.
+Pi offers two ways to change a provider's models, and the planner picks per provider.
 
-A provider another extension registered as a native object is skipped. Pi lists those
-providers in `getRegisteredProviderIds()` but returns no configuration for them, so
-re-registering one would replace its streaming, auth, and image handlers with a plain
-catalog list.
+Where `getRegisteredProviderConfig` returns a configuration, the pass registers a
+configuration: pi merges defined values over the previous registration, so the owner's
+`apiKey`, `oauth`, and `streamSimple` survive, and the filtered list carries every kept
+model of all three types because `getAll()` reports chat models only.
 
-A provider whose models cannot all be re-declared is skipped. Pi throws when a model
-definition resolves neither an `api` nor a `baseUrl`, counting the provider-level values
-as fallbacks, and one throw would abort the whole pass, so every plan is validated first.
+Everywhere else the pass wraps the composed provider from `getProvider` and registers the
+wrapper, which spreads the original object and replaces only `getModels` and
+`getAllModels`. That covers providers another extension registered as native objects, whose
+configuration pi will not return, and builtins whose models carry no `baseUrl`, which a
+configuration registration cannot re-declare because pi throws.
 
-Measured in the real host: 597 retirements applied across 35 providers, with 4 skipped.
-`azure-openai-responses` was skipped because all 44 of its chat models carry an empty
-`baseUrl`, and `hyper`, `openai-codex-fast`, and `openai-fast` were skipped as native
-registrations.
-The same run left `radius` with its `streamSimple` handler and `synthetic` with its
-credentials, which is what the incumbent-configuration rule buys.
+A provider is skipped only when pi exposes neither a configuration nor a composed provider
+for it. Measured in the real host: no provider is skipped, and all 39 providers with
+retirements are filtered.
 
-Per-model `headers` do not survive re-registration: pi's `extensionModelFromDefinition`
-sets them to `undefined` for all three model types. In the bundled catalog only
-`github-copilot` (34 models) and `nvidia` (19) carry per-model headers, and neither is
-in the live set on this machine.
+Per-model `headers` survive the wrapper path, which passes model objects through by
+reference. The configuration path loses them, because pi's `extensionModelFromDefinition`
+sets `headers` to `undefined` for all three model types; in the bundled catalog only
+`github-copilot` (34 models) and `nvidia` (19) carry per-model headers, and neither is in
+the live set on this machine.
 
 ## Logging
 
@@ -120,6 +124,12 @@ only two surfaces for the retirement table.
 Installed into global pi settings on 2026-10-02: the `packages` array went from 17 entries
 to 18, the new entry was appended last, no existing entry was removed, and no other setting
 changed.
+
+One pass in the real host after installation: chat models 1677 to 1080, 597 retirements
+across all 39 providers with retirements, no provider skipped, image 57 and classifier 15
+unchanged, `azure-openai-responses` filtered through the wrapper path, `radius` keeping its
+`streamSimple` handler, `synthetic` keeping its credentials, and no `extension_error` record
+from pi.
 
 Build the package, then install it by its repository path:
 
@@ -148,13 +158,6 @@ If you script the install, snapshot `~/.pi/agent/settings.json` before and after
 on any change outside the `packages` array, the way
 `package/pi-plugin/openai-fast/mise.toml` guards its `install:global` task.
 
-## Installed behavior, measured
-
-One pass in the real host after installation: chat models 1677 to 1109, 597 retirements
-across 35 providers, 4 providers skipped with a warning each, image 57 and classifier 15
-unchanged, `radius` keeping its `streamSimple` handler, `synthetic` keeping its
-credentials, and no `extension_error` record from pi.
-
 ## Tasks
 
 - `build`, `build:js`, `build:js:node`, `watch:build`, `watch:build:js`,
@@ -177,8 +180,10 @@ extension loaded. A probe extension loads before the built one and snapshots the
 registry at `session_start`, before filtering, and at `resources_discover`, after it.
 The run asserts that the chat catalog shrank, that a retired id disappeared, that the
 family winner survived, that the `models.json` override still reports 750000 rather
-than the bundled 272000, that thinking levels survived, and that image and classifier
-counts did not move.
+than the bundled 272000, that thinking levels survived, that image and classifier
+counts did not move, that a provider whose models carry no `baseUrl` was filtered
+through the wrapper path while keeping its own family winner, and that no provider was
+skipped. Fourteen assertions in total.
 The same probe, run against the real agent directory, is what reported the incumbent
 configuration key counts before and after filtering.
 
@@ -192,9 +197,9 @@ until the diff is reviewed and the fixture is regenerated with
 - Pi's extension API carries no stability guarantee, and its changelog records 59
   breaking changes. The characterization suite and both verification tasks exist to
   catch that early.
-- A catalog refresh during a session can reintroduce retired models. Pi fetches a remote
-  overlay every four hours and exposes no model-changed event, so the filter reapplies
-  at the next session start.
+- The wrapper path filters live, so a catalog refresh mid-session is filtered on the next
+  read. The configuration path filters a snapshot, so a refresh can reintroduce retired
+  models there until the next session start. Pi exposes no model-changed event either way.
 - Filtering happens after pi chooses the startup model, so a session can begin on a
   retired model. Today's configured default survives the rule; the exposure begins when
   a default drifts onto a retired id.

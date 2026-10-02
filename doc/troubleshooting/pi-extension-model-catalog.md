@@ -129,6 +129,49 @@ registered through the configuration form. A provider registered as a native obj
 appears in `getRegisteredProviderIds()` but has no readable configuration, so an extension
 that re-registers it replaces the owner's implementation with a plain catalog list.
 
+### Two mutation paths exist, and the native one takes precedence
+
+`ModelRuntime` keeps extension registrations in two maps, and composition prefers the
+native one (`dist/core/model-runtime.js:152`):
+
+```js
+const base = this.nativeExtensionProviders.get(providerId) ?? this.builtins.get(providerId);
+```
+
+`registerNativeProvider` fills that map from a whole `Provider` object
+(`dist/core/model-runtime.js:626-634`):
+
+```js
+registerNativeProvider(provider) {
+    if (!provider.id.trim())
+        throw new Error("Provider id must not be empty.");
+    this.extensionProviders.delete(provider.id);
+    this.nativeExtensionProviders.set(provider.id, provider);
+    this.recomposeProvider(provider.id);
+```
+
+The configuration form merges instead of replacing, and deletes any native registration
+(`dist/core/model-runtime.js:656-673`):
+
+```js
+this.nativeExtensionProviders.delete(providerId);
+// Re-registration merges defined values over the previous registration and
+// preserves undefined ones, matching the legacy ModelRegistry contract.
+const previous = this.extensionProviders.get(providerId);
+const effective = { ...previous };
+for (const [key, value] of Object.entries(config)) {
+    if (value !== undefined)
+        effective[key] = value;
+}
+```
+
+`ModelRegistry.getProvider(name)` returns the composed provider for any provider, native or
+builtin, and a `Provider` is a plain object whose `getModels()` and optional
+`getAllModels()` are ordinary methods (`pi-ai/dist/models.d.ts:57-95`). Spreading one and
+replacing only those two methods filters a provider without rebuilding any model metadata,
+and `pi.registerProvider` accepts the result through its `Provider` overload
+(`dist/core/extensions/runner.js:274`).
+
 ### `models.json` overrides are applied after extension replacement
 
 `dist/core/provider-composer.js:337-353`:
@@ -214,6 +257,11 @@ Real host, same command without `--no-extensions`, so all configured packages lo
   configuration with `streamSimple` to a 3-key configuration with `streamSimple`, the
   added key being the filtered model list. `synthetic` kept all 4 keys, credentials
   included.
+- Wrapping a native registration: `hyper`, whose configuration
+  `getRegisteredProviderConfig` does not return, went from 23 chat models to 17 with
+  `stream`, `streamSimple`, and `auth` intact and still registered as native.
+- Wrapping a builtin whose models carry no endpoint: `azure-openai-responses` went from
+  44 chat models to 21, with `gpt-4.1` removed and `gpt-5.5` kept.
 - Passing image and classifier models through: 57 and 15 before and after.
 - Metadata fidelity: a filtered model still carries `thinkingLevelMap` (7 levels),
   `compat`, `promptCache`, `samplingParams`, and `inputLimits`.
@@ -226,31 +274,42 @@ Real host, same command without `--no-extensions`, so all configured packages lo
 - Any change to `pi --list-models` output: the command fires no extension event, and in a
   credential-free host it prints `No models available` because availability is
   auth-filtered while `getAll()` is not.
-- Filtering a native provider registration: `hyper`, `openai-fast`, and
-  `openai-codex-fast` return no configuration, so re-registering them would replace their
-  owner's implementation.
-- Filtering `azure-openai-responses`: all 44 of its chat models carry an empty `baseUrl`.
-- Preserving per-model `headers`: `extensionModelFromDefinition` sets them to `undefined`.
-  In the bundled catalog this affects `github-copilot` (34 models) and `nvidia` (19).
+- Re-declaring a native registration as a configuration: `hyper`, `openai-fast`, and
+  `openai-codex-fast` return no configuration, so a configuration registration replaces
+  their owner's implementation. Wrapping the composed provider works instead.
+- Re-declaring `azure-openai-responses` as a configuration: all 44 of its chat models
+  carry an empty `baseUrl`, and pi throws. Wrapping works instead.
+- Preserving per-model `headers` through a configuration registration:
+  `extensionModelFromDefinition` sets them to `undefined`. In the bundled catalog this
+  affects `github-copilot` (34 models) and `nvidia` (19). Wrapping preserves them, since
+  it passes model objects through by reference.
 
 ## Verified workarounds
 
-All four are implemented in `package/pi-plugin/model-retirement`.
+All five are implemented in `package/pi-plugin/model-retirement`.
 
 1. Filter at `session_start`, the earliest event carrying `ctx.modelRegistry`.
    Tradeoff: the startup model choice and `pi --list-models` are both settled before the
    filter runs, so neither reflects it. A session can start on a model the pass then
    removes, and keeps running on it.
-2. Spread the incumbent configuration under the filtered model list, reading it from
-   `getRegisteredProviderConfig`.
-   Tradeoff: only providers registered through the configuration form have one. For a
-   native registration there is nothing to spread, so those providers must be skipped and
-   their stale models stay listed.
-3. Skip a provider when any model resolves neither an `api` nor a `baseUrl`, counting the
-   provider-level values as fallbacks the way pi does.
-   Tradeoff: a provider is all-or-nothing, so one unregisterable model keeps every
-   superseded model in that provider visible. Measured cost: 4 of 39 providers.
-4. Isolate each registration in its own `try` and report the caught value.
+2. Merge a configuration where `getRegisteredProviderConfig` returns one, since pi merges
+   defined values over the previous registration and so preserves that owner's `apiKey`,
+   `oauth`, and `streamSimple`.
+   Tradeoff: the model list must be rebuilt from registry reads, which drops per-model
+   `headers` and needs an `api` and `baseUrl` per model.
+3. Wrap the composed provider from `getProvider` everywhere else, spreading it and
+   replacing only `getModels` and `getAllModels`.
+   Tradeoff: the wrapper becomes that provider's native registration, so a later
+   configuration registration by its owner would apply on top of the wrapper. In exchange
+   it needs no endpoint metadata, loses no model field, keeps per-model headers, and
+   filters live, so a catalog refresh is filtered on the next read.
+4. Validate a configuration plan's endpoints first, counting provider-level `api` and
+   `baseUrl` as fallbacks the way pi does, and fall back to wrapping when a model cannot be
+   re-declared.
+   Tradeoff: a provider is all-or-nothing on the configuration path, so without the
+   fallback one unregisterable model would keep every superseded model in that provider
+   visible.
+5. Isolate each registration in its own `try` and report the caught value.
    Tradeoff: a failed provider is logged rather than fatal, so a partial pass is the
    normal failure mode and the warning lines are the only evidence.
 
