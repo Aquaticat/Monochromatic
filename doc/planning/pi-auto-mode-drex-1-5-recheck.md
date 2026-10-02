@@ -414,6 +414,66 @@ The next complementary diagnostic adds a losslessly reconstructed ordered view o
 while retaining the entire parent program and excluding reference effects.
 That tests representation rather than repeating the completed phase or using only isolated arguments.
 
+## Ordered-operation representation
+
+The next comparison changed only the input representation:
+`state.orderedOperations` added the declared write/node inputs in order,
+with exact reconstruction of the original parent source.
+It supplied neither the selected source nor reference effects.
+The runner,
+parser,
+questions,
+policy,
+and references were reused unchanged.
+
+Ten POSTs completed across two predetermined passes,
+with zero retries and caller exit 0.
+Offline reconciliation `proc_d04e` exited 0 and verified all 41 records,
+complete streams,
+and the representation-only difference.
+Source-selection labels were correct eight times,
+compared with six in the factorized baseline.
+The unrelated-file case selected the initial source in both passes.
+The write-after-execution case still selected the written source,
+with probabilities 0.5344 for the wrong occurrence and 0.4643 for the correct occurrence.
+Its separate confidence field was 0.3015;
+that is not the selected-label probability.
+
+At 90/10,
+direct effects were 22 correct,
+four wrong,
+and four unresolved;
+hypothetical effects were 58 correct,
+zero wrong,
+and two unresolved.
+At 95/05,
+direct effects were 22 correct,
+two wrong,
+and six unresolved;
+hypothetical effects were 54 correct,
+zero wrong,
+and six unresolved.
+Both passes returned identical estimates.
+These are observed differences on known development cases,
+not held-out improvements or evidence of uncached determinism.
+Composition remains unqualified.
+
+Mean modeled cost was US$0.00047443 per one-call diagnostic request;
+the phase totaled US$0.0047443.
+Preparation-through-freshness elapsed times ranged from 332.215358 to 666.638812 ms.
+Accumulated composed-program development spend is US$0.0160333,
+not a measured operational workload mean.
+Evidence is retained at `contract/research/drex-composed-ordered/` in the private qualification repository.
+
+The next offline check uses code to establish the literal-profile source binding,
+then selects the corresponding already-observed hypothetical effect estimates.
+It must validate the complete parent-program representation,
+retain source-occurrence identity,
+and report its restricted virtual-file semantics.
+It is not a general parser,
+a production decision,
+or a code-only effect-proof requirement.
+
 ## Remaining work
 
 - Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.

@@ -214,8 +214,26 @@ Mean modeled cost was US$0.00047233 per one-call diagnostic request.
 Both passes returned identical estimates;
 uncached determinism and calibration are not established.
 The private evidence directory is `contract/research/drex-composed-methods/`.
-Next compare a lossless ordered operation representation,
-keeping full composed context and local references out of model inputs.
+The ordered-operation comparison subsequently completed 10 requests with zero retries;
+`proc_d04e` reconciled all 41 records and exited 0.
+Only the ordered input view changed;
+the admitted runtime and questions were reused.
+Source-selection labels were correct eight times instead of six.
+The unrelated-file trap selected the initial source correctly;
+the write-after-execution trap remained wrong,
+with only 0.5344 probability on the selected wrong occurrence.
+
+At 90/10,
+ordered-input direct effects were 22 correct,
+four wrong,
+and four unresolved;
+hypothetical effects were 58 correct,
+zero wrong,
+and two unresolved.
+Mean modeled cost was US$0.00047443 per one-call diagnostic request.
+Evidence is in `contract/research/drex-composed-ordered/`.
+Next validate a restricted code-owned source-binding replay against the retained conditional estimates,
+without another provider request or a general parser/production claim.
 No production adoption or threshold choice follows from these results.
 
 ## Parallel-tool bug and private prototype
