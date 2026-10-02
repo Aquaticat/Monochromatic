@@ -543,5 +543,12 @@ Independent Advisor review confirmed the additive interpretation,
    real authentication,
    or personal settings during this interview.
 
+The scoped `mise run lint:markdown -- doc/planning/pi-openai-fast.md` check passed.
+A local `marked` render confirmed the interview headings,
+ companion identity code spans,
+ preserved reference link,
+ and absence of unintended emphasis or tables in the added section.
+No implementation or live new-provider verification has been performed.
+
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
