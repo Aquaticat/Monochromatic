@@ -18650,6 +18650,66 @@ Recurrence:
 `mistake-prevention.md`,
 "Text by code point".
 
+### B124: a refuser held out for no time ended the call as every provider dry
+
+Red in `804ae3e85`.
+Found reading `budget-hold-wait.ts` for the T8 bundle 2 review.
+`markRefused` (`provider-budget.ts`) holds a refuser whose meter reads wet for the rate-limit backoff
+only when another provider reads wet,
+so the calls move there;
+with every other provider dry it holds it for no time,
+and the transport ladder paces the retries
+(XIEPT2,
+2026-09-03).
+The router then asked again with that refusal folded in,
+and `readBudgetsPastHolds` read every provider dry,
+found every hold at 0 ms,
+and raised `EveryProviderDryError`,
+whose message says Synthetic has no five-hour or weekly credit left,
+while its meter read wet.
+The two rules were each right alone:
+the budget layer meant the refuser to stay spendable at once,
+which its own case asserts ("HOLDS NOTHING when a wet provider refuses us"),
+and the hold wait meant a just-refused provider to read dry.
+
+Measured:
+a probe on the built package
+(the real `createProviderBudgets` and `createRoutingClient`,
+stub meters with Synthetic wet and the others empty,
+a Synthetic caller refusing one call with a 429)
+asked Synthetic once and threw,
+holds all 0 ms,
+for a four-provider seat and a Synthetic-only one
+(`t8-par/b124/wet-refuser.mjs` in the audit scratch).
+Among the 8,511 `.log` files under the agent scratch
+(walked three levels deep,
+as the P1 measure walked),
+166 all-dry errors name a refuser "just refused this call" with every hold at 0 ms,
+all in the Uekawakuyuurei pictures log of 2026-09-04,
+beside 166 zero-hold refusal lines there;
+each was logged "voice lost",
+so the seat's voice was lost each time,
+not the run
+(`stage-call.ts` catches the error per seat).
+The huasheng4 log's 34 all-dry errors all waited out a hold first,
+so they are not this.
+
+The fix:
+`readBudgetsPastHolds` returns the first reading,
+the refuser wet in it,
+when the provider that just refused reads wet by meter and has no hold left,
+and logs that it asks that provider again.
+A unit case pins that reading,
+and a router case drives the real budget layer:
+Synthetic refuses once,
+is asked again,
+and answers.
+The probe on the fixed build asks Synthetic twice and is answered both times.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

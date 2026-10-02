@@ -336,7 +336,8 @@ await describe({
               pollMs: 1,
             },),).toEqual(refuserBack,);
             expect(reads.count,).toBe(1,);
-            expect(holdAsks.count,).toBe(0,);
+            // Asked once: the refuser's own hold is what says it is back.
+            expect(holdAsks.count,).toBe(1,);
           },
         },),
 

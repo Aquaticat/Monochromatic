@@ -24,7 +24,8 @@ import type { RosterModelId, } from './roster-id.ts';
 // second because two holds were read as two empty meters while both meters
 // read wet. When every provider reads dry and at least one is held, the
 // shortest hold is waited out and the budgets are read again; only a second
-// all-dry reading, which no hold can explain, ends the run.
+// all-dry reading, which no hold can explain, ends the run. A refuser held out
+// for no time is not dry at all, and the call goes back to it (ledger B124).
 //
 // SPLIT FROM `provider-router.ts` at its line budget, and along a real seam:
 // this is about WHEN to read the budgets, and the router's slot arithmetic must
@@ -204,7 +205,8 @@ function measuredAt(
 
 /**
  Reads the budgets, waiting out the shortest hold once when every provider
- reads dry and a refusal hold explains it.
+ reads dry and a refusal hold explains it, and going back to a refuser the
+ budgets gave no hold when it is the only provider with budget.
 
  @param budgets - shared budget view
 
@@ -213,8 +215,8 @@ function measuredAt(
  @param signal - the call's abort
 
  @param refused - provider that has just refused this call, which counts as
- dry for the first reading and not after its hold has been waited out; or
- nobody
+ dry for the first reading unless it is the only provider left and was held
+ out for no time, and not after its hold has been waited out; or nobody
 
  @param pollMs - how often the wait checks for abort
 
@@ -270,6 +272,30 @@ export async function readBudgetsPastHolds(
    How long each provider's refusal still holds it out.
    */
   const holds = budgets.holds();
+
+  // A REFUSAL THE BUDGETS GAVE NO HOLD HAS ALREADY ENDED (ledger B124).
+  // `markRefused` holds a refuser whose meter reads wet only when another
+  // provider is wet, so the calls move there; with every other provider dry it
+  // holds nothing and leaves the pacing to the transport ladder. Folding the
+  // refusal in then read every provider dry with no hold to wait out, and the
+  // call ended as if no budget were left anywhere: 166 calls on
+  // Uekawakuyuurei, 2026-09-04, while Synthetic's meter read wet. The refuser
+  // is the one provider with budget, so the call goes back to it.
+  /**
+   Whether the provider that just refused reads wet by meter and is held out
+   for no time.
+   */
+  const refuserBack = (refused !== NOBODY_REFUSED)
+    && (!first[refused])
+    && (holds[refused] === 0);
+  if (refuserBack) {
+    rl.info(
+      `${modelId}: ${refused} refused this call and is held out for no time, every other provider reading `
+        + `dry; asking ${refused} again rather than ending the run`,
+    );
+    return first;
+  }
+
   /**
    The first hold to end, zero when no provider is held.
    */

@@ -2612,6 +2612,39 @@ and the deltas still passed over;
 `anthropic-delta-scan.unit.test.ts` holds the frames the scanner counts as unreadable
 beside the ones it reads or passes over.
 
+## Two layers reading one refusal
+
+What happened:
+the budget layer held a refuser whose meter read wet for no time
+when every other provider was dry,
+so the calls kept going to it,
+and the router read the same refusal as a reason to call that provider dry,
+found no hold to wait out,
+and ended the call as if no provider had budget,
+166 times on Uekawakuyuurei while Synthetic's meter read wet (ledger B124).
+Each layer's own test held its half;
+no test ran a refusal through both.
+
+The rule:
+where one event is read by two layers,
+each layer's reading is stated beside the other's,
+and a test drives the event through the real code of both,
+stubbing only the wire and the meters,
+for every reading the first layer can give it
+(here:
+held for the backoff,
+held for a named wait,
+held for no time,
+read dry until paid).
+A layer that folds in an earlier layer's evidence reads what that layer decided,
+such as the hold it set,
+not the raw event the decision was made from.
+
+What enforces it:
+`provider-router.unit.test.ts` holds "ASKS A WET REFUSER AGAIN",
+which runs the refusal through the real budget layer and the router;
+`budget-hold-wait.unit.test.ts` holds the reading for a refuser with no hold.
+
 ## Counts in printed text
 
 What happened:

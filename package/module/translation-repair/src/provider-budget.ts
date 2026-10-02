@@ -153,8 +153,9 @@ export type ProviderBudgets = {
 
   /**
    Records that a provider refused us, re-reading its meter at once and
-   holding it out for the cooldown when the meter agrees or cannot be read,
-   for the rate-limit backoff when the meter still reads wet.
+   holding it out for the cooldown when the meter agrees or cannot be read;
+   when the meter still reads wet, for the rate-limit backoff if another
+   provider reads wet too, and for no time if none does.
    */
   readonly markRefused: (args: {
     readonly provider: ProviderName;

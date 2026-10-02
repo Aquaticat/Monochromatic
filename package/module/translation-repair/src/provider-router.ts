@@ -94,7 +94,8 @@ import {
 // RE-ROUTED AT MOST ONCE PER PROVIDER. Each refusal marks its provider and
 // asks the budgets again through `readBudgetsPastHolds`, which waits out a
 // refusal hold before calling every provider dry, so a refuser can come back
-// for a later re-route once its hold has ended; an all-dry
+// for a later re-route once its hold has ended, or at once when it was held
+// out for no time and nobody else has budget; an all-dry
 // reading no hold explains raises, and the call ends there. The loop is
 // bounded by the number of providers, so a wall of refusals is an answer
 // rather than an invitation to keep going.

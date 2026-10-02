@@ -12,6 +12,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
+  createProviderBudgets,
   createRoutingClient,
   EveryProviderDryError,
   isJsonRecord,
@@ -623,6 +624,71 @@ await describe({
         expect(called,).toEqual(['synthetic', 'synthetic',],);
         expect(stub.refused,).toEqual(['synthetic',],);
         expect(stub.holdReads.count,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'ASKS A WET REFUSER AGAIN when every other provider is dry, through the real budget layer, which '
+        + 'holds such a refuser for no time: the call is answered rather than ended as every provider dry '
+        + '(ledger B124)',
+      fn: async () => {
+        const { callers, called, } = stubProviders({
+          status: { synthetic: 429, },
+          refusals: { synthetic: 1, },
+        },);
+        /**
+         Budget layer over meters with Synthetic wet and the others empty;
+         Bedrock has no meter, so it reads dry.
+         */
+        const budgets = createProviderBudgets({
+          synthetic: {
+            quotas: async function quotas() {
+              return {
+                fiveHour: {
+                  limited: false,
+                  remaining: 400,
+                  max: 500,
+                  nextTickAt: '2026-08-24T10:00:00.000Z',
+                },
+                weekly: {
+                  percentRemaining: 62,
+                  nextRegenAt: '2026-08-24T13:24:00.000Z',
+                },
+              };
+            },
+          },
+          hyper: {
+            credits: async function credits() {
+              return { balance: 0, };
+            },
+          },
+          openrouter: {
+            credits: async function credits() {
+              return {
+                purchasedUsd: 10,
+                usedUsd: 10,
+                remainingUsd: 0,
+              };
+            },
+          },
+        },);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+          holdPollMs: 1,
+        },);
+
+        expect(await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },),).toEqual({ text: '{"spot":"windowsill"}', },);
+        expect(called,).toEqual(['synthetic', 'synthetic',],);
+        expect(budgets.holds(),).toEqual({
+          synthetic: 0,
+          bedrock: 0,
+          hyper: 0,
+          openrouter: 0,
+        },);
       },
     },),
 
