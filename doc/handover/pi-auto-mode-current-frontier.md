@@ -173,8 +173,25 @@ Nested calls need an explicit complete group boundary;
 a shared parent ID or timing window is not enough.
 Final effective inputs and later argument mutations have finite prepared-dispatch controls,
 not arbitrary-tool qualification.
-The serial-mode change has host-level controls,
-not a new full SDK session run.
+Subsequent asynchronous controls found a preparation-order defect in the private helper.
+`proc_66a7` exited 1 at the expected assertion;
+`proc_700d` exited 0 for nine controls after separating preparation and execution turns.
+Removing the execution wait triggered the same overlap assertion,
+proving the control could detect its absence.
+Ordinary native execution errors preserved continuation;
+staleness and cancellation while waiting prevented the next execution.
+
+`proc_1505` then passed four new native SDK sessions with the corrected frozen host/helper:
+parallel preparation,
+global serial mode,
+member-selected serial mode,
+and serial denial.
+Each group received one assessment after both transformations.
+The serial cases waited for the first asynchronous result hook;
+denial executed nothing.
+All newly persisted entries matched their in-memory JSON values.
+These are four additional own completions,
+not historical-ledger reconciliation or complete native event/cancellation parity.
 Private `contract/diagnostic/parallel-tool-batch/integration-frontier.json`
 is the detailed result and next-work receipt.
 Do not implement a barrier that waits inside the first per-call hook for sibling hooks:
@@ -197,6 +214,11 @@ while native qualification deliberately used the unchanged staged 0.87.1 SDK.
 
 When codemode's Wasm load failed,
 direct tools remained usable.
+Standalone `pi-codemode` 1.0.0 subsequently loaded its native worker and completed two inert calls in `proc_1e95`.
+A separate live-tool probe still emitted `Cannot find module 'quickjs-wasi/quickjs.wasm'`,
+with a 0.99.2 bundle path in its require stack.
+The standalone success does not establish live-tool recovery or a common root cause.
+No installed loader was patched.
 The native phase used a separately reviewed,
 checked,
 private stdin file instead of `process.write`.

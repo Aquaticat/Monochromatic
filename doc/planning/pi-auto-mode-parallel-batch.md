@@ -140,8 +140,26 @@ and the effective prompt contained that loader's marker.
 
 These are two newly observed own completed sessions,
 not a reconciliation of the historical session ledger.
-The SDK session controls used the first private host copy;
-the later serial-mode change has host-level controls but has not been repeated through a full SDK session.
+The original SDK session controls used the first private host copy.
+A subsequent asynchronous-order phase found and corrected concurrent native preparation:
+`proc_66a7` exited 1 at the exact preparation-order assertion,
+then `proc_700d` exited 0 for nine controls.
+Removing the execution-turn wait made the same non-overlap assertion fail.
+The corrected implementation separates preparation turns from execution turns:
+it releases the next preparation after hooks and sealing,
+before waiting for combined admission.
+Early failures also release preparation progression.
+
+`proc_1505` subsequently exited 0 for four new native SDK sessions with the corrected frozen helper.
+The cases covered parallel execution with ordered asynchronous preparation,
+global serial mode,
+member-selected serial mode,
+and serial group denial.
+Each group received one assessment after both transformations.
+Serial execution waited for the first tool's asynchronous result hook;
+denial executed no tools.
+Every newly persisted native entry matched its in-memory entry after JSON serialization.
+These controls do not establish arbitrary-tool compatibility or complete stock event/cancellation parity.
 No remote model call,
 genuine human confirmation,
 current permission,
@@ -214,7 +232,7 @@ The orchestration seam must supply the actual complete parallel set.
 ## Remaining verification
 
 - Integrate the qualified batch-admission seam into the real extension rather than only the private prototype.
-- Preserve the required native hook and result behavior while preparing complete effective inputs before admission.
+- Extend the verified native preparation and result-hook ordering beyond the finite inert-tool fixtures.
 - Keep declared-group admission independent of whether member execution is parallel or serial.
 - Verify zero execution on group denial,
   changed inputs,
