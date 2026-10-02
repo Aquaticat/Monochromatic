@@ -13,6 +13,8 @@
  */
 
 import {
+  chmod,
+  mkdir,
   readdir,
   readFile,
   writeFile,
@@ -113,6 +115,58 @@ async function ownIdentity(): Promise<{
     ...hostRead.here,
     startTicks: started.startTicks,
   };
+}
+
+/**
+ Refuses to run a case that needs this process to lack root's permission to
+ write anywhere. Root writes past any directory mode (no EACCES), so a case
+ built on that refusal would pass without ever reaching the rethrow it means
+ to exercise.
+
+ @throws Error naming the precondition, when this process is root
+
+ @example
+ ```ts
+ requireNonRoot();
+ ```
+ */
+function requireNonRoot(): void {
+  if ((process.getuid !== undefined) && (process.getuid() === 0))
+    throw new Error('this case needs a process that is not root, and this one is',);
+}
+
+/**
+ Refuses to run a case that needs signalling pid 1 to answer EPERM, which is
+ what the EPERM branch in `isAlive` (`runs-lock-holder.ts`) needs reached
+ rather than skipped. A uid check alone cannot stand in for this: a
+ non-root process inside a user namespace or rootless container can still
+ own pid 1 itself, where the signal succeeds instead of refusing, and the
+ branch this case means to exercise would stay cold while the case passed.
+
+ @throws Error naming the precondition, when signalling pid 1 does not
+ answer EPERM
+
+ @example
+ ```ts
+ requireEpermOnPidOne();
+ ```
+ */
+function requireEpermOnPidOne(): void {
+  try {
+    process.kill(
+      1,
+      0,
+    );
+  }
+  catch (error) {
+    if (Error.isError(error,) && ('code' in error) && (error.code === 'EPERM'))
+      return;
+    throw new Error(
+      'this case needs pid 1 to answer EPERM, and it answered something else',
+      { cause: error, },
+    );
+  }
+  throw new Error('this case needs pid 1 to answer EPERM, and signalling it succeeded instead',);
 }
 
 await describe({
@@ -221,6 +275,141 @@ await describe({
             await using _lock = await lockRunsDir({ runsDir, },);
 
             expect(await readdir(runsDir,),).toEqual(['pass.lock',],);
+          },
+        },),
+
+        it({
+          name: 'TAKES OVER a lock file whose text parses as JSON but not as a record (an array), since nothing '
+            + 'that cannot be probed for `pid` is a lock anyone can respect',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
+
+            await writeFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              '[]\n',
+            );
+
+            await using _lock = await lockRunsDir({ runsDir, },);
+
+            /**
+             What the new lock records, proving this pass actually took over
+             rather than finding the directory merely still holding one file.
+             */
+            const recorded: unknown = JSON.parse(await readFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              'utf8',
+            ),);
+            expect(recorded,).toMatchObject({ pid: process.pid, },);
+          },
+        },),
+
+        it({
+          name: 'TAKES OVER a lock file recording no `pid` field at all, which names no holder to respect',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
+
+            await writeFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              '{}\n',
+            );
+
+            await using _lock = await lockRunsDir({ runsDir, },);
+
+            /**
+             What the new lock records, proving this pass actually took over.
+             */
+            const recorded: unknown = JSON.parse(await readFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              'utf8',
+            ),);
+            expect(recorded,).toMatchObject({ pid: process.pid, },);
+          },
+        },),
+
+        it({
+          name: 'TAKES OVER a lock file naming a `pid` but recording no `startedAt`, which names no holder to '
+            + 'respect',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
+
+            await writeFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              `${JSON.stringify({ pid: 4_194_305, },)}\n`,
+            );
+
+            await using _lock = await lockRunsDir({ runsDir, },);
+
+            /**
+             What the new lock records, proving this pass actually took over.
+             */
+            const recorded: unknown = JSON.parse(await readFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              'utf8',
+            ),);
+            expect(recorded,).toMatchObject({ pid: process.pid, },);
+          },
+        },),
+
+        it({
+          name: 'PROPAGATES a filesystem refusal that is not EEXIST rather than mistaking it for another pass '
+            + 'already holding the lock, since only EEXIST means the file is already claimed',
+          fn: async () => {
+            requireNonRoot();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            /**
+             The directory actually passed to lockRunsDir. A SUBDIRECTORY of
+             the scratch root, chmod'd unwritable, so the scratch root itself
+             stays writable and the fixture's own disposal can still remove it.
+             */
+            const runsDir = join(
+              scratch.path,
+              'runs',
+            );
+            await mkdir(runsDir,);
+            await chmod(
+              runsDir,
+              0o500,
+            );
+
+            /**
+             This one attempt, settled rather than awaited directly, so a
+             rejection's class and code can both be inspected without an
+             intermediate throw.
+             */
+            const [settled,] = await Promise.allSettled([lockRunsDir({ runsDir, },),],);
+
+            if (settled.status === 'fulfilled') {
+              await settled.value[Symbol.asyncDispose]();
+              throw new Error('lockRunsDir resolved against a directory it cannot write into',);
+            }
+
+            expect(settled.reason,).not.toBeInstanceOf(RunsDirectoryBusyError,);
+            expect(
+              (Error.isError(settled.reason,) && ('code' in settled.reason))
+                ? settled.reason.code
+                : undefined,
+            ).toBe('EACCES',);
           },
         },),
       ],
@@ -499,6 +688,112 @@ await describe({
               'utf8',
             ),);
             expect(recorded,).toMatchObject(await ownIdentity(),);
+          },
+        },),
+        it({
+          name: 'REFUSES a lock naming a process id this one cannot signal, since EPERM still means the id is '
+            + 'in use and the lock is held rather than free',
+          fn: async () => {
+            requireEpermOnPidOne();
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
+            // Signalling pid 1 refuses with EPERM (confirmed by
+            // requireEpermOnPidOne) rather than succeeding or refusing with
+            // ESRCH. No identity fields are written, so the lock is judged
+            // by id alone.
+            await writeFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              `${JSON.stringify({
+                pid: 1,
+                startedAt: '2026-08-14T00:00:00.000Z',
+              },)}\n`,
+            );
+
+            await expect(lockRunsDir({ runsDir, },),)
+              .rejects
+              .toThrow('  process 1, since 2026-08-14T00:00:00.000Z',);
+          },
+        },),
+        it({
+          name: 'TAKES OVER a lock whose process id now names nothing at all, even though its recorded host, '
+            + 'boot and namespace all match this one, since no start time can be read for an id nothing holds',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'runs-lock-', },);
+            const runsDir = scratch.path;
+            // GONE_PID with a FULL identity matching this host carries the
+            // judgement past the boot and namespace checks and into the start
+            // time read, which finds nothing for an id nothing holds.
+            await writeFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              `${JSON.stringify({
+                pid: GONE_PID,
+                startedAt: '2026-08-14T00:00:00.000Z',
+                ...(await ownIdentity()),
+              },)}\n`,
+            );
+
+            await using _lock = await lockRunsDir({ runsDir, },);
+
+            /**
+             What the new lock records, proving this pass actually took over.
+             */
+            const recorded: unknown = JSON.parse(await readFile(
+              join(
+                runsDir,
+                'pass.lock',
+              ),
+              'utf8',
+            ),);
+            expect(recorded,).toMatchObject({ pid: process.pid, },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: RunsDirectoryBusyError.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SAYS its lock file records nothing readable when constructed without a holder, the shape a '
+            + 'race loss leaves once the winner\'s own lock could not be read back',
+          fn: async () => {
+            /**
+             Exact message the error renders with no holder, built the same
+             way the race-loss branch in `lockRunsDir` builds it when the
+             winner's lock could not be read.
+             */
+            const expectedMessage = [
+              'Another pass is running in /mittens/runs.',
+              '  its lock file records nothing readable',
+              '',
+              'Two passes sharing one runs directory do not conflict loudly. They',
+              'overwrite each other\'s attempt counts, delete each other\'s cached',
+              'slices whenever their pipelines differ, and the later write of any',
+              'entry simply replaces the earlier one. Every one of those looks like',
+              'ordinary output.',
+              '',
+              'Point this run at another directory with TRANSLATION_REPAIR_RUNS_DIR,',
+              'or stop the other pass. A lock whose process is gone is taken over',
+              'automatically. Another pass took it over at the same moment as this one.',
+            ].join('\n',);
+
+            /**
+             Constructed directly, as the race-loss branch does, with no
+             `holder` field at all.
+             */
+            const error = new RunsDirectoryBusyError({
+              runsDir: '/mittens/runs',
+              judgedBy: 'race',
+            },);
+
+            expect(error.message,).toBe(expectedMessage,);
           },
         },),
       ],

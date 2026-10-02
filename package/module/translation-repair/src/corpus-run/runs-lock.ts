@@ -189,7 +189,12 @@ async function claim(
 
  @returns Disposable releasing the lock
 
- @throws RunsDirectoryBusyError when a live process already holds it
+ @throws RunsDirectoryBusyError when a live process already holds it, or when
+ this call loses a concurrent race for a stale lock to another starter
+
+ @throws whatever the filesystem refuses creating the runs directory or the
+ lock file with, for any failure but the lock file already existing (an
+ unwritable runs directory, say), unwrapped
 
  @example
  ```ts
