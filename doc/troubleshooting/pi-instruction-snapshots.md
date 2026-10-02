@@ -566,11 +566,81 @@ all provider/transport families,
 instruction authority,
 current human permission,
 or production-ready collection.
-The next consumer component must own immutable request observations,
-associate them with the correct SDK response/root,
-and reject missing,
+The [consumer-owned observation controls](#consumer-owned-observation-controls)
+subsequently exercised immutable receipts,
+SDK response/root association,
+and missing,
 foreign,
-or stale observations.
+and stale rejection.
+
+## Consumer-owned observation controls
+
+The private `contract/collector/request-observation-owner/` module passed `proc_c523`,
+exit 0:
+25 intact cases and five independent guard-removal failures.
+The changed copies failed on the exact consumer `Missing expected exception` assertion;
+arbitrary exceptions did not count.
+Original source stayed unchanged.
+These controls reused the existing source collector and made no SDK sessions or external requests.
+
+Its interface wraps a bound stream function,
+returns an immutable receipt for an exact response object,
+revalidates receipt ownership and observed freshness,
+and invalidates old generations.
+Receipt copies and response copies do not inherit ownership.
+Reused response objects become ambiguous rather than silently changing request association.
+The module retains the source collector's coverage gaps and never creates instruction authority or permission.
+
+The unchanged owner then passed stock SDK binding in `proc_cf38`,
+exit 0,
+under `contract/collector/request-observation-sdk/`:
+eight completed sessions,
+16 serialized requests,
+one inert tool execution,
+and no external model requests.
+The actual `beforeToolCall` context carried the decoded response object accepted by the owner.
+Its receipt matched the exact serialized first request.
+
+Observed stream instances were extensible;
+`result` was inherited rather than an own property.
+Decorating the method worked,
+with iterator identity preserved.
+The original SDK argument preparation,
+asynchronous permission hook,
+and result hook remained active.
+The inert tool received `requested-native-hook` and returned the result-hook replacement.
+A native hook denial prevented observation lookup and execution.
+
+Missing binding,
+a response copy,
+a foreign observer,
+a fixture epoch change,
+an owned resource-loader reload,
+and explicit invalidation prevented the inert tool from running.
+Copy and foreign-observer controls also verified that the original response still worked with its owning observer.
+Root/source/invalidation controls first verified the intact observation.
+The loader reload changed the inventory visible at tool preparation;
+it was not deferred until another request for this source surface.
+The follow-up model request made the earlier receipt stale.
+
+The verifier reconciled exact traces,
+measured method/iterator properties,
+serialized and persisted tool-result IDs and content,
+private worker streams,
+listed source hashes,
+and unchanged mandatory policy.
+Worker stderr was empty.
+
+This is a single-tool consumer check,
+not composed-group admission,
+production lifecycle-event wiring,
+or complete cancellation and handback parity.
+The epoch reader was fixture-owned;
+stop-turn receipt consumption was not qualified.
+Complete producer coverage,
+instruction authority,
+and a new authenticated SDK-linked human original remain separate requirements.
+No installed source or auto-mode production implementation changed.
 
 ## Verified workarounds and limits
 

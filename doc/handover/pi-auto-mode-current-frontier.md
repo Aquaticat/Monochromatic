@@ -489,8 +489,39 @@ not hosted behavior,
 all providers,
 instruction authority,
 or current permission.
-Next build the consumer-owned immutable observation interface,
-with SDK response/root association and missing/foreign/stale rejection controls.
+The consumer-owned observer passed `proc_c523`:
+25 intact interface cases plus five exact guard-removal failures,
+with original source unchanged.
+Its stock SDK binding then passed `proc_cf38`:
+eight completed sessions,
+16 serialized requests,
+one inert tool execution,
+and no external model requests.
+Evidence is `contract/collector/request-observation-owner/` and `contract/collector/request-observation-sdk/`.
+
+Actual decoded response identity reached `beforeToolCall` and matched its serialized request receipt.
+Native preparation,
+asynchronous permission hooks,
+and result hooks remained active.
+A native denial bypassed lookup and execution.
+Missing binding,
+copied/foreign identity,
+fixture epoch drift,
+actual owned-loader reload,
+and explicit invalidation blocked execution.
+Copy/foreign controls verified the original remained valid;
+stale controls began with a valid lookup.
+A subsequent model request invalidated the older receipt.
+The source-stage and wire documentation passed native lint/render/readback in `proc_2269` before this owner update.
+
+The owner still carries every collector coverage gap.
+Production lifecycle-event wiring,
+stop-turn receipt consumption,
+complete native parity,
+instruction authority,
+and current permission remain unqualified.
+Next bind the owned observation to the already tested complete prepared-group consumer,
+then exercise real root lifecycle transitions rather than a fixture epoch counter.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
 
 ## Tooling and workflow
