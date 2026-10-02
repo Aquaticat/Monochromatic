@@ -305,8 +305,21 @@ Mean modeled cost was US$0.00048863 per request.
 These remain known development cases and conditional virtual facts,
 not held-out or production qualification.
 
-Next test the relevant selected-source effect questions alone,
-omitting the redundant model source-selection question while retaining full composed context.
+The relevant-only follow-up then completed ten fresh requests with three effect questions each.
+The full model-visible state was unchanged;
+source-choice and unused-source questions were removed.
+`proc_9369` reconciled all 41 records and exited 0.
+At 90/10,
+all 30 effects were correct with zero wrong or unresolved.
+At 95/05,
+28 were correct and two unresolved,
+with zero wrong.
+Mean modeled cost was US$0.00046188 per request.
+Evidence is `contract/research/drex-composed-selected/`.
+No threshold or operational mean is established by these known cases.
+
+Next broaden child semantics under the fixed selected-source question bundle,
+using new synthetic reference executions and leaving the original reserved bank unopened.
 No subagent extension is used.
 
 ## Parallel-tool bug and private prototype

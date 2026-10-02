@@ -607,6 +607,46 @@ Next test a pre-authored batch containing only the relevant selected-source effe
 without asking the model to echo the code-owned source binding.
 Retain full composed context and the same budget/accounting boundaries.
 
+## Relevant-only selected-source batch
+
+`contract/research/drex-composed-selected/` kept the code-bound study's model-visible state unchanged,
+then replaced the diagnostic bundle with pre-authored read,
+transfer,
+and marker predicates for the code-selected source.
+It removed both model source-selection and unused-source hypothetical questions.
+This tests actual fresh inference with relevant question selection,
+not a replay or policy verdict.
+
+The ten fixed requests completed with zero retries and caller exit 0.
+Offline reconciliation `proc_9369` exited 0 and checked all 41 records and private streams.
+At 80/20 and 90/10,
+all 30 effect estimates were correct,
+with zero wrong or unresolved.
+At 95/05,
+28 were correct and two unresolved,
+with zero wrong.
+The unresolved estimates remain unresolved;
+no threshold is selected from these results.
+Both passes returned identical estimates,
+which does not establish uncached determinism or calibration.
+
+Mean modeled cost was US$0.00046188 per request;
+the phase totaled US$0.0046188.
+Preparation-through-freshness elapsed times ranged from 305.789828 to 565.836709 ms,
+with the same startup/handback exclusions as the code-bound phase.
+Accumulated composed-program development spend is US$0.0255384.
+None of these figures establishes a representative operational workload mean.
+
+The candidate for the next diagnostic is now fixed:
+code parses and binds the invocation input,
+then asks the selected-source effect predicates while preserving full composed context.
+Broaden the synthetic child semantics without changing those questions,
+including uncalled functions,
+disabled branches,
+protected reads followed by unrelated payloads,
+and computed paths.
+The original reserved scenario bank remains unopened.
+
 ## Remaining work
 
 - Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.
