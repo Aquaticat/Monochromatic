@@ -520,8 +520,24 @@ stop-turn receipt consumption,
 complete native parity,
 instruction authority,
 and current permission remain unqualified.
-Next bind the owned observation to the already tested complete prepared-group consumer,
-then exercise real root lifecycle transitions rather than a fixture epoch counter.
+The complete-group binding subsequently passed `proc_70b6` in `contract/collector/request-observation-batch/`:
+five SDK sessions,
+ten serialized requests,
+no external model calls.
+Parallel and sequential groups shared one assessment after both members' final preparation.
+Missing ownership and preparation-time source change stopped both members before assessment.
+A source change after the first inert execution stopped the waiting second member precisely at execution entry,
+retaining the first success and an explicit second-member error.
+Assessment counts were `1, 1, 0, 0, 1`;
+execution counts were `2, 2, 0, 0, 1`.
+This used the existing private SDK/group-dispatch copies,
+not installed patches or production approval.
+The owner SDK documentation passed lint/render/readback in `proc_9613` before this group update.
+
+Next qualify actual SDK/root lifecycle mutation ownership rather than the fixture epoch counter.
+Current Pi 1.0.0 routes session replacement through `AgentSessionRuntime`;
+`AgentSession.navigateTree` handles in-session tree navigation.
+Their actual source and manager mutation surfaces require inspection before choosing invalidation wiring.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
 
 ## Tooling and workflow

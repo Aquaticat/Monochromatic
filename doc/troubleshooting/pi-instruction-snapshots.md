@@ -642,6 +642,51 @@ instruction authority,
 and a new authenticated SDK-linked human original remain separate requirements.
 No installed source or auto-mode production implementation changed.
 
+## Complete prepared-group consumer
+
+The private `contract/collector/request-observation-batch/` follow-up passed `proc_70b6`,
+exit 0,
+using the unchanged observer and the already tested private SDK/group-dispatch copies.
+It completed five SDK sessions,
+ten serialized requests,
+and five inert member executions,
+with no external model requests.
+Installed SDK files remained unchanged.
+
+Parallel and sequential groups each completed native preparation for both declared members,
+then shared one assessment and one owned request receipt before either member executed.
+Final prepared arguments,
+member order,
+source freshness,
+and native result processing were checked at the consumer.
+Missing ownership stopped both members before assessment.
+An owned loader change during preparation also stopped both before assessment.
+Neither failure fell back to independent per-tool approval.
+
+The partial-execution control admitted a sequential group while its observation was fresh.
+The first inert member waited until both members had passed release,
+then changed the owned loader inventory.
+The waiting second member failed precisely at `member-execute`.
+The first result remained successful and persisted;
+the second was an explicit error.
+This is freshness rejection,
+not rollback of completed work.
+
+Assessment counts were `1, 1, 0, 0, 1` and execution counts were `2, 2, 0, 0, 1`
+for parallel,
+sequential,
+missing ownership,
+preparation-time change,
+and post-first-execution change respectively.
+Full streams,
+per-member outcomes,
+source hashes,
+and JSON-value persistence reconciled with empty worker stderr.
+Real lifecycle epoch wiring,
+complete producer coverage,
+instruction authority,
+and current human permission remain open.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
