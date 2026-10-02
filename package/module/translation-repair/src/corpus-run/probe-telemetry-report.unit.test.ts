@@ -1,4 +1,5 @@
 import {
+  type DisposableSandbox,
   describe,
   expect,
   it,
@@ -8,6 +9,7 @@ import {
   type GatheredProbe,
   reportProbeTelemetry,
 } from '../../dist/final/node/index.mjs';
+import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
 
 //region Probe telemetry report tests
 // What the PROBE report says when its denominator is empty.
@@ -26,17 +28,17 @@ const SILENT_ROSTER = {
 
 /**
  Builds a gathered run whose counts are exactly the ones a case cares about.
- 
+
  Every other member is empty, because the note under test reads only the
  repair-lane record count and the report's remaining lines are covered by the
  figures they print.
- 
+
  @param repairShippedRecords - repair-lane records the run holds
- 
+
  @param editorOffered - slices the editor was asked to repair
- 
+
  @returns Gathered probe carrying those counts and nothing else
- 
+
  @example
  ```ts
  const gathered = gatheredWith({ repairShippedRecords: 0, editorOffered: 4, },);
@@ -69,57 +71,30 @@ function gatheredWith(
 }
 
 /**
- Diverts `console.log` into a list until disposed.
- 
- @param lines - where diverted lines are appended
- 
- @returns Capture holding those lines, which restores logging on disposal
- 
- @example
- ```ts
- using capture = collectingInto({ lines, },);
- ```
- */
-function collectingInto(
-  { lines, }: { readonly lines: string[]; },
-): { readonly lines: readonly string[]; } & Disposable {
-  /**
-   Real logger, put back on disposal.
-   */
-  const printed = console.log;
-  console.log = (...parts: readonly unknown[]) => {
-    lines.push(parts.map(String,)
-      .join(' ',),);
-  };
-  return {
-    lines,
-    [Symbol.dispose]: () => {
-      console.log = printed;
-    },
-  };
-}
-
-/**
  Reports one gathered run with every printed line collected instead of shown.
- 
+
  @param gathered - run to report on
- 
+
+ @param sinon - calling case's own sandbox (`ctx.sinon`), threaded through to
+ the console capture
+
  @returns Every line the report printed, in order
- 
+
  @example
  ```ts
- const lines = reportedLines({ gathered, },);
+ const lines = reportedLines({ gathered, sinon: ctx.sinon, },);
  ```
  */
 function reportedLines(
-  { gathered, }: { readonly gathered: GatheredProbe; },
+  {
+    gathered,
+    sinon,
+  }: {
+    readonly gathered: GatheredProbe;
+    readonly sinon: DisposableSandbox;
+  },
 ): readonly string[] {
-  /**
-   Lines the report printed.
-   */
-  const lines: string[] = [];
-
-  using capture = collectingInto({ lines, },);
+  using capture = divertingConsoleLog({ sinon, },);
   reportProbeTelemetry({ gathered, },);
 
   // Read before disposal returns the real logger, so a case never asserts on a
@@ -142,7 +117,7 @@ await describe({
         'NAMES AN EMPTY DENOMINATOR rather than letting seven zeros read as a clean result. With no '
         + 'repair-lane record to probe, every PROBE and CLAIMS figure is zero by construction, and '
         + 'majorityIntroduced=0 then says the probe found nothing wrong when it found nothing at all',
-      fn: async () => {
+      fn: async (ctx) => {
         /**
          Report over a run holding no repair-lane records.
          */
@@ -151,6 +126,7 @@ await describe({
             repairShippedRecords: 0,
             editorOffered: 4,
           },),
+          sinon: ctx.sinon,
         },);
 
         expect(lines.some(function carriesNote(line,): boolean {
@@ -163,7 +139,7 @@ await describe({
       name:
         'STAYS SILENT ONCE THERE IS SOMETHING TO PROBE, so the note marks the empty case rather '
         + 'than riding along on every report and teaching readers to skip it',
-      fn: async () => {
+      fn: async (ctx) => {
         /**
          Report over a run holding one repair-lane record.
          */
@@ -172,6 +148,7 @@ await describe({
             repairShippedRecords: 1,
             editorOffered: 4,
           },),
+          sinon: ctx.sinon,
         },);
 
         expect(lines.some(function carriesNote(line,): boolean {
@@ -185,7 +162,7 @@ await describe({
         'POINTS AT editorOffered, which is the only figure separating a lane that was asked and '
         + 'shipped nothing from one the critics never gave work to. Without that pointer the note '
         + 'would say a number means less than it looks and stop there',
-      fn: async () => {
+      fn: async (ctx) => {
         /**
          Report over a run holding no repair-lane records.
          */
@@ -194,6 +171,7 @@ await describe({
             repairShippedRecords: 0,
             editorOffered: 0,
           },),
+          sinon: ctx.sinon,
         },);
 
         /**

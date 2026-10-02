@@ -39,6 +39,7 @@ import {
   type ChunkPair,
   type ChunkRepairOutcome,
 } from '../dist/final/node/index.mjs';
+import { sliceBuilderFor, } from './repair-assemble-slice.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 /**
@@ -94,50 +95,9 @@ const LINE_STRUCTURED: ReadonlySet<number> = new Set([
 ],);
 
 /**
- Builds one prepared slice over a span of the document.
- 
- @param sliceIndex - stamped index of this slice
- 
- @param text - archive wording at it
- 
- @returns Pair shaped as preparation returns one
- 
- @example
- ```ts
- const slice = sliceOf({ sliceIndex: 0, text: FIRST_ARCHIVE, },);
- ```
+ Prepares one slice over the span of {@link TARGET_TEXT}.
  */
-function sliceOf(
-  {
-    sliceIndex,
-    text,
-  }: {
-    readonly sliceIndex: number;
-    readonly text: string;
-  },
-): ChunkPair {
-  /**
-   Where this slice starts, found by search since each wording is unique here.
-   */
-  const startOffset = TARGET_TEXT.indexOf(text,);
-
-  return {
-    source: {
-      sliceIndex,
-      text: '小猫在窗台上打盹。',
-      startOffset: 0,
-      endOffset: 9,
-      nodes: [],
-    },
-    target: {
-      sliceIndex,
-      text,
-      startOffset,
-      endOffset: startOffset + text.length,
-      nodes: [],
-    },
-  };
-}
+const sliceOf = sliceBuilderFor({ targetText: TARGET_TEXT, },);
 
 /**
  Slices every case assembles.

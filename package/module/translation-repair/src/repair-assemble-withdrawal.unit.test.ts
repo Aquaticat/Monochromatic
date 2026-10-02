@@ -33,6 +33,8 @@ import {
   type ChunkPair,
   type ChunkRepairOutcome,
 } from '../dist/final/node/index.mjs';
+import { warningRecordingLogger, } from './capturing-logger.test-fixture.ts';
+import { sliceBuilderFor, } from './repair-assemble-slice.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 /**
@@ -68,51 +70,9 @@ const ORPHANING_REPAIR = 'Mittens naps on the windowsill through the afternoon.'
 const TARGET_TEXT = `${REFERENCING_SLICE}\n\n${DEFINING_SLICE}`;
 
 /**
- Builds one prepared slice over a span of the document.
- 
- @param sliceIndex - stamped index of this slice
- 
- @param text - archive wording at it
- 
- @returns Pair shaped as preparation returns one
- 
- @example
- ```ts
- const slice = sliceOf({ sliceIndex: 0, text: REFERENCING_SLICE, },);
- ```
+ Prepares one slice over the span of {@link TARGET_TEXT}.
  */
-function sliceOf(
-  {
-    sliceIndex,
-    text,
-  }: {
-    readonly sliceIndex: number;
-    readonly text: string;
-  },
-): ChunkPair {
-  /**
-   Where this slice starts in the assembled document, found by search since
-   each fixture wording is unique in it.
-   */
-  const startOffset = TARGET_TEXT.indexOf(text,);
-
-  return {
-    source: {
-      sliceIndex,
-      text: '小猫在窗台上打盹。',
-      startOffset: 0,
-      endOffset: 9,
-      nodes: [],
-    },
-    target: {
-      sliceIndex,
-      text,
-      startOffset,
-      endOffset: startOffset + text.length,
-      nodes: [],
-    },
-  };
-}
+const sliceOf = sliceBuilderFor({ targetText: TARGET_TEXT, },);
 
 /**
  Slices every case assembles.
@@ -198,35 +158,6 @@ function outcomeOf(
 }
 
 /**
- Logger that keeps its warnings, so a case can read what assembly said.
- 
- @returns Logger plus the array its warnings land in
- 
- @example
- ```ts
- const { logger, warnings, } = capturingLogger();
- ```
- */
-function capturingLogger(): {
-  readonly logger: typeof l;
-  readonly warnings: readonly string[];
-} {
-  /**
-   Warnings recorded so far.
-   */
-  const warnings: string[] = [];
-  return {
-    logger: {
-      ...l,
-      warn: function record(message: string,): void {
-        warnings.push(message,);
-      },
-    } as typeof l,
-    warnings,
-  };
-}
-
-/**
  Assembles one repair of the referencing slice.
  
  @param repairedText - wording that slice settled on
@@ -244,7 +175,8 @@ function assembleWith(
   readonly result: ReturnType<typeof assembleRepair>;
   readonly warnings: readonly string[];
 } {
-  const { logger, warnings, } = capturingLogger();
+  const warnings: string[] = [];
+  const logger = warningRecordingLogger({ base: l, warnings, },);
 
   return {
     result: assembleRepair({

@@ -47,7 +47,7 @@ import {
   openNamespacedCache,
   type SliceNamespace,
 } from '../../dist/final/node/index.mjs';
-import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirOfEmptyRecords, } from '../scratch-dir.test-fixture.ts';
 
 //region Fixtures
 
@@ -123,22 +123,9 @@ async function cacheHolding(
   { names, }: { readonly names: readonly string[]; },
 ): Promise<{ readonly dir: string; } & AsyncDisposable> {
   // Throwaway directory standing in for a shared slice cache.
-  return await scratchDirWith({
+  return await scratchDirOfEmptyRecords({
     prefix: 'translation-repair-slice-cache-',
-    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
-      await Promise.all(names.map(async function writeOne(name,): Promise<void> {
-        await writeFile(
-          join(
-            dir,
-            name,
-          ),
-          '{}',
-          'utf8',
-        );
-      },),);
-
-      return { dir, };
-    },
+    names,
   },);
 }
 

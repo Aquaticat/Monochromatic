@@ -25,6 +25,7 @@ import {
   type ProviderRecord,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -190,7 +191,7 @@ function stubBudgets(): {
  const outcome = await ask({ client, modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },);
  ```
  */
-async function ask(
+function ask(
   {
     client,
     modelId,
@@ -199,15 +200,12 @@ async function ask(
     readonly modelId: Parameters<ReturnType<typeof createRoutingClient>['chatText']>[0]['modelId'];
   },
 ): Promise<{ readonly text: string; } | { readonly thrown: unknown; }> {
-  try {
-    return { text: (await client.chatText({
-      modelId,
-      messages: MESSAGES,
-      signal: SIGNAL,
-    },)).text, };
-  } catch (error) {
-    return { thrown: error, };
-  }
+  return textCallOutcome({
+    client,
+    modelId,
+    messages: MESSAGES,
+    signal: SIGNAL,
+  },);
 }
 
 await describe({

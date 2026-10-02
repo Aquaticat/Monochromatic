@@ -6,8 +6,8 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 //
 // TEST SUPPORT, NOT PACKAGE SOURCE. Unit test files that kept their own copy
 // of these loggers, whatever they called the array, now import them from
-// here. Loggers that only look alike stay in their files: one pair records
-// warnings alone over its file's own tagged logger.
+// here, including the warning-only logger repair-assemble-withdrawal and
+// stage-call each spread over their own tagged logger.
 
 /**
  Drains nothing: every line is kept as it is emitted, so no buffer waits.
@@ -123,6 +123,39 @@ export function levelCapturingLogger({ lines, }: { readonly lines: string[]; },)
     info: keepAt({ level: 'info', },),
     trace: keepAt({ level: 'trace', },),
     warn: keepAt({ level: 'warn', },),
+  };
+}
+
+/**
+ Logger recording only the warnings a base logger would otherwise emit,
+ every other level deferring to that base logger as it is.
+
+ @param base - logger this wraps, read for every level but warn
+
+ @param warnings - array the warn level's messages land in
+
+ @returns Logger behaving as the base logger everywhere but warn
+
+ @example
+ ```ts
+ const warnings: string[] = [];
+ const logger = warningRecordingLogger({ base: l, warnings, },);
+ ```
+ */
+export function warningRecordingLogger(
+  {
+    base,
+    warnings,
+  }: {
+    readonly base: Logger;
+    readonly warnings: string[];
+  },
+): Logger {
+  return {
+    ...base,
+    warn: function record(message: string,): void {
+      warnings.push(message,);
+    },
   };
 }
 

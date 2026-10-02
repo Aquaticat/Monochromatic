@@ -7,9 +7,7 @@
  @module
  */
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
-  caught,
   describe,
   expect,
   it,
@@ -18,9 +16,8 @@ import {
 import {
   DEFAULT_CANDIDATE_CAP,
   readCoverageProbeArguments,
-  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
-import { capNotDigits, } from './cap-argument-refusal.test-fixture.ts';
+import { capNotDigits, refusalOf, } from './cap-argument-refusal.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
@@ -92,15 +89,8 @@ await describe({
           [['--only',], `--only needs a value written after it. ${USAGE}`,],
           [['--only', ',',], '--only needs at least one entry id, and "," names none',],
         ];
-        expect(mistyped.map(function refusalOf([typed,],): string {
-          /**
-           What the reader threw.
-           */
-          const refusal = caught(function readsTyped(): void {
-            askedFrom({ typed, },);
-          },);
-          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-          return caughtValueText(refusal,);
+        expect(mistyped.map(function refusalFor([typed,],): string {
+          return refusalOf({ typed, askedFrom, },);
         },),).toEqual(mistyped.map(function expectedOf([, said,],): string {
           return said;
         },),);

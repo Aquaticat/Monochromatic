@@ -29,6 +29,7 @@ import {
   type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { warningRecordingLogger, } from './capturing-logger.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 import {
   isPurrReply,
@@ -142,36 +143,6 @@ async function callWith(
   },);
 }
 
-/**
- Logger that keeps its warnings, so a case can read WHAT a lost voice
- recorded rather than only that a voice was lost.
- 
- @returns Logger plus the array its warnings land in
- 
- @example
- ```ts
- const { logger, warnings, } = capturingLogger();
- ```
- */
-function capturingLogger(): {
-  readonly logger: typeof l;
-  readonly warnings: readonly string[];
-} {
-  /**
-   Warnings recorded so far.
-   */
-  const warnings: string[] = [];
-  return {
-    logger: {
-      ...l,
-      warn: function record(message: string,): void {
-        warnings.push(message,);
-      },
-    } as typeof l,
-    warnings,
-  };
-}
-
 await describe({
   name: attemptStageCall.name,
   children: [
@@ -229,7 +200,8 @@ await describe({
         + 'a rejected guard, which need three different fixes and read '
         + 'identically without it',
       fn: async () => {
-        const { logger, warnings, } = capturingLogger();
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
         await callWith({
           client: scriptedClient({
             outcome: {
@@ -252,7 +224,8 @@ await describe({
         + 'failure is diagnosable: the Kimi-K3 outage was a two-character '
         + 'channel marker that explained 507 mismatches in one pass',
       fn: async () => {
-        const { logger, warnings, } = capturingLogger();
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
         await callWith({
           client: scriptedClient({
             outcome: {
@@ -273,7 +246,8 @@ await describe({
       name: 'TRUNCATES a long reply and flattens its line breaks, so one lost '
         + 'voice cannot bury the rest of a run log',
       fn: async () => {
-        const { logger, warnings, } = capturingLogger();
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
         await callWith({
           client: scriptedClient({
             outcome: {
@@ -300,7 +274,8 @@ await describe({
         + 'voice, since a refusal and a parse failure call for different '
         + 'responses and both read as a bare lost voice otherwise',
       fn: async () => {
-        const { logger, warnings, } = capturingLogger();
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
         await callWith({
           client: scriptedClient({
             outcome: {

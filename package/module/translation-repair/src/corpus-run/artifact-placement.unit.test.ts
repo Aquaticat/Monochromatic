@@ -1,6 +1,6 @@
 /**
  Tests for how one settled artifact answers "which pipeline produced you".
- 
+
  FOUR ANSWERS, NOT TWO, and the difference between them is what an operator
  does next. A `placed` artifact belongs to a named generation. A `legacy` one
  is a perfectly good result whose pipeline can no longer be named, and the
@@ -8,30 +8,30 @@
  deleted. A `malformed` one belongs to the reader that reports malformed
  files. Collapsing any pair of those tells an operator to delete good work or
  to keep a file the pool would admit under a name its bytes never claimed.
- 
+
  THE CENSUS IS THE ONLY CALLER, and it aggregates: it counts artifacts per
  generation and reports totals. Every rule here reaches the suite as a count,
  which is why a rule that placed a file in the wrong bucket could survive as
  long as the total stayed right.
- 
+
  THREE CASES PIN DOCUMENTED REGRESSIONS the module's own comments describe.
  A tip of `HEAD` resolves against the READER's checkout rather than against
  whatever produced the artifact. An artifact carrying no id at all used to
  skip the identity check and be placed on its file name alone. A digest this
  build cannot read is legacy rather than garbage, because the recorded value
  names the scheme that produced it.
- 
+
  THE POOL LINES NAME A SHAPE AND NEVER A VALUE. A malformed id or digest is
  whatever bytes a bad file carries, and `readPlacement` runs inside the pass
  as well as in the readers, so those lines reach a pass's stdout. Four cases
  capture what is printed and pin both halves: the type and length are there,
  the recorded value is not.
- 
+
  DISPOSABLE FIXTURES ONLY: every case writes into its own `mkdtemp` directory
  and nothing here reads a real run.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -52,6 +52,7 @@ import {
   type Placement,
   readPlacement,
 } from '../../dist/final/node/index.mjs';
+import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
@@ -138,73 +139,14 @@ async function placementOf(
 }
 
 /**
- Captures what `readPlacement` prints, forwarding every line onward so the
- runner still sees it.
- 
- CHAINED RATHER THAN REPLACED, from when the suite ran its cases at once:
- each capture wraps whatever reporter it finds, which may be another case's
- wrapper, and on disposal it stops recording and unwraps only if it is still
- the outermost. A capture that restored the real reporter outright would
- silently cut a sibling's capture out of the chain mid-case, which is how a
- first version of these cases captured nothing or six lines. The suite now
- runs one case at a time (ledger B79), so the chain is a second safeguard
- rather than the only one.
- 
- Callers filter by their own file name, since the chain records everything.
- 
- @param lines - where captured lines go
- 
- @returns Captured lines, disposable
- 
- @example
- ```ts
- using printed = collectingLogs({ lines: [], },);
- ```
- */
-function collectingLogs(
-  { lines, }: { readonly lines: string[]; },
-): { readonly lines: readonly string[]; } & Disposable {
-  /**
-   Reporter found on entry, which every line is forwarded to.
-   */
-  const previous = console.log;
-
-  /**
-   Whether this capture is still recording.
-   */
-  const recording = { open: true, };
-
-  /**
-   This capture's own wrapper, kept so disposal can tell whether it is still
-   the outermost.
-   */
-  const mine = (...parts: readonly unknown[]): void => {
-    if (recording.open) {
-      lines.push(parts.map(String,)
-        .join(' ',),);
-    }
-    previous(...parts,);
-  };
-  console.log = mine;
-  return {
-    lines,
-    [Symbol.dispose]: () => {
-      recording.open = false;
-      if (console.log === mine)
-        console.log = previous;
-    },
-  };
-}
-
-/**
  Keeps the lines a placement printed about one file.
- 
+
  @param lines - everything captured while the case ran
- 
+
  @param name - file the case placed
- 
+
  @returns Lines naming that file
- 
+
  @example
  ```ts
  const own = linesAbout({ lines: printed.lines, name: 'Mismatch.json', },);
@@ -520,8 +462,8 @@ await describe({
       name: 'NAMES A MISMATCHED ID BY SHAPE ALONE on the POOL line and never by '
         + 'value: a malformed id is whatever bytes a bad file carries, and the '
         + 'line reaches the pass stdout',
-      fn: async () => {
-        using printed = collectingLogs({ lines: [], },);
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
         expect(await placementOf({
           body: {
@@ -545,8 +487,8 @@ await describe({
 
     it({
       name: 'NAMES AN ABSENT ID as absent on the POOL line',
-      fn: async () => {
-        using printed = collectingLogs({ lines: [], },);
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
         expect(await placementOf({
           body: {
@@ -569,8 +511,8 @@ await describe({
 
     it({
       name: 'NAMES AN ID RECORDED AS NULL as null on the POOL line, apart from an absent one',
-      fn: async () => {
-        using printed = collectingLogs({ lines: [], },);
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
         expect(await placementOf({
           body: {
@@ -594,8 +536,8 @@ await describe({
 
     it({
       name: 'NAMES AN ID RECORDED AS AN ARRAY by its kind alone on the POOL line, never its members',
-      fn: async () => {
-        using printed = collectingLogs({ lines: [], },);
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
         expect(await placementOf({
           body: {
@@ -619,8 +561,8 @@ await describe({
 
     it({
       name: 'NAMES AN ID RECORDED AS AN OBJECT by its kind alone on the POOL line, never its fields',
-      fn: async () => {
-        using printed = collectingLogs({ lines: [], },);
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
         expect(await placementOf({
           body: {
@@ -644,8 +586,8 @@ await describe({
 
     it({
       name: 'NAMES A NON-STRING DIGEST BY SHAPE on the POOL line',
-      fn: async () => {
-        using printed = collectingLogs({ lines: [], },);
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
         expect(await placementOf({
           body: {
@@ -670,8 +612,8 @@ await describe({
     it({
       name: 'NAMES AN UNREADABLE DIGEST BY LENGTH ALONE on the POOL line, since '
         + 'a value this build cannot read may be anything at all',
-      fn: async () => {
-        using printed = collectingLogs({ lines: [], },);
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
         expect(await placementOf({
           body: {

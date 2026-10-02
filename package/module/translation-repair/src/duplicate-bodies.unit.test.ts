@@ -83,6 +83,40 @@ const FROZEN_COPIES: readonly {
 ];
 
 /**
+ Test helpers kept in each file that uses them because they write a process
+ global directly: the global-writes scan (`global-writes-sequenced.unit.test.ts`)
+ follows a writer to the cases that call it by name within one file only, so
+ a shared copy in a fixture would write with no case the scan can see
+ (ledger B111). Each group as its sorted locations, with the reason it stays.
+ */
+const GLOBAL_WRITER_COPIES: readonly {
+  readonly locations: readonly string[];
+  readonly reason: string;
+}[] = [
+  {
+    locations: [
+      'corpus-run/editor-width-report.unit.test.ts#runsDirPointedAt',
+      'corpus-run/probe-relabel-artifact.unit.test.ts#runsDirPointedAt',
+    ],
+    reason: 'points TRANSLATION_REPAIR_RUNS_DIR at a case\'s directory, which the code under test reads itself',
+  },
+  {
+    locations: [
+      'corpus-run/editor-width-report.unit.test.ts#restore',
+      'corpus-run/probe-relabel-artifact.unit.test.ts#restore',
+    ],
+    reason: 'nested inside runsDirPointedAt, putting the variable back',
+  },
+  {
+    locations: [
+      'corpus-run/pass-entry.unit.test.ts#(anonymous)',
+      'corpus-run/slice-overlap.unit.test.ts#(anonymous)',
+    ],
+    reason: 'puts TRANSLATION_REPAIR_SLICE_OVERLAP back after a case set it, which the overlap reader reads itself',
+  },
+];
+
+/**
  Node kinds that carry a function body.
  */
 const FUNCTION_KINDS: ReadonlySet<string> = new Set([
@@ -632,7 +666,7 @@ await describe({
     },),
     it({
       name: 'KEEPS NO BODY IN TWO PLACES across the package\'s source, tests and fixtures, but the frozen copies '
-        + 'listed with their reasons, and every listed copy still stands',
+        + 'and global-writer copies listed with their reasons, and every listed copy still stands',
       fn: async () => {
         /**
          Every source file, tests and test fixtures included: a helper copied
@@ -643,7 +677,10 @@ await describe({
         expect(files.some(function isTestFile(file,): boolean {
           return file.isTest;
         },),).toBe(true,);
-        expect(duplicateGroups({ files, },),).toEqual(FROZEN_COPIES
+        expect(duplicateGroups({ files, },),).toEqual([
+          ...FROZEN_COPIES,
+          ...GLOBAL_WRITER_COPIES,
+        ]
           .map(function locationsOf({ locations, },): readonly string[] {
             return locations.toSorted();
           },)

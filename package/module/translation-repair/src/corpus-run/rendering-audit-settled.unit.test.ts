@@ -1,22 +1,22 @@
 /**
  Tests for the settled rendering audit's driver: what it buys, in what
  order, what it prints before buying, and what one audited row carries.
- 
+
  NO CASE REACHED THESE BEFORE. `capped` already carried one real cap defect
  (the args suite's header records it), `printPopulation` is the free reading
  a run prints before any roster is woken, and `auditOne` is where a subject's
  provenance and the roster's answers become the row every later reading
  interprets. Each is exported through the barrel for exactly this.
- 
+
  THE CLIENT IS HANDED IN, which is the rendering-6 shape: `main` builds one
  per run and `auditOne` counts every subject into it, so a scripted client
  here sees every model the roster asks and answers each with silence. The
  roster is the production one, read from the run configuration, so the
  cases assert against what the client was asked rather than against a list
  copied here.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -42,6 +42,7 @@ import {
   type SettledVerification,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
+import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
 
 /**
  Original every subject carries.
@@ -107,20 +108,20 @@ const OTHER_PAGE_TEXT = '虎斑猫在屋顶上晒太阳。\n';
 
 /**
  Builds one audit subject.
- 
+
  @param entryId - corpus entry
- 
+
  @param sliceIndex - slice index
- 
+
  @param auditsArchiveText - whether it audits the archive's own English
- 
+
  @param identity - what the producing run declared, none unless a case says
- 
+
  @param pageSourceText - whole original the slice was cut from, the linking
  page unless a case says
- 
+
  @returns Subject as the input module offers one
- 
+
  @example
  ```ts
  const subject = subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: false, },);
@@ -159,15 +160,15 @@ function subjectAt(
 
 /**
  Builds one artifact reading.
- 
+
  @param entryId - corpus entry
- 
+
  @param subjects - slices it offers
- 
+
  @param verification - provenance answer, verified unless a case says
- 
+
  @returns Reading as the input module returns one
- 
+
  @example
  ```ts
  const reading = readingOf({ entryId: 'mittens', subjects, },);
@@ -220,63 +221,15 @@ const TABBY = [subjectAt({
 },),];
 
 /**
- Captures what is printed, forwarding every line onward so the runner and a
- concurrent case still see their own; the describe using it runs one case
- at a time regardless.
- 
- @param lines - where captured lines go
- 
- @returns Captured lines, disposable
- 
- @example
- ```ts
- using printed = collectingLines({ lines: [], },);
- ```
- */
-function collectingLines(
-  { lines, }: { readonly lines: string[]; },
-): { readonly lines: readonly string[]; } & Disposable {
-  /**
-   Reporter found on entry, which every line is forwarded to.
-   */
-  const previous = console.log;
-
-  /**
-   Whether this capture is still recording.
-   */
-  const recording = { open: true, };
-
-  /**
-   This capture's own wrapper.
-   */
-  const mine = (...parts: readonly unknown[]): void => {
-    if (recording.open) {
-      lines.push(parts.map(String,)
-        .join(' ',),);
-    }
-    previous(...parts,);
-  };
-  console.log = mine;
-  return {
-    lines,
-    [Symbol.dispose]: () => {
-      recording.open = false;
-      if (console.log === mine)
-        console.log = previous;
-    },
-  };
-}
-
-/**
  Client answering every auditor with silence and recording who was asked
  and what it was shown.
- 
+
  @param asked - model ids, one per call, appended as calls arrive
- 
+
  @param shown - every request's messages as JSON, appended as calls arrive
- 
+
  @returns Client the driver calls
- 
+
  @example
  ```ts
  const client = quietClient({ asked: [], shown: [], },);
@@ -447,8 +400,8 @@ await describe({
         it({
           name: 'PRINTS one line per artifact with every count beside its denominator: subjects, '
             + 'retained, replaced, displaced, undecided and the verification',
-          fn: async () => {
-            using printed = collectingLines({ lines: [], },);
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
             printPopulation({
               readings: [readingOf({
@@ -467,8 +420,8 @@ await describe({
         it({
           name: 'SAYS WHAT A REFUSED VERIFICATION OBJECTED TO on its own line, since a slicing that '
             + 'moved under a settled artifact is the loudest thing this free reading can find',
-          fn: async () => {
-            using printed = collectingLines({ lines: [], },);
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
             printPopulation({
               readings: [readingOf({
@@ -489,8 +442,8 @@ await describe({
         it({
           name: 'NAMES THE RECIPE HALVES an unverifiable artifact lacks, so a reader can decide '
             + 'whether the gap explains the disagreement',
-          fn: async () => {
-            using printed = collectingLines({ lines: [], },);
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
             printPopulation({
               readings: [readingOf({

@@ -14,11 +14,10 @@
 
 import {
   describe,
-  expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import { expectAllAccepted, expectAllRefused, } from './rendering-glossary-candidate-kinds.test-fixture.ts';
 
 /**
  Original in which the cat overdoses day and night.
@@ -66,21 +65,13 @@ await describe({
     it({
       name: 'REFUSES "ODing", "JK skirt" and "Gaokao"',
       fn: async () => {
-        expect(REFUSED_CANDIDATES.map(function kindOf(candidate,): string {
-          return validateTranslatedSlice(candidate,).kind;
-        },),).toEqual(REFUSED_CANDIDATES.map(function invalid(): string {
-          return 'invalid';
-        },),);
+        expectAllRefused({ candidates: REFUSED_CANDIDATES, },);
       },
     },),
     it({
       name: 'ACCEPTS the owner\'s English and leaves MOD alone',
       fn: async () => {
-        expect(ACCEPTED_CANDIDATES.map(function kindOf(candidate,): string {
-          return validateTranslatedSlice(candidate,).kind;
-        },),).toEqual(ACCEPTED_CANDIDATES.map(function valid(): string {
-          return 'valid';
-        },),);
+        expectAllAccepted({ candidates: ACCEPTED_CANDIDATES, },);
       },
     },),
   ],

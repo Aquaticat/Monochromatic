@@ -22,6 +22,7 @@ import {
   COMMUNITY_GLOSSARY,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+import { expectAllAccepted, expectAllRefused, } from './rendering-glossary-candidate-kinds.test-fixture.ts';
 
 /**
  Original in which the kitten dances on stage in a kigurumi head.
@@ -87,21 +88,13 @@ await describe({
     it({
       name: 'REFUSES the head read as the wearer\'s and the archive\'s transliterated names',
       fn: async () => {
-        expect(REFUSED_CANDIDATES.map(function kindOf(candidate,): string {
-          return validateTranslatedSlice(candidate,).kind;
-        },),).toEqual(REFUSED_CANDIDATES.map(function invalid(): string {
-          return 'invalid';
-        },),);
+        expectAllRefused({ candidates: REFUSED_CANDIDATES, },);
       },
     },),
     it({
       name: 'PASSES the headpiece and the official names',
       fn: async () => {
-        expect(ACCEPTED_CANDIDATES.map(function kindOf(candidate,): string {
-          return validateTranslatedSlice(candidate,).kind;
-        },),).toEqual(ACCEPTED_CANDIDATES.map(function valid(): string {
-          return 'valid';
-        },),);
+        expectAllAccepted({ candidates: ACCEPTED_CANDIDATES, },);
       },
     },),
     it({

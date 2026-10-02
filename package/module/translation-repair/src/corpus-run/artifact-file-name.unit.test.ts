@@ -19,7 +19,6 @@
 import {
   mkdir,
   symlink,
-  writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -37,7 +36,7 @@ import {
   isArtifactFileName,
   listArtifactFiles,
 } from '../../dist/final/node/index.mjs';
-import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import { scratchDirOfEmptyRecords, } from '../scratch-dir.test-fixture.ts';
 
 //region Artifact file name tests
 
@@ -57,23 +56,9 @@ import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 async function directoryHolding(
   { names, }: { readonly names: readonly string[]; },
 ): Promise<AsyncDisposable & { readonly dir: string; }> {
-  // Disposable root for this case.
-  return await scratchDirWith({
+  return await scratchDirOfEmptyRecords({
     prefix: 'artifact-file-name-',
-    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
-      await Promise.all(names.map(async function writeOne(name,): Promise<void> {
-        await writeFile(
-          join(
-            dir,
-            name,
-          ),
-          '{}',
-          'utf8',
-        );
-      },),);
-
-      return { dir, };
-    },
+    names,
   },);
 }
 

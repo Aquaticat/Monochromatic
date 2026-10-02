@@ -19,7 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import { expectAllAccepted, expectAllRefused, } from './rendering-glossary-candidate-kinds.test-fixture.ts';
 import { seededAmong, } from './rendering-glossary-seeded.test-fixture.ts';
 
 /**
@@ -76,21 +76,13 @@ await describe({
     it({
       name: 'REFUSES the calques the page shipped',
       fn: async () => {
-        expect(REFUSED_CANDIDATES.map(function kindOf(candidate,): string {
-          return validateTranslatedSlice(candidate,).kind;
-        },),).toEqual(REFUSED_CANDIDATES.map(function invalid(): string {
-          return 'invalid';
-        },),);
+        expectAllRefused({ candidates: REFUSED_CANDIDATES, },);
       },
     },),
     it({
       name: 'PASSES the English meaning',
       fn: async () => {
-        expect(ACCEPTED_CANDIDATES.map(function kindOf(candidate,): string {
-          return validateTranslatedSlice(candidate,).kind;
-        },),).toEqual(ACCEPTED_CANDIDATES.map(function valid(): string {
-          return 'valid';
-        },),);
+        expectAllAccepted({ candidates: ACCEPTED_CANDIDATES, },);
       },
     },),
   ],

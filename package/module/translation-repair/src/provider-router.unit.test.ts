@@ -21,6 +21,7 @@ import {
   type ProviderName,
   type ProviderRecord,
 } from '../dist/final/node/index.mjs';
+import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -330,7 +331,7 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
  const outcome = await ask({ client, },);
  ```
  */
-async function ask(
+function ask(
   {
     client,
     modelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -339,15 +340,12 @@ async function ask(
     readonly modelId?: Parameters<ReturnType<typeof createRoutingClient>['chatText']>[0]['modelId'];
   },
 ): Promise<{ readonly text: string; } | { readonly thrown: unknown; }> {
-  try {
-    return { text: (await client.chatText({
-      modelId,
-      messages: MESSAGES,
-      signal: SIGNAL,
-    },)).text, };
-  } catch (error) {
-    return { thrown: error, };
-  }
+  return textCallOutcome({
+    client,
+    modelId,
+    messages: MESSAGES,
+    signal: SIGNAL,
+  },);
 }
 
 await describe({

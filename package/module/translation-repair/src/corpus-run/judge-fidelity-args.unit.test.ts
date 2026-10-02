@@ -7,9 +7,7 @@
  @module
  */
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
-  caught,
   describe,
   expect,
   it,
@@ -19,9 +17,8 @@ import {
   DAMAGE_KINDS,
   DEFAULT_TRIAL_CAP,
   readFidelityArguments,
-  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
-import { capNotDigits, } from './cap-argument-refusal.test-fixture.ts';
+import { capNotDigits, refusalOf, } from './cap-argument-refusal.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 
 /**
@@ -53,29 +50,6 @@ function askedFrom(
       typed,
     },),
   },);
-}
-
-/**
- Message of the stated refusal reading what was typed drew.
-
- @param typed - what the operator wrote after the script path
-
- @returns The refusal's message
-
- @example
- ```ts
- const said = refusalOf({ typed: ['--damage', 'scratches',], },);
- ```
- */
-function refusalOf({ typed, }: { readonly typed: readonly string[]; },): string {
-  /**
-   What the reader threw.
-   */
-  const refusal = caught(function readsTyped(): void {
-    askedFrom({ typed, },);
-  },);
-  expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-  return caughtValueText(refusal,);
 }
 
 await describe({
@@ -110,7 +84,7 @@ await describe({
         + 'Object.prototype, which a plain-object table once answered with a function (ledger B75)',
       fn: async () => {
         expect(['scratches', 'constructor', '__proto__', 'toString',].map(function refusedDefect(name,): string {
-          return refusalOf({ typed: ['--damage', name,], },);
+          return refusalOf({ typed: ['--damage', name,], askedFrom, },);
         },),).toEqual([
           '--damage takes deletion, insertion or alteration, not "scratches"',
           '--damage takes deletion, insertion or alteration, not "constructor"',
@@ -142,7 +116,7 @@ await describe({
           [['--context=yes',], `--context takes no value, and --context=yes gives it one. ${USAGE}`,],
         ];
         expect(mistyped.map(function refusalFor([typed,],): string {
-          return refusalOf({ typed, },);
+          return refusalOf({ typed, askedFrom, },);
         },),).toEqual(mistyped.map(function expectedOf([, said,],): string {
           return said;
         },),);

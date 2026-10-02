@@ -1,7 +1,7 @@
 /**
  Tests for the report over a persisted rendering audit, and for both CLIs at
  their boundary.
- 
+
  NO CASE REACHED THESE BEFORE. `readRunRows` decides what a report is a
  report of, `newestRun` decides which run is meant when none is named, and
  `printAcross` is the only across-run reading; each is exported through the
@@ -9,13 +9,13 @@
  throwaway runs and an empty archive, so the refusal policy rendering-7 set
  (a stated refusal exits 6 with its line and no frames) is proved at the
  boundary an operator meets rather than at the throw.
- 
+
  DISPOSABLE FIXTURES ONLY: every run is written under its own `mkdtemp`
  directory, in the shape the probe store writes, and nothing here reads a
  real run.
- 
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -42,6 +42,7 @@ import {
   type SettledAuditRow,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { relayingConsoleLog, } from './console-log-capture.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 
 /**
@@ -113,13 +114,13 @@ const OTHER_TEXTS = {
 
 /**
  Builds one audited slice as the probe persists it.
- 
+
  @param sliceIndex - slice index
- 
+
  @param texts - what the audit was shown, omitted to leave it unrecorded
- 
+
  @returns Row shaped as the probe persists it
- 
+
  @example
  ```ts
  const row = rowFor({ sliceIndex: 0, texts: SAME_TEXTS, },);
@@ -167,15 +168,15 @@ function rowFor(
 /**
  Writes one run file in the shape the probe store writes, under a runs
  directory of the caller's choosing.
- 
+
  @param runsDir - throwaway runs directory
- 
+
  @param stamp - filename-safe instant the run started at
- 
+
  @param body - top-level fields, which a case may leave incomplete on purpose
- 
+
  @returns Path written
- 
+
  @example
  ```ts
  const path = await writeRun({ runsDir, stamp: '2026-08-25T01-00-00.000Z', body: { rows: [], }, },);
@@ -225,14 +226,14 @@ async function writeRun(
 
 /**
  A complete run over the given rows.
- 
+
  @param rows - rows it bought
- 
+
  @param roster - roster it recorded, absent to write a run from before the
  field was kept
- 
+
  @returns Top-level fields
- 
+
  @example
  ```ts
  const body = runOver({ rows: [rowFor({ sliceIndex: 0, },),], roster: ROSTER, },);
@@ -259,53 +260,6 @@ function runOver(
 
 
 /**
- Captures what is printed, forwarding every line onward; the describe using
- it runs one case at a time.
- 
- @param lines - where captured lines go
- 
- @returns Captured lines, disposable
- 
- @example
- ```ts
- using printed = collectingLines({ lines: [], },);
- ```
- */
-function collectingLines(
-  { lines, }: { readonly lines: string[]; },
-): { readonly lines: readonly string[]; } & Disposable {
-  /**
-   Reporter found on entry, which every line is forwarded to.
-   */
-  const previous = console.log;
-
-  /**
-   Whether this capture is still recording.
-   */
-  const recording = { open: true, };
-
-  /**
-   This capture's own wrapper.
-   */
-  const mine = (...parts: readonly unknown[]): void => {
-    if (recording.open) {
-      lines.push(parts.map(String,)
-        .join(' ',),);
-    }
-    previous(...parts,);
-  };
-  console.log = mine;
-  return {
-    lines,
-    [Symbol.dispose]: () => {
-      recording.open = false;
-      if (console.log === mine)
-        console.log = previous;
-    },
-  };
-}
-
-/**
  What a built command wrote and how it exited.
  */
 type CommandRun = {
@@ -328,13 +282,13 @@ type CommandRun = {
 /**
  Runs a built command with every provider key withheld, so the child can
  neither refuse for the wrong reason nor spend.
- 
+
  @param command - built entry file
- 
+
  @param args - arguments after it
- 
+
  @returns Exit code and both streams
- 
+
  @example
  ```ts
  const run = await runBuilt({ command: REPORT_COMMAND, args: ['--run', path,], },);
@@ -597,8 +551,8 @@ await describe({
         it({
           name: 'PRINTS A BAND over the subjects both runs bought on identical text, and no sentence '
             + 'about moved or unverifiable slots',
-          fn: async () => {
-            using printed = collectingLines({ lines: [], },);
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
             /**
              Earlier run over the same text.
@@ -637,8 +591,8 @@ await describe({
         it({
           name: 'SAYS THE TEXT DISAGREES and leaves the slot out where both runs recorded it and the '
             + 'archive moved between them',
-          fn: async () => {
-            using printed = collectingLines({ lines: [], },);
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
             /**
              Earlier run over a different rendering of the slot.
@@ -671,8 +625,8 @@ await describe({
         it({
           name: 'SAYS A SLOT CANNOT BE CHECKED where one run recorded no text identity, which is a '
             + 'fact about the run and nothing about the archive',
-          fn: async () => {
-            using printed = collectingLines({ lines: [], },);
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
 
             /**
              Earlier run written before identities were recorded.

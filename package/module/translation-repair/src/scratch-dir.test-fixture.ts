@@ -24,6 +24,7 @@
 import {
   mkdtemp,
   rm,
+  writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -208,4 +209,51 @@ export async function scratchDirPrepared(
     await scratch[Symbol.asyncDispose]();
     throw error;
   }
+}
+
+/**
+ Makes a fresh directory holding exactly the named files, each the empty
+ JSON object, for cases about which names a directory reader takes as
+ records.
+
+ @param prefix - start of the directory's name, so a leftover shows which
+ test made it
+
+ @param names - file names to write, verbatim, so a case can write a name no
+ reader should take
+
+ @returns The directory, also as `dir`, removed on scope exit
+
+ @throws whatever a write throws, after removing the directory
+
+ @example
+ ```ts
+ await using cache = await scratchDirOfEmptyRecords({ prefix: 'whiskers-cache-', names: ['Mittens.json',], },);
+ ```
+ */
+export async function scratchDirOfEmptyRecords(
+  {
+    prefix,
+    names,
+  }: {
+    readonly prefix: string;
+    readonly names: readonly string[];
+  },
+): Promise<ScratchDir & { readonly dir: string; }> {
+  return await scratchDirWith({
+    prefix,
+    setup: async function seeded({ path: dir, },): Promise<{ readonly dir: string; }> {
+      await Promise.all(names.map(async function writeOne(name,): Promise<void> {
+        await writeFile(
+          join(
+            dir,
+            name,
+          ),
+          '{}',
+          'utf8',
+        );
+      },),);
+      return { dir, };
+    },
+  },);
 }

@@ -25,6 +25,7 @@ import {
   StreamBoundError,
   StreamCutShortError,
 } from '../dist/final/node/index.mjs';
+import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import { stubWetBudgets, } from './provider-router-wet-budgets.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
@@ -141,7 +142,7 @@ function stubProviders({ slow, }: { readonly slow: readonly string[]; },): {
  const outcome = await ask({ client, modelId: SEAT_BEDROCK_ONLY_TEXT, },);
  ```
  */
-async function ask(
+function ask(
   {
     client,
     modelId,
@@ -150,15 +151,12 @@ async function ask(
     readonly modelId: Parameters<ReturnType<typeof createRoutingClient>['chatText']>[0]['modelId'];
   },
 ): Promise<{ readonly text: string; } | { readonly thrown: unknown; }> {
-  try {
-    return { text: (await client.chatText({
-      modelId,
-      messages: MESSAGES,
-      signal: SIGNAL,
-    },)).text, };
-  } catch (error) {
-    return { thrown: error, };
-  }
+  return textCallOutcome({
+    client,
+    modelId,
+    messages: MESSAGES,
+    signal: SIGNAL,
+  },);
 }
 
 /**
