@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { signaturesOf, } from './corpus-run/attribution-line.ts';
 import {
   declaredNameNote,
@@ -57,7 +59,7 @@ type PageName = {
   readonly rendering: string;
 
   /**
-   Where the pair was read: the link's href, or the signature line.
+   Where the pair was read: the link's href, the signature line, or the heading it stands in.
    */
   readonly evidence: string;
 };
@@ -83,7 +85,9 @@ export type Link = {
  @param text - document text
 
  @returns Every `[text](href)` whose text carries no nested bracket and
- whose href carries no space; images are left out
+ whose href carries no space; images are left out. Where a text does carry
+ a `[`, the scan resumes at that inner bracket, as CommonMark matches a `]`
+ to its nearest opener: `[Maomao[](u)` yields the empty-text link `[](u)`
 
  @example
  ```ts
@@ -253,11 +257,11 @@ function signaturePairs(
     at,
   ): readonly PageName[] {
     /**
-     Archive's signature at the same position.
+     Archive's signature at the same position, always present:
+     `signaturePairs` returns early unless source and target have the same
+     length.
      */
-    const partner = target[at];
-    if (partner === undefined)
-      return [];
+    const partner = nonNullishOrThrow(target[at],);
     /**
      Name as the archive spells it.
      */
@@ -312,12 +316,12 @@ function pairsInOrder(
     readonly name: PageName;
   }[] {
     /**
-     Archive's heading at the same position.
+     Archive's heading at the same position, always present: `pairsInOrder`
+     returns early unless source and target have the same length.
      */
-    const rendering = target[index]
-      ?.text;
-    if ((rendering === undefined) || (rendering === '')
-      || (rendering === heading.text))
+    const rendering = nonNullishOrThrow(target[index],)
+      .text;
+    if ((rendering === '') || (rendering === heading.text))
       return [];
     if (!carriesHan({ text: heading.text, },))
       return [];

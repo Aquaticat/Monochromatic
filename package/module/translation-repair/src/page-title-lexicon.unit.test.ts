@@ -191,6 +191,18 @@ await describe({
           },
         },),
         it({
+          name: 'REFUSES A REPLY THAT IS NOT A RECORD AT ALL, and a titles list whose item is not a record either',
+          fn: async () => {
+            expect({
+              notRecord: isPageTitleLexiconWire(['Song of the Cat',],),
+              itemNotRecord: isPageTitleLexiconWire({ titles: [1,], },),
+            },).toEqual({
+              notRecord: false,
+              itemNotRecord: false,
+            },);
+          },
+        },),
+        it({
           name: 'SHOWS the lexicon the page\'s declared identity (ledger B28): it is told to give a work its official '
             + 'English title, and the web lookups and notes that establish one are there',
           fn: async () => {

@@ -235,5 +235,117 @@ await describe({
         expect(lines.slice(1,),).toEqual(['- 午睡 (heading): "The Nap"',],);
       },
     },),
+    it({
+      name: 'STOPS READING LINKS where a bracket never closes: a link before the break is still read, and the scan '
+        + 'never finds a link past an opening bracket with no `]` anywhere after it',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '[小狗](https://example.invalid/dog)\n\n猫 [未闭合',
+          targetText: '[Puppy](https://example.invalid/dog)\n\nCat text',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 小狗 (link text, https://example.invalid/dog): "Puppy"',
+        ],);
+      },
+    },),
+    it({
+      name: 'STOPS READING LINKS where a destination never closes: a link before the break is still read, and the '
+        + 'scan never finds a link whose `)` is missing to the end of the text',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '[小狗](https://example.invalid/dog)\n\n[猫猫](https://example.invalid/missing-paren',
+          targetText: '[Puppy](https://example.invalid/dog)\n\n[Cat](https://example.invalid/missing-paren',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 小狗 (link text, https://example.invalid/dog): "Puppy"',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT AN IMAGE, reading past its `!` marker to the next real link',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '![猫猫](https://example.invalid/cat)\n\n[小鸟](https://example.invalid/bird)',
+          targetText: '![Maomao](https://example.invalid/cat)\n\n[Bird](https://example.invalid/bird)',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 小鸟 (link text, https://example.invalid/bird): "Bird"',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A LINK WHOSE TEXT CARRIES A NESTED BRACKET, reading only the empty-text link CommonMark '
+        + 'finds at the inner bracket, which pairs nothing, and then the next real link',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '[猫[](https://example.invalid/nested)\n\n[小鸟](https://example.invalid/bird)',
+          targetText: '[Cat[](https://example.invalid/nested)\n\n[Bird](https://example.invalid/bird)',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 小鸟 (link text, https://example.invalid/bird): "Bird"',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A LINK WHOSE SOURCE TEXT CARRIES NO HAN, even where the archive renders it otherwise',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '[Tomcat](https://example.invalid/tomcat) and [小猫](https://example.invalid/kitten)',
+          targetText: '[Tom](https://example.invalid/tomcat) and [Kitten](https://example.invalid/kitten)',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 小猫 (link text, https://example.invalid/kitten): "Kitten"',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A SIGNATURE THE ARCHIVE KEEPS UNCHANGED OR WHOSE ORIGINAL NAME CARRIES NO HAN, pairing only '
+        + 'the one the archive renders otherwise',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '它伸懒腰。\n\n——阿橘, 2024 年 1 月 1 日\n\nTom 挥手。\n\n——Tom, 2024 年 1 月 2 日\n\n它打盹。\n\n——锦猫, 2024 年 1 月 3 日',
+          targetText: 'It stretches.\n\n——阿橘, January 1, 2024\n\nTom waves.\n\n——Thomas, January 2, 2024\n\nIt naps.\n\n——Jinmao, January 3, 2024',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 锦猫 (signature): "Jinmao"',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A HEADING WHOSE SOURCE TEXT CARRIES NO HAN, pairing only the one the archive renders otherwise',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '## Morning\n\n天亮了。\n\n## 左右\n\n猫在门口犹豫。\n',
+          targetText: '## Dawn\n\nIt dawns.\n\n## Conflict\n\nThe cat hesitates at the door.\n',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 左右 (heading): "Conflict"',
+        ],);
+      },
+    },),
+    it({
+      name: 'STOPS READING AN HTML HEADING THAT NEVER CLOSES, keeping a well-formed heading read before it',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '<h3 align="center">猫之歌</h3>\n\n<h2>未闭合标题',
+          targetText: '<h3 align="center">Song of the Cat</h3>\n\n<h2>Unfinished',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 猫之歌 (heading): "Song of the Cat"',
+        ],);
+      },
+    },),
+    it({
+      name: 'SWALLOWS EVERYTHING AFTER AN UNCLOSED JSX COMMENT to the document\'s end, including a heading inside it',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '## 外面\n\n猫在院子里玩。\n\n{/* 旧内容\n## 旧标题\n\n这些猫不存在。\n',
+          targetText: '## Outside\n\nThe cat plays in the yard.\n',
+        },);
+        expect(lines.slice(1,),).toEqual([
+          '- 外面 (heading): "Outside"',
+        ],);
+      },
+    },),
   ],
 },);
