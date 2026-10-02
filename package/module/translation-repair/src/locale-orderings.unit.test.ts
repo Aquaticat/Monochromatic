@@ -14,6 +14,17 @@
  named function. Out of the scan's reach: `Intl` reached through
  `globalThis` or another name, and a member named through a variable.
 
+ A SECOND SCAN READS ORDERINGS THAT SKIP THE CODE-POINT ORDER (ledger B122):
+ an argument-less `sort` or `toSorted` in package source, which orders by
+ UTF-16 unit, so an astral character sorts before one in U+E000 to U+FFFF;
+ and a relational operator inside a function handed straight to `sort` or
+ `toSorted`, in source and tests alike, which orders text by UTF-16 unit and,
+ written as `left < right ? -1 : 1`, never answers zero for two equal keys,
+ which the comparator contract requires. Numbers order by subtraction, text by
+ `compareCodePoints`. Out of this scan's reach: a comparator declared apart
+ and handed in by name, and a helper a comparator calls; the package hands
+ every comparator inline.
+
  THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a
  scan shown able to find each form (ledger M21). Fixtures are cat-themed; the
  package case reads this package's own source.
@@ -151,8 +162,141 @@ function localeReads({ files, }: { readonly files: readonly SourceText[]; },): r
 
 //endregion Locale orderings
 
+//region Code-unit orderings
+// The second scan (ledger B122): orderings that skip `compareCodePoints` by
+// ordering on UTF-16 units, and comparators that cannot answer zero.
+
+/**
+ Array members that order their receiver.
+ */
+const SORT_MEMBERS: ReadonlySet<string> = new Set([
+  'sort',
+  'toSorted',
+],);
+
+/**
+ Binary operators that order two values.
+ */
+const RELATIONAL_OPERATORS: ReadonlySet<string> = new Set([
+  '<',
+  '<=',
+  '>',
+  '>=',
+],);
+
+/**
+ The sort call a node is, with the arguments it passes, where it is one.
+
+ @param node - node read
+
+ @returns The call's arguments, or no record where the node calls no sort
+
+ @example
+ ```ts
+ const sort = sortCallOf({ node, },); // { arguments: [] }
+ ```
+ */
+function sortCallOf({ node, }: { readonly node: TreeNode; },): readonly { readonly arguments: readonly unknown[]; }[] {
+  if ((node.type !== 'CallExpression') || (!isTreeNode(node.callee,)))
+    return [];
+  /**
+   The callee, past any parentheses or type wrappers.
+   */
+  const { inner: callee, } = unwrapped({ node: node.callee, },);
+  if ((!isTreeNode(callee,)) || (callee.type !== 'MemberExpression') || (!SORT_MEMBERS.has(memberName({ node: callee, },),)))
+    return [];
+  return [{ arguments: Array.isArray(node.arguments,) ? node.arguments : [], },];
+}
+
+/**
+ Every ordering in the files given that skips the package's code-point order,
+ keyed `path#site: form`, one entry per ordering: an argument-less `sort` or
+ `toSorted` in package source, which orders by UTF-16 unit, and a relational
+ operator inside a function handed straight to `sort` or `toSorted`, in
+ source and tests alike, which orders by UTF-16 unit on text and, written to
+ answer -1 or 1, never answers zero for two equal keys.
+
+ TESTS MAY SORT WITHOUT A COMPARATOR: every such sort in the package's tests
+ orders text-typed values to compare two sides, which no order changes
+ (measured with a type-aware census, ledger B122).
+
+ @param files - files read, tests among them
+
+ @returns Keys sorted, repeated once per ordering
+
+ @example
+ ```ts
+ const orderings = codeUnitOrderings({ files, },);
+ ```
+ */
+function codeUnitOrderings({ files, }: { readonly files: readonly SourceText[]; },): readonly string[] {
+  /**
+   Keys found so far.
+   */
+  const found: string[] = [];
+  for (const file of files) {
+    /**
+     The functions handed straight to a sort as its order, past any
+     parentheses or type wrappers, gathered as their calls are visited, which
+     is always before the functions themselves.
+     */
+    const comparators = new Set<unknown>();
+    /**
+     Nodes still to visit, each with its enclosing named function and whether
+     it sits inside a comparator.
+     */
+    const pending: {
+      readonly node: TreeNode;
+      readonly site: string;
+      readonly inComparator: boolean;
+    }[] = [{
+      node: parseSource({ file, },).program,
+      site: '<module>',
+      inComparator: false,
+    },];
+    for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
+      /**
+       Node visited now and its site.
+       */
+      const {
+        node,
+        site,
+      } = next;
+      /**
+       Whether the node is a comparator or sits inside one.
+       */
+      const inComparator = next.inComparator || (comparators.has(node,) && FUNCTION_KINDS.has(node.type,));
+      /**
+       Enclosing named function for the node's children.
+       */
+      const here = (FUNCTION_KINDS.has(node.type,) && isTreeNode(node.id,)) ? identifierName({ node: node.id, },) : site;
+      /**
+       The sort the node calls, where it calls one.
+       */
+      const [sort,] = sortCallOf({ node, },);
+      if (sort !== undefined) {
+        if ((sort.arguments.length === 0) && (!file.isTest))
+          found.push(`${file.path}#${here}: bare sort`,);
+        comparators.add(unwrapped({ node: sort.arguments[0], },).inner,);
+      }
+      if (inComparator && (node.type === 'BinaryExpression') && RELATIONAL_OPERATORS.has(String(node.operator,),))
+        found.push(`${file.path}#${here}: ${String(node.operator,)} in a comparator`,);
+      pending.push(...childNodes({ node, },).map(function withSite(child,) {
+        return {
+          node: child,
+          site: here,
+          inComparator,
+        };
+      },),);
+    }
+  }
+  return found.toSorted();
+}
+
+//endregion Code-unit orderings
+
 await describe({
-  name: 'locale orderings (ledger B95)',
+  name: 'locale and code-unit orderings (ledger B95, B122)',
   children: [
     it({
       name: 'FINDS localeCompare called, handed on or computed, the toLocale casing and formatting members, and '
@@ -209,6 +353,68 @@ await describe({
           return !file.isTest;
         },),).toBe(true,);
         expect(localeReads({ files, },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'FINDS an argument-less sort or toSorted in source, and a relational operator in a comparator handed '
+        + 'straight to a sort, named, wrapped or an arrow, in source and tests alike, and leaves a test\'s '
+        + 'argument-less sort, a comparator through compareCodePoints or by subtraction, a comparator handed in by '
+        + 'name, and a relational operator outside any comparator (ledger B122)',
+      fn: async () => {
+        expect(codeUnitOrderings({
+          files: [
+            {
+              path: 'litter.ts',
+              text: [
+                'export const names = [\'Tabby\', \'Mooncat\',].toSorted();',
+                'export const kept = [\'b\', \'a\',].sort();',
+                'export const purred = [\'b\', \'a\',].toSorted(function byPurr(left, right,) {',
+                '  return left < right ? -1 : 1;',
+                '},);',
+                'export const mewed = [\'b\', \'a\',].toSorted((function byMew(left: string, right: string,): number {',
+                '  return left >= right ? 1 : -1;',
+                '}),);',
+                'export const fine = [\'b\', \'a\',].toSorted(function byCode(left, right,) {',
+                '  return compareCodePoints({ left, right, },);',
+                '},);',
+                'export const counted = [3, 1,].toSorted(function byCount(left, right,) {',
+                '  return left - right;',
+                '},);',
+                'export const handed = [\'b\', \'a\',].toSorted(byPurr,);',
+                'export const outside = 1 < 2;',
+              ].join('\n',),
+              isTest: false,
+            },
+            {
+              path: 'catnip.unit.test.ts',
+              text: [
+                'export const sorted = [\'b\', \'a\',].toSorted();',
+                'export const ordered = [\'b\', \'a\',].toSorted((left, right,) => (left > right ? 1 : -1),);',
+              ].join('\n',),
+              isTest: true,
+            },
+          ],
+        },),).toEqual([
+          'catnip.unit.test.ts#<module>: > in a comparator',
+          'litter.ts#<module>: bare sort',
+          'litter.ts#<module>: bare sort',
+          'litter.ts#byMew: >= in a comparator',
+          'litter.ts#byPurr: < in a comparator',
+        ],);
+      },
+    },),
+    it({
+      name: 'ORDERS NO TEXT BY UTF-16 UNIT AND HANDS NO SORT A COMPARATOR THAT CANNOT ANSWER ZERO in the package\'s '
+        + 'source, or a comparator of that kind in its tests',
+      fn: async () => {
+        /**
+         Every package file, tests among them.
+         */
+        const files = await readPackageSource();
+        expect(files.some(function isSource(file,): boolean {
+          return !file.isTest;
+        },),).toBe(true,);
+        expect(codeUnitOrderings({ files, },),).toEqual([],);
       },
     },),
   ],
