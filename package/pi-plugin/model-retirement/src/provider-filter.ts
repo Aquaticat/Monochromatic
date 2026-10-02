@@ -2,14 +2,18 @@
  Translation from a live registry read into per-provider re-registration plans.
 
  pi replaces a provider's whole model list when an extension registers one with
- `models`, so a plan must carry every model the provider keeps, of every model type.
+ `models`, so a plan must carry every model the provider keeps, of every model type,
+ plus whatever the incumbent owner of that provider configured.
  `ModelRegistry.getAll()` reports chat models only, which is why image and classifier
  models are read separately and passed through untouched.
 
  @module
  */
 
-import type { ProviderModelConfig, } from '@earendil-works/pi-coding-agent';
+import type {
+  ProviderConfig,
+  ProviderModelConfig,
+} from '@earendil-works/pi-coding-agent';
 import type {
   AnyModel,
   Api,
@@ -26,15 +30,38 @@ import {
   type CatalogEntry,
   type Retirement,
 } from './retirement-rule.ts';
+import {
+  REGISTERABLE,
+  planGap,
+  toModelConfig
+} from './registration-gap.ts';
 
 //region Types
 
 /**
+ Incumbent extension configuration for one provider.
+
+ Modelled as a discriminant rather than an optional value because pi returns
+ `undefined` both for a builtin provider and for a provider another extension
+ registered as a native object, and those two cases demand opposite decisions.
+ */
+export type IncumbentConfig = {
+  /**
+   Whether pi returned a configuration for this provider.
+   */
+  readonly kind: 'present' | 'absent';
+  /**
+   Configuration pi returned, present only when the kind is `present`.
+   */
+  readonly config?: ForeignBorrowed<ProviderConfig>;
+};
+
+/**
  Registry reads this extension needs, injected so tests can fake them.
 
- Every element is marked {@link ForeignBorrowed} because model objects are owned by
- pi's registry: this package reads them and spreads them into configurations, and
- never mutates them.
+ Every model is marked {@link ForeignBorrowed} because model objects are owned by pi's
+ registry: this package reads them and spreads them into configurations, and never
+ mutates them.
  */
 export type CatalogRead = {
   /**
@@ -53,6 +80,14 @@ export type CatalogRead = {
   readonly readClassifierModels: (
     provider: string,
   ) => readonly ForeignBorrowed<ClassifierModel<ClassifierApi>>[];
+  /**
+   Providers another extension registered, in pi's own order.
+   */
+  readonly readRegisteredProviderIds: () => readonly string[];
+  /**
+   Incumbent configuration one extension registered for a provider.
+   */
+  readonly readProviderConfig: (provider: string,) => IncumbentConfig;
 };
 
 /**
@@ -64,9 +99,9 @@ export type ProviderFilterPlan = {
    */
   readonly provider: string;
   /**
-   Every model the provider keeps, of all three types, in registry order.
+   Configuration to register: the incumbent's, with its model list replaced.
    */
-  readonly models: readonly ProviderModelConfig[];
+  readonly config: ProviderConfig;
   /**
    Retirements that made this plan necessary.
    */
@@ -91,8 +126,8 @@ export type FilterPlanning = {
    */
   readonly abstentions: AbstentionCounts;
   /**
-   Providers the rule retired models for but that cannot be re-registered from catalog
-   metadata, so their models stay visible.
+   Providers the rule retired models for but that cannot be re-registered safely, so
+   their models stay visible.
    */
   readonly skippedProviders: readonly SkippedProvider[];
 };
@@ -106,122 +141,12 @@ export type SkippedProvider = {
    */
   readonly provider: string;
   /**
-   What stopped the re-registration, naming the offending model.
+   What stopped the re-registration, naming the offending model or owner.
    */
   readonly reason: string;
 };
 
-/**
- Sentinel meaning a model carries everything a re-registration needs.
- */
-export const REGISTERABLE: unique symbol = Symbol('model can be re-declared faithfully',);
-
 //endregion Types
-
-//region Model configuration
-
-/**
- Express one live model as a provider-model configuration.
-
- The spread carries every field pi's composer accepts, which is what preserves
- `thinkingLevelMap`, `promptCache`, `compat`, `samplingParams`, and `inputLimits`
- across a re-registration. Per-model `headers` do not survive: pi's
- `extensionModelFromDefinition` sets them to `undefined` for all three types.
-
- The discriminant is read off the model itself rather than through an alias, because
- only a direct `model.type` comparison narrows pi's `AnyModel` union.
-
- @param model - live model object read from the registry, owned by pi
-
- @returns configuration pi accepts inside `ProviderConfig.models`
-
- @example
- ```typescript
- toModelConfig(chatModel); // { ...chatModel, type: 'chat' }
- ```
- */
-export function toModelConfig(model: ForeignBorrowed<AnyModel>,): ProviderModelConfig {
-  if (model.type === 'image')
-    return {
-      ...model,
-      type: 'image',
-    };
-  if (model.type === 'classifier')
-    return {
-      ...model,
-      type: 'classifier',
-    };
-  return {
-    ...model,
-    type: 'chat',
-  };
-}
-
-/**
- Find what stops one model being re-declared.
-
- pi's `extensionModelFromDefinition` throws when a definition resolves neither an `api`
- nor a `baseUrl`, and one throw aborts the whole pass, so both are checked here first.
- Measured exposure: `azure-openai-responses` carries an empty `baseUrl` on all 44 of
- its chat models.
-
- @param model - configuration a plan would register
-
- @returns {@link REGISTERABLE}, or text naming the missing field and model
-
- @example
- ```typescript
- registrationGap(azureModel); // 'model gpt-4.1 carries no baseUrl'
- ```
- */
-function registrationGap(
-  model: ForeignBorrowed<ProviderModelConfig>,
-): string | typeof REGISTERABLE {
-  if (((typeof model.api) !== 'string') || (model.api
-    .length
-    === 0))
-    return `model ${model.id} carries no api`;
-  if (((typeof model.baseUrl) !== 'string') || (model.baseUrl
-    .length
-    === 0))
-    return `model ${model.id} carries no baseUrl`;
-  return REGISTERABLE;
-}
-
-/**
- Find the first reason one provider's plan cannot be registered.
-
- A provider is all-or-nothing: registering a partial list deletes every model missing
- from it, so one unregisterable model disqualifies the whole provider.
-
- @param models - every model the plan would carry
-
- @returns {@link REGISTERABLE}, or the first gap found
-
- @example
- ```typescript
- planGap({ models }); // REGISTERABLE
- ```
- */
-function planGap(
-  {
-    models,
-  }: {
-    readonly models: readonly ForeignBorrowed<ProviderModelConfig>[];
-  },
-): string | typeof REGISTERABLE {
-  for (const model of models) {
-    /**
-     Gap for the current model, when it has one.
-     */
-    const gap = registrationGap(model,);
-    if (gap !== REGISTERABLE)
-      return gap;
-  }
-  return REGISTERABLE;
-}
-
-//endregion Model configuration
 
 //region Planning
 
@@ -229,13 +154,19 @@ function planGap(
  Plan every provider re-registration a catalog needs.
 
  A provider only earns a plan when the rule retires one of its models, and a family's
- keeper is never retired, so a plan always carries at least the keeper. That is what
- makes a separate empty-provider guard unnecessary: a provider whose models have not
- been read yet produces no retirements and therefore no registration.
+ keeper is never retired, so a plan always carries at least the keeper.
+
+ Two ownership rules keep the pass from breaking providers it does not own. A provider
+ another extension registered as a native object has no readable configuration, so
+ re-registering it would replace that extension's streaming, auth, and image handlers
+ with a plain catalog list; those providers are skipped. A provider with a readable
+ configuration is re-registered with that configuration spread underneath the filtered
+ model list, which preserves `api`, `baseUrl`, `apiKey`, `headers`, `oauth`, and
+ `streamSimple`.
 
  @param read - injected registry reads
 
- @returns plans, every retirement, and the abstention tally
+ @returns plans, every retirement, the abstention tally, and the skipped providers
 
  @example
  ```typescript
@@ -283,14 +214,35 @@ export function planProviderFilters(
     );
   }
   /**
+   Providers another extension registered.
+   */
+  const registeredIds = read.readRegisteredProviderIds();
+  /**
    Plans in first-seen provider order.
    */
   const plans: ProviderFilterPlan[] = [];
   /**
-   Providers whose models cannot be re-declared from catalog metadata.
+   Providers whose models cannot be re-declared safely.
    */
   const skippedProviders: SkippedProvider[] = [];
   for (const [provider, retired,] of retiredByProvider) {
+    /**
+     Incumbent configuration for this provider, when pi exposes one.
+     */
+    const incumbent = read.readProviderConfig(provider,);
+    if ((incumbent.kind === 'absent') && registeredIds.includes(provider,)) {
+      skippedProviders.push({
+        provider,
+        reason: 'another extension registered it as a native provider and pi exposes no configuration to preserve, so re-registering would replace its streaming and auth',
+      },);
+      continue;
+    }
+    /**
+     Configuration the filtered model list is layered onto.
+     */
+    const base: ProviderConfig = incumbent.kind === 'present'
+      ? incumbent.config ?? {}
+      : {};
     /**
      Chat models this provider still serves.
      */
@@ -299,25 +251,28 @@ export function planProviderFilters(
         && (!retired.has(`${model.api}\u0000${model.id}`,));
     },);
     /**
-     Image models this provider serves, which the rule never retires.
-     */
-    const imageModels = read.readImageModels(provider,);
-    /**
-     Classifier models this provider serves, which the rule never retires.
-     */
-    const classifierModels = read.readClassifierModels(provider,);
-    /**
-     Every model the re-registration must carry.
+     Every model the re-registration must carry, of all three types.
      */
     const models: ProviderModelConfig[] = [
-      ...keptChat.map(toModelConfig,),
-      ...imageModels.map(toModelConfig,),
-      ...classifierModels.map(toModelConfig,),
+      ...keptChat.map(function toChatConfig(model,) {
+        return toModelConfig(model,);
+      },),
+      ...read.readImageModels(provider,)
+        .map(function toImageConfig(model,) {
+          return toModelConfig(model,);
+        },),
+      ...read.readClassifierModels(provider,)
+        .map(function toClassifierConfig(model,) {
+          return toModelConfig(model,);
+        },),
     ];
     /**
      First reason this provider cannot be re-registered, when there is one.
      */
-    const gap = planGap({ models, },);
+    const gap = planGap({
+      models,
+      base,
+    },);
     if (gap !== REGISTERABLE) {
       skippedProviders.push({
         provider,
@@ -327,11 +282,14 @@ export function planProviderFilters(
     }
     plans.push({
       provider,
-      models,
+      config: {
+        ...base,
+        models,
+      },
       retirements: decision.retirements
         .filter(function onProvider(retirement,) {
-        return retirement.provider === provider;
-      },),
+          return retirement.provider === provider;
+        },),
     },);
   }
   return {

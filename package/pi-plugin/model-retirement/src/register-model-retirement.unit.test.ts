@@ -25,6 +25,8 @@ import {
   applyRetirements,
   readsFromRegistry,
   registerModelRetirement,
+  type CatalogRead,
+  type IncumbentConfig,
   type RetirementLog,
 } from '../dist/final/node/index.mjs';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -234,12 +236,16 @@ function readOf(
     chat,
     images = [],
     classifiers = [],
+    registeredIds = [],
+    configs = {},
   }: {
     readonly chat: readonly Model<Api>[];
     readonly images?: readonly ImageModel<ImageApi>[];
     readonly classifiers?: readonly ClassifierModel<ClassifierApi>[];
+    readonly registeredIds?: readonly string[];
+    readonly configs?: Readonly<Record<string, ProviderConfig>>;
   },
-) {
+): CatalogRead {
   return {
     readChatModels: function readChatModels() {
       return chat;
@@ -249,6 +255,21 @@ function readOf(
     },
     readClassifierModels: function readClassifierModels() {
       return classifiers;
+    },
+    readRegisteredProviderIds: function readRegisteredProviderIds() {
+      return registeredIds;
+    },
+    readProviderConfig: function readProviderConfig(provider,): IncumbentConfig {
+      /**
+       Incumbent configuration for this provider, when the fixture supplies one.
+       */
+      const config = configs[provider];
+      if (config === undefined)
+        return { kind: 'absent', };
+      return {
+        kind: 'present',
+        config,
+      };
     },
   };
 }
@@ -260,7 +281,7 @@ function readOf(
  
  @returns model ids in registration order
  */
-function registeredIds(config: ProviderConfig,): readonly string[] {
+function registeredModelIds(config: ProviderConfig,): readonly string[] {
   return (config.models ?? []).map(function toId(model,) {
     return model.id;
   },);
@@ -275,7 +296,7 @@ await describe({
       name: readsFromRegistry.name,
       children: [
         it({
-          name: 'forwards all three registry reads',
+          name: 'forwards every registry read',
           fn: async function runReadForwarding() {
             /**
              Chat model the fake registry reports.
@@ -308,10 +329,65 @@ await describe({
                   return [classifier];
                 },
               },
+              idReader: {
+                getRegisteredProviderIds: function readIds() {
+                  return ['hyper'];
+                },
+              },
+              configReader: {
+                getRegisteredProviderConfig: function readAbsentConfig() {
+                  return undefined;
+                },
+              },
             },);
             expect(read.readChatModels(),).toEqual([chat],);
             expect(read.readImageModels('hyper',),).toEqual([image],);
             expect(read.readClassifierModels('hyper',),).toEqual([classifier],);
+            expect(read.readRegisteredProviderIds(),).toEqual(['hyper'],);
+            expect(read.readProviderConfig('hyper',),).toEqual({ kind: 'absent', },);
+          },
+        },),
+        it({
+          name: 'marks a readable incumbent configuration present',
+          fn: async function runPresentConfig() {
+            /**
+             Incumbent configuration the fake registry returns.
+             */
+            const incumbent = { api: 'pi-messages', };
+            /**
+             Reads adapted from a registry that exposes one provider configuration.
+             */
+            const read = readsFromRegistry({
+              chatReader: {
+                getAll: function getAll() {
+                  return [];
+                },
+              },
+              imageReader: {
+                getModelsOfType: function getImages() {
+                  return [];
+                },
+              },
+              classifierReader: {
+                getModelsOfType: function getClassifiers() {
+                  return [];
+                },
+              },
+              idReader: {
+                getRegisteredProviderIds: function readIds() {
+                  return ['radius'];
+                },
+              },
+              configReader: {
+                getRegisteredProviderConfig: function readPresentConfig() {
+                  return incumbent;
+                },
+              },
+            },);
+            expect(read.readProviderConfig('radius',),).toEqual({
+              kind: 'present',
+              config: incumbent,
+            },);
           },
         },),
       ],
@@ -349,7 +425,7 @@ await describe({
             expect(registrations.length,).toBe(1,);
             expect(registrations[0]?.name,).toBe('hyper',);
             expect(
-              registeredIds(nonNullishOrThrow(registrations[0]?.config,),),
+              registeredModelIds(nonNullishOrThrow(registrations[0]?.config,),),
             ).toEqual([
               'glm-5.3',
             ],);
@@ -473,6 +549,12 @@ await describe({
                 readClassifierModels: function readClassifierModels() {
                   return [];
                 },
+                readRegisteredProviderIds: function readRegisteredProviderIds() {
+                  return [];
+                },
+                readProviderConfig: function readProviderConfig(): IncumbentConfig {
+                  return { kind: 'absent', };
+                },
               },
               refresh: function recordingRefresh() {
                 order.push('refresh',);
@@ -510,6 +592,43 @@ await describe({
             expect(summary.registeredProviders,).toEqual(['hyper'],);
             expect(captured.warn.length,).toBe(1,);
             expect(captured.warn[0]?.includes('models.json unreadable',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'warns about a provider another extension owns natively',
+          fn: async function runNativeOwnerWarning() {
+            /**
+             Capture arrays for this pass.
+             */
+            const captured = emptyCapture();
+            /**
+             Provider registrations the pass made.
+             */
+            const registrations: RecordedRegistration[] = [];
+            /**
+             Pass summary over a provider pi lists as extension-registered with no
+             readable configuration.
+             */
+            const summary = await applyRetirements({
+              refresh: noopRefresh,
+              read: readOf({
+                chat: [
+                  chatModel({ provider: 'hyper', id: 'glm-5.2', },),
+                  chatModel({ provider: 'hyper', id: 'glm-5.3', },),
+                ],
+                registeredIds: ['hyper'],
+              },),
+              registerProvider: function recordRegistration({ name, config, },) {
+                registrations.push({ name, config, },);
+              },
+              log: fakeLog(captured,),
+            },);
+            expect(registrations,).toEqual([],);
+            expect(summary.retirements.length,).toBe(1,);
+            expect(summary.skippedProviders.length,).toBe(1,);
+            expect(summary.skippedProviders[0]?.provider,).toBe('hyper',);
+            expect(captured.warn.length,).toBe(1,);
+            expect(captured.warn[0]?.includes('native provider',),).toBe(true,);
           },
         },),
         it({
@@ -584,13 +703,19 @@ await describe({
                   return [];
                 },
                 refresh: noopRefresh,
+                getRegisteredProviderIds: function readIds() {
+                  return [];
+                },
+                getRegisteredProviderConfig: function readConfig() {
+                  return undefined;
+                },
               },
               model: chatModel({ provider: 'hyper', id: 'glm-5.3', },),
             };
             await state.handler?.({ type: 'session_start', }, ctx,);
             expect(state.registrations.length,).toBe(1,);
             expect(
-              registeredIds(nonNullishOrThrow(state.registrations[0]?.config,),),
+              registeredModelIds(nonNullishOrThrow(state.registrations[0]?.config,),),
             ).toEqual([
               'glm-5.3',
             ],);
@@ -613,6 +738,12 @@ await describe({
                   return [];
                 },
                 refresh: noopRefresh,
+                getRegisteredProviderIds: function readIds() {
+                  return [];
+                },
+                getRegisteredProviderConfig: function readConfig() {
+                  return undefined;
+                },
               },
               model: undefined,
             },);

@@ -17,10 +17,12 @@ import type {
   ImageModel,
   Model,
 } from '@earendil-works/pi-ai';
+import type { ProviderConfig, } from '@earendil-works/pi-coding-agent';
 import {
   planProviderFilters,
   toModelConfig,
   type CatalogRead,
+  type IncumbentConfig,
 } from '../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -157,10 +159,14 @@ function readOf(
     chat,
     images = [],
     classifiers = [],
+    registeredIds = [],
+    configs = {},
   }: {
     readonly chat: readonly Model<Api>[];
     readonly images?: readonly ImageModel<ImageApi>[];
     readonly classifiers?: readonly ClassifierModel<ClassifierApi>[];
+    readonly registeredIds?: readonly string[];
+    readonly configs?: Readonly<Record<string, ProviderConfig>>;
   },
 ): CatalogRead {
   return {
@@ -172,6 +178,21 @@ function readOf(
     },
     readClassifierModels: function readClassifierModels() {
       return classifiers;
+    },
+    readRegisteredProviderIds: function readRegisteredProviderIds() {
+      return registeredIds;
+    },
+    readProviderConfig: function readProviderConfig(provider,): IncumbentConfig {
+      /**
+       Incumbent configuration for this provider, when the fixture supplies one.
+       */
+      const config = configs[provider];
+      if (config === undefined)
+        return { kind: 'absent', };
+      return {
+        kind: 'present',
+        config,
+      };
     },
   };
 }
@@ -231,7 +252,7 @@ await describe({
                 ],
               },),
             },);
-            expect(planIds(planning.plans[0]?.models ?? [],),).toEqual(['glm-5.3'],);
+            expect(planIds(planning.plans[0]?.config.models ?? [],),).toEqual(['glm-5.3'],);
           },
         },),
         it({
@@ -250,7 +271,7 @@ await describe({
                 classifiers: [classifierModel({ provider: 'openrouter', id: 'vendor/judge', },)],
               },),
             },);
-            expect(planIds(planning.plans[0]?.models ?? [],),).toEqual([
+            expect(planIds(planning.plans[0]?.config.models ?? [],),).toEqual([
               'vendor/gpt-5.5',
               'vendor/flux',
               'vendor/judge',
@@ -298,6 +319,60 @@ await describe({
             expect(planning.skippedProviders.length,).toBe(1,);
             expect(planning.skippedProviders[0]?.provider,).toBe('azure-openai-responses',);
             expect(planning.skippedProviders[0]?.reason.includes('baseUrl',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'skips a provider another extension registered natively',
+          fn: async function runNativeProviderSkip() {
+            /**
+             Planning over a provider pi lists as extension-registered but exposes no
+             configuration for, which is how `hyper` and `openai-fast` appear.
+             */
+            const planning = planProviderFilters({
+              read: readOf({
+                chat: [
+                  chatModel({ provider: 'hyper', id: 'glm-5.2', },),
+                  chatModel({ provider: 'hyper', id: 'glm-5.3', },),
+                ],
+                registeredIds: ['hyper'],
+              },),
+            },);
+            expect(planning.plans,).toEqual([],);
+            expect(planning.skippedProviders.length,).toBe(1,);
+            expect(planning.skippedProviders[0]?.provider,).toBe('hyper',);
+            expect(
+              planning.skippedProviders[0]?.reason.includes('native provider',),
+            ).toBe(true,);
+          },
+        },),
+        it({
+          name: 'preserves the incumbent configuration of a provider it filters',
+          fn: async function runIncumbentPreserved() {
+            /**
+             Planning over a provider whose incumbent configuration carries an endpoint,
+             an api, and request headers.
+             */
+            const planning = planProviderFilters({
+              read: readOf({
+                chat: [
+                  chatModel({ provider: 'radius', id: 'glm-5.2', },),
+                  chatModel({ provider: 'radius', id: 'glm-5.3', },),
+                ],
+                registeredIds: ['radius'],
+                configs: {
+                  radius: {
+                    api: 'pi-messages',
+                    baseUrl: 'https://radius.invalid/v1',
+                    headers: { 'x-source': 'pi', },
+                  },
+                },
+              },),
+            },);
+            expect(planning.plans.length,).toBe(1,);
+            expect(planning.plans[0]?.config.api,).toBe('pi-messages',);
+            expect(planning.plans[0]?.config.baseUrl,).toBe('https://radius.invalid/v1',);
+            expect(planning.plans[0]?.config.headers,).toEqual({ 'x-source': 'pi', },);
+            expect(planIds(planning.plans[0]?.config.models ?? [],),).toEqual(['glm-5.3'],);
           },
         },),
         it({

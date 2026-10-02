@@ -217,6 +217,24 @@ function fixtureRefresh(): Promise<unknown> {
 }
 
 /**
+ Provider ids the fixture registry reports as extension-registered.
+
+ @returns an empty list, so the fixture provider is treated as builtin
+ */
+function fixtureRegisteredProviderIds(): readonly string[] {
+  return [];
+}
+
+/**
+ Incumbent configuration the fixture registry reports.
+
+ @returns undefined, so the fixture provider is treated as builtin
+ */
+function fixtureProviderConfig(): unknown {
+  return undefined;
+}
+
+/**
  Build the session-start context the handler receives.
 
  @returns context carrying a fixture registry and no live model
@@ -227,6 +245,8 @@ function fixtureContext(): unknown {
       getAll: fixtureChatModels,
       getModelsOfType: fixtureModelsOfType,
       refresh: fixtureRefresh,
+      getRegisteredProviderIds: fixtureRegisteredProviderIds,
+      getRegisteredProviderConfig: fixtureProviderConfig,
     },
     model: undefined,
   };

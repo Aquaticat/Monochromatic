@@ -204,7 +204,7 @@ export function formatLiveModelWarning(
 
  @param skipped - provider the planner refused to build a plan for, and why
 
- @returns line naming the provider, the missing field, and the consequence
+ @returns line naming the provider, the reason, and the consequence
 
  @example
  ```typescript
@@ -221,7 +221,7 @@ export function formatSkippedProvider(
     };
   },
 ): string {
-  return `skipped ${skipped.provider}: ${skipped.reason}, so pi cannot re-declare its models and its retired entries stay listed`;
+  return `skipped ${skipped.provider}: ${skipped.reason}; its retired entries stay listed`;
 }
 
 /**

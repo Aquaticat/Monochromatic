@@ -32,6 +32,16 @@ const RETIRED_MODEL = 'gpt-6-sol';
  */
 const KEEPER_MODEL = 'gpt-6.1-sol';
 
+/**
+ Providers whose configuration another package owns, reported before and after
+ filtering so a lost `streamSimple` or credential is visible.
+ */
+const OWNER_PROVIDERS = [
+  'radius',
+  'synthetic',
+  'hyper'
+];
+
 //endregion Constants
 
 //region Types
@@ -52,6 +62,7 @@ type ProbeModel = {
 type ProbeRegistry = {
   readonly getAll: () => readonly ProbeModel[];
   readonly getModelsOfType: (type: string,) => readonly unknown[];
+  readonly getRegisteredProviderConfig: (name: string,) => unknown;
 };
 
 /**
@@ -94,6 +105,42 @@ function emit(record: Record<string, unknown>,): void {
       probe: 'model-retirement',
       ...record,
     })}\n`,);
+}
+
+/**
+ Summarize the configuration pi holds for each provider another package owns.
+
+ @param registry - registry the event carried
+
+ @returns one `name=<key count><stream marker>` group per provider
+
+ @example
+ ```typescript
+ describeOwnerConfigs(registry); // 'radius=2keys+stream synthetic=4keys-stream hyper=absent'
+ ```
+ */
+function describeOwnerConfigs(registry: ProbeRegistry,): string {
+  /**
+   One summary group per provider another package owns.
+   */
+  const described = OWNER_PROVIDERS.map(function describeOne(name,) {
+    /**
+     Configuration pi holds for this provider, when it holds one.
+     */
+    const config = registry.getRegisteredProviderConfig(name,);
+    if (((typeof config) !== 'object') || (config === null))
+      return `${name}=absent`;
+    /**
+     Keys the incumbent configuration carries.
+     */
+    const keys = Object.keys(config,);
+    /**
+     Whether the incumbent still carries a custom stream handler.
+     */
+    const stream = keys.includes('streamSimple',) ? '+stream' : '-stream';
+    return `${name}=${String(keys.length,)}keys${stream}`;
+  },);
+  return described.join(' ',);
 }
 
 /**
@@ -145,6 +192,7 @@ function snapshot(
     hasKeeper: chat.some(function isKeeper(model,) {
       return (model.provider === TARGET_PROVIDER) && (model.id === KEEPER_MODEL);
     },),
+    ownerConfigs: describeOwnerConfigs(registry,),
   },);
 }
 

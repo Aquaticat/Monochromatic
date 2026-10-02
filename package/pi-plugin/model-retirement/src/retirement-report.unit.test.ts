@@ -186,7 +186,7 @@ await describe({
                 reason: 'model gpt-4.1 carries no baseUrl',
               },
             },),).toBe(
-              'skipped azure-openai-responses: model gpt-4.1 carries no baseUrl, so pi cannot re-declare its models and its retired entries stay listed',
+              'skipped azure-openai-responses: model gpt-4.1 carries no baseUrl; its retired entries stay listed',
             );
           },
         },),

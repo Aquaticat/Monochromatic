@@ -24,19 +24,25 @@ export {
   type FailedProvider,
   type ImageModelReader,
   type LiveModelIdentity,
+  type ProviderConfigReader,
+  type ProviderIdReader,
   type ProviderRegistrar,
   type RetirementLog,
   type RetirementPassSummary,
 } from './register-model-retirement.ts';
 export {
   planProviderFilters,
-  REGISTERABLE,
-  toModelConfig,
   type CatalogRead,
   type FilterPlanning,
+  type IncumbentConfig,
   type ProviderFilterPlan,
   type SkippedProvider,
 } from './provider-filter.ts';
+export {
+  planGap,
+  REGISTERABLE,
+  toModelConfig,
+} from './registration-gap.ts';
 export {
   classifyToken,
   isDateShapedRaw,
