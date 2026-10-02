@@ -12,7 +12,7 @@ import type {
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
-  KEYLESS_AUTH,
+  createKeylessAuth,
   noAvailableTargets,
 } from './keyless-auth.ts';
 import type {
@@ -51,6 +51,7 @@ export type PriorityProviderOptions = {
   readonly provider: ForeignHostCapability<Provider>;
   readonly getProvider?: () => ForeignHostCapability<Provider>;
   readonly lookup: OriginalModelLookup;
+  readonly isConfigured: (signal: ForeignBorrowed<AbortSignal>) => Promise<boolean>;
   readonly dispatch: StreamFunction<PriorityApi>;
   readonly onCatalog: (models: readonly Model<Api>[]) => void;
 };
@@ -63,6 +64,8 @@ export type PriorityProviderOptions = {
  @param getProvider - live original-provider lookup after session initialization
  
  @param lookup - current upstream model lookup
+
+ @param isConfigured - fresh native availability check for the original provider
  
  @param dispatch - original registry dispatch for native auth and header precedence
  
@@ -75,6 +78,8 @@ export type PriorityProviderOptions = {
  @mutates getProvider - invokes live catalog capability
  
  @mutates lookup - priority dispatch invokes original-model lookup
+
+ @mutates isConfigured - adapter readiness checks invoke original-provider availability
  
  @mutates dispatch - priority dispatch invokes native stream capability
  
@@ -82,13 +87,14 @@ export type PriorityProviderOptions = {
 
  @example
  ```ts
- const adapter = createPriorityProvider({ provider, lookup, dispatch, onCatalog });
+ const adapter = createPriorityProvider({ provider, lookup, isConfigured, dispatch, onCatalog });
  ```
  */
 export function createPriorityProvider({
   provider,
   getProvider,
   lookup,
+  isConfigured,
   dispatch,
   onCatalog,
 }: PriorityProviderOptions,): Provider {
@@ -145,7 +151,7 @@ export function createPriorityProvider({
   return {
     id: `${provider.id}-fast`,
     name: `${provider.name} Fast`,
-    auth: KEYLESS_AUTH,
+    auth: createKeylessAuth(isConfigured,),
     getModels,
     getAllModels: getModels,
     filterModels: noAvailableTargets,

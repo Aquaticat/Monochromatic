@@ -1,5 +1,5 @@
 /**
- Keyless readiness contract for a transport adapter that resolves original auth later. @module
+ Source-dependent readiness for a transport adapter that resolves original auth later. @module
  */
 import type {
   AuthCheck,
@@ -8,20 +8,15 @@ import type {
   Api,
   ProviderAuth,
 } from '@earendil-works/pi-ai';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-//region Readiness without credentials
+//region Readiness without adapter credentials
 
 /**
- Declare adapter readiness without resolving or exposing another provider's credentials.
-
- @returns native configured-provider metadata
+ Module logger records readiness without credentials or provider payloads.
  */
-function check(): Promise<AuthCheck> {
-  return Promise.resolve({
-    type: 'api_key' as const,
-    source: 'routes-to-original-provider',
-  },);
-}
+const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.keyless-auth', },);
 
 /**
  Leave request authentication entirely at the original registry dispatch.
@@ -36,15 +31,52 @@ function resolve(): Promise<AuthResult> {
 }
 
 /**
- Reusable native keyless auth descriptor does not offer a login implementation.
+ Gate selectable companions on original-provider availability without inheriting its credentials.
+
+ @param isConfigured - fresh native source-only availability capability
+
+ @returns keyless auth descriptor without a separate login or token resolution
+
+ @mutates isConfigured - readiness checks invoke native availability handling
  */
-export const KEYLESS_AUTH: ProviderAuth = Object.freeze({
-  apiKey: {
-    name: 'Routes to existing OpenAI authentication',
-    check,
-    resolve,
-  },
-});
+export function createKeylessAuth(
+  isConfigured: (signal: ForeignBorrowed<AbortSignal>) => Promise<boolean>,
+): ProviderAuth {
+  /**
+   Factory logger preserves the readiness capability boundary.
+   */
+  const l = tagged({ tag: createKeylessAuth.name, l: moduleLogger, },);
+  l.debug('creating source-dependent priority readiness',);
+
+  /**
+   Recheck the original provider instead of caching a previous login state.
+
+   @param signal - cancellation authority supplied by native availability handling
+
+   @returns adapter readiness only when original chat models are available
+   */
+  async function check({ signal, }: { readonly signal: ForeignBorrowed<AbortSignal>; },): Promise<AuthCheck | undefined> {
+    /**
+     Readiness logger records only the configuration decision.
+     */
+    const inner = tagged({ tag: check.name, l, },);
+    signal.throwIfAborted();
+    if (!await isConfigured(signal,)) {
+      inner.debug('original provider is unavailable; hiding priority companions',);
+      return undefined;
+    }
+    inner.debug('original provider is available; exposing priority companions',);
+    return { type: 'api_key', source: 'routes-to-original-provider', };
+  }
+
+  return Object.freeze({
+    apiKey: {
+      name: 'Routes to existing OpenAI authentication',
+      check,
+      resolve,
+    },
+  },);
+}
 
 /**
  Exclude local physical routing targets from normal available-model lists.

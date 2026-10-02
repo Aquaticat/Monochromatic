@@ -15,7 +15,7 @@ import {
   tagged,
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { PriorityApi, } from './constants.ts';
 import { FastModelError, } from './fast-model-error.ts';
 import type {
@@ -32,6 +32,8 @@ import type {
 
  @param l - registration logger
 
+ @param checkInitialAvailability - native startup readiness before session registry binding
+
  @returns original-provider lookup and authenticated dispatch capabilities
 
  @example
@@ -42,9 +44,11 @@ import type {
 export function createOriginalDispatch({
   provider,
   l,
+  checkInitialAvailability,
 }: {
   readonly provider: ForeignHostCapability<Provider>;
   readonly l: Logger;
+  readonly checkInitialAvailability?: (signal: ForeignBorrowed<AbortSignal>) => Promise<boolean>;
 },): OriginalDispatchCapabilities {
   /**
    Logger retains registration ancestry without exposing request content.
@@ -96,6 +100,28 @@ export function createOriginalDispatch({
     if (original === undefined)
       throw new FastModelError(`The original ${provider.id} provider is no longer registered. Restore it or select another provider.`,);
     return original;
+  }
+
+  /**
+   Read fresh source-only availability without consulting this adapter's auth snapshot.
+
+   @param signal - cancellation authority owned by the host availability operation
+
+   @returns whether original chat models are available through native authentication
+   */
+  async function isConfigured(signal: ForeignBorrowed<AbortSignal>,): Promise<boolean> {
+    /**
+     Availability logger excludes authentication details.
+     */
+    const inner = tagged({ tag: isConfigured.name, l: logger, },);
+    inner.trace(`checking original ${provider.id} availability`,);
+    if (state.registry === undefined)
+      return checkInitialAvailability === undefined ? false : await checkInitialAvailability(signal,);
+    /**
+     Source-scoped reads avoid recursive adapter availability checks and stale cached status.
+     */
+    const available = await state.registry.getAvailableOfType('chat', provider.id, { signal, },);
+    return available.length > 0;
   }
 
   /**
@@ -173,6 +199,7 @@ export function createOriginalDispatch({
     bind,
     getProvider,
     lookup,
+    isConfigured,
     /**
      {@inheritDoc dispatch}
      */

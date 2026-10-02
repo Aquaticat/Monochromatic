@@ -3,9 +3,10 @@
  */
 
 import type { Provider, } from '@earendil-works/pi-ai';
-import type {
-  ExtensionAPI,
-  SessionStartEvent,
+import {
+  ModelRuntime,
+  type ExtensionAPI,
+  type SessionStartEvent,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
@@ -36,6 +37,7 @@ export {
   type PriorityApi,
 } from './constants.ts';
 export { FastModelError, } from './fast-model-error.ts';
+export { createKeylessAuth, } from './keyless-auth.ts';
 export {
   createPriorityProvider,
   isPriorityTarget,
@@ -63,6 +65,8 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.index', },);
  @param pi - host registration capability
  
  @param provider - credential-free bootstrap metadata source
+
+ @param checkInitialAvailability - native source readiness before session_start
  
  @mutates pi - registers adapter, virtual models, and session-start callback
  
@@ -76,9 +80,11 @@ const moduleLogger = tagged({ tag: 'pi-plugin-openai-fast.index', },);
 export function registerOpenAIFast({
   pi,
   provider,
+  checkInitialAvailability,
 }: {
   readonly pi: ForeignHostCapability<ExtensionAPI>;
   readonly provider: ForeignHostCapability<Provider>;
+  readonly checkInitialAvailability?: (signal: ForeignBorrowed<AbortSignal>) => Promise<boolean>;
 },): void {
   /**
    Registration logger carries the module boundary into helper calls.
@@ -94,6 +100,7 @@ export function registerOpenAIFast({
   const binding = createOriginalDispatch({
     provider,
     l,
+    ...(checkInitialAvailability === undefined ? {} : { checkInitialAvailability, }),
   },);
   /**
    Structural registration guard prevents getter-triggered reentrant catalog recursion.
@@ -106,6 +113,7 @@ export function registerOpenAIFast({
     provider,
     getProvider: binding.getProvider,
     lookup: binding.lookup,
+    isConfigured: binding.isConfigured,
     dispatch: binding.stream,
     onCatalog: synchronize,
   },),);
@@ -165,12 +173,19 @@ export default async function openAIFast(pi: ForeignHostCapability<ExtensionAPI>
   ].map(async function loadProvider(providerId,) {
     return await loadOriginalProvider({ providerId, },);
   },),);
+  /**
+   Native source readiness uses the original pi auth path without resolving tokens or refreshing over the network.
+   */
+  const availability = await ModelRuntime.create({ refreshOnCreate: false, allowModelNetwork: false, },);
   // Finish sink initialization before synchronous catalog registration can fill startup buffering.
   await l.flush();
   for (const provider of providers) {
     registerOpenAIFast({
       pi,
       provider,
+      checkInitialAvailability: async function checkInitialAvailability(signal: ForeignBorrowed<AbortSignal>): Promise<boolean> {
+        return (await availability.getAvailableOfType('chat', provider.id, { signal, },)).length > 0;
+      },
     },);
   }
   l.debug('virtual OpenAI fast extension initialized',);

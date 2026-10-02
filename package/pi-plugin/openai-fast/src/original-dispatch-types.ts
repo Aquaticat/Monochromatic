@@ -2,12 +2,11 @@
  Original host request capabilities and externally defined lookup absence semantics. @module
  */
 import type {
-  StreamOptions,
   Provider,
   StreamFunction,
 } from '@earendil-works/pi-ai';
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
-import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { ForeignBorrowed, ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { PriorityApi, } from './constants.ts';
 
 //region Native callback contracts
@@ -33,6 +32,10 @@ export type OriginalDispatchCapabilities = {
    Preserve native lookup absence until target resolution supplies its diagnostic.
    */
   readonly lookup: OriginalModelLookup;
+  /**
+   Check live original-provider availability without resolving request credentials.
+   */
+  readonly isConfigured: (signal: ForeignBorrowed<AbortSignal>) => Promise<boolean>;
   /**
    Native callback shape owns the externally dictated positional arguments.
    */

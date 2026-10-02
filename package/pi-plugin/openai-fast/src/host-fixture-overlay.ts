@@ -91,6 +91,10 @@ export function fixtureOverlay(provider: ForeignHostCapability<Provider>,): Fixt
    */
   const overlay = createPriorityProvider({
     provider,
+    isConfigured: async function isConfigured(signal: ForeignBorrowed<AbortSignal>): Promise<boolean> {
+      signal.throwIfAborted();
+      return await Promise.resolve(true,);
+    },
     dispatch: function dispatchOriginal(
       model: ForeignBorrowed<Model<PriorityApi>>,
       context: ForeignBorrowed<TranscriptContext>,
