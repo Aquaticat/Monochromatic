@@ -13,10 +13,20 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
+  type AbsoluteNaturalnessReviewWire,
   buildAbsoluteNaturalnessReviewMessages,
   isAbsoluteNaturalnessReviewWire,
   messageText,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Otherwise-valid reply each structural-malformation case corrupts in one field.
+ */
+const VALID_REVIEW: AbsoluteNaturalnessReviewWire = {
+  acceptable: false,
+  findings: [{ paragraph: 2, problem: 'Avoid literal word-for-word order.', },],
+  reason: 'retains source phrasing',
+};
 
 await describe({
   name: '',
@@ -49,6 +59,122 @@ await describe({
               findings: [],
               reason: 'contradictory',
             },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'ACCEPTS the otherwise-valid reply each refusal case corrupts in one field, so each refusal is '
+            + 'that field\'s',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire(VALID_REVIEW,),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A NON-BOOLEAN acceptable field',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({ ...VALID_REVIEW, acceptable: 'false', },),)
+              .toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A REPLY MISSING findings',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({
+              acceptable: false,
+              reason: 'retains source phrasing',
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A NON-ARRAY findings field',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({ ...VALID_REVIEW, findings: 'many', },),)
+              .toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FINDING THAT IS NOT A RECORD',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({
+              ...VALID_REVIEW,
+              findings: [['paragraph', 1,],],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FINDING WITH A NON-NUMBER paragraph',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({
+              ...VALID_REVIEW,
+              findings: [{ paragraph: '2', problem: 'Avoid literal word-for-word order.', },],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FINDING WITH A NON-INTEGER paragraph',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({
+              ...VALID_REVIEW,
+              findings: [{ paragraph: 1.5, problem: 'Avoid literal word-for-word order.', },],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FINDING WITH paragraph BELOW ONE',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({
+              ...VALID_REVIEW,
+              findings: [{ paragraph: 0, problem: 'Avoid literal word-for-word order.', },],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FINDING WITH A NON-STRING problem',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({
+              ...VALID_REVIEW,
+              findings: [{ paragraph: 2, problem: 7, },],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A FINDING WITH AN EMPTY problem',
+          fn: async () => {
+            // The one finding-level refusal decided by the finding check's last
+            // comparison (`problem !== ''`) rather than by a type or range
+            // check; it refuses the reply through the same `every` as the
+            // other finding-level cases.
+            expect(isAbsoluteNaturalnessReviewWire({
+              ...VALID_REVIEW,
+              findings: [{ paragraph: 2, problem: '', },],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A REPLY MISSING reason',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({
+              acceptable: false,
+              findings: [{ paragraph: 2, problem: 'Avoid literal word-for-word order.', },],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A NON-STRING reason field',
+          fn: async () => {
+            expect(isAbsoluteNaturalnessReviewWire({ ...VALID_REVIEW, reason: 7, },),)
+              .toBe(false,);
           },
         },),
       ],
