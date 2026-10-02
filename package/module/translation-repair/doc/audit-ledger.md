@@ -5266,6 +5266,21 @@ and 77 others.
 so the twenty-fourth batch takes it,
 against a census taken once this batch's docs close.
 
+That census,
+`census-3G9C58` at `d0cca211d`,
+holds none of those 14:
+B106 (`8cc9a3650`) and B107 (`837c18669`) cased the attribution reader's arms
+before the batch began.
+Library source stood at 590 stretches over 1291 lines in 242 files,
+15 functions never called.
+By the first construct `page` leads at 13 stretches in 4 files
+(`page-headings.ts`,
+`page-name-glossary.ts`,
+`page-title-lexicon-wire.ts`,
+`page-visible-text.ts`),
+none edited since `d0cca211d`,
+so the twenty-fourth batch takes `page` against `census-3G9C58`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -18159,12 +18174,156 @@ the pair `capturing-logger.test-fixture.ts` already names as kept apart.
 Open:
 the duplicate-body scan widens to test files,
 comparing literals as written
-and listing the remaining groups with their reasons;
-the census of test declarations nothing reads.
+and listing the remaining groups with their reasons
+(closed by B116);
+the census of test declarations nothing reads
+(B118).
 
 Recurrence:
 `mistake-prevention.md`,
 "Copies of shared code".
+
+### B116: the duplicate-body scan read production source alone and grouped literals by their visible characters
+
+Queued by B101,
+B111 and B115;
+red in `de7c6b099`,
+cleared in `5b43c5f45` and `8ea5e7fa5`.
+The scan read no test file,
+so a helper copied between tests,
+or a test restating a module's body as its expectation,
+could not fail it.
+And its grouping dropped every character `trim` reads as space,
+inside string and template literals too,
+so bodies building different text grouped as one (B114).
+It now reads every file under `src`,
+and compares each literal token as written
+while dropping the spacing of the code around it;
+a fixture case shows the change,
+and a scratch copy comparing literals the old way fails that case.
+
+Over the tree at `de7c6b099` the widened scan found 26 groups where 4 frozen copies are listed.
+Seventeen were the groups B115 left,
+less its three literal-whitespace groupings.
+Five more only the widened scan could see.
+Two were short predicates that each spelled a long fixture string twice,
+in `consolidate-driver` and `consolidation-polish`,
+past the 80-character floor once the string's spaces count;
+each now reads one named constant,
+used where the string is offered and where it is sought.
+Three were tests carrying a production body.
+B115's own lane-candidate fixture was a copy of the function `buildTranslateCandidates` wrote inline;
+`translate-candidates.ts` now exports it as `laneCandidate`,
+and the fixture is gone.
+`run-seats.unit.test.ts` restated `run-config.ts`'s translator filter as its expectation,
+which can fail only if the formula itself changes;
+it now states translators as the writers less the seats dropped from the translator role,
+a relation between two exported lists.
+`slice-implausible.unit.test.ts` restated `sliceSizesOf`'s map;
+it now spells out each slice's size from its own texts.
+
+The six split scenarios B114 kept are one named function each in their files,
+each case still asserting its own claim;
+in `repair-contract.unit.test.ts` one case's assertions are a superset of the other's,
+and both stay.
+The groups over different bindings take the binding as a parameter:
+the glossary cases' term lists,
+the command-line reader `refusalOf` asks,
+the messages `ask` sends,
+the document `sliceOf` cuts,
+and the logger `capturingLogger` wraps.
+The console captures stub `console.log` on the case's own sandbox,
+which the global-writes scan reads as no write,
+and read their lines off the stub's recorded calls with `util.format`;
+the agent's version faked `console.log` with a rest-parameter arrow function,
+which fixture lint refuses.
+Three groups stay,
+listed as `GLOBAL_WRITER_COPIES` with their reasons:
+each writes an environment variable the code under test reads itself,
+and the global-writes scan follows a writer within one file only.
+
+The scan now lists 7 groups,
+the 4 frozen copies and those 3.
+The agents' fixtures needed lint fixes before they passed
+(a duplicated import,
+chain and import layout,
+an inline object type),
+of the kinds B111 and B115 record;
+`repair-assemble-slice.test-fixture.ts` also gained a refusal for a slice wording its document does not hold,
+where the copies addressed offset -1.
+
+Open:
+the global-writes scan following a writer through its imports,
+which would let the three kept groups share one fixture.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
+### B117: test temp directories made outside `scratchDir`, or bound only after their setup ran
+
+Queued by B108,
+red in `9473905a0`,
+fixed in `cdd36a98d` and `8ea5e7fa5`.
+B108 fixed 43 leaking test directories and left the family unguarded.
+`temp-dirs-scratch.unit.test.ts` now holds two rules over tests and fixtures:
+no direct `mkdtemp` or `tmpdir` call outside `scratch-dir.test-fixture.ts`
+and the 8 kept sites it names with why;
+and every `scratchDir` call is the initializer of an `await using` declaration,
+since a bare binding leaves a window between the directory's making and anything bound to remove it.
+At `9473905a0` the first rule found 57 calls,
+the 8 kept sites among them,
+and the second 9.
+
+A read-only agent's patch moved them:
+`scratchDirWith` runs a setup against a fresh directory's path and removes the directory if the setup throws,
+and two-directory helpers make the second inside a `try` that removes the first.
+Before committing,
+the patch needed:
+its two rules folded into one top-level suite,
+since two let a failure of the first stop the second (B99);
+a lint-refused `String()` of untyped node fields replaced by the shared readers;
+five setups returning `Record<PropertyKey, never>`,
+which lint refuses,
+replaced by `scratchDirPrepared` for setups that hand back nothing,
+and by plain `scratchDir` bindings at the twelve callers of two helpers with no setup;
+an environment variable written inside a setup,
+a function only ever passed as a property,
+which the global-writes scan cannot follow by name,
+moved into `runsDirPointedAt`,
+called by name and disposed before the directory;
+23 TSDoc blocks left on return statements turned into line comments;
+and an import its move orphaned removed.
+
+The patch also undid work.
+The agent's copy of `entry-pictures.unit.test.ts` predated B115,
+and its diff was taken against the files as they stood when it finished,
+so rebuilding its base from that diff gave the current file,
+and the three-way merge copied the agent's file whole,
+bringing back the local `sliceOf` B115 had moved to `content-slice-of.test-fixture.ts`.
+The widened duplicate-body scan caught it;
+the import is restored in `8ea5e7fa5`.
+A line-level check of the nine temp-dir files any commit since B108 changed
+(lines those commits added that the merge no longer held,
+and lines they removed that it held again)
+found no other.
+The patch also wrote one setup into two files,
+now `scratchDirOfEmptyRecords`.
+
+The full suite at `8ea5e7fa5` left no new entry in `/tmp`
+(`find /tmp -maxdepth 1 -newer` a marker touched before the run lists `/tmp` itself alone,
+and `tmpdir()` is `/tmp` under `mise`);
+`/tmp` still holds 35,065 top-level entries on 2026-10-02 (UTC),
+most named by the test helpers B108 found leaking
+(4,294 `artifact-placement-*`,
+2,883 `artifact-generation-*`,
+2,576 `runs-lock-*` the largest),
+which this audit leaves for the owner to delete.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests touching the real world"
+and "Copies of shared code".
 
 ## Process mistakes in this audit
 

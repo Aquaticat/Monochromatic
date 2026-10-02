@@ -636,6 +636,17 @@ A test makes a temporary directory only through `scratchDir`,
 bound with `await using` where it is made or by every caller of a helper returning it,
 so the directory goes when the case ends,
 however the case ends.
+A helper that fills the directory before returning it makes it through `scratchDirWith`
+(a setup with fields to hand back)
+or `scratchDirPrepared`
+(a setup handing back nothing),
+which remove the directory if the setup throws;
+a helper that only makes it is no helper,
+and its callers bind `scratchDir` themselves (ledger B117).
+An environment variable a case points at its directory is written by a function the case calls by name,
+after the directory stands,
+and its disposer is bound after the directory's,
+so the variable is restored first.
 
 What enforces it:
 the type checker:
@@ -650,7 +661,10 @@ the transport and the corpus readers;
 the five provider clients require their transport,
 and every corpus reader its pin or reader (X24).
 A seam added to make a function testable never takes the production value as its default (M70).
-Temporary directories in tests have no scan yet (ledger B108).
+`src/temp-dirs-scratch.unit.test.ts` (ledger B117),
+among the source scans,
+fails on a direct `mkdtemp` or `tmpdir` call in a test or fixture outside the kept sites it names with why,
+and on a `scratchDir` call that is not the initializer of an `await using` declaration.
 
 ## Tests on the real clock
 
@@ -772,13 +786,25 @@ since the callback-arity rule reads the parameters of a function declared in the
 A move that leaves a caller without a use for an import removes that import in the same change,
 and an assertion a patch keeps because its author could not compile is tried without the assertion
 (ledger B115).
+A patch an agent cut is merged three-way against the commit the agent read,
+recorded when it starts;
+a diff it takes against the files as they stand when it finishes cannot show a change it undid,
+and every file a commit touched since that start is checked line by line for undone work (ledger B117).
+A test's expectation is never the module's own body restated:
+it states the result,
+or a relation between values the module exports,
+so a change to the formula can fail it (ledger B116).
+A string a case offers and then looks for is one named constant,
+so the two cannot drift apart (ledger B116).
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
-comments and whitespace aside,
+comments and the spacing of code aside,
+literals compared as written,
 kept in two places in the package's source,
+its tests or its test fixtures (ledger B116),
 in one file or two,
-except the frozen copies it lists with their reasons,
+except the frozen copies and global-writer copies it lists with their reasons,
 and fails when a listed copy no longer stands.
 A copy that must stay separate is added to that list in the same change that makes it,
 with the reason and the check that compares it.
@@ -798,10 +824,6 @@ and the checks it names with why.
 `src/own-unit-tests.unit.test.ts` (ledger B102),
 among the source scans,
 fails on a production module with neither a unit test of its own nor a line in its allowlist.
-Nothing yet fails on a helper copied between test files:
-the duplicate-body scan widens to them once the copies it would find there are hoisted or listed (ledger B101),
-20 groups after ledger B115,
-each one classified there.
 `src/unused-imports.unit.test.ts` (ledger B32),
 among the source scans,
 fails on an import a move left unread.

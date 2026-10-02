@@ -464,6 +464,12 @@ Its census (`census-Hq0z31` at `a41e6218b`)
 leaves library source at 633 stretches in 249 files,
 and the twenty-third batch takes `front`
 (15 stretches over 20 lines in 3 files) against the census taken after this batch's docs.
+That batch is done (ledger T8);
+the twenty-fourth takes `page`
+(13 stretches in 4 files)
+against `census-3G9C58` at `d0cca211d`,
+since B106 and B107 had cased the `corpus-run/attribution` arms queued before it,
+and library source stood at 590 stretches in 242 files.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
