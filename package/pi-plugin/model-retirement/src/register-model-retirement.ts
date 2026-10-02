@@ -23,8 +23,10 @@ import type {
   ImageModel,
   Model,
 } from '@earendil-works/pi-ai';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   planProviderFilters,
@@ -103,10 +105,10 @@ export type ProviderRegistrar = {
   /**
    Replace one provider's model list.
    */
-  readonly registerProvider: (
-    name: string,
-    config: ProviderConfig,
-  ) => void;
+  readonly registerProvider: (options: {
+    readonly name: string;
+    readonly config: ProviderConfig;
+  }) => void;
 };
 
 /**
@@ -138,7 +140,7 @@ export type RetirementPassSummary = {
   /**
    Retirement matching the session's live model, when there is one.
    */
-  readonly liveModelRetirement: Retirement | undefined;
+  readonly liveModelRetirement?: Retirement;
 };
 
 //endregion Types
@@ -224,7 +226,7 @@ export function applyRetirements(
   }: {
     readonly read: CatalogRead;
     readonly registerProvider: ProviderRegistrar['registerProvider'];
-    readonly liveModel: LiveModelIdentity | undefined;
+    readonly liveModel?: LiveModelIdentity;
     readonly log: RetirementLog;
   },
 ): RetirementPassSummary {
@@ -237,10 +239,10 @@ export function applyRetirements(
    */
   const registeredProviders: string[] = [];
   for (const plan of planning.plans) {
-    registerProvider(
-      plan.provider,
-      { models: [...plan.models], },
-    );
+    registerProvider({
+      name: plan.provider,
+      config: { models: [...plan.models], },
+    },);
     registeredProviders.push(plan.provider,);
   }
   log.info(formatPlanningSummary({
@@ -269,7 +271,7 @@ export function applyRetirements(
   return {
     retirements: planning.retirements,
     registeredProviders,
-    liveModelRetirement,
+    ...(liveModelRetirement === undefined ? {} : { liveModelRetirement, }),
   };
 }
 
@@ -297,10 +299,33 @@ export function registerModelRetirement(
     readonly logger?: Logger;
   },
 ): void {
+  /**
+   Provider re-registration forwarded to pi, hoisted so its scope is the one holding the
+   borrowed API handle.
+
+   @param name - provider whose model list pi replaces
+
+   @param config - configuration carrying every model the provider keeps
+   */
+  function registerProvider(
+    {
+      name,
+      config,
+    }: {
+      readonly name: string;
+      readonly config: ProviderConfig;
+    },
+  ): void {
+    pi.registerProvider(
+      name,
+      config,
+    );
+  }
+
   pi.on(
     'session_start',
     function onSessionStart(
-      _event: SessionStartEvent,
+      _event: ForeignBorrowed<SessionStartEvent>,
       ctx,
     ): void {
       /**
@@ -314,29 +339,25 @@ export function registerModelRetirement(
        Registry the session started against.
        */
       const registry = ctx.modelRegistry;
+      /**
+       Identity of the model the session runs, absent when none is resolved yet.
+       */
+      const liveModel = ctx.model === undefined
+        ? undefined
+        : {
+          provider: ctx.model
+            .provider,
+          id: ctx.model
+            .id,
+        };
       applyRetirements({
         read: readsFromRegistry({
           chatReader: registry,
           imageReader: registry,
           classifierReader: registry,
         },),
-        registerProvider: function registerProvider(
-          name,
-          config,
-        ) {
-          pi.registerProvider(
-            name,
-            config,
-          );
-        },
-        liveModel: ctx.model === undefined
-          ? undefined
-          : {
-            provider: ctx.model
-              .provider,
-            id: ctx.model
-              .id,
-          },
+        registerProvider,
+        ...(liveModel === undefined ? {} : { liveModel, }),
         log: {
           info: function reportInfo(message,) {
             scoped.info(message,);

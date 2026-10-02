@@ -16,6 +16,7 @@ import {
   compareRecency,
   decideRetirements,
   parseModelId,
+  UNORDERED,
   type CatalogEntry,
 } from '../dist/final/node/index.mjs';
 
@@ -368,7 +369,7 @@ await describe({
             expect(compareRecency({
               left: parseModelId('glm-5.2',),
               right: parseModelId('gpt-6-luna',),
-            },),).toBe(undefined,);
+            },),).toBe(UNORDERED,);
           },
         },),
         it({
@@ -377,7 +378,7 @@ await describe({
             expect(compareRecency({
               left: parseModelId('openai/gpt-4o',),
               right: parseModelId('openai/gpt-4o-2024-11-20',),
-            },),).toBe(undefined,);
+            },),).toBe(UNORDERED,);
           },
         },),
         it({
@@ -404,7 +405,7 @@ await describe({
             expect(compareRecency({
               left: parseModelId('mistral-medium-3',),
               right: parseModelId('mistral-medium-3-5-2512',),
-            },),).toBe(undefined,);
+            },),).toBe(UNORDERED,);
           },
         },),
       ],

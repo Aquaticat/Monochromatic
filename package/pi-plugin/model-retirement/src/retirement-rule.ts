@@ -1,30 +1,32 @@
 /**
  Retirement rule deciding which catalog entries a newer sibling supersedes.
 
- The rule abstains whenever id text cannot order two entries, because decision 4
- in `doc/planning/pi-model-retirement.md` removed every runtime override: a false
- positive is recoverable only by rebuilding the package, while a false negative
+ The rule abstains whenever id text cannot order two entries, because the settled
+ decisions in `doc/planning/pi-model-retirement.md` removed every runtime override: a
+ false positive is recoverable only by rebuilding the package, while a false negative
  costs one extra row in the picker.
 
  @module
  */
 
 import {
-  isDateShapedRaw,
   parseModelId,
   type ModelIdParse,
 } from './id-tokens.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import {
+  compareRecency,
+  UNORDERED,
+} from './retirement-order.ts';
 
 //region Constants
 
 /**
- Digit-length gap between two version components that marks them as belonging to
- different numbering schemes.
+ Separator joining the identity parts of a catalog entry.
 
- A month-day pair such as `02-15` meets an 8-digit snapshot such as `20260420` in
- `qwen3.5-plus`, and comparing them numerically would order a date against a month.
+ A control character, so no provider, api, or model id can produce a collision.
  */
-const INCOMMENSURABLE_DIGIT_GAP = 2;
+const IDENTITY_SEPARATOR = '\u0000';
 
 //endregion Constants
 
@@ -115,9 +117,18 @@ export type RetirementDecision = {
 };
 
 /**
- Recency comparison outcome between two parses.
+ One catalog entry paired with the age evidence parsed from its id.
  */
-type Recency = 'left' | 'right' | undefined;
+type FamilyMember = {
+  /**
+   Entry the catalog reported.
+   */
+  readonly entry: CatalogEntry;
+  /**
+   Age evidence parsed from that entry's id.
+   */
+  readonly parse: ModelIdParse;
+};
 
 /**
  Mutable abstention tally accumulated during one pass.
@@ -132,287 +143,7 @@ type AbstentionTally = {
 
 //endregion Types
 
-//region Ordering
-
-/**
- Compare two version components for scheme compatibility.
-
- @param leftRaw - raw text of the left component, leading zeros intact
-
- @param rightRaw - raw text of the right component
-
- @returns whether the two components use numbering schemes far enough apart that
- ordering them would compare a date against a version
-
- @example
- ```typescript
- isCommensurable({ leftRaw: '2', rightRaw: '20260420' }); // false
- ```
- */
-function isCommensurable(
-  {
-    leftRaw,
-    rightRaw,
-  }: {
-    readonly leftRaw: string;
-    readonly rightRaw: string;
-  },
-): boolean {
-  /**
-   Digit-count difference between the two raw components.
-   */
-  const gap = Math.abs(leftRaw.length - rightRaw.length);
-  return gap < INCOMMENSURABLE_DIGIT_GAP;
-}
-
-/**
- Compare two date sequences of equal length.
-
- @param leftDates - raw date components of the left parse
-
- @param rightDates - raw date components of the right parse
-
- @returns which side is more recent, or `undefined` when every component matches
-
- @example
- ```typescript
- compareDateSequences({ leftDates: ['2407'], rightDates: ['2512'] }); // 'right'
- ```
- */
-function compareDateSequences(
-  {
-    leftDates,
-    rightDates,
-  }: {
-    readonly leftDates: readonly string[];
-    readonly rightDates: readonly string[];
-  },
-): Recency {
-  for (let index = 0; index < leftDates.length; index += 1) {
-    /**
-     Left component at the current position.
-     */
-    const left = Number.parseInt(
-      leftDates[index] as string,
-      10,
-    );
-    /**
-     Right component at the current position.
-     */
-    const right = Number.parseInt(
-      rightDates[index] as string,
-      10,
-    );
-    if (left === right)
-      continue;
-    return left > right ? 'left' : 'right';
-  }
-  return undefined;
-}
-
-/**
- Decide which of two same-length version vectors carries the dates.
-
- @param left - parse of the left entry
-
- @param right - parse of the right entry
-
- @returns which side is more recent, or `undefined` when both carry the same dates
-
- @example
- ```typescript
- compareEqualLengthDates({ left: parseModelId('deepseek-v4-pro'), right: parseModelId('deepseek-v4-pro-0813') }); // 'left'
- ```
- */
-function compareEqualLengthDates(
-  {
-    left,
-    right,
-  }: {
-    readonly left: ModelIdParse;
-    readonly right: ModelIdParse;
-  },
-): Recency {
-  if ((left.dateRaws
-    .length
-    === right.dateRaws
-    .length)
-    && left.dateRaws
-    .every(function matchesSameDate(
-      raw,
-      index
-    ) {
-      return raw === right.dateRaws[index];
-    },))
-    return undefined;
-  if (left.dateRaws
-    .length
-    === 0)
-    return 'left';
-  if (right.dateRaws
-    .length
-    === 0)
-    return 'right';
-  if (left.dateRaws
-    .length
-    !== right.dateRaws
-    .length)
-    return undefined;
-  return compareDateSequences({
-    leftDates: left.dateRaws,
-    rightDates: right.dateRaws,
-  },);
-}
-
-/**
- Decide a prefix case, where one version vector continues the other.
-
- Extra components that are all dates mark a pinned snapshot, which loses to the
- rolling alias. Extra components that are all versions mark a point release, which
- beats its own base version. A mix of the two leaves the pair unordered.
-
- @param shorter - parse carrying the prefix
-
- @param longer - parse continuing that prefix
-
- @returns which side is more recent, or `undefined` when the extras mix schemes
-
- @example
- ```typescript
- comparePrefix({ shorter: parseModelId('claude-opus-5'), longer: parseModelId('claude-opus-5-5') }); // 'longer'
- ```
- */
-function comparePrefix(
-  {
-    shorter,
-    longer,
-  }: {
-    readonly shorter: ModelIdParse;
-    readonly longer: ModelIdParse;
-  },
-): 'shorter' | 'longer' | undefined {
-  /**
-   Raw components the longer parse carries past the shared prefix.
-   */
-  const extras = longer.versionRaws
-    .slice(shorter.versionRaws
-      .length,);
-  /**
-   Date classification of every extra component.
-   */
-  const shapes = extras.map(function classifyExtra(raw,) {
-    return isDateShapedRaw(raw,);
-  },);
-  if (shapes.every(function everyExtraIsDate(shape,) {
-    return shape;
-  },))
-    return 'shorter';
-  if (shapes.every(function noExtraIsDate(shape,) {
-    return !shape;
-  },))
-    return 'longer';
-  return undefined;
-}
-
-/**
- Order two parses by recency.
-
- @param left - parse of the left entry
-
- @param right - parse of the right entry
-
- @returns `'left'` when the left entry is newer, `'right'` when the right entry is
- newer, and `undefined` when the id text cannot order them
-
- @example
- ```typescript
- compareRecency({ left: parseModelId('glm-5.2'), right: parseModelId('glm-5.3') }); // 'right'
- ```
- */
-export function compareRecency(
-  {
-    left,
-    right,
-  }: {
-    readonly left: ModelIdParse;
-    readonly right: ModelIdParse;
-  },
-): Recency {
-  if (left.nameShape !== right.nameShape)
-    return undefined;
-  if ((left.versionParts
-    .length
-    === 0) || (right.versionParts
-      .length
-      === 0))
-    return undefined;
-  /**
-   Count of positions both vectors cover.
-   */
-  const shared = Math.min(
-    left.versionParts
-      .length,
-    right.versionParts
-      .length,
-  );
-  for (let index = 0; index < shared; index += 1) {
-    /**
-     Left component at the current position.
-     */
-    const leftPart = left.versionParts[index] as number;
-    /**
-     Right component at the current position.
-     */
-    const rightPart = right.versionParts[index] as number;
-    if (leftPart === rightPart)
-      continue;
-    if (!isCommensurable({
-      leftRaw: left.versionRaws[index] as string,
-      rightRaw: right.versionRaws[index] as string,
-    },))
-      return undefined;
-    return leftPart > rightPart ? 'left' : 'right';
-  }
-  if (left.versionParts
-    .length
-    === right.versionParts
-    .length)
-    return compareEqualLengthDates({
-      left,
-      right,
-    },);
-  /**
-   Prefix comparison result, expressed in caller terms.
-   */
-  const prefixOutcome = left.versionParts
-    .length
-    < right.versionParts
-    .length
-    ? comparePrefix({
-      shorter: left,
-      longer: right,
-    },)
-    : comparePrefix({
-      shorter: right,
-      longer: left,
-    },);
-  if (prefixOutcome === undefined)
-    return undefined;
-  /**
-   Whether the newer side of the prefix comparison is the left parse.
-   */
-  const shorterIsLeft = left.versionParts
-    .length
-    < right.versionParts
-    .length;
-  if (prefixOutcome === 'shorter')
-    return shorterIsLeft ? 'left' : 'right';
-  return shorterIsLeft ? 'right' : 'left';
-}
-
-//endregion Ordering
-
-//region Decision
+//region Grouping
 
 /**
  Build the family key that groups entries the rule may compare.
@@ -425,7 +156,7 @@ export function compareRecency(
 
  @example
  ```typescript
- familyKey({ entry: { provider: 'hyper', api: 'openai-completions', modelId: 'glm-5.2' }, parse: parseModelId('glm-5.2') });
+ familyKey({ entry, parse: parseModelId('glm-5.2') });
  ```
  */
 function familyKey(
@@ -437,112 +168,55 @@ function familyKey(
     readonly parse: ModelIdParse;
   },
 ): string {
-  return JSON.stringify([
+  return [
     entry.provider,
     entry.api,
-    parse.nameShape
-  ],);
+    parse.nameShape,
+  ].join(IDENTITY_SEPARATOR,);
 }
 
 /**
- Choose the newest candidate inside one family.
+ Build the identity key that stops one catalog row retiring its own duplicate.
 
- @param candidates - family members carrying version evidence, in catalog order
+ @param entry - catalog entry under consideration
 
- @param tally - abstention tally to charge keeper ambiguity to
-
- @returns the keeper, or `undefined` when the family holds fewer than two candidates
+ @returns key unique to one API and model id inside a provider family
 
  @example
  ```typescript
- chooseKeeper({ candidates: familyMembers, tally });
+ identityKey({ provider: 'hyper', api: 'openai-completions', modelId: 'glm-5.3' });
  ```
  */
-function chooseKeeper(
-  {
-    candidates,
-    tally,
-  }: {
-    readonly candidates: readonly {
-      readonly entry: CatalogEntry;
-      readonly parse: ModelIdParse
-    }[];
-    readonly tally: AbstentionTally;
-  },
-): {
-  readonly entry: CatalogEntry;
-  readonly parse: ModelIdParse
-} | undefined {
-  if (candidates.length < 2)
-    return undefined;
-  /**
-   Newest candidate seen so far.
-   */
-  let keeper = candidates[0] as {
-    readonly entry: CatalogEntry;
-    readonly parse: ModelIdParse
-  };
-  for (let index = 1; index < candidates.length; index += 1) {
-    /**
-     Candidate being compared against the current keeper.
-     */
-    const candidate = candidates[index] as {
-      readonly entry: CatalogEntry;
-      readonly parse: ModelIdParse
-    };
-    /**
-     Recency comparison between keeper and candidate.
-     */
-    const outcome = compareRecency({
-      left: keeper.parse,
-      right: candidate.parse,
-    },);
-    if (outcome === undefined) {
-      tally.keeperAmbiguity += 1;
-      continue;
-    }
-    if (outcome === 'right')
-      keeper = candidate;
-  }
-  return keeper;
+function identityKey(entry: CatalogEntry,): string {
+  return [
+    entry.api,
+    entry.modelId,
+  ].join(IDENTITY_SEPARATOR,);
 }
 
 /**
- Decide every retirement in one catalog.
+ Group a catalog into families.
 
- @param entries - catalog entries in the order the registry reports them
+ @param entries - catalog entries in registry order
 
- @returns retirements plus the abstention tally explaining what the rule declined
+ @returns families keyed by provider, API, and name shape
 
  @example
  ```typescript
- decideRetirements({ entries: [{ provider: 'hyper', api: 'openai-completions', modelId: 'glm-5.2' }] });
+ groupFamilies({ entries });
  ```
  */
-export function decideRetirements(
+function groupFamilies(
   {
     entries,
   }: {
     readonly entries: readonly CatalogEntry[];
   },
-): RetirementDecision {
+): Map<string, FamilyMember[]> {
   /**
-   Family members grouped by provider, API, and name shape.
+   Families collected so far, in first-seen order.
    */
-  const families = new Map<string, {
-    readonly entry: CatalogEntry;
-    readonly parse: ModelIdParse
-  }[]>();
-  /**
-   Abstention tally for this pass.
-   */
-  const tally: AbstentionTally = {
-    keeperAmbiguity: 0,
-    unorderedPair: 0,
-    loserNewerThanKeeper: 0,
-    versionlessProtected: 0,
-    duplicateIdentity: 0,
-  };
+  const families = new Map<string, FamilyMember[]>();
   for (const entry of entries) {
     /**
      Age evidence for the current entry.
@@ -568,6 +242,120 @@ export function decideRetirements(
       members,
     );
   }
+  return families;
+}
+
+//endregion Grouping
+
+//region Keeper selection
+
+/**
+ Result of choosing one family's newest candidate.
+ */
+type KeeperSelection = {
+  /**
+   Member every compared candidate lost to, or tied with.
+   */
+  readonly keeper: FamilyMember;
+  /**
+   Candidate pairs the id text could not order during selection.
+   */
+  readonly ambiguousPairs: number;
+};
+
+/**
+ Choose the newest candidate inside one family.
+
+ Selection walks the candidates once in catalog order, because the prototype this
+ rule was validated against counted an ambiguity per undecided step rather than per
+ unordered pair, and the recorded measurements use that count.
+
+ @param candidates - family members carrying version evidence, at least two of them
+
+ @returns the keeper and how many steps selection could not order
+
+ @example
+ ```typescript
+ selectKeeper({ candidates });
+ ```
+ */
+function selectKeeper(
+  {
+    candidates,
+  }: {
+    readonly candidates: readonly FamilyMember[];
+  },
+): KeeperSelection {
+  /**
+   First candidate, which selection starts from, and every candidate after it.
+   */
+  const [firstCandidate, ...remainingCandidates] = candidates;
+  /**
+   Mutable selection state, held in an object so no function-root binding mutates.
+   */
+  const selection = {
+    keeper: nonNullishOrThrow(firstCandidate,),
+    ambiguousPairs: 0,
+  };
+  for (const candidate of remainingCandidates) {
+    /**
+     Recency comparison between the current keeper and this candidate.
+     */
+    const outcome = compareRecency({
+      left: selection.keeper
+        .parse,
+      right: candidate.parse,
+    },);
+    if (outcome === UNORDERED) {
+      selection.ambiguousPairs += 1;
+      continue;
+    }
+    if (outcome === 'right')
+      selection.keeper = candidate;
+  }
+  return {
+    keeper: selection.keeper,
+    ambiguousPairs: selection.ambiguousPairs,
+  };
+}
+
+//endregion Keeper selection
+
+//region Decision
+
+/**
+ Decide every retirement in one catalog.
+
+ @param entries - catalog entries in the order the registry reports them
+
+ @returns retirements plus the abstention tally explaining what the rule declined
+
+ @example
+ ```typescript
+ decideRetirements({ entries: [{ provider: 'hyper', api: 'openai-completions', modelId: 'glm-5.2' }] });
+ ```
+ */
+export function decideRetirements(
+  {
+    entries,
+  }: {
+    readonly entries: readonly CatalogEntry[];
+  },
+): RetirementDecision {
+  /**
+   Families grouped by provider, API, and name shape.
+   */
+  const families = groupFamilies({ entries, },);
+  /**
+   Abstention tally for this pass.
+   */
+  const tally: AbstentionTally = {
+    keeperAmbiguity: 0,
+    unorderedPair: 0,
+    loserNewerThanKeeper: 0,
+    versionlessProtected: 0,
+    duplicateIdentity: 0,
+  };
   /**
    Retirements in catalog order.
    */
@@ -582,35 +370,26 @@ export function decideRetirements(
         .length
         > 0;
     },);
-    /**
-     Newest member of this family.
-     */
-    const keeper = chooseKeeper({
-      candidates,
-      tally,
-    },);
-    if (keeper === undefined)
+    if (candidates.length < 2)
       continue;
     /**
-     Identities already retired or kept in this family, so a repeated catalog row
-     cannot retire itself.
+     Newest member of this family, and how many steps selection could not order.
      */
-    const seen = new Set<string>([JSON.stringify([
-      keeper.entry
-        .api,
-      keeper.entry
-        .modelId
-    ],)],);
+    const selection = selectKeeper({ candidates, },);
+    tally.keeperAmbiguity += selection.ambiguousPairs;
+    /**
+     Keeper every other member of this family is compared against.
+     */
+    const {keeper} = selection;
+    /**
+     Identities already accounted for in this family.
+     */
+    const seen = new Set<string>([identityKey(keeper.entry,),],);
     for (const member of members) {
       /**
        Identity of the member under consideration.
        */
-      const identity = JSON.stringify([
-        member.entry
-          .api,
-        member.entry
-          .modelId
-      ],);
+      const identity = identityKey(member.entry,);
       if (seen.has(identity,)) {
         if (member !== keeper)
           tally.duplicateIdentity += 1;
@@ -635,7 +414,7 @@ export function decideRetirements(
         tally.loserNewerThanKeeper += 1;
         continue;
       }
-      if (outcome === undefined) {
+      if (outcome === UNORDERED) {
         tally.unorderedPair += 1;
         continue;
       }

@@ -36,6 +36,7 @@ export {
 export {
   classifyToken,
   isDateShapedRaw,
+  NO_NUMERIC_RUN,
   parseModelId,
   splitOnNonTokenCharacters,
   stripOrganizationPrefix,
@@ -43,13 +44,17 @@ export {
   type TokenClassification,
 } from './id-tokens.ts';
 export {
-  compareRecency,
   decideRetirements,
   type AbstentionCounts,
   type CatalogEntry,
   type Retirement,
   type RetirementDecision,
 } from './retirement-rule.ts';
+export {
+  compareRecency,
+  UNORDERED,
+  type Recency,
+} from './retirement-order.ts';
 export {
   formatAbstentions,
   formatLiveModelWarning,

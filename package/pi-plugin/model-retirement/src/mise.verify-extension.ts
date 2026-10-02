@@ -15,8 +15,14 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import type {
   Api,
+  ClassifierApi,
+  ClassifierModel,
+  ImageApi,
+  ImageModel,
   Model,
 } from '@earendil-works/pi-ai';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 //region Constants
 
@@ -78,10 +84,10 @@ type RecordedRegistration = {
 type HarnessState = {
   readonly events: string[];
   readonly registrations: RecordedRegistration[];
-  handler: ((
+  handler?: (
     payload: unknown,
     ctx: unknown,
-  ) => void) | undefined;
+  ) => void;
 };
 
 //endregion Types
@@ -116,58 +122,93 @@ function chatModel(id: string,): Model<Api> {
 }
 
 /**
+ Chat models the fixture registry reports, one retired and one kept.
+
+ @returns chat models in registry order
+ */
+function fixtureChatModels(): Model<Api>[] {
+  return [
+    chatModel(RETIRED_MODEL_ID,),
+    chatModel(KEPT_MODEL_ID,),
+  ];
+}
+
+/**
+ Image model the fixture registry reports, which must survive re-registration.
+
+ @returns image model fixture
+ */
+function fixtureImageModel(): ImageModel<ImageApi> {
+  return {
+    id: IMAGE_MODEL_ID,
+    name: IMAGE_MODEL_ID,
+    api: 'openrouter-images',
+    provider: FIXTURE_PROVIDER,
+    baseUrl: 'https://example.invalid',
+    input: [
+      'text',
+      'image',
+    ],
+    cost: {
+      input: 1,
+      output: 2,
+      cacheRead: 0,
+      cacheWrite: 0,
+    },
+    type: 'image',
+    output: ['image'],
+  };
+}
+
+/**
+ Classifier model the fixture registry reports, which must survive re-registration.
+
+ @returns classifier model fixture
+ */
+function fixtureClassifierModel(): ClassifierModel<ClassifierApi> {
+  return {
+    id: CLASSIFIER_MODEL_ID,
+    name: CLASSIFIER_MODEL_ID,
+    api: 'typesafe-system-one',
+    provider: FIXTURE_PROVIDER,
+    baseUrl: 'https://example.invalid',
+    input: ['text'],
+    cost: {
+      input: 1,
+      output: 2,
+      cacheRead: 0,
+      cacheWrite: 0,
+    },
+    type: 'classifier',
+    contextWindow: 8_000,
+  };
+}
+
+/**
+ Read the non-chat models the fixture registry reports for one type.
+
+ @param type - model type the registry was asked for
+
+ @returns image models for `image`, classifier models for anything else
+ */
+function fixtureModelsOfType(
+  type: string,
+): readonly (ImageModel<ImageApi> | ClassifierModel<ClassifierApi>)[] {
+  if (type === 'image')
+    return [fixtureImageModel(),];
+  return [fixtureClassifierModel(),];
+}
+
+/**
  Build the session-start context the handler receives.
- 
+
  @returns context carrying a fixture registry and no live model
  */
 function fixtureContext(): unknown {
   return {
     modelRegistry: {
-      getAll: function getAll() {
-        return [
-          chatModel(RETIRED_MODEL_ID,),
-          chatModel(KEPT_MODEL_ID,)
-        ];
-      },
-      getModelsOfType: function getModelsOfType(type: string,) {
-        if (type === 'image') {
-          return [{
-            id: IMAGE_MODEL_ID,
-            name: IMAGE_MODEL_ID,
-            api: 'openrouter-images',
-            provider: FIXTURE_PROVIDER,
-            baseUrl: 'https://example.invalid',
-            input: [
-              'text',
-              'image'
-            ],
-            cost: {
-              input: 1,
-              output: 2,
-              cacheRead: 0,
-              cacheWrite: 0,
-            },
-            type: 'image',
-            output: ['image'],
-          }];
-        }
-        return [{
-          id: CLASSIFIER_MODEL_ID,
-          name: CLASSIFIER_MODEL_ID,
-          api: 'typesafe-system-one',
-          provider: FIXTURE_PROVIDER,
-          baseUrl: 'https://example.invalid',
-          input: ['text'],
-          cost: {
-            input: 1,
-            output: 2,
-            cacheRead: 0,
-            cacheWrite: 0,
-          },
-          type: 'classifier',
-          contextWindow: 8_000,
-        }];
-      },
+      getAll: fixtureChatModels,
+      getModelsOfType: fixtureModelsOfType,
     },
     model: undefined,
   };
@@ -214,11 +255,11 @@ function fakeHost(state: HarnessState,): ExtensionAPI {
 /**
  Read the ids one registration carries.
  
- @param config - recorded provider configuration
- 
+ @param config - recorded provider configuration, owned by pi
+
  @returns model ids in registration order
  */
-function registeredIds(config: ProviderConfig,): string[] {
+function registeredIds(config: ForeignBorrowed<ProviderConfig>,): string[] {
   return (config.models ?? []).map(function toId(model,) {
     return model.id;
   },);
@@ -266,7 +307,6 @@ async function verifyBuiltExtension(): Promise<string> {
   const state: HarnessState = {
     events: [],
     registrations: [],
-    handler: undefined,
   };
   await mod.default(fakeHost(state,),);
   if ((state.events
@@ -295,7 +335,7 @@ async function verifyBuiltExtension(): Promise<string> {
   /**
    Only registration the pass made.
    */
-  const registration = state.registrations[0] as RecordedRegistration;
+  const registration = nonNullishOrThrow(state.registrations[0],);
   if (registration.name !== FIXTURE_PROVIDER)
     throw new Error(`session start must re-register ${FIXTURE_PROVIDER}, saw ${registration.name}`,);
   /**

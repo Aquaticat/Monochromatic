@@ -43,7 +43,7 @@ const CLASSIFIER_API: ClassifierApi = 'typesafe-system-one';
  
  @param api - API type the model is served under
  
- @param thinkingLevelMap - thinking map to prove optional metadata survives
+ @param samplingParams - sampling overrides to prove optional metadata survives
  
  @returns chat model shaped like a registry read
  */
@@ -52,12 +52,12 @@ function chatModel(
     provider,
     id,
     api = CHAT_API,
-    thinkingLevelMap,
+    samplingParams,
   }: {
     readonly provider: string;
     readonly id: string;
     readonly api?: Api;
-    readonly thinkingLevelMap?: Record<string, string | null>;
+    readonly samplingParams?: Record<string, unknown>;
   },
 ): Model<Api> {
   return {
@@ -71,7 +71,7 @@ function chatModel(
     reasoning: true,
     contextWindow: 128_000,
     maxTokens: 4_096,
-    ...(thinkingLevelMap === undefined ? {} : { thinkingLevelMap, }),
+    ...(samplingParams === undefined ? {} : { samplingParams, }),
   };
 }
 
@@ -295,7 +295,7 @@ await describe({
       name: toModelConfig.name,
       children: [
         it({
-          name: 'marks a chat model and keeps its thinking map',
+          name: 'marks a chat model and keeps its sampling params',
           fn: async function runChatConfig() {
             /**
              Configuration for a chat model carrying a thinking map.
@@ -303,10 +303,10 @@ await describe({
             const config = toModelConfig(chatModel({
               provider: 'hyper',
               id: 'glm-5.3',
-              thinkingLevelMap: { high: 'high', xhigh: null, },
+              samplingParams: { temperature: 0.5, },
             },),);
             expect(config.type ?? 'chat',).toBe('chat',);
-            expect('thinkingLevelMap' in config,).toBe(true,);
+            expect('samplingParams' in config,).toBe(true,);
           },
         },),
         it({

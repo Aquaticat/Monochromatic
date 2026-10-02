@@ -27,6 +27,7 @@ import {
   registerModelRetirement,
   type RetirementLog,
 } from '../dist/final/node/index.mjs';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 //region Fixtures
 
@@ -174,7 +175,7 @@ type RecordedRegistration = {
 type FakeHostState = {
   readonly events: string[];
   readonly registrations: RecordedRegistration[];
-  handler: ((payload: unknown, ctx: unknown,) => void) | undefined;
+  handler?: (payload: unknown, ctx: unknown,) => void;
 };
 
 /**
@@ -200,7 +201,6 @@ function fakeHost(state: FakeHostState,): ExtensionAPI {
       state.registrations.push({ name, config, },);
     },
   };
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the fake implements only `on` and `registerProvider`, the two members `registerModelRetirement` touches
   return fake as unknown as ExtensionAPI;
 }
 
@@ -246,8 +246,8 @@ function readOf(
  
  @returns model ids in registration order
  */
-function registeredIds(config: ProviderConfig | undefined,): readonly string[] {
-  return (config?.models ?? []).map(function toId(model,) {
+function registeredIds(config: ProviderConfig,): readonly string[] {
+  return (config.models ?? []).map(function toId(model,) {
     return model.id;
   },);
 }
@@ -326,15 +326,18 @@ await describe({
                   chatModel({ provider: 'hyper', id: 'glm-5.3', },),
                 ],
               },),
-              registerProvider: function recordRegistration(name, config,) {
+              registerProvider: function recordRegistration({ name, config, },) {
                 registrations.push({ name, config, },);
               },
-              liveModel: undefined,
               log: fakeLog(captured,),
             },);
             expect(registrations.length,).toBe(1,);
             expect(registrations[0]?.name,).toBe('hyper',);
-            expect(registeredIds(registrations[0]?.config,),).toEqual(['glm-5.3'],);
+            expect(
+              registeredIds(nonNullishOrThrow(registrations[0]?.config,),),
+            ).toEqual([
+              'glm-5.3',
+            ],);
             expect(summary.registeredProviders,).toEqual(['hyper'],);
             expect(summary.retirements.length,).toBe(1,);
             expect(captured.info.length,).toBe(1,);
@@ -416,10 +419,9 @@ await describe({
                   chatModel({ provider: 'hyper', id: 'glm-5.3-flash', },),
                 ],
               },),
-              registerProvider: function recordRegistration(name, config,) {
+              registerProvider: function recordRegistration({ name, config, },) {
                 registrations.push({ name, config, },);
               },
-              liveModel: undefined,
               log: fakeLog(captured,),
             },);
             expect(registrations,).toEqual([],);
@@ -438,7 +440,7 @@ await describe({
             /**
              State the fake host records into.
              */
-            const state: FakeHostState = { events: [], registrations: [], handler: undefined, };
+            const state: FakeHostState = { events: [], registrations: [], };
             registerModelRetirement({ pi: fakeHost(state,), },);
             expect(state.events,).toEqual(['session_start'],);
             expect(state.registrations,).toEqual([],);
@@ -450,7 +452,7 @@ await describe({
             /**
              State the fake host records into.
              */
-            const state: FakeHostState = { events: [], registrations: [], handler: undefined, };
+            const state: FakeHostState = { events: [], registrations: [], };
             registerModelRetirement({ pi: fakeHost(state,), },);
             /**
              Session-start context carrying a registry and a live model.
@@ -471,7 +473,9 @@ await describe({
             };
             state.handler?.({ type: 'session_start', }, ctx,);
             expect(state.registrations.length,).toBe(1,);
-            expect(registeredIds(state.registrations[0]?.config,),).toEqual([
+            expect(
+              registeredIds(nonNullishOrThrow(state.registrations[0]?.config,),),
+            ).toEqual([
               'glm-5.3',
             ],);
           },
@@ -482,7 +486,7 @@ await describe({
             /**
              State the fake host records into.
              */
-            const state: FakeHostState = { events: [], registrations: [], handler: undefined, };
+            const state: FakeHostState = { events: [], registrations: [], };
             registerModelRetirement({ pi: fakeHost(state,), },);
             state.handler?.({ type: 'session_start', }, {
               modelRegistry: {

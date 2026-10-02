@@ -19,6 +19,15 @@ import {
 
 //region Fixtures
 
+/** Reasons a tally fixture overrides, every one optional. */
+type TallyOverrides = {
+  readonly keeperAmbiguity?: number;
+  readonly unorderedPair?: number;
+  readonly loserNewerThanKeeper?: number;
+  readonly versionlessProtected?: number;
+  readonly duplicateIdentity?: number;
+};
+
 /**
  Build an abstention tally with only the given reasons set.
 
@@ -26,7 +35,7 @@ import {
 
  @returns tally with every reason present
  */
-function tally(overrides: Partial<AbstentionCounts>,): AbstentionCounts {
+function tally(overrides: TallyOverrides,): AbstentionCounts {
   return {
     keeperAmbiguity: 0,
     unorderedPair: 0,
