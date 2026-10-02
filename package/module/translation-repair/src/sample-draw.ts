@@ -1,5 +1,6 @@
 import { createHash, } from 'node:crypto';
 
+import { compareCodePoints, } from './code-points.ts';
 import {
   type BandQuota,
   type GradingCandidate,
@@ -163,31 +164,6 @@ type RankedCandidate = {
 };
 
 /**
- Compares two hex shuffle keys lexicographically.
-
- @param a - first key
-
- @param b - second key
-
- @returns Negative, zero, or positive ordering
- */
-function compareKeys(
-  {
-    a,
-    b,
-  }: {
-    readonly a: string;
-    readonly b: string
-  },
-): number {
-  if (a < b)
-    return -1;
-  if (a > b)
-    return 1;
-  return 0;
-}
-
-/**
  Selects `count` candidates from one band, spreading across its entries: each
  entry's issues are shuffle-ordered and ranked, then selection takes every
  entry's rank-0 issue before any rank-1 issue. So one issue-heavy entry never
@@ -254,9 +230,9 @@ function selectFromBand(
           a,
           b,
         ) {
-          return compareKeys({
-            a: a.issueKey,
-            b: b.issueKey,
+          return compareCodePoints({
+            left: a.issueKey,
+            right: b.issueKey,
           },);
         },)
         .map(function withRank(
@@ -287,15 +263,15 @@ function selectFromBand(
       /**
        Entry-key ordering, breaking rank ties between entries.
        */
-      const entryOrder = compareKeys({
-        a: a.entryKey,
-        b: b.entryKey,
+      const entryOrder = compareCodePoints({
+        left: a.entryKey,
+        right: b.entryKey,
       },);
       if (entryOrder !== 0)
         return entryOrder;
-      return compareKeys({
-        a: a.issueKey,
-        b: b.issueKey,
+      return compareCodePoints({
+        left: a.issueKey,
+        right: b.issueKey,
       },);
     },)
     .slice(

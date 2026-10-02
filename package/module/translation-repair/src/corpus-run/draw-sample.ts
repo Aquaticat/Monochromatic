@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { writeFile, } from 'node:fs/promises';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -118,12 +119,7 @@ async function drawGradingSample({ line, }: { readonly line: CommandLineOf<'draw
    artifact arriving between the two would join the census while never
    entering the candidate pool.
    */
-  const listed = (await listArtifactFiles({ artifactsDir, },))
-    // Sorted so the pool is built in one fixed order. The draw itself sorts by
-    // keys derived from the seed and the ids, so it does not depend on this,
-    // but the POOL report and any error naming "the first bad artifact" do, and
-    // a report that changes with directory order is a report nobody can cite.
-    .toSorted();
+  const listed = textsInCodePointOrder({ texts: (await listArtifactFiles({ artifactsDir, },)), },);
 
   /**
    Entries this draw may pool, with the commit each recorded.

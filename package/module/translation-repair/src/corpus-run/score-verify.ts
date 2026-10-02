@@ -5,6 +5,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
+import { compareCodePoints, } from '../code-points.ts';
 import { wordForCount, } from '../count-word.ts';
 import {
   type GradedItem,
@@ -280,7 +281,10 @@ async function main(): Promise<void> {
         left,
         right,
       ) {
-        return left[0] < right[0] ? (-1) : 1;
+        return compareCodePoints({
+          left: left[0],
+          right: right[0],
+        },);
       },)
   ) {
     /**

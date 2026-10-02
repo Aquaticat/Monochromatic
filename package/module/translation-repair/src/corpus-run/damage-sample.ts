@@ -2,6 +2,7 @@ import { createHash, } from 'node:crypto';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { compareCodePoints, } from '../code-points.ts';
 import { wordForCount, } from '../count-word.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { writeSheetPair, } from './sheet-write.ts';
@@ -197,7 +198,10 @@ function drawRegions(
       left,
       right,
     ) {
-      return left.key < right.key ? (-1) : 1;
+      return compareCodePoints({
+        left: left.key,
+        right: right.key,
+      },);
     },)
     .slice(
       0,

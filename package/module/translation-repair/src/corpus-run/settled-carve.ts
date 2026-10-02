@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -178,11 +179,10 @@ export async function listSettledEntryIds(
       return [];
     }
   })();
-  return names
+  return textsInCodePointOrder({ texts: names
     .map(function toEntryId(name,): string {
       return entryIdOfArtifact({ name, },);
-    },)
-    .toSorted();
+    },), },);
 }
 
 /**

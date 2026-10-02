@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
 
 import {
@@ -169,8 +170,7 @@ export async function censusByGeneration(
    entering the candidate pool. One listing threaded through closes the gap
    between the two views this module controls.
    */
-  const names = (listed ?? await listArtifactFiles({ artifactsDir, },))
-    .toSorted();
+  const names = textsInCodePointOrder({ texts: (listed ?? await listArtifactFiles({ artifactsDir, },)), },);
 
   /**
    Entry ids gathered under each recorded build.

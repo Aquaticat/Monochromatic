@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -74,8 +75,7 @@ async function gatherReadings(
    directory continuously: a second listing inside the census would classify a
    different set of files from the one this reader goes on to read.
    */
-  const listed = (await listArtifactFiles({ artifactsDir, },))
-    .toSorted();
+  const listed = textsInCodePointOrder({ texts: (await listArtifactFiles({ artifactsDir, },)), },);
 
   /**
    Artifact file names, JSON only.

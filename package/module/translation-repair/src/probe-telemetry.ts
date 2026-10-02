@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from './code-points.ts';
 import type {
   TelemetryProbeReading,
   TelemetryRegionTally,
@@ -274,14 +275,12 @@ function evidenceFingerprint(
     String(tally.uncertain,),
     // Sorted so two copies listing the same probers in different orders are
     // still one fact rather than a contradiction.
-    tally.claims
+    textsInCodePointOrder({ texts: tally.claims
       .map(function toIdentity(claim,) {
         return `${claim.modelId}/${claim.admissibility}`;
-      },)
-      .toSorted()
+      },), },)
       .join(','),
-    tally.issueIds
-      .toSorted()
+    textsInCodePointOrder({ texts: tally.issueIds, },)
       .join(','),
   ].join('|',);
 }

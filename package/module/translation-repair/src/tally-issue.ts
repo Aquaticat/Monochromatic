@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from './code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type {
   AdjudicatedIssue,
@@ -135,11 +136,10 @@ export function assembleGradedIssue(
   /**
    Membership determines identity exactly as before partitioning existed.
    */
-  const ids = graded.map(function claimId(entry,): string {
+  const ids = textsInCodePointOrder({ texts: graded.map(function claimId(entry,): string {
     return entry.member
       .claimId;
-  },)
-    .toSorted();
+  },), },);
   return {
     issueId: `adjudicated/${hashContent({ content: JSON.stringify(ids,), },)}`,
     status: graded.some(function blocked(entry,): boolean {

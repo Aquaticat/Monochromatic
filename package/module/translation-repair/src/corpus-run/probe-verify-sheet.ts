@@ -1,5 +1,6 @@
 import { createHash, } from 'node:crypto';
 
+import { compareCodePoints, } from '../code-points.ts';
 import { fenceForMarkdown, } from '../markdown-fence.ts';
 import type { ScreenedDefectClaim, } from '../introduced-defect-screen.ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
@@ -125,7 +126,10 @@ export function orderBlind(
       left,
       right,
     ) {
-      return left.digest < right.digest ? (-1) : 1;
+      return compareCodePoints({
+        left: left.digest,
+        right: right.digest,
+      },);
     },)
     .map(function toItem(entry,) {
       return entry.item;

@@ -62,7 +62,9 @@ function isPromptList(value: PromptValue,): value is readonly PromptValue[] {
  KEYS SORT BY UTF-16 CODE UNIT, as canonical JSON (RFC 8785) sorts them, and as
  the default `toSorted` compares strings. `localeCompare` follows the host's
  locale, and this digest names a durable payload record that a run on another
- host may read.
+ host may read. The one code-unit ordering the code-unit scan
+ (`locale-orderings.unit.test.ts`, ledger B122) exempts, since code-point
+ order would be another canonical form.
 
  @param value - prompt value composed from protocol strings
 

@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { wordForCount, } from '../count-word.ts';
@@ -295,10 +296,10 @@ async function verdictsByTip(
   /**
    Commits the census placed, each asked about once.
    */
-  const tips = [
+  const tips = textsInCodePointOrder({ texts: [
     ...new Set(census.tipByEntry
       .values(),),
-  ].toSorted();
+  ], },);
 
   /**
    Verdict per commit, filled in order.
@@ -365,11 +366,10 @@ export async function selectEligible(
   /**
    Every entry, whatever its generation.
    */
-  const everyId = census.groups
+  const everyId = textsInCodePointOrder({ texts: census.groups
     .flatMap(function toIds(group,): readonly string[] {
       return group.entryIds;
-    },)
-    .toSorted();
+    },), },);
 
   /**
    How many distinct pipeline versions the pool holds.

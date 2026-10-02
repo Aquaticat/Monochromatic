@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { wordForCount, } from '../count-word.ts';
 import {
   censusByGeneration,
@@ -289,10 +290,10 @@ export async function assertArtifactsPlaceable(
   /**
    Artifacts carrying nothing usable, whatever the reason.
    */
-  const unplaceable = [
+  const unplaceable = textsInCodePointOrder({ texts: [
     ...untaggedIds,
     ...malformedIds,
-  ].toSorted();
+  ], },);
 
   if (unplaceable.length > 0)
     throw new UnplaceableArtifactError({ entryIds: unplaceable, },);

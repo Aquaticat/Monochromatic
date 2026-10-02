@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from './code-points.ts';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -271,17 +272,10 @@ export async function runCriticStage(
     claims,
     nonTranslationVotes,
     heardCritics: reports.length,
-    heardCriticIds: gather.voices
+    heardCriticIds: textsInCodePointOrder({ texts: gather.voices
       .map(function toModelId(voice,) {
       return voice.modelId;
-    },)
-      // Bare toSorted: the default comparator sorts strings by code unit, which
-      // is the same order the explicit comparator in `collectClaimAttributions`
-      // imposes on proposers. Stated because the agreement is a property of the
-      // default rather than of anything written here, and because "fixing" this
-      // to localeCompare would reintroduce the locale-dependent ordering that
-      // was already caught once in a value headed for a cached outcome.
-      .toSorted(),
+    },), },),
     claimAttributions: collectClaimAttributions({ emissions, },),
     findings,
   };

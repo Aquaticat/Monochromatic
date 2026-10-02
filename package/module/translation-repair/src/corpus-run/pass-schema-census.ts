@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -225,8 +226,7 @@ export async function censusBySchema(
   /**
    Artifact names, sorted.
    */
-  const names = (await listArtifactFiles({ artifactsDir, },))
-    .toSorted();
+  const names = textsInCodePointOrder({ texts: (await listArtifactFiles({ artifactsDir, },)), },);
 
   return Promise.all(names.map(async function readOne(name,): Promise<SchemaCensusRow> {
     /**

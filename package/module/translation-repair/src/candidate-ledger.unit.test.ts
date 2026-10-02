@@ -34,6 +34,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  compareCodePoints,
   inEntryLogContext,
   inSliceLogContext,
   recordContest,
@@ -231,7 +232,10 @@ async function ledgerIn(
       left,
       right,
     ): number {
-      return (left < right) ? -1 : 1;
+      return compareCodePoints({
+        left,
+        right,
+      },);
     },)
     .map(async function one(name,): Promise<unknown> {
       return JSON.parse(await readFile(

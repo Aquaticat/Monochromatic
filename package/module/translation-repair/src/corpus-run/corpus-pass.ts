@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { join, } from 'node:path';
 
 
@@ -350,8 +351,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     /**
      Chosen ids in a stable order, so two runs of one selection log alike.
      */
-    const chosen = [...onlyIds,]
-      .toSorted()
+    const chosen = textsInCodePointOrder({ texts: [...onlyIds,], },)
       .join(',',);
 
     console.log(

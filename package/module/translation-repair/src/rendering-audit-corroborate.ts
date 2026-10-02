@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from './code-points.ts';
 import type {
   ScreenedFinding,
   SideReading,
@@ -534,10 +535,9 @@ export function corroborateByOverlap(
         return groups;
 
       groups.set(
-        JSON.stringify(group.map(function toKey(member,): string {
+        JSON.stringify(textsInCodePointOrder({ texts: group.map(function toKey(member,): string {
           return `${member.modelId}${defectKey({ finding: member.finding, },)}`;
-        },)
-          .toSorted(),),
+        },), },),),
         group,
       );
       return groups;

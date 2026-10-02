@@ -21,6 +21,7 @@ import {
   codePointBefore,
   codePointCount,
   compareCodePoints,
+  textsInCodePointOrder,
   wholeOpening,
 } from '../dist/final/node/index.mjs';
 
@@ -205,7 +206,7 @@ await describe({
           name: 'ORDERS BY CODE POINT, capitals before lower case, where a collation would interleave them '
             + '(ledger B95)',
           fn: async () => {
-            expect(['mooncat', 'Tabby', 'biscuit', 'Ginger',].toSorted(function byCodePoint(
+            expect(['mooncat', 'Tabby', 'biscuit', 'Ginger',].toSorted(function byName(
               left,
               right,
             ): number {
@@ -260,6 +261,33 @@ await describe({
               left: LONE_LOW,
               right: '\u{FF5E}',
             },),).toBeLessThan(0,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: textsInCodePointOrder.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ORDERS A LIST BY CODE POINT, a character past U+FFFF after one between U+E000 and U+FFFF, where '
+            + 'the argument-less toSorted puts it first, and leaves the list it was given as it was (ledger B122)',
+          fn: async () => {
+            /**
+             Names spanning the order's three edges: case, a shared start, and an astral character.
+             */
+            const names = [`cat${ASTRAL}`, 'cat\u{FF5E}', 'Cat', 'ca',];
+            expect(textsInCodePointOrder({ texts: names, },),).toEqual(['Cat', 'ca', 'cat\u{FF5E}', `cat${ASTRAL}`,],);
+            expect(names.toSorted(),).toEqual(['Cat', 'ca', `cat${ASTRAL}`, 'cat\u{FF5E}',],);
+            expect(names,).toEqual([`cat${ASTRAL}`, 'cat\u{FF5E}', 'Cat', 'ca',],);
+          },
+        },),
+        it({
+          name: 'KEEPS EQUAL TEXTS, each copy, since its comparator answers zero for them as the contract requires',
+          fn: async () => {
+            expect(textsInCodePointOrder({ texts: [`cat${ASTRAL}`, 'ca', `cat${ASTRAL}`,], },),)
+              .toEqual(['ca', `cat${ASTRAL}`, `cat${ASTRAL}`,],);
           },
         },),
       ],

@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   open,
   readFile,
@@ -241,11 +242,10 @@ export async function tallyCoverage(
   /**
    Every coverage file, in one fixed order for both readings.
    */
-  const paths = (await namesOfKind({
+  const paths = textsInCodePointOrder({ texts: (await namesOfKind({
     dir: coverageDirectory,
     kind: 'file',
-  },))
-    .toSorted()
+  },)), },)
     .map(function inDirectory(name,): string {
       return join(
         coverageDirectory,
@@ -389,11 +389,10 @@ export async function unloadedSourcesOf(
   },
 ): Promise<readonly UnloadedSource[]> {
   return await Promise.all(
-    [...new Set(carried,),]
+    textsInCodePointOrder({ texts: [...new Set(carried,),]
       .filter(function onlyThere(source,): boolean {
         return !loadedSources.has(source,);
-      },)
-      .toSorted()
+      },), },)
       .map(async function counted(source,): Promise<UnloadedSource> {
         return {
           source,

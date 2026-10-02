@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { readFile, } from 'node:fs/promises';
 import { basename, } from 'node:path';
 
@@ -249,7 +250,7 @@ export async function readRunnerClosure(
   return {
     kind: 'read',
     entry: basename(entryPath,),
-    chunks: [...new Set(found,),].toSorted(),
+    chunks: textsInCodePointOrder({ texts: [...new Set(found,),], },),
   };
 }
 

@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -227,7 +228,7 @@ export async function declinedEntryIds(
   { declinedDir, }: { readonly declinedDir: string; },
 ): Promise<ReadonlySet<string>> {
   return new Set(
-    (await recordFiles({ declinedDir, },))
+    textsInCodePointOrder({ texts: (await recordFiles({ declinedDir, },))
       .filter(function isRecord(name,): boolean {
         return name.endsWith(RECORD_SUFFIX,);
       },)
@@ -236,8 +237,7 @@ export async function declinedEntryIds(
           0,
           -RECORD_SUFFIX.length,
         );
-      },)
-      .toSorted(),
+      },), },),
   );
 }
 

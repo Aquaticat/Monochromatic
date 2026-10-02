@@ -1,4 +1,7 @@
-import { compareCodePoints, } from '../code-points.ts';
+import {
+  compareCodePoints,
+  textsInCodePointOrder,
+} from '../code-points.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type {
@@ -687,7 +690,7 @@ export function createCoverageTally(): CoverageTally {
     },
 
     loadedBundles: function loadedBundles(): readonly string[] {
-      return [...boundaries.keys(),].toSorted();
+      return textsInCodePointOrder({ texts: [...boundaries.keys(),], },);
     },
   },);
 }

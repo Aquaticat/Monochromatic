@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from './code-points.ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import {
   type IssueEvidenceConflictError,
@@ -44,24 +45,24 @@ function duplicateKey(
   /**
    Categories claimed, deduplicated so member order cannot change the key.
    */
-  const categories = [...new Set(issue.claims
+  const categories = textsInCodePointOrder({ texts: [...new Set(issue.claims
     .map(function toCategory(member,): string {
     return member.claim
       .category;
-  },),),].toSorted();
+  },),),], },);
 
   /**
    Every span claimed, rendered field by field rather than by JSON, since
    property order in a serialized object is not a guarantee worth keying on.
    */
-  const spans = [...new Set(issue.claims
+  const spans = textsInCodePointOrder({ texts: [...new Set(issue.claims
     .flatMap(function toSpans(member,): readonly string[] {
     return member.claim
       .spans
       .map(function render(span,): string {
       return `${span.side}|${span.nodeId}|${String(span.startOffset,)}`;
     },);
-  },),),].toSorted();
+  },),),], },);
 
   return `${categories.join(',',)}::${spans.join(',',)}`;
 }

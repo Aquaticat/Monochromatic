@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   COMPLETION_CAP,
   MIN_PROVIDER_CALLS,
@@ -323,10 +324,9 @@ export function capCensus({ samples, }: { readonly samples: readonly CapSample[]
       /**
        One reading per provider that served it.
        */
-      const providers = [...new Set(own.map(function providerOf(sample,) {
+      const providers = textsInCodePointOrder({ texts: [...new Set(own.map(function providerOf(sample,) {
         return sample.provider;
-      },),),]
-        .toSorted()
+      },),),], },)
         .map(function readingOf(provider,): ProviderCapReading {
           return providerReading({
             provider,

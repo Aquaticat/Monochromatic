@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   mkdir,
   mkdtemp,
@@ -229,7 +230,7 @@ async function reportCensus(
                 .line : 0,
           };
         },),
-        loadedSources: [...loadedSources,].toSorted(),
+        loadedSources: textsInCodePointOrder({ texts: [...loadedSources,], },),
         unloadedBundles,
         unloadedSources,
       },

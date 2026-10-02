@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from './code-points.ts';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -426,8 +427,8 @@ export async function runEditorStage(
       // Counted by reason rather than listed, since one bad editor can produce
       // many refusals of one kind and the shape is what a reader needs. Sorted
       // as finished lines: they share one prefix and each kind appears once, so
-      // their code-unit order is the kinds' order, with no comparator to write.
-      ...[...patch.rejected
+      // their code-point order is the kinds' order (ledger B122).
+      ...textsInCodePointOrder({ texts: [...patch.rejected
         .reduce(
           function tally(
             counts: Map<string, number>,
@@ -457,8 +458,7 @@ export async function runEditorStage(
         ),]
         .map(function toFinding([kind, count,],): string {
         return `editor-rejected ${kind} (${String(count,)})`;
-      },)
-        .toSorted(),
+      },), },),
     ],
   };
 }

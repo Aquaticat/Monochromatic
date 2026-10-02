@@ -1,6 +1,7 @@
 import { join, } from 'node:path';
 
 import { isLedgerFileName, } from '../candidate-ledger.ts';
+import { compareCodePoints, } from '../code-points.ts';
 import { failureName, } from '../error-name.ts';
 import { refusalText, } from '../refusal-text.ts';
 import {
@@ -184,7 +185,10 @@ export async function readLedgerDirectory(
     left,
     right,
   ): number {
-    return (left < right) ? -1 : 1;
+    return compareCodePoints({
+      left,
+      right,
+    },);
   },);
 
   /**

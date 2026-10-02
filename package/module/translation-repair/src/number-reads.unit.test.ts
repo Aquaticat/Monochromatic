@@ -30,6 +30,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { compareCodePoints, } from '../dist/final/node/index.mjs';
 import {
   childNodes,
   identifierName,
@@ -471,7 +472,10 @@ function numberReads({ files, }: { readonly files: readonly SourceText[]; },): R
     [left,],
     [right,],
   ): number {
-    return (left < right) ? -1 : 1;
+    return compareCodePoints({
+      left,
+      right,
+    },);
   },),);
 }
 

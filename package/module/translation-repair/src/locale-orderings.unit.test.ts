@@ -21,9 +21,11 @@
  `toSorted`, in source and tests alike, which orders text by UTF-16 unit and,
  written as `left < right ? -1 : 1`, never answers zero for two equal keys,
  which the comparator contract requires. Numbers order by subtraction, text by
- `compareCodePoints`. Out of this scan's reach: a comparator declared apart
- and handed in by name, and a helper a comparator calls; the package hands
- every comparator inline.
+ `compareCodePoints`, and a list of plain text through `textsInCodePointOrder`
+ (`code-points.ts`). A code-unit order kept on purpose is named in
+ `CODE_UNIT_ORDER_EXEMPTIONS` with why. Out of this scan's reach: a comparator
+ declared apart and handed in by name, and a helper a comparator calls; the
+ package hands every comparator inline.
 
  THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a
  scan shown able to find each form (ledger M21). Fixtures are cat-themed; the
@@ -182,6 +184,18 @@ const RELATIONAL_OPERATORS: ReadonlySet<string> = new Set([
   '<=',
   '>',
   '>=',
+],);
+
+/**
+ Orderings that are code-unit order on purpose, each with why.
+
+ `canonicalPromptValue` serializes a record's keys as canonical JSON
+ (RFC 8785) does, which sorts keys by UTF-16 unit, and its digest names a
+ durable payload record another host reads; code-point order would be
+ another canonical form.
+ */
+const CODE_UNIT_ORDER_EXEMPTIONS: ReadonlySet<string> = new Set([
+  'prompt-uniqueness-client.ts#canonicalPromptValue: bare sort',
 ],);
 
 /**
@@ -405,7 +419,8 @@ await describe({
     },),
     it({
       name: 'ORDERS NO TEXT BY UTF-16 UNIT AND HANDS NO SORT A COMPARATOR THAT CANNOT ANSWER ZERO in the package\'s '
-        + 'source, or a comparator of that kind in its tests',
+        + 'source, or a comparator of that kind in its tests, outside the named exemptions, and every exemption '
+        + 'still names one',
       fn: async () => {
         /**
          Every package file, tests among them.
@@ -414,7 +429,16 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(codeUnitOrderings({ files, },),).toEqual([],);
+        /**
+         Every ordering the scan finds, exemptions included.
+         */
+        const found = codeUnitOrderings({ files, },);
+        expect(found.filter(function unexempt(key,): boolean {
+          return !CODE_UNIT_ORDER_EXEMPTIONS.has(key,);
+        },),).toEqual([],);
+        expect([...CODE_UNIT_ORDER_EXEMPTIONS,].filter(function gone(key,): boolean {
+          return !found.includes(key,);
+        },),).toEqual([],);
       },
     },),
   ],

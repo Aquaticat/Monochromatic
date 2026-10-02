@@ -1,5 +1,5 @@
 import { isAsciiDigits, } from './ascii-letters.ts';
-import { compareCodePoints, } from './code-points.ts';
+import { textsInCodePointOrder, } from './code-points.ts';
 import {
   contentTokens,
   properNouns,
@@ -187,26 +187,18 @@ export function checkPreservation(
   const names = properNouns({ text: before, },);
 
   /**
-   Missing tokens that are names or numbers, whose loss no rewrite explains.
+   Missing tokens that are names or numbers, whose loss no rewrite explains,
+   ordered by code point, since these are words of the document and the
+   default order compares UTF-16 units, which puts a name past U+FFFF before
+   one between U+E000 and U+FFFF (ledger B95).
    */
-  const lostDistinctive = [...new Set(missing.filter(function isDistinctive(token,): boolean {
+  const lostDistinctive = textsInCodePointOrder({ texts: [...new Set(missing.filter(function isDistinctive(token,): boolean {
     // EVERY character must be a digit, not merely the first. A token like
     // "10th" begins with a digit while being a word, and an edit rewriting
     // "July 10th" as "July 10" loses it without losing anything: measured, that
     // exact case rejected a repair a human graded sound.
     return names.has(token,) || isAsciiDigits({ text: token, },);
-  },),),].toSorted(function byCodePoint(
-    left,
-    right,
-  ): number {
-    // BY CODE POINT, since these are words of the document and the default
-    // order compares UTF-16 units, which puts a name past U+FFFF before one
-    // between U+E000 and U+FFFF (ledger B95).
-    return compareCodePoints({
-      left,
-      right,
-    },);
-  },);
+  },),),], },);
 
   /**
    Share of unlicensed tokens that vanished.

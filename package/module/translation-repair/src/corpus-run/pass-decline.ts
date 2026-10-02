@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { rm, } from 'node:fs/promises';
 
 import {
@@ -251,14 +252,13 @@ export async function removeDeclinedPages(
   /**
    Entries whose page was removed.
    */
-  const removed = outcomes
+  const removed = textsInCodePointOrder({ texts: outcomes
     .filter(function wasRemoved({ removed: gone, },): boolean {
       return gone;
     },)
     .map(function idOf({ entryId, },): string {
       return entryId;
-    },)
-    .toSorted();
+    },), },);
   for (const entryId of removed) {
     tagged({ tag: entryId, },)
       .warn(`entry ${entryId}: removed a page standing for a declined entry, since the archive's note says the archive ships`,);

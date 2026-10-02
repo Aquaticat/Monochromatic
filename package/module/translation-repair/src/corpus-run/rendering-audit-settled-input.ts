@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   basename,
   join,
@@ -415,16 +416,16 @@ async function locateSettledArtifacts(
   /**
    Run-set subdirectories, sorted.
    */
-  const runSets = (await namesOfKind({
+  const runSets = textsInCodePointOrder({ texts: (await namesOfKind({
     dir: archiveDir,
     kind: 'directory',
-  },)).toSorted();
+  },)), },);
 
   /**
    Artifacts sitting at the archive root, which is the layout a pass writes:
    regular files named like one, as every artifact reader lists them.
    */
-  const loose = (await listArtifactFiles({ artifactsDir: archiveDir, },)).toSorted();
+  const loose = textsInCodePointOrder({ texts: (await listArtifactFiles({ artifactsDir: archiveDir, },)), },);
 
   // STATED, NOT FAULTED: the archive is the operator's, the path is what they
   // typed, and the remedy is theirs, so `reportingRefusals` prints this line
@@ -454,13 +455,12 @@ async function locateSettledArtifacts(
       // Regular files only, as the loose layout already required: a directory
       // named like an artifact inside a run set was read as JSON and stopped
       // the whole archive reading (ledger B64).
-      return (await listArtifactFiles({
+      return textsInCodePointOrder({ texts: (await listArtifactFiles({
         artifactsDir: join(
           archiveDir,
           runSet,
         ),
-      },))
-        .toSorted()
+      },)), },)
         .map(function at(artifactFile,): ArtifactLocation {
           return {
             runSetDir: runSet,

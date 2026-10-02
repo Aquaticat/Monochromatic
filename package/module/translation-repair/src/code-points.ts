@@ -230,4 +230,36 @@ export function compareCodePoints({
   return left.length - right.length;
 }
 
+/**
+ A list of text in code-point order, as `compareCodePoints` orders two.
+
+ FOR A LIST OF PLAIN TEXT, where an argument-less `toSorted` would order by
+ UTF-16 unit and put a character past U+FFFF before one between U+E000 and
+ U+FFFF (ledger B122). A list of records keys its own comparator through
+ `compareCodePoints`.
+
+ @param texts - text to order, left as it is, whose own text type the result
+ keeps (a file name ending in `.json`, a provider's name)
+
+ @returns A new list holding the same text in code-point order
+
+ @example
+ ```ts
+ const ordered = textsInCodePointOrder({ texts: ['mooncat', 'Tabby',], },); // ['Tabby', 'mooncat']
+ ```
+ */
+export function textsInCodePointOrder<const TextT extends string,>(
+  { texts, }: { readonly texts: readonly TextT[]; },
+): TextT[] {
+  return texts.toSorted(function byCodePoint(
+    left,
+    right,
+  ): number {
+    return compareCodePoints({
+      left,
+      right,
+    },);
+  },);
+}
+
 //endregion Code points

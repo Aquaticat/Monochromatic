@@ -1,7 +1,10 @@
 import { stat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { compareCodePoints, } from '../code-points.ts';
+import {
+  compareCodePoints,
+  textsInCodePointOrder,
+} from '../code-points.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import {
   namesIn,
@@ -117,19 +120,10 @@ export async function runsDirsIn({ parent, }: { readonly parent: string; },): Pr
     dir: parent,
     kind: 'directory',
   },);
-  return names
+  return textsInCodePointOrder({ texts: names
     .filter(function isRunsDir(name,): boolean {
       return name.startsWith(RUNS_DIR_NAME,);
-    },)
-    .toSorted(function byCodePoint(
-      left,
-      right,
-    ): number {
-      return compareCodePoints({
-        left,
-        right,
-      },);
-    },)
+    },), },)
     .map(function pathOf(name,): string {
       return join(
         parent,
@@ -321,15 +315,7 @@ export async function runsDirsUnder({ root, }: { readonly root: string; },): Pro
     levelsLeft: RUNS_SEARCH_DEPTH,
   },);
   return {
-    found: found.toSorted(function byCodePoint(
-      left,
-      right,
-    ): number {
-      return compareCodePoints({
-        left,
-        right,
-      },);
-    },),
+    found: textsInCodePointOrder({ texts: found, },),
     unlisted: unlisted.toSorted(function byDir(
       left,
       right,
@@ -479,15 +465,7 @@ export async function sliceCacheAccount(
     },);
   },);
   return {
-    runsDirs: runsDirs.toSorted(function byCodePoint(
-      left,
-      right,
-    ): number {
-      return compareCodePoints({
-        left,
-        right,
-      },);
-    },),
+    runsDirs: textsInCodePointOrder({ texts: runsDirs, },),
     count: records.length,
     newest: (newest === undefined)
       ? { kind: 'none', }

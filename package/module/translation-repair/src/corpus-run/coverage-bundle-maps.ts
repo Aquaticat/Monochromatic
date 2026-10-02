@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { wordForCount, } from '../count-word.ts';
 
@@ -76,11 +77,10 @@ export function bundleMapsOf(
   /**
    Its bundles, sorted.
    */
-  const bundles = built
+  const bundles = textsInCodePointOrder({ texts: built
     .filter(function isBundle(name,): boolean {
       return name.endsWith('.mjs',);
-    },)
-    .toSorted();
+    },), },);
   /**
    Bundles with a map beside them.
    */

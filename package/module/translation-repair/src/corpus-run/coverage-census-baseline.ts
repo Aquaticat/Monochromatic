@@ -1,4 +1,7 @@
-import { compareCodePoints, } from '../code-points.ts';
+import {
+  compareCodePoints,
+  textsInCodePointOrder,
+} from '../code-points.ts';
 import {
   type CensusStretch,
   isUnmappedSource,
@@ -277,11 +280,10 @@ export function emptyClaimsOf(
   const stretched = new Set(baselineStretches.map(function sourceOf(stretch,): string {
     return stretch.source;
   },),);
-  return [...sources,]
+  return textsInCodePointOrder({ texts: [...sources,]
     .filter(function holdsNone(source,): boolean {
       return (!stretched.has(source,)) && (!edited.has(source,));
-    },)
-    .toSorted()
+    },), },)
     .map(function standing(source,): EmptyClaim {
       return {
         source,
@@ -350,11 +352,10 @@ export function editedClaimsOf(
       return stretch.source;
     },),)
     : sources;
-  return [...read,]
+  return textsInCodePointOrder({ texts: [...read,]
     .filter(function wasEdited(source,): boolean {
       return edited.has(source,);
-    },)
-    .toSorted()
+    },), },)
     .map(function standing(source,): EditedClaim {
       return {
         source,

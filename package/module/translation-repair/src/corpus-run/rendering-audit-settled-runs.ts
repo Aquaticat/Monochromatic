@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { join, } from 'node:path';
 
 import {
@@ -149,14 +150,13 @@ export async function newestRun({ runsDir, }: { readonly runsDir: string; },): P
    directory named like a later run nor a run still being written under its
    temporary name (ledger B65).
    */
-  const kept = (await namesOfKind({
+  const kept = textsInCodePointOrder({ texts: (await namesOfKind({
     dir: probeDir,
     kind: 'file',
   },))
     .filter(function isRun(name,): boolean {
       return name.endsWith('.json',);
-    },)
-    .toSorted();
+    },), },);
 
   /**
    Newest, which is the last name.

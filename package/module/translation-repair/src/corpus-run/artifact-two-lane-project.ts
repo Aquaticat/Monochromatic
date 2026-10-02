@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import type { SliceLaneComparison, } from '../lane-comparison.ts';
 import type { LaneSliceOutcome, } from '../lane-slice-text.ts';
 import type {
@@ -93,8 +94,7 @@ function refuseUnknownMember(
   /**
    Field names only, sorted so the message is stable.
    */
-  const fields = Object.keys(carried,)
-    .toSorted()
+  const fields = textsInCodePointOrder({ texts: Object.keys(carried,), },)
     .join(', ',);
 
   throw new Error(

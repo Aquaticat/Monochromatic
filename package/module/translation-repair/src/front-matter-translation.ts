@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from './code-points.ts';
 import { frontMatterCommentAuthorityFindings, } from './front-matter-comment-authority.ts';
 import {
   requireFrontMatterRefusal,
@@ -186,8 +187,7 @@ function yamlShape({ value, }: { readonly value: unknown; }): string {
     return `[${children.join(',',)}]`;
   }
   if (isJsonRecord(value,)) {
-    return `{${Object.keys(value,)
-      .toSorted()
+    return `{${textsInCodePointOrder({ texts: Object.keys(value,), },)
       .map(function field(key,): string {
         return `${JSON.stringify(key,)}:${yamlShape({ value: value[key], })}`;
       },)

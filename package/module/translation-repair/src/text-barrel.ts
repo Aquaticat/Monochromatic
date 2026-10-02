@@ -26,6 +26,7 @@ export {
   codePointBefore,
   codePointCount,
   compareCodePoints,
+  textsInCodePointOrder,
   wholeOpening,
 } from './code-points.ts';
 export {

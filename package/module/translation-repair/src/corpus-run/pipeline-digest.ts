@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { createHash, } from 'node:crypto';
 import {
   readdir,
@@ -360,11 +361,10 @@ export async function digestPipeline(
      so there is one.
      */
     const firstName = nonNullishOrThrow(
-      foreign
+      textsInCodePointOrder({ texts: foreign
         .map(function nameOf(entry,): string {
           return entry.name;
-        },)
-        .toSorted()[0],
+        },), },)[0],
     );
 
     throw new PipelineDigestError({
@@ -424,7 +424,7 @@ export async function digestPipeline(
   /**
    Lines in one order whatever order the directory reported its entries in.
    */
-  const ordered = lines.toSorted();
+  const ordered = textsInCodePointOrder({ texts: lines, },);
 
   /**
    Combined hash over the sorted per-file lines.

@@ -1,3 +1,4 @@
+import { textsInCodePointOrder, } from '../code-points.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import {
   type BundleMaps,
@@ -184,14 +185,13 @@ export async function placeTally(
   /**
    Bundles no process loaded.
    */
-  const unloadedBundles = [
+  const unloadedBundles = textsInCodePointOrder({ texts: [
     ...mapped,
     ...unmapped,
   ]
     .filter(function unloaded(bundle,): boolean {
       return !loaded.has(bundle,);
-    },)
-    .toSorted();
+    },), },);
   for (const bundle of unloadedBundles) {
     requireMapFor({
       bundle,
