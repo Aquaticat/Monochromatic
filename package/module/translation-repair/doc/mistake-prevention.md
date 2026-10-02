@@ -887,13 +887,23 @@ and an opening that dropped a lone first half although no pair was cut.
 A benchmark draw broke its ties with `localeCompare`,
 so which slices it drew followed the machine's locale,
 and a sort of document words compared UTF-16 units (ledger B95).
+That fix left 40 argument-less sorts in production source,
+and four comparators written `left < right ? -1 : 1`,
+which order by UTF-16 unit and never answer zero for equal keys (ledger B122).
 
 The rule:
 text is ordered with `compareCodePoints` from `code-points.ts`,
+and a list of plain text with `textsInCodePointOrder` from the same file,
 never `localeCompare`,
-`Intl.Collator` or the default sort over text that may hold characters past the first plane,
+`Intl.Collator`,
+the default sort
+or a relational operator in a comparator,
 and cased with `toLowerCase` and `toUpperCase`,
 never their `toLocale` forms.
+Numbers order by subtraction.
+A code-unit order kept on purpose,
+such as canonical JSON's key order,
+is named in the scan's exemptions with why.
 A test whose domain reaches past the first plane
 (Han beyond the unified block,
 `\p{L}` or any general category,
@@ -917,7 +927,9 @@ What enforces it:
 `src/code-points.unit.test.ts` and `src/cased-letters.unit.test.ts` pin the readers themselves,
 lone halves included;
 `src/fixed-length-cuts.unit.test.ts` fails on any `.slice(0, LIMIT)` or `.slice(-LIMIT)` it does not list with a reason;
-`src/locale-orderings.unit.test.ts` fails on any locale-dependent ordering or casing in source or tests;
+`src/locale-orderings.unit.test.ts` fails on any locale-dependent ordering or casing in source or tests,
+on an argument-less sort in source outside its named exemptions,
+and on a relational operator inside a comparator handed straight to a sort;
 the Latin-twin cases in `corpus-run/canadian-forms.unit.test.ts`,
 and the script and Extension B cases in the declared-name,
 tokenizer,

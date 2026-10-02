@@ -18589,6 +18589,67 @@ Recurrence:
 `mistake-prevention.md`,
 "Which fold for which question".
 
+### B122: sorts that skipped the code-point order
+
+Red in `e29363b19`,
+fixed in `ae0a90f71`.
+B95 made `compareCodePoints` the package's order for text
+and guarded against locale orderings,
+but nothing guarded the other way around it.
+An argument-less `sort` or `toSorted` orders by UTF-16 unit,
+so an astral character sorts before one in U+E000 to U+FFFF,
+against code-point order.
+A comparator written `left < right ? -1 : 1` orders text the same way
+and never answers zero for two equal keys,
+which the comparator contract requires.
+
+`locale-orderings.unit.test.ts` gained `codeUnitOrderings`:
+an argument-less sort in package source,
+and a relational operator inside a function handed straight to a sort,
+in source and tests alike.
+Tests may still sort without a comparator:
+a type-aware census
+(TypeScript 5.9 from a scratch install,
+since the package's TypeScript 7 has no compiler API)
+found 153 such sorts in tests,
+every one over text-typed values sorted to compare two sides,
+which no order changes.
+The red package case failed on 46 sites,
+the set the census listed:
+40 argument-less sorts in 31 production files,
+relational comparators in `ledger-directory.ts`,
+`probe-verify-sheet.ts`,
+`damage-sample.ts` and `score-verify.ts`,
+and two in the candidate-ledger and number-reads unit tests.
+
+The fix added `textsInCodePointOrder` (`code-points.ts`),
+which orders a list of text through `compareCodePoints` and keeps its element type,
+and 39 of the 40 sorts go through it.
+The comparators go through `compareCodePoints`.
+`sample-draw.ts` held `compareKeys`,
+a correct second copy of the comparison out of the scan's reach,
+which the type-aware census found;
+its three calls now use `compareCodePoints`.
+The fortieth sort stays code-unit order on purpose:
+`canonicalPromptValue` (`prompt-uniqueness-client.ts`) sorts record keys as canonical JSON (RFC 8785) does,
+and its digest names a durable payload record another host reads,
+so code-point order would be another canonical form.
+It is the scan's one named exemption (`CODE_UNIT_ORDER_EXEMPTIONS`),
+which the scan also fails once it no longer names a site.
+The keys sorted are file names,
+hex digests,
+ids,
+labels and model names,
+so an order moves only where two keys first differ at an astral character against one in U+E000 to U+FFFF
+(inference from the key formats,
+with no replay),
+and no cache version moves.
+The full suite on `ae0a90f71` exited 0 with 1543 PASS lines.
+
+Recurrence:
+`mistake-prevention.md`,
+"Text by code point".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

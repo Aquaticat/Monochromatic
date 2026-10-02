@@ -482,7 +482,8 @@ all merged after review (ledger T8).
 The census's other 509 stretches,
 with 14 functions never called,
 are cut into 19 file-disjoint bundles;
-the first five are with five agents.
+the agents given the first five stopped part way at a usage limit,
+and their partial output is under review before any of it merges.
 B118 (test declarations nothing read,
 and fixture exports nothing imported)
 and B119 (16,856 lines ending in whitespace,
@@ -490,7 +491,9 @@ which `.editorconfig` forbids and nothing checked;
 issue 585 asks for the repository-wide rule)
 closed with a scan each,
 B120 lets the global-writes scan follow a writer into the test files importing it,
-and B121 (one İ on a page switched off the archive-name casing veto) is fixed.
+B121 (one İ on a page switched off the archive-name casing veto) is fixed,
+and B122 orders text by code point at every sort in production source,
+with canonical JSON's key order the one named exemption.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
