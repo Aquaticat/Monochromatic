@@ -206,6 +206,17 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES an attestation reply that is not a record, and an item that is not a record or whose quote is not a string, while the well-formed shapes are accepted',
+      fn: async () => {
+        expect(isReferenceAttestWire({ attested: [BROTHER_ITEM,], },),).toBe(true,);
+        expect(isReferenceAttestWire(null,),).toBe(false,);
+        expect(isReferenceAttestWire({ attested: [42,], },),).toBe(false,);
+        expect(isReferenceAttestWire({ attested: [{ archiveQuote: 'a', reference: 1, referenceQuote: 'b', },], },),).toBe(true,);
+        expect(isReferenceAttestWire({ attested: [{ archiveQuote: 1, reference: 1, referenceQuote: 'b', },], },),).toBe(false,);
+        expect(isReferenceAttestWire({ attested: [{ archiveQuote: 'a', reference: 1, referenceQuote: 1, },], },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'VERIFIES both quotes word for word, whitespace ignored, and discards an item whose quote is not found',
       fn: async () => {
         expect(quoteIsIn({ quote: 'younger  brother who', text: 'a younger brother who also', },),).toBe(true,);
@@ -355,6 +366,68 @@ await describe({
       },
     },),
     it({
+      name: 'MERGES a later, wider quote over an earlier, narrower one from a different voice, keeping whichever placement covers more of the detail',
+      fn: async () => {
+        const widerSecond = mergedAttestations({
+          verified: [
+            {
+              modelId: ROSTER[0],
+              item: {
+                ...BROTHER_ITEM,
+                archiveQuote: 'town.\nShe has a younger brother',
+              },
+            },
+            {
+              modelId: ROSTER[1],
+              item: BROTHER_ITEM,
+            },
+          ],
+          archiveText: ARCHIVE_TEXT,
+          heard: 4,
+          needed: 2,
+        },);
+        expect(widerSecond,).toEqual([BROTHER_DETAIL,],);
+      },
+    },),
+    it({
+      name: 'THROWS on an item whose archive quote is absent from the archive or empty once compacted, which verification never keeps, rather than dropping it unseen; the verified item beside it merges',
+      fn: async () => {
+        /**
+         Merges one item alone against the archive, one voice being enough.
+
+         @param archiveQuote - archive words the item claims
+
+         @returns Details the merge kept
+
+         @example
+         ```ts
+         const details = mergeAlone({ archiveQuote: 'She wears a bell.', },);
+         ```
+         */
+        function mergeAlone({ archiveQuote, }: { readonly archiveQuote: string; },): readonly unknown[] {
+          return mergedAttestations({
+            verified: [{
+              modelId: ROSTER[0],
+              item: {
+                ...BROTHER_ITEM,
+                archiveQuote,
+              },
+            },],
+            archiveText: ARCHIVE_TEXT,
+            heard: 4,
+            needed: 1,
+          },);
+        }
+        expect(mergeAlone({ archiveQuote: BROTHER_ITEM.archiveQuote, },),).toHaveLength(1,);
+        expect(function mergesAbsent() {
+          mergeAlone({ archiveQuote: 'a feather toy on a string', },);
+        },).toThrow('whose archive quote is empty or absent from the archive text',);
+        expect(function mergesEmpty() {
+          mergeAlone({ archiveQuote: ' \n ', },);
+        },).toThrow('whose archive quote is empty or absent from the archive text',);
+      },
+    },),
+    it({
       name: 'RENDERS one attested line per detail that the rules name',
       fn: async () => {
         /**
@@ -391,6 +464,26 @@ await describe({
           text: ARCHIVE_TEXT,
           details: [BROTHER_DETAIL,],
         },),).toHaveLength(0,);
+      },
+    },),
+    it({
+      name: 'FINDS the overlap a quote contains, REFUSES one whose quote is nowhere in the text, and REFUSES one whose detail quote is nowhere in that text either, even though the claim quote is there',
+      fn: async () => {
+        expect(attestedDetailsOverlapping({
+          quote: 'who also sits by the stove',
+          text: ARCHIVE_TEXT,
+          details: [BROTHER_DETAIL,],
+        },),).toEqual([BROTHER_DETAIL,],);
+        expect(attestedDetailsOverlapping({
+          quote: 'a feather toy on a string',
+          text: ARCHIVE_TEXT,
+          details: [BROTHER_DETAIL,],
+        },),).toEqual([],);
+        expect(attestedDetailsOverlapping({
+          quote: 'She wears a bell',
+          text: 'She wears a bell by the door. Nothing else is said here.',
+          details: [BROTHER_DETAIL,],
+        },),).toEqual([],);
       },
     },),
     it({

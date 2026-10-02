@@ -312,6 +312,13 @@ await describe({
             expect(kept[0]?.heard,).toBe(3,);
           },
         },),
+        it({
+          name: 'REFUSES a confirmation reply that is not a record, while the well-formed shape is accepted',
+          fn: async () => {
+            expect(isReferenceAttestConfirmWire({ confirmed: [1, 3,], },),).toBe(true,);
+            expect(isReferenceAttestConfirmWire(null,),).toBe(false,);
+          },
+        },),
       ],
     },),
 

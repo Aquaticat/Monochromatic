@@ -434,6 +434,20 @@ await describe({
             expect(seen.length,).toBe(1,);
           },
         },),
+        it({
+          name: 'REFUSES a record that is not an object at all, and ACCEPTS an error record carrying its failure tag',
+          fn: async () => {
+            expect(isReferenceRecord(null,),).toBe(false,);
+            expect(isReferenceRecord({
+              url: POST_URL,
+              fetchedAt: NOW.toISOString(),
+              status: 'error',
+              title: '',
+              text: '',
+              failure: 'CRAWL_NOT_FOUND',
+            },),).toBe(true,);
+          },
+        },),
       ],
     },),
 

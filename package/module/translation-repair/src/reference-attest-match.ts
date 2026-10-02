@@ -163,6 +163,10 @@ type PlacedAttestation = VerifiedAttestation & {
 
  @returns Details in archive order
 
+ @throws {@link Error} when an item's archive quote is empty or absent from
+ `archiveText`, which `quoteIsIn` refuses, so such an item was never verified
+ against this archive and placing it anywhere would invent its position
+
  @example
  ```ts
  const details = mergedAttestations({ verified, archiveText, heard: 4, needed: 2, },);
@@ -196,17 +200,27 @@ export function mergedAttestations(
       const quote = compacted({ text: entry.item
         .archiveQuote, },);
       /**
-       Where it starts; verification found it, so never absent.
+       Where it starts. Verification ran `quoteIsIn` on this quote against
+       this same archive text under this same fold, so it is always there.
        */
       const start = folded.indexOf(quote,);
+      if ((quote === '') || (start === NOT_FOUND)) {
+        /**
+         Reference the item cites, to name it in the message.
+         */
+        const { reference, } = entry.item;
+        throw new Error(
+          `unreachable: an attestation from ${entry.modelId} citing reference ${
+            String(reference,)
+          }, whose archive quote is empty or absent from the archive text it is merged against, `
+            + 'was never verified against that text',
+        );
+      }
       return {
         ...entry,
         start,
         end: start + quote.length,
       };
-    },)
-    .filter(function isPlaced(entry,): boolean {
-      return entry.start !== NOT_FOUND;
     },)
     .toSorted(function byStart(
       left,
