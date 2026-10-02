@@ -250,8 +250,33 @@ Read-only inventory completed as `program-fact-owners`.
 The user removed the subagent extension afterward;
 continue directly without that extension.
 The installed `yuku-parser` API is already used by `package/git-policy/cli/src/trust/mjs-validator.ts`.
-Next validate a parser-backed literal-profile fact producer,
-retaining full source and rejecting unsupported outer constructs rather than relying on supplied operation records.
+The parser-backed literal-profile fact producer subsequently passed as `proc_ce56`.
+It derives operation records from complete source using installed `yuku-parser` 0.14.0,
+retains exact source/literal spans,
+and binds exactly one invocation to its last preceding virtual write or initial occurrence.
+Child source remains opaque and has no whitelist.
+
+Revised controls passed the five originals,
+ten literal-boundary cases,
+and seven syntax/version variants;
+40 invalid-source and 12 invalid-initial-input cases were rejected.
+Disposable extra-argument,
+path-binding,
+and coverage mutations failed their checks while intact counterparts passed.
+The parser-derived replay selected 30 correct retained effects at all diagnostic bands,
+with zero wrong or unresolved and no new inference.
+
+Evidence is in `contract/research/composed-literal-facts/`.
+The result depends on caller-owned virtual primitives,
+successful prior writes,
+initial bytes,
+and no external mutation.
+It is not real-file identity,
+host integration,
+fresh selected-only inference,
+held-out qualification,
+or production permission.
+Next work must establish those consumer/environment bindings before using these facts in an actual guard.
 No production adoption or threshold choice follows from these results.
 
 ## Parallel-tool bug and private prototype

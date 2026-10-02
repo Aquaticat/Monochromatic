@@ -496,7 +496,78 @@ dynamic arguments,
 other source bodies,
 and host integration remain outside this result.
 Evidence is at `contract/research/composed-binding-replay/`.
-Next locate incumbent parsing/dataflow utilities before designing a broader fact producer.
+The incumbent inventory found `yuku-parser` already in use at
+`package/git-policy/cli/src/trust/mjs-validator.ts`.
+The completed inventory did not identify an existing operation-time file-version tracker.
+The user subsequently removed the subagent extension;
+continuation uses direct tools.
+
+## Parser-backed source facts
+
+The private prototype at `contract/research/composed-literal-facts/` now derives its operation records from the
+complete parent program using installed `yuku-parser` 0.14.0,
+rather than trusting fixture-supplied operation lists.
+A direct API probe verified decoded string literals,
+Unicode source offsets,
+and syntax diagnostics before implementation.
+No dependency was installed or changed.
+
+The accepted outer syntax consists of top-level awaited direct `write(string, string)` and `node(string)` calls,
+with at most 64 statements and exactly one invocation.
+Full source,
+source digest,
+argument spans,
+and distinct initial/write occurrences are retained.
+The last preceding write to the invoked virtual path determines its source;
+a later write cannot alter that captured occurrence.
+Multiple invocations are excluded because arbitrary earlier child effects could change later input files.
+The child source is opaque:
+there is no child-body whitelist,
+execution,
+or mechanical effect proof in this fact producer.
+
+These are conditional facts,
+not authenticated host observations.
+The caller must establish owned primitive bindings,
+initial virtual-file bytes,
+successful preceding writes,
+and absence of external mutation before invocation.
+Input objects are caller-owned and not proxies.
+Real files,
+symlinks,
+host argument transformations,
+current permission,
+and freshness/finalization remain unqualified.
+Rejected syntax is an unsupported diagnostic profile,
+not a policy denial or blanket prohibition on semantic estimation.
+
+After independent review,
+`proc_ce56` completed the revised controls,
+disposable guard-removal checks,
+and retained-model replay with exit 0:
+
+- All five original programs matched independent inert parent observations.
+- Ten literal-boundary cases and seven syntax/version variants passed.
+- Forty invalid-source cases and 12 invalid-initial-input cases were rejected.
+- Coverage checks rejected missing statement/comment spans;
+  initial accessors were rejected without calling their getters.
+- Extra-argument admission,
+  path-insensitive binding,
+  and skipped coverage each failed their consumer control when deliberately introduced in disposable copies.
+  Their intact counterparts passed.
+- Parser-derived selection of the retained conditional heads produced 30 correct effects,
+  zero wrong,
+  and zero unresolved at each diagnostic band.
+
+The replay uses five known programs,
+two archived passes,
+and three effect predicates.
+It adds no provider requests and preserves their original inference cost.
+It does not establish fresh selected-only inference,
+held-out performance,
+a representative workload mean,
+or production guard correctness.
+No subagent extension was used or restored for this continuation.
 
 ## Remaining work
 
