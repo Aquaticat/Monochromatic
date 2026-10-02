@@ -1190,7 +1190,13 @@ and 30 TSDoc blocks documented nothing,
 each standing before a second block,
 a `//` comment or a statement,
 which the tsdoc lint plugin never reads,
-since it walks from each declaration back to the nearest block (ledger B96).
+since it walks from each declaration back to the nearest block (ledger B96);
+four test declarations nothing read and 24 fixture exports no other file imported outlived their callers,
+since the lint leaves `no-unused-vars` off and nothing else reads tests (ledger B118);
+and 16,856 lines ended in whitespace,
+nearly all TSDoc blank lines holding one space,
+though `.editorconfig` forbids it,
+since no configured check enforces that for TypeScript (ledger B119).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -1264,9 +1270,15 @@ Markup quoted in prose,
 a link above all,
 goes in a code span,
 or behind an escaped bracket inside a quotation that spans lines.
-The edit tool writes a line holding only a space as an empty line,
-so after an edit adds TSDoc to a file whose blank TSDoc lines hold one space,
-the blank lines are counted by form and the file's own form restored before staging (ledger M103).
+No line ends in whitespace,
+except inside a template literal's text,
+where the whitespace is the value:
+a blank TSDoc line is an empty line,
+the form the edit tool writes (ledger M103,
+B119).
+A change that stops calling a test helper deletes it,
+and a fixture exports only what another file imports or re-exports,
+since an export its own file alone reads offers nothing (ledger B118).
 
 What enforces it:
 `mise run source-scans`,
@@ -1296,7 +1308,17 @@ unless a TSDoc link names it (ledger B32);
 which fails on a TSDoc block followed by anything but the declaration,
 member or function it documents,
 a lint suppression among them,
-outside `@module` headers (ledger B96).
+outside `@module` headers (ledger B96);
+`src/dead-test-declarations.unit.test.ts`,
+which fails on a top-level declaration in a test file or fixture whose name its file never reads,
+property and member names and other bindings not counted,
+on a fixture export no other file imports or re-exports,
+and on a default export,
+namespace import or dynamic relative import,
+which it cannot follow (ledger B118);
+`src/trailing-whitespace.unit.test.ts`,
+which fails on a line ending in whitespace outside a template literal's text (ledger B119;
+issue 585 asks for a repository-wide lint rule in its place).
 
 ## Tasks, builds and bulk output
 

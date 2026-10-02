@@ -5281,6 +5281,45 @@ By the first construct `page` leads at 13 stretches in 4 files
 none edited since `d0cca211d`,
 so the twenty-fourth batch takes `page` against `census-3G9C58`.
 
+The twenty-fourth batch took `page` in `dc9f0449b`,
+from a read-only agent's copies of `8ea5e7fa5`.
+Twelve stretches are cased:
+`page-headings.ts` and `page-visible-text.ts` have no test file and no export reaching the package index,
+so their arms are cased through `pageNameLines` in `page-name-glossary.unit.test.ts`,
+the shape the twenty-third batch used for `front-matter-translation.ts`;
+the two `isPageTitleLexiconWire` refusals are cased in `page-title-lexicon.unit.test.ts`.
+One stretch was unreachable:
+`signaturePairs` returns early unless source and target hold the same count of signatures,
+then reads the target at each source index,
+so its `partner === undefined` return could never run;
+it now reads through `nonNullishOrThrow`.
+`pairsInOrder` carried the same dead disjunct under the same length check,
+which the census could not show,
+since the condition's other disjuncts run;
+it reads through `nonNullishOrThrow` too.
+Before committing,
+the agent's two new comments,
+which named the length check as "the check just made",
+were rewritten to name the function that returns early;
+nine new cases that each restated the glossary's header line,
+which one case already pins,
+were cut to compare the pairs under test;
+and the agent's report of a "phantom" empty-text link in `linksOf`
+was checked against micromark 4.0.2,
+which reads `[猫[](url)` as a literal `[猫` and an empty link,
+as `linksOf` does,
+so `linksOf`'s `@returns` now says so instead.
+
+Four clusters of `census-3G9C58` whose sources no commit since `d0cca211d` touched went to four agents at once,
+each reading `7f529468e`:
+`corpus-run/archive`,
+`stream`,
+`critic`
+and `absolute`,
+47 stretches over 16 files.
+The whitespace normalization in `7f529468e` (B119) moved no line,
+so the census's line numbers hold.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -18325,6 +18364,99 @@ Recurrence:
 "Tests touching the real world"
 and "Copies of shared code".
 
+### B118: test declarations nothing read, and fixture exports nothing imported
+
+Red in `5f3e63e67`,
+fixed in `cacfa20fb`.
+B30 and B31 guard package source by production reach,
+and B32 guards imports,
+but nothing read the declarations of test files and fixtures:
+the repository's lint leaves `no-unused-vars` off
+and its TypeScript configuration leaves `noUnusedLocals` false.
+Four declarations were read nowhere:
+`SUPPORTING_READERS` and `NAME_QUOTE` (`archive-naming.test-fixture.ts`),
+`sliceCarrying` (`fidelity-damage.unit.test.ts`)
+and `withoutBreaks` (`semantic-wrap.unit.test.ts`),
+the last two named only inside their own `@example`.
+Twenty-four fixture exports no other file imported,
+each read only inside its own fixture,
+from constants such as `ARCHIVE_PATH` to the `ScratchDir` and `ParsedSource` types;
+an `export` only its own file reads offers nothing,
+and hides the next dead one behind it.
+
+`dead-test-declarations.unit.test.ts` reads every test file and fixture.
+An unexported top-level declaration fails unless its name stands where it is read:
+never as a property,
+member,
+class or interface member,
+enum member,
+specifier name or label,
+and never as another binding,
+such as a parameter or a nested declaration.
+A fixture export fails unless another file imports or re-exports it by name.
+A default export,
+a namespace import and a dynamic `import()` of a relative path fail as forms the scan cannot follow;
+the package's tests use none.
+A read of a nested binding that shadows a top-level name,
+and two declarations reading only each other,
+still count as reads,
+since telling them apart needs scope resolution.
+At `5f3e63e67` the scan found 28,
+the same 28 names the agent's TypeScript-checker census of the same tree listed.
+
+A read-only agent drafted the fix and the scan.
+Its fix was applied as written;
+its scan was reworked before the red commit:
+the draft counted a property key or member name spelling a declaration's name as reading it,
+counted a fixture export its own file reads as live,
+which left the 24 exports unguarded,
+and carried a default-import branch that could mark nothing read.
+
+Recurrence:
+`mistake-prevention.md`,
+"Lint and edits".
+
+### B119: 16,856 lines ended in whitespace, which `.editorconfig` forbids and nothing checked
+
+Red in `f6bf25ef2`,
+fixed in `7f529468e`.
+The repository's `.editorconfig` sets `trim_trailing_whitespace = true` for every file but HTML,
+yet no configured check enforces it for TypeScript:
+dprint's TypeScript plugin is disabled in `package/config/dprint/index.json`,
+and the repository's stylistic oxlint plugin has no such rule.
+At `f6bf25ef2` the package held 16,856 lines ending in spaces or tabs in 1,316 TypeScript files,
+nearly all of them TSDoc blank lines written as a lone space:
+at `6d8889c90`,
+its 2,078 TypeScript files held 25,568 TSDoc blank lines,
+16,851 holding whitespace and 8,717 empty,
+and 285 files mixed both forms.
+An editor honouring `.editorconfig` strips the lines it touches,
+so every edit carried whitespace-only diff lines,
+and the edit tool,
+which writes a blank TSDoc line empty (M103),
+left files mixing the two forms.
+
+`trailing-whitespace.unit.test.ts` fails on a line ending in anything `trimEnd` removes,
+unless a template literal's text covers part of that run,
+since a string or regular-expression literal cannot hold a line end;
+none of the 16,856 sat in one.
+A scratch normalizer that parses each file,
+strips only outside literals,
+and refuses a file whose literals change,
+made `7f529468e`:
+16,849 lines,
+the other 7 having gone with the TSDoc blocks B118 deleted;
+`git diff --ignore-all-space` over it is empty.
+The same lines run through the whole repository:
+30,859 more in 2,800 TypeScript files across 136 other packages,
+every one of them whitespace-only;
+issue 585 asks for a stylistic rule with an autofix,
+after which this package's scan can go.
+
+Recurrence:
+`mistake-prevention.md`,
+"Lint and edits".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -19458,6 +19590,40 @@ Prevention:
 a commit message reports the lint of the bytes it commits:
 the Markdown lint runs after a doc's last edit,
 as the commit message's own check runs after the message's last write.
+
+### M107: a shell command chained with `;`
+
+Status:
+happened 2026-10-02 (UTC),
+while reading the PASS lines of two source-scan logs in one call,
+and recorded here;
+no file was changed by it.
+The session's shell rule allows at most three `&&`-chained steps and no `;`,
+since a `;` runs the next step whatever the last one returned,
+so a failed read reads as an empty one.
+Prevention:
+two reads that do not depend on each other go in two calls,
+or in parallel calls,
+never one call joined by `;`.
+
+### M108: a whitespace-only check that counted the diff's own markers as content
+
+Status:
+happened 2026-10-02 (UTC) while checking `7f529468e`'s diff,
+and caught before the commit.
+To show the normalization changed whitespace alone,
+one check counted added diff lines holding a non-space character,
+expecting none,
+and read 16,849:
+each added line still carried the diff's leading `+`.
+The other check,
+`git diff --ignore-all-space --stat`,
+printed nothing and decided it;
+the commit message cites that check alone.
+Prevention:
+a check written to come back empty is first run on a case that must not
+(here a line whose added content is not whitespace),
+and a check over diff text strips the diff's markers before reading content.
 
 ### M79: a coverage census measuring compressed code
 
