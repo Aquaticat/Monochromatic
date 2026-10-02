@@ -279,6 +279,36 @@ or production permission.
 Next work must establish those consumer/environment bindings before using these facts in an actual guard.
 No production adoption or threshold choice follows from these results.
 
+## Fresh inference using parser-derived input
+
+`contract/research/drex-composed-bound/` completed 10 requests with zero retries.
+Only a code-derived invocation fact was added to the ordered study's state;
+the same questions and full parent/policy context remained.
+Parsing,
+fact construction,
+and parser/native freshness checks were inside each request's assessment clock.
+The supplied source-choice fact is excluded from model accuracy claims.
+
+The first verifier failed on its handling of absolute parser paths,
+not on an inference error.
+`proc_8fa2` completed corrected offline reconciliation with exit 0;
+all 41 records and complete streams matched,
+and no paid inference was replayed.
+At 90/10,
+direct effects were 26 correct,
+zero wrong,
+and four unresolved.
+The selected conditional effects were 30 correct,
+zero wrong,
+and zero unresolved at all diagnostic bands.
+Mean modeled cost was US$0.00048863 per request.
+These remain known development cases and conditional virtual facts,
+not held-out or production qualification.
+
+Next test the relevant selected-source effect questions alone,
+omitting the redundant model source-selection question while retaining full composed context.
+No subagent extension is used.
+
 ## Parallel-tool bug and private prototype
 
 The actual built extension reproduced two judgments for a parallel two-call group.

@@ -569,6 +569,44 @@ a representative workload mean,
 or production guard correctness.
 No subagent extension was used or restored for this continuation.
 
+## Fresh inference with code-bound invocation input
+
+`contract/research/drex-composed-bound/` added only `state.codeDerivedInvocation` to the ordered-input study.
+The parser established the selected source from the full parent and initial files on every request,
+inside that request's assessment clock.
+Installed parser text/native identities were checked before and after parsing and after inference.
+The question bundle remained unchanged.
+Source-choice output now echoes a supplied code fact and is excluded from accuracy claims.
+
+Ten requests completed with zero retries and caller exit 0.
+The first offline verifier failed with Node `ENOENT` because it prefixed an absolute parser path with the study path.
+The failed verifier is retained.
+The corrected offline verifier `proc_8fa2` exited 0,
+checking all 41 records and complete streams;
+no inference was repeated for that repair.
+
+Direct whole-program estimates had zero wrong answers at every band:
+28 correct and two unresolved at 80/20,
+26 correct and four unresolved at 90/10,
+and 24 correct and six unresolved at 95/05.
+The conditional estimates for the code-selected source were 30 correct,
+zero wrong,
+and zero unresolved at every band.
+This is fresh evidence for separating code-owned source binding from estimated source effects,
+not held-out qualification or a production threshold decision.
+
+Mean modeled cost was US$0.00048863 per request;
+the phase totaled US$0.0048863.
+Preparation-through-freshness elapsed times ranged from 306.973463 to 1002.702490 ms.
+Module imports and their initial runtime checks precede that clock;
+complete host handback is not measured.
+Accumulated composed-program research spend is US$0.0209196,
+not an operational workload mean.
+
+Next test a pre-authored batch containing only the relevant selected-source effect questions,
+without asking the model to echo the code-owned source binding.
+Retain full composed context and the same budget/accounting boundaries.
+
 ## Remaining work
 
 - Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.
