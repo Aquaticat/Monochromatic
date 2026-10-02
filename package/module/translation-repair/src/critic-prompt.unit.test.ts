@@ -163,6 +163,44 @@ await describe({
               .toContain('CITED REFERENCES',);
           },
         },),
+
+        it({
+          name: 'writes an empty nearby-original line when only the nearby translation is supplied',
+          fn: async () => {
+            /**
+             Sheet built with only the neighbouring archive translation.
+             */
+            const sheet = buildCriticMessages({
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              neighbouringIncumbentText: 'Archive sentence about the cat.',
+            },)[1]?.content ?? '';
+            expect(sheet,).toContain(
+              '===== NEARBY ORIGINAL, CONTEXT ONLY =====\n\n'
+                + '===== NEARBY EXISTING TRANSLATION, CONTEXT ONLY =====\n'
+                + 'Archive sentence about the cat.\n',
+            );
+          },
+        },),
+
+        it({
+          name: 'writes an empty nearby-translation line when only the nearby original is supplied',
+          fn: async () => {
+            /**
+             Sheet built with only the neighbouring original.
+             */
+            const sheet = buildCriticMessages({
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+              neighbouringSourceText: '隔壁的原文。',
+            },)[1]?.content ?? '';
+            expect(sheet,).toContain(
+              '===== NEARBY ORIGINAL, CONTEXT ONLY =====\n'
+                + '隔壁的原文。\n'
+                + '===== NEARBY EXISTING TRANSLATION, CONTEXT ONLY =====\n\n',
+            );
+          },
+        },),
       ],
     },),
 

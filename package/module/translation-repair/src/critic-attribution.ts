@@ -1,3 +1,4 @@
+import { compareCodePoints, } from './code-points.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Critic attribution
@@ -133,11 +134,10 @@ export function collectClaimAttributions(
       [left,],
       [right,],
     ): number {
-      if (left < right)
-        return -1;
-      if (left > right)
-        return 1;
-      return 0;
+      return compareCodePoints({
+        left,
+        right,
+      },);
     },)
     .map(function toAttribution(
     [
@@ -154,7 +154,7 @@ export function collectClaimAttributions(
           emissionCount,
         };
       },)
-        // Code-unit order rather than localeCompare: this value is serialized
+        // Code-point order rather than localeCompare: this value is serialized
         // into a cached outcome and compared across runs, so a comparison that
         // depends on the machine's default locale could order the same
         // proposers differently on two hosts.
@@ -162,11 +162,10 @@ export function collectClaimAttributions(
           left,
           right,
         ): number {
-        if (left.modelId < right.modelId)
-          return -1;
-        if (left.modelId > right.modelId)
-          return 1;
-        return 0;
+        return compareCodePoints({
+          left: left.modelId,
+          right: right.modelId,
+        },);
       },),
     };
   },);
@@ -271,11 +270,19 @@ export function buildSliceCriticRecords(
       // it. A permuted array serializes to different bytes for identical
       // evidence, and this value goes into a cached outcome.
       //
-      // Code-unit order throughout, never `localeCompare`, which is
-      // locale-dependent and would order the same critics differently on two
-      // machines.
+      // Code-point order throughout (`compareCodePoints`), never
+      // `localeCompare`, which is locale-dependent and would order the same
+      // critics differently on two machines.
       heardCriticIds: outcome.heardCriticIds
-        .toSorted(),
+        .toSorted(function byCriticId(
+          left,
+          right,
+        ): number {
+        return compareCodePoints({
+          left,
+          right,
+        },);
+      },),
       claimAttributions: outcome.claimAttributions
         .map(function canonical(attribution,): ClaimAttribution {
         return {
@@ -285,9 +292,10 @@ export function buildSliceCriticRecords(
               left,
               right,
             ): number {
-            if (left.modelId === right.modelId)
-              return 0;
-            return (left.modelId < right.modelId) ? (-1) : 1;
+            return compareCodePoints({
+              left: left.modelId,
+              right: right.modelId,
+            },);
           },),
         };
       },)
@@ -295,9 +303,10 @@ export function buildSliceCriticRecords(
           left,
           right,
         ): number {
-        if (left.claimId === right.claimId)
-          return 0;
-        return (left.claimId < right.claimId) ? (-1) : 1;
+        return compareCodePoints({
+          left: left.claimId,
+          right: right.claimId,
+        },);
       },),
     };
   },)

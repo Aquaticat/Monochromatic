@@ -178,6 +178,50 @@ await describe({
         },),
 
         it({
+          name: 'orders two proposers of one claim ascending by model id when they '
+            + 'already arrive in ascending order',
+          fn: async () => {
+            /**
+             Two critics on NAP_CLAIM, emitted in ascending model-id order.
+             */
+            const attributions = collectClaimAttributions({
+              emissions: emissionsOf([
+                [NAP_CLAIM, TABBY,],
+                [NAP_CLAIM, CALICO,],
+              ],),
+            },);
+
+            expect(
+              attributions[0]?.proposers.map(function toId(proposer,) {
+                return proposer.modelId;
+              },),
+            ).toStrictEqual([TABBY, CALICO,],);
+          },
+        },),
+
+        it({
+          name: 'orders two distinct claims from one critic ascending by id when '
+            + 'they already arrive in ascending order',
+          fn: async () => {
+            /**
+             Two claims from TABBY alone, emitted in ascending id order.
+             */
+            const attributions = collectClaimAttributions({
+              emissions: emissionsOf([
+                [NAP_CLAIM, TABBY,],
+                [PURR_CLAIM, TABBY,],
+              ],),
+            },);
+
+            expect(
+              attributions.map(function toId(attribution,) {
+                return attribution.claimId;
+              },),
+            ).toStrictEqual([NAP_CLAIM, PURR_CLAIM,],);
+          },
+        },),
+
+        it({
           name: 'SEPARATES distinct claims and orders them by CLAIM ID rather than '
             + 'by emission, so one critic emitting two different claims produces '
             + 'two attributions rather than a merged one. Emission order follows '
@@ -394,6 +438,76 @@ await describe({
             // cached artifact, so what matters is that JSON.stringify agrees.
             expect(JSON.stringify(reversed,),).toBe(JSON.stringify(forward,),);
             expect(forward[0]?.sliceIndex,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'keeps two proposers of one claim that share a model id, in '
+            + 'their original order, when canonicalizing',
+          fn: async () => {
+            /**
+             One claim whose proposers list carries the same model id twice,
+             which the type allows even though no deduplicated Map would.
+             */
+            const records = buildSliceCriticRecords({
+              outcomes: [
+                {
+                  sliceIndex: 0,
+                  heardCriticIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+                  claimAttributions: [
+                    {
+                      claimId: 'issue/nap',
+                      proposers: [
+                        { modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, emissionCount: 1, },
+                        { modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, emissionCount: 3, },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },);
+
+            expect(
+              records[0]?.claimAttributions[0]?.proposers.map(function toCount(proposer,) {
+                return proposer.emissionCount;
+              },),
+            ).toStrictEqual([1, 3,],);
+          },
+        },),
+
+        it({
+          name: 'keeps two claimAttributions that share a claim id, in their '
+            + 'original order, when canonicalizing',
+          fn: async () => {
+            /**
+             One slice outcome whose claimAttributions list carries the same
+             claim id twice, which the type allows even though no deduplicated
+             Map would.
+             */
+            const records = buildSliceCriticRecords({
+              outcomes: [
+                {
+                  sliceIndex: 0,
+                  heardCriticIds: [],
+                  claimAttributions: [
+                    {
+                      claimId: 'issue/nap',
+                      proposers: [{ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, emissionCount: 1, },],
+                    },
+                    {
+                      claimId: 'issue/nap',
+                      proposers: [{ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, emissionCount: 2, },],
+                    },
+                  ],
+                },
+              ],
+            },);
+
+            expect(
+              records[0]?.claimAttributions.map(function toFirstCount(attribution,) {
+                return attribution.proposers[0]?.emissionCount;
+              },),
+            ).toStrictEqual([1, 2,],);
           },
         },),
       ],

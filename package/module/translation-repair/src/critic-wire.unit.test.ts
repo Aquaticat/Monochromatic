@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   type CriticIssueWire,
+  hashContent,
   isCriticReportWire,
   parseDocument,
   resolveCriticIssue,
@@ -91,6 +92,24 @@ await describe({
             expect(isCriticReportWire({ issues: [{ category: 1, },], },),).toBe(false,);
             expect(isCriticReportWire({
               issues: [{ category: 'x', severity: 'y', summary: 'z', targetQuote: 7, },],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'rejects a non-record report, a non-record issue, and issues with '
+            + 'non-string severity, summary, or sourceQuote',
+          fn: async () => {
+            expect(isCriticReportWire(null,),).toBe(false,);
+            expect(isCriticReportWire({ issues: [7,], },),).toBe(false,);
+            expect(isCriticReportWire({
+              issues: [{ category: 'x', severity: 1, summary: 'z', },],
+            },),).toBe(false,);
+            expect(isCriticReportWire({
+              issues: [{ category: 'x', severity: 'y', summary: 1, },],
+            },),).toBe(false,);
+            expect(isCriticReportWire({
+              issues: [{ category: 'x', severity: 'y', summary: 'z', sourceQuote: 1, },],
             },),).toBe(false,);
           },
         },),
@@ -253,6 +272,70 @@ await describe({
             expect(resolution.resolved,).toBe(true,);
             if (resolution.resolved)
               expect(resolution.claim.category,).toBe('style/awkward-phrasing',);
+          },
+        },),
+
+        it({
+          name: 'refuses a claim when caller-supplied documents list two nodes '
+            + 'sharing one id whose hashes disagree',
+          fn: async () => {
+            /** Decoy paragraph sharing the real node's id but listed first. */
+            const decoyText = 'Decoy paragraph nobody quotes.';
+            /** Paragraph the quote actually lives in. */
+            const realText = 'The cat sleeps on the windowsill.';
+            /** Target text holding both paragraphs. */
+            const targetText = `${decoyText}\n\n${realText}\n`;
+            /** Offset of the decoy paragraph within targetText. */
+            const decoyStart = targetText.indexOf(decoyText,);
+            /** Offset of the real paragraph within targetText. */
+            const realStart = targetText.indexOf(realText,);
+
+            /**
+             Resolution against a target side whose nodes list the decoy
+             before the real node even though both carry id 'block/0':
+             `bindQuoteRegion` anchors the quote to the overlapping (real)
+             node, but `validateSpanAnchor` looks the id back up by `.find`,
+             which returns the decoy first, so the recorded hash and the
+             looked-up node's hash disagree.
+             */
+            const resolution = resolveCriticIssue({
+              wire: {
+                category: 'accuracy/omission',
+                severity: 'major',
+                summary: 'duplicate node id disagreement',
+                targetQuote: realText,
+              },
+              documents: {
+                source: DOCUMENTS.source,
+                target: {
+                  text: targetText,
+                  nodes: [
+                    {
+                      id: 'block/0',
+                      zone: 'body',
+                      kind: 'paragraph',
+                      text: decoyText,
+                      startOffset: decoyStart,
+                      endOffset: decoyStart + decoyText.length,
+                      contentHash: hashContent({ content: decoyText, },),
+                    },
+                    {
+                      id: 'block/0',
+                      zone: 'body',
+                      kind: 'paragraph',
+                      text: realText,
+                      startOffset: realStart,
+                      endOffset: realStart + realText.length,
+                      contentHash: hashContent({ content: realText, },),
+                    },
+                  ],
+                },
+              },
+            },);
+
+            expect(resolution.resolved,).toBe(false,);
+            if (!resolution.resolved)
+              expect(resolution.reason,).toBe('anchor-validation (stale-node-hash)',);
           },
         },),
       ],
