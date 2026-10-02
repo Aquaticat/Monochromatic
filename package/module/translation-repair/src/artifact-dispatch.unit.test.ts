@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ARTIFACT_SCHEMA_VERSION_V1,
   ArtifactParseError,
   KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   readSettledArtifact,
@@ -171,6 +172,16 @@ await describe({
         },),).toEqual(TWO_LANE_GENERATIONS.map(function everyOne(): string {
           return 'the two-lane reader';
         },),);
+      },
+    },),
+    it({
+      name:
+        'GIVES EVERY GENERATION THIS BUILD KNOWS A READER, version 1 or the two-lane one, so the refusal of a '
+        + 'known generation nothing reads is reached only when a generation joins the known list alone',
+      fn: async () => {
+        expect(KNOWN_ARTIFACT_SCHEMA_VERSIONS.filter(function unread(version,): boolean {
+          return (version !== ARTIFACT_SCHEMA_VERSION_V1) && (!TWO_LANE_GENERATIONS.includes(version,));
+        },),).toEqual([],);
       },
     },),
     it({

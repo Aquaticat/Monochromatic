@@ -348,5 +348,64 @@ await describe({
           .toEqual([],);
       },
     },),
+    it({
+      name: 'RANKS TWO WITHDRAWALS THAT EACH MOVE THE REFUSAL by whether the grammar then accepts the page, then by '
+        + 'how far the refusal moves, keeping the earlier slice where both reach the same place alike',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** Sets where two withdrawals each move the refusal, with the slice and clearing the ranking picks. */
+        const ranked = [
+          {
+            // Neither clears; withdrawing the bird moves the refusal to the page's end, the cat less far.
+            replacements: [
+              { sliceIndex: 0, replacementText: '## The cat\n\n{\n\nThe cat naps[^1].', },
+              { sliceIndex: 1, replacementText: '## The bird\n\n{\n\nA bird sits there. }\n\n}', },
+            ],
+            sliceIndex: 1,
+            cleared: false,
+          },
+          {
+            // Both clear and reach the page's end, so the earlier slice stands.
+            replacements: [
+              { sliceIndex: 0, replacementText: '## The cat\n\n```\n\nThe cat naps[^1]. {', },
+              { sliceIndex: 1, replacementText: '## The bird\n\n```\n\nA bird sits there. {\n\n}', },
+            ],
+            sliceIndex: 0,
+            cleared: true,
+          },
+          {
+            // Both reach the page's end, and only withdrawing the notes clears.
+            replacements: [
+              { sliceIndex: 0, replacementText: '## The cat\n\n}\n\nThe cat naps[^1].\n\n```', },
+              { sliceIndex: 1, replacementText: '## The bird\n\n{/*\n\nA bird sits there.\n\n<Cat', },
+              { sliceIndex: 2, replacementText: '## Notes\n\n```\n\n[^1]: That is its favourite spot. {\'open', },
+            ],
+            sliceIndex: 2,
+            cleared: true,
+          },
+          {
+            // Both reach the page's end, and only withdrawing the cat clears.
+            replacements: [
+              { sliceIndex: 0, replacementText: '## The cat\n\n{\n\nThe cat naps[^1]. {\n\n{/*', },
+              { sliceIndex: 1, replacementText: '## The bird\n\n}\n\nA bird sits there.', },
+            ],
+            sliceIndex: 0,
+            cleared: true,
+          },
+        ];
+        expect(ranked.map(function chosen({ replacements, },) {
+          return advancingStructuralWithdrawal({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },);
+        },),).toEqual(ranked.map(function expected({ replacements, sliceIndex, cleared, },) {
+          /** Page as assembled. */
+          const standing = spliceSlices({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },);
+          /** Where the grammar stops on it. */
+          const first = strictRefusalOffset({ text: standing, },);
+          if (!first.refused)
+            throw new Error('a break is on the page',);
+          return [{ sliceIndex, from: first.offset, to: standing.length, cleared, },];
+        },),);
+      },
+    },),
   ],
 },);

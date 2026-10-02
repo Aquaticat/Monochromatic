@@ -1,4 +1,5 @@
 import type { RootContent, } from 'mdast';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { splitFrontMatter, } from './front-matter.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
@@ -48,7 +49,8 @@ export type ActiveFootnoteMarker = GfmMarkerSpan & {
 
  @returns Matching raw marker in document coordinates
 
- @throws FootnoteRewriteError when raw syntax disagrees with parser positions or identity
+ @throws FootnoteRewriteError when raw syntax reads no marker where the parser
+ placed one, or reads a different identity
 
  @example
  ```ts
@@ -67,13 +69,14 @@ function positionedFootnote(
   },
 ): ActiveFootnoteMarker {
   /**
-   Parser-authorized opening position.
+   Parser-authorized opening position, always present: both footnote node
+   types are built through `mdast-util-from-markdown`'s `enter`
+   (`mdast-util-gfm-footnote`), which sets every node's start from its token,
+   and no transform the grammar runs builds a footnote node.
    */
-  const offset = node.position
+  const offset = nonNullishOrThrow(node.position
     ?.start
-    .offset;
-  if (offset === undefined)
-    throw new FootnoteRewriteError({ kind: 'position', },);
+    .offset,);
   /**
    Exact lexical end, independent of decoded label length.
    */
@@ -81,6 +84,13 @@ function positionedFootnote(
     text,
     offset,
   },);
+  // NO MARKER WHERE THE PARSER PLACED ONE is the disagreement an input reaches:
+  // micromark also forms a call from an image label (`![^a ]`, its
+  // `tokenizePotentialGfmFootnoteCall`), whose label may hold the whitespace
+  // the raw grammar refuses. The colon and end checks guard the parser
+  // boundary against a grammar change: `gfmMarkerAt` reads the label as the
+  // installed `micromark-extension-gfm-footnote` does, and no input found
+  // either disagreeing (ledger T8).
   if (((typeof marker) === 'symbol') || ((node.type === 'footnoteDefinition') && (text[marker.endOffset] !== ':'))
     || ((node.type === 'footnoteReference') && (node.position
       ?.end
@@ -149,13 +159,7 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
      Positioned markers collected in source-order preorder.
      */
     const markers: ActiveFootnoteMarker[] = [];
-    while (work.length > 0) {
-      /**
-       Next syntax node.
-       */
-      const node = work.pop();
-      if (node === undefined)
-        throw new FootnoteRewriteError({ kind: 'position', },);
+    for (let node = work.pop(); node !== undefined; node = work.pop()) {
       if ((node.type === 'footnoteDefinition') || (node.type === 'footnoteReference'))
         markers.push(positionedFootnote({
           node,

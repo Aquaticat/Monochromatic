@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type {
   PatchOperation,
   PatchRejection,
@@ -80,7 +81,11 @@ export function settleGatedOperations(
   readonly rejected: readonly PatchRejection[];
 } {
   /**
-   Kinds each gated operation was refused for, empty where it ships.
+   Kinds each gated operation was refused for, empty where it ships. One
+   entry per `gated` operation, in the same order: `settleMarkupMoves`
+   returns its input `deltas` mapped one-for-one, and `deltas` is itself
+   `gated` mapped one-for-one, so `ships` and `toRefusal` each read a
+   present entry at every index of `gated`.
    */
   const refusals = settleMarkupMoves({
     deltas: gated.map(function toDelta(entry,) {
@@ -93,7 +98,11 @@ export function settleGatedOperations(
         _entry,
         index,
       ): boolean {
-        return (refusals[index] ?? []).length === 0;
+        /**
+         Kinds this operation lost.
+         */
+        const kinds = nonNullishOrThrow(refusals[index],);
+        return kinds.length === 0;
       },)
       .map(function toRestored(entry,) {
         return entry.restored;
@@ -107,7 +116,7 @@ export function settleGatedOperations(
         /**
          Kinds this operation lost, none where it ships.
          */
-        const kinds = refusals[index] ?? [];
+        const kinds = nonNullishOrThrow(refusals[index],);
         // Kinds only, never the atoms: a destination or a code span is page
         // content, and the reason is stored.
         return (kinds.length === 0)

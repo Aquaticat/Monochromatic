@@ -218,6 +218,8 @@ function catLedger(
 
  @param issues - repair lane's issue records, empty when the lane filed none
 
+ @param findings - what the repair lane's stages reported, empty when none spoke
+
  @returns Artifact as JSON
 
  @example
@@ -229,9 +231,11 @@ function probeArtifact(
   {
     id,
     issues = [],
+    findings = [],
   }: {
     readonly id: string;
     readonly issues?: readonly unknown[];
+    readonly findings?: readonly unknown[];
   },
 ): Record<string, unknown> {
   /**
@@ -277,7 +281,7 @@ function probeArtifact(
           repairedText: ARCHIVE_NAP,
           status: 'unchanged',
           issues,
-          findings: [],
+          findings,
           sliceCritics: [],
           sliceCount: 1,
           changedSliceIndices: [],
@@ -788,6 +792,42 @@ await describe({
         expect(reading.readings,).toHaveLength(0,);
         expect(reading.repairShippedRecords,).toBe(0,);
         expect(reading.repairUnprobedRecords,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'READS a shipped record\'s naturalness-rewrite probe beside the accuracy readings, and KEEPS the lane\'s '
+        + 'findings that are text while passing over one that is not, since that count must survive a run whose '
+        + 'findings drifted',
+      fn: async () => {
+        /**
+         Rewrite probe the refined record carries.
+         */
+        const refinementDefects = {
+          heardProbers: 3,
+          configuredProbers: 3,
+          regions: [catTally({ envelopeId: 'envelope/refined', },),],
+        };
+        const reading = readArtifactProbe({
+          value: probeArtifact({
+            id: 'Kitten',
+            issues: [
+              {
+                ...catRecord({
+                  repairDisposition: 'shipped',
+                  refined: true,
+                },),
+                refinementDefects,
+              },
+            ],
+            findings: ['stage-quorum-unmet (critic 0/6)', 7, 'whiskers-checked',],
+          },),
+          path: 'Kitten',
+        },);
+        expect(reading.refinementReadings,).toEqual([refinementDefects,],);
+        expect(reading.findings,).toEqual(['stage-quorum-unmet (critic 0/6)', 'whiskers-checked',],);
+        expect(reading.readings,).toHaveLength(0,);
+        expect(reading.hasRewrites,).toBe(true,);
       },
     },),
   ],

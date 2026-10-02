@@ -338,6 +338,105 @@ await describe({
             },);
           },
         },),
+
+        it({
+          name: 'REFUSES A LINE WHOSE TIME, MODEL OR TOKEN COUNTS ARE NOT WHAT A CALL WRITES, naming the line and '
+            + 'the field, and SUMS the same call written whole',
+          fn: async () => {
+            await inScratch(async function body(dir,) {
+              /**
+               Each broken line, beside the refusal its read gives.
+               */
+              const broken = [
+                {
+                  line: {
+                    ...callCosting({ usd: 0.1, },),
+                    at: 1_788_811_674,
+                  },
+                  detail: 'at is not a string',
+                },
+                {
+                  line: {
+                    ...callCosting({ usd: 0.1, },),
+                    model: 7,
+                  },
+                  detail: 'model is not a string',
+                },
+                {
+                  line: {
+                    ...callCosting({ usd: 0.1, },),
+                    completionTokens: '10',
+                  },
+                  detail: 'token counts are not numbers',
+                },
+              ];
+              /**
+               Refusal each broken line's read gives, by its message.
+               */
+              const refusals = await Promise.all(broken.map(async function readBroken(
+                { line, },
+                index,
+              ): Promise<string> {
+                /**
+                 Ledger file holding only this line.
+                 */
+                const path = join(
+                  dir,
+                  `bedrock-spend-${String(index,)}.jsonl`,
+                );
+                await writeFile(
+                  path,
+                  `${JSON.stringify(line,)}\n`,
+                  'utf8',
+                );
+                /**
+                 What the read threw.
+                 */
+                const thrown = await createBedrockLedger({
+                  path,
+                  creditUsd: 200,
+                },)
+                  .read()
+                  .then(
+                    function unexpected(): unknown {
+                      return undefined;
+                    },
+                    function caught(error: unknown,): unknown {
+                      return error;
+                    },
+                  );
+                return (thrown instanceof BedrockLedgerShapeError) ? thrown.message : 'not a ledger shape refusal';
+              },),);
+              expect(refusals,).toEqual(broken.map(function expected({ detail, },): string {
+                return `Bedrock spend ledger line 1 violated expectations: ${detail}`;
+              },),);
+
+              /**
+               The same call written whole, which the broken lines each change one field of.
+               */
+              const wholePath = join(
+                dir,
+                'bedrock-spend-whole.jsonl',
+              );
+              await writeFile(
+                wholePath,
+                `${JSON.stringify(callCosting({ usd: 0.1, },),)}\n`,
+                'utf8',
+              );
+              expect(await createBedrockLedger({
+                path: wholePath,
+                creditUsd: 200,
+              },)
+                .read(),).toEqual({
+                creditUsd: 200,
+                spentUsd: 0.1,
+                reckonedUsd: 0,
+                remainingUsd: 199.9,
+                calls: 1,
+              },);
+            },);
+          },
+        },),
       ],
     },),
 

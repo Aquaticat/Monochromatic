@@ -88,6 +88,9 @@ export type ParsedArtifactReading = {
  names a generation this reader does not know, or when the chosen reader
  refuses it
 
+ @throws Error when a generation this build knows has no reader here, a
+ fault of the build rather than of the file
+
  @example
  ```ts
  const reading = readSettledArtifact({ value: parseRunJson({ text, from, },), },);
@@ -135,15 +138,16 @@ export function readSettledArtifact(
     };
   }
 
-  // REACHED when a generation joins the known list and no reader claims it,
-  // which is the failure this whole function is the single place to catch:
-  // returning a reading for the wrong generation is worse than refusing.
-  throw new ArtifactParseError({
-    path: 'artifact.artifactSchemaVersion',
-    reason: `a generation with a reader: version ${
+  // REACHED ONLY when a generation joins `KNOWN_ARTIFACT_SCHEMA_VERSIONS` and
+  // no reader claims it, which `artifact-dispatch.unit.test.ts` fails on:
+  // returning a reading for the wrong generation is worse than refusing. A
+  // fault of this build rather than of the file, so it is not an artifact
+  // refusal, which would send an operator to archive a sound run (ledger T8).
+  throw new Error(
+    `unreachable: version ${
       String(reading.version,)
-    } is known to this build and nothing here reads it`,
-  },);
+    } is known to this build and neither the version 1 reader nor the two-lane reader reads it`,
+  );
 }
 
 // RE-EXPORTED under the names their callers already use. The version 1 reader

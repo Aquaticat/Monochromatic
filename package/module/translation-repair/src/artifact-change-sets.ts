@@ -155,6 +155,9 @@ function readIndexArray(
  @throws {@link ArtifactParseError} when either array is malformed or the two
  break a rule the lanes hold them to
 
+ @throws Error when the set checks raise anything but their own refusal, a
+ fault of this build rather than of the file
+
  @example
  ```ts
  const sets = readCheckedSets({ artifact, path, sliceCount, },);
@@ -200,8 +203,17 @@ function readCheckedSets(
     },);
   }
   catch (error) {
-    if (!(error instanceof AssemblyContractError))
-      throw error;
+    // The index arrays reach here as safe non-negative integers
+    // (`readIndexArray` through `requireCount`), over which `checkedChangeSets`
+    // and `orderedChangeSets` raise only `AssemblyContractError`: every other
+    // statement in both iterates, builds a `Set`, filters or compares (ledger
+    // T8).
+    if (!(error instanceof AssemblyContractError)) {
+      throw new Error(
+        'unreachable: checkedChangeSets or orderedChangeSets raised something other than AssemblyContractError',
+        { cause: error, },
+      );
+    }
     throw new ArtifactParseError({
       path: `${path} index sets`,
       reason: `sets one document could carry (${error.message})`,

@@ -22,6 +22,10 @@ await describe({
           { name: 'malformed document syntax', text: '<Component value={broken>\n\nReal[^1].\n\n[^1]: Note.', map: [{ from: '1', to: '2' }], kind: 'syntax' },
           { name: 'a new JSX element replacing an unresolved reference', text: 'Missing[^1].', map: [{ from: '1', to: '<br/>' }], kind: 'graph' },
           { name: 'raw null bytes disagreeing with parser-normalized identifiers', text: 'Real[^a\0b].\n\n[^a\0b]: Note.', map: [{ from: 'a\0b', to: 'x' }], kind: 'position' },
+          // micromark forms this call from an image label, whose label may hold
+          // the space the raw marker grammar refuses (ledger T8).
+          { name: 'a footnote call the parser forms from an image label holding a space, where the raw opening reads no marker',
+            text: 'Cat![^ab ].\n\n[^ab]: Note.', map: [{ from: 'ab', to: 'cd' }], kind: 'position' },
         ].map(fixture => it({
           name: `refuses ${fixture.name}`,
           fn: async () => {

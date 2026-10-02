@@ -262,6 +262,57 @@ await describe({
         },),
 
         it({
+          name: 'leaves the nearby original line blank when only the nearby translation is supplied',
+          fn: async () => {
+            /** Plan with incumbent context but no source-side neighbour. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '原文',
+              targetText: 'translation',
+              clusters: [],
+              neighbouringIncumbentText: 'Mittens dozed on the mat.',
+            },);
+            /** Sheet text shown to the panelist. */
+            const sheet = plan.messages[1]?.content ?? '';
+            /** Nearby-context block, cut right after the incumbent line it ends on. */
+            const nearbySection = sheet.slice(
+              sheet.indexOf('===== NEARBY ORIGINAL',),
+              sheet.indexOf('Mittens dozed on the mat.',) + 'Mittens dozed on the mat.'.length,
+            );
+            expect(nearbySection,).toBe(
+              '===== NEARBY ORIGINAL, CONTEXT ONLY =====\n\n'
+                + '===== NEARBY EXISTING TRANSLATION, CONTEXT ONLY =====\nMittens dozed on the mat.',
+            );
+          },
+        },),
+
+        it({
+          name: 'leaves the nearby translation line blank when only the nearby original is supplied',
+          fn: async () => {
+            /** Plan with source-side neighbour context but no incumbent neighbour. */
+            const plan = buildAdjudicationMessages({
+              sourceText: '原文',
+              targetText: 'translation',
+              clusters: [],
+              neighbouringSourceText: '猫在窗台上打盹。',
+            },);
+            /** Sheet text shown to the panelist. */
+            const sheet = plan.messages[1]?.content ?? '';
+            /** Header the blank incumbent line sits directly after. */
+            const incumbentHeader = '===== NEARBY EXISTING TRANSLATION, CONTEXT ONLY =====';
+            /** Nearby-context block, cut right after the blank incumbent line and its line break. */
+            const nearbySection = sheet.slice(
+              sheet.indexOf('===== NEARBY ORIGINAL',),
+              sheet.indexOf(incumbentHeader,) + incumbentHeader.length
+                + 2,
+            );
+            expect(nearbySection,).toBe(
+              '===== NEARBY ORIGINAL, CONTEXT ONLY =====\n猫在窗台上打盹。\n'
+                + '===== NEARBY EXISTING TRANSLATION, CONTEXT ONLY =====\n\n',
+            );
+          },
+        },),
+
+        it({
           name: 'keeps proposer identity out of the sheet',
           fn: async () => {
             /** Plan for the two-cluster sheet. */

@@ -548,7 +548,6 @@ function ownTestRatchetFindings(
 const ALLOWLIST: readonly string[] = [
   'src/active-footnote-markers.ts',
   'src/align-blocks-walk.ts',
-  'src/apply-footnote-relabel.ts',
   'src/apply-patch-markup.ts',
   'src/archive-block-evidence.ts',
   'src/archive-block-naturalness.ts',

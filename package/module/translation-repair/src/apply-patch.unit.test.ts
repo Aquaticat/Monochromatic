@@ -630,6 +630,52 @@ await describe({
             expect(outcome.patchedText,).toBe('Contributor for this entry: Whiskers - Archive',);
           },
         },),
+
+        it({
+          name: 'REJECTS an operation that replaces every unlicensed word with unrelated ones, losing no name or '
+            + 'number, as bulk loss rather than the lost-distinctive reason',
+          fn: async () => {
+            /**
+             Text of six ordinary words, none a name or number.
+             */
+            const plain = 'cats chase butterflies across gardens quietly.';
+            /**
+             Envelope over the whole text, with no licensed quote filed for it
+             at all.
+             */
+            const envelope = {
+              envelopeId: 'envelope/plain',
+              startOffset: 0,
+              endOffset: plain.length,
+              baseText: plain,
+              baseHash: hashContent({ content: plain, },),
+              issueIds: ['issue/plain',],
+            };
+
+            /**
+             Edit that keeps none of the replaced words.
+             */
+            const outcome = applyPatchOperations({
+              targetText: plain,
+              envelopes: [envelope,],
+              operations: [{
+                envelopeId: 'envelope/plain',
+                baseHash: envelope.baseHash,
+                newText: 'nothing else remains here.',
+              },],
+              preservation: {
+                mode: 'enforce',
+                licensedQuotes: new Map(),
+                removableQuotes: new Map(),
+                sourceText: '',
+              },
+            },);
+
+            expect(outcome.applied,).toHaveLength(0,);
+            expect(outcome.rejected[0]?.reason,).toBe('preservation-bulk-loss (1.00)',);
+            expect(outcome.patchedText,).toBe(plain,);
+          },
+        },),
       ],
     },),
 

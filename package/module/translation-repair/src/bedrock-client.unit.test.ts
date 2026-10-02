@@ -10,6 +10,7 @@
  @module
  */
 
+import { once, } from 'node:events';
 import { setTimeout as sleepFor, } from 'node:timers/promises';
 
 import {
@@ -531,6 +532,77 @@ await describe({
             expect(outcome.kind,).toBe('ok',);
             if (outcome.kind === 'ok')
               expect(outcome.value.spot,).toBe('sunbeam',);
+          },
+        },),
+
+        it({
+          name: 'SENDS A CALLER\'S OWN CEILING under the measured cap and HANDS ITS ANSWER BOUND to the transport, '
+            + 'under a deadline signal of its own rather than the caller\'s',
+          fn: async () => {
+            const { client, exchanges, } = recordedClient({},);
+            await client.chatText({
+              modelId: SEAT_HYPER_TEXT_BEDROCK,
+              messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+              signal: SIGNAL,
+              maxTokens: 64,
+              maxAnswerChars: 2_000,
+              exchangeTimeoutMs: 5_000,
+            },);
+
+            /**
+             What went on the wire.
+             */
+            const [exchange,] = exchanges;
+            if (exchange === undefined)
+              throw new Error('nothing was sent',);
+            expect(64,).toBeLessThan(COMPLETION_CAP[SEAT_HYPER_TEXT_BEDROCK],);
+            expect(JSON.parse(exchange.bodyJson ?? '{}',),).toMatchObject({ max_tokens: 64, },);
+            expect(exchange.maxAnswerChars,).toBe(2_000,);
+            expect(exchange.signal,).not.toBe(SIGNAL,);
+          },
+        },),
+
+        it({
+          name: 'FORFEITS A CALL THAT OUTLASTS ITS DEADLINE, naming the served model and the deadline',
+          fn: async () => {
+            const client = createBedrockClient({
+              apiKey: 'test-key',
+              ledger: memoryLedger({},).ledger,
+              baseUrl: 'https://mantle.invalid',
+              transport: async function waitsForAbort(exchange,) {
+                // Answers only once the exchange is aborted, with the abort's
+                // own reason, as a fetch on that signal would.
+                await once(
+                  exchange.signal,
+                  'abort',
+                );
+                throw exchange.signal.reason;
+              },
+              retryPolicy: {
+                limit: 0,
+                baseMs: 1,
+              },
+            },);
+
+            /**
+             What the call threw.
+             */
+            const thrown = await client
+              .chatText({
+                modelId: SEAT_HYPER_TEXT_BEDROCK,
+                messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+                signal: SIGNAL,
+                exchangeTimeoutMs: 50,
+              },)
+              .then(
+                function unexpected(): unknown {
+                  return undefined;
+                },
+                function caught(error: unknown,): unknown {
+                  return error;
+                },
+              );
+            expect((thrown as Error).message,).toBe('Timeout: google.gemma-4-26b-a4b exceeded its 50ms deadline',);
           },
         },),
 

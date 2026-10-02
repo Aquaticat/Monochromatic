@@ -14,6 +14,7 @@ import {
 import {
   isPanelBallotWire,
   resolvePanelBallot,
+  usablePanelBallotFor,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -83,6 +84,37 @@ await describe({
               .toBe(false,);
             expect(isPanelBallotWire({ verdicts: [{ claim: 1, reason: 'Paws match.', vote: 'supported', },], },),)
               .toBe(true,);
+            // A verdict array element that is not itself a record carries none of
+            // the required fields.
+            expect(isPanelBallotWire({ verdicts: ['a string, not a verdict record',], },),)
+              .toBe(false,);
+            // A groups array element that is not itself a record carries neither
+            // the group number nor the same-defect flag.
+            expect(isPanelBallotWire({ verdicts: [], groups: ['a string, not a group record',], },),)
+              .toBe(false,);
+            // A group reference must itself be a number, not a numeral string.
+            expect(isPanelBallotWire({ verdicts: [], groups: [{ group: '1', sameDefect: true, },], },),)
+              .toBe(false,);
+            // A group reference must be a whole number: the prompt sheet numbers
+            // groups one by one, never fractionally.
+            expect(isPanelBallotWire({ verdicts: [], groups: [{ group: 1.5, sameDefect: true, },], },),)
+              .toBe(false,);
+            // The groups field itself must be an array when present.
+            expect(isPanelBallotWire({ verdicts: [], groups: 'not an array', },),)
+              .toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: usablePanelBallotFor.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'refuses a value that is not a wire ballot at all',
+          fn: async () => {
+            expect(usablePanelBallotFor({ claimCount: 3, },)('not a ballot',),).toBe(false,);
           },
         },),
       ],
