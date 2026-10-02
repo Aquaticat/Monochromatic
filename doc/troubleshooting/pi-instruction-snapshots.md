@@ -726,6 +726,56 @@ Runtime replacement,
 including same-manager in-memory forks,
 remains the next separate surface to exercise before choosing lifecycle wiring.
 
+## Actual runtime replacement and fork observations
+
+The private `contract/collector/request-runtime-lifecycle/` phase completed as `proc_7d74`,
+exit 0,
+using real service/runtime factories.
+It constructed 14 SDK sessions;
+eight completed an owned response and the replacement sessions were not prompted.
+Eight injected requests ran,
+with no tools or external model requests.
+Every constructed session completed its delegated disposal exactly once.
+
+Cancelled `newSession` kept the original runtime and fresh receipt.
+Successful new-session,
+switch,
+and persisted-fork paths replaced both the `AgentSession` and manager.
+An in-memory fork replaced the `AgentSession` but reused its manager.
+Without explicit invalidation,
+that old receipt was rejected by the stale extension-context check rather than by manager identity.
+The SDK extension runner emitted its existing `This extension ctx is stale after session replacement or reload` diagnostic.
+Manager identity alone did not explain that rejection.
+
+In the tested replacement paths,
+the receipt remained usable during `session_shutdown` and immediately before the host's
+`setBeforeSessionInvalidate` callback.
+Explicit invalidation in that callback rejected it before native disposal.
+The observed ordering was shutdown,
+host invalidation callback,
+disposal,
+replacement factory,
+new session start,
+rebind,
+and `withSession`.
+This does not close an earlier transition window merely because eventual rejection works.
+
+A deliberately failing replacement factory preserved its exact error object.
+The outgoing session was already disposed;
+no replacement SDK session was constructed,
+and its old receipt stayed unusable.
+Private streams,
+constructed/completed counts,
+callback ordering,
+selected source hashes,
+and policy hashes reconciled with empty worker stderr.
+
+These results cover the named native flows,
+not a production lifecycle lease.
+The existing registry's fixed-session branch snapshots must not be confused with a lifecycle-only epoch that
+survives normal message appends but expires on root changes.
+Direct mutations and borrowed mutable entry references still need an explicit coverage contract.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution

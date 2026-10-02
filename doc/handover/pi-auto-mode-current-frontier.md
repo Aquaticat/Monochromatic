@@ -553,9 +553,30 @@ No production transition-window or direct-manager coverage is established.
 The existing native-manager registry owns per-manager epochs and issuer-local branch snapshots,
 but requires a fixed planned session ID and persistent path and only advances epochs through explicit invalidation.
 Do not duplicate that ownership responsibility without inspecting its existing contract.
-Next exercise runtime replacement/new/fork and same-manager in-memory reuse through real service/runtime factories.
+Runtime replacement/fork controls then passed `proc_7d74` in `contract/collector/request-runtime-lifecycle/`:
+14 constructed SDK sessions,
+eight owned completed responses,
+eight injected requests,
+no tools or external model requests.
+Cancelled new-session flow preserved the original runtime and fresh receipt.
+New/switch/persisted-fork flows changed manager identity;
+in-memory forks reused the manager but replaced `AgentSession`.
+The unwired in-memory case rejected the old receipt through the stale extension-context check,
+not manager identity.
+Receipts remained fresh in shutdown and immediately before the host invalidation callback;
+explicit invalidation then rejected them before disposal.
+The exact deliberate factory failure was retained after old-session disposal,
+with no replacement constructed and no old-receipt revival.
+Every constructed session completed delegated disposal once.
+
+Next review a lifecycle-only lease extension of the existing ownership registry.
+It must account for pre-mutation windows,
+direct manager mutation,
+and mutable references returned by native getters,
+without invalidating every normal model/tool-result append or treating IDs as authority.
+No production mechanism is adopted.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
-The group documentation passed lint/render/readback in `proc_97af` before this tree update.
+The tree documentation passed lint/render/readback in `proc_62cd` before this runtime update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
 
 ## Tooling and workflow
