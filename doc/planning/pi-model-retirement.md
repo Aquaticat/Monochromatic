@@ -1,8 +1,11 @@
 # Pi model retirement extension proposal
 
-Status: proposal from a grilling session held 2026-10-02.
-Not accepted.
-No implementation is authorized by this file.
+Status: accepted and implemented.
+The design session that produced this file was held 2026-10-02, the package is delivered at
+`package/pi-plugin/model-retirement`, and the decision is recorded in
+`doc/decision/pi-model-retirement.md`.
+This file keeps the full evidence trail: the measurements, the rule, the rejected options,
+and the risks as they were understood at each step.
 
 ## Purpose
 
