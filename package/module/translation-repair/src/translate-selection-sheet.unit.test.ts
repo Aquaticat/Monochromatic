@@ -43,6 +43,21 @@ import {
 const OVERRIDDEN_CLAUSE = 'A SHAPE THE ORIGINAL DOES NOT HAVE IS NOT A FAULT';
 
 /**
+ Whether a governed criterion states the overridden clause without being the
+ line-structure criterion itself: the predicate both the precedence case
+ (by position) and the verbatim-clause case (by presence) check over a
+ governed slice.
+
+ @param criterion - criterion from a governed slice
+
+ @returns Whether this criterion carries the overridden clause elsewhere
+ */
+function statesOverriddenClause(criterion: string,): boolean {
+  return criterion.includes(OVERRIDDEN_CLAUSE,)
+    && (criterion !== TRANSLATE_LINE_STRUCTURE_CRITERION);
+}
+
+/**
  Criteria joined, since a judge reads them as one list.
  */
 const sheet = TRANSLATE_SELECTION_CRITERIA.join('\n',);
@@ -242,8 +257,7 @@ await describe({
 
             expect(governed.indexOf(TRANSLATE_LINE_STRUCTURE_CRITERION,),).toBeLessThan(
               governed.findIndex(function permitsAnUnoriginalShape(criterion,): boolean {
-                return criterion.includes(OVERRIDDEN_CLAUSE,)
-                  && (criterion !== TRANSLATE_LINE_STRUCTURE_CRITERION);
+                return statesOverriddenClause(criterion,);
               },),
             );
           },
@@ -263,8 +277,7 @@ await describe({
             expect(TRANSLATE_LINE_STRUCTURE_CRITERION.includes(OVERRIDDEN_CLAUSE,),).toBe(true,);
             expect(
               governed.some(function statesTheRule(criterion,): boolean {
-                return criterion.includes(OVERRIDDEN_CLAUSE,)
-                  && (criterion !== TRANSLATE_LINE_STRUCTURE_CRITERION);
+                return statesOverriddenClause(criterion,);
               },),
             ).toBe(true,);
           },

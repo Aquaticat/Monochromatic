@@ -18033,6 +18033,44 @@ Recurrence:
 `mistake-prevention.md`,
 "Structure read off the parse".
 
+### B114: test files kept helper bodies twice within one file
+
+Queued by B111,
+fixed in the commit adding this entry.
+Of the 58 groups B111 left,
+19 sit within one file.
+A read-only agent read every copy and found no test defect:
+no pair of cases whose identical bodies left one case's claim untested.
+Ten groups were one helper written twice and are hoisted to one function in their file
+(`critic-wire`,
+`candidate-select`,
+`archive-block-review-stage` with four copies,
+`provider-router`,
+`repair-translation`,
+`translate-retry`,
+`translate-selection-sheet`,
+and in `corpus-run` `run-timing`,
+`artifact-two-lane-read` and `insertion-container-deficit`).
+Six are one scenario split into cases that assert different things of it,
+the class of an error in one and its message in another,
+and stay.
+Three are not copies at all:
+the grouping strips every character `trim` reads as space,
+inside string literals too,
+and `trim` reads U+FEFF as space,
+so a cut leaving one space against one leaving two (`fidelity-splice`),
+a line of U+FEFF alone against one mixing it with spaces (`mask-invisible-lines`)
+and an empty override against one of three spaces (`grace-override`)
+group as one body.
+
+The grouping over the tree with this change finds 48 groups and 115 copies over 967 files.
+The duplicate-body scan's widening to tests has to compare literals as written
+and lists the six split scenarios with their reason.
+
+Recurrence:
+`mistake-prevention.md`,
+"Copies of shared code".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

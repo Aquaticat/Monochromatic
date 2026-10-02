@@ -41,6 +41,29 @@ const VALID_WIRE: CriticIssueWire = {
   targetQuote: 'The cat likes to nap in the sun.',
 };
 
+/**
+ Reads the failure reason of one corrupted wire.
+
+ @param wire - corrupted wire under test
+
+ @returns Failure reason, empty when resolution unexpectedly succeeded
+
+ @example
+ ```ts
+ reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },);
+ ```
+ */
+function reasonOf(wire: CriticIssueWire,): string {
+  /** Resolution of the corrupted wire. */
+  const resolution = resolveCriticIssue({
+    wire,
+    documents: DOCUMENTS,
+  },);
+  return resolution.resolved
+    ? ''
+    : resolution.reason;
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -100,29 +123,6 @@ await describe({
         it({
           name: 'fails closed vocabularies, missing quotes, and empty quotes',
           fn: async () => {
-            /**
-             Reads the failure reason of one corrupted wire.
-         
-             @param wire - corrupted wire under test
-         
-             @returns Failure reason, empty when resolution unexpectedly succeeded
-         
-             @example
-             ```ts
-             reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },);
-             ```
-             */
-            function reasonOf(wire: CriticIssueWire,): string {
-              /** Resolution of the corrupted wire. */
-              const resolution = resolveCriticIssue({
-                wire,
-                documents: DOCUMENTS,
-              },);
-              return resolution.resolved
-                ? ''
-                : resolution.reason;
-            }
-
             expect(reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },),)
               .toContain('unknown-category',);
             expect(reasonOf({ ...VALID_WIRE, severity: 'apocalyptic', },),)
@@ -144,29 +144,6 @@ await describe({
         it({
           name: 'fails absent, ambiguous, and outside-block quotes',
           fn: async () => {
-            /**
-             Reads the failure reason of one corrupted wire.
-         
-             @param wire - corrupted wire under test
-         
-             @returns Failure reason, empty when resolution unexpectedly succeeded
-         
-             @example
-             ```ts
-             reasonOf({ ...VALID_WIRE, category: 'accuracy/vibes', },);
-             ```
-             */
-            function reasonOf(wire: CriticIssueWire,): string {
-              /** Resolution of the corrupted wire. */
-              const resolution = resolveCriticIssue({
-                wire,
-                documents: DOCUMENTS,
-              },);
-              return resolution.resolved
-                ? ''
-                : resolution.reason;
-            }
-
             expect(reasonOf({ ...VALID_WIRE, targetQuote: 'The dog barks.', },),)
               .toBe('quote-not-found (target) needle=14 chars, 3 Latin tokens',);
             expect(reasonOf({ ...VALID_WIRE, targetQuote: 'The cat', },),)

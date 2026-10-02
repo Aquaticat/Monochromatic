@@ -137,6 +137,23 @@ function missingRow(
 }
 
 /**
+ Whether a finding names the slice-2 container deficit admission, the check
+ every admission case here runs over `deficit.findings`.
+
+ @param finding - finding from a deficit's findings list
+
+ @returns Whether this finding is the slice-2 admission
+
+ @example
+ ```ts
+ expect(deficit.findings.some(admittedDeficit,),).toBe(true,);
+ ```
+ */
+function admittedDeficit(finding: string,): boolean {
+  return finding.startsWith('insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3',);
+}
+
+/**
  Archive's closing half rendering the paragraph the original's slice 2 writes,
  so the archive's block has as many blocks as the original's.
  */
@@ -251,7 +268,7 @@ await describe({
             expect(deficit.unresolvedRows,).toEqual([],);
             expect(deficit.findings
               .some(function named(finding,): boolean {
-                return finding.startsWith('insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3',);
+                return admittedDeficit(finding,);
               },),).toBe(true,);
           },
         },),
@@ -405,7 +422,7 @@ await describe({
               },),).toBe(true,);
             expect(deficit.findings
               .some(function named(finding,): boolean {
-                return finding.startsWith('insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3',);
+                return admittedDeficit(finding,);
               },),).toBe(true,);
           },
         },),

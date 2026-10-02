@@ -264,6 +264,34 @@ function repairDecidedRows(): readonly Record<string, unknown>[] {
 }
 
 /**
+ Repair row withdrawn by whole-document refusal, the shape only a blocked run
+ produces: a decided outcome whose delivery is a refusal rather than a
+ shipped or withheld replacement.
+
+ @param row - delivery row to replace
+
+ @returns Row recording the blocked-run withdrawal
+
+ @example
+ ```ts
+ const refused = rowReplaced({ rows: repairLedger(), at: 0, replace: withdrawByRefusal, },);
+ ```
+ */
+function withdrawByRefusal(row: ArtifactDeliveryRow,): ArtifactDeliveryRow {
+  return {
+    ...row,
+    outcome: {
+      kind: 'decided',
+      acceptedText: MENDED_NAP,
+    },
+    delivery: {
+      kind: 'replacement-withdrawn',
+      reason: 'blocked-non-translation',
+    },
+  };
+}
+
+/**
  A ledger whose rows all claim the first slice.
  
  @param rows - ledger to collapse
@@ -1084,19 +1112,7 @@ await describe({
         const refusedWhileRunning = rowReplaced({
           rows: repairLedger(),
           at: 0,
-          replace: function withdrawByRefusal(row,): ArtifactDeliveryRow {
-            return {
-              ...row,
-              outcome: {
-                kind: 'decided',
-                acceptedText: MENDED_NAP,
-              },
-              delivery: {
-                kind: 'replacement-withdrawn',
-                reason: 'blocked-non-translation',
-              },
-            };
-          },
+          replace: withdrawByRefusal,
         },);
         /**
          What unblockedRefusal raised, read for its class as well as its wording.
@@ -1195,19 +1211,7 @@ await describe({
         const withdrawnByRefusal = rowReplaced({
           rows: repairLedger(),
           at: 0,
-          replace: function withdrawByRefusal(row,): ArtifactDeliveryRow {
-            return {
-              ...row,
-              outcome: {
-                kind: 'decided',
-                acceptedText: MENDED_NAP,
-              },
-              delivery: {
-                kind: 'replacement-withdrawn',
-                reason: 'blocked-non-translation',
-              },
-            };
-          },
+          replace: withdrawByRefusal,
         },);
         expect(parseSettledTwoLaneArtifact({
           value: artifactWith({

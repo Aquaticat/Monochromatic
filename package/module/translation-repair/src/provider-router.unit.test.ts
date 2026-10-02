@@ -63,6 +63,31 @@ const SIGNAL = new AbortController().signal;
 const SLOT_HOLD_MS = 50;
 
 /**
+ Synthetic provider stub that holds its one slot long enough for a concurrent
+ caller to find it busy, recording that it was called.
+
+ @param called - call log this stub appends to
+
+ @returns Caller usable as the routing client's `synthetic` provider
+
+ @example
+ ```ts
+ const synthetic = slotHoldingSynthetic({ called, },);
+ ```
+ */
+function slotHoldingSynthetic(
+  { called, }: { readonly called: ProviderName[]; },
+): { chatText: () => Promise<{ text: string; }>; } {
+  return {
+    chatText: async function chatText() {
+      called.push('synthetic',);
+      await wait(SLOT_HOLD_MS,);
+      return { text: '{"spot":"windowsill"}', };
+    },
+  };
+}
+
+/**
  Production Synthetic slots measured per active model.
  */
 const EXPECTED_SYNTHETIC_SLOTS = 5;
@@ -758,13 +783,7 @@ await describe({
         /** Providers asked, in call order. */
         const called: ProviderName[] = [];
         /** First provider holding every admitted slot. */
-        const synthetic = {
-          chatText: async function chatText() {
-            called.push('synthetic',);
-            await wait(SLOT_HOLD_MS,);
-            return { text: '{"spot":"windowsill"}', };
-          },
-        };
+        const synthetic = slotHoldingSynthetic({ called, },);
         /** Overflow provider answering without a local concurrency ceiling. */
         const hyper = {
           chatText: async function chatText() {
@@ -881,13 +900,7 @@ await describe({
          First provider, holding its one slot long enough for a concurrent
          caller to find it busy.
          */
-        const synthetic = {
-          chatText: async function chatText() {
-            called.push('synthetic',);
-            await wait(SLOT_HOLD_MS,);
-            return { text: '{"spot":"windowsill"}', };
-          },
-        };
+        const synthetic = slotHoldingSynthetic({ called, },);
         /**
          Second provider, answering at once and unparseably, so the caller
          re-asks the first.

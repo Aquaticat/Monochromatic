@@ -442,6 +442,36 @@ function tiedEveryJudging(
 }
 
 /**
+ Ballot script for the class eighty-two run-off (slice 14): a four-translator
+ slate that narrows from three finalists to two before deciding, shared by
+ the case where the slice has no archive incumbent and the case where the
+ archive wording is the incumbent each intermediate decline keeps.
+
+ @param judging - which judging this ballot answers, counting from one
+
+ @param seat - judge whose ballot is scripted
+
+ @returns Ballot the seat casts
+
+ @example
+ ```ts
+ const { result, } = await judgedUnder({ judges: DISINTERESTED_JUDGES, ballotFor: narrowTwice, },);
+ ```
+ */
+function narrowTwice(
+  judging: number,
+  seat: RosterModelId,
+): ScriptedBallot {
+  if (seat === DISINTERESTED_JUDGES[0])
+    return 'dozes';
+  if (seat === DISINTERESTED_JUDGES[1])
+    return (judging === 3) ? 'dozes' : 'naps';
+  if (judging === 1)
+    return 'curls';
+  return (judging === 2) ? 'reject' : 'naps';
+}
+
+/**
  Repair lane text carrying a word no translator's rendering carries.
  */
 const REPAIR_LANE: LaneText = {
@@ -532,18 +562,7 @@ await describe({
           translators: FOUR_TRANSLATORS,
           judges: DISINTERESTED_JUDGES,
           renderings: FOUR_RENDERINGS,
-          ballotFor: function narrowTwice(
-            judging,
-            seat,
-          ): ScriptedBallot {
-            if (seat === DISINTERESTED_JUDGES[0])
-              return 'dozes';
-            if (seat === DISINTERESTED_JUDGES[1])
-              return (judging === 3) ? 'dozes' : 'naps';
-            if (judging === 1)
-              return 'curls';
-            return (judging === 2) ? 'reject' : 'naps';
-          },
+          ballotFor: narrowTwice,
         },);
         expect(result.origin,).toBe('fresh',);
         expect(result.text.includes('dozes',),).toBe(true,);
@@ -637,18 +656,7 @@ await describe({
           translators: FOUR_TRANSLATORS,
           judges: DISINTERESTED_JUDGES,
           renderings: FOUR_RENDERINGS,
-          ballotFor: function narrowTwice(
-            judging,
-            seat,
-          ): ScriptedBallot {
-            if (seat === DISINTERESTED_JUDGES[0])
-              return 'dozes';
-            if (seat === DISINTERESTED_JUDGES[1])
-              return (judging === 3) ? 'dozes' : 'naps';
-            if (judging === 1)
-              return 'curls';
-            return (judging === 2) ? 'reject' : 'naps';
-          },
+          ballotFor: narrowTwice,
         },);
         expect({
           origin: result.origin,

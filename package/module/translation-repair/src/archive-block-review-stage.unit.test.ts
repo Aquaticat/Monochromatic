@@ -199,6 +199,30 @@ const ACCEPTABLE_NATURALNESS = {
   reason: 'Publication-ready wording.',
 } as const;
 
+/**
+ Reply anchoring the archive quote for an archive-block review request, and
+ the acceptable-naturalness reply for every other schema: the scripted reply
+ every case that reaches a reachable bench's naturalness round by anchoring
+ the whole roster shares.
+
+ @param schema - structured schema requested of this reply
+
+ @returns Reply scripted for the archive_block_review schema, or the
+ acceptable-naturalness reply otherwise
+ */
+function anchoredReviewReplyFor(
+  { schema, }: { readonly schema: string; },
+): unknown {
+  return schema === 'archive_block_review'
+    ? {
+      disposition: 'source-supported',
+      sourceQuote: '窗边安静地睡觉',
+      replacementText: '',
+      finding: 'Expected section supports this sentence.',
+    }
+    : ACCEPTABLE_NATURALNESS;
+}
+
 await describe({
   name: 'archive block review stage',
   children: [
@@ -347,14 +371,7 @@ await describe({
         const outcome = await runArchiveBlockReviewStage({
           client: scriptedClient({
             prompts,
-            replyFor: ({ schema, },) => schema === 'archive_block_review'
-              ? {
-                disposition: 'source-supported',
-                sourceQuote: '窗边安静地睡觉',
-                replacementText: '',
-                finding: 'Expected section supports this sentence.',
-              }
-              : ACCEPTABLE_NATURALNESS,
+            replyFor: anchoredReviewReplyFor,
           },),
           modelIds: ROSTER,
           sourceText: '猫在窗边安静地睡觉。',
@@ -439,14 +456,7 @@ await describe({
               asked.add(modelId,);
               return modelId !== ROSTER[0];
             },
-            replyFor: ({ schema, },) => schema === 'archive_block_review'
-              ? {
-                disposition: 'source-supported',
-                sourceQuote: '窗边安静地睡觉',
-                replacementText: '',
-                finding: 'Expected section supports this sentence.',
-              }
-              : ACCEPTABLE_NATURALNESS,
+            replyFor: anchoredReviewReplyFor,
           },),
           modelIds: ROSTER,
           sourceText: '猫在窗边安静地睡觉。',
@@ -483,14 +493,7 @@ await describe({
           client: scriptedClient({
             prompts,
             refusedFor: (modelId,) => REFUSED_SEATS.has(modelId,),
-            replyFor: ({ schema, },) => schema === 'archive_block_review'
-              ? {
-                disposition: 'source-supported',
-                sourceQuote: '窗边安静地睡觉',
-                replacementText: '',
-                finding: 'Expected section supports this sentence.',
-              }
-              : ACCEPTABLE_NATURALNESS,
+            replyFor: anchoredReviewReplyFor,
           },),
           modelIds: SHORT_BENCH,
           sourceText: '猫在窗边安静地睡觉。',
@@ -871,14 +874,7 @@ await describe({
             client: scriptedClient({
               prompts: [],
               unreadableFor: ({ modelId, prompt, },) => (modelId !== ROSTER[0]) && prompt.includes(sheetPhrase,),
-              replyFor: ({ schema, },) => schema === 'archive_block_review'
-                ? {
-                  disposition: 'source-supported',
-                  sourceQuote: '窗边安静地睡觉',
-                  replacementText: '',
-                  finding: 'Expected section supports this sentence.',
-                }
-                : ACCEPTABLE_NATURALNESS,
+              replyFor: anchoredReviewReplyFor,
             },),
             modelIds: ROSTER,
             sourceText: '猫在窗边安静地睡觉。',

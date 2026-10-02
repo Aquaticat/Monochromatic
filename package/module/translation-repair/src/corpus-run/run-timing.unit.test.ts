@@ -147,6 +147,27 @@ function refusalTexts({ read, }: { readonly read: () => void; },): readonly stri
   ];
 }
 
+/**
+ Refusal texts a round line throws through `readRoundTiming`, the read every
+ round-line case in this describe block maps a line list through.
+
+ @param line - round line under test
+
+ @returns Messages the read threw, outermost first
+
+ @example
+ ```ts
+ const texts = refusalsOfRound(unframedRatio,);
+ ```
+ */
+function refusalsOfRound(line: string,): readonly string[] {
+  return refusalTexts({
+    read: function readsRound(): void {
+      readRoundTiming({ line, },);
+    },
+  },);
+}
+
 //endregion Fixtures
 
 await describe({
@@ -298,11 +319,7 @@ await describe({
               disagreeing,
               wordy,
             ].map(function refusalsOf(line,): readonly string[] {
-              return refusalTexts({
-                read: function readsRound(): void {
-                  readRoundTiming({ line, },);
-                },
-              },);
+              return refusalsOfRound(line,);
             },),).toEqual([
               [
                 `round line unreadable: ${short}`,
@@ -336,11 +353,7 @@ await describe({
               unframedRatio,
               unframedQuorum,
             ].map(function refusalsOf(line,): readonly string[] {
-              return refusalTexts({
-                read: function readsRound(): void {
-                  readRoundTiming({ line, },);
-                },
-              },);
+              return refusalsOfRound(line,);
             },),).toEqual([
               [
                 `round line unreadable: ${unframedRatio}`,

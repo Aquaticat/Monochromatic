@@ -146,6 +146,49 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
 ];
 
 /**
+ Builds a judged-selection candidate carrying a synthetic chunk replacement,
+ keeping the string candidate's producer and rendering so the judge sheet
+ still reads as a slate over the same two proposals.
+
+ @param candidate - string candidate this test's slate holds
+
+ @param index - position of the candidate on the slate, varying its
+ replacement text so the two candidates stay distinct
+
+ @returns Candidate ready for `selectChunkPatch`
+
+ @example
+ ```ts
+ const candidates = STRING_CANDIDATES.map(function toPatchCandidate(
+   candidate,
+   index,
+ ): Candidate<PatchOutcome> {
+   return patchCandidateFor({ candidate, index, },);
+ },);
+ ```
+ */
+function patchCandidateFor(
+  {
+    candidate,
+    index,
+  }: {
+    readonly candidate: Candidate<string>;
+    readonly index: number;
+  },
+): Candidate<PatchOutcome> {
+  return {
+    producer: candidate.producer,
+    value: candidateFor({
+      modelId: candidate.producer.kind === 'model'
+        ? candidate.producer.modelId
+        : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+      newText: `Replacement ${String(index + 1,)}.`,
+    },).patch,
+    rendered: candidate.rendered,
+  };
+}
+
+/**
  Client whose listed seats are refused by the router for want of a wet
  provider, the way `judgeSeatsFor` leaves a dry provider's seats on the
  bench, and whose other seats vote from the script.
@@ -904,16 +947,7 @@ await describe({
                 candidate,
                 index,
               ): Candidate<PatchOutcome> {
-                return {
-                  producer: candidate.producer,
-                  value: candidateFor({
-                    modelId: candidate.producer.kind === 'model'
-                      ? candidate.producer.modelId
-                      : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                    newText: `Replacement ${String(index + 1,)}.`,
-                  },).patch,
-                  rendered: candidate.rendered,
-                };
+                return patchCandidateFor({ candidate, index, },);
               },),
               judgeModelIds: JUDGES,
               sourceText: SOURCE_TEXT,
@@ -966,16 +1000,7 @@ await describe({
                 candidate,
                 index,
               ): Candidate<PatchOutcome> {
-                return {
-                  producer: candidate.producer,
-                  value: candidateFor({
-                    modelId: candidate.producer.kind === 'model'
-                      ? candidate.producer.modelId
-                      : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-                    newText: `Replacement ${String(index + 1,)}.`,
-                  },).patch,
-                  rendered: candidate.rendered,
-                };
+                return patchCandidateFor({ candidate, index, },);
               },),
               judgeModelIds: JUDGES,
               sourceText: SOURCE_TEXT,

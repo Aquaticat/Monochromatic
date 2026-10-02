@@ -276,6 +276,40 @@ function scriptedClient(
 }
 
 /**
+ Chat-JSON caller that forwards every exchange to a scripted client while
+ recording which model answered the resolution-report schema, the ask a
+ re-seated checker bench's own capacity is read off.
+
+ @param asked - call log the forwarded exchange appends its model id to
+
+ @param scripted - client whose scripted replies answer every forwarded request
+
+ @returns Chat-JSON function usable as a client override
+
+ @example
+ ```ts
+ const chatJson = trackingChatJson({ asked, scripted, },);
+ ```
+ */
+function trackingChatJson(
+  {
+    asked,
+    scripted,
+  }: {
+    readonly asked: string[];
+    readonly scripted: SyntheticClient;
+  },
+): <ValueT,>(request: ChatJsonRequest<ValueT>,) => Promise<ChatJsonOutcome<ValueT>> {
+  return async function chatJson<ValueT,>(
+    request: ChatJsonRequest<ValueT>,
+  ): Promise<ChatJsonOutcome<ValueT>> {
+    if (request.responseFormat?.json_schema.name === 'resolution_report')
+      asked.push(request.modelId,);
+    return await scripted.chatJson(request,);
+  };
+}
+
+/**
  Wraps a scripted client with the two failures a long run actually meets: a
  caller abort part way through a document, and a critic roster that answers
  nothing while the run is still live.
@@ -1266,13 +1300,7 @@ Meow meow meow meow.
         await repairPreparedDocument({
           client: {
             ...scripted,
-            chatJson: async <ValueT,>(
-              request: ChatJsonRequest<ValueT>,
-            ): Promise<ChatJsonOutcome<ValueT>> => {
-              if (request.responseFormat?.json_schema.name === 'resolution_report')
-                asked.push(request.modelId,);
-              return await scripted.chatJson(request,);
-            },
+            chatJson: trackingChatJson({ asked, scripted, },),
           },
           prepared,
           models: MODELS,
@@ -1323,13 +1351,7 @@ Meow meow meow meow.
         await repairPreparedDocument({
           client: {
             ...scripted,
-            chatJson: async <ValueT,>(
-              request: ChatJsonRequest<ValueT>,
-            ): Promise<ChatJsonOutcome<ValueT>> => {
-              if (request.responseFormat?.json_schema.name === 'resolution_report')
-                asked.push(request.modelId,);
-              return await scripted.chatJson(request,);
-            },
+            chatJson: trackingChatJson({ asked, scripted, },),
           },
           prepared,
           models: MODELS,
