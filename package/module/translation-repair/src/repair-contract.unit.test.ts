@@ -74,6 +74,29 @@ const JUDGE_TWO = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
  */
 const JUDGE_THREE = SEAT_HYPER_VISION;
 
+/**
+ Attempts a one-producer roster judged by that producer and one disinterested
+ judge, which tops out at half a vote from the author plus one full vote and
+ can never reach a minimum of two.
+
+ @throws ProducerRosterError naming the capacity the roster falls short of
+
+ @example
+ ```ts
+ expect(refuseUnwinnableBench,).toThrow(ProducerRosterError,);
+ ```
+ */
+function refuseUnwinnableBench(): void {
+  assertJudgeableProducerRoster({
+    producerModelIds: [PRODUCER_ONE,],
+    judgeModelIds: [
+      PRODUCER_ONE,
+      JUDGE_ONE,
+    ],
+    role: 'editor',
+  },);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -348,16 +371,7 @@ await describe({
             + 'ever reach a minimum of two and every round would decline while '
             + 'reading as a stage that found nothing worth changing',
           fn: async () => {
-            expect(function refuseUnwinnableBench() {
-              assertJudgeableProducerRoster({
-                producerModelIds: [PRODUCER_ONE,],
-                judgeModelIds: [
-                  PRODUCER_ONE,
-                  JUDGE_ONE,
-                ],
-                role: 'editor',
-              },);
-            },).toThrow(ProducerRosterError,);
+            expect(refuseUnwinnableBench,).toThrow(ProducerRosterError,);
           },
         },),
 
@@ -368,21 +382,12 @@ await describe({
             + 'whoever reads it to the wrong configuration',
           fn: async () => {
             /**
-             What refuseAndSayWhy raised, read for its class as well as its wording.
+             What refuseUnwinnableBench raised, read for its class as well as its wording.
              */
-            const refusalOfRefuseAndSayWhy = caught(function refuseAndSayWhy() {
-              assertJudgeableProducerRoster({
-                producerModelIds: [PRODUCER_ONE,],
-                judgeModelIds: [
-                  PRODUCER_ONE,
-                  JUDGE_ONE,
-                ],
-                role: 'editor',
-              },);
-            },);
+            const refusalOfRefuseUnwinnableBench = caught(refuseUnwinnableBench,);
 
-            expect(refusalOfRefuseAndSayWhy,).toBeInstanceOf(ProducerRosterError,);
-            expect((refusalOfRefuseAndSayWhy as Error).message,).toContain('at most 1.5',);
+            expect(refusalOfRefuseUnwinnableBench,).toBeInstanceOf(ProducerRosterError,);
+            expect((refusalOfRefuseUnwinnableBench as Error).message,).toContain('at most 1.5',);
           },
         },),
       ],

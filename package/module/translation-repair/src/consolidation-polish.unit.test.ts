@@ -85,6 +85,12 @@ const SHORT_POLISHED = 'She spent many snug afternoons with the other cats.';
 const CONTRIBUTOR_BASE = 'Contributors for this entry: [Snow](https://example.test/snow)';
 
 /**
+ Words of the finding a polish writes when a review rejection is recorded as
+ evidence while the gated text ships, which both rejection cases look for.
+ */
+const REJECTION_RECORDED = 'absolute naturalness rejection recorded as evidence';
+
+/**
  Client serving rewrite, selection and final gate schemas.
  */
 const client: SyntheticClient = {
@@ -627,7 +633,7 @@ await describe({
         expect(
           polish.findings
             .some(function namesRecording(finding,): boolean {
-              return finding.includes('absolute naturalness rejection recorded as evidence',);
+              return finding.includes(REJECTION_RECORDED,);
             },),
         ).toBe(true,);
       },
@@ -668,7 +674,7 @@ await describe({
         expect(
           polish.findings
             .some(function namesRecording(finding,): boolean {
-              return finding.includes('absolute naturalness rejection recorded as evidence',);
+              return finding.includes(REJECTION_RECORDED,);
             },),
         ).toBe(true,);
       },

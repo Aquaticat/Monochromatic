@@ -95,6 +95,25 @@ const SECOND_SOURCE = '## 第二节\n\n小猫在楼梯上看着。';
  */
 const ABSENT_WORDING = 'the dog barked once at the gate and then lay down again';
 
+/**
+ Attempts to locate the slice holding {@link ABSENT_WORDING}, which no slice
+ carries, standing in for a re-carve that drifted from the run it is relabelling.
+
+ @throws ArtifactParseError naming only the absent wording's length
+
+ @example
+ ```ts
+ expect(refuseMissingSlice,).toThrow(ArtifactParseError,);
+ ```
+ */
+function refuseMissingSlice(): void {
+  locateSlice({
+    sourceText: SOURCE_TEXT,
+    targetText: TARGET_TEXT,
+    before: ABSENT_WORDING,
+  },);
+}
+
 await describe({
   name: locateSlice.name,
   children: [
@@ -149,13 +168,7 @@ await describe({
     it({
       name: 'REFUSES when no slice carries the replaced text, since the re-carve drifted',
       fn: async () => {
-        expect(() => {
-          locateSlice({
-            sourceText: SOURCE_TEXT,
-            targetText: TARGET_TEXT,
-            before: ABSENT_WORDING,
-          },);
-        },).toThrow(ArtifactParseError,);
+        expect(refuseMissingSlice,).toThrow(ArtifactParseError,);
       },
     },),
     it({
@@ -188,13 +201,7 @@ await describe({
     it({
       name: 'SAYS what a missing slice means, so the refusal is actionable',
       fn: async () => {
-        expect(() => {
-          locateSlice({
-            sourceText: SOURCE_TEXT,
-            targetText: TARGET_TEXT,
-            before: ABSENT_WORDING,
-          },);
-        },).toThrow('slicing no longer reproduces the run',);
+        expect(refuseMissingSlice,).toThrow('slicing no longer reproduces the run',);
       },
     },),
   ],

@@ -143,6 +143,28 @@ function deltaOf(
   },);
 }
 
+/**
+ Attempts to extract a completion from a data frame that is not JSON, since a
+ frame nobody can read means the answer assembled from the rest is missing an
+ unknown piece.
+
+ @throws MalformedCompletionError naming the Anthropic Messages contract, so
+ the failure points at the right provider rather than the OpenAI-compatible one
+
+ @example
+ ```ts
+ expect(refuseUnreadableFrame,).toThrow(MalformedCompletionError,);
+ ```
+ */
+function refuseUnreadableFrame(): void {
+  extractAnthropicCompletion({
+    bodyText: `${startOf({ inputTokens: 8, },)}data: {not json at all\n\n${endOf({
+      stopReason: 'end_turn',
+      outputTokens: 1,
+    },)}`,
+  },);
+}
+
 await describe({
   name: extractAnthropicCompletion.name,
   children: [
@@ -516,14 +538,7 @@ await describe({
       name: 'REFUSES a payload that is not JSON rather than skipping it, since a frame nobody can '
         + 'read means the answer assembled from the rest is missing an unknown piece',
       fn: async () => {
-        expect(function unreadable() {
-          extractAnthropicCompletion({
-            bodyText: `${startOf({ inputTokens: 8, },)}data: {not json at all\n\n${endOf({
-              stopReason: 'end_turn',
-              outputTokens: 1,
-            },)}`,
-          },);
-        },).toThrow(MalformedCompletionError,);
+        expect(refuseUnreadableFrame,).toThrow(MalformedCompletionError,);
       },
     },),
 
@@ -531,14 +546,7 @@ await describe({
       name: 'NAMES THE ANTHROPIC MESSAGES CONTRACT when the fold refuses a frame, not the '
         + 'OpenAI-compatible one (ledger B90)',
       fn: async () => {
-        expect(function unreadable() {
-          extractAnthropicCompletion({
-            bodyText: `${startOf({ inputTokens: 8, },)}data: {not json at all\n\n${endOf({
-              stopReason: 'end_turn',
-              outputTokens: 1,
-            },)}`,
-          },);
-        },).toThrow('Anthropic Messages contract',);
+        expect(refuseUnreadableFrame,).toThrow('Anthropic Messages contract',);
       },
     },),
 

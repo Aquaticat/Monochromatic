@@ -26,6 +26,7 @@ import {
   type ChatJsonRequest,
   type ConsolidationSettlement,
   judgeSlateWithRetry,
+  laneCandidate,
   type LaneText,
   messageText,
   produceTranslateSlate,
@@ -41,7 +42,6 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
-import { toLaneCandidate, } from './lane-text-candidate.test-fixture.ts';
 
 /**
  Logger the stages write through, whose output is not under test.
@@ -282,7 +282,7 @@ async function judgedRejecting(
         REPAIR_LANE,
         TRANSLATE_LANE,
       ].map(function asLaneCandidate(laneText,) {
-        return toLaneCandidate(laneText,);
+        return laneCandidate(laneText,);
       },),
     ],
   };

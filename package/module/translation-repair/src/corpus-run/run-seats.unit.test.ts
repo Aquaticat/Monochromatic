@@ -210,8 +210,12 @@ await describe({
         expect(RUN_WRITERS,).toEqual(RUN_ROSTER.filter(function measuredWriter(modelId,): boolean {
           return !WRITER_UNMEASURED.has(modelId,);
         },),);
-        expect(RUN_TRANSLATORS,).toEqual(RUN_ROSTER.filter(function eligibleTranslator(modelId,): boolean {
-          return (!TRANSLATOR_DROPPED.has(modelId,)) && (!WRITER_UNMEASURED.has(modelId,));
+        // Translators are the writers less the seats dropped from the
+        // translator role: stated over the two exported lists, not by
+        // restating the definition `run-config.ts` computes them with, so a
+        // change to either list's rule shows here.
+        expect(RUN_TRANSLATORS,).toEqual(RUN_WRITERS.filter(function keepsTranslatorSeat(modelId,): boolean {
+          return !TRANSLATOR_DROPPED.has(modelId,);
         },),);
       },
     },),

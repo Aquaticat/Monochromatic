@@ -99,16 +99,30 @@ const TWO_SENTENCES: BenchSlice = {
 };
 
 /**
+ Refuses any chat exchange, since a control that reached one has already
+ failed the question this file asks: every case here must decline before
+ asking a judge anything. Assignable to both `chatText` and `chatJson` on
+ `SyntheticClient`, since a function returning `never` never needs to produce
+ either reply type.
+
+ @throws Error on any invocation
+
+ @example
+ ```ts
+ expect(refuseEveryExchange,).toThrow();
+ ```
+ */
+function refuseEveryExchange(): never {
+  throw new Error('the width control must refuse an undamageable draw before asking anyone',);
+}
+
+/**
  Client refusing every exchange, since a control that reached one has already
  failed the question this file asks.
  */
 const CLIENT: SyntheticClient = {
-  chatText: async () => {
-    throw new Error('the width control must refuse an undamageable draw before asking anyone',);
-  },
-  chatJson: async () => {
-    throw new Error('the width control must refuse an undamageable draw before asking anyone',);
-  },
+  chatText: refuseEveryExchange,
+  chatJson: refuseEveryExchange,
   quotas: async () => {
     throw new Error('quotas unused by the width control',);
   },

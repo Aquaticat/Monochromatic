@@ -372,9 +372,12 @@ await describe({
               { source: { text: '猫在睡觉。', }, target: { text: 'The cat naps.', }, },
               { source: { text: '', }, target: { text: 'A kitten waits.\n\nThen it naps.', }, },
             ];
-            expect(sliceSizesOf({ slices, },),).toEqual(slices.map(function sizeOf(slice,) {
-              return sliceSizeOf({ sourceText: slice.source.text, targetText: slice.target.text, },);
-            },),);
+            // Each slice's size spelled out from its own texts, in order,
+            // rather than by mapping the slices the way `sliceSizesOf` does.
+            expect(sliceSizesOf({ slices, },),).toEqual([
+              sliceSizeOf({ sourceText: '猫在睡觉。', targetText: 'The cat naps.', },),
+              sliceSizeOf({ sourceText: '', targetText: 'A kitten waits.\n\nThen it naps.', },),
+            ],);
             expect(sliceSizesOf({ slices, },)[1]?.targetBlocks,).toBe(2,);
           },
         },),

@@ -24,6 +24,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   judgeSlateWithRetry,
+  laneCandidate,
   type LaneText,
   messageText,
   type ProducedSlate,
@@ -34,7 +35,6 @@ import {
   TranslateAbsenceError,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
-import { toLaneCandidate, } from './lane-text-candidate.test-fixture.ts';
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 
 /**
@@ -362,7 +362,7 @@ async function judgedUnder(
     candidates: [
       ...produced.candidates,
       ...laneTexts.map(function asLaneCandidate(laneText,) {
-        return toLaneCandidate(laneText,);
+        return laneCandidate(laneText,);
       },),
     ],
   };

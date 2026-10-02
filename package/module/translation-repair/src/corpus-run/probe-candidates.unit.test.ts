@@ -65,6 +65,22 @@ function probeLine(
   },);
 }
 
+/**
+ Attempts to read candidate ids naming one the roster does not know, so the
+ refusal's message can be read for both the unknown id it names and a known
+ id it names beside it.
+
+ @throws StatedRefusalError naming the unseatable id
+
+ @example
+ ```ts
+ expect(refuseUnknownCandidate,).toThrow('nobody/such-model',);
+ ```
+ */
+function refuseUnknownCandidate(): void {
+  readCandidateIds({ line: probeLine({ typed: ['--candidates', 'nobody/such-model',], },), },);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -114,12 +130,8 @@ await describe({
             expect(() => {
               readCandidateIds({ line: probeLine({ typed: ['--candidates', 'google.gemma-4-e2b,nobody/such-model',], },), },);
             },).toThrow(StatedRefusalError,);
-            expect(() => {
-              readCandidateIds({ line: probeLine({ typed: ['--candidates', 'nobody/such-model',], },), },);
-            },).toThrow('nobody/such-model',);
-            expect(() => {
-              readCandidateIds({ line: probeLine({ typed: ['--candidates', 'nobody/such-model',], },), },);
-            },).toThrow(BEDROCK_ONLY_ROSTER_IDS[0],);
+            expect(refuseUnknownCandidate,).toThrow('nobody/such-model',);
+            expect(refuseUnknownCandidate,).toThrow(BEDROCK_ONLY_ROSTER_IDS[0],);
           },
         },),
         it({

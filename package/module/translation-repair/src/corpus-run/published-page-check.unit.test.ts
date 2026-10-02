@@ -220,6 +220,36 @@ function storing(
   };
 }
 
+/**
+ Attempts to publish entry "Mittens" over its archive page unchanged, so the
+ page is missing every wording the archive's slices settled on, and returns
+ whatever the guard raised instead of throwing it, so both the wording it
+ names and the text it withholds can be read from the one refusal.
+
+ @returns Refusal the guard raised, or `undefined` when it did not raise
+
+ @example
+ ```ts
+ const refusal = refusalOfPageMissingWording();
+ ```
+ */
+function refusalOfPageMissingWording(): unknown {
+  try {
+    refusePageThatDisagrees({
+      artifact: artifactOver(ONE_SWAP,),
+      archive: {
+        kind: 'stored',
+        text: ARCHIVE_PAGE,
+      },
+      pageText: ARCHIVE_PAGE,
+      entryId: 'Mittens',
+    },);
+    return undefined;
+  } catch (error) {
+    return error;
+  }
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -560,22 +590,7 @@ await describe({
             /**
              Whatever the guard raised, caught so its class and text can be read.
              */
-            const refusal = ((): unknown => {
-              try {
-                refusePageThatDisagrees({
-                  artifact: artifactOver(ONE_SWAP,),
-                  archive: {
-                    kind: 'stored',
-                    text: ARCHIVE_PAGE,
-                  },
-                  pageText: ARCHIVE_PAGE,
-                  entryId: 'Mittens',
-                },);
-                return undefined;
-              } catch (error) {
-                return error;
-              }
-            })();
+            const refusal = refusalOfPageMissingWording();
 
             expect(refusal,).toBeInstanceOf(PublishedPageDisagreesError,);
             expect((refusal as Error).message,).toContain('Mittens',);
@@ -707,22 +722,7 @@ await describe({
             /**
              Whatever the guard raised, caught so its text can be inspected.
              */
-            const refusal = ((): unknown => {
-              try {
-                refusePageThatDisagrees({
-                  artifact: artifactOver(ONE_SWAP,),
-                  archive: {
-                    kind: 'stored',
-                    text: ARCHIVE_PAGE,
-                  },
-                  pageText: ARCHIVE_PAGE,
-                  entryId: 'Mittens',
-                },);
-                return undefined;
-              } catch (error) {
-                return error;
-              }
-            })();
+            const refusal = refusalOfPageMissingWording();
 
             /**
              What the refusal said, read once for the three `said.includes` claims.

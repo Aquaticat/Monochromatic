@@ -97,6 +97,13 @@ const WIDE_ROSTER = [
 const CALL_TIMEOUT_MS = 5_000;
 
 /**
+ What a picture near a slice was read to say, offered to the driver in the
+ picture cases and looked for on the sheets it sends, so the reading offered
+ and the reading sought cannot drift apart.
+ */
+const TABBY_READING = 'the photograph shows a tabby asleep on a stack of library books';
+
+/**
  Successful consolidation calls in flight and peak observed by fixture.
  */
 type ConsolidationConcurrency = {
@@ -1922,12 +1929,12 @@ await describe({
             await driveWith({
               client,
               contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-              pictureContextBySlice: new Map([[0, 'the photograph shows a tabby asleep on a stack of library books',],],),
+              pictureContextBySlice: new Map([[0, TABBY_READING,],],),
             },);
 
             expect(bodies.length,).toBeGreaterThan(0,);
             expect(bodies.some(function carriesReading(body,): boolean {
-              return body.includes('the photograph shows a tabby asleep on a stack of library books',);
+              return body.includes(TABBY_READING,);
             },),).toBe(true,);
           },
         },),
@@ -1945,12 +1952,12 @@ await describe({
             await driveWith({
               client,
               contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-              pictureContextBySlice: new Map([[1, 'the photograph shows a tabby asleep on a stack of library books',],],),
+              pictureContextBySlice: new Map([[1, TABBY_READING,],],),
             },);
 
             expect(bodies.length,).toBeGreaterThan(0,);
             expect(bodies.some(function carriesReading(body,): boolean {
-              return body.includes('the photograph shows a tabby asleep on a stack of library books',);
+              return body.includes(TABBY_READING,);
             },),).toBe(false,);
           },
         },),

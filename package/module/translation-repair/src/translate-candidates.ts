@@ -115,6 +115,37 @@ export type TranslateCandidateSet = {
 };
 
 /**
+ Renders one lane's text as a candidate the slate carries beside the
+ proposals: fresh, since the lane wrote it this run, and attributed to its
+ lane rather than to any one model. Exported so the slate tests offer lanes
+ exactly as the consolidation does rather than keeping a copy of this shape
+ (ledger B116).
+
+ @param laneText - text one lane would ship
+
+ @returns Candidate carrying that lane's text
+
+ @example
+ ```ts
+ const candidate = laneCandidate({ lane: 'repair', text: '> The cat naps.', },);
+ ```
+ */
+export function laneCandidate(laneText: LaneText,): Candidate<TranslateCandidateValue> {
+  return {
+    producer: {
+      kind: 'lane',
+      lane: laneText.lane,
+      matched: [],
+    },
+    value: {
+      text: laneText.text,
+      origin: 'fresh',
+    },
+    rendered: laneText.text,
+  };
+}
+
+/**
  Assembles the candidate slate for one slice.
 
  ONE WORDING, ONE CANDIDATE. Two proposals that publish the same page share a
@@ -241,20 +272,7 @@ export function buildTranslateCandidates(
       .filter(function isUsable(laneText,): boolean {
         return !rendersAsNothing({ text: laneText.text, },);
       },)
-      .map(function toLaneCandidate(laneText,): Candidate<TranslateCandidateValue> {
-        return {
-          producer: {
-            kind: 'lane',
-            lane: laneText.lane,
-            matched: [],
-          },
-          value: {
-            text: laneText.text,
-            origin: 'fresh',
-          },
-          rendered: laneText.text,
-        };
-      },),
+      .map(laneCandidate,),
     ...folded.map(function toCandidate(voice,): Candidate<TranslateCandidateValue> {
       return {
         producer: {
