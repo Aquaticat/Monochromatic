@@ -249,4 +249,29 @@ export function formatFailedProvider(
   return `pi refused to re-register ${failed.provider}: ${failed.reason}; its retired entries stay listed for this session`;
 }
 
+/**
+ Format the warning for a catalog refresh that failed.
+
+ Filtering continues on the unrefreshed catalog, so this line is the reader's only
+ evidence that `models.json` overrides may be missing from the metadata written back.
+
+ @param reason - text of the caught failure
+
+ @returns line naming the failure and what the pass did anyway
+
+ @example
+ ```typescript
+ formatRefreshFailure({ reason: 'ENOENT' });
+ ```
+ */
+export function formatRefreshFailure(
+  {
+    reason,
+  }: {
+    readonly reason: string;
+  },
+): string {
+  return `catalog refresh failed, filtering the unrefreshed catalog instead: ${reason}`;
+}
+
 //endregion Lines

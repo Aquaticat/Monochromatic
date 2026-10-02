@@ -87,7 +87,7 @@ type HarnessState = {
   handler?: (
     payload: unknown,
     ctx: unknown,
-  ) => void;
+  ) => Promise<void>;
 };
 
 //endregion Types
@@ -200,6 +200,23 @@ function fixtureModelsOfType(
 }
 
 /**
+ Refresh stub standing in for pi's asynchronous `models.json` reload.
+
+ @returns resolved promise, so the pass can await it
+
+ @example
+ ```typescript
+ await fixtureRefresh();
+ ```
+ */
+function fixtureRefresh(): Promise<unknown> {
+  return Promise.resolve({
+    aborted: false,
+    errors: new Map(),
+  },);
+}
+
+/**
  Build the session-start context the handler receives.
 
  @returns context carrying a fixture registry and no live model
@@ -209,6 +226,7 @@ function fixtureContext(): unknown {
     modelRegistry: {
       getAll: fixtureChatModels,
       getModelsOfType: fixtureModelsOfType,
+      refresh: fixtureRefresh,
     },
     model: undefined,
   };
@@ -231,7 +249,7 @@ function fakeHost(state: HarnessState,): ExtensionAPI {
       handler: (
         payload: unknown,
         ctx: unknown,
-      ) => void,
+      ) => Promise<void>,
     ): void {
       state.events
         .push(event,);
@@ -320,7 +338,7 @@ async function verifyBuiltExtension(): Promise<string> {
     throw new Error('factory must not register providers before a session starts',);
   if (state.handler === undefined)
     throw new Error('built extension did not capture its session_start handler',);
-  state.handler(
+  await state.handler(
     { type: 'session_start', },
     fixtureContext(),
   );

@@ -39,6 +39,7 @@ import {
   formatFailedProvider,
   formatLiveModelWarning,
   formatPlanningSummary,
+  formatRefreshFailure,
   formatRetirementLine,
   formatSkippedProvider,
 } from './retirement-report.ts';
@@ -113,6 +114,24 @@ export type ProviderRegistrar = {
     readonly name: string;
     readonly config: ProviderConfig;
   }) => void;
+};
+
+/**
+ Catalog refresh side of pi's registry.
+
+ Pi reloads `models.json` asynchronously, and its own registry documents awaiting
+ `refresh` before synchronous reads. Without it a session-start read can miss the
+ user's `modelOverrides`, measured in the real host as `openai-codex/gpt-6-luna`
+ reporting the bundled 272000 instead of the configured 750000, and re-registering
+ from that read would pin the smaller window for the whole session.
+ */
+export type CatalogRefresher = {
+  /**
+   Reload `models.json`, optionally without reaching the network.
+   */
+  readonly refresh: (options?: {
+    readonly allowNetwork?: boolean;
+  }) => Promise<unknown>;
 };
 
 /**
@@ -228,6 +247,8 @@ export function readsFromRegistry(
 
  @param read - catalog reads for this pass
 
+ @param refresh - awaited before reading, so `models.json` overrides are applied
+
  @param registerProvider - provider re-registration side of pi
 
  @param liveModel - identity of the model the session is running, when it has one
@@ -240,22 +261,29 @@ export function readsFromRegistry(
 
  @example
  ```typescript
- applyRetirements({ read, registerProvider, liveModel: undefined, log });
+ await applyRetirements({ read, refresh, registerProvider, log });
  ```
  */
-export function applyRetirements(
+export async function applyRetirements(
   {
     read,
+    refresh,
     registerProvider,
     liveModel,
     log,
   }: {
     readonly read: CatalogRead;
+    readonly refresh: () => Promise<void>;
     readonly registerProvider: ProviderRegistrar['registerProvider'];
     readonly liveModel?: LiveModelIdentity;
     readonly log: RetirementLog;
   },
-): RetirementPassSummary {
+): Promise<RetirementPassSummary> {
+  try {
+    await refresh();
+  } catch (error) {
+    log.warn(formatRefreshFailure({ reason: caughtValueText(error,), },),);
+  }
   /**
    Plans and retirements for the catalog as it stands now.
    */
@@ -368,10 +396,10 @@ export function registerModelRetirement(
 
   pi.on(
     'session_start',
-    function onSessionStart(
+    async function onSessionStart(
       _event: ForeignBorrowed<SessionStartEvent>,
       ctx,
-    ): void {
+    ): Promise<void> {
       /**
        Logger tagged for this handler, so records name the package and the entry point.
        */
@@ -380,9 +408,9 @@ export function registerModelRetirement(
         l: logger,
       },);
       /**
-       Registry the session started against.
+       Registry the session started against, narrowed to the surface this pass uses.
        */
-      const registry = ctx.modelRegistry;
+      const registry: ChatModelReader & ImageModelReader & ClassifierModelReader & CatalogRefresher = ctx.modelRegistry;
       /**
        Identity of the model the session runs, absent when none is resolved yet.
        */
@@ -394,12 +422,15 @@ export function registerModelRetirement(
           id: ctx.model
             .id,
         };
-      applyRetirements({
+      await applyRetirements({
         read: readsFromRegistry({
           chatReader: registry,
           imageReader: registry,
           classifierReader: registry,
         },),
+        refresh: async function refreshCatalog() {
+          await registry.refresh({ allowNetwork: false, },);
+        },
         registerProvider,
         ...(liveModel === undefined ? {} : { liveModel, }),
         log: {

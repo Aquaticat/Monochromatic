@@ -175,7 +175,7 @@ type RecordedRegistration = {
 type FakeHostState = {
   readonly events: string[];
   readonly registrations: RecordedRegistration[];
-  handler?: (payload: unknown, ctx: unknown,) => void;
+  handler?: (payload: unknown, ctx: unknown,) => Promise<void>;
 };
 
 /**
@@ -192,7 +192,7 @@ function fakeHost(state: FakeHostState,): ExtensionAPI {
   const fake = {
     on(
       event: string,
-      handler: (payload: unknown, ctx: unknown,) => void,
+      handler: (payload: unknown, ctx: unknown,) => Promise<void>,
     ): void {
       state.events.push(event,);
       state.handler = handler;
@@ -202,6 +202,20 @@ function fakeHost(state: FakeHostState,): ExtensionAPI {
     },
   };
   return fake as unknown as ExtensionAPI;
+}
+
+/**
+ Refresh stub that resolves immediately.
+
+ @returns resolved promise, so a pass can await it
+
+ @example
+ ```typescript
+ await noopRefresh();
+ ```
+ */
+function noopRefresh(): Promise<void> {
+  return Promise.resolve();
 }
 
 /**
@@ -319,7 +333,8 @@ await describe({
             /**
              Pass summary over one superseded pair.
              */
-            const summary = applyRetirements({
+            const summary = await applyRetirements({
+              refresh: noopRefresh,
               read: readOf({
                 chat: [
                   chatModel({ provider: 'hyper', id: 'glm-5.2', },),
@@ -357,7 +372,8 @@ await describe({
             /**
              Pass summary with a live model the rule retires.
              */
-            const summary = applyRetirements({
+            const summary = await applyRetirements({
+              refresh: noopRefresh,
               read: readOf({
                 chat: [
                   chatModel({ provider: 'hyper', id: 'glm-5.2', },),
@@ -383,7 +399,8 @@ await describe({
             /**
              Pass summary with a live model the rule keeps.
              */
-            const summary = applyRetirements({
+            const summary = await applyRetirements({
+              refresh: noopRefresh,
               read: readOf({
                 chat: [
                   chatModel({ provider: 'hyper', id: 'glm-5.2', },),
@@ -412,7 +429,8 @@ await describe({
             /**
              Pass summary where one provider throws on registration.
              */
-            const summary = applyRetirements({
+            const summary = await applyRetirements({
+              refresh: noopRefresh,
               read: readOf({
                 chat: [
                   chatModel({ provider: 'azure-openai-responses', id: 'gpt-4.1', },),
@@ -437,6 +455,64 @@ await describe({
           },
         },),
         it({
+          name: 'awaits the catalog refresh before reading',
+          fn: async function runRefreshOrder() {
+            /**
+             Order the pass touched its dependencies in.
+             */
+            const order: string[] = [];
+            await applyRetirements({
+              read: {
+                readChatModels: function readChatModels() {
+                  order.push('read',);
+                  return [];
+                },
+                readImageModels: function readImageModels() {
+                  return [];
+                },
+                readClassifierModels: function readClassifierModels() {
+                  return [];
+                },
+              },
+              refresh: function recordingRefresh() {
+                order.push('refresh',);
+                return Promise.resolve();
+              },
+              registerProvider: function discardRegistration() {},
+              log: fakeLog(emptyCapture(),),
+            },);
+            expect(order,).toEqual(['refresh', 'read'],);
+          },
+        },),
+        it({
+          name: 'keeps filtering when the catalog refresh fails',
+          fn: async function runRefreshFailure() {
+            /**
+             Capture arrays for this pass.
+             */
+            const captured = emptyCapture();
+            /**
+             Pass summary over a refresh that rejects.
+             */
+            const summary = await applyRetirements({
+              refresh: function failingRefresh() {
+                return Promise.reject(new Error('models.json unreadable',),);
+              },
+              read: readOf({
+                chat: [
+                  chatModel({ provider: 'hyper', id: 'glm-5.2', },),
+                  chatModel({ provider: 'hyper', id: 'glm-5.3', },),
+                ],
+              },),
+              registerProvider: function discardRegistration() {},
+              log: fakeLog(captured,),
+            },);
+            expect(summary.registeredProviders,).toEqual(['hyper'],);
+            expect(captured.warn.length,).toBe(1,);
+            expect(captured.warn[0]?.includes('models.json unreadable',),).toBe(true,);
+          },
+        },),
+        it({
           name: 'registers nothing when no family is superseded',
           fn: async function runNoRetirement() {
             /**
@@ -450,7 +526,8 @@ await describe({
             /**
              Pass summary over two models in different families.
              */
-            const summary = applyRetirements({
+            const summary = await applyRetirements({
+              refresh: noopRefresh,
               read: readOf({
                 chat: [
                   chatModel({ provider: 'hyper', id: 'glm-5.3', },),
@@ -506,10 +583,11 @@ await describe({
                 getModelsOfType: function getModelsOfType() {
                   return [];
                 },
+                refresh: noopRefresh,
               },
               model: chatModel({ provider: 'hyper', id: 'glm-5.3', },),
             };
-            state.handler?.({ type: 'session_start', }, ctx,);
+            await state.handler?.({ type: 'session_start', }, ctx,);
             expect(state.registrations.length,).toBe(1,);
             expect(
               registeredIds(nonNullishOrThrow(state.registrations[0]?.config,),),
@@ -526,7 +604,7 @@ await describe({
              */
             const state: FakeHostState = { events: [], registrations: [], };
             registerModelRetirement({ pi: fakeHost(state,), },);
-            state.handler?.({ type: 'session_start', }, {
+            await state.handler?.({ type: 'session_start', }, {
               modelRegistry: {
                 getAll: function getAll() {
                   return [chatModel({ provider: 'hyper', id: 'glm-5.3', },)];
@@ -534,6 +612,7 @@ await describe({
                 getModelsOfType: function getModelsOfType() {
                   return [];
                 },
+                refresh: noopRefresh,
               },
               model: undefined,
             },);

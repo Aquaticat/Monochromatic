@@ -14,6 +14,7 @@ import {
   formatFailedProvider,
   formatLiveModelWarning,
   formatPlanningSummary,
+  formatRefreshFailure,
   formatRetirementLine,
   formatSkippedProvider,
   type AbstentionCounts,
@@ -204,6 +205,21 @@ await describe({
               },
             },),).toBe(
               'pi refused to re-register azure-openai-responses: "baseUrl" is required; its retired entries stay listed for this session',
+            );
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: formatRefreshFailure.name,
+      children: [
+        it({
+          name: 'names the caught failure and the fallback',
+          fn: async function runRefreshFailureLine() {
+            expect(formatRefreshFailure({
+              reason: 'models.json unreadable',
+            },),).toBe(
+              'catalog refresh failed, filtering the unrefreshed catalog instead: models.json unreadable',
             );
           },
         },),
