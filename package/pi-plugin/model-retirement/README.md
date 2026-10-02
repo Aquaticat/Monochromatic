@@ -117,18 +117,43 @@ only two surfaces for the retirement table.
 
 ## Installation
 
-Build the package, then install it into global pi settings by its repository path:
+Installed into global pi settings on 2026-10-02: the `packages` array went from 17 entries
+to 18, the new entry was appended last, no existing entry was removed, and no other setting
+changed.
+
+Build the package, then install it by its repository path:
 
 ```bash
 mise run //package/pi-plugin/model-retirement:build
 pi install /var/home/user/Monochromatic/package/pi-plugin/model-retirement
 ```
 
-Global settings only. Do not add it to a project `.pi/settings.json`.
+Global settings only. Do not add it to a project `.pi/settings.json`, and do not pass
+`--local`.
+
+Pi records a local path relative to your home directory, so the stored entry reads
+`../../../../var/home/user/Monochromatic/package/pi-plugin/model-retirement`. That is
+normal and resolves correctly; `openai-fast` is stored the same way. Removal accepts the
+absolute path even though the stored entry is relative:
+
+```bash
+pi remove /var/home/user/Monochromatic/package/pi-plugin/model-retirement
+```
 
 Install it last in the `packages` array. By `session_start` every provider package has
 already registered, so ordering only matters against an extension that registers
 providers from a later event handler.
+
+If you script the install, snapshot `~/.pi/agent/settings.json` before and after and fail
+on any change outside the `packages` array, the way
+`package/pi-plugin/openai-fast/mise.toml` guards its `install:global` task.
+
+## Installed behavior, measured
+
+One pass in the real host after installation: chat models 1677 to 1109, 597 retirements
+across 35 providers, 4 providers skipped with a warning each, image 57 and classifier 15
+unchanged, `radius` keeping its `streamSimple` handler, `synthetic` keeping its
+credentials, and no `extension_error` record from pi.
 
 ## Tasks
 

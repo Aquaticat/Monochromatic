@@ -301,6 +301,19 @@ then restart Pi.
 Pi documents global `install` and `remove` behavior in
 `node_modules/@earendil-works/pi-coding-agent/docs/packages.md:20-43`.
 
+Pi stores a local package path relative to your home directory,
+so the entry written to `~/.pi/agent/settings.json` reads
+`../../../../var/home/user/Monochromatic/package/pi-plugin/goal`
+rather than the absolute path given on the command line.
+Measured 2026-10-02 on pi 1.0.0 while installing
+`package/pi-plugin/model-retirement`,
+whose stored entry took that form beside an identically stored `openai-fast` entry.
+The form resolves correctly,
+and `pi remove` accepts the absolute path anyway.
+A scripted installer that diffs settings before and after must therefore expect the
+relative form in the `packages` array,
+not the argument it passed.
+
 Tradeoff:
 the private package points at this checkout,
 so the checkout and built artifact must remain available.

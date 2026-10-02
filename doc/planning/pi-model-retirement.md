@@ -513,8 +513,18 @@ pi install /var/home/user/Monochromatic/package/pi-plugin/model-retirement
 
 ## Delivery status
 
-Implemented at `package/pi-plugin/model-retirement` as `@monochromatic-dev/pi-plugin-model-retirement`.
-Nothing is installed into pi settings yet.
+Implemented at `package/pi-plugin/model-retirement` as `@monochromatic-dev/pi-plugin-model-retirement`,
+and installed into global pi settings on 2026-10-02: the `packages` array went from 17
+entries to 18, the new entry was appended last, nothing was removed, and no setting outside
+`packages` changed.
+Pi stores a local package path relative to the home directory, so the recorded entry is
+`../../../../var/home/user/Monochromatic/package/pi-plugin/model-retirement`, the same form
+the existing `openai-fast` entry uses; `pi remove` accepts the absolute path anyway.
+
+One pass in the real host after installation: chat models 1677 to 1109, 597 retirements
+across 35 providers, 4 skipped with a warning each, image 57 and classifier 15 unchanged,
+`radius` keeping `streamSimple`, `synthetic` keeping its credentials, and no
+`extension_error` record.
 
 Source modules: `id-tokens.ts` (tokenizer and date classification), `retirement-order.ts`
 (recency ordering and the `UNORDERED` sentinel), `retirement-rule.ts` (family grouping and
