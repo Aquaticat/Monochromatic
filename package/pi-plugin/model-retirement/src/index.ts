@@ -48,6 +48,7 @@ export {
   isDateShapedRaw,
   NO_NUMERIC_RUN,
   parseModelId,
+  readNumericRun,
   splitOnNonTokenCharacters,
   stripOrganizationPrefix,
   type ModelIdParse,

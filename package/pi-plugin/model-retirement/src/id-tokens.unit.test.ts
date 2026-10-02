@@ -12,7 +12,10 @@ import {
 import {
   classifyToken,
   isDateShapedRaw,
+  NO_NUMERIC_RUN,
   parseModelId,
+  readNumericRun,
+  splitOnNonTokenCharacters,
   stripOrganizationPrefix,
 } from '../dist/final/node/index.mjs';
 
@@ -270,6 +273,105 @@ await describe({
           },
         },);
       },),
+    },),
+    describe({
+      name: splitOnNonTokenCharacters.name,
+      children: [
+        it({
+          name: 'splits on hyphens and keeps dotted versions together',
+          fn: async function runHyphenSplit() {
+            expect(splitOnNonTokenCharacters('glm-5.2',),).toEqual(['glm', '5.2'],);
+          },
+        },),
+        it({
+          name: 'splits on colons and slashes',
+          fn: async function runSeparatorSplit() {
+            expect(splitOnNonTokenCharacters('hf:zai-org/glm-5.3',),).toEqual([
+              'hf',
+              'zai',
+              'org',
+              'glm',
+              '5.3',
+            ],);
+          },
+        },),
+        it({
+          name: 'drops empty runs',
+          fn: async function runEmptyRuns() {
+            expect(splitOnNonTokenCharacters('',),).toEqual([],);
+            expect(splitOnNonTokenCharacters('--',),).toEqual([],);
+            expect(splitOnNonTokenCharacters('-a-',),).toEqual(['a'],);
+          },
+        },),
+        it({
+          name: 'keeps a trailing dot inside its token',
+          fn: async function runTrailingDot() {
+            expect(splitOnNonTokenCharacters('3.',),).toEqual(['3.'],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: readNumericRun.name,
+      children: [
+        it({
+          name: 'reads a dotted run to the end of the token',
+          fn: async function runDottedRun() {
+            expect(readNumericRun({ text: '3.8', start: 0, },),).toEqual({
+              end: 3,
+              raws: ['3', '8'],
+            },);
+          },
+        },),
+        it({
+          name: 'reads a run starting after an alphabetic prefix',
+          fn: async function runOffsetRun() {
+            expect(readNumericRun({ text: 'qwen3.8', start: 4, },),).toEqual({
+              end: 7,
+              raws: ['3', '8'],
+            },);
+          },
+        },),
+        it({
+          name: 'preserves leading zeros in the raw text',
+          fn: async function runLeadingZeros() {
+            expect(readNumericRun({ text: '0813', start: 0, },),).toEqual({
+              end: 4,
+              raws: ['0813'],
+            },);
+          },
+        },),
+        it({
+          name: 'stops at a trailing letter',
+          fn: async function runTrailingLetter() {
+            expect(readNumericRun({ text: '70b', start: 0, },),).toEqual({
+              end: 2,
+              raws: ['70'],
+            },);
+          },
+        },),
+        it({
+          name: 'reports no run when no digit starts it',
+          fn: async function runNoDigits() {
+            expect(readNumericRun({ text: 'abc', start: 0, },),).toBe(NO_NUMERIC_RUN,);
+          },
+        },),
+        it({
+          name: 'reports no run when a dot is not followed by a digit',
+          fn: async function runDanglingDot() {
+            expect(readNumericRun({ text: '3.', start: 0, },),).toBe(NO_NUMERIC_RUN,);
+          },
+        },),
+        it({
+          name: 'reads a run behind a version marker',
+          fn: async function runMarkedRun() {
+            expect(readNumericRun({ text: 'v4', start: 1, },),).toEqual({
+              end: 2,
+              raws: ['4'],
+            },);
+          },
+        },),
+      ],
     },),
     describe({
       name: 'family separation',
