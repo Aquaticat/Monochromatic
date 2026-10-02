@@ -16,6 +16,13 @@ import {
   stream as nativeStream,
   streamSimple as nativeSimple,
 } from '@earendil-works/pi-ai/api/openai-codex-responses';
+import { hasApi, } from '@earendil-works/pi-ai';
+import { openaiProvider, } from '@earendil-works/pi-ai/providers/openai';
+import {
+  stream as nativeOpenAIStream,
+  streamSimple as nativeOpenAISimple,
+} from '@earendil-works/pi-ai/api/openai-responses';
+import { CODEX_PROVIDER, OPENAI_PROVIDER, OPENAI_API, } from '../dist/final/node/index.mjs';
 import { requireCodexModel, } from './host-fixture-model.ts';
 import { fixtureProvider, } from './host-fixture-provider.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -173,6 +180,8 @@ export type FixtureHttpCall = {
 
  @param responses - ordered response factories whose length bounds request dispatch
 
+ @param providerId - native provider identity retained through intercepted transport
+
  @returns captured final HTTP requests and synthetic provider with intercepted transport
 
  @example
@@ -183,8 +192,9 @@ export type FixtureHttpCall = {
 export function fixtureHttp({ responses = [
   nativeResponse,
   nativeResponse,
-], }: {
+], providerId = CODEX_PROVIDER, }: {
   readonly responses?: readonly (() => Response)[];
+  readonly providerId?: typeof CODEX_PROVIDER | typeof OPENAI_PROVIDER;
 } = {},): {
   readonly requests: FixtureHttpCall[];
   readonly source: ReturnType<typeof fixtureProvider>
@@ -193,6 +203,11 @@ export function fixtureHttp({ responses = [
    Synthetic provider records auth and native request dispatch independently.
    */
   const source = fixtureProvider({ dynamic: false, },);
+  if (providerId === OPENAI_PROVIDER) {
+    source.state.models = source.state.models.map(function nativeOpenAIModel(model,) {
+      return { ...model, provider: OPENAI_PROVIDER, api: OPENAI_API, baseUrl: 'https://api.openai.com/v1', };
+    },);
+  }
   /**
    Final serialized HTTP inputs include registry-resolved headers.
    */
@@ -217,7 +232,7 @@ export function fixtureHttp({ responses = [
      URL forms are narrowed explicitly instead of coerced from arbitrary objects.
      */
     const url = input instanceof Request ? input.url : input instanceof URL ? input.href : input;
-    if (!url.startsWith('https://host-fixture.invalid/',))
+    if (!(providerId === OPENAI_PROVIDER ? url.startsWith('https://api.openai.com/v1/',) : url.startsWith('https://host-fixture.invalid/',)))
       throw new Error(`Native fixture attempted an unexpected endpoint: ${url}`,);
     /**
      Native transport may serialize JSON directly or compress it into zstd bytes.
@@ -270,6 +285,8 @@ export function fixtureHttp({ responses = [
    */
   const provider: Provider = {
     ...source.provider,
+    id: providerId,
+    ...(providerId === OPENAI_PROVIDER ? { auth: openaiProvider().auth, baseUrl: 'https://api.openai.com/v1', } : {}),
     stream: function stream(
       model: ForeignBorrowed<Model<Api>>,
       context: ForeignBorrowed<TranscriptContext>,
@@ -283,6 +300,8 @@ export function fixtureHttp({ responses = [
           context,
           ...(options === undefined ? {} : { options, }),
         },);
+      if (hasApi(model, OPENAI_API,))
+        return nativeOpenAIStream(model, context, { ...options, fetch: transport.fetch, maxRetries: 0, },);
       return nativeStream(
         requireCodexModel(model,),
         context,
@@ -307,6 +326,8 @@ export function fixtureHttp({ responses = [
           context,
           ...(options === undefined ? {} : { options, }),
         },);
+      if (hasApi(model, OPENAI_API,))
+        return nativeOpenAISimple(model, context, { ...options, fetch: transport.fetch, maxRetries: 0, },);
       return nativeSimple(
         requireCodexModel(model,),
         context,

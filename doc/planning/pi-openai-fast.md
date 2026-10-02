@@ -588,7 +588,14 @@ A local `marked` render confirmed the interview headings,
  companion identity code spans,
  preserved reference link,
  and absence of unintended emphasis or tables in the added section.
-Implementation is authorized and pending.
+The initial provider mapping is committed in `1ed0a2517`.
+Its package-scoped build and type check passed before the new native-provider regression fixture was added.
+The additional fixture exercises native request construction,
+ source-bound authentication delegation,
+ equal upstream IDs across providers,
+ caller overrides,
+ and ordinary/priority separation without external HTTP.
+The complete verification sequence is pending.
 No live new-provider verification has been performed.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
