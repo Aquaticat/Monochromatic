@@ -10,6 +10,11 @@ This document tracks the accepted requirements,
  evidence,
  and implementation progress.
 
+A new `/grill-me` interview requests additional support for the non-legacy `openai` sign-in.
+The original confirmation applies to the delivered Codex extension,
+ not to this pending scope extension.
+Implementation of the additional provider awaits shared-understanding confirmation.
+
 ## Requested behavior
 
 - Create a pi extension for OpenAI fast selection.
@@ -453,6 +458,90 @@ Native npm removal reconciled other dependencies;
  affected active factories loaded successfully,
  but their complete behavior was not audited.
 The verification limits remain explicit.
+
+## Non-legacy OpenAI sign-in interview
+
+### Requested addition and retained constraints
+
+The user requested that the existing extension also map the new OpenAI provider sign-in.
+Treat this as additive:
+retain `openai-codex-fast/<model-id>` routing to its original legacy provider,
+ and propose `openai-fast/<model-id>` routing to the native `openai` provider.
+Do not silently repoint saved legacy selections or copy credentials between providers.
+
+Retain the accepted native virtual-model design,
+ unchanged defaults and model scopes,
+ original-provider authentication ownership,
+ no extra selection UI,
+ no compatibility allowlist,
+ and no model or tier fallback.
+The guarantee remains requesting priority,
+ not demonstrated acceleration or confirmed served priority.
+
+### Installed-source evidence
+
+`pi --version` reports `1.0.0`.
+The extension's peer links resolve to installed pi-ai and coding-agent `1.0.0`.
+Within `package/pi-plugin/openai-fast/node_modules/@earendil-works/pi-ai/dist/`:
+
+- `providers/openai-codex.js:9` names the existing provider `OpenAI Codex (legacy)`.
+  It retains `openai-codex-responses` and the ChatGPT backend endpoint.
+- `providers/openai.js:8` registers provider identity `openai`.
+  Lines 10 to 21 declare the public OpenAI endpoint,
+   API-key authentication,
+   and the native `Sign in with ChatGPT` OAuth option.
+- `auth/oauth/openai-chatgpt.js:256` defines native login,
+   token refresh,
+   and access-token resolution for the new sign-in.
+- `api/openai-responses.js:23` distinguishes ChatGPT sign-in using original provider identity,
+   endpoint,
+   and resolved credential.
+  The extension must preserve that native identity during dispatch.
+- `api/openai-responses.js:254` maps native `serviceTier` into the request's `service_tier` field.
+  This establishes request construction,
+   not backend priority support through the new sign-in.
+
+The extension currently hardcodes the legacy source,
+ companion namespace,
+ and Codex transport in `src/constants.ts`,
+ `src/original-dispatch.ts`,
+ `src/priority-target.ts`,
+ and `src/priority-stream.ts`.
+Changing only the provider string would not preserve the new native request path.
+
+### Current frontier
+
+Q8 asks whether the new companions should accept only ChatGPT subscription sign-in,
+ or both native ChatGPT sign-in and API-key authentication.
+Recommendation:
+subscription sign-in only,
+ matching the requested addition and previously accepted authentication scope.
+The broader option avoids an authentication-method restriction,
+ but expands support and verification into API-key billing.
+No answer has been recorded.
+
+Independent Advisor review confirmed the additive interpretation,
+ warned against conflating the native providers' transports or credentials,
+ and identified effective authentication selection as a prerequisite for any subscription-only guard.
+
+### Next actions and verification boundaries
+
+- Obtain the authentication-scope answer,
+   then recompute dependent interview questions.
+- Inspect effective native credential precedence and request authentication before designing any restriction.
+- Confirm the complete updated design before implementation.
+- Verify both companion families,
+   ordinary-request invariance,
+   equal model IDs across providers,
+   native payload hooks,
+   refresh/logout,
+   catalog changes,
+   and saved selections in disposable host fixtures.
+- A live new-sign-in smoke probe remains pending;
+   old Codex live evidence does not verify the new provider.
+- Do not modify extension source,
+   real authentication,
+   or personal settings during this interview.
 
 [codex-speed]: https://developers.openai.com/codex/agent-configuration/speed
 [pi-fast-comment]: https://github.com/earendil-works/pi/issues/6738#issuecomment-4995103821
