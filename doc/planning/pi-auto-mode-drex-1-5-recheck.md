@@ -465,14 +465,38 @@ Accumulated composed-program development spend is US$0.0160333,
 not a measured operational workload mean.
 Evidence is retained at `contract/research/drex-composed-ordered/` in the private qualification repository.
 
-The next offline check uses code to establish the literal-profile source binding,
-then selects the corresponding already-observed hypothetical effect estimates.
-It must validate the complete parent-program representation,
-retain source-occurrence identity,
-and report its restricted virtual-file semantics.
-It is not a general parser,
+A subsequent offline replay established source binding in code for the restricted literal profile,
+then selected the corresponding retained hypothetical estimates.
+`proc_7856` exited 0:
+all 10 occurrence bindings matched their references,
+nine invalid-profile cases were rejected,
+and faulty selectors that ignored writes,
+order,
+or paths were detected.
+All 30 selected effect estimates matched their references at 80/20,
+90/10,
+and 95/05.
+No additional provider calls were made;
+the original inference costs remain counted.
+
+This validates a fixture-specific combination of code-owned binding facts and semantic estimates.
+It is not fresh selected-head inference,
+held-out qualification,
+a general JavaScript parser,
 a production decision,
 or a code-only effect-proof requirement.
+The replay covers exactly one literal virtual write and node invocation,
+three inspected source bodies,
+unchanged protected contents,
+and no concurrent mutation.
+It verifies complete parent-source reconstruction and distinguishes identical-byte source occurrences.
+Real-file identity,
+path aliases,
+dynamic arguments,
+other source bodies,
+and host integration remain outside this result.
+Evidence is at `contract/research/composed-binding-replay/`.
+Next locate incumbent parsing/dataflow utilities before designing a broader fact producer.
 
 ## Remaining work
 

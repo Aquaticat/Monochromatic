@@ -232,8 +232,26 @@ zero wrong,
 and two unresolved.
 Mean modeled cost was US$0.00047443 per one-call diagnostic request.
 Evidence is in `contract/research/drex-composed-ordered/`.
-Next validate a restricted code-owned source-binding replay against the retained conditional estimates,
-without another provider request or a general parser/production claim.
+The offline binding replay then passed as `proc_7856`:
+10 source-occurrence bindings matched references,
+nine invalid-profile cases were rejected,
+and deliberately faulty write/order/path selectors were detected.
+Selecting the corresponding retained model heads produced 30 correct effects,
+zero wrong,
+and zero unresolved at all recorded diagnostic bands,
+with no new provider calls.
+This covers only the declared literal virtual-file profile and inspected bodies,
+not arbitrary JavaScript,
+real-file identity,
+fresh selected-only inference,
+or a production guard.
+Private evidence is `contract/research/composed-binding-replay/`.
+Read-only inventory completed as `program-fact-owners`.
+The user removed the subagent extension afterward;
+continue directly without that extension.
+The installed `yuku-parser` API is already used by `package/git-policy/cli/src/trust/mjs-validator.ts`.
+Next validate a parser-backed literal-profile fact producer,
+retaining full source and rejecting unsupported outer constructs rather than relying on supplied operation records.
 No production adoption or threshold choice follows from these results.
 
 ## Parallel-tool bug and private prototype
