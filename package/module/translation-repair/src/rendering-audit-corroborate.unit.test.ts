@@ -581,6 +581,273 @@ await describe({
             expect(corroborateByOverlap({ claims, },),).toEqual([],);
           },
         },),
+        it({
+          name: 'READS two one-sided claims naming one defect as one opinion confirmed, since the side the '
+            + 'category does not use is one absence rather than a position (ledger T8, the rendering '
+            + 'cluster)',
+          fn: async () => {
+            /**
+             Span both voices name, the candidate side of the category unused.
+             */
+            const span = {
+              text: 'cat',
+              start: 0,
+              end: 3,
+            } as const;
+
+            /**
+             Two voices naming one dropped denial.
+             */
+            const claims: readonly AuditMemberClaim[] = [
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the rendering leaves the denial out',
+                },
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the denial is missing from the rendering',
+                },
+              },
+            ];
+            const defects = corroborate({ claims, },);
+            expect(defects.length,).toBe(1,);
+            expect(defects[0]?.voices,).toBe(2,);
+          },
+        },),
+        it({
+          name: 'READS nothing shared on a side one claim leaves unused and the other spans, so the two do '
+            + 'not corroborate (ledger T8, the rendering cluster)',
+          fn: async () => {
+            /**
+             Span both voices name on the original side.
+             */
+            const span = {
+              text: 'cat',
+              start: 0,
+              end: 3,
+            } as const;
+
+            /**
+             One voice with the candidate side unused beside one spanning it.
+             */
+            const claims: readonly AuditMemberClaim[] = [
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the rendering leaves the denial out',
+                },
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  reason: 'the rendering asserts where the original denies',
+                },
+              },
+            ];
+            expect(corroborateByOverlap({ claims, },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'READS two claims leaving the same side unused as agreeing about it, since the absence they '
+            + 'share is the same absence (ledger T8, the rendering cluster)',
+          fn: async () => {
+            /**
+             Span both voices name, the candidate side of the category unused.
+             */
+            const span = {
+              text: 'cat',
+              start: 0,
+              end: 3,
+            } as const;
+
+            /**
+             Two voices naming one dropped denial.
+             */
+            const claims: readonly AuditMemberClaim[] = [
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the rendering leaves the denial out',
+                },
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the denial is missing from the rendering',
+                },
+              },
+            ];
+            const agreements = corroborateByOverlap({ claims, },);
+            expect(agreements.length,).toBe(1,);
+            expect(agreements[0]?.voices,).toBe(2,);
+          },
+        },),
+        it({
+          name: 'ORDERS the defects by the voices behind them, most agreed first (ledger T8, the rendering '
+            + 'cluster)',
+          fn: async () => {
+            /**
+             Span the two-voice defect names.
+             */
+            const span = {
+              text: 'cat',
+              start: 0,
+              end: 3,
+            } as const;
+
+            /**
+             Two claims naming one defect and three naming another.
+             */
+            const claims: readonly AuditMemberClaim[] = [
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the rendering leaves the denial out',
+                },
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the denial is missing from the rendering',
+                },
+              },
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'altered-number',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  reason: 'the count changed',
+                },
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                finding: {
+                  category: 'altered-number',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  reason: 'the count is wrong',
+                },
+              },
+              {
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                finding: {
+                  category: 'altered-number',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  reason: 'the number was rewritten',
+                },
+              },
+            ];
+            expect(corroborate({ claims, },).map(function category(defect,): string {
+              return defect.category;
+            },),).toEqual([
+              'altered-number',
+              'omission',
+            ],);
+          },
+        },),
       ],
     },),
   ],

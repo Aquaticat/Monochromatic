@@ -59,6 +59,7 @@ export {
   type RenderingAuditSpanAnchor,
 } from './rendering-audit-anchor.ts';
 export {
+  quotesRequired,
   screenRenderingAudit,
   type ScreenedFinding,
   type ScreenedReport,

@@ -1,9 +1,10 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { textsInCodePointOrder, } from './code-points.ts';
 import type {
   ScreenedFinding,
   SideReading,
 } from './rendering-audit-screen.ts';
-import { RenderingAuditInvariantError, } from './rendering-audit-invariant.ts';
 import type { RenderingAuditCategory, } from './rendering-audit-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -315,12 +316,7 @@ export function corroborate(
        First member, which every member agrees with by construction of the
        key.
        */
-      const [first,] = members;
-
-      if (first === undefined)
-        throw new RenderingAuditInvariantError({
-          invariant: 'a defect group with no members cannot occur, since groups are built from claims',
-        },);
+      const first = nonNullishOrThrow(members.at(0,),);
 
       return {
         category: first.finding
@@ -550,12 +546,7 @@ export function corroborateByOverlap(
       /**
        First member, whose category every other member shares.
        */
-      const [first,] = members;
-
-      if (first === undefined)
-        throw new RenderingAuditInvariantError({
-          invariant: 'an overlap group with no members cannot occur, since groups are grown from a seed',
-        },);
+      const first = nonNullishOrThrow(members.at(0,),);
 
       return {
         category: first.finding

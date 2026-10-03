@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { wholeOpening, } from './code-points.ts';
 import {
   type AnchoredSpan,
@@ -146,7 +148,7 @@ export type ScreenedReport = {
  const { needsSource, } = quotesRequired({ category: 'omission', },);
  ```
  */
-function quotesRequired(
+export function quotesRequired(
   { category, }: { readonly category: RenderingAuditCategory; },
 ): {
   readonly needsSource: boolean;
@@ -292,7 +294,7 @@ function boundedWord({ word, }: { readonly word: string; },): string {
   /**
    First of them, empty for an empty word.
    */
-  const token = tokens[0] ?? '';
+  const token = nonNullishOrThrow(tokens[0],);
 
   return wholeOpening({
     text: token,

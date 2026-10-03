@@ -20,7 +20,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type RenderingAuditCategory,
   type RenderingAuditFindingWire,
+  quotesRequired,
   screenRenderingAudit,
 } from '../dist/final/node/index.mjs';
 
@@ -317,6 +319,19 @@ await describe({
         },);
         expect(screened.verdict,).toBe('no-defect-found',);
         expect(screened.dropped,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES a category no anchoring rule names, so one added to the vocabulary and forgotten there '
+        + 'is caught instead of quietly treated as paired (ledger T8, the rendering cluster)',
+      fn: async () => {
+        /**
+         Category the vocabulary does not name, cast past its type to reach the
+         rule mapping.
+         */
+        const forgotten = 'meow-unlisted' as RenderingAuditCategory;
+        expect(() => quotesRequired({ category: forgotten, },),)
+          .toThrow('belongs to no anchoring rule',);
       },
     },),
   ],

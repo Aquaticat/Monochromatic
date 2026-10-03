@@ -223,5 +223,18 @@ await describe({
           .text,).toBe('bookshop’s',);
       },
     },),
+    it({
+      name: 'REFUSES a canonicalization that changes the length, since no offset through it would index the '
+        + 'stored text (ledger T8, the rendering cluster)',
+      fn: async () => {
+        expect(() => anchorLocatedSpan({
+          text: '猫猫在窗台上睡觉。',
+          locator: '猫猫',
+          focus: '猫猫',
+          side: 'source',
+          fold: (input,) => `${input}。`,
+        },),).toThrow('quote canonicalization changed the length',);
+      },
+    },),
   ],
 },);
