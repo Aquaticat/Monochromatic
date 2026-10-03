@@ -679,6 +679,20 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  22:12 UTC:
+  the next batch's baseline census taken at commit `911154fe8`:
+  `census written to ~/.cache/translation-repair/coverage/census-Ai2qpF/census.json`
+  (`~/temp/agent/mimo-trial/census-7.log`).
+  `library source: 187 files, 405 stretches over 952 lines, 9 functions never called`.
+  Largest clusters by stretches then lines:
+  `fidelity` leads with 9 stretches over 24 lines in 2 files,
+  `decision` with 9 over 19 in 2,
+  `openrouter` with 9 over 18 in 5.
+  This line lands in the trial-log commit that follows `911154fe8`.
+  Next:
+  the `fidelity` batch.
+
+- 2026-10-03,
   22:07 UTC:
   the T8 `corpus-run/meter` batch closed with commit `729931a40`:
   10 stretches over the two meter readers,
