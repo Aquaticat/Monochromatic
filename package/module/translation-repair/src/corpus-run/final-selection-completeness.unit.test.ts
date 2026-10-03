@@ -192,5 +192,81 @@ await describe({
         },),).toEqual([],);
       },
     },),
+    it({
+      name: 'REPORTS NOTHING when the contest has not run, since nothing stands on its verdict',
+      fn: async () => {
+        expect(finalSelectionFindings({
+          artifact: {
+            ...sourceWith({ verdict: { kind: 'settled-neither', archive: 'declined', }, },),
+            laneSelection: { kind: 'pending-human-decision', },
+          },
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REPORTS NOTHING for a contested slice whose archive says nothing, since there is no standing '
+        + 'to judge (ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        /**
+         Source whose contested slice names an empty archive.
+         */
+        const source = sourceWith({
+          verdict: { kind: 'settled-neither', archive: 'declined', },
+        },);
+        expect(finalSelectionFindings({
+          artifact: {
+            ...source,
+            comparison: [{
+              sliceIndex: 0,
+              incumbentKind: 'present',
+              incumbentText: '',
+              repairText: REPAIR,
+              translateText: TRANSLATE,
+              laneRelation: 'both-differ',
+              repairOutcome: {
+                kind: 'decided',
+                acceptedText: REPAIR,
+              },
+              translateOutcome: {
+                kind: 'decided',
+                acceptedText: TRANSLATE,
+              },
+              decisionComparison: {
+                kind: 'comparable',
+                verdict: 'different',
+              },
+              repairDelivery: {
+                kind: 'replacement-shipped',
+              },
+              translateDelivery: {
+                kind: 'replacement-shipped',
+              },
+            },],
+          },
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REPORTS NOTHING for polish over a lane winner, which is not archive fallback at all',
+      fn: async () => {
+        expect(finalSelectionFindings({
+          artifact: sourceWith({
+            verdict: { kind: 'lane-won', lane: 'repair', },
+            polished: true,
+          }),
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REPORTS NOTHING for polish over an endorsed archive baseline',
+      fn: async () => {
+        expect(finalSelectionFindings({
+          artifact: sourceWith({
+            verdict: { kind: 'settled-neither', archive: 'endorsed', },
+            polished: true,
+          }),
+        },),).toEqual([],);
+      },
+    },),
   ],
 },);

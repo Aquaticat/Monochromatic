@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ArtifactContestVerdict, } from './artifact-two-lane-contest.ts';
 import {
   type WouldShipSource,
@@ -87,14 +89,20 @@ export function finalSelectionFindings(
       return [];
     if (reading.decidedBy === 'polish') {
       /**
+       Consolidation stage settled, which the polish wording read above proves:
+       `would-ship-text.ts` reads polish only from a settled consolidation.
+       */
+      const settled = nonNullishOrThrow((consolidation.kind === 'settled')
+        ? consolidation
+        : undefined,);
+
+      /**
        Initial consolidation result polish rewrote, when stage recorded one.
        */
-      const consolidated = (consolidation.kind === 'settled')
-        ? consolidation.slices
-          .find(function namesSlice(slice,): boolean {
-            return slice.sliceIndex === contest.sliceIndex;
-          },)
-        : undefined;
+      const consolidated = settled.slices
+        .find(function namesSlice(slice,): boolean {
+          return slice.sliceIndex === contest.sliceIndex;
+        },);
       if (consolidated?.terminal === 'consolidated')
         return [];
       /**

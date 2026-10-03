@@ -334,11 +334,17 @@ const CONFIG = {
 } as const;
 
 /**
- Wraps one settled polish in the minimal artifact the completeness guard reads.
+ Wraps one polish record in the minimal artifact the completeness guard reads,
+ with the deciding stages replaceable where a case needs another standing.
 
  @param polish - settled polish record as the pipeline would persist it
 
- @returns Artifact whose only consolidated body slice carries that polish
+ @param selection - lane contest record, contested over slice 1 by default
+
+ @param consolidation - consolidation record, settled over slice 1 carrying the
+ polish by default
+
+ @returns Artifact whose consolidated body slice carries that polish
 
  @example
  ```ts
@@ -346,22 +352,21 @@ const CONFIG = {
  ```
  */
 function artifactCarrying(
-  { polish, }: { readonly polish: unknown; },
-): SettledArtifact {
-  // Serialization round-trip first, because persistence writes JSON and the
-  // guard must accept what a resumed run would read back.
-  // oxlint-disable-next-line unicorn/prefer-structured-clone -- JSON semantics are the point: persistence writes JSON, so undefined-valued keys must drop and a non-serializable field must fail here, both of which structuredClone would hide.
-  return JSON.parse(JSON.stringify({
-    laneSelection: {
+  {
+    polish,
+    selection = {
       kind: 'contested',
       slices: [{
         sliceIndex: 1,
-        verdict: { kind: 'lane-won', lane: 'translate', },
+        verdict: {
+          kind: 'lane-won',
+          lane: 'translate',
+        },
         ballots: [],
         usable: 2,
       },],
     },
-    consolidation: {
+    consolidation = {
       kind: 'settled',
       slices: [{
         sliceIndex: 1,
@@ -374,6 +379,18 @@ function artifactCarrying(
         polish,
       },],
     },
+  }: {
+    readonly polish: unknown;
+    readonly selection?: unknown;
+    readonly consolidation?: unknown;
+  },
+): SettledArtifact {
+  // Serialization round-trip first, because persistence writes JSON and the
+  // guard must accept what a resumed run would read back.
+  // oxlint-disable-next-line unicorn/prefer-structured-clone -- JSON semantics are the point: persistence writes JSON, so undefined-valued keys must drop and a non-serializable field must fail here, both of which structuredClone would hide.
+  return JSON.parse(JSON.stringify({
+    laneSelection: selection,
+    consolidation,
   },),) as SettledArtifact;
 }
 
@@ -787,6 +804,142 @@ await describe({
         },),).toThrow(NaturalnessCompletenessError,);
         expect(() => assertFinalNaturalnessComplete({
           artifact: artifactCarrying({ polish: undefined, },),
+        },),).toThrow(NaturalnessCompletenessError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES NOTHING when the contest never ran and consolidation never ran, since nothing was '
+        + 'asked of final naturalness (ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: undefined,
+            selection: {
+              kind: 'pending-human-decision',
+            },
+            consolidation: {
+              kind: 'not-run',
+            },
+          },),
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a contested body slice when consolidation never ran, which proves final naturalness '
+        + 'never ran over it (ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        expect(() => assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: undefined,
+            selection: {
+              kind: 'contested',
+              slices: [{
+                sliceIndex: 7,
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'translate',
+                },
+                ballots: [],
+                usable: 2,
+              },],
+            },
+            consolidation: {
+              kind: 'not-run',
+            },
+          },),
+        },),).toThrow(NaturalnessCompletenessError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES NOTHING for contested front matter when consolidation never ran, syntax-bearing '
+        + 'front matter being exempt (ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: undefined,
+            selection: {
+              kind: 'contested',
+              slices: [{
+                sliceIndex: 7,
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'translate',
+                },
+                ballots: [],
+                usable: 2,
+                eligibility: {
+                  syntax: 'front-matter',
+                },
+              },],
+            },
+            consolidation: {
+              kind: 'not-run',
+            },
+          },),
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS no syntax exemptions when the contest never ran, so the polish record alone decides '
+        + '(ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: {
+              kind: 'not-run',
+              reason: 'unsafe-baseline',
+            },
+            selection: {
+              kind: 'pending-human-decision',
+            },
+          },),
+        },);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS a front-matter slice whose polish records the front-matter skip, and REFUSES the '
+        + 'same slice under any other record (ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        /**
+         Contested slice carrying front matter.
+         */
+        const selection = {
+          kind: 'contested',
+          slices: [{
+            sliceIndex: 1,
+            verdict: {
+              kind: 'lane-won',
+              lane: 'translate',
+            },
+            ballots: [],
+            usable: 2,
+            eligibility: {
+              syntax: 'front-matter',
+            },
+          },],
+        };
+        assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: {
+              kind: 'not-run',
+              reason: 'front-matter',
+            },
+            selection,
+          },),
+        },);
+        expect(() => assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: {
+              kind: 'not-run',
+              reason: 'not-configured',
+            },
+            selection,
+          },),
         },),).toThrow(NaturalnessCompletenessError,);
       },
     },),
