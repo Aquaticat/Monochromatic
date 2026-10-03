@@ -679,6 +679,26 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  18:48 UTC:
+  the T8 `group` cluster's six unreachable stretches closed with commit `92c912b08`
+  (`fix(module-translation-repair): T8 group, drop the unreachable anchor fallbacks`):
+  three `?? NO_BOUNDARY` fallbacks,
+  one undefined-step arm
+  and one dead `? []` arm removed,
+  and one no-boundary arm replaced with an `unreachable:` throw
+  after four probes on the built package never built the run list it guards.
+  Counts:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-group-unreachable-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  This line lands in the trial-log commit that follows `92c912b08`.
+  Next:
+  the `group` cluster's two reachable stretches in `group-aligned.ts`
+  (the position after a decline and the sealed cohesive continuation),
+  then the batch's reach census.
+
+- 2026-10-03,
   18:20 UTC:
   "Second:
   the whole-suite census" taken at commit `6d5f13a8b`,
