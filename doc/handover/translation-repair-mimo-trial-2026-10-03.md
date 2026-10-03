@@ -679,6 +679,20 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  23:07 UTC:
+  the next batch's baseline census taken at commit `51f394046`:
+  `census written to ~/.cache/translation-repair/coverage/census-XzBVZf/census.json`
+  (`~/temp/agent/mimo-trial/census-9.log`).
+  `library source: 183 files, 387 stretches over 909 lines, 9 functions never called`.
+  Largest clusters by stretches then lines:
+  `openrouter` leads with 9 stretches over 18 lines in 5 files,
+  `synthetic` with 9 over 9 in 2,
+  `inspect` with 8 over 33 in 1.
+  This line lands in the trial-log commit that follows `51f394046`.
+  Next:
+  the `openrouter` batch.
+
+- 2026-10-03,
   23:03 UTC:
   the T8 `decision` batch closed with commits `045c0e2f5` and `750ec0708`:
   9 stretches over the reply contract and the over-context gate,
