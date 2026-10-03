@@ -224,7 +224,12 @@ It would need a terminal-close contract without a replacement session,
 and verified behavior for rebind/`withSession` callbacks,
 including nesting and failures after an already-applied replacement.
 Those semantics have not been measured for a changed runtime implementation.
-This extension awaits explicit acceptance.
+The user accepted runtime option A:
+extend the private prototype into runtime-owned operations and constructor factories.
+Installation,
+production adoption,
+provider/cutoff selection,
+and permission creation remain outside this acceptance.
 
 ### A: Extend the private prototype into runtime-owned operations
 
@@ -252,8 +257,12 @@ or permission creation.
 
 ## Next action
 
-Ask for A or B on the runtime extension before implementing its proposed module.
+Implement the accepted runtime extension in fresh private phases.
+Qualify terminal close,
+constructor ownership,
+operation-entry suspension,
+and native callback/failure behavior separately.
 Preserve original errors,
 consumed sources,
-and the verified profile either way.
+and the verified manager/session profile.
 Do not install a fork or claim production qualification from the completed private tests.

@@ -740,7 +740,10 @@ session liveness/pairing,
 and the stated content/navigation consumers.
 Runtime-owned operations are a separate proposed extension in
 [the custody plan](../planning/pi-auto-mode-sdk-state-custody.md).
-Ask for explicit acceptance before implementing that module.
+The user accepted runtime option A.
+Implement the private extension in fresh phases,
+starting with terminal close and constructor/operation ownership.
+Do not infer permission or production adoption from this development authorization.
 Runtime operation-entry suspension,
 replacement constructors,
 content freshness,
