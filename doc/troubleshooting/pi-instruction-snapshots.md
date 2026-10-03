@@ -1331,6 +1331,43 @@ and 14 injected requests.
 The source-stage cleanup and invalid-branch diagnostics remain separate.
 Original `proc_aa49` and `proc_cc01` failures were not relabeled successful or replayed.
 
+### Auxiliary producers bypass ordinary run hooks
+
+`proc_941b` exercised five actual SDK producers with five sessions and five injected requests:
+ordinary prompt,
+`sendUserMessage`,
+manual compaction,
+branch summary,
+and bug-report summary.
+No external model or tool ran.
+
+Prompt and `sendUserMessage` traversed `before_agent_start`,
+`context_with_system`,
+and `before_provider_request`.
+The auxiliary summaries used the same session stream function,
+but supplied no ordinary payload hook and built different instruction text.
+Their ordinary rendered getter/resource-base observations remained unchanged.
+The branch-summary receipt became stale after native navigation.
+
+Pi 1.0.0 forwards `this.agent.streamFunction` from `dist/core/agent-session.js:2111`,
+line 3240,
+and line 3478 into the auxiliary summarizers.
+`dist/core/compaction/compaction.js:485` invokes that function directly:
+
+```js
+// Pi 1.0.0: dist/core/compaction/compaction.js:485
+const produce = async () => streamFn
+    ? (await streamFn(model, context, requestOptions)).result()
+    : completeSimple(model, context, requestOptions);
+```
+
+This invalidates a blanket requirement that every request traverse the ordinary run-hook chain.
+A producer inventory must follow the actual native request builder,
+and any main-agent action consumer must distinguish auxiliary responses from main-agent responses.
+Neither producer identity nor an observed hook chain authenticates governing instructions or a human grant.
+The existing collector coverage gaps remain open;
+they are not closed by deleting gap labels or by matching a hardcoded prompt marker.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
