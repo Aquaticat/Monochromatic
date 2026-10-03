@@ -232,5 +232,30 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'READS AS A LOST VOICE rather than out of reach when the refusal status is not 400 even '
+        + 'though the body names the marker, since only a 400 max_tokens_exceeded names the state itself '
+        + '(ledger T8, the decision cluster)',
+      fn: async () => {
+        const serverError = await attemptStageCall({
+          ...SHARED,
+          client: clientWith({
+            decide: async () => {
+              throw new SyntheticHttpError({
+                status: 503,
+                bodyText: 'upstream reported max_tokens_exceeded for its own model',
+              },);
+            },
+          },),
+          decision: DECISION,
+        },);
+        expect(serverError,).toEqual({
+          heard: false,
+          answered: false,
+          unreachable: false,
+        },);
+      },
+    },),
   ],
 },);

@@ -691,7 +691,6 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/title-reference-rewrite.ts',
   'src/coverage-foreign-region.ts',
   'src/decision-context-refusal.ts',
-  'src/decision-contract.ts',
   'src/declared-identity-rule.ts',
   'src/declared-names-evidence.ts',
   'src/derive-seeds.ts',
