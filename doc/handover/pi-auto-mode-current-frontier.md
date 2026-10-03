@@ -740,9 +740,31 @@ session liveness/pairing,
 and the stated content/navigation consumers.
 Runtime-owned operations are a separate proposed extension in
 [the custody plan](../planning/pi-auto-mode-sdk-state-custody.md).
-The user accepted runtime option A.
-Implement the private extension in fresh phases,
-starting with terminal close and constructor/operation ownership.
+The user accepted runtime option A,
+and the declared private runtime profile is now verified:
+
+- `proc_68df`:
+  12 terminal-close cases and three guard removals.
+- `proc_ef9b`:
+  native callback semantics in three cases/eight constructed sessions/no model requests.
+- `proc_a3be`:
+  23 constructor/operation-owner cases and six guard removals.
+- `proc_07ea`:
+  12 actual SDK cases/21 constructed sessions/no model requests or tools.
+
+Runtime operations suspend before before-switch/fork handlers,
+retire before shutdown/disposal,
+and route manager creation through the declared owner.
+Post-apply nesting and original callback errors preserve applied outcomes.
+Terminal disposal uses a completion receipt and does not repeat completed cleanup in the tested schedule.
+
+This profile requires owned non-proxy factory results and a fixed callback-free publisher.
+`proc_4f1c` records excluded-contract gaps,
+not safety passes.
+Constructor-phase requests/protected actions,
+other mutable state and instruction producers,
+current human permission,
+and production integration remain unqualified.
 Do not infer permission or production adoption from this development authorization.
 Runtime operation-entry suspension,
 replacement constructors,

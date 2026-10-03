@@ -265,18 +265,53 @@ and callback-driven epoch changes still permit failed-transition cleanup.
 The previously qualified registry implementation remained unchanged outside this added operation.
 No SDK sessions or model requests ran in this pure phase.
 
-Native nested rebind/`withSession` behavior and post-apply callback failures are being probed
-in a separate owned SDK fixture before runtime routing is changed.
-These checks do not yet qualify a runtime-owned operation module.
+The native callback intake passed `proc_ef9b`:
+three cases,
+eight constructed SDK sessions,
+and no model requests.
+Awaited replacements nested from both rebind and `withSession` callbacks completed.
+A later callback failure preserved the already-applied live session.
+Those measured semantics determine the private runtime's application point and failure handling.
+
+The constructor/operation coordinator passed `proc_a3be`:
+23 pure cases and six guard-removal variants.
+It releases its preparation lock at application,
+keeps nested operations' handles separate,
+and uses a completed-disposal receipt rather than a liveness flag to skip repeated cleanup.
+`proc_4f1c` separately retained excluded-contract observations;
+those are not safety passes.
+
+The generated runtime passed actual SDK verification in `proc_07ea`:
+12 cases,
+21 constructed sessions,
+no model requests,
+and no tool executions.
+Coverage includes new sessions,
+switch/import,
+memory and persisted forks,
+cancellation,
+pre-effect errors,
+factory failure,
+post-apply failure,
+nested callbacks,
+and terminal disposal.
+Constructor routing used the declared owned functions.
+The old root was suspended before before-switch/fork handlers and retired before shutdown/disposal.
+Each constructed session entered disposal once in this schedule;
+runtime completion and cleanup were checked separately.
+
+The accepted private runtime extension is verified within this profile,
+not adopted for production.
 
 ## Next action
 
-Implement the accepted runtime extension in fresh private phases.
-Qualify terminal close,
-constructor ownership,
-operation-entry suspension,
-and native callback/failure behavior separately.
-Preserve original errors,
-consumed sources,
-and the verified manager/session profile.
-Do not install a fork or claim production qualification from the completed private tests.
+Preserve the completed runtime,
+manager,
+and session profiles and their consumed evidence.
+Further admission work must address constructor-phase model requests/protected actions,
+other mutable state and instruction producers,
+current human permission,
+and production integration.
+The runtime fixture admits owned non-proxy factory records and a fixed callback-free private-field publisher;
+arbitrary publishers and contradictory factory/body contracts are not qualified.
+Do not install a fork or claim production qualification from these private tests.

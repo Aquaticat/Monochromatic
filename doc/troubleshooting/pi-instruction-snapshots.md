@@ -1111,6 +1111,59 @@ and content freshness remain separate requirements.
 A runtime-owned operation module is a proposed scope extension,
 not an implemented or qualified part of these results.
 
+### Runtime-owned operation and constructor profile
+
+The accepted private runtime extension reuses the existing registry rather than adding another owner registry.
+`completeRetirement` passed `proc_68df` with 12 cases and three guard-removal controls:
+it finishes an already-retired transition without issuing a replacement root.
+It is distinct from failed retirement and from cancellation.
+
+The stock SDK callback intake `proc_ef9b` constructed eight sessions across three cases,
+without model requests.
+Awaited nested replacements completed from both rebind and `withSession` callbacks.
+A callback failure after application left the new session live.
+The private coordinator preserves that behavior rather than treating application as reversible.
+
+`runtime-custody/` passed `proc_a3be`:
+23 pure cases and six guard removals.
+`runtime-owned-sdk/` then passed `proc_07ea`:
+12 actual SDK cases,
+21 constructed sessions,
+no model requests,
+and no tools.
+The cases exercised new/switch/import,
+constant-manager and persisted forks,
+cancellation,
+pre-effect import failure,
+factory failure,
+post-apply callback failure,
+post-apply nesting,
+and terminal disposal.
+
+The old lease was suspended before before-switch/fork handlers and retired before shutdown/disposal.
+Cached/prototype dispatch reached protected native operation entry.
+All factory managers came from the declared constructor functions.
+Each constructed session entered native disposal once in the schedule;
+completion followed the native return,
+not merely the session's early closed flag.
+
+This is a controlled factory profile.
+The native publisher contains only synchronous private-field assignments from prepared data.
+Owned non-proxy results remain a producer precondition;
+data-descriptor checks alone do not establish it.
+`proc_4f1c` separately demonstrated that an arbitrary throwing publisher can leave an admitted successor
+without a coordinator cleanup route,
+and that contradictory arbitrary body results are not enforced by the generic helper.
+Those are excluded-contract findings,
+not approved recovery behavior.
+
+Factory session-start callbacks in the actual runtime fixture only recorded events:
+constructor-phase model requests or protected actions were not admitted.
+Other mutable SDK state,
+all instruction producers,
+current human permission,
+and production integration remain outside the claim.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
