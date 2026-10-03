@@ -624,7 +624,16 @@ Its first staging attempt `proc_c72a` failed before the worker because the stage
 license path.
 Original sources and partial generated output remain intact;
 `contract/lifecycle/manager-copy-boundary-v2/` validates the upstream-tag license blob before staging.
-No behavioral result exists for that new phase yet.
+The recovery phase then passed `proc_0468`:
+30 paired cases using 32 owned native managers,
+no SDK sessions or model requests.
+The copy variant isolated the tested getter,
+append-argument,
+and preloaded-input aliases from the canonical graph/projection.
+Direct raw-state mutation remained effective in both variants.
+Actual SDK message-replacement and context-edit consumers are now prepared in
+`contract/lifecycle/manager-copy-sdk/`,
+not yet qualified.
 
 A separate private-repository Git recovery blocked commands on the superseded `a673638` transaction.
 Explicitly authorized `proc_aac3` preserved and archived 21 journal files without changing index or refs;

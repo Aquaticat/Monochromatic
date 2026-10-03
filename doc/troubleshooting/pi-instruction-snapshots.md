@@ -834,6 +834,20 @@ before writing generated artifacts.
 The verified Git blob is `b0a8e9b81083294360c69b4ec45d3d39a2b28197`.
 No copy-boundary behavior or SDK compatibility result is inferred from the failed staging attempt.
 
+The fresh recovery phase subsequently passed `proc_0468`:
+30 paired cases,
+32 owned native managers,
+no SDK sessions,
+and no model requests.
+The original baseline preserved every tested alias effect.
+The copy-in/copy-out variant prevented tested getter,
+append-argument,
+and preloaded-input mutations from changing canonical graph or projection values.
+Raw own-state access still changed both variants.
+Persistent bytes and fixture restoration were checked separately.
+This is a data-copy result for the inspected profile,
+not full encapsulation or SDK-consumer compatibility.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
