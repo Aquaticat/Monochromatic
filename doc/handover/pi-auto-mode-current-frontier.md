@@ -587,9 +587,12 @@ Evidence is `contract/collector/manager-mutation-coverage/`.
 No production mechanism is adopted.
 The [private lifecycle-only lease proposal](../planning/pi-auto-mode-root-lifecycle-lease.md)
 is separate from unresolved writer custody.
-Its implementation awaits explicit acceptance;
-do not treat the proposed lease as proof that every native mutation is observed.
-The user-facing decision is whether to prototype that contract first or investigate SDK state encapsulation first.
+The user accepted A:
+prototype that contract first,
+then address SDK writer custody separately.
+Do not treat the lease as proof that every native mutation is observed.
+Implementation is authorized only for the private prototype;
+production deployment and permission creation remain unapproved.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).

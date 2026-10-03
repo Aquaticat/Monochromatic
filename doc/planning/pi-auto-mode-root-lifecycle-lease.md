@@ -7,7 +7,10 @@ This is not production adoption,
 SDK deployment,
 provider selection,
 or authorization to create human permission.
-Implementation of this proposal awaits explicit acceptance.
+The user accepted option A:
+implement the private lifecycle-only contract first,
+then address writer custody separately.
+This acceptance does not authorize production deployment or permission creation.
 
 The [instruction snapshot findings](../troubleshooting/pi-instruction-snapshots.md)
 record the supporting controls:
@@ -89,10 +92,10 @@ private lease contract followed by custody work > custody work before the lease 
 because the first order makes the required lifecycle semantics explicit without claiming the writers are closed.
 Neither order authorizes production cutover.
 
-## Requested decision
+## Accepted next action
 
-Approve the private lifecycle-only lease prototype in the existing registry,
-with writer custody,
+Implement the private lifecycle-only lease prototype in the existing registry.
+Writer custody,
 instruction authority,
-and human permission remaining separate unmet production gates,
-or defer that prototype to resolve SDK state encapsulation first.
+and human permission remain separate unmet production gates.
+Keep historical branch-snapshot behavior and consumed evidence intact.
