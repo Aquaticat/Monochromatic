@@ -679,6 +679,30 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  21:05 UTC:
+  the T8 `rendering` batch closed with commits `18f0b3a85` and `0bea2bc58`:
+  10 baseline stretches and 2 more the per-source reading found,
+  3 replaced with `nonNullishOrThrow`,
+  9 cased through `corroborate`,
+  `corroborateByOverlap`,
+  `nearMisses`,
+  the exported `quotesRequired`
+  and `anchorLocatedSpan`'s new `fold` seam.
+  The reach census reads `still cold 0, cold since then 0, not loaded 0`
+  and every edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-rendering2.log`).
+  Counts at the close:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-rendering-final-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `0bea2bc58`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/final` cluster.
+
+- 2026-10-03,
   20:18 UTC:
   the next batch's baseline census taken at commit `90b76fe15`:
   `census written to ~/.cache/translation-repair/coverage/census-MgQUMe/census.json`

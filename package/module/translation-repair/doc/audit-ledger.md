@@ -5485,6 +5485,39 @@ The reach census (`~/temp/agent/mimo-trial/reach-inline.log`)
 reads `still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The third cluster of that census,
+`rendering`,
+against `census-MgQUMe` at `f5ae72c9a`:
+10 stretches over `rendering-audit-corroborate.ts`,
+`rendering-audit-anchor.ts` and `rendering-audit-screen.ts`
+(`18f0b3a85`,
+`0bea2bc58`),
+with 2 more the per-source whole-file reading found in `nearMisses`.
+Three became `nonNullishOrThrow`
+(two empty-group invariant throws,
+whose groups are built from their claims or grown from a seed,
+and a `tokens[0]` fallback over a split that always returns one element).
+Nine are cased:
+the one-sided readers of `corroborate`
+(the unused interval,
+the unused-side refusal to intersect,
+the both-unused agreement)
+and `byAgreement`'s ordering;
+the near-miss refusals for one voice's own claims
+and for one defect named twice;
+the rule mapping's throw,
+reached through `quotesRequired` exported for it (rule XPT)
+with a category cast past its type;
+and the quote canonicalization's length tripwire,
+reached through an optional `fold` a case supplies
+(no text breaks the maps themselves:
+a probe over 12 shapes including a CRLF pair,
+an astral character and CJK punctuation found none).
+The reach census (`~/temp/agent/mimo-trial/reach-rendering2.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+and every edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
