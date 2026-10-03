@@ -3,6 +3,9 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { autoPush, } from './auto-push.ts';
+import { forwardToRealGit, } from './forward-real-git.ts';
+import { installGitChildEnvironment, } from './git-child-environment.ts';
+import { IndexLockUnprovenOwnerError, } from './index-lock/index-lock-wait.ts';
 import { resolveGitWorktreeIdentity, } from './git-worktree-identity.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { parseManagementArgs, } from './management-parser.ts';
@@ -11,6 +14,8 @@ import { parseCommitRegion, } from './parser/commit.ts';
 import { printPostCommandOutput, } from './post-command-output.ts';
 import { COMMIT_TRANSACTION_NOT_APPLICABLE, } from './policy-engine/commit-transaction.ts';
 import { runCommitTransactionBoundary, } from './policy-engine/commit-transaction-boundary.ts';
+import { NativeCommitFailedError, } from './policy-engine/commit-preparation-native.ts';
+import { hasValidInheritedLease, } from './hook-dispatch/preparation-lease.ts';
 import {
   CommitTransactionRecoveryError,
   recoverCommitTransaction,
@@ -36,7 +41,7 @@ import {
   ForwardedGitWorktreeCopyError,
   WorktreeCopyError,
 } from './worktree-copy/errors.ts';
-import { runGitWithWorktreeCopy, } from './worktree-copy/lifecycle.ts';
+import { DEFAULT_CONCURRENCY_CONFIG, } from './trust/config-validation-concurrency.ts';
 
 /**
  Logger root for cli-git after removing the package log shim.
@@ -102,6 +107,7 @@ class PolicyDecisionError extends Error {
  ```
  */
 export async function runCliGit(): Promise<void> {
+  installGitChildEnvironment(process.env,);
   /**
    Raw arguments passed after the script name.
    */
@@ -189,7 +195,8 @@ try {
         gitPath,
       },)
     : undefined;
-  if (!willShortCircuit)
+  // A hook of a live outer transaction inherits its lease; recovery would only find that live owner.
+  if ((!willShortCircuit) && (!(await hasValidInheritedLease(process.env,))))
     await recoverCommitTransaction({
       args: rawArgs,
       gitPath,
@@ -244,6 +251,9 @@ try {
       args: rawArgs,
       gitPath,
       policyOptions,
+      ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT ? {} : { concurrency: runtimeResolution.loaded
+        .validated
+        .concurrency, }),
     },);
   /**
    Stable policy result before real Git forwarding.
@@ -335,14 +345,25 @@ try {
     }
   }
   /**
+   Commit the transaction landed, read later instead of live `HEAD`.
+   */
+  const landedOid = (typeof commitTransaction) === 'symbol' ? undefined : commitTransaction.landedOid;
+  /**
    Whether private-index transaction already executed real Git.
    */
-  const transactionCommitted = ((typeof commitTransaction) !== 'symbol')
-    && commitTransaction.committed;
+  const transactionCommitted = landedOid !== undefined;
+  if (((typeof commitTransaction) !== 'symbol') && (!transactionCommitted))
+    throw new TypeError('A commit transaction that landed nothing must block forwarding.',);
   if (!transactionCommitted) {
-    await runGitWithWorktreeCopy({
+    await forwardToRealGit({
       args: processedArgs,
       gitPath,
+      unprovenOwnerTimeoutMs: (runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT
+        ? DEFAULT_CONCURRENCY_CONFIG
+        : runtimeResolution.loaded
+          .validated
+          .concurrency).indexLock
+        .unprovenOwnerTimeoutMs,
       ...(configFreeIdentity === undefined ? {} : { identity: configFreeIdentity, }),
     },);
   }
@@ -370,6 +391,7 @@ try {
       transformedArgs: processedArgs,
       gitPath,
       cwd: effectiveCwd,
+      ...(landedOid === undefined ? {} : { landedOid, }),
       ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT
         ? {}
         : {
@@ -396,6 +418,7 @@ try {
     await autoPush({
       gitPath,
       cwd: effectiveCwd,
+      landedOid: postCommitResult.oid,
     },);
   }
 
@@ -406,16 +429,16 @@ try {
   }
 }
 catch (error) {
-  if (error instanceof CommitTransactionRecoveryError) {
+  if ((error instanceof CommitTransactionRecoveryError) || (error instanceof IndexLockUnprovenOwnerError)) {
     process.stderr
       .write(renderPolicyEvents([createEngineFailureEvent({
       sequence: 0,
-      code: 'content-unavailable',
+      code: error instanceof IndexLockUnprovenOwnerError ? 'index-lock-unproven-owner' : 'content-unavailable',
       message: error.message,
     },),],),);
     process.exitCode = 2;
   }
-  else if (error instanceof PolicyDecisionError)
+  else if ((error instanceof PolicyDecisionError) || (error instanceof NativeCommitFailedError))
     process.exitCode = error.exitCode;
   else if (error instanceof ForwardedGitWorktreeCopyError) {
     console.error(error.copyFailureMessage,);

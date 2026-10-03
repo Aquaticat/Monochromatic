@@ -10,7 +10,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { updateWidget, } from './ask-user.ts';
+import { updateWidget, } from '../dist/final/node/index.mjs';
 
 /** Widget name used by auto-mode status updates. */
 const AUTO_MODE_WIDGET_NAME = 'auto-mode';

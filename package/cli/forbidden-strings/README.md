@@ -783,7 +783,7 @@ deleting its `forbidden-strings/` child is always safe because authoritative tex
 ## Fuzzing
 
 Coverage-guided fuzzing lives in its own package,
- `package/fuzz/forbidden-strings`,
+ `package/cli/forbidden-strings.fuzz`,
  so a
 scoped nightly toolchain does not force this published crate onto nightly.
  The scanner

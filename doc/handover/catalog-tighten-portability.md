@@ -194,7 +194,7 @@ next sessions pick up the manager-specific issues.
     - Name validation:
        string-scan predicate,
        no regex
-      (repo rule RG1,
+      (repo lint rule `no-restricted-syntax/no-regex`,
        and this parser was deliberately rewritten from regex to string scans).
       Check non-empty,
        first char `@` or `[a-z0-9]`,

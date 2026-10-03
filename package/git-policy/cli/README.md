@@ -44,8 +44,14 @@ That self-contained static bundle is both the executable and the inert package-r
 
 ## Automatic linked-worktree state
 
-Every forwarded Git invocation whose effective target is a linked worktree or bare repository observes linked-worktree
-administrative identities before and after real Git runs.
+Every forwarded Git invocation whose effective target is a linked worktree or bare repository,
+and whose subcommand creates or moves worktrees after ordinary Git alias resolution,
+observes linked-worktree administrative identities before and after real Git runs
+while holding a common-directory settlement lock.
+Other commands,
+including commits,
+never take that lock,
+so concurrent commits in linked worktrees do not wait on each other there.
 Main-worktree invocations bypass linked-worktree observation,
 journal recovery,
 settlement locking,
@@ -53,6 +59,7 @@ and ignored-state synchronization,
 even when they create a linked worktree.
 This outcome-based comparison on applicable sources detects ordinary Git aliases and worktrees that Git retains after a
 command or `post-checkout` hook returns nonzero.
+A worktree created by a hook that calls real Git through an absolute path bypasses the wrapper and gets no copy.
 When new linked worktrees exist,
 cli-git snapshots the invoking linked worktree's paths selected by Git's standard ignore stack after real Git and its
 hooks settle,
@@ -68,7 +75,10 @@ The snapshot preserves regular files,
 directories,
 symbolic-link target text,
 and portable permission bits.
-File copies request copy-on-write and use Node's full-copy fallback when the filesystem cannot clone extents.
+File copies into the private stage request copy-on-write and use Node's full-copy fallback when the filesystem cannot
+clone extents;
+installation then hard-links each staged file into the new worktree,
+copying instead when the filesystem refuses the link.
 Registered worktree roots nested beneath an ignored source tree are excluded,
 as are cli-git's private staging paths.
 Source paths remain selected even when the destination branch does not ignore them.
@@ -81,7 +91,8 @@ An exact type,
 mode,
 link target,
 and byte match is accepted;
-a difference fails after retaining the Git-created worktree.
+a difference fails after retaining the Git-created worktree,
+and the failed copy removes its journal and stage so later commands are unaffected.
 Cli-git compares the completed private stage back to the source before installation,
 so source instability fails unless exact final equivalence remains.
 A successful copy emits one summary line on stderr.
@@ -92,12 +103,29 @@ or uses `1` when Git ended by signal without a numeric status.
 
 Private stages live beside their destination for same-filesystem copy-on-write.
 Durable journals and a recoverable process-identity lock live under
-`<git-common-dir>/cli-git-worktree-copy/v1`.
-A later cli-git invocation validates destination registration,
-stage ownership,
+`<git-common-dir>/cli-git-worktree-copy/v1`;
+each installation appends its progress to a log inside its private stage,
+so its cost grows linearly with the copied entry count.
+A later cli-git invocation validates stage ownership,
 permissions,
-and path containment before resuming an interrupted installation.
-Malformed or conflicting recovery state fails closed and remains available for diagnosis.
+and path containment before resuming an interrupted installation,
+including directories the interrupted owner created before applying their final modes.
+A journal whose worktree was removed or whose private stage is gone is discarded with a one-line notice.
+While another live cli-git process holds settlement,
+commands that do not create or move worktrees skip recovery rather than wait,
+and a command that creates or moves worktrees waits for it without a time limit
+after printing one line naming the holder's PID.
+A settlement lock whose owner record proves nothing fails that command after about one second,
+leaving the lock in place.
+Malformed or unsafe recovery state fails closed and remains available for diagnosis.
+
+WXG:
+ Worktree-copy incidents:
+ first verify main worktrees bypass admin observation,
+ recovery,
+ settlement,
+ and copying;
+ then classify the effective source before lock analysis.
 
 ## Policy authoring API
 
@@ -152,6 +180,28 @@ export default defineConfig({
 
 `defineConfig` rejects unknown statically known policy IDs and option values that do not match a policy's Valibot
 output.
+
+A policy may declare `inputs`,
+what it reads outside its `PolicyContext`,
+so a commit replayed onto a moved branch re-runs it only when those inputs or its recorded context reads changed.
+The default `'unrestricted'` always re-runs;
+`{ external: [] }` declares context-only reads;
+`external` entries name `worktree` pathspecs,
+an `executable`,
+a Git `revision`,
+or an `env` variable.
+`inputs` may also be a function of the validated policy options,
+called once at config loading.
+A `worktree` input covers every matching file,
+ignored ones included,
+so keep its pathspecs narrow.
+The shipped repository policies,
+`final-newline`,
+and `add-explicit` read only their context;
+forbidden-strings declares its scanner,
+`FORBIDDEN_STRINGS_RULES`,
+and the rules file it names;
+markdown autofix and the other built-ins stay unrestricted.
 `ABSENT_GIT_VALUE` represents mutable candidate revisions,
 missing object IDs,
 and direct operations without a Git subcommand.
@@ -233,7 +283,7 @@ amend and allow-empty edge cases,
 and merge,
 cherry-pick,
 or revert conclusions,
-trusted pre-forward policies receive lazy candidate bytes from a locked private Git index.
+trusted pre-forward policies receive lazy candidate bytes from a private Git index.
 A fixable finding returns one `git-unified` patch bound to the candidate's opaque target ID and repository path.
 Cli-git validates that the patch contains exactly one matching ordinary text target,
 writes the bytes to a private file,
@@ -249,10 +299,9 @@ Non-overlapping proposals compose sequentially;
 a conflict blocks with exit `2` while its unmerged state remains private.
 
 Explicit-path mode builds the intended tree from `HEAD` plus selected worktree paths,
-then reconciles only those landed entries into a copy of the original index.
+then reconciles only those landed entries into the real index as it is at landing.
 Explicit `--no-only` mode patches a copy of the complete real index.
-For a commit that changes the tree,
- the completed index is installed atomically only after real Git succeeds,
+The real index changes only when the commit lands,
 so policy failures,
 patch conflicts,
 and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
@@ -287,48 +336,193 @@ and does not create an empty commit unless explicitly requested.
 The wrapper applies this behavior in repositories outside Monochromatic too.
 An explicit error override restores blocking behavior.
 
-A durable no-follow transaction directory retains exact original and prepared index snapshots,
-expected parent and tree identities,
-a private nonce-bearing reflog action,
-process birth identity,
-and exact directory,
-index-artifact,
-and real-index lock identities before reference advancement.
-Every later wrapper invocation recovers before trusted config execution,
-installs or recognizes the exact prepared index after an interrupted landed commit,
-and fails closed on active owners,
-reused PIDs,
-replaced locks,
-replaced or unsafe artifacts,
-read-only transaction filesystem setup,
-or unrelated reference/index movement.
+### Concurrent commits
+
+Several `git commit` invocations against the same worktree and branch can run at the same time;
+each lands as its own sequential commit instead of failing on `index.lock`.
+This is always on;
+there is no opt-out.
+
+Every non-dry-run commit,
+including a clean commit and `commit -a`,
+prepares in parallel without the real index lock.
+Cli-git captures the selected worktree bytes
+(or the staged index)
+at invocation,
+runs policies,
+then runs native `git commit` against a private index and a private `HEAD`
+in a per-commit shadow repository that borrows the real object store,
+so Git still owns hooks,
+the editor,
+templates,
+message cleanup,
+and signing.
+Hooks see the real branch name,
+its upstream,
+and `includeIf "onbranch:"` config,
+and every other ref as it stood at invocation,
+so tags,
+other branches,
+and remote-tracking refs resolve inside hooks.
+The prepared commit stays in the shadow repository's own object store,
+so `gc` cannot delete it,
+and cli-git creates no ref in the real repository before landing.
+Hooks run through a generated dispatcher that honors the repository's `core.hooksPath` and disabled hooks.
+By default,
+one repository-wide hook lock serializes hook runs across concurrent commits
+without being held while a message editor is open.
+`post-commit` runs once,
+after landing,
+in the real worktree.
+Right before it,
+cli-git runs Git's automatic maintenance
+(`git maintenance run --auto`),
+as native `git commit` does,
+because every landing adds one pack to the real object store
+and unconsolidated packs slow down every later Git command in the repository.
+
+Commits then land one at a time in the order their preparation finished.
+Landing advances the branch by compare-and-swap and computes the real index against its current state,
+so another invocation's staging survives.
+When no other commit landed in between,
+the prepared commit lands unchanged,
+signature included.
+Otherwise cli-git replays it onto the new tip.
+Captures from one worktree are ordered:
+each takes a short per-worktree capture lock and the next capture sequence number,
+kept under `<git-dir>/cli-git-captures/`.
+For a file that this commit and the commits that landed meanwhile all captured from this worktree's disk,
+the later capture's bytes land,
+as native sequential commits would record them:
+a commit captured later lands its own bytes,
+and one captured earlier keeps the landed bytes of that file.
+A file changed from anywhere else,
+such as another worktree or clone,
+or a native commit that bypassed cli-git,
+keeps its captured bytes when they already contain the change that landed meanwhile,
+such as an edit made right next to another agent's in-flight edit,
+and otherwise merges three-way from the commit's base.
+The replay re-signs the commit when it was signed,
+re-runs `pre-commit` when the tree changed,
+and re-runs only the policies whose recorded reads or declared `inputs` changed;
+every policy without an `inputs` declaration re-runs.
+A `pre-commit` hook that rewrites and re-stages files,
+as lint-staged does,
+commits what it staged,
+as native Git does;
+the real index and worktree copies of those files take the committed bytes
+unless they changed while the commit ran.
+A replay conflict lands nothing and exits `1` with a `concurrent-commit/replay-conflict` core finding
+naming the conflicting paths,
+the winning commit,
+and the prepared commit to cherry-pick.
+Amends and merge,
+cherry-pick,
+or revert conclusions fail with `concurrent-commit/head-moved` when the branch moved,
+and any commit fails with `concurrent-commit/branch-switched` when `HEAD` now names another branch.
+On a Git whose `git merge-tree` has no `--merge-base` option
+(before Git 2.40.0;
+verified on Git 2.39.5),
+a commit that loses the race to land fails fast with `concurrent-commit/head-moved` instead of replaying,
+as every overlapping commit did before replay existed;
+commits that land on their first attempt are unaffected.
+Before Git 2.54.0,
+Git writes no `core.lockfilePid` owner file,
+so a wrapped commit waits for a native `git commit` holding `index.lock` in its editor
+only up to `indexLock.unprovenOwnerTimeoutMs`,
+and config-based hooks do not exist.
+See `SPEC.md` "Compatibility and degradation".
+A commit that keeps losing the race to land reserves the next landing slot
+after `landing.reserveAfterLostRaces` lost races.
+Replays,
+lost landing races,
+and reservations also appear as `commit-replayed`,
+`landing-race-lost`,
+and `landing-reserved` JSONL events.
+Re-signing a replayed signed commit drops any custom commit headers
+and reports them in a `replay-headers-dropped` event;
+consumers ignore event types they do not recognize.
+
+Cli-git sets `core.lockfilePid=true` for the Git it runs,
+so Git 2.54.0 and later records who holds `index.lock`;
+older Git leaves no such record.
+A lock whose owner is proven alive gets an unbounded wait with one stderr line naming the holder.
+A lock with a dead or unproven owner is retried with backoff for `indexLock.unprovenOwnerTimeoutMs`,
+then reported as `index-lock-unproven-owner` with exit `2` and the evidence collected.
+Cli-git never deletes a lock it did not create.
+Wrapped index writers such as `git add`,
+`git rm`,
+and `git restore --staged`,
+and `git cli-git fix`,
+wait for an in-progress landing instead of colliding with it.
+Processes that bypass the wrapper can still collide.
+In linked worktrees,
+only commands that create or move worktrees take the worktree-copy settlement lock.
+
+### Concurrency configuration
+
+Trusted `cli-git.config.*` accepts three optional keys:
+
+```ts
+export default defineConfig({
+  hooks: { concurrentCommits: false },
+  indexLock: { unprovenOwnerTimeoutMs: 1000 },
+  landing: { reserveAfterLostRaces: 1 },
+});
+```
+
+- `hooks.concurrentCommits`,
+  default `false`:
+  `true` lets hooks from concurrent commits overlap instead of serializing them.
+  Enable it only when every hook tolerates concurrent runs.
+- `indexLock.unprovenOwnerTimeoutMs`,
+  default `1000`:
+  how long to retry a foreign `index.lock` whose owner cannot be proven alive.
+- `landing.reserveAfterLostRaces`,
+  default `1`:
+  after this many lost landing races,
+  a commit reserves the next landing slot;
+  the oldest waiting invocation is served first.
+
+Unknown or mistyped keys fail config validation with exit `2`.
+
+### Commit recovery
+
+Each commit keeps a durable no-follow transaction directory under
+`<git-dir>/cli-git-transactions/<transaction-id>/`.
+It retains the owner's process birth identity,
+the preparation base,
+the shadow repository path,
+exact index snapshots,
+and a nonce-bearing reflog message written at landing.
 Filesystem setup errors emit `content-unavailable` JSONL and leave exact ref,
 index,
 and worktree state unchanged.
 
 Recovery is automatic rather than a separate management command.
-Run the next ordinary cli-git invocation after the interrupted owner has terminated.
 Before loading trusted repository code,
-cli-git inspects the Git-provided `cli-git-transaction` administrative path and either restores the original index,
-installs the prepared post-commit index,
+every later wrapper invocation inspects each transaction.
+Transactions whose owner is still running are skipped,
+so other commands keep working while a commit waits in a hook or editor.
+An interrupted transaction that never landed has its shadow repository and directory removed;
+the real index and refs were never touched.
+An interrupted landing is recovered under the landing lock:
+cli-git searches the branch reflog for the transaction's nonce,
+then installs the intended real index,
 recognizes an already completed installation,
-or fails closed with the retained transaction path.
-An active owner or conflicting ref,
+or discards the unlanded attempt.
+Conflicting ref,
 reflog,
 index,
 lock,
 artifact,
-or filesystem identity produces exit `2` without discarding evidence.
+or filesystem identity fails closed with exit `2` and the retained transaction path.
 Do not remove the retained directory merely to silence that diagnostic;
 the preserved snapshots and journal are the evidence needed to distinguish an unlanded commit from a landed commit
 whose index installation was interrupted.
-If setup stopped before writing a journal,
-an empty directory has no snapshots to recover,
-but its emptiness does not prove its owner has exited (including when another index location is in use).
-The wrapper preserves it and reports an empty pre-journal diagnostic rather than deleting a possibly active transaction.
-Exclusive index-lock acquisition precedes recovery-directory creation,
-so `EEXIST` cannot leave a new empty directory.
-A preexisting empty directory still fails closed until its ownership has been checked.
+A legacy `cli-git-transaction` directory from an earlier build is still recovered.
+
+### Management commands
 
 Use the namespaced cli-git management commands:
 
@@ -641,6 +835,10 @@ before a segment-aware containment check,
  Add sibling tool caches there when a new
 tool needs the same exemption.
 
+GCW:
+ Worktree-guard reviews:
+ `DEFAULT_ALLOWED_WORKTREE_DIRS` (`src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass the guard.
+
 **Branch worktree only**:
  rejects branch creation in the current worktree and
 redirects to creating the branch together with its own linked worktree.
@@ -798,8 +996,9 @@ matches config keys.
 
 ## Post-commit auto-push
 
-After a successful real `git commit`,
-the wrapper resolves the exact landed commit OID before backup.
+After a commit lands,
+the wrapper uses the exact OID its landing wrote rather than re-reading `HEAD`,
+which a concurrent landing may already have moved.
 Trusted `post-commit` plugin policies receive that landed OID and lazy landed-delta candidates:
 only the files that commit changed against its parents,
 never the unchanged remainder of the tree.
@@ -859,6 +1058,20 @@ surfaced but never changes the commit command's own exit code:
  the commit stays
 saved locally and a later `git push` retries it.
 
+Pushes are single-flight per branch.
+When several commits land concurrently,
+a commit whose OID an in-flight push already covers joins that push and waits for its result;
+otherwise it pushes the current branch tip itself.
+Each commit command returns only once a push containing its OID has finished,
+so concurrent commits usually produce fewer pushes than commits.
+A failed joined push is surfaced by every commit that joined it,
+each still exiting `0`.
+A commit waiting behind a push whose owner was killed takes over and pushes the tip itself.
+The coordination lives in `.git/cli-git/push/`:
+a per-branch lock and a `last-pushed` record;
+if that coordination itself fails,
+the commit surfaces the failure the same way and still exits `0`.
+
 ## Performance gates
 
 Run the packed lifecycle gate with:
@@ -885,9 +1098,70 @@ config validation,
 scanner checks,
 clean and changed final-newline paths,
 and post-commit policy work.
-`perf/lifecycle-latency-2026-07-16.json` stores the measured baseline.
+`perf/lifecycle-latency-2026-07-16.json` stores the measured baseline the ceilings derive from.
 Each enforced ceiling is twice its baseline maximum rounded up to the next 25 milliseconds;
 every ceiling remains below 2,000 milliseconds.
+`perf/lifecycle-latency-2026-09-26.json` re-measures the matrix after every non-dry-run commit moved to private preparation;
+every scenario stays below its ceiling.
+`perf/lifecycle-latency-2026-09-26-maintained.json` re-measures it at `30a7d95d0`,
+with automatic maintenance after landing and a reservation default of `1`;
+every scenario still stays below its ceiling,
+and the post-commit scenario's wrapper-added median moves from 399 ms to 413 ms.
+
+```console
+mise run //package/git-policy/cli:perf:concurrent-commits
+```
+
+The concurrent-commit benchmark runs in the same bounded container shape,
+on `node:24-trixie-slim`,
+because bookworm's Git 2.39.5 predates `git merge-tree --merge-base`,
+so every commit that loses a landing race there fails fast instead of replaying.
+It covers the concurrent scenarios `SPEC.md` "Benchmark method" names:
+disjoint paths at concurrency 1,
+2,
+4,
+and 8,
+a same-file non-overlapping pair,
+a conflicting pair against a native commit,
+a slow `pre-commit` hook with `hooks.concurrentCommits` `false` and `true`,
+and a `landing.reserveAfterLostRaces` sweep.
+Each scenario gets a fresh repository,
+so no scenario inherits the packs and history earlier scenarios left,
+warms up until adjacent three-batch windows agree within 20 %,
+then records 30 concurrent batches,
+each paired with the same commits serialized through the wrapper
+(and,
+for disjoint paths,
+through direct Git).
+It reports batch wall time,
+throughput,
+per-commit completion,
+lost races,
+replays,
+and landing lock and real `index.lock` holds read from inotify rename events.
+`perf/concurrent-commit-latency-2026-09-26.json` stores the first baseline;
+no budget is enforced yet.
+`--scenarios` measures a comma-separated list of scenario ids in the listed order,
+and `--output` names the evidence file under `dist/perf`.
+Four such runs of the `landing.reserveAfterLostRaces` sweep,
+in rotated orders on the build that runs automatic maintenance after landing,
+set the default to `1`:
+it had the lowest per-commit p95 and median in every run
+(`perf/reserve-sweep-2026-09-26-maintained-run-<n>.json`,
+`SPEC.md` "Benchmark method").
+`perf/concurrent-commit-latency-2026-09-26-merged.json` re-measures the full matrix at `d647d4786`,
+after the worktree-copy stall fix merge and the trust and replay degradation fixes;
+every scenario's median batch wall time stays within 5 % of the first baseline,
+and disjoint commits at concurrency 8 give a per-commit p95 of 4537 ms against 4614 ms.
+`perf/concurrent-commit-latency-2026-09-26-maintained.json` re-measures it at `30a7d95d0`,
+with automatic maintenance after landing and a reservation default of `1`:
+at concurrency 8 the median batch wall time drops from 4073 ms to 2661 ms
+and the per-commit p95 from 4537 ms to 2809 ms,
+while single commits and pairs,
+which lose few races and leave few packs,
+take 3 to 6 % longer
+(disjoint commits at concurrency 1:
+313 ms to 328 ms).
 
 ## How it works
 
@@ -902,6 +1176,8 @@ Arguments pass through built-in policy,
 fixed-transform,
 and trusted-plugin stages;
 the real git is then spawned with exactly the final transformed arguments and full stdio inheritance.
+Non-dry-run commits instead run native `git commit` against private state
+and land through the concurrent commit transaction described in "Concurrent commits".
  After a successful
 commit,
  the new commit is auto-pushed to origin as described above.

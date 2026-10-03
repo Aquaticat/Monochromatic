@@ -20,10 +20,8 @@ import {
   captureIndexRecords,
   stagedDeltaPaths,
 } from './add-staged-delta.ts';
-import {
-  createPrivateIndexFacts,
-  listPrivateIndexPaths,
-} from './commit-transaction-candidates.ts';
+import { createPrivateIndexFacts, } from './commit-transaction-candidates.ts';
+import { listPrivateIndexPaths, } from './commit-transaction-index-paths.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import { copyIndexFile, } from './index-file-timestamps.ts';
 

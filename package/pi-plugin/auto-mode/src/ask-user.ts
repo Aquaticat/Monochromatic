@@ -174,7 +174,8 @@ async function notifyAsk(
 /**
  Prompt the user to approve or deny an action.
  
- If no interactive UI is available, denies by default (fail-closed).
+ If no interactive UI is available, denies by default (fail-closed) and
+ tells headless children to report the blocked action to their parent.
  Verdict-ask callers opt into reflecting the explanation via
  {@link formatModelBlockReason} when the user denies; fallback prompts keep
  the generic {@link DEFAULT_DENY_GUIDANCE} block guidance.
@@ -240,7 +241,10 @@ async function askUser(
     );
     return {
       block: true,
-      reason: DEFAULT_DENY_GUIDANCE,
+      reason: formatModelBlockReason({
+        guardrailReason: `${explanation} No approval UI is available in this session. Blocked action: ${action}`,
+        guidance: 'Do not retry or rephrase this blocked action. If running as a subagent, report the action and reason to the parent agent so it can handle approval in its interactive session. Otherwise, return the action and reason to the caller for interactive approval.',
+      },),
     };
   }
 

@@ -18,6 +18,10 @@ import {
   createFindingEvent,
   type PolicyEvent,
 } from './events.ts';
+import {
+  checkTrackedPolicy,
+  type PassReadTracking,
+} from './policy-check.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
@@ -67,71 +71,6 @@ function findingsAreValid(findings: readonly PolicyFinding[],): boolean {
 }
 
 /**
- Settled plugin check result preserving whether plugin code threw.
- */
-type PolicyCheckResult = Readonly<{
-  /**
-   Successful check discriminator.
-   */
-  status: 'complete';
-  /**
-   Unvalidated plugin findings.
-   */
-  findings: readonly PolicyFinding[];
-}> | Readonly<{
-  /**
-   Thrown check discriminator.
-   */
-  status: 'threw';
-  /**
-   Exact thrown plugin value.
-   */
-  error: unknown;
-}>;
-
-/**
- Settles one plugin callback without conflating its exception with engine validation.
- 
- @param policy - current runtime plugin
- 
- @param context - trigger-specific policy facts
- 
- @param options - validated plugin options
- 
- @returns discriminated plugin result
- 
- @example
- ```ts
- const result = await checkPolicy({ policy, context, options: undefined });
- ```
- */
-async function checkPolicy({
-  policy,
-  context,
-  options,
-}: Readonly<{
-  policy: RuntimePolicyDefinition;
-  context: PolicyContext;
-  options: unknown;
-}>,): Promise<PolicyCheckResult> {
-  try {
-    return {
-      status: 'complete',
-      findings: await policy.check({
-        context,
-        options,
-      },),
-    };
-  }
-  catch (error: unknown) {
-    return {
-      status: 'threw',
-      error,
-    };
-  }
-}
-
-/**
  Runs one ordered policy group.
  
  @param policies - built-in or plugin definitions in stable order
@@ -152,6 +91,8 @@ async function checkPolicy({
  
  @param sequence - first stage event sequence
  
+ @param pass - read tracking of this pass, present only inside a commit transaction
+ 
  @returns settled stage outcome
  
  @example
@@ -169,6 +110,7 @@ export async function runPolicyStage({
   policyOptions,
   keepGoing,
   sequence,
+  pass,
 }: Readonly<{
   policies: readonly RuntimePolicyDefinition[];
   context: PolicyContext;
@@ -179,6 +121,7 @@ export async function runPolicyStage({
   policyOptions: ReadonlyMap<string, unknown>;
   keepGoing: boolean;
   sequence: number;
+  pass?: PassReadTracking;
 }>,): Promise<PolicyStageResult> {
   /**
    Stage-local buffered events.
@@ -210,10 +153,11 @@ export async function runPolicyStage({
      Settled callback result preserving plugin ownership of thrown values.
      */
     // oxlint-disable-next-line no-await-in-loop -- Policy contract requires sequential checks in fixed registration order.
-    const checkResult = await checkPolicy({
+    const checkResult = await checkTrackedPolicy({
       policy,
       context,
       options: policyOptions.get(policy.name,),
+      ...(pass === undefined ? {} : { pass, }),
     },);
     if (checkResult.status === 'threw') {
       events.push(createEngineFailureEvent({

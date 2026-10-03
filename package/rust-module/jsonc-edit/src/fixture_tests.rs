@@ -49,7 +49,7 @@ use crate::text_units::units_to_string;
 /// import { parseJsonc, emitJsoncValue, jsoncComment, jsoncKeyComment } from './index';
 /// ```
 use crate::value::{JsoncEntry, JsoncKind, JsoncValue};
-use crate::{emit_jsonc_value, jsonc_comment, jsonc_key_comment, parse_jsonc};
+use crate::{emit_jsonc_value, jsonc_comment, jsonc_key_comment, jsonc_set, parse_jsonc};
 
 /// What:     Parse the embedded fixture document once per test.
 /// Why:      The fixture is ordinary JSON, so this crate's own parser reads it without a second JSON
@@ -279,5 +279,124 @@ fn fixture_document_has_every_section() {
         .collect();
     for required in ["valid", "invalid", "commentOwnership", "numberSpelling", "numberEquality", "depth"] {
         assert!(names.iter().any(|name| return name == required), "fixture is missing {required}");
+    }
+}
+
+/// What:     Collect every comment body in a tree, from the node itself, its keys and its values.
+/// Why:      The round-trip contract is stated as bodies that must still be attached afterwards,
+///           which needs one walk rather than a query per address.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function commentBodies(value: JsoncValue): string[];
+/// ```
+fn comment_bodies(value: &JsoncValue) -> Vec<String> {
+    let mut bodies: Vec<String> = Vec::new();
+    let mut stack: Vec<&JsoncValue> = vec![value];
+    while let Some(current) = stack.pop() {
+        if let Some(comment) = &current.comment {
+            bodies.push(comment.text.clone());
+        }
+        if let JsoncKind::Record { entries } = &current.kind {
+            for entry in entries.iter().rev() {
+                if let Some(comment) = &entry.key.comment {
+                    bodies.push(comment.text.clone());
+                }
+                stack.push(&entry.value);
+            }
+        }
+        if let JsoncKind::Array { elements } = &current.kind {
+            for element in elements.iter().rev() {
+                stack.push(element);
+            }
+        }
+    }
+    return bodies;
+}
+
+/// What:     Build one replacement value for a fixture `valueKind` name.
+/// Why:      The root-shape contract is about the replacement's shape, so the fixture names a kind
+///           rather than spelling a literal both suites would have to agree on.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function valueForKind(kind: string): JsonValue;
+/// ```
+fn value_for_kind(kind: &str) -> JsoncValue {
+    let payload = if kind == "null" {
+        JsoncKind::Null
+    } else if kind == "number" {
+        JsoncKind::Number {
+            raw: "7".to_string(),
+            identity: JsoncNumberIdentity::from_token("7").expect("seven is a valid token"),
+        }
+    } else if kind == "string" {
+        JsoncKind::Text { units: Vec::new(), raw: "\"\"".to_string() }
+    } else if kind == "array" {
+        JsoncKind::Array { elements: Vec::new() }
+    } else if kind == "record" {
+        JsoncKind::Record { entries: Vec::new() }
+    } else {
+        panic!("fixture names an unknown value kind {kind}");
+    };
+    return JsoncValue { kind: payload, comment: None };
+}
+
+/// Emission must reparse, and every comment body the fixture names must still be attached.
+#[test]
+fn round_trip_cases_keep_their_comment_bodies() {
+    let document = fixture();
+    let cases = member(&document, "roundTrip");
+    for index in 0..cases.elements().expect("roundTrip cases").len() {
+        let case = element(cases, index);
+        let name = text(case, "name");
+        let source = text(case, "source");
+        let parsed = parse_jsonc(&source).unwrap_or_else(|error| panic!("{name} must parse: {error}"));
+        let emitted = emit_jsonc_value(&parsed);
+        let reparsed = parse_jsonc(&emitted).unwrap_or_else(|error| panic!("{name} emission must reparse: {error}"));
+        let bodies = comment_bodies(&reparsed);
+        let expected = member(case, "commentBodies");
+        for expectation in 0..expected.elements().expect("expected bodies").len() {
+            let wanted = units_to_string(element(expected, expectation).text_units().expect("body text"))
+                .expect("fixture body is valid UTF-16");
+            assert!(
+                bodies.iter().any(|body| return *body == wanted),
+                "{name} lost comment body {wanted:?}; found {bodies:?}"
+            );
+        }
+    }
+}
+
+/// A root replacement that is not a container must be refused, and every other case accepted.
+#[test]
+fn root_shape_cases_match_the_fixture() {
+    let document = fixture();
+    let cases = member(&document, "rootShape");
+    let base = parse_jsonc("{\"a\":1}").expect("base document parses");
+    for index in 0..cases.elements().expect("rootShape cases").len() {
+        let case = element(cases, index);
+        let name = text(case, "name");
+        let path = to_path(member(case, "path").elements().expect("path entries"));
+        let replacement = value_for_kind(&text(case, "valueKind"));
+        let refused = matches!(member(case, "refused").kind, JsoncKind::Boolean { value: true });
+        match jsonc_set(&base, &path, replacement) {
+            Ok(_) => assert!(!refused, "{name} should have been refused"),
+            Err(error) => assert!(refused, "{name} should have been accepted: {error}"),
+        }
+    }
+}
+
+/// Canonical emission must equal the recorded text exactly, byte for byte.
+#[test]
+fn canonical_layout_matches_the_fixture() {
+    let document = fixture();
+    let cases = member(&document, "canonicalLayout");
+    for index in 0..cases.elements().expect("layout cases").len() {
+        let case = element(cases, index);
+        let name = text(case, "name");
+        let source = text(case, "source");
+        let parsed = parse_jsonc(&source).unwrap_or_else(|error| panic!("{name} must parse: {error}"));
+        let expected = text(case, "emitted");
+        assert_eq!(emit_jsonc_value(&parsed), expected, "{name} canonical layout differs");
     }
 }

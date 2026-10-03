@@ -15,7 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { findBudgetModel, } from './budget-model.ts';
+import { findBudgetModel, } from '../dist/final/node/index.mjs';
 
 //region Fixtures
 

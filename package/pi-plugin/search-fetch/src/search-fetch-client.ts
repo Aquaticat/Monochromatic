@@ -10,6 +10,13 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  combinedFallbackError,
+  fetchExaFallback,
+  hasCredential,
+  rethrowIfCancelled,
+  searchLinkupFallback,
+} from './provider-fallback.ts';
+import {
   DEFAULT_LINKUP_BASE_URL,
   createLinkupClient,
   type FetchOptions,
@@ -21,6 +28,9 @@ import {
   createExaClient,
   type ExaClient,
 } from './exa-client.ts';
+import { createGhClient, } from './gh-client.ts';
+import { planGitHubFetch, } from './github-url-plan.ts';
+import type { GhClient, } from './github-fetch-types.ts';
 import type {
   ProviderFallback,
   ProviderResponse,
@@ -93,6 +103,10 @@ function createSearchFetchClient(
     baseUrl: runtime.linkupBaseUrl,
     fetchImpl: runtime.fetchImpl,
   },);
+  /**
+   gh-backed client serving planned GitHub URLs before paid providers.
+   */
+  const ghClient = clientOptions.ghClient ?? createGhClient({},);
 
   return Object.freeze({
     search(searchOptions: ForeignBorrowed<SearchOptions>,): Promise<ProviderResponse> {
@@ -106,6 +120,7 @@ function createSearchFetchClient(
     fetch(fetchOptions: ForeignBorrowed<FetchOptions>,): Promise<ProviderResponse> {
       return fetchWithFallback({
         runtime,
+        ghClient,
         exaClient,
         linkupClient,
         options: fetchOptions,
@@ -152,6 +167,7 @@ async function searchWithFallback(
       };
     }
     catch (error: unknown) {
+      rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
       /**
        Safe Exa failure text for logs and details.
        */
@@ -160,11 +176,13 @@ async function searchWithFallback(
       return searchLinkupFallback({
         linkupClient,
         options,
-        fallback: {
-          from: 'exa',
-          to: 'linkup',
-          reason,
-        },
+        fallbackChain: [
+          {
+            from: 'exa',
+            to: 'linkup',
+            reason,
+          },
+        ],
       },);
     }
   }
@@ -173,12 +191,99 @@ async function searchWithFallback(
   return searchLinkupFallback({
     linkupClient,
     options,
-    fallback: {
-      from: 'exa',
-      to: 'linkup',
-      reason: 'missing Exa API key',
-    },
+    fallbackChain: [
+      {
+        from: 'exa',
+        to: 'linkup',
+        reason: 'missing Exa API key',
+      },
+    ],
   },);
+}
+
+/**
+ Fetch through gh for planned GitHub URLs, then Linkup, then Exa contents.
+ 
+ @param runtime - client runtime dependencies
+ 
+ @param ghClient - gh-backed fetch client
+ 
+ @param exaClient - Exa client
+ 
+ @param linkupClient - Linkup client
+ 
+ @param options - fetch options
+ 
+ @returns provider-tagged fetch response
+ 
+ @throws when the caller-owned signal cancels a gh invocation
+ 
+ @mutates options - gh children register abort listeners on `options.signal`.
+ */
+async function fetchWithFallback(
+  {
+    runtime,
+    ghClient,
+    exaClient,
+    linkupClient,
+    options,
+  }: {
+    readonly runtime: SearchFetchClientRuntime;
+    readonly ghClient: GhClient;
+    readonly exaClient: ExaClient;
+    readonly linkupClient: LinkupClient;
+    readonly options: FetchOptions;
+  },
+): Promise<ProviderResponse> {
+  /**
+   gh plan for this fetch URL.
+   */
+  const plan = planGitHubFetch({ url: options.input
+    .url, },);
+  if (!plan.planned) {
+    l.debug(`routing ${options.input
+      .url} to paid providers: ${plan.reason}`,);
+    return fetchLinkupThenExa({
+      runtime,
+      exaClient,
+      linkupClient,
+      options,
+    },);
+  }
+
+  try {
+    return {
+      provider: 'gh',
+      response: await ghClient.fetch({
+        url: options.input
+          .url,
+        kind: plan.kind,
+        attempts: plan.attempts,
+        ...(options.signal === undefined ? {} : { signal: options.signal, }),
+      },),
+    };
+  }
+  catch (error: unknown) {
+    rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
+    /**
+     Safe gh failure text for logs and details.
+     */
+    const reason = errorMessage(error,);
+    l.warn(`gh fetch unavailable; falling back to Linkup: ${reason}`,);
+    return fetchLinkupThenExa({
+      runtime,
+      exaClient,
+      linkupClient,
+      options,
+      fallbackChain: [
+        {
+          from: 'gh',
+          to: 'linkup',
+          reason,
+        },
+      ],
+    },);
+  }
 }
 
 /**
@@ -192,29 +297,36 @@ async function searchWithFallback(
  
  @param options - fetch options
  
+ @param fallbackChain - fallback steps already taken before Linkup
+ 
  @returns provider-tagged fetch response
  */
-async function fetchWithFallback(
+async function fetchLinkupThenExa(
   {
     runtime,
     exaClient,
     linkupClient,
     options,
+    fallbackChain = [],
   }: {
     readonly runtime: SearchFetchClientRuntime;
     readonly exaClient: ExaClient;
     readonly linkupClient: LinkupClient;
     readonly options: FetchOptions;
+    readonly fallbackChain?: readonly ProviderFallback[];
   },
 ): Promise<ProviderResponse> {
+  rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
   if ((runtime.linkupApiKey !== undefined) && hasCredential({ value: runtime.linkupApiKey, })) {
     try {
       return {
         provider: 'linkup',
         response: await linkupClient.fetch(options,),
+        ...(fallbackChain.length === 0 ? {} : { fallbackChain, }),
       };
     }
     catch (error: unknown) {
+      rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
       /**
        Safe Linkup failure text for logs and details.
        */
@@ -223,11 +335,14 @@ async function fetchWithFallback(
       return fetchExaFallback({
         exaClient,
         options,
-        fallback: {
-          from: 'linkup',
-          to: 'exa',
-          reason,
-        },
+        fallbackChain: [
+          ...fallbackChain,
+          {
+            from: 'linkup',
+            to: 'exa',
+            reason,
+          },
+        ],
       },);
     }
   }
@@ -236,146 +351,18 @@ async function fetchWithFallback(
   return fetchExaFallback({
     exaClient,
     options,
-    fallback: {
-      from: 'linkup',
-      to: 'exa',
-      reason: 'missing Linkup API key',
-    },
+    fallbackChain: [
+      ...fallbackChain,
+      {
+        from: 'linkup',
+        to: 'exa',
+        reason: 'missing Linkup API key',
+      },
+    ],
   },);
 }
 
 //endregion Routed operations
-
-//region Fallback helpers
-
-/**
- Execute Linkup search fallback and wrap failures with original fallback context.
- 
- @param linkupClient - Linkup client
- 
- @param options - search options
- 
- @param fallback - fallback metadata
- 
- @returns provider-tagged Linkup response
- */
-async function searchLinkupFallback(
-  {
-    linkupClient,
-    options,
-    fallback,
-  }: {
-    readonly linkupClient: LinkupClient;
-    readonly options: SearchOptions;
-    readonly fallback: ProviderFallback;
-  },
-): Promise<ProviderResponse> {
-  try {
-    return {
-      provider: 'linkup',
-      response: await linkupClient.search(options,),
-      fallback,
-    };
-  }
-  catch (error: unknown) {
-    throw combinedFallbackError({
-      operation: 'search',
-      fallback,
-      finalProvider: 'Linkup',
-      finalError: error,
-    },);
-  }
-}
-
-/**
- Execute Exa fetch fallback and wrap failures with original fallback context.
- 
- @param exaClient - Exa client
- 
- @param options - fetch options
- 
- @param fallback - fallback metadata
- 
- @returns provider-tagged Exa response
- */
-async function fetchExaFallback(
-  {
-    exaClient,
-    options,
-    fallback,
-  }: {
-    readonly exaClient: ExaClient;
-    readonly options: FetchOptions;
-    readonly fallback: ProviderFallback;
-  },
-): Promise<ProviderResponse> {
-  try {
-    return {
-      provider: 'exa',
-      response: await exaClient.fetch(options,),
-      fallback,
-    };
-  }
-  catch (error: unknown) {
-    throw combinedFallbackError({
-      operation: 'fetch',
-      fallback,
-      finalProvider: 'Exa',
-      finalError: error,
-    },);
-  }
-}
-
-/**
- Build an error that includes first fallback reason and final provider failure.
- 
- @param operation - operation name
- 
- @param fallback - fallback metadata
- 
- @param finalProvider - final provider display name
- 
- @param finalError - final provider error
- 
- @returns combined provider failure
- 
- @mutates finalError - `errorMessage` may invoke string-conversion hooks.
- */
-function combinedFallbackError(
-  {
-    operation,
-    fallback,
-    finalProvider,
-    finalError,
-  }: {
-    readonly operation: string;
-    readonly fallback: ProviderFallback;
-    readonly finalProvider: string;
-    readonly finalError: unknown;
-  },
-): Error {
-  return new Error(
-    `Search Fetch ${operation} failed. ${fallback.from} unavailable: ${fallback.reason}. ${finalProvider} failed: ${errorMessage(finalError,)}`,
-    { cause: finalError, },
-  );
-}
-
-//endregion Fallback helpers
-
-//region Utility helpers
-
-/**
- Return whether optional credential has non-blank content.
- 
- @param value - optional credential
- 
- @returns whether credential is configured
- */
-function hasCredential({ value, }: { readonly value: string; }): boolean {
-  return value.trim() !== '';
-}
-
-//endregion Utility helpers
 
 export { createSearchFetchClient, };
 export type {

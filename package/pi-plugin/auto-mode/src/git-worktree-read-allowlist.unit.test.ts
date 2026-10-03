@@ -26,10 +26,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
 
-import autoMode from './index.ts';
-import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
-import { shouldFlag, } from './signals.ts';
-import type { SignalContext, } from './types.ts';
+import autoMode, {
+  linkedWorktreeReadAllowlistedDirs,
+  shouldFlag,
+  type SignalContext,
+} from '../dist/final/node/index.mjs';
 
 //region Git fixture helpers
 

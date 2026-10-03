@@ -83,7 +83,7 @@ Prerequisites for a fresh machine and a fresh checkout:
 
 The Worker is `monochromatic-lfs`,
  the R2 bucket is `monochromatic-lfs`,
-and the public Worker URL is `https://monochromatic-lfs.an1298.workers.dev`.
+and the public Worker URL is `https://monochromatic-lfs.aquaticat.workers.dev`.
 If the bucket does not exist yet (full recreate),
 create it once with `cf r2 buckets create --name monochromatic-lfs`
 or `wrangler r2 bucket create monochromatic-lfs`.
@@ -104,7 +104,7 @@ TODO
    Expected:
     the output lists the binding `env.BUCKET (monochromatic-lfs)`,
    then `Deployed monochromatic-lfs triggers` and the URL
-   `https://monochromatic-lfs.an1298.workers.dev`.
+   `https://monochromatic-lfs.aquaticat.workers.dev`.
 
 2. To validate a change without shipping it,
     run the dry run instead.
@@ -122,23 +122,97 @@ The upload token gates writes to R2.
 Rotate it whenever it may have leaked,
 or set it on first provisioning.
 
-1. Generate a fresh token and set it as the Worker secret in one step,
-   so the value is never printed.
+`wrangler secret put` reads the value from stdin when stdin is not a terminal,
+and it stores an **empty** secret without complaint when stdin delivers nothing.
+A blank `LFS_WRITE_TOKEN` used to be worse than an absent one:
+`authorized()` in `package/config/lfs-r2-worker/src/authorize.ts` refused only an `undefined` secret,
+so a blank one matched an empty Basic-auth password and let anyone upload objects.
+It now refuses absent and blank secrets alike
+(deployed 2026-10-01,
+ Worker version `b0009f5d-9b00-4719-bbb4-1b6e5902867f`),
+so a blank secret fails closed and every push gets `401`.
+That is still a silent breakage,
+so supply the value by shell redirection from a private file
+and verify the live Worker before trusting the rotation.
+The failure mode,
+ its measurements,
+ and its source trace are recorded in
+`doc/troubleshooting/wrangler-secret-put-empty-stdin.md`.
+
+1. Generate a token into a private file with no trailing newline,
+   so the value never reaches terminal scrollback or shell history.
 
    ```sh
-   printf '%s' "$(openssl rand -hex 32)" \
-     | mise run "//package/config/lfs-r2-worker:secret:write-token"
+   # doc/runbook/lfs-r2-worker.md
+   umask 077
+   openssl rand -hex 32 | tr -d '\n' > "${HOME}/temp/lfs-write-token.txt"
+   ```
+
+   Expected:
+    the file holds 64 hexadecimal characters and no newline.
+   Record the same value in your password manager;
+   every pushing machine needs it.
+
+2. Upload it through the mise task,
+   redirecting the file into the task's stdin.
+
+   ```sh
+   # doc/runbook/lfs-r2-worker.md
+   mise run "//package/config/lfs-r2-worker:secret:write-token" < "${HOME}/temp/lfs-write-token.txt"
    ```
 
    The task runs `wrangler secret put LFS_WRITE_TOKEN`.
    Expected:
     `✨ Success! Uploaded secret LFS_WRITE_TOKEN`.
+   That message reports only that Cloudflare accepted a value,
+   not that the value was the one you intended,
+   so the verification step is mandatory.
 
-2. Because the value was piped,
-    capture it again for the pushing machines that need it.
-   Re-run with a value you record in your password manager instead of `openssl`,
-   or generate it first into a variable you store,
-    then pipe that same variable.
+3. Verify the live Worker against three credentials:
+   the new token,
+   an empty password,
+   and a wrong token.
+
+   ```sh
+   # doc/runbook/lfs-r2-worker.md
+   node --input-type=module -e '
+   import { readFileSync } from "node:fs";
+   const token = readFileSync(process.argv[1], "utf8").trim();
+   const body = JSON.stringify({ operation: "upload", transfers: ["basic"], objects: [{ oid: "0".repeat(64), size: 1 }] });
+   for (const password of [token, "", "definitely-wrong-token"]) {
+     const response = await fetch("https://monochromatic-lfs.aquaticat.workers.dev/objects/batch", {
+       method: "POST",
+       headers: {
+         Accept: "application/vnd.git-lfs+json",
+         "Content-Type": "application/vnd.git-lfs+json",
+         Authorization: `Basic ${Buffer.from(`lfs:${password}`).toString("base64")}`,
+       },
+       body,
+     });
+     console.log(response.status);
+   }
+   ' "${HOME}/temp/lfs-write-token.txt"
+   ```
+
+   Expected,
+    in order:
+   `200`,
+   `401`,
+   `401`.
+   Three `401` responses mean the stored secret is blank or differs from the file;
+   repeat the upload from a file that provably holds the token.
+   A `200` for the empty password means the deployed Worker predates the blank-secret guard;
+   redeploy it.
+   The probe asks for an upload action but never sends a `PUT`,
+   so it stores nothing.
+
+4. Destroy the file.
+
+   ```sh
+   # doc/runbook/lfs-r2-worker.md
+   shred -u "${HOME}/temp/lfs-write-token.txt"
+   ```
+
    A rotated token invalidates every machine's previously stored push credential,
    so update each pushing machine (next procedure) after rotating.
 
@@ -156,7 +230,7 @@ The token lives in local git config,
    Replace `<TOKEN>` with the current `LFS_WRITE_TOKEN`.
 
    ```sh
-   git config --local lfs.url "https://lfs:<TOKEN>@monochromatic-lfs.an1298.workers.dev"
+   git config --local lfs.url "https://lfs:<TOKEN>@monochromatic-lfs.aquaticat.workers.dev"
    ```
 
    Expected:
@@ -176,6 +250,61 @@ The token lives in local git config,
     the push log includes a line like
    `Uploading LFS objects: 100% (1/1), ... done`.
 
+### Migrate an existing clone after the Worker URL changes
+
+A committed `.lfsconfig` change does not reach a clone that carries a local `lfs.url` override,
+because git-lfs prefers the local value.
+Every pushing machine has such an override,
+since that is where its token lives.
+Download-only clones need no migration:
+a plain `git pull` picks up the new `.lfsconfig`.
+
+Never print `lfs.url` or the `lfs.<url>.locksverify` key name unredacted;
+both embed the token.
+
+1. List the local LFS keys with the credential masked.
+
+   ```sh
+   # doc/runbook/lfs-r2-worker.md
+   git config --local --get-regexp '^lfs\.' | cut -d' ' -f1 | sed -E 's#//[^@]*@#//<credential>@#'
+   ```
+
+   Expected:
+    `lfs.url` carrying the old host,
+   plus one `lfs.<url>.locksverify` key that embeds the same old URL.
+
+2. Drop the stale `locksverify` key without echoing it.
+
+   ```sh
+   # doc/runbook/lfs-r2-worker.md
+   git config --local --get-regexp '^lfs\.https://.*\.locksverify$' \
+     | cut -d' ' -f1 \
+     | xargs --no-run-if-empty -n1 git config --local --unset-all
+   ```
+
+   The key name passes through the process table as an argument,
+   so run this on a machine whose process list you trust.
+
+3. Set both keys against the new host,
+   replacing `<TOKEN>` with the current `LFS_WRITE_TOKEN`.
+
+   ```sh
+   # doc/runbook/lfs-r2-worker.md
+   git config --local lfs.url "https://lfs:<TOKEN>@monochromatic-lfs.aquaticat.workers.dev"
+   git config --local --add \
+     "lfs.https://lfs:<TOKEN>@monochromatic-lfs.aquaticat.workers.dev.locksverify" false
+   ```
+
+   Expected:
+    no output.
+   Re-run the listing command from this procedure and confirm both keys name the new host.
+
+4. Confirm the write path end to end with the write-path check in "What to check".
+
+   Expected exact output:
+   `oid match: true; authenticated PUT: 200; unauthenticated PUT: 401`.
+   A `401` for the authenticated `PUT` means the endpoint credential no longer matches the Worker secret.
+
 ## What to check
 
 Status:
@@ -186,7 +315,7 @@ TODO
 
    ```sh
    curl --silent \
-     "https://monochromatic-lfs.an1298.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8" \
+     "https://monochromatic-lfs.aquaticat.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8" \
      | sha256sum
    ```
 
@@ -198,7 +327,7 @@ TODO
 
    ```sh
    curl --silent --head \
-     "https://monochromatic-lfs.an1298.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8/wolf-s.png"
+     "https://monochromatic-lfs.aquaticat.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8/package/ssg/aquati.cat/src/content/wolf-s.png"
    ```
 
    Expected:
@@ -221,7 +350,37 @@ TODO
    in a logged-out browser and confirm every gallery image shows a picture,
    not pointer text.
 
-4. A fresh clone resolves LFS from the Worker and verifies clean.
+4. The write path accepts the configured push credential and refuses everyone else.
+   This needs a machine whose local `lfs.url` carries the token,
+   and it re-uploads an object that already exists,
+   so it stores nothing new:
+   objects are content-addressed,
+   and putting identical bytes under the same oid is a no-op.
+
+   ```sh
+   # doc/runbook/lfs-r2-worker.md
+   node --input-type=module -e '
+   import { createHash } from "node:crypto";
+   import { execFileSync } from "node:child_process";
+   const endpoint = new URL(execFileSync("git", ["config", "--local", "--get", "lfs.url"], { encoding: "utf8" }).trim());
+   const authorization = `Basic ${Buffer.from(`${decodeURIComponent(endpoint.username)}:${decodeURIComponent(endpoint.password)}`).toString("base64")}`;
+   const oid = "8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8";
+   const bytes = new Uint8Array(await (await fetch(`${endpoint.origin}/${oid}`)).arrayBuffer());
+   const digest = createHash("sha256").update(bytes).digest("hex");
+   const put = await fetch(`${endpoint.origin}/${oid}`, { method: "PUT", headers: { Authorization: authorization }, body: bytes });
+   const anonymous = await fetch(`${endpoint.origin}/${oid}`, { method: "PUT", body: bytes });
+   console.log(`oid match: ${digest === oid}; authenticated PUT: ${put.status}; unauthenticated PUT: ${anonymous.status}`);
+   '
+   ```
+
+   Expected exact output:
+   `oid match: true; authenticated PUT: 200; unauthenticated PUT: 401`.
+   An authenticated `401` means the local credential no longer matches the Worker secret,
+   or that the secret is blank,
+   since a blank secret fails closed;
+   the three-credential probe in "Set or rotate the upload token" tells those apart.
+
+5. A fresh clone resolves LFS from the Worker and verifies clean.
 
    ```sh
    git clone --depth 1 https://github.com/Aquaticat/Monochromatic /tmp/lfs-check
@@ -231,7 +390,7 @@ TODO
    Expected exact output:
     `Git LFS fsck OK`.
 
-5. The GitHub LFS bandwidth bill drops over the following days.
+6. The GitHub LFS bandwidth bill drops over the following days.
    In GitHub,
     open **Settings**,
     then **Billing and licensing**,

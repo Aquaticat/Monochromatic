@@ -1,0 +1,125 @@
+diff --git a/apps/oxlint/src-js/bindings.d.ts b/apps/oxlint/src-js/bindings.d.ts
+index 9c67b55..2267385 100644
+--- a/apps/oxlint/src-js/bindings.d.ts
++++ b/apps/oxlint/src-js/bindings.d.ts
+@@ -93,7 +93,7 @@ export type JsSetupRuleConfigsCb = ((arg: string) => string | null)
+  *
+  * Returns `true` if linting succeeded without errors, `false` otherwise.
+  */
+-export declare function lint(args: Array<string>, loadPlugin: JsLoadPluginCb, setupRuleConfigs: JsSetupRuleConfigsCb, lintFile: JsLintFileCb, createWorkspace: JsCreateWorkspaceCb, destroyWorkspace: JsDestroyWorkspaceCb, loadJsConfigs: JsLoadJsConfigsCb): Promise<boolean>
++export declare function lint(args: Array<string>, loadPlugin: JsLoadPluginCb, setupRuleConfigs: JsSetupRuleConfigsCb, lintFile: JsLintFileCb, createWorkspace: JsCreateWorkspaceCb, destroyWorkspace: JsDestroyWorkspaceCb, loadJsConfigs: JsLoadJsConfigsCb): Promise<number>
+ 
+ /**
+  * Parse AST into provided `Uint8Array` buffer, synchronously.
+diff --git a/apps/oxlint/src-js/cli.ts b/apps/oxlint/src-js/cli.ts
+index aa53132..f273f08 100644
+--- a/apps/oxlint/src-js/cli.ts
++++ b/apps/oxlint/src-js/cli.ts
+@@ -185,7 +185,7 @@ if (!process.stdout.isTTY) {
+ if (args.includes("--lsp")) process.stdout.write = process.stderr.write.bind(process.stderr);
+ 
+ // Call Rust, passing callbacks and CLI arguments
+-const success = await lint(
++const exitCode = await lint(
+   args,
+   loadPluginWrapper,
+   setupRuleConfigsWrapper,
+@@ -198,4 +198,4 @@ const success = await lint(
+ // Note: It's recommended to set `process.exitCode` instead of calling `process.exit()`.
+ // `process.exit()` kills the process immediately and `stdout` may not be flushed before process dies.
+ // https://nodejs.org/api/process.html#processexitcode
+-if (!success) process.exitCode = 1;
++if (exitCode !== 0) process.exitCode = exitCode;
+diff --git a/apps/oxlint/src/result.rs b/apps/oxlint/src/result.rs
+index f86a246..7d0dcc1 100644
+--- a/apps/oxlint/src/result.rs
++++ b/apps/oxlint/src/result.rs
+@@ -24,19 +24,23 @@ pub enum CliRunResult {
+     TsGoLintError,
+ }
+ 
+-impl Termination for CliRunResult {
+-    fn report(self) -> ExitCode {
++impl CliRunResult {
++    /// Process exit code, following ESLint's documented contract:
++    /// `0` success, `1` linting ran and reported problems,
++    /// `2` linting could not run (configuration problem or internal error).
++    pub fn exit_code(&self) -> u8 {
+         match self {
+             Self::None
+             | Self::PrintConfigResult
+             | Self::ConfigFileInitSucceeded
+-            | Self::LintSucceeded => ExitCode::SUCCESS,
+-            Self::ConfigFileInitFailed
+-            | Self::JsPluginWorkspaceSetupFailed
+-            | Self::LintFoundErrors
++            | Self::LintSucceeded => 0,
++            Self::LintFoundErrors
+             | Self::LintNoFilesFound
+             | Self::LintNoWarningsAllowed
+             | Self::LintMaxWarningsExceeded
++            | Self::LintUnprunedSuppressions
++            | Self::ConfigFileInitFailed => 1,
++            Self::JsPluginWorkspaceSetupFailed
+             | Self::InvalidOptionConfig
+             | Self::InvalidOptionTsConfig
+             | Self::InvalidOptionTypeCheckWithoutTypeAware
+@@ -45,8 +49,13 @@ impl Termination for CliRunResult {
+             | Self::InvalidOptionSeverityWithoutFilter
+             | Self::InvalidOptionSeverityWithoutPluginName
+             | Self::InvalidOptionSeverityWithoutRuleName
+-            | Self::LintUnprunedSuppressions
+-            | Self::TsGoLintError => ExitCode::FAILURE,
++            | Self::TsGoLintError => 2,
+         }
+     }
+ }
++
++impl Termination for CliRunResult {
++    fn report(self) -> ExitCode {
++        ExitCode::from(self.exit_code())
++    }
++}
+diff --git a/apps/oxlint/src/run.rs b/apps/oxlint/src/run.rs
+index 242fba8..f156bb5 100644
+--- a/apps/oxlint/src/run.rs
++++ b/apps/oxlint/src/run.rs
+@@ -1,7 +1,4 @@
+-use std::{
+-    io::BufWriter,
+-    process::{ExitCode, Termination},
+-};
++use std::io::BufWriter;
+ 
+ use napi::{
+     Status,
+@@ -144,7 +141,8 @@ pub type JsLoadJsConfigsCb = ThreadsafeFunction<
+ /// 6. `destroy_workspace`: Destroy a workspace.
+ /// 7. `load_js_configs`: Load JavaScript config files.
+ ///
+-/// Returns `true` if linting succeeded without errors, `false` otherwise.
++/// Returns the process exit code: `0` success, `1` lint problems found,
++/// `2` linting could not run (configuration problem or internal error).
+ #[expect(clippy::allow_attributes)]
+ #[allow(clippy::trailing_empty_array, clippy::unused_async)] // https://github.com/napi-rs/napi-rs/issues/2758
+ #[napi]
+@@ -156,7 +154,7 @@ pub async fn lint(
+     create_workspace: JsCreateWorkspaceCb,
+     destroy_workspace: JsDestroyWorkspaceCb,
+     load_js_configs: JsLoadJsConfigsCb,
+-) -> bool {
++) -> u32 {
+     lint_impl(
+         args,
+         load_plugin,
+@@ -167,8 +165,8 @@ pub async fn lint(
+         load_js_configs,
+     )
+     .await
+-    .report()
+-        == ExitCode::SUCCESS
++    .exit_code()
++    .into()
+ }
+ 
+ /// Run the linter.

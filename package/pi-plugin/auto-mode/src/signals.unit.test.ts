@@ -24,23 +24,19 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { analyzeBashCommand, } from './command-parser.ts';
 import {
+  analyzeBashCommand,
   contentSignals,
   textSignals,
-} from './content-signals.ts';
-import {
   isHomeDotfile,
   isUnder,
   pathSignals,
   resolvePath,
-} from './path-signals.ts';
-import {
   bashSignals,
   hasFlag,
   shouldFlag,
-} from './signals.ts';
-import type { SignalContext, } from './types.ts';
+  type SignalContext,
+} from '../dist/final/node/index.mjs';
 
 /** Default signal context for tests. */
 const DEFAULT_CTX: SignalContext = {

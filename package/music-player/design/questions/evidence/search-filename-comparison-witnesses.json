@@ -1,0 +1,2008 @@
+{
+  "version": 1,
+  "scope": "Debug-only static Search filename presentation comparisons with authored complete-filename labels. No actual files, matching, collision detection, activation, speech or production Search implementation.",
+  "prototypeCommit": "a5560abb223af9f700b9d9465eac1991a02aac07",
+  "apkSha256": "6f69735270cce6a21e9f65d11822f8a0e774b9a41c432430774317dd1f510755",
+  "privacy": "Only inspected app-area crops; status strips removed, navigation retained, no private XML/log/screenshot publication.",
+  "captures": {
+    "initial": 64,
+    "scrolled": 6
+  },
+  "reports": [
+    {
+      "role": "comparison-positive-report",
+      "sha256": "e613e198b104eda4476412e99eba1a5d842ddc7476ecabb606a9b46658e325f7"
+    },
+    {
+      "role": "comparison-unknown-mutant-report",
+      "sha256": "85f2b8c06824f3ed68a75567da5789f8c5bb87d5e6d2e38422c94fe260a9f5e6"
+    },
+    {
+      "role": "comparison-terminal-mutant-report",
+      "sha256": "da0d745dc446a3af31e98c7779d4f29b01adaaa5987337b849678d3681da0a8a"
+    }
+  ],
+  "verificationBoundaries": [
+    "Hierarchy text and rectangles do not prove visible ink, action bounds or accessibility traversal.",
+    "Initial literal rows may be clipped at 200%; use the separately identified scrolled witnesses.",
+    "Conditional visibility uses explicitly authored scope and eligibility, including a non-displayed partner.",
+    "Dots and exact suffixes do not infer kind or encoding.",
+    "The earlier rejected capture attempts are not published or merged into this cohort."
+  ],
+  "witnesses": [
+    {
+      "file": "search-filename-comparison-inner-placementfull-light-s100.png",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "8091389ba5d9a40d9a7ab2fd8de0b366811284ac968fa9f116604f39a9c76d8b",
+      "privateRawSha256": "6dee309466b9a7c1ced70ab1fc12a5bf18ef81b230a96d6d206d05f202cc7aa9",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-placementsupport-light-s100.png",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "54a17b68a2cd56ff4b1fbc5bafcf540093ec28c054b024e151f5389c7bfc787f",
+      "privateRawSha256": "3c7d4787bf4d7296ad6f2382123498e996fe5d885df861ee2cd7a65916495eec",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalfull-light-s100.png",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "b191dc7d9f1c20b6f1338183cdd6bd1034d7e2f5e44a16544a3fbb092baf4b62",
+      "privateRawSha256": "673ef02fe8267eb68b9fe0f63a12208564fbaa9223e99325164e57b0a358e534",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalsupport-light-s100.png",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "9384917c34e5e91feaecf9e81313e86e5a2c00c3ed205c59f0784287c45b6cc2",
+      "privateRawSha256": "8be0ca7b8353c8678c267ea184ae74a2e6227fa24071c26500cd4208fbc9ecb2",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityfull-light-s100.png",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "e211116e9a6cd1624fc8ab2f708f5e999f53ef2188051deb4f0e849f53d3f53f",
+      "privateRawSha256": "9171c4b337f066d53daf378fe4cb51287718fc1b3c09fce7a1525fb97cde9b6c",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityconditional-light-s100.png",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "a993859294c3b83bc9953bf38310246f5f2e324286701404116ff6e577063511",
+      "privateRawSha256": "d9d78492e25c8e5fc2644280bd489426e8c4cba7cf2c044a907d0a62afcdb13d",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportfull-light-s100.png",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "4ebaa9c8371bc0e5c614399c3f3e289d89acfae881146c58ec8257f6daf75aa8",
+      "privateRawSha256": "dfc81d32b62c62ff805dcded7c628bd1a4c993b4f23d6396b782d46cc71d53fc",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportconditional-light-s100.png",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "ae73dcd805e20e83dc5f6f5cc9f0a35caac6cb5c3e37ca67ec1727cd13ac9270",
+      "privateRawSha256": "474cc4da51a7aca2740215924e6bcbb8d98cf1647e5a0e45851eb20b193d1f93",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-placementfull-dark-s100.png",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "aa76bbba2f652cc9bad165a75cb56d8db3cd7093bbfbb41653f04f810d33beff",
+      "privateRawSha256": "a213d9b200aac7ec3df371b84a98b1acebabf24f4292aa7bed98444359a38d5a",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-placementsupport-dark-s100.png",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "7657baafd3dba7f48bda0084980179e40398ae29aba06aaf1fd88cf90699283e",
+      "privateRawSha256": "db477b70bad1497644d425e5fc75061a2fd672d6b514390e8b2bd946c62a2db3",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalfull-dark-s100.png",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "8459f260bd0e147eed39f170c7a587d99aa967acc7ec6da4283fe3a88116cf73",
+      "privateRawSha256": "29e43ad3504d0fd802299f55f70e9ba18be4d134c4a8c4a3716cabc2b3010f33",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalsupport-dark-s100.png",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "c3e316492f01e30306ef09cc30c620309bc08d1149d830a830450b32b60cbbd3",
+      "privateRawSha256": "13186ad65d59d87de2df6b4914e048713a224f732376d649980a3083555abdbd",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityfull-dark-s100.png",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "3bcbd3068e4f0c441642bdfd9808c4c0e05d6417be78697345c5ebab1736412e",
+      "privateRawSha256": "85978d789efccb4f5ffa3486f89066d76425ab9069f34764a4c6eee0ad492c16",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityconditional-dark-s100.png",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "a6e053b884bf9859708a869f1b75d10eea2e434cb10277616a231c3df8866ba4",
+      "privateRawSha256": "3d59b46faed50e34f02f72819faff66845d789ed994c334fa64c28ebc9ef2ddb",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportfull-dark-s100.png",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "7083a015800f33c4e5eb487574f93edc0371e10513980ade8483502b0d8e9287",
+      "privateRawSha256": "a24b74b00ce10af9716d8a6954329aaf5ee0a252d7e71b5f39c0643b43863d70",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportconditional-dark-s100.png",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "1c823bbe5137c16def16b5c040f970965eff1322bfb1ecba6e716fd0698665c1",
+      "privateRawSha256": "90956a6eaaf2ce10ab498f53bd86c95d8f0e93351e5687758568f562d8c32a4c",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-placementfull-light-s200.png",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "47bb20ae8c753366262a720cb13ab93e273846bb97a541e4122b1d2a22ce46bc",
+      "privateRawSha256": "7b8c99ad6397feaaad949e64890d4186aececa5b2222229fd6b398276a8af613",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-placementsupport-light-s200.png",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "094799aa635e4f9b5576dd8f5d580f5e5dc81d8bbd927e2a5be2ddd7a849b238",
+      "privateRawSha256": "db1e1bb6c4ebf4132c659995de890624a14a8051272c0e37c8c1f59d0e4dcc8b",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalfull-light-s200.png",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "b4ed43b3d65583e76a7da99de48ec5342c7bbc49e72c1c9b4397289dd1881636",
+      "privateRawSha256": "3340e9faf68edaa8459df031d764a9ea72f566861f9fe840a57c14104cab0e22",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalsupport-light-s200.png",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "6dc63ca3a09df9318bf77c7d0d1902b3aa401522d5b40a070f4e5b5f961726fe",
+      "privateRawSha256": "4dde8d66de60bd1055cad483c57fdf8e7fddc8268348c4d2b037e33a591af94d",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityfull-light-s200.png",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "7f37763b7b2b0157be112cdc17a21962d320c27b175b3f0bcc2eb7e0b338267c",
+      "privateRawSha256": "480f3c7e18b06bb8b538d96d704b8c65cc2c18e9c0958d88313f456ed65bee12",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityconditional-light-s200.png",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "513c2326854a5b8c9a0db2b5b718aea805c68a427a0445ef5c658d161edf1c3c",
+      "privateRawSha256": "0e92ba19beaad9ab97e537c31dbe027825f99a493b0fc6d25013cac9a74ca900",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportfull-light-s200.png",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "0ac3f1ff2df9b202689a085a3f61595168f482ffde219bb952fd664c2fe3f8b1",
+      "privateRawSha256": "c20f59887a5acaef8d7d6e6f8f7a219295277c60ba7d692191863545ed5dc879",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportconditional-light-s200.png",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "6cec7cd3af2207774d18928ed5e1dba7b4a20c578ac4a1647f7c5c420d3554a6",
+      "privateRawSha256": "d02df4c031458c37673d1d67245abeda0110dcf981c2a17e788c0db7f4457338",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-placementfull-dark-s200.png",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "70ec7fcd4f4b49cee22b4db99f7cfe58e2b30d3653b1dd18c5d73dafa28ab813",
+      "privateRawSha256": "59d34c288b19c5b5752ad3f5fd2e9ef30e3efd1cf707944449e9bdb98ff4de23",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-placementsupport-dark-s200.png",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "de391f145bea122d7a4f80faa683174097a01297b908322a8ed3ae98b2f24144",
+      "privateRawSha256": "66692ed411a627c4fcd30f98d23c32654d09775eba0cc7a68b456a7cfb1fa7e9",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalfull-dark-s200.png",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "6968493f24577d019018c61d6035c8760ccc355f682421fd16f51a1731750b1e",
+      "privateRawSha256": "1459f2956c2cabfa2fbdb9e59aba1df438d83645bce20c0b10b12add41afac3c",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalsupport-dark-s200.png",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "d91b05738e483e953ed3442e0e9e671bacb20c370d0df524d9196ab91bea534e",
+      "privateRawSha256": "dda1b592239c444d47079fe101072f8028d9559f790fb1f7cb89a8f4f4991f4d",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityfull-dark-s200.png",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "7b21eb876e0f6c35bfd33bd696794b49256d7fe69a110693c75612ece208a5a5",
+      "privateRawSha256": "f295d8ec16f44dfce69260fd3d25b857374a7ecb994d53f4c5cd10875db467f7",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilityconditional-dark-s200.png",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "3a2cafa0e029b13f00c06101a8ca2e858c1450af984a0d4ff435ec0f38b5e095",
+      "privateRawSha256": "c608459d72299e1b7bd7871e08242c3d947f8ced83cbb7fb0b2ab67779e38c1a",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportfull-dark-s200.png",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "3c8c9b980a21199f227b3180e7af943e7372f67941d00e2dc891f38b2ffaaf63",
+      "privateRawSha256": "41ac5e95c69055cd88f93eb1ba397f2a443dc5a8c3e0cd3e93d273a2d750040f",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-visibilitysupportconditional-dark-s200.png",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "85c1daece9923fc3313e373b24e3f29734d2116c6f76a401e9d0bb1dbe5c5cf8",
+      "privateRawSha256": "1e2fb1fd5c25e191df03808122f6cd0c33bfea8da55eb67a68919e22e5a5f991",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementfull-light-s100.png",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "17321c33a3e5bda0059247c80903058e1df0b1b7ffc299b15c98bc1ac991765c",
+      "privateRawSha256": "7642969690c71b6e092bb55dc4ee16bc7683260afa93146560f6b5e10dec6447",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementsupport-light-s100.png",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "144979707d2ba4cbc7eb3552fde62f0bca910a63c153b7f860f255fa1ac25f8b",
+      "privateRawSha256": "ae3dc137e0ad67929777324045682c0b99c879642992f641b5c0968ea759b5b2",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalfull-light-s100.png",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "ccfc95bcfcea9beaa8bea9050cb82447eb1d1e2cea510e90ac0ab5070ecbc64a",
+      "privateRawSha256": "689b1c7a409addcf4f22a227580d523cb70f42e78da7e1e197adddd309e3626d",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalsupport-light-s100.png",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "1e2b4b99fba95b6bc0240ad654c7867088d27f332ad7a34cf4f3153ef54a24d0",
+      "privateRawSha256": "bfa24f3072e24475d114a8e151395bccba582e88b73416597a80cc6406e52166",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityfull-light-s100.png",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "4f7f3598473908a70b0249368eea03ab862cf6f9e7417cbc46bb882b677b7b04",
+      "privateRawSha256": "199ce321023e9f7f55806b55fc0be4d927a5478bac3c3bcd278a553000979732",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityconditional-light-s100.png",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "f35484e4812ff6bcb73572af1d21098a5d54597703677054a467fad6469e9913",
+      "privateRawSha256": "cc6fed8c06bb6541f266071ddc52084b44b0b5f8290593e852352d906d8ebbe4",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportfull-light-s100.png",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "1f0b3a6b78664e06f22d72a32167e612a7a6dde32560ac18e154ff73ca023dcf",
+      "privateRawSha256": "e782c4ac30ede4f8d68556696748a249237e1ce7d63ffcefe1b4abbdd183fa1f",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportconditional-light-s100.png",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "2b02fff926274f0e7979096ac03c10f61c405a127bb6c71c055f4218ab32c809",
+      "privateRawSha256": "efdcc3fd51784fe9018ce6196108b0aa1fe0be6ca2ff3ca4a3c7ff80bbad10b5",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementfull-dark-s100.png",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "96f37fc7426c6509249f500825fb0e2a87eaefb20c1bd2190297a76152d5b8ae",
+      "privateRawSha256": "7d95d55327a27a3adf67b40a34180321db52064cec5d1ccaef7da70d3227eef1",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementsupport-dark-s100.png",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "2284341a5751dd940e47ff66327983a6673e6538a3b098318917b6fe9cac3637",
+      "privateRawSha256": "d276e50802e83bc643d2d88a0be93649d65f812e3debf7874826cb94749f53ec",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalfull-dark-s100.png",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "466c88245efad2deb0b89255f67e7a0d4dc34d9b91a67d15e92cbb1e872f8558",
+      "privateRawSha256": "3effd627be637adcd0525375df6f7e3b805d2cad00bc287de4f81c587204f777",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalsupport-dark-s100.png",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "7366917d92f27cb72c4ded76e249ded8a1b4873f22e82bfd9a0e6811f61a98a9",
+      "privateRawSha256": "04f6679211516a0710fc912d6954f2ae54c1e1ffa766197e7a7795062823efe1",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityfull-dark-s100.png",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "68c0bff698f4b8bacee982f5f81f7a4877cd8354a6377f22ec02ddfc3f74f5b2",
+      "privateRawSha256": "7e22d9b14e69b1aeeaacd5b84f114ac2277612cd50aa262a4f08adf31052b76d",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityconditional-dark-s100.png",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "6e1c4bb2be09c36a7dee696bbc9b6780c88de97a81248b4a96f3afdf15c4d13c",
+      "privateRawSha256": "dd4001aad5d11ad4b4cd868e10570bc8a520fbee7b1b17604594160d9981dfa9",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportfull-dark-s100.png",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "15ef3aa8741a2bd59fdcbf34d9a7823c0d38c9f2504012fed554f8dd42675ed1",
+      "privateRawSha256": "46f2ee4a51bf50c16e633fbe274546e316cae141517937ece8079fc79be97317",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportconditional-dark-s100.png",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "5b07eac3ec210269512eaea12450a6dac403dda621e05a7db0de18cff96d1f00",
+      "privateRawSha256": "c23feda6a717b0a0aae584900db45e99735794552fe239fb745b4de26bfe5d06",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementfull-light-s200.png",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "80f26fa0d6ec513331ea1d55683bf4591b1aa2a6ff10555483b5af5a7aa4a6d1",
+      "privateRawSha256": "58a8ea472bac8f57d7b33a1ed8c48564ab493879b706b7e1448d0bf750a87ec7",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementsupport-light-s200.png",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "6a50a3c94e84308b904ed412dd4beb65e008b402fa715ab9475c5122dde82aa7",
+      "privateRawSha256": "be5379a792d621eee62f439c5aae6869120563816d2f2b184e68aa5b39b62d03",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalfull-light-s200.png",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "d2a47e578024d255e47f170d37c7322edfdeb94cbe1715e11d442c6578b27824",
+      "privateRawSha256": "4557348c03399327737e892c17ba0b190a5bfb0a99a9d9b17aca45e966e36ada",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalsupport-light-s200.png",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "d378f17b445d25f738353907c11487cf0f738a52e504dda65ce3c21c2b16b8ea",
+      "privateRawSha256": "9d7044c7ae4d2c0264a7e90cc038cf6eac7f7c1e357fc1c9e33e81cf431d7453",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityfull-light-s200.png",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "9a663eae024866a0251c43190a0e7e92ff9eb217b36659448211df520c02681c",
+      "privateRawSha256": "be99e6c243ee1f5e980e021c0299fc10975719be29c9a5e4f6f5573d448b6bc5",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityconditional-light-s200.png",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "368e8474d00d2d1773fa5e242c6a643c5d4cdd5dd8844aa442a52577c7dc0b47",
+      "privateRawSha256": "f9186285ac7c96239e77f5401f5053bf8d60fa981a2ae57483de59d6d87a2f05",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportfull-light-s200.png",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "c432ac37dd1afcc7690173ebc57adf8da3d5afecbca98b85cb8577d3aa7bed52",
+      "privateRawSha256": "cd143b27a88af8043377a29c35391ba22af31b7d4d131a928f1851f6689cf047",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportconditional-light-s200.png",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "d13148a3c91178bf51e529b6d5fdd4d647096109edf24ca372ac7a2bb7d8017d",
+      "privateRawSha256": "29c7d0884ca4ba103dd3e0a183bc7f283761c42e23743b385afe39f0156a3499",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementfull-dark-s200.png",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "8c3fb13addbb21f928c6e932bdb70a6d1546b70169a746b0dbf05610786ca865",
+      "privateRawSha256": "e18d081e598be04a6be057b6d202157a2f824b6621004ae2ab65e4862accec87",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-placementsupport-dark-s200.png",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "7aac6977e8078ccc36e18da03924150c474b61e02f60b7c92faa10f2e65bc02a",
+      "privateRawSha256": "9a8b7a5c98278dc371fa8c21fe670c9a4fa4673f146f470e48aa06e38652a67a",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileplacementsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalfull-dark-s200.png",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "ad71e39beab2300b8e63f4344248dc07f2a0bd8e5c09b736144265a37a93eaae",
+      "privateRawSha256": "9ec5bd7b864129618681e443f2bb62a9c594cfb890a0eca7c356fdc7bc5b76b1",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-literalsupport-dark-s200.png",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "4018d8d1befa92ae45feca641cfdf71e54aac8d3cbf2077722c3c266bc26a1f6",
+      "privateRawSha256": "16dff22f54ed310ca0a11d315a35c03f1eda2fa4af87c50aaeec992ac3bb82b0",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityfull-dark-s200.png",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "30fcec578f00ea0676b9fdfdc9687fcdfbf1e011d729804d73f42f547c7d5396",
+      "privateRawSha256": "aa80acc2348c7f7cd49b436d6bcbd4e4505546ef039d9ee4acf63a6cdbd854da",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilityconditional-dark-s200.png",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "07a7bc5f31fc8972de57663a2e639e4a317f12fd5d4f4c9ee0346e7644fa9f93",
+      "privateRawSha256": "20186b02295820c79ba52e97547409774b645ba9fa0344ede5da0beb45867789",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilityconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportfull-dark-s200.png",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "4caa40253e70ada5d7067ec58a384e0d3cf9f842ade492b9ba879cc687c64f0b",
+      "privateRawSha256": "6bd751e9af78c9bc49481eea2e479a269d961f09c422231522fad996b3cf2bc8",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-cover-visibilitysupportconditional-dark-s200.png",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "b636b17e69e0b1002578ea9e876f9599ded1c79a075b7a44fbc72792d07a897e",
+      "privateRawSha256": "c343eba5b7f82e5e5f1a01e84501872cc97aa8d1ec5a6fa8aaaaf4e880266797",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfilevisibilitysupportconditional-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "leadingTitleAndSupportMultiplicityVerified": true
+    },
+    {
+      "file": "search-filename-comparison-inner-literalfull-end-light-s200.png",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "f5bf94ab06159ccf77ea152b7ea77d22ce164493b94a70b6c8c1e1b1a0a067bf",
+      "privateRawSha256": "330196fa24715762128a51482186e3905d13bf8521e0e54a1e413e02b7e28d3c",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "scrollPositiveControl": {
+        "lastTitleBefore": [
+          1249,
+          2075,
+          1395,
+          2152
+        ],
+        "lastTitleAfter": [
+          1249,
+          1856,
+          1395,
+          1959
+        ],
+        "appRgbChanged": true
+      }
+    },
+    {
+      "file": "search-filename-comparison-inner-literalsupport-end-light-s200.png",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "8aada2803ff99caca7604b2e81f04994d522c93ca6b86e2cca3aab41e3cfb561",
+      "privateRawSha256": "d9a05ef4cd7abbe7e3129e807bd5204a7e7e525396ed75426b65f37bcea09974",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "scrollPositiveControl": {
+        "lastTitleBefore": [
+          1249,
+          671,
+          1395,
+          774
+        ],
+        "lastTitleAfter": [
+          1249,
+          1856,
+          1395,
+          1959
+        ],
+        "appRgbChanged": true
+      }
+    },
+    {
+      "file": "search-filename-comparison-inner-literalfull-end-dark-s200.png",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "ad55c36a67dff0c51ac521a4313c5e3c26a96b25043a0f5f8de40a9b88ce1405",
+      "privateRawSha256": "ba77404b75a0704cf134e593ed38c66b6126dc69a391771ede1f0a0da040333d",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralfull-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "scrollPositiveControl": {
+        "lastTitleBefore": [
+          1249,
+          2075,
+          1395,
+          2152
+        ],
+        "lastTitleAfter": [
+          1249,
+          1856,
+          1395,
+          1959
+        ],
+        "appRgbChanged": true
+      }
+    },
+    {
+      "file": "search-filename-comparison-inner-literalsupport-end-dark-s200.png",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "46d9514bc7d2b01e41cc0754993b29a6d704eed91f6379d660824e59373cdbdf",
+      "privateRawSha256": "ef1d56e2f96116b0d146ef68987593eb4baabde16fcfb387c0360e6f742ef964",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "scrollPositiveControl": {
+        "lastTitleBefore": [
+          1249,
+          671,
+          1395,
+          774
+        ],
+        "lastTitleAfter": [
+          1249,
+          1856,
+          1395,
+          1959
+        ],
+        "appRgbChanged": true
+      }
+    },
+    {
+      "file": "search-filename-comparison-cover-literalsupport-end-light-s200.png",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "b891f613b4a8545199d14a38441d08c6279ef544f9e6afcc2b7980858e0944f5",
+      "privateRawSha256": "9f9be46dfb673ede0df1261dd0a4206e7b4a5b7f267fe44eccff03e4cad8d0d1",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results-light",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "scrollPositiveControl": {
+        "lastTitleBefore": [
+          156,
+          2221,
+          302,
+          2324
+        ],
+        "lastTitleAfter": [
+          156,
+          2151,
+          302,
+          2254
+        ],
+        "appRgbChanged": true
+      }
+    },
+    {
+      "file": "search-filename-comparison-cover-literalsupport-end-dark-s200.png",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "ae295acb5b89b3612daae4615cb885583b6e7231adde3f41d120ef6501e6ac78",
+      "privateRawSha256": "f3c0da622626e13bc9a90eb2d6e1f3c507b255ccf4ad5821ba17b9f2513a9cba",
+      "candidate": "search-deck-right-lift-retain-e2floor7p5-imeviewport-rankfileliteralsupport-results",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "scrollPositiveControl": {
+        "lastTitleBefore": [
+          156,
+          2221,
+          302,
+          2324
+        ],
+        "lastTitleAfter": [
+          156,
+          2151,
+          302,
+          2254
+        ],
+        "appRgbChanged": true
+      }
+    }
+  ]
+}

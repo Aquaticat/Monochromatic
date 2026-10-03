@@ -214,6 +214,10 @@ function buildCandidate({
  
  @param paths - candidate repository paths
  
+ @param baseRevision - baseline commit or tree
+ 
+ @param objectDirectory - object store holding the index's blobs, the real store when absent
+ 
  @returns candidates in requested path order
  
  @throws CommitTransactionGitError when private state cannot back candidates
@@ -223,11 +227,15 @@ async function loadPrivateIndexCandidates({
   cwd,
   indexPath,
   paths,
+  baseRevision,
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   indexPath: string;
   paths: readonly string[];
+  baseRevision: string;
+  objectDirectory?: string;
 }>,): Promise<readonly CandidateFile[]> {
   /**
    Independent staged and baseline reads for complete path set.
@@ -243,6 +251,7 @@ async function loadPrivateIndexCandidates({
       gitPath,
       cwd,
       paths,
+      revision: baseRevision,
     },),
   ],);
   /**
@@ -265,6 +274,7 @@ async function loadPrivateIndexCandidates({
         : [entry.oid,];
     },),
     createError: transactionGitError,
+    ...(objectDirectory === undefined ? {} : { objectDirectory, }),
   },);
   return paths.map(function toCandidate(path,): CandidateFile {
     return buildCandidate({
@@ -292,6 +302,10 @@ async function loadPrivateIndexCandidates({
  
  @param paths - candidate paths
  
+ @param baseRevision - baseline commit or tree the transaction recorded; live `HEAD` outside a transaction
+ 
+ @param objectDirectory - object store holding the private index's blobs, such as the transaction's shadow store; the real store when absent
+ 
  @returns policy Git facts
  
  @example
@@ -304,11 +318,15 @@ export function createPrivateIndexFacts({
   cwd,
   indexPath,
   paths,
+  baseRevision = 'HEAD',
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   indexPath: string;
   paths: readonly string[];
+  baseRevision?: string;
+  objectDirectory?: string;
 }>,): LazyPolicyGitFacts {
   return {
     candidates: function candidates(): Promise<readonly CandidateFile[]> {
@@ -317,6 +335,8 @@ export function createPrivateIndexFacts({
         cwd,
         indexPath,
         paths,
+        baseRevision,
+        ...(objectDirectory === undefined ? {} : { objectDirectory, }),
       },);
     },
     trackedFiles: function trackedFiles({ pathspecs, },): Promise<readonly TrackedFile[]> {
@@ -325,6 +345,8 @@ export function createPrivateIndexFacts({
         cwd,
         indexPath,
         pathspecs,
+        baseRevision,
+        ...(objectDirectory === undefined ? {} : { objectDirectory, }),
       },);
     },
     headOid: async function headOid(): Promise<GitObjectId> {
@@ -334,7 +356,7 @@ export function createPrivateIndexFacts({
         args: [
           'rev-parse',
           '--verify',
-          'HEAD^{commit}',
+          `${baseRevision}^{commit}`,
         ],
       },)).stdout,)
         .trim();
@@ -342,173 +364,4 @@ export function createPrivateIndexFacts({
     landedCommitOid: absentLandedCommit,
     pushUpdates: emptyPushUpdates,
   };
-}
-
-/**
- Returns unmerged paths from private index.
- 
- @param gitPath - resolved Git executable
- 
- @param cwd - repository directory
- 
- @param indexPath - private index
- 
- @returns unique unmerged repository paths
- 
- @example
- ```ts
- await listUnmergedIndexPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
- ```
- */
-export async function listUnmergedIndexPaths({
-  gitPath,
-  cwd,
-  indexPath,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  indexPath: string;
-}>,): Promise<readonly string[]> {
-  /**
-   NUL-delimited unmerged stage records.
-   */
-  const output = await runTransactionGit({
-    gitPath,
-    cwd,
-    indexPath,
-    args: [
-      'ls-files',
-      '--unmerged',
-      '-z',
-    ],
-  },);
-  /**
-   Repository paths deduplicated across conflict stages.
-   */
-  const paths = DECODER.decode(output.stdout,)
-    .split('\0',)
-    .flatMap(function recordPath(record,) {
-      /**
-       Metadata/path separator.
-       */
-      const tab = record.indexOf('\t',);
-      return tab === (-1) ? [] : [record.slice(tab + 1,),];
-    },);
-  return [...new Set(paths,),];
-}
-
-/**
- Returns concrete paths from private index through Git pathspec semantics.
- 
- @param gitPath - resolved Git executable
- 
- @param cwd - effective repository cwd
- 
- @param indexPath - private index path
- 
- @param pathspecs - Git pathspec scope
- 
- @returns ordered concrete repository paths
- 
- @example
- ```ts
- await listPrivateIndexPaths({ gitPath, cwd, indexPath, pathspecs: [':/'] });
- ```
- */
-export async function listPrivateIndexPaths({
-  gitPath,
-  cwd,
-  indexPath,
-  pathspecs,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  indexPath: string;
-  pathspecs: readonly string[];
-}>,): Promise<readonly string[]> {
-  /**
-   NUL-delimited private-index path output.
-   */
-  const output = await runTransactionGit({
-    gitPath,
-    cwd,
-    indexPath,
-    args: [
-      'ls-files',
-      '-z',
-      '--',
-      ...pathspecs,
-    ],
-  },);
-  return DECODER.decode(output.stdout,)
-    .split('\0',)
-    .filter(function nonempty(path,) {
-    return path.length > 0;
-  },);
-}
-
-/**
- Returns staged paths from private index relative to HEAD.
- 
- @param gitPath - resolved Git executable
- 
- @param cwd - repository directory
- 
- @param indexPath - private index
- 
- @returns repository paths
- 
- @example
- ```ts
- await listChangedIndexPaths({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index' });
- ```
- */
-export async function listChangedIndexPaths({
-  gitPath,
-  cwd,
-  indexPath,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  indexPath: string;
-}>,): Promise<readonly string[]> {
-  /**
-   Optional existing parent commit.
-   */
-  const head = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'rev-parse',
-      '--verify',
-      'HEAD^{commit}',
-    ],
-    allowFailure: true,
-  },);
-  /**
-   NUL-delimited changed or unborn-index paths.
-   */
-  const output = await runTransactionGit({
-    gitPath,
-    cwd,
-    indexPath,
-    args: head.exitCode === 0
-      ? [
-        'diff',
-        '--cached',
-        '--name-only',
-        '-z',
-        'HEAD',
-      ]
-      : [
-        'ls-files',
-        '--cached',
-        '-z',
-      ],
-  },);
-  return DECODER.decode(output.stdout,)
-    .split('\0',)
-    .filter(function nonempty(path,) {
-    return path.length > 0;
-  },);
 }

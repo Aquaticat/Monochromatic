@@ -7,8 +7,11 @@ import {
 import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import {
+  LEGACY_TRANSACTION_DIRECTORY_NAME,
+  TRANSACTION_ROOT_NAME,
+} from './commit-transaction-registry.ts';
 import { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
-import { TRANSACTION_DIRECTORY_NAME, } from './commit-transaction-workspace.ts';
 
 /**
  Invocation has no worktree transaction directory to recover.
@@ -16,6 +19,20 @@ import { TRANSACTION_DIRECTORY_NAME, } from './commit-transaction-workspace.ts';
 export const RECOVERY_TARGET_NOT_APPLICABLE: unique symbol = Symbol(
   'commit transaction recovery target is not applicable',
 );
+
+/**
+ Recovery locations of one worktree Git directory.
+ */
+export type CommitTransactionRecoveryTargets = Readonly<{
+  /**
+   Single per-index journal directory written by builds before per-transaction journals.
+   */
+  legacyDirectory: string;
+  /**
+   Per-transaction directory registry.
+   */
+  registryRoot: string;
+}>;
 
 /**
  Strict Git metadata decoder.
@@ -26,10 +43,34 @@ const DECODER = new TextDecoder(
 );
 
 /**
- Resolves invocation-specific transaction directory from retained identity or one Git request.
+ Resolves an absolute Git-reported administrative path.
+
+ @param effectiveCwd - invocation repository location
+
+ @param reportedPath - one nonempty Git output line
+
+ @returns absolute path
+ */
+function absoluteGitPath({
+  effectiveCwd,
+  reportedPath,
+}: Readonly<{
+  effectiveCwd: string;
+  reportedPath: string;
+}>,): string {
+  return isAbsolute(reportedPath,)
+    ? reportedPath
+    : resolve(
+        effectiveCwd,
+        reportedPath,
+      );
+}
+
+/**
+ Resolves invocation-specific transaction locations from retained identity or one Git request.
  
  Pre-resolved identity lets known read-only commands reuse worktree classification for recovery
- and forwarding. Other commands ask Git for membership and transaction path together.
+ and forwarding. Other commands ask Git for membership and both transaction paths together.
  
  @param args - Exact wrapper arguments.
  
@@ -37,16 +78,16 @@ const DECODER = new TextDecoder(
  
  @param identity - Optional identity already resolved before config-free policy execution.
  
- @returns Absolute transaction directory or not-applicable sentinel.
+ @returns Absolute legacy directory and registry, or not-applicable sentinel.
  
  @throws {@link CommitTransactionRecoveryError} when Git returns incomplete metadata.
  
  @example
  ```ts
- await resolveCommitTransactionDirectory({ args: ['status'], gitPath: '/usr/bin/git' });
+ await resolveCommitTransactionTargets({ args: ['status'], gitPath: '/usr/bin/git' });
  ```
  */
-export async function resolveCommitTransactionDirectory({
+export async function resolveCommitTransactionTargets({
   args,
   gitPath,
   identity,
@@ -63,14 +104,20 @@ export async function resolveCommitTransactionDirectory({
    Optional retained repository identity.
    */
   identity?: GitWorktreeIdentity;
-}>,): Promise<string | typeof RECOVERY_TARGET_NOT_APPLICABLE> {
+}>,): Promise<CommitTransactionRecoveryTargets | typeof RECOVERY_TARGET_NOT_APPLICABLE> {
   if (identity !== undefined) {
     if ((identity.kind === 'outside-worktree') || (identity.kind === 'bare-repository'))
       return RECOVERY_TARGET_NOT_APPLICABLE;
-    return join(
-      identity.gitDir,
-      TRANSACTION_DIRECTORY_NAME,
-    );
+    return {
+      legacyDirectory: join(
+        identity.gitDir,
+        LEGACY_TRANSACTION_DIRECTORY_NAME,
+      ),
+      registryRoot: join(
+        identity.gitDir,
+        TRANSACTION_ROOT_NAME,
+      ),
+    };
   }
 
   /**
@@ -78,7 +125,7 @@ export async function resolveCommitTransactionDirectory({
    */
   const { effectiveCwd, } = parseGlobalOptions(args,);
   /**
-   Combined worktree-membership and transaction-path response.
+   Combined worktree-membership and transaction-paths response.
    */
   const metadata = await runTransactionGit({
     gitPath,
@@ -88,7 +135,9 @@ export async function resolveCommitTransactionDirectory({
       '--path-format=absolute',
       '--is-inside-work-tree',
       '--git-path',
-      TRANSACTION_DIRECTORY_NAME,
+      LEGACY_TRANSACTION_DIRECTORY_NAME,
+      '--git-path',
+      TRANSACTION_ROOT_NAME,
     ],
     allowFailure: true,
   },);
@@ -100,21 +149,29 @@ export async function resolveCommitTransactionDirectory({
    */
   const [
     insideWorktree,
-    reportedDirectory,
+    reportedLegacyDirectory,
+    reportedRegistryRoot,
   ] = DECODER.decode(metadata.stdout,)
     .trim()
     .split('\n',);
   if (insideWorktree !== 'true')
     return RECOVERY_TARGET_NOT_APPLICABLE;
-  if ((reportedDirectory === undefined) || (reportedDirectory === '')) {
+  if ((reportedLegacyDirectory === undefined)
+    || (reportedLegacyDirectory === '')
+    || (reportedRegistryRoot === undefined)
+    || (reportedRegistryRoot === '')) {
     throw new CommitTransactionRecoveryError(
       'Git returned incomplete commit transaction recovery metadata.',
     );
   }
-  return isAbsolute(reportedDirectory,)
-    ? reportedDirectory
-    : resolve(
-        effectiveCwd,
-        reportedDirectory,
-      );
+  return {
+    legacyDirectory: absoluteGitPath({
+      effectiveCwd,
+      reportedPath: reportedLegacyDirectory,
+    },),
+    registryRoot: absoluteGitPath({
+      effectiveCwd,
+      reportedPath: reportedRegistryRoot,
+    },),
+  };
 }

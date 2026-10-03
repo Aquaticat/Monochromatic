@@ -191,6 +191,8 @@ function parseBatchOutput({
  
  @param createError - domain error factory for batch failure and malformed output
  
+ @param objectDirectory - object store to read, such as a transaction's shadow store; the repository's own store when absent
+ 
  @returns exact blob bytes keyed by object ID
  
  @throws caller-domain error when Git exits nonzero or output is malformed
@@ -205,11 +207,13 @@ export async function loadBlobBatch({
   cwd,
   oids,
   createError,
+  objectDirectory,
 }: {
   readonly gitPath: string;
   readonly cwd: string;
   readonly oids: readonly string[];
   readonly createError: (message: string) => Error;
+  readonly objectDirectory?: string;
 },): Promise<ReadonlyMap<string, Uint8Array>> {
   /**
    Unique request order avoids re-reading unchanged blobs across commit trees.
@@ -228,6 +232,10 @@ export async function loadBlobBatch({
     ],
     {
       cwd,
+      env: objectDirectory === undefined ? process.env : {
+        ...process.env,
+        GIT_OBJECT_DIRECTORY: objectDirectory,
+      },
       stdio: [
         'pipe',
         'pipe',

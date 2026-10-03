@@ -10,6 +10,7 @@ import {
   type PluginDefinition,
   type PolicyDefinition,
   type PolicyFinding,
+  type PolicyInputs,
 } from '@monochromatic-dev/git-policy-api/ts';
 import * as v from 'valibot';
 import { scanCandidates, } from './scan-candidates.ts';
@@ -47,6 +48,58 @@ const forbiddenStringsOptions = definePolicyOptions(v.object({
 },),);
 
 /**
+ Rules file the scanner reads when `FORBIDDEN_STRINGS_RULES` is unset, relative to its working directory.
+ */
+const DEFAULT_RULES_PATH = 'forbidden-strings.local.txt';
+
+/**
+ What the scanner reads besides candidate bytes:
+ its executable,
+ which embeds the built-in rules,
+ and the one rules file `FORBIDDEN_STRINGS_RULES` names,
+ or the default file in the repository root.
+ The rules path is a literal pathspec,
+ so a path outside the repository cannot be fingerprinted and the policy always re-runs.
+ The scanner's compiled-rules cache is keyed by rules content,
+ so it is not an input.
+ It also looks for `.git` above its working directory,
+ which is fixed for a commit.
+
+ @param options - validated scanner options
+
+ @returns declared inputs
+
+ @example
+ ```ts
+ forbiddenStringsInputs({ executable: 'forbidden-strings', builtinRules: true });
+ ```
+ */
+export function forbiddenStringsInputs(options: ForbiddenStringsPolicyOptions,): PolicyInputs {
+  /**
+   Rules file the scanner reads, relative to the repository root unless absolute.
+   */
+  const rulesPath = process.env
+    .FORBIDDEN_STRINGS_RULES
+    ?? DEFAULT_RULES_PATH;
+  return {
+    external: [
+      {
+        kind: 'executable',
+        path: options.executable,
+      },
+      {
+        kind: 'env',
+        name: 'FORBIDDEN_STRINGS_RULES',
+      },
+      {
+        kind: 'worktree',
+        pathspecs: [`:(literal)${rulesPath}`,],
+      },
+    ],
+  };
+}
+
+/**
  Scans exact candidate content through separately built forbidden-strings binary.
  
  @example
@@ -69,6 +122,7 @@ export const forbiddenStringsPolicy: PolicyDefinition<
     'direct-check',
   ],
   options: forbiddenStringsOptions,
+  inputs: forbiddenStringsInputs,
   /**
    Scans lifecycle-selected candidate bytes.
    

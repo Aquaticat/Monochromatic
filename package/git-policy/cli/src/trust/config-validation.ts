@@ -10,21 +10,20 @@ import type {
 } from '../api/policy-types.ts';
 import { BUILT_IN_POLICIES, } from '../policy-engine/built-ins.ts';
 import type { RuntimePolicyDefinition, } from '../policy-engine/types.ts';
+import {
+  CONCURRENCY_CONFIG_KEYS,
+  type ConcurrencyConfig,
+  validateConcurrencyConfig,
+} from './config-validation-concurrency.ts';
+import { ConfigValidationError, } from './config-validation-error.ts';
+import {
+  INPUTS_UNDECLARED,
+  resolvePolicyInputs,
+  validateInputsDeclaration,
+} from './policy-inputs-schema.ts';
 
-/**
- Loaded configuration failed runtime validation.
- */
-export class ConfigValidationError extends Error {
-  /**
-   Creates configuration validation failure.
-   
-   @param message - safe failure explanation
-   */
-  public constructor(message: string,) {
-    super(message,);
-    this.name = 'ConfigValidationError';
-  }
-}
+export { ConfigValidationError, } from './config-validation-error.ts';
+
 
 /**
  Prepared runtime policy configuration.
@@ -35,7 +34,7 @@ export type ValidatedConfig = Readonly<{
    */
   recursiveChildren: boolean;
   /**
-   Built-ins followed by namespaced plugins.
+   Built-ins followed by namespaced plugins, each enabled policy carrying its resolved inputs.
    */
   registeredPolicies: readonly RuntimePolicyDefinition[];
   /**
@@ -46,6 +45,10 @@ export type ValidatedConfig = Readonly<{
    Runtime-parsed policy option outputs.
    */
   policyOptions: ReadonlyMap<string, unknown>;
+  /**
+   Concurrent-commit tuning with defaults applied.
+   */
+  concurrency: ConcurrencyConfig;
 }>;
 
 /**
@@ -73,6 +76,7 @@ const CONFIG_KEYS: ReadonlySet<string> = new Set([
   'plugins',
   'policies',
   'trust',
+  ...CONCURRENCY_CONFIG_KEYS,
 ]);
 
 /**
@@ -239,6 +243,13 @@ function validatePolicy({
   assertPolicyCheck(value.check,);
   if (value.options !== undefined)
     assertSchema(value.options,);
+  /**
+   Validated static inputs or function, or the undeclared sentinel for the unrestricted default.
+   */
+  const inputs = validateInputsDeclaration({
+    value: value.inputs,
+    effectiveId,
+  },);
 
   return {
     name: effectiveId,
@@ -247,6 +258,7 @@ function validatePolicy({
     triggers: value.triggers
       .filter(isPolicyTrigger,),
     ...(value.options === undefined ? {} : { options: value.options, }),
+    ...(inputs === INPUTS_UNDECLARED ? {} : { inputs, }),
     check: value.check,
   };
 }
@@ -392,6 +404,10 @@ export function validateConfig(value: unknown,): ValidatedConfig {
   },);
   if (unknownKey !== undefined)
     throw new ConfigValidationError(`Unknown configuration key: ${unknownKey}`,);
+  /**
+   Concurrent-commit tuning, validated before plugins as the config contract orders it.
+   */
+  const concurrency = validateConcurrencyConfig(value,);
 
   /**
    Declared plugin namespace map.
@@ -484,6 +500,21 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     );
     policySeverities[policy.name] = parsed.severity;
   }
+  /**
+   Registry with every enabled policy's inputs resolved after every option parsed.
+   */
+  const resolvedPolicies = registeredPolicies.map(function resolveInputs(policy,): RuntimePolicyDefinition {
+    return policySeverities[policy.name] === 'off'
+      ? policy
+      : {
+        ...policy,
+        inputs: resolvePolicyInputs({
+          ...(policy.inputs === undefined ? {} : { declaration: policy.inputs, }),
+          options: policyOptions.get(policy.name,),
+          effectiveId: policy.name,
+        },),
+      };
+  },);
 
   if (value.trust !== undefined) {
     assertRecord(value.trust,);
@@ -505,8 +536,9 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     recursiveChildren: (value.trust !== undefined) && (value.trust
       .children
       === true),
-    registeredPolicies,
+    registeredPolicies: resolvedPolicies,
     policySeverities,
     policyOptions,
+    concurrency,
   };
 }

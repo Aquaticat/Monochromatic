@@ -35,6 +35,23 @@ await describe({
     },),
 
     it({
+      name: 'returns genuine errors from other realms unchanged',
+      fn: async () => {
+        const { runInNewContext, } = await import('node:vm');
+        const foreign: unknown = runInNewContext('new TypeError("bad type",)',);
+        expect(errorOrThrow(foreign,),).toBe(foreign,);
+      },
+    },),
+
+    it({
+      name: 'throws on prototype-only impostors and Error-shaped fakes',
+      fn: async () => {
+        expect(() => errorOrThrow(Object.create(Error.prototype,),),).toThrow('Error',);
+        expect(() => errorOrThrow({ name: 'Error', message: 'boom', stack: '', },),).toThrow('Error',);
+      },
+    },),
+
+    it({
       name: 'throws on non-Error values, including error-shaped plain objects',
       fn: async () => {
         expect(() => errorOrThrow('boom',)).toThrow('Error',);

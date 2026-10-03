@@ -297,7 +297,7 @@ export const noRegex: CreateOnceRule = {
       regexLiteral:
         'Regex literal requires a scoped disable with justification. Prefer an index scan, parser, or string API; if regex is still right, add `oxlint-disable-next-line no-restricted-syntax/no-regex -- <why regex, input bounds, backtracking safety>`.',
       regexpConstructor:
-        'RegExp constructor requires a scoped disable with justification. Explain why dynamic regex compilation is needed, what bounds the pattern/input, and why matching stays safe.',
+        'RegExp constructor requires a scoped disable with justification. Prefer an index scan, parser, or string API; if dynamic regex is still right, explain why dynamic compilation is needed, what bounds the pattern/input, and why matching stays safe.',
       stringMethod:
         'String#{{method}}() with an inline regex requires a scoped disable with justification. Explain why regex is clearer than a string API or parser, and what bounds matching cost.',
     },

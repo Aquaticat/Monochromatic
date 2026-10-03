@@ -97,6 +97,9 @@ export const markdownLintPolicy: PolicyDefinition<
   name: 'autofix',
   defaultSeverity: 'warn',
   warnSafe: true,
+  // The configured command runs a program that may read any file, and the lfs-image-url rule reads
+  // `.lfsconfig`, `.gitattributes`, and every image a candidate links, none of which an input kind can name.
+  inputs: 'unrestricted',
   triggers: [
     'pre-forward',
     'post-commit',

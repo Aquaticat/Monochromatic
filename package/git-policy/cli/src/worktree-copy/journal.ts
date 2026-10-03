@@ -9,6 +9,7 @@ import {
   rm,
 } from 'node:fs/promises';
 import {
+  basename,
   dirname,
   join,
 } from 'node:path';
@@ -51,6 +52,11 @@ const PRIVATE_FILE_MODE = 0o600;
  Journal filename suffix.
  */
 const JOURNAL_SUFFIX = '.json';
+
+/**
+ Suffix of an unpublished temporary journal write.
+ */
+const TEMPORARY_SUFFIX = '.tmp';
 
 /**
  Resolves private journal root beneath canonical common Git directory.
@@ -243,7 +249,7 @@ export async function writeJournal({
   /**
    Unique sibling temporary journal path.
    */
-  const temporaryPath = `${path}.${randomUUID()}.tmp`;
+  const temporaryPath = `${path}.${randomUUID()}${TEMPORARY_SUFFIX}`;
   /**
    Plain immutable journal value detached from caller-owned arrays.
    */
@@ -451,6 +457,38 @@ export async function readPendingWorktreeCopyJournals(
 }
 
 /**
+ Removes temporary journal files an interrupted {@link writeJournal} of this journal left beside it.
+
+ @param path - final journal path whose temporary siblings carry its name as prefix
+
+ @example
+ ```ts
+ await removeUnfinishedJournalWrites('/repo/.git/cli-git-worktree-copy/v1/id.json');
+ ```
+ */
+async function removeUnfinishedJournalWrites(path: string,): Promise<void> {
+  /**
+   Temporary-name prefix owned by this journal.
+   */
+  const prefix = `${basename(path,)}.`;
+  /**
+   Unfinished temporary writes of this journal.
+   */
+  const unfinished = (await readdir(dirname(path,),)).filter(function isOwnTemporary(name,): boolean {
+    return name.startsWith(prefix,) && name.endsWith(TEMPORARY_SUFFIX,);
+  },);
+  await Promise.all(unfinished.map(function removeTemporary(name,): Promise<void> {
+    return rm(
+      join(
+        dirname(path,),
+        name,
+      ),
+      { force: true, },
+    );
+  },),);
+}
+
+/**
  Removes completed journal and private stage.
  
  @param pending - completed durable transaction
@@ -490,5 +528,6 @@ export async function removeWorktreeCopyJournal(
     pending.path,
     { force: true, },
   );
+  await removeUnfinishedJournalWrites(pending.path,);
   await syncDirectory(dirname(pending.path,),);
 }

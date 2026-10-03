@@ -1,6 +1,6 @@
 # Pi ask-user-question
 
-Pi extension that lets the model ask one free-form question,
+Pi extension that lets the model ask free-form questions,
 then blocks that model turn until the user finishes a multiline answer.
 
 The question remains fully visible in Pi's transcript.

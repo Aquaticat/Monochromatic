@@ -1,0 +1,3321 @@
+{
+ "catalogGeneratedAt": "2026-10-01T18:57:11.882Z",
+ "catalogSchemaVersion": 6,
+ "entryCount": 1604,
+ "retirementCount": 551,
+ "abstentions": {
+  "keeperAmbiguity": 14,
+  "unorderedPair": 15,
+  "loserNewerThanKeeper": 0,
+  "versionlessProtected": 6,
+  "duplicateIdentity": 0
+ },
+ "retirements": [
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "amazon.nova-lite-v1:0",
+   "keeperId": "amazon.nova-2-lite-v1:0"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-fable-5",
+   "keeperId": "anthropic.claude-fable-5-1"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-opus-4-1-20250805-v1:0",
+   "keeperId": "anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-opus-4-5-20251101-v1:0",
+   "keeperId": "anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-opus-4-6-v1",
+   "keeperId": "anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-opus-4-7",
+   "keeperId": "anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-opus-4-8",
+   "keeperId": "anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-sonnet-4-5-20250929-v1:0",
+   "keeperId": "anthropic.claude-sonnet-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-sonnet-4-6",
+   "keeperId": "anthropic.claude-sonnet-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "anthropic.claude-sonnet-5",
+   "keeperId": "anthropic.claude-sonnet-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "au.anthropic.claude-opus-4-6-v1",
+   "keeperId": "au.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "au.anthropic.claude-opus-4-7",
+   "keeperId": "au.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "au.anthropic.claude-opus-4-8",
+   "keeperId": "au.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "au.anthropic.claude-opus-5",
+   "keeperId": "au.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
+   "keeperId": "au.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "au.anthropic.claude-sonnet-4-6",
+   "keeperId": "au.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.amazon.nova-lite-v1:0",
+   "keeperId": "eu.amazon.nova-2-lite-v1:0"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
+   "keeperId": "eu.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-opus-4-6-v1",
+   "keeperId": "eu.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-opus-4-7",
+   "keeperId": "eu.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-opus-4-8",
+   "keeperId": "eu.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-opus-5",
+   "keeperId": "eu.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-sonnet-4-20250514-v1:0",
+   "keeperId": "eu.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0",
+   "keeperId": "eu.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "eu.anthropic.claude-sonnet-4-6",
+   "keeperId": "eu.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-fable-5",
+   "keeperId": "global.anthropic.claude-fable-5-1"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-opus-4-5-20251101-v1:0",
+   "keeperId": "global.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-opus-4-6-v1",
+   "keeperId": "global.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-opus-4-7",
+   "keeperId": "global.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-opus-4-8",
+   "keeperId": "global.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-opus-5",
+   "keeperId": "global.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-sonnet-4-20250514-v1:0",
+   "keeperId": "global.anthropic.claude-sonnet-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+   "keeperId": "global.anthropic.claude-sonnet-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-sonnet-4-6",
+   "keeperId": "global.anthropic.claude-sonnet-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.anthropic.claude-sonnet-5",
+   "keeperId": "global.anthropic.claude-sonnet-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.openai.gpt-5.6-luna",
+   "keeperId": "global.openai.gpt-6-luna"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.openai.gpt-5.6-sol",
+   "keeperId": "global.openai.gpt-6.1-sol"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.openai.gpt-6-sol",
+   "keeperId": "global.openai.gpt-6.1-sol"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "global.xai.grok-4.6",
+   "keeperId": "global.xai.grok-4.7"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "jp.anthropic.claude-opus-4-7",
+   "keeperId": "jp.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "jp.anthropic.claude-opus-4-8",
+   "keeperId": "jp.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "jp.anthropic.claude-opus-5",
+   "keeperId": "jp.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
+   "keeperId": "jp.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "jp.anthropic.claude-sonnet-4-6",
+   "keeperId": "jp.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "meta.llama3-1-70b-instruct-v1:0",
+   "keeperId": "meta.llama3-3-70b-instruct-v1:0"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "minimax.minimax-m2",
+   "keeperId": "minimax.minimax-m2.5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "minimax.minimax-m2.1",
+   "keeperId": "minimax.minimax-m2.5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "openai.gpt-5.4",
+   "keeperId": "openai.gpt-5.5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "openai.gpt-5.6-luna",
+   "keeperId": "openai.gpt-6-luna"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "openai.gpt-5.6-sol",
+   "keeperId": "openai.gpt-6.1-sol"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "openai.gpt-6-sol",
+   "keeperId": "openai.gpt-6.1-sol"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.amazon.nova-lite-v1:0",
+   "keeperId": "us.amazon.nova-2-lite-v1:0"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-fable-5",
+   "keeperId": "us.anthropic.claude-fable-5-1"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-opus-4-1-20250805-v1:0",
+   "keeperId": "us.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-opus-4-5-20251101-v1:0",
+   "keeperId": "us.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-opus-4-6-v1",
+   "keeperId": "us.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-opus-4-7",
+   "keeperId": "us.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-opus-4-8",
+   "keeperId": "us.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-opus-5",
+   "keeperId": "us.anthropic.claude-opus-5-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+   "keeperId": "us.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+   "keeperId": "us.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.anthropic.claude-sonnet-4-6",
+   "keeperId": "us.anthropic.claude-sonnet-5"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.meta.llama3-1-70b-instruct-v1:0",
+   "keeperId": "us.meta.llama3-3-70b-instruct-v1:0"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.openai.gpt-5.6-luna",
+   "keeperId": "us.openai.gpt-6-luna"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.openai.gpt-5.6-sol",
+   "keeperId": "us.openai.gpt-6.1-sol"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.openai.gpt-6-sol",
+   "keeperId": "us.openai.gpt-6.1-sol"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.writer.palmyra-x4-v1:0",
+   "keeperId": "us.writer.palmyra-x5-v1:0"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "us.xai.grok-4.6",
+   "keeperId": "us.xai.grok-4.7"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "writer.palmyra-x4-v1:0",
+   "keeperId": "writer.palmyra-x5-v1:0"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "xai.grok-4.3",
+   "keeperId": "xai.grok-4.6"
+  },
+  {
+   "provider": "amazon-bedrock",
+   "api": "bedrock-converse-stream",
+   "retiredId": "zai.glm-4.7",
+   "keeperId": "zai.glm-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-fable-5",
+   "keeperId": "claude-fable-5-1"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-haiku-4-5-20251001",
+   "keeperId": "claude-haiku-4-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-5",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-5-20251101",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-6",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-7",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-8",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-5",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4-5",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4-5-20250929",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4-6",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "anthropic",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-5",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-4.1",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.1",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.2",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-4.1-mini",
+   "keeperId": "gpt-5.4-mini"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5-mini",
+   "keeperId": "gpt-5.4-mini"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-4.1-nano",
+   "keeperId": "gpt-5.4-nano"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5-nano",
+   "keeperId": "gpt-5.4-nano"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-4o-2024-05-13",
+   "keeperId": "gpt-4o-2024-11-20"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-4o-2024-08-06",
+   "keeperId": "gpt-4o-2024-11-20"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5-chat-latest",
+   "keeperId": "gpt-5.3-chat-latest"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.2-chat-latest",
+   "keeperId": "gpt-5.3-chat-latest"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.2-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.4-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-5.6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "gpt-6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "o1",
+   "keeperId": "o3"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "o1-pro",
+   "keeperId": "o3-pro"
+  },
+  {
+   "provider": "azure-openai-responses",
+   "api": "azure-openai-responses",
+   "retiredId": "o3-mini",
+   "keeperId": "o4-mini"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "deepseek-ai/DeepSeek-V4-Pro-0813",
+   "keeperId": "deepseek-ai/DeepSeek-V4-Pro"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/Kimi-K2.5",
+   "keeperId": "moonshotai/Kimi-K3"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/Kimi-K2.6",
+   "keeperId": "moonshotai/Kimi-K3"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-4.7",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5.1",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5.2",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "baseten",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5.2-Fast",
+   "keeperId": "zai-org/GLM-5.3-Fast"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-fable-5",
+   "keeperId": "claude-fable-5.1"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4.5",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4.6",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4.7",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4.8",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-5",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4.5",
+   "keeperId": "claude-sonnet-5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4.6",
+   "keeperId": "claude-sonnet-5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-completions",
+   "retiredId": "workers-ai/@cf/zai-org/glm-4.7-flash",
+   "keeperId": "workers-ai/@cf/zai-org/glm-5.3-flash"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-completions",
+   "retiredId": "workers-ai/@cf/zai-org/glm-5.2",
+   "keeperId": "workers-ai/@cf/zai-org/glm-5.3"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-4.1",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.1",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-4.1-mini",
+   "keeperId": "gpt-5.4-mini"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-mini",
+   "keeperId": "gpt-5.4-mini"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-4.1-nano",
+   "keeperId": "gpt-5.4-nano"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-nano",
+   "keeperId": "gpt-5.4-nano"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.4-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-sol",
+   "keeperId": "gpt-6-sol"
+  },
+  {
+   "provider": "cloudflare-ai-gateway",
+   "api": "openai-responses",
+   "retiredId": "o3-mini",
+   "keeperId": "o4-mini"
+  },
+  {
+   "provider": "cloudflare-workers-ai",
+   "api": "openai-completions",
+   "retiredId": "@cf/zai-org/glm-4.7-flash",
+   "keeperId": "@cf/zai-org/glm-5.3-flash"
+  },
+  {
+   "provider": "cloudflare-workers-ai",
+   "api": "openai-completions",
+   "retiredId": "@cf/zai-org/glm-5.2",
+   "keeperId": "@cf/zai-org/glm-5.3"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "anthropic-messages",
+   "retiredId": "claude-fable-5",
+   "keeperId": "claude-fable-5.1"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4.7",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4.8",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-5",
+   "keeperId": "claude-opus-5.5"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4.6",
+   "keeperId": "claude-sonnet-5.5"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-5",
+   "keeperId": "claude-sonnet-5.5"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-completions",
+   "retiredId": "gemini-3.5-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-completions",
+   "retiredId": "gemini-3.6-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-completions",
+   "retiredId": "gemini-3.7-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-mini",
+   "keeperId": "gpt-5.4-mini"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-responses",
+   "retiredId": "gpt-6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-responses",
+   "retiredId": "grok-4.5",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "github-copilot",
+   "api": "openai-responses",
+   "retiredId": "grok-4.6",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "google-vertex",
+   "api": "google-vertex",
+   "retiredId": "gemini-2.5-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google-vertex",
+   "api": "google-vertex",
+   "retiredId": "gemini-3.5-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google-vertex",
+   "api": "google-vertex",
+   "retiredId": "gemini-3.6-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google-vertex",
+   "api": "google-vertex",
+   "retiredId": "gemini-3.7-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google-vertex",
+   "api": "google-vertex",
+   "retiredId": "gemini-2.5-flash-lite",
+   "keeperId": "gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "google-vertex",
+   "api": "google-vertex",
+   "retiredId": "gemini-3.1-flash-lite",
+   "keeperId": "gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "google",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-2.5-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3.5-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3.6-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3.7-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "google",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-2.5-flash-lite",
+   "keeperId": "gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "google",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3.1-flash-lite",
+   "keeperId": "gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "groq",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.6-27b",
+   "keeperId": "qwen/qwen3.8-27b"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "deepseek-ai/DeepSeek-R1-0528",
+   "keeperId": "deepseek-ai/DeepSeek-R1"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "deepseek-ai/DeepSeek-V3",
+   "keeperId": "deepseek-ai/DeepSeek-V3.2"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "deepseek-ai/DeepSeek-V3.1",
+   "keeperId": "deepseek-ai/DeepSeek-V3.2"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "deepseek-ai/DeepSeek-V4-Flash",
+   "keeperId": "deepseek-ai/DeepSeek-V4.1-Flash"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "deepseek-ai/DeepSeek-V4-Pro-0813",
+   "keeperId": "deepseek-ai/DeepSeek-V4-Pro"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "MiniMaxAI/MiniMax-M2",
+   "keeperId": "MiniMaxAI/MiniMax-M3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "MiniMaxAI/MiniMax-M2.1",
+   "keeperId": "MiniMaxAI/MiniMax-M3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "MiniMaxAI/MiniMax-M2.5",
+   "keeperId": "MiniMaxAI/MiniMax-M3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "MiniMaxAI/MiniMax-M2.7",
+   "keeperId": "MiniMaxAI/MiniMax-M3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/Kimi-K2-Instruct-0905",
+   "keeperId": "moonshotai/Kimi-K2-Instruct"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/Kimi-K2.5",
+   "keeperId": "moonshotai/Kimi-K3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/Kimi-K2.6",
+   "keeperId": "moonshotai/Kimi-K3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "Qwen/Qwen3.5-27B",
+   "keeperId": "Qwen/Qwen3.8-27B"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "Qwen/Qwen3.6-27B",
+   "keeperId": "Qwen/Qwen3.8-27B"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "Qwen/Qwen3.5-35B-A3B",
+   "keeperId": "Qwen/Qwen3.6-35B-A3B"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "stepfun-ai/Step-3.5-Flash",
+   "keeperId": "stepfun-ai/Step-3.7-Flash"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-4.5",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-4.6",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-4.7",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5.1",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5.2",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "huggingface",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-4.7-Flash",
+   "keeperId": "zai-org/GLM-5.3-Flash"
+  },
+  {
+   "provider": "meta",
+   "api": "openai-responses",
+   "retiredId": "muse-spark-1.1",
+   "keeperId": "muse-spark-1.3"
+  },
+  {
+   "provider": "meta",
+   "api": "openai-responses",
+   "retiredId": "muse-spark-1.2",
+   "keeperId": "muse-spark-1.3"
+  },
+  {
+   "provider": "meta",
+   "api": "openai-responses",
+   "retiredId": "muse-spark-1.2-contributor",
+   "keeperId": "muse-spark-1.3-contributor"
+  },
+  {
+   "provider": "minimax-cn",
+   "api": "anthropic-messages",
+   "retiredId": "MiniMax-M2.7",
+   "keeperId": "MiniMax-M3"
+  },
+  {
+   "provider": "minimax",
+   "api": "anthropic-messages",
+   "retiredId": "MiniMax-M2.7",
+   "keeperId": "MiniMax-M3"
+  },
+  {
+   "provider": "mistral",
+   "api": "mistral-conversations",
+   "retiredId": "devstral-small-2505",
+   "keeperId": "devstral-small-2507"
+  },
+  {
+   "provider": "mistral",
+   "api": "mistral-conversations",
+   "retiredId": "mistral-large-2411",
+   "keeperId": "mistral-large-2512"
+  },
+  {
+   "provider": "mistral",
+   "api": "mistral-conversations",
+   "retiredId": "mistral-medium-2505",
+   "keeperId": "mistral-medium-2604"
+  },
+  {
+   "provider": "mistral",
+   "api": "mistral-conversations",
+   "retiredId": "mistral-medium-2508",
+   "keeperId": "mistral-medium-2604"
+  },
+  {
+   "provider": "mistral",
+   "api": "mistral-conversations",
+   "retiredId": "mistral-small-2506",
+   "keeperId": "mistral-small-2603"
+  },
+  {
+   "provider": "mistral",
+   "api": "mistral-conversations",
+   "retiredId": "zai-glm-5-2",
+   "keeperId": "zai-glm-5-3"
+  },
+  {
+   "provider": "moonshotai-cn",
+   "api": "openai-completions",
+   "retiredId": "kimi-k2.6",
+   "keeperId": "kimi-k3"
+  },
+  {
+   "provider": "moonshotai",
+   "api": "openai-completions",
+   "retiredId": "kimi-k2.6",
+   "keeperId": "kimi-k3"
+  },
+  {
+   "provider": "nvidia",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/kimi-k2.6",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "openai-codex",
+   "api": "openai-codex-responses",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "openai-codex",
+   "api": "openai-codex-responses",
+   "retiredId": "gpt-5.6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "openai-codex",
+   "api": "openai-codex-responses",
+   "retiredId": "gpt-6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-4.1",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.1",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.2",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-4.1-mini",
+   "keeperId": "gpt-5.4-mini"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-mini",
+   "keeperId": "gpt-5.4-mini"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-4.1-nano",
+   "keeperId": "gpt-5.4-nano"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-nano",
+   "keeperId": "gpt-5.4-nano"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-4o-2024-05-13",
+   "keeperId": "gpt-4o-2024-11-20"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-4o-2024-08-06",
+   "keeperId": "gpt-4o-2024-11-20"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-chat-latest",
+   "keeperId": "gpt-5.3-chat-latest"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.2-chat-latest",
+   "keeperId": "gpt-5.3-chat-latest"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.2-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.4-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "gpt-6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "o1",
+   "keeperId": "o3"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "o1-pro",
+   "keeperId": "o3-pro"
+  },
+  {
+   "provider": "openai",
+   "api": "openai-responses",
+   "retiredId": "o3-mini",
+   "keeperId": "o4-mini"
+  },
+  {
+   "provider": "opencode-go",
+   "api": "openai-completions",
+   "retiredId": "deepseek-v4-flash",
+   "keeperId": "deepseek-v4.1-flash"
+  },
+  {
+   "provider": "opencode-go",
+   "api": "openai-completions",
+   "retiredId": "glm-5.2",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "opencode-go",
+   "api": "openai-completions",
+   "retiredId": "mimo-v2.5-pro",
+   "keeperId": "mimo-v2.6-pro"
+  },
+  {
+   "provider": "opencode-go",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "opencode-go",
+   "api": "openai-responses",
+   "retiredId": "grok-4.6",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "opencode-go",
+   "api": "openai-responses",
+   "retiredId": "muse-spark-1.2-contributor",
+   "keeperId": "muse-spark-1.3-contributor"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-fable-5",
+   "keeperId": "claude-fable-5-1"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-5",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-6",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-7",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-4-8",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-opus-5",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4-5",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-4-6",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "claude-sonnet-5",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "opencode",
+   "api": "anthropic-messages",
+   "retiredId": "qwen3.5-plus",
+   "keeperId": "qwen3.6-plus"
+  },
+  {
+   "provider": "opencode",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "opencode",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3.5-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "opencode",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3.6-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "opencode",
+   "api": "google-generative-ai",
+   "retiredId": "gemini-3.7-flash",
+   "keeperId": "gemini-3.8-flash"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "deepseek-v4-flash",
+   "keeperId": "deepseek-v4.1-flash"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "glm-5",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "glm-5.1",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "glm-5.2",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "kimi-k2.5",
+   "keeperId": "kimi-k3"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "kimi-k2.6",
+   "keeperId": "kimi-k3"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "minimax-m2.5",
+   "keeperId": "minimax-m3"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-completions",
+   "retiredId": "minimax-m2.7",
+   "keeperId": "minimax-m3"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.1",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.2",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-codex",
+   "keeperId": "gpt-5.3-codex"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.1-codex",
+   "keeperId": "gpt-5.3-codex"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.2-codex",
+   "keeperId": "gpt-5.3-codex"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5-nano",
+   "keeperId": "gpt-5.4-nano"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.4-pro",
+   "keeperId": "gpt-5.5-pro"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-5.6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "gpt-6-sol",
+   "keeperId": "gpt-6.1-sol"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "grok-4.5",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "grok-4.6",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "opencode",
+   "api": "openai-responses",
+   "retiredId": "muse-spark-1.2",
+   "keeperId": "muse-spark-1.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-fable-5",
+   "keeperId": "anthropic/claude-fable-5.1"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.1",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.5",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.6",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.7",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.8",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-5",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-4",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-4.5",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-4.6",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-5",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "aion-labs/aion-2.0",
+   "keeperId": "aion-labs/aion-3.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "aion-labs/aion-3.0",
+   "keeperId": "aion-labs/aion-3.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "aion-labs/aion-3.0-mini",
+   "keeperId": "aion-labs/aion-3.5-mini"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "amazon/nova-lite-v1",
+   "keeperId": "amazon/nova-2-lite-v1"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-fable-5:batch",
+   "keeperId": "anthropic/claude-fable-5.1:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-opus-4.1:batch",
+   "keeperId": "anthropic/claude-opus-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-opus-4.5:batch",
+   "keeperId": "anthropic/claude-opus-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-opus-4.6:batch",
+   "keeperId": "anthropic/claude-opus-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-opus-4.7:batch",
+   "keeperId": "anthropic/claude-opus-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-opus-4.8:batch",
+   "keeperId": "anthropic/claude-opus-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-opus-5:batch",
+   "keeperId": "anthropic/claude-opus-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-sonnet-4.5:batch",
+   "keeperId": "anthropic/claude-sonnet-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-sonnet-4.6:batch",
+   "keeperId": "anthropic/claude-sonnet-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "anthropic/claude-sonnet-5:batch",
+   "keeperId": "anthropic/claude-sonnet-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "deepseek/deepseek-r1-0528",
+   "keeperId": "deepseek/deepseek-r1"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "deepseek/deepseek-v4-flash",
+   "keeperId": "deepseek/deepseek-v4.1-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "deepseek/deepseek-v4-pro-0813",
+   "keeperId": "deepseek/deepseek-v4-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-2.5-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.5-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.6-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.7-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-2.5-flash-lite",
+   "keeperId": "google/gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.1-flash-lite",
+   "keeperId": "google/gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-2.5-flash-lite:batch",
+   "keeperId": "google/gemini-3.5-flash-lite:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.1-flash-lite:batch",
+   "keeperId": "google/gemini-3.5-flash-lite:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-2.5-flash:batch",
+   "keeperId": "google/gemini-3.8-flash:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.5-flash:batch",
+   "keeperId": "google/gemini-3.8-flash:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.6-flash:batch",
+   "keeperId": "google/gemini-3.8-flash:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-3.7-flash:batch",
+   "keeperId": "google/gemini-3.8-flash:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "google/gemini-2.5-pro-preview",
+   "keeperId": "google/gemini-3.1-pro-preview"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "inception/mercury-2",
+   "keeperId": "inception/mercury-2.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "meta-llama/llama-3.1-70b-instruct",
+   "keeperId": "meta-llama/llama-3.3-70b-instruct"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "meta/muse-spark-1.1",
+   "keeperId": "meta/muse-spark-1.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "meta/muse-spark-1.2",
+   "keeperId": "meta/muse-spark-1.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "meta/muse-spark-1.2-contributor",
+   "keeperId": "meta/muse-spark-1.3-contributor"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "minimax/minimax-m1",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "minimax/minimax-m2",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "minimax/minimax-m2.1",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "minimax/minimax-m2.5",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "minimax/minimax-m2.7",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "mistralai/mistral-large-2407",
+   "keeperId": "mistralai/mistral-large-2512"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "mistralai/mistral-medium-3",
+   "keeperId": "mistralai/mistral-medium-3-5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "mistralai/mistral-medium-3.1",
+   "keeperId": "mistralai/mistral-medium-3-5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "mistralai/mistral-medium-3.1:batch",
+   "keeperId": "mistralai/mistral-medium-3-5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "mistralai/mistral-small-3.1-24b-instruct",
+   "keeperId": "mistralai/mistral-small-3.2-24b-instruct"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/kimi-k2",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/kimi-k2-0905",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/kimi-k2.5",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "moonshotai/kimi-k2.6",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-3.5-turbo",
+   "keeperId": "openai/gpt-4-turbo"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-3.5-turbo-0613",
+   "keeperId": "openai/gpt-4-turbo"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-3.5-turbo:batch",
+   "keeperId": "openai/gpt-4-turbo:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4.1",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.1",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.2",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.4",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4.1-mini",
+   "keeperId": "openai/gpt-5.4-mini"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5-mini",
+   "keeperId": "openai/gpt-5.4-mini"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4.1-mini:batch",
+   "keeperId": "openai/gpt-5.4-mini:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5-mini:batch",
+   "keeperId": "openai/gpt-5.4-mini:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4.1-nano",
+   "keeperId": "openai/gpt-5.4-nano"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5-nano",
+   "keeperId": "openai/gpt-5.4-nano"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4.1-nano:batch",
+   "keeperId": "openai/gpt-5.4-nano:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5-nano:batch",
+   "keeperId": "openai/gpt-5.4-nano:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4.1:batch",
+   "keeperId": "openai/gpt-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5:batch",
+   "keeperId": "openai/gpt-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.1:batch",
+   "keeperId": "openai/gpt-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.2:batch",
+   "keeperId": "openai/gpt-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.4:batch",
+   "keeperId": "openai/gpt-5.5:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4o-2024-05-13",
+   "keeperId": "openai/gpt-4o-2024-11-20"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-4o-2024-08-06",
+   "keeperId": "openai/gpt-4o-2024-11-20"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5-pro",
+   "keeperId": "openai/gpt-5.5-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.2-pro",
+   "keeperId": "openai/gpt-5.5-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.4-pro",
+   "keeperId": "openai/gpt-5.5-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5-pro:batch",
+   "keeperId": "openai/gpt-5.5-pro:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.2-pro:batch",
+   "keeperId": "openai/gpt-5.5-pro:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.4-pro:batch",
+   "keeperId": "openai/gpt-5.5-pro:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.1-codex",
+   "keeperId": "openai/gpt-5.3-codex"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.2-codex",
+   "keeperId": "openai/gpt-5.3-codex"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-luna",
+   "keeperId": "openai/gpt-6-luna"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-luna-pro",
+   "keeperId": "openai/gpt-6-luna-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-luna-pro:batch",
+   "keeperId": "openai/gpt-6-luna-pro:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-luna:batch",
+   "keeperId": "openai/gpt-6-luna:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-sol",
+   "keeperId": "openai/gpt-6.1-sol"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-6-sol",
+   "keeperId": "openai/gpt-6.1-sol"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-sol-pro",
+   "keeperId": "openai/gpt-6.1-sol-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-6-sol-pro",
+   "keeperId": "openai/gpt-6.1-sol-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-sol-pro:batch",
+   "keeperId": "openai/gpt-6-sol-pro:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/gpt-5.6-sol:batch",
+   "keeperId": "openai/gpt-6-sol:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/o1",
+   "keeperId": "openai/o3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/o3-mini",
+   "keeperId": "openai/o4-mini"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/o3-mini-high",
+   "keeperId": "openai/o4-mini-high"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "openai/o3-mini:batch",
+   "keeperId": "openai/o4-mini:batch"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3-235b-a22b-2507",
+   "keeperId": "qwen/qwen3-235b-a22b"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.7-max",
+   "keeperId": "qwen/qwen3.8-max-0902"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.5-27b",
+   "keeperId": "qwen/qwen3.8-27b"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.6-27b",
+   "keeperId": "qwen/qwen3.8-27b"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.5-35b-a3b",
+   "keeperId": "qwen/qwen3.6-35b-a3b"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.5-flash-02-23",
+   "keeperId": "qwen/qwen3.8-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.6-flash",
+   "keeperId": "qwen/qwen3.8-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "qwen/qwen3.7-flash",
+   "keeperId": "qwen/qwen3.8-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "stepfun/step-3.5-flash",
+   "keeperId": "stepfun/step-3.7-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "tencent/hy3-preview",
+   "keeperId": "tencent/hy4-preview"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "upstage/solar-pro-3",
+   "keeperId": "upstage/solar-pro4"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "x-ai/grok-4.3",
+   "keeperId": "x-ai/grok-4.20"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "x-ai/grok-4.5",
+   "keeperId": "x-ai/grok-4.20"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "x-ai/grok-4.6",
+   "keeperId": "x-ai/grok-4.20"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "x-ai/grok-4.7",
+   "keeperId": "x-ai/grok-4.20"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "xiaomi/mimo-v2.5-pro",
+   "keeperId": "xiaomi/mimo-v2.6-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "z-ai/glm-4.5",
+   "keeperId": "z-ai/glm-5.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "z-ai/glm-4.6",
+   "keeperId": "z-ai/glm-5.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "z-ai/glm-4.7",
+   "keeperId": "z-ai/glm-5.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "z-ai/glm-5",
+   "keeperId": "z-ai/glm-5.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "z-ai/glm-5.1",
+   "keeperId": "z-ai/glm-5.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "z-ai/glm-5.2",
+   "keeperId": "z-ai/glm-5.3"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openai-completions",
+   "retiredId": "z-ai/glm-4.7-flash",
+   "keeperId": "z-ai/glm-5.3-flash"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "google/gemini-2.5-flash-image",
+   "keeperId": "google/gemini-3.1-flash-image"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "microsoft/mai-image-2.5",
+   "keeperId": "microsoft/mai-image-2.6"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "openai/gpt-5-image",
+   "keeperId": "openai/gpt-5.4-image-2"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "openai/gpt-image-1",
+   "keeperId": "openai/gpt-5.4-image-2"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "openai/gpt-image-2",
+   "keeperId": "openai/gpt-5.4-image-2"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "openai/gpt-image-1-mini",
+   "keeperId": "openai/gpt-5-image-mini"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "recraft/recraft-v3",
+   "keeperId": "recraft/recraft-v4.1"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "recraft/recraft-v4",
+   "keeperId": "recraft/recraft-v4.1"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "recraft/recraft-v4-pro",
+   "keeperId": "recraft/recraft-v4.1-pro"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "recraft/recraft-v4-pro-vector",
+   "keeperId": "recraft/recraft-v4.1-pro-vector"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "recraft/recraft-v4-vector",
+   "keeperId": "recraft/recraft-v4.1-vector"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "sourceful/riverflow-v2-fast",
+   "keeperId": "sourceful/riverflow-v2.5-fast"
+  },
+  {
+   "provider": "openrouter",
+   "api": "openrouter-images",
+   "retiredId": "sourceful/riverflow-v2-pro",
+   "keeperId": "sourceful/riverflow-v2.5-pro"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "deepseek-v4-flash",
+   "keeperId": "deepseek-v4.1-flash"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "deepseek-v4-pro-0813",
+   "keeperId": "deepseek-v4-pro"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "glm-5",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "glm-5.1",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "glm-5.2",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "kimi-k2.5",
+   "keeperId": "kimi-k2.6"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "qwen3.6-flash",
+   "keeperId": "qwen3.8-flash"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "qwen3.6-plus",
+   "keeperId": "qwen3.7-plus"
+  },
+  {
+   "provider": "qwen-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "qwen3.7-max",
+   "keeperId": "qwen3.8-max"
+  },
+  {
+   "provider": "qwen-token-plan-individual",
+   "api": "openai-completions",
+   "retiredId": "deepseek-v4-pro-0813",
+   "keeperId": "deepseek-v4-pro"
+  },
+  {
+   "provider": "qwen-token-plan-individual",
+   "api": "openai-completions",
+   "retiredId": "qwen3.6-flash",
+   "keeperId": "qwen3.8-flash"
+  },
+  {
+   "provider": "qwen-token-plan-individual",
+   "api": "openai-completions",
+   "retiredId": "qwen3.7-max",
+   "keeperId": "qwen3.8-max"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "deepseek-v4-flash",
+   "keeperId": "deepseek-v4.1-flash"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "deepseek-v4-pro-0813",
+   "keeperId": "deepseek-v4-pro"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "glm-5",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "glm-5.1",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "glm-5.2",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "kimi-k2.5",
+   "keeperId": "kimi-k2.6"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "qwen3.6-flash",
+   "keeperId": "qwen3.8-flash"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "qwen3.6-plus",
+   "keeperId": "qwen3.7-plus"
+  },
+  {
+   "provider": "qwen-token-plan",
+   "api": "openai-completions",
+   "retiredId": "qwen3.7-max",
+   "keeperId": "qwen3.8-max"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "claude-fable-5",
+   "keeperId": "claude-fable-5-1"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "claude-opus-4-5",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "claude-opus-4-8",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "claude-opus-5",
+   "keeperId": "claude-opus-5-5"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "claude-sonnet-4-5",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "claude-sonnet-5",
+   "keeperId": "claude-sonnet-5-5"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "gpt-5.4",
+   "keeperId": "gpt-5.5"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "gpt-5.6-luna",
+   "keeperId": "gpt-6-luna"
+  },
+  {
+   "provider": "radius",
+   "api": "pi-messages",
+   "retiredId": "gpt-5.6-sol",
+   "keeperId": "gpt-6-sol"
+  },
+  {
+   "provider": "together",
+   "api": "openai-completions",
+   "retiredId": "deepseek-ai/DeepSeek-V4-Pro-0813",
+   "keeperId": "deepseek-ai/DeepSeek-V4-Pro"
+  },
+  {
+   "provider": "together",
+   "api": "openai-completions",
+   "retiredId": "MiniMaxAI/MiniMax-M2.7",
+   "keeperId": "MiniMaxAI/MiniMax-M3"
+  },
+  {
+   "provider": "together",
+   "api": "openai-completions",
+   "retiredId": "zai-org/GLM-5.2",
+   "keeperId": "zai-org/GLM-5.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3-max-preview",
+   "keeperId": "alibaba/qwen-3.6-max-preview"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3-max",
+   "keeperId": "alibaba/qwen3.8-max"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3.7-max",
+   "keeperId": "alibaba/qwen3.8-max"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3.8-max-0902",
+   "keeperId": "alibaba/qwen3.8-max"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3.5-flash",
+   "keeperId": "alibaba/qwen3.8-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3.7-flash",
+   "keeperId": "alibaba/qwen3.8-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3.5-plus",
+   "keeperId": "alibaba/qwen3.7-plus"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3.6-plus",
+   "keeperId": "alibaba/qwen3.7-plus"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "alibaba/qwen3.6-27b",
+   "keeperId": "alibaba/qwen3.8-27b"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-3-haiku",
+   "keeperId": "anthropic/claude-haiku-4.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-fable-5",
+   "keeperId": "anthropic/claude-fable-5.1"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.5",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.6",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.7",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.8",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-5",
+   "keeperId": "anthropic/claude-opus-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-4.8-fast",
+   "keeperId": "anthropic/claude-opus-5.5-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-opus-5-fast",
+   "keeperId": "anthropic/claude-opus-5.5-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-4",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-4.5",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-4.6",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "anthropic/claude-sonnet-5",
+   "keeperId": "anthropic/claude-sonnet-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "bytedance/seed-1.6",
+   "keeperId": "bytedance/seed-1.8"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "deepseek/deepseek-v3.1",
+   "keeperId": "deepseek/deepseek-v3.2"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "deepseek/deepseek-v4-flash",
+   "keeperId": "deepseek/deepseek-v4.1-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "deepseek/deepseek-v4-pro-0813",
+   "keeperId": "deepseek/deepseek-v4-pro"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "google/gemini-2.5-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "google/gemini-3-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "google/gemini-3.5-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "google/gemini-3.6-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "google/gemini-3.7-flash",
+   "keeperId": "google/gemini-3.8-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "google/gemini-2.5-flash-lite",
+   "keeperId": "google/gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "google/gemini-3.1-flash-lite",
+   "keeperId": "google/gemini-3.5-flash-lite"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "inception/mercury-2",
+   "keeperId": "inception/mercury-2.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "inclusionai/ling-3.0-flash",
+   "keeperId": "inclusionai/ling-3.1-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "meta/llama-3.1-70b",
+   "keeperId": "meta/llama-3.3-70b"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "meta/muse-spark-1.1",
+   "keeperId": "meta/muse-spark-1.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "meta/muse-spark-1.2",
+   "keeperId": "meta/muse-spark-1.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "meta/muse-spark-1.2-contributor",
+   "keeperId": "meta/muse-spark-1.3-contributor"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "minimax/minimax-m2",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "minimax/minimax-m2.1",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "minimax/minimax-m2.5",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "minimax/minimax-m2.7",
+   "keeperId": "minimax/minimax-m3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "minimax/minimax-m2.5-highspeed",
+   "keeperId": "minimax/minimax-m2.7-highspeed"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "moonshotai/kimi-k2",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "moonshotai/kimi-k2.5",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "moonshotai/kimi-k2.6",
+   "keeperId": "moonshotai/kimi-k3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-3.5-turbo",
+   "keeperId": "openai/gpt-4-turbo"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-4.1",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.2",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.4",
+   "keeperId": "openai/gpt-5.5"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-4.1-fast",
+   "keeperId": "openai/gpt-5.5-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5-fast",
+   "keeperId": "openai/gpt-5.5-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.2-fast",
+   "keeperId": "openai/gpt-5.5-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.4-fast",
+   "keeperId": "openai/gpt-5.5-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-4.1-mini",
+   "keeperId": "openai/gpt-5.4-mini"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5-mini",
+   "keeperId": "openai/gpt-5.4-mini"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-4.1-mini-fast",
+   "keeperId": "openai/gpt-5.4-mini-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5-mini-fast",
+   "keeperId": "openai/gpt-5.4-mini-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-4.1-nano",
+   "keeperId": "openai/gpt-5.4-nano"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5-nano",
+   "keeperId": "openai/gpt-5.4-nano"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5-codex",
+   "keeperId": "openai/gpt-5.3-codex"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.1-codex",
+   "keeperId": "openai/gpt-5.3-codex"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.2-codex",
+   "keeperId": "openai/gpt-5.3-codex"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5-pro",
+   "keeperId": "openai/gpt-5.5-pro"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.2-pro",
+   "keeperId": "openai/gpt-5.5-pro"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.4-pro",
+   "keeperId": "openai/gpt-5.5-pro"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.6-luna",
+   "keeperId": "openai/gpt-6-luna"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.6-luna-fast",
+   "keeperId": "openai/gpt-6-luna-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.6-sol",
+   "keeperId": "openai/gpt-6.1-sol"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-6-sol",
+   "keeperId": "openai/gpt-6.1-sol"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-5.6-sol-fast",
+   "keeperId": "openai/gpt-6.1-sol-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/gpt-6-sol-fast",
+   "keeperId": "openai/gpt-6.1-sol-fast"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/o1",
+   "keeperId": "openai/o3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "openai/o3-mini",
+   "keeperId": "openai/o4-mini"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "spacexai/grok-4.3",
+   "keeperId": "spacexai/grok-4.7"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "spacexai/grok-4.5",
+   "keeperId": "spacexai/grok-4.7"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "spacexai/grok-4.6",
+   "keeperId": "spacexai/grok-4.7"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "stepfun/step-3.5-flash",
+   "keeperId": "stepfun/step-3.7-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "xiaomi/mimo-v2.5-pro",
+   "keeperId": "xiaomi/mimo-v2.6-pro"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-4.5",
+   "keeperId": "zai/glm-5.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-4.6",
+   "keeperId": "zai/glm-5.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-4.7",
+   "keeperId": "zai/glm-5.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-5",
+   "keeperId": "zai/glm-5.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-5.1",
+   "keeperId": "zai/glm-5.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-5.2",
+   "keeperId": "zai/glm-5.3"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-4.7-flash",
+   "keeperId": "zai/glm-5.3-flash"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-4.7-flashx",
+   "keeperId": "zai/glm-5.3-flashx"
+  },
+  {
+   "provider": "vercel-ai-gateway",
+   "api": "anthropic-messages",
+   "retiredId": "zai/glm-5.2-fast",
+   "keeperId": "zai/glm-5.3-fast"
+  },
+  {
+   "provider": "xai",
+   "api": "openai-responses",
+   "retiredId": "grok-4.3",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "xai",
+   "api": "openai-responses",
+   "retiredId": "grok-4.5",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "xai",
+   "api": "openai-responses",
+   "retiredId": "grok-4.6",
+   "keeperId": "grok-4.7"
+  },
+  {
+   "provider": "xiaomi-token-plan-ams",
+   "api": "openai-completions",
+   "retiredId": "mimo-v2.5-pro",
+   "keeperId": "mimo-v2.6-pro"
+  },
+  {
+   "provider": "xiaomi-token-plan-cn",
+   "api": "openai-completions",
+   "retiredId": "mimo-v2.5-pro",
+   "keeperId": "mimo-v2.6-pro"
+  },
+  {
+   "provider": "xiaomi-token-plan-sgp",
+   "api": "openai-completions",
+   "retiredId": "mimo-v2.5-pro",
+   "keeperId": "mimo-v2.6-pro"
+  },
+  {
+   "provider": "xiaomi",
+   "api": "openai-completions",
+   "retiredId": "mimo-v2.5-pro",
+   "keeperId": "mimo-v2.6-pro"
+  },
+  {
+   "provider": "xiaomi",
+   "api": "openai-completions",
+   "retiredId": "mimo-v2.5-pro-ultraspeed",
+   "keeperId": "mimo-v2.6-pro-ultraspeed"
+  },
+  {
+   "provider": "zai",
+   "api": "openai-completions",
+   "retiredId": "glm-4.7",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "zai",
+   "api": "openai-completions",
+   "retiredId": "glm-5.2",
+   "keeperId": "glm-5.3"
+  },
+  {
+   "provider": "zai",
+   "api": "openai-completions",
+   "retiredId": "glm-5.2-highspeed",
+   "keeperId": "glm-5.3-highspeed"
+  }
+ ]
+}

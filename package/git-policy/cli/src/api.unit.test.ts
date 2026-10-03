@@ -1,6 +1,7 @@
 import {
   describe,
   expect,
+  expectTypeOf,
   it,
 } from '@monochromatic-dev/module-test/ts';
 import * as v from 'valibot';
@@ -12,6 +13,9 @@ import {
   definePolicy,
   definePolicyOptions,
   type PolicyDefinition,
+  type PolicyInput,
+  type PolicyInputs,
+  type PolicyInputsDeclaration,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -58,6 +62,27 @@ await describe({
         expect(definedPolicy,).toBe(policy,);
         expect(plugin,).toBe(pluginInput,);
         expect(config,).toBe(configInput,);
+      },
+    },),
+    it({
+      name: 'preserves an inputs declaration computed from typed options',
+      fn: async () => {
+        const policy = definePolicy({
+          name: 'scanner',
+          defaultSeverity: 'error',
+          warnSafe: true,
+          triggers: ['pre-forward',],
+          options: definePolicyOptions(v.object({ executable: v.string(), },),),
+          inputs: function inputs(options,): PolicyInputs {
+            expectTypeOf(options.executable,).toEqualTypeOf<string>();
+            return { external: [{ kind: 'executable', path: options.executable, },], };
+          },
+          check: async () => [],
+        },);
+        expect(definePolicy(policy,),).toBe(policy,);
+        expectTypeOf<PolicyInputs>().toEqualTypeOf<'unrestricted' | Readonly<{ external: readonly PolicyInput[]; }>>();
+        expectTypeOf<PolicyInputsDeclaration<undefined>>().toExtend<PolicyInputs | ((options: undefined) => PolicyInputs)>();
+        expectTypeOf<PolicyInput>().toExtend<Readonly<{ kind: 'worktree' | 'executable' | 'revision' | 'env'; }>>();
       },
     },),
     it({

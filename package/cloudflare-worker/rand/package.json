@@ -1,0 +1,42 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/cloudflare-worker-rand",
+  "description": "Cloudflare Worker serving random values over HTTP: UUIDv4, inclusive random integers, and random alphanumeric strings of a requested length. Replaces the Caddy template original at rand.c.aquati.cat, whose template functions could only coerce bad input silently; this Worker answers 400 instead.",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "module": "dist/final/neutral/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/final/neutral/index.d.mts",
+      "default": "./dist/final/neutral/index.mjs"
+    },
+    "./worker": {
+      "types": "./dist/final/neutral/worker.d.mts",
+      "default": "./dist/final/neutral/worker.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/module-or-throw": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-rolldown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
+  "files": [
+    "dist/final",
+    "src",
+    "LICENSES"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "package/cloudflare-worker/rand"
+  }
+}

@@ -100,9 +100,9 @@ type LinkupToolDetails = {
    */
   readonly provider?: SearchFetchProvider;
   /**
-   Fallback metadata when fallback provider produced response.
+   Fallback steps taken before the responding provider answered.
    */
-  readonly fallback?: ProviderFallback;
+  readonly fallbackChain?: readonly ProviderFallback[];
   /**
    Ignored compatibility keys, when supplied.
    */
@@ -200,9 +200,9 @@ type LinkupToolOutputOptions = {
    */
   readonly provider?: SearchFetchProvider;
   /**
-   Fallback metadata when fallback provider produced response.
+   Fallback steps taken before the responding provider answered.
    */
-  readonly fallback?: ProviderFallback;
+  readonly fallbackChain?: readonly ProviderFallback[];
   /**
    Fixed behavior explanation for ignored-key warning.
    */
@@ -287,7 +287,7 @@ async function createLinkupToolOutput(
       linkupResponse: options.linkupResponse,
       rawLinkupResponse: options.rawLinkupResponse,
       ...(options.provider === undefined ? {} : { provider: options.provider, }),
-      ...(options.fallback === undefined ? {} : { fallback: options.fallback, }),
+      ...(options.fallbackChain === undefined ? {} : { fallbackChain: options.fallbackChain, }),
       ...(options.ignoredKeys
         .length
         === 0 ? {} : { ignoredKeys: options.ignoredKeys, }),

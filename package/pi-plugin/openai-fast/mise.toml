@@ -1,0 +1,220 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."format:source"]
+description = "Apply standards fixes only to production sources, leaving concurrent test edits untouched"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', 'src/index.ts', 'src/catalog.ts', 'src/constants.ts', 'src/fast-model-error.ts', 'src/original-dispatch.ts', 'src/priority-provider.ts', 'src/virtual-registration.ts', 'src/priority-stream.ts', 'src/priority-payload.ts', 'src/priority-error.ts', 'src/catalog-credentials.ts', 'src/original-dispatch-types.ts', 'src/priority-target.ts', 'src/keyless-auth.ts'])
+"""
+
+[tasks."test:unit"]
+extends = "test:unit"
+
+[tasks."verify:extension"]
+run = ["mise run //package/pi-plugin/openai-fast:build:js:node", "node src/host.unit.test.ts"]
+
+[tasks."package:help"]
+description = "Inspect installed pi package-manager command help"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { fileURLToPath } from 'node:url'
+const run = promisify(execFile)
+const entry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent'))
+const cli = fileURLToPath(new URL('./cli.js', entry))
+for (const command of ['install', 'remove']) {
+  const result = await run(process.execPath, [cli, command, '--help'])
+  process.stdout.write(result.stdout)
+  process.stderr.write(result.stderr)
+}
+'''
+
+[tasks."install:global"]
+description = "Replace the incumbent global fast package without changing defaults, scope, or other settings"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { execFile } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
+import { promisify } from 'node:util'
+import { resolve, join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { getAgentDir } from '@earendil-works/pi-coding-agent'
+class GlobalInstallationError extends Error {
+  constructor(message) { super(message); this.name = 'GlobalInstallationError' }
+}
+const run = promisify(execFile)
+const entry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent'))
+const cli = fileURLToPath(new URL('./cli.js', entry))
+const hostRoot = fileURLToPath(new URL('../', entry))
+const settingsPath = join(getAgentDir(), 'settings.json')
+const before = JSON.parse(await readFile(settingsPath, 'utf8'))
+const packagePath = resolve('.')
+const { isLocalPath, resolvePath } = await import(new URL('./utils/paths.js', entry))
+function isIncumbent(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && (source.trim() === 'npm:pi-openai-codex-fast' || source.trim().startsWith('npm:pi-openai-codex-fast@'))
+}
+const incumbentEntries = before.packages.filter(isIncumbent)
+const commands = [...incumbentEntries.map(function removal(value) { return ['remove', typeof value === 'string' ? value : value.source] }), ['install', packagePath]]
+for (const args of commands) {
+  const result = await run(process.execPath, [cli, ...args], { env: { ...process.env, PI_PACKAGE_DIR: hostRoot } })
+  process.stdout.write(result.stdout)
+  process.stderr.write(result.stderr)
+}
+const after = JSON.parse(await readFile(settingsPath, 'utf8'))
+const { packages: previousPackages, ...previousSettings } = before
+const { packages: installedPackages, ...installedSettings } = after
+if (JSON.stringify(previousSettings) !== JSON.stringify(installedSettings)) {
+  throw new GlobalInstallationError('Pi package installation changed non-package settings; inspect the settings diff before continuing.')
+}
+function isReplacement(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && isLocalPath(source) && resolvePath(source, dirname(settingsPath), { trim: true }) === packagePath
+}
+if (installedPackages.some(isIncumbent) || !installedPackages.some(isReplacement)) {
+  throw new GlobalInstallationError('Pi global package replacement did not produce the expected package declarations.')
+}
+const unrelatedBefore = previousPackages.filter(function unrelated(value) { return !isIncumbent(value) && !isReplacement(value) })
+const unrelatedAfter = installedPackages.filter(function unrelated(value) { return !isReplacement(value) })
+if (JSON.stringify(unrelatedBefore) !== JSON.stringify(unrelatedAfter)) {
+  throw new GlobalInstallationError('Pi package installation changed unrelated package declarations; inspect the settings diff before continuing.')
+}
+console.log('PASS global replacement: unrelated settings, defaults, model scope, and other packages preserved')
+'''
+
+[tasks."verify:installed"]
+description = "Verify the globally declared replacement through native package discovery in disposable state"
+run = "PI_OPENAI_FAST_VERIFY_INSTALLED=1 mise run //package/pi-plugin/openai-fast:verify:live"
+
+[tasks."verify:live"]
+description = "Verify normal and priority requests in disposable pi state using only the existing Codex access token"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises'
+import { homedir } from 'node:os'
+import { join, resolve, dirname, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { getAgentDir } from '@earendil-works/pi-coding-agent'
+import { spawn } from 'node:child_process'
+import { once } from 'node:events'
+class LiveVerificationError extends Error {
+  constructor(message) { super(message); this.name = LiveVerificationError.name }
+}
+if (process.env.PI_OPENAI_FAST_LIVE_CHILD === '1') {
+  throw new LiveVerificationError('Live verification cannot recursively launch itself')
+}
+const originalAgentDir = getAgentDir()
+const authPath = join(originalAgentDir, 'auth.json')
+const stored = JSON.parse(await readFile(authPath, 'utf8'))
+const credential = stored['openai-codex']
+if (credential?.type !== 'oauth' || typeof credential.access !== 'string' || credential.expires <= Date.now()) {
+  throw new LiveVerificationError('A currently valid original Codex OAuth access token is required. Refresh the original login before live verification.')
+}
+const hostEntry = new URL(import.meta.resolve('@earendil-works/pi-coding-agent'))
+const cliPath = fileURLToPath(new URL('./cli.js', hostEntry))
+const hostRoot = fileURLToPath(new URL('../', hostEntry))
+const bundle = resolve('dist/final/node/index.mjs')
+const installedVerification = process.env.PI_OPENAI_FAST_VERIFY_INSTALLED === '1'
+const globalSettingsPath = join(originalAgentDir, 'settings.json')
+const { isLocalPath, resolvePath } = await import(new URL('./utils/paths.js', hostEntry))
+const globalSettings = installedVerification ? JSON.parse(await readFile(globalSettingsPath, 'utf8')) : undefined
+const installedSource = globalSettings?.packages.find(function replacement(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && isLocalPath(source) && resolvePath(source, dirname(globalSettingsPath), { trim: true }) === resolve('.')
+})
+if (installedVerification && !installedSource) throw new LiveVerificationError('The replacement package is absent from global pi settings')
+if (globalSettings?.packages.some(function incumbent(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && (source.trim() === 'npm:pi-openai-codex-fast' || source.trim().startsWith('npm:pi-openai-codex-fast@'))
+})) throw new LiveVerificationError('The incumbent fast package remains declared alongside the replacement')
+const declaredSource = typeof installedSource === 'string' ? installedSource : installedSource?.source
+const installedPath = declaredSource ? resolvePath(declaredSource, dirname(globalSettingsPath), { trim: true }) : undefined
+const extensionArgs = installedVerification ? [] : ['--no-extensions', '--extension', bundle]
+const root = await mkdtemp(join(homedir(), 'temp', 'agent', 'pi-openai-fast-live-'))
+try {
+  const rebasedSource = installedPath ? relative(root, installedPath) : undefined
+  const declaration = typeof installedSource === 'object' ? { ...installedSource, source: rebasedSource } : rebasedSource
+  await writeFile(join(root, 'settings.json'), JSON.stringify({ packages: declaration ? [declaration] : [], transport: 'auto', retry: { enabled: false }, compaction: { enabled: false } }))
+  await writeFile(join(root, 'models.json'), JSON.stringify({ providers: { 'openai-codex': { apiKey: '$PI_OPENAI_FAST_ACCESS' } } }))
+  const observer = join(root, 'observe.ts')
+  await writeFile(observer, `import { appendFile } from 'node:fs/promises';
+export default function observe(pi) {
+  if (process.env.PI_OPENAI_FAST_LIVE_CHILD !== '1') throw new Error('Disposable live observer requires its recursion guard');
+  pi.on('before_provider_request', async function request(event) {
+    const body = event.payload;
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      await appendFile(process.env.PI_OPENAI_FAST_TRACE, JSON.stringify({ model: body.model, serviceTier: body.service_tier }) + '\\n');
+    }
+  });
+}`)
+  for (const [mode, slug] of [['normal', 'openai-codex/gpt-6-luna'], ['fast', 'openai-codex-fast/gpt-6-luna']]) {
+    const trace = join(root, mode + '.jsonl')
+    const marker = 'PI_OPENAI_FAST_LIVE_' + mode.toUpperCase()
+    const child = spawn(process.execPath, [cliPath, '--offline', '--no-approve', ...extensionArgs, '--extension', observer,
+      '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files', '--no-tools', '--no-session', '--print',
+      '--model', slug, '--thinking', 'low', 'Reply only with ' + marker + '.'], {
+      cwd: root,
+      env: { ...process.env, HOME: root, PI_CODING_AGENT_DIR: root, PI_PACKAGE_DIR: hostRoot, PI_OFFLINE: '1',
+        PI_OPENAI_FAST_LIVE_CHILD: '1', PI_OPENAI_FAST_ACCESS: credential.access, PI_OPENAI_FAST_TRACE: trace },
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
+    const output = []
+    const errors = []
+    let captured = 0
+    let outputExceeded = false
+    function capture({ chunks, value }) {
+      captured += value.length
+      if (captured > 1048576) { outputExceeded = true; child.kill('SIGTERM'); return }
+      chunks.push(value)
+    }
+    child.stdout.on('data', function stdout(value) { capture({ chunks: output, value }) })
+    child.stderr.on('data', function stderr(value) { capture({ chunks: errors, value }) })
+    const deadline = AbortSignal.timeout(120000)
+    function terminate() {
+      child.kill('SIGTERM')
+      const escalation = AbortSignal.timeout(5000)
+      escalation.addEventListener('abort', function killStaleChild() {
+        if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
+      }, { once: true })
+    }
+    deadline.addEventListener('abort', terminate, { once: true })
+    const [code] = await once(child, 'close')
+    deadline.removeEventListener('abort', terminate)
+    if (deadline.aborted || outputExceeded) throw new LiveVerificationError(mode + ' live pi verification exceeded its deadline or output limit')
+    const text = Buffer.concat(output).toString('utf8')
+    const diagnostic = Buffer.concat(errors).toString('utf8')
+    if (code !== 0 || !text.includes(marker) || diagnostic.includes('context canceled')) {
+      throw new LiveVerificationError(mode + ' live pi verification failed: ' + diagnostic + '\\n' + text)
+    }
+    const requests = (await readFile(trace, 'utf8')).trim().split('\n').map(function parse(line) { return JSON.parse(line) })
+    if (requests.length === 0 || requests.some(function incorrect(request) {
+      return request.model !== 'gpt-6-luna' || (mode === 'fast' ? request.serviceTier !== 'priority' : request.serviceTier === 'priority')
+    })) { throw new LiveVerificationError(mode + ' request did not preserve the expected original model and requested tier') }
+    console.log('PASS ' + mode + ': real pi output and original-model request metadata verified' + (installedVerification ? ' through installed package discovery' : ''))
+  }
+} finally {
+  await rm(root, { recursive: true, force: true })
+}
+'''

@@ -150,6 +150,10 @@ async function objectBytes({
 
  @param pathspecs - Git pathspecs, glob magic allowed
 
+ @param baseRevision - baseline tree-ish for `headRevision` and `headBytes`
+
+ @param objectDirectory - object store holding the index's blobs, such as a transaction's shadow store
+
  @returns tracked files in index path order
 
  @throws CommitTransactionGitError when index or `HEAD` state cannot back a file
@@ -164,11 +168,15 @@ export async function loadTrackedFiles({
   cwd,
   indexPath,
   pathspecs,
+  baseRevision = 'HEAD',
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   indexPath: string;
   pathspecs: readonly string[];
+  baseRevision?: string;
+  objectDirectory?: string;
 }>,): Promise<readonly TrackedFile[]> {
   if (pathspecs.length === 0)
     return [];
@@ -192,6 +200,7 @@ export async function loadTrackedFiles({
     gitPath,
     cwd,
     paths,
+    revision: baseRevision,
   },);
   /**
    One cached batch promise, started by the first byte read.
@@ -224,6 +233,7 @@ export async function loadTrackedFiles({
           : [entry.oid,];
       },),
       createError: trackedFileGitError,
+      ...(objectDirectory === undefined ? {} : { objectDirectory, }),
     },);
     batchCache.set(
       BLOB_BATCH_KEY,

@@ -24,9 +24,81 @@ Read these files in order:
 7. [`device-metrics.md`](device-metrics.md)
 8. [`candidates.md`](candidates.md)
 
-## Design questionnaire
+## Current review and historical rounds
 
-The most recent design round applied the standing true-black dark requirement while
+The Search accessibility design review is complete through D75 to D80.
+The recorded Search A decisions remain selected.
+Whether result titles display file extensions is a separate open visual
+question outside this completed round;
+no extension-display preference or matcher eligibility rule was selected.
+`questions/current.html` shows selected Search A and adopted accessibility
+goals with a correction/veto path,
+not an unanswered questionnaire.
+The [Search accessibility boundaries](evidence/search-accessibility-boundaries.md)
+and [inspected TalkBack baseline](evidence/search-talkback-native-baseline.md)
+separate desired behavior from the 200% keyboard-closed inner fixture.
+Cover traversal,
+native result activation,
+live announcements and return focus still need separately authorized
+implementation verification.
+No new IME experiment or production Search work is authorized.
+The accessibility study's disposable emulator was stopped.
+The next design-only,
+keyboard-closed filename-label study used the capped disposable AVD.
+`evidence/search-filename-presentation-frontier.md` records the inspected
+24-view native matrix and the separately inspected 32-view controls.
+`questions/evidence/search-filename-witnesses.json` and
+`questions/evidence/search-filename-control-witnesses.json` link sanitized
+app-area crops with separate provenance.
+The bounded assessment warrants a consequential comparison,
+not incumbent-only advice;
+`doc/planning/music-player-search-filename-comparison.md` records its
+proposed scope.
+The inspected 32-view actual production-renderer baseline is now in
+`evidence/search-filename-actual-player-baseline.md` and
+`questions/evidence/search-filename-actual-player-witnesses.json`.
+Its synthetic paused inputs close the copied-row rendering gap,
+not real playback or complete `MainActivity` integration.
+Unlike the narrower replica,
+the actual ordinary player retains long suffixes on inner at 100%.
+Usable placement/visibility alternatives are now built,
+captured and inspected.
+`evidence/search-filename-usable-comparison.md` and
+`questions/evidence/search-filename-comparison-witnesses.json`
+record 64 initial and six scrolled native views.
+The fixed-policy filename question is withdrawn.
+D81 preserves supporting-text templates configurable in Settings.
+Task 141 corrected `questions/search-filename-comparison.html` to an
+evidence-only review with optional observations and the separately
+provenanced actual-renderer baseline.
+The comparison captures are authored layouts,
+not template-engine output or implemented presets.
+Offline checks decoded and opened all 102 images.
+Separate desktop/mobile light/dark checks exercised modal/viewer controls
+and optional empty/blank observations,
+inert adversarial notes and stale-observation invalidation.
+Closed-page A/AA audits had no violations or incomplete checks.
+Open-dialog desktop metadata contrast remained axe incomplete;
+flat opaque computed-color and live-hit-test review resolved that bounded
+manual check without changing the axe result.
+`questions/evidence/search-filename-comparison-review-verification.json`
+retains the exact coverage;
+no console errors were observed.
+The current disposable runtime was restored to its fresh snapshot and stopped.
+The policy recommendations are withdrawn,
+not accepted defaults.
+Template/default and distinguishing-information interactions remain open.
+No dependent implementation or native activation is established.
+
+Status vocabulary follows `open-questions.md` section 0:
+settled decisions are not shipped behavior,
+provisional choices have a revisit point,
+open entries need design,
+and developer-owned entries are feasibility or implementation work.
+Archived candidates and past round descriptions do not reopen settled
+questions.
+
+An earlier dark-color round applied the standing true-black dark requirement while
 following Android dynamic color.
  It preserved accepted option 3B,
  transport 1B,
@@ -91,7 +163,8 @@ The withdrawn form and its captures remain archived at
 passed a superseded geometric guard but did not make the page usable.
 D50 additionally requires the unfolded playback deck to stay visible during
 Search,
- including with a keyboard in view.
+ including with a keyboard in view,
+ except for the measured real-Gboard overlays accepted by D53 and D54.
  The user selected A (D51):
  Search stays on the unfolded right,
  and the
@@ -110,22 +183,96 @@ A system-managed 300dp debug keyboard verified bounded bottom-keyboard
 occlusion and input routing;
 it is not Gboard.
 The linked older real-Gboard PNGs predate this browser correction.
-A later real floating Gboard at 200% text obscured part of the deck title,
-so D50 is not fully met in this tested mode.
- On the cover at 100% text,
-the floating keyboard obscured both matching result labels while typing.
- The user's A selection is unchanged.
+Real floating Gboard at 200% text obscured part of the unfolded deck title;
+D53 accepts that measured overlap.
+On the cover at 100% text,
+the floating keyboard obscured both matching result labels while typing;
+D55 separately accepts that state while the query remains visible.
+The user's A selection is unchanged.
 A disposable Fold then verified real split inner and full-width cover Gboard
 at 100% and 200% text, with the deck and cover results visible in settled
 states.
 Its Gboard font-update banner briefly clipped the final inner mode;
-D50 remains unmet across the measured floating and transient states.
+D54 accepts that measured brief overlap.
+Ordinary settled docked/split keyboards still require the full deck,
+and other keyboard states are not verified by those exceptions.
 The original AVD's active Gboard was updated versionCode `175981944`,
 not the preloaded `175753756`;
 updating the disposable Gboard to that same build did not reproduce the
 floating layout.
 `package/music-player/design/evidence/gboard-geometry.md` indexes sanitized real-keyboard captures
-and measured passing/failing states.
+and bounded accepted overlays.
+The [selected Search A crease measurement](evidence/selected-search-crease-geometry.md)
+records the visible central band and app-node geometry;
+it did not determine a floor.
+After the [native player/Search comparison](evidence/crease-floor-native-comparison.md),
+the user chose **7.5mm total** minimum between opposing informational marks,
+even for a future narrower-crease device.
+E2 still permits backgrounds,
+borders,
+padding and hit regions to cross the center.
+D58 corrects the Search-opened result columns:
+Back and result-icon paint share a leading center,
+while the query and result titles share a start on the disposable Fold at
+100% and 200% keyboard-closed text scales.
+D59 emphasizes each visible result-title or matching-parent `cam` substring
+in place with bold ink over an OS-accent-derived OKLCH fill,
+not the rejected purple tertiary container.
+The [native alignment evidence](evidence/search-header-result-alignment.md),
+[native match-emphasis evidence](evidence/search-match-emphasis-native.md)
+and refreshed selected-only `questions/current.html` show these corrections;
+historical keyboard-open captures remain labeled as pre-D58-to-D61
+geometry evidence.
+D60 selects direct folder/filename matches,
+not parent-only track expansion.
+D61 selects mixed relevance across folder and track types,
+not grouped folder-first or track-first display.
+The [archived native comparison](questions/archive/search-ranking-before-dm.html)
+and [fixture evidence](evidence/search-ranking-native-comparison.md) retain
+all D/P and M/F/T alternatives as decision history,
+not active choices or a selected scorer.
+D62 records that choosing an eventual fuzzy search library does not
+change this UI review and is not work to undertake now.
+The [matching boundary ledger](evidence/search-matching-acceptance-ledger.md)
+separates selected visible examples from future engine concerns.
+The W/A [native mid-word exploration](questions/archive/search-word-boundary-deferred.html)
+and [its evidence](evidence/search-word-boundary-native-comparison.md)
+are historical and unadopted;
+no matcher rule or library is selected by them.
+D63 to D68 select Search entry focus,
+visible Back,
+Clear focus state,
+new-visit query behavior,
+conditional restored-query position and same-query row visibility.
+The [navigation and focus evidence](evidence/search-navigation-focus-boundaries.md)
+and [archived logic comparison](questions/archive/search-navigation-focus-before-selection.html)
+explain the alternatives;
+the [active Search A review](questions/current.html) shows only selected
+goals alongside the retained browser and deck.
+Native realization of focus/scroll behavior remains unverified.
+D69 to D71 distinguish an unqueried prompt,
+a fully evaluated no-match state and a known Search-source failure;
+they reject the debug fixture's unsupported automatic-recovery claim.
+The [status evidence](evidence/search-empty-unavailable-boundaries.md)
+and [keyboard-closed native gallery](questions/search-status-evidence.html)
+show these states on the selected Fold layout,
+not an implemented lookup or a selected cause-specific recovery control.
+D72 to D74 now select folder hits opening their folder without autoplay,
+track hits carrying the existing play/pause row behavior,
+and successful track actions **returning to player**.
+The [activation evidence](evidence/search-result-activation-frontier.md)
+and [archived Stay/Return logic comparison](questions/archive/search-result-activation-before-return.html)
+explain the choice;
+`questions/current.html` shows only the selected action goals.
+No Search result tap handler has been tested or implemented.
+D75 to D80 adopt query-first accessibility entry,
+contiguous Search reading order,
+single-action rows,
+non-stealing truthful announcements,
+outcome-aware return focus and identity continuity.
+These design recommendations have a chat correction/veto path;
+complete native accessibility acceptance is deferred,
+not demonstrated by the static screenshots.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
@@ -134,13 +281,13 @@ D21's configurable global hotkey and extra Settings row belonged to the command 
 they do not silently move to Search.
  D25's Ctrl+F reservation remains pending the
 whole keyboard-map pass.
- Search result actions/ranking,
- tall-keyboard fit,
- and final empty/error
-behavior remain to be designed;
- the
-canned captures are a design review,
- not a running search index.
+ Result actions and status truth conditions are settled design goals under
+D69 to D74.
+Exact cause-specific recovery needs a future source-status owner;
+arbitrary-keyboard fit remains unverified and does not authorize further
+IME studies.
+ Matcher grammar and tie-break implementation are deferred;
+ the canned captures do not constitute a running search index.
  The live backlog and developer-owned items are in
 `open-questions.md` section 0b.
 
@@ -179,8 +326,10 @@ Each round embeds its visual evidence,
 controls in one file.
  Questionnaire HTML follows the viewer's light or dark system preference;
 never force a light review surface.
- The file is rendered and interaction-checked before it is opened in
-Helium.
+ Each review file is rendered and interaction-checked.
+Headless verification is sufficient unless the user explicitly asks for
+visible presentation;
+no KWin/window-management step is a completion gate.
  Android evidence comes from a non-functional Jetpack Compose prototype
 installed on the target emulator,
  not from CSS redraws.

@@ -4,7 +4,6 @@
  * @module
  */
 import {
-  access,
   readFile,
   rm,
   writeFile,
@@ -17,6 +16,7 @@ import {
   assertFixtureEqual,
   resolveFixtureOid,
 } from './built-post-commit-helpers.ts';
+import { assertNoTransactionDirectories, } from './built-transaction-registry.ts';
 
 /**
  * Exercises read-only administrative filesystem failure and next-shim health.
@@ -74,7 +74,7 @@ export async function verifyAutofixFilesystemFailure({
   const originalIndex = Buffer.from(await readFile(`${repository}/.git/index`,))
     .toString('base64',);
   /**
-   * Existing Git index lock from another owner must not create recovery state.
+   * Existing Git index lock without owner evidence outlasts the landing backoff and must not create recovery state.
    */
   const lockPath = `${repository}/.git/index.lock`;
   await writeFile(lockPath, 'other owner',);
@@ -87,19 +87,15 @@ export async function verifyAutofixFilesystemFailure({
   },);
   assertJsonl({
     text: locked.stderr,
-    expectedCode: 'transaction-failed',
+    expectedCode: 'index-lock-unproven-owner',
     context: 'preexisting Git index lock',
   },);
-  if (!locked.stderr.includes('EEXIST'))
-    throw new Error(`expected exclusive index lock failure, received ${locked.stderr}`,);
-  try {
-    await access(`${repository}/.git/cli-git-transaction`,);
-    throw new Error('failed lock acquisition created a transaction directory',);
-  }
-  catch (error: unknown) {
-    if (!(Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT')))
-      throw error;
-  }
+  if (!locked.stderr.includes('cli-git left the lock in place and landed nothing'))
+    throw new Error(`expected busy index lock failure at landing, received ${locked.stderr}`,);
+  await assertNoTransactionDirectories({
+    repository,
+    context: 'failed lock acquisition',
+  },);
   assertFixtureEqual({
     actual: await readFile(lockPath, 'utf8',),
     expected: 'other owner',

@@ -60,11 +60,11 @@ await describe({ name: '', children: [
     expect(fixture.first.state.callCount,).toBe(1,);
     expect(fixture.other.state.callCount,).toBe(0,);
   }, },),
-  ...['raw', 'wrapped', 'empty',].map(shape => it({ name: `getter-backed ${shape} scope changes during auth prevent stale dispatch`, fn: async (): Promise<void> => {
+  ...['raw', 'wrapped', 'malformed',].map(shape => it({ name: `getter-backed ${shape} scope changes during auth prevent stale dispatch`, fn: async (): Promise<void> => {
     const fixture = hostFixture();
     fixture.first.setResponses([fauxAssistantMessage('must not dispatch',),],);
     fixture.state.auth = () => {
-      fixture.state.live = shape === 'empty' ? [] : shape === 'raw' ? fixture.other.models : fixture.other.models.map(model => ({ model, thinkingLevel: 'high', }));
+      fixture.state.live = shape === 'malformed' ? [{}] : shape === 'raw' ? fixture.other.models : fixture.other.models.map(model => ({ model, thinkingLevel: 'high', }));
     };
     let caught: unknown;
     try {
@@ -78,6 +78,17 @@ await describe({ name: '', children: [
     expect(fixture.first.state.callCount,).toBe(0,);
     expect(fixture.other.state.callCount,).toBe(0,);
   }, },),),
+  it({ name: 'clearing Pi model cycling scope does not revoke the selected endpoint', fn: async (): Promise<void> => {
+    const fixture = hostFixture();
+    fixture.first.setResponses([fauxAssistantMessage('review after clearing cycle list',),],);
+    fixture.state.auth = (): void => {
+      fixture.state.live = [];
+    };
+    const result = await runAdvisor({ ctx: fixture.ctx, config, requestedSlug: 'first/a', },);
+    expect(result.text,).toBe('review after clearing cycle list',);
+    expect(fixture.first.state.callCount,).toBe(1,);
+    expect(fixture.other.state.callCount,).toBe(0,);
+  }, },),
   it({ name: 'already-cancelled caller invokes neither scope nor provider', fn: async (): Promise<void> => {
     const fixture = hostFixture();
     const controller = new AbortController();

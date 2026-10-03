@@ -25,7 +25,65 @@ rounds (2026-09-17):
  feasibility and porting studies,
  and implementation of settled designs.
 
-## 0b. Live design backlog (2026-09-23)
+## 0b. Live design backlog (updated 2026-09-29)
+
+The Search accessibility design review is complete through D75 to D80.
+Completion covers the recorded decisions,
+not every future Search presentation detail.
+The selected review at `questions/current.html` remains a correction/veto
+surface,
+not a new questionnaire.
+Internal review task 133 tracks later native accessibility acceptance,
+and internal review task 131 tracks truthful source-status/recovery
+binding.
+Both need separate implementation authorization.
+Do not treat unverified behavior as a reopened visual decision or schedule
+an IME experiment.
+The stopped disposable emulator and bounded inner speech evidence are
+recorded in `evidence/search-talkback-native-baseline.md`.
+The next design-only investigation is filename presentation,
+recorded in `evidence/search-filename-presentation-frontier.md`.
+Ordinary-player source retains suffixes,
+but neither that incumbent nor D11's shortened Settings example selects
+Search's extension display.
+Internal task 136 captured the inspected 24-view synthetic
+complete-filename matrix;
+its manifest is `questions/evidence/search-filename-witnesses.json`.
+Suffix-distinct examples remain visibly distinguishable in those
+captured states,
+not proven for every filename or a live source.
+Task 137's 32-view comparative controls are inspected and published in
+`questions/evidence/search-filename-control-witnesses.json`.
+Literal suffix omission keeps the measured title height in these samples
+but loses the distinguishing information.
+Ancestor A/B paths remain visible;
+the ordinary-row replica hides the tested suffixes.
+The inspected 32-view static actual production-renderer baseline is in
+`evidence/search-filename-actual-player-baseline.md` and
+`questions/evidence/search-filename-actual-player-witnesses.json`.
+It shows the matched chrome/page/current-row context with synthetic
+paused inputs,
+not live playback or full `MainActivity` integration.
+The actual ordinary player retains long suffixes on inner at 100%,
+which the narrower replica did not establish.
+The completed debug-native follow-up separates placement from visibility:
+`evidence/search-filename-usable-comparison.md` and
+`questions/evidence/search-filename-comparison-witnesses.json`
+record 64 initial plus six scrolled inspected views.
+The fixed placement/visibility question is withdrawn because it omitted
+settled supporting-text configurability.
+D81 records templates editable in Settings.
+Internal task 141 corrected `questions/search-filename-comparison.html`
+to a verified evidence-only review with optional observations.
+The authored comparisons remain valid measurements,
+not template-engine output or implemented presets.
+Default-template design and customization/disambiguation interactions remain
+open without a replacement policy vote.
+The runtime's fresh settings were restored and it was stopped.
+`doc/planning/music-player-search-filename-comparison.md` selects no policy
+and authorizes no dependent implementation.
+All filename investigations exclude matcher choices,
+new IME work and native accessibility acceptance.
 
 - **PROVISIONAL: folded-cover picker P4 (D46).**
   The app-bar folder title and caret
@@ -59,7 +117,7 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **SETTLED: Fold Search composition A and result heading (D47 to D52).**
+- **SETTLED: Fold Search A with result heading and measured IME exceptions (D47 to D55).**
   D47 chooses a Search
   button opening a separate page;
   D48 puts Back,
@@ -117,7 +175,9 @@ rounds (2026-09-17):
   so treat that as a negative text-clearance example,
   not an endorsement.
   D50 additionally requires the unfolded playback/control deck to remain
-  visible throughout Search.
+  visible throughout Search,
+  except for real floating-Gboard overlap (D53) and the brief measured
+  Gboard font-update banner (D54).
   The first coherent-layout studies still hid
   it (the docked overlay covered it;
   both full-width variants replaced its
@@ -136,9 +196,11 @@ rounds (2026-09-17):
   Dragging it lower obscured more controls rather than docking it.
   On the folded cover, real Gboard key taps produced `cam`, while the
   floating keyboard completely covered both matching result labels.
-  D50 remains **unmet in the measured unfolded Gboard mode** and cover
-  result visibility remains unmet in its measured floating mode,
-  even though A remains the selected design;
+  D53 accepts the measured floating-Gboard overlap with the unfolded deck.
+  D55 accepts the measured floating cover keyboard obscuring both matching
+  result labels while `cam` remains visible.
+  A remains the selected design,
+  and the original observations remain evidence.
   the 300dp bottom-IME capture is bounded evidence.
   A disposable Fold AVD booted after user authorization raised its container
   cap to 6 GiB.
@@ -155,7 +217,9 @@ rounds (2026-09-17):
   split/full-width geometry.
   A transient Gboard font-update banner on the disposable inner panel
   raised its IME to y `1140` and clipped the last mode until `OK` was tapped.
-  D50 therefore remains unmet in measured floating and banner states.
+  D53 permits real floating Gboard to obscure the unfolded deck;
+  D54 separately accepts that brief measured font-update banner clipping.
+  Ordinary docked and split-keyboard typing still requires the full deck.
   The user clarified that Search keeps its **actual folder browser** in
   the upper-left area while typing.
   Do not blank it or replace it with a `Current folder` caption;
@@ -164,12 +228,21 @@ rounds (2026-09-17):
   The user accepts a little clipping even around the Open button;
   this does not imply that the off-screen folder rows are accessible during
   a banner-height keyboard.
+  The user liked the refreshed A-only review on 2026-09-25;
+  the retained browser composition is settled,
+  not the separate tall-IME reflow.
+  D54 accepts the observed brief banner clipping without adopting
+  that reflow.
   The full Open parent is `[621,148][953,279]` with the keyboard closed,
   while UI Automator sees only `[621,132][953,245]` in the short viewport.
   Those are visible accessibility bounds,
   not an intrinsic layout-size measurement.
   No below-48dp layout target has been deliberately introduced.
-  Do not take space from the complete deck or put meaning on the crease.
+  Do not take space from the complete deck under ordinary docked or split
+  keyboards or put meaning on the crease.
+  D53 and D54 permit only their measured floating and font-update-banner
+  exceptions,
+  respectively.
   A 415dp debug-only system IME reproduced the banner-height clipping at
   y `1141` in unchanged A.
   An **unaccepted** inline title/transport study keeps the original
@@ -193,14 +266,90 @@ rounds (2026-09-17):
   The stress trigger is fixed at 1000px;
   no real-banner recurrence or continuous animation fit has been verified.
   This is not a complete D50 response.
-  App-side logging measured docked IME insets and a bounding rectangle,
-  but the floating case and animation continuity remain unverified.
+  App-side logging measured docked IME insets and a bounding rectangle.
+  A later corrected-prototype test switched **real disposable Gboard**
+  from full-width to floating keys at 200% text.
+  The app logged `visible=true`,
+  `platformBottom=0`,
+  and `boundingRects=[]`,
+  while privileged Window Manager reported keys overlapping the deck's
+  `4:35` duration.
+  That first visit's exact debug variant was not recorded.
+  A separate explicit `search-deck-right-lift-retain-results-light` visit
+  showed real floating keys obscuring the vertical A deck's title and
+  other controls;
+  a real key tap changed the query from `cam` to `cadm`.
+  Its private screenshot,
+  UI Automator bounds and privileged touch region prove visual overlap,
+  but its public-insets log did not retain a noninitial sample.
+  The first visit received no floating-key rectangle through the tested
+  app APIs;
+  animation continuity remains unverified.
+  A debug-only app panel painted above real floating Gboard,
+  but an uncovered key entered `m` while a key beneath the panel did not.
+  `InputDispatcher` reported a dropped touch due to app-window occlusion.
+  The panel also remained over the deck after Back in the sampled state.
+  Reject this layering probe;
+  it is not approval to obscure keyboard keys or the folder browser.
+  A later debug-only keep-clear probe registered
+  `[0,717][1038,2152]` with Window Manager,
+  yet floating Gboard still covered the deck.
+  Manual drags moved the reported key region rightward (still overlapping
+  the area by 13px) and then back to a larger overlap;
+  that validates region detection,
+  not automatic keep-clear cooperation.
+  A real key entered `d` while the title was still obscured.
+  Reject this best-effort request on the tested Gboard fixture,
+  not every possible keyboard configuration.
+  The Android 17 AOSP release source traces submitted keep-clear areas
+  through Window Manager to a PiP placement consumer;
+  it does not establish that Gboard's internal floating keys subscribe.
+  A PiP move was not tested,
+  and the reason Gboard kept overlapping remains unproven.
+  A bounded real-banner recurrence attempt changed the disposable font
+  scale from 200% to 100% and back while the floating keyboard was open.
+  The activity was recreated;
+  after refocus at 200%,
+  docked split Gboard began at y `1352` with the complete final mode
+  ending at y `1332` and **no** font-update banner.
+  This does not test a continuously focused scale transition or prove
+  that the original banner cannot recur.
   Sanitized real-keyboard captures and whitelisted geometry records are
   indexed in `package/music-player/design/evidence/gboard-geometry.md`.
-  Other keyboard heights and the user-visible response remain open.
+  The user explicitly accepted that real floating Gboard still obscures
+  the unfolded deck (D53).
+  The user also accepted the **brief** font-update-banner clip (D54).
+  The user separately accepted floating Gboard obscuring both cover result
+  labels while the query stayed visible (D55).
+  None of these choices waives complete deck visibility under ordinary
+  settled docked/split input or approves ordinary full-width cover Gboard
+  hiding matching results.
+  Other keyboard heights and distinct or persistent banner behavior remain
+  unverified.
   A 200% long query remained in the right input region without hiding
   the deck under the debug IME.
-  Long **result** names and result-list scrolling are still open.
+  A debug-only stress fixture now wraps long spaced and unbroken result
+  titles on the right at 100%/200% text while retaining the browser/deck.
+  On the cover at 200%,
+  the selected list could not scroll its final rows above a bottom debug IME;
+  a same-APK opt-out control repeated this failure.
+  D56 selects a **cover-only keyboard-aware results viewport** after an
+  opt-in study made row 18 and its support text reachable above both a
+  300dp debug IME and settled full-width Gboard at 100%/200% text.
+  The accepted direction keeps the fixed header and selected inner A;
+  it is not a production fix or evidence for other IME heights.
+  The prototype needed another swipe after keyboard dismissal and refocus;
+  D68 instead selects same-query row visibility as the desired behavior,
+  still unverified in native implementation.
+  D57 separately accepts the **observed** real floating-Gboard overlap
+  with some inner right-pane result lettering while `cam` remains visible.
+  D53's deck exception and D55's folded-cover exception are distinct;
+  no other inner floating placement or ordinary keyboard overlap is waived.
+  Whether covered matches are scroll-reachable after focus changes remains
+  unverified against D68;
+  their activation was settled as D72 to D74 under review task 129,
+  but native behavior remains unverified.
+  See `evidence/search-result-overflow.md` for bounds and test limitations.
 - **OPEN: remaining Search behavior after D51/D52.**
   Keep positive results,
   no-results/unavailable states and open/back behavior distinct;
@@ -210,7 +359,87 @@ rounds (2026-09-17):
   or TalkBack.
   Baseline M3 Search evidence is in
   `material-3-compliance.md`.
-  Search targets and result effects/ranking remain open;
+  D58 settles horizontal Back/result-icon and query/result-title alignment
+  on both Fold panels;
+  measured 100% and 200% text starts and icon-paint centers matched after
+  correction.
+  D59 requires every visible result title/parent-context `cam` occurrence
+  to be emphasized from the OS accent with OKLCH adjustment,
+  not the rejected purple tertiary-container role.
+  D60 selects **Scope D**:
+  direct folder names and track filenames,
+  with parent context shown but no parent-only track expansion.
+  D61 independently selects **Order M**:
+  mix types by illustrative relevance,
+  not all folders or all tracks first.
+  The D59-highlighted native D/P and M/F/T comparison is historical
+  decision evidence;
+  see `evidence/search-ranking-native-comparison.md` and
+  `evidence/search-match-emphasis-native.md`.
+  The cover M/P and T/P fixture needed a second keyboard-closed swipe
+  to reveal the last supporting line fully;
+  those were comparison cases,
+  not selected directions.
+  The accepted `cam` examples already require `Cam` case equivalence,
+  prefix `Camellia` and later-word `Live at Camellia` matches.
+  D62 removes fuzzy-library choice and the W/A word-boundary menu from
+  this UI review:
+  the [historical native comparison](questions/archive/search-word-boundary-deferred.html)
+  is unselected evidence,
+  not a question to answer.
+  Backend extension eligibility,
+  Unicode equivalence,
+  multiple terms,
+  deterministic scoring/ties and result limits belong to future
+  implementation work when authorized;
+  see `evidence/search-matching-acceptance-ledger.md`.
+  File-extension display in result titles is a separate open visual
+  question outside the completed accessibility round.
+  No show/hide-extension preference was selected,
+  and this visual question is not developer-owned matcher eligibility or
+  a reason to pick a library now.
+  D63 to D68 settle review task 127's entry edit focus,
+  visible Back,
+  Clear focus state,
+  new-visit empty query,
+  conditional restored-query top position and same-query row visibility.
+  See `evidence/search-navigation-focus-boundaries.md` and the archived
+  `questions/archive/search-navigation-focus-before-selection.html`
+  comparison;
+  its alternative controls are historical rather than open choices.
+  Native focus/scroll restoration and system-Back/IME integration still
+  need verification when an implementation is authorized.
+  D69 to D71 settle the Search status truth conditions:
+  an empty query is a prompt,
+  no match requires a completed current-query evaluation,
+  and a known source failure must not promise an automatic recovery.
+  See `evidence/search-empty-unavailable-boundaries.md` and the
+  keyboard-closed `questions/search-status-evidence.html` gallery.
+  Exact cause-specific recovery copy/control depends on a truthful
+  source-status owner in a future implementation;
+  the broad debug unavailable wording was rejected.
+  D72 to D74 settle the desired Search result effects:
+  folder hits open their folder without autoplay,
+  other track hits start playback,
+  already-current track hits toggle play/pause,
+  and successful track actions return to player.
+  See `evidence/search-result-activation-frontier.md` and the archived
+  `questions/archive/search-result-activation-before-return.html`
+  comparison.
+  Stale results must not substitute another target or fake success;
+  no real result tap has been verified.
+  D75 to D80 settle the Search accessibility design through adopted
+  recommendations with a correction/veto path:
+  query-first accessibility focus,
+  contiguous Search traversal,
+  single-action rows,
+  truthful non-stealing announcements,
+  outcome-aware return focus and identity-preserving updates.
+  See `evidence/search-accessibility-boundaries.md` and
+  `evidence/search-talkback-native-baseline.md`.
+  Native entry/row/status/return behavior is not implemented or verified;
+  cover swipe delivery lacks a positive control.
+  Internal review task 118 closes design choices only.
   D21's global command hotkey and Settings row
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the
@@ -219,7 +448,7 @@ rounds (2026-09-17):
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
   screen.
-- **OPEN: player information clearance across the crease (E2).**
+- **SETTLED floor; OPEN verification: player information clearance across the crease (E2).**
   The user
   corrected the fixed 24dp unpainted gap:
   keep opposing **informational
@@ -235,8 +464,42 @@ rounds (2026-09-17):
   zero-width emulator hinge-area sensor is an occlusion model,
   not the
   visible dent.
-  The numeric `min_padding` for this boundary remains open;
-  the 12dp mode-button text rule is unrelated.
+  The user reconfirmed **`min_padding = 7.5mm` total opposing-information
+  separation** after reviewing the player before Search and both Search states.
+  This independent floor remains 7.5mm even if a future device's crease is
+  narrower;
+  a wider actual crease still wins through `max(min_padding, crease_width)`.
+  It is not a 7.5mm margin on either side,
+  nor a limit on backgrounds,
+  borders,
+  padding or hit regions.
+  The 12dp mode-button text rule is unrelated.
+  The [selected-A Search measurement](evidence/selected-search-crease-geometry.md)
+  found no app-node box intersecting the approximate dent and a 167px
+  projected horizontal gap between extreme boxes across the inner fixtures.
+  A sampled rendered-pixel scan with an injected crossing mark supported
+  the visible gap,
+  but neither accessibility bounds nor those samples establish a universal
+  glyph-ink margin or select the minimum floor.
+  A first E2 floor form was withdrawn because proportional bars were not
+  distinct mockups.
+  The first native revision still omitted the Search-closed player and an
+  interim player variant incorrectly painted a gray center stripe.
+  The [corrected native review](questions/crease-floor-review.html)
+  shows P7.5,
+  P14 and P20 in the **player before Search**,
+  empty Search and results at 200% text.
+  Each keeps the full browser/deck and continuous surfaces.
+  The player shifts right-side text;
+  the Search content inset also moves associated control targets,
+  but their hit bounds do not count toward E2's informational floor.
+  The user then explicitly reconfirmed **P7.5** in the revised review.
+  P14 and P20 are historical alternatives,
+  not chosen hard floors.
+  Painted clearance,
+  longer text,
+  other display scales,
+  keyboard-open fit and accessibility remain unverified.
   Borders,
   paddings,
   input/row
@@ -272,9 +535,13 @@ rounds (2026-09-17):
 
 ## 1. The unfolded layout — SETTLED structurally (D16, D17, D18); unf-h is the assembly
 
-Remaining inside it:
- cover-c still shows the connected button group and the old
-left-hugging transport — it needs D1/D18 applied before it is final.
+The assembly descriptions in this section are **historical fixtures**,
+not remaining implementation requests.
+D17 rejects prefix-bucket splitting and the one-folder-per-row directions;
+D31 supplies the wrapped plain-name treatment.
+D39/D40 settle ordinary-player traversal/state speech,
+and the later native Fold cover/player studies supersede the old
+`cover-c` transport-rebuild request.
 
 **Round 3 verdict.**
  unf-d and unf-e rejected:
@@ -282,8 +549,7 @@ left-hugging transport — it needs D1/D18 applied before it is final.
 "This is the third time I'm saying this."
  See review-notes.md 5b.
 
-**Now built:
- unf-f.**
+### Historical `unf-f` fixture, rejected by D17
  Left half = a picker that never scrolls far:
  a 27-letter rail
 (48dp targets) filters to one letter;
@@ -292,8 +558,7 @@ bucket chips (Ca / Ch–Co / Cr–Cy);
  names appear as wrapped content-width 48dp chips.
 Deck stays right (deck side still unanswered).
 
-*Earlier rounds,
- kept for history:*
+### Historical unfolded alternatives
 
 **Round 2 verdict.**
  unf-b/unf-c were not picked:
@@ -303,8 +568,7 @@ like a keyboard."
 (recommendation:
  deck-left starved the folder list to ~7 rows).
 
-**Now built.**
- unf-d:
+The rejected `unf-d` fixture used
  single-column folders with letter headers and a 48dp-wide
 fast-scroll rail along the list edge (tap or drag;
  a 56dp bubble shows the letter —
@@ -371,7 +635,24 @@ is void.
 
 ---
 
-## 2. The cover screen — SETTLED: cover-c, volume kept (decisions.md D14)
+## 2. The cover screen, settled structure with provisional picker (D41 to D46)
+
+The current cover uses D41/D42 dark treatments,
+D45 light seams and D46's provisional P4 picker.
+D43 removed the in-app volume control;
+the mode control remains part of the complete player deck.
+Measured AVD geometry is 1080 × 2424px at 390dpi,
+approximately 443 × 994dp.
+The former 411 × 923dp value was an unmeasured estimate,
+not the native target.
+`README.md` and `decisions.md` record the later native 100%/200% captures.
+Picker TalkBack return focus remains unverified;
+P4's before-1.x revisit is separate from the settled cover structure.
+
+### Historical cover experiments and superseded rebuild request
+
+The following diagnostic history does not reopen volume,
+mode inclusion or the old 411dp rebuild.
 
 **Background.**
  Folded,
@@ -407,8 +688,7 @@ margin has since been removed and the transport rows centred,
  but **the files have not
 been verified at 411dp** and should be treated as unbuilt.
 
-**What to build.**
- Both directions again,
+The superseded rebuild request was both directions again,
  at 411×923,
  verified.
  Open question inside
@@ -516,8 +796,9 @@ to be ported,
  the
 44px slider handle,
  the state-layer mechanism) are impractical in Slint.
- Worth a
-feasibility pass before more desktop surfaces are drawn.
+ This feasibility/porting work is **developer-owned** under the user's
+2026-09-17 assignment,
+not a prerequisite design questionnaire or permission to replace Slint.
 
 ---
 
@@ -778,7 +1059,11 @@ remains unmeasured.
  The command-bar recommendation led to rejected I/G/R prototypes;
  D47 replaces that
 surface with a Search button and page.
- The page design is now active in section 0b.
+ The recorded Fold Search decisions and accessibility round are settled
+ through D75 to D80;
+ section 0b separates adopted goals,
+ the template-aware filename-design work and deferred native
+ acceptance.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
  the keyboard-map pass,
@@ -795,21 +1080,23 @@ captures at 100% and 200% text.
  The error bar, undo toast, settings pane, context menu, first-run prompt and
 scan bar remain undrawn in light; do not credit the cover decision as evidence for them.
 
-### 11e. Custom display templating — stated, not designed
-The product will allow users to set a custom display through templating.
- That is the
-reason D35 keeps the default supporting line neutral.
- The user's statement does not
-yet settle template scope,
- available fields,
- syntax,
- editing surface,
- preview,
+### 11e. Custom display templating: Settings requirement settled, details open
+
+The product lets users configure supporting text through templates in Settings.
+D81 records the user's reaffirmation during Search filename review.
+D35 keeps the default supporting-text role neutral rather than fixing its
+content or emphasis.
+The editing location and supporting-text configurability are settled;
+fields,
+grammar,
+editor controls,
+preview,
 validation,
- fallback behavior,
- or whether templates apply beyond track rows.
- Do not
-invent those details or narrow the requirement without a dedicated design round.
+fallback behavior,
+other row-type coverage and title customization remain undesigned.
+Default templates and their interaction with required visible distinction
+need a dedicated design round.
+Do not replace this requirement with a fixed supporting-text policy vote.
 
 ## 12. Existing-screen refinement, 3B settled and accepted
 

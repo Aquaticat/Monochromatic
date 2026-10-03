@@ -1,0 +1,235 @@
+# Reference copy of the Caddy site block this Worker replaces.
+#
+# Nothing in this repository runs this file. It served rand.c.aquati.cat from the
+# Coolify host's self-managed Caddy, where it exists only on that host and under no
+# version control, so it is committed here as the porting spec and as provenance.
+# The /int line carries the owner's inclusive fix, which changed the upper bound from
+# randInt's exclusive max to (int (add max 1)); that fix is live on the origin.
+#
+# Behaviours this block encodes, each measured against the live origin on 2026-10-02:
+# - randAlphaNum draws from 62 characters, 0-9A-Za-z, uppercase included.
+# - Response bodies carry no trailing newline, so Content-Length equals the value length.
+# - Path matching is case-insensitive, so /UUIDV4 and /INT both serve.
+# - Every method matches, so POST and OPTIONS on /uuidv4 both return 200.
+# - Anything unmatched returns 501 with an empty body.
+# - atoi coerces unparseable input to 0 rather than failing, and duplicate query
+#   parameters collapse into one unparseable string, so min=0&max=2&max=6 returned a
+#   constant 0 with status 200. The Worker answers 400 for both.
+#
+# The 64 literal branches below are why the Worker parses the segment instead of
+# enumerating it. The reachable set is unchanged: lengths 1 to 64, plus / for 64.
+#
+# Status: soft-deprecated. The owner keeps the origin running, and will neither delete
+# nor change it, even if it breaks. See package README.
+
+rand.c.aquati.cat {
+	log
+	import tls13
+	templates
+
+	respond /uuidv4 `{{uuidv4}}` 200 {
+		close
+	}
+
+	respond /int `{{randInt (atoi (placeholder "http.request.uri.query.min")) (int (add (atoi (placeholder "http.request.uri.query.max")) 1))}}` 200 {
+		close
+	}
+
+	respond /1 `{{randAlphaNum 1}}` 200 {
+		close
+	}
+	respond /2 `{{randAlphaNum 2}}` 200 {
+		close
+	}
+	respond /3 `{{randAlphaNum 3}}` 200 {
+		close
+	}
+	respond /4 `{{randAlphaNum 4}}` 200 {
+		close
+	}
+	respond /5 `{{randAlphaNum 5}}` 200 {
+		close
+	}
+	respond /6 `{{randAlphaNum 6}}` 200 {
+		close
+	}
+	respond /7 `{{randAlphaNum 7}}` 200 {
+		close
+	}
+	respond /8 `{{randAlphaNum 8}}` 200 {
+		close
+	}
+	respond /9 `{{randAlphaNum 9}}` 200 {
+		close
+	}
+	respond /10 `{{randAlphaNum 10}}` 200 {
+		close
+	}
+	respond /11 `{{randAlphaNum 11}}` 200 {
+		close
+	}
+	respond /12 `{{randAlphaNum 12}}` 200 {
+		close
+	}
+	respond /13 `{{randAlphaNum 13}}` 200 {
+		close
+	}
+	respond /14 `{{randAlphaNum 14}}` 200 {
+		close
+	}
+	respond /15 `{{randAlphaNum 15}}` 200 {
+		close
+	}
+	respond /16 `{{randAlphaNum 16}}` 200 {
+		close
+	}
+	respond /17 `{{randAlphaNum 17}}` 200 {
+		close
+	}
+	respond /18 `{{randAlphaNum 18}}` 200 {
+		close
+	}
+	respond /19 `{{randAlphaNum 19}}` 200 {
+		close
+	}
+	respond /20 `{{randAlphaNum 20}}` 200 {
+		close
+	}
+	respond /21 `{{randAlphaNum 21}}` 200 {
+		close
+	}
+	respond /22 `{{randAlphaNum 22}}` 200 {
+		close
+	}
+	respond /23 `{{randAlphaNum 23}}` 200 {
+		close
+	}
+	respond /24 `{{randAlphaNum 24}}` 200 {
+		close
+	}
+	respond /25 `{{randAlphaNum 25}}` 200 {
+		close
+	}
+	respond /26 `{{randAlphaNum 26}}` 200 {
+		close
+	}
+	respond /27 `{{randAlphaNum 27}}` 200 {
+		close
+	}
+	respond /28 `{{randAlphaNum 28}}` 200 {
+		close
+	}
+	respond /29 `{{randAlphaNum 29}}` 200 {
+		close
+	}
+	respond /30 `{{randAlphaNum 30}}` 200 {
+		close
+	}
+	respond /31 `{{randAlphaNum 31}}` 200 {
+		close
+	}
+	respond /32 `{{randAlphaNum 32}}` 200 {
+		close
+	}
+	respond /33 `{{randAlphaNum 33}}` 200 {
+		close
+	}
+	respond /34 `{{randAlphaNum 34}}` 200 {
+		close
+	}
+	respond /35 `{{randAlphaNum 35}}` 200 {
+		close
+	}
+	respond /36 `{{randAlphaNum 36}}` 200 {
+		close
+	}
+	respond /37 `{{randAlphaNum 37}}` 200 {
+		close
+	}
+	respond /38 `{{randAlphaNum 38}}` 200 {
+		close
+	}
+	respond /39 `{{randAlphaNum 39}}` 200 {
+		close
+	}
+	respond /40 `{{randAlphaNum 40}}` 200 {
+		close
+	}
+	respond /41 `{{randAlphaNum 41}}` 200 {
+		close
+	}
+	respond /42 `{{randAlphaNum 42}}` 200 {
+		close
+	}
+	respond /43 `{{randAlphaNum 43}}` 200 {
+		close
+	}
+	respond /44 `{{randAlphaNum 44}}` 200 {
+		close
+	}
+	respond /45 `{{randAlphaNum 45}}` 200 {
+		close
+	}
+	respond /46 `{{randAlphaNum 46}}` 200 {
+		close
+	}
+	respond /47 `{{randAlphaNum 47}}` 200 {
+		close
+	}
+	respond /48 `{{randAlphaNum 48}}` 200 {
+		close
+	}
+	respond /49 `{{randAlphaNum 49}}` 200 {
+		close
+	}
+	respond /50 `{{randAlphaNum 50}}` 200 {
+		close
+	}
+	respond /51 `{{randAlphaNum 51}}` 200 {
+		close
+	}
+	respond /52 `{{randAlphaNum 52}}` 200 {
+		close
+	}
+	respond /53 `{{randAlphaNum 53}}` 200 {
+		close
+	}
+	respond /54 `{{randAlphaNum 54}}` 200 {
+		close
+	}
+	respond /55 `{{randAlphaNum 55}}` 200 {
+		close
+	}
+	respond /56 `{{randAlphaNum 56}}` 200 {
+		close
+	}
+	respond /57 `{{randAlphaNum 57}}` 200 {
+		close
+	}
+	respond /58 `{{randAlphaNum 58}}` 200 {
+		close
+	}
+	respond /59 `{{randAlphaNum 59}}` 200 {
+		close
+	}
+	respond /60 `{{randAlphaNum 60}}` 200 {
+		close
+	}
+	respond /61 `{{randAlphaNum 61}}` 200 {
+		close
+	}
+	respond /62 `{{randAlphaNum 62}}` 200 {
+		close
+	}
+	respond /63 `{{randAlphaNum 63}}` 200 {
+		close
+	}
+	respond /64 `{{randAlphaNum 64}}` 200 {
+		close
+	}
+	respond / `{{randAlphaNum 64}}` 200 {
+		close
+	}
+
+	respond 501
+}

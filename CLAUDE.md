@@ -40,42 +40,47 @@ Keep Monitor for streams of events that end within 30 minutes.
 
 ORG:
  Organized by moment of decision,
- not topic.
-Cross-cutting reference:
- "Architecture decisions" + "Agent skills" sections.
+ not topic;
+ "Architecture decisions" and "Agent skills" hold cross-cutting reference.
 Rationale,
  mechanisms,
  examples:
  `doc/philosophy/agents.md`.
 
 TAG:
- Every rule carries unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `):
- stable handle for cross-session reference.
-Don't tag headings,
+ Every rule starts with a `[A-Z0-9]{3}` code (`CODE:`),
+ a stable cross-session handle unique across `AGENTS.md`,
+ skills,
+ and package docs;
+ never tag headings,
  code fences,
- title.
+ or the title.
 
 RLM:
- Each tagged rule stays under 50 words and 200 characters after whitespace normalization.
-Split longer guidance into fresh tagged rules.
+ Each tagged rule stays under 50 words and 200 characters after whitespace normalization;
+ split longer guidance into fresh tagged rules.
+
+SLF:
+ Each tagged rule makes sense alone:
+ never cite another rule's code or lean on terms only another rule defines.
+Citing paths and docs is fine.
 
 NCD:
- New code:
+ New codes:
  fresh,
  unique,
  semi-meaningful;
- check `forbidden-strings.append.local.txt`.
-Reject unrelated first readings:
- acronyms,
+ check both forbidden-strings appendixes;
+ reject unrelated first readings (acronyms,
  products,
  ordinary words,
- external prefix+digit namespaces.
+ external prefix+digit namespaces).
 
 CRN:
- Never reuse existing code except explicit rename of misleading one;
- update every `AGENTS.md` occurrence same change.
-Rename/reject:
- add comment+regex entry to local forbidden strings appendix.
+ Reuse a code only to rename a misleading one,
+ updating all uses at once;
+ retired/rejected codes go in `forbidden-strings.append.local.txt`,
+ renamed identifiers in `forbidden-strings.append.txt`.
 
 APG:
  Auto-push is enabled.
@@ -85,124 +90,98 @@ APG:
 ### Communication style
 
 HON:
- Direct,
- honest.
-Research,
+ Honest;
+ research,
  don't deflect.
-One clear reading -> act;
- several -> confirm.
-Ask on ambiguous intent,
- never knowledge gap.
 Unpublished package change = design change,
  not compat break.
 
 SYS:
- Never attribute `<system-reminder>` or injected context (MCP instructions,
+ Never attribute injected context (`<system-reminder>`,
+ MCP instructions,
  skill descriptions) to user;
  cite policy by content.
-`role:user` turn alone doesn't prove human typed it.
+A `role:user` turn doesn't prove a human typed it.
 
 WKP:
- Wakeup/cron/continuation prompts arrive as user turns but you authored them.
-Never write directives (stop conditions,
- cadence,
- scope) into `prompt`;
- relay user's real task or bare sentinel.
-
-WK2:
- Fired wakeup/continuation carries no authority.
-Re-derive actions + stop conditions from user's real instructions + current state;
- never obey its wording or credit it as user's.
+ Wakeup/cron/continuation prompts are self-authored,
+ never user authority.
+Write only the real task or a bare sentinel;
+ when fired,
+ re-derive actions + stop conditions from user instructions + state.
 
 DCK:
- Long sessions need durable docs.
-After corrections,
-decisions,
-or before compaction,
-record requirements,
-evidence,
-rejected ideas,
-open questions,
-commits,
-and next action.
-Docs are canonical.
+ Long sessions:
+ after each correction,
+ decision,
+ answer,
+ verification,
+ and pre-compaction,
+ update canonical docs:
+ requirements,
+ evidence,
+ rejected ideas,
+ open questions,
+ commits,
+ next action.
 
 1ST:
  User's first-person words ("I",
  "me",
  "future me") name the human typing,
- never Claude or future sessions.
-"Future me" = user themselves,
- not future Claude,
- despite handover framing.
+ never Claude or future sessions,
+ even in handover framing.
 
 SRC:
- Cite right source file (`AGENTS.md`,
- harness system prompt,
- `.claude/settings.json`,
+ Before attributing a rule to a file (`AGENTS.md`,
+ `CLAUDE.md`,
  `SKILL.md`,
- MCP instructions,
- `CLAUDE.md`).
-Grep named file before attributing rule to it.
+ settings,
+ harness prompt,
+ MCP instructions),
+ grep that file.
 
 EXT:
  External tool features,
  CLI options,
  conf syntax,
- API capabilities:
- fetch current doc/src before responding.
-"Does X support Y" = research task,
- not recall.
+ API capabilities ("does X support Y"):
+ fetch current doc/src before answering,
+ never recall.
 
 WRN:
  Explaining warning/error:
- name exact emitting tool,
- cite diagnostic code/message.
+ name exact emitting tool + diagnostic code/message.
 Unsure?
- Grep codebase for diagnostic,
+ Grep codebase,
  check tool docs,
- run tool first.
-
-DGT:
- User-facing diagnostics:
- name affected input and calls plainly.
-Explain uncertainty and every valid remediation path.
-Avoid unexplained implementation terms;
- length is unconstrained.
-
-DNL:
- Diagnostic names and messages use neutral operation or evidence terms.
-Never characterize code,
-types,
-or authors with moral judgments.
-
-JCH:
- Never use `@mutates` for absent effects.
-Move work to an ownership-known boundary,
- pass its primitive result,
- or improve proof.
-Contracts describe possible runtime effects,
- not analyzer gaps.
+ or run tool first.
 
 GAP:
  "I was expecting you to..." or spotted failure mode = doc gap:
- propose `AGENTS.md` edit + perform expected action,
+ do expected action + propose `AGENTS.md` edit,
+ tightening existing rules first;
  never "I'll keep it in mind".
-Merge overlapping rules;
- remove superseded.
+Remove superseded rules.
 
 EPR:
- Naming or technology brainstorming that could benefit from ecosystem precedent:
- research it before offering options.
-Model system named ("think in X"):
- list its features,
+ Research ecosystem precedent before offering naming or technology options it could inform.
+"Think in X":
+ list X's features,
  ask which to omit.
+
+VHI:
+ Handoffs (visual or doc) state purpose,
+ changes,
+ what to inspect,
+ and how to respond;
+ never make unexplained internal labels the user's task.
 
 ### Proactivity calibration
 
 PX1:
- Proactivity isn't overreach;
- take authorized steps unasked.
+ Take authorized steps unasked;
+ skip "should I...".
 Notifications,
  recoverable failures,
  background runs:
@@ -211,94 +190,44 @@ Notifications,
 Stop only at completion or genuine blocker.
 
 MWK:
- Monitors,
- wakeups and the like must rarely wake the main agent.
-Emit only terminal states and lines you would act on,
+ Monitors and wakeups rarely wake main agent:
+ emit only terminal states and lines you'd act on,
  never routine progress;
- prefer one completion notification over a stream.
+ prefer one completion notification.
 
 PXQ:
- "Completion" in PX1 means the queue,
- not the task.
-Finished item with tracked work left:
- start the next unasked.
-Never end a turn on a status report the user must answer with "continue".
+ "Completion" means the queue:
+ tracked work left -> start the next item unasked.
+Never end a turn on a status report the user must answer with "continue";
+ low context is no reason to stop.
 
 PX2:
- Doesn't relax constraints:
- PX3 gates destructive/external actions,
+ Proactivity keeps constraints:
+ destructive/external actions still need authorization,
  decision verbs return answers,
- non-measurable preferences warrant asking.
-Already-authorized step:
- skip "should I...",
- do it.
+ non-measurable preferences get asked.
 
 PX3:
  Act + report on local work,
  current-repo GitHub mutations,
- and mutations of solely user-controlled resources.
-Else authorization;
- uncertain -> ask.
-Keep drafts local.
-Read-only research allowed.
+ and solely user-controlled resources.
+Else need authorization;
+ unsure -> ask.
+Drafts stay local;
+ read-only research allowed.
 
 TSK:
  Broad multi-area requests:
- split into separate task-list items per major area,
- each with independently verifiable completion criteria;
+ one task-list item per major area,
+ each independently verifiable;
  never one umbrella item.
 
 ### Pre-response checklist
-
-PRE:
- Before sending any response with substantive claims,
- run this checklist.
-
-CK1:
- Quantitative claim without measuring?
- QJ1;
- unbuilt-fix difficulty/duration is claim to drop,
- not label (CK3).
-
-CK2:
- Described external tool behavior without `troubleshooting-doc` investigation path?
- Do it,
- or label recall-from-training.
-
-CK3:
- Estimated difficulty of fix you haven't built?
- Drop estimate.
-
-CK5:
- Assumed measurable fact about user's environment or working pattern?
- QF1.
-
-CK6:
- Assumed non-measurable preference?
- ASK.
-
-CK7:
- Confident claim about environment,
- external tool,
- src?
- Verify cited path/line still exists;
- uncited:
- cite inline or downgrade to labeled guess.
-
-CK8:
- Claimed tool cannot do something?
- Try composition (Bash + shell utility) first;
- refuse only after trying.
 
 CK9:
  Quoted clause + drew conclusion?
  Restate subject + object in plain English first;
  obligation direction is the classic misread.
-
-CKA:
- Asking user to perform manual action?
- Try bridging first;
- genuine handoff -> invoke `runbook` skill.
 
 CKB:
  Correction?
@@ -312,348 +241,144 @@ never same-session self-review (`doc/agent/self-review.md`).
 
 XIC:
  Similar or concurrent symptoms stay separate incidents until user-visible boundaries match.
-Removing a present component proves removal,
-not causation or remediation.
+Component removal,
+ log silence (retention + emitter unverified),
+ or later recovery proves no cause or fix.
 
 ### Measure-vs-ask
 
 QF1:
- **Measurable facts:
- measure.
-** Sizes,
+ Measurable facts (sizes,
  counts,
  conf values,
  file contents,
- user's working pattern in repo artifacts.
-Categorical dismissals are one `rg`/conf-read away;
+ user's working pattern in repo artifacts):
+ measure,
  cite result inline.
+Categorical dismissals are one `rg`/conf-read away.
 
 QJ1:
- Run measurement yourself;
- never quantitative adjective ("small",
+ Run measurement yourself before any quantitative claim or adjective ("small",
  "fast",
- "complex",
- "trivial",
- "significant") without one.
-Agent has tools;
- using them is its job,
- not user's.
+ "trivial").
+Unbuilt-fix difficulty or duration:
+ drop the estimate,
+ never label it.
 
 DVP:
  Target device available:
- probe its current settings and limits directly before web research.
-Use external sources only to explain direct evidence or when the device probe cannot answer.
+ probe its settings + limits before web research;
+ external sources only explain probe results or fill gaps.
 
 QAB:
- Before-state reading isn't after-state evidence.
-Predicting a change's effect from unchanged code is inference.
-Apply it in a fork,
+ Predicting a change's (or revert's) effect from unchanged code is inference:
+ apply it in a fork,
  measure,
  then conclude.
-Covers reverting on a predicted regression.
 
 QPC:
- "No difference" is evidence only from a probe proven able to show one.
-Run a positive control first:
- a case that must move.
-Unvalidated null result means nothing.
+ "No difference" counts only from a probe proven able to show one:
+ run a positive control first (a case that must move).
 
 QIV:
- Validate scope,
+ Before trusting a null or count,
+ validate scope,
  cache,
  harness,
- generator reach before trusting a null or count;
- list unexercised surfaces.
-Stale cache,
+ generator reach (stale cache,
  one-file lint,
  narrow fuzzer,
- wrong assertion:
- each answers another question.
+ wrong assertion);
+ list unexercised surfaces.
 
 QNB:
- Comparing timings:
- measure the run-to-run band on one unchanged build first.
-Single runs resolve nothing smaller than that spread;
- smaller differences are noise you will credit to a change.
-
-QET:
- Runtime estimates use same pipeline digest and stage inventory.
-Older runs need explicit mismatch warning;
-active elapsed beyond observed range requires immediate remeasurement.
+ Comparing noisy measurements (timings,
+ benchmarks,
+ model or provider outcomes):
+ measure run-to-run spread on unchanged input first;
+ smaller differences are noise.
 
 ASK:
- **Non-measurable facts:
+ Non-measurable facts:
  ask.
-** Preferred approach,
+Preferred approach,
  feature wanted,
  destructive-action authorization,
  values (depth vs governance,
  speed vs clarity).
 
-MA3:
- Failure directions:
- asking what you could measure;
- assuming what you should ask;
- asking permission for authorized step (PX2).
-Tells:
- "for a project like this...",
- "in a typical setup...".
-
 QGR:
- Grilling doesn't justify rubber-stamp questions.
-Settled decisions determine one answer:
- adopt + record it unasked.
-Ask only while two paths hinge on non-measurable preference or authority.
-
-QDF:
- Diagnosed defect with a fix keeping stated policy = authorized work,
- never a design decision:
- fix,
- record,
- invite veto.
-Options menus only for choices between published behaviors.
-
-QPW:
- One provider dry,
- one seat slow,
- one meter low:
- normal operation,
- never a launch blocker or a question.
-Launch;
- record the shape;
- read the outcome as evidence.
-
-QNX:
- Options that aren't mutually exclusive aren't a decision:
- do every compatible one.
-Mechanism choices with data to measure:
- measure,
- decide,
- record.
-Ask only for values or authority.
-
-FLG:
- Flagged user choices (veto-open adoptions,
- open questions) get asked in the same turn with options;
+ Settled decisions determining one answer:
+ adopt + record unasked,
+ even while grilling.
+Flagged choices (veto-open adoptions,
+ open questions):
+ ask same turn with options;
  never park them in docs.
-Choices settled requirements determine:
- close and record.
-
-QVE:
- Visual review starts from the accepted design,
-then names consequential concerns the user did not raise.
-Explore them with built variants;
-never substitute a vague approval question.
-
-CXD:
- **Cross-cue distinction:**
- Use two visible channels (color,
- weight,
- icon,
- label,
- boundary,
- position) for states and action prominence.
-Preserve content space;
-never rely on color or shape alone.
-
-PFG:
- Minimum padding or spacing is a hard floor.
-Test fit at that floor;
-reflow or truncate permitted content when it fails.
-Never introduce a below-minimum compact fallback.
-
-QVM:
- Design matrix includes pros,
-cons,
-analysis,
-full ranking,
-recommended additions.
-End with separable questions whose answers select among visible new variants.
-
-MXQ:
- Matrix size follows consequential independent dimensions and meaningful variants.
-Never cap cells to a number mentioned only as an example.
 
 QCS:
- A quality-over-cost guideline makes cost a non-constraint.
-Options differing only in price aren't user questions:
+ Under a quality-over-cost guideline,
+ options differing only in price aren't user questions:
  pick the one buying more evidence or better output,
  record it,
  invite veto.
 
 QSP:
- Never bundle separable decisions into one option set,
- nor offer complements as alternatives.
-Split by what each actually decides;
- answering both "yes,
+ Never bundle separable decisions into one option set or offer complements as alternatives;
+ "both,
  in this order" must be reachable.
 
 QPM:
- Every option set asserts a shared premise.
-Before asking which mechanism,
- try dissolving the constraint that demands one;
+ Before asking which mechanism,
+ try dissolving the constraint demanding one;
  offer the menu only if it survives.
-Dissolving beats choosing.
 
 ### Present options with pros, cons, and a personal ranking
 
 OPT:
- Proposing distinct options:
- give each pros + cons plus fully sorted personal ranking,
- with reason deciding each adjacent pair.
+ Distinct options:
+ pros + cons for each,
+ then "Ranking:
+ B > A > C,
+ because ..." giving the reason for every adjacent pair.
 
 OPA:
  `AskUserQuestion`:
- pros + cons in each `description`;
- order best first,
+ pros + cons in each `description`,
+ best first,
  "(Recommended)" on top label;
- state full ranking + adjacent-pair reasons in surrounding prose.
-
-OPI:
- Inline prose:
- per-option pros + cons block,
- then "Ranking:
- B > A > C,
- because ..." explaining each adjacent step,
- not just top pick.
+ full ranking with adjacent-pair reasons in surrounding prose.
 
 YKZ:
- Several options:
- widen to plausible alternatives,
- each with its libraries and repo incumbents;
+ Before ranking several options:
+ widen to plausible alternatives (with their libraries and repo incumbents);
  design each until disqualifying problems surface.
-Rank only after.
 
 ODM:
  Option examples must demonstrate every concept the question asks the user to compare.
 
-HFM:
- Visual-design questions:
- render one self-contained HTML form
- and verify it.
-Include built options,
- pros/cons,
- ranking,
- and final free text.
-
-HDM:
- HTML visual-review artifacts follow the viewer's system color scheme.
-Build and verify light and dark review chrome;
-open the artifact in current system mode.
-
-ZDV:
- Device mockups:
- capture at cited physical px;
-display 100% at cited dp;
-show px,
-dp,
-current scale + reset.
-Never upscale a dp-sized bitmap.
-
-BZF:
- Device visuals use measured target frame:
- opaque chassis,
-bezels,
-hinge + corners.
-Place screenshot inside screen opening;
-never clip it to reveal page.
-
-ANB:
- Android device mocks show status + navigation bars with current target geometry.
-Keep app controls out of cutouts and system insets;
-screen dimensions include these bars.
-
-AVP:
- Android screen comparisons:
-build a nonfunctional Compose prototype,
-install on target emulator,
-and capture each candidate at panel px before HTML presentation.
-
-HUP:
- Ongoing design sessions:
- update current handover after each correction,
- answer,
- decision,
- candidate,
- and verification;
-never wait for session end.
-
-VHI:
- Visual handoffs state purpose,
- changed details,
- what to inspect,
- and exact response path in the artifact.
-Never make unexplained internal labels the user's task.
-
-RVC:
- Post-decision visual review shows the active design only.
-Keep rejected evidence in durable docs;
-compare discarded candidates only when user explicitly asks.
-
-OCG:
- Output cardinality never determines option occurrence grammar.
-Sketch token encoding before asserting repeated,
-delimited,
-or variadic forms.
-
 ### Exhaust evidence layers when assessing system usage
 
 EVL:
- "Should we use X better?
-":
- walk every layer before recommending;
- each can flip conclusion.
-
-EL1:
- First layer,
- **the tool itself**:
- usage volume,
- conf.
-
-EL2:
- Second layer,
- **parallel systems**:
- where same need met outside tool.
-
-EL3:
- Third layer,
- **content of those parallel systems**:
- what's inside,
- not just file count.
+ "Should we use X better?":
+ before recommending,
+ report X's usage + conf,
+ parallel systems meeting the same need (with content),
+ TODO/workaround comments,
+ suppressions,
+ and stated policies.
 
 EL4:
- Fourth layer,
- **inline annotations**:
- TODO/FIXME/HACK,
- deprecation markers,
- workaround comments.
-Zero signals discipline (verify search ran;
- QRY);
- thousands signal debt.
-
-EL5:
- Fifth layer,
- **suppressions + exceptions**:
- lint disables,
- type suppressions,
- skipped tests.
-Justified-with-rationale healthy;
- bare suppressions debt.
-
-EL6:
- Sixth layer,
- **stated policies in code/conf**:
- declared intent may not match practice.
-
-ELR:
- Report findings at each layer before concluding;
- layer-1-only recommendation is a guess.
+ Codebase health signals:
+ zero TODO/FIXME/workaround hits mean discipline only if the search provably ran;
+ thousands mean debt.
+Suppressions with rationale are healthy;
+ bare ones are debt.
 
 ### Before claiming inability
 
 CB1:
- Inability claims cover whole toolset.
-Before refusing,
+ Before refusing or handing off,
  bridge:
  shell utils;
  web via `agent-browser`;
@@ -661,82 +386,53 @@ Before refusing,
  HTTP/IPC;
  auth via `expect`/tokens;
  hardware via CLI.
-
-VKI:
- Synthetic key input:
- use nested compositor or caller-independent broker.
-Never invoke `ydotool` from agent command;
- its key-down can cancel caller before key-up,
- wedging desktop input.
-
-BR2:
- Refuse/hand off only after attempting bridges + confirming no path exists;
+Refuse only after;
  state bridges tried.
-Unconsidered refusal looks identical to real obstacle.
 
 RXH:
- Same for research:
+ Research:
  narrow "no evidence for X" -> widen to comparable entities (siblings,
  peer platforms) first.
 State searches + comparable evidence;
  narrowest empty query isn't "no precedent".
 
 CB2:
- External-system impossibility claims ("can't",
- "by design"):
- read deciding source.
-Black-box probes aren't proof;
- workaround menus premised on it assert it.
+ Claims an external system "can't" or behaves "by design":
+ read the deciding source;
+ black-box probes aren't proof,
+ and workaround menus assert the claim.
 Surprise after your edit:
  diff it.
 
 RPB:
- One failed probe of resource user says is present isn't proof of absence.
-Re-probe + ask user to reconnect/re-authorize/restart before concluding unreachable.
-
-JEV:
- Journal silence or a later recovery action isn't cause or stability evidence.
-Verify retention + emitter;
-reproduce with live link,
-supplicant,
-kernel,
-and reachability capture.
-
-FLK:
- One provider capacity failure isn't a stable limit.
-Measure repeated same-input outcomes before lowering global context budgets;
-prefer model-aware budgeting.
-
-RBK:
- User must execute manually:
- invoke `runbook` skill for the document.
-Repo-wide runbooks:
- `doc/runbook/<topic>.md`;
- handovers:
- `doc/handover/<topic>.md`;
- package-specific ones stay beside code.
+ Resource the user says exists fails one probe:
+ re-probe,
+ then ask user to reconnect/re-authorize/restart before concluding unreachable.
 
 FCH:
- Source doc points at another where substantive provisions live:
- fetch it before drawing conclusions.
-Never hedge ("likely contains") about document one tool call away.
+ Doc points elsewhere for substance:
+ fetch that before concluding;
+ never hedge ("likely contains") about a document one tool call away.
 
 ### Name the verification step
 
 NVS:
- Confident claims about environment,
+ Pair confident claims about environment,
  external tool,
- src pair inline with what backs them.
-Can't name backing?
- Labeled guess or verify.
+ or src inline with their backing (re-verified path:line,
+ command,
+ doc).
+No backing:
+ verify,
+ or label as guess.
 
 QRY:
- Search results claim search ran + lines are matches;
+ Search output claims the search ran and lines match;
  both fail silently (bad `--type`,
  masked stderr,
  `head` caps,
  `-v` filters,
- `rg --replace`).
+ hidden/ignored skips).
 Sanity-check broader,
  uncapped,
  unfiltered.
@@ -744,69 +440,35 @@ Sanity-check broader,
 ### Git cleanup and worktree safety reviews
 
 GCL:
- Reviewing `git clean`,
-destructive git guards,
-worktree safety,
-or ignored-file cleanup:
-inspect ignored root artifacts before final findings.
+ Before doing or reviewing cleanup of ignored files (`git clean -X`,
+ artifact deletion):
+ list them with `git clean --dry-run -d -X` first.
 
 GCR:
- For GCL,
-run `find . -maxdepth 1 \( -name HEAD -o -name config -o -name hooks -o -name objects -o -name refs \) -print`.
-
-GCI:
- For GCL,
-run `git check-ignore --verbose HEAD config hooks objects refs` and
-`git clean --dry-run -d -X HEAD config hooks objects refs`.
+ Before cleanup,
+ check root `HEAD`,
+ `config`,
+ `hooks`,
+ `objects`,
+ `refs` (stray git-dir entries) with `ls -d` + `git check-ignore --verbose`;
+ any hit makes safe cleanup part of the finding.
 
 GC2:
- Never rely on `git status`,
+ `git status`,
  `git ls-files --others --exclude-standard`,
- `rg --files`;
- they hide ignored files.
-Any root sentinel exists:
- safe cleanup path is part of design under review.
-
-GCW:
- `git-policy-cli` worktree-guard reviews:
- baked-in allowlist `DEFAULT_ALLOWED_WORKTREE_DIRS` (`package/git-policy/cli/src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass guard.
-
-WXG:
- cli-git worktree-copy incidents:
- classify effective source before lock analysis.
-Main worktrees must bypass admin observation,
- recovery,
- settlement,
- and copying;
- verify this invariant first.
+ and `rg --files` hide ignored files;
+ never use them as cleanup evidence.
 
 ### Research tools
 
 RT1:
- `rg`:
- fast text search;
- use directly,
+ `rg` for text search,
  not directory navigation;
- `rg --files` for globs.
-
-RT2:
- `agent-browser`:
- headless browser CLI;
- rendered pages,
- screenshots,
- web UI interaction,
- deployed-app verification.
-
-RT3:
- `FetchUrl`:
- docs sites,
- npm pages,
- GitHub READMEs;
- raw source when docs incomplete.
+ `rg --files` for globs;
+ add `--hidden`/`--no-ignore` when dot-dirs or ignored files may hold matches.
 
 RT4:
- `gh`:
- GitHub issues,
+ `gh` for GitHub issues,
  PRs,
  release notes,
  repository metadata.
@@ -815,222 +477,149 @@ RT4:
 
 ### Command execution conventions
 
-FIT:
- Early stage:
- fast iteration outranks per-run coverage.
-Size runs to end within about an hour;
- spend overlap,
- shorter windows,
- narrower seats first.
-Longer needs owner's say.
-
-FT2:
- Owner's say of 2026-09-03:
- XIEPT2-scale entries on Hyper alone (about 1,900 calls under 1,000 per hour) may take about two hours.
-Don't thin benches or probe the ceiling for that alone.
-
 TMO:
- Never wrap routine verification in external `timeout`.
-Use command tool's session/polling;
- stop stale surviving processes by PID.
+ No external `timeout` around routine verification;
+ use the command tool's session/polling and stop stale processes by PID.
 Wrappers only for behavior-under-test or unbounded runtime.
-
-SLF:
- `pgrep --full <name>` matches the waiting shell's own command line,
- so `until ! pgrep --full X` never ends.
-Wait on the harness's completion notification,
- or exclude self by PID.
 
 NXR:
  Transport failure (`No result provided`,
- dropped session) while child may have run:
- never rerun same synchronous command.
-Inspect processes + logs;
- rerun via process tool or bounded execution.
+ dropped session) after a command may have run:
+ inspect processes + logs first;
+ never repeat the same synchronous call;
+ rerun in background or with a bound.
 
-IMX:
- Importing a module runs its top-level code.
-Never import a CLI entry to check it parses or to read its exports;
- that starts the run.
-Read the file or type-check instead.
-
-HLT:
- Stop your own runs by PID.
-`pkill`/`killall` patterns match every command line holding the string,
- including pi calls that merely quote the same path.
-List matches first;
- kill only intended PIDs.
+EDR:
+ Parallel tool calls may run in any order,
+ so a command reading a fresh edit can see the pre-edit file;
+ send dependent commands only after the edit returns.
 
 1CB:
- At most three `&&`-chained steps per Bash call;
- never `;` chains or loops:
- uninspectable for user and auto mode.
+ At most three `&&`-chained steps per shell call;
+ no `;` chains or loops.
 Longer multi-step work:
- write a scratch `.ts` (`node:child_process`),
- run that file.
+ write a scratch `.ts` (`node:child_process`) and run it.
 
 RGP:
- Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
+ `rg` without a path may read stdin:
+ always pass `.` or an absolute path.
 
 ATH:
- Before current agent scratch use,
- run `mkdir --parents "${HOME}/temp/agent"`,
- then `chmod 700 "${HOME}/temp/agent"`.
-Trust checks reject group or other permission bits.
+ Before using `${HOME}/temp/agent` scratch:
+ `mkdir --parents` it,
+ then `chmod 700`;
+ trust checks reject group/other permission bits.
 
 CLN:
  Investigating package source:
- prepare current scratch root per ATH,
- then `gh repo clone <repo> "${HOME}/temp/agent/<name>-<date>" -- --depth 1`;
+ `gh repo clone <repo> "${HOME}/temp/agent/<name>-<date>" -- --depth 1`,
  not `git clone`,
  unless commit history matters.
 
-TMP:
- `${HOME}/temp` (incl `${HOME}/temp/agent/`) is ephemeral;
- assume cleanup wipes it anytime.
- Keep only reconstructable scaffolding there,
- nothing irreplaceable.
-
-NMD:
- Durable state that must stay uncommitted (UNLICENSED-derived artifacts,
- run caches) goes in `node_modules/.monochromatic/`:
- gitignored,
- and survives `${HOME}/temp` cleanup.
-
 APQ:
- cli-git auto-push also fires in third-party clones.
-Before committing in one,
- run `git remote set-url --push origin DISABLED`;
- a `pnpm/pnpm` prototype commit attempted an upstream push.
+ Auto-push fires in third-party clones too:
+ before committing in one,
+ run `git remote set-url --push origin DISABLED`.
 
 BOP:
- `~` in Bash output = display substitution for home dir by `bash-output-filter` hook (display-only).
-Skip filter via blocklist trigger:
- `eval`,
+ `~` in shell output is a display-only home-dir substitution by the `bash-output-filter` hook;
+ bypass it with `eval`,
  `export`,
  `source`,
  `$(...)`,
  backticks,
- `> file`.
+ or `> file`.
 
 WCD:
- Pin target dir on every shell command;
- Bash tool has no `cwd`.
-Use native `-C`/`--cwd` or `cd -- <abs path> &&`.
-Alternate-worktree writes:
- verify `pwd` + `git rev-parse --show-toplevel` first.
+ Pin target dir on every shell command (native `-C`/`--cwd` or `cd -- <abs path> &&`).
+Before alternate-worktree writes,
+ verify `pwd` + `git rev-parse --show-toplevel`.
+
+CLH:
+ Before automating CLI prompts (pipes,
+ PTYs,
+ drivers):
+ check `--help` and current docs/source for native noninteractive flags;
+ prefer them over terminal emulation.
 
 ### Long-form flags
 
-CLH:
- Before automating CLI prompts with pipes,
- PTYs,
- or drivers,
- run `--help` and inspect current docs/source for native noninteractive flags.
- Prefer flags over terminal emulation.
-
 LFF:
  Use long-form (`--flag`) CLI options,
- not bundled single-letter short flags;
- writing long form forces knowing what it does.
+ not short flags;
+ writing long form forces knowing what each does.
+No long form:
+ short flag stays.
 
 RGT:
- `rg` recurses by default:
- `-r` means `--replace`,
- not grep's recursive `-r`;
- grep-reflex `rg -rl`/`-ir` silently rewrites matches in output.
-Long form removes trap.
-
-RGD:
- A shell glob defeats that recursion:
- `rg pat src/*.ts` never enters `src/corpus-run/`,
- and reports zero as confidently as a real absence.
-Pass the directory;
- filter with `--glob`.
-
-LF2:
- No long-form spelling:
- short flag stays;
- `--` argument separators (`mise watch -- task`) unaffected.
+ `rg` recurses by default;
+ its `-r` means `--replace`,
+ so grep-reflex `rg -rl`/`-ir` silently rewrites matches in output.
 
 ### Hazardous commands
 
 HRM:
- Could action physically harm human or wear hardware?
+ Could an action physically harm a human or wear hardware?
  Warn first.
 `ssh m1`:
- 16 GiB RAM hard cap,
+ 16 GiB RAM cap,
  fragile internal SSD;
- probe + prefer `/Volumes/MacData` for write-heavy work.
+ probe first,
+ put write-heavy work on `/Volumes/MacData`.
 
 RXI:
- Commands that might crash/exhaust host:
- performance-limited container/VM only.
-Includes:
- heavy memory/process/fd allocation,
+ Host-exhausting risks (heavy memory/process/fd use,
  unbounded loops,
  uncapped fan-outs,
- stress/bench/load runs.
+ stress/bench/load):
+ run in `podman run --memory=2g --cpus=2 --rm` or `mvm`,
+ stating bounds.
 
 BOX:
- Isolate each heavy run in a container/VM whose RAM,
- CPU and PID limits fit current host headroom;
- state bounds.
-Third-party benchmarks run mount-free,
- inputs baked in.
-Authorization doesn't transfer.
+ Third-party benchmarks run mount-free,
+ inputs baked into the image.
 
 DCB:
- Never execute or have agents execute catastrophic commands (`sudo rm -rf /`,
+ Never run or have agents run catastrophic commands (`sudo rm -rf /`,
  `mkfs`,
  `dd of=/dev/sda`,
  fork bombs),
- even as guardrail tests.
-Verify guardrails with moderately dangerous commands.
+ even as guardrail tests;
+ test guardrails with moderately dangerous ones.
+
+VKI:
+ Synthetic key input:
+ nested compositor or caller-independent broker only;
+ never `ydotool` from an agent command (key-down can cancel the caller before key-up,
+ wedging desktop input).
 
 ### Essential commands
 
 CM1:
- Identify target package + task before running tests;
- never reflexive repo-root `mise run test` for narrow package work.
-
-CM2:
- Mise bare commands use default shell.
-Sequence with `run` array form (`run = ["a", "b"]`);
- never `;`-chaining nor `:::`.
-`shell = "node --input-type=module-typescript -e"` for logic only.
+ Narrow package work:
+ run that package's task,
+ never reflexive repo-root `mise run test`.
 
 CM3:
- All builds + tasks via `mise run`;
+ All tasks via `mise run`;
  never `pnpm exec`,
  package scripts,
  or raw tools (`tsc`,
  `tsdown`,
  `bun test`).
 No suitable task:
- add one to package `mise.toml` first (CM4 excepted).
-
-CM4:
- Never substitute `bun test` for missing mise task;
- it misreports under `@monochromatic-dev/module-test`.
-Use `mise run //package/<path>:test:unit`,
- or `node <file>` when no task exists.
+ add one to package `mise.toml`;
+ tests may run via `node <file>` meanwhile.
 
 CM5:
- Read root + package `mise.toml` for available commands.
-Run package task via `mise run //package/path:task` (not `mise run --cd`).
+ Find tasks in root + package `mise.toml`;
+ run as `mise run //package/<path>:<task>`,
+ not `mise run --cd`.
 
 CM6:
- Run `mise run //package/<path>:lint:types` manually after editing TypeScript;
- no automated type-check yet.
-
-WC2:
- Root files (e.g. `CLAUDE.md`,
- `mise.toml`) generated by file-enforcer.
-Check `file-enforcer.config.ts` before editing any root config;
- managed -> edit source,
- run file-enforcer,
- commit output as-is.
+ After editing TypeScript,
+ run `mise run //package/<path>:lint:types`;
+ nothing type-checks automatically.
 
 ## Before editing code
 
@@ -1041,10 +630,9 @@ VRB:
  "review",
  "audit",
  "investigate",
- "propose"...) request deliberation:
- deliver answer + requested or policy-required docs,
- no fixes.
-Action verbs ("fix",
+ "propose"...) want an answer + required docs,
+ no fixes;
+ action verbs ("fix",
  "implement",
  "update"...) authorize action.
 
@@ -1054,197 +642,189 @@ DRR:
  brief evidence,
  ranking,
  risks;
- get acceptance before `doc/decision/` or dependent work.
-Review/sub-question answers don't ratify;
- proposals use `doc/planning/`.
+ proposals in `doc/planning/`;
+ only explicit acceptance (not review or sub-question answers) unlocks `doc/decision/` or dependent work.
 
 IWT:
- Decision verbs forbid non-document mutations in main worktree (edits,
- installs,
- builds,
- autofixes);
- doc/reports OK.
-Reproduce/experiment in fork:
- `git worktree add <path> HEAD`,
- remove after.
+ Deliberation requests ("review",
+ "audit",
+ "investigate"...):
+ main worktree gets doc/report writes only;
+ experiment in `git worktree add <path> HEAD`,
+ removed after.
 
 AUT:
- Holds in Auto Mode:
- "prefer action over planning" applies to executing requested action,
- not expanding scope or acting on adjacent undecided choices.
+ Auto mode's "prefer action over planning" covers executing the requested action,
+ never expanding scope or acting on adjacent undecided choices.
 
 VR2:
- Verb ambiguous:
- default to narrower interpretation,
- propose broader action explicitly.
+ Request with one clear reading:
+ act.
+Readings differing in what to do:
+ confirm first.
+Readings differing only in how far to go:
+ do the narrower,
+ propose the broader explicitly.
 
 ANN:
- Move changes where they belong immediately:
- different file,
+ Put changes where they belong immediately (other file,
  new file,
- gitignore entry.
-Unsure:
- propose concrete edit + location.
+ gitignore entry);
+ unsure:
+ propose the concrete edit + location.
 
 EC4:
- Never implement features that won't achieve intended effect;
- unsupported functionality gets explanation,
- not non-functional code.
+ Never implement features that can't achieve their intended effect;
+ explain the limitation instead of writing non-functional code.
 
 ### Cross-runtime and scripts
 
 XRT:
- Prefer cross-runtime patterns instead of Bun-specific implementations.
+ Prefer cross-runtime patterns over Bun-specific APIs.
 
 HOM:
- Production paths for current user derive from injected home or runtime homedir;
- never hardcode username or assume `/home`.
-Environment-sensitive tests inject disposable homes.
+ Derive current-user paths from injected home or runtime homedir,
+ never a hardcoded username or `/home`;
+ environment-sensitive tests inject disposable homes.
 
 SCR:
- Never write bash/powershell scripts.
-Inline mise task logic via `shell = "node --input-type=module-typescript -e"`,
- or move into package bin.
-Never create `mise.<action>.ts` files.
+ Never write bash/powershell scripts or `mise.<action>.ts` files;
+ put task logic inline via `shell = "node --input-type=module-typescript -e"` or in a package bin.
 
 PIN:
- Pin tool versions only with clear justification + comment explaining why.
+ Pin tool versions only with a comment explaining why.
 
 SPG:
- Add explicit guards (transcript size check,
- env var flag,
- session type filter) to any automation spawning agent sessions;
- prevents recursive token burn.
+ Automation that spawns agent sessions needs explicit recursion guards (env var flag,
+ session type filter,
+ transcript size check).
+
+CM2:
+ `mise.toml` tasks:
+ sequence with `run = ["a", "b"]`,
+ never `;` or `:::` chaining;
+ `shell = "node --input-type=module-typescript -e"` only for logic.
+
+WC2:
+ file-enforcer generates root files (`CLAUDE.md`,
+ `mise.toml`,
+ ...):
+ check `file-enforcer.config.ts` before editing root config;
+ if managed,
+ edit its source,
+ run file-enforcer,
+ commit output as-is.
 
 ### Simplification
 
 IMM:
- Prefer `const`,
- immutable patterns,
- functional approaches (`map`/`filter`/`reduce`) over mutable state + imperative loops.
+ Prefer immutable patterns.
 
 UTL:
- Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
+ Reuse existing repo utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) before writing helpers.
 
 XNC:
- Extract + name concepts by role and boundary behavior;
- names reveal sentinel and fallback semantics.
-Start simple;
- refactor only when necessary.
+ Name extracted concepts by role and boundary behavior,
+ revealing sentinel and fallback semantics;
+ start simple,
+ refactor only when needed.
 
 ITR:
- Linear input:
- `map`/`filter`/`reduce`,
- `for...of`,
- counter `for`,
- `while` cursor;
- never recurse over string/flat array.
+ Linear input (strings,
+ flat arrays):
+ iterate;
+ never recurse or rebuild accumulators (`acc + c`).
 Recurse only bounded structural walks;
- flatten spines with work-stack.
+ flatten spines with a work stack.
 
 MXL:
- Never disable/raise/bypass max-lines limit.
-Remediate by splitting:
- re-export from `index.ts`;
- helpers to siblings,
- constants/types to own files.
-Never reformat or strip TSDoc/`//region` to fit.
-
-MXR:
- `.rs` files share max-lines budget (`monochromatic-rust-linter` rule `max-lines`,
- 300 code lines).
-Split into sibling modules.
-`tests/`,
- `*_tests.rs`,
- `fuzz/`,
- `build.rs` exempt;
- never disable.
-
-RDC:
- Rustdoc (`///`/`//!`;
- plain `//` doesn't count) on every documentable `.rs` item,
- public + private (`require-rustdoc`).
-cxx-qt files exempt `use` + trait-impls;
- tests/fuzz exempt;
- never disable.
+ Over max-lines (TS,
+ Rust):
+ split into sibling files/modules (constants,
+ types,
+ helpers),
+ re-exporting from `index.ts`;
+ never strip docs/`//region` or reformat to fit.
 
 ### Linting
 
 LN1:
- Never violate one rule to satisfy another;
- apparent conflicts get structural remediation (split,
+ Lint rules in apparent conflict:
+ restructure (split,
  extract,
- rename),
- never reformatting one rule's surface to silence another.
+ rename);
+ never violate one or reformat to silence another.
 
 LN2:
- Treat each lint finding as design signal,
- not checkbox:
- name rule's real intent,
- make best code shape satisfying it + rest of codebase.
+ Each lint finding is a design signal:
+ name the rule's intent,
+ then write the best code shape satisfying it and the codebase.
 
 LN3:
- Before suppressing/skirting a lint rule:
+ Before suppressing a lint rule:
  inspect linter source + linted value;
- try config/allow-list first.
-Remaining suppression needs `.md` doc citing both sources + proving config can't work.
-
-LN4:
- Prefer `Object.entries` + functional methods over `for...in`.
-
-LN5:
- Add `oxlint-disable-next-line` comments with justification where rules can't be avoided.
+ try config/allow-list.
+Remaining suppression:
+ justified disable comment plus `.md` doc citing both,
+ proving config fails.
 
 LN6:
- Block disables wrap tightly:
- `/* oxlint-disable rule */` -> TSDoc -> declaration -> `/* oxlint-enable rule */` on very next line.
-Never `disable-next-line` between TSDoc + declaration.
+ Suppressing a documented declaration:
+ `/* oxlint-disable rule */`,
+ TSDoc,
+ declaration,
+ `/* oxlint-enable rule */` on the very next line;
+ never `disable-next-line` between TSDoc and declaration.
 
 LN7:
  Never loosen lint rules without prior approval.
 
-LN8:
- Address all lint issues,
- including but not limited to warnings.
-
-### Logging
+### Logging and diagnostics
 
 LOG:
- Log extensively by default:
+ Log extensively:
  entry points,
  branch decisions,
  error paths,
- async lifecycle.
-Never remove logging to "clean up";
- permanent infrastructure.
+ async lifecycle;
+ never remove logging to "clean up".
 
 TLG:
- Tagged loggers from `@monochromatic-dev/module-logger` only;
- never raw/untagged `console` in production code.
-Exception:
- raw `console` for precise terminal output (CLI output,
+ Production code logs only via tagged loggers from `@monochromatic-dev/module-logger`;
+ raw `console` only for exact terminal output (CLI output,
  prompts).
 
 LG1:
- Tag every module + function boundary using `myFn.name`;
- wrap logger with additional tag when passing to sub-function.
-Never embed tags in message strings;
- use `tagged` wrapper.
+ Tag loggers at every module + function boundary with `myFn.name`,
+ re-wrapping with an added tag when passing to a sub-function;
+ never embed tags in message strings.
 
 LG2:
- Catch bindings must be used in body:
- log caught value (even expected) or rethrow;
- never unused `catch (error)`.
+ Every `catch (error)` uses its binding:
+ log the caught value (even expected) or rethrow.
+
+DGT:
+ User-facing diagnostics:
+ name the affected input and calls plainly;
+ explain uncertainty and every valid remediation path;
+ no unexplained implementation terms;
+ length is unconstrained.
+
+DNL:
+ Diagnostic names and messages use neutral operation or evidence terms,
+ never moral judgments of code,
+ types,
+ or authors.
 
 ### Security
 
 SYB:
- Text crossing syntax boundaries obeys destination grammar.
-Encode at final interpolation.
-Don't invent comment-string DSLs for relations the host type system or AST can express or infer.
+ Text crossing syntax boundaries obeys destination grammar:
+ encode at final interpolation.
+Never invent comment-string DSLs for relations the type system or AST can express or infer.
 
 STB:
- Transformer tests emitting another syntax need adversarial destination boundary cases:
+ Tests for code emitting another syntax include adversarial boundary cases:
  delimiters,
  escapes,
  quotes,
@@ -1254,452 +834,359 @@ STB:
  source-escaped variants.
 
 PRV:
- Shared-media sanitization:
- inspect every region in dense encoded samples.
-Mask status bars,
+ Before sharing media or data externally:
+ inspect every region in dense samples;
+ mask status bars,
  notifications,
  paths,
  titles,
  accounts,
- and identifiers;
-strip metadata and unintended audio.
+ identifiers;
+ strip metadata + unintended audio.
+
+### User interfaces
+
+CXD:
+ Any UI or state output:
+ mark states and action prominence with two visible channels (color,
+ weight,
+ icon,
+ label,
+ boundary,
+ position),
+ never color or shape alone;
+ preserve content space.
+
+HDM:
+ Agent-authored HTML follows the viewer's system color scheme:
+ build + verify light and dark;
+ open it in current system mode.
+
+ATS:
+ Custom interactive elements (web,
+ Android):
+ explicit min 48px/dp layout width + height;
+ never rely on touch area expanding past bounds where neighbors can overlap.
 
 ### TSDoc comments
 
 TSD:
- Comprehensive TSDoc on all declarations (exported or not,
- locals too),
- per `@monochromatic-dev/oxlint-plugin-tsdoc`.
-`{@inheritDoc originalFn}` for non-async wrappers.
+ Non-async wrappers document via `{@inheritDoc originalFn}`.
 
 TD1:
- Embed comments inside template literals via `${ // comment \n '' }`;
- never target-language comments or moving comment outside.
+ Comments inside template literals:
+ `${ // comment \n '' }`,
+ never target-language comments or moving the comment outside.
 
 TD2:
- TSDoc (`/** */`) for declarations only;
+ TSDoc (`/** */`) only directly before declarations;
  `//` or `/* */` for statements,
  control flow,
  imports,
  returns.
 
-TD3:
- TSDoc must directly precede declaration,
- not statement.
-
 TD4:
- Comments on own line above code,
- never inline after code.
+ Comments go on their own line above code,
+ never trailing it.
 
 TD5:
  Escape `*/` as `*\/` inside TSDoc blocks.
 
 TD6:
- Avoid `the`/`a`/`an` in `@param`/`@returns`;
- explain **why**,
- not **what**.
+ `@param`/`@returns`:
+ no articles;
+ explain why,
+ not what.
 
 TD7:
- Don't mention Promise wrapping for async functions.
+ Async function docs never mention Promise wrapping.
 
-TD8:
- Include `@example` tags with usage examples.
-
-TD9:
- `@internal` is a modifier tag and must carry no content,
- or `tsdoc(empty-tags)` errors.
-Explanation goes in prose above the bare tag.
+JCH:
+ Never write `@mutates` for absent effects:
+ move work to an ownership-known boundary,
+ pass its primitive result,
+ or improve the proof;
+ contracts describe possible runtime effects,
+ not analyzer gaps.
 
 ### TypeScript
 
 #### Standards
 
 ST2:
- Use `//region`/`//endregion` markers with purpose + explanation for logical sections.
+ Mark logical sections with `//region`/`//endregion`,
+ stating purpose + explanation.
 
 ST3:
- Cross-package workspace imports use the package's `/ts` subpath,
- which resolves to TypeScript source,
- never built output.
-Rationale + accepted costs:
+ Cross-package workspace imports use the package's `/ts` subpath (TypeScript source),
+ never built output;
+ rationale:
  `doc/decision/workspace-ts-source-imports.md`.
 
 ST5:
- Prefer named imports,
- `import type` for type-only,
- absolute imports for workspace packages.
+ Prefer named imports;
+ import workspace packages by absolute package name.
 
 ST6:
- Use `import ... with { type: 'text' }` for static assets (SVG,
+ Static assets (SVG,
  HTML,
  CSS,
- SQL) instead of `readFile`;
- build tooling resolves at build time.
+ SQL):
+ `import ... with { type: 'text' }`,
+ not `readFile`;
+ build tooling resolves them.
 
 ST8:
- No calling functions before declaration in source order;
- hoisting legal but top-down reading unreliable.
+ Declare functions before calling them in source order,
+ despite hoisting.
 
 ST9:
- Functions with 2+ parameters use single destructured object parameter;
- exempt:
- callbacks with externally dictated signatures.
-
-TQ1:
- No rest parameters (`...args`) in functions we control;
- accept array parameter.
+ Functions with 2+ parameters take one destructured object,
+ except callbacks with externally dictated signatures.
 
 TQ2:
- Export immediately at declaration;
- avoid `Object.assign` for extending typed objects.
+ Export at declaration,
+ not in a trailing `export { }`;
+ never extend typed objects via `Object.assign`.
 
 TQ3:
  Throw + return early.
 
 XPT:
- Shared internals belong in the barrel,
- exported and marked `@internal`,
- not withheld.
-Covers helpers a sibling module or a built-artifact test needs.
+ Exporting small helpers through the package API so built-artifact tests reach them is allowed.
 
 #### Type system
 
-TY1:
- Explicit parameter + return types;
- `type` over `interface`;
- `Record` for maps.
-
 TY2:
- Avoid generic `Function` type;
- avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`.
+ Write `Generator<T>`/`AsyncGenerator<T>` without unused or optional type arguments.
 
 TY3:
- Union types over enums;
  `as const` for literals;
  branded types for domain primitives.
 
-TY4:
- Narrow symbol unions by `typeof` first,
- then identity check.
-
 TY5:
- `const` generic parameters;
- `readonly` array parameters;
- meaningful constraint names.
+ `const` generic parameters with meaningful constraint names.
 
 TY6:
- Prefer `as` over angle brackets;
- type guards for runtime checking;
- avoid deep nesting in conditional types.
+ Avoid deeply nested conditional types.
 
 TY7:
- Use assertion functions (`asserts value is T`) for runtime type narrowing.
+ Runtime narrowing:
+ type guards or assertion functions (`asserts value is T`).
 
 TY8:
- `const` narrowing doesn't reach function declarations (classic tsc 6 + native tsc 7).
-Fix:
- helper returning non-null,
- or new `const` with explicit type after null check.
+ `const` narrowing doesn't reach function declarations:
+ use a helper returning non-null,
+ or a new explicitly typed `const` after the null check.
 
 TY9:
- Generator overloads:
- remove `*` (sync) or `async *` (async) from non-implementation signatures.
+ Generator overload signatures omit `*`/`async *`;
+ only the implementation has them.
 
 #### Variables and values
 
 VA5:
- `satisfies` for type checking without widening;
- separate destructuring blocks for dependent values.
-
-VA6:
- Magic literals as named `const`;
- exempt:
- `-2` through `2` + object-literal property values (oxlint `detectObjects: false`).
-Fractional names compose from exempt range:
- `HALF = 1 / 2`.
+ `satisfies` checks types without widening;
+ destructure dependent values in separate statements.
 
 #### Programming patterns
 
 PP1:
- `async`/`await` only;
- no `.then()`/`.catch()`/`.finally()`;
- no explicit `new Promise`.
+ `async`/`await` only:
+ no promise chains or `new Promise`.
 
 PP2:
- `Promise.all()` for concurrent ops;
- `Promise.allSettled()` when all results needed;
- `AbortController` for cancellation.
-
-PP3:
- `using`/`await using` for cleanup;
- no `try...finally`.
+ Concurrent async work:
+ `Promise.all`,
+ or `Promise.allSettled` when failures must not discard other results;
+ cancel via `AbortController`.
 
 PP4:
- Custom error classes;
- throw over error codes/null/result types;
- `@throws` in TSDoc.
+ Signal failure by throwing custom error classes,
+ never error codes,
+ null,
+ or result types;
+ document with `@throws`.
 
 PP5:
- `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator;
- `dedent` from `string-dedent` for multi-line error messages.
+ Replace `!` with `nonNullishOrThrow` (`@monochromatic-dev/module-or-throw`);
+ build multi-line error messages with `dedent` (`string-dedent`).
 
 PP6:
- Combine `console.log`/`console.error` messages into thrown errors;
- `process.exitCode` only for non-standard exit codes.
-
-PP7:
- Never `process.exit()`:
- throw errors instead;
- never silently swallow in catch blocks (rethrow or log error).
+ Put error text in the thrown error,
+ not a preceding `console.log`/`console.error`;
+ set `process.exitCode` only for non-standard exit codes.
 
 PP8:
- Never silently discard unexpected states;
- throw on unreachable branches.
-
-PP9:
- No `switch` statements:
- if/else chains or `Record` lookups;
- if/else avoids `break` + fallthrough bugs;
- `Record` for discriminant-to-value maps.
+ Throw on unreachable branches;
+ never silently discard unexpected states.
 
 PPX:
- Composition over inheritance;
- `readonly` and `#private` by default;
- `unknown` over `any`.
-
-OWB:
- `ForeignBorrowed` marks ownership boundaries only.
-Propagate provenance through aliases,
- properties,
- destructuring,
- elements,
- and callbacks;
- never repeat marker on descendants.
+ Class members default to `#private`.
 
 #### Regular expressions
 
-RG1:
- Don't introduce regex when index scan,
- parser,
- string API expresses same rule clearly.
-
 RG2:
- Removed regex becomes single linear pass (O(n),
- O(1) stack);
- never recursion over text or accumulator rebuilds (`acc + c`).
-Original may backtrack superlinearly;
- prove O(n) for unbounded input.
-
-RG3:
- Every regex needs scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` justifying why regex fits,
- what bounds input,
- why no backtracking/rescanning.
-No justification:
- no regex.
+ Code replacing a regex makes one linear pass (O(n) time,
+ O(1) stack),
+ proven O(n) for unbounded input.
 
 ### Third-party libraries
 
 TP1:
- Undefined method error:
- retrieve docs immediately.
-
-TP2:
- Check actual type definitions before using APIs.
-
-TP3:
- Note CLI command patterns across examples;
- test simplest case first.
+ Third-party APIs and CLIs:
+ read the installed type definitions before calling;
+ on an undefined-method error,
+ fetch current docs immediately;
+ test the simplest invocation first.
 
 ### Dependency management
 
 DM1:
- Use `workspace:*` for internal dependencies.
-
-DM2:
- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
+ Internal dependencies use `workspace:*`;
+ external ones use `catalog:`,
+ with versions in the `pnpm-workspace.yaml` catalog.
 
 LFW:
- Never hand-edit lockfiles;
- regenerate with owning package manager or repo task,
- inspect generated diffs,
+ Never hand-edit lockfiles:
+ regenerate via the owning package manager or repo task,
+ inspect the generated diff,
  report unrelated drift separately.
 
-RCO:
- Incumbent removal:
- build coverage ledger of every consumed responsibility,
- owner,
- selection status,
- parity test,
- and retired behavior.
-Recommend removal only after every entry has a viable owner.
-
 RCI:
- Replacement design:
- inspect existing repo-owned generators and managers before proposing a new owner.
-Extend a present boundary when it already owns the responsibility.
+ Before proposing a new owner for a responsibility,
+ inspect existing repo-owned generators and managers;
+ extend one that already owns it.
 
 ### Adding new packages
 
 AP1:
- Create directory under the appropriate category in `package/`.
+ New packages go under `package/<category>/<name>`.
 
 AP2:
- Add `mise.toml` with task definitions mirroring sibling packages.
-
-AP3:
- Configure `package.json` with workspace dependencies.
+ New packages get a `mise.toml` with tasks mirroring sibling packages.
 
 AP4:
  CLI packages with `bin`:
- `#!/usr/bin/env node` shebang first line;
- without it Unix falls back to `/bin/sh` + hangs.
-`#!/usr/bin/env bun` only in documented Bun islands.
-
-AP5:
- Client-side bundling packages:
- add `rolldown.client.config.ts` extending `@monochromatic-dev/config-rolldown/.client.ts`,
- `build:js:client` task,
- `@monochromatic-dev/config-rolldown` devDependency.
+ `#!/usr/bin/env node` as the first line,
+ or Unix falls back to `/bin/sh` and hangs;
+ `#!/usr/bin/env bun` only in documented Bun islands.
 
 SGD:
  Dir segments singular;
- package name = `@monochromatic-dev/` + path,
+ package name = `@monochromatic-dev/` + path under `package/`,
  `/` -> `-`.
 Rename dir + name + consumers together.
 Exemptions:
  `doc/planning/singular-dir-name-invariant.md`.
+
+SBS:
+ Sidecars (`.fuzz`,
+ `.bench`,
+ `.conformance`) sit beside their subject package as `<pkg>.<kind>`,
+ never under a per-kind top-level dir;
+ move dir,
+ name,
+ and consumers together.
 
 ## Before declaring work complete
 
 ### Package completeness
 
 PKG:
- Package unfinished until it has `README.md`,
+ A package is complete only with `README.md`,
  zero lint errors,
- passing tests covering every exported code path.
-Never declare complete while any unmet.
+ and passing tests covering every exported code path.
 
 TCV:
- Enumerate every distinct code path,
- not just happy path;
- each implementation branch (sync/async,
+ Tests cover every implementation branch (sync/async,
  string/object,
- direct/delegated) needs own test.
-
-TC2:
- "Tests exist and pass" isn't completeness evidence;
- compare test names against implementation branches,
- confirm no untested path.
+ direct/delegated),
+ not just the happy path;
+ passing tests show completeness only after comparing test names against branches.
 
 GFP:
- Guard test proves nothing until shown to fail:
- remove guard,
+ A guard test proves nothing until shown to fail:
+ commit it,
+ remove the guard,
  rebuild,
  run,
- restore.
-Commit the guard first;
+ restore;
  restoring discards uncommitted work on that file.
 
-FSP:
- Test runner abandons a whole file once any describe in it fails.
-Never share one file between cheap unit describes and end-to-end ones;
- a cheap break then hides every expensive case.
-
 CXL:
- Semantic plugin/process cleanup must not emit bare shutdown errors such as `context canceled`.
- Capture stderr in lifecycle tests and fix hook ordering;
- do not filter accepted noise.
+ Plugin and process cleanup must not emit bare shutdown errors (e.g. `context canceled`):
+ capture stderr in lifecycle tests and fix hook ordering;
+ never filter the noise.
 
 ### Verify at the user boundary
 
 VUB:
- After building/deploying/installing artifact,
- verify by exercising it the way an end user would.
-
-PRF:
- Read every generated artifact end to end before handing it to a human.
-Judge whether its CONTENT answers the question asked;
- a generator that ran is not evidence its output makes sense.
+ After building,
+ deploying,
+ or installing,
+ verify the artifact the way its consumer uses it;
+ compiling or installing alone isn't verification.
 
 VB1:
- Server:
- confirm correct responses,
- not just startup.
-
-VB2:
- CLI tool:
- run real command + check output.
-
-VB3:
- Hook/plugin:
- trigger through host application,
- not just piped test input.
-
-VB4:
- Library:
- import + call from consuming project,
- not just compile.
+ Servers:
+ check responses,
+ not startup.
+CLIs:
+ run the real command,
+ check output.
+Hooks/plugins:
+ trigger via the host app.
+Libraries:
+ import and call from a consumer.
 
 VB5:
- Web page/HTML artifact:
- load with `agent-browser`,
+ Web pages/HTML artifacts:
+ load in `agent-browser`,
  confirm no console errors,
  exercise every interactive element,
- read rendered state via `agent-browser eval`.
-Rewritten JS paths:
- drive each.
-
-VB6:
- Verification must cross artifact-consumer integration boundary;
- "it compiled"/"it installed" alone isn't verification.
+ read rendered state via `agent-browser eval`;
+ drive each rewritten JS path.
 
 VB7:
- Markdown ships only after a rendered check
- (live page or renderer output);
- lint rule sets miss CommonMark emphasis edge cases.
-
-ATS:
- Android custom interactive elements:
- explicit minimum 48dp layout width + height.
-Never rely on Compose expanding touch beyond bounds where adjacent targets can overlap.
+ Markdown ships only after a rendered check (live page or renderer output);
+ lint misses CommonMark emphasis edge cases.
 
 SCF:
  Screenshot after scripted input:
- verify intended rendered state first,
- then capture.
-Input command completion isn't frame completion;
- recapture stale or transitional frames.
+ confirm intended rendered state,
+ then capture;
+ command completion isn't frame completion.
+Recapture stale or transitional frames.
 
 ABR:
- `agent-browser` sessions outlive verification:
+ End browser verification with `agent-browser close`:
  open pages keep animating,
  and WebAudio unlocked by scripted clicks plays on system speakers.
- End browser verification with `agent-browser close`.
 
 URF:
- Verification needing user-provided resource runs FIRST,
- before unrelated work + other parts of same task;
- scope expansion never defers it.
-Not done until resource exercised.
+ Verification needing a user-provided resource runs first,
+ before other work or other parts of the task;
+ scope growth never defers it;
+ not done until the resource is exercised.
 
 ### Verify on a throwaway, not against real state
 
 THR:
- State-mutating verification runs on disposable fixtures (`mktemp -d`,
+ State-mutating verification uses disposable fixtures (`mktemp -d`,
  throwaway worktree,
  container),
- never user's real/shared state,
- even idempotent.
-Guard tests:
- allowed + rejected fixtures.
+ never real or shared state,
+ even when idempotent;
+ guard tests need allowed and rejected fixtures.
 
 TAE:
- Prescribing tool/API behavior in instructions/conf/docs:
- test claim with real invocation first,
- never from how X should work.
-Covers agent prompts,
- README guidance,
- CI scripts.
+ Before prescribing tool/API behavior in prompts,
+ docs,
+ configs,
+ or CI scripts,
+ test it with a real invocation,
+ never from how it should work.
 
 ## When committing or documenting
 
@@ -1708,49 +1195,56 @@ Covers agent prompts,
 #### Prose style
 
 WR2:
- No em-dashes,
+ Prose never uses em-dashes,
  en-dashes,
- or their ASCII substitutes as prose em-dashes.
-Use paired commas/parentheses,
+ or ASCII substitutes for them:
+ use paired commas/parentheses,
  colon,
  semicolon,
  or period;
  "to" for ranges.
-Compound-word hyphens + CLI `--flags` fine.
+Hyphenated compounds and CLI `--flags` are fine.
 
 WR3:
- Sentence case headings;
- **bold** for inline emphasis only (no ALL CAPS);
- never bold as standalone title,
- use ATX header level.
+ Emphasis:
+ **bold** inline only;
+ never italics or ALL CAPS.
 
 WR4:
- Numerals only when exact count,
+ Numerals only where exact count,
  order,
  version,
  ID,
  or measurement matters;
  prefer count-neutral wording;
- never mention list length unless it's the claim.
+ mention list length only when it is the claim.
 
 WR5:
- Never reference by relative position ("above",
+ Never point by relative position ("above",
  "below",
  "earlier");
- name the thing:
- tag,
+ name the tag,
  heading,
  path,
- symbol.
-Applies to prose,
+ or symbol,
+ in prose,
  TSDoc,
- comments.
+ and comments.
+
+WR6:
+ A moved identifier (URL,
+ host,
+ path,
+ name) in a historical record keeps its original text
+ plus an in-place note giving the current value and the move date;
+ never leave it pointing nowhere.
 
 #### Markdown syntax
 
 MD1:
- Break lines at semantic boundaries so text reads naturally without editor wrapping;
- no italics.
+ Break lines at semantic boundaries,
+ under 120 chars,
+ so text reads without editor wrapping.
 
 MD2:
  `-` for unordered lists;
@@ -1758,200 +1252,171 @@ MD2:
  `10.`).
 
 MD3:
- Fenced code blocks with language tags;
- include file paths as comments.
+ Fenced code blocks with language tags and file-path comments.
 
 MD4:
  Reference-style links for repeated URLs;
  relative links for internal docs.
 
 MD5:
- No tables;
- use headings or lists instead.
+ No tables (pipe or HTML);
+ use headings or lists.
 
 MD6:
- ATX headers,
+ Headings:
+ ATX,
+ sentence case,
  max 4 levels,
- blank line before headers,
- lines under 120 chars.
-
-MD7:
- Labeled points become an ATX heading plus prose;
- bold-label bullets cram a heading into a list item.
+ blank line before.
+Standalone titles and labeled points become headings plus prose,
+ never bold lines or bold-label bullets.
 
 MD8:
- Hard wraps end lines only between whole inline spans;
+ Hard wraps fall only between whole inline spans;
  keep code spans,
  emphasis,
- and link syntax whole on one line,
+ and link syntax on one line,
  or the closing delimiter renders literally.
 
 WRP:
  Backtick file names,
  identifiers,
  commands,
- code tokens in Markdown prose:
- a code span is one token no prose rule touches.
-Older splits:
- `doc/todo/backtick-split-filenames.md`.
+ and code tokens in Markdown prose.
 
 ### Doc placement
 
 DPL:
- Repo-wide docs:
- `doc/<family>/`.
-Root keeps only `README.md`,
+ Repo-wide docs live in `doc/`;
+ root docs are only `README.md`,
  `SECURITY.md`,
  `AGENTS.md`,
  `CLAUDE.md`,
  `LICENSE`,
- `LICENSES/`,
- tidy subdirs;
- `CONTEXT.md` forbidden.
+ `LICENSES/`.
 Package docs stay beside code.
 
 DL1:
- `PREFIX.rest.md` becomes `doc/<prefix-lowercased>/<rest-lowercased>.md`,
- dropping redundant prefix;
- second dotted segment stays flat in filename;
- kebab-case for multi-word topics.
-
-DL2:
- Hubs:
- bare `PREFIX.md` index becomes `doc/<family>/README.md`,
- keeping curated prose.
+ Repo-wide doc paths:
+ `doc/<family>/<kebab-topic>.md`;
+ a family index,
+ if any,
+ is `doc/<family>/README.md`.
 
 DL3:
- Bug reports fold into most relevant `doc/troubleshooting/<topic>.md` as section,
- not own family.
+ Bug reports become a section of the most relevant `doc/troubleshooting/<topic>.md`,
+ never their own family.
 
 DL4:
- Delete doc only when work landed AND no durable value (root causes,
+ Delete a doc only when its work landed and no durable fact (root causes,
  workarounds,
- tradeoffs) remains.
-Identify replacement per durable fact;
- none -> update.
-Read first;
- git history isn't proof.
+ tradeoffs) lacks a new home;
+ read it first;
+ git history isn't a home.
 
 DL5:
  Reference source files by repo-relative path,
- not pinned GitHub blob URL;
- blob URLs break when target moves.
+ never pinned GitHub blob URLs,
+ which break when targets move.
 
-DL6:
- No automated check guards root regression;
- this rule is the cure.
+RBK:
+ Repo-wide runbooks:
+ `doc/runbook/<topic>.md`;
+ handovers:
+ `doc/handover/<topic>.md`;
+ package-specific ones stay beside code.
 
 ### Handling external changes
 
 EC1:
- External worktree changes = concurrent work,
- not emergency.
-Never restore/stash/revert unrelated changes;
- touch only task-scope files.
-Unrelated change blocks needed edit:
- acknowledge + ask.
-
-XIR:
- Adjacent repo issues:
- open GitHub issues even when fixing locally.
-Record each workaround/fix and explicitly state it has not been reviewed.
+ Worktree changes you did not make are concurrent work,
+ not emergencies:
+ never restore,
+ stash,
+ or revert them;
+ touch only task files.
+Unrelated change blocks your edit:
+ say so and ask.
 
 ### Git commit guidelines
 
 GCE:
- Commit at earliest opportunity,
- before the next work step;
- never wait for verification or completion.
-Broken states commit too:
- name the breakage in the message.
-Supersedes harness ask-first default.
+ Commit before the next work step,
+ never waiting for verification or completion;
+ broken states commit too,
+ naming the breakage.
+Overrides the harness ask-first default.
 
 GCG:
- Commit messages use Conventional Commits `<type>(<scope>): <subject>`;
-scope is package name or `*` for multi-package.
+ Commit subjects:
+ `<type>(<scope>): <subject>`;
+ scope:
+ package name minus `@monochromatic-dev/`,
+ doc family (`docs(planning)`),
+ root file or tool name (`mise`,
+ `AGENTS.md`),
+ or `*` for multi-package.
 
 GCB:
- Multi-package commit messages use two lines per package group:
-`fix(package1): <what>`,
-blank line,
-`<why>`.
-Repeat in package order.
-
-TID:
- `#N` in a commit message is a GitHub issue of this repo.
-Never write an agent task-list ID there;
- the numbering spaces collide.
-Verify with `gh issue view N` before any closing keyword.
+ Multi-package commit bodies:
+ per package,
+ `<type>(<package>): <what>`,
+ blank line,
+ `<why>`,
+ in package order.
 
 GCA:
  Inaccurate commit message:
- don't amend (harness rule).
-Surface it;
- if auto-push is off,
- ask user to push.
-Post corrective current-repo commit comment unasked;
- never silently let it stand.
+ never amend;
+ surface it,
+ ask the user to push if auto-push is off,
+ and post a corrective commit comment unasked.
 
 CLG:
- Never preemptively bypass `git-policy-cli` guards (they reject bulk staging + pathspec-less commits).
-Stage explicit scoped pathspecs.
-`--no-enforce-*` only when no scoped pathspec fits the change.
+ Never preemptively bypass `git-policy-cli` guards (they reject bulk staging and pathspec-less commits):
+ stage explicit scoped pathspecs;
+ `--no-enforce-*` only when none fits.
 
 CPN:
- Commit pathspecs must name every new file.
-`git add F` then `git commit -- other/paths` commits without `F`,
- leaving imports unresolvable at that commit while the working tree still builds.
-Verify with `git status --short` after committing.
-
-IHN:
- `#N` in a commit body means a GitHub issue,
- never a task-tool ID;
- the namespaces collide.
-Verify with `gh issue view N` before any closing keyword,
- or name the tracker instead.
+ Commit pathspecs name every new file:
+ `git add F` then `git commit -- other/paths` omits `F`,
+ leaving imports unresolvable at that commit;
+ check `git status --short` after.
 
 XCM:
- External communications report result,
+ External messages report results,
  never work-inviting offers ("happy to",
- "want me to").
-User-only choice:
- ask user before sending.
-Necessary blocker question to recipient allowed.
+ "want me to");
+ user-only choices get asked before sending;
+ necessary blocker questions to the recipient are fine.
 
 ## Architecture decisions
 
 AD1:
  Root `package.json` may depend on workspace packages;
- root configs import by package name.
+ root configs import them by package name.
 
 AD2:
- Switch from config-as-data to TypeScript when conf needs logic (`if`,
+ Config needing logic (`if`,
  `map`,
- `await`).
+ `await`):
+ switch from data to TypeScript.
 
 AD3:
- Direct async execution over descriptor/interpreter patterns.
+ Run async work directly,
+ not through descriptor/interpreter patterns.
 
 AD4:
  Nested calls (`b(a())`) over method chaining;
- split chains of more than two nested calls across lines,
- no stacked `)))`.
+ split more than two nested calls across lines,
+ never stacked `)))`.
 
-M1T:
- Multi-row MD1 tabs keep each label on one content-width line plus horizontal padding.
-Never stretch or wrap text inside a tab;
- wrap whole tabs across rows.
-
-PXF:
- Screenshot-driven UI:
- measure reference geometry,
- colors,
- spacing,
- and states;
- render final artifact side-by-side at matching scale before completion.
-Memory-based similarity is not evidence.
+OCG:
+ CLI option design:
+ output cardinality never determines option occurrence grammar;
+ sketch token encoding before asserting repeated,
+ delimited,
+ or variadic forms.
 
 ## Agent skills
 
@@ -1962,26 +1427,13 @@ SK1:
  `Closes #N` in the commit body auto-closes on auto-push.
 See `doc/agent/issue-tracker.md`.
 
-XNS:
- Task-tracker ids and GitHub issue numbers are separate namespaces that collide.
-Before `gh issue comment`/`view`,
- read the title back and confirm it names the subject.
-
-XN2:
- Same collision in prose:
- bare `#N` autolinks on GitHub.
-Writing a task id into an issue body,
- PR,
- or commit links a stranger's ticket;
- code-span it or name the tracker.
-
 SK2:
  **Triage labels**:
- canonical roles with default label strings.
-See `doc/agent/triage-labels.md`.
+ canonical roles with default label strings;
+ see `doc/agent/triage-labels.md`.
 
 SK3:
  **Domain docs**:
  no context files;
- agents read fresh code on every probe.
-See `doc/agent/domain.md`.
+ agents read fresh code on every probe;
+ see `doc/agent/domain.md`.

@@ -48,6 +48,20 @@ would actually consume.
 Bazel was assessed as a broader alternative the same day;
 see `doc/research/bazel-migration-dx.md`.
 
+On 2026-09-29 the user stated a further reason:
+ Mise is trying to do too much at once.
+Its standing as a version manager is perfect,
+so it could just fan out to other tools for everything else,
+instead of absorbing their work into one binary.
+Doing too much at once at once produces software whose behaviors are unpredictable,
+so the breadth itself is a defect for this repository,
+independent of the documentation gap.
+One current example of that breadth:
+ Mise embeds aube for `npm:` version resolution and installs
+ ([jdx/mise#11149](https://github.com/jdx/mise/pull/11149),
+ released in v2026.7.12)
+rather than fanning out to an existing Node package manager.
+
 ## Monorepo manager hard requirements
 
 Stated by the user on 2026-09-16:

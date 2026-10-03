@@ -128,8 +128,7 @@ Publish-readiness audit (measured 2026-07-16):
   367 errors,
   every one the crate's own `implicit_return = "deny"` gate
   (missing `return` statement);
-  a mechanical sweep is a publish prerequisite (PKG,
-   LN8).
+  a mechanical sweep is a publish prerequisite (PKG).
 - `cargo package --list` bundles README,
   `Cargo.lock`,
   and both `LICENSES/*.txt` files correctly.
@@ -196,7 +195,7 @@ This is an engine API work item that lands before the scanner rewrite.
   (audited 2026-07-16),
   which the sentinel test still covers.
 - Fuzz:
-  scanner-level targets in `package/fuzz/forbidden-strings` are retargeted;
+  scanner-level targets in `package/cli/forbidden-strings.fuzz` are retargeted;
   gate/shard/dispatch targets die with the machinery they fuzz;
   the literal-roundtrip target grows adversarial verbose-mode escaping cases
   (literal-to-dialect escaping is a syntax-boundary transformer);

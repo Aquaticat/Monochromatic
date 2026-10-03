@@ -65,7 +65,11 @@ pub fn attach(existing: Option<JsoncComment>, additions: Vec<JsoncComment>) -> O
 /// function singleLine(comment: JsoncComment): boolean { return !comment.text.includes('\n'); }
 /// ```
 pub fn single_line(comment: &JsoncComment) -> bool {
-    return !comment.text.contains('\n');
+    // What: Test for every line terminator, not just LF.
+    // Why: A `//` comment ends at CR, LF or CRLF, so a body carrying a bare CR cannot be emitted
+    //      in trailing form: the comment would end early and the rest of the body would be parsed
+    //      as code. Fuzzing found exactly that as an emission the parser then rejected.
+    return !comment.text.contains('\n') && !comment.text.contains('\r');
 }
 
 /// What: Emit a comment before a node with two-space indentation.
@@ -84,7 +88,11 @@ pub fn leading(comment: &JsoncComment, depth: usize) -> String {
     // const pad = '  '.repeat(depth);
     // ```
     let pad = "  ".repeat(depth);
-    if comment.kind == JsoncCommentKind::Block && !comment.text.contains("*/") {
+    // What: Prefer the block form for a block comment, or for any body carrying a bare CR.
+    // Why: A block comment may contain CR and LF verbatim, while a `//` line ends at either. A
+    //      body with only LF keeps the established one `//` line per body line layout.
+    let block_safe = !comment.text.contains("*/");
+    if block_safe && (comment.kind == JsoncCommentKind::Block || comment.text.contains('\r')) {
         return format!("{pad}/*{}*/\n", comment.text);
     }
     // What: An owned `String` accumulates lines, unlike borrowed `&str`.
@@ -95,7 +103,15 @@ pub fn leading(comment: &JsoncComment, depth: usize) -> String {
     // let output = '';
     // ```
     let mut output = String::new();
-    for line in comment.text.split('\n') {
+    // What: Split body lines on CRLF, LF or CR.
+    // Why: This fallback is reached only when the body contains the block close delimiter, so it
+    //      cannot be emitted as a block. Splitting on CR too is lossy for that character but never
+    //      corrupts the document, which an emitted `//` line containing CR would.
+    // What: Normalize CRLF to LF first, then split on either remaining terminator.
+    // Why: `str::split` accepts an array of chars as a pattern but not an array of strings, and
+    //      splitting a CRLF pair as two terminators would emit an empty comment line between them.
+    let normalized = comment.text.replace("\r\n", "\n");
+    for line in normalized.split(['\n', '\r']) {
         output.push_str(&pad);
         output.push_str("//");
         output.push_str(line);

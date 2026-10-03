@@ -26,6 +26,11 @@ export type {
   PolicySetting,
 } from './config-types.ts';
 export type {
+  PolicyInput,
+  PolicyInputs,
+  PolicyInputsDeclaration,
+} from './policy-input-types.ts';
+export type {
   ActivePolicySeverity,
   CandidateChange,
   CandidateFile,

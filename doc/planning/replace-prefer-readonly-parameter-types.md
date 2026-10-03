@@ -87,7 +87,7 @@ or rewritten as readonly acceptance failures.
 The user corrected the TOML migration on 2026-07-13:
 `ForeignBorrowed` is an ownership-boundary marker,
 not a type annotation to repeat on every AST descendant or callback.
-The correction is now recorded by `OWB` in `AGENTS.md`.
+The correction is now recorded in the prefer-readonly guidance message and `package/ownership-marker/foreign-borrowed/README.md`.
 
 The implemented semantic rule applies that correction:
 

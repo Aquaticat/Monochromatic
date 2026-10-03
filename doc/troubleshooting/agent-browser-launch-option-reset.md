@@ -187,6 +187,28 @@ A separate session using consistent flags plus `--pin-tab` also retained the sup
 Its subsequent `eval` returned the expected title and a measured button count of 40.
 Pinning was not required for the successful unpinned control.
 
+## Later bounded observation with agent-browser 0.38.1
+
+The design-only Fold Search review encountered an equivalent **symptom**
+with installed `agent-browser 0.38.1`:
+opening the local review with `--allow-file-access` reported its title,
+then follow-up commands without that launch flag read an empty snapshot
+and `about:blank`.
+The page-ready wait consequently timed out after 25000ms.
+
+Reopening that same review in the same isolated session without the
+file-access flag,
+using `--pin-tab`,
+returned the expected page URL,
+named controls and a passing initial axe check.
+Subsequent verification kept launch options consistent.
+Pinning is protection against implicit target fallback,
+not proof it caused or fixed the launch reset.
+The current release's source path was not re-traced during this UI review;
+the version-0.36.0 root-cause trace must not be relabeled as a proven
+version-0.38.1 cause.
+No user browser configuration or production application code was changed.
+
 ## Verified workarounds
 
 Use the same launch flags for opening,

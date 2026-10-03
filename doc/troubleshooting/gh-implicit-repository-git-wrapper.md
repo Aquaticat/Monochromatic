@@ -234,6 +234,81 @@ This is why an explicit `gh api repos/Aquaticat/Monochromatic/issues` call works
 the endpoint already names the repository.
 API endpoints containing placeholders such as `{owner}` or `{repo}` can still require local repository context.
 
+### Release view treats its positional argument as a tag, never as a URL
+
+Five view subcommands accept a page URL as their positional argument:
+`gh issue view`,
+`gh pr view`,
+`gh pr diff`,
+`gh gist view`,
+and `gh repo view`.
+`gh release view` does not.
+It stores the positional argument as a tag name and resolves the repository separately.
+`pkg/cmd/release/view/view.go:54-60` at tag `v2.101.0`:
+
+```go
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// support `-R, --repo` override
+			opts.BaseRepo = f.BaseRepo
+
+			if len(args) > 0 {
+				opts.TagName = args[0]
+			}
+```
+
+`pkg/cmd/release/view/view.go:81` at tag `v2.101.0` then resolves the repository through the same
+implicit path this file documents:
+
+```go
+	baseRepo, err := opts.BaseRepo()
+```
+
+`BaseRepo` comes from the factory's remote-listing resolver.
+`pkg/cmd/factory/default.go:41` and `:50` at tag `v2.101.0`:
+
+```go
+	f.BaseRepo = BaseRepoFunc(f.Remotes)
+```
+
+```go
+// BaseRepoFunc requests a list of Remotes, and selects the first one.
+```
+
+Passing a release page URL therefore yields a tag string that no release carries,
+after a repository lookup that needs a Git work tree.
+From a directory that is not a work tree,
+the failure names Git instead of the unusable tag.
+Observed on `gh version 2.101.0 (2026-09-15)` from a directory outside any work tree:
+
+```text
+$ gh release view https://github.com/cli/cli/releases/tag/v2.101.0
+failed to run git: fatal: not a git repository (or any parent up to mount point /var)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+```
+
+That message text is built by `git/errors.go:30-35` at tag `v2.101.0`:
+
+```go
+func (ge *GitError) Error() string {
+	if ge.Stderr == "" {
+		return fmt.Sprintf("failed to run git: %v", ge.err)
+	}
+	return fmt.Sprintf("failed to run git: %s", ge.Stderr)
+}
+```
+
+Inside a work tree the same command fails later and differently,
+because the URL is still consumed as a tag.
+The working form names the repository explicitly and passes only the tag:
+
+```bash
+gh release view v2.101.0 --repo cli/cli
+```
+
+`package/pi-plugin/search-fetch` maps `https://github.com/OWNER/REPO/releases/tag/TAG` onto that form in
+`package/pi-plugin/search-fetch/src/github-record-plan.ts`,
+and runs every gh child in a temporary directory so no ambient work tree can supply a repository.
+
 ## Verification
 
 Verified against:
@@ -368,6 +443,19 @@ The issue operation is not partially executed after this exact `BaseRepo` error.
 
 An explicit `repos/OWNER/REPO/...` endpoint is Git-free for repository selection.
 An endpoint using `{owner}` or `{repo}` placeholders can ask GitHub CLI to infer those values from the current repository and therefore re-enter Git discovery.
+
+### Passing a release page URL to `gh release view`
+
+```bash
+gh release view https://github.com/cli/cli/releases/tag/v2.101.0
+```
+
+The argument is not parsed as a URL.
+It becomes the tag name,
+and the repository still comes from implicit Git discovery,
+so the command fails outside a work tree with a Git diagnostic and fails inside one with a tag that does
+not exist.
+Supply the tag and `--repo` separately instead.
 
 ## Upstream filing decision
 

@@ -170,7 +170,7 @@ Error-handling shape:
  and `finally`/`closeQuietly` cleanup.
  No silent swallowing
 observed in the audited paths.
- This matches the repo's own PP4/PP7 throw-over-null preferences.
+ This matches the repo's own PP4 throw-over-null preference.
 
 Transitive dependencies (parity-relevant):
  only two runtime deps,

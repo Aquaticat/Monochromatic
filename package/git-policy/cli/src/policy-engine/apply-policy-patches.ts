@@ -59,6 +59,10 @@ export type AddedPathContext = Readonly<{
    Operation adding the path, which decides the remedy a precondition failure names.
    */
   lifecycle: AddedPathLifecycle;
+  /**
+   Baseline commit the added path must match: the transaction's recorded base, or live `HEAD` when absent.
+   */
+  baseRevision?: string;
 }>;
 
 /**
@@ -191,6 +195,7 @@ async function resolvePatchTarget({
       path: patch.path,
       oid: tracked.oid,
       lifecycle: addedPathContext.lifecycle,
+      ...(addedPathContext.baseRevision === undefined ? {} : { baseRevision: addedPathContext.baseRevision, }),
     },);
     addedPaths.set(
       patch.path,

@@ -917,8 +917,11 @@ On a disposable Fold,
 real split inner and full-width cover Gboard keys entered `cam` at
 100% and 200% text;
 the settled deck and result labels stayed visible.
-A Gboard font-update banner briefly clipped the final inner mode,
-so the bottom-keyboard result does not establish D50 for every keyboard state.
+A Gboard font-update banner briefly clipped the final inner mode.
+D53 to D55 accept the measured floating-deck,
+brief banner and cover floating-result overlaps respectively;
+those exceptions do not establish D50 for other keyboard states or change
+Material 3 component requirements.
 `package/music-player/design/evidence/gboard-geometry.md` records the separate real-keyboard states,
 not a new Material component rule.
  The separate destination is still visually distinct from a command

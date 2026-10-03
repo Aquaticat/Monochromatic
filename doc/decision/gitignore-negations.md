@@ -48,7 +48,7 @@ Four negation lines protected nothing and were deleted outright:
 
 ## Design: fuzz seed corpora move to `seeds/<target>/`
 
-Applies to `package/fuzz/forbidden-strings` (1344 committed seeds)
+Applies to `package/cli/forbidden-strings.fuzz` (1344 committed seeds)
  and `package/rust-module/forbidden-regex.fuzz` (none yet).
 
 Committed seeds move out of `corpus/<target>/` into a sibling `seeds/<target>/` directory
@@ -65,7 +65,7 @@ Consequences:
 - The seeder (`src/bin/seed-from-tests.rs`) writes to `seeds/<target>/`.
 - The mise `smoke` and `run` tasks pass both directories explicitly
   (passing explicit corpus args replaces cargo-fuzz's default `corpus/<target>`).
-- `package/fuzz/forbidden-strings/README.md` and `doc/handover/forbidden-strings-fuzzing.md`
+- `package/cli/forbidden-strings.fuzz/README.md` and `doc/handover/forbidden-strings-fuzzing.md`
   update their corpus-layout descriptions.
 
 Rejected alternatives:

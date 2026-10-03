@@ -76,7 +76,7 @@ pub trait Rule: Send + Sync {
     // What:     No default body, deliberately, unlike `plugin` above.
     // Why:      Whether a rule may be silenced inline is a policy decision, and a
     //           default would let a rule author inherit one without noticing. The
-    //           repo's AGENTS.md MXL, MXR and RDC forbid silencing `max-lines` and
+    //           repo's MXL, MXR and RDC rules forbid silencing `max-lines` and
     //           `require-rustdoc` at all, and that guarantee is only worth
     //           anything if every new rule has to state its own answer.
     /// Report whether an inline directive may silence this rule.

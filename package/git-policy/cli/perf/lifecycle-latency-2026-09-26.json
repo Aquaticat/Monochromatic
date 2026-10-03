@@ -1,0 +1,1792 @@
+{
+  "schemaVersion": 1,
+  "revision": "7ca7721b470993e55bea27017e356d7d5272b0e8",
+  "platform": "linux",
+  "node": "v24.18.0",
+  "git": "git version 2.39.5",
+  "filesystem": "Type\ntmpfs",
+  "limits": {
+    "memoryBytes": 2147483648,
+    "cpus": 2,
+    "availableCpus": 2,
+    "maximumBudgetMs": 2000
+  },
+  "fixture": {
+    "trackedFiles": 2048,
+    "warmups": 6,
+    "runs": 30
+  },
+  "scenarios": [
+    {
+      "id": "no-config",
+      "metric": "wrapper-added",
+      "budgetMs": 275,
+      "maximumMs": 73.801751,
+      "medianMs": 67.1803,
+      "p95Ms": 73.42294299999999,
+      "madMs": 1.523556499999998,
+      "samples": [
+        {
+          "directMs": 2.086503,
+          "wrapperMs": 70.925292,
+          "addedMs": 68.838789
+        },
+        {
+          "directMs": 2.681225,
+          "wrapperMs": 72.273419,
+          "addedMs": 69.592194
+        },
+        {
+          "directMs": 2.592993,
+          "wrapperMs": 71.30655,
+          "addedMs": 68.71355700000001
+        },
+        {
+          "directMs": 2.671865,
+          "wrapperMs": 72.136537,
+          "addedMs": 69.46467200000001
+        },
+        {
+          "directMs": 2.736656,
+          "wrapperMs": 68.091503,
+          "addedMs": 65.354847
+        },
+        {
+          "directMs": 2.948911,
+          "wrapperMs": 76.027977,
+          "addedMs": 73.07906600000001
+        },
+        {
+          "directMs": 2.173495,
+          "wrapperMs": 68.159804,
+          "addedMs": 65.98630899999999
+        },
+        {
+          "directMs": 2.545212,
+          "wrapperMs": 68.522132,
+          "addedMs": 65.97691999999999
+        },
+        {
+          "directMs": 2.938001,
+          "wrapperMs": 66.94787,
+          "addedMs": 64.009869
+        },
+        {
+          "directMs": 2.300708,
+          "wrapperMs": 69.096554,
+          "addedMs": 66.795846
+        },
+        {
+          "directMs": 2.557492,
+          "wrapperMs": 69.450251,
+          "addedMs": 66.892759
+        },
+        {
+          "directMs": 2.828848,
+          "wrapperMs": 72.610727,
+          "addedMs": 69.781879
+        },
+        {
+          "directMs": 2.270627,
+          "wrapperMs": 75.69357,
+          "addedMs": 73.42294299999999
+        },
+        {
+          "directMs": 2.632404,
+          "wrapperMs": 68.980012,
+          "addedMs": 66.34760800000001
+        },
+        {
+          "directMs": 2.210326,
+          "wrapperMs": 69.242867,
+          "addedMs": 67.03254100000001
+        },
+        {
+          "directMs": 3.137085,
+          "wrapperMs": 71.929343,
+          "addedMs": 68.792258
+        },
+        {
+          "directMs": 2.788637,
+          "wrapperMs": 68.455081,
+          "addedMs": 65.66644400000001
+        },
+        {
+          "directMs": 2.284317,
+          "wrapperMs": 70.176257,
+          "addedMs": 67.89194
+        },
+        {
+          "directMs": 2.340188,
+          "wrapperMs": 69.561634,
+          "addedMs": 67.221446
+        },
+        {
+          "directMs": 3.078294,
+          "wrapperMs": 73.364742,
+          "addedMs": 70.28644800000001
+        },
+        {
+          "directMs": 2.514792,
+          "wrapperMs": 70.076264,
+          "addedMs": 67.561472
+        },
+        {
+          "directMs": 2.845088,
+          "wrapperMs": 69.659706,
+          "addedMs": 66.814618
+        },
+        {
+          "directMs": 2.631414,
+          "wrapperMs": 71.899112,
+          "addedMs": 69.267698
+        },
+        {
+          "directMs": 3.332678,
+          "wrapperMs": 71.555045,
+          "addedMs": 68.222367
+        },
+        {
+          "directMs": 2.383109,
+          "wrapperMs": 67.718105,
+          "addedMs": 65.33499599999999
+        },
+        {
+          "directMs": 3.939381,
+          "wrapperMs": 77.741132,
+          "addedMs": 73.801751
+        },
+        {
+          "directMs": 3.219657,
+          "wrapperMs": 69.330099,
+          "addedMs": 66.110442
+        },
+        {
+          "directMs": 2.555862,
+          "wrapperMs": 68.154235,
+          "addedMs": 65.598373
+        },
+        {
+          "directMs": 2.135433,
+          "wrapperMs": 68.162564,
+          "addedMs": 66.027131
+        },
+        {
+          "directMs": 2.783447,
+          "wrapperMs": 69.922601,
+          "addedMs": 67.139154
+        }
+      ]
+    },
+    {
+      "id": "read-only",
+      "metric": "wrapper-added",
+      "budgetMs": 300,
+      "maximumMs": 76.6536,
+      "medianMs": 68.089708,
+      "p95Ms": 74.725421,
+      "madMs": 2.486281500000004,
+      "samples": [
+        {
+          "directMs": 2.204785,
+          "wrapperMs": 73.106927,
+          "addedMs": 70.902142
+        },
+        {
+          "directMs": 2.279137,
+          "wrapperMs": 67.865489,
+          "addedMs": 65.58635199999999
+        },
+        {
+          "directMs": 1.803177,
+          "wrapperMs": 71.627597,
+          "addedMs": 69.82441999999999
+        },
+        {
+          "directMs": 2.287327,
+          "wrapperMs": 75.433585,
+          "addedMs": 73.14625799999999
+        },
+        {
+          "directMs": 1.718015,
+          "wrapperMs": 70.030694,
+          "addedMs": 68.312679
+        },
+        {
+          "directMs": 2.507342,
+          "wrapperMs": 74.437694,
+          "addedMs": 71.930352
+        },
+        {
+          "directMs": 2.090183,
+          "wrapperMs": 71.490434,
+          "addedMs": 69.400251
+        },
+        {
+          "directMs": 2.329388,
+          "wrapperMs": 70.35445,
+          "addedMs": 68.025062
+        },
+        {
+          "directMs": 2.181515,
+          "wrapperMs": 63.348436,
+          "addedMs": 61.166921
+        },
+        {
+          "directMs": 2.40672,
+          "wrapperMs": 67.804707,
+          "addedMs": 65.397987
+        },
+        {
+          "directMs": 2.187905,
+          "wrapperMs": 71.512834,
+          "addedMs": 69.324929
+        },
+        {
+          "directMs": 2.384019,
+          "wrapperMs": 74.086487,
+          "addedMs": 71.70246800000001
+        },
+        {
+          "directMs": 2.298498,
+          "wrapperMs": 66.265316,
+          "addedMs": 63.966817999999996
+        },
+        {
+          "directMs": 2.39289,
+          "wrapperMs": 68.157634,
+          "addedMs": 65.76474400000001
+        },
+        {
+          "directMs": 2.154894,
+          "wrapperMs": 70.931472,
+          "addedMs": 68.776578
+        },
+        {
+          "directMs": 2.514102,
+          "wrapperMs": 69.87162,
+          "addedMs": 67.357518
+        },
+        {
+          "directMs": 2.107063,
+          "wrapperMs": 76.832484,
+          "addedMs": 74.725421
+        },
+        {
+          "directMs": 2.851189,
+          "wrapperMs": 79.504789,
+          "addedMs": 76.6536
+        },
+        {
+          "directMs": 1.868158,
+          "wrapperMs": 63.56248,
+          "addedMs": 61.694322
+        },
+        {
+          "directMs": 2.236066,
+          "wrapperMs": 73.863853,
+          "addedMs": 71.62778700000001
+        },
+        {
+          "directMs": 1.907079,
+          "wrapperMs": 67.357779,
+          "addedMs": 65.4507
+        },
+        {
+          "directMs": 2.115234,
+          "wrapperMs": 70.269588,
+          "addedMs": 68.154354
+        },
+        {
+          "directMs": 2.157715,
+          "wrapperMs": 67.778216,
+          "addedMs": 65.620501
+        },
+        {
+          "directMs": 2.705895,
+          "wrapperMs": 64.52846,
+          "addedMs": 61.822565
+        },
+        {
+          "directMs": 2.397019,
+          "wrapperMs": 73.625408,
+          "addedMs": 71.22838899999999
+        },
+        {
+          "directMs": 1.96444,
+          "wrapperMs": 70.292398,
+          "addedMs": 68.32795800000001
+        },
+        {
+          "directMs": 2.350879,
+          "wrapperMs": 69.306838,
+          "addedMs": 66.955959
+        },
+        {
+          "directMs": 2.544363,
+          "wrapperMs": 70.067564,
+          "addedMs": 67.523201
+        },
+        {
+          "directMs": 2.230436,
+          "wrapperMs": 68.494011,
+          "addedMs": 66.263575
+        },
+        {
+          "directMs": 2.670456,
+          "wrapperMs": 69.41314,
+          "addedMs": 66.742684
+        }
+      ]
+    },
+    {
+      "id": "strict-mjs",
+      "metric": "wrapper-added",
+      "budgetMs": 275,
+      "maximumMs": 87.21096800000001,
+      "medianMs": 68.513767,
+      "p95Ms": 76.70735,
+      "madMs": 2.3787894999999963,
+      "samples": [
+        {
+          "directMs": 2.722326,
+          "wrapperMs": 70.560955,
+          "addedMs": 67.83862900000001
+        },
+        {
+          "directMs": 2.694576,
+          "wrapperMs": 71.81943,
+          "addedMs": 69.124854
+        },
+        {
+          "directMs": 2.43149,
+          "wrapperMs": 75.156049,
+          "addedMs": 72.724559
+        },
+        {
+          "directMs": 2.641125,
+          "wrapperMs": 70.993613,
+          "addedMs": 68.352488
+        },
+        {
+          "directMs": 2.309547,
+          "wrapperMs": 68.843319,
+          "addedMs": 66.533772
+        },
+        {
+          "directMs": 3.282987,
+          "wrapperMs": 68.571844,
+          "addedMs": 65.288857
+        },
+        {
+          "directMs": 2.39505,
+          "wrapperMs": 73.719019,
+          "addedMs": 71.323969
+        },
+        {
+          "directMs": 2.580333,
+          "wrapperMs": 71.255379,
+          "addedMs": 68.67504600000001
+        },
+        {
+          "directMs": 2.186535,
+          "wrapperMs": 76.397225,
+          "addedMs": 74.21069
+        },
+        {
+          "directMs": 3.163215,
+          "wrapperMs": 69.782318,
+          "addedMs": 66.61910300000001
+        },
+        {
+          "directMs": 2.604333,
+          "wrapperMs": 70.228338,
+          "addedMs": 67.624005
+        },
+        {
+          "directMs": 3.121795,
+          "wrapperMs": 72.561075,
+          "addedMs": 69.43928
+        },
+        {
+          "directMs": 2.629114,
+          "wrapperMs": 73.435504,
+          "addedMs": 70.80639
+        },
+        {
+          "directMs": 2.637694,
+          "wrapperMs": 72.053935,
+          "addedMs": 69.416241
+        },
+        {
+          "directMs": 2.354619,
+          "wrapperMs": 79.061969,
+          "addedMs": 76.70735
+        },
+        {
+          "directMs": 3.157005,
+          "wrapperMs": 90.367973,
+          "addedMs": 87.21096800000001
+        },
+        {
+          "directMs": 2.827578,
+          "wrapperMs": 67.790548,
+          "addedMs": 64.96297
+        },
+        {
+          "directMs": 3.173146,
+          "wrapperMs": 72.557345,
+          "addedMs": 69.384199
+        },
+        {
+          "directMs": 2.794187,
+          "wrapperMs": 67.163425,
+          "addedMs": 64.36923800000001
+        },
+        {
+          "directMs": 2.90763,
+          "wrapperMs": 68.956441,
+          "addedMs": 66.048811
+        },
+        {
+          "directMs": 2.671455,
+          "wrapperMs": 64.889058,
+          "addedMs": 62.217603000000004
+        },
+        {
+          "directMs": 2.747017,
+          "wrapperMs": 70.430501,
+          "addedMs": 67.683484
+        },
+        {
+          "directMs": 2.475231,
+          "wrapperMs": 76.356244,
+          "addedMs": 73.88101300000001
+        },
+        {
+          "directMs": 3.107994,
+          "wrapperMs": 70.121865,
+          "addedMs": 67.013871
+        },
+        {
+          "directMs": 2.718867,
+          "wrapperMs": 70.325439,
+          "addedMs": 67.606572
+        },
+        {
+          "directMs": 3.331759,
+          "wrapperMs": 66.170454,
+          "addedMs": 62.83869500000001
+        },
+        {
+          "directMs": 2.92867,
+          "wrapperMs": 77.931316,
+          "addedMs": 75.002646
+        },
+        {
+          "directMs": 2.729937,
+          "wrapperMs": 71.553405,
+          "addedMs": 68.82346799999999
+        },
+        {
+          "directMs": 2.716276,
+          "wrapperMs": 76.358103,
+          "addedMs": 73.641827
+        },
+        {
+          "directMs": 2.824358,
+          "wrapperMs": 68.576963,
+          "addedMs": 65.752605
+        }
+      ]
+    },
+    {
+      "id": "strict-typescript",
+      "metric": "wrapper-added",
+      "budgetMs": 250,
+      "maximumMs": 79.14456200000001,
+      "medianMs": 67.604298,
+      "p95Ms": 73.939374,
+      "madMs": 1.525216499999999,
+      "samples": [
+        {
+          "directMs": 4.957132,
+          "wrapperMs": 74.946344,
+          "addedMs": 69.989212
+        },
+        {
+          "directMs": 5.571495,
+          "wrapperMs": 76.771172,
+          "addedMs": 71.19967700000001
+        },
+        {
+          "directMs": 5.006843,
+          "wrapperMs": 68.858829,
+          "addedMs": 63.851986
+        },
+        {
+          "directMs": 5.312929,
+          "wrapperMs": 74.854803,
+          "addedMs": 69.541874
+        },
+        {
+          "directMs": 4.589274,
+          "wrapperMs": 76.704741,
+          "addedMs": 72.115467
+        },
+        {
+          "directMs": 5.955573,
+          "wrapperMs": 72.617307,
+          "addedMs": 66.661734
+        },
+        {
+          "directMs": 5.222227,
+          "wrapperMs": 71.653967,
+          "addedMs": 66.43173999999999
+        },
+        {
+          "directMs": 5.555345,
+          "wrapperMs": 70.253168,
+          "addedMs": 64.697823
+        },
+        {
+          "directMs": 5.191927,
+          "wrapperMs": 74.209899,
+          "addedMs": 69.01797199999999
+        },
+        {
+          "directMs": 4.721527,
+          "wrapperMs": 72.015674,
+          "addedMs": 67.29414700000001
+        },
+        {
+          "directMs": 4.690877,
+          "wrapperMs": 72.605326,
+          "addedMs": 67.914449
+        },
+        {
+          "directMs": 5.135246,
+          "wrapperMs": 79.07462,
+          "addedMs": 73.939374
+        },
+        {
+          "directMs": 5.127526,
+          "wrapperMs": 73.140337,
+          "addedMs": 68.012811
+        },
+        {
+          "directMs": 6.922622,
+          "wrapperMs": 71.870972,
+          "addedMs": 64.94834999999999
+        },
+        {
+          "directMs": 6.242668,
+          "wrapperMs": 85.38723,
+          "addedMs": 79.14456200000001
+        },
+        {
+          "directMs": 4.815669,
+          "wrapperMs": 73.386053,
+          "addedMs": 68.570384
+        },
+        {
+          "directMs": 5.087385,
+          "wrapperMs": 71.081085,
+          "addedMs": 65.9937
+        },
+        {
+          "directMs": 5.270129,
+          "wrapperMs": 74.314262,
+          "addedMs": 69.044133
+        },
+        {
+          "directMs": 4.836789,
+          "wrapperMs": 73.302971,
+          "addedMs": 68.466182
+        },
+        {
+          "directMs": 5.204687,
+          "wrapperMs": 69.071044,
+          "addedMs": 63.866357
+        },
+        {
+          "directMs": 5.152326,
+          "wrapperMs": 75.927645,
+          "addedMs": 70.775319
+        },
+        {
+          "directMs": 6.181838,
+          "wrapperMs": 73.153478,
+          "addedMs": 66.97164000000001
+        },
+        {
+          "directMs": 5.454952,
+          "wrapperMs": 69.951622,
+          "addedMs": 64.49667
+        },
+        {
+          "directMs": 5.056534,
+          "wrapperMs": 78.495908,
+          "addedMs": 73.439374
+        },
+        {
+          "directMs": 8.080017,
+          "wrapperMs": 71.009973,
+          "addedMs": 62.929956000000004
+        },
+        {
+          "directMs": 5.494743,
+          "wrapperMs": 72.703748,
+          "addedMs": 67.209005
+        },
+        {
+          "directMs": 5.087395,
+          "wrapperMs": 72.099836,
+          "addedMs": 67.012441
+        },
+        {
+          "directMs": 5.502483,
+          "wrapperMs": 74.470045,
+          "addedMs": 68.967562
+        },
+        {
+          "directMs": 5.405822,
+          "wrapperMs": 72.362521,
+          "addedMs": 66.956699
+        },
+        {
+          "directMs": 5.683827,
+          "wrapperMs": 72.258739,
+          "addedMs": 66.57491200000001
+        }
+      ]
+    },
+    {
+      "id": "post-commit",
+      "metric": "wrapper-added",
+      "budgetMs": 1150,
+      "maximumMs": 441.79909499999997,
+      "medianMs": 399.34110499999997,
+      "p95Ms": 436.96779599999996,
+      "madMs": 5.3135155000000225,
+      "samples": [
+        {
+          "directMs": 23.927222999999998,
+          "wrapperMs": 412.367139,
+          "addedMs": 388.43991600000004
+        },
+        {
+          "directMs": 22.750287999999998,
+          "wrapperMs": 421.285603,
+          "addedMs": 398.53531499999997
+        },
+        {
+          "directMs": 21.545603999999997,
+          "wrapperMs": 408.246324,
+          "addedMs": 386.70072000000005
+        },
+        {
+          "directMs": 26.862584,
+          "wrapperMs": 398.402221,
+          "addedMs": 371.53963699999997
+        },
+        {
+          "directMs": 22.062584,
+          "wrapperMs": 421.013488,
+          "addedMs": 398.950904
+        },
+        {
+          "directMs": 21.984253000000002,
+          "wrapperMs": 415.77128,
+          "addedMs": 393.78702699999997
+        },
+        {
+          "directMs": 22.547955,
+          "wrapperMs": 417.526256,
+          "addedMs": 394.978301
+        },
+        {
+          "directMs": 24.222238,
+          "wrapperMs": 425.735325,
+          "addedMs": 401.513087
+        },
+        {
+          "directMs": 24.055985,
+          "wrapperMs": 419.060618,
+          "addedMs": 395.00463299999996
+        },
+        {
+          "directMs": 23.817581,
+          "wrapperMs": 419.268521,
+          "addedMs": 395.45094
+        },
+        {
+          "directMs": 24.712780000000002,
+          "wrapperMs": 424.382256,
+          "addedMs": 399.669476
+        },
+        {
+          "directMs": 22.302970000000002,
+          "wrapperMs": 420.865264,
+          "addedMs": 398.562294
+        },
+        {
+          "directMs": 23.036575,
+          "wrapperMs": 418.121397,
+          "addedMs": 395.08482200000003
+        },
+        {
+          "directMs": 24.941833000000003,
+          "wrapperMs": 414.853761,
+          "addedMs": 389.911928
+        },
+        {
+          "directMs": 21.86495,
+          "wrapperMs": 426.45129,
+          "addedMs": 404.58633999999995
+        },
+        {
+          "directMs": 24.323870999999997,
+          "wrapperMs": 425.869467,
+          "addedMs": 401.545596
+        },
+        {
+          "directMs": 22.532353999999998,
+          "wrapperMs": 423.866196,
+          "addedMs": 401.333842
+        },
+        {
+          "directMs": 23.287869999999998,
+          "wrapperMs": 421.242302,
+          "addedMs": 397.954432
+        },
+        {
+          "directMs": 23.535854999999998,
+          "wrapperMs": 436.011087,
+          "addedMs": 412.475232
+        },
+        {
+          "directMs": 23.2624,
+          "wrapperMs": 434.28448,
+          "addedMs": 411.02207999999996
+        },
+        {
+          "directMs": 23.043765,
+          "wrapperMs": 460.011561,
+          "addedMs": 436.96779599999996
+        },
+        {
+          "directMs": 24.429364,
+          "wrapperMs": 442.802246,
+          "addedMs": 418.372882
+        },
+        {
+          "directMs": 22.160707000000002,
+          "wrapperMs": 456.426437,
+          "addedMs": 434.26573
+        },
+        {
+          "directMs": 22.30026,
+          "wrapperMs": 450.577617,
+          "addedMs": 428.277357
+        },
+        {
+          "directMs": 23.710859,
+          "wrapperMs": 439.909997,
+          "addedMs": 416.19913799999995
+        },
+        {
+          "directMs": 21.490353,
+          "wrapperMs": 463.289448,
+          "addedMs": 441.79909499999997
+        },
+        {
+          "directMs": 22.074285000000003,
+          "wrapperMs": 458.926449,
+          "addedMs": 436.852164
+        },
+        {
+          "directMs": 23.990505,
+          "wrapperMs": 428.713406,
+          "addedMs": 404.72290100000004
+        },
+        {
+          "directMs": 22.994844,
+          "wrapperMs": 422.007578,
+          "addedMs": 399.012734
+        },
+        {
+          "directMs": 28.017368,
+          "wrapperMs": 426.551702,
+          "addedMs": 398.534334
+        }
+      ]
+    },
+    {
+      "id": "wide-commit",
+      "metric": "wrapper-added",
+      "budgetMs": 925,
+      "maximumMs": 671.781336,
+      "medianMs": 524.0258855,
+      "p95Ms": 557.757326,
+      "madMs": 6.109456499999965,
+      "samples": [
+        {
+          "directMs": 60.662929000000005,
+          "wrapperMs": 562.271289,
+          "addedMs": 501.60836
+        },
+        {
+          "directMs": 60.523108,
+          "wrapperMs": 589.139452,
+          "addedMs": 528.616344
+        },
+        {
+          "directMs": 69.153835,
+          "wrapperMs": 626.911161,
+          "addedMs": 557.757326
+        },
+        {
+          "directMs": 75.16920999999999,
+          "wrapperMs": 746.950546,
+          "addedMs": 671.781336
+        },
+        {
+          "directMs": 64.293736,
+          "wrapperMs": 579.041184,
+          "addedMs": 514.7474480000001
+        },
+        {
+          "directMs": 59.156490000000005,
+          "wrapperMs": 567.243221,
+          "addedMs": 508.08673099999993
+        },
+        {
+          "directMs": 56.33166,
+          "wrapperMs": 568.752812,
+          "addedMs": 512.4211519999999
+        },
+        {
+          "directMs": 64.135522,
+          "wrapperMs": 580.739119,
+          "addedMs": 516.6035969999999
+        },
+        {
+          "directMs": 59.442085000000006,
+          "wrapperMs": 577.071823,
+          "addedMs": 517.629738
+        },
+        {
+          "directMs": 59.066807999999995,
+          "wrapperMs": 575.518172,
+          "addedMs": 516.451364
+        },
+        {
+          "directMs": 62.687340999999996,
+          "wrapperMs": 571.996409,
+          "addedMs": 509.30906799999997
+        },
+        {
+          "directMs": 59.454706,
+          "wrapperMs": 583.418944,
+          "addedMs": 523.964238
+        },
+        {
+          "directMs": 60.17046,
+          "wrapperMs": 595.432193,
+          "addedMs": 535.2617329999999
+        },
+        {
+          "directMs": 60.006676,
+          "wrapperMs": 569.959247,
+          "addedMs": 509.95257100000003
+        },
+        {
+          "directMs": 63.293254000000005,
+          "wrapperMs": 585.704582,
+          "addedMs": 522.4113279999999
+        },
+        {
+          "directMs": 60.409914,
+          "wrapperMs": 584.497447,
+          "addedMs": 524.087533
+        },
+        {
+          "directMs": 59.740892,
+          "wrapperMs": 572.782375,
+          "addedMs": 513.041483
+        },
+        {
+          "directMs": 59.631079,
+          "wrapperMs": 580.107097,
+          "addedMs": 520.476018
+        },
+        {
+          "directMs": 62.242543,
+          "wrapperMs": 612.755899,
+          "addedMs": 550.513356
+        },
+        {
+          "directMs": 61.121849999999995,
+          "wrapperMs": 588.868027,
+          "addedMs": 527.746177
+        },
+        {
+          "directMs": 60.814194,
+          "wrapperMs": 579.017314,
+          "addedMs": 518.20312
+        },
+        {
+          "directMs": 61.57182,
+          "wrapperMs": 582.636828,
+          "addedMs": 521.065008
+        },
+        {
+          "directMs": 59.469865999999996,
+          "wrapperMs": 584.892364,
+          "addedMs": 525.422498
+        },
+        {
+          "directMs": 61.533809,
+          "wrapperMs": 590.108622,
+          "addedMs": 528.574813
+        },
+        {
+          "directMs": 60.062108,
+          "wrapperMs": 593.39962,
+          "addedMs": 533.3375120000001
+        },
+        {
+          "directMs": 59.256912,
+          "wrapperMs": 584.458316,
+          "addedMs": 525.2014039999999
+        },
+        {
+          "directMs": 61.976968,
+          "wrapperMs": 589.390957,
+          "addedMs": 527.4139889999999
+        },
+        {
+          "directMs": 62.168631000000005,
+          "wrapperMs": 587.118641,
+          "addedMs": 524.95001
+        },
+        {
+          "directMs": 60.029577,
+          "wrapperMs": 588.738595,
+          "addedMs": 528.709018
+        },
+        {
+          "directMs": 60.763652,
+          "wrapperMs": 585.688462,
+          "addedMs": 524.92481
+        }
+      ]
+    },
+    {
+      "id": "scanner",
+      "metric": "wrapper-added",
+      "budgetMs": 375,
+      "maximumMs": 96.75139399999999,
+      "medianMs": 89.0866815,
+      "p95Ms": 92.875715,
+      "madMs": 1.8278879999999873,
+      "samples": [
+        {
+          "directMs": 19.209416,
+          "wrapperMs": 110.877816,
+          "addedMs": 91.66839999999999
+        },
+        {
+          "directMs": 18.785767,
+          "wrapperMs": 111.375306,
+          "addedMs": 92.589539
+        },
+        {
+          "directMs": 18.252376,
+          "wrapperMs": 108.919985,
+          "addedMs": 90.667609
+        },
+        {
+          "directMs": 19.419661,
+          "wrapperMs": 107.551726,
+          "addedMs": 88.132065
+        },
+        {
+          "directMs": 19.42605,
+          "wrapperMs": 110.500128,
+          "addedMs": 91.074078
+        },
+        {
+          "directMs": 19.443421,
+          "wrapperMs": 104.81322,
+          "addedMs": 85.369799
+        },
+        {
+          "directMs": 18.640944,
+          "wrapperMs": 105.329361,
+          "addedMs": 86.688417
+        },
+        {
+          "directMs": 19.564783,
+          "wrapperMs": 107.944335,
+          "addedMs": 88.37955199999999
+        },
+        {
+          "directMs": 19.202775,
+          "wrapperMs": 112.07849,
+          "addedMs": 92.875715
+        },
+        {
+          "directMs": 20.463502,
+          "wrapperMs": 111.330824,
+          "addedMs": 90.867322
+        },
+        {
+          "directMs": 18.8991,
+          "wrapperMs": 108.302022,
+          "addedMs": 89.40292199999999
+        },
+        {
+          "directMs": 20.795568,
+          "wrapperMs": 110.670491,
+          "addedMs": 89.874923
+        },
+        {
+          "directMs": 20.799239,
+          "wrapperMs": 111.658231,
+          "addedMs": 90.858992
+        },
+        {
+          "directMs": 18.581173,
+          "wrapperMs": 108.612429,
+          "addedMs": 90.03125600000001
+        },
+        {
+          "directMs": 18.874648,
+          "wrapperMs": 105.939113,
+          "addedMs": 87.06446500000001
+        },
+        {
+          "directMs": 18.44419,
+          "wrapperMs": 105.679348,
+          "addedMs": 87.23515800000001
+        },
+        {
+          "directMs": 21.507583,
+          "wrapperMs": 107.304972,
+          "addedMs": 85.79738900000001
+        },
+        {
+          "directMs": 19.825368,
+          "wrapperMs": 111.066729,
+          "addedMs": 91.241361
+        },
+        {
+          "directMs": 18.537552,
+          "wrapperMs": 106.167818,
+          "addedMs": 87.63026599999999
+        },
+        {
+          "directMs": 20.793949,
+          "wrapperMs": 104.745739,
+          "addedMs": 83.95179
+        },
+        {
+          "directMs": 22.247699,
+          "wrapperMs": 109.445535,
+          "addedMs": 87.19783600000001
+        },
+        {
+          "directMs": 19.018612,
+          "wrapperMs": 108.19769,
+          "addedMs": 89.17907799999999
+        },
+        {
+          "directMs": 18.43535,
+          "wrapperMs": 106.580566,
+          "addedMs": 88.145216
+        },
+        {
+          "directMs": 21.768908,
+          "wrapperMs": 106.283861,
+          "addedMs": 84.514953
+        },
+        {
+          "directMs": 19.265077,
+          "wrapperMs": 116.016471,
+          "addedMs": 96.75139399999999
+        },
+        {
+          "directMs": 18.802157,
+          "wrapperMs": 107.796442,
+          "addedMs": 88.99428499999999
+        },
+        {
+          "directMs": 19.597573,
+          "wrapperMs": 107.461255,
+          "addedMs": 87.863682
+        },
+        {
+          "directMs": 19.962431,
+          "wrapperMs": 112.599281,
+          "addedMs": 92.63685000000001
+        },
+        {
+          "directMs": 18.884689,
+          "wrapperMs": 107.537436,
+          "addedMs": 88.652747
+        },
+        {
+          "directMs": 18.481991,
+          "wrapperMs": 109.372925,
+          "addedMs": 90.89093399999999
+        }
+      ]
+    },
+    {
+      "id": "normalizer",
+      "metric": "wrapper-added",
+      "budgetMs": 300,
+      "maximumMs": 92.926886,
+      "medianMs": 81.648764,
+      "p95Ms": 92.62843,
+      "madMs": 1.3948535000000035,
+      "samples": [
+        {
+          "directMs": 3.561673,
+          "wrapperMs": 84.607334,
+          "addedMs": 81.045661
+        },
+        {
+          "directMs": 5.168737,
+          "wrapperMs": 85.345199,
+          "addedMs": 80.17646199999999
+        },
+        {
+          "directMs": 3.929901,
+          "wrapperMs": 83.743076,
+          "addedMs": 79.813175
+        },
+        {
+          "directMs": 3.505283,
+          "wrapperMs": 86.471452,
+          "addedMs": 82.966169
+        },
+        {
+          "directMs": 3.789758,
+          "wrapperMs": 82.51275,
+          "addedMs": 78.72299199999999
+        },
+        {
+          "directMs": 3.605684,
+          "wrapperMs": 85.308729,
+          "addedMs": 81.703045
+        },
+        {
+          "directMs": 3.622465,
+          "wrapperMs": 82.641543,
+          "addedMs": 79.019078
+        },
+        {
+          "directMs": 3.162085,
+          "wrapperMs": 88.031344,
+          "addedMs": 84.869259
+        },
+        {
+          "directMs": 2.752387,
+          "wrapperMs": 84.118963,
+          "addedMs": 81.366576
+        },
+        {
+          "directMs": 3.39307,
+          "wrapperMs": 84.45408,
+          "addedMs": 81.06101000000001
+        },
+        {
+          "directMs": 2.920151,
+          "wrapperMs": 84.359588,
+          "addedMs": 81.439437
+        },
+        {
+          "directMs": 3.833229,
+          "wrapperMs": 82.878398,
+          "addedMs": 79.045169
+        },
+        {
+          "directMs": 3.819129,
+          "wrapperMs": 84.737326,
+          "addedMs": 80.91819699999999
+        },
+        {
+          "directMs": 3.162705,
+          "wrapperMs": 88.875622,
+          "addedMs": 85.712917
+        },
+        {
+          "directMs": 3.40357,
+          "wrapperMs": 85.648725,
+          "addedMs": 82.245155
+        },
+        {
+          "directMs": 3.85717,
+          "wrapperMs": 91.000586,
+          "addedMs": 87.143416
+        },
+        {
+          "directMs": 3.112794,
+          "wrapperMs": 85.276677,
+          "addedMs": 82.16388300000001
+        },
+        {
+          "directMs": 3.995032,
+          "wrapperMs": 85.701346,
+          "addedMs": 81.706314
+        },
+        {
+          "directMs": 3.493352,
+          "wrapperMs": 91.196279,
+          "addedMs": 87.702927
+        },
+        {
+          "directMs": 3.473632,
+          "wrapperMs": 85.258437,
+          "addedMs": 81.784805
+        },
+        {
+          "directMs": 3.298368,
+          "wrapperMs": 87.697228,
+          "addedMs": 84.39886
+        },
+        {
+          "directMs": 3.553744,
+          "wrapperMs": 81.880317,
+          "addedMs": 78.32657300000001
+        },
+        {
+          "directMs": 3.592304,
+          "wrapperMs": 84.392579,
+          "addedMs": 80.800275
+        },
+        {
+          "directMs": 3.230326,
+          "wrapperMs": 85.651386,
+          "addedMs": 82.42106
+        },
+        {
+          "directMs": 2.829318,
+          "wrapperMs": 95.756204,
+          "addedMs": 92.926886
+        },
+        {
+          "directMs": 3.240517,
+          "wrapperMs": 83.607063,
+          "addedMs": 80.366546
+        },
+        {
+          "directMs": 2.93876,
+          "wrapperMs": 86.305609,
+          "addedMs": 83.366849
+        },
+        {
+          "directMs": 3.128064,
+          "wrapperMs": 84.722547,
+          "addedMs": 81.59448300000001
+        },
+        {
+          "directMs": 3.039903,
+          "wrapperMs": 81.439128,
+          "addedMs": 78.399225
+        },
+        {
+          "directMs": 3.028182,
+          "wrapperMs": 95.656612,
+          "addedMs": 92.62843
+        }
+      ]
+    },
+    {
+      "id": "normalizer-change",
+      "metric": "wrapper-added",
+      "budgetMs": 275,
+      "maximumMs": 124.18507799999999,
+      "medianMs": 82.96937450000001,
+      "p95Ms": 109.04037699999999,
+      "madMs": 1.5282119999999964,
+      "samples": [
+        {
+          "directMs": 3.150985,
+          "wrapperMs": 90.615038,
+          "addedMs": 87.46405299999999
+        },
+        {
+          "directMs": 3.713406,
+          "wrapperMs": 84.857329,
+          "addedMs": 81.14392299999999
+        },
+        {
+          "directMs": 3.257297,
+          "wrapperMs": 85.498372,
+          "addedMs": 82.24107500000001
+        },
+        {
+          "directMs": 3.929071,
+          "wrapperMs": 86.827499,
+          "addedMs": 82.89842800000001
+        },
+        {
+          "directMs": 2.752407,
+          "wrapperMs": 93.63185,
+          "addedMs": 90.879443
+        },
+        {
+          "directMs": 3.013802,
+          "wrapperMs": 86.896201,
+          "addedMs": 83.882399
+        },
+        {
+          "directMs": 3.687126,
+          "wrapperMs": 82.4614,
+          "addedMs": 78.77427399999999
+        },
+        {
+          "directMs": 3.212516,
+          "wrapperMs": 85.898261,
+          "addedMs": 82.68574500000001
+        },
+        {
+          "directMs": 3.272148,
+          "wrapperMs": 83.144553,
+          "addedMs": 79.872405
+        },
+        {
+          "directMs": 3.729326,
+          "wrapperMs": 85.690066,
+          "addedMs": 81.96074
+        },
+        {
+          "directMs": 3.139195,
+          "wrapperMs": 112.179572,
+          "addedMs": 109.04037699999999
+        },
+        {
+          "directMs": 3.897161,
+          "wrapperMs": 128.082239,
+          "addedMs": 124.18507799999999
+        },
+        {
+          "directMs": 3.342209,
+          "wrapperMs": 86.697426,
+          "addedMs": 83.355217
+        },
+        {
+          "directMs": 3.780328,
+          "wrapperMs": 88.082075,
+          "addedMs": 84.301747
+        },
+        {
+          "directMs": 3.144525,
+          "wrapperMs": 84.804158,
+          "addedMs": 81.659633
+        },
+        {
+          "directMs": 3.739657,
+          "wrapperMs": 85.296688,
+          "addedMs": 81.55703100000001
+        },
+        {
+          "directMs": 2.669295,
+          "wrapperMs": 84.951561,
+          "addedMs": 82.28226599999999
+        },
+        {
+          "directMs": 3.214546,
+          "wrapperMs": 82.95682,
+          "addedMs": 79.742274
+        },
+        {
+          "directMs": 2.818288,
+          "wrapperMs": 87.488773,
+          "addedMs": 84.670485
+        },
+        {
+          "directMs": 3.257747,
+          "wrapperMs": 84.633584,
+          "addedMs": 81.375837
+        },
+        {
+          "directMs": 3.40977,
+          "wrapperMs": 88.645037,
+          "addedMs": 85.23526700000001
+        },
+        {
+          "directMs": 3.193716,
+          "wrapperMs": 86.234037,
+          "addedMs": 83.040321
+        },
+        {
+          "directMs": 4.118225,
+          "wrapperMs": 85.542893,
+          "addedMs": 81.42466800000001
+        },
+        {
+          "directMs": 3.36029,
+          "wrapperMs": 86.643936,
+          "addedMs": 83.28364599999999
+        },
+        {
+          "directMs": 3.024323,
+          "wrapperMs": 86.744127,
+          "addedMs": 83.71980400000001
+        },
+        {
+          "directMs": 3.238237,
+          "wrapperMs": 83.717316,
+          "addedMs": 80.479079
+        },
+        {
+          "directMs": 3.092014,
+          "wrapperMs": 88.407782,
+          "addedMs": 85.31576799999999
+        },
+        {
+          "directMs": 2.917501,
+          "wrapperMs": 87.716358,
+          "addedMs": 84.798857
+        },
+        {
+          "directMs": 3.130754,
+          "wrapperMs": 87.611846,
+          "addedMs": 84.481092
+        },
+        {
+          "directMs": 3.649265,
+          "wrapperMs": 85.537323,
+          "addedMs": 81.888058
+        }
+      ]
+    },
+    {
+      "id": "validator",
+      "metric": "wrapper-added",
+      "budgetMs": 250,
+      "maximumMs": 73.81793,
+      "medianMs": 67.3226975,
+      "p95Ms": 73.24314,
+      "madMs": 2.4825314999999932,
+      "samples": [
+        {
+          "directMs": 2.579613,
+          "wrapperMs": 69.39731,
+          "addedMs": 66.81769700000001
+        },
+        {
+          "directMs": 3.035643,
+          "wrapperMs": 68.549052,
+          "addedMs": 65.51340900000001
+        },
+        {
+          "directMs": 2.489002,
+          "wrapperMs": 68.304727,
+          "addedMs": 65.815725
+        },
+        {
+          "directMs": 3.441551,
+          "wrapperMs": 76.684691,
+          "addedMs": 73.24314
+        },
+        {
+          "directMs": 3.085673,
+          "wrapperMs": 70.849071,
+          "addedMs": 67.763398
+        },
+        {
+          "directMs": 3.019772,
+          "wrapperMs": 67.547782,
+          "addedMs": 64.52801
+        },
+        {
+          "directMs": 2.568673,
+          "wrapperMs": 72.7872,
+          "addedMs": 70.218527
+        },
+        {
+          "directMs": 3.733867,
+          "wrapperMs": 67.681944,
+          "addedMs": 63.948077
+        },
+        {
+          "directMs": 2.44755,
+          "wrapperMs": 68.078663,
+          "addedMs": 65.631113
+        },
+        {
+          "directMs": 3.353809,
+          "wrapperMs": 69.933842,
+          "addedMs": 66.580033
+        },
+        {
+          "directMs": 3.945531,
+          "wrapperMs": 73.485655,
+          "addedMs": 69.54012399999999
+        },
+        {
+          "directMs": 3.537423,
+          "wrapperMs": 73.971935,
+          "addedMs": 70.434512
+        },
+        {
+          "directMs": 2.92173,
+          "wrapperMs": 72.992064,
+          "addedMs": 70.070334
+        },
+        {
+          "directMs": 2.814958,
+          "wrapperMs": 66.121573,
+          "addedMs": 63.306615
+        },
+        {
+          "directMs": 2.458161,
+          "wrapperMs": 72.890582,
+          "addedMs": 70.43242099999999
+        },
+        {
+          "directMs": 2.581103,
+          "wrapperMs": 69.3638,
+          "addedMs": 66.782697
+        },
+        {
+          "directMs": 2.4635,
+          "wrapperMs": 69.978383,
+          "addedMs": 67.514883
+        },
+        {
+          "directMs": 3.265927,
+          "wrapperMs": 71.019543,
+          "addedMs": 67.753616
+        },
+        {
+          "directMs": 2.660835,
+          "wrapperMs": 70.062404,
+          "addedMs": 67.401569
+        },
+        {
+          "directMs": 3.168685,
+          "wrapperMs": 73.342891,
+          "addedMs": 70.174206
+        },
+        {
+          "directMs": 3.035473,
+          "wrapperMs": 65.450509,
+          "addedMs": 62.41503599999999
+        },
+        {
+          "directMs": 2.949941,
+          "wrapperMs": 66.028521,
+          "addedMs": 63.078579999999995
+        },
+        {
+          "directMs": 2.402249,
+          "wrapperMs": 72.561216,
+          "addedMs": 70.158967
+        },
+        {
+          "directMs": 2.583394,
+          "wrapperMs": 76.401324,
+          "addedMs": 73.81793
+        },
+        {
+          "directMs": 3.030452,
+          "wrapperMs": 69.266838,
+          "addedMs": 66.23638600000001
+        },
+        {
+          "directMs": 3.158675,
+          "wrapperMs": 73.461024,
+          "addedMs": 70.30234899999999
+        },
+        {
+          "directMs": 2.726726,
+          "wrapperMs": 70.468302,
+          "addedMs": 67.741576
+        },
+        {
+          "directMs": 2.971201,
+          "wrapperMs": 70.215027,
+          "addedMs": 67.24382600000001
+        },
+        {
+          "directMs": 2.947881,
+          "wrapperMs": 69.311718,
+          "addedMs": 66.363837
+        },
+        {
+          "directMs": 3.584754,
+          "wrapperMs": 67.92595,
+          "addedMs": 64.341196
+        }
+      ]
+    },
+    {
+      "id": "relaxed-rebuild",
+      "metric": "wrapper-added",
+      "budgetMs": 250,
+      "maximumMs": 82.793855,
+      "medianMs": 71.3670065,
+      "p95Ms": 80.07891,
+      "madMs": 4.057734499999995,
+      "samples": [
+        {
+          "directMs": 6.30222,
+          "wrapperMs": 79.709083,
+          "addedMs": 73.406863
+        },
+        {
+          "directMs": 7.28523,
+          "wrapperMs": 69.314078,
+          "addedMs": 62.028847999999996
+        },
+        {
+          "directMs": 6.640207,
+          "wrapperMs": 74.885133,
+          "addedMs": 68.24492599999999
+        },
+        {
+          "directMs": 6.149977,
+          "wrapperMs": 73.109686,
+          "addedMs": 66.959709
+        },
+        {
+          "directMs": 6.064245,
+          "wrapperMs": 70.83313,
+          "addedMs": 64.768885
+        },
+        {
+          "directMs": 6.891182,
+          "wrapperMs": 68.89853,
+          "addedMs": 62.00734799999999
+        },
+        {
+          "directMs": 6.986234,
+          "wrapperMs": 80.628881,
+          "addedMs": 73.64264700000001
+        },
+        {
+          "directMs": 5.85152,
+          "wrapperMs": 71.973364,
+          "addedMs": 66.12184400000001
+        },
+        {
+          "directMs": 6.291439,
+          "wrapperMs": 74.173609,
+          "addedMs": 67.88217
+        },
+        {
+          "directMs": 7.26925,
+          "wrapperMs": 78.220282,
+          "addedMs": 70.951032
+        },
+        {
+          "directMs": 6.373621,
+          "wrapperMs": 82.375277,
+          "addedMs": 76.001656
+        },
+        {
+          "directMs": 7.097766,
+          "wrapperMs": 73.969945,
+          "addedMs": 66.87217899999999
+        },
+        {
+          "directMs": 6.350951,
+          "wrapperMs": 85.831449,
+          "addedMs": 79.48049800000001
+        },
+        {
+          "directMs": 6.144937,
+          "wrapperMs": 81.02279,
+          "addedMs": 74.877853
+        },
+        {
+          "directMs": 6.110656,
+          "wrapperMs": 84.41468,
+          "addedMs": 78.304024
+        },
+        {
+          "directMs": 6.849311,
+          "wrapperMs": 74.68324,
+          "addedMs": 67.833929
+        },
+        {
+          "directMs": 7.263459,
+          "wrapperMs": 78.59042,
+          "addedMs": 71.326961
+        },
+        {
+          "directMs": 6.226889,
+          "wrapperMs": 89.020744,
+          "addedMs": 82.793855
+        },
+        {
+          "directMs": 5.967313,
+          "wrapperMs": 82.583502,
+          "addedMs": 76.61618899999999
+        },
+        {
+          "directMs": 6.386011,
+          "wrapperMs": 75.578348,
+          "addedMs": 69.19233700000001
+        },
+        {
+          "directMs": 6.633877,
+          "wrapperMs": 77.942096,
+          "addedMs": 71.30821900000001
+        },
+        {
+          "directMs": 6.799,
+          "wrapperMs": 80.608971,
+          "addedMs": 73.80997099999999
+        },
+        {
+          "directMs": 7.101137,
+          "wrapperMs": 84.590573,
+          "addedMs": 77.48943600000001
+        },
+        {
+          "directMs": 6.033554,
+          "wrapperMs": 73.692389,
+          "addedMs": 67.65883500000001
+        },
+        {
+          "directMs": 11.849444,
+          "wrapperMs": 86.750647,
+          "addedMs": 74.901203
+        },
+        {
+          "directMs": 6.445843,
+          "wrapperMs": 77.208951,
+          "addedMs": 70.763108
+        },
+        {
+          "directMs": 6.894422,
+          "wrapperMs": 78.301474,
+          "addedMs": 71.407052
+        },
+        {
+          "directMs": 7.316571,
+          "wrapperMs": 84.018532,
+          "addedMs": 76.701961
+        },
+        {
+          "directMs": 6.226498,
+          "wrapperMs": 82.693835,
+          "addedMs": 76.467337
+        },
+        {
+          "directMs": 6.468034,
+          "wrapperMs": 86.546944,
+          "addedMs": 80.07891
+        }
+      ]
+    }
+  ]
+}

@@ -152,14 +152,14 @@ Objects must have `Symbol.iterator` or `Symbol.asyncIterator` to pass.
 </tr>
 <tr>
 <td>`errorOrThrow`</td>
-<td>value is not `instanceof Error`</td>
+<td>`Error.isError(value)` is `false`</td>
 </tr>
 </tbody>
 </table>
 
 `dateOrThrow` does not check date validity (invalid dates still pass).
 `promiseOrThrow` rejects thenables.
-`errorOrThrow` rejects error-shaped plain objects.
+`errorOrThrow` accepts genuine errors from any realm and rejects error-shaped plain objects.
 
 ### typeof primitives
 

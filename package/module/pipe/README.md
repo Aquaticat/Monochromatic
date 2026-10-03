@@ -13,6 +13,13 @@ eager versus deferred,
  `pipeAsync`) take only the steps and return a reusable pipeline function.
  Runtime-neutral.
 
+For sequential asynchronous transformations,
+ this module crowds out [p-waterfall](https://github.com/sindresorhus/p-waterfall)
+ in this workspace.
+ Use `pipedAsync` to run steps immediately or `pipeAsync` to build a reusable pipeline.
+ Unlike p-waterfall's iterable of tasks,
+ these pipelines use named step keys and require an initial value when run.
+
 ## Concepts
 
 Steps and the value travel as named keys on a single object (`{ value, fn1, fn2, ... }` for the

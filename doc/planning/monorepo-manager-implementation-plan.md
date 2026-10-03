@@ -28,7 +28,7 @@ Everything here is scoped to meow 0.x;
 The user explicitly deferred the publishing subsystem to 1.x during the non-task-model discussion.
 Its future push-to-`main` trigger is recorded in the design,
 not an addition to this implementation plan or a 0.x blocker.
-No estimate of effort or duration appears anywhere in this plan (rule `CK3`).
+No estimate of effort or duration appears anywhere in this plan (rule `QJ1`).
 
 ## Active design work
 
@@ -197,7 +197,7 @@ Publication is excluded entirely from this frontier.
 ## What each milestone must prove
 
 A milestone is done when its named evidence exists and is committed,
-not when its code compiles (rule `VB6`).
+not when its code compiles (rule `VUB`).
 Every milestone carries a parity or conformance target measured against something that exists today.
 
 ### M1: the binary and its output contract

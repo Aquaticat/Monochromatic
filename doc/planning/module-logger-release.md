@@ -70,7 +70,7 @@ Its post-release value (toml-edit verification bar,
    reachable only through `createLogger` with sinks that all fail verify,
    documented,
    pinned by tests,
-   consistent with rules PP4 and PP7.
+   consistent with rules PP4 and PP8.
 - `engines.node` declares `>=24`:
    the dist calls `Error.isError`,
    which arrived with V8 13.6 in Node 24.0.0.

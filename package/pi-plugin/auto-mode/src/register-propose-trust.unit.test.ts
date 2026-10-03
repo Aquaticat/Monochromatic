@@ -14,8 +14,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { registerProposeTrust, } from './register-propose-trust.ts';
-import { TRUST_ENTRY_TYPE, } from './types.ts';
+import {
+  registerProposeTrust,
+  TRUST_ENTRY_TYPE,
+} from '../dist/final/node/index.mjs';
 
 /** Trust directive reused across propose_trust tests. */
 const TRUST_RULE = 'Allow .env file access';

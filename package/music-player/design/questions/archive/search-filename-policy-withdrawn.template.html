@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Search filename placement and visibility review</title>
+<style>
+:root { color-scheme: light dark; --color-surface: #fcf9ff; --color-card: #f0edf5; --color-text: #201e26;
+  --color-muted: #56515e; --color-line: #756e81; --color-focus: #554184; --color-selected: #e5dafa; }
+@media (prefers-color-scheme: dark) {
+  :root { --color-surface: #17151d; --color-card: #26222e; --color-text: #eee7f6;
+    --color-muted: #c2b9d0; --color-line: #a79bb8; --color-focus: #d9c0ff; --color-selected: #443452; }
+}
+* { box-sizing: border-box; }
+body { margin-block: 0; margin-inline: auto; padding-block: 2rem; padding-inline: 1rem;
+  max-inline-size: 88rem; color: var(--color-text); background-color: var(--color-surface);
+  font-family: system-ui,sans-serif; line-height: 1.55; }
+h1 { font-size: clamp(1.8rem,4vi,2.8rem); line-height: 1.2; }
+h2 { margin-block-start: 2.5rem; line-height: 1.3; }
+h3 { line-height: 1.3; }
+p,li { max-inline-size: 75ch; }
+a { color: var(--color-focus); }
+code,.digest { overflow-wrap: anywhere; }
+section,fieldset,details { margin-block: 1.5rem; min-inline-size: 0; }
+fieldset { border-width: 0.0625rem; border-style: solid; border-color: var(--color-line);
+  border-radius: 1rem; padding-block: 1.25rem; padding-inline: 1.25rem; }
+legend { font-size: 1.25rem; font-weight: 700; padding-inline: 0.4rem; }
+.note { border-inline-start-width: 0.3rem; border-inline-start-style: solid;
+  border-inline-start-color: var(--color-focus); padding-inline-start: 1rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; }
+.control { display: grid; gap: 0.3rem; }
+button,select,input,textarea { font: inherit; color: var(--color-text); background-color: var(--color-card);
+  border-width: 0.0625rem; border-style: solid; border-color: var(--color-line); border-radius: 0.5rem;
+  min-inline-size: 3rem; min-block-size: 3rem; }
+button,select { padding-block: 0.6rem; padding-inline: 1rem; }
+button { cursor: pointer; }
+:where(button,select,input,textarea,a,summary,.viewer):focus-visible {
+  outline-width: 0.2rem; outline-style: solid; outline-color: var(--color-focus); outline-offset: 0.2rem; }
+.summary-text { color: var(--color-muted); }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,20rem),1fr)); gap: 1rem; }
+figure { margin-block: 0; margin-inline: 0; min-inline-size: 0; padding-block: 1rem; padding-inline: 1rem;
+  border-radius: 1rem; background-color: var(--color-card); }
+figure h3 { margin-block-start: 0; }
+.preview-button { display: grid; gap: 0.75rem; inline-size: 100%; padding-block: 0.5rem; padding-inline: 0.5rem; }
+.preview-button img { display: block; inline-size: 100%; block-size: auto; }
+figcaption { margin-block-start: 0.8rem; font-size: 0.9rem; overflow-wrap: anywhere; }
+.choices { display: grid; gap: 1rem; }
+.choices label { display: grid; grid-template-columns: 3rem 1fr; gap: 1rem; align-items: start;
+  padding-block: 1rem; padding-inline: 1rem; border-width: 0.125rem; border-style: solid;
+  border-color: var(--color-line); border-radius: 0.75rem; min-inline-size: 3rem; min-block-size: 3rem; }
+.choices label:has(input:checked) { border-color: var(--color-focus); background-color: var(--color-selected); }
+.selected-marker { display: none; font-weight: 700; }
+.choices label:has(input:checked) .selected-marker { display: block; }
+.choices input { margin-block: 0; margin-inline: 0; accent-color: var(--color-focus); }
+textarea { display: block; inline-size: 100%; min-block-size: 8rem; padding-block: 0.75rem; padding-inline: 0.75rem; }
+summary { min-inline-size: 3rem; min-block-size: 3rem; cursor: pointer; padding-block: 0.7rem; padding-inline: 0.5rem;
+  font-weight: 700; }
+dialog { inline-size: min(80rem,calc(100vi - 2rem)); max-block-size: calc(100vb - 2rem);
+  color: var(--color-text); background-color: var(--color-surface); border-width: 0.125rem;
+  border-style: solid; border-color: var(--color-line); border-radius: 1rem;
+  padding-block: 1rem; padding-inline: 1rem; }
+dialog::backdrop { background-color: var(--color-surface); opacity: 0.85; }
+dialog h2 { margin-block-start: 0; }
+.viewer { overflow: auto; max-block-size: 65vb; min-inline-size: 3rem; min-block-size: 3rem; }
+.viewer img { display: block; max-inline-size: none; block-size: auto; }
+[hidden] { display: none; }
+</style>
+</head>
+<body>
+<header>
+<p class="summary-text">Design review only. No policy is preselected.</p>
+<h1>Where should filename suffixes appear, and when should they remain visible?</h1>
+<p>Purpose: compare filename presentation within accepted Search A. Placement and visibility are independent,
+so supporting-line placement can combine with either visibility policy. Placement is where a retained suffix appears;
+visibility decides whether an eligible suffix is retained. Ordinary-player retention and
+D11's Settings example select neither.</p>
+<p>Inspect long names, duplicate names and ancestor context, then answer both questions and the final free-text field.
+Reply in this chat using the prepared text or your own wording. This authorizes no production Search implementation.</p>
+<p class="note">Native images are keyboard-closed static debug fixtures, not indexed files, matching, activation,
+speech or focus studies. This is not native accessibility acceptance. The inner browser and complete deck remain;
+the cover has no added deck. Dotted folders stay literal, and suffix text establishes neither kind nor encoding.</p>
+</header>
+<section aria-labelledby="environment-title">
+<h2 id="environment-title">Inspect the same native conditions</h2>
+<div class="controls">
+<label class="control" for="panel">Panel<select id="panel"><option value="inner">Inner</option><option value="cover">Cover</option></select></label>
+<label class="control" for="scale">Native font scale<select id="scale"><option value="1">100%</option><option value="2">200%</option></select></label>
+<label class="control" for="scheme">Native image theme<select id="scheme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+<p id="environment" role="status"></p>
+<p>Thumbnails fit the review column. Open any image to inspect it at 100% logical dp or native pixels.
+These are sanitized app-area crops, not device mockups. Status strips were removed for privacy;
+bottom navigation remains. Logical dp uses the measured 390dpi density, not your monitor's physical size.</p>
+</section>
+<form id="review-form">
+<section aria-labelledby="placement-title">
+<h2 id="placement-title">Placement: keep the literal name together or move its exact suffix to support?</h2>
+<p>The same authored long-name pair, kind, parent, action, membership and order are held constant.
+Both options keep <code>.flac</code> and <code>.mp3</code> visible. Moving the suffix did not reduce measured title
+or supporting-line height in this pair. At 200%, some literal-name supporting lines wrap more, reducing initial viewport content.</p>
+<div class="gallery">
+<figure data-scene="placementfull"><h3>Full literal title: long pair</h3><button type="button" class="preview-button"><img alt="Native long-name Search pair with exact suffixes in full titles"><span>Open full-title long pair</span></button><figcaption></figcaption></figure>
+<figure data-scene="placementsupport"><h3>Supporting suffix: long pair</h3><button type="button" class="preview-button"><img alt="Same native long-name Search pair with exact suffixes in supporting lines"><span>Open supporting-suffix long pair</span></button><figcaption></figcaption></figure>
+<figure data-scene="literalfull"><h3>Full literal title: literal names and ancestor context</h3><button type="button" class="preview-button"><img alt="Native full-title literal-name fixtures with Collection A and B, dotted folder, case, Japanese text and extensionless track"><span>Open full-title literal names</span></button><figcaption></figcaption></figure>
+<figure data-scene="literalsupport"><h3>Supporting suffix: literal names and ancestor context</h3><button type="button" class="preview-button"><img alt="Same native literal names with exact suffixes moved to support, dotted folder unchanged and ancestor context retained"><span>Open supporting-suffix literal names</span></button><figcaption></figcaption></figure>
+</div>
+<p>Equal complete <code>Cam.flac</code> names keep <code>Collection A / Live</code> and <code>Collection B / Live</code> context.
+<code>Camellia.flac</code> is an indivisible folder name. Exact case in <code>.FLAC</code>, leading dots,
+Japanese text and extensionless <code>Cam</code> are authored boundary cases, not parsing rules.</p>
+<details id="scrolled-details"><summary>Inspect the separately captured final literal rows at 200%</summary>
+<p id="scroll-note">Choose 200% native font scale to inspect the scrolled witnesses. The initial inner full-title
+view clips the final support; inner supporting placement loses the final title and support. Cover supporting
+placement also needs scrolling. The final row and support are shown after one bounded scroll, not TalkBack traversal.</p>
+<div class="gallery">
+<figure data-scene="literalfull" data-position="scrolled"><h3>Full title: final-row scroll witness</h3><button type="button" class="preview-button"><img alt="Native inner full-title literal list after scrolling with extensionless Cam and its final support visible"><span>Open full-title final row</span></button><figcaption></figcaption></figure>
+<figure data-scene="literalsupport" data-position="scrolled"><h3>Supporting suffix: final-row scroll witness</h3><button type="button" class="preview-button"><img alt="Native supporting-suffix literal list after scrolling with extensionless Cam and Track library root Play visible"><span>Open supporting-suffix final row</span></button><figcaption></figcaption></figure>
+</div>
+</details>
+<p><strong>Ranking: full literal title &gt; supporting suffix</strong>, because secondary placement bought no long-name
+height reduction and cost initial literal-list visibility. This is a recommendation for correction or veto, not a selected policy.</p>
+<fieldset><legend>Choose placement independently of visibility</legend><div class="choices">
+<label><input type="radio" name="placement" value="Full literal title" required><span><strong>Full literal title (Recommended)</strong><br>
+Pros: contiguous literal name; suffix at title emphasis; more initial literal content in the tested inner 200% view.<br>
+Cons: retains suffix punctuation in titles, including long names.<span class="selected-marker">Selected placement</span></span></label>
+<label><input type="radio" name="placement" value="Supporting suffix" required><span><strong>Supporting suffix</strong><br>
+Pros: cleaner stem title; exact suffix grouped with kind and context.<br>
+Cons: weaker suffix emphasis; split literal name; extra support wraps in some tested literal cases; no long-pair height saving.<span class="selected-marker">Selected placement</span></span></label>
+<label><input type="radio" name="placement" value="Keep placement open" required><span><strong>Keep placement open</strong><br>
+Neither built option expresses your preference. Explain the missing consequence in the final notes.<span class="selected-marker">Selected placement response</span></span></label>
+</div></fieldset>
+</section>
+<section aria-labelledby="visibility-title">
+<h2 id="visibility-title">Visibility: always retain suffixes or omit only with known safe scope?</h2>
+<p><code>Cam Solo.opus</code> is the authored eligible case. Same-parent <code>Cam.flac</code> and <code>Cam.mp3</code>
+retain their cues. <code>Cam Outside.flac</code> also retains its cue: a same-parent <code>Cam Outside.mp3</code>
+partner is authored outside the displayed subset. Visible rows alone do not establish uniqueness.</p>
+<p class="note">The fixtures supply scope and eligibility flags. They do not inspect an inventory or detect collisions.
+Unknown scope is not proof of uniqueness. A conditional policy would need independently known scope and retain
+cues when safety is unknown. This review selects no parser, matcher or collision algorithm.</p>
+<div class="gallery">
+<figure data-scene="visibilityfull"><h3>Title placement: always visible</h3><button type="button" class="preview-button"><img alt="Native title placement with all authored suffixes visible, including Cam Solo opus"><span>Open always-visible title placement</span></button><figcaption></figcaption></figure>
+<figure data-scene="visibilityconditional"><h3>Title placement: eligible-only omission</h3><button type="button" class="preview-button"><img alt="Same native title-placement list omitting only Cam Solo suffix while collision cues and dotted folder stay literal"><span>Open conditional title placement</span></button><figcaption></figcaption></figure>
+<figure data-scene="visibilitysupportfull"><h3>Supporting placement: always visible</h3><button type="button" class="preview-button"><img alt="Native supporting placement with all authored suffixes visible in support"><span>Open always-visible supporting placement</span></button><figcaption></figcaption></figure>
+<figure data-scene="visibilitysupportconditional"><h3>Supporting placement: eligible-only omission</h3><button type="button" class="preview-button"><img alt="Same native supporting placement with only eligible Cam Solo suffix omitted and required cues retained"><span>Open conditional supporting placement</span></button><figcaption></figcaption></figure>
+</div>
+<p><strong>Ranking: always visible &gt; conditional omission</strong>, because this eligible omission reduced text but not
+measured vertical space, while real conditional behavior needs scope knowledge the fixture does not supply.</p>
+<fieldset><legend>Choose visibility independently of placement</legend><div class="choices">
+<label><input type="radio" name="visibility" value="Always visible" required><span><strong>Always visible (Recommended)</strong><br>
+Pros: preserves information; no uniqueness assessment needed for suffix visibility.<br>
+Cons: extra literal text on an eligible unambiguous name.<span class="selected-marker">Selected visibility</span></span></label>
+<label><input type="radio" name="visibility" value="Conditional omission with independently known safe scope" required><span><strong>Conditional omission</strong><br>
+Pros: removes suffix text when the relevant scope is actually known safe.<br>
+Cons: scope-dependent behavior; cues still needed for non-displayed partners or unknown scope; no measured height saving here.<span class="selected-marker">Selected visibility</span></span></label>
+<label><input type="radio" name="visibility" value="Keep visibility open" required><span><strong>Keep visibility open</strong><br>
+Neither built policy expresses your preference. Explain the missing consequence in the final notes.<span class="selected-marker">Selected visibility response</span></span></label>
+</div></fieldset>
+</section>
+<details><summary>Inspect the actual ordinary-player renderer as incumbent context</summary>
+<p>These invoke real <code>playerScreen</code>, private rows and pager, and real controller with synthetic paused
+inputs and a no-audio double. The private host color expression is mirrored. They are not full
+<code>MainActivity</code>, live playback or native packaging equivalence. Short-name controls are no-current only.</p>
+<p>The actual full-width ordinary player retains long suffixes at inner 100%, unlike the narrower copied control.
+In the captured cover and 200% cases, long suffixes clip. Current-row fill does not recover those clipped suffixes.
+This does not select either Search policy.</p>
+<div class="gallery">
+<figure data-source="baseline" data-scene="long-none"><h3>Actual player: long pair, no current row</h3><button type="button" class="preview-button"><img alt="Actual ordinary-player renderer with synthetic long filename pair and no current-row decoration"><span>Open actual player with no current row</span></button><figcaption></figcaption></figure>
+<figure data-source="baseline" data-scene="long-first"><h3>Actual player: long pair, first current</h3><button type="button" class="preview-button"><img alt="Actual ordinary-player renderer with synthetic long filename pair and first current row paused"><span>Open actual player with first current row</span></button><figcaption></figcaption></figure>
+<figure data-source="baseline" data-scene="long-second"><h3>Actual player: long pair, second current</h3><button type="button" class="preview-button"><img alt="Actual ordinary-player renderer with synthetic long filename pair and second current row paused"><span>Open actual player with second current row</span></button><figcaption></figcaption></figure>
+<figure data-source="baseline" data-scene="short-none"><h3>Actual player: short pair, no current row</h3><button type="button" class="preview-button"><img alt="Actual ordinary-player renderer short filename control with no current row"><span>Open actual player short control</span></button><figcaption></figcaption></figure>
+</div>
+</details>
+<details><summary>Read evidence provenance and acceptance boundaries</summary>
+<p>Comparison: 64 initial images plus six scrolled witnesses, prototype <code>a5560abb223af9f700b9d9465eac1991a02aac07</code>.</p>
+<p>Comparison APK SHA-256: <code>6f69735270cce6a21e9f65d11822f8a0e774b9a41c432430774317dd1f510755</code>.</p>
+<p>Actual-renderer baseline APK SHA-256: <code>84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e</code>.</p>
+<p>All displayed images are inspected, stripped app-area crops with exact RGB, opacity, dimensions, PNG chunk and
+hash verification. No raw status-bearing frame, hierarchy, OCR or log is included. Earlier rejected attempts stay separate.
+The owned disposable runtime was capped at 6 GiB/2 CPU; its fresh snapshot was restored and its disappearance verified.</p>
+<p>Source inner panel: 2076 × 2152px; retained app area 2076 × 2016px after removing 136 status pixels.
+Source cover: 1080 × 2424px; retained app area 1080 × 2273px after removing 151 status pixels.</p>
+<p>Accepted Search A, E2 clearance, spacing, inner browser and complete deck are retained. Cover remains full-width
+without an added deck. Within each matched panel/theme/font-scale group, exact measured Search-header-region RGB
+matched across the options, covering 64 initial views; retained inner browser/deck RGB matched across the options,
+covering 32 inner initial views. This does not independently remeasure E2 clearance. Semantic title/support rectangles are not ink or action bounds.</p>
+<p>Static source inspection, hierarchy presence, stable frames and this browser review establish no matching,
+activation, speech, native contrast acceptance, actual 48dp actions or focus transitions. D75 to D80's accessibility
+policy acceptance is separate from task 133's native implementation gate.</p>
+</details>
+<fieldset><legend>Final notes</legend><label for="final-notes">Corrections, missing consequences or a different filename preference</label>
+<textarea id="final-notes" name="notes" placeholder="Optional: explain what the built options miss."></textarea></fieldset>
+<button type="submit">Prepare reply</button>
+<section id="response" hidden aria-labelledby="response-title"><h2 id="response-title">Reply in this chat</h2>
+<p id="response-status" role="status">Nothing has been sent. Use this text or your own wording.</p>
+<label for="reply">Prepared reply</label><textarea id="reply" readonly></textarea></section>
+</form>
+<dialog id="preview" aria-labelledby="preview-title">
+<h2 id="preview-title">Native witness</h2>
+<div class="controls"><button type="button" id="close-preview">Close image</button><button type="button" id="zoom-out">Smaller</button>
+<button type="button" id="zoom-in">Larger</button><button type="button" id="reset-preview">Reset 100% dp</button>
+<button type="button" id="native-preview">Native pixels</button></div>
+<p id="preview-scale" role="status"></p><p id="preview-metadata" class="digest"></p>
+<div class="viewer" tabindex="0" role="region" aria-label="Scrollable native witness"><img id="preview-image" alt=""></div>
+</dialog>
+<script>
+//region Native evidence viewer, only checked embedded images and explicit view state
+const images = __FILENAME_REVIEW_IMAGES__;
+const nativeTheme = matchMedia('(prefers-color-scheme: dark)');
+const state = { panel: 'inner', fontScale: 1, theme: 'system', zoom: 1, preview: null };
+const controls = { panel: document.getElementById('panel'), scale: document.getElementById('scale'), scheme: document.getElementById('scheme') };
+const preview = document.getElementById('preview');
+function selectedScheme() { return state.theme === 'system' ? (nativeTheme.matches ? 'dark' : 'light') : state.theme; }
+function imageKey(figure) {
+  return [figure.dataset.source || 'comparison', state.panel, figure.dataset.scene,
+    selectedScheme(), state.fontScale, figure.dataset.position || 'initial'].join('/');
+}
+function metadata(image) {
+  return image.width + ' × ' + image.height + ' retained px · ' + (image.width / (image.density / 160)).toFixed(1) +
+    ' × ' + (image.height / (image.density / 160)).toFixed(1) + ' logical dp · source density ' + image.density +
+    'dpi · ' + image.file + ' · SHA-256 ' + image.hash;
+}
+function render() {
+  document.getElementById('environment').textContent = state.panel + ' panel · ' + state.fontScale * 100 +
+    '% native text · ' + selectedScheme() + ' native images. Thumbnail size is not native font scale.';
+  for (const figure of document.querySelectorAll('figure[data-scene]')) {
+    const intentionallyAbsent = figure.dataset.position === 'scrolled' &&
+      (state.fontScale !== 2 || (figure.dataset.scene === 'literalfull' && state.panel === 'cover'));
+    figure.hidden = intentionallyAbsent;
+    if (intentionallyAbsent) continue;
+    const image = images[imageKey(figure)];
+    if (!image) throw new Error('Required native witness is absent: ' + imageKey(figure));
+    const element = figure.querySelector('img');
+    element.src = image.source;
+    element.width = image.width;
+    element.height = image.height;
+    figure.querySelector('figcaption').textContent = metadata(image) +
+      (figure.dataset.position === 'scrolled' ? ' · separately captured after one visual scroll' : ' · initial viewport');
+  }
+}
+function resizePreview() {
+  if (!state.preview) throw new Error('No native witness is open.');
+  const rootFont = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const logicalWidth = state.preview.width / (state.preview.density / 160);
+  document.getElementById('preview-image').style.inlineSize = logicalWidth * state.zoom / rootFont + 'rem';
+  document.getElementById('preview-scale').textContent = (state.zoom * 100).toFixed(1) +
+    '% logical dp · ' + Math.round(logicalWidth * state.zoom) + ' CSS px displayed width. Pan within the image region.';
+}
+function openPreview(figure) {
+  const image = images[imageKey(figure)];
+  if (!image) throw new Error('Selected native evidence is absent.');
+  state.preview = image;
+  state.zoom = 1;
+  document.getElementById('preview-title').textContent = figure.querySelector('h3').textContent;
+  document.getElementById('preview-metadata').textContent = metadata(image);
+  const element = document.getElementById('preview-image');
+  element.src = image.source;
+  element.alt = figure.querySelector('img').alt;
+  resizePreview();
+  preview.showModal();
+  document.querySelector('.viewer').scrollTo(0, 0);
+}
+for (const figure of document.querySelectorAll('figure[data-scene]')) {
+  figure.querySelector('button').addEventListener('click', () => openPreview(figure));
+}
+controls.panel.addEventListener('change', () => { state.panel = controls.panel.value; render(); });
+controls.scale.addEventListener('change', () => { state.fontScale = Number(controls.scale.value); render(); });
+controls.scheme.addEventListener('change', () => { state.theme = controls.scheme.value; render(); });
+nativeTheme.addEventListener('change', () => { if (state.theme === 'system') render(); });
+document.getElementById('close-preview').addEventListener('click', () => preview.close());
+document.getElementById('zoom-out').addEventListener('click', () => { state.zoom = Math.max(0.125, state.zoom / 1.25); resizePreview(); });
+document.getElementById('zoom-in').addEventListener('click', () => { state.zoom = Math.min(4, state.zoom * 1.25); resizePreview(); });
+document.getElementById('reset-preview').addEventListener('click', () => { state.zoom = 1; resizePreview(); });
+document.getElementById('native-preview').addEventListener('click', () => { state.zoom = state.preview.density / 160; resizePreview(); });
+render();
+//endregion
+
+//region Independent responses, recommendations never become implicit human answers
+function prepareReply(event) {
+  event.preventDefault();
+  const form = document.getElementById('review-form');
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const notes = String(data.get('notes')).trim();
+  document.getElementById('reply').value = 'Filename placement: ' + data.get('placement') +
+    '\nFilename visibility: ' + data.get('visibility') + '\nFinal notes: ' + (notes || 'None.');
+  document.getElementById('response').hidden = false;
+  document.getElementById('reply').focus();
+}
+function invalidateReply() {
+  document.getElementById('reply').value = '';
+  document.getElementById('response').hidden = true;
+}
+document.getElementById('review-form').addEventListener('input', invalidateReply);
+document.getElementById('review-form').addEventListener('change', invalidateReply);
+document.getElementById('review-form').addEventListener('submit', prepareReply);
+//endregion
+</script>
+</body>
+</html>

@@ -20,11 +20,17 @@ export type {
 } from './context-types.ts';
 export type {
   BuiltInPolicyId,
+  CliGitConcurrencyConfig,
   CliGitConfig,
   PluginDefinition,
   PluginMap,
   PolicySetting,
 } from './config-types.ts';
+export type {
+  PolicyInput,
+  PolicyInputs,
+  PolicyInputsDeclaration,
+} from './policy-input-types.ts';
 export type {
   ActivePolicySeverity,
   CandidateChange,

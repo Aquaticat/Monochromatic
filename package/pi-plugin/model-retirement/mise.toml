@@ -1,0 +1,82 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."test:unit"]
+extends = "test:unit"
+depends = ["build"]
+
+[tasks."verify:extension"]
+depends = ["build"]
+run = "node src/mise.verify-extension.ts"
+
+[tasks."fixture:retirement-table"]
+description = "Regenerate the pinned retirement table from the installed pi-ai catalog"
+depends = ["build"]
+shell = "node --input-type=module-typescript -e"
+run = """
+const { readdirSync, readFileSync, writeFileSync } = await import('node:fs')
+const { fileURLToPath } = await import('node:url')
+const { decideRetirements } = await import('./dist/final/node/index.mjs')
+const dataDirectory = fileURLToPath(new URL('./data/', import.meta.resolve('@earendil-works/pi-ai/providers/all')))
+const entries = []
+for (const file of readdirSync(dataDirectory).toSorted()) {
+  if (!file.endsWith('.json') || file === '.manifest.json')
+    continue
+  const provider = file.slice(0, -'.json'.length)
+  const document = JSON.parse(readFileSync(`${dataDirectory}/${file}`, 'utf8'))
+  for (const [api, models] of Object.entries(document)) {
+    if (typeof models !== 'object' || models === null)
+      continue
+    for (const model of Object.values(models)) {
+      if (model !== null && typeof model === 'object' && 'id' in model)
+        entries.push({ provider, api, modelId: model.id })
+    }
+  }
+}
+const manifest = JSON.parse(readFileSync(`${dataDirectory}/.manifest.json`, 'utf8'))
+const decision = decideRetirements({ entries })
+const fixture = {
+  catalogGeneratedAt: manifest.generatedAt,
+  catalogSchemaVersion: manifest.schemaVersion,
+  entryCount: entries.length,
+  retirementCount: decision.retirements.length,
+  abstentions: decision.abstentions,
+  retirements: decision.retirements,
+}
+writeFileSync('./src/retirement-table.fixture.json', `${JSON.stringify(fixture, null, 1)}\n`)
+console.log(`retirement table regenerated: ${String(fixture.entryCount)} entries, ${String(fixture.retirementCount)} retirements, catalog ${String(fixture.catalogGeneratedAt)}`)
+"""
+
+[tasks."verify:host"]
+description = "Exercise built model retirement in a guarded disposable Pi host"
+run = ["mise run //package/pi-plugin/model-retirement:build", "node src/verify-host.ts"]
+
+[tasks."verify:host".env]
+PI_MODEL_RETIREMENT_VERIFY_HOST = "1"

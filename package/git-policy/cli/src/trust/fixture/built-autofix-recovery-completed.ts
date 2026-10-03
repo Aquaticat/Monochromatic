@@ -12,6 +12,10 @@ import {
 } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
 import { assertFixtureEqual, } from './built-post-commit-helpers.ts';
+import {
+  assertNoTransactionDirectories,
+  resolveSingleTransactionDirectory,
+} from './built-transaction-registry.ts';
 
 /**
  * Executable private hook mode.
@@ -43,11 +47,9 @@ async function pathExists(path: string,): Promise<boolean> {
  *
  * @param repository - disposable repository
  *
- * @param transactionDirectory - private recovery directory
- *
  * @param lockPath - held real-index lock
  *
- * @param postHookPath - disposable post-commit hook
+ * @param postHookPath - disposable landing hook
  *
  * @param killingHookSource - wrapper-killing hook prefix
  *
@@ -57,12 +59,11 @@ async function pathExists(path: string,): Promise<boolean> {
  *
  * @example
  * ```ts
- * await verifyCompletedInstallRecovery({ repository, transactionDirectory, lockPath, postHookPath, killingHookSource, waitForOrphan, env });
+ * await verifyCompletedInstallRecovery({ repository, lockPath, postHookPath, killingHookSource, waitForOrphan, env });
  * ```
  */
 export async function verifyCompletedInstallRecovery({
   repository,
-  transactionDirectory,
   lockPath,
   postHookPath,
   killingHookSource,
@@ -70,7 +71,6 @@ export async function verifyCompletedInstallRecovery({
   env,
 }: Readonly<{
   repository: string;
-  transactionDirectory: string;
   lockPath: string;
   postHookPath: string;
   killingHookSource: string;
@@ -110,8 +110,12 @@ export async function verifyCompletedInstallRecovery({
   },);
   await waitForOrphan();
   await rm(postHookPath,);
+  /**
+   * Transaction directory the interrupted wrapper retained.
+   */
+  const transactionDirectory = await resolveSingleTransactionDirectory(repository,);
   await copyFile(
-    `${transactionDirectory}/post.index`,
+    `${transactionDirectory}/post-1.index`,
     lockPath,
   );
   await rename(
@@ -131,7 +135,11 @@ export async function verifyCompletedInstallRecovery({
     cwd: repository,
     env,
   },);
-  if ((await pathExists(transactionDirectory,)) || (await pathExists(lockPath,)))
+  await assertNoTransactionDirectories({
+    repository,
+    context: 'completed-index recovery',
+  },);
+  if (await pathExists(lockPath,))
     throw new Error('completed-index recovery did not clean artifacts',);
   assertFixtureEqual({
     actual: (await execute({

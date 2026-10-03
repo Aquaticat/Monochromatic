@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selected Fold Search, static status evidence</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --page: #f5f6fa;
+  --panel: #fff;
+  --raised: #e9eaf0;
+  --ink: #262b35;
+  --muted: #505764;
+  --edge: #777e8d;
+  --accent: #345286;
+  --chassis: #17191f;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0d0f14;
+    --panel: #1a1d25;
+    --raised: #292d38;
+    --ink: #e8eaf2;
+    --muted: #bdc1ce;
+    --edge: #9ea4b2;
+    --accent: #bfd0ff;
+    --chassis: #080a0d;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background-color: var(--page); color: var(--ink); font: 1rem/1.5 system-ui, sans-serif; }
+main { max-inline-size: 100rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 3rem); padding-block: 1rem 4rem; }
+h1 { font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.2; }
+h2 { margin-block: 1.8rem 0.55rem; }
+p, li { max-inline-size: 95ch; }
+code { overflow-wrap: anywhere; }
+button, select { min-inline-size: 3rem; min-block-size: 3rem; padding: 0.35rem 0.8rem; border: 0.0625rem solid var(--edge); border-radius: 0.55rem; background-color: var(--panel); color: var(--ink); font: inherit; }
+button { cursor: pointer; }
+button:hover { background-color: var(--raised); }
+button:focus-visible, select:focus-visible { outline: 0.1875rem solid var(--accent); outline-offset: 0.1875rem; }
+a { color: var(--accent); }
+.note, .capture { border: 0.0625rem solid var(--edge); border-radius: 0.8rem; background-color: var(--panel); }
+.note { padding-inline: 1rem; padding-block: 0.2rem; }
+.muted { color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; align-items: end; gap: 0.85rem; margin-block: 1.2rem; }
+.controls label { display: grid; gap: 0.25rem; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 31rem), 1fr)); gap: 1rem; }
+.capture { min-inline-size: 0; padding: 1rem; }
+.capture h2 { margin-block: 0 0.5rem; }
+.capture p { margin-block: 0.7rem; }
+.frame {
+  position: relative;
+  display: inline-block;
+  max-inline-size: 100%;
+  margin: 0;
+  padding: 1.1rem 0.85rem;
+  border: 0.22rem solid #424751;
+  border-radius: 1.5rem;
+  background-color: var(--chassis);
+  vertical-align: top;
+}
+.frame[data-panel='inner'] { max-inline-size: min(100%, 55rem); }
+.frame[data-panel='inner']::before, .frame[data-panel='inner']::after { content: ''; position: absolute; inset-inline-start: calc(50% - 0.15rem); inline-size: 0.3rem; block-size: 0.9rem; background-color: #626976; }
+.frame[data-panel='inner']::before { inset-block-start: 0.2rem; }
+.frame[data-panel='inner']::after { inset-block-end: 0.2rem; }
+.frame[data-panel='cover'] { max-inline-size: min(100%, 31rem); }
+.frame img { display: block; max-inline-size: 100%; block-size: auto; background-color: #000; }
+.frame[data-panel='inner'] img { inline-size: 852px; }
+.frame[data-panel='cover'] img { inline-size: 443.08px; }
+.frame figcaption { color: #fff; padding-block-start: 0.6rem; font-size: 0.9rem; }
+.capture button { display: block; margin-block-start: 0.8rem; }
+dialog { max-inline-size: min(98vw, 95rem); max-block-size: 96vh; padding: 0.6rem; border: 0.12rem solid var(--edge); border-radius: 0.8rem; background-color: var(--panel); color: var(--ink); }
+dialog::backdrop { background-color: rgb(0 0 0 / 84%); }
+.dialog-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; }
+.dialog-bar h2 { flex-basis: 100%; margin-block: 0 0.25rem; }
+.dialog-bar p { flex-basis: 100%; margin-block: 0.15rem; }
+.preview-stage { max-block-size: 70vh; max-inline-size: 93vw; overflow: auto; padding: 0.7rem; }
+.preview-stage .frame { max-inline-size: none; transform-origin: top left; transform: scale(var(--scale, 1)); }
+.preview-stage img { max-inline-size: none; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="muted">Music player · static status evidence · Pixel 9 Pro Fold</p>
+  <h1>Search status, with the selected browser and deck intact</h1>
+  <p>These sanitized native captures use the existing debug-only Compose Search A fixture. Compare an unqueried prompt, a fixed nonmatching <code>zzq</code> query, and a fixed unavailable flag across the unfolded inner and folded cover screens. The unfolded view keeps the actual folder browser, visible Open control, and complete playback deck. No Search algorithm, source-health signal, recovery action or result activation is exercised.</p>
+  <div class="note"><p><strong>Bounded evidence, not a new keyboard experiment.</strong> Each screenshot is keyboard-closed and came from the disposable <code>Fold_No_Hardware_Probe</code> in a 6 GiB/2 CPU container. The installed debug APK matched SHA-256 <code>1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05</code>. Status bars were replaced by the existing generic 9:41 strip; app pixels below it were unchanged. D63's entry-focus request is <strong>not</strong> validated by these old static fixture states. The words “Library unavailable” and “Search returns when the library is available” are unselected fixture copy, not a promised recovery path. <a href="current.html">The selected Search A review</a> remains the active visual baseline.</p></div>
+</header>
+<section aria-labelledby="read-title">
+  <h2 id="read-title">Read the status, not just the row count</h2>
+  <ul>
+    <li><strong>Empty query:</strong> no lookup has failed; a prompt is not a no-match verdict.</li>
+    <li><strong>Completed query with no matches:</strong> the current query and source must have been fully evaluated. The <code>zzq</code> fixture illustrates wording/fit only, not a real evaluation.</li>
+    <li><strong>Known source failure:</strong> only a verified inability to search the current source can justify an unavailable message. A still-visible browser and playing deck make the broad fixture phrase “Library unavailable” especially misleading. No automatic recovery is established.</li>
+    <li><strong>Other conditions:</strong> confirmed empty searchable inventory, incomplete enumeration and analysis progress are distinct. A zero-length track list does not prove that no folder names can match.</li>
+  </ul>
+  <p class="muted">The design evidence and status preconditions live at <code>package/music-player/design/evidence/search-empty-unavailable-boundaries.md</code>. The physical capture manifest is <code>package/music-player/design/questions/evidence/search-status-review-manifest.json</code>. This gallery does not settle exact cause-specific recovery copy; the eventual implementation must have a truthful status owner before showing one.</p>
+</section>
+<section aria-labelledby="inspect-title">
+  <h2 id="inspect-title">Inspect keyboard-closed native states</h2>
+  <div class="controls">
+    <label for="search-state">Fixture state<select id="search-state"><option value="empty">No query entered</option><option value="none">Nonmatching query: zzq</option><option value="unavailable">Fixed unavailable marker</option></select></label>
+    <label for="text-scale">Android text scale<select id="text-scale"><option value="100">100% text</option><option value="200">200% text</option></select></label>
+    <label for="screen-scheme">Screenshot scheme<select id="screen-scheme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+  </div>
+  <div class="gallery">
+    <article class="capture" data-panel="inner"><h2>Unfolded: right Search and actual left browser/deck</h2><figure class="frame" data-panel="inner"><img width="2076" height="2152" alt="Keyboard-closed unfolded Search status in the right pane with actual left browser and complete deck"><figcaption>Source 2076 × 2152 physical px · approximately 852 × 883dp at 390dpi</figcaption></figure><p>The left browser and deck are retained in each fixed fixture; their presence is not proof that the source can still be searched or the controls work after a source failure.</p><button type="button" data-preview="inner">Inspect unfolded at device size</button></article>
+    <article class="capture" data-panel="cover"><h2>Folded: full-width Search destination</h2><figure class="frame" data-panel="cover"><img width="1080" height="2424" alt="Keyboard-closed cover Search status below the integrated header"><figcaption>Source 1080 × 2424 physical px · approximately 443 × 994dp at 390dpi</figcaption></figure><p>On the cover there is no concurrent left Open button; a cause-specific action cannot be inferred from the inner screenshot.</p><button type="button" data-preview="cover">Inspect cover at device size</button></article>
+  </div>
+</section>
+<section aria-labelledby="response-title"><h2 id="response-title">Correction path</h2><p>The evidence supports distinguishing unqueried, fully evaluated no-match, and confirmed source failure states; it does not ratify the generic unavailable promise. This is not a preference questionnaire. If a consequence or visual defect is missing, reply in this chat with the fixture state, panel, text scale and concern; no answer is required to continue the design review.</p></section>
+</main>
+<dialog id="preview" aria-labelledby="preview-title"><div class="dialog-bar"><h2 id="preview-title">Static Search status at device size</h2><button id="fit" type="button">Fit</button><button id="reset" type="button">Reset 100%</button><button id="zoom-out" type="button">Zoom out</button><button id="zoom-in" type="button">Zoom in</button><button id="close-preview" type="button">Close</button><p id="scale-label" class="muted" aria-live="polite"></p></div><div id="preview-stage" class="preview-stage"><figure class="frame" id="preview-frame" data-panel="inner"><img id="preview-image" width="2076" height="2152" alt="Selected static Search status screenshot at native panel geometry"><figcaption id="preview-caption"></figcaption></figure></div></dialog>
+<script>
+const captures = __SEARCH_STATUS_CAPTURE_MAP__;
+const state = document.querySelector('#search-state');
+const textScale = document.querySelector('#text-scale');
+const scheme = document.querySelector('#screen-scheme');
+const media = window.matchMedia('(prefers-color-scheme: dark)');
+const preview = document.querySelector('#preview');
+const previewFrame = document.querySelector('#preview-frame');
+const previewImage = document.querySelector('#preview-image');
+const previewStage = document.querySelector('#preview-stage');
+let selectedPanel = 'inner';
+let scale = 1;
+let returnTarget;
+function currentScheme() { return scheme.value === 'system' ? (media.matches ? 'dark' : 'light') : scheme.value; }
+function sourceFor(panel) { return captures[panel][state.value][currentScheme()][textScale.value]; }
+function geometry(panel) { return panel === 'inner' ? { px: [2076, 2152], dp: [852, 883] } : { px: [1080, 2424], dp: [443.08, 994.46] }; }
+function showScale() {
+  const source = geometry(selectedPanel);
+  previewFrame.style.setProperty('--scale', scale);
+  document.querySelector('#scale-label').textContent = `Source ${source.px[0]} × ${source.px[1]} physical px · ${Math.round(source.dp[0])} × ${Math.round(source.dp[1])}dp at 390dpi · ${Math.round(scale * 100)}% of design dp · Reset returns to 100%`;
+}
+function render() {
+  document.querySelectorAll('.capture').forEach(card => {
+    const img = card.querySelector('img');
+    img.src = sourceFor(card.dataset.panel);
+    img.alt = `${card.dataset.panel === 'inner' ? 'Unfolded' : 'Folded cover'} · ${state.selectedOptions[0].textContent} · ${textScale.selectedOptions[0].textContent} · ${currentScheme()} · static keyboard-closed debug fixture`;
+  });
+  if (preview.open) updatePreview();
+}
+function updatePreview() {
+  const source = geometry(selectedPanel);
+  previewFrame.dataset.panel = selectedPanel;
+  previewImage.src = sourceFor(selectedPanel);
+  previewImage.width = source.px[0];
+  previewImage.height = source.px[1];
+  previewImage.alt = `${state.selectedOptions[0].textContent} on ${selectedPanel} at ${textScale.value}% text`;
+  document.querySelector('#preview-caption').textContent = `Source ${source.px[0]} × ${source.px[1]} physical px · design ${Math.round(source.dp[0])} × ${Math.round(source.dp[1])}dp`;
+  showScale();
+}
+for (const selector of [state, textScale, scheme]) selector.addEventListener('change', render);
+media.addEventListener('change', () => { if (scheme.value === 'system') render(); });
+document.querySelectorAll('[data-preview]').forEach(button => button.addEventListener('click', async () => {
+  returnTarget = button;
+  selectedPanel = button.dataset.preview;
+  document.querySelector('#preview-title').textContent = `${selectedPanel === 'inner' ? 'Unfolded' : 'Folded'} · ${state.selectedOptions[0].textContent}`;
+  scale = 1;
+  updatePreview();
+  await previewImage.decode();
+  preview.showModal();
+  previewStage.scrollTop = 0;
+  previewStage.scrollLeft = 0;
+  document.querySelector('#close-preview').focus();
+}));
+document.querySelector('#fit').addEventListener('click', () => {
+  const source = geometry(selectedPanel);
+  scale = Math.min(1, (previewStage.clientWidth - 40) / (source.dp[0] + 40), (previewStage.clientHeight - 40) / (source.dp[1] + 40));
+  showScale();
+});
+document.querySelector('#reset').addEventListener('click', () => { scale = 1; showScale(); });
+document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
+document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
+document.querySelector('#close-preview').addEventListener('click', () => preview.close());
+preview.addEventListener('close', () => returnTarget?.focus());
+render();
+</script>
+</body>
+</html>

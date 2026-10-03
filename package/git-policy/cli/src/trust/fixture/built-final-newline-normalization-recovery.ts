@@ -1,31 +1,35 @@
 //region Normalization-only recovery fixture
 /**
- * Packed recovery of a prepared normalization-only journal with no new commit.
+ * Packed recovery of an interrupted normalization-only landing with no new commit.
  *
  * @module
  */
 import {
-  access,
   readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
 import {
-  KILL_WRAPPER_SOURCE,
+  KILL_LANDING_SOURCE,
+  LANDING_HOOK,
   waitForOrphan,
 } from './built-autofix-recovery-consumer.ts';
 import {
   assertFixtureEqual,
   initializePostCommitRepository,
 } from './built-post-commit-helpers.ts';
+import {
+  assertNoTransactionDirectories,
+  resolveSingleTransactionDirectory,
+} from './built-transaction-registry.ts';
 
 /**
  * Exercises both differing and byte-identical prepared index snapshots.
  *
- * A post-commit kill yields a real prepared journal and selected worktree record.
- * Reclassifying its already-landed HEAD as the no-commit reference simulates an
- * interruption immediately after a normalization-only journal was prepared.
+ * A kill at the landing's compare-and-swap yields a real landing record with a selected worktree record.
+ * Reclassifying it as a normalization whose expected target is the already-landed HEAD simulates an
+ * interruption inside a normalization-only landing.
  *
  * @param env - packed Git shim environment
  *
@@ -38,8 +42,7 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
   const repository = '/work/final-newline-normalization-recovery';
-  const transaction = `${repository}/.git/cli-git-transaction`;
-  const hook = `${repository}/.git/hooks/post-commit`;
+  const hook = `${repository}/.git/hooks/${LANDING_HOOK}`;
   await initializePostCommitRepository(repository,);
   await writeFile(`${repository}/value.txt`, 'before\n',);
   await execute({ command: '/usr/bin/git', args: ['add', 'value.txt',], cwd: repository, },);
@@ -52,8 +55,8 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
     await writeFile(`${repository}/value.txt`, content,);
     // oxlint-disable-next-line no-await-in-loop -- Real Git provides the pre-commit index snapshot.
     await execute({ command: '/usr/bin/git', args: ['add', 'value.txt',], cwd: repository, },);
-    // oxlint-disable-next-line no-await-in-loop -- Hook kills wrapper only after its journal is durable and real Git advances HEAD.
-    await writeFile(hook, KILL_WRAPPER_SOURCE, { mode: 0o700, },);
+    // oxlint-disable-next-line no-await-in-loop -- Hook kills wrapper only after its landing record is durable and the ref advanced.
+    await writeFile(hook, KILL_LANDING_SOURCE, { mode: 0o700, },);
     // oxlint-disable-next-line no-await-in-loop -- Each invocation is independent and must be interrupted.
     await execute({
       command: 'git',
@@ -71,22 +74,27 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
       args: ['rev-parse', 'HEAD',],
       cwd: repository,
     },)).stdout.trim();
-    const path = `${transaction}/journal.json`;
+    // oxlint-disable-next-line no-await-in-loop -- Each interrupted transaction retains its own directory.
+    const transaction = await resolveSingleTransactionDirectory(repository,);
+    const path = `${transaction}/landing-1.json`;
     const parsed: unknown = JSON.parse(await readFile(path, 'utf8',),);
     if ((typeof parsed !== 'object') || (parsed === null))
-      throw new Error('Prepared normalization fixture journal is malformed.',);
-    /** Rebind to identical landed tree as a normalization-only operation. */
-    await writeFile(path, `${JSON.stringify({
+      throw new Error('Landing normalization fixture record is malformed.',);
+    /** Rebind to identical landed tree as a normalization-only landing without commit fields. */
+    const normalization = Object.fromEntries(Object.entries({
       ...parsed,
       operation: 'normalize-only',
-      originalHead: { kind: 'oid', oid, },
-    })}\n`,);
+      expectedOld: { kind: 'commit', oid, },
+    },).filter(function commitFieldDropped([key,],): boolean {
+      return (key !== 'newOid') && (key !== 'packName');
+    },),);
+    await writeFile(path, `${JSON.stringify(normalization,)}\n`,);
     if (sameIndex) {
       /** Model a selected raw worktree file whose real and prepared indexes already match canonical HEAD. */
       // oxlint-disable-next-line no-await-in-loop -- Read actual prepared canonical index from interrupted transaction.
-      const canonicalIndex = await readFile(`${transaction}/post.index`,);
-      // oxlint-disable-next-line no-await-in-loop -- In-place writes preserve journal-bound snapshot inodes.
-      await writeFile(`${transaction}/original.index`, canonicalIndex,);
+      const canonicalIndex = await readFile(`${transaction}/post-1.index`,);
+      // oxlint-disable-next-line no-await-in-loop -- In-place writes preserve record-bound snapshot inodes.
+      await writeFile(`${transaction}/pre-landing-1.index`, canonicalIndex,);
       // oxlint-disable-next-line no-await-in-loop -- Disposable real index now matches both identical snapshots.
       await writeFile(`${repository}/.git/index`, canonicalIndex,);
     }
@@ -106,15 +114,11 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
       expected: '',
       context: `${content} normalization-only recovered index`,
     },);
-    try {
-      // oxlint-disable-next-line no-await-in-loop -- Finished recovery must remove its journal.
-      await access(transaction,);
-      throw new Error(`Normalization recovery retained completed journal for ${content}.`,);
-    }
-    catch (error: unknown) {
-      if (!(Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT')))
-        throw error;
-    }
+    // oxlint-disable-next-line no-await-in-loop -- Finished recovery must remove its journal.
+    await assertNoTransactionDirectories({
+      repository,
+      context: `${content} normalization-only recovery`,
+    },);
   }
 }
 //endregion Normalization-only recovery fixture

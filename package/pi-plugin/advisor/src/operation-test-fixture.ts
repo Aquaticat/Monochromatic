@@ -286,6 +286,15 @@ export function operationFixture({
     return ADVISOR_CLOCK_BOUNDARY;
   }
 
+  /**
+   Record progress across fixture runs without allocating a new callback per run.
+
+   @param value - operation snapshot retained for assertions
+   */
+  function recordProgress(value: AdvisorOperationSnapshot,): void {
+    progress.push(value,);
+  }
+
   return {
     dispatched,
     prepared,
@@ -309,7 +318,7 @@ export function operationFixture({
         complete,
         wait,
         now,
-        onUpdate: function recordProgress(value: AdvisorOperationSnapshot): void { progress.push(value,); },
+        onUpdate: recordProgress,
         ...options,
       },);
     },

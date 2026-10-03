@@ -842,7 +842,7 @@ and 15 of them run a native toolchain the glob cannot reach:
 //package/desktop-app/file-manager-gtk-sticky:test
 //package/desktop-app/file-manager-qt:test
 //package/desktop-app/terminal:test
-//package/fuzz/forbidden-strings:test           cargo nextest run --lib --release
+//package/cli/forbidden-strings.fuzz:test           cargo nextest run --lib --release
 //package/linter/kotlin:test                    ./gradlew test --no-daemon --console=plain
 //package/linter/rust:test
 //package/music-player/desktop-app:test
@@ -1036,9 +1036,8 @@ Verified:
 but its TypeScript plugin is disabled at line 39,
 and no oxlint or `tsc` invocation targets `.toml`.
 Rules `TSD`,
- `TY1`,
  `LG1`,
- `PP7` and the rest of the TypeScript section of `AGENTS.md`
+ `PP4` and the rest of the TypeScript section of `AGENTS.md`
 apply to none of it.
 Verified:
 the largest single block,
@@ -1479,7 +1478,7 @@ Option C,
    no new surface.
 - Cons:
    every decision-verb task now needs a human in the loop for setup,
-   which rule `CKA` says to bridge rather than hand off.
+   which rule `CB1` says to bridge rather than hand off.
 
 Ranking:
  B > A > C.

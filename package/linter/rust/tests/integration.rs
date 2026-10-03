@@ -937,7 +937,7 @@ fn directive_probe(name: &str, source: &str) -> std::path::PathBuf {
     return root;
 }
 
-// What:     The end-to-end form of the guarantee AGENTS.md MXL, MXR and RDC
+// What:     The end-to-end form of the guarantee the repo's MXL, MXR and RDC rules
 //           state: those two rules are never disabled.
 // Why:      A unit test proves the applier refuses. This proves the whole
 //           binary does, with the real rule registry deciding suppressibility,

@@ -471,12 +471,12 @@ if (args.includes('rev-parse')) process.exitCode = 1;
           env,
         },);
         expect(await readFile(capturePath, 'utf8',),).toBe(
-          '["rev-parse","--path-format=absolute","--is-inside-work-tree","--git-path","cli-git-transaction"]\n'
+          '["rev-parse","--path-format=absolute","--is-inside-work-tree","--git-path","cli-git-transaction","--git-path","cli-git-transactions"]\n'
           + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir","--show-cdup"]\n'
           + '["push","--atomic","origin","main"]\n'
           + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir","--show-cdup"]\n'
           + '["-c","advice.statusHints=false","status","--porcelain=v1"]\n'
-          + '["rev-parse","--path-format=absolute","--is-inside-work-tree","--git-path","cli-git-transaction"]\n'
+          + '["rev-parse","--path-format=absolute","--is-inside-work-tree","--git-path","cli-git-transaction","--git-path","cli-git-transactions"]\n'
           + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir","--show-cdup"]\n'
           + '["commit","-o","--dry-run","-m","message","file.txt"]\n',
         );

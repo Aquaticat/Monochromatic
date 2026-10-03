@@ -21,7 +21,7 @@ The repo-root `.lfsconfig` points every clone at this Worker:
 ```ini
 # .lfsconfig
 [lfs]
-	url = https://monochromatic-lfs.an1298.workers.dev
+	url = https://monochromatic-lfs.aquaticat.workers.dev
 ```
 
 GitHub never consults `.lfsconfig`.
@@ -76,7 +76,7 @@ Routes:
 
 The `lfs-image-url` rule of `cli-markdown-lint` (`package/cli/markdown-lint`)
 rewrites a Markdown image whose target is an LFS-tracked file to
-`https://monochromatic-lfs.an1298.workers.dev/<oid>/<repo-relative path>`.
+`https://monochromatic-lfs.aquaticat.workers.dev/<oid>/<repo-relative path>`.
 The `markdown/autofix` cli-git policy (`package/git-policy/markdown-lint`) applies that rewrite inside every commit,
 so authors keep writing relative links and the landed commit carries absolute ones.
 `package/ssg/` is excluded because those MDX pages resolve images through the site build.
@@ -106,8 +106,20 @@ The operator procedure is `doc/runbook/lfs-r2-worker.md`.
 ```sh
 mise run //package/config/lfs-r2-worker:deploy
 mise run //package/config/lfs-r2-worker:deploy:dry-run
-printf '%s' "<token>" | mise run //package/config/lfs-r2-worker:secret:write-token
+mise run //package/config/lfs-r2-worker:secret:write-token < "${HOME}/temp/lfs-write-token.txt"
 ```
+
+`wrangler secret put` stores an **empty** secret without complaint when its stdin delivers no value.
+`authorized()` refuses an absent or blank `LFS_WRITE_TOKEN`,
+so a blank secret fails closed and every push gets `401`;
+before that guard landed on 2026-10-01,
+a blank secret accepted an empty Basic-auth password and opened uploads to any anonymous caller.
+Redirect the value from a private file,
+then verify the live Worker against three credentials (correct,
+ empty,
+ wrong) before trusting a rotation.
+`doc/runbook/lfs-r2-worker.md` carries the procedure;
+`doc/troubleshooting/wrangler-secret-put-empty-stdin.md` carries the measurements and the source trace.
 
 The R2 bucket is created once with `cf r2 buckets create --name monochromatic-lfs`
 (or `wrangler r2 bucket create monochromatic-lfs`).
@@ -117,7 +129,7 @@ The R2 bucket is created once with `cf r2 buckets create --name monochromatic-lf
 A machine that adds images needs the upload token in its local git config (not committed):
 
 ```sh
-git config --local lfs.url "https://lfs:<LFS_WRITE_TOKEN>@monochromatic-lfs.an1298.workers.dev"
+git config --local lfs.url "https://lfs:<LFS_WRITE_TOKEN>@monochromatic-lfs.aquaticat.workers.dev"
 ```
 
 With that set,

@@ -24,7 +24,7 @@ deleted,
 symlink,
 and submodule candidates.
 The exact hk exclusion families remain unchanged:
-`package/fuzz/forbidden-strings/corpus/**`,
+`package/cli/forbidden-strings.fuzz/corpus/**`,
 `package/test-fixture/toml-edit/src/**`,
 and `**/dist/final/node/**`.
 Tsdown outputs therefore keep producer-native missing final LF.
@@ -65,7 +65,7 @@ and 1,547 non-empty text-like violations.
 
 The violations split by ownership:
 
-- 1,344 files under `package/fuzz/forbidden-strings/corpus/`.
+- 1,344 files under `package/cli/forbidden-strings.fuzz/corpus/`.
   These are fuzz inputs whose bytes are data,
   not source formatting.
 - 52 TOML inputs under `package/test-fixture/toml-edit/src/`.
@@ -140,7 +140,7 @@ local finalNewline = (Builtins.newlines) {
   batch = true
   exclude = List(
     "**/dist/final/node/**",
-    "package/fuzz/forbidden-strings/corpus/**",
+    "package/cli/forbidden-strings.fuzz/corpus/**",
     "package/test-fixture/toml-edit/src/**",
   )
 }

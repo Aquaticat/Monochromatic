@@ -1,4 +1,4 @@
-# axe-core 4.13.0 reports modal-dialog text contrast as incomplete `bgOverlap`
+# axe-core 4.12.1 and 4.13.0 report modal-dialog text contrast as incomplete
 
 ## Symptom
 
@@ -274,3 +274,169 @@ No new issue should be filed.
  There is no additive comment to post without a minimal
 reproduction independent of this questionnaire and evidence that axe's conservative
 classification itself is wrong.
+
+## Filename review under axe-core 4.12.1
+
+### Symptom and source boundary
+
+`agent-browser` 0.38.1's A/AA audit reported axe-core 4.12.1.
+The filename review's closed page had zero violations and incomplete checks
+at desktop/mobile light/dark settings.
+Opening its native dialog at 1440 × 1000 produced zero violations and one
+`color-contrast` incomplete on `#preview-metadata`:
+
+```text
+Element's background color could not be determined because it partially overlaps other elements
+```
+
+The 390 × 844 open-dialog audits had zero violations and incomplete checks.
+This is distinct from the earlier 4.13.0 `bgOverlap` observations.
+No causal equivalence is inferred from the similar surface.
+
+The read-only `dequelabs/axe-core` tag `v4.12.1`,
+revision `5d002cca1f862a0699d9f1bb7b5a1ec334fa1b22`,
+was inspected.
+This matches the reported library version;
+installed-bundle byte equivalence and the exact origin of the differing
+virtual stacks were not established.
+
+In that source,
+`lib/commons/dom/get-text-element-stack.js:12` to `18` maps visible text
+rectangles to the virtual grid's stacks:
+
+```js
+// lib/commons/dom/get-text-element-stack.js
+const clientRects = getVisibleChildTextRects(node);
+return clientRects.map(rect => getRectStack(grid, rect));
+```
+
+`lib/commons/color/get-background-stack.js:32` to `35` records uncertainty
+when those stacks differ:
+
+```js
+// lib/commons/color/get-background-stack.js
+if (index !== 0 && !shallowArraysEqual(stack, stacks[0])) {
+  incompleteData.set('bgColor', 'elmPartiallyObscuring');
+  return null;
+}
+```
+
+`lib/checks/color/color-contrast.json:44` maps that key to the observed message.
+`lib/checks/color/color-contrast-evaluate.js:163` to `176` returns `undefined`
+for a missing background rather than establishing a contrast violation.
+`README.md:19` requires manual review of uncertain results.
+These source paths explain the reported classification,
+not why this review's virtual stacks differ.
+
+### Verification and bounded manual resolution
+
+The policy-selection form was later withdrawn because supporting text is
+templated and user-configurable in Settings.
+The observations in this subsection belong to that archived form.
+Fresh [evidence-only review checks][template-verification] repeated the
+closed-page/modal audits and bounded manual review after removing votes;
+they do not implement templates or establish native acceptance.
+
+The [verification summary][filename-verification] retains the closed-page
+and open-dialog results separately.
+The checks ran offline in a 2GiB/2CPU container.
+The native image cohort remained unchanged.
+Modal controls,
+zoom,
+panning,
+100% dp reset,
+Escape/focus return and all four composed placement/visibility answers were
+exercised in each desktop/mobile light/dark context.
+
+For each incomplete node,
+the consumer probe retained its exact diagnostic,
+checked foreground and the first opaque ancestor background,
+and rejected images,
+opacity,
+filters,
+blend modes or text shadows in that color chain.
+Live hit tests at the centers of its three text rectangles placed the metadata
+node foremost.
+The screenshot region was also inspected.
+The computed flat pairs measured:
+
+- Light:
+  `rgb(32, 30, 38)` on `rgb(252, 249, 255)`,
+  15.78947720932554:1.
+- Dark:
+  `rgb(238, 231, 246)` on `rgb(23, 21, 29)`,
+  14.978445394818559:1.
+
+Black/white and equal-color controls yielded 21:1 and 1:1.
+Both measured review-text pairs exceed 4.5:1.
+The axe incomplete results remain incomplete;
+the direct measurement resolves this flat-pair manual review only.
+It is not a native screenshot contrast assessment or a universal modal pass.
+
+A reproduction uses the committed offline artifact.
+Set `REPO_ROOT` to this checkout and use a fresh named browser session:
+
+```console
+# package/music-player/design/questions/search-filename-comparison.html
+agent-browser --session filename-contrast --pin-tab open \
+  "file://${REPO_ROOT}/package/music-player/design/questions/search-filename-comparison.html"
+agent-browser --session filename-contrast set viewport 1440 1000
+agent-browser --session filename-contrast set media light
+agent-browser --session filename-contrast select '#scale' 2
+agent-browser --session filename-contrast click 'figure[data-scene=placementsupport] button'
+agent-browser --session filename-contrast a11y --tags wcag2a,wcag2aa,wcag21a,wcag21aa --json
+agent-browser --session filename-contrast close
+```
+
+Requiring every modal audit to have zero incomplete checks rejected the first
+coverage run.
+Treating that rejection as a demonstrated contrast violation would be wrong.
+No CSS workaround,
+axe rule disable or upstream source edit was applied.
+The manual fallback's tradeoff is an explicit,
+flat-opaque-color-only review.
+It accepts only axe 4.12.1's exact partial-overlap diagnostic on
+`#preview-metadata` at the desktop width.
+Other diagnostics,
+selectors,
+versions,
+widths or color-chain effects fail verification.
+
+### Upstream filing decision for the filename incident
+
+The `.out-of-scope/` census had no matching axe exemption.
+Issue 3463 and its comments were read again;
+the thread is closed and covers historical modal detection,
+not a demonstrated defect in this specific contrast result.
+Exact `elmPartiallyObscuring dialog` issue and PR searches returned no matches;
+that empty query is not proof of no comparable behavior,
+so the existing modal issue and versioned source remain the comparison.
+
+- Upstream fault:
+  not demonstrated;
+  this is a documented uncertainty classification with measured adequate flat contrast.
+- Upstream ability:
+  the source's virtual-stack inference is the relevant boundary;
+  no architectural impossibility is claimed.
+- Supported use case:
+  the tag includes modal detection in `lib/commons/dom/get-modal-dialog.js`
+  and the historical support thread.
+- Contribution policy:
+  `CONTRIBUTING.md:5` requires a CLA and points to
+  `doc/code-submission-guidelines.md`.
+  Searches of that document,
+  `.github/`,
+  `CONTRIBUTING.md` and `README.md` found no AI-assistance prohibition.
+- Likely action:
+  no decision on this specific result was found;
+  the closed support issue does not prove a refusal to improve inference.
+- Minimal fix:
+  not prototyped because an upstream fault was not established.
+  The read-only source clone was not modified.
+
+Nothing additive establishing a bug or fix was identified.
+No new issue,
+comment or patch was sent.
+
+[filename-verification]: ../../package/music-player/design/questions/evidence/search-filename-policy-withdrawn-verification.json
+[template-verification]: ../../package/music-player/design/questions/evidence/search-filename-comparison-review-verification.json

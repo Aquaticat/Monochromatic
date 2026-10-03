@@ -35,7 +35,7 @@ export const ASK_USER_QUESTION_TOOL_NAME = 'ask_user_question';
  */
 const AskUserQuestionParameters: TObject<{ question: TString; }> = Type.Object({
   question: Type.String({
-    description: 'Complete free-form question to show in the Pi transcript while waiting for the user answer.',
+    description: 'Free-form question text to show in the Pi transcript while waiting for the user answer.',
   }),
 },);
 
@@ -114,13 +114,8 @@ function createAskUserQuestionTool(
   return {
     name: ASK_USER_QUESTION_TOOL_NAME,
     label: 'Ask User Question',
-    description: 'Ask the user one free-form question and block model execution until the user submits or cancels a multiline answer in the default editor.',
-    promptSnippet: 'Ask the user one free-form question and wait for a multiline answer',
-    promptGuidelines: [
-      'Use ask_user_question when work requires a user decision or free-form information that cannot be measured from available evidence.',
-      'Ask one complete question per ask_user_question call. The user can inspect the full Pi transcript while answering.',
-      'Never request passwords, tokens, credentials, or other secrets through ask_user_question.',
-    ],
+    description: 'Ask the user free-form questions and block model execution until the user submits or cancels a multiline answer in the default editor.',
+    promptSnippet: 'Ask the user free-form questions and wait for a multiline answer',
     parameters: AskUserQuestionParameters,
     executionMode: 'sequential',
     execute:

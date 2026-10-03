@@ -7,7 +7,7 @@
 import { chmod, lstat, readFile, rm, stat, writeFile, } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
 import { assertFixtureEqual, initializePostCommitRepository, } from './built-post-commit-helpers.ts';
-import { KILL_WRAPPER_SOURCE, waitForOrphan, } from './built-autofix-recovery-consumer.ts';
+import { KILL_LANDING_SOURCE, LANDING_HOOK, waitForOrphan, } from './built-autofix-recovery-consumer.ts';
 
 /**
  * Exercises canonical input, corrected worktrees, and normalization-only commits.
@@ -153,11 +153,11 @@ export async function verifyFinalNewlineReconciliation({ env, }: Readonly<{
     expected: 'same\n',
     context: 'explicit allow-empty reconciles selected worktree',
   },);
-  /** Wrapper death after Git advances HEAD must replay selected-file completion. */
+  /** Wrapper death after the landing advanced HEAD must replay selected-file completion. */
   await writeFile(`${repository}/missing.txt`, 'after interruption',);
   await execute({ command: '/usr/bin/git', args: ['add', '--', 'missing.txt',], cwd: repository, },);
-  const postHookPath = `${repository}/.git/hooks/post-commit`;
-  await writeFile(postHookPath, KILL_WRAPPER_SOURCE, { mode: 0o700, },);
+  const postHookPath = `${repository}/.git/hooks/${LANDING_HOOK}`;
+  await writeFile(postHookPath, KILL_LANDING_SOURCE, { mode: 0o700, },);
   await execute({
     command: 'git',
     args: ['commit', '--quiet', '--message=interrupted-normalization', '--', 'missing.txt',],

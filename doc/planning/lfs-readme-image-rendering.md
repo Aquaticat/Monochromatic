@@ -8,13 +8,22 @@ Remaining follow-ups are tracked as issues #491,
 and #496.
 
 Last updated:
-2026-09-06.
+2026-10-01,
+to note the Worker subdomain change in place;
+the decision record itself dates from 2026-09-06.
 
 ## Question from the issue
 
 Can GitHub README rendering resolve Git LFS objects that live behind the repo's custom LFS backend
 (`https://monochromatic-lfs.an1298.workers.dev`,
 see `doc/runbook/lfs-r2-worker.md`)?
+The `an1298` host is what the account served when this record was written.
+On 2026-10-01 the account's `workers.dev` subdomain changed,
+so the same Worker,
+the same R2 bucket,
+and the same object oids now serve from
+`https://monochromatic-lfs.aquaticat.workers.dev`,
+and the `an1298` host no longer resolves.
 
 Answer:
 no.
@@ -353,6 +362,8 @@ git show HEAD:package/music-player/asset/readme/android-page-controls.png | head
 git lfs ls-files --long --size
 curl --silent --location --output /dev/null --write-out '%{http_code} %{content_type} %{url_effective}\n' \
   'https://github.com/Aquaticat/Monochromatic/blob/main/package/music-player/asset/readme/desktop-wide-empty.png?raw=true'
+# The an1298 host below is the 2026-09-06 record and no longer resolves.
+# Since 2026-10-01 the same Worker serves https://monochromatic-lfs.aquaticat.workers.dev/<oid>.
 curl --silent --head 'https://monochromatic-lfs.an1298.workers.dev/<oid>'
 git count-objects --verbose --human-readable
 ```

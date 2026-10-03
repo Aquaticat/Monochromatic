@@ -71,6 +71,6 @@ await once(child, 'exit')
 if (child.exitCode !== 0) throw new Error(`forbidden-strings exited ${String(child.exitCode)}`)
 """
 
-# Fuzzing moved to its own config root at package/fuzz/forbidden-strings so a
+# Fuzzing lives in the sibling config root at package/cli/forbidden-strings.fuzz so a
 # scoped nightly toolchain does not force this published crate onto nightly.
-# Run targets via `mise run //package/fuzz/forbidden-strings:build` etc.
+# Run targets via `mise run //package/cli/forbidden-strings.fuzz:build` etc.

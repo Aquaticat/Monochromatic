@@ -18,7 +18,9 @@ import {
   realGit,
 } from './built-autofix-added-paths-helpers.ts';
 import {
-  KILL_WRAPPER_SOURCE,
+  KILL_LANDING_SOURCE,
+  KILL_OWNER_SOURCE,
+  LANDING_HOOK,
   waitForOrphan,
 } from './built-autofix-recovery-consumer.ts';
 import { execute, } from './built-consumer-helpers.ts';
@@ -26,6 +28,10 @@ import {
   assertFixtureEqual,
   resolveFixtureOid,
 } from './built-post-commit-helpers.ts';
+import {
+  assertNoTransactionDirectories,
+  resolveSingleTransactionDirectory,
+} from './built-transaction-registry.ts';
 
 /**
  * Executable private hook mode.
@@ -36,10 +42,6 @@ const EXECUTABLE_MODE = 0o700;
  * Paths of the recovery artifacts an interrupted transaction leaves.
  */
 type RecoveryPaths = Readonly<{
-  /**
-   * Persistent transaction directory for the main worktree.
-   */
-  transactionDirectory: string;
   /**
    * Real index lock the interrupted wrapper held.
    */
@@ -55,7 +57,7 @@ type RecoveryPaths = Readonly<{
  *
  * @param round - distinct version text for this scenario
  *
- * @param hook - Git hook that kills the wrapper
+ * @param hook - Git hook that kills the wrapper: a preparation hook, or the landing's compare-and-swap hook
  *
  * @param hookSuffix - hook source appended after the kill
  *
@@ -72,7 +74,7 @@ async function interruptAddedPathCommit({
   repository: string;
   env: NodeJS.ProcessEnv;
   round: string;
-  hook: 'pre-commit' | 'post-commit';
+  hook: 'pre-commit' | typeof LANDING_HOOK;
   hookSuffix: string;
   recovery: RecoveryPaths;
 }>,): Promise<void> {
@@ -101,7 +103,7 @@ async function interruptAddedPathCommit({
   },);
   await writeFile(
     hookPath,
-    `${KILL_WRAPPER_SOURCE}${hookSuffix}`,
+    `${hook === 'pre-commit' ? KILL_OWNER_SOURCE : KILL_LANDING_SOURCE}${hookSuffix}`,
     { mode: EXECUTABLE_MODE, },
   );
   await execute({
@@ -119,8 +121,10 @@ async function interruptAddedPathCommit({
   },);
   await waitForOrphan();
   await rm(hookPath,);
-  if ((!(await pathExists(recovery.transactionDirectory,))) || (!(await pathExists(recovery.lockPath,))))
-    throw new Error(`${round} interruption did not retain recovery artifacts`,);
+  await resolveSingleTransactionDirectory(repository,);
+  // Only a landing holds the real index lock; preparation never takes it.
+  if ((await pathExists(recovery.lockPath,)) !== (hook === LANDING_HOOK))
+    throw new Error(`${round} interruption left unexpected real index lock state`,);
   assertFixtureEqual({
     actual: await readFile(
       `${repository}/dependent.txt`,
@@ -162,7 +166,11 @@ async function recoverThroughShim({
     cwd: repository,
     env,
   },);
-  if ((await pathExists(recovery.transactionDirectory,)) || (await pathExists(recovery.lockPath,)))
+  await assertNoTransactionDirectories({
+    repository,
+    context: `${context} recovery`,
+  },);
+  if (await pathExists(recovery.lockPath,))
     throw new Error(`${context} recovery did not clean artifacts`,);
 }
 
@@ -189,7 +197,6 @@ export async function verifyAddedPathRecovery({
    * Recovery artifacts for the main worktree.
    */
   const recovery: RecoveryPaths = {
-    transactionDirectory: `${repository}/.git/cli-git-transaction`,
     lockPath: `${repository}/.git/index.lock`,
   };
 
@@ -246,7 +253,7 @@ export async function verifyAddedPathRecovery({
     repository,
     env,
     round: 'recovery-after-ref',
-    hook: 'post-commit',
+    hook: LANDING_HOOK,
     hookSuffix: '',
     recovery,
   },);
@@ -271,14 +278,18 @@ export async function verifyAddedPathRecovery({
     repository,
     env,
     round: 'recovery-installed',
-    hook: 'post-commit',
+    hook: LANDING_HOOK,
     // Keeps the killed wrapper's Git alive briefly, matching the completed-install sibling fixture.
     hookSuffix: 'setTimeout(() => {}, 250);\n',
     recovery,
   },);
+  /**
+   * Transaction directory the interrupted wrapper retained.
+   */
+  const transactionDirectory = await resolveSingleTransactionDirectory(repository,);
   // Simulates an interruption after the wrapper installed the prepared index and wrote its durable marker.
   await copyFile(
-    `${recovery.transactionDirectory}/post.index`,
+    `${transactionDirectory}/post-1.index`,
     recovery.lockPath,
   );
   await rename(
@@ -286,7 +297,7 @@ export async function verifyAddedPathRecovery({
     `${repository}/.git/index`,
   );
   await writeFile(
-    `${recovery.transactionDirectory}/index-installed`,
+    `${transactionDirectory}/index-installed`,
     new Uint8Array(),
   );
   await recoverThroughShim({

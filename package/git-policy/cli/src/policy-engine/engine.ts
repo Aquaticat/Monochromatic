@@ -18,6 +18,8 @@ import {
   type PolicyEvent,
 } from './events.ts';
 import { applyFixedTransforms, } from './fixed-transforms.ts';
+import type { PassReadTracking, } from './policy-check.ts';
+import { memoizeValidationFacts, } from './policy-read-validation.ts';
 import { runPolicyStage, } from './policy-stage.ts';
 import type {
   PolicyEngineResult,
@@ -141,6 +143,8 @@ function createPolicyContext({
  
  @param policyOptions - runtime-validated outputs by effective policy ID
  
+ @param readTracking - read recording and reuse inside a commit transaction
+ 
  @mutates config through https://github.com/open-circle/valibot safeParse property access, getter or proxy hooks, and schema callbacks
  
  @returns policy decision and forwardable arguments
@@ -162,6 +166,7 @@ export async function runPolicyEngine({
   selectedPolicyIds,
   registeredPolicies = BUILT_IN_POLICIES,
   policyOptions = new Map(),
+  readTracking,
 }: RunPolicyEngineOptions,): Promise<PolicyEngineResult> {
   /**
    Wrapper controls and real-Git arguments.
@@ -236,6 +241,17 @@ export async function runPolicyEngine({
   }
 
   /**
+   Read tracking shared by both stages of this pass, validating against one memoized candidate state.
+   */
+  const passTracking: Readonly<{ pass?: PassReadTracking; }> = readTracking === undefined
+    ? {}
+    : {
+      pass: {
+        tracking: readTracking,
+        validationFacts: memoizeValidationFacts(gitFacts,),
+      },
+    };
+  /**
    Direct-check filter optimized for sequential lookup.
    */
   const selectedSet = new Set(selectedIds,);
@@ -280,6 +296,7 @@ export async function runPolicyEngine({
     policyOptions,
     keepGoing: controls.keepGoing,
     sequence: 0,
+    ...passTracking,
   },);
   if ((!builtInStage.complete) || builtInStage.stopped
     || builtInStage.patchProposed) {
@@ -354,6 +371,7 @@ export async function runPolicyEngine({
     policyOptions,
     keepGoing: controls.keepGoing,
     sequence: stagedEvents.length,
+    ...passTracking,
   },);
   /**
    Complete ordered invocation events.

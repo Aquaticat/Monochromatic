@@ -264,7 +264,7 @@ The root `.gitignore` already ignores `target/` globally.
 Measured across the repository's `target/debug` and `target/release` directories,
  that is 20 GB,
  with the largest single trees being `package/cli/nested-wayland-session/target` at 6.3G,
- `package/fuzz/forbidden-strings/target` at 5.8G,
+ `package/cli/forbidden-strings.fuzz/target` at 5.8G,
  `package/linter/rust/target` at 4.4G,
  and `package/cli/forbidden-strings/target` at 3.1G.
 

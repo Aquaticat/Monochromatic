@@ -67,7 +67,7 @@ button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
   outline: 0.1875rem solid var(--color-accent);
   outline-offset: 0.1875rem;
 }
-.note, .capture {
+.note, .capture, .accepted-overflow, .accepted-floating, .accepted-e2 {
   border-width: 0.0625rem;
   border-style: solid;
   border-color: var(--color-edge);
@@ -75,17 +75,22 @@ button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
   background-color: var(--color-panel);
 }
 .note { padding-inline: 1rem; padding-block: 0.35rem; }
+.note + .note { margin-block-start: 1rem; }
+details.note summary { display: flex; align-items: center; min-block-size: 3rem; cursor: pointer; font-weight: 700; font-size: 1.15rem; }
+details.note summary:focus-visible { outline: 0.1875rem solid var(--color-accent); outline-offset: 0.1875rem; }
 .muted { color: var(--color-muted); }
 .controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: end; margin-block: 1rem; }
 .controls label { display: grid; gap: 0.3rem; }
 .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 1rem; }
-.capture { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
+.capture, .accepted-overflow, .accepted-floating, .accepted-e2 { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
 .capture h2 { margin-block: 0 0.5rem; }
 .capture picture { display: block; overflow: hidden; max-block-size: 45rem; }
 .capture img { display: block; max-inline-size: 100%; block-size: auto; }
 .capture[data-panel='inner'] img { inline-size: min(100%, 42rem); }
 .capture[data-panel='cover'] img { inline-size: min(100%, 20rem); }
-.capture p { background-color: var(--color-panel); }
+.capture p, .accepted-overflow p, .accepted-floating p, .accepted-e2 p { background-color: var(--color-panel); }
+.accepted-overflow img { display: block; inline-size: min(100%, 20rem); block-size: auto; }
+.accepted-floating img, .accepted-e2 img { display: block; inline-size: min(100%, 42rem); block-size: auto; }
 .capture button { margin-block-start: 0.75rem; }
 dialog {
   inline-size: min(98vw, 96rem);
@@ -174,23 +179,44 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <main>
 <header>
   <p class="muted">Music player · selected design review · Pixel 9 Pro Fold</p>
-  <h1>Search A, without a repeated results heading</h1>
+  <h1>Search A, with reachable folded-cover results</h1>
   <p>The user selected A (D51). On the unfolded panel, Search stays in the right pane and the bottom-left playback deck lifts above the keyboard. The folded cover has one full-width Search destination. The separate <code>Results for “cam”</code> heading is gone on both panels (D52); the query appears once in the Back/query/Clear header, with folder and track results directly beneath it.</p>
-  <div class="note"><p><strong>Design only, with a real-keyboard finding.</strong> On a disposable Fold, real split Gboard on the inner panel and full-width Gboard on the cover let the user type “cam” with the complete deck and results visible in settled 100% and 200% states. The original Fold AVD's floating Gboard still obscured the playback title at 200% and both cover results at 100%. A Gboard font-update banner on the disposable inner panel briefly clipped the final mode until dismissed. A remains the selected design, but these measured failures keep D50 open. The review images show a separate 300dp debug input method, not Gboard. The indexed sanitized real-Gboard captures predate the retained-browser correction; a later disposable-device check confirmed its settled split keyboard with the browser header and full deck, but did not reproduce the transient banner. The Gboard evidence is indexed at <code>package/music-player/design/evidence/gboard-geometry.md</code>. No production implementation was made.</p></div>
-  <p class="muted">Native source: unfolded 2076 × 2152 physical px (approximately 852 × 883dp) and cover 1080 × 2424px (approximately 443 × 994dp) at this AVD's 390dpi. Meaning-bearing app marks stay clear of the approximate 7.5mm physical crease at inner-panel x[983,1093); surfaces may cross it. Minimum informational padding remains open. Status notification content is replaced with a generic clock.</p>
+  <details class="note"><summary>Keyboard and device evidence bounds</summary><p><strong>Design only, with a real-keyboard finding.</strong> On a disposable Fold, real split Gboard on the inner panel and full-width Gboard on the cover let the user type “cam” with the complete deck and results visible in settled 100% and 200% states. Real floating Gboard obscured the unfolded playback title at 200% and both cover result labels at 100%. D53 accepts the unfolded deck overlap; D55 separately accepts the measured cover result-label overlap while the query stays visible. A real Gboard font-update banner on the disposable inner panel clipped the final mode until dismissed; D54 accepts that brief overlap. The complete deck remains required under ordinary settled docked and split keyboards. A remains the selected design. The keyboard-open review images use a separate 300dp debug input method, not Gboard. The indexed sanitized real-Gboard captures predate the retained-browser correction; a later disposable-device check confirmed its settled split keyboard with the browser header and full deck, but did not reproduce the transient banner. The Gboard evidence is indexed at <code>package/music-player/design/evidence/gboard-geometry.md</code>. No production implementation was made.</p>
+  <p class="muted">D56 adds keyboard-aware bottom space only to the folded-cover scrolling results viewport for ordinary docked/full-width keyboards; the header stays fixed. D57 separately accepts the observed inner real floating-Gboard overlap with some result lettering while the query stays clear. The inner layout is unchanged. Neither decision validates every IME height, animation frame, floating placement or result action.</p>
+  <p class="muted">Native source: unfolded 2076 × 2152 physical px (approximately 852 × 883dp) and cover 1080 × 2424px (approximately 443 × 994dp) at this AVD's 390dpi. Meaning-bearing app marks stay clear of the approximate physical crease at inner-panel x[983,1093); surfaces may cross it. E2 now sets an independent 7.5mm <strong>total opposing-information minimum</strong> even on a future narrower-crease device; a wider actual crease still governs. Status notification content is replaced with a generic clock.</p>
+</details>
 </header>
+<details class="note">
+  <summary id="behavior-title">Selected Search interaction (D63 to D68)</summary>
+  <p>Opening Search requests query edit focus and a keyboard (D63). The visible Back arrow returns directly to the player, including while the keyboard is shown (D64). Clear erases the query but keeps Search and its existing edit-focus/keyboard state (D65). Opening Search again from the player starts a fresh empty query (D66); if a future design instead restores query text, it would begin its results at the top (conditional D67). With the same query after hiding and refocusing the keyboard, the intended result row should remain <strong>visible</strong> in the resized viewport, not merely retain a raw scroll offset (D68). These are selected interaction goals, not demonstrated by the keyboard-closed captures or the archived logic-only comparison. The D56 final-row extra swipe is an observed limitation, not accepted behavior; native restoration across keyboards still needs implementation-boundary verification. System Back may first be handled by the IME and is not promised to be identical to the visible Back arrow. The left browser context and full playback deck remain intact. <a href="archive/search-navigation-focus-before-selection.html">Historical interaction alternatives</a> are archived, not active choices.</p>
+</details>
+<details class="note">
+  <summary id="status-title">Selected Search status meanings (D69 to D71)</summary>
+  <p>An empty query shows an invitation to search, not a failed lookup. A “no results” message requires a completed evaluation of the current query and source; an empty track list or partial read cannot prove it (D69). The existing unqueried prompt and the no-match treatment naming the entered query remain the visual directions (D70). The old forced “Library unavailable” fixture and its automatic-recovery promise are <strong>not selected</strong>: only a known Search-source failure can show a cause-specific unavailable message with a genuinely owned recovery action (D71). The <a href="search-status-evidence.html">keyboard-closed native status gallery</a> retains those historical fixture strings for evidence, not as a selected recovery UI. No search engine, live source-health signal or error action is present in these screenshots.</p>
+</details>
+<details class="note">
+  <summary id="activation-title">Selected result action (D72 to D74)</summary>
+  <p>A folder result returns to the player with that folder selected, changing the queue page scope without starting another track (D72). A directly named track result starts a different track, or toggles play/pause if it is already current, as existing player rows do (D73). After either successful track action, Search <strong>returns to the player</strong> (D74), so the ordinary folder view is visible and a later Search opens empty under D66. A stale result must not start a substitute or pretend playback succeeded; D9's missing-item bar is a precedent to verify later. Neither the static result rows nor the older captions “opens this folder” and “reveals track” have a working tap handler; actual activation, row scrolling and TalkBack behavior remain unverified. The <a href="archive/search-result-activation-before-return.html">historical interaction comparison</a> is not an active choice.</p>
+</details>
+<details class="note">
+  <summary id="accessibility-title">Adopted accessibility goals (D75 to D80)</summary>
+  <p>Search opens with <strong>query accessibility focus</strong> (D75), separately from D63's edit-focus/keyboard request. Back stays reachable by reverse navigation. Keep Back/query/Clear and results or current status together in reading order; then traverse the retained inner folder region and full deck without interleaving the alphabet rail (D76). Search is not a focus trap: named retained regions must remain reachable without stepping through every hit.</p>
+  <p>Each result is one action with its own name once, kind, disambiguating parent context and the actual Open/Play/Pause meaning (D77). Announce meaningful current-query result/status changes without stealing focus or announcing every key; never turn a partial read into completed no match (D78). Visible Back restores the invoking player control. Successful activation focuses the revealed folder or track context; failed activation stays in Search with a truthful diagnostic (D79). Same-query updates preserve surviving item identity, with explicit fallback when a result or Clear disappears (D80).</p>
+  <p><strong>Design goals, not verified native behavior.</strong> The bounded inner baseline at 200% text and keyboard closed interleaved the left alphabet rail and separated result title/detail stops. Cover swipe delivery lacked a positive control. The inspected witnesses are documented at <code>package/music-player/design/evidence/search-talkback-native-baseline.md</code>. The user accepted these reviewed goals as good enough; the chat correction path remains available. Native entry, rows, announcements, return focus and fold continuity still need implementation-boundary verification; exact source recovery remains deferred. No new keyboard experiment or production Search change was made.</p>
+</details>
 <section aria-labelledby="states-title">
   <h2 id="states-title">Inspect the selected design on both panels</h2>
-  <p><strong>Changed detail:</strong> The first folder result now starts where the redundant heading was. Inspect whether this transition from header to results reads clearly, especially at 200% text with the keyboard present. Switch to the empty state to see its explanation, which was not removed.</p>
+  <p><strong>Selected D58 to D61:</strong> Back and result-type icons share a leading center; <code>cam</code> and result titles share a text start. Every visible <code>Cam</code> substring in a matching title or supporting context is bold on a fill derived from the OS accent in OKLCH. Results now follow Scope D and Order M: exact <code>Cam</code> track first, matching <code>Camellia</code> folder next, then other directly named track/folder examples in mixed order. A parent name disambiguates a track but never adds it as a parent-only hit. The keyboard-closed native views were recaptured at 100% and 200% on both panels in light and dark app modes. Inspect the in-place highlights, aligned columns, actual left browser and complete deck.</p>
+  <p class="muted">The playback deck still names <code>Another Xronixle</code> as the current track; it is <strong>not</strong> a Search result for <code>cam</code> under D60. Result captions such as “opens this folder” remain illustrative; these rows have no tap handler and do not demonstrate D72 to D74 or a matching algorithm. The older 200% keyboard-open image predates D58 to D61 and is retained only for accepted IME/deck geometry, not final Search paint, membership or order. The separate D56/D57 overlap captures are likewise historical. The E2 player/empty scenes are older bounded floor evidence; its positive-results scene has been refreshed to D/M. The empty-state image has no result rows. No new keyboard experiment was performed for D58 to D61.</p>
   <div class="controls">
-    <label for="state">Native state<select id="state"><option value="results">Results, keyboard closed, 100% text</option><option value="typing">Typing “cam”, 200% text</option><option value="empty">Empty Search, 100% text</option></select></label>
+    <label for="state">Native state<select id="state"><option value="results">Selected D/M results, keyboard closed, 100% text</option><option value="results200">Selected D/M results, keyboard closed, 200% text</option><option value="typing">Historical keyboard geometry (pre-D58 to D61), 200% text</option><option value="empty">Empty query prompt, 100% text</option></select></label>
     <label for="scheme">Screenshot scheme<select id="scheme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   </div>
   <div class="gallery">
     <article class="capture" data-panel="inner">
-      <h2>Unfolded: tested bottom keyboard</h2>
+      <h2>Unfolded: retained browser and playback deck</h2>
       <picture><img width="2076" height="2152" alt="Selected A: Search results on right and playback deck bottom-left"></picture>
-      <p>With this 300dp debug keyboard, the same Folders/Open browser stays above the lifted deck. Its shortened viewport clips part of the folder rail at 200% text; that small crop is accepted, rather than replacing the browser with a “Current folder” caption. The complete deck, query, and results remain visible. Floating Gboard and a real font-update banner are separate unresolved tests.</p>
+      <p>The actual Folders/Open browser and complete deck remain on the left. In the historical 200% keyboard-open state, a 300dp debug keyboard lifts the deck and crops part of the folder rail; this bounded crop was accepted instead of replacing the browser. D53 and D54 accept only their measured floating-keyboard and brief banner overlaps; D55 separately accepts the measured floating-cover overlap. The keyboard-open screenshot predates D58 to D61 and cannot verify the selected matching scope, order or paint. In measured settled full-width cover Gboard states, matching labels stayed visible; D55 does not waive ordinary full-width visibility.</p>
       <button type="button" data-preview="inner">Inspect unfolded at device size</button>
     </article>
     <article class="capture" data-panel="cover">
@@ -201,9 +227,30 @@ dialog::backdrop { background-color: var(--color-backdrop); }
     </article>
   </div>
 </section>
+<section class="accepted-overflow" aria-labelledby="overflow-title">
+  <h2 id="overflow-title">Accepted D56: reach the final match on the cover</h2>
+  <p>In this separate 200% synthetic long-result fixture, the final folder and its supporting line scroll fully above a 300dp debug bottom keyboard while the Back/query/Clear header remains fixed. This is the selected cover-only viewport direction; this light-scheme overflow capture does not change when the earlier state and scheme controls change. The rejected unchanged viewport is retained only in the historical R/C evidence. Another swipe was required after refocusing; D68 instead selects visible-row restoration as a design goal, still unverified natively. This pre-D58-to-D61 capture does not establish selected columns, highlights, D/M membership/order, activation, TalkBack traversal or arbitrary real-keyboard heights.</p>
+  <img id="accepted-overflow" src="__ACCEPTED_COVER_OVERFLOW__" width="1080" height="2424" alt="Accepted folded-cover Search viewport with the last Camellia archive match and supporting line above the 300dp debug keyboard">
+  <button type="button" data-preview="overflow">Inspect accepted cover overflow at device size</button>
+</section>
+<section class="accepted-floating" aria-labelledby="floating-title">
+  <h2 id="floating-title">Accepted D57: the observed inner floating overlay</h2>
+  <p>This separate 200% light-scheme long-results capture uses real floating Gboard. It covers portions of middle right-pane result lettering and parts of the already D53-exempt deck while the <code>cam</code> query stays readable. D57 accepts only this measured visual overlap, not an obscured query, missing matches, failed activation or other floating placements. Covered-row reachability after focus changes is unverified against D68, and result activation has no native handler despite the D72 to D74 design direction. This pre-D58-to-D61 image does not establish selected Search paint or D/M results and does not change with the selected-results state or screenshot-scheme controls.</p>
+  <img id="accepted-floating" src="__ACCEPTED_INNER_FLOATING__" width="2076" height="2152" alt="Accepted inner Search A state at 200 percent text with real floating Gboard covering portions of right result lettering while the cam query remains clear">
+  <button type="button" data-preview="floating">Inspect accepted inner floating overlap at device size</button>
+</section>
+<section class="accepted-e2" aria-labelledby="e2-title">
+  <h2 id="e2-title">Accepted E2: 7.5mm total information floor</h2>
+  <p>The user selected P7.5 only after viewing the player <strong>before Search opens</strong>, empty Search and positive results on the unfolded Fold. Switch the native 200% light-scheme capture to inspect all three accepted states. The player keeps the full folder browser and deck on the left, with its current-row background and pane surfaces continuing across the center; only readable marks must respect the floor. The Search capture retains the same left browser/deck and right-side query/results. These keyboard-closed samples do not certify all glyph ink, long names, keyboard-open fit or future device geometry. The positive-results scene is now a D/M keyboard-closed native capture with D58/D59 paint. The player-before-Search and empty scenes remain earlier E2 floor evidence; none certifies keyboard-open or future-device geometry. The scene selector is independent of the short-results and scheme controls in the first section.</p>
+  <label for="e2-state">Accepted P7.5 scene
+    <select id="e2-state"><option value="player">Player, Search closed</option><option value="empty">Empty Search</option><option value="results">Search results for “cam”</option></select>
+  </label>
+  <img id="accepted-e2" width="2076" height="2152" alt="Selected P7.5 unfolded Fold scene with information clear of the estimated crease and surfaces continuous">
+  <button type="button" data-preview="e2">Inspect accepted P7.5 at device size</button>
+</section>
 <section aria-labelledby="response-title">
   <h2 id="response-title">Correction path</h2>
-  <p>A is selected. Reply in this chat with any remaining visual correction; please identify the panel and state. The comparison with B and C is archived, not an active choice. Long result names, tall real keyboards, result-list scrolling and the exact minimum information clearance still need follow-up before production.</p>
+  <p>Search A, D56 to D61, D63 to D74 and E2's independent 7.5mm total informational floor are selected; D75 to D80 are adopted accessibility recommendations with a correction/veto path. Reply in this chat with any remaining design correction; please identify the panel, state or accessibility goal. Rejected options remain historical, not active choices. Other keyboard geometries and floating placements, native refocus visibility, result activation, painted E2 clearance at other scales and accessibility remain unverified before production.</p>
 </section>
 </main>
 <dialog id="preview" aria-labelledby="preview-title">
@@ -221,6 +268,9 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <script>
 const captures = __SELECTED_CAPTURES__;
 const state = document.querySelector('#state');
+const acceptedE2Captures = __ACCEPTED_E2_CAPTURE_MAP__;
+const e2State = document.querySelector('#e2-state');
+const e2Image = document.querySelector('#accepted-e2');
 const scheme = document.querySelector('#scheme');
 const media = window.matchMedia('(prefers-color-scheme: dark)');
 const dialog = document.querySelector('#preview');
@@ -233,7 +283,12 @@ let selectedPanel = 'inner';
 let scale = 1;
 let returnTarget;
 function currentScheme() { return scheme.value === 'system' ? (media.matches ? 'dark' : 'light') : scheme.value; }
-function sourceFor(panel) { return captures[panel][state.value][currentScheme()]; }
+function sourceFor(panel) {
+  if (panel === 'overflow') return document.querySelector('#accepted-overflow').src;
+  if (panel === 'floating') return document.querySelector('#accepted-floating').src;
+  if (panel === 'e2') return acceptedE2Captures[e2State.value];
+  return captures[panel][state.value][currentScheme()];
+}
 function render() {
   document.querySelectorAll('.capture').forEach(card => {
     card.querySelector('img').src = sourceFor(card.dataset.panel);
@@ -259,14 +314,25 @@ function updatePreview() {
   showScale();
 }
 state.addEventListener('change', render);
+e2State.addEventListener('change', () => {
+  e2Image.src = acceptedE2Captures[e2State.value];
+  e2Image.alt = `Selected P7.5 · ${e2State.options[e2State.selectedIndex].textContent} · 200% light`;
+  if (dialog.open && selectedPanel === 'e2') {
+    previewTitle.textContent = `Accepted E2 · ${e2State.options[e2State.selectedIndex].textContent} · 200% text`;
+    updatePreview();
+  }
+});
 scheme.addEventListener('change', render);
 media.addEventListener('change', () => { if (scheme.value === 'system') render(); });
 document.querySelectorAll('[data-preview]').forEach(button => {
   button.addEventListener('click', async () => {
     returnTarget = button;
     selectedPanel = button.dataset.preview;
-    device.dataset.panel = selectedPanel;
-    previewTitle.textContent = `${selectedPanel === 'cover' ? 'Folded cover' : 'Unfolded inner'} · ${state.options[state.selectedIndex].textContent} · ${currentScheme()}`;
+    device.dataset.panel = ({ overflow: 'cover', floating: 'inner', e2: 'inner' })[selectedPanel] ?? selectedPanel;
+    if (selectedPanel === 'overflow') previewTitle.textContent = 'Accepted D56 · historical pre-D58-to-D61 Search paint · folded cover · debug keyboard';
+    else if (selectedPanel === 'floating') previewTitle.textContent = 'Accepted D57 · historical pre-D58-to-D61 Search paint · unfolded inner · real floating Gboard';
+    else if (selectedPanel === 'e2') previewTitle.textContent = `Accepted E2 · ${e2State.options[e2State.selectedIndex].textContent} · 200% text`;
+    else previewTitle.textContent = `${selectedPanel === 'cover' ? 'Folded cover' : 'Unfolded inner'} · ${state.options[state.selectedIndex].textContent} · ${currentScheme()}`;
     updatePreview();
     await previewImage.decode();
     scale = 1;
@@ -287,6 +353,7 @@ document.querySelector('#zoom-out').addEventListener('click', () => { scale = Ma
 document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
 document.querySelector('#close-preview').addEventListener('click', () => dialog.close());
 dialog.addEventListener('close', () => returnTarget?.focus());
+e2Image.src = acceptedE2Captures[e2State.value];
 render();
 </script>
 </body>

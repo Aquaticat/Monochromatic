@@ -13,6 +13,7 @@ import type {
   AbsentGitValue,
   LazyPolicyGitFacts,
 } from './context-types.ts';
+import type { PolicyInputsDeclaration, } from './policy-input-types.ts';
 
 /**
  Policy configuration severity. @example `const severity: PolicySeverity = 'error';`
@@ -296,6 +297,11 @@ export type PolicyDefinition<
    Optional Valibot options schema.
    */
   readonly options?: GenericSchema<unknown, TOptions>;
+  /**
+   What the policy reads outside its context; omitted means `'unrestricted'`.
+   A function receives the validated options once at config loading.
+   */
+  readonly inputs?: PolicyInputsDeclaration<TOptions>;
   /**
    Finds every violation for one candidate state.
    */

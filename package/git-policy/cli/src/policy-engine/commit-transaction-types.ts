@@ -17,9 +17,13 @@ export type CommitTransactionResult = Readonly<{
    */
   policyResult: PolicyEngineResult;
   /**
-   Whether transaction executed real commit.
+   Whether transaction landed a real commit.
    */
   committed: boolean;
+  /**
+   Landed commit, present exactly when `committed` is true; later lifecycle steps read it instead of live `HEAD`.
+   */
+  landedOid?: string;
 }>;
 
 /**

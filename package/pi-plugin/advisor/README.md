@@ -383,6 +383,11 @@ When serialized context exceeds that effective budget,
  Advisor keeps the head and tail and inserts an omission marker.
 Set `maxContextChars` only when a project needs a lower hard cap than the selected model allows.
 
+FLK:
+ One provider "Context limit exceeded" isn't a stable limit:
+ measure repeated same-input outcomes before lowering global context budgets;
+ prefer model-aware budgeting.
+
 ## Verification
 
 Package checks:

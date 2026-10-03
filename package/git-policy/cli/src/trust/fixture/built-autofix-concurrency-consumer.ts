@@ -1,5 +1,9 @@
 /**
- * Packed concurrent transaction-owner rejection verification.
+ * Packed verification that startup recovery skips a live transaction owner.
+ *
+ * Per-transaction journals let other invocations proceed while a commit transaction runs.
+ * A concurrent commit prepares privately, waits for the hook lock while the first commit's hook runs,
+ * and lands without ever touching the real index lock during preparation.
  *
  * @module
  */
@@ -16,6 +20,10 @@ import {
   execute,
 } from './built-consumer-helpers.ts';
 import { assertFixtureEqual, } from './built-post-commit-helpers.ts';
+import {
+  assertNoTransactionDirectories,
+  listRegistryEntries,
+} from './built-transaction-registry.ts';
 
 /**
  * Executable private hook mode.
@@ -66,7 +74,7 @@ async function waitUntilReady(path: string,): Promise<void> {
 }
 
 /**
- * Exercises second wrapper refusal while first transaction owner is alive.
+ * Exercises a read-only invocation and a second commit while the first transaction owner is alive.
  *
  * @param repository - initialized trusted autofix repository
  *
@@ -129,14 +137,16 @@ export async function verifyAutofixConcurrency({
     `#!/usr/bin/env node
 const { execFileSync } = require('node:child_process');
 const { writeFileSync } = require('node:fs');
-writeFileSync('.git/active-transaction-ready', 'ready\\n');
-execFileSync('sleep', ['3']);
-throw new Error('active transaction fixture failure');
+if (process.env.ACTIVE_TRANSACTION_HOOK === '1') {
+  writeFileSync('.git/active-transaction-ready', 'ready\\n');
+  execFileSync('sleep', ['6']);
+  throw new Error('active transaction fixture failure');
+}
 `,
     { mode: EXECUTABLE_MODE, },
   );
   /**
-   * First wrapper holding real-index lock and durable journal.
+   * First wrapper whose preparation hook holds the hook lock while it sleeps and then fails.
    */
   const active = spawn(
     'git',
@@ -149,43 +159,96 @@ throw new Error('active transaction fixture failure');
     ],
     {
       cwd: repository,
-      env,
+      env: {
+        ...env,
+        ACTIVE_TRANSACTION_HOOK: '1',
+      },
       stdio: 'ignore',
     },
   );
   await waitUntilReady(readyPath,);
   /**
-   * Concurrent wrapper result while owner PID remains alive.
+   * Transaction directories while the owner runs its hook.
    */
-  const concurrent = await execute({
+  const activeEntries = await listRegistryEntries(repository,);
+  if (activeEntries.length !== 1)
+    throw new Error(`active transaction expected one registry entry, found ${JSON.stringify(activeEntries,)}`,);
+  /**
+   * Read-only wrapper result while the owner PID remains alive; recovery skips the live transaction.
+   */
+  const concurrentStatus = await execute({
     command: 'git',
     args: [
       'status',
       '--short',
     ],
-    expectedExit: 2,
     cwd: repository,
     env,
   },);
   assertIncludes({
-    text: concurrent.stderr,
-    expected: 'is still active',
-    context: 'concurrent transaction owner',
+    text: concurrentStatus.stdout,
+    expected: 'concurrent-marker.txt',
+    context: 'status beside live transaction owner',
   },);
-  await once(
+  /**
+   * Exit of the first wrapper, observed from the moment it is known to be running.
+   */
+  const activeClosed = once(
     active,
     'close',
   );
+  /**
+   * Second commit while the first transaction's hook still runs; it waits for the hook lock and then lands.
+   */
+  const concurrentCommit = await execute({
+    command: 'git',
+    args: [
+      'commit',
+      '--no-only',
+      '--quiet',
+      '-m',
+      'concurrent transaction',
+    ],
+    cwd: repository,
+    env,
+  },);
+  if (concurrentCommit.stderr.includes('EEXIST',) || concurrentCommit.stderr.includes('index.lock',))
+    throw new Error(`concurrent commit touched the real index lock\n${concurrentCommit.stderr}`,);
+  await activeClosed;
   if (active.exitCode !== 1)
     throw new Error(`active transaction expected exit 1, got ${String(active.exitCode,)}`,);
   await rm(hookPath,);
   await rm(readyPath,);
   assertFixtureEqual({
-    actual: Buffer.from(await readFile(`${repository}/.git/index`,))
-      .toString('base64',),
-    expected: originalIndex,
-    context: 'concurrent transaction real index',
+    actual: (await execute({
+      command: '/usr/bin/git',
+      args: [
+        'log',
+        '-1',
+        '--format=%s',
+      ],
+      cwd: repository,
+    },)).stdout.trim(),
+    expected: 'concurrent transaction',
+    context: 'commit landed beside a live transaction owner',
   },);
-  if (await pathExists(`${repository}/.git/cli-git-transaction`,))
-    throw new Error('failed active transaction left journal after graceful cleanup',);
+  assertFixtureEqual({
+    actual: (await execute({
+      command: '/usr/bin/git',
+      args: [
+        'diff',
+        '--cached',
+        '--name-only',
+      ],
+      cwd: repository,
+    },)).stdout,
+    expected: '',
+    context: 'real index after the concurrent commit landed',
+  },);
+  if (Buffer.from(await readFile(`${repository}/.git/index`,)).toString('base64',) === originalIndex)
+    throw new Error('concurrent commit did not install its landed index',);
+  await assertNoTransactionDirectories({
+    repository,
+    context: 'failed active transaction and landed concurrent transaction',
+  },);
 }

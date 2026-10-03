@@ -293,7 +293,7 @@ Nothing under `/var/home/user/Monochromatic` was modified
   which the Linux-only 0.x scope accepts (inference).
 - `SCR` (`AGENTS.md:963-967`) and the `sh` coverage in `doc/planning/load-bearing-code-languages.md:11`
   rule out the `sh -c` launcher variant (verified, source).
-- `MXL`, `TSD`, `VA6`: FFI struct offsets need named constants and TSDoc (applies to all three options).
+- `MXL`, `TSD`, `eslint/no-magic-numbers`: FFI struct offsets need named constants and TSDoc (applies to all three options).
 
 ### R9: documentation quality (culling triggers)
 
@@ -467,7 +467,7 @@ The only published docs describe `1.4.x`.
 
 - `bun SCRATCH/fe-import-probe.ts` printed the same result as Node:
   `importOk:true`, 80 exports, `glob`, `AsyncLocalStorage`, and query re-import working (verified, measured).
-- `CM4` says `bun test` misreports under `@monochromatic-dev/module-test` (`AGENTS.md:877-881`, verified, source);
+- `CM3` bans `bun test`, which misreports under `@monochromatic-dev/module-test` (`AGENTS.md:877-881`, verified, source);
   Bun-specific code would still be tested through Node tasks or `bun <file>`.
 
 ### R8: repository fit
@@ -529,7 +529,7 @@ Ranked by severity, most severe first.
    and moving blocking calls off-thread needs Workers, also experimental.
 3. **Repository policy conflict.**
    A long-running daemon as a Bun island contradicts `AP4`, `XRT`, and `build-execution.md`,
-   and `CM4` already records a test-harness misreport under Bun.
+   and `CM3` already bans `bun test` after a test-harness misreport under Bun.
 4. **Native socket API loses data unless the caller buffers**
    (72.2 percent lost in the fan-out probe); `node:net` must be used instead.
 5. **Watcher scale and signal ambiguity even on 1.4.2.**

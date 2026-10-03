@@ -235,7 +235,7 @@ Agreed sequence:
  then migrate,
 using the rule's own output as the worklist.
 No allowlist and no `warn` stage;
-a `warn` parking lot would conflict with LN8.
+a `warn` parking lot would conflict with oxlint `denyWarnings`.
 Staged registration,
  holding the rule out of standard lint until the tree passes,
  was raised and declined.

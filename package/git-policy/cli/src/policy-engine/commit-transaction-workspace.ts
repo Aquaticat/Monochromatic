@@ -1,49 +1,47 @@
 /**
- Disposable and recoverable private-index transaction workspace.
- 
+ Disposable and recoverable per-transaction workspace.
+
+ The workspace never holds the real `index.lock`:
+ preparation runs without it,
+ and the landing critical section acquires it.
+ Disposal removes the shadow repository before the transaction directory,
+ so no shadow repository outlives the journal that names it,
+ unless a landing record handed both to recovery.
+
  @module
  */
-import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
 import { randomUUID, } from 'node:crypto';
+import { join, } from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { removeShadowRepository, } from '../shadow-repository/shadow-repository.ts';
+import { pruneLandedCaptures, } from './commit-capture-order-prune.ts';
 import {
-  lstat,
-  mkdir,
-  open,
-  readFile,
-  realpath,
-  rename,
-  rm,
-  rmdir,
-} from 'node:fs/promises';
+  type InvocationCapture,
+  shadowRepositoryPath,
+} from './commit-transaction-capture.ts';
 import {
-  dirname,
-  isAbsolute,
-  join,
-  resolve,
-} from 'node:path';
+  createTransactionOwnerRecord,
+  encodeTransactionOwner,
+} from './commit-transaction-owner.ts';
 import {
-  DIRECTORY_MODE,
-  isMissingPath,
-  protectPath,
-  syncDirectory,
-} from '../trust/registry-io.ts';
-import { runTransactionGit, } from './commit-transaction-git.ts';
-import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
-import { applyIndexTimestamps, } from './index-file-timestamps.ts';
+  ensureTransactionRoot,
+  publishTransactionDirectory,
+  removeTransactionDirectory,
+} from './commit-transaction-registry.ts';
 
 /**
- Private file mode restricted to current account.
+ Module logger.
  */
-const PRIVATE_FILE_MODE = 0o600;
-/**
- Stable per-index transaction directory name.
- */
-export const TRANSACTION_DIRECTORY_NAME = 'cli-git-transaction';
+const l = tagged({ tag: 'cli-git', },);
 
 /**
  Owned private transaction state.
  */
 export type CommitTransactionWorkspace = {
+  /**
+   Unique transaction ID naming the durable directory; also the reflog nonce.
+   */
+  readonly transactionId: string;
   /**
    Durable transaction directory outside worktree content.
    */
@@ -53,43 +51,28 @@ export type CommitTransactionWorkspace = {
    */
   readonly commitIndexPath: string;
   /**
-   Prepared post-commit index.
+   Exact real index snapshot captured at invocation.
    */
-  readonly postIndexPath: string;
-  /**
-   Exact original index snapshot.
-   */
-  readonly originalIndexPath: string;
-  /**
-   Durable transaction journal.
-   */
-  readonly journalPath: string;
-  /**
-   Private nonce-bearing reflog action for post-crash attribution.
-   */
-  readonly reflogAction: string;
+  readonly capturedIndexPath: string;
   /**
    Real index path.
    */
   readonly realIndexPath: string;
   /**
-   Real Git lock path.
+   Shadow repository path derived from the transaction ID.
    */
-  readonly lockPath: string;
+  readonly shadowPath: string;
   /**
-   Filesystem identity of owned lock.
+   Shadow object store receiving every object the transaction writes before landing migrates them;
+   its alternates name the real object store.
    */
-  readonly lockFsId: string;
+  readonly objectDirectory: string;
   /**
-   Device identity of owned lock object.
+   Hook dispatcher directory.
    */
-  readonly lockDevice: string;
+  readonly hooksDirectory: string;
   /**
-   Inode identity of owned lock object.
-   */
-  readonly lockInode: string;
-  /**
-   Marks ref advancement so disposal preserves recovery artifacts.
+   Marks a landing record durable so disposal leaves recovery artifacts in place.
    */
   readonly preserveForRecovery: () => void;
   /**
@@ -97,360 +80,100 @@ export type CommitTransactionWorkspace = {
    */
   readonly finishTransaction: () => void;
   /**
-   Atomically installs private index through held Git lock.
-   */
-  readonly installIndex: (sourcePath: string) => Promise<void>;
-  /**
-   Removes private state unless recovery owns it.
+   Removes the shadow repository and then the transaction directory unless recovery owns them; later calls do nothing.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- Resolves absolute Git-provided path.
- 
- @param cwd - effective repository directory
- 
- @param reportedPath - Git path output
- 
- @returns absolute native path
- */
-function resolveGitPath({
-  cwd,
-  reportedPath,
-}: Readonly<{
-  cwd: string;
-  reportedPath: string;
-}>,): string {
-  if (reportedPath.length === 0)
-    throw new TypeError('Git returned an empty administrative path.',);
-  return isAbsolute(reportedPath,) ? reportedPath : resolve(
-    cwd,
-    reportedPath,
-  );
-}
+ Publishes a fresh transaction directory owned by the current process.
 
-/**
- Revalidates exact owned lock name before path-based replacement.
- 
- @param lockPath - owned lock pathname
- 
- @param lockFsId - original filesystem identity
- 
- @param lockDevice - original device identity
- 
- @param lockInode - original inode identity
- */
-async function assertWorkspaceLockIdentity({
-  lockPath,
-  lockFsId,
-  lockDevice,
-  lockInode,
-}: Readonly<{
-  lockPath: string;
-  lockFsId: string;
-  lockDevice: string;
-  lockInode: string;
-}>,): Promise<void> {
-  /**
-   Current non-followed lock metadata.
-   */
-  const metadata = await lstat(
-    lockPath,
-    { bigint: true, },
-  );
-  /**
-   Current lock filesystem identity.
-   */
-  const filesystem = await resolveFsId({
-    path: lockPath,
-    emitDiagnostics: false,
-  },);
-  if ((!metadata.isFile())
-    || metadata.isSymbolicLink()
-    || (filesystem.value !== lockFsId)
-    || (String(metadata.dev,) !== lockDevice)
-    || (String(metadata.ino,) !== lockInode))
-    throw new TypeError(`Commit transaction index lock identity changed: ${lockPath}`,);
-}
+ @param capture - invocation capture naming the registry and common directory
 
-/**
- Creates durable private directory and acquires exclusive real-index lock.
- 
- @param gitPath - resolved Git executable
- 
- @param cwd - effective repository directory
- 
  @returns owned disposable workspace
- 
+
  @example
  ```ts
- await createCommitTransactionWorkspace({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ await using workspace = await createCommitTransactionWorkspace({ capture });
  ```
  */
-export async function createCommitTransactionWorkspace({
-  gitPath,
-  cwd,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
+export async function createCommitTransactionWorkspace({ capture, }: Readonly<{
+  capture: Pick<InvocationCapture, 'registryRoot' | 'commonDir' | 'gitDir' | 'realIndexPath' | 'invokedAt'>;
 }>,): Promise<CommitTransactionWorkspace> {
+  await ensureTransactionRoot(capture.registryRoot,);
   /**
-   Git-provided real index and transaction paths.
+   Fresh transaction ID naming the directory, the shadow, and the reflog nonce.
    */
-  const [indexOutput, directoryOutput,] = await Promise.all([
-    runTransactionGit({
-      gitPath,
-      cwd,
-      args: [
-        'rev-parse',
-        '--git-path',
-        'index',
-      ],
-    },),
-    runTransactionGit({
-      gitPath,
-      cwd,
-      args: [
-        'rev-parse',
-        '--git-path',
-        TRANSACTION_DIRECTORY_NAME,
-      ],
-    },),
-  ],);
+  const transactionId = randomUUID();
   /**
-   Strict administrative path decoder.
+   Owner record published with the directory so recovery can skip this live transaction.
    */
-  const decoder = new TextDecoder(
-    'utf-8',
-    { fatal: true, },
-  );
-  /**
-   Absolute real index path.
-   */
-  const realIndexPath = resolveGitPath({
-    cwd,
-    reportedPath: decoder.decode(indexOutput.stdout,)
-      .trim(),
+  const owner = await createTransactionOwnerRecord({
+    transactionId,
+    createdAt: capture.invokedAt,
   },);
   /**
-   Absolute durable transaction directory.
+   Published durable transaction directory.
    */
-  const directory = resolveGitPath({
-    cwd,
-    reportedPath: decoder.decode(directoryOutput.stdout,)
-      .trim(),
+  const directory = await publishTransactionDirectory({
+    root: capture.registryRoot,
+    transactionId,
+    ownerBytes: encodeTransactionOwner(owner,),
   },);
   /**
-   Canonical administrative parent proving no transaction symlink.
+   Lifecycle markers: a landing record hands the directory to recovery; disposal runs once.
    */
-  const canonicalParent = await realpath(dirname(directory,),);
-  if (resolve(
-    canonicalParent,
-    TRANSACTION_DIRECTORY_NAME,
-  ) !== resolve(directory,))
-    throw new TypeError('Git transaction path has a noncanonical administrative parent.',);
+  const preserved = new Set<'preserved' | 'disposed'>();
   /**
-   Real Git lock path.
+   Derived shadow repository path.
    */
-  const lockPath = `${realIndexPath}.lock`;
-  /**
-   Exclusive real-index lock acquired before creating any recovery state.
-   */
-  const lockHandle = await open(
-    lockPath,
-    'wx',
-    PRIVATE_FILE_MODE,
-  );
-  /**
-   Whether ownership has transferred to the returned workspace.
-   */
-  const ready = new Set<'ready'>();
-  /**
-   Closes an acquired descriptor even when setup fails before metadata is read.
-   */
-  await using setupHandle = {
-    [Symbol.asyncDispose]: async function closeFailedSetupHandle(): Promise<void> {
-      if (ready.size === 0)
-        await lockHandle.close();
-    },
-  };
-  /**
-   Whether this invocation created a directory it can remove while still holding its lock.
-   */
-  const created = new Set<'created'>();
-  /**
-   Releases only setup artifacts owned by this invocation on any pre-return failure.
-   */
-  await using setup = {
-    [Symbol.asyncDispose]: async function disposeFailedSetup(): Promise<void> {
-      if (ready.size > 0)
-        return;
-      if (created.size > 0)
-        await rmdir(directory,);
-      try {
-        /**
-         Current lock metadata, never followed across a replaced path.
-         */
-        const current = await lstat(
-          lockPath,
-          { bigint: true, },
-        );
-        /**
-         Owned lock metadata from still-open descriptor.
-         */
-        const owned = await lockHandle.stat({ bigint: true, },);
-        if ((current.dev === owned.dev) && (current.ino === owned.ino))
-          await rm(lockPath,);
-      }
-      catch (error: unknown) {
-        if (!isMissingPath(error,))
-          throw error;
-      }
-      if (created.size > 0)
-        await syncDirectory(canonicalParent,);
-    },
-  };
-  /**
-   Exact owned lock object metadata.
-   */
-  const lockMetadata = await lockHandle.stat({ bigint: true, },);
-  await protectPath({
-    path: lockPath,
-    directory: false,
+  const shadowPath = shadowRepositoryPath({
+    commonDir: capture.commonDir,
+    transactionId,
   },);
-  /**
-   Filesystem identity containing owned lock artifact.
-   */
-  const lockFilesystem = await resolveFsId({
-    path: lockPath,
-    emitDiagnostics: false,
-  },);
-  await mkdir(
-    directory,
-    { mode: DIRECTORY_MODE, },
-  );
-  created.add('created',);
-  await protectPath({
-    path: directory,
-    directory: true,
-  },);
-  await syncDirectory(canonicalParent,);
-  /**
-   Installation marker populated only after atomic replacement.
-   */
-  const installed = new Set<'installed'>();
-  /**
-   Recovery marker populated immediately after real Git advances ref.
-   */
-  const preserved = new Set<'preserved'>();
-  /**
-   Closed-handle marker preventing duplicate close after partial installation.
-   */
-  const closed = new Set<'closed'>();
-  ready.add('ready',);
+  l.debug(`published transaction ${transactionId}`,);
   return {
+    transactionId,
     directory,
     commitIndexPath: join(
       directory,
       'commit.index',
     ),
-    postIndexPath: join(
+    capturedIndexPath: join(
       directory,
-      'post.index',
+      'captured.index',
     ),
-    originalIndexPath: join(
+    realIndexPath: capture.realIndexPath,
+    shadowPath,
+    objectDirectory: join(
+      shadowPath,
+      'objects',
+    ),
+    hooksDirectory: join(
       directory,
-      'original.index',
+      'hooks',
     ),
-    journalPath: join(
-      directory,
-      'journal.json',
-    ),
-    reflogAction: `cli-git:transaction:${randomUUID()}`,
-    realIndexPath,
-    lockPath,
-    lockFsId: lockFilesystem.value,
-    lockDevice: String(lockMetadata.dev,),
-    lockInode: String(lockMetadata.ino,),
     preserveForRecovery: function preserveForRecovery(): void {
       preserved.add('preserved',);
     },
     finishTransaction: function finishTransaction(): void {
       preserved.delete('preserved',);
     },
-    installIndex: async function installIndex(sourcePath: string,): Promise<void> {
-      /**
-       Exact intended index bytes.
-       */
-      const bytes = await readFile(sourcePath,);
-      await assertWorkspaceLockIdentity({
-        lockPath,
-        lockFsId: lockFilesystem.value,
-        lockDevice: String(lockMetadata.dev,),
-        lockInode: String(lockMetadata.ino,),
-      },);
-      await lockHandle.writeFile(bytes,);
-      await applyIndexTimestamps({
-        sourcePath,
-        handle: lockHandle,
-      },);
-      await lockHandle.sync();
-      await assertWorkspaceLockIdentity({
-        lockPath,
-        lockFsId: lockFilesystem.value,
-        lockDevice: String(lockMetadata.dev,),
-        lockInode: String(lockMetadata.ino,),
-      },);
-      /**
-       Private owner-preserving installation name.
-       */
-      const installPath = join(
-        directory,
-        'install.index',
-      );
-      await createOwnedFileLink({
-        sourcePath: lockPath,
-        linkedPath: installPath,
-        expectedDevice: String(lockMetadata.dev,),
-        expectedInode: String(lockMetadata.ino,),
-      },);
-      await lockHandle.close();
-      closed.add('closed',);
-      await rename(
-        installPath,
-        realIndexPath,
-      );
-      installed.add('installed',);
-      await assertWorkspaceLockIdentity({
-        lockPath,
-        lockFsId: lockFilesystem.value,
-        lockDevice: String(lockMetadata.dev,),
-        lockInode: String(lockMetadata.ino,),
-      },);
-      await rm(lockPath,);
-      await syncDirectory(dirname(realIndexPath,),);
-    },
     [Symbol.asyncDispose]: async function disposeWorkspace(): Promise<void> {
-      if ((closed.size === 0) && (installed.size === 0)) {
-        await lockHandle.close();
-        closed.add('closed',);
-      }
-      if (preserved.size > 0)
+      if (preserved.has('disposed',))
         return;
-      if (installed.size === 0)
-        await rm(
-          lockPath,
-          { force: true, },
-        );
-      await rm(
-        directory,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-      await syncDirectory(canonicalParent,);
+      preserved.add('disposed',);
+      if (preserved.has('preserved',)) {
+        l.debug(`leaving transaction ${transactionId} for recovery`,);
+        return;
+      }
+      await removeShadowRepository(shadowPath,);
+      await removeTransactionDirectory(directory,);
+      // Last, so the last transaction to finish sees no other one pinning landed-capture records.
+      await pruneLandedCaptures({
+        gitDir: capture.gitDir,
+        registryRoot: capture.registryRoot,
+      },);
     },
   };
 }

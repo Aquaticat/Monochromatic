@@ -1,5 +1,10 @@
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type PushAttempt,
+  runSingleFlightPush,
+  type SingleFlightOutcome,
+} from './auto-push-single-flight.ts';
 
 /**
  Logger root for cli-git after removing the package log shim.
@@ -120,9 +125,20 @@ export function filterPushOutput({
 //region Auto-push orchestration
 
 /**
+ Note surfaced after every failed push, owned or joined: the commit stays local.
+ */
+const PUSH_FAILED_NOTE = 'cli-git: commit saved locally, but auto-push to origin failed; run `git push` when ready.';
+
+/**
+ Absent symbolic `HEAD`: the commit landed on a detached `HEAD`.
+ */
+const HEAD_DETACHED: unique symbol = Symbol('HEAD is detached',);
+
+/**
  Outcome of one auto-push attempt: `skipped` when there is nowhere to back
- up to (no upstream and no origin) or HEAD is detached, `pushed` on a clean
- push, `failed` when git rejected or could not reach the remote.
+ up to (no upstream and no origin) or HEAD is detached, `pushed` once a
+ successful push delivered the landed commit, `failed` when the push that
+ would deliver it was rejected or could not reach the remote.
  */
 export type AutoPushOutcome = 'skipped' | 'pushed' | 'failed';
 
@@ -140,26 +156,30 @@ export type AutoPushResult = {
    */
   readonly exitCode: number;
   /**
-   Text surfaced to stderr; empty on a skip or a quiet clean push.
+   Text surfaced to stderr; empty on a skip, a quiet clean push, or a joined success.
    */
   readonly shown: string;
+  /**
+   Whether another invocation's push decided the outcome, so this invocation pushed nothing.
+   */
+  readonly joined: boolean;
 };
 
 /**
  Reports whether a read-only git query exits zero in given directory. Used
  for the yes/no probes auto-push needs: does origin exist, is an upstream
- configured, is HEAD on a branch.
- 
+ configured.
+
  @param gitPath - Absolute path to real git binary.
- 
+
  @param cwd - Directory query runs in, matching where commit landed.
- 
+
  @param args - Read-only git argv to probe with.
- 
+
  @returns `true` when query exits zero.
- 
+
  @throws When the probe fails for a reason nano-spawn does not model as a {@link SubprocessError}.
- 
+
  @example
  ```ts
  await gitQuerySucceeds({
@@ -196,12 +216,151 @@ async function gitQuerySucceeds({
 }
 
 /**
- Pushes the just-created commit to its upstream, then surfaces a
- {@link filterPushOutput filtered view} of the push: only GitHub `remote:`
- lines on success, the full output on failure. Always invoked with the real
+ Resolves the branch ref `HEAD` names.
+
+ @param gitPath - Absolute path to real git binary.
+
+ @param cwd - Directory the commit landed in.
+
+ @returns Full branch ref, or the detached sentinel.
+
+ @throws When git fails for a reason nano-spawn does not model as a {@link SubprocessError}.
+ */
+async function readSymbolicHead({
+  gitPath,
+  cwd,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+}>,): Promise<string | typeof HEAD_DETACHED> {
+  try {
+    return (await nanoSpawn(
+      gitPath,
+      [...SYMBOLIC_HEAD_ARGS,],
+      { cwd, },
+    )).stdout
+      .trim();
+  }
+  catch (error) {
+    if (!(error instanceof SubprocessError))
+      throw error;
+
+    return HEAD_DETACHED;
+  }
+}
+
+/**
+ Runs one real `git push` and captures its interleaved output. Always the real
  git binary, so it does not re-enter the cli-git wrapper, yet the push still
  fires git's native pre-push hook.
- 
+
+ @param gitPath - Absolute path to real git binary.
+
+ @param cwd - Directory the commit landed in.
+
+ @param pushArgs - Push argv chosen by upstream state.
+
+ @returns Push exit code and complete output.
+
+ @throws When git fails for a reason nano-spawn does not model as a {@link SubprocessError}.
+ */
+async function runPushCommand({
+  gitPath,
+  cwd,
+  pushArgs,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  pushArgs: readonly string[];
+}>,): Promise<PushAttempt> {
+  try {
+    return {
+      exitCode: 0,
+      output: (await nanoSpawn(
+        gitPath,
+        [...pushArgs,],
+        { cwd, },
+      )).output,
+    };
+  }
+  catch (error) {
+    if (!(error instanceof SubprocessError))
+      throw error;
+
+    return {
+      // Absent code (spawn failure or signal) counts as failure.
+      exitCode: error.exitCode
+        ?? 1,
+      output: error.output,
+    };
+  }
+}
+
+/**
+ Surfaces a settled single-flight outcome and converts it into the auto-push result.
+
+ Raw `console.error` rather than a tagged logger is intentional: the surfaced
+ lines must be exactly git's output with no tag prefixes, matching how the
+ wrapper prints its other user-facing notes.
+
+ @param outcome - Settled single-flight outcome.
+
+ @param landedOid - Commit the landing wrote.
+
+ @param branchRef - Branch that was pushed.
+
+ @returns Auto-push result.
+ */
+function reportSingleFlightOutcome({
+  outcome,
+  landedOid,
+  branchRef,
+}: Readonly<{
+  outcome: SingleFlightOutcome;
+  landedOid: string;
+  branchRef: string;
+}>,): AutoPushResult {
+  /**
+   Whether another invocation's push decided the outcome.
+   */
+  const joined = (outcome.kind === 'joined-pushed') || (outcome.kind === 'joined-failed');
+  /**
+   Whether the deciding push failed.
+   */
+  const failed = (outcome.kind === 'failed') || (outcome.kind === 'joined-failed');
+  /**
+   Surfaced push output: nothing for a joined success, whose owner already showed its `remote:` lines.
+   */
+  const shown = outcome.kind === 'joined-pushed'
+    ? ''
+    : filterPushOutput({
+      output: outcome.output,
+      exitCode: outcome.exitCode,
+    },);
+
+  if (shown)
+    console.error(shown,);
+  if (!outcome.covered)
+    console.error(`cli-git: landed commit ${landedOid} is no longer on ${branchRef}; auto-push pushed ${outcome.tip} without it.`,);
+  if (failed)
+    console.error(PUSH_FAILED_NOTE,);
+
+  return {
+    outcome: failed ? 'failed' : 'pushed',
+    exitCode: outcome.exitCode,
+    shown,
+    joined,
+  };
+}
+
+/**
+ Backs up a landed commit by pushing its branch, single-flight per branch:
+ the commit joins a push whose tip covers it or pushes the current branch tip
+ itself, and returns only once a successful push delivered it or the push that
+ would deliver it failed (see {@link runSingleFlightPush}). A {@link filterPushOutput filtered view}
+ of the push is surfaced: only GitHub `remote:` lines on success, the full
+ output on failure, including a joined failure.
+
  A branch with a configured upstream is pushed plainly, following that
  upstream wherever it lives; `--set-upstream origin HEAD` is used only when
  no upstream exists yet, so a branch tracking another remote never has its
@@ -211,33 +370,33 @@ async function gitQuerySucceeds({
  detached (mid-rebase, mid-cherry-pick, or a detached checkout), where
  pushing `HEAD` cannot work.
  The commit has already happened by the time this runs, and git ignores
- a post-commit hook's exit status, so a failed backup push is surfaced in the
- output but never changes the commit command's exit code; the caller leaves
- `process.exitCode` untouched on a failed push.
- 
- Raw `console.error` rather than a tagged logger is intentional: the surfaced
- lines must be exactly git's output with no tag prefixes, matching how the
- wrapper prints its other user-facing notes.
- 
+ a post-commit hook's exit status, so a failed backup push, or a failure of
+ the push coordination itself, is surfaced in the output but never changes
+ the commit command's exit code; the caller leaves `process.exitCode` untouched.
+
  @param gitPath - Absolute path to real git binary resolved by wrapper.
- 
+
  @param cwd - Directory push runs in: effective cwd after `-C` chaining.
- 
- @returns Outcome, exit code, and surfaced text of push.
- 
+
+ @param landedOid - Commit the landing wrote, never re-read from live `HEAD`.
+
+ @returns Outcome, exit code, surfaced text, and whether the push was joined.
+
  @throws When git fails for a reason nano-spawn does not model as a {@link SubprocessError}.
- 
+
  @example
  ```ts
- await autoPush({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ await autoPush({ gitPath: '/usr/bin/git', cwd: '/repo', landedOid });
  ```
  */
 export async function autoPush({
   gitPath,
   cwd,
+  landedOid,
 }: {
   readonly gitPath: string;
   readonly cwd: string;
+  readonly landedOid: string;
 },): Promise<AutoPushResult> {
   /**
    Tagged logger for the auto-push step.
@@ -267,19 +426,24 @@ export async function autoPush({
       outcome: 'skipped',
       exitCode: 0,
       shown: '',
+      joined: false,
     };
   }
 
-  if (!(await gitQuerySucceeds({
+  /**
+   Branch the commit landed on, or the detached sentinel.
+   */
+  const branchRef = await readSymbolicHead({
     gitPath,
     cwd,
-    args: SYMBOLIC_HEAD_ARGS,
-  },))) {
+  },);
+  if (branchRef === HEAD_DETACHED) {
     console.error(DETACHED_HEAD_NOTE,);
     return {
       outcome: 'skipped',
       exitCode: 0,
       shown: DETACHED_HEAD_NOTE,
+      joined: false,
     };
   }
 
@@ -293,64 +457,41 @@ export async function autoPush({
 
   rl.debug(
     hasUpstream
-      ? 'auto-pushing committed work to its configured upstream'
-      : 'auto-pushing committed work to origin HEAD with --set-upstream',
+      ? `auto-pushing ${landedOid} to the configured upstream of ${branchRef}`
+      : `auto-pushing ${landedOid} to origin HEAD with --set-upstream`,
   );
 
   try {
-    /**
-     Successful push result carrying interleaved output.
-     */
-    const result = await nanoSpawn(
-      gitPath,
-      [...pushArgs,],
-      { cwd, },
-    );
-    /**
-     Only the GitHub `remote:` lines from this clean push.
-     */
-    const shown = filterPushOutput({
-      output: result.output,
-      exitCode: 0,
+    return reportSingleFlightOutcome({
+      outcome: await runSingleFlightPush({
+        gitPath,
+        cwd,
+        branchRef,
+        landedOid,
+        push: function pushBranch(): Promise<PushAttempt> {
+          return runPushCommand({
+            gitPath,
+            cwd,
+            pushArgs,
+          },);
+        },
+      },),
+      landedOid,
+      branchRef,
     },);
-
-    if (shown)
-      console.error(shown,);
-
-    return {
-      outcome: 'pushed',
-      exitCode: 0,
-      shown,
-    };
   }
   catch (error) {
-    if (!(error instanceof SubprocessError))
+    if (!Error.isError(error,))
       throw error;
 
-    /**
-     Push exit code; absent code (spawn failure or signal) counts as failure.
-     */
-    const exitCode = error.exitCode
-      ?? 1;
-    /**
-     Full push output so the failure reason stays visible.
-     */
-    const shown = filterPushOutput({
-      output: error.output,
-      exitCode,
-    },);
-
-    if (shown)
-      console.error(shown,);
-
-    console.error(
-      'cli-git: commit saved locally, but auto-push to origin failed; run `git push` when ready.',
-    );
-
+    rl.error(`auto-push coordination failed: ${error.message}`,);
+    console.error(`cli-git: auto-push of ${landedOid} could not run: ${error.message}`,);
+    console.error(PUSH_FAILED_NOTE,);
     return {
       outcome: 'failed',
-      exitCode,
-      shown,
+      exitCode: 1,
+      shown: error.message,
+      joined: false,
     };
   }
 }

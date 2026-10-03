@@ -626,8 +626,13 @@ mode group wrapped 2×2.
 The 9×3 grid of rounded cells (unf-a/unf-b/unf-c) "looks like a keyboard,
  which
 doesn't fly."
- Open between a fast-scroll rail with drag bubble (unf-d) and a
-borderless text index (unf-e) — see open-questions.md #1.
+The historical rail-with-bubble (`unf-d`) versus borderless-index (`unf-e`)
+comparison is not open:
+D17 rejects their one-folder-per-row list model and selects the filtering
+picker,
+with D31's wrapped plain names.
+Retain these files as historical rejection evidence,
+not candidate instructions for a new fast-scroller round.
 
 ## E. Foldable
 
@@ -651,8 +656,13 @@ Where information is arranged on opposing sides of the fold,
  its clearance
 is **`max(min_padding, crease_width)`** after both terms are expressed in the
 same physical coordinate system.
- This is **not** a required empty surface
-gap between two panes.
+The user reconfirmed **`min_padding = 7.5mm` as a minimum total gap between
+opposing information** on 2026-09-26,
+including on future devices whose physical crease is narrower than 7.5mm.
+For a wider crease,
+the physical crease width still governs.
+This is one total left-to-right information gap,
+not 7.5mm on each side and **not** a required empty surface gap between panes.
  Text,
  labels and other informative marks stay out;
 backgrounds,
@@ -713,6 +723,25 @@ near-crease example** for this player's text placement.
 this app-content requirement.
  The earlier "no app-owned paint or hit region"
 version of E2 was an erroneous interpretation and is withdrawn.
+
+The numeric floor was selected only after a debug-only Compose comparison
+showed the player with Search closed,
+empty Search and results for P7.5,
+P14 and P20 on the disposable Pixel 9 Pro Fold.
+The earlier measurement-bar form,
+Search-only comparison and gray-strip player prototype were rejected as
+incomplete or as applying the floor to surfaces.
+P14 and P20 were not selected as hard floors;
+the decision does not prohibit naturally wider information spacing.
+The accepted player browser,
+full deck,
+right-side Search layout and track-row surfaces remain structurally intact.
+The captured 200% keyboard-closed node-box projections support this visual
+choice but do not certify every glyph's ink,
+long names,
+other display settings or keyboard-open fit.
+The evidence is in `package/music-player/design/evidence/crease-floor-native-comparison.md`.
+No production Search implementation was authorized.
 
 ### E3. Tabletop posture = candidate tabletop-c
 The user’s own proposal,
@@ -1424,6 +1453,9 @@ parallel design vote.
 ### D50. The unfolded control deck remains visible (2026-09-24)
 The user requires the playback/control deck to **never be hidden while the
 Fold is unfolded**.
+D53 and D54 permit only their explicitly measured floating-Gboard and
+font-update-banner exceptions;
+other keyboard states remain subject to this requirement.
  This includes the D47 Search destination,
  regardless
 of whether Search occupies one side or more of the display.
@@ -1443,9 +1475,10 @@ keyboard-closed screenshots;
  its x `[274,1180)`, y `[310,1081)` key surface overlaps the deck
  title at `[258,1042][781,1145]` on the 2076 × 2152px inner panel.
  Do not mark D50 fully validated from the debug bottom-IME captures.
-The later real split-keyboard test passed after settling but a Gboard
-font-update banner briefly clipped the final mode;
-D50 also covers that observed typing state.
+The real split-keyboard test passed after settling,
+while a Gboard font-update banner briefly clipped the final mode.
+D54 accepts that measured brief banner overlap;
+D50 still governs non-exempt keyboard states.
  D47's separate-page
 interaction does not supersede this persistent control region.
 
@@ -1495,13 +1528,19 @@ not active choices.
 The corrected A-only review was recaptured with the same folder browser
 visible in the shortened upper-left viewport under a 300dp debug IME;
 its unfolded deck and query/results remained visible.
+On 2026-09-25 the user said “Okay, I like it” after reviewing that
+correction.
+This affirms the retained-browser composition,
+not the separate synthetic 415dp title/transport reflow or universal D50
+compliance.
 The older real-Gboard PNGs predate that browser correction.
 A later real Gboard floating-keyboard probe at 200% text obscured part of
 the deck title; moving that keyboard lower obscured more controls.
-This is a validation failure against D50 in the tested floating mode,
-not a change to the user's A selection.
+D53 accepts this specific real floating-Gboard overlap with the unfolded
+deck without changing the user's A selection.
 On the folded cover, the same real floating mode covered both matching
 result labels while a focused `cam` query remained visible.
+D55 accepts that separate observed cover overlap.
 A separate disposable Fold AVD verified real Gboard split input on the
 inner panel and full-width input on the cover at 100% and 200% text.
 At settled 200%, its inner IME began at y `1352` and the final mode ended
@@ -1512,8 +1551,10 @@ Updating the disposable Gboard to the same version did not reproduce its
 floating behavior, so version alone is not an explanation.
 A Gboard font-update banner on the disposable inner panel temporarily
 raised the IME top to y `1140` and clipped the final mode until dismissed.
-These bounded passing modes and failing states do not change D50 or the
-user's A selection; other heights and app-observed floating insets remain unverified.
+D54 accepts that measured brief banner overlap;
+D53 separately accepts the floating-keyboard deck overlap.
+Other D50 states and the user's A selection remain unchanged.
+Other heights remain unverified.
 A debug-only app probe subsequently observed the docked bottom inset and
 bounding rectangle;
 its synthetic 415dp banner-height reflow is not a chosen replacement.
@@ -1541,7 +1582,701 @@ repeat a successful query.
  This is design-only until implementation is
 separately authorized.
 
+### D53. Real floating Gboard may obscure the unfolded deck (2026-09-26)
+
+The user explicitly said that “real floating Gboard still obscures the deck”
+is **acceptable**.
+When real floating Gboard overlays the unfolded playback deck during Search,
+that specific occlusion is an exception to D50's otherwise complete-deck
+visibility requirement.
+Do not move or replace selected Search A merely to make the deck visible
+beneath a user-positioned floating keyboard.
+The actual folder browser remains above the bottom-left deck;
+query and results remain together on the right (D51),
+and D52 still removes the repeated positive-results heading.
+
+This exception does **not** permit clipping or hiding the deck under a
+docked or split keyboard.
+D54 separately accepts the measured transient Gboard font-update banner;
+D53 alone does not generalize to other keyboard overlays.
+D55 separately accepts the observed floating cover keyboard obscuring both
+Search result labels;
+D53 alone does not authorize that cover behavior.
+The synthetic 416dp anticipatory reservation and inline deck reflow remain
+unaccepted debug-only studies.
+This is a design-scope clarification,
+not production authorization or proof that the remaining D50 states pass.
+
+### D54. The brief Gboard font-update banner may clip the deck (2026-09-26)
+
+When asked about the measured `Keyboard font size updated` state,
+the user said “That brief banner is also acceptable.”
+On the disposable Fold at 200% text,
+this real Gboard banner briefly raised the IME top to y `1140` and clipped
+the final mode to `[73,1076][965,1140]` until its `OK` action was tapped.
+D54 accepts **that measured transient system banner overlap** as a second
+exception to D50;
+it is not approval to hide the deck beneath ordinary settled docked or split
+keyboards,
+nor beneath arbitrary taller keyboards or persistent banners.
+The selected A still keeps the actual folder browser above the bottom-left
+deck and the integrated Search query/results on the right.
+
+The synthetic 415dp inline title/transport reflow and 416dp anticipatory
+reservation remain unaccepted debug-only studies;
+no banner-specific layout change is required by this decision alone.
+D55 separately accepts the measured cover result-label overlap;
+D54 alone does not authorize it.
+No production implementation is authorized.
+
+### D55. Real floating Gboard may obscure folded-cover Search matches (2026-09-26)
+
+When asked about the measured cover state and given its sanitized capture
+path,
+the user answered “Also acceptable.”
+At 100% text on the folded cover,
+real floating Gboard covered both matching result labels,
+`Camellia` and `Another Xronixle`,
+while the focused `cam` query remained visible.
+D55 accepts that **specific floating-keyboard result overlap** without
+changing D47's separate cover page,
+D48's single Back/query/Clear header,
+or D52's removal of the repeated positive-results heading.
+It does not approve an obscured query,
+missing or nonfunctional search results,
+or ordinary docked/full-width keyboards hiding matching labels.
+The accepted A review still shows results with its separate debug IME;
+the sanitized real-Gboard capture is the evidence for this exception.
+D53 concerns the unfolded deck,
+D54 concerns the brief unfolded font-update banner,
+and D55 concerns the folded-cover floating keyboard.
+No production implementation is authorized.
+
+### D56. The folded-cover Search result list fits above a bottom keyboard (2026-09-26)
+
+The user chose **R** in the cover-viewport design review.
+For the selected A cover Search page,
+keep the integrated Back/query/Clear header fixed and give **only the scrolling
+results viewport** keyboard-aware bottom space while an ordinary docked or
+full-width keyboard is open.
+Positive matches still start directly beneath the header (D52).
+Long result names retain their wrapping and the last result and supporting
+text must be reachable by scrolling above the keyboard,
+not remain stranded beneath it.
+The selected unfolded Search layout,
+upper-left folder browser and bottom-left deck are unchanged.
+
+The same installed debug APK supplied a 200% text-scale failure control:
+with a 300dp bottom keyboard,
+row 18 remained at y `[2151,2254]` below keyboard top y `1693`
+even after another end-of-list swipe.
+The opt-in cover-only viewport brought its title and supporting line to
+y `[1479,1582]` and `[1582,1673]` above that keyboard.
+At 100%/200%,
+the final row was also scroll-reachable above **settled real full-width Gboard**
+in this debug fixture.
+These are bounded design-study results,
+not validation of animation frames,
+all keyboard geometries,
+real search ranking or activation.
+
+The measured R prototype required another swipe to recover the final row
+after hiding and refocusing the keyboard.
+D63 to D68 subsequently settled the interaction direction:
+D68 requires the intended row to remain visible after same-query
+keyboard refocus.
+Native realization and verification remain open;
+R selects the cover viewport direction,
+not that extra swipe as a requirement.
+C's unchanged cover viewport was rejected for the measured end-of-list
+occlusion.
+D55 remains the separate accepted **floating** cover Gboard exception,
+not a waiver for ordinary full-width input.
+The comparison and limits are in
+`package/music-player/design/evidence/search-result-overflow.md`.
+No production implementation is authorized.
+
+### D57. The observed inner floating Gboard may obscure some Search result lettering (2026-09-26)
+
+The user chose **A** in the separate inner floating-result review.
+At 200% text in the selected A long-results fixture,
+real floating Gboard covered portions of middle **right-pane result labels**
+while the `cam` query stayed readable and later results were visible below
+the keyboard.
+D57 accepts **this specific observed floating overlay** as a bounded
+exception to visual result-lettering visibility.
+It does not extend to other floating placements,
+ordinary docked or split keyboards,
+an obscured query,
+missing matches or nonfunctional result actions.
+Whether the covered rows can be scrolled into clear space,
+reached or activated was **not** established;
+D57 does not accept their absence or inaccessibility.
+
+D53 independently accepts the measured floating-keyboard overlap with the
+left playback deck;
+D55 concerns floating results on the folded cover.
+D56 keeps the folded-cover result list scrollable above ordinary full-width
+keyboards.
+No inner layout move,
+IME placement mechanism,
+production implementation or further device experiment was selected.
+The sanitized native capture and bounded fixture are in
+`package/music-player/design/questions/floating-results-review.html`
+and `package/music-player/design/evidence/search-result-overflow.md`.
+
+### D58. Search header and result rows share leading columns (2026-09-29)
+
+The user corrected a visible offset in the Search-opened state:
+**Back arrow and folder/music result icons share one horizontal center**,
+and **query text and result titles share one horizontal start**.
+The integrated header already used a 48dp leading icon target,
+but debug result rows used a 24dp icon plus 12dp spacer.
+At 200% text before the correction,
+inner query `cam` began at x `1249` while result `Cam` began at x `1220`;
+on the cover the same pair began at x `156` and x `127`.
+
+Debug-only commit `baa37caaf` centers 24dp result icons inside the same
+48dp leading slot as Back on both panels.
+On the subsequently installed disposable Fold APK,
+UI Automator reported `cam` and `Cam` both starting at x `1249` on the
+inner display and both at x `156` on the cover at **100% and 200% text**.
+In native 200% light-scheme screenshots,
+the Back,
+folder and music glyphs had respective horizontal centers x `1190`
+on the inner panel and x `97` on the cover;
+the old folder icon centers were x `1161` and x `68`.
+The Back `IconButton` remains 48dp in the debug source;
+the 48dp result slot is decorative,
+not an activated result target.
+The corrected icon paint starts beyond the measured inner crease,
+and the browser/deck and static fixture order remain as before.
+This is not a universal E2 glyph-ink or accessibility pass.
+See `evidence/search-header-result-alignment.md` for the pixel method,
+positive control and bounded image set.
+Result activation,
+ranking and accessibility still require separate decisions and verification.
+This is a design-only alignment correction,
+not a production Search implementation or permission for new IME tests.
+
+### D59. Emphasize each visible Search match using the OS accent in OKLCH (2026-09-29)
+
+Before deciding #116 membership or order,
+the user required each visible `cam` match (including case variants such as
+`Cam`) to be highlighted **in place** in Search results.
+That includes result titles and the supporting parent-folder text when it
+contains the match;
+`cam` must visibly match `Cam` in the accepted fixture.
+This establishes the shown ASCII case equivalence,
+not general Unicode casefolding.
+The emphasis does not restyle the retained left folder browser or turn a
+static row into an action.
+The first debug-only highlight used the theme's tertiary-container role
+and rendered purple;
+the user rejected that color and specified a color **derived from the
+selected theme and adjusted in OKLCH**.
+A3 makes the OS accent the theme source.
+The revised debug fixture uses `MaterialTheme.colorScheme.primary` and the
+existing `mixOklchWithNeutral` utility to derive light and dark match fills,
+with bold text as a second cue.
+No fixed purple swatch,
+new production Search feature,
+result membership/rank,
+Unicode matching grammar or keyboard behavior is decided here.
+The corrected disposable-AVD APK SHA-256
+`7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`
+was captured at 100% and 200% in light/dark with the keyboard closed;
+`evidence/search-match-emphasis-native.md` records bounded contrast,
+text bounds and provenance.
+The exact prototype blend is reviewable and not a universal palette pass.
+
+### D60. Search results use direct names, not parent-only track expansion (2026-09-29)
+
+After reviewing D59-highlighted native inner and cover examples,
+the user selected **Scope D** over P.
+A folder may appear because its **own name** matches;
+a track may appear because its **own final filename component** matches.
+`Track.displayPath` and `PageEntry.name` can contain relative folder
+segments (see
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/Track.kt`
+and
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/Page.kt`);
+indexing either entire displayed path would violate this decision.
+Parent and ancestor folder segments remain disambiguating context,
+not sources of track matches.
+D sets the eligible fields,
+not a current-directory-only coverage limit or a file-index implementation.
+The synthetic `Another Xronixle` row must **not** appear solely because
+its immediate parent is `Camellia` for query `cam`.
+This keeps matching-folder results visible without deciding what tapping
+that folder does (review task 129).
+It does not decide broader Unicode equivalence,
+filename extension handling,
+mid-word substring matching,
+multiple query terms,
+result count limits or an index implementation.
+The user's choice is a design direction,
+not authorization for production Search code.
+
+### D61. Mix result types by relevance rather than grouping by kind (2026-09-29)
+
+The user independently selected **Order M** over folders-first F and
+tracks-first T in the same D59-highlighted matrix.
+For the accepted `cam` examples,
+an exact `Cam` track precedes the prefix `Camellia` folder,
+which stays near the top;
+`Live at Camellia` remains a match beginning at a later word.
+Other direct track and folder hits interleave across those observed
+relationships.
+The example does not decide whether `cam` inside `Scamper`
+should match.
+This does not select a concrete scorer,
+normalization rule,
+locale-aware or deterministic tie-break,
+result action,
+or a production implementation.
+The selected A header,
+actual left browser,
+complete deck,
+D58 columns,
+D59 theme-derived highlighting and E2 floor remain unchanged.
+
+### D62. Search-library choice is outside the current UI review (2026-09-29)
+
+After the D/M selection,
+a further W/A word-boundary question was prepared.
+The user corrected the task boundary:
+**the eventual choice of a good fuzzy search library does not affect the
+UI design and is not this agent's job right now**.
+Withdraw the W/A question rather than asking the user to specify a
+hand-rolled matcher or evaluating/installing a library now.
+The W/A native fixtures remain historical exploratory evidence only;
+neither rule is selected.
+D60's direct-name result presentation,
+D61's mixed visual order,
+D59's in-place OS-accent match highlighting,
+and the selected A layout remain the current design.
+Future implementation may use a library to produce result identities and
+match ranges,
+but must not silently change these selected visible behaviors;
+a genuine conflict returns for design review then.
+Continue the separate UI questions for Back/Clear/focus,
+empty/unavailable states,
+result activation and accessibility.
+No production Search implementation is authorized by this correction.
+
+### D63. Search entry requests query edit focus (2026-09-29)
+
+The user selected the recommended **E-fast** interaction under review task 127:
+opening the separate Search destination requests query edit focus and a
+keyboard so the user can begin typing without first selecting the field.
+This is an interaction intent,
+not proof that every native keyboard appears or fits the selected layout.
+Actual focus and keyboard behavior need implementation-boundary verification.
+Accessibility focus remains a separate review task 118 decision.
+
+### D64. The visible Back arrow exits Search directly (2026-09-29)
+
+The user selected **A-exit**:
+activating the page-level Back arrow returns to the player even when a
+keyboard is shown.
+The arrow does not first dismiss the keyboard while leaving Search open.
+D47 required a Back path from a separate destination;
+D64 now settles that visible control's first action while typing.
+System Back is distinct:
+Android SDK 37 documents default IME interception when the keyboard is
+shown and a conditional IME-owned bypass,
+so the logic walkthrough models keyboard-first system Back only as an
+illustrative baseline,
+not a cross-keyboard guarantee or a selected app override.
+Returning must not replace the retained left folder-browser location or
+playback deck with a Search fixture.
+No native return-focus target is selected here (review task 118).
+
+### D65. Clear preserves the current edit-focus state (2026-09-29)
+
+The user selected **C-keep**:
+Clear erases the query without leaving Search and does not itself force
+query refocus or reopen a dismissed keyboard.
+If edit focus and the keyboard are already active,
+they remain active;
+if the keyboard was dismissed or edit focus moved away,
+Clear preserves those states.
+The debug prototype's empty-query action was not evidence of this focus
+policy;
+this is the new design decision.
+
+### D66. A new Search visit starts with an empty query (2026-09-29)
+
+The user selected **Q-new**:
+after returning to the player,
+opening Search again begins with a fresh empty query rather than restoring
+the previous text.
+D63 requests edit focus on that new visit.
+This describes navigation within a running session;
+process restoration and posture changes were not compared here.
+
+### D67. A restored query would start results at the top (2026-09-29)
+
+The user also selected the recommended conditional **P-top** preference:
+**if** a future design restores a previous query on re-entry,
+it should begin at the first results instead of reviving the prior deep
+result position.
+Under D66's active Q-new behavior,
+there is no restored result set and P-top has no immediate effect.
+Do not treat P-top as permission to restore the previous query,
+nor as a result-activation rule.
+
+### D68. Same-query keyboard refocus preserves row visibility (2026-09-29)
+
+The user selected **S-visible** as the desired interaction:
+after scrolling to a result and hiding then refocusing the keyboard
+without changing the query,
+keep the intended row visible in the resized viewport.
+Preserving only a raw list offset is insufficient:
+the D56 cover observation required another swipe to recover the final
+row after keyboard refocus,
+and that extra swipe was not selected.
+The middle-row and final-row logic walkthrough illustrates this
+visibility distinction but cannot prove a native scroll correction.
+Verify it with a future implementation before claiming it works with
+arbitrary keyboard geometries;
+do not restart IME experiments in this design review without first
+making a compelling case to the user.
+D57's bounded floating-Gboard overlap and review task 129 result activation remain
+separate.
+
+The user accepted all review task 127 recommendations and pointed out that
+asking for an additional preference answer was unnecessary.
+Treat these choices as selected,
+not as pending defaults in the review form.
+No production Search change or search-library choice is authorized.
+
+### D69. Search status claims follow verified query and source state (2026-09-29)
+
+The empty/unavailable review has one evidence-led direction,
+not an additional preference ballot:
+keep **no query yet**,
+**completed current-query no match**,
+**confirmed empty searchable inventory** and **known source failure**
+separate in the selected A result region.
+A partial scan,
+source refresh,
+prior-query results or an empty track list cannot by itself establish
+that no folder/track name matches the current query.
+Peak analysis is not a prerequisite for name Search under D27.
+An explicit source failure takes precedence over ordinary empty-query or
+no-match copy;
+it does not silently erase the query,
+leave Search,
+steal edit focus or reopen a dismissed keyboard.
+The fixed debug states and
+`package/music-player/design/questions/search-status-evidence.html`
+illustrate this distinction on both Fold panels at 100% and 200% text
+without executing a real lookup.
+This selects status **truth conditions**,
+not an index scope,
+matcher,
+backend state implementation or result tap.
+
+### D70. Keep the unqueried prompt and completed-no-match treatment (2026-09-29)
+
+The selected A right pane may show the existing “Search your music” /
+“Type a name to explore your library” prompt while a usable source has
+no query.
+Do not label this first visit “No results.”
+For a **fully evaluated** nonempty query with zero direct-name hits,
+keep the query and Clear in the fixed header and show a no-match title
+naming the entered text with “Try another name” support.
+The native `zzq` fixture demonstrates this paint only;
+it does not prove a search ran,
+long-query wrapping,
+keyboard-open fit or arbitrary text.
+D52's rejected repeated **positive-results heading** does not ban a
+no-match diagnostic from naming the affected input.
+The real Search scope and completion signal belong to implementation
+work;
+without that signal,
+do not render a final no-match verdict.
+
+### D71. Do not promise a library recovery that has no owner (2026-09-29)
+
+Reject the debug fixture's broad “Library unavailable” /
+“Search returns when the library is available” as selected Search copy.
+Its inner screenshot keeps visible folders and an already-playing track,
+while the fixed unavailable marker proves neither total library loss nor
+automatic recovery.
+Only a **known inability to search the current source** may replace the
+result region with a Search-specific unavailable explanation.
+Name the cause when known and present only a recovery action whose owner
+can actually perform it;
+changing to another folder is a scope change,
+not repair of the original source.
+Do not infer unavailability from a zero-length track list or missing
+device-wide permission alone:
+a held folder may still be a readable source,
+while the current production permission gate may prevent Search opening.
+The exact cause-specific sentence and control depend on a future real
+source-status signal;
+no generic button or successful retry is promised by this decision.
+Preserve the integrated header,
+query,
+actual left browser and complete deck without presenting their stale
+content as freshly verified.
+
+These D69 to D71 directions were derived from the existing decisions,
+production source selection and sanitized native fixture review.
+They are recorded with a correction/veto path rather than another
+ceremonial preference question,
+in response to the user's correction after the D63 to D68 selection.
+No production Search change,
+fuzzy-library work,
+new IME experiment or original-AVD modification is authorized.
+
+### D72. A folder Search result opens its folder without autoplay (2026-09-29)
+
+Carry the existing `selectPage(page)` action into Search:
+a folder result returns to the ordinary player folder view with that
+folder selected and its queue page scope updated.
+It does **not** load another track or stop the already-playing stream.
+Changing only the visible left picker while leaving the right Search
+pane open would not expose the selected folder's track view on the
+unfolded panel,
+and would hide the outcome entirely on the folded cover.
+This is a coherence decision from the existing player behavior,
+not evidence that a Search row is currently clickable.
+The new Search visit after this return starts with an empty query (D66).
+
+### D73. Track Search results carry existing play/pause row semantics (2026-09-29)
+
+A directly named result for a different track starts that track,
+using the existing non-current player-row meaning.
+`PlayerController.playIndex(index)` calls `playCurrent()`;
+its source path selects the track's owning page in player state.
+A result for the already-current track uses the existing current-row
+`togglePlay()` meaning:
+pause while playing,
+resume when its URI is already loaded,
+or load it if necessary.
+Do **not** call `playIndex(current)` and describe that as an equivalent
+toggle.
+The historical parent-only `cam` result for the deck's Another
+Xronixle is excluded by D60;
+a current-track test needs a direct own-name query such as `Another`.
+No result handler,
+file-error path,
+scroll-to-row or accessibility focus has been implemented or verified
+by this design decision.
+
+### D74. Successful track result activation returns to player (2026-09-29)
+
+After the source-backed track-action defaults were presented,
+the user chose **Return** over **Stay** for the track-navigation
+consequence.
+A successful other-track start leaves Search and presents the ordinary
+player view with the selected owning page;
+a successful current-track play/pause action likewise returns to player,
+without inventing a playhead restart or changing the selected page solely
+for that toggle.
+The separate Search query ends on return;
+a later Search opening is fresh under D66.
+Do not claim that the new track's row is scrolled into view or that its
+accessibility focus was restored:
+`refresh(followCurrent = true)` selects the page,
+not a proven row position.
+A stale or failed result activation must not claim playback succeeded or
+substitute a different target;
+it stays in Search for truthful error handling,
+with D9's missing-item bar as the incumbent presentation precedent to
+verify during future implementation.
+The [historical Stay/Return logic comparison](questions/archive/search-result-activation-before-return.html)
+was not an Android tap test.
+No production Search implementation,
+fuzzy matcher selection or new IME experiment is authorized.
+
+### D75. Search opens with query accessibility focus (2026-09-29)
+
+Adopted as an evidence-led recommendation under the user's instruction
+to record strongly determined defaults with a correction/veto path,
+not as a separately answered questionnaire.
+The user subsequently accepted the reviewed goals as “good enough” and
+asked to continue design work.
+That confirms D75 to D80's design direction,
+not the unverified native behavior.
+Initial accessibility focus goes to the query field on both Fold panels.
+Its accessible name remains “Search music”;
+the current value is separate from that name.
+Back remains the preceding reachable control in the header's reading order.
+This is separate from D63's request for **edit focus** and a keyboard:
+neither focus system proves or overrides the other.
+Query-first prioritizes the Search task just invoked;
+Back-first would announce escape first but require another forward
+gesture to reach the field.
+Material guidance permits either initial target and does not select ours.
+The fixed `cam` fixture did not exercise a real Search-entry transition,
+so this is a design goal,
+not verified initial TalkBack focus.
+
+### D76. Keep Search together in reading order (2026-09-29)
+
+The linear Search region is Back,
+query,
+Clear when present,
+then the current results or status.
+On the inner panel,
+the retained folder region follows as a whole,
+including its header,
+alphabet rail and folder grid,
+then the complete playback deck.
+Do not interleave the left alphabet rail between the query and results.
+The cover has only its full-width Search destination;
+do not add a cover Search deck to reproduce the inner layout.
+D39 still governs the ordinary player outside Search.
+
+Search is not an accessibility modal or focus trap.
+Expose named regions so retained browser/deck controls are discoverable
+without traversing every hit in a large result list;
+the host application's actual region-navigation route needs verification.
+Keep visual composition unchanged and do not add repeated visible headings
+or hide the retained controls merely to simplify traversal.
+
+### D77. Each result is one named action (2026-09-29)
+
+Expose each result as one actionable semantic unit:
+own filename/folder name once,
+track/folder kind,
+useful parent context and the real activation meaning.
+A folder offers Open folder without autoplay under D72.
+A different track offers Play track.
+An already-current track offers Pause track while playing,
+or Play track while paused/unloaded,
+using D73's actual toggle semantics.
+“Current track” is structured state,
+not a synonym for “playing” or a second copied title.
+The resulting playback state remains discoverable on return.
+
+Disambiguate equal names with their relative parent path.
+For a root-level item,
+use the library-root context rather than inventing a parent or saying
+“unknown”.
+Parent context describes location,
+never eligibility from a parent-only match.
+Decorative type icons and D59 highlight fragments are not extra
+accessibility stops.
+Retain visible title/support text,
+actual minimum 48dp action targets and a labeled focus boundary;
+do not replace useful child text with a synthetic duplicated sentence.
+Exact platform speech and row activation remain implementation gates.
+
+### D78. Announce meaningful current Search changes without focus theft (2026-09-29)
+
+Make the results/status region persistently discoverable and announce
+meaningful changes without moving query edit or accessibility focus.
+Coalesce result updates rather than interrupting speech for every key,
+and cancel superseded announcements after another query,
+Clear or leaving Search.
+Completion belongs to the **current query and source evaluation**,
+not a silence timer.
+Announce an exact result count only when its scope is known;
+partial/stale results never establish completed no match under D69.
+If useful results appear while evaluation continues,
+distinguish availability from completion instead of announcing absence.
+
+An empty query retains D70's search invitation,
+not a failed lookup announcement.
+Completed no match may name the query;
+confirmed empty searchable inventory and known source failure retain
+their distinct D69/D71 meanings.
+Do not announce an unsupported recovery action,
+a fabricated total or hidden old-query success.
+Exact cause-specific error/recovery language remains dependent on
+internal review task 131's future source-status owner.
+
+### D79. Return focus explains the actual navigation outcome (2026-09-29)
+
+Visible Back returns accessibility focus to the player control that
+invoked Search when it still exists.
+If that control disappeared,
+use the current folder context as a deterministic fallback,
+not a disposed Search node.
+This does not change the distinct system-Back/IME boundary in D64.
+
+After a successful folder action,
+focus the selected folder context in the ordinary player:
+its selected folder item on the inner panel or folder title on the cover.
+After a successful other-track action,
+reveal and focus that track's player row on its owning page.
+After a successful current-track toggle,
+focus its player row if present on the retained page;
+otherwise use the deck's current-track context without changing pages
+solely for the toggle.
+A missing target falls back to the destination's folder context.
+
+Transfer focus only after the selected action genuinely succeeds and
+the destination is ready.
+A stale/failed activation remains in Search with a truthful,
+discoverable diagnostic and no substitute target.
+Do not let a delayed completion move focus after later navigation.
+These are desired targets,
+not proof of scroll-to-row,
+native success/error handling or TalkBack return speech.
+
+### D80. Preserve meaningful focus through Search changes (2026-09-29)
+
+For same-query updates,
+keyboard refocus and fold/layout changes,
+preserve the focused result's identity and make its target visible when
+that item still exists.
+This complements D68's visibility goal without promising arbitrary
+keyboard fit.
+If an item vanishes,
+focus the next surviving item in the current order,
+then the preceding one,
+or the query if no result survives;
+do not silently activate a replacement.
+If Clear removes its own focused control,
+accessibility focus falls back to the query while D65's edit-focus and
+keyboard-state contract remains unchanged.
+A new query cancels old-result focus restoration,
+but an update must not steal focus from editing.
+Hardware-keyboard mapping remains separate from these screen-reader goals.
+
+These recommendations can be corrected or vetoed in chat.
+They close the **design choices** for internal review task 118,
+not native accessibility acceptance.
+See `evidence/search-accessibility-boundaries.md` and
+`evidence/search-talkback-native-baseline.md`.
+The inner baseline is fixed-query,
+keyboard-closed and 200% only;
+cover physical-swipe delivery has no positive control.
+No production Search code,
+matcher selection,
+new IME experiment or original-AVD change is authorized.
+
 ---
+
+### D81. Supporting text is user-configurable through templates in Settings
+
+Supporting text is templated and the user can configure it in Settings.
+The user reaffirmed this agreement when the filename review presented
+supporting text as a fixed placement/visibility policy.
+Search filename review must preserve this configurability.
+D35's neutral default supporting-text role does not hard-code its content.
+
+The fixed-policy filename question is withdrawn.
+The native captures remain evidence of exact authored layouts,
+not implemented templates,
+Settings functionality or accepted defaults.
+Template fields,
+grammar,
+editor details,
+other row-type scope and interactions with required distinguishing
+information remain undesigned.
+Title customization is not implied by configurable supporting text.
+D77's accessible-action naming direction and the need for visible distinction
+before activation remain intact;
+no automatic suffix restoration or collision fallback is selected.
+No production implementation is authorized by this clarification.
 
 ## Pending after the theme picks (2026-09-04)
 

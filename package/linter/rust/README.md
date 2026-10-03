@@ -182,7 +182,7 @@ They are glob `overrides` now,
 
 A justification after `--` is **mandatory**:
  a directive without one does not suppress and is itself reported.
-`AGENTS.md` LN5 already requires one,
+`AGENTS.md` LN3 already requires one,
  so this makes the requirement enforceable
 rather than advisory.
 It is a superset of oxlint's behaviour,

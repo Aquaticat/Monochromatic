@@ -578,7 +578,7 @@ From repo rules,
   pi side via `pi -e` extension load or the unit-test `pi-test-harness`;
   claude side via the byte-equal stdout fixture replay documented in
   `package/claude-code-plugin/README.md`.
-   See AGENTS.md VUB and VB2.
+   See AGENTS.md VUB and VB1.
 - Each new shared package satisfies all lint rules:
   `require-tsdoc`,
    max-lines

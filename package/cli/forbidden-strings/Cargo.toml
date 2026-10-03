@@ -40,7 +40,7 @@ path = "src/main.rs"
 # What:     `fuzzing` Cargo feature. When enabled (`cargo build --features fuzzing`),
 #           the crate exposes `mod fuzz_api`, a curated re-export bundle of
 #           internal compile/extract/walker helpers used by the fuzz targets in
-#           `package/fuzz/forbidden-strings/fuzz_targets/*.rs`.
+#           `package/cli/forbidden-strings.fuzz/fuzz_targets/*.rs`.
 # Why:      Production consumers (the bin target, integration tests) build
 #           with this feature off, so they see the same public surface as
 #           before. Fuzz targets opt in by depending on

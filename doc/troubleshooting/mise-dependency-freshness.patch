@@ -1,0 +1,127 @@
+diff --git a/e2e/tasks/test_task_source_freshness_failed_first_run b/e2e/tasks/test_task_source_freshness_failed_first_run
+new file mode 100755
+index 0000000..5534cbf
+--- /dev/null
++++ b/e2e/tasks/test_task_source_freshness_failed_first_run
+@@ -0,0 +1,26 @@
++#!/usr/bin/env bash
++
++# A task whose first run fails after writing its explicit outputs has no
++# source baseline yet. The mtime fallback must not treat those outputs as
++# proof of success.
++
++cat <<EOF >mise.toml
++[tasks.build]
++run = 'touch out.txt; if [ -f poison ]; then exit 1; fi; echo built'
++sources = ['src.txt']
++outputs = ['out.txt']
++EOF
++
++echo "hello" >src.txt
++touch poison
++
++# First run writes out.txt, then fails
++assert_fail "mise run build 2>&1"
++
++rm poison
++
++# out.txt is newer than src.txt, but the failed run must not count as fresh
++assert "mise run -q build" "built"
++
++# After a success the task is fresh again
++assert_empty "mise run -q build"
+diff --git a/src/task/task_executor.rs b/src/task/task_executor.rs
+index 0f8c1a6..cca1702 100644
+--- a/src/task/task_executor.rs
++++ b/src/task/task_executor.rs
+@@ -17,7 +17,7 @@ use crate::task::task_output_handler::OutputHandler;
+ use crate::task::task_scheduler::SchedMsg;
+ use crate::task::task_script_parser::subcommand_name_from_parse;
+ use crate::task::task_source_checker::{
+-    remove_auto_output, save_checksum, sources_are_fresh, task_cwd,
++    mark_run_pending, remove_auto_output, save_checksum, sources_are_fresh, task_cwd,
+ };
+ use crate::task::{
+     Deps, FailedTasks, GetMatchingExt, Task, TaskCacheAudit, TaskCacheMode, TaskCacheOutput,
+@@ -711,6 +711,7 @@ impl TaskExecutor {
+             let exec_start = std::time::Instant::now();
+             Self::check_interruption(allow_during_interruption)?;
+             remove_auto_output(task, config).await?;
++            mark_run_pending(task, config).await?;
+             self.exec_file(config, &file, confirm_guard, exec_ctx)
+                 .await?;
+             trace!(
+@@ -733,6 +734,7 @@ impl TaskExecutor {
+             let exec_start = std::time::Instant::now();
+             Self::check_interruption(allow_during_interruption)?;
+             remove_auto_output(task, config).await?;
++            mark_run_pending(task, config).await?;
+             self.exec_task_run_entries(
+                 rendered_run_scripts,
+                 TaskRunEntriesContext {
+diff --git a/src/task/task_source_checker.rs b/src/task/task_source_checker.rs
+index beb3c64..95abec2 100644
+--- a/src/task/task_source_checker.rs
++++ b/src/task/task_source_checker.rs
+@@ -38,6 +38,23 @@ pub(crate) async fn remove_auto_output(task: &Task, config: &Arc<Config>) -> Res
+     Ok(())
+ }
+ 
++/// Record that a run of this task has started. `save_checksum` clears the
++/// marker after success; a failed or interrupted run leaves it, so the next
++/// freshness check reruns the task even when that attempt wrote outputs newer
++/// than its sources and no earlier baseline exists.
++pub(crate) async fn mark_run_pending(task: &Task, config: &Arc<Config>) -> Result<()> {
++    if task.sources.is_empty() {
++        return Ok(());
++    }
++    let root = task_cwd(task, config).await?;
++    let path = pending_run_path(task, &root);
++    if let Some(dir) = path.parent() {
++        file::create_dir_all(dir)?;
++    }
++    file::write(&path, "")?;
++    Ok(())
++}
++
+ /// Check if a path is a glob pattern
+ pub(crate) fn is_glob_pattern(path: &str) -> bool {
+     // This is the character set used for glob detection by glob
+@@ -817,6 +834,11 @@ pub(crate) async fn sources_are_fresh(task: &Task, config: &Arc<Config>) -> Resu
+     let run = async || -> Result<bool> {
+         let (root, _, source_metadatas) = collect_source_metadatas(task, config).await?;
+ 
++        if pending_run_path(task, &root).exists() {
++            debug!("previous run of {} did not succeed", task.name);
++            return Ok(false);
++        }
++
+         // Check if sources resolved to no files (likely a config mistake)
+         if source_metadatas.is_empty() {
+             warn!(
+@@ -988,6 +1010,11 @@ pub(crate) async fn save_checksum(task: &Task, config: &Arc<Config>) -> Result<(
+         }
+         file::write(&path, &hash)?;
+     }
++    match fs::remove_file(pending_run_path(task, &root)) {
++        Ok(()) => {}
++        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
++        Err(err) => return Err(err.into()),
++    }
+     // Persist the output hash so the next freshness check can detect missing
+     // or incomplete outputs even when the source hash still matches.
+     // Traversal errors (broken symlinks, unreadable files) are warned but not
+@@ -1034,6 +1061,13 @@ fn task_state_key(task: &Task, root: &Path) -> String {
+     format!("{:x}", hasher.finish())
+ }
+ 
++/// Marker present while a run has started but not yet succeeded.
++fn pending_run_path(task: &Task, root: &Path) -> PathBuf {
++    dirs::STATE
++        .join("task-sources")
++        .join(format!("{}-pending", task_state_key(task, root)))
++}
++
+ /// Get the path to store source hashes for a task
+ fn sources_hash_path(task: &Task, root: &Path, content_hash: bool) -> PathBuf {
+     let suffix = if content_hash { "-content" } else { "" };

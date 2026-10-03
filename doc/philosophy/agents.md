@@ -262,12 +262,40 @@ Keep `AGENTS.md` to rules that change what an agent decides at a fork it would o
 This is the test-tooling instance of the general rule above ("Code examples for rules that are self-explanatory" and "Detailed sub-rules for generic workflows"):
  a convention an agent will copy from its surroundings does not need a written rule.
 
+### Removed: 2026-09 rule-by-rule optimization
+
+Every rule was reviewed with the user and measured;
+ the record,
+ including each rule's approved text and the evidence behind every removal,
+ is `doc/planning/agents-md-optimization.md`.
+Rules left `AGENTS.md` for three reasons:
+
+1. A lint rule already enforces them and its diagnostic names the fix,
+    so the always-loaded copy only repeated the error message.
+    Compact principles standing in for many lint rules (IMM,
+    PP1,
+    ST9) stayed,
+    because one clause prevents many lint round-trips.
+2. They duplicated another rule,
+    so they merged into the more-cited code.
+3. They governed one product,
+    one package,
+    or one kind of task,
+    so they moved beside that material:
+    the `visual-design-review` skill,
+    the `choosing-technology` skill,
+    or the owning package's docs.
+    Moved rules keep their codes.
+
+Retired codes are reserved in the local forbidden-strings appendix so they are never reused.
+
 ## Relocated rule rationale
 
 The explanatory "why/how" for each rule below was moved here so `AGENTS.md` keeps only the terse enforceable rule,
  cue,
  and tokens.
- Headings match the `AGENTS.md` section they came from.
+ Headings match the `AGENTS.md` section each rule came from;
+ rules since moved to a skill or package doc keep their codes there.
 
 ### Rule details
 
@@ -299,7 +327,7 @@ work.
  run the file directly with `node <file>`,
  matching the Node-based test task template.
  A `PreToolUse` hook (`ccgr`,
- source at `package/claude-code-plugin/source/src/handlers/guardrail.ts`) blocks the call when configured.
+ source at `package/claude-code-plugin/source/src/handler/guardrail.ts`) blocks the call when configured.
 
 #### Type system: why `const` narrowing does not reach function declarations
 
@@ -595,14 +623,14 @@ When the behavior under test is whether a guard blocks a destructive operation,
  while a passing guard tells you nothing a throwaway would not have.
  So build both the allowed case and the rejected case as fixtures.
 
-#### Pre-response checklist item 5: categorical-dismissal examples
+#### Measure-vs-ask: categorical-dismissal examples (QF1)
 
 Categorical dismissals that feel like recall but are one search away:
  "the project doesn't use X",
  "X doesn't apply here",
  "X is already handled by Y".
  These overlap the hedge-phrase list;
- the checklist item keeps the rule (measure assumed facts,
+ QF1 keeps the rule (measure assumed facts,
  cite inline) while the examples live here and in the hedge section.
  `AGENTS.md` and tsconfig count as confs where X may be wired up.
 
@@ -738,15 +766,17 @@ The Rust `max-lines` rule (`monochromatic-rust-linter`) counts only code lines:
 The helper-shape allowlist suppresses the report when a function ends in `return <local-binding>`,
  which is why extracting such a helper is a clean remediation rather than a workaround.
 
-#### Variables and values: why VA6 stops at object-literal property values
+#### Variables and values: why magic-number policy lives in the lint config
 
 `no-magic-numbers` ships with `detectObjects: false` (`package/config/oxlint/src/rule/style.ts`),
  so a numeric literal used directly as an object-literal property value is never flagged by the tool.
- Before this exemption,
- VA6's plain wording ("magic literals as named const") read as a blanket requirement,
- with nothing marking object-literal values as already covered by the tool's own default.
+ The former `AGENTS.md` rule restating this check was deleted in the 2026-09 optimization:
+ `denyWarnings` makes every `no-magic-numbers` finding fail,
+ and the config is the one source of truth for its exemptions.
 
-Failure that produced this rule:
+Failure that shows why the config,
+ not a plain-language rule,
+ must decide:
  a redesign of `package/webapp-productivity/wc/src/styles-colors.ts` extracted five inline `l` channel values inside `cssOklch({...})` calls (e.g. `l: 0.16,`) into standalone named constants (`L_BLACK`,
  `L_NEAR_BLACK`,
  `L_MID`,
@@ -756,7 +786,6 @@ Failure that produced this rule:
  on the assumption the linter required it.
  `detectObjects: false` had already exempted that exact pattern for months (since commit `3515cd5cb`),
  so the extraction served no lint-compliance purpose and added five single-use constants of pure ceremony.
- VA6 now spells out the exemption so a future session checks the tool's actual config before over-complying with the rule's plain-language reading.
 
 #### Security: why source escapes are not portable across a syntax boundary
 

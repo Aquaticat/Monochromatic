@@ -233,6 +233,8 @@ async function worktreeMetadata({
 
  @param lifecycle - operation adding the path, which decides the remedy text
 
+ @param baseRevision - baseline commit the path must match; live `HEAD` when absent
+
  @returns Git mode of the unchanged ordinary file
 
  @throws AddedPathPreconditionError when any copy differs from `HEAD`
@@ -252,6 +254,7 @@ export async function assertAddablePath({
   path,
   oid,
   lifecycle,
+  baseRevision = 'HEAD',
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -261,6 +264,7 @@ export async function assertAddablePath({
   path: string;
   oid: GitObjectId;
   lifecycle: AddedPathLifecycle;
+  baseRevision?: string;
 }>,): Promise<AddedPathRecord['gitMode']> {
   /**
    `HEAD`, real index, and private index records for the path.
@@ -270,6 +274,7 @@ export async function assertAddablePath({
       gitPath,
       cwd,
       paths: [path,],
+      revision: baseRevision,
     },),
     loadIndexEntries({
       gitPath,
@@ -381,6 +386,8 @@ export type AddedWorktreeInstallResult = Readonly<{
 
  @param records - added paths recorded before real Git ran
 
+ @param objectDirectory - store holding blobs that never landed, such as a pre-correction original in the transaction's shadow store; the real store when absent
+
  @returns rewritten and conflicted paths
 
  @throws CommitTransactionGitError when Git cannot supply a recorded blob
@@ -396,11 +403,13 @@ export async function installAddedWorktreeFiles({
   cwd,
   repositoryRoot,
   records,
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   repositoryRoot: string;
   records: readonly AddedPathRecord[];
+  objectDirectory?: string;
 }>,): Promise<AddedWorktreeInstallResult> {
   if (records.length === 0)
     return {
@@ -420,6 +429,7 @@ export async function installAddedWorktreeFiles({
       ];
     },),
     createError: addedPathGitError,
+    ...(objectDirectory === undefined ? {} : { objectDirectory, }),
   },);
   /**
    Paths rewritten so far.
@@ -460,7 +470,7 @@ export async function installAddedWorktreeFiles({
     if (current.kind === 'intended')
       continue;
     if (current.kind === 'conflict') {
-      l.warn(`Worktree copy of ${record.path} changed or disappeared while cli-git completed a policy fix; the committed bytes remain in HEAD and your worktree state was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
+      l.warn(`Worktree copy of ${record.path} changed or disappeared while cli-git completed the commit; the committed bytes remain in HEAD and your worktree state was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
       conflicted.push(record.path,);
       continue;
     }

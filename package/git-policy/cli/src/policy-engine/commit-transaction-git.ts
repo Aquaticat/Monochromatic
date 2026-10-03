@@ -15,6 +15,8 @@ import type {
   GitObjectId,
   PolicyPatch,
 } from '../api/policy-types.ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
@@ -24,7 +26,17 @@ import type { CommitTransactionWorkspace, } from './commit-transaction-workspace
 export type PrivatePatchWorkspace = Readonly<Pick<
   CommitTransactionWorkspace,
   'directory' | 'commitIndexPath'
->>;
+> & {
+  /**
+   Object directory receiving the objects the patch writes; the real store when absent.
+   */
+  objectDirectory?: string;
+}>;
+
+/**
+ Module logger.
+ */
+const l = tagged({ tag: 'cli-git', },);
 
 /**
  Private patch file mode.
@@ -80,6 +92,12 @@ export type GitOutput = Readonly<{
  
  @param environment - transaction-owned environment additions
  
+ @param unsetEnvironment - inherited variables removed before additions apply, such as a caller `GIT_DIR`
+ 
+ @param input - bytes written to standard input instead of an empty stream
+ 
+ @param objectDirectory - object store receiving every object Git writes, such as a transaction's shadow store whose alternates name the real store; the repository's own store when absent
+ 
  @returns exact captured output
  
  @throws CommitTransactionGitError when Git exits nonzero
@@ -97,6 +115,9 @@ export async function runTransactionGit({
   stdio = 'capture',
   allowFailure = false,
   environment = {},
+  unsetEnvironment = [],
+  input,
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -105,14 +126,21 @@ export async function runTransactionGit({
   stdio?: 'capture' | 'inherit';
   allowFailure?: boolean;
   environment?: Readonly<Record<string, string>>;
+  unsetEnvironment?: readonly string[];
+  input?: Uint8Array;
+  objectDirectory?: string;
 }>,): Promise<GitOutput> {
   /**
    Environment containing only engine-selected index override.
    */
   const env = {
-    ...process.env,
+    ...Object.fromEntries(Object.entries(process.env,)
+      .filter(function inherited([name,],): boolean {
+        return !unsetEnvironment.includes(name,);
+      },),),
     ...environment,
     ...(indexPath === undefined ? {} : { GIT_INDEX_FILE: indexPath, }),
+    ...(objectDirectory === undefined ? {} : { GIT_OBJECT_DIRECTORY: objectDirectory, }),
   };
   if (stdio === 'inherit') {
     /**
@@ -149,12 +177,26 @@ export async function runTransactionGit({
     cwd,
     env,
     stdio: [
-      'ignore',
+      input === undefined ? 'ignore' : 'pipe',
       'pipe',
       'pipe',
     ],
   },
   );
+  if ((child.stdout === null) || (child.stderr === null))
+    throw new CommitTransactionGitError(`git ${args.join(' ',)} started without captured output streams.`,);
+  if ((input !== undefined) && (child.stdin !== null)) {
+    // Git may exit before reading everything; its exit status, not the broken pipe, reports the failure.
+    child.stdin
+      .once(
+      'error',
+      function reportInputError(error: unknown,): void {
+        l.debug(`git ${args.join(' ',)} closed standard input early: ${caughtValueText(error,)}`,);
+      },
+    );
+    child.stdin
+      .end(input,);
+  }
   /**
    Concurrent stream consumers.
    */
@@ -244,5 +286,6 @@ export async function applyPrivatePatch({
       '--3way',
       patchPath,
     ],
+    ...(workspace.objectDirectory === undefined ? {} : { objectDirectory: workspace.objectDirectory, }),
   },);
 }

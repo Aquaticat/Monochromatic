@@ -20,7 +20,7 @@ Nothing is implemented until the user confirms a shared understanding.
 Keep this handover current after every answer,
 correction,
 decision,
-and verification (`AGENTS.md` HUP and DCK).
+and verification (`AGENTS.md` DCK).
 
 ## Incumbents
 
@@ -426,7 +426,7 @@ not vetoed in round 3:
     `package/rust-module/forbidden-regex.fuzz`:
      61 `require-rustdoc`.
   - Rust exemptions are matched relative to the working directory:
-     `package/fuzz/forbidden-strings` reports 0 from the root and 30 from inside it.
+     `package/cli/forbidden-strings.fuzz` reports 0 from the root and 30 from inside it.
   - The built-in exemptions hide 1,132 Rust findings,
      including 4 more files over the line budget.
   - Markdown:

@@ -712,7 +712,7 @@ the work is strictly larger than option 1C by the size of a correct,
 Unverified:
  how long that takes.
 No estimate is offered here,
- per rule CK3.
+ per rule QJ1.
 
 #### Option 1E: port `hcl/v2` and `go-cty` wholesale
 

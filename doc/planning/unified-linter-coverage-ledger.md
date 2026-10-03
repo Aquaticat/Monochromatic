@@ -2,7 +2,7 @@
 
 Every responsibility the incumbent Rust linter and Markdown linter carry,
 who consumes it,
-and its owner in the unified linter (`AGENTS.md` RCO).
+and its owner in the unified linter (rule RCO in the `choosing-technology` skill).
 Design interview state:
 [`doc/handover/unified-linter.md`](../handover/unified-linter.md).
 
@@ -518,7 +518,7 @@ registered as `markdown/autofix` in `cli-git.config.ts:22-43`.
    or Android Gradle Lint.
   The same claim appears in `doc/planning/monorepo-manager-from-scratch-design.md:1892`.
 - Rust crates without `lint:rust`:
-   `package/fuzz/forbidden-strings`
+   `package/cli/forbidden-strings.fuzz`
    and `package/rust-module/forbidden-regex.fuzz`,
    whose path escapes the `**/fuzz/**` default.
 - Root `lint:markdown` and `format:markdown` run `node package/cli/markdown-lint/src/cli.ts --lfs-image-exclude=package/ssg/`,
@@ -541,7 +541,7 @@ registered as `markdown/autofix` in `cli-git.config.ts:22-43`.
    MXR names `monochromatic-rust-linter`;
    RDC names `require-rustdoc` and the cxx-qt carve-out;
    MXL,
-   LN5,
+   LN3,
    MD1,
    MD3,
    MD4,

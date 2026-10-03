@@ -1,5 +1,34 @@
 # Candidate inventory
 
+## Current status and how to read this archive
+
+`questions/current.html` is the selected Fold Search review through
+D75 to D80,
+not a candidate-selection questionnaire.
+The accessibility round is complete;
+file-extension display in result titles remains a separate open visual
+question outside that round.
+Native Search activation,
+announcements,
+focus transitions and complete cover traversal remain deferred
+implementation acceptance work.
+The inspected inner TalkBack fixture is 200% and keyboard-closed only.
+No production change or new IME experiment is authorized.
+
+Use `decisions.md` for settled choices and `open-questions.md` section 0b
+for open,
+provisional and developer-owned work.
+D46's P4 cover picker remains provisional;
+D17's rejected prefix buckets/one-folder-per-row fast-scroll variants do
+not become live options merely because their files still exist.
+Candidate descriptions are historical unless a named decision explicitly
+makes them the current baseline.
+MD3-on-Slint feasibility and implementing the keyboard map are
+developer-owned;
+the single revised keyboard-map design remains open.
+
+## Historical inventory
+
 66 files in **candidates/**.
  Every one is a standalone Design Component (.dc.html)
 that opens in a browser at its declared preview size.
@@ -123,7 +152,7 @@ which were left as historical style comparisons.
    and frames fill
   the viewport height rather than floating in dead space.
 
-## Current screen refinement matrix, awaiting verdict
+## Historical screen refinement matrix, settled with 1B
 
 The accepted `divider-final.png` remains the before-state evidence.
  Its transport
@@ -378,7 +407,7 @@ fill,
 All light-side files are presented on a light desk with a light caption bar
 (review-notes 5g);
  the dark pair keeps a dark one.
- For the active questionnaire,
+ For the historical native theme questionnaire,
  the
 six `.dc.html` files are now historical design records rather than screenshot sources.
 Branch `prototype/music-player-theme-compose` rebuilds the same six keys in native
@@ -568,7 +597,7 @@ the visible dynamic rail line.
 </tbody>
 </table>
 
-## ROUND 6 — awaiting verdict
+## Historical round 6, scrollbar choice settled by D22
 
 <table>
 <thead>
@@ -741,7 +770,7 @@ on-secondary-container #E8DEF8.
  The descend demos assume parent tracks play before
 subfolders (unconfirmed — see open-questions.md #3).
 
-## REJECTED or UNRESOLVED — needs rebuilding
+## Historical rejected or unresolved candidates
 
 <table>
 <thead>
@@ -829,7 +858,7 @@ subfolders (unconfirmed — see open-questions.md #3).
    **Keep:
    this is the fallback if the connected button group is dropped.**
 
-### Folder picker explorations (the A–Z jump strip won)
+### Historical folder picker explorations, superseded by D17 and D31
 - **picker-a** — letter section rows.
 - **picker-b** — the jump strip (the direction that won).
 - **picker-c** — persistent sidebar.
@@ -949,7 +978,7 @@ covered (`questions/evidence/cover-round-cover-picker-p4-interaction.json`).
 P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
 cap because the D31 name wall needs the full panel.
 
-## Desktop command-bar visual drafts, withdrawn pending MD3 redraw
+## Historical desktop command-bar visual drafts, withdrawn
 
 The I/G/R questions are independent,
  and no choice was made.
@@ -960,7 +989,7 @@ rejected as visibly non-MD3.
  The candidates recorded here are historical design
 probes,
  not current response options.
- The replacement must use the Search bar/view
+ The subsequent replacement used the Search bar/view
 visual and token evidence in `material-3-compliance.md`.
 
 The withdrawn I/G/R variant roles were:
@@ -1102,7 +1131,10 @@ flow was exercised,
 measures the target phone geometry.
 D21's global hotkey and Settings row are not inherited by the Search page.
 D25's Ctrl+F reservation remains open with the whole keyboard map.
- Search targets and result effects/ranking remain design questions;
+ At that retired round,
+ Search targets and result effects/ranking were still design questions;
+ D58 to D61 and D63 to D80 now settle the visible and interaction goals.
+ Engine selection and native implementation remain deferred.
 D49 makes the Fold the visual source for every platform,
  and D51 later
 selected A's unfolded pane placement.
@@ -1169,11 +1201,25 @@ right pane,
 typing.
  D52 removes the duplicate `Results for “cam”` heading from positive
 results on the inner and cover panels.
- The current A-only rasters in
+ The initial A-only rasters in
 `questions/render/search-selected-review-*` are sanitized native captures
 at 100% and 200% text in light/dark.
  The self-contained
 `questions/current.html` shows the selected state,
  not a new choice menu.
 Native query input was exercised with a measured 300dp debug-only system IME;
-Gboard geometry and production implementation remain unverified.
+Real-Gboard geometry is measured for the linked settled and overlay states;
+D53 to D55 accept the observed floating-deck,
+brief banner and cover floating-result overlaps.
+Other keyboard configurations and production implementation remain unverified.
+D58 to D61 refine alignment,
+match emphasis,
+direct-name membership and mixed relevance.
+D63 to D74 settle navigation,
+status truth and result-action goals;
+D75 to D80 adopt accessibility goals with a chat correction/veto path.
+The current selected-only review and
+`evidence/search-talkback-native-baseline.md` distinguish those goals from
+static captures and bounded observed speech.
+There is no native Search result handler,
+verified cover swipe sequence or live announcement/return-focus proof.

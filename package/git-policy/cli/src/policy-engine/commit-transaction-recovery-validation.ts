@@ -309,9 +309,14 @@ export function headsEqual({
 }
 
 /**
+ Recorded identity of the real-index lock a transaction created.
+ */
+export type OwnedLockIdentity = Pick<PreparedTransactionJournal, 'lockDevice' | 'lockFsId' | 'lockInode'>;
+
+/**
  Verifies owned lock identity before recovery mutation.
  
- @param journal - prepared journal identity
+ @param journal - prepared journal or owner record naming the owned lock
  
  @param lockPath - current real-index lock path
  
@@ -324,7 +329,7 @@ export async function assertOwnedLock({
   journal,
   lockPath,
 }: Readonly<{
-  journal: PreparedTransactionJournal;
+  journal: OwnedLockIdentity;
   lockPath: string;
 }>,): Promise<void> {
   /**
@@ -347,75 +352,6 @@ export async function assertOwnedLock({
     || (String(metadata.dev,) !== journal.lockDevice)
     || (String(metadata.ino,) !== journal.lockInode))
     throw new CommitTransactionRecoveryError(`Index lock identity changed: ${lockPath}`,);
-}
-
-/**
- Validates latest HEAD reflog entry as transaction-owned ref movement.
- 
- @param gitPath - resolved Git executable
- 
- @param cwd - repository root
- 
- @param oid - current commit OID
- 
- @param journal - prepared transaction
- 
- @example
- ```ts
- await assertTransactionReflog({ gitPath: '/usr/bin/git', cwd: '/repo', oid, journal });
- ```
- */
-export async function assertTransactionReflog({
-  gitPath,
-  cwd,
-  oid,
-  journal,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  oid: string;
-  journal: PreparedTransactionJournal;
-}>,): Promise<void> {
-  /**
-   Latest reflog identity and subject separated without text ambiguity.
-   */
-  const result = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'reflog',
-      'show',
-      '--max-count=1',
-      '--format=%H%x00%gs',
-      'HEAD',
-    ],
-    allowFailure: true,
-  },);
-  if (result.exitCode !== 0)
-    throw new CommitTransactionRecoveryError('Transaction ref movement lacks durable reflog provenance.',);
-  /**
-   Exact latest reflog output without terminal LF.
-   */
-  const output = DECODER.decode(result.stdout,)
-    .endsWith('\n',)
-    ? DECODER.decode(result.stdout,)
-      .slice(
-        0,
-        -1,
-      )
-    : DECODER.decode(result.stdout,);
-  /**
-   Unambiguous identity/subject separator.
-   */
-  const separator = output.indexOf('\0',);
-  if ((separator === (-1))
-    || (output.slice(
-      0,
-      separator,
-    ) !== oid)
-    || (!output.slice(separator + 1,)
-      .startsWith(`${journal.reflogAction}:`,)))
-    throw new CommitTransactionRecoveryError('Current HEAD reflog does not identify prepared transaction.',);
 }
 
 /**

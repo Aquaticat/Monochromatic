@@ -20,6 +20,8 @@ export const addExplicitPolicy: RuntimePolicyDefinition = {
   name: 'add-explicit',
   defaultSeverity: 'error',
   warnSafe: false,
+  // Parses only the command arguments in its context.
+  inputs: { external: [], },
   triggers: ['pre-forward',],
   check: function runAddExplicitPolicy({ context, }): Promise<readonly PolicyFinding[]> {
     try {

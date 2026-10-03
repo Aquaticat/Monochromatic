@@ -1182,7 +1182,7 @@ Linkup search,
    which hashes with `gix_hash::hasher(gix_hash::Kind::Sha256)`.
 - RP08 lockfile packages
    (every `Cargo.lock` under `package/`):
-   `sha2` 0.10.9 (`cli/forbidden-strings`, `fuzz/forbidden-strings`, `cli/nested-wayland-session`),
+   `sha2` 0.10.9 (`cli/forbidden-strings`, `cli/forbidden-strings.fuzz`, `cli/nested-wayland-session`),
    `sha2` 0.11.0 (`rust-module/forbidden-regex.bench`),
    `sha1` 0.10.6 and 0.10.7 with `sha1-checked` 0.10.0 (through `gix-hash`),
    `aes` 0.8.4 and `sha1_smol` 1.0.1 (music player, through `turso_core`),
