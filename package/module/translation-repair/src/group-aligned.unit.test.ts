@@ -722,6 +722,69 @@ await describe({
         },),
 
         it({
+          name: 'BEGINS A FRESH RUN AT THE STEP AFTER A DECLINE, so the declined block\'s bytes sit '
+            + 'outside both spans instead of between two blocks of one run (ledger T8, the group '
+            + 'cluster)',
+          fn: async () => {
+            /**
+             Original blocks, both placed by the pairing.
+             */
+            const sourceNodes = blocksOf({ text: '猫猫在窗台上睡觉。\n\n猫猫追蝴蝶。\n', },);
+
+            /**
+             Translation blocks, the middle one no original claims while every original is placed.
+             */
+            const targetNodes = blocksOf({
+              text: 'The cat sleeps on the windowsill.\n\nA caption no original claims.\n\nThe cat chases butterflies.\n',
+            },);
+
+            /**
+             Runs as grouped over a pairing that leaves the middle translation declined.
+             */
+            const runs = groupWithNothingSealed({
+              sourceNodes,
+              targetNodes,
+              sourceBudget: WIDE_BUDGET,
+              targetBudget: WIDE_BUDGET,
+              steps: [
+                {
+                  kind: 'paired',
+                  sourceIndex: 0,
+                  targetIndex: 0,
+                },
+                {
+                  kind: 'target-only',
+                  targetIndex: 1,
+                },
+                {
+                  kind: 'paired',
+                  sourceIndex: 1,
+                  targetIndex: 2,
+                },
+              ],
+            },);
+            expect(runs.map(function sourceIds(run,) {
+              return run.sourceRun.map(function id(node,) {
+                return node.id;
+              },);
+            },),).toStrictEqual([
+              [ nonNullishOrThrow(sourceNodes.at(0,),).id, ],
+              [ nonNullishOrThrow(sourceNodes.at(1,),).id, ],
+            ],);
+            expect(runs.map(function targetIds(run,) {
+              if (run.kind !== 'paired')
+                throw new Error(`expected only paired runs after the decline, got ${run.kind}`,);
+              return run.targetRun.map(function id(node,) {
+                return node.id;
+              },);
+            },),).toStrictEqual([
+              [ nonNullishOrThrow(targetNodes.at(0,),).id, ],
+              [ nonNullishOrThrow(targetNodes.at(2,),).id, ],
+            ],);
+          },
+        },),
+
+        it({
           name: 'ANCHORS A TRAILING ORIGINAL AFTER THE LAST RENDERED BLOCK, since nothing follows it '
             + 'to sit before, and anchoring at the start of the last block instead would write the '
             + 'passage above the paragraph it comes after',
