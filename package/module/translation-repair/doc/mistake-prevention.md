@@ -494,6 +494,8 @@ and a search for that shape found five more code pointers by sequence in the tes
 "the previous case",
 "reaching the next line"),
 which D33's scan does not read.
+A trial fix's comment named its check as "the check below",
+and the position scan turned the suite red before the change landed (M111).
 
 The rule:
 a reference names something a later reader can open:

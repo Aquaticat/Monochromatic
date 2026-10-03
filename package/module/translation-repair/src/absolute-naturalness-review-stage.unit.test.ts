@@ -79,6 +79,9 @@ const PROVIDER_GROUPED_ROSTER = [
 
  @param delayed - whether rejecting model answers after accepting peers
 
+ @param held - seat whose answer the case releases after the review settled,
+ so a straggler arrives after the close on every run
+
  @param refused - models the router refuses for want of a wet provider
 
  @returns Scripted absolute reviewer
@@ -93,11 +96,22 @@ function reviewClient(
     unavailable = [],
     rejecting,
     delayed = false,
+    held,
     refused = [],
   }: {
     readonly unavailable?: readonly RosterModelId[];
     readonly rejecting?: RosterModelId;
     readonly delayed?: boolean;
+    readonly held?: {
+      /**
+       Model whose answer holds on the gate.
+       */
+      readonly modelId: RosterModelId;
+      /**
+       Gate the answer waits on until the case resolves it.
+       */
+      readonly answer: PromiseWithResolvers<undefined>;
+    };
     readonly refused?: readonly RosterModelId[];
   },
 ): SyntheticClient {
@@ -114,7 +128,14 @@ function reviewClient(
           reason: 'every provider serving this cat is out of budget',
         },);
       }
-      if (delayed && (request.modelId === rejecting))
+      // ORDERED BY A GATE where the case holds one (ledger T5's recurrence of
+      // 2026-10-03): a 30 ms sleeper against its peers' microtask answers let
+      // the reply land inside the 0 ms close 2 full-suite runs of 5. A round
+      // that never settles leaves the seat held, so the case fails on the
+      // run's deadline rather than passing.
+      if ((held !== undefined) && (request.modelId === held.modelId))
+        await held.answer.promise;
+      else if (delayed && (request.modelId === rejecting))
         await wait(30,);
       if (unavailable.includes(request.modelId,)) {
         return {
@@ -234,10 +255,17 @@ await describe({
       name: 'STARTS GRACE AT HALF instead of requiring delayed final seat',
       fn: async () => {
         const messages: string[] = [];
+        /**
+         Gate the final seat's answer holds on, released after the review settled.
+         */
+        const heldAnswer = Promise.withResolvers<undefined>();
         const review = await runReview({
           client: reviewClient({
             rejecting: ROSTER[2],
-            delayed: true,
+            held: {
+              modelId: ROSTER[2],
+              answer: heldAnswer,
+            },
           },),
           messages,
         },);
@@ -251,6 +279,11 @@ await describe({
           'unusable',
         ],);
         expect(review.findings,).toEqual([],);
+        // RELEASED AFTER THE REVIEW SETTLED, so the straggler's words still
+        // flow through the abandoned ask and the no-leak check covers them;
+        // `wait(0)` drains that microtask chain before the check reads.
+        heldAnswer.resolve(undefined,);
+        await wait(0,);
         expect(messages.some(function leaksPrivateReview(line,): boolean {
           return line.includes('Replace stiff source-language word order.',)
             || line.includes('candidate retains translationese',);

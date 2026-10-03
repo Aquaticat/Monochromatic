@@ -2436,6 +2436,25 @@ then released,
 so the sleep is the whole window on every run;
 the default clock stays covered by the B78 case on a stepped wall clock.
 
+Recurred in `absolute-naturalness-review-stage.unit.test.ts`,
+found 2026-10-03 (UTC) in the trial's suite start under the whole suite's load:
+the "STARTS GRACE AT HALF instead of requiring delayed final seat" case
+ordered its delayed seat's rejection 30 ms against its peers' microtask answers,
+and load starved the peers' quorum to the seat's arrival,
+so the reply raced the 0 ms grace close
+and the case failed 2 of 5 full-suite runs
+(a correction naming itself:
+the Status's claim that the naturalness-review sibling's "race read into it does not occur" rested on 5 of 5 at 0.2 CPU,
+which never probes the whole suite's load).
+The seat's answer is now held on a gate the case releases after the review settled
+(the M11 shape),
+so the straggler arrives after the close on every run
+and its words still flow past the no-leak check,
+which a seat that never answers would have left vacuous;
+"KEEPS REJECTION that arrives inside bounded post-quorum grace" keeps its 30 ms sleeper against a 100 ms grace,
+safe in both orderings,
+as the control.
+
 ### T6: names claiming more than they check
 
 Status:
@@ -20075,6 +20094,19 @@ and a task's log is read for its own result line
 (the lint's `Found N warnings and N errors.`,
 the scans' `[PASS]` count)
 before its exit status is believed either way.
+
+### M111: a comment naming its check by where it sits
+
+Status:
+happened 2026-10-03 (UTC),
+caught at once and recorded here.
+The T5 recurrence's fixture comment told the reader "the check below covers them",
+and `position-references.unit.test.ts` turned the suite red on it before the change landed.
+The comment names "the no-leak check" in words now.
+Prevention:
+a comment names the check it discusses in words,
+never by where it sits,
+since an insertion silently repoints a position.
 
 ### M79: a coverage census measuring compressed code
 
