@@ -434,6 +434,14 @@ and dependency finalization.
 Start its clock before provenance checks and preparation,
 not after either gate.
 
+The separate native-host omission control `proc_3b7a` used one session/two injected requests.
+Removing the host checkpoint callback reached assessment where the fixture expected none,
+producing exact `AssertionError [ERR_ASSERTION]: 1 !== 0`.
+A separate assessment receipt assertion still prevented execution;
+this proves omission detection,
+not an unsafe execution.
+No intact SDK worker was replayed.
+
 ## Next action
 
 Preserve the completed runtime,

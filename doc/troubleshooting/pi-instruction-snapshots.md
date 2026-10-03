@@ -1382,8 +1382,21 @@ export function readMainAgentRequest({producerOwner,observer,stream,response}) {
 }
 ```
 
-`observationFor` checks its owned response association and current lifecycle/source receipt;
-it is not merely an identity lookup.
+The private observer's `contract/lifecycle/root-lifecycle-retirement-entry/observer.mjs:52` calls `validate(scope)`.
+That function invokes `assertScope` at line 41,
+which calls `lifecycle.assertActive` and `collector.assertObservedFresh` at lines 37 and 38:
+
+```js
+// Private prototype: root-lifecycle-retirement-entry/observer.mjs:52
+function observationFor(response) {
+  const scope = object(response) ? responses.get(response) : undefined;
+  if (!scope) throw new RequestObservationOwnershipError('Response is not associated with this observer');
+  validate(scope);
+  return scope.receipt;
+}
+```
+
+Thus `observationFor` is not merely an identity lookup.
 The helper does not grant permission or decide policy.
 
 `proc_1aaa` qualified the producer/wire gate at the actual complete prepared-group consumer:
@@ -1408,6 +1421,14 @@ code-owned evidence/decision handling,
 and dependency finalization.
 Start its clock before provenance checks and preparation,
 not after either gate.
+
+The separate native-host omission control `proc_3b7a` used one session/two injected requests.
+Removing the host checkpoint callback reached assessment where the fixture expected none,
+producing exact `AssertionError [ERR_ASSERTION]: 1 !== 0`.
+A separate assessment receipt assertion still prevented execution;
+this proves omission detection,
+not an unsafe execution.
+No intact SDK worker was replayed.
 
 ## Verified workarounds and limits
 
