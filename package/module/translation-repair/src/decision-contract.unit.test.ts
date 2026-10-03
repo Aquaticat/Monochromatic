@@ -82,6 +82,19 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a reply with no answers block and one carrying an answer that is none of the three '
+        + '(ledger T8, the decision cluster)',
+      fn: async () => {
+        expect(() => readDecisionReplyBody({
+          bodyText: '{"model":"kitty"}',
+        },),).toThrow('answers missing',);
+        expect(() => readDecisionReplyBody({
+          bodyText: '{"answers":{"a":{"type":"meow"}},"model":"kitty"}',
+        },),).toThrow('answer a is not a choice, noul or score',);
+      },
+    },),
+
+    it({
       name: 'READS a reply carrying no usage as its answers and model alone (ledger T8, the decision '
         + 'cluster)',
       fn: async () => {

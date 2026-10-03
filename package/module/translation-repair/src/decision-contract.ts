@@ -301,13 +301,27 @@ export class DecisionReplyShapeError extends Error {
 
    @param detail - which documented field was absent or mistyped
 
+   @param cause - what the parse threw, carried for the chain and kept out of
+   the message, which names nothing the reply held
+
    @example
    ```ts
    new DecisionReplyShapeError({ detail: 'answers missing', },);
    ```
    */
-  public constructor({ detail, }: { readonly detail: string; },) {
-    super(`decisions reply is not the documented shape: ${detail}`,);
+  public constructor(
+    {
+      detail,
+      cause,
+    }: {
+      readonly detail: string;
+      readonly cause?: unknown;
+    },
+  ) {
+    super(
+      `decisions reply is not the documented shape: ${detail}`,
+      { cause, },
+    );
     this.name = 'DecisionReplyShapeError';
   }
 }
@@ -360,7 +374,10 @@ export function readDecisionReplyBody({ bodyText, }: { readonly bodyText: string
       return JSON.parse(bodyText,);
     }
     catch (error) {
-      throw new DecisionReplyShapeError({ detail: `body is not JSON (${String(Error.isError(error,) ? error.name : error,)})`, },);
+      throw new DecisionReplyShapeError({
+        detail: 'body is not JSON',
+        cause: error,
+      },);
     }
   })();
   if (!isJsonRecord(parsed,))
