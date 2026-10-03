@@ -469,6 +469,14 @@ one-time enclosing/nested scope construction,
 and existing dependency-finalizer integration remain next work.
 No SDK session or model ran in this phase.
 
+`proc_035e` subsequently measured a failure-retention gap in the consumed budget source:
+separate operation/clock or classifier/clock failures could compare equal and be collapsed.
+Four paired contrasts qualify a fresh candidate that distinguishes a new retirement from an already-latched one.
+Equal `undefined` values and repeated references now retain separate new occurrences;
+rethrowing the already-latched retirement still preserves the original exception.
+The earlier matrix was not replayed or rewritten.
+Use `contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs` for further integration.
+
 ## Next action
 
 Preserve the completed runtime,
