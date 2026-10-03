@@ -212,18 +212,21 @@ Changed-factory compatibility checks also passed:
 `proc_7c32` completed two content-consumer sessions/four requests/one inert execution;
 `proc_791c` completed six navigation-consumer sessions/six requests/no tools.
 No external model calls ran.
-The accepted private profile is verified within these declared surfaces.
-Runtime replacement,
+That manager/session checkpoint verified the declared surfaces,
+but did not qualify runtime replacement,
 other session/agent state,
-and instruction authority remain unqualified.
+or instruction authority.
+The separate runtime result is recorded under `Runtime prototype progress`.
 
 ## Runtime extension decision
 
-The next possible module would govern runtime-owned replacement operations and their constructor factories.
-It would need a terminal-close contract without a replacement session,
+At this decision,
+the proposed module would govern runtime-owned replacement operations and their constructor factories.
+It needed a terminal-close contract without a replacement session,
 and verified behavior for rebind/`withSession` callbacks,
 including nesting and failures after an already-applied replacement.
-Those semantics have not been measured for a changed runtime implementation.
+Those changed-runtime semantics had not yet been measured;
+`Runtime prototype progress` records the subsequent qualification.
 The user accepted runtime option A:
 extend the private prototype into runtime-owned operations and constructor factories.
 Installation,

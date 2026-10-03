@@ -1148,7 +1148,19 @@ completion followed the native return,
 not merely the session's early closed flag.
 
 This is a controlled factory profile.
-The native publisher contains only synchronous private-field assignments from prepared data.
+The publisher in the private generator `contract/lifecycle/runtime-sdk-copy/generate-runtime.mjs:40`
+contains only synchronous private-field assignments from prepared data:
+
+```js
+// Private repository: contract/lifecycle/runtime-sdk-copy/generate-runtime.mjs
+this.#operations.apply({ result, publish: (prepared) => {
+    this.#_session = prepared.session;
+    this.#_services = prepared.services;
+    this.#_diagnostics = prepared.diagnostics;
+    this.#_modelFallbackMessage = prepared.modelFallbackMessage;
+} });
+```
+
 Owned non-proxy results remain a producer precondition;
 data-descriptor checks alone do not establish it.
 `proc_4f1c` separately demonstrated that an arbitrary throwing publisher can leave an admitted successor

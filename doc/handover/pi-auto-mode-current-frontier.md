@@ -738,7 +738,7 @@ Both made no external model calls.
 The verified private profile now covers manager occurrences,
 session liveness/pairing,
 and the stated content/navigation consumers.
-Runtime-owned operations are a separate proposed extension in
+Runtime-owned operations were accepted as a separate extension in
 [the custody plan](../planning/pi-auto-mode-sdk-state-custody.md).
 The user accepted runtime option A,
 and the declared private runtime profile is now verified:
