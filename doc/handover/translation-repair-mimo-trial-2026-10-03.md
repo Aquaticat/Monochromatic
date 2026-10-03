@@ -8,10 +8,9 @@ Read this whole file before running any command.
 It is the one document you must read in full;
 every other link is for when a step sends you there.
 A session resuming the trial reads "Trial log" first:
-its newest line says where the last session stopped and what comes next.
-Before a session's context fills,
-commit,
-and write that line.
+its newest line names the last commit and the step in progress.
+Write that line after every commit,
+so a new session picks up mid-step.
 Everything stated as measured was run on 2026-10-03 in a cloud copy of the repository
 (Node 26.10.0,
 pnpm 12.5.1,
@@ -156,13 +155,26 @@ before leaving:
   "First:
   fix B126".
 
-The owner is away.
-When a step needs a decision only the owner can make,
-write it under "Questions for the owner" at the end of this file,
-commit,
-and go on with the next step;
-never stop the whole session on one question.
-A turn ends only when every step here is done or blocked (ledger M101).
+The owner is away and answers nothing until the trial ends,
+so no step waits on the owner.
+This file has no stopping point:
+when a step closes,
+the next starts,
+and the owner expects T8 to outlast the 48 hours.
+A turn never ends on a summary,
+a plan
+or a question (ledger M101).
+A choice the stated rules and a measurement settle is settled:
+make it and record it (`AGENTS.md` rules QDF,
+QGR,
+QNX).
+A choice that still turns on preference alone
+takes the option that serves the quality of the shipped page,
+the owner's standing directive of 2026-09-28;
+act on it,
+and record it under "Decisions for the owner to review" with the options,
+the evidence and the reason,
+so the owner can veto it on return.
 
 ## Setup, once
 
@@ -179,11 +191,22 @@ git switch --create translation-repair-mimo-trial --no-track origin/translation-
 git log --max-count 1 --format='%h %s'
 ```
 
-- `git status --short` must print nothing under `package/module/translation-repair` or `doc` before anything else runs.
-  A path outside both is someone else's work in progress:
+- A path `git status --short` prints outside `package/module/translation-repair` and `doc` is someone else's work in progress:
   leave it,
   never stage it,
   and never restore or stash it (`AGENTS.md` rule EC1).
+- A path it prints under either is carried onto the trial branch by the switch:
+  read it with `git diff`,
+  commit it there as found,
+  alone,
+  as `chore(module-translation-repair): commit changes found at the trial's start`,
+  naming each path,
+  and note it in "Trial log".
+  If the switch refuses because such a change conflicts,
+  cut the branch where the worktree stands
+  (`git switch --create translation-repair-mimo-trial --no-track`),
+  commit the change the same way,
+  then `git merge --no-edit origin/translation-repair-rebased` so the branch carries this file.
 - `--no-track` matters.
   Without it the new branch tracks `origin/translation-repair-rebased`
   (measured on 2026-10-03:
@@ -212,8 +235,11 @@ fix B126",
 which prints three `[FAIL]` lines
 (the case,
 its suite and the file's root suite).
-Any other `[FAIL]` line on this machine is a finding:
-record it under "Trial log" before going on.
+Any other `[FAIL]` line on this machine is a finding of the same kind:
+take the next B number and fix it on the steps of "First:
+fix B126",
+right after B126 and before the census,
+which refuses a failing suite.
 In the cloud copy the suite took about four minutes after the build.
 
 If you are not on the owner's machine:
@@ -437,8 +463,15 @@ then decide which of three it is.
     never on hope:
     `23090a91d` rejected an agent's "unreachable" after a probe reached it.
 
-A stretch you cannot place goes under "Trial log" as left uncased,
-with the reason.
+Every stretch ends as one of the three.
+There is no fourth outcome:
+T8 closes only when every library stretch has a case or is removed (ledger T8).
+A stretch that resists placement gets a probe on the built package,
+as `23090a91d` did,
+until it is placed.
+A reachable arm that needs a failure the host will not produce on demand is still cased,
+through a parameter the function already takes,
+or the narrowest one added so a test can supply that failure.
 
 Close the batch in this order:
 
@@ -464,9 +497,10 @@ Close the batch in this order:
     `cold since then 0`
     and `not loaded 0`.
     Each count above zero is followed by lines naming the stretches;
-    case or explain each one,
+    case each one,
+    or prove it unreachable and remove it,
     commit,
-    and run it again.
+    and run it again until all three read 0.
     A source the batch edited is read as a whole:
     its line must say this run loaded it and left nothing cold.
 3.  Run the full suite (`buildAndTest`),
@@ -493,10 +527,16 @@ Take it after the first T8 batch has landed.
 The ledger's B123 entry has the cause,
 the probe inputs and their results.
 Write the red case through `applyFootnoteRelabel` first,
-then design the fix.
-If two fixes both keep every stated rule and differ only in what the owner would prefer,
-write both under "Questions for the owner" with what each costs,
-and go back to T8.
+then design the fix,
+build it,
+and land it on the steps of "First:
+fix B126".
+Settle the design as "Your authority and the owner's choices" says:
+by the stated rules and measurement,
+and where two designs still differ by preference alone,
+by the quality of the shipped page,
+recorded under "Decisions for the owner to review".
+Then back to the next T8 cluster.
 
 ## Commands
 
@@ -636,7 +676,7 @@ One line per step or batch:
 the date and UTC time,
 what landed with its commit,
 the counts read from the logs,
-and anything left open.
+and the step in progress.
 
 - 2026-10-03,
   16:20 UTC:
@@ -648,7 +688,15 @@ and anything left open.
   then "First:
   fix B126".
 
-## Questions for the owner
+## Decisions for the owner to review
+
+Each entry is a choice already made and acted on,
+never an open question:
+the options,
+the evidence,
+the one taken,
+why,
+and its commit.
 
 None yet.
 
