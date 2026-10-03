@@ -845,8 +845,29 @@ append-argument,
 and preloaded-input mutations from changing canonical graph or projection values.
 Raw own-state access still changed both variants.
 Persistent bytes and fixture restoration were checked separately.
-This is a data-copy result for the inspected profile,
-not full encapsulation or SDK-consumer compatibility.
+This first phase is a data-copy result for the inspected profile,
+not full encapsulation.
+
+The actual SDK follow-up `contract/lifecycle/manager-copy-sdk/` passed `proc_5f26`:
+four completed sessions,
+eight injected requests,
+two inert tool executions,
+and no external model requests.
+Original and changed managers both preserved selected final-message replacement,
+asynchronous native tool hooks,
+before-settle draft preview,
+append-only context edits,
+continuation payload content,
+and persisted JSON values.
+The final settle callback was measured in both modes.
+Public message-end event identity stayed intact while stored-message identity became separate in the copy variant.
+That distinguishes live event coordination from retained state ownership.
+
+This does not qualify auto-retry/recovery omission,
+arbitrary extension payloads,
+raw own-state protection,
+or complete mutation custody.
+The installed SDK remained unchanged.
 
 ## Verified workarounds and limits
 

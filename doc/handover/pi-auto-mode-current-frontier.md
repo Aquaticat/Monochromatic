@@ -631,17 +631,31 @@ The copy variant isolated the tested getter,
 append-argument,
 and preloaded-input aliases from the canonical graph/projection.
 Direct raw-state mutation remained effective in both variants.
-Actual SDK message-replacement and context-edit consumers are now prepared in
-`contract/lifecycle/manager-copy-sdk/`,
-not yet qualified.
+The actual SDK consumer then passed `proc_5f26` in `contract/lifecycle/manager-copy-sdk/`:
+four completed sessions,
+eight injected requests,
+two inert tool executions,
+no external model calls.
+Both variants preserved final-message rewrites,
+native preparation/result hooks,
+before-settle preview,
+append-only context edits,
+provider continuation inputs,
+and persisted JSON values.
+Public event identity stayed intact;
+stored-message identity was shared in the baseline and separate in the copy variant.
+Only these inspected JSON-like consumers are qualified;
+retry/omission paths and arbitrary extension payloads remain unexercised.
 
 A separate private-repository Git recovery blocked commands on the superseded `a673638` transaction.
 Explicitly authorized `proc_aac3` preserved and archived 21 journal files without changing index or refs;
 normal wrapper status/log calls then passed.
 Evidence is `contract/diagnostic/superseded-index-recovery/`.
 The first recovery script parse failure remains retained separately.
-Next run the fresh copy-boundary variant and then exercise real native consumers;
-raw own-state exposure and unmanaged writers remain outside its claim.
+Next investigate private state encapsulation against those same positive consumers.
+Raw own-state exposure,
+prototype mutation,
+and unmanaged writers remain outside the qualified copy-boundary claim.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
