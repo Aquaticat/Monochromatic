@@ -679,6 +679,27 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  19:17 UTC:
+  the T8 `group` batch closed:
+  commit `691e70e3b` landed its last case
+  (`test(module-translation-repair): T8 group, case the continuation riding with its seal`),
+  written for `src/group-aligned.ts` lines 377 to 383,
+  and the reach census reads `still cold 0, cold since then 0, not loaded 0`
+  over the three claimed sources and three test files
+  (`~/temp/agent/mimo-trial/reach-group.log`).
+  Counts at the close:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-group-final-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `691e70e3b`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `inline` cluster
+  (10 stretches in one file).
+
+- 2026-10-03,
   19:00 UTC:
   the T8 `group` batch's first case landed with commit `aa5f63aec`
   (`test(module-translation-repair): T8 group, case the run split at the step after a decline`),

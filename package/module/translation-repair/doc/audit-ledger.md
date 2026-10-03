@@ -5433,6 +5433,31 @@ The cut of the 19 bundles (`make-bundles.mjs`) and the agents' other partial cop
 not in the repository,
 so the batches after this one read against a fresh whole-suite census rather than the cut.
 
+The first cluster batch of that fresh census,
+`group`,
+against `census-WkdwRV` at `36841106c`:
+10 stretches over `group-run-anchor.ts`,
+`group-source-anchor.ts` and `group-aligned.ts`,
+none near the split-by-file size.
+Six were unreachable fallbacks their own neighbourhoods guarantee away
+(`92c912b08`):
+three `?? NO_BOUNDARY` index fallbacks,
+an undefined-step arm the loop's own bounds close,
+a dead `? []` arm the early return closes,
+and one no-boundary return arm replaced with an `unreachable:` throw
+after four probes on the built package never built the run list it guards.
+Two are cased:
+the run split at the step after a decline
+(`aa5f63aec`),
+and the sealed cohesive continuation riding with its seal
+(`691e70e3b`),
+each named for its stretch in the commit that carries it.
+The reach census (`~/temp/agent/mimo-trial/reach-group.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+over the three claimed sources and three test files,
+with the two edited sources loaded whole and left nothing cold.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
