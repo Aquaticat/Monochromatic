@@ -593,6 +593,15 @@ then address SDK writer custody separately.
 Do not treat the lease as proof that every native mutation is observed.
 Implementation is authorized only for the private prototype;
 production deployment and permission creation remain unapproved.
+The private lifecycle path passed `proc_ca4b`:
+24 intact cases and five guard-removal failures,
+with historical registry source unchanged,
+no SDK sessions,
+and no model requests.
+Evidence is `contract/lifecycle/root-lifecycle-lease/`.
+Next bridge request observations to opaque leases,
+keeping temporary suspension distinct from irreversible stale-state rejection,
+then exercise that interface through real SDK lifecycle calls.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).

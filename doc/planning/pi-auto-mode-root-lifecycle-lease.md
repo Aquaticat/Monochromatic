@@ -92,9 +92,34 @@ private lease contract followed by custody work > custody work before the lease 
 because the first order makes the required lifecycle semantics explicit without claiming the writers are closed.
 Neither order authorizes production cutover.
 
+## Private prototype result
+
+The sibling `contract/lifecycle/root-lifecycle-lease/` implementation passed `proc_ca4b`,
+exit 0,
+with 24 intact interface cases and five guard-removal failures.
+Historical registry source remained unchanged.
+The prototype shares canonical manager epochs across the branch and lifecycle interfaces,
+while keeping branch snapshots independent of temporary lifecycle suspension.
+
+Controls covered issuer identity,
+exact session/manager pairing,
+suspension and cancellation,
+pre-effect retirement,
+same-pair restoration,
+same-manager session replacement,
+uncertain failure,
+explicit reopening,
+shared epoch changes,
+and trace failure/reentrancy handling.
+Trace failures are retained without orphaning handles or changing completed operation outcomes.
+Unmanaged borrowed mutation remains an explicit non-detection control.
+No SDK session or external model request ran in this phase.
+
 ## Accepted next action
 
-Implement the private lifecycle-only lease prototype in the existing registry.
+Bridge the private request observer to these opaque lifecycle leases.
+Temporary suspension must not trigger its permanent stale latch;
+committed or uncertain mutation must prevent old-receipt revival.
 Writer custody,
 instruction authority,
 and human permission remain separate unmet production gates.
