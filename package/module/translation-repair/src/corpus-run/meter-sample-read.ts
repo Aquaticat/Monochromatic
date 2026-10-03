@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { isIsoStampText, } from '../iso-stamp-text.ts';
 import type { MeterState, } from '../provider-meters.ts';
 
@@ -216,7 +218,9 @@ function firstFieldReads(
   /**
    First whitespace-separated token after the marker.
    */
-  const first = tail.split(' ',)[0] ?? '';
+  const first = nonNullishOrThrow(tail
+    .split(' ',)
+    .at(0,),);
 
   /**
    Where that token's name stops and its state starts.

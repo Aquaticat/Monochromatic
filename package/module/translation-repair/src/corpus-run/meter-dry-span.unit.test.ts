@@ -291,6 +291,45 @@ await describe({
             expect(dutyCycle({ counts, },),).toBe('none-answered',);
           },
         },),
+        it({
+          name: 'reads no state for a provider a sample predates, since a record from before it existed '
+            + 'says nothing about it (ledger T8, the corpus-run/meter cluster)',
+          fn: async () => {
+            expect(seriesFor({
+              samples: minuteByMinute({
+                states: [
+                  'wet',
+                  'dry',
+                ],
+              },),
+              provider: 'bedrock',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'reports the longest outage across several rather than the first (ledger T8, the '
+            + 'corpus-run/meter cluster)',
+          fn: async () => {
+            /**
+             Spans closing one three-sample outage and one single-sample one.
+             */
+            const spans = drySpans({
+              series: seriesFor({
+                samples: minuteByMinute({
+                  states: [
+                    'dry',
+                    'dry',
+                    'dry',
+                    'wet',
+                    'dry',
+                  ],
+                },),
+                provider: 'synthetic',
+              },),
+            },);
+            expect(longestDrySpan({ spans, },),).toBe(spans[0],);
+          },
+        },),
       ],
     },),
   ],

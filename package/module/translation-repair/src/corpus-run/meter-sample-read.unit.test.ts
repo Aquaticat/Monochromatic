@@ -214,6 +214,59 @@ await describe({
             expect(readMeterLine({ line, },),).toBe('skipped',);
           },
         },),
+        it({
+          name: 'SKIPS a record whose field carries no meter state even when a later field repeats the '
+            + 'name, since the first reading is absent (ledger T8, the corpus-run/meter cluster)',
+          fn: async () => {
+            expect(readMeterLine({
+              line: '[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] '
+                + 'METERS hyper=dry synthetic=bogus synthetic=wet',
+            },),).toBe('skipped',);
+          },
+        },),
+        it({
+          name: 'counts no level out of a field carrying no separator, since it names no reading '
+            + '(ledger T8, the corpus-run/meter cluster)',
+          fn: async () => {
+            expect(readMeterLine({
+              line: '[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] '
+                + 'METERS synthetic=wet hyper=dry hyperBalance',
+            },),).toEqual({
+              at: Date.parse('2026-08-24T18:17:35.383Z',),
+              synthetic: 'wet',
+              hyper: 'dry',
+              bedrock: 'absent',
+              openrouter: 'absent',
+              levels: [],
+            },);
+            expect(readMeterLine({
+              line: '[info] [2026-08-24T18:17:35.383Z] [translation-repair] [takeReading] '
+                + 'METERS synthetic=wet hyper=dry hyperBalance=0',
+            },),).toEqual({
+              at: Date.parse('2026-08-24T18:17:35.383Z',),
+              synthetic: 'wet',
+              hyper: 'dry',
+              bedrock: 'absent',
+              openrouter: 'absent',
+              levels: ['hyperBalance=0',],
+            },);
+          },
+        },),
+        it({
+          name: 'skips a record whose prefix holds no bracketed timestamp, in each shape a broken '
+            + 'prefix takes (ledger T8, the corpus-run/meter cluster)',
+          fn: async () => {
+            expect(readMeterLine({
+              line: 'nostamp METERS synthetic=wet',
+            },),).toBe('skipped',);
+            expect(readMeterLine({
+              line: 'x] y METERS synthetic=wet',
+            },),).toBe('skipped',);
+            expect(readMeterLine({
+              line: 'x] [y METERS synthetic=wet',
+            },),).toBe('skipped',);
+          },
+        },),
       ],
     },),
 

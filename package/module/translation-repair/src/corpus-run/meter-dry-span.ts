@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { MeterState, } from '../provider-meters.ts';
 import type { ProviderName, } from '../provider-name.ts';
 import type { MeterSample, } from './meter-sample-read.ts';
@@ -382,8 +384,8 @@ export function drySpans(
       return {
         at: reading.at,
         state: reading.state,
-        wetBefore: before[index] ?? 'none',
-        wetAfter: after[index] ?? 'none',
+        wetBefore: nonNullishOrThrow(before.at(index,),),
+        wetAfter: nonNullishOrThrow(after.at(index,),),
       };
     },);
 
