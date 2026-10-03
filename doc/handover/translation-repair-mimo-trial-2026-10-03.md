@@ -679,6 +679,27 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  22:07 UTC:
+  the T8 `corpus-run/meter` batch closed with commit `729931a40`:
+  10 stretches over the two meter readers,
+  3 `??` fallbacks replaced with `nonNullishOrThrow`,
+  7 cased through `seriesFor`,
+  `longestDrySpan` and `readMeterLine`.
+  The reach census reads `still cold 0, cold since then 0, not loaded 0`
+  and both edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-meter.log`).
+  Counts at the close:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-meter-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `729931a40`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `fidelity` cluster.
+
+- 2026-10-03,
   21:50 UTC:
   the next batch's baseline census taken at commit `dae4b8eea`:
   `census written to ~/.cache/translation-repair/coverage/census-DbGZ25/census.json`

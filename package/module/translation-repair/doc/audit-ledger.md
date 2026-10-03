@@ -5546,6 +5546,28 @@ reads `still cold 0, cold since then 0, not loaded 0`
 and the edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The fifth cluster of that census,
+`corpus-run/meter`,
+against `census-DbGZ25` at `cedebd9eb`:
+10 stretches over `meter-dry-span.ts` and `meter-sample-read.ts`
+(`729931a40`).
+Three `??` fallbacks came out for `nonNullishOrThrow`
+(the two wet-neighbour bounds and the first token of a tail),
+each backed by a walk that pushes one entry per element.
+Seven are cased:
+the absent-provider skip,
+the `longestDrySpan` reducer's arms,
+the no-state field beside a repeated name,
+the separator-less level field beside its level-shaped control,
+and the three unstamped prefixes
+(no bracket at all,
+a level bracket with none after it,
+and one that never closes).
+The reach census (`~/temp/agent/mimo-trial/reach-meter.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+and both edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
