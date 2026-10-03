@@ -268,5 +268,43 @@ await describe({
         },),).toEqual([],);
       },
     },),
+    it({
+      name: 'REPORTS NOTHING for polish that rewrote an already consolidated slice, which is fresh '
+        + 'wording rather than archive fallback (ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        expect(finalSelectionFindings({
+          artifact: {
+            ...sourceWith({
+              verdict: { kind: 'settled-neither', archive: 'declined', },
+              polished: true,
+            },),
+            consolidation: {
+              kind: 'settled',
+              slices: [{
+                sliceIndex: 0,
+                terminal: 'consolidated',
+                shipped: {
+                  kind: 'unchanged',
+                },
+                rewrapped: false,
+                demoted: false,
+                verdicts: [],
+                polish: {
+                  kind: 'settled',
+                  baseText: ARCHIVE,
+                  proposedText: 'The cat rested.',
+                  text: 'The cat rested.',
+                  changed: true,
+                  refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                  contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                  roundCount: 1,
+                  findings: [],
+                },
+              },],
+            },
+          } as unknown as WouldShipSource,
+        },),).toEqual([],);
+      },
+    },),
   ],
 },);

@@ -1,5 +1,3 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 import type { ArtifactContestVerdict, } from './artifact-two-lane-contest.ts';
 import {
   type WouldShipSource,
@@ -78,6 +76,16 @@ export function finalSelectionFindings(
   const { consolidation, } = artifact;
 
   /**
+   Consolidation records the final reading derives from, none where the stage
+   never ran: polish wording exists only inside a settled consolidation
+   (`would-ship-text.ts` reads polish only there), so an empty list is the
+   honest reading anywhere else.
+   */
+  const consolidatedSlices = (consolidation.kind === 'settled')
+    ? consolidation.slices
+    : [];
+
+  /**
    Slices where archive would stand despite no contest endorsement.
    */
   const unresolved = contests.flatMap(function unresolvedArchive(contest,): readonly number[] {
@@ -89,17 +97,9 @@ export function finalSelectionFindings(
       return [];
     if (reading.decidedBy === 'polish') {
       /**
-       Consolidation stage settled, which the polish wording read above proves:
-       `would-ship-text.ts` reads polish only from a settled consolidation.
-       */
-      const settled = nonNullishOrThrow((consolidation.kind === 'settled')
-        ? consolidation
-        : undefined,);
-
-      /**
        Initial consolidation result polish rewrote, when stage recorded one.
        */
-      const consolidated = settled.slices
+      const consolidated = consolidatedSlices
         .find(function namesSlice(slice,): boolean {
           return slice.sliceIndex === contest.sliceIndex;
         },);

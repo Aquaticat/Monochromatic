@@ -945,6 +945,24 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES a settled polish carrying no review record, since nothing proves a reviewer read '
+        + 'the body slice (ledger T8, the corpus-run/final cluster)',
+      fn: async () => {
+        expect(() => assertFinalNaturalnessComplete({
+          artifact: artifactCarrying({
+            polish: {
+              kind: 'settled',
+              baseText: 'The cat naps.',
+              proposedText: 'The cat is napping.',
+              text: 'The cat is napping.',
+              changed: true,
+            },
+          },),
+        },),).toThrow(NaturalnessCompletenessError,);
+      },
+    },),
+
+    it({
       name: 'SHOWS THE REVIEWER EVERY BODY BLOCK and records that count, so a blockquote candidate with '
         + 'no refinable paragraph still gives a reviewer one paragraph to cite (one entry, slice 10, '
         + '2026-09-02: zero refinable paragraphs, six of nine ballots refused as out of range), and the '
