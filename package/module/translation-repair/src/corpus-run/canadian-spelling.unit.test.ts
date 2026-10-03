@@ -250,5 +250,13 @@ await describe({
           .toBe('A cat says `colour\n# Loud heading\nand `not color` again.',);
       },
     },),
+    it({
+      name: 'LEAVES "mum" AS WRITTEN when no word stands before it across a space, a quote mark included, '
+        + 'rather than reading a possessive where none is there (`previousWord`)',
+      fn: async () => {
+        expect(respelled({ text: 'Keep "mum" about the cat.', },),)
+          .toBe('Keep "mum" about the cat.',);
+      },
+    },),
   ],
 },);

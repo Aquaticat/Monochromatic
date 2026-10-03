@@ -66,6 +66,38 @@ await describe({
         },),
 
         it({
+          name: 'READS a name behind any of the three list markers',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: 'Contributors for this entry: - Whisker, * Pebble, + Mittens',
+            },),).toEqual([
+              'Whisker',
+              'Mittens',
+              'Pebble',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'KEEPS an opening bracket no link follows as the name it is written as',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: 'Contributor for this entry: [Whisker',
+            },),).toEqual(['[Whisker',],);
+          },
+        },),
+
+        it({
+          name: 'READS NO NAME from a link whose label is empty, which shows a reader nothing, rather than its '
+            + 'markup (T8)',
+          fn: async () => {
+            expect(archiveContributorNameForms({
+              text: 'Contributors for this entry: [](https://example.test/whisker), Pebble',
+            },),).toEqual(['Pebble',],);
+          },
+        },),
+
+        it({
           name: 'IGNORES ORDINARY PROSE carrying same words away from line start',
           fn: async () => {
             expect(archiveContributorNameForms({
