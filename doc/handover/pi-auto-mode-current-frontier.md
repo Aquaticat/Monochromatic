@@ -652,10 +652,20 @@ Explicitly authorized `proc_aac3` preserved and archived 21 journal files withou
 normal wrapper status/log calls then passed.
 Evidence is `contract/diagnostic/superseded-index-recovery/`.
 The first recovery script parse failure remains retained separately.
-Next investigate private state encapsulation against those same positive consumers.
-Raw own-state exposure,
-prototype mutation,
-and unmanaged writers remain outside the qualified copy-boundary claim.
+The private-field experiment then passed `proc_50e1`:
+58 observations,
+four native managers,
+no SDK sessions/model requests.
+Its 11 private data fields resisted tested public-field shadows,
+but cached/prototype branch calls,
+getter overrides,
+and public `_loadEntries` remained open routes.
+This isolates data;
+it does not establish method custody.
+`contract/lifecycle/manager-private-fields-sdk/` is prepared to test only the changed variant
+against the retained positive SDK consumer outcomes.
+Next reconcile that consumer and design the intrinsic SDK ownership boundary;
+instance hooks alone cannot cover the measured method routes.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).

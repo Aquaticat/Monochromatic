@@ -869,6 +869,34 @@ raw own-state protection,
 or complete mutation custody.
 The installed SDK remained unchanged.
 
+### Private fields isolate data but leave method routes open
+
+`contract/lifecycle/manager-private-fields/` passed `proc_50e1`:
+58 declared observations using four owned native managers,
+no SDK sessions or model requests.
+The experiment converted the pinned copy variant's 11 state fields to JavaScript private fields.
+All state fields disappeared from ordinary own-property enumeration.
+Public writes to ten tested field names no longer changed canonical read results,
+unlike the copy-only baseline.
+
+The persistent `flushed` flag had a separate positive control.
+Setting the baseline's public flag to false caused exact `EEXIST` at its owned session path:
+the memory entry had been appended,
+but the old file bytes remained.
+The private-field variant ignored the public shadow and persisted the new append.
+The failed baseline fixture was not reused.
+
+Private fields did not close method custody:
+
+-   Cached and prototype `branch` calls still moved/restored the leaf without the selected instance hook.
+-   An own getter override still spoofed ordinary `getSessionId()` calls.
+    A captured prototype getter returned the actual ID.
+-   The compiled public `_loadEntries` method still replaced/restored graph content in both variants.
+
+The result catalogs unexercised methods rather than claiming whole-module compatibility.
+The next SDK consumer phase reuses the pinned prior probe logic for only the changed variant,
+comparing with retained baseline outcomes instead of replaying unchanged sessions.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
