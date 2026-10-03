@@ -679,6 +679,30 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  18:20 UTC:
+  "Second:
+  the whole-suite census" taken at commit `6d5f13a8b`,
+  `census written to ~/.cache/translation-repair/coverage/census-WkdwRV/census.json`
+  (`~/temp/agent/mimo-trial/census-base.log`).
+  `library source: 198 files, 457 stretches over 1061 lines, 11 functions never called`.
+  Largest clusters by stretches then lines:
+  `group` leads with 10 stretches over 24 lines in 3 files,
+  `inline` with 10 over 23 in 1,
+  `rendering` with 10 over 23 in 3,
+  `corpus-run/final` with 10 over 17 in 2,
+  `corpus-run/meter` with 10 over 15 in 2,
+  `fidelity` with 9 over 24 in 2,
+  `decision` with 9 over 19 in 2,
+  `openrouter` with 9 over 18 in 5.
+  No cluster is near the split-by-file size.
+  This line lands in the trial-log commit that follows `6d5f13a8b`.
+  Next:
+  "Third:
+  T8 batches,
+  one cluster at a time",
+  the `group` cluster first.
+
+- 2026-10-03,
   18:14 UTC:
   the flaky fixture finding closed with commit `3a6e3b1fa`
   (`test(module-translation-repair): T5, hold the naturalness grace case's delayed seat at a gate`):
