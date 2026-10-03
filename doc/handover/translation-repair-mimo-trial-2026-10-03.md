@@ -679,6 +679,36 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  17:28 UTC:
+  "Setup,
+  once" closed on trial-log commit `ebe0933d7`;
+  no source commit landed in it.
+  Suite start (`~/temp/agent/mimo-trial/suite-start.log`):
+  1,544 [PASS] and 10 [FAIL] lines,
+  triaged to three groups.
+  Three lines are the B126 case,
+  its suite and the file's root suite.
+  Four `sampleBenchSlices` cases and their suite line failed on the fresh checkout only
+  because the cli-git wrapper's build was missing there
+  (`Cannot find module .../git-policy-cli/dist/final/node/index.mjs` behind a fixture `git init`);
+  `mise run //package/git-policy/cli:build` fixed it
+  and all four pass (`~/temp/agent/mimo-trial/retry-named.log`).
+  `reviewAbsoluteNaturalness` "STARTS GRACE AT HALF instead of requiring delayed final seat"
+  failed in that run,
+  passed in the merge check and on re-run:
+  its fixture rides wall-clock timing,
+  so a delayed seat landed inside grace and its rejection counted,
+  which "KEEPS REJECTION that arrives inside bounded post-quorum grace" pins as correct.
+  That flake is the next finding after B126,
+  on the steps of "First:
+  fix B126",
+  before the census.
+  This line lands in the trial-log commit that follows `ebe0933d7`.
+  Next:
+  "First:
+  fix B126".
+
+- 2026-10-03,
   17:18 UTC:
   merge of main (at `ea53b956a`) into `translation-repair-rebased` landed with commit `28303c42a`
   (`chore(*): merge main into translation-repair-rebased`):
