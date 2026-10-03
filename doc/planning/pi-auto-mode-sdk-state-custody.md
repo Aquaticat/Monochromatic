@@ -351,6 +351,23 @@ Constructor occurrence ownership does not establish instruction authority,
 human permission,
 or another judgment budget.
 
+The construction-aware registry passed `proc_a698`:
+26 pure cases and eight guard removals.
+Its cleanup-obligation refinement passed read-only reconciliation `proc_ddf4`,
+retaining five intact cases and three mutations plus isolated foreign-pair controls.
+The original `proc_6cea` verifier failure remains preserved;
+its mutation was detected by an earlier ownership assertion than expected.
+The cleanup holder passed `proc_4f3e` with 12 cases/four guard removals,
+and the construction-aware operation owner passed `proc_22a9` with 12 cases/four guard removals.
+
+The first actual SDK integration process `proc_aa49` preserved completed startup-request cases,
+but failed in the replacement cleanup-fault fixture.
+Its fault was armed before source teardown rather than restricted to the candidate session.
+The exact thrown operation error was not retained by the failing assertion,
+so a fresh targeted diagnostic and corrected tail are required.
+The original process remains failed;
+completed cases will be reconciled without replay.
+
 ## Next action
 
 Preserve the completed runtime,
