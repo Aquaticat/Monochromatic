@@ -1015,12 +1015,48 @@ with Pi SDK 1.0.0 `ExtensionRunner.assertActive` emitting a plain `Error` whose 
 The collector propagated that SDK error;
 it was not a `SourceCollectionError` fingerprint mismatch.
 
-The source ordering is explicit:
-`AgentSession.dispose()` in `dist/core/agent-session.js:977` runs abort hooks before
-`this._extensionRunner.invalidate(...)` at line 988.
-The same file exposes `agent` and `sessionManager` as ordinary fields at lines 82 and 83.
-`AgentSessionRuntime` imports its installed manager module,
-so providing a protected manager to an initial SDK session does not itself redirect replacement constructors.
+The abort portion of `AgentSession.dispose()` is explicit in `dist/core/agent-session.js:977`:
+
+```js
+// Installed SDK: dist/core/agent-session.js, disposal entry excerpt.
+dispose() {
+    try {
+        this.abortRetry();
+        this.abortCompaction();
+        this.abortBranchSummary();
+        this.abortBash();
+        this.agent.abort();
+    }
+    catch {
+        // Dispose must succeed even if an abort hook throws.
+    }
+```
+
+The immediately following statement at line 988 begins with this call,
+using the retained stale-context diagnostic:
+
+```js
+// Installed SDK: dist/core/agent-session.js, next statement's prefix.
+this._extensionRunner.invalidate(
+```
+
+The same class declares ordinary fields at lines 82 and 83:
+
+```js
+// Installed SDK: dist/core/agent-session.js, field declarations.
+agent;
+sessionManager;
+```
+
+`dist/core/agent-session-runtime.js:6` imports its own installed manager module:
+
+```js
+// Installed SDK: dist/core/agent-session-runtime.js.
+import { SessionManager } from "./session-manager.js";
+```
+
+Providing a protected manager to an initial SDK session does not itself change that import
+or redirect the runtime's replacement constructors.
 
 The next private interface must observe session liveness and its actual manager pairing,
 not infer those facts from unchanged manager state.
