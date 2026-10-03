@@ -255,6 +255,20 @@ production adoption,
 provider/cutoff selection,
 or permission creation.
 
+## Runtime prototype progress
+
+The fresh `runtime-root-lifecycle/` extension passed `proc_68df`:
+12 terminal-close cases and three independent guard-removal controls.
+`completeRetirement` finishes an already-retired transition without issuing a replacement lease.
+A clean pending transition cannot use it,
+and callback-driven epoch changes still permit failed-transition cleanup.
+The previously qualified registry implementation remained unchanged outside this added operation.
+No SDK sessions or model requests ran in this pure phase.
+
+Native nested rebind/`withSession` behavior and post-apply callback failures are being probed
+in a separate owned SDK fixture before runtime routing is changed.
+These checks do not yet qualify a runtime-owned operation module.
+
 ## Next action
 
 Implement the accepted runtime extension in fresh private phases.
