@@ -679,6 +679,20 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  21:10 UTC:
+  the next batch's baseline census taken at commit `8fa092e8b`:
+  `census written to ~/.cache/translation-repair/coverage/census-7Aczvk/census.json`
+  (`~/temp/agent/mimo-trial/census-5.log`).
+  `library source: 191 files, 425 stretches over 984 lines, 9 functions never called`.
+  Largest clusters by stretches then lines:
+  `corpus-run/final` leads with 10 stretches over 17 lines in 2 files,
+  `corpus-run/meter` with 10 over 15 in 2,
+  `fidelity` with 9 over 24 in 2.
+  This line lands in the trial-log commit that follows `8fa092e8b`.
+  Next:
+  the `corpus-run/final` batch.
+
+- 2026-10-03,
   21:05 UTC:
   the T8 `rendering` batch closed with commits `18f0b3a85` and `0bea2bc58`:
   10 baseline stretches and 2 more the per-source reading found,
