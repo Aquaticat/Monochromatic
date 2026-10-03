@@ -482,8 +482,13 @@ all merged after review (ledger T8).
 The census's other 509 stretches,
 with 14 functions never called,
 are cut into 19 file-disjoint bundles;
-the agents given the first five stopped part way at a usage limit,
-and their partial output is under review before any of it merges.
+the agents given the first five stopped part way at a usage limit.
+Bundles 1 and 2 landed after review (`23090a91d`,
+`ba6da4640`);
+of bundles 3 to 5,
+only two test files reached the branch (`98e94e584`),
+and the cut itself was never committed,
+so the next batch reads against a fresh whole-suite census.
 B118 (test declarations nothing read,
 and fixture exports nothing imported)
 and B119 (16,856 lines ending in whitespace,
@@ -494,14 +499,25 @@ B120 lets the global-writes scan follow a writer into the test files importing i
 B121 (one İ on a page switched off the archive-name casing veto) is fixed,
 and B122 orders text by code point at every sort in production source,
 with canonical JSON's key order the one named exemption.
+Reviewing bundle 2 found B124
+(a wet refuser held for no time ended a call as every provider dry)
+and B125
+(a decision seat's distribution recorded as an objection),
+both fixed.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
 which `message-names-only.unit.test.ts` now checks at every construction.
 The census reading leaves sources edited since its baseline out of its counts,
 since it matches stretches by line (`d27a89dd0`).
-Holding the launch for T8 is a quality call recorded for the owner to veto,
+Open:
+T8 (code no unit test runs;
+holding the launch for it is a quality call recorded for the owner to veto,
 and these counts are the size of what it holds the launch for),
+B123 (a link literal the parser leaves without a position makes the footnote relabel refuse the page,
+reproduced on 2026-10-03),
+B126 (an empty-label contributor link read as a contributor name,
+the one case `98e94e584` fails),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,
 issue #576),
@@ -517,6 +533,13 @@ or ruled on by the owner.
 The mistakes are grouped by family,
 with the checklist before a run launches,
 in [Preventing this package's mistakes](mistake-prevention.md).
+
+From 2026-10-03 the owner is away for about 48 hours,
+and a trial model,
+MiMo 2.6 Pro,
+works the package on the branch `translation-repair-mimo-trial`,
+starting with B126;
+its start point and log is `doc/handover/translation-repair-mimo-trial-2026-10-03.md` at the repository root.
 
 ## Where it stood on 2026-09-24
 

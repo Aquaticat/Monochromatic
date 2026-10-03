@@ -24,6 +24,43 @@ and the reason is recorded in
 
 ## Where the work stands
 
+### 2026-10-03: handover to a trial model, one case failing
+
+The checkpoint of 2026-09-29 left T8 with its bundle agents at work;
+this one says what changed after it and who works next.
+
+- T8.
+  The agents given the first five of the 19 bundles cut from `census-3G9C58` all stopped part way at a usage limit.
+  Bundles 1 and 2 landed after review (`23090a91d`,
+  `ba6da4640`);
+  of bundles 3 to 5,
+  only two test files reached the branch,
+  committed by the owner in `98e94e584`.
+  The cut lived in session scratch,
+  so the next batch reads against a fresh whole-suite census.
+- FINDINGS.
+  B122 (sorts outside code-point order),
+  B124 (a wet refuser held for no time ended a call as every provider dry)
+  and B125 (a decision seat's distribution recorded as an objection) are fixed.
+  B123 (a link literal the parser leaves without a position makes the footnote relabel refuse the page)
+  had been queued only in `23090a91d`'s message;
+  it is in the audit ledger now,
+  reproduced on the build of `98e94e584`.
+- RED.
+  `98e94e584` fails one case:
+  an empty-label link on a contributor line reads as a contributor name.
+  It is B126,
+  the trial's first step.
+- NEXT.
+  MiMo 2.6 Pro works the package on the branch `translation-repair-mimo-trial` from 2026-10-03 for about 48 hours,
+  and
+  [`translation-repair-mimo-trial-2026-10-03.md`](translation-repair-mimo-trial-2026-10-03.md)
+  is its start point and log.
+  The owner's answer on its authority:
+  "Same authority as Claude,
+  but I don't think it will finish the audit fast enough (in 48h) anyway."
+  The launch still waits for T8 unless the owner says otherwise.
+
 ### 2026-09-29: the whole-package audit, and no pass since 2026-09-28
 
 The checkpoint of 2026-09-24 (next heading) left the pipeline at class one hundred ten;

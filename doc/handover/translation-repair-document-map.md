@@ -2,6 +2,19 @@
 
 ## Current status
 
+From 2026-10-03 the owner is away for about 48 hours,
+and a trial model,
+MiMo 2.6 Pro,
+works the package on the branch `translation-repair-mimo-trial`.
+Its start point and log is
+[`translation-repair-mimo-trial-2026-10-03.md`](translation-repair-mimo-trial-2026-10-03.md),
+which names the state that day:
+`98e94e584` fails one case,
+the empty-label contributor link now numbered B126;
+B123 is written into the audit ledger from the commit message that queued it;
+and T8's next batch reads against a fresh whole-suite census,
+since the cut of the remaining bundles was never committed.
+
 As of 2026-09-29,
 work is on the LEGACY slice pipeline,
 under the owner's direction decision of 2026-09-01 and the OpenRouter order of 2026-09-03,

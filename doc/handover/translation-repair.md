@@ -1,5 +1,26 @@
 # Translation repair session handover
 
+## Trial handover to MiMo, from 2026-10-03
+
+From 2026-10-03 the owner is away for about 48 hours,
+and MiMo 2.6 Pro works the package on the branch `translation-repair-mimo-trial`,
+cut from `translation-repair-rebased` at the docs commit that added
+[`translation-repair-mimo-trial-2026-10-03.md`](translation-repair-mimo-trial-2026-10-03.md).
+That file is the trial's start point and its log:
+the state on 2026-10-03 with what was measured,
+the owner's answers on authority and branch,
+the queue
+(fix B126,
+the empty-label contributor link that fails one case on `98e94e584`;
+a fresh whole-suite census;
+T8 batches;
+B123),
+the commands verified that day,
+and a "Trial log" each session appends to.
+The snapshot named under "Current handover,
+2026-09-06" stays the operating record;
+its 2026-10-03 checkpoint points at the trial file.
+
 ## Current handover, 2026-09-06
 
 The current session snapshot is

@@ -5382,6 +5382,38 @@ The first five bundles went to five agents reading `9d6cde01a`,
 each told to case only in test files of its own modules,
 so no two agents write one file.
 
+All five agents stopped part way at a usage limit.
+Bundle 1 (31 lines:
+29 stretches and 2 functions never called,
+in 12 source files)
+landed as `23090a91d`,
+and bundle 2 (29 stretches over 12 files) as `ba6da4640`,
+each after its agent's partial copies were reviewed against the source
+and the rest was done by hand;
+the two commit messages list what was taken,
+what was rejected and why.
+Reviewing them found B123 (open),
+B124 and B125 (both fixed).
+Of bundles 3 to 5,
+only two test files reached the branch,
+committed by the owner as they stood in `98e94e584` on 2026-10-03:
+four cases in `contributor-name-authority.unit.test.ts`
+and one in `corpus-run/canadian-spelling.unit.test.ts`,
+the second written by the bundle 4 agent
+(per the messages of `ca242a2c4` and `14e4e2cea`).
+One of the contributor cases fails on that commit:
+an empty-label link,
+`[](https://example.test/whisker)`,
+reads as the contributor name `[](https://example.test/whisker)`
+where the case expects no name
+(measured 2026-10-03,
+the case's own FAIL line);
+the fix is the trial model's first step under its handover
+(`doc/handover/translation-repair-mimo-trial-2026-10-03.md` at the repository root).
+The cut of the 19 bundles (`make-bundles.mjs`) and the agents' other partial copies lived in session scratch,
+not in the repository,
+so the batches after this one read against a fresh whole-suite census rather than the cut.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -18649,6 +18681,48 @@ The full suite on `ae0a90f71` exited 0 with 1543 PASS lines.
 Recurrence:
 `mistake-prevention.md`,
 "Text by code point".
+
+### B123: a link literal the parser builds without a position makes the footnote relabel refuse the page
+
+Status:
+open,
+queued for a fix of its own.
+Found 2026-10-02 (UTC) reviewing what the T8 bundle 1 agent left,
+and written only into `23090a91d`'s commit message until 2026-10-03,
+when the handover to the trial model copied it here.
+`activeFootnoteMarkers` (`src/active-footnote-markers.ts`) walks the parsed body
+and reads each text node's raw bounds off `node.position`;
+a text node without one throws `FootnoteRewriteError` of kind `position`
+(the check reading `start` and `end` in the text-node arm of the walk).
+The commit message names the source of such nodes:
+`mdast-util-gfm-autolink-literal`'s transform builds text and link nodes with no position
+wherever its pattern finds a literal micromark did not tokenize,
+such as `www.` after a quote mark,
+a comma or CJK punctuation,
+and any literal after an unbalanced `[`.
+On a page holding a footnote and one such literal,
+the relabel refuses the whole page and the archive is kept.
+That session's census of the 279 pinned `.md` and `.mdx` files found none that triggers it
+(`b1-review/corpus-unpositioned.mjs` in its scratch folder).
+Bundle 1 left this stretch uncased on purpose,
+since a case written against the code as it stands would pin the refusal.
+
+Measured on 2026-10-03 against the build of `98e94e584`,
+calling `applyFootnoteRelabel` with the one rewrite of label `1` to `2`:
+`A cat[^1] naps.` with its definition relabels,
+while the same text holding `"www.example.com"`,
+`[www.example.com`,
+`，www.example.com。`
+or `,www.example.com`
+throws `FootnoteRewriteError` with the `position` kind's message
+(`footnote rewrite: parsed marker positions do not match raw syntax; ...`).
+
+The fix is not designed yet,
+and its red case,
+through `applyFootnoteRelabel`,
+comes first.
+Whether a cache version moves follows from what the relabel changes on the pinned corpus,
+where the 2026-10-02 census found no page holding such a literal.
 
 ### B124: a refuser held out for no time ended the call as every provider dry
 
