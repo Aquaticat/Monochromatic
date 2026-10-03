@@ -662,10 +662,19 @@ getter overrides,
 and public `_loadEntries` remained open routes.
 This isolates data;
 it does not establish method custody.
-`contract/lifecycle/manager-private-fields-sdk/` is prepared to test only the changed variant
-against the retained positive SDK consumer outcomes.
-Next reconcile that consumer and design the intrinsic SDK ownership boundary;
-instance hooks alone cannot cover the measured method routes.
+`contract/lifecycle/manager-private-fields-sdk/` then passed `proc_809e`:
+two changed-variant sessions,
+four injected requests,
+one inert execution,
+no external calls.
+Its outcomes matched retained copy-boundary consumer records without replaying unchanged sessions.
+
+The next structural choice is
+[the private SDK-owned custody proposal](../planning/pi-auto-mode-sdk-state-custody.md).
+Option A prototypes intrinsic lifecycle occurrences and a protected method surface inside the SDK owner.
+Option B stops structural SDK work with production mutation custody still unqualified.
+The proposal recommends A and awaits explicit acceptance;
+neither option authorizes installed changes or production adoption.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).

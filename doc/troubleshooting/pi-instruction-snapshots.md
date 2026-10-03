@@ -894,8 +894,19 @@ Private fields did not close method custody:
 -   The compiled public `_loadEntries` method still replaced/restored graph content in both variants.
 
 The result catalogs unexercised methods rather than claiming whole-module compatibility.
-The next SDK consumer phase reuses the pinned prior probe logic for only the changed variant,
-comparing with retained baseline outcomes instead of replaying unchanged sessions.
+The follow-up `manager-private-fields-sdk/` passed `proc_809e`:
+two changed-variant SDK sessions,
+four injected requests,
+one inert execution,
+and no external model requests.
+It reused the pinned prior probe logic with only the variant schedule and aggregate counts changed.
+Measured consumer outcomes matched the retained copy-boundary baseline without replaying unchanged sessions.
+
+Data isolation and those selected consumers are now qualified within their stated profiles.
+A native lifecycle occurrence and protected method surface are not implemented or qualified.
+The proposed next structural work is recorded in
+[the private SDK custody proposal](../planning/pi-auto-mode-sdk-state-custody.md),
+awaiting acceptance rather than deployment.
 
 ## Verified workarounds and limits
 
