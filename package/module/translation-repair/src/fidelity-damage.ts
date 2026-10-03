@@ -138,6 +138,9 @@ function anchorSentence({ text, }: { readonly text: string; },): string {
 
  @param cleanText - slice English as the archive holds it
 
+ @param needle - sentence to remove, the seed's pick unless a case supplies
+ one the splice cannot find, which is the unchanged refusal's only trigger
+
  @returns Damaged twin and what it cost, or why none could be built
 
  @example
@@ -146,12 +149,14 @@ function anchorSentence({ text, }: { readonly text: string; },): string {
  ```
  */
 export function deleteOneSentence(
-  { cleanText, }: { readonly cleanText: string; },
+  {
+    cleanText,
+    needle = anchorSentence({ text: cleanText, },),
+  }: {
+    readonly cleanText: string;
+    readonly needle?: string;
+  },
 ): DamageAttempt {
-  /**
-   Sentence to remove.
-   */
-  const needle = anchorSentence({ text: cleanText, },);
   if (needle === '')
     return {
       kind: 'undamageable',
@@ -206,6 +211,9 @@ export function deleteOneSentence(
  @param donorTexts - English of other slices of the same document, FURTHEST
  FIRST, of which the first usable one donates
 
+ @param anchor - sentence to splice after, the seed's pick unless a case
+ supplies one the splice cannot find, which applySeededErrors refuses
+
  @returns Damaged twin and what it cost, or why none could be built
 
  @example
@@ -217,9 +225,11 @@ export function insertBorrowedSentence(
   {
     cleanText,
     donorTexts,
+    anchor = anchorSentence({ text: cleanText, },),
   }: {
     readonly cleanText: string;
     readonly donorTexts: readonly string[];
+    readonly anchor?: string;
   },
 ): DamageAttempt {
   /**
@@ -260,11 +270,9 @@ export function insertBorrowedSentence(
       reason: 'no other slice offers a sentence this one does not already carry',
     };
 
-  /**
-   Sentence the borrowed one is placed after, which must occur exactly once
-   for the splice point to be defined.
-   */
-  const anchor = anchorSentence({ text: cleanText, },);
+  // THE SPLICE POINT, which must occur exactly once. A case supplies a
+  // sentence the splice cannot find, which applySeededErrors refuses to
+  // leave half-applied.
   if (anchor === '')
     return {
       kind: 'undamageable',
@@ -288,11 +296,6 @@ export function insertBorrowedSentence(
       },
     ],
   },);
-  if (seeded.seededText === cleanText)
-    return {
-      kind: 'undamageable',
-      reason: 'insertion left the text unchanged',
-    };
   return {
     kind: 'damaged',
     damageKind: 'insertion',

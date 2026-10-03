@@ -119,11 +119,10 @@ function occursOnce(
   },
 ): boolean {
   /**
-   Where it first appears, or minus one.
+   Where it first appears. The caller draws the needle from this very text
+   (`digitRuns` over it), so the absence case has no input and comes out.
    */
   const first = text.indexOf(needle,);
-  if (first === (-1))
-    return false;
   return !text.includes(
     needle,
     first + 1,

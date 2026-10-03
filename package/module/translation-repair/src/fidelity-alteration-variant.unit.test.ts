@@ -62,5 +62,27 @@ await describe({
         },),).toBe('2001',);
       },
     },),
+    it({
+      name: 'SKIPS a variant the source already states even when the translation does not, since the '
+        + 'original supports it (ledger T8, the fidelity cluster)',
+      fn: async () => {
+        expect(unsupportedVariant({
+          original: '2009',
+          cleanText: CLEAN_TEXT,
+          sourceText: `${SOURCE_TEXT} 那是 2000 年。`,
+        },),).toBe('2001',);
+      },
+    },),
+    it({
+      name: 'REPORTS no variant when every same-shape number already appears on one side or the other '
+        + '(ledger T8, the fidelity cluster)',
+      fn: async () => {
+        expect(unsupportedVariant({
+          original: '2009',
+          cleanText: 'Mittens counted 2009 birds over 2000 2001 2002 2003 2004 2005 2006 2007 2008 days.',
+          sourceText: SOURCE_TEXT,
+        },),).toBe('',);
+      },
+    },),
   ],
 },);

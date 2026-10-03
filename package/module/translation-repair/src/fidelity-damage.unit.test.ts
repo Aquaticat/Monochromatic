@@ -136,6 +136,31 @@ await describe({
             expect(attempt.kind,).toBe('undamageable',);
           },
         },),
+        it({
+          name: 'REFUSES a deletion whose sentence the text does not carry, since an unchanged twin is '
+            + 'not damage (ledger T8, the fidelity cluster)',
+          fn: async () => {
+            expect(deleteOneSentence({
+              cleanText: CLEAN_TEXT,
+              needle: 'A sentence this slice does not carry.',
+            },),).toEqual({
+              kind: 'undamageable',
+              reason: 'deletion left the text unchanged',
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES a deletion that would leave the slice empty, which is a shape no translation '
+            + 'takes (ledger T8, the fidelity cluster)',
+          fn: async () => {
+            expect(deleteOneSentence({
+              cleanText: 'The tortoiseshell cat arrived at the shelter on a rainy Tuesday and stayed.',
+            },),).toEqual({
+              kind: 'undamageable',
+              reason: 'deletion would leave the slice empty, which is a shape no translation takes',
+            },);
+          },
+        },),
       ],
     },),
 
@@ -187,6 +212,44 @@ await describe({
               donorTexts: [],
             },);
             expect(attempt.kind,).toBe('undamageable',);
+          },
+        },),
+        it({
+          name: 'SKIPS an empty offered sentence and borrows the first usable one (ledger T8, the '
+            + 'fidelity cluster)',
+          fn: async () => {
+            const attempt = insertBorrowedSentence({
+              cleanText: CLEAN_TEXT,
+              donorTexts: ['', DONOR_TEXT,],
+            },);
+            if (attempt.kind !== 'damaged')
+              throw new Error(`expected damage, got ${attempt.reason}`,);
+            expect(attempt.damagedText
+              .includes(BORROWED,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'REFUSES an insertion where no sentence is long enough and unique enough to splice '
+            + 'after (ledger T8, the fidelity cluster)',
+          fn: async () => {
+            expect(insertBorrowedSentence({
+              cleanText: 'Short. Also short.',
+              donorTexts: [DONOR_TEXT,],
+            },),).toEqual({
+              kind: 'undamageable',
+              reason: 'no sentence long enough and unique enough to splice after',
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES an insertion whose splice point the text does not carry, where applySeededErrors '
+            + 'refuses to leave it half-applied (ledger T8, the fidelity cluster)',
+          fn: async () => {
+            expect(() => insertBorrowedSentence({
+              cleanText: CLEAN_TEXT,
+              donorTexts: [DONOR_TEXT,],
+              anchor: 'A sentence this slice does not carry.',
+            },),).toThrow('needle absent from current text',);
           },
         },),
       ],
@@ -278,6 +341,19 @@ await describe({
               sourceText: '她有3只玩具老鼠。',
             },);
             expect(attempt.kind,).toBe('undamageable',);
+          },
+        },),
+        it({
+          name: 'REFUSES an alteration where every same-shape number already appears on one side or '
+            + 'the other (ledger T8, the fidelity cluster)',
+          fn: async () => {
+            expect(alterSharedNumber({
+              cleanText: 'Mittens counted 2009 birds over 2000 2001 2002 2003 2004 2005 2006 2007 2008 days.',
+              sourceText: '2009 年冬天，小猫在窗台上数了很多鸟。',
+            },),).toEqual({
+              kind: 'undamageable',
+              reason: 'every same-shape number already appears on one side or the other',
+            },);
           },
         },),
       ],
