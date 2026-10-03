@@ -194,7 +194,24 @@ The native pre-write failure retained its exact error and did not revive the rec
 Five suspended stream attempts did not advance request generation.
 
 This qualifies the stated native-manager profile and its observed SDK consumers.
-Other `AgentSession` state and runtime replacement still need their own custody inventory.
+The subsequent direct-disposal diagnostic `proc_7f17` showed why session lifetime is separate:
+manager-only leases stayed active while the full observer eventually rejected the disposed extension context.
+
+The private session extension and exact-pair reader then passed `proc_deae`:
+six SDK sessions/requests,
+four intact cases,
+and two guard-failure controls.
+Disposal closed the native session before abort hooks,
+including cached/prototype routes,
+without losing cleanup or the controlled abort error.
+Its pure reader adaptation passed `proc_59d2` with 56 cases and 12 guard removals.
+The original source-path admission failure `proc_f507` remains retained;
+no SDK worker had run in that failed namespace.
+
+Selected content/navigation compatibility checks for this changed factory are prepared next.
+Runtime replacement,
+other session/agent state,
+and instruction authority remain unqualified.
 
 ## Next action
 

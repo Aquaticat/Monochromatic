@@ -1058,9 +1058,46 @@ import { SessionManager } from "./session-manager.js";
 Providing a protected manager to an initial SDK session does not itself change that import
 or redirect the runtime's replacement constructors.
 
-The next private interface must observe session liveness and its actual manager pairing,
-not infer those facts from unchanged manager state.
-Runtime operation-entry suspension and content freshness remain distinct requirements.
+The private extension now observes session liveness and its actual manager pairing,
+not inferred liveness from unchanged manager state.
+`root-lifecycle-session/` passed `proc_59d2`:
+24 legacy,
+17 native-reader,
+nine callback,
+and six pair-reader cases,
+plus 12 guard-removal variants.
+
+The staged SDK session has a private monotone disposed flag,
+a protected actual-manager slot,
+and protected disposal entry points.
+`session-lifetime-sdk-controls-v2/` passed `proc_deae`:
+six SDK sessions/requests,
+four intact cases,
+and two exact guard-failure controls,
+with no tools or external model calls.
+Direct,
+cached,
+and prototype disposal rejected old lifecycle/receipt use before abort hooks.
+Original abort delegation,
+a controlled swallowed abort error,
+SDK context invalidation,
+and cleanup remained observable.
+Removing the flag or moving it after abort hooks failed the same pre-abort assertion.
+
+The first preparation `proc_f507` stopped before its SDK worker:
+an authored `join()` path still named `root-lifecycle-native` while comparing
+`root-lifecycle-session` source hashes.
+Its Node `AssertionError [ERR_ASSERTION]`,
+partial preparation,
+and original source remain preserved.
+The fresh v2 phase corrected that directory literal;
+it did not replay an earlier SDK execution.
+
+Selected content and navigation consumers of this changed factory are prepared for compatibility checks.
+Runtime operation-entry suspension,
+replacement factory imports,
+other mutable state,
+and content freshness remain distinct requirements.
 
 ## Verified workarounds and limits
 

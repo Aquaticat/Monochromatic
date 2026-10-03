@@ -718,10 +718,20 @@ the full observer rejected through the SDK's stale extension context.
 That is a session-lifetime gap,
 not a manager-custody safety pass.
 
-Next add an SDK-owned session-liveness and actual manager-pair observation to the existing registry reader.
-Protect direct/cached disposal entry,
-preserve SDK cleanup,
-and qualify the change before widening the custody claim.
+The exact-pair reader extension passed `proc_59d2`:
+56 pure cases and 12 guard-removal variants.
+The private SDK session-liveness controls then passed `proc_deae`:
+six sessions/requests,
+four intact cases and two exact guard failures,
+no tools or external calls.
+Direct/cached/prototype disposal rejected old roots before abort hooks;
+cleanup and the controlled abort error remained observable.
+The earlier `proc_f507` preparation failure was a stale source-hash path,
+not an SDK execution;
+its original artifacts are retained.
+
+Next run the prepared `session-lifetime-content-consumers/` and
+`session-lifetime-navigation-consumers/` compatibility phases using this changed factory.
 Runtime operation-entry suspension,
 replacement constructors,
 content freshness,
