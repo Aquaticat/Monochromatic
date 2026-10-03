@@ -679,6 +679,31 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  17:43 UTC:
+  "First:
+  fix B126" landed with commit `16ef9ff5d`
+  (`fix(module-translation-repair): B126, read no contributor name from a link whose label is empty`):
+  `contributorForm` returns the token unchanged only where no `](` exists,
+  an empty label slices to the empty string,
+  and the ledger's B126 plus one sentence in "Structure read off the parse" record it.
+  No cache version moves:
+  the pinned corpus search prints six binary matches and no text line
+  (inference from that search).
+  Checks:
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL],
+  Markdown lint clean in the two docs,
+  and the full suite 1,545 [PASS] with 2 [FAIL] lines
+  (the `reviewAbsoluteNaturalness` "STARTS GRACE AT HALF instead of requiring delayed final seat" case and its suite,
+  the wall-clock fixture of the 17:28 entry;
+  the fix alone ran green as `~/temp/agent/mimo-trial/b126-suite.log`).
+  This line lands in the trial-log commit that follows `16ef9ff5d`.
+  Next:
+  the flaky fixture as the next finding after B126,
+  then "Second:
+  the whole-suite census".
+
+- 2026-10-03,
   17:28 UTC:
   "Setup,
   once" closed on trial-log commit `ebe0933d7`;
