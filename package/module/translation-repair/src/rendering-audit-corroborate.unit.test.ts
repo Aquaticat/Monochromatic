@@ -848,6 +848,110 @@ await describe({
             ],);
           },
         },),
+        it({
+          name: 'READS two claims of one voice as one opinion rather than a near miss, since filing two '
+            + 'findings about one sentence is what atomicity asks for (ledger T8, the rendering cluster)',
+          fn: async () => {
+            /**
+             Span both claims name.
+             */
+            const span = {
+              text: 'cat',
+              start: 0,
+              end: 3,
+            } as const;
+
+            /**
+             One voice naming two defects at one span.
+             */
+            const claims: readonly AuditMemberClaim[] = [
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the rendering leaves the denial out',
+                },
+              },
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'altered-number',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  reason: 'the count changed too',
+                },
+              },
+            ];
+            expect(nearMisses({ claims, },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'READS two voices naming one defect as agreement rather than a near miss, since the same '
+            + 'claim twice is confirmation and nothing to reconcile (ledger T8, the rendering cluster)',
+          fn: async () => {
+            /**
+             Span both claims name.
+             */
+            const span = {
+              text: 'cat',
+              start: 0,
+              end: 3,
+            } as const;
+
+            /**
+             Two voices naming one defect in the same words.
+             */
+            const claims: readonly AuditMemberClaim[] = [
+              {
+                modelId: SEAT_HYPER_VISION,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the rendering leaves the denial out',
+                },
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                finding: {
+                  category: 'omission',
+                  source: {
+                    kind: 'anchored',
+                    locator: span,
+                    focus: span,
+                  },
+                  candidate: {
+                    kind: 'unused',
+                  },
+                  reason: 'the rendering leaves the denial out',
+                },
+              },
+            ];
+            expect(nearMisses({ claims, },),).toEqual([],);
+          },
+        },),
       ],
     },),
   ],
