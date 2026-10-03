@@ -5518,6 +5518,34 @@ reads `still cold 0, cold since then 0, not loaded 0`
 and every edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The fourth cluster of that census,
+`corpus-run/final`,
+against `census-7Aczvk` at `0beef6dc0`:
+10 stretches over `final-naturalness-completeness.ts` and `final-selection-completeness.ts`
+(`e0bf15a10`,
+`3da0a9a3b`).
+The polish branch's consolidation narrowing moved before the contests loop,
+where every call runs it
+and the not-run cases carry its other arm,
+its `: undefined` fallback having been dead
+(polish wording exists only inside a settled consolidation).
+Eleven cases cover the rest:
+the completeness guards' refusals
+(the contested body slice,
+the settled polish without a review,
+the front-matter slice under any record but its own skip),
+their exemptions
+(the pending contest,
+the all-front-matter contested set,
+the unsafe-baseline standing,
+the empty archive,
+the consolidated slice polish rewrote),
+and the lane-won and endorsed readings inside the polish branch.
+The reach census (`~/temp/agent/mimo-trial/reach-final2.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+and the edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

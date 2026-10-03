@@ -679,6 +679,27 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  21:45 UTC:
+  the T8 `corpus-run/final` batch closed with commits `e0bf15a10` and `3da0a9a3b`:
+  10 stretches over the two completeness checkers,
+  11 cases in `consolidation-polish.unit.test.ts` and its own test file,
+  and the polish branch's consolidation narrowing hoisted before the loop
+  so both its arms run.
+  The reach census reads `still cold 0, cold since then 0, not loaded 0`
+  and the edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-final2.log`).
+  Counts at the close:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-final-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `3da0a9a3b`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/meter` cluster.
+
+- 2026-10-03,
   21:10 UTC:
   the next batch's baseline census taken at commit `8fa092e8b`:
   `census written to ~/.cache/translation-repair/coverage/census-7Aczvk/census.json`
