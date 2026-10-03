@@ -679,6 +679,35 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  19:00 UTC:
+  the T8 `group` batch's first case landed with commit `aa5f63aec`
+  (`test(module-translation-repair): T8 group, case the run split at the step after a decline`),
+  written for `src/group-aligned.ts` lines 195 to 198:
+  a pairing placing every original with the middle translation declined,
+  asserting the two runs it splits into.
+  Counts:
+  lint "Found 0 warnings and 0 errors.",
+  the named file no [FAIL] and 2 [PASS]
+  (`~/temp/agent/mimo-trial/t8-group-case-a2.log`),
+  35 source scans and no [FAIL].
+  The cluster's state:
+  6 of 10 stretches closed as unreachable in `92c912b08`,
+  1 cased here,
+  and `src/group-aligned.ts` lines 377 to 383 (the sealed cohesive continuation arm)
+  resist placement behind `mergeOneSidedRuns`' kind mapping:
+  probe that mapping before deciding case or unreachable.
+  This line lands in the trial-log commit that follows `aa5f63aec`.
+  Next:
+  place the two sealed-arm stretches,
+  then the batch's reach census against `census-WkdwRV`
+  (`--baseline` with one `--source` per file the batch claims),
+  the full suite,
+  lint,
+  the scans,
+  the T8 paragraph and this line,
+  and a whole-suite census as the next batch's baseline.
+
+- 2026-10-03,
   18:48 UTC:
   the T8 `group` cluster's six unreachable stretches closed with commit `92c912b08`
   (`fix(module-translation-repair): T8 group, drop the unreachable anchor fallbacks`):
