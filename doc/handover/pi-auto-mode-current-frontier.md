@@ -730,8 +730,17 @@ The earlier `proc_f507` preparation failure was a stale source-hash path,
 not an SDK execution;
 its original artifacts are retained.
 
-Next run the prepared `session-lifetime-content-consumers/` and
-`session-lifetime-navigation-consumers/` compatibility phases using this changed factory.
+The changed-factory compatibility phases passed:
+`proc_7c32` completed two content-consumer sessions/four requests/one inert execution;
+`proc_791c` completed six navigation-consumer sessions/six requests/no tools.
+Both made no external model calls.
+
+The verified private profile now covers manager occurrences,
+session liveness/pairing,
+and the stated content/navigation consumers.
+Runtime-owned operations are a separate proposed extension in
+[the custody plan](../planning/pi-auto-mode-sdk-state-custody.md).
+Ask for explicit acceptance before implementing that module.
 Runtime operation-entry suspension,
 replacement constructors,
 content freshness,

@@ -208,15 +208,52 @@ Its pure reader adaptation passed `proc_59d2` with 56 cases and 12 guard removal
 The original source-path admission failure `proc_f507` remains retained;
 no SDK worker had run in that failed namespace.
 
-Selected content/navigation compatibility checks for this changed factory are prepared next.
+Changed-factory compatibility checks also passed:
+`proc_7c32` completed two content-consumer sessions/four requests/one inert execution;
+`proc_791c` completed six navigation-consumer sessions/six requests/no tools.
+No external model calls ran.
+The accepted private profile is verified within these declared surfaces.
 Runtime replacement,
 other session/agent state,
 and instruction authority remain unqualified.
 
+## Runtime extension decision
+
+The next possible module would govern runtime-owned replacement operations and their constructor factories.
+It would need a terminal-close contract without a replacement session,
+and verified behavior for rebind/`withSession` callbacks,
+including nesting and failures after an already-applied replacement.
+Those semantics have not been measured for a changed runtime implementation.
+This extension awaits explicit acceptance.
+
+### A: Extend the private prototype into runtime-owned operations
+
+Recommended.
+It addresses the remaining runtime entry/factory gap at its owner while reusing the verified registry.
+The tradeoff is another structural SDK experiment:
+terminal disposal,
+callback/reentrancy behavior,
+and failure outcomes must be established rather than inferred from manager/session tests.
+
+### B: Stop at the verified manager/session profile
+
+This avoids further structural SDK changes and retains the completed private qualification results.
+The tradeoff is that runtime-dependent production admission remains blocked.
+This option does not promote the current profile to complete runtime custody.
+
+Ranking:
+A > B,
+because A investigates a path toward the remaining runtime requirement,
+while B deliberately leaves that prerequisite unresolved.
+Neither choice authorizes installation,
+production adoption,
+provider/cutoff selection,
+or permission creation.
+
 ## Next action
 
-Continue option A in fresh private sibling phases.
-First qualify intrinsic occurrences and protected methods,
-then connect them to the existing registry and actual SDK consumers.
-Preserve original errors and consumed sources.
-Do not install a fork or claim production qualification from this private acceptance.
+Ask for A or B on the runtime extension before implementing its proposed module.
+Preserve original errors,
+consumed sources,
+and the verified profile either way.
+Do not install a fork or claim production qualification from the completed private tests.

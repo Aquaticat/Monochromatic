@@ -1093,11 +1093,23 @@ and original source remain preserved.
 The fresh v2 phase corrected that directory literal;
 it did not replay an earlier SDK execution.
 
-Selected content and navigation consumers of this changed factory are prepared for compatibility checks.
+Compatibility checks against the changed factory also passed:
+`proc_7c32` completed two content-consumer sessions,
+four injected requests,
+and one inert execution;
+`proc_791c` completed six navigation-consumer sessions and six injected requests without tools.
+No external model calls ran.
+Message/context-edit behavior matched retained baseline outcomes,
+and navigation preserved the tested suspension/retirement behavior.
+
 Runtime operation-entry suspension,
 replacement factory imports,
+terminal disposal,
+callback reentrancy,
 other mutable state,
-and content freshness remain distinct requirements.
+and content freshness remain separate requirements.
+A runtime-owned operation module is a proposed scope extension,
+not an implemented or qualified part of these results.
 
 ## Verified workarounds and limits
 
