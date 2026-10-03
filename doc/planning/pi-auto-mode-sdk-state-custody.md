@@ -6,7 +6,12 @@ Propose a private SDK-owned custody module that supplies trustworthy lifecycle o
 to the accepted [root lease module](pi-auto-mode-root-lifecycle-lease.md).
 This is a new structural prototype proposal,
 not production adoption or an installed SDK change.
-Implementation of this proposed module awaits explicit acceptance.
+The user accepted option A:
+implement the private SDK-owned custody prototype.
+This acceptance does not authorize installation,
+production adoption,
+provider/cutoff selection,
+or permission creation.
 
 The accepted investigation has established that data copying and private fields can preserve
 selected native consumers,
@@ -155,5 +160,8 @@ Both keep production admission blocked until its actual prerequisites are met.
 
 ## Next action
 
-Ask whether to implement option A's private custody prototype or stop that structural work under option B.
-Do not install a fork or adopt the proposed interface from this document alone.
+Implement option A in fresh private sibling phases.
+First qualify intrinsic occurrences and protected methods,
+then connect them to the existing registry and actual SDK consumers.
+Preserve original errors and consumed sources.
+Do not install a fork or claim production qualification from this private acceptance.

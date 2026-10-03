@@ -906,7 +906,8 @@ Data isolation and those selected consumers are now qualified within their state
 A native lifecycle occurrence and protected method surface are not implemented or qualified.
 The proposed next structural work is recorded in
 [the private SDK custody proposal](../planning/pi-auto-mode-sdk-state-custody.md),
-awaiting acceptance rather than deployment.
+now accepted for private prototyping only,
+not deployment.
 
 ## Verified workarounds and limits
 

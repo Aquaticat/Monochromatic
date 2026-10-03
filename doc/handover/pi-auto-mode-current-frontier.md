@@ -673,8 +673,13 @@ The next structural choice is
 [the private SDK-owned custody proposal](../planning/pi-auto-mode-sdk-state-custody.md).
 Option A prototypes intrinsic lifecycle occurrences and a protected method surface inside the SDK owner.
 Option B stops structural SDK work with production mutation custody still unqualified.
-The proposal recommends A and awaits explicit acceptance;
-neither option authorizes installed changes or production adoption.
+The user accepted A:
+implement the private SDK-owned custody prototype.
+First qualify intrinsic occurrences and protected methods,
+then connect the existing registry and native consumers.
+Installation,
+production adoption,
+and permission creation remain unauthorized.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
