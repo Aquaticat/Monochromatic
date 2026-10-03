@@ -614,8 +614,25 @@ and restoration did not revive it.
 The exact controlled mutator-entry failure survived retirement with the leaf unchanged.
 Prototype dispatch still bypassed the selected hooks and left the receipt active,
 explicitly retaining the custody gap.
-Next investigate SDK state encapsulation and legitimate native consumers,
-using the accepted private lease contract as the target.
+SDK state-custody intake inspected native own fields,
+borrowed projection/entry identities,
+message persistence,
+and pre-persistence in-place message replacement.
+A paired copy-in/copy-out fork experiment is now prepared,
+not adopted as complete encapsulation.
+Its first staging attempt `proc_c72a` failed before the worker because the stager assumed an absent installed
+license path.
+Original sources and partial generated output remain intact;
+`contract/lifecycle/manager-copy-boundary-v2/` validates the upstream-tag license blob before staging.
+No behavioral result exists for that new phase yet.
+
+A separate private-repository Git recovery blocked commands on the superseded `a673638` transaction.
+Explicitly authorized `proc_aac3` preserved and archived 21 journal files without changing index or refs;
+normal wrapper status/log calls then passed.
+Evidence is `contract/diagnostic/superseded-index-recovery/`.
+The first recovery script parse failure remains retained separately.
+Next run the fresh copy-boundary variant and then exercise real native consumers;
+raw own-state exposure and unmanaged writers remain outside its claim.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).

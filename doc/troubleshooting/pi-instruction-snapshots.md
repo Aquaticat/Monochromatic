@@ -812,6 +812,28 @@ post-mutation events,
 and persisted-file comparison are not interchangeable ownership guarantees.
 No native getter behavior or installed implementation was changed.
 
+## Copy-boundary experiment staging failure
+
+The first private `contract/lifecycle/manager-copy-boundary/` attempt,
+`proc_c72a`,
+failed in staging before any worker,
+manager fixture,
+or model request ran.
+Node 26.10.0 `readFileSync` emitted `ENOENT` for the assumed installed
+`@earendil-works/pi-coding-agent/LICENSE` path.
+The installed 1.0.0 package directory did not contain that file.
+The package manifest declared MIT and named the upstream repository,
+but that did not prove a local license-file path.
+
+The assumption was in the authored stager,
+not a demonstrated SDK runtime defect.
+Its original sources and generated module prefix remain intact.
+A fresh `manager-copy-boundary-v2` phase validates the retained MIT text against the
+[upstream v1.0.0 license](https://github.com/earendil-works/pi/blob/v1.0.0/LICENSE)
+before writing generated artifacts.
+The verified Git blob is `b0a8e9b81083294360c69b4ec45d3d39a2b28197`.
+No copy-boundary behavior or SDK compatibility result is inferred from the failed staging attempt.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
