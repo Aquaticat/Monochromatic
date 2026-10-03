@@ -679,6 +679,20 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  21:50 UTC:
+  the next batch's baseline census taken at commit `dae4b8eea`:
+  `census written to ~/.cache/translation-repair/coverage/census-DbGZ25/census.json`
+  (`~/temp/agent/mimo-trial/census-6.log`).
+  `library source: 189 files, 415 stretches over 967 lines, 9 functions never called`.
+  Largest clusters by stretches then lines:
+  `corpus-run/meter` leads with 10 stretches over 15 lines in 2 files,
+  `fidelity` with 9 over 24 in 2,
+  `decision` with 9 over 19 in 2.
+  This line lands in the trial-log commit that follows `dae4b8eea`.
+  Next:
+  the `corpus-run/meter` batch.
+
+- 2026-10-03,
   21:45 UTC:
   the T8 `corpus-run/final` batch closed with commits `e0bf15a10` and `3da0a9a3b`:
   10 stretches over the two completeness checkers,
