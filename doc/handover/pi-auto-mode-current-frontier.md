@@ -707,8 +707,25 @@ and prototype mutation retired them permanently.
 Five suspended stream attempts did not advance request generation.
 
 The native-manager occurrence and tested request-observer binding are qualified in this private profile.
-Next inventory other `AgentSession` state and runtime replacement writers;
-do not generalize the manager result to all SDK state or current human permission.
+The next intake,
+`session-disposal-intake/`,
+passed `proc_7f17` with one SDK session/request and one disposal.
+During the owned abort hook,
+both lifecycle-only and full-receipt checks were active.
+After disposal,
+lifecycle-only assertion and recapture still succeeded;
+the full observer rejected through the SDK's stale extension context.
+That is a session-lifetime gap,
+not a manager-custody safety pass.
+
+Next add an SDK-owned session-liveness and actual manager-pair observation to the existing registry reader.
+Protect direct/cached disposal entry,
+preserve SDK cleanup,
+and qualify the change before widening the custody claim.
+Runtime operation-entry suspension,
+replacement constructors,
+content freshness,
+and current human permission remain separate.
 Installation,
 production adoption,
 and permission creation remain unauthorized.

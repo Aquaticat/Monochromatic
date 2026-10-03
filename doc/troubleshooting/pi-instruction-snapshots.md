@@ -992,7 +992,39 @@ It does not establish all `AgentSession` or runtime-state custody,
 instruction authority,
 current human permission,
 or production integration.
-Session/runtime replacement and other state writers remain the next custody intake.
+Session/runtime replacement and other state writers remain separate custody work.
+
+### Direct session disposal is not a manager occurrence change
+
+The focused follow-up `session-disposal-intake/` passed its diagnostic checks in `proc_7f17`:
+one owned SDK session,
+one injected request,
+one disposal,
+and no tools or external model calls.
+This is a measured gap,
+not a safety pass.
+
+The manager-backed lifecycle lease and full request receipt were both active in an owned abort hook
+before the SDK invalidated its extension context.
+After disposal,
+the manager occurrence and entry JSON were unchanged.
+Lifecycle-only assertion and a new lifecycle capture still succeeded.
+The full request observer rejected,
+with Pi SDK 1.0.0 `ExtensionRunner.assertActive` emitting a plain `Error` whose message begins
+`This extension ctx is stale after session replacement or reload.`
+The collector propagated that SDK error;
+it was not a `SourceCollectionError` fingerprint mismatch.
+
+The source ordering is explicit:
+`AgentSession.dispose()` in `dist/core/agent-session.js:977` runs abort hooks before
+`this._extensionRunner.invalidate(...)` at line 988.
+The same file exposes `agent` and `sessionManager` as ordinary fields at lines 82 and 83.
+`AgentSessionRuntime` imports its installed manager module,
+so providing a protected manager to an initial SDK session does not itself redirect replacement constructors.
+
+The next private interface must observe session liveness and its actual manager pairing,
+not infer those facts from unchanged manager state.
+Runtime operation-entry suspension and content freshness remain distinct requirements.
 
 ## Verified workarounds and limits
 
