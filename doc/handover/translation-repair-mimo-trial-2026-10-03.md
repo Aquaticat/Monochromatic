@@ -679,6 +679,28 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  19:30 UTC:
+  the fresh census caught the `unreachable:` throw's own line as a stretch
+  and the guard came out with commit `c592bcc0f`
+  (`fix(module-translation-repair): T8 group, remove the no-boundary guard instead of throwing from it`):
+  `census-QFKBeX` listed `src/group-run-anchor.ts` line 172,
+  an unreachable throw is unreachable code too,
+  so the dead arm is removed
+  and its invariant stands in the comment above `settled`.
+  M112 records it
+  and the T8 group paragraph's correction names itself.
+  Counts:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-group-throw-fix-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL],
+  Markdown lint clean in the ledger.
+  This line lands in the trial-log commit that follows `c592bcc0f`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `inline` cluster.
+
+- 2026-10-03,
   19:17 UTC:
   the T8 `group` batch closed:
   commit `691e70e3b` landed its last case
