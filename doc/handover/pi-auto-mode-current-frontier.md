@@ -694,12 +694,21 @@ plus 11 guard-removal variants.
 `proc_f13e` first reproduced the nine callback/finalization defects on the preserved draft.
 The remedy validates after callbacks and leaves failed preparation cleanup available.
 
-Next run `root-lifecycle-intrinsic-sdk/`:
-six planned SDK sessions test navigation/cancellation,
-native pre-write failure,
-and cached/prototype calls through the intrinsic reader without instance hooks.
-That actual binding is prepared,
-not yet qualified.
+`root-lifecycle-intrinsic-sdk/` passed `proc_2e77`:
+six sessions,
+six injected requests,
+no tools or external calls,
+and no instance mutator hooks.
+No-op/cancel resumed receipts;
+managed,
+failing,
+cached,
+and prototype mutation retired them permanently.
+Five suspended stream attempts did not advance request generation.
+
+The native-manager occurrence and tested request-observer binding are qualified in this private profile.
+Next inventory other `AgentSession` state and runtime replacement writers;
+do not generalize the manager result to all SDK state or current human permission.
 Installation,
 production adoption,
 and permission creation remain unauthorized.

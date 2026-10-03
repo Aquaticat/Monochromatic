@@ -182,9 +182,19 @@ and 11 guard-removal variants.
 `proc_f13e` had first reproduced those nine publication failures on the preserved draft.
 The tested remedy has validated,
 callback-free publication tails and keeps failure cleanup available.
-This qualifies the pure integration protocol,
-not its actual SDK binding.
-The real navigation/request-observer phase is prepared next.
+The real navigation/request-observer binding then passed `proc_2e77`:
+six SDK sessions,
+six injected requests,
+no tools or external model calls.
+Cancellation/no-op resumed old receipts;
+managed,
+cached,
+and prototype mutations retired them without instance hooks.
+The native pre-write failure retained its exact error and did not revive the receipt.
+Five suspended stream attempts did not advance request generation.
+
+This qualifies the stated native-manager profile and its observed SDK consumers.
+Other `AgentSession` state and runtime replacement still need their own custody inventory.
 
 ## Next action
 

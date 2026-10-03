@@ -970,9 +970,29 @@ nine callback/publication cases,
 and 11 independent guard-removal variants.
 These use constructor-owned doubles,
 not actual SDK roots.
-The next `root-lifecycle-intrinsic-sdk/` phase binds this registry and the request observer to real SDK navigation,
-including cached/prototype calls without instance hooks.
-It is prepared but not yet qualified.
+The actual binding in `root-lifecycle-intrinsic-sdk/` then passed `proc_2e77`:
+six completed SDK sessions,
+six injected requests,
+no tool execution,
+and no external model calls.
+No instance mutator hook was installed.
+
+No-op and cancelled navigation resumed the original receipt.
+Managed navigation,
+a native pre-write failure,
+and cached/prototype calls retired old receipts;
+restoring the original leaf did not revive them.
+The exact native failure survived with unchanged leaf/entry values.
+Five refused stream attempts stopped during suspension before request generation advanced.
+
+This qualifies the tested native-manager occurrence,
+registry,
+and request-observer integration.
+It does not establish all `AgentSession` or runtime-state custody,
+instruction authority,
+current human permission,
+or production integration.
+Session/runtime replacement and other state writers remain the next custody intake.
 
 ## Verified workarounds and limits
 
