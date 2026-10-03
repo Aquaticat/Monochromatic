@@ -303,7 +303,23 @@ The old root was suspended before before-switch/fork handlers and retired before
 Each constructed session entered disposal once in this schedule;
 runtime completion and cleanup were checked separately.
 
-The accepted private runtime extension is verified within this profile,
+Independent review then identified an initial-result admission asymmetry in the private coordinator,
+not an upstream SDK defect.
+The fresh `runtime-initial-admission-v2/` snapshot validates initial records and checks the initial manager
+before invoking its factory.
+`proc_ebd6` passed ten admission cases,
+three guard-removal controls,
+and a new assertion that failed against the retained previous source.
+It also passed six SDK cases with 11 constructed sessions and no model requests.
+Native cleanup failure after the early disposed flag propagated its original error;
+incomplete cleanup was retried while the root stayed retired.
+Completed cleanup was not repeated.
+Nested factory failures preserved the original error and left the applied-but-disposed root unavailable.
+A nested post-apply callback failure preserved the latest live root.
+The earlier 12-case schedule was retained,
+not replayed.
+
+The accepted private runtime extension is verified within these declared profiles,
 not adopted for production.
 
 ## Next action
@@ -312,6 +328,7 @@ Preserve the completed runtime,
 manager,
 and session profiles and their consumed evidence.
 Further admission work must address constructor-phase model requests/protected actions,
+cleanup after idle external disposal or mutation,
 other mutable state and instruction producers,
 current human permission,
 and production integration.

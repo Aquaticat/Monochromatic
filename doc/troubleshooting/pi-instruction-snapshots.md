@@ -1169,8 +1169,40 @@ and that contradictory arbitrary body results are not enforced by the generic he
 Those are excluded-contract findings,
 not approved recovery behavior.
 
-Factory session-start callbacks in the actual runtime fixture only recorded events:
+Independent review then identified an initial-result admission asymmetry in the private coordinator,
+not an upstream SDK defect.
+The fresh `runtime-initial-admission-v2/` snapshot validates initial records and checks the initial manager
+before invoking its factory.
+`proc_ebd6` passed ten admission cases,
+three guard-removal controls,
+and a new assertion that failed against the retained previous source.
+It also passed six SDK cases with 11 constructed sessions and no model requests.
+Native cleanup failure after the early disposed flag propagated its original error;
+incomplete cleanup was retried while the root stayed retired.
+Completed cleanup was not repeated.
+Nested factory failures preserved the original error and left the applied-but-disposed root unavailable.
+A nested post-apply callback failure preserved the latest live root.
+The earlier 12-case schedule was retained,
+not replayed.
+
+The injected native cleanup error occurred at `dist/core/agent-session.js:989` in Pi 1.0.0,
+after its abort catch and extension-context invalidation:
+
+```js
+// Pi 1.0.0: dist/core/agent-session.js:989
+this._disconnectFromAgent();
+this._eventListeners = [];
+```
+
+The fixture threw once from the disconnection delegate after observing the private disposed flag.
+This tested a native disposal that had entered but not completed,
+not an observed default SDK failure.
+Both failed attempts were retained;
+all 11 constructed sessions subsequently completed cleanup.
+
+Factory session-start callbacks in the actual runtime fixtures only recorded events:
 constructor-phase model requests or protected actions were not admitted.
+Cleanup after idle external disposal or mutation was not exercised.
 Other mutable SDK state,
 all instruction producers,
 current human permission,

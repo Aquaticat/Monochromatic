@@ -751,17 +751,28 @@ and the declared private runtime profile is now verified:
   23 constructor/operation-owner cases and six guard removals.
 - `proc_07ea`:
   12 actual SDK cases/21 constructed sessions/no model requests or tools.
+- `proc_ebd6`:
+  ten initial-admission cases,
+  three guard removals,
+  a retained-source red control,
+  and six SDK cases/11 constructed sessions/no model requests.
 
 Runtime operations suspend before before-switch/fork handlers,
 retire before shutdown/disposal,
 and route manager creation through the declared owner.
 Post-apply nesting and original callback errors preserve applied outcomes.
-Terminal disposal uses a completion receipt and does not repeat completed cleanup in the tested schedule.
+Terminal disposal uses a completion receipt and does not repeat completed cleanup in the tested schedules.
+The initial-admission update validates result records before capture and managers before factory execution.
+Native incomplete cleanup was retried without reviving the retired root.
+Nested factory failure left the applied-but-disposed root unavailable;
+nested post-apply callback failure preserved the latest live root.
+The original 12-case schedule and its sources remain unchanged.
 
 This profile requires owned non-proxy factory results and a fixed callback-free publisher.
 `proc_4f1c` records excluded-contract gaps,
 not safety passes.
 Constructor-phase requests/protected actions,
+cleanup after idle external disposal or mutation,
 other mutable state and instruction producers,
 current human permission,
 and production integration remain unqualified.
