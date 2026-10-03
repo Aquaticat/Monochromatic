@@ -909,6 +909,48 @@ The proposed next structural work is recorded in
 now accepted for private prototyping only,
 not deployment.
 
+### Intrinsic native occurrences and protected methods
+
+The accepted private SDK custody prototype lives in `contract/lifecycle/sdk-custody-native/`.
+It adds opaque root occurrences,
+protects the instance/prototype/constructor method slots,
+and makes low-level writers private.
+The installed declaration exposes `_persist` publicly;
+removing that writer is a deliberate interface change for this controlled prototype,
+not arbitrary SDK-caller compatibility.
+
+The first run,
+`proc_b8f3`,
+completed its native workers but failed independent verification.
+Node `assert/strict` emitted `AssertionError [ERR_ASSERTION]` because the mutable-instance worker's message
+did not match the predeclared method-assignment witness.
+Its retained stack points to `sdk-custody-native/check.mjs:35:12`,
+the public `leafId` shadow assertion.
+The original failure and source remain intact.
+
+`proc_04d7` then exercised four fresh paired controls.
+The retained frozen prototype rejected ordinary method assignment in both variants.
+Only the unfrozen instance admitted an own getter through `Reflect.defineProperty` and returned its spoofed value.
+The intact instance rejected that definition.
+This corrects the authored test assumption;
+it is not an upstream defect claim.
+
+`proc_2023` reconciled the retained workers with the specific stack/source witness and that supplement,
+without replaying the native matrix.
+It admitted 24 intact native-manager cases and 12 independent guard-removal outcomes.
+Cached/prototype navigation changed the native occurrence;
+returning to the old leaf did not revive it.
+The append family preserved its lifecycle occurrence.
+A fault immediately before the branch write retained the original error and old leaf,
+while the occurrence had already changed.
+Separate omissions exercised each structural marker site.
+
+No SDK agent session or external model request ran in this native-manager phase.
+Actual SDK consumers of this stronger protected-method variant remain unqualified.
+The fresh `root-lifecycle-native/` registry integration is still an unverified draft:
+independent source review identified callback-tail and replacement-reader finalization gaps,
+and targeted regression controls are being prepared before qualification.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution

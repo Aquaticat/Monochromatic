@@ -158,9 +158,25 @@ because A tests a path toward the required occurrence semantics,
 while B leaves the demonstrated custody prerequisite unresolved.
 Both keep production admission blocked until its actual prerequisites are met.
 
+## Prototype progress
+
+The native module passed retained-worker reconciliation `proc_2023`:
+24 intact cases and 12 independent guard removals,
+with the fresh four-case own-definition supplement `proc_04d7`.
+The failed initial verifier `proc_b8f3` remains preserved;
+completed native workers were not replayed.
+This qualifies the declared native-manager profile,
+not registry integration or actual SDK consumers of the protected-method variant.
+
+The registry integration is authored in `root-lifecycle-native/`,
+but is not qualified.
+Independent review identified callback windows after freshness checks and a fallible replacement reader
+after transition finalization.
+Add regression evidence before repairing those publication paths.
+
 ## Next action
 
-Implement option A in fresh private sibling phases.
+Continue option A in fresh private sibling phases.
 First qualify intrinsic occurrences and protected methods,
 then connect them to the existing registry and actual SDK consumers.
 Preserve original errors and consumed sources.

@@ -675,8 +675,16 @@ Option A prototypes intrinsic lifecycle occurrences and a protected method surfa
 Option B stops structural SDK work with production mutation custody still unqualified.
 The user accepted A:
 implement the private SDK-owned custody prototype.
-First qualify intrinsic occurrences and protected methods,
-then connect the existing registry and native consumers.
+Native qualification now has 24 intact cases and 12 guard-removal outcomes,
+reconciled by `proc_2023` with the four-case own-definition supplement `proc_04d7`.
+The initial verifier failure `proc_b8f3` remains retained;
+no completed native worker was replayed.
+
+`root-lifecycle-native/` contains an unverified registry-integration draft.
+Independent review found callback-tail freshness and replacement-reader finalization gaps.
+Next run the targeted red controls,
+repair publication with a callback-free validated return,
+then qualify the existing-registry integration and actual SDK consumers.
 Installation,
 production adoption,
 and permission creation remain unauthorized.
