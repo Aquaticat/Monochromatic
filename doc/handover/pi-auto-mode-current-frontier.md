@@ -817,6 +817,42 @@ The user requested faster progress.
 Batch related changes and minimize bookkeeping between meaningful acceptance or irreversible boundaries,
 while preserving actual verification and authorization constraints.
 
+## Native request producer evidence
+
+`proc_941b` measured ordinary prompt,
+`sendUserMessage`,
+manual compaction,
+branch summary,
+and bug-report summary.
+The auxiliary paths reuse the session stream function but bypass ordinary run/payload hooks.
+This is a producer-coverage distinction,
+not evidence of instruction authority.
+
+`proc_24bc` passed 18 pure cases and six guard removals for a private producer broker.
+It binds one-use invocation claims to exact consumers and associates origin with exact returned responses.
+Copied or foreign responses reject;
+reused response/stream identities invalidate their associations.
+
+`proc_e862` then passed five actual SDK cases/five injected requests with that broker at native call sites.
+Main-agent responses pass the main-agent origin predicate;
+auxiliary responses fail it.
+The existing wire observer still rejects the branch-summary receipt after navigation.
+No external model or tool executed.
+The collector's unresolved coverage labels remain unresolved.
+
+`proc_c139` failed source staging because its selected historical license had 1070 bytes,
+not the pinned upstream blob's 1069 bytes.
+Its generated files and failure remain preserved.
+Fresh staging `proc_f14b` reused the previously verified SDK-custody license and passed.
+No SDK worker ran in the failed staging phase.
+
+Private evidence is under `contract/collector/request-producer-claims/`,
+`request-producer-sdk-copy-v2/`,
+and `request-producer-native-controls/`.
+The next consumer boundary is native complete prepared-group admission,
+followed by policy/axiom and finalization coupling.
+These producer facts create neither a human grant nor a new judgment budget.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,
