@@ -363,10 +363,30 @@ and the construction-aware operation owner passed `proc_22a9` with 12 cases/four
 The first actual SDK integration process `proc_aa49` preserved completed startup-request cases,
 but failed in the replacement cleanup-fault fixture.
 Its fault was armed before source teardown rather than restricted to the candidate session.
-The exact thrown operation error was not retained by the failing assertion,
-so a fresh targeted diagnostic and corrected tail are required.
-The original process remains failed;
-completed cases will be reconciled without replay.
+The exact thrown operation error was not retained by the failing assertion.
+A fresh source-stage diagnostic then preserved the native error,
+and the corrected candidate-only cleanup case passed.
+The remaining registration fixture called `branch(null)`,
+which the SDK rejects without changing the occurrence;
+`proc_06bb` paired that diagnostic with the correct `resetLeaf()` mutation.
+
+Read-only reconciliation `proc_0c7e` passed the intended nine-case profile:
+15 SDK sessions and 14 locally injected requests,
+with the source-stage and invalid-branch diagnostics reported separately.
+Initial,
+new-manager,
+and same-manager startup requests retain their exact candidate observations through publication.
+Failed and partially registered candidates retire before cleanup;
+failed native cleanup remains retryable even when initial construction returned no runtime.
+Both original failed processes,
+`proc_aa49` and `proc_cc01`,
+remain failed and preserved.
+Completed workers were not replayed.
+
+The next idle-cleanup diagnostic `proc_2d14` passed four SDK cases/four injected requests:
+the existing runtime could not enter cleanup after external complete/partial disposal or branch-away/back.
+Terminal-only retirement and a branded native completion reader are being integrated.
+They must not relax ordinary replacement freshness or treat an early disposed flag as completed cleanup.
 
 ## Next action
 

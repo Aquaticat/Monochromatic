@@ -831,9 +831,15 @@ Current independently verifiable areas:
   `proc_587f` passed five cases/nine sessions/nine injected requests.
   New-manager startup requests created a root that later publication rejected;
   failed factories left that candidate live until explicit fixture cleanup.
-- [ ] Integrate factory-occurrence ownership into the existing registry,
+- [x] Integrate factory-occurrence ownership into the existing registry,
   preserving valid startup requests while retiring failed candidates.
+  `proc_0c7e` reconciled nine intended cases/15 sessions/14 injected requests.
+  Original failed fixture/verifier processes remain preserved;
+  completed workers were not replayed.
 - [ ] Qualify runtime cleanup after idle external disposal or structural mutation.
+  `proc_2d14` measured the cleanup refusal in four SDK cases.
+  Terminal-only entry and native completion observation are implemented;
+  actual changed-runtime consumers are pending.
 - [ ] Complete the instruction-collection and prepared-group consumer bridge,
   including nested complete-group boundaries and finalization.
 - [ ] Prepare the new SDK-linked human-original confirmation once its mechanical prerequisites are ready.

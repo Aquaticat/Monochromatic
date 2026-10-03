@@ -1257,6 +1257,66 @@ No startup request,
 constructor identity,
 or proposed occurrence token establishes human permission or another judgment budget.
 
+### Idle external disposal blocks runtime cleanup
+
+`proc_2d14` measured four actual SDK cases with four injected requests and no external calls.
+Ordinary runtime close completed.
+After direct complete or partial session disposal,
+first runtime close propagated `NativeSessionDisposedError`,
+then another close rejected the already-retired lease.
+After native branch-away/back,
+runtime close rejected the retired lease without disposing the still-live session.
+Explicit fixture cleanup completed the owned sessions.
+
+The private operation owner in `contract/lifecycle/runtime-construction-operations/operations.mjs`
+used active-root entry for terminal work as well as replacements:
+
+```js
+// Private repository: contract/lifecycle/runtime-construction-operations/operations.mjs
+if(!unavailable)transition=lifecycle.begin(lease);
+```
+
+The remedy separates terminal-only invalidation from ordinary active-root admission.
+Its token must not become a replacement or construction token.
+Native cleanup completion also needs a separate observation:
+the existing disposed flag is set before abort and later cleanup can still throw.
+A completion reader must stay incomplete during nested disposal and after an outer failure.
+This is a private implementation issue,
+not an upstream SDK defect or permission grant.
+
+### Registration-fault fixture used an invalid branch argument
+
+The constructor-request tail `proc_cc01` expected a native occurrence change,
+but its diagnostic callback called `SessionManager.branch(null)`.
+Pi 1.0.0 declares `branch(branchFromId: string)` in `dist/core/session-manager.d.ts:347`.
+Its implementation rejects the absent entry before changing the leaf:
+
+```js
+// Pi 1.0.0: dist/core/session-manager.js:1161
+branch(branchFromId) {
+    if (!this.byId.has(branchFromId)) {
+        throw new Error(`Entry ${branchFromId} not found`);
+    }
+    this.leafId = branchFromId;
+}
+```
+
+The lifecycle diagnostic callback retained `Error: Entry null not found`,
+so no occurrence change happened and the candidate request/publication completed.
+The correct native operation is `resetLeaf()` at `dist/core/session-manager.js:1172`.
+The fresh paired control `proc_06bb` verified both outcomes:
+the invalid call retained its exact error,
+while `resetLeaf()` changed the occurrence,
+rejected registration,
+and cleaned the candidate before a request.
+
+`proc_0c7e` then reconciled the intended constructor profile from retained and corrected cases:
+nine cases,
+15 SDK sessions,
+and 14 injected requests.
+The source-stage cleanup and invalid-branch diagnostics remain separate.
+Original `proc_aa49` and `proc_cc01` failures were not relabeled successful or replayed.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
