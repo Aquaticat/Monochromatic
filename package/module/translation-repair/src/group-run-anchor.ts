@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { GroupedRun, } from './group-aligned.ts';
 
 //region Insertion anchors read off the settled runs
@@ -146,23 +147,34 @@ export function reanchorInsertions(
       return run;
 
     /**
+     Where the nearest translation blocks after this insertion start, which
+     these runs always carry: `anchorOffsets` names an anchor only where a
+     step paired, and a paired step leaves its blocks in a run.
+     */
+    const next = nonNullishOrThrow(nextStart.at(at,),);
+
+    /**
+     Where the nearest translation blocks before this insertion end.
+     */
+    const previous = nonNullishOrThrow(previousEnd.at(at,),);
+
+    /**
      Boundary this insertion writes at, preferring the passage that follows.
      */
-    const settled = (nextStart[at] ?? NO_BOUNDARY) === NO_BOUNDARY
-      ? (previousEnd[at] ?? NO_BOUNDARY)
-      : (nextStart[at] ?? NO_BOUNDARY);
+    const settled = (next === NO_BOUNDARY) ? previous : next;
 
-    // NOTHING EITHER SIDE CARRIES A TRANSLATION BLOCK, so there is no boundary
-    // to read and the walk's answer is the only one there is. `anchorOffsets`
-    // returns nothing at all when no step paired, so this is unreachable
-    // through it; keeping the run untouched is the honest reading if it ever is.
-    return (settled === NO_BOUNDARY)
-      ? run
-      : {
-        kind: 'insertion',
-        sourceRun: run.sourceRun,
-        targetOffset: settled,
-      };
+    // NOTHING EITHER SIDE CARRIES A TRANSLATION BLOCK, which no walk builds:
+    // `anchorOffsets` returns nothing at all when no step paired, so no run
+    // is an insertion then, and a paired step always leaves a translation
+    // block in the runs for these scans to find (ledger T8, the group
+    // cluster).
+    if (settled === NO_BOUNDARY)
+      throw new Error('unreachable: an insertion with no translation block on either side',);
+    return {
+      kind: 'insertion',
+      sourceRun: run.sourceRun,
+      targetOffset: settled,
+    };
   },);
 }
 

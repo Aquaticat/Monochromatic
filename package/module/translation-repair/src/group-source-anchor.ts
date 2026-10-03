@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { AlignmentStep, } from './align-blocks-walk.ts';
 import type { DocumentNode, } from './document-node.ts';
 
@@ -179,20 +180,15 @@ export function anchorOffsets(
      Step at this position, always present since the loop counts down from
      the walk's own length.
      */
-    const step = walk[at];
+    const step = nonNullishOrThrow(walk.at(at,),);
 
     /**
      Span the step consumes on the translation side.
      */
-    const span = (step === undefined)
-      ? {
-        start: NO_OFFSET,
-        end: NO_OFFSET,
-      }
-      : renderedSpan({
-        step,
-        targetNodes,
-      },);
+    const span = renderedSpan({
+      step,
+      targetNodes,
+    },);
     if (span.start !== NO_OFFSET)
       scan.next = span.start;
 
@@ -235,19 +231,17 @@ export function anchorOffsets(
      Where this original's rendering would go: before the next rendered block
      when one follows, after the last one otherwise.
      */
-    const forward = nextOffsets[at] ?? NO_OFFSET;
+    const forward = nonNullishOrThrow(nextOffsets.at(at,),);
 
     /**
      That, falling back to the tail for an original past every rendering.
      */
     const offset = (forward === NO_OFFSET) ? tail : forward;
 
-    return (offset === NO_OFFSET)
-      ? []
-      : [[
-        at,
-        offset,
-      ],];
+    return [[
+      at,
+      offset,
+    ],];
   },),);
 }
 
