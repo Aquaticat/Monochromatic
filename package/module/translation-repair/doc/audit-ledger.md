@@ -5589,6 +5589,35 @@ reads `still cold 0, cold since then 0, not loaded 0`
 and both edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The seventh cluster of that census,
+`decision`,
+against `census-bR9IAH` at `3a184963e`:
+9 stretches over `decision-contract.ts` and `decision-context-refusal.ts`
+(`045c0e2f5`,
+`750ec0708`).
+The parse catch now names its detail and carries the failure as cause
+(the shape `hyper-credits.ts` already uses),
+its non-Error fallback arm having been unreachable
+(a JSON parse throws only `SyntaxError`).
+Nine are cased in `decision-contract.unit.test.ts` (new,
+the module leaving the own-unit-tests allowlist)
+and `stage-decision-call.unit.test.ts`:
+the answer guard's refusals and its three documented answers,
+the reply reader's refusals (non-JSON,
+non-object,
+no answers,
+a mistyped answer,
+no model),
+its shaped returns (no usage,
+usage only for paired token counts,
+`costUsd` only for a numeric cost),
+and the over-context gate's status refusal
+(a 503 whose body names the marker stays a lost voice).
+The reach census (`~/temp/agent/mimo-trial/reach-decision3.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+and the edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

@@ -679,6 +679,31 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  23:03 UTC:
+  the T8 `decision` batch closed with commits `045c0e2f5` and `750ec0708`:
+  9 stretches over the reply contract and the over-context gate,
+  8 cased (the answer guard,
+  the reply reader's refusals and shaped returns,
+  the status refusal),
+  1 replaced by the house cause shape
+  (the parse catch's dead non-Error arm).
+  `decision-contract.unit.test.ts` is new
+  and the module leaves the own-unit-tests allowlist.
+  The reach census reads `still cold 0, cold since then 0, not loaded 0`
+  and the edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-decision3.log`).
+  Counts at the close:
+  the full suite 1,546 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-decision-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `750ec0708`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `openrouter` cluster.
+
+- 2026-10-03,
   22:39 UTC:
   the next batch's baseline census taken at commit `d017074e2`:
   `census written to ~/.cache/translation-repair/coverage/census-bR9IAH/census.json`
