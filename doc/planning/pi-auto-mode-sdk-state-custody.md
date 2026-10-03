@@ -405,6 +405,35 @@ Shutdown then host invalidation callbacks preserved their order,
 but ran late and observed stale extension context after direct disposal.
 This timing is recorded rather than described as complete event parity.
 
+## Producer-bound complete prepared groups
+
+`proc_e862` bound main-agent and auxiliary request producers to exact SDK consumer/response identities.
+The private call-site changes retain the existing prepared-batch host and current protected session/factory.
+Producer identity does not establish governing instruction authority or human permission.
+
+`proc_1aaa` qualified the producer/wire gate at the actual complete prepared-group consumer:
+six SDK sessions,
+13 injected requests,
+and five inert executions.
+Parallel and sequential groups each assessed once before both members executed.
+Missing wire evidence,
+a copied response,
+and a genuine same-session auxiliary-summary response each blocked both members before assessment.
+When the source changed after the first serial result,
+the second member was blocked and the completed first result remained.
+This still uses a fixed inert assessment,
+not a qualified policy or semantic verdict.
+
+`proc_bed1` reconciled the separate pure consumer controls without replaying workers:
+three cases and two guard removals.
+The original `proc_6333` summary incorrectly reported six removals from a copied literal count;
+its source and result remain preserved.
+The next boundary is one enclosing judgment's budget,
+code-owned evidence/decision handling,
+and dependency finalization.
+Start its clock before provenance checks and preparation,
+not after either gate.
+
 ## Next action
 
 Preserve the completed runtime,

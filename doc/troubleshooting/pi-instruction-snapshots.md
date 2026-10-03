@@ -1368,6 +1368,47 @@ Neither producer identity nor an observed hook chain authenticates governing ins
 The existing collector coverage gaps remain open;
 they are not closed by deleting gap labels or by matching a hardcoded prompt marker.
 
+### Producer and wire evidence constrain the group consumer separately
+
+`proc_e862` exercised code-owned request origin at actual native main-agent and auxiliary call sites.
+`proc_1aaa` then connected that origin to the existing complete prepared-group host.
+The private helper in `contract/collector/request-producer-group-consumer/request.mjs:3` composes the checks:
+
+```js
+// Private prototype: contract/collector/request-producer-group-consumer/request.mjs
+export function readMainAgentRequest({producerOwner,observer,stream,response}) {
+  producerOwner.assertMainAgentResponse({stream,response});
+  return observer.observationFor(response);
+}
+```
+
+`observationFor` checks its owned response association and current lifecycle/source receipt;
+it is not merely an identity lookup.
+The helper does not grant permission or decide policy.
+
+`proc_1aaa` qualified the producer/wire gate at the actual complete prepared-group consumer:
+six SDK sessions,
+13 injected requests,
+and five inert executions.
+Parallel and sequential groups each assessed once before both members executed.
+Missing wire evidence,
+a copied response,
+and a genuine same-session auxiliary-summary response each blocked both members before assessment.
+When the source changed after the first serial result,
+the second member was blocked and the completed first result remained.
+This still uses a fixed inert assessment,
+not a qualified policy or semantic verdict.
+
+`proc_bed1` reconciled the separate pure consumer controls without replaying workers:
+three cases and two guard removals.
+The original `proc_6333` summary incorrectly reported six removals from a copied literal count;
+its source and result remain preserved.
+The next boundary is one enclosing judgment's budget,
+code-owned evidence/decision handling,
+and dependency finalization.
+Start its clock before provenance checks and preparation,
+not after either gate.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
