@@ -819,6 +819,27 @@ while preserving actual verification and authorization constraints.
 
 ## Next work
 
+The runtime result was a checkpoint in the migration,
+not completion of the authorized mechanical queue.
+The user had to request continuation after that premature stop.
+Continue directly through the remaining authorized work;
+keep adoption and human-permission gates separate from mechanical progress.
+
+Current independently verifiable areas:
+
+- [ ] Measure constructor-phase requests and root publication using the existing observer and actual SDK callbacks.
+- [ ] Qualify runtime cleanup after idle external disposal or structural mutation.
+- [ ] Complete the instruction-collection and prepared-group consumer bridge,
+  including nested complete-group boundaries and finalization.
+- [ ] Prepare the new SDK-linked human-original confirmation once its mechanical prerequisites are ready.
+  Only this step requires the genuine human input;
+  historical witnesses do not supply permission.
+
+Proposed tightening of `AGENTS.md` rule `PXQ`,
+not applied because that file remains protected:
+
+> Completion means the authorized queue, not a phase. After each checkpoint, start the next authorized item. Stop only at completion or a genuine blocker; never require the user to say "continue".
+
 - Establish the composed operation and relevant effect scope before mapping nested transport groups to judgments.
   Do not infer missing safety information merely from a runtime-dependent value.
 - Finish the real policy consumer and explicit nested-group orchestration seam.
