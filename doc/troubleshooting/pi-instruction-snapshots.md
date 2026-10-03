@@ -946,10 +946,33 @@ while the occurrence had already changed.
 Separate omissions exercised each structural marker site.
 
 No SDK agent session or external model request ran in this native-manager phase.
-Actual SDK consumers of this stronger protected-method variant remain unqualified.
-The fresh `root-lifecycle-native/` registry integration is still an unverified draft:
-independent source review identified callback-tail and replacement-reader finalization gaps,
-and targeted regression controls are being prepared before qualification.
+The stronger protected-method variant then passed selected actual SDK consumers in `proc_51fd`:
+two completed sessions,
+four injected requests,
+one inert execution,
+no external model calls.
+Its measured message/context-edit outcomes matched retained baseline records.
+This does not establish every SDK caller's compatibility.
+
+Independent source review found separate registry-integration defects:
+a callback could invalidate a root after its last freshness check,
+and a replacement-reader failure could occur after transition finalization.
+`proc_f13e` reproduced nine failing controls on the preserved draft.
+The remedy validates after callbacks,
+prepares fallible replacement observations before finalization,
+and publishes commit/cancellation state without further callbacks.
+Failed preparation keeps transition cleanup available;
+an unreturned begin handle is cleaned up internally.
+
+`proc_9258` passed 24 retained legacy cases,
+17 native-reader protocol cases,
+nine callback/publication cases,
+and 11 independent guard-removal variants.
+These use constructor-owned doubles,
+not actual SDK roots.
+The next `root-lifecycle-intrinsic-sdk/` phase binds this registry and the request observer to real SDK navigation,
+including cached/prototype calls without instance hooks.
+It is prepared but not yet qualified.
 
 ## Verified workarounds and limits
 

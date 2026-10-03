@@ -680,11 +680,26 @@ reconciled by `proc_2023` with the four-case own-definition supplement `proc_04d
 The initial verifier failure `proc_b8f3` remains retained;
 no completed native worker was replayed.
 
-`root-lifecycle-native/` contains an unverified registry-integration draft.
-Independent review found callback-tail freshness and replacement-reader finalization gaps.
-Next run the targeted red controls,
-repair publication with a callback-free validated return,
-then qualify the existing-registry integration and actual SDK consumers.
+`proc_51fd` passed selected SDK consumers with the protected manager:
+two sessions,
+four injected requests,
+one inert execution,
+no external calls.
+
+`root-lifecycle-native/` then passed `proc_9258`:
+24 legacy,
+17 native-reader,
+and nine callback/publication cases,
+plus 11 guard-removal variants.
+`proc_f13e` first reproduced the nine callback/finalization defects on the preserved draft.
+The remedy validates after callbacks and leaves failed preparation cleanup available.
+
+Next run `root-lifecycle-intrinsic-sdk/`:
+six planned SDK sessions test navigation/cancellation,
+native pre-write failure,
+and cached/prototype calls through the intrinsic reader without instance hooks.
+That actual binding is prepared,
+not yet qualified.
 Installation,
 production adoption,
 and permission creation remain unauthorized.

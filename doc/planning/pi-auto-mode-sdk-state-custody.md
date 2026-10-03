@@ -168,11 +168,23 @@ completed native workers were not replayed.
 This qualifies the declared native-manager profile,
 not registry integration or actual SDK consumers of the protected-method variant.
 
-The registry integration is authored in `root-lifecycle-native/`,
-but is not qualified.
-Independent review identified callback windows after freshness checks and a fallible replacement reader
-after transition finalization.
-Add regression evidence before repairing those publication paths.
+The protected manager preserved selected SDK message/context-edit consumers in `proc_51fd`:
+two sessions,
+four injected requests,
+and one inert execution.
+No unchanged baseline session was replayed.
+
+The registry integration in `root-lifecycle-native/` passed `proc_9258`:
+24 retained legacy cases,
+17 native-reader protocol cases,
+nine callback/publication cases,
+and 11 guard-removal variants.
+`proc_f13e` had first reproduced those nine publication failures on the preserved draft.
+The tested remedy has validated,
+callback-free publication tails and keeps failure cleanup available.
+This qualifies the pure integration protocol,
+not its actual SDK binding.
+The real navigation/request-observer phase is prepared next.
 
 ## Next action
 
