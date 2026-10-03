@@ -341,5 +341,58 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'carries a continuation\'s original with the seal that covers its rendering, so the sealed '
+        + 'block and the originals it renders leave together rather than the continuation becoming a '
+        + 'sealed run of its own',
+      fn: async () => {
+        /**
+         Originals whose renderings the one sealed block covers.
+         */
+        const sourceNodes = blocksOf({ text: '猫猫在窗台上睡觉。\n\n猫猫追蝴蝶。\n', },);
+
+        /**
+         The single rendering, sealed.
+         */
+        const targetNodes = blocksOf({ text: 'The cat sleeps on the windowsill, and chases butterflies.\n', },);
+        const {
+          runs,
+          sealedSourceIds,
+        } = groupNodesSealed({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+          steps: [
+            {
+              kind: 'paired',
+              sourceIndex: 0,
+              targetIndex: 0,
+            },
+            {
+              kind: 'source-only',
+              sourceIndex: 1,
+              continuesPairing: true,
+            },
+          ],
+          sealed: new Set([ nodeAt({
+            nodes: targetNodes,
+            at: 0,
+          },).id, ],),
+        },);
+        expect([ ...sealedSourceIds, ],).toStrictEqual([
+          nodeAt({
+            nodes: sourceNodes,
+            at: 0,
+          },).id,
+          nodeAt({
+            nodes: sourceNodes,
+            at: 1,
+          },).id,
+        ],);
+        expect(runs,).toStrictEqual([],);
+      },
+    },),
   ],
 },);
