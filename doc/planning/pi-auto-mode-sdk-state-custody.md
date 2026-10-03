@@ -322,6 +322,35 @@ not replayed.
 The accepted private runtime extension is verified within these declared profiles,
 not adopted for production.
 
+## Constructor-phase request continuation
+
+The runtime checkpoint did not complete the authorized migration queue.
+The fresh `runtime-construction-request-intake/` diagnostic passed `proc_587f`:
+five cases,
+nine constructed SDK sessions,
+and nine locally injected wire requests.
+No external model or tool ran.
+
+An initial `session_start` callback completed an observed request before runtime construction returned.
+The initial runtime reused that exact root.
+A new-manager replacement callback also completed its request,
+but publication then failed with `RootTransitionError: Replacement manager already has an active root`.
+A factory error after a startup request left the candidate session and receipt live
+when the old runtime closed;
+the fixture explicitly disposed that candidate.
+The same-manager fork instead refused constructor-phase capture while its manager transition was pending,
+then accepted the post-application request.
+
+These observations establish an occurrence-ownership and publication gap,
+not a rule that startup requests must always be denied.
+The next mechanical change must associate the candidate with this factory attempt,
+adopt only that exact fresh root on success,
+and retire it on failure.
+Keep that state in the existing registry and preserve awaited startup behavior.
+Constructor occurrence ownership does not establish instruction authority,
+human permission,
+or another judgment budget.
+
 ## Next action
 
 Preserve the completed runtime,

@@ -827,7 +827,12 @@ keep adoption and human-permission gates separate from mechanical progress.
 
 Current independently verifiable areas:
 
-- [ ] Measure constructor-phase requests and root publication using the existing observer and actual SDK callbacks.
+- [x] Measure constructor-phase requests and root publication using the existing observer and actual SDK callbacks.
+  `proc_587f` passed five cases/nine sessions/nine injected requests.
+  New-manager startup requests created a root that later publication rejected;
+  failed factories left that candidate live until explicit fixture cleanup.
+- [ ] Integrate factory-occurrence ownership into the existing registry,
+  preserving valid startup requests while retiring failed candidates.
 - [ ] Qualify runtime cleanup after idle external disposal or structural mutation.
 - [ ] Complete the instruction-collection and prepared-group consumer bridge,
   including nested complete-group boundaries and finalization.
