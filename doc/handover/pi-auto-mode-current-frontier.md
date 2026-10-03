@@ -884,6 +884,33 @@ this proves omission detection,
 not an unsafe execution.
 No intact SDK worker was replayed.
 
+## Shared judgment accounting prototype
+
+`proc_7ec7` passed 28 pure cases and ten guard removals for `contract/lifecycle/judgment-budget/budget.mjs`.
+The constructor starts one absolute five-second deadline before caller preparation.
+The same owner counts at most three initiated client attempts,
+including at most one code-classified transport retry.
+Returned unresolved values do not trigger retries.
+Overlap,
+reentry,
+late success,
+clock regression,
+cancellation,
+and finished-boundary reuse reject in the declared profile.
+Attempt records retain final status and original operation failures.
+Classifier failure after expiry retains the transport,
+classifier,
+and deadline errors together.
+
+This is cooperative accounting,
+not five-second handback under a hard stall or ignored cancellation.
+It creates no permission and imposes no tool-execution runtime deadline.
+Question identity/anti-fishing enforcement,
+selection qualification,
+one-time enclosing/nested scope construction,
+and existing dependency-finalizer integration remain next work.
+No SDK session or model ran in this phase.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,
