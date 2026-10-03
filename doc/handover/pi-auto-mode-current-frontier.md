@@ -853,7 +853,12 @@ Current independently verifiable areas:
 Proposed tightening of `AGENTS.md` rule `PXQ`,
 not applied because that file remains protected:
 
-> Completion means the authorized queue, not a phase. After each checkpoint, start the next authorized item. Stop only at completion or a genuine blocker; never require the user to say "continue".
+> Completion means the authorized queue,
+>  not a phase.
+>  After each checkpoint,
+>  start the next authorized item.
+>  Stop only at completion or a genuine blocker;
+>  never require the user to say "continue".
 
 - Establish the composed operation and relevant effect scope before mapping nested transport groups to judgments.
   Do not infer missing safety information merely from a runtime-dependent value.
