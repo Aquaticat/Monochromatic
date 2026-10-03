@@ -134,13 +134,19 @@ No external upstream issue was drafted or filed.
 This is repo-owned recovery behavior,
 not a demonstrated fault in native Git or the Pi process harness.
 
--   Upstream fault: not established for an external project.
--   Fixability: no generic recovery change was designed or qualified by this incident.
--   Supported use: local commit interruption is documented;
+-   Upstream fault:
+     not established for an external project.
+-   Fixability:
+     no generic recovery change was designed or qualified by this incident.
+-   Supported use:
+     local commit interruption is documented;
     conflicting index recovery deliberately fails closed.
--   Contribution policy: external contribution policy is not applicable to this repo-owned resolution.
--   Likelihood of an external fix: not assessed because no external defect is claimed.
--   Prototype: the incident-specific administrative recovery was exercised;
+-   Contribution policy:
+     external contribution policy is not applicable to this repo-owned resolution.
+-   Likelihood of an external fix:
+     not assessed because no external defect is claimed.
+-   Prototype:
+     the incident-specific administrative recovery was exercised;
     no generic code fix is represented as tested.
 
 `.out-of-scope/` was inspected;
