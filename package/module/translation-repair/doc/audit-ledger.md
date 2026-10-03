@@ -5444,8 +5444,12 @@ Six were unreachable fallbacks their own neighbourhoods guarantee away
 three `?? NO_BOUNDARY` index fallbacks,
 an undefined-step arm the loop's own bounds close,
 a dead `? []` arm the early return closes,
-and one no-boundary return arm replaced with an `unreachable:` throw
-after four probes on the built package never built the run list it guards.
+and one no-boundary return arm dropped
+after four probes on the built package never built the run list it guards
+(a correction naming itself:
+this paragraph first read "replaced with an `unreachable:` throw",
+and that throw's own line then stood cold as `census-QFKBeX`'s stretch at line 172,
+so the guard came out as M112 records).
 Two are cased:
 the run split at the step after a decline
 (`aa5f63aec`),
@@ -20132,6 +20136,27 @@ Prevention:
 a comment names the check it discusses in words,
 never by where it sits,
 since an insertion silently repoints a position.
+
+### M112: an `unreachable:` throw that left its own line cold
+
+Status:
+happened 2026-10-03 (UTC),
+caught at once and recorded here.
+The group batch's no-boundary guard first became a throw whose message starts `unreachable:`,
+the shape `mergedAttestations` uses,
+and the fresh whole-suite census then listed the throw's own line
+(`census-QFKBeX`,
+`src/group-run-anchor.ts` at line 172)
+as code no unit test runs:
+an unreachable throw is unreachable code too.
+The guard is removed now,
+with its invariant in the comment above `settled`.
+Prevention:
+where a stretch must close,
+the dead branch comes out rather than throwing from it,
+and an `unreachable:` throw counts as one more uncased line
+(`artifact-change-sets.ts` holds that shape open,
+`census-QFKBeX` lines 212 to 215).
 
 ### M79: a coverage census measuring compressed code
 

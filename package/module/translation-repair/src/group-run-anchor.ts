@@ -160,16 +160,12 @@ export function reanchorInsertions(
 
     /**
      Boundary this insertion writes at, preferring the passage that follows.
+     Nothing either side carries a translation block only when no walk builds
+     one: `anchorOffsets` names an anchor only where a step paired, and a
+     paired step always leaves a translation block in the runs for these
+     scans to find (ledger T8, the group cluster).
      */
     const settled = (next === NO_BOUNDARY) ? previous : next;
-
-    // NOTHING EITHER SIDE CARRIES A TRANSLATION BLOCK, which no walk builds:
-    // `anchorOffsets` returns nothing at all when no step paired, so no run
-    // is an insertion then, and a paired step always leaves a translation
-    // block in the runs for these scans to find (ledger T8, the group
-    // cluster).
-    if (settled === NO_BOUNDARY)
-      throw new Error('unreachable: an insertion with no translation block on either side',);
     return {
       kind: 'insertion',
       sourceRun: run.sourceRun,
