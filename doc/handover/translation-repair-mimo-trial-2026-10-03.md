@@ -679,6 +679,27 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  22:35 UTC:
+  the T8 `fidelity` batch closed with commit `e9d07984e`:
+  9 stretches over the two damage builders,
+  2 dropped as unreachable,
+  7 cased in `fidelity-alteration-variant.unit.test.ts` and `fidelity-damage.unit.test.ts`
+  through an optional `needle` and `anchor` a case can supply.
+  The reach census reads `still cold 0, cold since then 0, not loaded 0`
+  and both edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-fidelity.log`).
+  Counts at the close:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-fidelity-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `e9d07984e`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `decision` cluster.
+
+- 2026-10-03,
   22:12 UTC:
   the next batch's baseline census taken at commit `911154fe8`:
   `census written to ~/.cache/translation-repair/coverage/census-Ai2qpF/census.json`

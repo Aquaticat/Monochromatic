@@ -5568,6 +5568,27 @@ reads `still cold 0, cold since then 0, not loaded 0`
 and both edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The sixth cluster of that census,
+`fidelity`,
+against `census-Ai2qpF` at `4c8eb9c03`:
+9 stretches over `fidelity-alteration.ts` and `fidelity-damage.ts`
+(`e9d07984e`).
+Two came out:
+the `occursOnce` absence arm,
+whose only caller draws the needle from the same text with `digitRuns`,
+and the insertion's unchanged refusal,
+`applySeededErrors` throwing `needle absent from current text`
+before any no-op could reach it.
+Seven are cased,
+the two unchanged and empty deletion refusals among them through an optional
+`needle` and `anchor` a case supplies
+(the seed's pick by default),
+so a splice point the text lacks is a test's to give.
+The reach census (`~/temp/agent/mimo-trial/reach-fidelity.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+and both edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
