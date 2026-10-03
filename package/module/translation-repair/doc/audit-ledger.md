@@ -18828,6 +18828,50 @@ Recurrence:
 `mistake-prevention.md`,
 "One field carrying two kinds of text".
 
+### B126: a link's empty label returned its markup for a name
+
+Red in `98e94e584`.
+A T8 bundle agent's case in `contributor-name-authority.unit.test.ts` wrote it:
+"READS NO NAME from a link whose label is empty,
+which shows a reader nothing,
+rather than its markup (T8)".
+`contributorForm` (`contributor-name-authority.ts`) finds a link's label end with
+`unmarked.indexOf('](')`
+and returned the token unchanged when `labelEnd <= 1`.
+That one check joined two cases:
+`-1`,
+no `](` at all,
+where the token is a plain name such as `[Whisker`,
+and `1`,
+an empty label `[](...)`,
+whose visible form is the empty string.
+The empty label instead returned its whole markup:
+the case expected `['Pebble']`
+and measured `['[](https://example.test/whisker)', 'Pebble']`.
+
+The fix:
+the check returns the token only where no `](` exists (`labelEnd === (-1)`),
+so an empty label slices to the empty string,
+which `archiveContributorNameForms` drops through its `nonempty` filter,
+and the `@returns` names the empty link label beside the empty token.
+The reader keeps its scan;
+moving it onto the Markdown parse,
+which the recurrence's rule asks for,
+is a larger change no finding here asks for.
+
+No cached decision changes,
+inference from one search of the pinned corpus:
+`git -C ~/one-among-us/data grep --line-number --fixed-strings '[](' a41fc607ea5a70d8a7625cc67d5ed8c444f53379`
+prints six lines and every one reads `Binary file ... matches`
+for a photo under `people/`,
+no text line,
+so no contributor line (`CONTRIBUTOR_LABELS`) carries an empty-label link
+and the contributor floor protects the same pages as before.
+
+Recurrence:
+`mistake-prevention.md`,
+"Structure read off the parse".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

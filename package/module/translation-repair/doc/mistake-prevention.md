@@ -2025,6 +2025,8 @@ a front-matter slice is YAML,
 where a line opening with `>` is a scalar's content,
 so a Markdown reading of structure skips it,
 as the declared-name guard and the floor already did (ledger B113).
+The contributor reader found a link's label end with `indexOf('](')`
+and took the whole token for a name when the label was empty (ledger B126).
 
 What enforces it:
 `blank-line-splits.unit.test.ts`,

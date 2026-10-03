@@ -83,7 +83,7 @@ function splitContributorForms(
 
  @param token - one top-level contributor token
 
- @returns Visible target-authoritative form, empty for empty token
+ @returns Visible target-authoritative form, empty for empty token or empty link label, which shows a reader nothing
 
  @example
  ```ts
@@ -109,7 +109,7 @@ function contributorForm({ token, }: { readonly token: string; },): string {
    Boundary between visible label and link destination.
    */
   const labelEnd = unmarked.indexOf('](',);
-  if (labelEnd <= 1)
+  if (labelEnd === (-1))
     return unmarked;
   return unmarked.slice(
     1,
