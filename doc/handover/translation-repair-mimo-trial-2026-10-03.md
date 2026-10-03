@@ -679,6 +679,19 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  19:35 UTC:
+  the next batch's baseline census taken at commit `ae88792c7`:
+  `census written to ~/.cache/translation-repair/coverage/census-DXY8l2/census.json`
+  (`~/temp/agent/mimo-trial/census-3.log`).
+  `library source: 195 files, 447 stretches over 1037 lines, 11 functions never called`,
+  one stretch below `census-QFKBeX` with the `group` cluster now empty of them.
+  The `inline` cluster holds 10,
+  all in `src/inline-container-tags.ts`.
+  This line lands in the trial-log commit that follows `ae88792c7`.
+  Next:
+  the `inline` batch.
+
+- 2026-10-03,
   19:30 UTC:
   the fresh census caught the `unreachable:` throw's own line as a stretch
   and the guard came out with commit `c592bcc0f`
