@@ -1208,6 +1208,55 @@ all instruction producers,
 current human permission,
 and production integration remain outside the claim.
 
+### Constructor-phase requests and publication conflict
+
+`proc_587f` passed a fresh diagnostic against the unchanged private runtime:
+five cases,
+nine SDK sessions,
+and nine locally injected requests.
+An initial `session_start` request completed before runtime creation returned.
+A new-manager replacement request also completed during `session_start`,
+but runtime publication then emitted
+`RootTransitionError: Replacement manager already has an active root`.
+A factory error after such a request left the candidate session and receipt active
+when the old runtime closed.
+Explicit fixture cleanup retired them.
+A same-manager fork refused capture during the pending transition,
+then succeeded after application.
+
+Pi 1.0.0 `dist/core/agent-session.js:2582` awaits startup before later resource discovery:
+
+```js
+// Pi 1.0.0: dist/core/agent-session.js, bindExtensions
+this._applyExtensionBindings(this._extensionRunner);
+await this._extensionRunner.emit(this._sessionStartEvent);
+this._extensionRunner.reportUnhandledMcpServers();
+await this.extendResourcesFromExtensions(this._sessionStartEvent.reason === "reload" ? "reload" : "startup");
+```
+
+The private registry `contract/lifecycle/runtime-root-lifecycle/lifecycle.mjs:72`
+creates a root for an owned pair during capture:
+
+```js
+// Private registry: contract/lifecycle/runtime-root-lifecycle/lifecycle.mjs
+if(!root)root=createRoot({session,manager,canonical});
+```
+
+Its replacement publication at line 123 rejects that independently active root:
+
+```js
+// Private registry: contract/lifecycle/runtime-root-lifecycle/lifecycle.mjs
+if(existing&&existing!==operation.root&&!retired(existing))throw new RootTransitionError('Replacement manager already has an active root');
+```
+
+This is a private occurrence-ownership/publication gap,
+not an upstream defect or proof that all startup requests must be denied.
+The required continuation is factory-scoped ownership in the existing registry:
+adopt only the exact fresh candidate on success and retire abandoned candidates.
+No startup request,
+constructor identity,
+or proposed occurrence token establishes human permission or another judgment budget.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
