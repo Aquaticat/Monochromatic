@@ -1278,9 +1278,23 @@ if(!unavailable)transition=lifecycle.begin(lease);
 
 The remedy separates terminal-only invalidation from ordinary active-root admission.
 Its token must not become a replacement or construction token.
+`proc_8d27` verified that distinction with 16 cases and five guard removals;
+the original `proc_e63c` verifier failure remains preserved.
 Native cleanup completion also needs a separate observation:
 the existing disposed flag is set before abort and later cleanup can still throw.
 A completion reader must stay incomplete during nested disposal and after an outer failure.
+`proc_9e54` passed six intact SDK cases and three omission controls using nine sessions,
+with no model requests.
+The completion-aware runtime then passed `proc_4ad5`:
+four sessions/four injected requests,
+successful close in every declared mode,
+no repeated completed native disposal,
+and a successful retry after partial disposal.
+
+Shutdown then host invalidation callbacks retained their order.
+After a prior direct disposal they ran late and observed stale extension context;
+this is an observed compatibility detail,
+not complete native event parity.
 This is a private implementation issue,
 not an upstream SDK defect or permission grant.
 

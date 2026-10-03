@@ -385,8 +385,25 @@ Completed workers were not replayed.
 
 The next idle-cleanup diagnostic `proc_2d14` passed four SDK cases/four injected requests:
 the existing runtime could not enter cleanup after external complete/partial disposal or branch-away/back.
-Terminal-only retirement and a branded native completion reader are being integrated.
-They must not relax ordinary replacement freshness or treat an early disposed flag as completed cleanup.
+The terminal-only entry passed `proc_8d27`:
+16 retained intact cases and five guard removals,
+with the original early-witness verifier failure `proc_e63c` preserved.
+The native completion reader passed `proc_9e54`:
+six intact SDK cases and three guard variants using nine sessions without model requests.
+It distinguishes running,
+incomplete,
+and successful outermost disposal.
+The operation-owner adaptation passed `proc_13dc` with six cases and three guard removals.
+
+Actual changed-runtime cleanup then passed `proc_4ad5`:
+four SDK cases/four injected requests.
+Runtime close completed after direct full/partial disposal and native branch-away/back.
+Completed native disposal did not repeat;
+incomplete disposal retried.
+Ordinary replacements still require active-root admission.
+Shutdown then host invalidation callbacks preserved their order,
+but ran late and observed stale extension context after direct disposal.
+This timing is recorded rather than described as complete event parity.
 
 ## Next action
 

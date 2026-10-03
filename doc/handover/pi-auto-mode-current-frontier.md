@@ -836,10 +836,14 @@ Current independently verifiable areas:
   `proc_0c7e` reconciled nine intended cases/15 sessions/14 injected requests.
   Original failed fixture/verifier processes remain preserved;
   completed workers were not replayed.
-- [ ] Qualify runtime cleanup after idle external disposal or structural mutation.
-  `proc_2d14` measured the cleanup refusal in four SDK cases.
-  Terminal-only entry and native completion observation are implemented;
-  actual changed-runtime consumers are pending.
+- [x] Qualify runtime cleanup after idle external disposal or structural mutation.
+  `proc_2d14` measured the cleanup refusal;
+  `proc_4ad5` passed four changed-runtime SDK cases/four injected requests.
+  Complete direct disposal was not repeated,
+  partial disposal retried,
+  and ordinary replacement admission remained closed.
+  Shutdown then host invalidation order was preserved;
+  after direct disposal these callbacks observed stale extension context.
 - [ ] Complete the instruction-collection and prepared-group consumer bridge,
   including nested complete-group boundaries and finalization.
 - [ ] Prepare the new SDK-linked human-original confirmation once its mechanical prerequisites are ready.
