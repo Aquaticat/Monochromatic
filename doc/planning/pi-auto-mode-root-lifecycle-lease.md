@@ -115,11 +115,36 @@ Trace failures are retained without orphaning handles or changing completed oper
 Unmanaged borrowed mutation remains an explicit non-detection control.
 No SDK session or external model request ran in this phase.
 
+The observer bridge in `contract/lifecycle/root-lifecycle-observer/` then passed `proc_6f61`:
+ten intact cases and three guard-removal failures.
+Temporary suspension passed through without a permanent stale latch.
+A refused new request during suspension did not supersede the original receipt after cancellation.
+Source changes,
+root retirement,
+and genuine newer requests still made older receipts unusable.
+This phase reused the actual collector and registry with constructor-shaped doubles,
+not SDK sessions.
+
+The stock SDK consumer in `contract/lifecycle/root-lifecycle-sdk/` passed `proc_4b83`:
+five completed sessions,
+five injected requests,
+no tools or external model requests.
+It suspended at operation entry,
+resumed receipts after controlled no-op/cancel,
+and retired them before selected native branch mutation.
+Restoring the original leaf did not revive an old receipt.
+A controlled mutator-entry failure retained its exact exception after retirement while leaving the leaf unchanged.
+
+The prototype-dispatch control bypassed the selected instance hooks and left the receipt active.
+That is an explicit uncovered writer,
+not a safety pass or production mutation-coverage claim.
+The accepted private lifecycle contract is now exercised at this bounded consumer seam.
+
 ## Accepted next action
 
-Bridge the private request observer to these opaque lifecycle leases.
-Temporary suspension must not trigger its permanent stale latch;
-committed or uncertain mutation must prevent old-receipt revival.
+Investigate SDK state encapsulation and its legitimate native consumers.
+Use the tested lease contract as the target;
+do not confuse selected-method interception with exclusive mutation custody.
 Writer custody,
 instruction authority,
 and human permission remain separate unmet production gates.

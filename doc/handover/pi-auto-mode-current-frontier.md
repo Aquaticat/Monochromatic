@@ -599,9 +599,23 @@ with historical registry source unchanged,
 no SDK sessions,
 and no model requests.
 Evidence is `contract/lifecycle/root-lifecycle-lease/`.
-Next bridge request observations to opaque leases,
-keeping temporary suspension distinct from irreversible stale-state rejection,
-then exercise that interface through real SDK lifecycle calls.
+The observer bridge passed `proc_6f61`:
+ten intact cases and three guard-removal failures.
+Temporary suspension did not latch stale state,
+and a refused stream during suspension did not supersede a receipt that could resume after cancellation.
+Permanent source/root changes still rejected older receipts.
+The real SDK consumer then passed `proc_4b83` in `contract/lifecycle/root-lifecycle-sdk/`:
+five completed sessions,
+five injected requests,
+no tools or external model requests.
+Controlled no-op/cancel resumed the original receipt;
+managed navigation retired it before native mutation,
+and restoration did not revive it.
+The exact controlled mutator-entry failure survived retirement with the leaf unchanged.
+Prototype dispatch still bypassed the selected hooks and left the receipt active,
+explicitly retaining the custody gap.
+Next investigate SDK state encapsulation and legitimate native consumers,
+using the accepted private lease contract as the target.
 Canonical intake is `contract/collector/request-lifecycle-intake/progress.json`.
 The runtime documentation passed lint/render/readback in `proc_0b4d` before this getter update.
 See [instruction snapshots](../troubleshooting/pi-instruction-snapshots.md#pi-100-terminal-stage-controls).
