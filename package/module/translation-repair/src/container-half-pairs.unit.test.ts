@@ -124,5 +124,87 @@ await describe({
         expect(pairs,).toEqual([],);
       },
     },),
+    it({
+      name: 'READS NO TAG out of a name running on into a word, a self-closing tag, or a tag never closed, '
+        + 'so the closing half beside them finds nothing to pair with (ledger T8, the inline cluster)',
+      fn: async () => {
+        const pairs = containerHalfPairs({
+          slices: [
+            sliceOf({ sliceIndex: 0, text: '<details>\n猫猫在窗台上睡觉。', insertion: false, },),
+            sliceOf({
+              sliceIndex: 1,
+              text: '<detailsx>猫猫追蝴蝶。\n<details/>猫猫伸了个懒腰。\n</details>\n<details x',
+              insertion: false,
+            },),
+          ],
+        },);
+        expect(pairs,).toEqual([{
+          open: {
+            sliceIndex: 0,
+            position: 0,
+            insertion: false,
+            name: 'details',
+          },
+          close: {
+            sliceIndex: 1,
+            position: 1,
+            insertion: false,
+            name: 'details',
+          },
+        },],);
+      },
+    },),
+    it({
+      name: 'READS a brace close at no brace depth as text rather than a close, so its tag still ends at the '
+        + '`>` after it and takes the closing half as its partner (ledger T8, the inline cluster)',
+      fn: async () => {
+        const pairs = containerHalfPairs({
+          slices: [
+            sliceOf({ sliceIndex: 0, text: '<details>\n猫猫在窗台上睡觉。', insertion: false, },),
+            sliceOf({
+              sliceIndex: 1,
+              text: '<details data-x=}>猫猫追蝴蝶。\n</details>',
+              insertion: false,
+            },),
+          ],
+        },);
+        expect(pairs,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'READS the opener inline beside prose as an opener and the closer inline beside prose as a '
+        + 'closer, so each pairs the tag line of its own slice rather than cancelling it (ledger T8, the '
+        + 'inline cluster)',
+      fn: async () => {
+        const pairs = containerHalfPairs({
+          slices: [
+            sliceOf({
+              sliceIndex: 0,
+              text: '<details>\n猫猫在窗台上睡觉。<details>',
+              insertion: false,
+            },),
+            sliceOf({
+              sliceIndex: 1,
+              text: '猫猫追蝴蝶。</details>\n</details>',
+              insertion: false,
+            },),
+          ],
+        },);
+        expect(pairs,).toEqual([{
+          open: {
+            sliceIndex: 0,
+            position: 0,
+            insertion: false,
+            name: 'details',
+          },
+          close: {
+            sliceIndex: 1,
+            position: 1,
+            insertion: false,
+            name: 'details',
+          },
+        },],);
+      },
+    },),
   ],
 },);

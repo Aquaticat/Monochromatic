@@ -500,6 +500,39 @@ await describe({
             ],);
           },
         },),
+        it({
+          name: 'READS the inline half of a container through a quoted or braced value holding the character '
+            + 'that would end it, so a self-closing tag is refused on its own `>` and its closing half stays '
+            + 'lone (ledger T8, the inline cluster)',
+          fn: async () => {
+            // THE QUOTE SWALLOWS the `>` that would end the tag and the closing quote releases it.
+            expect(atomsOf({
+              text: '猫猫在窗台上睡觉。\n<details title=">"/>猫猫追蝴蝶。\n</details>',
+            },),).toEqual([
+              {
+                kind: 'container-tag',
+                value: '</details>',
+              },
+            ],);
+            expect(atomsOf({
+              text: "猫猫在窗台上睡觉。\n<details title='>'/>猫猫追蝴蝶。\n</details>",
+            },),).toEqual([
+              {
+                kind: 'container-tag',
+                value: '</details>',
+              },
+            ],);
+            // THE BRACE HOLDS the `>` that would end the tag.
+            expect(atomsOf({
+              text: '猫猫在窗台上睡觉。\n<details data-x={1 > 0}/>猫猫追蝴蝶。\n</details>',
+            },),).toEqual([
+              {
+                kind: 'container-tag',
+                value: '</details>',
+              },
+            ],);
+          },
+        },),
       ],
     },),
   ],
