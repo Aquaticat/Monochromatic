@@ -679,6 +679,24 @@ the counts read from the logs,
 and the step in progress.
 
 - 2026-10-03,
+  20:13 UTC:
+  the T8 `inline` batch closed with commit `eef1e1610`
+  (`test(module-translation-repair): T8 inline, case the tag reader's refusals and its quoted spans`):
+  all 10 stretches of `src/inline-container-tags.ts` cased through `containerHalfPairs` and `readSliceSkeleton`,
+  and the reach census reads `still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-inline.log`).
+  Counts at the close:
+  the full suite 1,545 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-inline-final-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `eef1e1610`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `rendering` cluster.
+
+- 2026-10-03,
   19:35 UTC:
   the next batch's baseline census taken at commit `ae88792c7`:
   `census written to ~/.cache/translation-repair/coverage/census-DXY8l2/census.json`

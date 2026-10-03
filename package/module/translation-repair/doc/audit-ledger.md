@@ -5462,6 +5462,29 @@ over the three claimed sources and three test files,
 with the two edited sources loaded whole and left nothing cold.
 No B entry found.
 
+The next cluster of that census,
+`inline`,
+against `census-DXY8l2` at `3ba6b9794`:
+10 stretches in `inline-container-tags.ts`,
+a module with no test file of its own and no export reaching the package index,
+cased through two exported callers
+(`eef1e1610`).
+`container-half-pairs.unit.test.ts` carries the tag reader's refusals
+(a name running on into a word,
+a self-closing tag,
+a tag never closed)
+and the brace close at no depth,
+through the pairs a lone closing half finds;
+`translate-skeleton.unit.test.ts` carries the quote and brace arms
+through the lone-tag atoms,
+where a self-closing tag whose value holds the character that would end it
+leaves its closing half carried alone.
+The names its scan reads come from tag lines,
+so every case text carries one.
+The reach census (`~/temp/agent/mimo-trial/reach-inline.log`)
+reads `still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
