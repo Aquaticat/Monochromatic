@@ -683,6 +683,31 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  09:02 UTC:
+  the T8 `corpus-run/coverage` batch closed with commits `c2c9c9689`
+  and `db979e5b3`:
+  6 stretches over `coverage-control.ts`,
+  all cased in its vote-change driver file
+  (the not-carried and evidence-not-locatable refusals,
+  the no-room decoy riding its row,
+  and the held pair through a quote-following client
+  whose `none` answers carry the empty quote the wire requires).
+  The reach census reads `ran 6, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-coveragecontrol.log`).
+  Counts at the close:
+  the full suite 1,554 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-coveragecontrol-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-coveragecontrol-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `db979e5b3`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/rendering` cluster
+  (the ranking's next at `census-14CEcx`).
+
+- 2026-10-04,
   08:45 UTC:
   the next batch's baseline census taken at commit `40afaf9b5`:
   `census written to ~/.cache/translation-repair/coverage/census-14CEcx/census.json`

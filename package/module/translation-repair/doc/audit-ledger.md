@@ -6044,6 +6044,28 @@ reads `ran 1, still cold 0, cold since then 0, not loaded 0`
 and the two edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The twentieth cluster of that census,
+`corpus-run/coverage`,
+against `census-14CEcx` at `6d19de4cb`:
+6 stretches over `coverage-control.ts`
+(`c2c9c9689`,
+`db979e5b3`).
+All cased in the vote-change driver file:
+the not-carried refusal
+(a verdict that never claimed a rendering),
+the evidence-not-locatable refusal
+(the cut emptying the translation),
+the no-room decoy
+(a quoted rendering filling all but one character,
+the no-room reading riding its row),
+and the held pair through a client whose vote follows the quote
+(the wire's rule that a `none` claim carries an empty quote
+doing the pairing),
+with the unchanged-vote case beside it.
+The reach census (`~/temp/agent/mimo-trial/reach-coveragecontrol.log`)
+reads `ran 6, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
