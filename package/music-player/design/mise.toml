@@ -423,6 +423,11 @@ description = "Exercise native filename review provenance and required-scroll gu
 dir = "{{config_root}}"
 run = "node search-filename-comparison-test.mjs"
 
+[tasks."test:keyboard-map"]
+description = "Exercise the actual keyboard demonstration classifier and ownership guards on disposable inputs"
+dir = "{{config_root}}"
+run = "node keyboard-map-test.mjs"
+
 [tasks."build:first-run:access"]
 description = "Build offline first-run access state evidence from inspected native witnesses"
 dir = "{{config_root}}"
