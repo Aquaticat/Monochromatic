@@ -95,7 +95,7 @@ description = "Exercise embedded font features and ligature selection through pr
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--test', 'font_features', '--', '--nocapture'])
+runCargo(['test', '--no-default-features', '--lib', '--test', 'font_features', '--test', 'inter_features', '--', '--nocapture'])
 """
 
 [tasks."test:raster"]

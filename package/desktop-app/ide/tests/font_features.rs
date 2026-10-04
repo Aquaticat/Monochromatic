@@ -100,3 +100,39 @@ fn partial_ligature_selection_preserves_geometry_and_clips_ink() {
     }
     assert!(selected_ink > 0 && ordinary_ink > 0, "both halves must contain real glyph pixels");
 }
+
+/// Partial selection preserves coverage at fractional DPI and horizontal origins.
+#[test]
+fn fractional_ligature_selection_keeps_glyph_alpha_and_clip_edges() {
+    let mut shaper = TextShaper::new();
+    let colors = CodeColors { foreground: [255,0,0,255], selected: [0,255,0,255], dark: true };
+    for scale in [1.0, 1.25, 1.5, 2.0] {
+        for horizontal in [0.0, 0.25, 5.75] {
+            let mut area = viewport();
+            area.scale = scale;
+            let mut document = Document::new("===");
+            let ordinary = shaper.prepare(&document, area, &[]);
+            let baseline = TextRaster::new().paint(&ordinary, colors, horizontal).expect("ordinary glyph alpha");
+            document.select(ReadingPosition { anchor: 1, head: 2, viewport: 0 });
+            let selected = shaper.prepare(&document, area, &[]);
+            assert_eq!(glyphs(&ordinary), glyphs(&selected));
+            let rectangle = selected.selections[0];
+            let left = (rectangle.x - horizontal) * scale;
+            let right = (rectangle.x + rectangle.width - horizontal) * scale;
+            let image = TextRaster::new().paint(&selected, colors, horizontal).expect("fractional selected glyph");
+            for y in 0..image.height {
+                for x in 0..image.width {
+                    let offset = ((y * image.width + x) * 4) as usize;
+                    assert_eq!(image.bytes[offset + 3], baseline.bytes[offset + 3]);
+                    if image.bytes[offset + 3] == 0 { continue; }
+                    if x as f32 >= left && x as f32 + 1.0 <= right {
+                        assert_eq!(image.bytes[offset], 0, "red inside clip at scale {scale}, origin {horizontal}");
+                    }
+                    if x as f32 + 1.0 <= left || x as f32 >= right {
+                        assert_eq!(image.bytes[offset + 1], 0, "green outside clip at scale {scale}, origin {horizontal}");
+                    }
+                }
+            }
+        }
+    }
+}
