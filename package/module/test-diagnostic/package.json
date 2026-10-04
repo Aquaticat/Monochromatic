@@ -9,6 +9,7 @@
   "exports": {
     ".": {
       "types": "./dist/final/neutral/index.d.mts",
+      "node": "./dist/final/node/index.mjs",
       "default": "./dist/final/neutral/index.mjs"
     },
     "./ts": "./src/index.ts",

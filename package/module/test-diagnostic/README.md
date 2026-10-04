@@ -32,7 +32,9 @@ const diagnostic = await formatFailure({
 ```
 
 Workspace consumers use `/ts`.
-The root entry resolves to the built neutral artifact.
+The root entry selects the Node artifact under Node and the neutral artifact otherwise.
+This preserves filesystem-backed workspace-root discovery for Node consumers,
+while keeping browser imports free of Node filesystem initialization.
 
 ## Verification
 
