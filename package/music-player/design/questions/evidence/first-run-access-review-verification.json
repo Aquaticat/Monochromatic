@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "scope": "Authored native first-run state evidence and offline review controls. No policy ballot, production discovery, permissions, recovery, playback, consent implementation or native accessibility acceptance.",
+  "htmlSha256": "e60871dcd6c3d05f170b5f4ab92e5ca2de00f08f18f15eab712a3132e06d392d",
+  "builderSha256": "92a61b54e3dc2c3e377136f715e9da165c8945dbc3daa34cb523dc6603feb316",
+  "manifestSha256": "6d861a0657dff6131d06ed992099de1c25ece4f823a2e3de6dc0140d491cde9a",
+  "browserCliVersion": "0.38.1",
+  "browserEngine": "Chromium; Firefox ESR 140 not exercised",
+  "resourceBounds": {
+    "memoryGiB": 2,
+    "cpu": 2
+  },
+  "offline": true,
+  "imagesDecodedAndOpened": 34,
+  "contexts": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 40,
+        "incomplete": 0,
+        "passes": 22,
+        "violations": 0
+      },
+      "optionalObservations": true,
+      "inertNotes": true,
+      "staleReplyInvalidation": true,
+      "modalZoomPanResetFocus": true,
+      "availabilityCombinationsExercised": true,
+      "overflow": false
+    }
+  ],
+  "noPolicyVotes": true,
+  "consoleErrors": 0,
+  "browsersClosed": true,
+  "guardReportSha256": {
+    "positive": "e864736aa09a79bb7f134440dc4386a8deca77e2755c541e5649d42b75e3ecc7",
+    "without-exact-cohort": "9ba9eb2632d566582c90c7e712c59d27c705d1cffc25c3bc29768733db8ed5ff",
+    "restored": "e864736aa09a79bb7f134440dc4386a8deca77e2755c541e5649d42b75e3ecc7",
+    "without-scroll-signals": "0d104e17192cb436008198eb98cb60adab7c3ad627b9024cd71ddedd88261a5f"
+  },
+  "nativeRecordedFieldsRestored": {
+    "fontScale": "1.0",
+    "nightMode": "Night mode: no",
+    "panelState": "2",
+    "accessibilityEnabled": "0",
+    "enabledAccessibilityServices": "null",
+    "stayOnWhilePluggedIn": "1"
+  },
+  "separateDeviceBaseAndOverrideRestorationProven": false,
+  "ownedRuntimeAbsenceVerified": true,
+  "productionSourceAndAcceptedSearchReviewUnchanged": true,
+  "verificationLimits": [
+    "All distinct previews opened in first desktop/light interaction pass; separate availability, observations and representative modal/zoom/pan controls exercised in all four contexts. Axe audits are closed-page only, not native acceptance.",
+    "Axe audits were performed with the image dialog closed; no open-dialog audit is claimed.",
+    "Image modal tests use explicit center scrolling before trusted native clicks; initial implicit scrolling missed a partially visible target.",
+    "Synthetic scroll-signal guard tests are not native gesture tests.",
+    "No absent source-status API is implemented by authored complete/partial flags.",
+    "Restoration compares the fresh recorded fields, not separately retained base/override configuration."
+  ]
+}

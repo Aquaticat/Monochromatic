@@ -528,7 +528,12 @@ new IME work and native accessibility acceptance.
  context menu,
   first-run prompt,
   scan bar.
-- **OPEN: D10 empty state redrawn for the no-system-library case (8b).**
+- **BUILT design evidence: D10 no-system-library/declined-source states.**
+  `evidence/first-run-access-boundaries.md` records the scoped authored
+  native study and `questions/first-run-access.html` is verified evidence,
+  not a new preference ballot.
+  Production source-status/recovery binding and native accessibility
+  acceptance remain separate.
 - **DEVELOPER-OWNED: desktop window default size (11c, D49).**
   Choose an
   implementation window frame around the Fold-derived treatments;

@@ -24,6 +24,23 @@ Read these files in order:
 7. [`device-metrics.md`](device-metrics.md)
 8. [`candidates.md`](candidates.md)
 
+## Active design continuation
+
+The first-run/no-library study is in
+[`evidence/first-run-access-boundaries.md`](evidence/first-run-access-boundaries.md).
+Its [verified offline review](questions/first-run-access.html) presents
+32 initial and two separately proven content-movement witnesses,
+not a policy ballot.
+The source states are authored inputs,
+not production permission/discovery evaluation or recovery acceptance.
+The owned native runtime was stopped after restoring its recorded fields.
+
+D82 accepts Android's standard media-notification presentation;
+no special notification design remains.
+The next substantive item is the single IntelliJ-aligned keyboard map,
+with editing and focused-control ownership preserved.
+No production implementation is authorized by this continuation.
+
 ## Current review and historical rounds
 
 The Search accessibility design review is complete through D75 to D80.

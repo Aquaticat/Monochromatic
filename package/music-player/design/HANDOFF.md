@@ -23,6 +23,18 @@ preserving D27 and all accepted Search/template decisions.
 fresh executable-source audit,
 debug-only native state/fit evidence,
 then verified publication.
+The first-run source audit and authored native study are complete.
+`evidence/first-run-access-boundaries.md` and
+`questions/first-run-access.html` retain 32 initial and two proven movement
+witnesses with optional observations,
+not a policy ballot.
+The other six post-swipe attempts remain private no-movement controls.
+Fresh fixture tests,
+guard-removal proofs,
+exact artifact validation and four-context offline consumer checks passed.
+Only the recorded native snapshot fields were restored;
+separate device base/override equality is not claimed.
+The owned emulator is stopped and absent.
 No production,
 real-library,
 original-AVD or new IME work is authorized.

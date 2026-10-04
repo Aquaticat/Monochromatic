@@ -30,13 +30,13 @@ No new IME or TalkBack experiment follows.
   Completion requires executable-branch citations and explicit missing
   signals,
   not interpreting an empty list as confirmed absence.
-- [ ] Build debug-only first-run state fixtures from settled actions and
+- [x] Build debug-only first-run state fixtures from settled actions and
   inspect keyboard-closed fit on both panels,
   themes and native text scales.
   Completion requires tests rejecting unknown scenes and assumptions
   about failed/partial reads,
   native captures and inspected sanitized evidence.
-- [ ] Publish the verified design evidence with settled-action rationale
+- [x] Publish the verified design evidence with settled-action rationale
   and an implementation gate.
   Ask only for a consequential unresolved product choice;
   do not turn text or spacing details into another ballot.
@@ -199,6 +199,40 @@ by the permission-result callback.
 No independent Settings-return access refresh was observed inside
 `appRoot`;
 this scoped observation does not establish whole-app behavior.
+
+## Verified publication and next item
+
+The native run acquired 32 initial views and eight post-swipe attempts.
+Only two inner no-source 200% attempts showed changed retained RGB and
+identified body-coordinate movement.
+Six unchanged attempts remain private controls,
+not scroll witnesses.
+All 34 published app-area frames were inspected;
+verified crops were generated separately from the rejected partial output.
+The full final paragraph is visible in each retained scroll witness,
+with the heading partly cropped.
+Initial semantic clipping proves no missing glyphs,
+and no visible-ink recovery claim is made.
+
+`package/music-player/design/evidence/first-run-access-boundaries.md`
+and the witness/consumer manifests retain exact provenance and limits.
+The evidence-only review at
+`package/music-player/design/questions/first-run-access.html`
+passed build,
+validation,
+disposable guard-removal proofs and bounded offline consumer checks.
+It has optional observations,
+not another policy ballot.
+The recorded fresh native settings were restored and the owned runtime
+stopped;
+separate base-state/override configuration was not retained or proved equal.
+
+The human settled Android notification presentation in D82:
+accept what Android provides and do no special designs.
+The next substantive design item is the whole IntelliJ-aligned keyboard-map
+revision from `open-questions.md` section 6,
+not a notification matrix or binding-by-binding questionnaire.
+Production shortcuts and live playback remain unauthorized.
 
 ## Continuation correction
 

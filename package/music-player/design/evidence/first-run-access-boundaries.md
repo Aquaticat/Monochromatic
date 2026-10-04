@@ -36,7 +36,7 @@ not one common failure:
 - Whole-folder failures and skipped child reads can produce empty/partial
   track lists without an equivalent complete/partial/failure UI outcome.
 - The launch path's automatic initial analysis has a separately accepted
-  provisional runtime in `android-app/DECISION.peak-sweep-parallelism.md`,
+  provisional runtime in `package/music-player/android-app/DECISION.peak-sweep-parallelism.md`,
   with better launch UX deferred.
   It is not labelled an unauthorized regression or reverted here.
 
@@ -166,7 +166,29 @@ It is not a request to select among state witnesses.
 Its build,
 consumer and rendered-document verification are publication gates,
 not a user-answer gate.
-Browser verification is still pending at this document revision.
+[The verification summary](../questions/evidence/first-run-access-review-verification.json)
+pins the artifact,
+builder and native manifest.
+All 34 images decoded and opened in the first desktop/light interaction pass.
+Availability combinations,
+optional empty/blank observations,
+inert adversarial notes and representative modal/zoom/pan/focus controls
+were separately exercised in each desktop/mobile light/dark context.
+Four closed-page A/AA axe audits had zero violations or incomplete checks;
+no console errors or document overflow were observed.
+No open-dialog axe audit or Firefox acceptance is claimed.
+Browser controls met the verifier's 48CSSpx minimum.
+
+The first implicit preview click missed a partly visible target.
+Explicit center scrolling before trusted native input passed the complete
+consumer check without changing the page or native images.
+[The bounded source diagnosis](../../../../doc/troubleshooting/agent-browser-partial-target-center.md)
+records the separate zero-offset control and its verified workaround.
+Fresh exact-cohort and scroll-signal guard-removal tests failed their
+intended assertions,
+then restored consumer tests passed.
+These checks verify this artifact,
+not source recovery or native accessibility.
 
 The native runtime was capped at 6GiB/2CPU.
 The fresh snapshot's recorded font 1.0,
