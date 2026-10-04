@@ -683,6 +683,35 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  07:46 UTC:
+  the T8 `introduced` batch closed with commits `3af7885a8`,
+  `74490e7dc` and `3094cc053`:
+  7 stretches over two files,
+  all cased and none unreachable.
+  The wire guards' non-record and non-number refusals,
+  the two neighbour fallbacks,
+  the empty-quote dismissal
+  (the case drives it through the damage gate,
+  the only way an empty quote reaches the restates check),
+  and the identity-context thread
+  (its rules ride the system half,
+  gated on a `DECLARED NAMES` entry).
+  The reach census reads `ran 7, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-introduced3.log`).
+  Counts at the close:
+  the full suite 1,553 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-introduced-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-introduced-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `3094cc053`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `image` cluster
+  (the ranking's next at `census-HKw9t2`).
+
+- 2026-10-04,
   07:27 UTC:
   the next batch's baseline census taken at commit `b1f893810`:
   `census written to ~/.cache/translation-repair/coverage/census-HKw9t2/census.json`

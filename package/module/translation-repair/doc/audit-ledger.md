@@ -5983,6 +5983,32 @@ reads `ran 1, still cold 0, cold since then 0, not loaded 0`
 and the edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The eighteenth cluster of that census,
+`introduced`,
+against `census-HKw9t2` at `de0c6777d`:
+7 stretches over `introduced-defect-wire.ts` and `introduced-defect-screen.ts`
+(`3af7885a8`,
+`74490e7dc`,
+`3094cc053`).
+All cased,
+none unreachable:
+the verdict and report guards' non-record refusals
+and the check guard's non-number region,
+the two neighbour fallbacks
+(one neighbour handed in,
+the other block reading empty),
+the empty-quote dismissal
+(a claim whose quoted side flattens to nothing
+can only reach the restates check through the damage gate,
+so the case anchors on new wording and reads corroborated),
+and the identity-context thread
+(its rules ride the system half and gate on the context carrying a
+`DECLARED NAMES` entry,
+the case handing that shape beside a no-context run).
+The reach census (`~/temp/agent/mimo-trial/reach-introduced3.log`)
+reads `ran 7, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
