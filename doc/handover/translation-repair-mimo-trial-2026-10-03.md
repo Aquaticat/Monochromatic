@@ -683,6 +683,25 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  19:18 UTC:
+  the next batch's baseline census taken at commit `5840665be`:
+  `census written to ~/.cache/translation-repair/coverage/census-pVW4Um/census.json`
+  (`~/temp/agent/mimo-trial/census-52.log`).
+  `library source: 111 files, 184 stretches over 395 lines, 4 functions never called`.
+  Largest clusters by stretches then lines:
+  `corpus-run/published` leads with 5 stretches over 6 lines in 2 files
+  (its documented-left arms),
+  `corpus-run/runs` with 4 over 10 in 2
+  (`runs-lock-holder.ts:198`,
+  `463-468`,
+  `runs-lock.ts:250-251`,
+  `311`),
+  `transient` with 4 over 9 in 1.
+  This line lands in the trial-log commit that follows `5840665be`.
+  Next:
+  the `corpus-run/runs` batch.
+
+- 2026-10-04,
   19:03 UTC:
   the next batch's baseline census taken at commit `6209604f3`:
   `census written to ~/.cache/translation-repair/coverage/census-cQ5IKo/census.json`
