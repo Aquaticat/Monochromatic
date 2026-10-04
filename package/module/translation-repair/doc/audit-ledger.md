@@ -6203,7 +6203,7 @@ Two closed by narrowing:
 the gap walk's earlier-extent fallback
 (a `??` over an index its own map guarantees)
 and the archive lookup's undefined check
-(counts compared above),
+(the counts had already been compared),
 both `nonNullishOrThrow`,
 their own comments already arguing the values are present.
 Two cased:
