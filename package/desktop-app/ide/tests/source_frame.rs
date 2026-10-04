@@ -1,7 +1,13 @@
 //! Source-image invalidation must preserve caret geometry without needless painting.
 
 /// Consumer APIs use the same stamp as the native rendering boundary.
-use ide_app::{document::{Document, ReadingPosition}, shaped_text::Viewport, source_frame::FrameStamp, text_raster::CodeColors, source_style::{SourceStyles, StyleSpan}};
+use ide_app::{
+    document::{Document, ReadingPosition},
+    shaped_text::Viewport,
+    source_frame::FrameStamp,
+    source_style::{SourceStyles, StyleSpan},
+    text_raster::CodeColors,
+};
 
 /// Source-image fixture with explicit physical geometry and system colors.
 fn stamp(document: &Document) -> FrameStamp {
@@ -11,12 +17,21 @@ fn stamp(document: &Document) -> FrameStamp {
 
 /// Standard logical viewport, with a nonintegral scale to exercise physical identity.
 fn viewport() -> Viewport {
-    return Viewport { first: 0, count: 27, width: 1044.0, scale: 1.25 };
+    return Viewport {
+        first: 0,
+        count: 27,
+        width: 1044.0,
+        scale: 1.25,
+    };
 }
 
 /// Native dark foreground and selection ink.
 fn colors() -> CodeColors {
-    return CodeColors { foreground: [240,240,240,255], selected: [255,255,255,255], dark: true };
+    return CodeColors {
+        foreground: [240, 240, 240, 255],
+        selected: [255, 255, 255, 255],
+        dark: true,
+    };
 }
 
 /// Moving an empty selection changes caret position, not source-image pixels.
@@ -32,7 +47,11 @@ fn caret_only_movement_reuses_image() {
     // ```
     let mut document = Document::new("猫 and Latin");
     let before = stamp(&document);
-    document.select(ReadingPosition { anchor: 5, head: 5, viewport: 0 });
+    document.select(ReadingPosition {
+        anchor: 5,
+        head: 5,
+        viewport: 0,
+    });
     // Assert the exact rendering gate remains closed for caret-only movement.
     assert!(before == stamp(&document));
 }
@@ -42,12 +61,24 @@ fn caret_only_movement_reuses_image() {
 fn selection_invalidates_but_direction_does_not() {
     let mut document = Document::new("猫 and Latin");
     let empty = stamp(&document);
-    document.select(ReadingPosition { anchor: 1, head: 5, viewport: 0 });
+    document.select(ReadingPosition {
+        anchor: 1,
+        head: 5,
+        viewport: 0,
+    });
     let selected = stamp(&document);
     assert!(empty != selected);
-    document.select(ReadingPosition { anchor: 5, head: 1, viewport: 0 });
+    document.select(ReadingPosition {
+        anchor: 5,
+        head: 1,
+        viewport: 0,
+    });
     assert!(selected == stamp(&document));
-    document.select(ReadingPosition { anchor: 5, head: 5, viewport: 0 });
+    document.select(ReadingPosition {
+        anchor: 5,
+        head: 5,
+        viewport: 0,
+    });
     assert!(selected != stamp(&document));
 }
 
@@ -68,18 +99,46 @@ fn materialization_scale_theme_and_syntax_invalidate() {
     area = viewport();
     area.scale = 1.5;
     assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
-    assert!(original != FrameStamp::new(&document, viewport(), 0.25, colors(), SourceStyles::from([])));
+    assert!(
+        original
+            != FrameStamp::new(
+                &document,
+                viewport(),
+                0.25,
+                colors(),
+                SourceStyles::from([])
+            )
+    );
     let mut palette = colors();
     palette.dark = false;
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([])));
+    assert!(
+        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
+    );
     palette = colors();
-    palette.foreground = [0,0,0,255];
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([])));
+    palette.foreground = [0, 0, 0, 255];
+    assert!(
+        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
+    );
     palette = colors();
-    palette.selected = [0,0,0,255];
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([])));
-    let styles = [StyleSpan { start: 0, end: 1, style: 1 }];
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, colors(), SourceStyles::from(styles)));
+    palette.selected = [0, 0, 0, 255];
+    assert!(
+        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
+    );
+    let styles = [StyleSpan {
+        start: 0,
+        end: 1,
+        style: 1,
+    }];
+    assert!(
+        original
+            != FrameStamp::new(
+                &document,
+                viewport(),
+                0.0,
+                colors(),
+                SourceStyles::from(styles)
+            )
+    );
 }
 
 /// Reloads must invalidate even when reading position and geometry do not change.

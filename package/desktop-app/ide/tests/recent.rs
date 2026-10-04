@@ -1,7 +1,7 @@
 //! Consumer tests for the explicitly required Ctrl+digit navigation contract.
 
 /// Import production history and key decoding, plus owned test paths.
-use ide_app::recent::{shortcut_slot, RecentFiles};
+use ide_app::recent::{RecentFiles, shortcut_slot};
 /// PathBuf owns test names independently of temporary formatting strings.
 use std::path::{Path, PathBuf};
 

@@ -1,11 +1,14 @@
 //! Build-time language assets; the read-only application never invokes this executable.
 
-/// Filesystem paths are owned when retained and borrowed during recursive directory copies.
-use std::{fs, path::{Path, PathBuf}};
 /// Asset preparation failures must stop the build instead of shipping partial language support.
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 /// Serialize configuration through TOML rather than interpolating a configuration language.
 use serde::Serialize;
+/// Filesystem paths are owned when retained and borrowed during recursive directory copies.
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 /// Initial end-to-end source slice; later inventory coverage extends this same owner.
 const GRAMMARS: &[&str] = &["rust", "typescript", "tsx", "javascript", "jsdoc"];
@@ -48,9 +51,14 @@ fn copy_tree(source: &Path, destination: &Path) -> Result<()> {
 fn prepare(source: &Path, operation: &str) -> Result<()> {
     let target = std::env::current_dir()?.join("target");
     let config = helix_loader::config_dir();
-    let runtime = helix_loader::runtime_dirs().first().context("No Helix runtime directory")?;
+    let runtime = helix_loader::runtime_dirs()
+        .first()
+        .context("No Helix runtime directory")?;
     if !config.starts_with(&target) || !runtime.starts_with(&target) {
-        bail!("Language preparation writes only under {}. Run the scoped runtime task with its private configuration environment.", target.display());
+        bail!(
+            "Language preparation writes only under {}. Run the scoped runtime task with its private configuration environment.",
+            target.display()
+        );
     }
     fs::create_dir_all(&config)?;
     // What: iter/map/collect copy static names into an owned Vec<String>.
@@ -60,15 +68,25 @@ fn prepare(source: &Path, operation: &str) -> Result<()> {
     // ```ts
     // const config = { 'use-grammars': { only: [...grammars] } };
     // ```
-    let only = GRAMMARS.iter().map(|name| return (*name).to_string()).collect();
-    let configuration = Configuration { selection: Selection { only } };
+    let only = GRAMMARS
+        .iter()
+        .map(|name| return (*name).to_string())
+        .collect();
+    let configuration = Configuration {
+        selection: Selection { only },
+    };
     let encoded = toml::to_string(&configuration)?;
     fs::write(config.join("languages.toml"), encoded)?;
     copy_tree(&source.join("queries"), &runtime.join("queries"))?;
-    let repository = source.parent().context("Helix runtime has no repository parent")?;
+    let repository = source
+        .parent()
+        .context("Helix runtime has no repository parent")?;
     fs::copy(repository.join("LICENSE"), runtime.join("Helix-LICENSE"))?;
     // Publish the same selection used by the manager so packaging cannot duplicate its inventory.
-    fs::write(runtime.join("selected-grammars.json"), serde_json::to_vec(GRAMMARS)?)?;
+    fs::write(
+        runtime.join("selected-grammars.json"),
+        serde_json::to_vec(GRAMMARS)?,
+    )?;
     if operation == "fetch" {
         helix_loader::grammar::fetch_grammars(true)?;
         return Ok(());
@@ -80,8 +98,13 @@ fn prepare(source: &Path, operation: &str) -> Result<()> {
 /// Expose build-only fetch/build operations; help never touches runtime state.
 fn main() -> Result<()> {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
-    if arguments.first().is_some_and(|value| return value == "--help") {
-        println!("Usage: ide-runtime <fetch|build> <PINNED_HELIX_RUNTIME>\nBuild-only helper. Use mise run //package/desktop-app/ide:runtime.");
+    if arguments
+        .first()
+        .is_some_and(|value| return value == "--help")
+    {
+        println!(
+            "Usage: ide-runtime <fetch|build> <PINNED_HELIX_RUNTIME>\nBuild-only helper. Use mise run //package/desktop-app/ide:runtime."
+        );
         return Ok(());
     }
     if arguments.len() != 2 || (arguments[0] != "fetch" && arguments[0] != "build") {

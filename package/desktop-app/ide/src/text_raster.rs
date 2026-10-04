@@ -1,19 +1,22 @@
 //! Rasterize shared shaped rows; glyphs retain their common baseline and advances.
 
-/// Font identity maps keep Swash's scaler caches stable between frames.
-use std::collections::HashMap;
-/// Propagate malformed font or oversized viewport diagnostics to the native shell.
-use anyhow::{bail, Context, Result};
-/// Positioned glyph runs come from the same layouts used for caret and hit testing.
-use parley::PositionedLayoutItem;
-/// Swash is already part of Slint's dependency graph and supports fallback/color glyphs.
-use swash::{CacheKey, FontRef, scale::{image::Content, ScaleContext}};
 /// Bounded glyph images prevent repeating outline rasterization on every viewport update.
 use crate::glyph_cache::{GlyphCache, GlyphKey};
 /// Selection color follows geometry rather than recoloring an entire ligature glyph.
 use crate::selection_paint;
 /// Source layout and geometry are independent of the native widget tree.
 use crate::shaped_text::ShapedView;
+/// Propagate malformed font or oversized viewport diagnostics to the native shell.
+use anyhow::{Context, Result, bail};
+/// Positioned glyph runs come from the same layouts used for caret and hit testing.
+use parley::PositionedLayoutItem;
+/// Font identity maps keep Swash's scaler caches stable between frames.
+use std::collections::HashMap;
+/// Swash is already part of Slint's dependency graph and supports fallback/color glyphs.
+use swash::{
+    CacheKey, FontRef,
+    scale::{ScaleContext, image::Content},
+};
 
 /// Native palette values needed by code painting.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -56,29 +59,43 @@ impl Default for TextRaster {
 
 /// Translate semantic paint roles into the selected system-theme palette.
 fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
-    if role == 64 { return colors.selected; }
+    if role == 64 {
+        return colors.selected;
+    }
     if role == 1 || role == 8 || role == 10 {
-        if colors.dark { return [199, 146, 234, 255]; }
+        if colors.dark {
+            return [199, 146, 234, 255];
+        }
         return [118, 54, 164, 255];
     }
     if role == 2 {
-        if colors.dark { return [168, 204, 140, 255]; }
+        if colors.dark {
+            return [168, 204, 140, 255];
+        }
         return [50, 101, 32, 255];
     }
     if role == 3 {
-        if colors.dark { return [160, 168, 176, 255]; }
+        if colors.dark {
+            return [160, 168, 176, 255];
+        }
         return [85, 92, 101, 255];
     }
     if role == 4 || role == 13 {
-        if colors.dark { return [240, 188, 122, 255]; }
+        if colors.dark {
+            return [240, 188, 122, 255];
+        }
         return [139, 77, 4, 255];
     }
     if role == 5 || role == 12 {
-        if colors.dark { return [130, 190, 235, 255]; }
+        if colors.dark {
+            return [130, 190, 235, 255];
+        }
         return [20, 86, 127, 255];
     }
     if role == 6 || role == 11 {
-        if colors.dark { return [225, 212, 157, 255]; }
+        if colors.dark {
+            return [225, 212, 157, 255];
+        }
         return [113, 83, 16, 255];
     }
     return colors.foreground;
@@ -93,21 +110,35 @@ fn blend(bytes: &mut [u8], offset: usize, color: [u8; 4]) {
         let destination = (u32::from(bytes[offset + channel]) * inverse + 127) / 255;
         bytes[offset + channel] = (source + destination).min(255) as u8;
     }
-    bytes[offset + 3] = (alpha + (u32::from(bytes[offset + 3]) * inverse + 127) / 255).min(255) as u8;
+    bytes[offset + 3] =
+        (alpha + (u32::from(bytes[offset + 3]) * inverse + 127) / 255).min(255) as u8;
 }
 
 /// Composite source glyphs and clipped selection ink into bounded viewport tiles.
 impl TextRaster {
     /// Initialize caches without allocating a viewport image.
     pub fn new() -> Self {
-        return Self { scale: ScaleContext::new(), keys: HashMap::new(), glyphs: GlyphCache::default() };
+        return Self {
+            scale: ScaleContext::new(),
+            keys: HashMap::new(),
+            glyphs: GlyphCache::default(),
+        };
     }
 
     /// Paint only the bounded materialized viewport; horizontal offset stays fractional.
-    pub fn paint(&mut self, view: &ShapedView, colors: CodeColors, horizontal: f32) -> Result<SourcePixels> {
+    pub fn paint(
+        &mut self,
+        view: &ShapedView,
+        colors: CodeColors,
+        horizontal: f32,
+    ) -> Result<SourcePixels> {
         let length = u64::from(view.width) * u64::from(view.height) * 4;
         if length > 64 * 1024 * 1024 {
-            bail!("Source viewport {}x{} exceeds the 64 MiB raster limit; reduce the window size or scale", view.width, view.height);
+            bail!(
+                "Source viewport {}x{} exceeds the 64 MiB raster limit; reduce the window size or scale",
+                view.width,
+                view.height
+            );
         }
         let mut bytes = vec![0; length as usize];
         let factor = view.viewport.scale;
@@ -116,8 +147,10 @@ impl TextRaster {
             let mut selected_intervals = Vec::new();
             for rectangle in &view.selections {
                 if rectangle.y == row.row as f32 * 24.0 {
-                    selected_intervals.push(((rectangle.x - horizontal) * factor,
-                        (rectangle.x + rectangle.width - horizontal) * factor));
+                    selected_intervals.push((
+                        (rectangle.x - horizontal) * factor,
+                        (rectangle.x + rectangle.width - horizontal) * factor,
+                    ));
                 }
             }
             for line in row.layout.lines() {
@@ -132,15 +165,22 @@ impl TextRaster {
                         .context("Unable to read a shaped source font face")?;
                     let key = self.keys.entry((font.data.id(), font.index)).or_default();
                     font_ref.key = *key;
-                    let mut scaler = self.scale.builder(font_ref)
-                        .size(run.font_size()).hint(true)
-                        .normalized_coords(run.normalized_coords().iter().copied()).build();
+                    let mut scaler = self
+                        .scale
+                        .builder(font_ref)
+                        .size(run.font_size())
+                        .hint(true)
+                        .normalized_coords(run.normalized_coords().iter().copied())
+                        .build();
                     let foreground = ink(glyph_run.style().brush, colors);
                     for glyph in glyph_run.positioned_glyphs() {
                         let x = glyph.x - horizontal * factor;
                         let y = glyph.y + row_y + row.baseline_shift;
-                        if x + glyph.advance < -32.0 || x > view.width as f32 + 32.0 { continue; }
-                        let glyph_id = u16::try_from(glyph.id).context("Source glyph index exceeds OpenType range")?;
+                        if x + glyph.advance < -32.0 || x > view.width as f32 + 32.0 {
+                            continue;
+                        }
+                        let glyph_id = u16::try_from(glyph.id)
+                            .context("Source glyph index exceeds OpenType range")?;
                         // What: to_bits retains exact float identity; to_vec owns variation coordinates.
                         // Why: Cached masks must distinguish scale, font face, and fractional placement.
                         //
@@ -149,21 +189,31 @@ impl TextRaster {
                         // const key = { font, face, size, variations: [...coords], glyph, x, y };
                         // ```
                         let glyph_key = GlyphKey {
-                            font: font.data.id(), face: font.index, size: run.font_size().to_bits(),
-                            variations: run.normalized_coords().to_vec(), glyph: glyph_id,
-                            x: x.fract().to_bits(), y: y.fract().to_bits(),
+                            font: font.data.id(),
+                            face: font.index,
+                            size: run.font_size().to_bits(),
+                            variations: run.normalized_coords().to_vec(),
+                            glyph: glyph_id,
+                            x: x.fract().to_bits(),
+                            y: y.fract().to_bits(),
                         };
                         // Lend the scaler only on cache misses; ? preserves cache-limit diagnostics.
                         // Empty glyphs such as spaces legitimately have no ink image.
-                        let Some(image) = self.glyphs.image(glyph_key, &mut scaler)? else { continue; };
+                        let Some(image) = self.glyphs.image(glyph_key, &mut scaler)? else {
+                            continue;
+                        };
                         let left = x.floor() as i32 + image.placement.left;
                         let top = y.floor() as i32 - image.placement.top;
                         for iy in 0..image.placement.height {
                             let py = top + iy as i32;
-                            if py < 0 || py >= view.height as i32 { continue; }
+                            if py < 0 || py >= view.height as i32 {
+                                continue;
+                            }
                             for ix in 0..image.placement.width {
                                 let px = left + ix as i32;
-                                if px < 0 || px >= view.width as i32 { continue; }
+                                if px < 0 || px >= view.width as i32 {
+                                    continue;
+                                }
                                 let source = (iy * image.placement.width + ix) as usize;
                                 // What: if is an expression whose branch value initializes color.
                                 // Why: Every valid image format supplies a complete pixel; others fail.
@@ -173,15 +223,29 @@ impl TextRaster {
                                 // const color = isMask ? coloredAlphaMask : embeddedRgba;
                                 // ```
                                 let color = if image.content == Content::Mask {
-                                    let selected = selection_paint::coverage(px, &selected_intervals);
-                                    selection_paint::ink(foreground, colors.selected, selected, image.data[source])
+                                    let selected =
+                                        selection_paint::coverage(px, &selected_intervals);
+                                    selection_paint::ink(
+                                        foreground,
+                                        colors.selected,
+                                        selected,
+                                        image.data[source],
+                                    )
                                 } else if image.content == Content::Color {
                                     let offset = source * 4;
-                                    [image.data[offset], image.data[offset + 1], image.data[offset + 2], image.data[offset + 3]]
+                                    [
+                                        image.data[offset],
+                                        image.data[offset + 1],
+                                        image.data[offset + 2],
+                                        image.data[offset + 3],
+                                    ]
                                 } else {
-                                    bail!("Unexpected subpixel mask when rasterizing source with alpha format");
+                                    bail!(
+                                        "Unexpected subpixel mask when rasterizing source with alpha format"
+                                    );
                                 };
-                                let destination = (py as usize * view.width as usize + px as usize) * 4;
+                                let destination =
+                                    (py as usize * view.width as usize + px as usize) * 4;
                                 blend(&mut bytes, destination, color);
                             }
                         }
@@ -189,6 +253,10 @@ impl TextRaster {
                 }
             }
         }
-        return Ok(SourcePixels { width: view.width, height: view.height, bytes });
+        return Ok(SourcePixels {
+            width: view.width,
+            height: view.height,
+            bytes,
+        });
     }
 }

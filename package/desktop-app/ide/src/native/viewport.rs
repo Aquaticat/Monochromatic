@@ -17,8 +17,11 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
         let width = viewport_width.max(1.0);
         let mut current = state.borrow_mut();
-        if current.first == first.saturating_sub(1) && current.count == count
-            && current.horizontal == tile_x && current.width == width {
+        if current.first == first.saturating_sub(1)
+            && current.count == count
+            && current.horizontal == tile_x
+            && current.width == width
+        {
             return;
         }
         current.first = first.saturating_sub(1);

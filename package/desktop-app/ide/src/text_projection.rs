@@ -57,5 +57,9 @@ pub fn project_line(source: &str) -> Projection {
         }
         source_to_byte.push(text.len());
     }
-    return Projection { text, source_to_byte, byte_to_source };
+    return Projection {
+        text,
+        source_to_byte,
+        byte_to_source,
+    };
 }

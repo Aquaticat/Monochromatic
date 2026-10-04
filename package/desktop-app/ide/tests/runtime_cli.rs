@@ -8,18 +8,28 @@ use std::process::Command;
 fn runtime_help_does_not_prepare_assets() {
     let fixture = tempfile::tempdir().expect("isolated helper directory");
     let output = Command::new(env!("CARGO_BIN_EXE_ide-runtime"))
-        .current_dir(fixture.path()).arg("--help").output().expect("run runtime help");
+        .current_dir(fixture.path())
+        .arg("--help")
+        .output()
+        .expect("run runtime help");
     assert!(output.status.success());
     assert!(String::from_utf8_lossy(&output.stdout).contains("Usage: ide-runtime"));
     assert!(output.stderr.is_empty());
-    assert_eq!(std::fs::read_dir(fixture.path()).expect("inspect helper fixture").count(), 0);
+    assert_eq!(
+        std::fs::read_dir(fixture.path())
+            .expect("inspect helper fixture")
+            .count(),
+        0
+    );
 }
 
 /// Invalid operations stop before resolving or modifying configuration.
 #[test]
 fn runtime_rejects_unknown_operations() {
     let output = Command::new(env!("CARGO_BIN_EXE_ide-runtime"))
-        .args(["unknown", "/unused/runtime"]).output().expect("run invalid operation");
+        .args(["unknown", "/unused/runtime"])
+        .output()
+        .expect("run invalid operation");
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stderr).contains("Expected fetch or build"));
 }
@@ -33,7 +43,9 @@ fn runtime_rejects_non_build_configuration_before_writing() {
         .current_dir(fixture.path())
         .env("XDG_CONFIG_HOME", &outside)
         .env_remove("CARGO_MANIFEST_DIR")
-        .args(["fetch", "/unused/runtime"]).output().expect("run guarded operation");
+        .args(["fetch", "/unused/runtime"])
+        .output()
+        .expect("run guarded operation");
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stderr).contains("writes only under"));
     assert!(!outside.exists());

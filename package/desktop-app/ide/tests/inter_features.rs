@@ -1,9 +1,12 @@
 //! Audit the embedded Inter faces through the same Parley/fontique stack used by Slint.
 
+/// Slint's shared-parley shaping path uses these same family, size, and weight properties.
+use parley::{
+    FontContext, FontFamily, FontFeature, FontFeatures, FontWeight, Layout, LayoutContext,
+    PositionedLayoutItem, StyleProperty, setting::Tag,
+};
 /// Owned font bytes are shared with the font collection; borrowed family text needs no allocation.
 use std::{borrow::Cow, sync::Arc};
-/// Slint's shared-parley shaping path uses these same family, size, and weight properties.
-use parley::{FontContext, FontFamily, FontFeature, FontFeatures, FontWeight, Layout, LayoutContext, PositionedLayoutItem, StyleProperty, setting::Tag};
 
 /// Unmodified bundled faces, not fonts discovered from the host desktop.
 const REGULAR: &[u8] = include_bytes!("../asset/font/Inter-Regular.ttf");
@@ -20,10 +23,14 @@ fn label(text: &str, weight: f32, features: &[FontFeature]) -> Layout<u32> {
     let mut layouts = LayoutContext::new();
     // Slint's shared-parley UI path requests fractional layout rather than quantized metrics.
     let mut builder = layouts.ranged_builder(&mut fonts, text, 1.0, false);
-    builder.push_default(StyleProperty::FontFamily(FontFamily::Source(Cow::Borrowed("Inter"))));
+    builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
+        Cow::Borrowed("Inter"),
+    )));
     builder.push_default(StyleProperty::FontSize(15.0));
     builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
-    builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(Cow::Borrowed(features))));
+    builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
+        Cow::Borrowed(features),
+    )));
     let mut layout = builder.build(text);
     layout.break_all_lines(None);
     return layout;
@@ -35,7 +42,9 @@ fn glyph_ids(layout: &Layout<u32>) -> Vec<u32> {
     for line in layout.lines() {
         for item in line.items() {
             if let PositionedLayoutItem::GlyphRun(run) = item {
-                for glyph in run.positioned_glyphs() { ids.push(glyph.id); }
+                for glyph in run.positioned_glyphs() {
+                    ids.push(glyph.id);
+                }
             }
         }
     }
@@ -53,8 +62,16 @@ fn inter_contextual_and_discretionary_features_keep_distinct_defaults() {
     assert_ne!(glyph_ids(&defaults), glyph_ids(&disabled));
     let discretionary = "Difficult affine fjord interface";
     let normal = label(discretionary, 400.0, &[]);
-    let off = label(discretionary, 400.0, &[FontFeature::new(Tag::new(b"dlig"), 0)]);
-    let on = label(discretionary, 400.0, &[FontFeature::new(Tag::new(b"dlig"), 1)]);
+    let off = label(
+        discretionary,
+        400.0,
+        &[FontFeature::new(Tag::new(b"dlig"), 0)],
+    );
+    let on = label(
+        discretionary,
+        400.0,
+        &[FontFeature::new(Tag::new(b"dlig"), 1)],
+    );
     assert_eq!(glyph_ids(&normal), glyph_ids(&off));
     assert_ne!(glyph_ids(&normal), glyph_ids(&on));
 }
@@ -63,9 +80,20 @@ fn inter_contextual_and_discretionary_features_keep_distinct_defaults() {
 #[test]
 fn inter_default_kerning_changes_real_advances() {
     let normal = label("AVATAR To WA", 400.0, &[]);
-    let off = label("AVATAR To WA", 400.0, &[FontFeature::new(Tag::new(b"kern"), 0)]);
-    assert!((normal.width() - off.width()).abs() > 0.1, "kerning off must move the control");
-    eprintln!("Inter kerning: default={} off={}", normal.width(), off.width());
+    let off = label(
+        "AVATAR To WA",
+        400.0,
+        &[FontFeature::new(Tag::new(b"kern"), 0)],
+    );
+    assert!(
+        (normal.width() - off.width()).abs() > 0.1,
+        "kerning off must move the control"
+    );
+    eprintln!(
+        "Inter kerning: default={} off={}",
+        normal.width(),
+        off.width()
+    );
 }
 
 /// Requests for the UI's current weights resolve to the exact bundled bytes.
@@ -77,7 +105,10 @@ fn inter_weights_choose_real_bundled_faces() {
         for line in shaped.lines() {
             for item in line.items() {
                 if let PositionedLayoutItem::GlyphRun(run) = item {
-                    assert!(run.run().font().data.as_ref() == expected, "weight {weight} did not choose its bundled face");
+                    assert!(
+                        run.run().font().data.as_ref() == expected,
+                        "weight {weight} did not choose its bundled face"
+                    );
                     runs += 1;
                 }
             }

@@ -7,7 +7,7 @@
 /// ```ts
 /// import { Rope, compareRopes, Assoc } from 'helix-core';
 /// ```
-use helix_core::{diff::compare_ropes, Assoc, Rope, Transaction};
+use helix_core::{Assoc, Rope, Transaction, diff::compare_ropes};
 
 /// What: A copyable reading-position record. usize is an address-sized index,
 /// unlike signed i32/i64 or fixed-width u32/u64.
@@ -92,7 +92,11 @@ impl Document {
         // ```
         let rope = Rope::from_str(text);
         // Return an owned record, with an empty caret at the beginning.
-        return Self { text: rope, revision: 0, position: ReadingPosition::default() };
+        return Self {
+            text: rope,
+            revision: 0,
+            position: ReadingPosition::default(),
+        };
     }
 
     /// Borrow current text without permitting source modification.
@@ -160,7 +164,11 @@ impl Document {
         // const changes = compareRopes(this.text, text);
         // ```
         let changes = compare_ropes(&self.text, &text);
-        return Reload { base: self.revision, text, changes };
+        return Reload {
+            base: self.revision,
+            text,
+            changes,
+        };
     }
 
     /// Apply only a reload computed from the current displayed revision.
@@ -168,7 +176,11 @@ impl Document {
     /// Returns whether the revision was accepted, not whether text differed.
     pub fn apply_reload(&mut self, reload: Reload) -> bool {
         if reload.base != self.revision {
-            tracing::debug!(base = reload.base, current = self.revision, "discard stale document reload");
+            tracing::debug!(
+                base = reload.base,
+                current = self.revision,
+                "discard stale document reload"
+            );
             return false;
         }
         let changes = reload.changes.changes();
@@ -196,7 +208,12 @@ impl Document {
         self.text = reload.text;
         self.revision += 1;
         self.select(mapped);
-        tracing::debug!(revision = self.revision, anchor = mapped.anchor, head = mapped.head, "applied external text revision");
+        tracing::debug!(
+            revision = self.revision,
+            anchor = mapped.anchor,
+            head = mapped.head,
+            "applied external text revision"
+        );
         return true;
     }
 }

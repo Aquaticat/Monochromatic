@@ -4,10 +4,10 @@
 use crate::document::Document;
 /// Physical tile geometry determines materialized rows and font scale.
 use crate::shaped_text::Viewport;
-/// Palette colors affect pixels but not caret geometry.
-use crate::text_raster::CodeColors;
 /// Syntax spans belong to the source paint key even when text is unchanged.
 use crate::source_style::SourceStyles;
+/// Palette colors affect pixels but not caret geometry.
+use crate::text_raster::CodeColors;
 /// Pointer equality avoids walking unchanged classifications on caret-only updates.
 use std::sync::Arc;
 
@@ -37,8 +37,10 @@ pub struct FrameStamp {
 impl PartialEq for FrameStamp {
     /// Unchanged source classifications require no per-span equality scan.
     fn eq(&self, other: &Self) -> bool {
-        return self.revision == other.revision && self.selection == other.selection
-            && self.viewport == other.viewport && self.horizontal == other.horizontal
+        return self.revision == other.revision
+            && self.selection == other.selection
+            && self.viewport == other.viewport
+            && self.horizontal == other.horizontal
             && self.colors == other.colors
             && (Arc::ptr_eq(&self.styles, &other.styles) || self.styles == other.styles);
     }
@@ -48,13 +50,29 @@ impl PartialEq for FrameStamp {
 impl FrameStamp {
     /// Capture image inputs without including a collapsed caret's position.
     /// Reset the cached stamp when replacing the document with a different file.
-    pub fn new(document: &Document, viewport: Viewport, horizontal: f32, colors: CodeColors, styles: SourceStyles) -> Self {
+    pub fn new(
+        document: &Document,
+        viewport: Viewport,
+        horizontal: f32,
+        colors: CodeColors,
+        styles: SourceStyles,
+    ) -> Self {
         let position = document.position();
         let mut selection = (0, 0);
         if position.anchor != position.head {
-            selection = (position.anchor.min(position.head), position.anchor.max(position.head));
+            selection = (
+                position.anchor.min(position.head),
+                position.anchor.max(position.head),
+            );
         }
         // Transfer the immutable shared handle, not a copy of all source classifications.
-        return Self { revision: document.revision(), selection, viewport, horizontal, colors, styles };
+        return Self {
+            revision: document.revision(),
+            selection,
+            viewport,
+            horizontal,
+            colors,
+            styles,
+        };
     }
 }

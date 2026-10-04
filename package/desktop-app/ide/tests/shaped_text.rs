@@ -1,15 +1,23 @@
 //! Native-font geometry tests for mixed-script source rather than terminal cells.
 
-/// Canonical document and shaped source-view interfaces.
-use ide_app::{document::{Document, ReadingPosition}, shaped_text::{TextShaper, Viewport}};
 /// Rasterization uses the same shaped rows and font faces.
 use ide_app::text_raster::{CodeColors, TextRaster};
+/// Canonical document and shaped source-view interfaces.
+use ide_app::{
+    document::{Document, ReadingPosition},
+    shaped_text::{TextShaper, Viewport},
+};
 /// Inspect actual glyph runs when checking baseline coherence.
 use parley::PositionedLayoutItem;
 
 /// Shared fixture geometry stays independent of a window server.
 fn viewport() -> Viewport {
-    return Viewport { first: 0, count: 10, width: 500.0, scale: 1.0 };
+    return Viewport {
+        first: 0,
+        count: 10,
+        width: 500.0,
+        scale: 1.0,
+    };
 }
 
 /// Mixed CJK/Latin runs must share one baseline, also matching other source lines.
@@ -26,19 +34,28 @@ fn mixed_script_runs_share_the_source_baseline() {
             for item in line.items() {
                 if let PositionedLayoutItem::GlyphRun(run) = item {
                     assert!((run.baseline() + row.baseline_shift - baseline).abs() < 0.01);
-                    if row.row == 1 { mixed_runs += 1; }
+                    if row.row == 1 {
+                        mixed_runs += 1;
+                    }
                 }
             }
         }
     }
-    assert!(mixed_runs >= 2, "test must exercise a real fallback-font run");
+    assert!(
+        mixed_runs >= 2,
+        "test must exercise a real fallback-font run"
+    );
 }
 
 /// Native caret geometry and pointer hit testing agree after a wide source character.
 #[test]
 fn caret_and_hit_test_share_mixed_script_advances() {
     let mut document = Document::new("猫 and a cat");
-    document.select(ReadingPosition { anchor: 4, head: 4, viewport: 0 });
+    document.select(ReadingPosition {
+        anchor: 4,
+        head: 4,
+        viewport: 0,
+    });
     let mut shaper = TextShaper::new();
     let view = shaper.prepare(&document, viewport(), &[]);
     let caret = view.caret(&document);
@@ -50,7 +67,11 @@ fn caret_and_hit_test_share_mixed_script_advances() {
 #[test]
 fn selection_copies_source_not_projection() {
     let mut document = Document::new("a\t猫e\u{301}");
-    document.select(ReadingPosition { anchor: 1, head: 5, viewport: 0 });
+    document.select(ReadingPosition {
+        anchor: 1,
+        head: 5,
+        viewport: 0,
+    });
     let mut shaper = TextShaper::new();
     let view = shaper.prepare(&document, viewport(), &[]);
     assert_eq!(document.selected_text(), "\t猫e\u{301}");
@@ -64,7 +85,11 @@ fn raster_has_ink_and_requested_dimensions() {
     let mut shaper = TextShaper::new();
     let view = shaper.prepare(&document, viewport(), &[]);
     let mut raster = TextRaster::new();
-    let colors = CodeColors { foreground: [240,240,240,255], selected: [255,255,255,255], dark: true };
+    let colors = CodeColors {
+        foreground: [240, 240, 240, 255],
+        selected: [255, 255, 255, 255],
+        dark: true,
+    };
     let image = raster.paint(&view, colors, 0.0).unwrap();
     assert_eq!(image.width, 500);
     assert_eq!(image.height, 24);

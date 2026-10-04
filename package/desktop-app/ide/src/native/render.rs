@@ -8,14 +8,14 @@
 /// import { type State, AppWindow, SourceSelection } from '../native';
 /// ```
 use super::{AppWindow, State, ui::SourceSelection};
-/// Toolkit images and models carry owned source presentation data.
-use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 /// Physical viewport description for shared shaping.
 use ide_app::shaped_text::Viewport;
-/// Native palette values retain syntax and selection contrast.
-use ide_app::text_raster::CodeColors;
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
+/// Native palette values retain syntax and selection contrast.
+use ide_app::text_raster::CodeColors;
+/// Toolkit images and models carry owned source presentation data.
+use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 /// UI callbacks share state without cross-thread synchronization.
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
@@ -36,7 +36,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let first = current.first;
     let horizontal = current.horizontal;
     let viewport = Viewport {
-        first, count: current.count, width: current.width + 256.0, scale: factor,
+        first,
+        count: current.count,
+        width: current.width + 256.0,
+        scale: factor,
     };
     // What: Some stores a present image; None means the existing image remains valid.
     // Why: Caret-only updates must not reshape, rasterize, or upload source pixels.
@@ -47,20 +50,36 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // if (!samePaintInputs(previous, next)) pixels = paint(prepare(document));
     // ```
     let mut rendered_pixels = None;
-    let stamp = FrameStamp::new(&current.document, viewport, horizontal, colors, Arc::clone(&current.styles));
+    let stamp = FrameStamp::new(
+        &current.document,
+        viewport,
+        horizontal,
+        colors,
+        Arc::clone(&current.styles),
+    );
     if current.frame_stamp.as_ref() != Some(&stamp) {
         // Destructure the mutable borrow so caches can update while source is lent read-only.
-        let State { document, styles, shaper, raster, .. } = &mut *current;
+        let State {
+            document,
+            styles,
+            shaper,
+            raster,
+            ..
+        } = &mut *current;
         let view = shaper.prepare(document, viewport, styles);
         // Propagate raster failure visibly rather than retaining misleading old source pixels.
         match raster.paint(&view, colors, horizontal) {
-            Ok(image) => { rendered_pixels = Some(image); }
+            Ok(image) => {
+                rendered_pixels = Some(image);
+            }
             Err(error) => {
                 tracing::error!(%error, "source raster failed");
                 current.frame_stamp = None;
                 drop(current);
                 window.set_source_image(slint::Image::default());
-                window.set_error_message(SharedString::from(format!("Cannot render source: {error}")));
+                window.set_error_message(SharedString::from(format!(
+                    "Cannot render source: {error}"
+                )));
                 return;
             }
         }
@@ -73,7 +92,12 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let caret = view.caret(document);
     let mut selections = Vec::new();
     for rect in &view.selections {
-        selections.push(SourceSelection { x: rect.x, y: rect.y, width: rect.width, height: rect.height });
+        selections.push(SourceSelection {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+        });
     }
     let position = document.position();
     let revision = document.revision();
@@ -91,15 +115,21 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         None
     };
     let mut notices = Vec::new();
-    if let Some(message) = &current.file_error { notices.push(message.as_str()); }
-    if let Some(message) = &current.syntax_error { notices.push(message.as_str()); }
+    if let Some(message) = &current.file_error {
+        notices.push(message.as_str());
+    }
+    if let Some(message) = &current.syntax_error {
+        notices.push(message.as_str());
+    }
     let diagnostic = notices.join("\n");
     drop(current);
 
     if let Some(pixels) = rendered_pixels {
         // Premultiplied pixels share the font engine's baseline and advances.
         let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
-            &pixels.bytes, pixels.width, pixels.height,
+            &pixels.bytes,
+            pixels.width,
+            pixels.height,
         );
         window.set_source_image(slint::Image::from_rgba8_premultiplied(buffer));
         window.set_image_x(horizontal);
@@ -119,7 +149,12 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     window.set_total_lines(lines as i32);
     window.set_selection_anchor(position.anchor as i32);
     window.set_selection_head(position.head as i32);
-    tracing::debug!(revision, anchor = position.anchor, head = position.head, "source reading state presented");
+    tracing::debug!(
+        revision,
+        anchor = position.anchor,
+        head = position.head,
+        "source reading state presented"
+    );
 }
 
 /// Redraw cached source at a new system appearance or display scale without requiring user input.
@@ -127,11 +162,15 @@ pub(super) fn bind_appearance(window: &AppWindow, shared: &Rc<RefCell<State>>) {
     let theme_state = Rc::clone(shared);
     let theme_window = window.as_weak();
     window.on_theme_changed(move || {
-        if let Some(active) = theme_window.upgrade() { render(&active, &theme_state); }
+        if let Some(active) = theme_window.upgrade() {
+            render(&active, &theme_state);
+        }
     });
     let scale_state = Rc::clone(shared);
     let scale_window = window.as_weak();
     window.on_scale_changed(move || {
-        if let Some(active) = scale_window.upgrade() { render(&active, &scale_state); }
+        if let Some(active) = scale_window.upgrade() {
+            render(&active, &scale_state);
+        }
     });
 }

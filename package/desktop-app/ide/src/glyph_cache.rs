@@ -1,5 +1,7 @@
 //! Bounded glyph images retain exact subpixel placement across source frames.
 
+/// Propagate an oversized glyph instead of retaining unbounded image memory.
+use anyhow::{Result, bail};
 /// What: HashMap owns key/value entries, like Map in TypeScript.
 /// Why: Glyph identities need lookup rather than a scan of previously rendered images.
 ///
@@ -8,10 +10,8 @@
 /// const images = new Map<GlyphKey, Image | undefined>();
 /// ```
 use std::collections::HashMap;
-/// Propagate an oversized glyph instead of retaining unbounded image memory.
-use anyhow::{bail, Result};
 /// Swash provides both cached images and the scaler used on cache misses.
-use swash::scale::{image::Image, Render, Scaler, Source, StrikeWith};
+use swash::scale::{Render, Scaler, Source, StrikeWith, image::Image};
 
 /// Every outline-affecting input; theme colors are applied during compositing.
 #[derive(Hash, PartialEq, Eq)]
@@ -57,7 +57,11 @@ pub(crate) struct GlyphCache {
 impl GlyphCache {
     /// Borrow an image until the next cache operation, rendering only on a miss.
     /// The anonymous Scaler lifetime means its borrowed font cannot outlive its owner.
-    pub(crate) fn image(&mut self, key: GlyphKey, scaler: &mut Scaler<'_>) -> Result<&Option<Image>> {
+    pub(crate) fn image(
+        &mut self,
+        key: GlyphKey,
+        scaler: &mut Scaler<'_>,
+    ) -> Result<&Option<Image>> {
         // What: &key lends the key for lookup; inserting later transfers ownership.
         // Why: A cache hit must not allocate or reconstruct a glyph image.
         //
@@ -74,7 +78,9 @@ impl GlyphCache {
             // const renderer = new Render([colorOutline, colorBitmap, outline]);
             // ```
             let mut renderer = Render::new(&[
-                Source::ColorOutline(0), Source::ColorBitmap(StrikeWith::BestFit), Source::Outline,
+                Source::ColorOutline(0),
+                Source::ColorBitmap(StrikeWith::BestFit),
+                Source::Outline,
             ]);
             renderer.format(swash::zeno::Format::Alpha);
             // Recover the exact fractional coordinates rather than quantizing positions.
@@ -90,9 +96,13 @@ impl GlyphCache {
             // let bytes = 0; if (image !== undefined) bytes = image.data.length;
             // ```
             let mut bytes = 0;
-            if let Some(rendered) = &image { bytes = rendered.data.len(); }
+            if let Some(rendered) = &image {
+                bytes = rendered.data.len();
+            }
             if bytes > 16 * 1024 * 1024 {
-                bail!("Source glyph image exceeds the 16 MiB glyph limit; reduce the display scale");
+                bail!(
+                    "Source glyph image exceeds the 16 MiB glyph limit; reduce the display scale"
+                );
             }
             if self.bytes + bytes > 16 * 1024 * 1024 || self.images.len() >= 4096 {
                 self.images.clear();

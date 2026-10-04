@@ -14,18 +14,16 @@ mod ui {
     }
 }
 
-/// Native window and model row generated from the UI declaration.
-use ui::AppWindow;
-/// Toolkit handles and models bridge owned Rust state to the window.
-use slint::{ComponentHandle, SharedString};
-/// Source and display geometry use the same library interface tested headlessly.
-use ide_app::{document::Document, source_style::SourceStyles};
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
-/// Raster output retains the exact glyph positions used by selection.
-use ide_app::text_raster::TextRaster;
 /// Paint identity prevents caret movement from rebuilding source pixels.
 use ide_app::source_frame::FrameStamp;
+/// Raster output retains the exact glyph positions used by selection.
+use ide_app::text_raster::TextRaster;
+/// Source and display geometry use the same library interface tested headlessly.
+use ide_app::{document::Document, source_style::SourceStyles};
+/// Toolkit handles and models bridge owned Rust state to the window.
+use slint::{ComponentHandle, SharedString};
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
 /// Why: Callbacks need the same document without cross-thread Arc/Mutex overhead.
 ///
@@ -34,22 +32,24 @@ use ide_app::source_frame::FrameStamp;
 /// const shared = { current: state };
 /// ```
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
+/// Native window and model row generated from the UI declaration.
+use ui::AppWindow;
 
-/// Native rendering and input are split by their invalidation boundary.
-mod render;
 /// Source selection and keyboard callbacks.
 mod input;
-/// Fractional viewport movement and bounded tile materialization.
-mod viewport;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
+/// Native rendering and input are split by their invalidation boundary.
+mod render;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
-/// Shared rendering entry point.
-use render::{bind_appearance, render};
+/// Fractional viewport movement and bounded tile materialization.
+mod viewport;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
+/// Shared rendering entry point.
+use render::{bind_appearance, render};
 /// Bind viewport changes without line-snapping native scrolling.
 use viewport::bind_viewport;
 
@@ -96,31 +96,32 @@ impl State {
     /// Retain source ownership and initialize viewport resources without changing the filesystem.
     fn new(source: &str, file_path: Option<PathBuf>) -> Self {
         return Self {
-        document: Document::new(source),
-        file_path,
-        file_generation: 1,
-        file_error: None,
-        syntax_revision: None,
-        syntax_error: None,
-        styles: SourceStyles::from([]),
-        first: 0,
-        count: 32,
-        width: 1044.0,
-        horizontal: 0.0,
-        document_width: 0.0,
-        shaper: TextShaper::new(),
-        raster: TextRaster::new(),
-        shaped: None,
-        presented_revision: None,
-        frame_stamp: None,
-
+            document: Document::new(source),
+            file_path,
+            file_generation: 1,
+            file_error: None,
+            syntax_revision: None,
+            syntax_error: None,
+            styles: SourceStyles::from([]),
+            first: 0,
+            count: 32,
+            width: 1044.0,
+            horizontal: 0.0,
+            document_width: 0.0,
+            shaper: TextShaper::new(),
+            raster: TextRaster::new(),
+            shaped: None,
+            presented_revision: None,
+            frame_stamp: None,
         };
     }
 }
 
 /// Run the source-view gate against a supplied file or its explicit fixture.
 pub fn run() -> anyhow::Result<()> {
-    tracing_subscriber::fmt().with_env_filter("ide_app=debug,monochromatic_ide=debug").init();
+    tracing_subscriber::fmt()
+        .with_env_filter("ide_app=debug,monochromatic_ide=debug")
+        .init();
     let file_path = std::env::args().nth(1).map(PathBuf::from);
     // What: if let extracts a present command-line argument without unwrap.
     // Why: The fixture is explicit when no real source file was supplied.

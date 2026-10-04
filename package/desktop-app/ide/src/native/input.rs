@@ -2,10 +2,10 @@
 
 /// Borrow the parent's state and its single rendering boundary.
 use super::{AppWindow, State, render};
-/// Toolkit key representations and weak window handles.
-use slint::{ComponentHandle, SharedString};
 /// Source offsets remain independent of rendered pixels.
 use ide_app::document::ReadingPosition;
+/// Toolkit key representations and weak window handles.
+use slint::{ComponentHandle, SharedString};
 /// Rc and RefCell share checked mutable state on the UI thread.
 use std::{cell::RefCell, rc::Rc};
 
@@ -29,7 +29,9 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     // ```
     owner.on_pointer_hit(move |row, x, extend| {
         let mut current = state.borrow_mut();
-        let Some(view) = &current.shaped else { return; };
+        let Some(view) = &current.shaped else {
+            return;
+        };
         let head = view.hit(&current.document, row.max(0) as usize, x);
         let mut position = current.document.position();
         if !extend {
@@ -58,7 +60,11 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     owner.on_select_all_request(move || {
         let mut current = select_state.borrow_mut();
         let end = current.document.text().len_chars();
-        current.document.select(ReadingPosition { anchor: 0, head: end, viewport: 0 });
+        current.document.select(ReadingPosition {
+            anchor: 0,
+            head: end,
+            viewport: 0,
+        });
         drop(current);
         if let Some(window) = select_window.upgrade() {
             render(&window, &select_state);
@@ -76,11 +82,15 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         } else if key == SharedString::from(slint::platform::Key::RightArrow) {
             position.head = helix_core::graphemes::next_grapheme_boundary(text, position.head);
         } else if key == SharedString::from(slint::platform::Key::Home) {
-            if control { position.head = 0; }
-            else { position.head = text.line_to_char(text.char_to_line(position.head)); }
+            if control {
+                position.head = 0;
+            } else {
+                position.head = text.line_to_char(text.char_to_line(position.head));
+            }
         } else if key == SharedString::from(slint::platform::Key::End) {
-            if control { position.head = text.len_chars(); }
-            else {
+            if control {
+                position.head = text.len_chars();
+            } else {
                 let row = text.char_to_line(position.head);
                 let start = text.line_to_char(row);
                 let mut end = text.line_to_char((row + 1).min(text.len_lines()));
@@ -93,7 +103,9 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         } else {
             return;
         }
-        if !shift { position.anchor = position.head; }
+        if !shift {
+            position.anchor = position.head;
+        }
         current.document.select(position);
         drop(current);
         if let Some(window) = weak.upgrade() {

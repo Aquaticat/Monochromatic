@@ -20,7 +20,11 @@ fn caret_follows_surviving_word() {
     // const doc = new Document('I am a big cat.');
     // ```
     let mut doc = Document::new("I am a big cat.");
-    doc.select(ReadingPosition { anchor: 9, head: 9, viewport: 7 });
+    doc.select(ReadingPosition {
+        anchor: 9,
+        head: 9,
+        viewport: 7,
+    });
     let reload = doc.prepare_reload("I was a big cat.");
     // What: assert macros terminate a test when its condition fails.
     // Why: The exact caret and viewport mapping are the acceptance boundary.
@@ -31,7 +35,14 @@ fn caret_follows_surviving_word() {
     // expect(doc.position()).toEqual({anchor: 10, head: 10, viewport: 8});
     // ```
     assert!(doc.apply_reload(reload));
-    assert_eq!(doc.position(), ReadingPosition { anchor: 10, head: 10, viewport: 8 });
+    assert_eq!(
+        doc.position(),
+        ReadingPosition {
+            anchor: 10,
+            head: 10,
+            viewport: 8
+        }
+    );
 }
 
 /// Verify replacement selection cannot relocate to a later identical string.
@@ -39,7 +50,11 @@ fn caret_follows_surviving_word() {
 fn selected_region_follows_replacement_not_literal_match() {
     // Create a mutable document owned by this test.
     let mut doc = Document::new("I am a big cat");
-    doc.select(ReadingPosition { anchor: 2, head: 6, viewport: 0 });
+    doc.select(ReadingPosition {
+        anchor: 2,
+        head: 6,
+        viewport: 0,
+    });
     let reload = doc.prepare_reload("I was a big cat, but now I am a human!");
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.selected_text(), "was a");
@@ -51,7 +66,11 @@ fn selected_region_follows_replacement_not_literal_match() {
 #[test]
 fn backwards_selection_preserves_direction() {
     let mut doc = Document::new("I am a big cat");
-    doc.select(ReadingPosition { anchor: 6, head: 2, viewport: 0 });
+    doc.select(ReadingPosition {
+        anchor: 6,
+        head: 2,
+        viewport: 0,
+    });
     let reload = doc.prepare_reload("I was a big cat, but now I am a human!");
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.selected_text(), "was a");
@@ -82,7 +101,11 @@ fn stale_reload_is_rejected() {
 fn reload_maps_latest_reading_position() {
     let mut doc = Document::new("I am a big cat");
     let reload = doc.prepare_reload("I was a big cat");
-    doc.select(ReadingPosition { anchor: 11, head: 14, viewport: 7 });
+    doc.select(ReadingPosition {
+        anchor: 11,
+        head: 14,
+        viewport: 7,
+    });
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.selected_text(), "cat");
 }
@@ -91,7 +114,11 @@ fn reload_maps_latest_reading_position() {
 #[test]
 fn unicode_prefix_preserves_selection() {
     let mut doc = Document::new("猫 am a big cat");
-    doc.select(ReadingPosition { anchor: 2, head: 6, viewport: 0 });
+    doc.select(ReadingPosition {
+        anchor: 2,
+        head: 6,
+        viewport: 0,
+    });
     let reload = doc.prepare_reload("猫 was a big cat, am a");
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.selected_text(), "was a");
@@ -101,7 +128,11 @@ fn unicode_prefix_preserves_selection() {
 #[test]
 fn deletion_clamps_positions() {
     let mut doc = Document::new("abc");
-    doc.select(ReadingPosition { anchor: 0, head: 3, viewport: 2 });
+    doc.select(ReadingPosition {
+        anchor: 0,
+        head: 3,
+        viewport: 2,
+    });
     let reload = doc.prepare_reload("");
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.position(), ReadingPosition::default());

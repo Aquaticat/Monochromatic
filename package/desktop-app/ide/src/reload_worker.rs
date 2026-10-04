@@ -1,5 +1,16 @@
 //! One bounded source-read/diff job at a time, outside the native event loop.
 
+/// Snapshots share immutable rope chunks; replies carry only prepared changes.
+use crate::{
+    document::{Document, Reload},
+    file_reload::read_reload,
+    source_style::SourceStyles,
+    syntax::SyntaxEngine,
+};
+/// Preserve worker-start, request, and unexpected-disconnect diagnostics.
+use anyhow::{Context, Result, bail};
+/// Classification reads the same immutable rope snapshot as correspondence.
+use helix_core::Rope;
 /// What: Channels transfer owned messages between threads; capacity one bounds queued work.
 /// Why: UI input remains independent of filesystem reads and Helix diff computation.
 ///
@@ -7,13 +18,11 @@
 /// ```ts
 /// const worker = new Worker('source-reader'); // messages are owned snapshots
 /// ```
-use std::{path::{Path, PathBuf}, sync::mpsc::{sync_channel, Receiver, SyncSender, TryRecvError}, thread::{self, JoinHandle}};
-/// Preserve worker-start, request, and unexpected-disconnect diagnostics.
-use anyhow::{bail, Context, Result};
-/// Snapshots share immutable rope chunks; replies carry only prepared changes.
-use crate::{document::{Document, Reload}, file_reload::read_reload, source_style::SourceStyles, syntax::SyntaxEngine};
-/// Classification reads the same immutable rope snapshot as correspondence.
-use helix_core::Rope;
+use std::{
+    path::{Path, PathBuf},
+    sync::mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
+    thread::{self, JoinHandle},
+};
 
 /// A file generation prevents applying an old file's result after navigation.
 pub struct ReloadRequest {
@@ -61,7 +70,10 @@ pub struct ReloadWorker {
 fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u64) -> SyntaxReply {
     let result = match engine {
         Ok(active) => active.highlight(path, text),
-        Err(error) => Err(anyhow::anyhow!("Cannot initialize highlighting for {}: {error:#}", path.display())),
+        Err(error) => Err(anyhow::anyhow!(
+            "Cannot initialize highlighting for {}: {error:#}",
+            path.display()
+        )),
     };
     return SyntaxReply { revision, result };
 }
@@ -86,12 +98,26 @@ fn run(requests: Receiver<ReloadRequest>, replies: SyncSender<ReloadReply>) {
         };
         let result = read_reload(&request.snapshot, &request.path);
         let classified = match &result {
-            Ok(Some(reload)) => Some(classify(&syntax, &request.path, reload.text(), request.snapshot.revision() + 1)),
-            Ok(None) if request.highlight_unchanged => Some(classify(&syntax, &request.path, request.snapshot.text(), request.snapshot.revision())),
+            Ok(Some(reload)) => Some(classify(
+                &syntax,
+                &request.path,
+                reload.text(),
+                request.snapshot.revision() + 1,
+            )),
+            Ok(None) if request.highlight_unchanged => Some(classify(
+                &syntax,
+                &request.path,
+                request.snapshot.text(),
+                request.snapshot.revision(),
+            )),
             // Read failures retain their original result; unchanged accepted syntax needs no repeat parse.
             _ => None,
         };
-        let reply = ReloadReply { generation: request.generation, result, syntax: classified };
+        let reply = ReloadReply {
+            generation: request.generation,
+            result,
+            syntax: classified,
+        };
         if let Err(error) = replies.send(reply) {
             tracing::debug!(%error, "source reload worker reply receiver closed");
             return;
@@ -119,17 +145,31 @@ impl ReloadWorker {
         // ```ts
         // const worker = startWorker(() => run(requestReceiver, replySender));
         // ```
-        let worker = thread::Builder::new().name("ide-source-reload".to_string())
-            .spawn(move || { run(request_receiver, reply_sender); })
+        let worker = thread::Builder::new()
+            .name("ide-source-reload".to_string())
+            .spawn(move || {
+                run(request_receiver, reply_sender);
+            })
             .context("Cannot start the source reload worker")?;
-        return Ok(Self { requests: Some(request_sender), replies: reply_receiver, busy: false, thread: Some(worker) });
+        return Ok(Self {
+            requests: Some(request_sender),
+            replies: reply_receiver,
+            busy: false,
+            thread: Some(worker),
+        });
     }
 
     /// Return false while a job or unread response already occupies the worker.
     pub fn request(&mut self, request: ReloadRequest) -> Result<bool> {
-        if self.busy { return Ok(false); }
-        let sender = self.requests.as_ref().context("Source reload worker is closed")?;
-        sender.try_send(request)
+        if self.busy {
+            return Ok(false);
+        }
+        let sender = self
+            .requests
+            .as_ref()
+            .context("Source reload worker is closed")?;
+        sender
+            .try_send(request)
             .context("Cannot send a source reload request")?;
         self.busy = true;
         return Ok(true);
@@ -142,9 +182,13 @@ impl ReloadWorker {
                 self.busy = false;
                 return Ok(Some(reply));
             }
-            Err(TryRecvError::Empty) => { return Ok(None); }
+            Err(TryRecvError::Empty) => {
+                return Ok(None);
+            }
             Err(TryRecvError::Disconnected) => {
-                bail!("Source reload worker stopped unexpectedly; reopen the file or restart the application");
+                bail!(
+                    "Source reload worker stopped unexpectedly; reopen the file or restart the application"
+                );
             }
         }
     }
@@ -156,7 +200,9 @@ impl Drop for ReloadWorker {
     fn drop(&mut self) {
         // Taking the sender drops its owned endpoint at the end of this statement.
         self.requests.take();
-        let Some(worker) = self.thread.take() else { return; };
+        let Some(worker) = self.thread.take() else {
+            return;
+        };
         if let Err(error) = worker.join() {
             tracing::error!(?error, "source reload worker panicked during shutdown");
         }

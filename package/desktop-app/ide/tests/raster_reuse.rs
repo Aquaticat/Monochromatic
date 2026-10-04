@@ -7,7 +7,11 @@
 /// ```ts
 /// import { Document, TextShaper, TextRaster } from './ide';
 /// ```
-use ide_app::{document::Document, shaped_text::{TextShaper, Viewport}, text_raster::{CodeColors, TextRaster}};
+use ide_app::{
+    document::Document,
+    shaped_text::{TextShaper, Viewport},
+    text_raster::{CodeColors, TextRaster},
+};
 /// What: Instant measures monotonic elapsed time, unlike wall-clock SystemTime.
 /// Why: Clock corrections must not change the reported stage durations.
 ///
@@ -47,8 +51,17 @@ fn repeated_viewport_renders_preserve_pixels() {
     let mut shaper = TextShaper::new();
     // Initialize raster resources once, not once per frame.
     let mut raster = TextRaster::new();
-    let viewport = Viewport { first: 0, count: 27, width: 1300.0, scale: 1.0 };
-    let colors = CodeColors { foreground: [240, 240, 240, 255], selected: [255, 255, 255, 255], dark: true };
+    let viewport = Viewport {
+        first: 0,
+        count: 27,
+        width: 1300.0,
+        scale: 1.0,
+    };
+    let colors = CodeColors {
+        foreground: [240, 240, 240, 255],
+        selected: [255, 255, 255, 255],
+        dark: true,
+    };
     // What: Vec<u8> owns variable-length bytes, unlike borrowed &[u8] or fixed [u8; N].
     // Why: Retain the first output independently of subsequent frames.
     //
@@ -77,7 +90,9 @@ fn repeated_viewport_renders_preserve_pixels() {
         // ```ts
         // const pixels = raster.paint(view, colors, 0);
         // ```
-        let pixels = raster.paint(&view, colors, 0.0).expect("render viewport fixture");
+        let pixels = raster
+            .paint(&view, colors, 0.0)
+            .expect("render viewport fixture");
         let painted = start.elapsed() - shaped;
         // Test diagnostics deliberately report measured stage durations.
         eprintln!("viewport sample {sample}: shape={shaped:?} raster={painted:?}");

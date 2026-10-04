@@ -28,16 +28,24 @@ fn masked(mut color: [u8; 4], alpha: u8) -> [u8; 4] {
 /// Blend foregrounds by clipped pixel area, not by the first character's glyph brush.
 /// Alpha-weighted color interpolation keeps partially transparent theme colors coherent.
 pub(crate) fn ink(ordinary: [u8; 4], selected: [u8; 4], coverage: f32, mask: u8) -> [u8; 4] {
-    if coverage <= 0.0 { return masked(ordinary, mask); }
-    if coverage >= 1.0 { return masked(selected, mask); }
+    if coverage <= 0.0 {
+        return masked(ordinary, mask);
+    }
+    if coverage >= 1.0 {
+        return masked(selected, mask);
+    }
     let ordinary_alpha = f32::from(ordinary[3]) * (1.0 - coverage);
     let selected_alpha = f32::from(selected[3]) * coverage;
     let alpha = ordinary_alpha + selected_alpha;
-    if alpha == 0.0 { return [0; 4]; }
+    if alpha == 0.0 {
+        return [0; 4];
+    }
     let mut color = [0, 0, 0, (alpha * f32::from(mask) / 255.0).round() as u8];
     for channel in 0..3 {
         color[channel] = ((f32::from(ordinary[channel]) * ordinary_alpha
-            + f32::from(selected[channel]) * selected_alpha) / alpha).round() as u8;
+            + f32::from(selected[channel]) * selected_alpha)
+            / alpha)
+            .round() as u8;
     }
     return color;
 }
@@ -61,15 +69,27 @@ mod tests {
     /// Blending uses alpha-weighted color rather than introducing transparent-color fringes.
     #[test]
     fn selection_edge_respects_foreground_opacity() {
-        assert_eq!(ink([255,0,0,200], [0,255,0,100], 0.5, 255), [170,85,0,150]);
-        assert_eq!(ink([255,0,0,0], [0,0,255,128], 0.5, 255), [0,0,255,64]);
-        assert_eq!(ink([255,0,0,0], [0,0,255,0], 0.5, 255), [0; 4]);
+        assert_eq!(
+            ink([255, 0, 0, 200], [0, 255, 0, 100], 0.5, 255),
+            [170, 85, 0, 150]
+        );
+        assert_eq!(
+            ink([255, 0, 0, 0], [0, 0, 255, 128], 0.5, 255),
+            [0, 0, 255, 64]
+        );
+        assert_eq!(ink([255, 0, 0, 0], [0, 0, 255, 0], 0.5, 255), [0; 4]);
     }
 
     /// Unselected and fully selected masks retain exact original integer alpha behavior.
     #[test]
     fn complete_coverage_preserves_mask_rounding() {
-        assert_eq!(ink([255,0,0,255], [0,255,0,255], 0.0, 127), [255,0,0,127]);
-        assert_eq!(ink([255,0,0,255], [0,255,0,255], 1.0, 127), [0,255,0,127]);
+        assert_eq!(
+            ink([255, 0, 0, 255], [0, 255, 0, 255], 0.0, 127),
+            [255, 0, 0, 127]
+        );
+        assert_eq!(
+            ink([255, 0, 0, 255], [0, 255, 0, 255], 1.0, 127),
+            [0, 255, 0, 127]
+        );
     }
 }

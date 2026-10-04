@@ -1,17 +1,20 @@
 //! Shared shaped rows replace independently centered fallback-font glyph items.
 
-/// Font and paragraph layout are supplied by the same Parley stack Slint uses.
-use parley::{Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, Layout, LayoutContext, LineHeight, Selection, StyleProperty};
-/// Four-byte OpenType tags avoid stringly typed feature names in the source defaults.
-use parley::setting::Tag;
-/// Font bytes are shared immutably across the font database.
-use std::{borrow::Cow, sync::Arc};
 /// Canonical source remains in the read-only document.
 use crate::document::Document;
-/// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
-use crate::text_projection::{project_line, Projection};
 /// Syntax classifications stay independent of pixels.
 use crate::source_style::StyleSpan;
+/// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
+use crate::text_projection::{Projection, project_line};
+/// Four-byte OpenType tags avoid stringly typed feature names in the source defaults.
+use parley::setting::Tag;
+/// Font and paragraph layout are supplied by the same Parley stack Slint uses.
+use parley::{
+    Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, Layout, LayoutContext,
+    LineHeight, Selection, StyleProperty,
+};
+/// Font bytes are shared immutably across the font database.
+use std::{borrow::Cow, sync::Arc};
 
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
@@ -97,18 +100,33 @@ impl TextShaper {
         let bytes: &'static [u8] = include_bytes!("../asset/font/JetBrainsMono-Regular.ttf");
         let blob = parley::fontique::Blob::new(Arc::new(bytes));
         fonts.collection.register_fonts(blob, None);
-        return Self { fonts, layouts: LayoutContext::new(), features };
+        return Self {
+            fonts,
+            layouts: LayoutContext::new(),
+            features,
+        };
     }
 
     /// Shape text with explicit source typography and no soft wrapping.
-    fn line_layout(&mut self, text: &str, scale: f32, roles: &[(usize, usize, u32)]) -> Layout<u32> {
+    fn line_layout(
+        &mut self,
+        text: &str,
+        scale: f32,
+        roles: &[(usize, usize, u32)],
+    ) -> Layout<u32> {
         // Borrow the contexts only while constructing this owned layout.
-        let mut builder = self.layouts.ranged_builder(&mut self.fonts, text, scale, true);
-        builder.push_default(StyleProperty::FontFamily(FontFamily::Source(Cow::Borrowed("JetBrains Mono"))));
+        let mut builder = self
+            .layouts
+            .ranged_builder(&mut self.fonts, text, scale, true);
+        builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
+            Cow::Borrowed("JetBrains Mono"),
+        )));
         builder.push_default(StyleProperty::FontSize(15.0));
         builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
         builder.push_default(StyleProperty::Brush(0));
-        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(Cow::Borrowed(&self.features))));
+        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
+            Cow::Borrowed(&self.features),
+        )));
         for (start, end, role) in roles {
             builder.push(StyleProperty::Brush(*role), *start..*end);
         }
@@ -118,12 +136,25 @@ impl TextShaper {
     }
 
     /// Prepare a visible viewport using native font advances rather than character cells.
-    pub fn prepare(&mut self, document: &Document, viewport: Viewport, styles: &[StyleSpan]) -> ShapedView {
+    pub fn prepare(
+        &mut self,
+        document: &Document,
+        viewport: Viewport,
+        styles: &[StyleSpan],
+    ) -> ShapedView {
         let text = document.text();
-        let last = viewport.first.saturating_add(viewport.count).min(text.len_lines());
+        let last = viewport
+            .first
+            .saturating_add(viewport.count)
+            .min(text.len_lines());
         let probe = self.line_layout("M", viewport.scale, &[]);
         // A known primary glyph establishes a consistent baseline for all source rows.
-        let baseline = probe.lines().next().expect("primary font line").metrics().baseline;
+        let baseline = probe
+            .lines()
+            .next()
+            .expect("primary font line")
+            .metrics()
+            .baseline;
         let mut rows = Vec::new();
         for row in viewport.first..last {
             let source_start = text.line_to_char(row);
@@ -135,16 +166,39 @@ impl TextShaper {
                 let start = span.start.saturating_sub(source_start).min(source_len);
                 let end = span.end.saturating_sub(source_start).min(source_len);
                 if start < end {
-                    roles.push((projection.source_to_byte[start], projection.source_to_byte[end], span.style as u32));
+                    roles.push((
+                        projection.source_to_byte[start],
+                        projection.source_to_byte[end],
+                        span.style as u32,
+                    ));
                 }
             }
             let layout = self.line_layout(&projection.text, viewport.scale, &roles);
-            let natural = layout.lines().next().expect("source line layout").metrics().baseline;
-            rows.push(ShapedRow { row, source_start, projection, layout, baseline, baseline_shift: baseline - natural });
+            let natural = layout
+                .lines()
+                .next()
+                .expect("source line layout")
+                .metrics()
+                .baseline;
+            rows.push(ShapedRow {
+                row,
+                source_start,
+                projection,
+                layout,
+                baseline,
+                baseline_shift: baseline - natural,
+            });
         }
         let width = (viewport.width.max(1.0) * viewport.scale).ceil() as u32;
-        let height = ((last.saturating_sub(viewport.first).max(1) as f32) * 24.0 * viewport.scale).ceil() as u32;
-        let mut view = ShapedView { rows, viewport, width, height, selections: Vec::new() };
+        let height = ((last.saturating_sub(viewport.first).max(1) as f32) * 24.0 * viewport.scale)
+            .ceil() as u32;
+        let mut view = ShapedView {
+            rows,
+            viewport,
+            width,
+            height,
+            selections: Vec::new(),
+        };
         view.selections = view.selection(document);
         return view;
     }
@@ -168,9 +222,17 @@ impl ShapedView {
     /// Convert a pointer to a source character using the shaping engine's hit test.
     pub fn hit(&self, document: &Document, row: usize, x: f32) -> usize {
         for shaped in &self.rows {
-            if shaped.row != row { continue; }
-            let cursor = Cursor::from_point(&shaped.layout, x * self.viewport.scale, shaped.layout.height() / 2.0);
-            let index = cursor.index().min(shaped.projection.byte_to_source.len() - 1);
+            if shaped.row != row {
+                continue;
+            }
+            let cursor = Cursor::from_point(
+                &shaped.layout,
+                x * self.viewport.scale,
+                shaped.layout.height() / 2.0,
+            );
+            let index = cursor
+                .index()
+                .min(shaped.projection.byte_to_source.len() - 1);
             return shaped.source_start + shaped.projection.byte_to_source[index];
         }
         let bounded_row = row.min(document.text().len_lines().saturating_sub(1));
@@ -182,14 +244,32 @@ impl ShapedView {
         let head = document.position().head;
         let row = document.text().char_to_line(head);
         for shaped in &self.rows {
-            if shaped.row != row { continue; }
-            let local = head.saturating_sub(shaped.source_start).min(shaped.projection.source_to_byte.len() - 1);
-            let cursor = Cursor::from_byte_index(&shaped.layout, shaped.projection.source_to_byte[local], Affinity::Downstream);
+            if shaped.row != row {
+                continue;
+            }
+            let local = head
+                .saturating_sub(shaped.source_start)
+                .min(shaped.projection.source_to_byte.len() - 1);
+            let cursor = Cursor::from_byte_index(
+                &shaped.layout,
+                shaped.projection.source_to_byte[local],
+                Affinity::Downstream,
+            );
             let rect = cursor.geometry(&shaped.layout, self.viewport.scale);
             // Parley's geometry uses f64; Slint logical coordinates use f32.
-            return ReadingRect { x: rect.x0 as f32 / self.viewport.scale, y: row as f32 * 24.0 + 2.0, width: 2.0, height: 20.0 };
+            return ReadingRect {
+                x: rect.x0 as f32 / self.viewport.scale,
+                y: row as f32 * 24.0 + 2.0,
+                width: 2.0,
+                height: 20.0,
+            };
         }
-        return ReadingRect { x: 0.0, y: row as f32 * 24.0 + 2.0, width: 2.0, height: 20.0 };
+        return ReadingRect {
+            x: 0.0,
+            y: row as f32 * 24.0 + 2.0,
+            width: 2.0,
+            height: 20.0,
+        };
     }
 
     /// Return per-line selection rectangles without including annotations in source.
@@ -202,14 +282,26 @@ impl ShapedView {
             let len = shaped.projection.source_to_byte.len() - 1;
             let a = start.saturating_sub(shaped.source_start).min(len);
             let b = end.saturating_sub(shaped.source_start).min(len);
-            if a == b { continue; }
-            let anchor = Cursor::from_byte_index(&shaped.layout, shaped.projection.source_to_byte[a], Affinity::Downstream);
-            let focus = Cursor::from_byte_index(&shaped.layout, shaped.projection.source_to_byte[b], Affinity::Upstream);
+            if a == b {
+                continue;
+            }
+            let anchor = Cursor::from_byte_index(
+                &shaped.layout,
+                shaped.projection.source_to_byte[a],
+                Affinity::Downstream,
+            );
+            let focus = Cursor::from_byte_index(
+                &shaped.layout,
+                shaped.projection.source_to_byte[b],
+                Affinity::Upstream,
+            );
             let selection = Selection::new(anchor, focus);
             for (rect, _) in selection.geometry(&shaped.layout) {
                 result.push(ReadingRect {
-                    x: rect.x0 as f32 / self.viewport.scale, y: shaped.row as f32 * 24.0,
-                    width: (rect.x1 - rect.x0) as f32 / self.viewport.scale, height: 24.0,
+                    x: rect.x0 as f32 / self.viewport.scale,
+                    y: shaped.row as f32 * 24.0,
+                    width: (rect.x1 - rect.x0) as f32 / self.viewport.scale,
+                    height: 24.0,
                 });
             }
         }

@@ -1,5 +1,9 @@
 //! Read authoritative disk text without changing the displayed document or filesystem.
 
+/// Helix correspondence is prepared separately from applying current reading state.
+use crate::document::{Document, Reload};
+/// I/O failures retain their affected input and operation context.
+use anyhow::{Context, Result, bail};
 /// What: Path borrows a filesystem name, unlike the owned PathBuf sibling.
 /// Why: A read operation need not copy or retain the caller's path.
 ///
@@ -8,10 +12,6 @@
 /// function readReload(snapshot: Document, path: string): Reload | undefined;
 /// ```
 use std::path::Path;
-/// I/O failures retain their affected input and operation context.
-use anyhow::{bail, Context, Result};
-/// Helix correspondence is prepared separately from applying current reading state.
-use crate::document::{Document, Reload};
 
 /// Read one regular UTF-8 file and prepare correspondence only if its bytes changed.
 /// The caller retains the previous document on missing-file or decoding failures.
@@ -27,7 +27,10 @@ pub fn read_reload(snapshot: &Document, path: &Path) -> Result<Option<Reload>> {
         .with_context(|| return format!("Cannot inspect source file {}", path.display()))?;
     if !metadata.is_file() {
         // bail! returns an error rather than opening a directory or potentially blocking device.
-        bail!("Cannot refresh {}: source is not a regular file", path.display());
+        bail!(
+            "Cannot refresh {}: source is not a regular file",
+            path.display()
+        );
     }
     let source = std::fs::read_to_string(path)
         .with_context(|| return format!("Cannot read source file {} as UTF-8", path.display()))?;
