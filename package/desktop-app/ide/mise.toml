@@ -73,6 +73,7 @@ for (const profile of ['debug', 'release']) {
 """
 
 [tasks.build]
+depends = ["runtime"]
 description = "Build the native IDE in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -81,6 +82,7 @@ runCargo(['build'])
 """
 
 [tasks.test]
+depends = ["runtime"]
 description = "Run library and integration tests in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -124,6 +126,7 @@ runCargo(['fmt'])
 """
 
 [tasks.mcp]
+depends = ["runtime"]
 description = "Build and run the source-view gate with native headless UI inspection"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -147,6 +150,7 @@ execFileSync('./target/debug/monochromatic-ide', [], { stdio: 'inherit', env })
 """
 
 [tasks."inspect:native"]
+depends = ["runtime"]
 description = "Run the IDE in the repo compositor with isolated theme and font configuration"
 usage = '''
 arg "[scheme]" default="dark" help="Private system appearance: dark or light"

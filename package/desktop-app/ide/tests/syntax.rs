@@ -19,7 +19,7 @@ fn rust_highlights_use_unicode_source_positions() {
     let classified = spans.iter().map(|span| return (span.style, text.slice(span.start..span.end).to_string())).collect::<Vec<_>>();
     assert!(spans.iter().any(|span| return span.style == 3 && text.slice(span.start..span.end).to_string().contains("// 猫")), "classified source: {classified:?}");
     let mut previous_end = 0;
-    for span in &spans {
+    for span in spans.iter() {
         assert!(span.start >= previous_end);
         assert!(span.start < span.end && span.end <= text.len_chars());
         previous_end = span.end;

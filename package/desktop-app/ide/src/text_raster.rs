@@ -53,7 +53,7 @@ impl Default for TextRaster {
 /// Translate semantic paint roles into the selected system-theme palette.
 fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
     if role == 64 { return colors.selected; }
-    if role == 1 {
+    if role == 1 || role == 8 || role == 10 {
         if colors.dark { return [199, 146, 234, 255]; }
         return [118, 54, 164, 255];
     }
@@ -65,9 +65,17 @@ fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
         if colors.dark { return [160, 168, 176, 255]; }
         return [85, 92, 101, 255];
     }
-    if role == 4 {
+    if role == 4 || role == 13 {
         if colors.dark { return [240, 188, 122, 255]; }
         return [139, 77, 4, 255];
+    }
+    if role == 5 || role == 12 {
+        if colors.dark { return [130, 190, 235, 255]; }
+        return [20, 86, 127, 255];
+    }
+    if role == 6 || role == 11 {
+        if colors.dark { return [225, 212, 157, 255]; }
+        return [113, 83, 16, 255];
     }
     return colors.foreground;
 }

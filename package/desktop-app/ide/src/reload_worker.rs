@@ -7,20 +7,32 @@
 /// ```ts
 /// const worker = new Worker('source-reader'); // messages are owned snapshots
 /// ```
-use std::{path::PathBuf, sync::mpsc::{sync_channel, Receiver, SyncSender, TryRecvError}, thread::{self, JoinHandle}};
+use std::{path::{Path, PathBuf}, sync::mpsc::{sync_channel, Receiver, SyncSender, TryRecvError}, thread::{self, JoinHandle}};
 /// Preserve worker-start, request, and unexpected-disconnect diagnostics.
 use anyhow::{bail, Context, Result};
 /// Snapshots share immutable rope chunks; replies carry only prepared changes.
-use crate::{document::{Document, Reload}, file_reload::read_reload};
+use crate::{document::{Document, Reload}, file_reload::read_reload, source_style::SourceStyles, syntax::SyntaxEngine};
+/// Classification reads the same immutable rope snapshot as correspondence.
+use helix_core::Rope;
 
 /// A file generation prevents applying an old file's result after navigation.
-struct Request {
+pub struct ReloadRequest {
     /// Source target supplied by the UI, never inferred from a background result.
-    path: PathBuf,
+    pub path: PathBuf,
     /// Displayed base revision used by correspondence.
-    snapshot: Document,
+    pub snapshot: Document,
     /// Monotonic file-open identity, separate from each document's revision.
-    generation: u64,
+    pub generation: u64,
+    /// Request initial/retried classification even without a text change; changed source always classifies.
+    pub highlight_unchanged: bool,
+}
+
+/// Classifications identify the exact source revision they describe.
+pub struct SyntaxReply {
+    /// Expected revision after accepting the associated reload, or the unchanged revision.
+    pub revision: u64,
+    /// None means unrecognized plain text; missing parser assets remain an error.
+    pub result: Result<Option<SourceStyles>>,
 }
 
 /// A successful read can report unchanged text without creating a revision.
@@ -29,12 +41,14 @@ pub struct ReloadReply {
     pub generation: u64,
     /// Prepared change or unchanged result; failure leaves displayed source intact.
     pub result: Result<Option<Reload>>,
+    /// Present for changed source and explicitly requested unchanged-source classification.
+    pub syntax: Option<SyntaxReply>,
 }
 
 /// UI-owned worker handle with at most one requested or unread reply.
 pub struct ReloadWorker {
     /// Option permits closing the request channel before joining during Drop.
-    requests: Option<SyncSender<Request>>,
+    requests: Option<SyncSender<ReloadRequest>>,
     /// The UI polls this receiver without blocking.
     replies: Receiver<ReloadReply>,
     /// Includes both executing work and an unread response.
@@ -43,8 +57,18 @@ pub struct ReloadWorker {
     thread: Option<JoinHandle<()>>,
 }
 
+/// Prepare classifications without making a syntax failure discard readable disk text.
+fn classify(engine: &Result<SyntaxEngine>, path: &Path, text: &Rope, revision: u64) -> SyntaxReply {
+    let result = match engine {
+        Ok(active) => active.highlight(path, text),
+        Err(error) => Err(anyhow::anyhow!("Cannot initialize highlighting for {}: {error:#}", path.display())),
+    };
+    return SyntaxReply { revision, result };
+}
+
 /// Own the blocking receive loop entirely outside UI state.
-fn run(requests: Receiver<Request>, replies: SyncSender<ReloadReply>) {
+fn run(requests: Receiver<ReloadRequest>, replies: SyncSender<ReloadReply>) {
+    let syntax = SyntaxEngine::new();
     loop {
         // What: match extracts either an owned job or the expected closed-channel condition.
         // Why: Shutdown must end the worker without an unhandled channel error.
@@ -61,7 +85,13 @@ fn run(requests: Receiver<Request>, replies: SyncSender<ReloadReply>) {
             }
         };
         let result = read_reload(&request.snapshot, &request.path);
-        let reply = ReloadReply { generation: request.generation, result };
+        let classified = match &result {
+            Ok(Some(reload)) => Some(classify(&syntax, &request.path, reload.text(), request.snapshot.revision() + 1)),
+            Ok(None) if request.highlight_unchanged => Some(classify(&syntax, &request.path, request.snapshot.text(), request.snapshot.revision())),
+            // Read failures retain their original result; unchanged accepted syntax needs no repeat parse.
+            _ => None,
+        };
+        let reply = ReloadReply { generation: request.generation, result, syntax: classified };
         if let Err(error) = replies.send(reply) {
             tracing::debug!(%error, "source reload worker reply receiver closed");
             return;
@@ -95,10 +125,10 @@ impl ReloadWorker {
     }
 
     /// Return false while a job or unread response already occupies the worker.
-    pub fn request(&mut self, path: PathBuf, snapshot: Document, generation: u64) -> Result<bool> {
+    pub fn request(&mut self, request: ReloadRequest) -> Result<bool> {
         if self.busy { return Ok(false); }
         let sender = self.requests.as_ref().context("Source reload worker is closed")?;
-        sender.try_send(Request { path, snapshot, generation })
+        sender.try_send(request)
             .context("Cannot send a source reload request")?;
         self.busy = true;
         return Ok(true);
@@ -125,10 +155,9 @@ impl Drop for ReloadWorker {
     fn drop(&mut self) {
         // Taking the sender drops its owned endpoint at the end of this statement.
         self.requests.take();
-        if let Some(worker) = self.thread.take() {
-            if let Err(error) = worker.join() {
-                tracing::error!(?error, "source reload worker panicked during shutdown");
-            }
+        let Some(worker) = self.thread.take() else { return; };
+        if let Err(error) = worker.join() {
+            tracing::error!(?error, "source reload worker panicked during shutdown");
         }
     }
 }

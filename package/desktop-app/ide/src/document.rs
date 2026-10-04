@@ -43,6 +43,14 @@ pub struct Reload {
     changes: Transaction,
 }
 
+/// Read-only access lets background consumers classify the same replacement that will be installed.
+impl Reload {
+    /// Lend replacement text without applying it or exposing mutation.
+    pub fn text(&self) -> &Rope {
+        return &self.text;
+    }
+}
+
 /// What: A document owns its rope and current reading position.
 /// Why: Source, copying, and refresh share one state rather than UI buffers.
 ///

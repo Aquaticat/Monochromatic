@@ -9,7 +9,7 @@
 /// ```
 use super::{AppWindow, State, render};
 /// Background replies retain the file generation and source base revision.
-use ide_app::reload_worker::{ReloadReply, ReloadWorker};
+use ide_app::reload_worker::{ReloadReply, ReloadRequest, ReloadWorker, SyntaxReply};
 /// Reset source classifications without mutating a snapshot shared with the previous frame.
 use ide_app::source_style::SourceStyles;
 /// Timer callbacks and weak window references belong to the toolkit event loop.
@@ -29,6 +29,31 @@ fn read_failed(window: &AppWindow, state: &Rc<RefCell<State>>, message: String) 
     render(window, state);
 }
 
+/// Accept classifications only for the installed source revision, without hiding parser failures.
+fn apply_syntax(current: &mut State, reply: SyntaxReply) -> bool {
+    if reply.revision != current.document.revision() {
+        tracing::debug!(revision = reply.revision, "discarding syntax for an obsolete source revision");
+        return false;
+    }
+    current.syntax_revision = Some(reply.revision);
+    match reply.result {
+        Ok(Some(styles)) => {
+            current.styles = styles;
+            current.syntax_error = None;
+        }
+        Ok(None) => {
+            current.styles = SourceStyles::from([]);
+            current.syntax_error = None;
+        }
+        Err(error) => {
+            tracing::warn!(%error, "highlighting unavailable; retaining readable source");
+            current.styles = SourceStyles::from([]);
+            current.syntax_error = Some(format!("{error:#}"));
+        }
+    }
+    return true;
+}
+
 /// Install a matching file/revision result using the current caret and selection.
 fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     if reply.generation != state.borrow().file_generation {
@@ -44,26 +69,32 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     };
     let fractional_row = (-window.get_scroll_y()).max(0.0) % 24.0;
     let mut current = state.borrow_mut();
-    let recovered = current.file_error.is_some();
-    let Some(reload) = update else {
-        current.file_error = None;
-        drop(current);
-        if recovered { render(window, state); }
-        return;
-    };
-    if !current.document.apply_reload(reload) { return; }
+    let mut redraw = current.file_error.is_some();
+    let mut mapped_viewport = None;
+    if let Some(reload) = update {
+        if !current.document.apply_reload(reload) { return; }
+        let position = current.document.position();
+        let first = current.document.text().char_to_line(position.viewport);
+        let lines = current.document.text().len_lines();
+        current.first = first.saturating_sub(1);
+        current.document_width = 0.0;
+        current.styles = SourceStyles::from([]);
+        current.syntax_revision = None;
+        current.syntax_error = None;
+        mapped_viewport = Some((first, lines));
+        redraw = true;
+    }
     current.file_error = None;
-    let position = current.document.position();
-    let first = current.document.text().char_to_line(position.viewport);
-    let lines = current.document.text().len_lines();
-    current.first = first.saturating_sub(1);
-    current.document_width = 0.0;
-    current.styles = SourceStyles::from([]);
+    if let Some(syntax) = reply.syntax {
+        redraw = apply_syntax(&mut current, syntax) || redraw;
+    }
     drop(current);
-    // Update extent before the offset so the old document height cannot clamp a mapped viewport.
-    window.set_total_lines(lines as i32);
-    window.set_scroll_y(-(first as f32 * 24.0 + fractional_row));
-    render(window, state);
+    if let Some((first, lines)) = mapped_viewport {
+        // Update extent before offset so the old height cannot clamp a mapped viewport.
+        window.set_total_lines(lines as i32);
+        window.set_scroll_y(-(first as f32 * 24.0 + fractional_row));
+    }
+    if redraw { render(window, state); }
 }
 
 /// Poll completed work on the UI thread; schedule disk reads at 250 ms intervals.
@@ -91,12 +122,13 @@ pub(super) fn bind(window: &AppWindow, shared: &Rc<RefCell<State>>) -> Result<Ti
                 return;
             }
         }
-        if let Some(last) = last_request {
-            if last.elapsed() < Duration::from_millis(250) { return; }
-        }
+        if last_request.is_some_and(|last| return last.elapsed() < Duration::from_millis(250)) { return; }
         let current = state.borrow();
         let Some(path) = &current.file_path else { return; };
-        let requested = worker.request(path.clone(), current.document.clone(), current.file_generation);
+        let requested = worker.request(ReloadRequest {
+            path: path.clone(), snapshot: current.document.clone(), generation: current.file_generation,
+            highlight_unchanged: current.syntax_revision != Some(current.document.revision()),
+        });
         drop(current);
         match requested {
             Ok(true) => { last_request = Some(Instant::now()); }

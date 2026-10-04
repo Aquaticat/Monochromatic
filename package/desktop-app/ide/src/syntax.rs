@@ -13,7 +13,7 @@ use anyhow::{Context, Result};
 /// Reuse Helix's built-in registry, grammar/query loader, and bounded parser.
 use helix_core::{Rope, syntax::{Loader, Syntax, config::Configuration}};
 /// Source paint spans remain unrelated to native pixel coordinates.
-use crate::source_style::StyleSpan;
+use crate::source_style::{SourceStyles, StyleSpan};
 /// The upstream error enum needs explicit conversion and operation-specific remedies.
 use crate::syntax_error::parser_failure;
 
@@ -62,7 +62,7 @@ impl SyntaxEngine {
     /// Return None only when the registry does not recognize the filename or shebang.
     /// Known languages with missing or incompatible assets return a visible failure instead.
     /// Returned intervals are sorted, non-overlapping, and merge adjacent identical paint roles.
-    pub fn highlight(&self, path: &Path, text: &Rope) -> Result<Option<Vec<StyleSpan>>> {
+    pub fn highlight(&self, path: &Path, text: &Rope) -> Result<Option<SourceStyles>> {
         let recognized = self.loader.language_for_filename(path)
             .or_else(|| return self.loader.language_for_shebang(text.slice(..)));
         let Some(language) = recognized else { return Ok(None); };
@@ -93,6 +93,6 @@ impl SyntaxEngine {
             start = end;
         }
         tracing::debug!(path = %path.display(), spans = spans.len(), "source syntax prepared");
-        return Ok(Some(spans));
+        return Ok(Some(SourceStyles::from(spans)));
     }
 }

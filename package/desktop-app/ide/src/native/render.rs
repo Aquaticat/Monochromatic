@@ -91,7 +91,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     } else {
         source = None;
     }
-    let read_error = current.file_error.clone().unwrap_or_default();
+    let mut notices = Vec::new();
+    if let Some(message) = &current.file_error { notices.push(message.as_str()); }
+    if let Some(message) = &current.syntax_error { notices.push(message.as_str()); }
+    let diagnostic = notices.join("\n");
     drop(current);
 
     if let Some(pixels) = pixels {
@@ -105,7 +108,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.set_image_width(pixels.width as f32 / factor);
         window.set_image_height(pixels.height as f32 / factor);
     }
-    window.set_error_message(SharedString::from(read_error));
+    window.set_error_message(SharedString::from(diagnostic));
     window.set_source_selections(ModelRc::from(Rc::new(VecModel::from(selections))));
     window.set_document_width(document_width);
     window.set_caret_x(caret.x);

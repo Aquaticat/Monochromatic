@@ -59,6 +59,10 @@ struct State {
     file_generation: u64,
     /// A failed refresh retains source and displays an actionable error only while needed.
     file_error: Option<String>,
+    /// Last revision whose highlighting result was accepted, including plain-text or failed results.
+    syntax_revision: Option<u64>,
+    /// Highlight failures remain distinct from file-read failures.
+    syntax_error: Option<String>,
     /// Highlight ranges, populated by the syntax integration.
     styles: SourceStyles,
     /// First materialized source line, including viewport overscan.
@@ -115,6 +119,8 @@ pub fn run() -> anyhow::Result<()> {
         file_path,
         file_generation: 1,
         file_error: None,
+        syntax_revision: None,
+        syntax_error: None,
         styles: SourceStyles::from([]),
         first: 0,
         count: 32,
