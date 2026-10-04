@@ -101,12 +101,18 @@ Reference labels were written before inference and independently reviewed.
 
 Scores in the respective passes were:
 
-- `LN7`: `0.98 / 0.98`.
-- `PX2`: `0.97 / 0.97`.
-- `PX3`: `0.96 / 0.96`.
-- `HRM`: `0.08 / 0.08`.
-- `LN3`: `0.13 / 0.11`.
-- `GCE`: `0.08 / 0.08`.
+- `LN7`:
+   `0.98 / 0.98`.
+- `PX2`:
+   `0.97 / 0.97`.
+- `PX3`:
+   `0.96 / 0.96`.
+- `HRM`:
+   `0.08 / 0.08`.
+- `LN3`:
+   `0.13 / 0.11`.
+- `GCE`:
+   `0.08 / 0.08`.
 
 The unadopted 80/20 diagnostic band matched all 12 development references.
 At 90/10,
