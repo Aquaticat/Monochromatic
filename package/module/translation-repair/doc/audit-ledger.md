@@ -5618,6 +5618,58 @@ reads `still cold 0, cold since then 0, not loaded 0`
 and the edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The eighth cluster of that census,
+`openrouter`,
+against `census-XzBVZf` at `5d6f6335d`:
+9 stretches over `openrouter-abandoned-spend.ts`,
+`openrouter-chunk-scan.ts`,
+`openrouter-cached-tokens.ts`,
+`openrouter-cost.ts` and `openrouter-client.ts`
+(`adcfeb5d4`,
+`b3cfd5637`,
+`780e4d267`).
+One is cased through a seam:
+the ratio ternary's `unmeasured` arm is reachable by shape
+(the card side types `rawCharsPerToken` as `number | 'unmeasured'`
+and `corpus-run/roster-card-render.ts` generates that spelling)
+with no roster card carrying it,
+so the ternary reads through the exported `rawCharsPerCompletionTokenOf`
+and one case pins the fallback to the median of the measured card ratios
+rather than to a literal.
+Three are the wire readers' refusals,
+cased in their own files:
+the not-a-record chunk and the not-a-safe-integer count,
+each reading `unreported` since neither states a count,
+and the not-finite cost the same way
+(`adcfeb5d4`).
+Five are `openrouter-client.ts`'s:
+the armed-deadline arm,
+the deadline-joined signal arm and the caller `maxAnswerChars` spread,
+cased together with the answer read back under both knobs,
+and the cost and cached-token conditional spreads,
+folded with the endpoint spread behind the exported `reportedSpendFieldsOf`
+(the shape the fidelity batch gave `needle` and `anchor`),
+the cached field's only observable being the spend line `chatText` discards:
+one case pins the field combinations,
+one meter pair proves the wiring
+(a bare stream leaves the meter flat,
+a costed one moves it 0.5).
+The reach census found three more to settle (`b3cfd5637`):
+the record guard's skip arm in `openrouter-chunk-scan.ts` was unreachable,
+a `startsWith('{')` gate dropping every input that could fail the guard
+(a `{`-opening payload `JSON.parse` accepts is always a record),
+so the gate came out
+and a whitespace-prefixed object it used to drop is read now;
+the endpoint spread's unreported arm folded into the seam;
+the `/credits` non-success refusal got its case,
+throwing the shared HTTP failure class.
+Two by-position comments and one statement TSDoc the source scans flagged
+came out with `780e4d267`.
+The reach census (`~/temp/agent/mimo-trial/reach-openrouter2.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+and the three edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

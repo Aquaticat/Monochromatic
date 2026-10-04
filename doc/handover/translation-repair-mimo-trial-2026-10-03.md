@@ -682,6 +682,49 @@ and after any correction or decision inside it,
 naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
+- 2026-10-04,
+  01:10 UTC:
+  the T8 `openrouter` batch closed with commits `adcfeb5d4`,
+  `b3cfd5637` and `780e4d267`:
+  9 stretches over five source files.
+  One is cased through the exported `rawCharsPerCompletionTokenOf` seam
+  (its `unmeasured` arm reachable by shape,
+  no roster card carrying it),
+  one case pinning the fallback to the median of the measured card ratios.
+  Three are the wire readers' refusals,
+  cased in their own files.
+  Five are the client's:
+  the armed deadline,
+  its joined signal and the caller `maxAnswerChars` spread cased together,
+  and the cost,
+  cached-token and endpoint spreads folded behind the exported
+  `reportedSpendFieldsOf`,
+  one case pinning the field combinations
+  beside a meter pair
+  (a bare stream leaves the meter flat,
+  a costed one moves it 0.5).
+  The first reach census settled three more
+  (the chunk record guard behind a `startsWith('{')` gate that came out,
+  the endpoint spread's unreported arm,
+  the `/credits` non-success refusal),
+  and two by-position comments and one statement TSDoc came out
+  after the source scans flagged them.
+  The reach census reads `still cold 0, cold since then 0, not loaded 0`
+  and the three edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-openrouter2.log`).
+  Counts at the close:
+  the full suite 1,548 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-openrouter-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-openrouter-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `780e4d267`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `synthetic` cluster
+  (the ranking's next after `openrouter` at `census-XzBVZf`).
+
 - 2026-10-03,
   23:59 UTC:
   the `openrouter` batch is in progress,
