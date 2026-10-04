@@ -262,7 +262,33 @@ Additional child cancellation remains effective rather than being discarded.
 `proc_4be3` passed ten runtime/helper controls,
 including a positive native-signal control;
 `proc_4dbb` removed each cancellation dependency separately and observed the intended assertion failure.
-Those controls are not actual SDK composition qualification.
+Those helper controls were followed by actual SDK composition in `proc_2cf6`.
+Four SDK sessions and four injected requests produced child execution counts `[0, 0, 1, 0]`:
+original cancellation blocked inherited and substituted child signals,
+live signals allowed execution,
+and additional child cancellation still blocked it.
+The verifier reconciled complete native streams,
+source identities,
+parent records,
+and disposal.
+No deadline,
+new model budget,
+or permission was introduced.
+The private consumer change is:
+
+```javascript
+// contract/lifecycle/nested-context-cancellation/wrapper.mjs, selected statements
+const requested = options === undefined ? undefined : options.signal;
+const effectiveSignal = requested === undefined || requested === signal
+  ? signal
+  : AbortSignal.any([signal, requested]);
+const effectiveOptions = { ...options, signal: effectiveSignal };
+```
+
+The full wrapper retains the parent-invocation lifetime check and native context descriptors.
+The protected cancellation claim requires an actual parent signal;
+legacy unbound calls remain outside that claim.
+This is still not an original-judgment carrier or complete nested group admission.
 
 ## Verified workaround and remaining implementation
 

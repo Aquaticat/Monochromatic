@@ -665,8 +665,17 @@ and two canned semantic attempts.
 A fresh wrapper derivative composes original and additional cancellation instead of substituting them.
 `proc_4be3` passed ten native signal/helper controls;
 `proc_4dbb` passed independent original/child cancellation guard removals.
-Actual SDK composition is the next verification step,
-not yet a qualified cancellation remedy.
+`proc_2cf6` then passed four actual private SDK cases:
+four sessions,
+four injected requests,
+four canned semantic attempts,
+and child execution counts `[0, 0, 1, 0]`.
+Original-aborted inherited and substituted signals both prevented the child;
+live parent/child signals allowed it;
+a separately aborted child still prevented it.
+This qualifies that cancellation profile without introducing an execution deadline.
+The next draft extends existing judgment member records with opaque one-use native execution occurrences;
+actual child identity carriage and complete prepared nested membership remain unfinished.
 No external inference,
 semantic accuracy,
 instruction authority,
