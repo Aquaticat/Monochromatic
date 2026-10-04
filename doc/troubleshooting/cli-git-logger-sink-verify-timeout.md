@@ -80,10 +80,45 @@ Run `git` with generous tool timeouts and retry once on timeout.
 The sink is dropped after the first 5 s,
  so a retried command is not slowed again inside the same process.
 
+## Investigation for issue #573 on 2026-10-04
+
+`package/module/logger/src/default-sinks.node.ts:37` constructs the Node default set in this order:
+
+```ts
+// package/module/logger/src/default-sinks.node.ts
+return [
+  createConsoleSink(),
+  createSessionStorageSink(),
+  createLocalStorageSink(),
+  createFileSink(),
+];
+```
+
+Entry 3 is therefore the file sink for a process using this default set.
+The emitting process in the reported commit remains unidentified.
+
+At baseline commit `d62bf6905`,
+a disposable repository with its own `node_modules` completed both wrapper `status --short`
+and an explicit-path `commit` with exit code 0 and empty stderr.
+Both processes created JSONL files containing logger records.
+This fixture did not load the repository policies,
+so it is a negative control rather than a reproduction of the reported commit.
+Current working-repository `status` and `log` commands also did not emit the warning.
+
+A streaming directory enumeration counted 882885 entries in the working repository's
+`node_modules/.monochromatic`.
+That count alone does not establish latency or causation;
+the failing process's actual sink directory must be identified first.
+No existing log files were removed or changed by the enumeration.
+
+Next action:
+exercise the configured commit policies in a disposable repository,
+then attribute any timeout to its process and verification stage.
+Do not increase the timeout or suppress its diagnostic without a reproducing probe.
+
 ## Open questions
 
-- Which sink is entry 3 in the cli-git hook logger configuration?
-- Does `verify()` block on a socket,
- a lock,
- or a read-back?
+- Which process emitted the reported timeout,
+ and which actual directory did its file sink select?
+- Which filesystem operation or scheduling delay exhausted verification's deadline?
 - Does the failure follow this machine or every checkout?
