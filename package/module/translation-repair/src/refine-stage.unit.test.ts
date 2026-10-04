@@ -102,6 +102,7 @@ function scriptedRefiner(
     ballot,
     paragraph = 1,
     selectionSheets,
+    refinerSheets,
   }: {
     readonly newText?:
       | string
@@ -111,6 +112,7 @@ function scriptedRefiner(
       | ((modelId: RosterModelId) => number);
     readonly paragraph?: number;
     readonly selectionSheets?: string[];
+    readonly refinerSheets?: string[];
   },
 ): SyntheticClient {
   return {
@@ -131,6 +133,8 @@ function scriptedRefiner(
       // Scripted reply for the stage.
       if ((stage !== 'refine_report') && (selectionSheets !== undefined))
         selectionSheets.push(JSON.stringify(request.messages,),);
+      if ((stage === 'refine_report') && (refinerSheets !== undefined))
+        refinerSheets.push(JSON.stringify(request.messages,),);
       /**
        Replacement this particular rewriter returns.
        */
@@ -182,7 +186,16 @@ function scriptedRefiner(
  const result = await runFixture(scriptedRefiner({ ballot: 1, },),);
  ```
  */
-async function runFixture(client: SyntheticClient,) {
+async function runFixture(
+  client: SyntheticClient,
+  {
+    identityContext,
+    referenceContext,
+  }: {
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
+  } = {},
+) {
   /** Envelopes and definitions of the fixture. */
   const slice = fixtureSlice();
   return runRefineStage({
@@ -196,6 +209,8 @@ async function runFixture(client: SyntheticClient,) {
     repairedText: REPAIRED_TEXT,
     envelopes: slice.envelopes,
     definitions: slice.definitions,
+    ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
     l,
@@ -270,6 +285,45 @@ await describe({
                   return finding.includes('refine-candidates',);
                 },),
             ).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'CARRIES the identity and reference contexts onto the rewriter and selection sheets, '
+            + 'and none where none was handed in',
+          fn: async () => {
+            /**
+             Sheets the rewriter and the selectors were asked with.
+             */
+            const refinerSheets: string[] = [];
+            const selectionSheets: string[] = [];
+            await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+              refinerSheets,
+              selectionSheets,
+            },), {
+              identityContext: 'The translator signs as 喵工作室.',
+              referenceContext: 'Cat naps are documented in the glossary.',
+            },);
+            for (const sheets of [refinerSheets, selectionSheets,]) {
+              expect(sheets.some(function carriesBoth(sheet,) {
+                return sheet.includes('喵工作室',)
+                  && sheet.includes('Cat naps are documented in the glossary.',);
+              },),).toBe(true,);
+            }
+            /**
+             Sheets the same flow collects with no context in.
+             */
+            const plain: string[] = [];
+            await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+              refinerSheets: plain,
+            },),);
+            expect(plain.some(function carriesEither(sheet,) {
+              return sheet.includes('喵工作室',);
+            },),).toBe(false,);
           },
         },),
 

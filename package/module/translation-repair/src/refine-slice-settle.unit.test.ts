@@ -124,8 +124,9 @@ const REFUSING_CLIENT: SyntheticClient = {
  Client that scripts every stage the settle asks and records the sheet of
  every call, so a case can read what the flow asked in order.
  */
-function scriptedSettleClient({ asked, }: {
+function scriptedSettleClient({ asked, worseTally = false, }: {
   readonly asked: string[];
+  readonly worseTally?: boolean;
 },): SyntheticClient {
   return {
     chatText(): never {
@@ -153,6 +154,14 @@ function scriptedSettleClient({ asked, }: {
           best: 1,
           reason: 'scripted',
         },
+        ...(worseTally
+          ? [{
+            checks: [{
+              issue: 1,
+              verdict: 'worse',
+            },],
+          },]
+          : []),
         EMPTY_INTRODUCED_DEFECT_REPORT,
       ];
       for (const candidate of candidates) {
@@ -237,16 +246,25 @@ async function settleWith(
     client = REFUSING_CLIENT,
     neighbouringSourceText,
     neighbouringIncumbentText,
+    identityContext,
+    referenceContext,
+    issues,
   }: {
     readonly nonTranslationStanding: boolean;
     readonly client?: SyntheticClient;
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
+    readonly issues?: ChunkRepairOutcome['issues'];
   },
 ): Promise<Awaited<ReturnType<typeof settleRefinedSlice>>> {
   return await settleRefinedSlice({
     client,
-    outcome: settledOutcome({ nonTranslationStanding, },),
+    outcome: {
+      ...settledOutcome({ nonTranslationStanding, },),
+      ...(issues === undefined ? {} : { issues, }),
+    },
     sourceText: SOURCE_TEXT,
     incumbentText: REPAIRED_TEXT,
     definitions: '',
@@ -255,6 +273,8 @@ async function settleWith(
     declaredNames: [],
     ...(neighbouringSourceText === undefined ? {} : { neighbouringSourceText, }),
     ...(neighbouringIncumbentText === undefined ? {} : { neighbouringIncumbentText, }),
+    ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
     signal: AbortSignal.timeout(30_000,),
     perCallTimeoutMs: 1_000,
     l,
@@ -336,6 +356,84 @@ await describe({
         expect(asked.some(function carriesNeighbour(sheet,) {
           return sheet.includes('邻猫每天下午都在窗台上晒太阳。',);
         },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'CARRIES the identity and reference contexts onto the sheets it asks, and none where none '
+        + 'was handed in',
+      fn: async () => {
+        /**
+         Sheets the flow asked with both contexts in.
+         */
+        const asked: string[] = [];
+        await settleWith({
+          nonTranslationStanding: true,
+          client: scriptedSettleClient({ asked, },),
+          identityContext: 'The translator signs as 喵工作室.',
+          referenceContext: 'Cat naps are documented in the glossary.',
+        },);
+        expect(asked.some(function carriesBoth(sheet,) {
+          return sheet.includes('喵工作室',)
+            && sheet.includes('Cat naps are documented in the glossary.',);
+        },),).toBe(true,);
+        /**
+         Sheets the same flow collects with no context in.
+         */
+        const plain: string[] = [];
+        await settleWith({
+          nonTranslationStanding: true,
+          client: scriptedSettleClient({ asked: plain, },),
+        },);
+        expect(plain.some(function carriesEither(sheet,) {
+          return sheet.includes('喵工作室',)
+            || sheet.includes('Cat naps are documented in the glossary.',);
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS an open issue no checker tally names as not worsened, and rolls back only where a '
+        + 'tally says a checker found it worse',
+      fn: async () => {
+        /**
+         Accepted issue the rewrite left open.
+         */
+        const issues = [{
+          issueId: 'issue/1',
+          status: 'accepted',
+          severity: 'minor',
+          claims: [],
+          tallies: {},
+        },] as unknown as ChunkRepairOutcome['issues'];
+        /**
+         Recheck whose checkers named nothing: the tally falls back to zero.
+         */
+        const quiet = await settleWith({
+          nonTranslationStanding: false,
+          client: scriptedSettleClient({ asked: [], },),
+          issues,
+        },);
+        expect(quiet.findings
+          .some(function passed(finding,) {
+            return finding.startsWith('refine-recheck-passed',);
+          },),).toBe(true,);
+        /**
+         Recheck whose checkers named the issue worse.
+         */
+        const loud = await settleWith({
+          nonTranslationStanding: false,
+          client: scriptedSettleClient({
+            asked: [],
+            worseTally: true,
+          },),
+          issues,
+        },);
+        expect(loud.findings
+          .some(function rolledBack(finding,) {
+            return finding.startsWith('refine-rolled-back',)
+              && finding.includes('issue/1',);
+          },),).toBe(true,);
       },
     },),
   ],
