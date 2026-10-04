@@ -83,6 +83,52 @@ for the actual host-source and original-judgment clause bindings,
 and the [gateway observations](../troubleshooting/llmgateway-systemone-boundaries.md)
 for the retained model failures.
 
+## Instruction-prerequisite relation result
+
+`proc_ef2e` verified a separate rule-meaning diagnostic:
+12 live Jev requests,
+two fixed identical passes over six actual policy clauses,
+and no retries.
+The predicate asks whether the selected clause states an approval or authorization prerequisite for any described action.
+It does not ask whether the proposed action is covered,
+whether authorization is already supplied,
+who can supply it,
+or whether a new human grant is needed.
+Every request retained the complete current policy,
+the exact indexed clause,
+and the complete fixed enclosing program.
+Reference labels were written before inference and independently reviewed.
+
+Scores in the respective passes were:
+
+- `LN7`: `0.98 / 0.98`.
+- `PX2`: `0.97 / 0.97`.
+- `PX3`: `0.96 / 0.96`.
+- `HRM`: `0.08 / 0.08`.
+- `LN3`: `0.13 / 0.11`.
+- `GCE`: `0.08 / 0.08`.
+
+The unadopted 80/20 diagnostic band matched all 12 development references.
+At 90/10,
+ten matched and two remained unresolved.
+At 95/05,
+six matched and six remained unresolved.
+None of these results adopts a threshold or establishes held-out correctness.
+The target changed from predicting program effects to extracting a narrow relation from a selected clause;
+the failed broad effect head remains unqualified.
+
+Modeled returned-token spend was US$0.004224444 total
+and US$0.000352037 mean,
+using the retained published rate.
+The combined recorded semantic-study subtotal is US$0.049044476.
+These values exclude reviewer/agent cost,
+unobserved gateway attempts or charges,
+and invoice verification.
+The live namespace is consumed.
+Next,
+connect the fixed relation to the actual original SDK judgment beside the owned code-effect facts,
+while keeping estimates unqualified for policy permission.
+
 ## Recommended next qualification candidate
 
 The user accepted the recommendation with "Okay,
