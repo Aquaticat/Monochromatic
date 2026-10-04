@@ -345,16 +345,23 @@ not proposals to replace our implementation or evidence of equivalent behavior.
 
 Implementation commits include `79a3565fc`,
 `2aea88562`,
-and `feff926c0`,
-followed by runner-export and diagnostic-Node verification commits.
+`feff926c0`,
+`8a02c2724`,
+and `d5a267175`.
+The detached verification worktree was removed after its temporary CLI trust was revoked.
 One `config-oxlint` type-check encountered concurrent Rolldown edits;
 the later complete check passed without this task modifying that concurrent source.
 
 ## Document verification
 
-Earlier interview revisions passed the scoped Markdown lint and GitHub Markdown rendering checks.
+The new package READMEs,
+this plan,
+and the commit-policy incident record pass scoped Markdown lint.
 The initial `semantic-line-breaks` findings after label colons were corrected.
-The responsibility-based revision receives the same document checks.
+All 16 changed Markdown documents were rendered in full through the installed Satteri renderer.
+The verification checked rendered package links and relocation code spans,
+including the historical documents too large for convenient inline inspection.
+Earlier interview revisions also passed GitHub Markdown rendering checks.
 Implementation began after explicit approval.
 Commit `79a3565fc` extracts the packages.
 The first commit attempt hit a `git-policy-cli` engine failure in `mono/dependent-version-bump`;
