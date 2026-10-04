@@ -69,7 +69,7 @@ function shortBlocks({ lengths, }: { readonly lengths: readonly number[]; },): b
     return left - right;
   },);
   /**
-   The middle length, present because the block floor above holds (ledger
+   The middle length, present because the block-count floor holds (ledger
    T8, 2026-10-04).
    */
   const middle = nonNullishOrThrow(ascending[Math.floor(ascending.length / 2,)],);
