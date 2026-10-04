@@ -404,12 +404,12 @@ dir = "{{config_root}}"
 run = "node search-status-evidence.mjs validate"
 
 [tasks."build:search:filename-comparison"]
-description = "Build the independent offline filename placement and visibility review from inspected native evidence"
+description = "Build the offline filename evidence review with configurable-support boundaries and optional observations"
 dir = "{{config_root}}"
 run = "node search-filename-comparison.mjs build"
 
 [tasks."lint:search:filename-comparison"]
-description = "Validate exact offline filename review content, native image hashes and independent unselected questions"
+description = "Validate exact filename evidence review content, native hashes and absence of policy voting"
 dir = "{{config_root}}"
 run = "node search-filename-comparison.mjs validate"
 
@@ -422,6 +422,26 @@ run = ["node search-filename-comparison.mjs build", "node search-filename-compar
 description = "Exercise native filename review provenance and required-scroll guards on a disposable fixture"
 dir = "{{config_root}}"
 run = "node search-filename-comparison-test.mjs"
+
+[tasks."build:first-run:access"]
+description = "Build offline first-run access state evidence from inspected native witnesses"
+dir = "{{config_root}}"
+run = "node first-run-access.mjs build"
+
+[tasks."lint:first-run:access"]
+description = "Validate the exact first-run evidence review, native hashes and no-policy-ballot boundary"
+dir = "{{config_root}}"
+run = "node first-run-access.mjs validate"
+
+[tasks."verify:first-run:access"]
+description = "Build first-run state review before validating its exact committed output"
+dir = "{{config_root}}"
+run = ["node first-run-access.mjs build", "node first-run-access.mjs validate"]
+
+[tasks."test:first-run:access"]
+description = "Exercise first-run review image, metadata, cohort and ballot guards in disposable fixtures"
+dir = "{{config_root}}"
+run = ["node first-run-scroll-evidence-test.mjs", "node first-run-access-test.mjs"]
 
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"
