@@ -29,7 +29,7 @@ The fresh staging controller reverses the new callback to the old form
 and requires the entire resulting file to match the historical digest:
 
 ```javascript
-// Private contract/collector/sdk-1-0-2-paired-copy/stage.mjs:25, session delta check
+// Private contract/collector/sdk-1-0-2-paired-copy/stage.mjs:26, session delta check
 assert.equal(sha(currentSession.replace(newLine,oldLine)),sessionChange.expected);
 ```
 
