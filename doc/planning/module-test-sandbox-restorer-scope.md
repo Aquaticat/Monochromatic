@@ -5,7 +5,11 @@
 Confirmed resolution plan for [issue 582](https://github.com/Aquaticat/Monochromatic/issues/582).
 The user confirmed the scope-only change after the grilling round.
 The implementation moves the callback declaration without changing its body or execution order.
-Verification is pending; no design questions remain open.
+The first rebuilt-artifact unit run passed.
+Lint confirmed removal of the scope warning but reported `stylistic(max-statements-per-line)`
+on the moved one-line declaration.
+The declaration body now occupies its own line; final verification is pending.
+No design questions remain open.
 
 ## Evidence
 
