@@ -683,6 +683,20 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  04:12 UTC:
+  the next batch's baseline census taken at commit `c651bea68`:
+  `census written to ~/.cache/translation-repair/coverage/census-MBzNhP/census.json`
+  (`~/temp/agent/mimo-trial/census-15.log`).
+  `library source: 172 files, 348 stretches over 826 lines, 9 functions never called`.
+  Largest clusters by stretches then lines:
+  `coverage` leads with 8 stretches over 9 lines in 4 files,
+  `markup` with 7 over 11 in 2,
+  `refine` with 7 over 11 in 4.
+  This line lands in the trial-log commit that follows `c651bea68`.
+  Next:
+  the `coverage` batch.
+
+- 2026-10-04,
   03:58 UTC:
   the T8 `corpus` batch closed with commits `33fc7a459`,
   `6046af7be` and `0c0b80bd9`:
