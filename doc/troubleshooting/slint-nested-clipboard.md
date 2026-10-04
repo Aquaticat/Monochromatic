@@ -10,6 +10,10 @@ These tests used disposable source text,
 not a user's project contents.
 The source fixture may have been copied to the host X11 clipboard instead.
 No host clipboard readback was used to make a stronger claim.
+A review suggestion to read or clear the host clipboard was rejected:
+its previous and current human-owned contents are unknown.
+Verification uses disposable nested sessions,
+not a second mutation of shared host state.
 
 ## Root cause
 
@@ -110,9 +114,13 @@ not tracked assets.
 The durable `inspect:clipboard` task adds standalone text/binary transfer,
 clear,
 and clean-source-exit checks;
-the task passed both MIME cases,
-cleared the selection,
-and observed clean source exits with no source stderr.
+the task passed UTF-8,
+six-byte binary,
+and 2 MiB binary cases.
+It checks ordinary clearing and abrupt source death with SIGKILL,
+then requires an empty clipboard and no source stderr.
+A primary-selection probe also confirms the deliberately unsupported boundary.
+A separate disposable nested session retained its selected `é` throughout these tests.
 
 Version evidence from the generated Cargo lock:
 Slint 1.18.1 checksum

@@ -10,9 +10,10 @@ continue the queue without asking the user to say “continue”.
 The application remains an incomplete source-view gate.
 
 Current boundary:
-the simplified source view and nested clipboard text paths are verified.
-Finish IDE-owned lint/geometry coverage,
-then implement live external refresh and the remaining application surfaces.
+verify the newly wired live external-refresh worker through the native GUI,
+including both required correspondence cases and viewport preservation.
+The simplified source view and nested clipboard paths are verified.
+Continue remaining application surfaces afterward.
 Do not restart technology selection:
 Helix reuse and the standalone Rust/Slint architecture are approved.
 
@@ -146,6 +147,18 @@ deletion,
 stale result rejection,
 and selection movement while a reload is pending.
 
+`src/file_reload.rs` reads regular UTF-8 source without filesystem mutation.
+`src/reload_worker.rs` allows one outstanding job/reply on bounded channels,
+computing reads and Helix correspondence on a named background thread.
+File generations accompany replies;
+the document still rejects stale content revisions.
+`src/native/reload.rs` polls replies every 20 ms and submits reads at 250 ms intervals.
+It applies changes to the latest selection,
+retains fractional viewport placement,
+and keeps the last readable text with an actionable error on read failure.
+Its library tests and native build pass;
+live GUI correspondence remains the immediate verification step.
+
 `src/recent.rs` implements ten unique push-to-front slots and exact Ctrl+digit decoding.
 Its four tests pass.
 It is not yet wired to file switching or the native tree.
@@ -198,7 +211,6 @@ not a second text layout.
 Unfinished surfaces:
 `styles` is empty;
 no syntax parser,
-watcher,
 tree,
 search,
 find,
@@ -292,7 +304,8 @@ selection clearing,
 and clean producer shutdown.
 See [the clipboard investigation][clipboard].
 
-The latest IDE suite passes 23 tests after retiring the five legacy geometry tests
+The latest IDE suite passes 29 tests,
+including six disk-read/worker tests after retiring the five legacy geometry tests
 and adding raster/stamp coverage.
 The Slint markup check and native build pass.
 IDE Clippy remains blocked by shadowing in app bindings and generated Slint code;
@@ -310,9 +323,13 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
-- `proc_b0cc`,
+- `proc_4ae9`,
+  `ide-live-reload-native`,
+  is starting the dark/scroll fixture with the new live-refresh worker.
+  Rediscover its socket and source path from the readiness logs.
+- `proc_b0cc` (stopped),
   `ide-minimal-clipboard-native`,
-  is the current dark/basic fixture with the simplified UI and rebuilt clipboard-capable compositor.
+  is stopped after verifying the dark/basic fixture with the simplified UI and rebuilt clipboard-capable compositor.
   MCP is `http://127.0.0.1:9318/mcp`.
   Socket:
   `/tmp/monochromatic-ide-native-8rNGro/control.sock`.
