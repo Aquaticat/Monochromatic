@@ -28,6 +28,7 @@ import {
   type ChunkPair,
   completedArms,
   messageText,
+  makeInsertionChunk,
   readTrialLedger,
   runSliceArms,
   type SyntheticClient,
@@ -94,9 +95,12 @@ const SLICES: readonly ChunkPair[] = [
  const rig = driftingClient();
  ```
  */
-function driftingClient(): {
+function driftingClient({ ballot = 0, }: {
+  readonly ballot?: number;
+} = {},): {
   readonly client: SyntheticClient;
   readonly judgeSheets: string[];
+  readonly translateSheets: string[];
   readonly served: { count: number; };
 } {
   /**
@@ -110,9 +114,15 @@ function driftingClient(): {
    */
   const judgeSheets: string[] = [];
 
+  /**
+   Sheets the translators received, where the incumbent rides.
+   */
+  const translateSheets: string[] = [];
+
   return {
     served,
     judgeSheets,
+    translateSheets,
     client: {
       chatText: async () => {
         throw new Error('chatText unused',);
@@ -127,6 +137,11 @@ function driftingClient(): {
           ?.json_schema
           .name === TRANSLATE_SCHEMA) {
           served.count += 1;
+          translateSheets.push(request.messages
+            .map(function toContent(message,) {
+              return messageText({ message, },);
+            },)
+            .join('\n',),);
 
           /**
            Rendering that differs on every call.
@@ -155,24 +170,24 @@ function driftingClient(): {
           .join('\n',),);
 
         /**
-         Ballot declining everything, so the archive stands and no case here
-         depends on which candidate wins.
+         Ballot this rig casts on every slate, 0 declining everything so the
+         archive stands and no case here depends on which candidate wins.
          */
-        const ballot: unknown = {
-          best: 0,
+        const ballotReply: unknown = {
+          best: ballot,
           reason: 'fixture',
         };
-        if (!request.validate(ballot,)) {
+        if (!request.validate(ballotReply,)) {
           return {
             kind: 'schema-mismatch',
-            rawText: JSON.stringify(ballot,),
+            rawText: JSON.stringify(ballotReply,),
             detail: 'reply failed the wire guard',
           };
         }
         return {
           kind: 'ok',
-          value: ballot as ValueT,
-          rawText: JSON.stringify(ballot,),
+          value: ballotReply as ValueT,
+          rawText: JSON.stringify(ballotReply,),
         };
       },
     },
@@ -503,6 +518,104 @@ await describe({
         // And it refused before buying anything.
         expect(rig.served
           .count,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'THROWS the draw-and-preparation disagreement for a slice index the slices do not carry, '
+        + 'since the two were made from different text',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
+        const rig = driftingClient();
+        /**
+         Attempt on a slice index off the prepared list.
+         */
+        const attempt = runSliceArms({
+          client: rig.client,
+          slices: SLICES,
+          sliceIndex: 99,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+        await expect(attempt,).rejects
+          .toThrow('the draw and the preparation disagree',);
+      },
+    },),
+    it({
+      name: 'BUYS AN ABSENT INCUMBENT for a slice whose target is an insertion, where the same source '
+        + 'with a rendering buys the one it has',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
+        /**
+         Source both trials share.
+         */
+        const source = '猫猫在窗台上打盹。';
+        /**
+         Rendering the archive carries for it.
+         */
+        const incumbent = 'The cat dozes on the sill.';
+        /**
+         Trial over the slice the archive rendered.
+         */
+        const present = driftingClient({ ballot: 1, },);
+        await runSliceArms({
+          client: present.client,
+          slices: [slicePairOf({
+            sliceIndex: 0,
+            source,
+            target: incumbent,
+          },), SLICES[1] as ChunkPair, SLICES[2] as ChunkPair,],
+          sliceIndex: 0,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+        /**
+         Trial over the same source with the target side an insertion.
+         */
+        const absent = driftingClient({ ballot: 1, },);
+        await runSliceArms({
+          client: absent.client,
+          slices: [{
+            source: slicePairOf({
+              sliceIndex: 0,
+              source,
+              target: incumbent,
+            },).source,
+            target: makeInsertionChunk({
+              sliceIndex: 0,
+              offset: 0,
+            },),
+          }, SLICES[1] as ChunkPair, SLICES[2] as ChunkPair,],
+          sliceIndex: 0,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 5_000,
+          l,
+        },);
+        expect(present.translateSheets
+          .join('\n',)
+          .includes(incumbent,),).toBe(true,);
+        expect(absent.translateSheets
+          .join('\n',)
+          .includes(incumbent,),).toBe(false,);
       },
     },),
   ],

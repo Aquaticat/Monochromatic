@@ -297,24 +297,19 @@ function pairedExcessOf(
       triple,
     ): number {
       /**
-       What each arm did with this slice.
+       Whether one arm replaced the archive:1 where it did.
        */
-      const shipped = [
-        TRIAL_ARMS.narrowFirst,
-        TRIAL_ARMS.narrowSecond,
-        TRIAL_ARMS.wide,
-      ].map(function toShipped(arm,): number {
-        /**
-         Whether this arm replaced the archive.
-         */
-        const replaced = triple.get(arm,)
+      function shippedOf(arm: string,): number {
+        return (triple.get(arm,)
           ?.shipped
-          === true;
-        return replaced ? 1 : 0;
-      },);
+          === true)
+          ? 1
+          : 0;
+      }
 
       return running
-        + ((((shipped[0] ?? 0) + (shipped[1] ?? 0)) * HALF) - (shipped[2] ?? 0));
+        + (((shippedOf(TRIAL_ARMS.narrowFirst,) + shippedOf(TRIAL_ARMS.narrowSecond,)) * HALF)
+          - shippedOf(TRIAL_ARMS.wide,));
     },
     0,
   ) / triples.length;

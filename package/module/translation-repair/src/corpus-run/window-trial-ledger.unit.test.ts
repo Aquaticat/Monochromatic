@@ -15,6 +15,7 @@
  */
 
 import {
+  appendFile,
   mkdir,
   writeFile,
 } from 'node:fs/promises';
@@ -187,6 +188,27 @@ await describe({
         const rows = await readTrialLedger({ path, },);
         expect(rows.length,).toBe(1,);
         expect(rows[0]?.arm,).toBe('narrow-a',);
+      },
+    },),
+    it({
+      name: 'DROPS a line that parses as JSON but is no trial row, keeping the rows around it',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-trial-', },);
+        const path = freshLedger({ dir: scratch.path, },);
+        await appendTrialRow({
+          path,
+          row: rowFor({
+            arm: 'narrow-a',
+            sliceIndex: 1,
+          },),
+        },);
+        await appendFile(
+          path,
+          '{"hello":"world"}\n',
+        );
+        const kept = await readTrialLedger({ path, },);
+        expect(kept.length,).toBe(1,);
+        expect(kept[0]?.arm,).toBe('narrow-a',);
       },
     },),
     it({
