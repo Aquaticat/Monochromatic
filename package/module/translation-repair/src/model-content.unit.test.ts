@@ -15,6 +15,7 @@ import {
 import {
   formatUsageNote,
   parseModelJson,
+  stripCodeFence,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -70,6 +71,13 @@ await describe({
           },
         },),
       ],
+    },),
+
+    it({
+      name: 'STRIPS NOTHING from a fence line with no line end after it, since the whole text is the opening line',
+      fn: async () => {
+        expect(stripCodeFence({ text: '```ts one line', },),).toBe('```ts one line',);
+      },
     },),
   ],
 },);
