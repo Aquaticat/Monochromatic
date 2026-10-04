@@ -22,9 +22,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ArtifactParseError,
   CATALOG_MODEL_IDS,
   compareCatalog,
   decodeModelList,
+  formatCatalogReport,
   SYNTHETIC_MODELS,
 } from '../../dist/final/node/index.mjs';
 import {
@@ -257,6 +259,60 @@ await describe({
           },
         },),
       ],
+    },),
+
+    it({
+      name: 'REFUSES a models body that is no object and an entry that is no object, since nothing there '
+        + 'names a served model',
+      fn: async () => {
+        expect(function readsBody(): void {
+          decodeModelList({ body: 5, },);
+        },).toThrow(ArtifactParseError,);
+        expect(function readsEntry(): void {
+          decodeModelList({ body: { data: [5,], }, },);
+        },).toThrow(ArtifactParseError,);
+      },
+    },),
+
+    it({
+      name: 'CLAIMS an underlying model under either spelling, so an alias onto one already seated is a '
+        + 'second seat rather than a new voice',
+      fn: async () => {
+        const comparison = compareCatalog({
+          served: [{
+            id: 'glm-5.3-seat',
+            huggingFaceId: 'zai-org/GLM-5.3-Flash',
+          }, {
+            id: 'mao-1-seat',
+            huggingFaceId: 'cats/Mao-1',
+          },],
+          catalog: ['hf:zai-org/GLM-5.3-Flash', 'cats/Mao-1',],
+        },);
+        expect(comparison.aliases,).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'REPORTS the owner blocklist under both spellings and the unlisted models it does not block',
+      fn: async () => {
+        const comparison = compareCatalog({
+          served: [{
+            id: 'qwen3.8-max',
+            huggingFaceId: 'qwen/qwen3.8-max',
+          }, {
+            id: 'glm-5.2-seat',
+            huggingFaceId: 'zai-org/GLM-5.2',
+          }, {
+            id: 'mao-1',
+            huggingFaceId: 'cats/Mao-1',
+          },],
+          catalog: [],
+        },);
+        const report = formatCatalogReport({ comparison, },);
+        expect(report,).toContain('BLOCKED by owner: absurd cost in money',);
+        expect(report,).toContain('BLOCKED by owner: too outdated',);
+        expect(report,).toContain('  mao-1  (cats/Mao-1)',);
+      },
     },),
   ],
 },);
