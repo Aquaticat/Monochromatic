@@ -6,7 +6,8 @@
  * sizing; `:focus-visible` on every interactive element; minimum 3rem
  * (48px) touch targets via min-block-size / min-inline-size.
  */
-/* stylelint-disable function-disallowed-list, unit-disallowed-list, property-disallowed-list, no-descending-specificity -- Audit report canvas controls still use browser-native range geometry and neutral overlay colors pending a dedicated CSS-token pass. */
+/* Audit report canvas controls still use browser-native range geometry and
+   neutral overlay colors pending a dedicated CSS-token pass. */
 
 :root {
   --bg-page: #fafafa;

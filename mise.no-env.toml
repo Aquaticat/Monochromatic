@@ -849,7 +849,7 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 # Step 1 fans out (via the JS cross-package fanout, not the native glob) to every
 # package's own `lint`, whose intra-package fanout already runs that package's
 # lint:oxlint, lint:types, lint:rust, lint:detekt, lint:clippy, lint:tofu. Step 2
-# runs only the repo-wide linters that have NO per-package task (dprint, stylelint,
+# runs only the repo-wide linters that have NO per-package task (dprint,
 # markdown). lint:rust / lint:detekt are deliberately absent from step 2: every
 # package carrying them also has a `lint` reached by step 1, so listing them here
 # too would invoke each package's lint:rust / lint:detekt twice.
@@ -858,7 +858,7 @@ description = "Lint"
 shell = "node --input-type=module-typescript -e"
 run = [
   "{{vars.fanout_packages}}",
-  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown"] },
+  { tasks = ["lint:dprint", "lint:markdown"] },
 ]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
@@ -872,19 +872,6 @@ extends = "lint:oxlint"
 hide = true
 description = "Check formatting with dprint"
 run = "dprint check --list-different"
-
-[tasks."lint:stylelint"]
-hide = true
-description = "Lint CSS with Stylelint, optionally restricted to specific files or globs"
-usage = 'arg "[args]" var=#true help="File paths or globs (when provided, only those are linted)"'
-shell = "node --input-type=module-typescript -e"
-run = """
-{{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-const args = parseUsageArgs(process.env.usage_args ?? '')
-const stylelintArgs = ['--ignore-path', '.gitignore', ...(args.length === 0 ? ['**/*.{css,astro,html}'] : args)]
-execFileSync('stylelint', stylelintArgs, { stdio: 'inherit' })
-"""
 
 # Lints Markdown and MDX with @monochromatic-dev/cli-markdown-lint, run from
 # TypeScript source under Bun (no build-before-lint step, closing issue #231).
@@ -924,7 +911,7 @@ run = "{{vars.fanout_packages}}"
 
 # Formatter orchestration
 # dprint handles formatting (CSS, JSON, YAML, TOML, HTML).
-# After dprint, stylelint --fix and oxlint --fix run in parallel
+# After dprint, format:oxlint and format:markdown run in parallel
 # to apply auto-fixable lint rules that formatters can't cover.
 #
 # Previously attempted dprint-plugin-exec for inline chaining, but exec is
@@ -935,13 +922,8 @@ run = "{{vars.fanout_packages}}"
 description = "Format all files"
 run = [
   "dprint fmt",
-  { tasks = ["format:stylelint", "format:oxlint", "format:markdown"] },
+  { tasks = ["format:oxlint", "format:markdown"] },
 ]
-
-[tasks."format:stylelint"]
-hide = true
-description = "Auto-fix CSS with Stylelint"
-run = 'stylelint --fix --ignore-path .gitignore "**/*.{css,astro,html}"'
 
 [tasks."format:oxlint"]
 hide = true

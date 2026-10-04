@@ -55,7 +55,7 @@
   },
   "js-yaml": {
     "action": "throw",
-    "reason": "unused YAML source; workspace YAML uses the `yaml` package. Sole transitive consumer is cosmiconfig (stylelint), whose lazy loadYaml is never reached (config is stylelint.config.mjs). See docs/troubleshooting/dependencies.md."
+    "reason": "unused YAML source; workspace YAML uses the `yaml` package. Its only transitive consumer was cosmiconfig (stylelint, removed 2026-10-04), whose lazy loadYaml was never reached. See docs/troubleshooting/dependencies.md."
   },
   "methods": {
     "action": "throw",

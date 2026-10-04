@@ -17,7 +17,7 @@
  
  Branded value constructors ({@link cssRem}, {@link cssVar}, {@link cssOklch}, etc.) replace raw
  string values, preventing invalid units, disallowed color functions, and named
- colors at the type level, eliminating the need for stylelint runtime checks.
+ colors at the type level, eliminating the need for runtime lint checks.
  
  @param options - Named parameters describing the CSS construct
  @returns CSS string

@@ -128,7 +128,6 @@ index.meta
 .serena/memories/
 .serena/project.local.yml
 .serena/.gitignore
-.stylelintcache
 .eslintcache
 .vale
 

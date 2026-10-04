@@ -147,9 +147,7 @@ textarea::placeholder {
 
 /* Sidebar basis width used by both body flex and side-drawer styles.
    Declared here (not merged into the main :root block above) because it belongs
-   to the Layout Shell region, but stylelint no-duplicate-selectors requires
-   a single :root block per file. */
-/* stylelint-disable-next-line no-duplicate-selectors -- regional grouping */
+   to the Layout Shell region. */
 :root {
   --sidebar-basis: 22rem;
 }

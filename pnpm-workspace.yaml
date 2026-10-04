@@ -135,7 +135,6 @@ catalog:
   'pdfjs-dist': '>=4.0.0'
   'picomatch': '>=4.0.5'
   'postcss': '>=8.5.26'
-  'postcss-html': '>=2.0.0'
   'preact': '>=10.26.0'
   'preact-render-to-string': '>=6.5.0'
   # quick-lru-fork.fuzz differential subject; not a runtime dependency anywhere.
@@ -162,8 +161,6 @@ catalog:
   'sinon-chai': '>=4.0.1'
   'smol-toml': '>=1.6.0'
   'string-dedent': '>=3.0.2'
-  'stylelint': '>=17.14.1'
-  'stylelint-config-standard': '>=40.0.0'
   'superjson': '>=2.2.6'
   'the-new-css-reset': '>=1.11.3'
   'three': '>=0.182.0'
@@ -288,7 +285,8 @@ overrides:
   # wawoff2 (bin/woff2_{compress,decompress}.js, pulled in directly by
   # ssg/aquati.cat). That CLI is never invoked anywhere in the tree or
   # in CI; we use wawoff2.decompress as a library. The other former argparse
-  # importer, js-yaml (bin/js-yaml.js, pulled in via stylelint > cosmiconfig),
+  # importer, js-yaml (bin/js-yaml.js, pulled in via stylelint > cosmiconfig;
+  # stylelint removed 2026-10-04, see doc/decision/remove-stylelint.md),
   # has itself left the graph: it is substituted with the throwing stub via the
   # `js-yaml` policy in .pnpmfile.policies.json, so it no longer ships argparse.
   # The workspace does not consume js-yaml at all; YAML parsing uses the `yaml`
@@ -317,10 +315,12 @@ overrides:
   # workaround. Refs #163.
   'dprint': '-'
   # Patch GHSA-7p8r-x3mc-p8w7 / CVE-2026-18446: >=4.0.0 <4.1.2 can treat a
-  # backslash as an authority introducer, causing host confusion. Only
-  # transitive consumer is ajv@8.20.0 (pulled in by stylelint > table); the
-  # workspace already overrides ajv's `^3.0.1` request to v4, and this keeps
-  # the effective dependency on a patched v4 release.
+  # backslash as an authority introducer, causing host confusion. The sole
+  # transitive consumer used to be ajv@8.20.0 (pulled in by stylelint > table;
+  # stylelint removed 2026-10-04, see doc/decision/remove-stylelint.md), so the
+  # consumer may leave the graph. The override stays as defense in depth so any
+  # future ajv resolution lands on a patched v4 release (the workspace already
+  # overrides ajv's `^3.0.1` request to v4).
   'fast-uri': '>=4.1.2'
   # Patch GHSA-5wm8-gmm8-39j9 / CVE-2026-44665: <=1.1.6 lets quote characters
   # in attribute values break out of the attribute and inject sibling
