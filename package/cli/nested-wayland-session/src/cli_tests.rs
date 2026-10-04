@@ -34,6 +34,7 @@ fn help_is_not_an_application_error() {
     assert_eq!(error_kind(&["--help"]), clap::error::ErrorKind::DisplayHelp);
     assert_eq!(error_kind(&["-h"]), clap::error::ErrorKind::DisplayHelp);
     assert_eq!(error_kind(&["--version"]), clap::error::ErrorKind::DisplayVersion);
+    assert_eq!(error_kind(&["--size", "800x600", "--help"]), clap::error::ErrorKind::DisplayHelp);
 }
 
 /// Default dimensions and optional values match the former parser.
@@ -106,6 +107,15 @@ fn unknown_parent_option_is_rejected() {
 fn later_parent_values_override_earlier_values() {
     let config = parse_args(&args(&["--size", "800x600", "--size", "900x700", "app"])).unwrap();
     assert_eq!((config.width, config.height), (900, 700));
+}
+
+/// Standard joined values preserve spaces and flag-looking path values.
+#[test]
+fn joined_parent_values_are_supported() {
+    let config = parse_args(&args(&["--size=900x700", "--socket=--a socket", "app"])).unwrap();
+    assert_eq!((config.width, config.height), (900, 700));
+    assert_eq!(config.control_socket, Some(PathBuf::from("--a socket")));
+    assert!(parse_args(&args(&["--size=", "app"])).is_err());
 }
 
 /// Missing command and option values fail before compositor startup.

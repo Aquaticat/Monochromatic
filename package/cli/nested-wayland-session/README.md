@@ -87,6 +87,9 @@ cargo binstall monochromatic-nested-wayland-session
 Clap handles parent options only until the child command begins:
 `app --help` and `-- app --help` both forward `--help` to the child.
 Unknown options before the child remain usage errors.
+Clap uses exit 2 for usage errors instead of the former generic exit 1;
+help/version use exit 0.
+Joined values such as `--size=800x600` are also accepted.
 
 ```txt
 monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]

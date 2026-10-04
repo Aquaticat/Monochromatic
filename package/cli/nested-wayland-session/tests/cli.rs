@@ -68,6 +68,9 @@ fn usage_errors_are_reported_before_startup() {
         if input.is_empty() || input[0] == "--unknown" {
             assert!(text.contains("Usage:"), "{input:?}: {text}");
         }
+        if !input.is_empty() {
+            assert!(text.contains(input[0]), "{input:?}: {text}");
+        }
         assert!(!text.contains("WAYLAND_DISPLAY"));
         assert!(!text.contains("XDG_RUNTIME_DIR"));
     }
