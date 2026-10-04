@@ -43,6 +43,9 @@ pub mod diagnostic;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;
+/// Internal fixed Rust rule implementations.
+#[doc(hidden)]
+pub mod rust_rules;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
 
