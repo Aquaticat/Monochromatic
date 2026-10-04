@@ -212,9 +212,11 @@ async function reportFor(
   {
     controlHeld,
     draw,
+    rows = ROWS,
   }: {
     readonly controlHeld: boolean;
     readonly draw: WidthDraw;
+    readonly rows?: readonly WidthRow[];
   },
 ): Promise<{
   readonly path: string;
@@ -227,7 +229,7 @@ async function reportFor(
    Where the writer says it put the report.
    */
   const path = await writeWidthReport({
-    rows: ROWS,
+    rows,
     skipped: SKIPPED,
     headSha: HEAD_SHA,
     narrowEditorIds: NARROW,
@@ -450,6 +452,28 @@ await describe({
         },);
 
         expect(written.text.includes('no accepted issue: 5',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'RENDERS a row that shipped nothing on either arm as n on both, beside one that shipped on '
+        + 'both',
+      fn: async () => {
+        const written = await reportFor({
+          controlHeld: true,
+          draw: 'a',
+          rows: [{
+            ...rowOf({ sliceIndex: 0, moved: true, churned: true, },),
+            narrowShipped: true,
+            wideShipped: true,
+          }, {
+            ...rowOf({ sliceIndex: 1, moved: false, churned: false, },),
+            narrowShipped: false,
+            wideShipped: false,
+          },],
+        },);
+        expect(written.text.includes('shipped y/y',),).toBe(true,);
+        expect(written.text.includes('shipped n/n',),).toBe(true,);
       },
     },),
   ],
