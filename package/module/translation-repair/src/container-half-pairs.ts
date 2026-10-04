@@ -1,4 +1,7 @@
 import type { ChunkPair, } from './chunk-document.ts';
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { isInsertionChunk, } from './chunk-placement.ts';
 import { maskLoneContainerTags, } from './mask-container-tags.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
@@ -179,10 +182,8 @@ export function containerHalfPairs(
         partner,
         1,
       );
-      if (opening === undefined)
-        continue;
       pairs.push({
-        open: opening,
+        open: nonNullishOrThrow(opening,),
         close: {
           ...half,
           name: tag.name,
