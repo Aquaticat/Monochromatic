@@ -74,6 +74,9 @@ fn configure_child_environment(
 ) {
     command.env("WAYLAND_DISPLAY", socket_name);
     command.env_remove("WAYLAND_SOCKET");
+    // Do not let a clipboard library or child GUI fall back to the host X11 display.
+    command.env_remove("DISPLAY");
+    command.env_remove("XAUTHORITY");
     if let Some(address) = session_bus_address {
         command.env("DBUS_SESSION_BUS_ADDRESS", address);
         command.env_remove("DBUS_STARTER_ADDRESS");

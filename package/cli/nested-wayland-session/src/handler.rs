@@ -33,6 +33,9 @@ pub mod xdg_shell;
 /// ```
 pub mod dmabuf;
 
+/// Nested-only clipboard manager protocols share the existing seat selection.
+pub mod clipboard;
+
 /// What:     Grouped `use` of the seat, output, data-device, and delegate items.
 /// Why:      Bring the traits and macros the impls below need into scope.
 ///

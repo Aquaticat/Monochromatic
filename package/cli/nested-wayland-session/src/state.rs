@@ -24,6 +24,9 @@
 /// ```
 use std::{ffi::OsString, process::Child, sync::Arc};
 
+/// Clipboard management globals are owned by this nested display, never the host.
+use crate::handler::clipboard::ClipboardProtocols;
+
 /// What:     A grouped `use` of Smithay items. Each path names a type used below; the
 ///           braces just avoid repeating the common `smithay::...` prefix.
 /// Why:      Bring the compositor building blocks into scope.
@@ -144,6 +147,9 @@ pub struct Compositor {
     /// Why:      Needed so keyboard focus can carry a data-device offer; clients
     ///           expect it to exist.
     pub data_device_state: DataDeviceState,
+
+    /// Nested clipboard manager globals for wlr and ext data-control clients.
+    pub clipboard: ClipboardProtocols,
 
     /// Tracker for xdg-shell popups (menus, tooltips).
     ///
@@ -341,6 +347,8 @@ impl Compositor {
         // What:     `DataDeviceState::new::<Self>(&dh)`. Registers `wl_data_device_manager`.
         // Why:      Clipboard / DnD plumbing focus handling expects.
         let data_device_state = DataDeviceState::new::<Self>(&dh);
+        // Lend the nested display handle; clipboard protocols use its existing seat storage.
+        let clipboard = ClipboardProtocols::new(&dh);
 
         // What:     `PopupManager::default()`. Builds an empty popup tracker.
         // Why:      Ready to track any popups the app opens.
@@ -425,6 +433,7 @@ impl Compositor {
             output_manager_state,
             seat_state,
             data_device_state,
+            clipboard,
             popups,
             seat,
             output: pieces.output,
