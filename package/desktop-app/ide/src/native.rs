@@ -32,7 +32,7 @@ use ide_app::source_frame::FrameStamp;
 /// ```ts
 /// const shared = { current: state };
 /// ```
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
 /// Native rendering and input are split by their invalidation boundary.
 mod render;
@@ -40,6 +40,8 @@ mod render;
 mod input;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// Background source reads apply correspondence to the latest UI reading state.
+mod reload;
 /// Shared rendering entry point.
 use render::render;
 /// Bind caret and selection callbacks.
@@ -51,6 +53,12 @@ use viewport::bind_viewport;
 struct State {
     /// Canonical source and current reading position.
     document: Document,
+    /// Optional authoritative disk file; absent only for the explicit in-memory fixture.
+    file_path: Option<PathBuf>,
+    /// File-open identity rejects worker replies after future navigation.
+    file_generation: u64,
+    /// A failed refresh retains source and displays an actionable error only while needed.
+    file_error: Option<String>,
     /// Highlight ranges, populated by the syntax integration.
     styles: Vec<StyleSpan>,
     /// First materialized source line, including viewport overscan.
@@ -77,10 +85,8 @@ struct State {
 
 /// Run the source-view gate against a supplied file or its explicit fixture.
 pub fn run() -> anyhow::Result<()> {
-    tracing_subscriber::fmt().with_env_filter("ide=debug").init();
-    let path = std::env::args().nth(1);
-    let source;
-    let label;
+    tracing_subscriber::fmt().with_env_filter("ide_app=debug,monochromatic_ide=debug").init();
+    let file_path = std::env::args().nth(1).map(PathBuf::from);
     // What: if let extracts a present command-line argument without unwrap.
     // Why: The fixture is explicit when no real source file was supplied.
     //
@@ -88,7 +94,7 @@ pub fn run() -> anyhow::Result<()> {
     // ```ts
     // if (path !== undefined) { source = readFile(path); }
     // ```
-    if let Some(path) = path {
+    let (source, label) = if let Some(path) = &file_path {
         // What: ? returns an I/O failure to main, preserving its diagnostic.
         // Why: A failed open must not silently substitute the fixture.
         //
@@ -96,15 +102,19 @@ pub fn run() -> anyhow::Result<()> {
         // ```ts
         // source = await readFile(path, 'utf8');
         // ```
-        source = std::fs::read_to_string(&path)?;
-        label = path;
+        (std::fs::read_to_string(path)?, path.display().to_string())
     } else {
-        source = "I am a big cat.\nSelect text and use the native Copy action.\n猫 and e\u{301} are grapheme test cases.".to_string();
-        label = "Source-view gate fixture".to_string();
-    }
+        (
+            "I am a big cat.\nSelect text and use the native Copy action.\n猫 and e\u{301} are grapheme test cases.".to_string(),
+            "Source-view gate fixture".to_string(),
+        )
+    };
     let window = AppWindow::new()?;
     let state = Rc::new(RefCell::new(State {
         document: Document::new(&source),
+        file_path,
+        file_generation: 1,
+        file_error: None,
         styles: Vec::new(),
         first: 0,
         count: 32,
@@ -121,6 +131,8 @@ pub fn run() -> anyhow::Result<()> {
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);
     bind_keys(&window, &state);
+    // Retain the timer until window shutdown; its Drop also closes and joins the worker.
+    let _reload_timer = reload::bind(&window, &state)?;
     let theme_state = Rc::clone(&state);
     let theme_window = window.as_weak();
     window.on_theme_changed(move || {

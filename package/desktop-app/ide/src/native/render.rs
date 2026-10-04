@@ -91,6 +91,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     } else {
         source = None;
     }
+    let read_error = current.file_error.clone().unwrap_or_default();
     drop(current);
 
     if let Some(pixels) = pixels {
@@ -99,12 +100,12 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             &pixels.bytes, pixels.width, pixels.height,
         );
         window.set_source_image(slint::Image::from_rgba8_premultiplied(buffer));
-        window.set_error_message(SharedString::default());
         window.set_image_x(horizontal);
         window.set_image_y(first as f32 * 24.0);
         window.set_image_width(pixels.width as f32 / factor);
         window.set_image_height(pixels.height as f32 / factor);
     }
+    window.set_error_message(SharedString::from(read_error));
     window.set_source_selections(ModelRc::from(Rc::new(VecModel::from(selections))));
     window.set_document_width(document_width);
     window.set_caret_x(caret.x);
