@@ -10,7 +10,8 @@ continue the queue without asking the user to say “continue”.
 The application remains an incomplete source-view gate.
 
 Current boundary:
-verify source-render reuse through native wheel and caret input,
+the simplified source view and nested clipboard text paths are verified.
+Finish IDE-owned lint/geometry coverage,
 then implement live external refresh and the remaining application surfaces.
 Do not restart technology selection:
 Helix reuse and the standalone Rust/Slint architecture are approved.
@@ -88,11 +89,13 @@ Helix reuse and the standalone Rust/Slint architecture are approved.
 
 ## Work queue
 
-- [x] Implement and verify nested compositor clap help.
-  Full package tests now report 39 passing cases,
+- [x] Implement and verify nested compositor clap help and isolated clipboard support.
+  Full package tests now report 40 passing cases,
   including wheel protocol and joined-option cases.
   Release build and post-wheel Clippy pass.
   Debug/release help exit 0 before Wayland startup.
+  Native text/binary clipboard lifecycle checks pass.
+  Hosted children no longer inherit X11 fallback variables.
 - [x] Bundle and verify font embedding.
   Inter Regular/SemiBold and JetBrains Mono Regular are imported by Slint.
   `build.rs` explicitly selects `EmbedResourcesKind::EmbedFiles`.
@@ -224,7 +227,11 @@ This is not whole-application acceptance.
 Before the debug footer was removed,
 a native click reached `Selection 61:61` after the leading CJK glyph;
 keyboard selection reached `Selection 60:61`.
-Clipboard readback is still unverified.
+After adding nested clipboard management,
+independent `wl-paste` readback matches full source,
+`猫`,
+and decomposed `é` exactly.
+Typing and Ctrl+V preserve the accessible source value.
 A multi-step MCP probe timed out,
 but subsequent state reads responded and showed the expected selection;
 this did not establish an application deadlock.
@@ -274,9 +281,44 @@ v120 notch units,
 and ordinary axis deltas.
 See [the scroll investigation][scroll].
 
+## Latest clipboard and interface verification
+
+The user explicitly authorized adding clipboard support to the nested compositor.
+`src/handler/clipboard.rs` registers wlr-data-control and ext-data-control against the nested seat.
+`src/child.rs` removes `DISPLAY` and `XAUTHORITY` so toolkit fallback cannot reach host X11.
+The new isolation test was observed failing before the fix and passing afterward.
+`inspect:clipboard` passed text and binary transfer,
+selection clearing,
+and clean producer shutdown.
+See [the clipboard investigation][clipboard].
+
+The latest IDE suite passes 23 tests after retiring the five legacy geometry tests
+and adding raster/stamp coverage.
+The Slint markup check and native build pass.
+IDE Clippy remains blocked by shadowing in app bindings and generated Slint code;
+no shadow lint has been relaxed.
+An alternative macro compilation path was source-inspected but not applied or tested.
+
+The minimal dark UI screenshot at
+`/tmp/monochromatic-ide-native-8rNGro/minimal-dark.png`
+was inspected.
+MCP confirms no Button role,
+read-only badge,
+or debug footer in the complete element tree.
+Copy is keyboard-only.
+Only the file context and source remain visible in the normal source-view gate.
+
 ## Active probes at this checkpoint
 
-- `proc_f5f1`,
+- `proc_b0cc`,
+  `ide-minimal-clipboard-native`,
+  is the current dark/basic fixture with the simplified UI and rebuilt clipboard-capable compositor.
+  MCP is `http://127.0.0.1:9318/mcp`.
+  Socket:
+  `/tmp/monochromatic-ide-native-8rNGro/control.sock`.
+  Consumer probe:
+  `/tmp/monochromatic-ide-native-8rNGro/clipboard-probe.mjs`.
+- `proc_f5f1` (stopped),
   `ide-native-wheel-probe`,
   runs the pre-cache source renderer with the rebuilt compositor.
   MCP is `http://127.0.0.1:9318/mcp`.
@@ -284,11 +326,11 @@ See [the scroll investigation][scroll].
   `/tmp/monochromatic-ide-native-8CCvg2/control.sock`.
   Source:
   `/tmp/monochromatic-ide-native-8CCvg2/fixture.ts`.
-  Stop through socket `quit` and restart after the new build.
+  This historical baseline process is stopped.
 - `proc_ea50`,
   `ide-caret-reuse-tests-build`,
   runs scoped tests then the native build.
-  Inspect its completion before claiming the frame-stamp changes pass.
+  It completed successfully.
 - `proc_37fc` and `proc_7948` are stopped.
   Their original source-view handles and binaries are obsolete.
 
@@ -408,3 +450,4 @@ These proposals are not permission to pause implementation or silently change po
 [plan]: ../planning/slint-ide-implementation.md
 [theme]: ../troubleshooting/slint-nested-color-scheme-portal.md
 [scroll]: ../troubleshooting/slint-flickable-smooth-scroll.md
+[clipboard]: ../troubleshooting/slint-nested-clipboard.md

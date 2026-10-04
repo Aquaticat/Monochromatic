@@ -40,6 +40,8 @@ alternative considered are recorded in
 - Clicks at a point,
    presses keys,
    and types text into the app.
+- Provides an isolated clipboard through wlr-data-control and ext-data-control,
+  sharing the nested seat's regular clipboard with `wl_data_device` clients.
 - Changes the nested screen size.
 - Answers every control command with a plain machine-readable `ok`/`err` line.
 
@@ -139,6 +141,25 @@ printf 'resize 500 400\n'             | nc -U /tmp/nws.sock   # => ok
 printf 'screenshot /tmp/after.png\n'  | nc -U /tmp/nws.sock   # => ok
 printf 'quit\n'                       | nc -U /tmp/nws.sock   # => ok
 ```
+
+### Isolated clipboard
+
+Hosted clients receive the nested `WAYLAND_DISPLAY` without inherited `WAYLAND_SOCKET`,
+`DISPLAY`,
+or `XAUTHORITY`.
+This prevents clipboard libraries from falling back to the host X11 clipboard.
+No host clipboard synchronization is provided.
+Clients connected to the nested socket can exchange text and other MIME payloads.
+Primary selection is not advertised,
+and clipboard data is not persisted after its owner exits.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:clipboard` to verify the built release binary.
+The task requires `wl-copy` and `wl-paste`,
+launches a separate nested session,
+checks text and binary round-trips,
+clears each selection,
+and checks clean producer shutdown.
+It asserts child display isolation before touching any clipboard.
 
 ### Isolate dark and light appearance
 
