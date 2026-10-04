@@ -2,21 +2,19 @@
 
 /// Slint's shared-parley shaping path uses these same family, size, and weight properties.
 use parley::{
-    FontContext, FontFamily, FontFeature, FontFeatures, FontWeight, Layout, LayoutContext,
-    PositionedLayoutItem, StyleProperty, setting::Tag,
+    FontContext, FontFamily, FontFeature, FontFeatures, FontStyle, FontVariation, FontVariations,
+    FontWeight, Layout, LayoutContext, PositionedLayoutItem, StyleProperty, setting::Tag,
 };
 /// Owned font bytes are shared with the font collection; borrowed family text needs no allocation.
 use std::{borrow::Cow, sync::Arc};
 
-/// Unmodified bundled faces, not fonts discovered from the host desktop.
-const REGULAR: &[u8] = include_bytes!("../asset/font/Inter-Regular.ttf");
-/// Actual 600-weight font avoids testing a synthesized bold face.
-const SEMIBOLD: &[u8] = include_bytes!("../asset/font/Inter-SemiBold.ttf");
+/// Both real variable faces must be chosen from the bundled bytes, never synthesized or discovered on the host.
+use ide_app::font_asset::{UI_ROMAN, UI_ITALIC};
 
 /// Shape one UI label with explicit features and the registered real Inter faces.
-fn label(text: &str, weight: f32, features: &[FontFeature]) -> Layout<u32> {
+fn label_with_style(text: &str, weight: f32, italic: bool, optical_size: Option<f32>, features: &[FontFeature]) -> Layout<u32> {
     let mut fonts = FontContext::new();
-    for bytes in [REGULAR, SEMIBOLD] {
+    for bytes in [UI_ROMAN, UI_ITALIC] {
         let blob = parley::fontique::Blob::new(Arc::new(bytes));
         fonts.collection.register_fonts(blob, None);
     }
@@ -24,16 +22,25 @@ fn label(text: &str, weight: f32, features: &[FontFeature]) -> Layout<u32> {
     // Slint's shared-parley UI path requests fractional layout rather than quantized metrics.
     let mut builder = layouts.ranged_builder(&mut fonts, text, 1.0, false);
     builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
-        Cow::Borrowed("Inter"),
+        Cow::Borrowed("Inter Variable"),
     )));
     builder.push_default(StyleProperty::FontSize(15.0));
     builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
+    builder.push_default(StyleProperty::FontStyle(if italic { FontStyle::Italic } else { FontStyle::Normal }));
+    let mut variations = Vec::new();
+    if let Some(size) = optical_size { variations.push(FontVariation::new(Tag::new(b"opsz"), size)); }
+    builder.push_default(StyleProperty::FontVariations(FontVariations::List(Cow::Borrowed(&variations))));
     builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
         Cow::Borrowed(features),
     )));
     let mut layout = builder.build(text);
     layout.break_all_lines(None);
     return layout;
+}
+
+/// The native UI's ordinary request leaves the optical axis at its font default.
+fn label(text: &str, weight: f32, features: &[FontFeature]) -> Layout<u32> {
+    return label_with_style(text, weight, false, None, features);
 }
 
 /// Inspect substitutions without assuming that a ligature reduces the number of glyphs.
@@ -96,24 +103,41 @@ fn inter_default_kerning_changes_real_advances() {
     );
 }
 
-/// Requests for the UI's current weights resolve to the exact bundled bytes.
+/// Intermediate weights and italics use real variable instances, not synthetic emboldening or slant.
 #[test]
-fn inter_weights_choose_real_bundled_faces() {
-    for (weight, expected) in [(400.0, REGULAR), (600.0, SEMIBOLD)] {
-        let shaped = label("Inter", weight, &[]);
-        let mut runs = 0;
-        for line in shaped.lines() {
-            for item in line.items() {
-                if let PositionedLayoutItem::GlyphRun(run) = item {
-                    assert!(
-                        run.run().font().data.as_ref() == expected,
-                        "weight {weight} did not choose its bundled face"
-                    );
-                    runs += 1;
+fn inter_weights_and_italics_choose_real_variable_faces() {
+    for italic in [false, true] {
+        let expected = if italic { UI_ITALIC } else { UI_ROMAN };
+        for weight in [100.0, 400.0, 537.5, 600.0, 900.0] {
+            let shaped = label_with_style("Inter", weight, italic, None, &[]);
+            let mut runs = 0;
+            for line in shaped.lines() {
+                for item in line.items() {
+                    if let PositionedLayoutItem::GlyphRun(glyph_run) = item {
+                        let run = glyph_run.run();
+                        assert!(run.font().data.as_ref() == expected, "wrong Inter face for weight {weight}, italic={italic}");
+                        assert!(!run.synthesis().embolden());
+                        assert!(run.synthesis().skew().is_none());
+                        assert_eq!(run.normalized_coords().len(), 2);
+                        if weight != 400.0 { assert_ne!(run.normalized_coords()[1], 0); }
+                        runs += 1;
+                    }
                 }
             }
+            assert!(runs > 0);
         }
-        assert!(runs > 0);
+    }
+}
+
+/// Optical size is a genuine axis; the current toolkit default must not be mislabeled automatic sizing.
+#[test]
+fn inter_optical_size_changes_layout_with_an_explicit_control() {
+    for italic in [false, true] {
+        let default = label_with_style("Typography", 400.0, italic, None, &[]);
+        let text = label_with_style("Typography", 400.0, italic, Some(14.0), &[]);
+        let display = label_with_style("Typography", 400.0, italic, Some(32.0), &[]);
+        assert!((default.width() - text.width()).abs() < 0.01);
+        assert!((text.width() - display.width()).abs() > 0.1);
     }
 }
 
