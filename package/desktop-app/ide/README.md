@@ -10,10 +10,11 @@ and the next implementation action.
 ## Implementation queue
 
 - [ ] Complete the source view:
-  shaped selection/copy and native external-change correspondence pass;
-  syntax,
-  annotations,
-  and remaining keyboard navigation are pending.
+  shaped selection/copy,
+  initial real syntax,
+  font fidelity,
+  and native external-change correspondence pass;
+  annotations and remaining keyboard navigation are pending.
 - [ ] Live workspace tree and search.
 - [ ] Required language-intelligence feature paths.
 - [ ] Measured Helix-supported language inventory and private server state.
@@ -24,8 +25,13 @@ and the next implementation action.
 JetBrains Mono and Inter are bundled under `asset/font` with their original OFL notices.
 The Slint compiler is configured to embed imported font bytes.
 The UI binds to the system palette.
-Native dark rendering and font isolation are verified;
-light-mode and live theme-change acceptance remain in progress.
+Native dark/light rendering and font isolation are verified.
+Programming ligatures retain per-character caret,
+selection,
+and copy behavior.
+Inter's default kerning and real UI weights are covered by font-stack tests.
+Idle DPI changes are covered by a native headless window-event regression.
+Live system-theme change and physical-output scale migration remain to be verified.
 
 ## Current reader behavior
 
@@ -48,12 +54,21 @@ This polling boundary is not yet a workspace tree watcher or language-server syn
 
 ## Build boundary
 
-Cargo tasks run in the existing native-app container with 2 GiB RAM,
+Application builds and tests run in the IDE container extending the repository's native-app image,
+with 2 GiB RAM,
 2 CPUs,
 a 512-process limit,
 and a 4096-descriptor limit.
 The container receives this package and a dedicated Cargo cache,
 not the user's home or credentials.
+The source documentation/line-budget task invokes the repository's Rust linter separately.
+
+The `runtime` task prepares the pinned Rust/TypeScript/TSX/JavaScript/JSDoc grammar slice,
+matching query assets,
+and license notices beside built binaries.
+It is a build-only operation,
+not an application-triggered downloader.
+Full measured-language coverage remains in the queue.
 
 Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;

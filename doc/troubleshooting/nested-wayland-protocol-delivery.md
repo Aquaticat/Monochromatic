@@ -79,7 +79,10 @@ including the exact callback object,
 opcode,
 and message size in the reply.
 The scoped Clippy task and release build also passed.
-A cold native startup with the rebuilt artifact remains a separate verification step.
+A cold native IDE startup with the rebuilt artifact reached its MCP endpoint
+and completed the dark-mode partial-ligature clipboard/screenshot probe.
+This confirms the new artifact works at the consumer boundary;
+it does not retrospectively identify the original stall's trigger.
 
 ## Workaround and tradeoffs
 
