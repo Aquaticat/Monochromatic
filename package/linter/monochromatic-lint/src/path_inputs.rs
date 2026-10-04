@@ -44,15 +44,28 @@ fn walk_root(pattern: &Path, cwd: &Path) -> PathBuf {
 }
 
 /// Expand a glob without converting discovered file names to UTF-8 or losing their operating-system bytes.
-fn expand_glob(pattern: &Path, text: &str, options: &DiscoveryOptions) -> Result<Vec<PathBuf>, FileDiscoveryError> {
+fn expand_glob(
+    pattern: &Path,
+    text: &str,
+    options: &DiscoveryOptions,
+) -> Result<Vec<PathBuf>, FileDiscoveryError> {
     // Path components remove a leading './' without changing pattern punctuation or native literal lookup.
-    let normalized: PathBuf = pattern.components().collect::<PathBuf>();
+    let mut normalized: PathBuf = PathBuf::new();
+    for component in pattern.components() {
+        if component != Component::CurDir {
+            normalized.push(component.as_os_str());
+        }
+    }
     let normalized_text: &str = normalized.to_str().expect("UTF-8 pattern components");
     let mut builder: GlobBuilder<'_> = GlobBuilder::new(normalized_text);
     builder.literal_separator(true);
     let matcher: GlobMatcher = match builder.build() {
         Ok(glob) => glob.compile_matcher(),
-        Err(error) => return Err(FileDiscoveryError { message: format!("Invalid lint input pattern {text:?}: {error}.") }),
+        Err(error) => {
+            return Err(FileDiscoveryError {
+                message: format!("Invalid lint input pattern {text:?}: {error}."),
+            });
+        }
     };
     let root: PathBuf = walk_root(pattern, &options.cwd);
     match std::fs::metadata(&root) {
@@ -65,7 +78,12 @@ fn expand_glob(pattern: &Path, text: &str, options: &DiscoveryOptions) -> Result
             if error.kind() == ErrorKind::NotFound || error.kind() == ErrorKind::NotADirectory {
                 return Ok(Vec::<PathBuf>::new());
             }
-            return Err(FileDiscoveryError { message: format!("Cannot inspect root {} of input pattern {text:?}: {error}.", root.display()) });
+            return Err(FileDiscoveryError {
+                message: format!(
+                    "Cannot inspect root {} of input pattern {text:?}: {error}.",
+                    root.display()
+                ),
+            });
         }
     }
     let candidates: Vec<PathBuf> = discover_literal_path(&root, options)?;
@@ -76,9 +94,15 @@ fn expand_glob(pattern: &Path, text: &str, options: &DiscoveryOptions) -> Result
         } else {
             match candidate.strip_prefix(&options.cwd) {
                 Ok(relative) => relative,
-                Err(error) => return Err(FileDiscoveryError {
-                    message: format!("Cannot match {} relative to {}: {error}.", candidate.display(), options.cwd.display()),
-                }),
+                Err(error) => {
+                    return Err(FileDiscoveryError {
+                        message: format!(
+                            "Cannot match {} relative to {}: {error}.",
+                            candidate.display(),
+                            options.cwd.display()
+                        ),
+                    });
+                }
             }
         };
         if matcher.is_match(target) {
@@ -89,13 +113,21 @@ fn expand_glob(pattern: &Path, text: &str, options: &DiscoveryOptions) -> Result
 }
 
 /// Collect explicit input tokens, defaulting to cwd only when the caller supplies no paths.
-pub fn collect_inputs(inputs: &[PathBuf], options: &DiscoveryOptions, allow_unmatched: bool) -> Result<Vec<PathBuf>, FileDiscoveryError> {
+pub fn collect_inputs(
+    inputs: &[PathBuf],
+    options: &DiscoveryOptions,
+    allow_unmatched: bool,
+) -> Result<Vec<PathBuf>, FileDiscoveryError> {
     if inputs.is_empty() {
         return discover_literal_path(&options.cwd, options);
     }
     let mut files: BTreeSet<PathBuf> = BTreeSet::<PathBuf>::new();
     for input in inputs {
-        let absolute: PathBuf = if input.is_absolute() { input.clone() } else { options.cwd.join(input) };
+        let absolute: PathBuf = if input.is_absolute() {
+            input.clone()
+        } else {
+            options.cwd.join(input)
+        };
         match std::fs::metadata(&absolute) {
             Ok(_) => {
                 files.extend(discover_literal_path(&absolute, options)?);
@@ -103,7 +135,12 @@ pub fn collect_inputs(inputs: &[PathBuf], options: &DiscoveryOptions, allow_unma
             }
             Err(error) => {
                 if error.kind() != ErrorKind::NotFound && error.kind() != ErrorKind::NotADirectory {
-                    return Err(FileDiscoveryError { message: format!("Cannot inspect lint input {}: {error}.", absolute.display()) });
+                    return Err(FileDiscoveryError {
+                        message: format!(
+                            "Cannot inspect lint input {}: {error}.",
+                            absolute.display()
+                        ),
+                    });
                 }
             }
         }
@@ -114,7 +151,12 @@ pub fn collect_inputs(inputs: &[PathBuf], options: &DiscoveryOptions, allow_unma
             matched = expand_glob(input, text, options)?;
         }
         if matched.is_empty() && !allow_unmatched {
-            return Err(FileDiscoveryError { message: format!("Lint input {} matched no supported source files. Correct the path/pattern or use --no-error-on-unmatched-pattern.", input.display()) });
+            return Err(FileDiscoveryError {
+                message: format!(
+                    "Lint input {} matched no supported source files. Correct the path/pattern or use --no-error-on-unmatched-pattern.",
+                    input.display()
+                ),
+            });
         }
         files.extend(matched);
     }

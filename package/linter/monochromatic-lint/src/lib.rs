@@ -93,6 +93,9 @@ mod rust_inferred_constants;
 /// Internal syntax-only rejection of anonymous Rust functions.
 #[doc(hidden)]
 pub mod rust_no_anonymous_functions;
+/// JSONL routing, stdin-fix source output and exit-status accounting.
+#[doc(hidden)]
+pub mod run_output;
 /// Typed Rust rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod rust_rule_settings;
