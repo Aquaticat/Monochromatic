@@ -19,7 +19,9 @@ import {
 
 import {
   isBudgetRefusal,
+  isPaymentRefusal,
   isUpstreamModelRefusal,
+  statedWaitMsOf,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 
@@ -93,6 +95,15 @@ await describe({
       name: 'READS nothing into a failure that is not a provider reply',
       fn: async () => {
         expect(isUpstreamModelRefusal({ error: new Error('the cat unplugged the router',), },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS NO PAYMENT REFUSAL and NO STATED WAIT where the failure is not a provider reply, so a '
+        + 'local fault marks nothing refused',
+      fn: async () => {
+        expect(isPaymentRefusal({ error: new Error('the cat unplugged the router',), },),).toBe(false,);
+        expect(statedWaitMsOf({ error: new Error('the cat unplugged the router',), },),).toBe(0,);
       },
     },),
   ],

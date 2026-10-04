@@ -1180,5 +1180,27 @@ await describe({
         ).toEqual({ spot: 'radiator', },);
       },
     },),
+
+    it({
+      name: 'RERAISES the last refusal once every provider has refused every attempt, rather than '
+        + 'returning a silence no caller can read',
+      fn: async () => {
+        /**
+         Providers all answering an upstream failure.
+         */
+        const { callers, called, } = stubProviders({
+          status: { synthetic: 503, hyper: 503, openrouter: 503, },
+        },);
+        const { budgets, } = stubBudgets({},);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+
+        const outcome = await ask({ client, },);
+        expect('thrown' in outcome,).toBe(true,);
+        expect(called.length,).toBeGreaterThan(0,);
+      },
+    },),
   ],
 },);
