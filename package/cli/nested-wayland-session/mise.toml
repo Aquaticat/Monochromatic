@@ -102,6 +102,10 @@ run = """
 runCargo(['package'])
 """
 
+[tasks."inspect:cli"]
+description = "Run the already-built debug CLI for help and argument-boundary verification"
+run = "./target/debug/monochromatic-nested-wayland-session"
+
 [tasks."test:cli:container"]
 description = "Exercise clap parsing and real CLI help without a display in the bounded container"
 shell = "node --input-type=module-typescript -e"
