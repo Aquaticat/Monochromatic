@@ -337,16 +337,16 @@ await describe({
         },),
 
         it({
-          name: 'KEEPS an empty-quote claim out of the prior-issue dismissal, since wording that is '
-            + 'nothing restates nothing',
+          name: 'KEEPS a corroborated claim whose quoted side flattens to nothing out of the prior-issue '
+            + 'dismissal, since wording that is nothing restates nothing',
           fn: async () => {
             const [tally,] = screenIntroducedDefects({
               regions: [REGION,],
               ballots: {
                 'hf:cat/one': [catCheck({
                   verdict: 'introduced-defect',
-                  evidence: '',
-                  omittedText: '',
+                  evidence: 'cat sleeps',
+                  omittedText: '   ',
                 },),],
               },
               issues: [{
@@ -359,8 +359,9 @@ await describe({
                 tallies: {},
               },] as unknown as AdjudicatedIssue[],
             },);
-            expect(tally?.unanchored,).toBe(1,);
+            expect(tally?.corroborated,).toBe(1,);
             expect(tally?.claims,).toHaveLength(1,);
+            expect(tally?.claims[0]?.admissibility,).toBe('corroborated',);
           },
         },),
 
