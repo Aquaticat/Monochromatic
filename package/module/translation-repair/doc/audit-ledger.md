@@ -6703,6 +6703,30 @@ reads `ran 0, still cold 4`:
 those four.
 No B entry found.
 
+The forty-eighth cluster of that census,
+`declined`,
+against `census-PGu68D` at `ea2437490`:
+4 line stretches over `declined-target-runs.ts`
+(`3326ef801`).
+Landed:
+the empty-pairing case
+(a pairing that placed nothing declines nothing).
+Left:
+the rendering-continue mark
+(`109`),
+the empty-pairing refusal's own line
+(`158`,
+the case's empty input exits through the guard before it),
+and the node-read ternary arms
+(`193-194`,
+`195-196`).
+Their step shapes need alignments producing continuations
+the pairing fixtures do not yet stage.
+The reach census (`~/temp/agent/mimo-trial/reach-declined.log`)
+reads `ran 0, still cold 4`:
+those four.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

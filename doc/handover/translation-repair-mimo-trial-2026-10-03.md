@@ -703,6 +703,34 @@ so a fresh context resumes from this file alone.
   the `declined` batch.
 
 - 2026-10-04,
+  20:20 UTC:
+  the T8 `declined` batch closed with commit `3326ef801`:
+  4 line stretches over `declined-target-runs.ts`,
+  the empty-pairing case landed,
+  the four arms left documented
+  (the rendering-continue mark,
+  the empty-pairing refusal's own line,
+  and the node-read ternary arms:
+  their step shapes need alignments producing
+  continuations the pairing fixtures do not stage).
+  The reach census reads `ran 0, still cold 4`:
+  those four
+  (`~/temp/agent/mimo-trial/reach-declined.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-declined-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-declined-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `3326ef801`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the next cluster in the ranking
+  (the remaining clusters all sit near 4 stretches each;
+  the published and active ones carry documented-left arms).
+
+- 2026-10-04,
   20:08 UTC:
   the next batch's baseline census taken at commit `0d76e5014`:
   `census written to ~/.cache/translation-repair/coverage/census-Kyrgyt/census.json`
