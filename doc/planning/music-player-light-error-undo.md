@@ -186,12 +186,22 @@ The first owned emulator attempt aborted before guest readiness with
 `Failed to find memory type for ColorBuffers.`
 The obsolete boot watch was stopped and container/matching-emulator
 absence checked.
-A bounded host-GLES attempt with an explicit `-feature -Vulkan` override
-is running in `proc_5f1f`;
-`proc_3bf4` owns readiness and the fresh settings snapshot.
-This is an attempted consumer-side configuration change,
-not a verified workaround or a proven cause.
-The next action is to inspect that terminal readiness outcome,
+The explicit `-feature -Vulkan` attempt then exited before guest readiness
+with the distinct multiple-instance FATAL.
+That lock rejection does not establish the override's effect on graphics.
+Validated `lsof` and `fuser` positive controls,
+nonempty `lslocks` output and empty matching process/container checks
+preceded joint quarantine of only the exact owned `hardware-qemu.ini.lock`
+and `multiinstance.lock` files.
+Their private backup is retained;
+no original AVD or arbitrary lock was changed.
+
+The same bounded post-quarantine startup is running in `proc_ca9b`;
+`proc_f3c6` owns readiness and a fresh settings snapshot.
+The read-only comparable gfxstream source clone is running in `proc_f700`
+for the separate graphics diagnostic.
+No source identity or graphics workaround is asserted yet.
+The next action is to inspect those terminal outcomes,
 then run the prepared cover/200% combined and failed-trash fit controls
 before any full capture cohort.
 Verification must establish stable fresh root/viewport rectangles,
