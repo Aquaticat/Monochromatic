@@ -3,3 +3,6 @@ FROM localhost/monochromatic/terminal
 
 # Helix's grammar manager requests a C++ driver even for grammars whose generated parser is C.
 RUN dnf install --assumeyes gcc-c++ && dnf clean all
+
+# The shared minimal toolchain supplies clippy but omits cargo-fmt.
+RUN CARGO_HOME=/usr/local rustup component add rustfmt

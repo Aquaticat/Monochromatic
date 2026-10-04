@@ -21,6 +21,10 @@ const runBounded = (args, options = {}) => execFileSync('podman', [
 const runCargo = (args, options = {}) => runBounded(['cargo', ...args], options)
 """
 
+[tasks.image]
+description = "Rebuild the bounded native IDE toolchain image"
+run = "podman build --memory=2g --cpu-period=100000 --cpu-quota=200000 --tag localhost/monochromatic/ide --file Containerfile ."
+
 [tasks.fetch]
 description = "Fetch the selected Rust dependencies in the bounded build container"
 shell = "node --input-type=module-typescript -e"
