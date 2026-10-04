@@ -18,7 +18,9 @@ import { HelperProtocolError, } from './helper-protocol.ts';
  */
 const HELPER_CONNECT_TIMEOUT_MS = 30_000;
 
-/** Milliseconds per second for user-facing startup deadline. */
+/**
+ Milliseconds per second for user-facing startup deadline.
+ */
 const MILLISECONDS_PER_SECOND = 1_000;
 
 /**
@@ -142,33 +144,33 @@ export async function acceptAuthenticatedSocket(
       deadlineSignal,
     ],);
   try {
-  for await (const connection of on(
-    server,
-    'connection',
-    { signal: startupSignal, },
-  )) {
-    /**
-     Runtime value narrowed to Node socket.
-     */
-    const socketValue: unknown = connection[0];
-    if (!(socketValue instanceof Socket))
-      throw new HelperProtocolError('Answer channel emitted a non-socket connection.',);
-    /**
-     Authentication outcome for candidate socket.
-     */
-    const authenticated = await authenticateSocket({
-      socket: socketValue,
-      token,
-      signal: startupSignal,
-    },);
-    if ((typeof authenticated) !== 'symbol')
-      return authenticated;
-    if (authenticated !== AUTHENTICATION_REJECTED)
-      throw new HelperProtocolError('Answer channel received an unknown authentication state.',);
-    socketValue.destroy();
-    l.warn('rejected unauthenticated answer helper connection',);
-  }
-  throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
+    for await (const connection of on(
+      server,
+      'connection',
+      { signal: startupSignal, },
+    )) {
+      /**
+       Runtime value narrowed to Node socket.
+       */
+      const socketValue: unknown = connection[0];
+      if (!(socketValue instanceof Socket))
+        throw new HelperProtocolError('Answer channel emitted a non-socket connection.',);
+      /**
+       Authentication outcome for candidate socket.
+       */
+      const authenticated = await authenticateSocket({
+        socket: socketValue,
+        token,
+        signal: startupSignal,
+      },);
+      if ((typeof authenticated) !== 'symbol')
+        return authenticated;
+      if (authenticated !== AUTHENTICATION_REJECTED)
+        throw new HelperProtocolError('Answer channel received an unknown authentication state.',);
+      socketValue.destroy();
+      l.warn('rejected unauthenticated answer helper connection',);
+    }
+    throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
   }
   catch (error: unknown) {
     if (deadlineSignal.aborted && (startupSignal.reason === deadlineSignal.reason)

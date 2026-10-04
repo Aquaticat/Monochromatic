@@ -210,7 +210,10 @@ export async function requestExternalAnswer(
    */
   const helperPath = await prepareAnswerHelper({
     workspace,
-    sourcePath: fileURLToPath(new URL(ANSWER_HELPER_FILENAME, import.meta.url,),),
+    sourcePath: fileURLToPath(new URL(
+      ANSWER_HELPER_FILENAME,
+      import.meta.url,
+    ),),
   },);
   /**
    Authenticated one-shot helper return channel.

@@ -12,7 +12,9 @@ import type { AnswerWorkspace, } from './answer-workspace.ts';
 
 //region Launch diagnostics
 
-/** Owner-only permissions for executable source stored with answer data. */
+/**
+ Owner-only permissions for executable source stored with answer data.
+ */
 const PRIVATE_FILE_MODE = 0o600;
 
 /**
@@ -26,8 +28,17 @@ export class AnswerLaunchError extends Error {
 
    @param cause - filesystem failure without request contents
    */
-  constructor({ message, cause, }: { readonly message: string; readonly cause: unknown; },) {
-    super(message, { cause, },);
+  constructor({
+    message,
+    cause,
+  }: {
+    readonly message: string;
+    readonly cause: unknown
+  },) {
+    super(
+      message,
+      { cause, },
+    );
     this.name = 'AnswerLaunchError';
   }
 }
@@ -69,13 +80,23 @@ export async function resolveAnswerRuntime({
   readonly execPath?: string;
   readonly pid?: number;
 } = {},): Promise<string> {
-  /** Function-local runtime diagnostics omit all answer content. */
-  const rl = tagged({ tag: resolveAnswerRuntime.name, l, },);
+  /**
+   Function-local runtime diagnostics omit all answer content.
+   */
+  const rl = tagged({
+    tag: resolveAnswerRuntime.name,
+    l,
+  },);
   if (platform === 'linux') {
-    /** Parent remains alive throughout detached helper lifetime. */
+    /**
+     Parent remains alive throughout detached helper lifetime.
+     */
     const liveExecutable = `/proc/${String(pid,)}/exe`;
     try {
-      await access(liveExecutable, constants.X_OK,);
+      await access(
+        liveExecutable,
+        constants.X_OK,
+      );
       rl.debug(`using live runtime: ${liveExecutable}`,);
       return liveExecutable;
     }
@@ -84,7 +105,10 @@ export async function resolveAnswerRuntime({
     }
   }
   try {
-    await access(execPath, constants.X_OK,);
+    await access(
+      execPath,
+      constants.X_OK,
+    );
   }
   catch (error: unknown) {
     throw new AnswerLaunchError({
@@ -124,13 +148,30 @@ export async function prepareAnswerHelper({
   readonly workspace: AnswerWorkspace;
   readonly sourcePath: string;
 },): Promise<string> {
-  /** Function-local preparation diagnostics identify filesystem inputs. */
-  const rl = tagged({ tag: prepareAnswerHelper.name, l, },);
-  /** Private launch target owned by same scope as request and answer. */
-  const helperPath = join(workspace.directory, 'answer-helper.mjs',);
+  /**
+   Function-local preparation diagnostics identify filesystem inputs.
+   */
+  const rl = tagged({
+    tag: prepareAnswerHelper.name,
+    l,
+  },);
+  /**
+   Private launch target owned by same scope as request and answer.
+   */
+  const helperPath = join(
+    workspace.directory,
+    'answer-helper.mjs',
+  );
   try {
-    await copyFile(sourcePath, helperPath, constants.COPYFILE_EXCL,);
-    await chmod(helperPath, PRIVATE_FILE_MODE,);
+    await copyFile(
+      sourcePath,
+      helperPath,
+      constants.COPYFILE_EXCL,
+    );
+    await chmod(
+      helperPath,
+      PRIVATE_FILE_MODE,
+    );
   }
   catch (error: unknown) {
     throw new AnswerLaunchError({
