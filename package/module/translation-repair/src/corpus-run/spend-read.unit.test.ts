@@ -607,5 +607,22 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'REFUSES a first field that names no record, a negative count, and a record missing its prompt '
+        + 'or its completion',
+      fn: async () => {
+        expect(readSpendLine({ line: logged({ tail: 'SPEND meow', },), },),).toBe('not-a-record',);
+        expect(readSpendLine({
+          line: logged({ tail: 'SPEND provider=openrouter model=m prompt=-5 completion=3 cost=0.1', },),
+        },),).toBe('unreadable',);
+        expect(readSpendLine({
+          line: logged({ tail: 'SPEND provider=openrouter model=m completion=3 cost=0.1', },),
+        },),).toBe('unreadable',);
+        expect(readSpendLine({
+          line: logged({ tail: 'SPEND provider=openrouter model=m prompt=1 cost=0.1', },),
+        },),).toBe('unreadable',);
+      },
+    },),
   ],
 },);
