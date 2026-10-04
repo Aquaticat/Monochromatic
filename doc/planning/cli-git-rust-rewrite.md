@@ -1,17 +1,22 @@
-# Should cli-git be rewritten in Rust?
+# cli-git Rust rewrite scope
 
 ## Status and authority
 
-Context gathering for the user's request:
-"Should we rewrite our cli-git in Rust /grill-me".
-No language recommendation,
-architecture adoption,
-or product changes are authorized by this interview.
+The user clarified that the Rust rewrite is already decided
+and directed the session away from unnecessary evaluation.
+The original rewrite-versus-retain question is closed.
+Do not require comparative benchmarks or a new language-selection audit to reopen it.
 
-The interview proceeds through independent preference questions first.
-Architecture,
-validation targets,
-and migration choices follow only after their prerequisites are settled.
+The main agent over-investigated the original decision after the direction was sufficiently settled.
+The remaining interview is limited to implementation-changing scope questions,
+followed by confirmation of shared understanding before implementation.
+No production source changes have been made.
+
+Proposed instruction refinement for `AGENTS.md`:
+explicitly stop comparative evaluation after a user settles the choice;
+retain only investigation that can change implementation,
+safety,
+or acceptance.
 
 ## Current evidence
 
@@ -79,7 +84,9 @@ not a promise that this repository's entire add/commit/push operation finishes w
 ### Language and runtime
 
 The user answered yes to whether achieving the desired outcomes without a rewrite would satisfy them.
-Rust is a means rather than an independent goal.
+That first-round answer explained motivation,
+not a reason to keep the language choice open after the later clarification.
+Rust is now the selected implementation language.
 Eliminating an external Node installation is not a hard requirement.
 
 ### Configuration
@@ -141,16 +148,17 @@ No scanner replacement is requested.
 
 The configuration-authority and release-scope questions are answered.
 No new architecture question should be asked merely to repeat those choices.
-Performance budgets and implementation ranking await representative workload evidence.
+Do not run more incumbent benchmarks to decide whether to rewrite.
+Performance verification belongs to implementation acceptance,
+not a prerequisite for the already selected language.
 Do not propose backgrounding auto-push as a latency remedy before measuring it.
 Preserve accepted safety,
 concurrent-commit,
 and recovery requirements unless the user explicitly reopens them;
 rewriting is not permission to drop functionality.
 The rejected alternative is a generic external-policy plugin interface.
-No implementation language,
-module arrangement,
-or migration strategy has been adopted.
+Rust is selected.
+No specific module arrangement or migration strategy has been implemented.
 
 ## Pending evidence and dependent questions
 
@@ -169,9 +177,7 @@ or migration strategy has been adopted.
   filesystem work,
   and remote latency.
 - Freeze relevant hard constraints and criteria from the user's answers.
-- Discover and evaluate alternatives,
-  including retaining the incumbent,
-  before ranking implementations.
+- Do not revisit retaining the incumbent as an alternative to the selected Rust rewrite.
 - Decide scope,
   policy execution boundary,
   parity requirements,
@@ -267,10 +273,73 @@ The current `trust/command-classification.ts` classifies `status` as `skip-confi
 Their labels alone do not establish that they exercise config loading or rebuilding.
 A consumer-boundary positive control remains required before drawing trust-cost conclusions.
 
+## Actual-policy fixture execution
+
+The same detached worktree contains a temporary `perf:policy-boundary` task.
+It runs mount-free,
+network-disabled containers under the same 2 GiB,
+2 CPU,
+and 256 PID bounds.
+The local image adds only copied repository-owned artifacts and installed dependencies:
+
+- the installed forbidden-strings executable;
+- current Markdown-lint TypeScript source and its local dependency closure;
+- the development host's Node 26.10.0 executable;
+- `doc/planning/slint-ide-0x.md` as the Markdown workload.
+
+The source closure includes the logger's source-level `module-async-time` import,
+which is a workspace devDependency rather than a manifest runtime dependency.
+No package installation,
+network download,
+real home mount,
+GitHub remote,
+or private scanner rules file is used.
+The fixture uses the scanner's built-in rules plus a deterministic planted literal.
+It is not yet the exact real-repository workload.
+
+Positive controls precede timings:
+
+- `status` must tolerate changed untrusted configuration while `add` rejects it;
+- the actual Markdown CLI must rewrite a planted LFS image URL;
+- an actual wrapped commit must reject the planted forbidden string without moving `HEAD`.
+
+Within each fresh container,
+compare policies disabled,
+scanner enabled,
+Markdown enabled,
+and both enabled.
+Every scenario uses actual wrapped staging and committing plus automatic local push,
+paired with direct Git staging,
+commit,
+and local push.
+Pair order alternates;
+each scenario has 2 warm-ups and 10 recorded samples.
+The complete scenario sequence runs twice in separate containers.
+This probe does not enable a feature or change production policy settings.
+
+Invocation:
+`mise run //package/git-policy/cli:perf:policy-boundary` in the detached worktree.
+The initial attempt failed before JavaScript because the copied Node 26 binary lacked `libatomic.so.1`.
+A Node 26 base image resolved that fixture packaging error;
+the next attempt reached a separate configuration error because disabled option-bearing policies still need option values.
+The corrected fixture supplied severity-plus-options tuples.
+
+Managed process:
+`cli-git-actual-policy-latency-valid-options`.
+Status:
+stopped after the user's direction to stop unnecessary rewrite evaluation.
+Container listing after termination showed no running containers.
+No completion result or causal performance conclusion is claimed.
+Do not restart this experiment merely to finish its planned sample count.
+
 ## Next action
 
-Extend the fixture to exercise the actual Markdown policy and bundled scanner workload,
-and validate benchmark reach with positive controls,
-before attributing the reported delay or setting rewrite acceptance budgets.
-Keep the current implementation running;
-do not port code during the interview.
+Confirm the agreed first-release scope without reopening Rust:
+JSONC via the repository package,
+shipped policies only,
+bundled forbidden-strings,
+no executable-config trust subsystem,
+repository-controlled policy settings,
+and preservation of required Git behavior.
+The expanded 2.x catalog is excluded.
+Proceed to implementation only after shared understanding is confirmed.
