@@ -487,5 +487,61 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'READS NO ANSWER from a line carrying no grade marker, and READS THE WHOLE REST when no '
+        + 'legend bounds it',
+      fn: async () => {
+        /**
+         A line with no marker, and one whose answer no legend bounds.
+         */
+        const unmarked = parseGradedSheet({ text: 'a plain line with no grade marker', },);
+        const unbounded = parseGradedSheet({ text: '### 1. grade: Y', },);
+        expect(unbounded[0]?.verdict,).toBe('real-defect',);
+        expect(unmarked.every(function isNoVerdict(item,): boolean {
+          return item.verdict === 'unscored';
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'READS A DUPLICATE verdict where the answer opens with the word, keeping the note the grader '
+        + 'wrote',
+      fn: async () => {
+        const items = parseGradedSheet({
+          text: catSheet({ answers: ['Duplicate: the same page twice',], },),
+        },);
+        expect(items[0]?.verdict,).toBe('duplicate',);
+      },
+    },),
+
+    it({
+      name: 'READS NO VERDICT from a pre-grade whose verdict is no string, since nothing there names a '
+        + 'verdict the grader gave',
+      fn: async () => {
+        expect(function refusesTheVocabulary(): void {
+          parsePreGrades({ text: '[{"index": 1, "verdict": 42}]', },);
+        },).toThrow('outside the vocabulary',);
+      },
+    },),
+
+    it({
+      name: 'LISTS THE DUPLICATE INDICES beside the rates, since a duplicate row is one opinion counted '
+        + 'once',
+      fn: async () => {
+        const tally = scoreGradedPrecision({
+          human: [{
+            index: 1,
+            verdict: 'real-defect',
+            note: '',
+          }, {
+            index: 2,
+            verdict: 'duplicate',
+            note: 'the same page twice',
+          },] as unknown as readonly GradedItem[],
+        },);
+        expect(tally.duplicates,).toEqual([2,],);
+      },
+    },),
   ],
 },);
