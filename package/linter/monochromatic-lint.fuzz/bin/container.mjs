@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /** Build instrumented targets with a read-only compiler, then fuzz without host mounts. */
 import { spawnSync } from 'node:child_process';
-import { copyFile, cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { homedir, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { constants } from 'node:fs';
+import { access, copyFile, cp, mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { delimiter, join, resolve } from 'node:path';
 
 /** Preserve the failed verification boundary rather than masking it with a later copy error. */
 class FuzzVerificationError extends Error {}
@@ -19,6 +20,22 @@ function execute({ command, args, cwd = process.cwd(), capture = false, allowFai
   if (!allowFailure && result.status !== 0)
     throw new FuzzVerificationError(`${command} ${args[0]} exited ${result.status}: ${result.stderr ?? ''}`);
   return result;
+}
+
+/** Resolve the actual PATH-selected tool rather than an older unrelated Cargo-home installation. */
+async function executable(name) {
+  for (const directory of (process.env.PATH ?? '').split(delimiter)) {
+    const candidate = resolve(directory, name);
+    try {
+      await access(candidate, constants.X_OK);
+      if ((await stat(candidate)).isFile())
+        return candidate;
+    } catch (error) {
+      if (error.code !== 'ENOENT' && error.code !== 'ENOTDIR' && error.code !== 'EACCES')
+        throw error;
+    }
+  }
+  throw new FuzzVerificationError(`Executable ${name} was not found on PATH.`);
 }
 
 /** Copy only package inputs, never its caches, dependencies, or private machine-local files. */
@@ -62,7 +79,8 @@ async function main() {
       throw new FuzzVerificationError('Cargo vendor did not emit the expected source directory mapping.');
     await mkdir(join(context, '.cargo'), { recursive: true });
     await writeFile(join(context, '.cargo/config.toml'), config);
-    await copyFile(join(process.env.CARGO_HOME ?? join(homedir(), '.cargo'), 'bin/cargo-fuzz'), join(context, 'cargo-fuzz'));
+    const cargoFuzz = await executable('cargo-fuzz');
+    await copyFile(cargoFuzz, join(context, 'cargo-fuzz'));
     await writeFile(join(context, 'Containerfile'), [
       '# Same installed Rust runtime image as the subject container tests; compiler is a separate read-only input.',
       'FROM 62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884',
@@ -78,7 +96,9 @@ async function main() {
       '',
     ].join('\n'));
     execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-fuzz-build:development', context] });
-    const compilerMount = ['--volume', `${compiler}:/toolchain:ro`];
+    // Compiler files retain their host labels. Do not relabel a shared Rust installation with :Z.
+    // Only build containers disable label isolation; fuzz execution has no host mounts and keeps it enabled.
+    const compilerMount = ['--security-opt', 'label=disable', '--volume', `${compiler}:/toolchain:ro`];
     execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development', 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
     const buildContainer = execute({ command: 'podman', args: [
       'create', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development',
@@ -91,7 +111,7 @@ async function main() {
     await mkdir(join(context, 'bin'), { recursive: true });
     for (const target of targets)
       execute({ command: 'podman', args: ['cp', `${buildContainer}:/work/build/x86_64-unknown-linux-gnu/release/${target}`, join(context, 'bin', target)] });
-    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ compilerVersion, targets, sanitizer: 'address', maxInputBytes: 8192, secondsPerTarget: 30, memory: '2g', cpus: 2, compilerMount: 'read-only during compilation; absent during fuzzing' }, null, 2) + '\n');
+    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ compilerVersion, targets, sanitizer: 'address', maxInputBytes: 8192, secondsPerTarget: 30, memory: '2g', cpus: 2, compilerMount: 'read-only during compilation with container label isolation disabled; absent during fuzzing' }, null, 2) + '\n');
     if (buildOnly) {
       await cp(join(context, 'bin'), join(evidence, 'bin'), { recursive: true });
       console.log(`Instrumented binaries: ${evidence}`);
