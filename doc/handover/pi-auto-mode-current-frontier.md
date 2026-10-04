@@ -31,9 +31,37 @@ promote its raw answer,
 or build more editor forms as a migration prerequisite.
 Those artifacts remain historical evidence only.
 
-The next implementation work is the adapter from the original complete prepared group and closed judgment
-to the existing TUI and its actual verdict append.
-No production cutover or threshold adoption is authorized by this correction.
+The private adapter now reuses the actual existing `askUser` export.
+`proc_91cb` exercised its incumbent choice,
+notification,
+Stop,
+and headless behavior.
+`proc_c8c5` confirmed that the ordinary native verdict append preserves original-judgment currentness
+in the admitted profile;
+no persistence bypass was needed.
+
+`proc_8452` passed controlled native Allow,
+Deny,
+Stop,
+and source-change cases:
+four sessions,
+seven local main-model requests,
+four canned assessments,
+and native read counts `[2, 0, 0, 0]`.
+The adapter forwards original cancellation to the existing selector
+and checks currentness before releasing an owned Allow.
+It does not build a new UI.
+
+`proc_c4c9` separately showed that restoring source after a failed Allow does not revive it.
+Removing the phase guard made the exact assertion fail.
+Headless blocking and late Allow after cancellation also passed their named controls.
+Retained diagnostics are not release eligibility.
+These controls used synthetic UI backends,
+not genuine human approval.
+General prompt-size and actual viewport qualification remain open.
+
+Continue policy and semantic integration using this incumbent path.
+No production cutover or threshold adoption is authorized by the correction.
 
 Proposed guidance clarification,
 not applied to protected `AGENTS.md`:
