@@ -3,6 +3,9 @@
 Implementation in progress.
 The accepted [0.x scope][scope] and [build approach][plan] define the completion criteria.
 This package is not yet a completed application.
+Use the [handover][handover] for current verification,
+running-process details,
+and the next implementation action.
 
 ## Implementation queue
 
@@ -25,5 +28,6 @@ Helix crates share a pinned upstream revision.
 Helix code and runtime assets retain their own license obligations;
 the application does not inherit Helix's modal commands or editing features.
 
+[handover]: ../../../doc/handover/slint-ide-0x.md
 [scope]: ../../../doc/decision/slint-ide-0x-scope.md
 [plan]: ../../../doc/planning/slint-ide-implementation.md

@@ -6,9 +6,9 @@ The user confirmed the [consolidated scope][scope] after a grilling interview.
 Build a Slint desktop application for reading and navigating live local source code on the current host.
 Actual editing and all direct or delegated project-file mutation are excluded from 0.x.
 
-The latest request is to explain the implementation approach first.
-Scope acceptance does not turn an untested integration proposal into a verified design.
-The [implementation proposal][implementation] records that next step separately.
+The user reviewed the implementation approach and explicitly authorized implementation.
+Scope acceptance does not turn an untested integration into a verified design.
+The [implementation plan][implementation] and [handover][handover] record progress separately.
 
 ## Required capabilities
 
@@ -29,6 +29,10 @@ The [implementation proposal][implementation] records that next step separately.
   line numbers,
   read-only caret and selection,
   and copying.
+- Bundled JetBrains Mono for source text and Inter for UI text,
+  including the font faces used by the application and their license notices.
+- Light/dark appearance follows the system at startup and when its preference changes.
+  No application-specific theme override.
 - Go-to-definition,
   references,
   hover information,
@@ -116,5 +120,6 @@ Compilation,
 upstream configuration entries,
 and unit tests alone do not establish completion.
 
+[handover]: ../handover/slint-ide-0x.md
 [scope]: ../planning/slint-ide-0x.md
 [implementation]: ../planning/slint-ide-implementation.md

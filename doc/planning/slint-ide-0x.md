@@ -4,9 +4,9 @@
 
 The user confirmed the consolidated contract.
 The accepted scope is recorded in [the decision document][accepted-scope].
-The current request is to explain the build approach first.
-[The implementation proposal][implementation] records that explanation separately;
-no application implementation has started.
+The user subsequently reviewed the approach and explicitly authorized implementation.
+[The implementation plan][implementation] records the work queue;
+[the handover][handover] records the current implementation and verification state.
 
 ## Explicit requirements
 
@@ -30,6 +30,10 @@ no application implementation has started.
   inlay hints,
   and diagnostics.
 - Require syntax highlighting.
+- Bundle JetBrains Mono and Inter;
+  include their licenses and avoid relying on host-installed copies.
+- Follow the system's light/dark appearance,
+  including changes while running.
 - Keep combined file-path/content search and a browsable file tree.
 - Explicit implementation follow-up:
   retain editord's Ctrl+0 through Ctrl+9 recency navigation,
@@ -583,8 +587,8 @@ No later editing roadmap is implied.
 ## Next action
 
 The scope is confirmed and recorded in `doc/decision/slint-ide-0x-scope.md`.
-Explain `doc/planning/slint-ide-implementation.md` before implementation,
-as the user requested.
+Implementation is authorized and underway.
+Resume from `doc/handover/slint-ide-0x.md`.
 Do not ask for scope confirmation again.
 If later integration probing exposes a genuine requirement conflict,
 report the evidence and ask only the controlling decision.
@@ -612,6 +616,7 @@ Planning history:
 Scoped Markdown lint and micromark rendered-output checks passed through the language-scope update.
 Repeat both for the consolidated contract.
 
+[handover]: ../handover/slint-ide-0x.md
 [accepted-scope]: ../decision/slint-ide-0x-scope.md
 [implementation]: slint-ide-implementation.md
 [editor-readme]: ../../package-paused/desktop-daemon/editord/README.md

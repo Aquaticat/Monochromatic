@@ -9,6 +9,15 @@ The confirmed deliverable remains incomplete until every gate is verified.
 
 ## Implementation queue
 
+Current process,
+verification,
+and resumption details are in [the handover][handover].
+
+- [ ] Nested Wayland session clap/help fix,
+  explicitly requested after the existing binary rejected `--help`.
+  Preserve hosted-command forwarding and verify help without starting a display.
+- [ ] Bundle JetBrains Mono and Inter with licenses and registration,
+  verified independently of installed copies of those families.
 - [ ] Source view and document correspondence.
   Document interface exists;
   all 7 consumer tests pass,
@@ -18,7 +27,12 @@ The confirmed deliverable remains incomplete until every gate is verified.
   deletion,
   stale reload rejection,
   and selection movement during pending work.
-  Native rendering/interaction is not yet verified.
+  Native headless rendering and the accessible read-only source value are verified.
+  Pointer,
+  keyboard,
+  clipboard,
+  and running-GUI reload tests remain pending.
+  Recent-file and view-model tests added after the passing run still need execution.
   `slint-viewer --check` accepted the source-view declaration.
   Cargo's first GUI build failed because the repository's manifest owner normalized Slint to a non-optional dependency;
   the app's `gui` feature now gates code generation rather than `dep:slint`.
@@ -31,6 +45,9 @@ The confirmed deliverable remains incomplete until every gate is verified.
   native key binding and tree reveal remain pending.
 - [ ] Five required language-intelligence feature paths and synchronization.
 - [ ] Measured Helix-supported runtime languages and project-write confinement.
+- [ ] Verify both system-theme modes and live appearance changes through the repo-owned nested Wayland session.
+  Palette bindings exist,
+  but the light headless screenshot is not proof of native system-theme tracking.
 - [ ] Native integration tests,
   lint,
   packaging,
@@ -313,7 +330,9 @@ The proposed first gate must establish the usable implementation before the rest
 
 ## Next action
 
-Implement and verify the selectable highlighted source view with native input.
-Then continue through the remaining implementation queue without treating the document tests as product completion.
+Complete the explicitly requested clap/help fix for the native verification helper.
+Then bundle fonts and continue the selectable highlighted source view and remaining implementation queue.
+The document tests and first screenshot are not product completion.
 
+[handover]: ../handover/slint-ide-0x.md
 [scope]: ../decision/slint-ide-0x-scope.md
