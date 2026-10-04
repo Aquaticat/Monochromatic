@@ -699,8 +699,24 @@ copied contexts entered no definition;
 ordinary tool errors retained native serial continuation;
 and source change retained the first result while blocking the next member.
 Missing complete nested-group support now rejects explicitly instead of falling back to independent child execution.
-An actual native retirement-omission control is running separately.
+`proc_6251` omitted issuer retirement in the actual native return path.
+The worker retained active issuer states where returned states were required,
+and original execution origins remained readable at result hooks.
+The expected assertion verified that local context return is not enough to retire the original occurrence.
+It added one session,
+two injected requests,
+one canned semantic attempt,
+and two unchanged root definition entries;
+no extra effect or child execution was claimed.
+
 Complete parent-program/dataflow and prepared child membership remain unfinished.
+The accepted preparation requirement applies to each actual execution group,
+not every future dynamic descendant at once.
+Whole-parent semantic coverage may include result-derived bindings;
+this does not require code-only effect proof.
+Later mechanical validation neither creates another judgment nor reopens its inference budget.
+A bounded static extraction profile is a prototype mechanism,
+not a newly adopted universal policy.
 No external inference,
 semantic accuracy,
 instruction authority,

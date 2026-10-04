@@ -380,7 +380,12 @@ Ordinary tool errors still allowed the next serial member,
 while source staleness stopped it.
 The issuer occurrence was returned before native result hooks;
 local context return alone is not that proof.
-The native retirement-omission control remains separate.
+The separate `proc_6251` native omission removed issuer retirement after definition return.
+Its expected assertion compared active issuer states with required returned states.
+Original origins also remained readable during result hooks.
+Root effect counts were unchanged;
+this is an issuer-lifetime witness,
+not a claim of additional effects.
 
 No complete nested-group handler is installed in this graph.
 The carrier therefore rejects that missing support before starting a child,
