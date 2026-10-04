@@ -731,7 +731,6 @@ const ALLOWLIST: readonly string[] = [
   'src/line-structure-addendum.ts',
   'src/line-structure-inherit.ts',
   'src/linked-title-declared-name.ts',
-  'src/lookup-cache.ts',
   'src/markdown-blocks.ts',
   'src/naturalness-completeness-error.ts',
   'src/naturalness-quorum.ts',

@@ -9,8 +9,7 @@
  @module
  */
 
-import { mkdtemp, writeFile, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -25,6 +24,7 @@ import {
   lookupCachePath,
   readCachedLookup,
 } from '../dist/final/node/index.mjs';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 //region Lookup cache tests
 
@@ -38,10 +38,10 @@ await describe({
         expect(isLookupRecord(5,),).toBe(false,);
 
         // A cache file whose JSON is no record.
-        const dir = await mkdtemp(join(tmpdir(), 'lookup-cache-',),);
-        const path = lookupCachePath({ dir, query: 'cat', },);
+        await using scratch = await scratchDir({ prefix: 'lookup-cache-', },);
+        const path = lookupCachePath({ dir: scratch.path, query: 'cat', },);
         await writeFile(path, '5', 'utf8',);
-        const read = await readCachedLookup({ dir, query: 'cat', },);
+        const read = await readCachedLookup({ dir: scratch.path, query: 'cat', },);
         expect(read.kind,).toBe('miss',);
       },
     },),
