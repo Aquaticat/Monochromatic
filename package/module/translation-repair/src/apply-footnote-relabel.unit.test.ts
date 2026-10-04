@@ -71,8 +71,8 @@ await describe({
              Paragraph whose only child is the untokenized literal, so the
              run sits at both bounds of its parent's children.
              */
-            const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\nwww.example.com\n';
-            const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\nwww.example.com\n';
+            const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\n[www.example.com\n';
+            const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\n[www.example.com\n';
             expect(applyFootnoteRelabel({
               text,
               map: [{ from: '1', to: '2', },],
