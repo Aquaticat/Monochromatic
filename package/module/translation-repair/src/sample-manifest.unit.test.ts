@@ -160,6 +160,28 @@ await describe({
         },),
 
         it({
+          name: 'READS A MANIFEST WHOSE GENERATION SAYS IT IS UNRECORDED as unrecorded, carrying the '
+            + 'reason it gave',
+          fn: async () => {
+            const parsed = parseSampleManifest({
+              value: buildSampleManifest({
+                sample: [catCandidate({ issueId: 'adjudicated/nap', },),],
+                seed: 'cat-seed',
+                corpusSha: 'sha/1',
+                generation: {
+                  kind: 'unrecorded',
+                  reason: 'the draw named no pipeline',
+                },
+              },),
+            },);
+            expect(parsed.generation.kind,).toBe('unrecorded',);
+            if (parsed.generation.kind !== 'unrecorded')
+              throw new Error('unrecorded by construction',);
+            expect(parsed.generation.reason,).toBe('the draw named no pipeline',);
+          },
+        },),
+
+        it({
           name: 'round-trips what the draw wrote, which is the only property the '
             + 'join depends on',
           fn: async () => {

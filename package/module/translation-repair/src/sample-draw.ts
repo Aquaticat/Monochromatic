@@ -70,23 +70,23 @@ export function allocateBandQuota(
     ),
   );
 
-  while (remaining > 0) {
-    /**
-     Whether this pass placed at least one slot; a pass that places none
-     means every band is at capacity and the loop must stop.
-     */
-    let progressed = false;
+  /**
+   Passes never outlive the slots to place: a pass that runs places at
+   least one while any remain, the cap above guaranteeing a band below its
+   own. The ceiling is the termination proof the no-progress break was a
+   stopgap for.
+   */
+  const passes = remaining;
+  for (let pass = 0; pass < passes; pass += 1) {
     for (const band of SIZE_BANDS) {
       if (remaining === 0)
         break;
       if (quota[band] < available[band]) {
         quota[band] += 1;
         remaining -= 1;
-        progressed = true;
       }
     }
-    /* v8 ignore next 2 -- @preserve: remaining is capped at total available, so a no-progress pass is unreachable; the guard only prevents an infinite loop if that invariant ever breaks */
-    if (!progressed)
+    if (remaining === 0)
       break;
   }
 

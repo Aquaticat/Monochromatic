@@ -791,7 +791,6 @@ const ALLOWLIST: readonly string[] = [
   'src/retry-stated-wait.ts',
   'src/roster-quorum-size.ts',
   'src/sample-draw-identity.ts',
-  'src/sample-draw.ts',
   'src/sealed-node-ids.ts',
   'src/seed-detection.ts',
   'src/select-decline-consequence.ts',

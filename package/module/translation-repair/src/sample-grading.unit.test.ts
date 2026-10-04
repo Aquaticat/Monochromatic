@@ -224,6 +224,23 @@ await describe({
 
         //endregion classifyBand
 
+        //region assertSourceBytes
+
+        describe({
+          name: assertSourceBytes.name,
+          children: [
+            it({
+              name: 'refuses a fractional or negative byte count, since neither measures bytes',
+              fn: async () => {
+                expect(() => assertSourceBytes(-1,),).toThrow('non-negative safe integer',);
+                expect(() => assertSourceBytes(1.5,),).toThrow('non-negative safe integer',);
+              },
+            },),
+          ],
+        },),
+
+        //endregion assertSourceBytes
+
         //region extractGradingCandidate
 
         describe({
@@ -246,6 +263,24 @@ await describe({
                 expect(candidate.summary,).toBe('Whisker rendered as antenna.',);
                 expect(candidate.entryId,).toBe('Kitten',);
                 expect(candidate.band,).toBe('small',);
+              },
+            },),
+            it({
+              name: 'reads the uncategorized and no-summary placeholders where the issue names no claim',
+              fn: async () => {
+                const candidate = extractGradingCandidate({
+                  issue: {
+                    issueId: 'adjudicated/empty',
+                    status: 'accepted',
+                    severity: 'minor',
+                    claims: [],
+                    tallies: {},
+                  } as unknown as Parameters<typeof extractGradingCandidate>[0]['issue'],
+                  entryId: 'Kitten',
+                  band: 'small',
+                },);
+                expect(candidate.category,).toBe('(uncategorized)',);
+                expect(candidate.summary,).toBe('(no claim summary)',);
               },
             },),
             it({
