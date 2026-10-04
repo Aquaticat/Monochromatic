@@ -557,11 +557,46 @@ The failed original parser intake and a separate generator-escaping error remain
 see [SDK staging](pi-sdk-staging.md).
 The installed SDK and production auto-mode were not changed.
 
-This qualification covers model-issued native Codemode parents with the declared literal group shape.
-It does not establish full output/usage/image/store parity,
-shared-queue contention,
-outstanding-child lifetime at the connected seam,
-or general dynamic groups.
+`proc_15e7` added native `Promise.allSettled` child-failure controls.
+An ordinary child error allowed the next serial child to complete;
+a required-group guard failure left the next child unentered.
+The two sessions used four injected requests and two original canned assessments,
+with child-entry counts `[2, 1]`.
+This avoids confusing ordinary errors with `Promise.all` fail-fast transport cancellation.
+
+The first queue fixture `proc_ff76` remains failed:
+it treated the current `queueTail` as the active first lease.
+Fresh `proc_bb45` observed actual queue publications and their predecessor identity instead.
+Two parallel program parents contended for one sequential-child queue under one judgment.
+It checked four child definitions,
+separate recorder summaries,
+opaque owner-key consumption before agent end,
+four exact update payloads,
+and synthetic per-parent usage totals.
+This is not a claim about provider billing or arbitrary recursive queue ownership.
+
+`proc_dd3b` cancelled the original agent while the first child definition was running.
+The child observed its composed signal abort;
+the second definition remained unentered.
+Both already-prepared native attempts retained their start/end records.
+One SDK session,
+one injected request,
+and one canned assessment completed with returned parent/child issuer state and clean stderr.
+A recorder start is not a definition entry,
+and retained diagnostics are not fresh cancelled evidence.
+
+`proc_f6a8` forwarded the non-program root regressions onto the changed wrapper.
+Two sessions and four injected requests retained definition-entry counts `[2, 1]`
+for execution after evidence close and target change after the first effect.
+
+This qualification covers model-issued native Codemode parents with the declared literal group shapes.
+Full image/store parity,
+arbitrary recursive queue ownership,
+body-return/queued-release combinations beyond the named cases,
+and general dynamic groups remain open.
+Next qualify later actual groups whose inputs depend on an earlier native result,
+without preparing every future concrete value before the parent starts
+or creating another judgment.
 Definition ownership is factory-closure ownership,
 not session or human authority;
 the fixed session reader and registered receiver separately bind each execution.
