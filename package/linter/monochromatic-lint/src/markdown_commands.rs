@@ -1,0 +1,105 @@
+//! What: Remove shell prompts from prompt-only top-level fenced examples.
+//! Why: Commands without shown output should be copyable, while output-bearing and indented examples remain unchanged.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // Check decoded code content, then remove only actual authored '$ ' prefixes using byte edits.
+//! ```
+
+/// Import native code payloads and shared diagnostics/fixes.
+use satteri_ast::mdast::{MdastNodeType, decode_code_data};
+use crate::diagnostic::{Diagnostic, Severity};
+use crate::edits::{Edit, Fix};
+use crate::markdown_code::language_insert_offset;
+use crate::markdown_finding::finding;
+use crate::markdown_source::MarkdownSource;
+
+/// Require at least one nonblank line and reject every non-prompt content line.
+fn all_prompts(value: &str) -> bool {
+    let mut seen: bool = false;
+    for line in value.split('\n') {
+        if line.trim().is_empty() {
+            continue;
+        }
+        if !line.starts_with("$ ") {
+            return false;
+        }
+        seen = true;
+    }
+    return seen;
+}
+
+/// What: Find authored prompt prefixes without replacing normalized code-node content.
+/// Why: LF, CRLF and bare CR remain byte-identical; closing fences cannot begin with a shell prompt.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function promptEdits(source, bodyStart, nodeEnd): Edit[];
+/// ```
+fn prompt_edits(source: &str, start: usize, end: usize) -> Vec<Edit> {
+    let bytes: &[u8] = source.as_bytes();
+    let mut line_start: usize = start;
+    let mut edits: Vec<Edit> = Vec::<Edit>::new();
+    while line_start < end {
+        if bytes[line_start..end].starts_with(b"$ ") {
+            edits.push(Edit { start: line_start, end: line_start + 2, replacement: String::new() });
+        }
+        let mut next: usize = line_start;
+        while next < end && bytes[next] != b'\n' && bytes[next] != b'\r' {
+            next += 1;
+        }
+        if next == end {
+            break;
+        }
+        if bytes[next] == b'\r' && next + 1 < end && bytes[next + 1] == b'\n' {
+            next += 1;
+        }
+        line_start = next + 1;
+    }
+    return edits;
+}
+
+/// Report each prompt-only column-one fenced block and group its localized prefix removals atomically.
+pub fn commands_show_output(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
+    let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
+    for id in context.visible_nodes() {
+        if context.kind(*id) != MdastNodeType::Code || context.node_span(*id).column != 1 {
+            continue;
+        }
+        if language_insert_offset(context, *id).is_none() {
+            continue;
+        }
+        let data = decode_code_data(context.data(*id));
+        if !all_prompts(context.text(data.value)) {
+            continue;
+        }
+        let (start, end): (usize, usize) = context.offsets(*id);
+        let bytes: &[u8] = context.source.as_bytes();
+        let mut body: usize = start;
+        while body < end && bytes[body] != b'\n' && bytes[body] != b'\r' {
+            body += 1;
+        }
+        if body == end {
+            continue;
+        }
+        if bytes[body] == b'\r' && body + 1 < end && bytes[body + 1] == b'\n' {
+            body += 1;
+        }
+        body += 1;
+        let edits: Vec<Edit> = prompt_edits(context.source.as_str(), body, end);
+        let mut diagnostic: Diagnostic = finding(
+            context, *id, "markdown/commands-show-output", severity,
+            String::from("Shell prompts with no shown output; remove the `$ ` prompts."), None,
+        );
+        if !edits.is_empty() {
+            diagnostic.fix = Some(Fix { edits });
+        }
+        findings.push(diagnostic);
+    }
+    return findings;
+}
+
+/// Native source-preservation regressions are not release code.
+#[cfg(test)]
+#[path = "markdown_commands_tests.rs"]
+mod tests;

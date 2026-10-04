@@ -46,12 +46,15 @@ pub mod edits;
 /// Native source-file discovery with explicit ignore and failure boundaries.
 #[doc(hidden)]
 pub mod file_discovery;
-/// Duplicate headings scoped by their textual ancestor path.
-#[doc(hidden)]
-pub mod markdown_duplicate_headings;
 /// Internal code-fence normalization.
 #[doc(hidden)]
 pub mod markdown_code;
+/// Copyable prompt-only shell examples with byte-preserving grouped fixes.
+#[doc(hidden)]
+pub mod markdown_commands;
+/// Duplicate headings scoped by their textual ancestor path.
+#[doc(hidden)]
+pub mod markdown_duplicate_headings;
 /// Shared Markdown diagnostic construction.
 mod markdown_finding;
 /// Internal report-only heading checks.
