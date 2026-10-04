@@ -58,6 +58,12 @@ mod markdown_positions;
 pub mod markdown_source;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
+/// Typed Rust rule selection from validated merged JSONC.
+#[doc(hidden)]
+pub mod rust_rule_settings;
+/// Syntax-only Rust execution without initializing a Cargo workspace.
+#[doc(hidden)]
+pub mod rust_dispatch;
 /// Declaration-site checks used by the full semantic explicit-types rule.
 #[doc(hidden)]
 pub mod rust_explicit_declarations;
