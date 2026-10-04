@@ -683,6 +683,23 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  01:13 UTC:
+  the next batch's baseline census taken at commit `148979b36`:
+  `census written to ~/.cache/translation-repair/coverage/census-xB1R6c/census.json`
+  (`~/temp/agent/mimo-trial/census-11.log`).
+  `library source: 178 files, 378 stretches over 891 lines, 9 functions never called`.
+  Largest clusters by stretches then lines:
+  `synthetic` leads with 9 stretches over 9 lines in 2 files,
+  `inspect` with 8 over 33 in 1,
+  `corpus-run/tag` with 8 over 16 in 1.
+  This line lands in the trial-log commit that follows `148979b36`.
+  Next:
+  `B123`,
+  "Fourth" in this file,
+  due once the first T8 batch landed and now overdue,
+  then the `synthetic` batch.
+
+- 2026-10-04,
   01:10 UTC:
   the T8 `openrouter` batch closed with commits `adcfeb5d4`,
   `b3cfd5637` and `780e4d267`:
