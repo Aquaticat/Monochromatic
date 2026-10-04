@@ -940,6 +940,18 @@ governing-instruction authority,
 human permission,
 or production adoption.
 Current-use checks remain separate from retained result and cleanup records.
+
+`proc_4ede` then cancelled the original run at a native producer-result update,
+after the owned string receipt existed and before the successor activated.
+One SDK session made one injected request and one canned assessment.
+The completed producer retained its `ok` outcome and unchanged converted value;
+no sink started,
+the successor stayed unreached,
+and the parent issuer returned after drainage.
+Receipt readiness is a recorded observation of the owned program,
+not authority derived from an event label.
+The independent guard review and source-reconciled findings are retained in
+`contract/lifecycle/runtime-continuation/result-guard-review-resolution.json`.
 Definition ownership is factory-closure ownership,
 not session or human authority;
 the fixed session reader and registered receiver separately bind each execution.

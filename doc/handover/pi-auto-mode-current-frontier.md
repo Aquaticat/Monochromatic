@@ -1382,6 +1382,18 @@ governing-instruction authority,
 human permission,
 or production adoption.
 Current-use checks remain separate from retained result and cleanup records.
+
+`proc_4ede` then cancelled the original run at a native producer-result update,
+after the owned string receipt existed and before the successor activated.
+One SDK session made one injected request and one canned assessment.
+The completed producer retained its `ok` outcome and unchanged converted value;
+no sink started,
+the successor stayed unreached,
+and the parent issuer returned after drainage.
+Receipt readiness is a recorded observation of the owned program,
+not authority derived from an event label.
+The independent guard review and source-reconciled findings are retained in
+`contract/lifecycle/runtime-continuation/result-guard-review-resolution.json`.
 Definition ownership is factory-closure ownership,
 not session or human authority;
 the fixed session reader and registered receiver separately bind each execution.
@@ -1435,9 +1447,16 @@ Current independently verifiable areas:
   and dependency finalization to the declared native SDK group profile.
   `proc_e427` qualified the configured consumer;
   `proc_6979` and `proc_5749` covered required freshness support and execution-checkpoint omission.
-- [ ] Extend native nested execution with exact parent occurrence ownership and complete enclosing-program/group linkage.
-  Keep the original budget across callbacks and worker drains;
-  see private `contract/lifecycle/runtime-continuation/nested-judgment-next.json`.
+- [x] Extend native nested execution for the declared literal and string-result profiles,
+  with exact parent occurrence ownership and complete enclosing-program/group linkage.
+  `proc_0963`,
+  `proc_408c`,
+  and `proc_4ede` retain the original judgment across reached groups,
+  result guards,
+  cancellation,
+  and native drainage.
+  General dynamic orchestration and additional output modalities remain unqualified;
+  these finite profiles do not become universal policy restrictions.
 - [ ] Complete instruction-source collection and authority admission beyond the finite observed producer profiles.
 - [ ] Finish the code-owned policy consumer without adopting diagnostic model thresholds or historical policy defaults.
 - [ ] Prepare the new SDK-linked human-original confirmation once its mechanical prerequisites are ready.
