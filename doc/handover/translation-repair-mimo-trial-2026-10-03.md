@@ -683,6 +683,27 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:10 UTC:
+  the next batch's baseline census taken at commit `e91b5dd12`:
+  `census written to ~/.cache/translation-repair/coverage/census-VzG5Wr/census.json`
+  (`~/temp/agent/mimo-trial/census-65.log`).
+  `library source: 104 files, 163 stretches over 366 lines, 4 functions never called`.
+  The ranking's first five clusters
+  (`corpus-run/published`,
+  `active`,
+  `declined`,
+  `corpus-run/runs`,
+  `transient`)
+  all carry documented-left arms.
+  The next actionable cluster is `container`
+  with 3 stretches over 7 lines in 2 files,
+  then `edit`,
+  `preservation`.
+  This line lands in the trial-log commit that follows `e91b5dd12`.
+  Next:
+  the `container` batch.
+
+- 2026-10-04,
   22:02 UTC:
   the T8 `model` batch closed with commit `cb4b07506`:
   3 line stretches over `model-card-derive.ts`
