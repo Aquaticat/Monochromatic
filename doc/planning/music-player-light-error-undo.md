@@ -88,10 +88,28 @@ height correction experiments and resize/drop witnesses recorded in this
 plan are superseded presentation evidence,
 not the accepted overlay implementation.
 No older artifact is relabelled.
-The next action is an isolated overlay renderer with measured message-fit
-fallback,
-real auto/manual dismissal controls and log-capture intent provenance,
-then no-layout-change positive/negative controls before publication.
+Prototype `2d67822ce` replaces the feedback bottomBar with independent
+native snackbar hosts inside the measured viewport overlay.
+`4c5f0cc67` bases transition separation on rendered host heights,
+retains failure meaning in the brief fallback and logs actual rendered
+message line/overflow metrics.
+The default path uses native `Short` duration;
+an explicit false-default capture hold is a debug static pose only,
+not auto-dismiss evidence.
+No feedback is part of Scaffold's player-space allocation.
+The first overlay APK build passed.
+The nine pure message tests and fresh third-line/overflow guard-removal
+controls passed,
+including exact restoration and the complete unit task.
+
+The next action is the updated pure-test run with the multiline/non-ASCII
+diagnostic-tail fixture,
+current artifact build and focused native lifecycle/fit/log read-back
+controls.
+Same-scene player-geometry equality needs a changing-geometry positive
+control before any new held capture cohort.
+Log capture remains a named debug intent here,
+not an implemented export or successful storage recovery.
 The original selected Search review,
 D81 templates and D82 standard notifications remain unchanged.
 
