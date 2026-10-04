@@ -5720,7 +5720,8 @@ and the definitions-parse rejection cased with a paragraph that parses
 alone and refuses beside broken definitions.
 One was the second `not-one-paragraph` check,
 dead behind the first one's kind half
-(its own comment: the structure check already proved the shape):
+(its own comment:
+the structure check already proved the shape):
 a probe over five one-paragraph texts and twenty-one definition shapes
 never fired it
 (`~/temp/agent/mimo-trial/inspect-probe.mjs`),
