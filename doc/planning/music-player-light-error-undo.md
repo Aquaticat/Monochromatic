@@ -245,6 +245,20 @@ ADB then reported `device`,
 `proc_0e8c` retained the fresh settings snapshot and validated the 6 GiB/2 CPU
 bounds.
 The guest transport is no longer a blocker.
+The cover/light/200% combined and failed-trash fit controls captured in
+`proc_7ccb`.
+Both raw frames were inspected:
+error copy,
+Dismiss and the complete deck remain visible;
+the combined Undo-bearing surface is over the list.
+The final combined layout event records viewport bottom `979px` and toast
+bottom `940px`,
+a `39px` separation matching `16dp` at `390dpi`.
+This is a bounded layout observation,
+not native activation,
+ink bounds,
+universal fit or actual operation/recovery acceptance.
+The independent initial panel/theme/font cohort is the next acquisition.
 
 The human correction identified a workflow gap:
 prioritize an available owned-device authorization prompt and verify its
