@@ -230,6 +230,16 @@ Its final diagnostics included `gles_v2_imp.cpp` functions reporting
 Comparable `host/gl/glestranslator/common/include/common/gles_macros.h:28`
 to `43` obtains the current context and routes a missing context through
 `FAIL_IF`.
+The guard's source at lines `18` to `21` prints and returns:
+
+```cpp
+// host/gl/glestranslator/common/include/common/gles_macros.h
+#define FAIL_IF(condition, description) if((condition)) { \
+        fprintf(stderr, "%s:%s:%d error %s\\n", __FILE__, __FUNCTION__, __LINE__, description); \
+        return; \
+    }
+```
+
 This identifies a diagnostic guard,
 not the crash's deciding instruction or whether the messages preceded
 teardown.
@@ -242,9 +252,15 @@ This is distinct from both the pre-guest allocation fatal and the older
 
 The current 37.2.12 GPU help was exercised and lists `swiftshader` as a
 software renderer for GLES and Vulkan.
-That renderer is being probed under the same owned AVD and 6 GiB/2 CPU
-bounds,
-not ruled out by the older version's failure or claimed to fix this crash.
+That renderer's current-37.2.12 probe reached authorized `device`
+transport,
+boot-completion `1` and a separately retained startup settings record under
+the same owned AVD and 6 GiB/2 CPU bounds.
+The runtime explicitly reported OpenGL ES Translator over Google SwiftShader.
+A new capture cohort is in progress.
+Boot success alone does not establish a graphics-crash fix or complete
+application evidence;
+it is not ruled out by the older version's failure.
 New startup settings and renderer provenance remain separate from the
 original restoration snapshot and interrupted cohort.
 

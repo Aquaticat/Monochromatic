@@ -277,8 +277,14 @@ The historical 37.1.11 SwiftShader failure is not treated as proof about
 this different installed build.
 The original settings snapshot remains unchanged;
 a new renderer's startup snapshot is separate.
-A successful probe still requires a new complete capture cohort and
-renderer-specific provenance before publication.
+The current SwiftShader probe reached authorized guest readiness and a
+separate startup snapshot in `proc_0c26`.
+The emitter explicitly reports Google SwiftShader;
+the original restoration snapshot remains unchanged.
+`proc_43c8` acquires a new complete initial cohort with renderer/build
+provenance and final post-stability layout diagnostics.
+Boot success does not prove that the earlier graphics failure is fixed.
+New capture and interaction evidence still gates publication.
 
 The human correction identified a workflow gap:
 prioritize an available owned-device authorization prompt and verify its
