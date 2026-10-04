@@ -20,12 +20,12 @@ pub mod config_merge;
 
 /// Internal data-shape checks, including duplicate decoded keys.
 mod config_data;
-/// Internal nearest-file and explicit configuration discovery.
-#[doc(hidden)]
-pub mod config_lookup;
 /// Internal typed configuration errors shared by the executable and verification drivers.
 #[doc(hidden)]
 pub mod config_error;
+/// Internal nearest-file and explicit configuration discovery.
+#[doc(hidden)]
+pub mod config_lookup;
 /// Internal ordered JSONC configuration parser.
 #[doc(hidden)]
 pub mod configuration;

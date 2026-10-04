@@ -6,11 +6,11 @@
 //! // discoverConfiguration({ file, cwd, explicitConfig }) returns one configuration, not an ancestor merge.
 //! ```
 
-/// Import native path values rather than requiring filesystem names to be UTF-8 strings.
-use std::path::{Path, PathBuf};
 /// Import typed parsing and setup failures.
 use crate::config_error::ConfigError;
-use crate::configuration::{parse_configuration, ConfigBlock};
+use crate::configuration::{ConfigBlock, parse_configuration};
+/// Import native path values rather than requiring filesystem names to be UTF-8 strings.
+use std::path::{Path, PathBuf};
 
 /// What: The sole discovered configuration filename.
 /// Why: HCL and executable configuration are not alternate formats for this implementation.
@@ -80,15 +80,20 @@ impl ConfigFilesystem for NativeConfigFilesystem {
             Ok(metadata) => metadata,
             Err(error) => {
                 if error.kind() == std::io::ErrorKind::NotFound
-                    || error.kind() == std::io::ErrorKind::NotADirectory {
+                    || error.kind() == std::io::ErrorKind::NotADirectory
+                {
                     // Missing virtual-file directories are normal during ancestor lookup.
                     return Ok(None);
                 }
-                return Err(ConfigError::new(format!("Cannot inspect configuration {}: {error}", path.display()).as_str()));
+                return Err(ConfigError::new(
+                    format!("Cannot inspect configuration {}: {error}", path.display()).as_str(),
+                ));
             }
         };
         if !metadata.is_file() {
-            return Err(ConfigError::new(format!("Configuration {} is not a regular file.", path.display()).as_str()));
+            return Err(ConfigError::new(
+                format!("Configuration {} is not a regular file.", path.display()).as_str(),
+            ));
         }
         // What: Read owned UTF-8 source, preserving I/O errors instead of treating them as absent configuration.
         // Why: Invalid encoding must not disable configured rules by causing an ancestor fallback.
@@ -99,7 +104,11 @@ impl ConfigFilesystem for NativeConfigFilesystem {
         // ```
         match std::fs::read_to_string(path) {
             Ok(source) => return Ok(Some(source)),
-            Err(error) => return Err(ConfigError::new(format!("Cannot read configuration {}: {error}", path.display()).as_str())),
+            Err(error) => {
+                return Err(ConfigError::new(
+                    format!("Cannot read configuration {}: {error}", path.display()).as_str(),
+                ));
+            }
         }
     }
 }
@@ -126,11 +135,19 @@ fn absolute_path(path: &Path, cwd: &Path) -> PathBuf {
 /// ```ts
 /// function selected(path: Path, base: Path, source: string): ConfigurationSource;
 /// ```
-fn selected(path: PathBuf, base: PathBuf, source: &str) -> Result<ConfigurationSource, ConfigError> {
+fn selected(
+    path: PathBuf,
+    base: PathBuf,
+    source: &str,
+) -> Result<ConfigurationSource, ConfigError> {
     // Inspect the typed parser result and retain the affected source path on failure.
     match parse_configuration(source) {
         Ok(blocks) => return Ok(ConfigurationSource { path, base, blocks }),
-        Err(error) => return Err(ConfigError::new(format!("Configuration {}: {error}", path.display()).as_str())),
+        Err(error) => {
+            return Err(ConfigError::new(
+                format!("Configuration {}: {error}", path.display()).as_str(),
+            ));
+        }
     }
 }
 
@@ -148,7 +165,9 @@ pub(crate) fn discover_with_filesystem(
     filesystem: &impl ConfigFilesystem,
 ) -> Result<Option<ConfigurationSource>, ConfigError> {
     if !cwd.is_absolute() {
-        return Err(ConfigError::new("Configuration lookup requires an absolute working directory."));
+        return Err(ConfigError::new(
+            "Configuration lookup requires an absolute working directory.",
+        ));
     }
     // What: A present override bypasses discovery, even when its file is outside the repository.
     // Why: The commit adapter supplies a temporary one-rule config whose patterns still target cwd.
@@ -160,7 +179,9 @@ pub(crate) fn discover_with_filesystem(
     if let Some(explicit_path) = explicit {
         let path = absolute_path(explicit_path, cwd);
         let Some(source) = filesystem.read(&path)? else {
-            return Err(ConfigError::new(format!("Explicit configuration {} does not exist.", path.display()).as_str()));
+            return Err(ConfigError::new(
+                format!("Explicit configuration {} does not exist.", path.display()).as_str(),
+            ));
         };
         let result = selected(path, cwd.to_path_buf(), source.as_str())?;
         return Ok(Some(result));
