@@ -165,5 +165,20 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'READS NO VOICES from a unit line carrying no heard pair, since nothing there says who '
+        + 'answered',
+      fn: async () => {
+        expect(summarizeStageRoster({
+          entries: [['refine-candidates (voices unheard),',],],
+          stage: 'refine',
+        },),).toEqual({
+          offered: 0,
+          degraded: 0,
+          silent: 0,
+        },);
+      },
+    },),
   ],
 },);

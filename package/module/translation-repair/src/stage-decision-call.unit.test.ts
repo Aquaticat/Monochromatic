@@ -257,5 +257,47 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'LOSES THE VOICE where the stage guard refuses the reading, since a typed answer that fails '
+        + 'the guard is not the value the stage asked for',
+      fn: async () => {
+        const voice = await attemptStageCall({
+          ...SHARED,
+          validate: function refuses(_value: unknown,): _value is unknown {
+            return false;
+          },
+          client: clientWith({
+            decide: async () => ({
+              model: 'typesafe/jev-1.13',
+              answers: { best: { type: 'choice', choice: '2', }, },
+            }),
+          },),
+          decision: DECISION,
+        },);
+        expect(voice,).toEqual({
+          heard: false,
+          answered: true,
+          unreachable: false,
+          unreadable: 'off-shape',
+        },);
+      },
+    },),
+
+    it({
+      name: 'THROWS the call error where the signal aborted, so steering stops the fan-out',
+      fn: async () => {
+        await expect(attemptStageCall({
+          ...SHARED,
+          signal: AbortSignal.abort(),
+          client: clientWith({
+            decide: async () => {
+              throw new Error('cat nap',);
+            },
+          },),
+          decision: DECISION,
+        },),).rejects.toThrow('cat nap',);
+      },
+    },),
   ],
 },);

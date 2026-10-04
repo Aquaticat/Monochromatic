@@ -91,12 +91,11 @@ export function benchRotation(
    */
   const parts = messages.map(function contentOf(message,): string {
     /**
-     Content of this message, text or structured.
+     Content of this message; the type says text, so no structured form
+     exists to stringify.
      */
     const { content, } = message;
-    if ((typeof content) === 'string')
-      return content;
-    return JSON.stringify(content,);
+    return content;
   },);
 
   /**
