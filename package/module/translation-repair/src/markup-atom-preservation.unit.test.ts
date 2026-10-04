@@ -158,6 +158,38 @@ await describe({
             },);
           },
         },),
+
+        it({
+          name: 'HOLDS a loss the source itself carries as unexcused however the edit writes, since the '
+            + 'markup was copied rather than authored',
+          fn: async () => {
+            expect(markupDelta({
+              before: '<br />',
+              after: '<x />',
+              removableQuotes: [],
+              sourceKeys: markupSourceKeys({ sourceText: '<br />', },),
+            },),).toEqual({
+              unexcused: [{ kind: 'tag', value: '<br />', },],
+              gained: [{ kind: 'tag', value: '<x />', },],
+            },);
+          },
+        },),
+
+        it({
+          name: 'PAIRS a loss with a write the source carries of another kind, where no same-kind write '
+            + 'stands beside it',
+          fn: async () => {
+            expect(markupDelta({
+              before: '`c`',
+              after: '<br />',
+              removableQuotes: [],
+              sourceKeys: markupSourceKeys({ sourceText: '<br />', },),
+            },),).toEqual({
+              unexcused: [],
+              gained: [],
+            },);
+          },
+        },),
       ],
     },),
   ],
