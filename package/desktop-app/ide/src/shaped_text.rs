@@ -12,7 +12,7 @@ use crate::text_projection::{project_line, Projection};
 use crate::view_model::StyleSpan;
 
 /// Logical dimensions and scale of the source viewport.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Viewport {
     /// First logical line materialized, including overscan.
     pub first: usize,

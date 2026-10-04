@@ -23,6 +23,8 @@ use ide_app::{document::Document, view_model::StyleSpan};
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Raster output retains the exact glyph positions used by selection.
 use ide_app::text_raster::TextRaster;
+/// Paint identity prevents caret movement from rebuilding source pixels.
+use ide_app::source_frame::FrameStamp;
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
 /// Why: Callbacks need the same document without cross-thread Arc/Mutex overhead.
 ///
@@ -69,6 +71,8 @@ struct State {
     shaped: Option<ShapedView>,
     /// Avoid cloning whole source for accessibility on each selection change.
     presented_revision: Option<u64>,
+    /// Last materialized image inputs; reset when changing the displayed file.
+    frame_stamp: Option<FrameStamp>,
 }
 
 /// Run the source-view gate against a supplied file or its explicit fixture.
@@ -111,6 +115,7 @@ pub fn run() -> anyhow::Result<()> {
         raster: TextRaster::new(),
         shaped: None,
         presented_revision: None,
+        frame_stamp: None,
     }));
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);

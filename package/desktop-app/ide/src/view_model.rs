@@ -49,7 +49,7 @@ pub struct Glyph {
 /// ```ts
 /// type StyleSpan = {start: number; end: number; style: number};
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct StyleSpan {
     /// Inclusive source character offset.
     pub start: usize,

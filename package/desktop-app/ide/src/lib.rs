@@ -26,3 +26,6 @@ pub mod text_raster;
 
 /// Internal bounded glyph images shared across source-raster frames.
 mod glyph_cache;
+
+/// Paint identity separates source-image updates from caret presentation.
+pub mod source_frame;

@@ -14,7 +14,7 @@ use crate::glyph_cache::{GlyphCache, GlyphKey};
 use crate::shaped_text::ShapedView;
 
 /// Native palette values needed by code painting.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct CodeColors {
     /// Default source ink from the system palette.
     pub foreground: [u8; 4],
