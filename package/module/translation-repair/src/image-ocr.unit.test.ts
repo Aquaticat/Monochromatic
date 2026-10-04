@@ -231,6 +231,59 @@ await describe({
             expect(reading.kind,).toBe('read',);
           },
         },),
+
+        it({
+          name: 'READS NOTHING off a picture with no words on it, the textless line under the reading '
+            + 'floor',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'image-ocr-', },);
+            /**
+             Blank picture, white on white.
+             */
+            const pngPath = join(scratch.path, 'blank.png',);
+            await spawn('magick', [
+              '-size',
+              '200x80',
+              'xc:white',
+              pngPath,
+            ],);
+            const bytes = new Uint8Array(await readFile(pngPath,),);
+            const reading = await readImageWithOcr({
+              bytes,
+              assetName: 'blank.png',
+              l,
+            },);
+            expect(reading.kind,).toBe('no-text',);
+          },
+        },),
+
+        it({
+          name: 'REPORTS the OCR failure when the reader refuses the picture it was handed, the tool '
+            + 'present but unhappy',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'image-ocr-', },);
+            /**
+             Picture wider than the OCR reader will process.
+             */
+            const pngPath = join(scratch.path, 'wide.png',);
+            await spawn('magick', [
+              '-size',
+              '40000x8',
+              'xc:white',
+              pngPath,
+            ],);
+            const bytes = new Uint8Array(await readFile(pngPath,),);
+            const reading = await readImageWithOcr({
+              bytes,
+              assetName: 'wide.png',
+              l,
+            },);
+            expect(reading.kind,).toBe('unavailable',);
+            if (reading.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(reading.reason,).toBe('ocr-failed',);
+          },
+        },),
       ],
     },),
   ],
