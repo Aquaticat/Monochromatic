@@ -472,6 +472,12 @@ the window and does not push anything.
  Collision with the error bar is now settled by D29.
 
 ### D9. Missing files and renamed folders = candidate err-b
+
+The layout-reserving error-bar presentation is superseded by D83.
+Vanished-row removal,
+count-collapsed failures and renamed-folder behavior remain applicable.
+Historical accepted treatment:
+
 The list stays clean:
  a file that has vanished **drops out of the list**,
  and a
@@ -952,7 +958,15 @@ that every non-Latin name used to fall into.
 **This decision covers the rail only.**
  Presentation of the names is D31.
 
-### D29. Undo toast floats above the error bar — both visible (candidate toast-a)
+### D29. Undo toast floats above the error bar, both visible (candidate toast-a)
+
+D83 supersedes the error-bar owner and its layout reservation.
+The remaining overlay requirements still apply:
+content width,
+left alignment,
+16dp owner separation and no player-layout push.
+Historical collision treatment:
+
 Closes the collision.
  The toast is content-width,
  left-aligned,
@@ -2293,6 +2307,32 @@ responsibilities,
 not proof supplied by this design choice.
 No production implementation,
 live playback or real-device notification mutation is authorized here.
+
+### D83. Error feedback is an auto-dismissing, dismissible overlay
+
+The human rejected a bar that changes player layout.
+Use a floating toast/snackbar for error feedback,
+with automatic expiry and immediate manual dismissal.
+Try to fit the message in two visible lines.
+When more detail would need additional lines,
+direct the user to capture Android logs rather than expanding the message
+or reserving player space.
+Full operation details belong in tagged diagnostics,
+not a growing on-screen bar.
+
+This supersedes D9's layout-reserving bar and D29's bar-specific collision
+owner,
+not their truthful outcome requirements or the Undo capability gate.
+Feedback appearing,
+expiring or being dismissed must not resize the folder browser,
+track viewport or deck.
+Do not reinterpret an accepted request as successful trash or log capture
+as actual storage recovery.
+
+The current work remains an isolated authored design study.
+No production storage,
+playback,
+IME or TalkBack operation is authorized by this presentation change.
 
 ## Pending after the theme picks (2026-09-04)
 

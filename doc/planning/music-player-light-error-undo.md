@@ -69,6 +69,32 @@ not a current source-operation proof.
 `package/music-player/design/open-questions.md` section 11d lists the light error bar and
 Undo toast as undrawn.
 
+## Current presentation authority
+
+D83 supersedes the layout-reserving error bar.
+The accepted replacement is a floating,
+auto-dismissing and manually dismissible toast/snackbar.
+Target two visible message lines;
+when further detail would require more lines,
+direct the user to capture Android logs rather than enlarge the notice.
+Keep full operation details in tagged diagnostics.
+The player,
+folder browser and deck must not resize when feedback appears,
+expires or is dismissed.
+Truthful outcome gating and the restoration-handle boundary remain unchanged.
+
+All bar-family captures,
+height correction experiments and resize/drop witnesses recorded in this
+plan are superseded presentation evidence,
+not the accepted overlay implementation.
+No older artifact is relabelled.
+The next action is an isolated overlay renderer with measured message-fit
+fallback,
+real auto/manual dismissal controls and log-capture intent provenance,
+then no-layout-change positive/negative controls before publication.
+The original selected Search review,
+D81 templates and D82 standard notifications remain unchanged.
+
 ## Completed source/operation audit
 
 The historical `err-b` and `toast-a` files were read completely.
