@@ -61,7 +61,8 @@ fn inspect(database: &dyn HirDatabase) -> Vec<Diagnostic> {
     let request: Request = Request::get(database);
     let semantics: Semantics<'_, dyn HirDatabase> = Semantics::new_dyn(database);
     let root: ast::SourceFile = semantics.parse_guess_edition(request.file(database));
-    let source: RustSource = RustSource::from_syntax(String::from("input.rs"), root.syntax().clone());
+    let source: RustSource =
+        RustSource::from_syntax(String::from("input.rs"), root.syntax().clone());
     return check_explicit_types(&semantics, &source, request.severity(database));
 }
 
@@ -80,7 +81,11 @@ fn cargo_configuration() -> CargoConfig {
     let text: String = String::from_utf8(output.stdout).expect("compiler sysroot is UTF-8");
     let sysroot: AbsPathBuf = AbsPathBuf::try_from(text.trim()).expect("absolute compiler sysroot");
     let library: AbsPathBuf = sysroot.join("lib/rustlib/src/rust/library");
-    assert!(library.join("core/src/lib.rs").exists(), "semantic fixtures require the matching rust-src component; use the prepared container task");
+    let core: AbsPathBuf = library.join("core/src/lib.rs");
+    // AbsPath deliberately disables filesystem methods; use the standard filesystem boundary explicitly.
+    let metadata: std::fs::Metadata = std::fs::metadata(&core)
+        .expect("semantic fixtures require the matching rust-src component; use the prepared container task");
+    assert!(metadata.is_file(), "rust-src core entry must be a regular file");
     return CargoConfig {
         sysroot: Some(RustLibSource::Path(sysroot)),
         sysroot_src: Some(library),
@@ -128,11 +133,19 @@ impl SemanticFixture {
         let (database, files, macro_server): (RootDatabase, Vfs, Option<ProcMacroClient>) =
             load_workspace_at(&directory.path, &cargo, &loading, &progress).expect("load fixture");
         assert!(macro_server.is_none());
-        let path: VfsPath = VfsPath::new_real_path(String::from(source_path.to_str().expect("UTF-8 fixture path")));
-        let (file, excluded): (FileId, FileExcluded) = files.file_id(&path).expect("fixture file loaded");
+        let path: VfsPath = VfsPath::new_real_path(String::from(
+            source_path.to_str().expect("UTF-8 fixture path"),
+        ));
+        let (file, excluded): (FileId, FileExcluded) =
+            files.file_id(&path).expect("fixture file loaded");
         assert_eq!(excluded, FileExcluded::No);
         let request: Request = Request::new(&database, file, Severity::Error);
-        return SemanticFixture { database, file, request, _directory: directory };
+        return SemanticFixture {
+            database,
+            file,
+            request,
+            _directory: directory,
+        };
     }
 
     /// Replace exact source bytes before querying; returned findings cannot borrow the database.

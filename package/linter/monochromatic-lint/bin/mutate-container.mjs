@@ -51,7 +51,8 @@ async function main() {
     await copyFile(tool, join(context, 'cargo-mutants'));
     const command = [
       'cargo', 'mutants', '--in-place', '--baseline', 'run',
-      '--build-timeout', '60', '--timeout', '30',
+      // The combined semantic/Markdown consumer build took 83 seconds in the bounded container.
+      '--build-timeout', '300', '--timeout', '60',
       '--no-config', '--no-shuffle', '--output', '/work/mutation-report',
       '--cargo-arg=--offline', '--cargo-arg=--locked',
     ];
@@ -87,7 +88,7 @@ async function main() {
       toolSha256,
       container,
       command,
-      limits: { memory: '2g', cpus: 2, pids: 128, buildTimeoutSeconds: 60, testTimeoutSeconds: 30 },
+      limits: { memory: '2g', cpus: 2, pids: 128, buildTimeoutSeconds: 300, testTimeoutSeconds: 60 },
     }, null, 2) + '\n');
     console.log(`Mutation evidence: ${evidence}`);
     const result = podman({ args: ['start', '--attach', container], allowFailure: true });
