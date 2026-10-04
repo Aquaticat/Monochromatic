@@ -72,9 +72,9 @@ export function allocateBandQuota(
 
   /**
    Passes never outlive the slots to place: a pass that runs places at
-   least one while any remain, the cap above guaranteeing a band below its
-   own. The ceiling is the termination proof the no-progress break was a
-   stopgap for.
+   least one while any remain, the `Math.min` cap guaranteeing a band
+   below its own. The ceiling is the termination proof the no-progress
+   break was a stopgap for.
    */
   const passes = remaining;
   for (let pass = 0; pass < passes; pass += 1) {
@@ -260,12 +260,10 @@ function selectFromBand(
     ) {
       if (a.rank !== b.rank)
         return a.rank - b.rank;
-      /**
-       Entry-key ordering, breaking rank ties between entries. Equal keys
-       mean one entry twice, whose ranks already order its candidates by
-       the issue shuffle; the stable order settles anything else (ledger
-       T8, 2026-10-04).
-       */
+      // Entry-key ordering, breaking rank ties between entries. Equal
+      // keys mean one entry twice, whose ranks already order its
+      // candidates by the issue shuffle; the stable order settles
+      // anything else (ledger T8, 2026-10-04).
       return compareCodePoints({
         left: a.entryKey,
         right: b.entryKey,
