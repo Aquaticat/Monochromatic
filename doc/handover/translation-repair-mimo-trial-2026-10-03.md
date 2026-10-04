@@ -683,6 +683,31 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  11:18 UTC:
+  the T8 `corpus-run/directory` batch closed with commits `6ce30575c`
+  and `f2a9a055b`:
+  6 line stretches over `directory-id-name.ts`,
+  all cased
+  (the record and string refusals of the metadata reads,
+  the alias shapes,
+  the empty-letters id,
+  and the id-namer).
+  The reach census reads `ran 6, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-directory2.log`).
+  Counts at the close:
+  the full suite 1,558 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-directory-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-directory-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `f2a9a055b`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/consolidate` cluster
+  (the ranking's next at `census-eIzZ5P`).
+
+- 2026-10-04,
   11:11 UTC:
   the next batch's baseline census taken at commit `b7e216487`:
   `census written to ~/.cache/translation-repair/coverage/census-eIzZ5P/census.json`

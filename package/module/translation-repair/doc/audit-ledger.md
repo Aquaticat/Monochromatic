@@ -6155,6 +6155,26 @@ reads `ran 0, still cold 0, cold since then 0, not loaded 0`
 and the two edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The twenty-fourth cluster of that census,
+`corpus-run/directory`,
+against `census-eIzZ5P` at `328486494`:
+6 line stretches over `directory-id-name.ts`
+(`6ce30575c`,
+`f2a9a055b`).
+All cased:
+front matter that is no record reads no name and no alias,
+a name that is no string names nobody,
+an info block that is no record names no id,
+the alias list stands when its entries spell the id
+(and neither text nor list names nothing),
+an id of punctuation carries no letters to spell
+(the source carrying no alias at all,
+since the alias path's empty-vs-empty comparison stands first),
+and the id-namer answers for the visible name.
+The reach census (`~/temp/agent/mimo-trial/reach-directory2.log`)
+reads `ran 6, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
