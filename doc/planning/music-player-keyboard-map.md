@@ -17,17 +17,17 @@ any remaining meaningful preference question is asked.
 
 ## Independently verifiable queue
 
-- [ ] Compare the settled app actions and draft map against current
+- [x] Compare the settled app actions and draft map against current
   IntelliJ defaults and existing input handling.
   Completion requires exact key sequences and named action/scope
   differences,
   not assuming every editor command has a music-player analogue.
-- [ ] Build an isolated,
+- [x] Build an isolated,
   no-audio whole-map behavior demonstration with editing,
   focused-control and application-level cases.
   Completion requires guarded tests showing keys reach their intended
   owner without hidden playback or source changes.
-- [ ] Verify the demonstration and present one coherent proposed map,
+- [x] Verify the demonstration and publish one coherent proposed map,
   with rationale and any genuinely unresolved product consequence.
   No cosmetic key-by-key ballot or production implementation follows.
 
@@ -129,8 +129,24 @@ by itself.
 The human's existing request for the whole map is preserved without
 turning its individual entries into separate rounds.
 
-The next action is to finish the input-scope audit,
-then build and test the bounded behavior demonstration.
+The audit and bounded behavior demonstration are complete.
+`package/music-player/design/questions/keyboard-map.prototype.html`
+is the verified self-contained proposal,
+with optional whole-map observations and no per-key ballot.
+`package/music-player/design/evidence/keyboard-map-boundaries.md`
+and its verification manifest retain exact scope and limitations.
+Committed classifier tests and fresh copied-program removal of player,
+logical-composition and popup guards produced intended failures;
+positive/restored checks passed.
+The browser checks exercised caret motion after an End-key positive control,
+focused-control ownership,
+Search visit behavior,
+popup containment and current-row reveal in four responsive/theme contexts.
+New assignments and the proposed playback-region scope are not accepted
+defaults.
+The next independent design item is the settled light error/Undo state
+family,
+recorded in `doc/planning/music-player-light-error-undo.md`.
 Mac/Linux global reservations,
 media-key delivery,
 accessibility traversal and native production binding remain verification

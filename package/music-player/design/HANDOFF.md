@@ -12,17 +12,15 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Active continuation: first-run access and no-library states
+## Current design queue: light error/Undo after first-run and keymap evidence
 
 The filename evidence and its configurable-support correction are complete.
 The human directed continued work rather than another status-only stop.
-The next bounded design-only area is D10's no-system-library/declined-source
-flow,
-preserving D27 and all accepted Search/template decisions.
-`doc/planning/music-player-first-run-access.md` owns the active queue:
-fresh executable-source audit,
-debug-only native state/fit evidence,
-then verified publication.
+The D10 no-system-library/declined-source study preserved D27 and
+all accepted Search/template decisions.
+`doc/planning/music-player-first-run-access.md` records its completed
+executable-source audit,
+debug-only native state/fit evidence and verified publication.
 The first-run source audit and authored native study are complete.
 `evidence/first-run-access-boundaries.md` and
 `questions/first-run-access.html` retain 32 initial and two proven movement
@@ -44,9 +42,16 @@ The human then settled Android media notifications in D82:
 accept Android's standard presentation with no special design or variants.
 That item is removed from the design queue;
 functional media-session wiring is separate.
-After first-run publication verification,
-advance to the single IntelliJ-aligned keyboard-map revision,
-not binding-by-binding questions.
+The single whole-map keyboard proposal is now built and browser-verified.
+`questions/keyboard-map.prototype.html` demonstrates editing,
+control and popup ownership without files or audio;
+`evidence/keyboard-map-boundaries.md` preserves the new-binding proposal
+and OS-delivery limits.
+The map is not an accepted default or production implementation.
+No per-key questionnaire is queued.
+`doc/planning/music-player-light-error-undo.md` owns the next independent
+source/fit/publication queue under settled D8/D9/D29 behavior.
+No real file is trashed or restored by that design work.
 
 ## Filename investigation record (started 2026-09-29)
 

@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "scope": "One unaccepted keyboard-map design proposal with isolated authored browser behavior. No native application keyboard implementation, source operation, real audio, OS media-key delivery or IME study.",
+  "htmlSha256": "d9281ae926ecd6fa73c8a24f747abb1b83d9eda872885a55410c821ce187e28a",
+  "classifierTestSha256": "c9c14b95774a45a8ff4e0ae16efb1163e9d95c4eb8b2bd2856f6085d07c8afab",
+  "browserEngine": "Chromium; no Firefox or native OS delivery claim",
+  "browserCli": "0.38.1",
+  "resourceBounds": {
+    "memoryGiB": 2,
+    "cpu": 2
+  },
+  "offline": true,
+  "contexts": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 39,
+        "incomplete": 0,
+        "passes": 23,
+        "violations": 0
+      },
+      "editingOwnership": true,
+      "sameAndNewSearchVisits": true,
+      "nativeButtonAndSliderOwnership": true,
+      "popupContainment": true,
+      "authoredRowReveal": true,
+      "optionalInertObservations": true,
+      "noSourceOrAudioOperations": true,
+      "visibleClosedPageMinimum48CssPixels": true,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 39,
+        "incomplete": 0,
+        "passes": 23,
+        "violations": 0
+      },
+      "editingOwnership": true,
+      "sameAndNewSearchVisits": true,
+      "nativeButtonAndSliderOwnership": true,
+      "popupContainment": true,
+      "authoredRowReveal": true,
+      "optionalInertObservations": true,
+      "noSourceOrAudioOperations": true,
+      "visibleClosedPageMinimum48CssPixels": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "light",
+      "axeCounts": {
+        "inapplicable": 39,
+        "incomplete": 0,
+        "passes": 23,
+        "violations": 0
+      },
+      "editingOwnership": true,
+      "sameAndNewSearchVisits": true,
+      "nativeButtonAndSliderOwnership": true,
+      "popupContainment": true,
+      "authoredRowReveal": true,
+      "optionalInertObservations": true,
+      "noSourceOrAudioOperations": true,
+      "visibleClosedPageMinimum48CssPixels": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mode": "dark",
+      "axeCounts": {
+        "inapplicable": 39,
+        "incomplete": 0,
+        "passes": 23,
+        "violations": 0
+      },
+      "editingOwnership": true,
+      "sameAndNewSearchVisits": true,
+      "nativeButtonAndSliderOwnership": true,
+      "popupContainment": true,
+      "authoredRowReveal": true,
+      "optionalInertObservations": true,
+      "noSourceOrAudioOperations": true,
+      "visibleClosedPageMinimum48CssPixels": true,
+      "overflow": false
+    }
+  ],
+  "classificationCases": 26,
+  "classificationUnknownPlatformRejected": true,
+  "guardReportSha256": {
+    "positive": "97e06505305d1ac0b91d9e07d153d4e4e7ab3659a92191ab916492d69c30cf58",
+    "without-player-owner": "e557e729e3d7f1ed391997a6510454b1745dcab1c90b986a76840c1793a2a107",
+    "without-composition-owner": "2ee7245e59c919b0218190e3b8cbe684536f9fbb8dbc326776675b4dbbd88a37",
+    "without-popup-owner": "7321c5f19ce711785f22308da29dc40bf445a4bdeaf263f1415f16c194ce5e93",
+    "restored": "97e06505305d1ac0b91d9e07d153d4e4e7ab3659a92191ab916492d69c30cf58"
+  },
+  "noSourceOrAudioOperations": true,
+  "reviewNotesOutsideApplicationShortcutScope": true,
+  "browserClosed": true,
+  "consoleErrors": 0,
+  "limits": [
+    "Isolated browser behavior model; macOS combos tested by protocol classification, not actual OS delivery; no native app/IME/media-key or accessibility acceptance.",
+    "Composition tests exercise a logical property only, not a real Android or desktop IME.",
+    "Player-region guard verifies the proposed scope, not an already accepted universal shortcut policy.",
+    "Native folder typeahead and real folder/Settings operation are not implemented by the popup model.",
+    "Closed-page axe checks are not native accessibility or open-popup audit acceptance.",
+    "New bindings remain a coherent proposal; D25s existing Search/picker assignments remain settled."
+  ]
+}

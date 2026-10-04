@@ -44,9 +44,12 @@ recorded in `evidence/search-talkback-native-baseline.md`.
 The completed filename investigation is recorded in
 `evidence/search-filename-presentation-frontier.md`.
 The human directed continued design work;
-the active bounded first-run/no-library queue is in
+the completed first-run/no-library queue is in
 `doc/planning/music-player-first-run-access.md`.
-It preserves D10/D27 and does not reopen the filename ballot.
+The whole-map keyboard proposal is verified without new accepted defaults.
+`doc/planning/music-player-light-error-undo.md` owns the next independent
+state-family queue.
+Neither work item reopens the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
 Search's extension display.
@@ -820,7 +823,7 @@ not a prerequisite design questionnaire or permission to replace Slint.
 
 ---
 
-## 6. The keyboard map — partially settled (D25), needs an IntelliJ pass
+## 6. The keyboard map: D25 settled assignments and a verified whole-map proposal
 
 Settled:
  Ctrl+F reserved for search,
@@ -842,6 +845,12 @@ accept the platform presentation with no special design.
  the design deliverable is a single revised map brought back as a
 whole;
  implementing it is developer work.
+The requested pass now has a verified whole-map proposal at
+`questions/keyboard-map.prototype.html`.
+`evidence/keyboard-map-boundaries.md` separates actual browser behavior
+from unverified OS/native delivery.
+New bindings and the proposed playback-region scope are not accepted defaults;
+there is no per-key ballot or production implementation authority.
  The custom media-notification design item is closed by D82;
  functional integration remains separate.
 

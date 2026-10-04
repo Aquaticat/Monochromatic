@@ -37,8 +37,14 @@ The owned native runtime was stopped after restoring its recorded fields.
 
 D82 accepts Android's standard media-notification presentation;
 no special notification design remains.
-The next substantive item is the single IntelliJ-aligned keyboard map,
+The [whole-map keyboard proposal](questions/keyboard-map.prototype.html)
+is now browser-verified,
 with editing and focused-control ownership preserved.
+[Its boundary record](evidence/keyboard-map-boundaries.md) distinguishes
+proposal,
+protocol and actual OS/native delivery.
+The next independent area is the light error/Undo state family under
+settled D8/D9/D29 behavior.
 No production implementation is authorized by this continuation.
 
 ## Current review and historical rounds
