@@ -597,9 +597,28 @@ unsupported `undefined` and negative-zero tool values cannot silently change dur
 
 This qualifies the configured fixed-bootstrap profile,
 not arbitrary callback providers or nested semantic groups.
-The native freshness callback is still optional in this consumed SDK graph.
-A fresh source-derived graph is being staged to require and capture that callback;
-omission sensitivity remains next work.
+The native freshness callback was optional in the `proc_e427` SDK graph.
+`proc_a8bf` staged a fresh graph requiring and capturing that callback.
+`proc_6979` passed its three native delta cases:
+three sessions,
+six injected requests,
+three inert executions,
+and two canned semantic attempts.
+Absent freshness support rejected the complete group before preparation or assessment.
+
+`proc_5749` then omitted only the actual native `member-execute` freshness invocation.
+The unchanged target-change fixture observed two inert executions instead of one and failed with
+`AssertionError [ERR_ASSERTION]: 2 !== 1`.
+The first completed effect and both native results were retained;
+other checkpoints and fixture release synchronization remained intact.
+The guard worker used one session,
+two injected wire requests,
+and one canned semantic attempt.
+Its original assertion,
+cleanup completion,
+and full stream/source evidence were checked.
+No completed intact SDK worker was replayed.
+Native nested execution and complete enclosing-program linkage are the next mechanical area.
 No external inference,
 semantic accuracy,
 instruction authority,
