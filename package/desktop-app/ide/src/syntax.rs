@@ -23,6 +23,18 @@ const SCOPES: &[&str] = &[
     "operator", "punctuation", "tag", "attribute", "namespace", "special",
 ];
 
+/// Merge touching intervals with identical paint roles, not unrelated syntax nodes.
+fn append_span(spans: &mut Vec<StyleSpan>, incoming: StyleSpan) {
+    // last_mut lends only the final owned interval; source text remains immutable.
+    if let Some(previous) = spans.last_mut() {
+        if previous.end == incoming.start && previous.style == incoming.style {
+            previous.end = incoming.end;
+            return;
+        }
+    }
+    spans.push(incoming);
+}
+
 /// Own the language registry and its lazy grammar/query caches on the source worker.
 pub struct SyntaxEngine {
     /// Built-in configuration only; project-local executable configuration is not loaded.
@@ -49,6 +61,7 @@ impl SyntaxEngine {
 
     /// Return None only when the registry does not recognize the filename or shebang.
     /// Known languages with missing or incompatible assets return a visible failure instead.
+    /// Returned intervals are sorted, non-overlapping, and merge adjacent identical paint roles.
     pub fn highlight(&self, path: &Path, text: &Rope) -> Result<Option<Vec<StyleSpan>>> {
         let recognized = self.loader.language_for_filename(path)
             .or_else(|| return self.loader.language_for_shebang(text.slice(..)));
@@ -67,7 +80,7 @@ impl SyntaxEngine {
             if start < end {
                 // The last active capture is the most specific current source classification.
                 if let Some(highlight) = highlighter.active_highlights().next_back() {
-                    spans.push(StyleSpan {
+                    append_span(&mut spans, StyleSpan {
                         start: text.byte_to_char(start as usize),
                         end: text.byte_to_char(end as usize),
                         style: highlight.idx() + 1,
