@@ -683,6 +683,37 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  05:00 UTC:
+  the T8 `markup` batch closed with commits `1136d5be0`,
+  `2fe92afcd` and `27a8745bb`:
+  7 stretches over `markup-atom-scan.ts` and `markup-atom-preservation.ts`.
+  Four scanner refusals carry cases
+  (the escaped close inside a matched region,
+  the link destination unclosed at the newline,
+  the unterminated comment,
+  the unclosed attribute expression),
+  two `?? ''` fallbacks and one `?.unexcused ?? []` came out dead behind
+  their own callers' guarantees,
+  and the preservation module's new test file
+  (it sat on the own-unit-tests allowlist)
+  grew to eight cases across the reach runs.
+  The reach census reads `ran 0, still cold 0, cold since then 0, not loaded 0`
+  and the two edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-markup3.log`).
+  Counts at the close:
+  the full suite 1,552 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-markup-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-markup-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `27a8745bb`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `refine` cluster
+  (the ranking's next at `census-uyG0kG`).
+
+- 2026-10-04,
   04:38 UTC:
   the next batch's baseline census taken at commit `411e705a1`:
   `census written to ~/.cache/translation-repair/coverage/census-uyG0kG/census.json`

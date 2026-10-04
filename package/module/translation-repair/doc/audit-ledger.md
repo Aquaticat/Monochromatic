@@ -5846,6 +5846,40 @@ reads `ran 5, still cold 0, cold since then 0, not loaded 0`
 and the two edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The fourteenth cluster of that census,
+`markup`,
+against `census-uyG0kG` at `264a05cd9`:
+7 stretches over `markup-atom-scan.ts` and `markup-atom-preservation.ts`
+(`1136d5be0`,
+`2fe92afcd`,
+`27a8745bb`).
+Four scanner refusals are cased in its case table:
+an escaped close inside a matched region skipping to the real one,
+a link destination unclosed at the newline,
+an unterminated comment,
+and a tag whose attribute expression never closes.
+Two `?? ''` index fallbacks came out dead behind `scanMarkupAtoms`'s own
+loop guard,
+`at < text.length` holding at every read.
+One `?.unexcused ?? []` fallback came out the same way,
+dead behind the equal-length map of standings over deltas,
+`nonNullishOrThrow` reading the delta.
+`markup-atom-preservation` carried no test of its own
+(the own-unit-tests allowlist);
+the new file leaves it and grows through the reach runs
+from three `settleMarkupMoves` cases to eight,
+the later ones pinning the key reader,
+the unexcused and gained pairing,
+the same-kind re-mark,
+the removable quote,
+the copied-markup refusal
+(a loss the source carries stays unexcused however the edit writes)
+and the source-write pairing.
+The reach census (`~/temp/agent/mimo-trial/reach-markup3.log`)
+reads `ran 0, still cold 0, cold since then 0, not loaded 0`
+and the two edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
