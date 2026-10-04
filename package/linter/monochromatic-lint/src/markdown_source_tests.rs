@@ -138,6 +138,7 @@ fn esm_node_acceptance_does_not_claim_javascript_validity() {
     )
     .expect("native ESM construction does not report this JavaScript error");
     let esm: u32 = node(&document, MdastNodeType::MdxjsEsm);
-    assert_eq!(document.slice(esm), "export const =");
+    // Node ranges include the authored line ending even though the ESM value trims it.
+    assert_eq!(document.slice(esm), "export const =\n");
     assert!(!document.visible_nodes().contains(&esm));
 }
