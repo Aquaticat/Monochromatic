@@ -63,7 +63,11 @@ fn usage_errors_are_reported_before_startup() {
         assert_eq!(output.status.code(), Some(2));
         assert!(output.stdout.is_empty());
         let text = String::from_utf8(output.stderr).expect("UTF-8 error");
-        assert!(text.contains("Usage:"));
+        // clap's missing-value form gives --help guidance without repeating usage.
+        assert!(text.contains("--help"), "{input:?}: {text}");
+        if input.is_empty() || input[0] == "--unknown" {
+            assert!(text.contains("Usage:"), "{input:?}: {text}");
+        }
         assert!(!text.contains("WAYLAND_DISPLAY"));
         assert!(!text.contains("XDG_RUNTIME_DIR"));
     }
