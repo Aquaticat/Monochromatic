@@ -961,9 +961,8 @@ This is a pure reservation profile,
 not native SDK group-entry or finalization integration.
 A subsequent private delta attaches each fixed session-specific constructor to the existing stream-consumer identity.
 Its goal is to avoid caller-selected factories or a competing stream/session lookup registry.
-Actual fixed creator,
-occurrence resolver,
-and SDK integration remain next work.
+The fixed creator and occurrence resolver were subsequent composition work;
+actual SDK integration remains next work.
 
 `proc_c390` passed the constructor-binding delta:
 eight pure cases and three guard removals.
@@ -972,10 +971,46 @@ call-entry metadata cannot select another constructor.
 `proc_17a2` then staged nine private SDK artifacts without importing the SDK.
 The protected copy always uses complete-group admission and requires synchronous enclosing-judgment entry.
 Missing hooks cannot select independent per-tool fallback.
-This is source/syntax evidence only;
-the fixed creator,
-member-binding resolver,
-and actual SDK consumer integration are not yet qualified.
+The SDK staging is source/syntax evidence only;
+actual SDK consumer integration is not yet qualified.
+
+## Fixed judgment composition controls
+
+`proc_6147` passed 20 new composition cases for the private fixed creator.
+The tests use owned producer/root/source doubles and real descriptor-bound disposable target files,
+not actual SDK sessions.
+The creator combines the original-start budget,
+complete ordered prepared membership,
+canonical member claims,
+one-use assessment dispatch,
+and dependency finalization.
+Failed or late responses remain discarded;
+failed close retains its original cause,
+including `throw undefined`,
+without becoming current evidence or permission.
+
+`proc_a447` passed seven intact delta cases and six exact guard mutants in 13 sequential workers.
+The controls cover the shared attempt ceiling including a transport retry,
+the four MiB serialized request bound,
+and guard sensitivity for original start,
+member order,
+target freshness,
+callback reentry,
+pre-dispatch terminal retention,
+and request size.
+The parent program,
+final prepared group,
+and observed request body appear once in the shared request envelope,
+not once per question.
+After evidence closes,
+continuation checks retain root/source/target/cancellation checks without imposing the decision-model deadline
+on tool execution.
+No external model requests,
+SDK imports,
+semantic calibration,
+policy verdicts,
+or human permission were established.
+The next step binds this creator and its preparation checkpoints to the actual protected SDK group consumer.
 
 ## Next work
 
