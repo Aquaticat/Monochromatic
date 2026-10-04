@@ -683,6 +683,23 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  23:45 UTC:
+  the next batch's baseline census taken at commit `c82ae61f7`:
+  `census written to ~/.cache/translation-repair/coverage/census-G1oD6W/census.json`
+  (`~/temp/agent/mimo-trial/census-73.log`),
+  `library source: 102 files, 157 stretches over 357 lines, 4 functions never called`.
+  The ranking's first six clusters carry documented-left arms
+  or the attribution quirk's records.
+  The next actionable cluster is `corpus-run/reading`
+  with 3 stretches over 3 lines in 1 file,
+  then `nudged`,
+  `photo`,
+  `resolution`.
+  This line lands in the trial-log commit that follows `c82ae61f7`.
+  Next:
+  the `corpus-run/reading` batch.
+
+- 2026-10-04,
   23:38 UTC:
   the T8 `corpus-run/lane` batch closed with commit `4fa547794`:
   3 line stretches over `lane-contest-cache-store.ts`,
