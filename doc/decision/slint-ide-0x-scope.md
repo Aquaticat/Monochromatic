@@ -31,6 +31,12 @@ The [implementation plan][implementation] and [handover][handover] record progre
   and copying.
 - Bundled JetBrains Mono for source text and Inter for UI text,
   including the font faces used by the application and their license notices.
+- Correct JetBrains Mono and Inter typography,
+  including ligatures and supported font settings.
+  Ligature shaping must not break caret positions,
+  hit testing,
+  partial selection,
+  or copying of the underlying source characters.
 - Light/dark appearance follows the system at startup and when its preference changes.
   No application-specific theme override.
 - True pixel-level smooth scrolling,
