@@ -258,5 +258,13 @@ await describe({
           .toBe('Keep "mum" about the cat.',);
       },
     },),
+
+    it({
+      name: 'COUNTS a stray underscore outside any emphasis, so a mark neither closed nor opened skips nothing',
+      fn: async () => {
+        expect(respelled({ text: 'The _cat_ napped on the colour of the lonely _.', },),)
+          .toBe('The _cat_ napped on the colour of the lonely _.',);
+      },
+    },),
   ],
 },);
