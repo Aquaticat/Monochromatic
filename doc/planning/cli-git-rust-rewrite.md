@@ -87,16 +87,30 @@ Eliminating an external Node installation is not a hard requirement.
 The user explicitly selected JSONC and removed the requirement to retain TypeScript support.
 They identified the repository's recently ported Rust JSONC package for reuse.
 Inspect that package before proposing another parser.
-Retiring executable configuration does not by itself decide whether custom policies may run as external commands.
+The user subsequently selected shipped policies only,
+rejecting the proposed generic external-policy extension capability.
+The user also wants the executable-config trust subsystem removed.
+A broad enough built-in catalog to avoid writing new policies is a 2.x goal.
+Whether 2.x scopes the catalog alone or the whole redesign remains to be clarified.
+
+Existing built-in adapters accept executable paths and command arrays:
+`package/git-policy/markdown-lint/src/index.ts` defines `command`,
+and `package/git-policy/forbidden-strings/src/index.ts` defines `executable`.
+The generated copies under `package/git-policy/cli/src/optional/` retain these options.
+The shipped-only design must not preserve arbitrary program selection through JSONC;
+that would retain the executable-config problem under a different name.
+Deleting the trust subsystem does not remove the need to validate data,
+constrain file writes,
+or choose whether repository configuration may weaken user-required enforcement.
 
 ### Embedding
 
-The user wants cli-git to "embed in forbidden-strings".
-The direction and scope of embedding are not yet settled:
-clarify whether forbidden-strings hosts the Git wrapper,
-the Git wrapper calls the scanner in-process,
-or both share reusable modules and a distribution artifact.
-Do not silently invert the user's wording.
+The user clarified:
+"cli-git should come with forbidden-strings bundled in."
+Cli-git is the distributing tool and forbidden-strings is bundled with it,
+not the reverse.
+Keep this product requirement distinct from selecting in-process linkage versus an owned child executable.
+No scanner replacement is requested.
 
 ## Local interface inspection
 
@@ -117,23 +131,24 @@ Do not silently invert the user's wording.
 
 ## Next preference frontier
 
-- Clarify the embedding purpose and direction:
-  hosting cli-git inside forbidden-strings,
-  eliminating the scanner subprocess from cli-git,
-  shared configuration,
-  one installation,
-  or a combination.
-- Decide whether JSONC may register entirely new policies implemented as external executables,
-  or only configure shipped policies.
-  A shipped adapter's existing command option does not establish a generic external-plugin contract.
+- Decide whether repository JSONC may automatically weaken enforcement,
+  such as switching off secret scanning or excluding all files,
+  or whether user-required policies remain a non-overridable minimum.
+  This is configuration authority,
+  not consent to execute code.
+- Clarify whether the 2.x goal refers only to expanding the built-in catalog,
+  or also to the wrapper redesign,
+  JSONC,
+  bundling,
+  and trust removal.
 
-Performance budgets and implementation ranking await measured workload evidence.
+Performance budgets and implementation ranking await representative workload evidence.
 Do not propose backgrounding auto-push as a latency remedy before measuring it.
 Preserve accepted safety,
 concurrent-commit,
 and recovery requirements unless the user explicitly reopens them;
 rewriting is not permission to drop functionality.
-Trust design follows the authority granted to JSONC settings and any selected external-command model.
+The rejected alternative is a generic external-policy plugin interface.
 No implementation language,
 module arrangement,
 or migration strategy has been adopted.
@@ -214,13 +229,50 @@ Invocation:
 Managed process:
 `cli-git-installed-lifecycle-baseline`.
 Status:
-started;
-results pending.
+completed with exit 0.
+Baseline-capture mode collects measurements without enforcing performance budgets;
+exit 0 is not a budget-pass result.
+
+Raw results:
+
+- [`installed-baseline-run-1.json`](cli-git-rust-rewrite-evidence/installed-baseline-run-1.json).
+- [`installed-baseline-run-2.json`](cli-git-rust-rewrite-evidence/installed-baseline-run-2.json).
+
+Each scenario records 30 samples after 6 warm-ups in each run.
+The installed artifact identity is its recorded SHA-256;
+`revision: unrecorded` in the raw benchmark output must not be represented as a verified source revision.
+
+One-file commit plus local auto-push had wrapper wall-time medians of 436.710 and 450.966 ms.
+Its paired direct Git commit plus push medians were 27.035 and 27.509 ms.
+Paired wrapper-added medians were 409.953 and 423.590 ms;
+wrapper-added p95 values were 444.931 and 439.857 ms.
+These figures measure the synthetic fixture,
+not the reported Markdown workload.
+
+Unchanged-run variability is material elsewhere:
+the 256-path commit wrapper medians were 2,336.066 and 582.359 ms.
+No implementation comparison has run,
+and no causal explanation for that spread is established.
+Do not attribute either the spread or the real-repository delay to Rust,
+Node,
+trust,
+network,
+or contention from these samples.
+
+Harness scope warning:
+`strict-mjs`,
+`strict-typescript`,
+`validator`,
+and `relaxed-rebuild` issue `status` commands in `lifecycle-latency-definitions.ts`.
+The current `trust/command-classification.ts` classifies `status` as `skip-config`.
+Their labels alone do not establish that they exercise config loading or rebuilding.
+A consumer-boundary positive control remains required before drawing trust-cost conclusions.
 
 ## Next action
 
-Ask the embedding and custom-policy questions together and wait for the user's answers.
-Inspect baseline completion when notified,
-then extend only the missing workload surfaces needed to reproduce the reported delay.
+Ask the configuration-authority and release-scope questions together and wait for the user's answers.
+Extend the fixture to exercise the actual Markdown policy and bundled scanner workload,
+and validate benchmark reach with positive controls,
+before attributing the reported delay or setting rewrite acceptance budgets.
 Keep the current implementation running;
 do not port code during the interview.
