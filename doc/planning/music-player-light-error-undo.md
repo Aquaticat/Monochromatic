@@ -357,6 +357,13 @@ the previous artifacts.
 The next action is the corrected native cohort,
 height/glyph checks and fresh intent/Dismiss controls before publication.
 No old capture is relabelled as the new artifact.
+The first corrected-artifact boot watch targeted the old first-run
+container name and rejected `no such container`;
+the actual owned runtime independently reports authorized `device`.
+This is a consumer-watch target mistake,
+not a renewed ADB grant failure or a proved guest boot failure.
+The watch target is corrected without restarting the emulator or changing
+its retained granted identity.
 Boot success does not prove that the earlier graphics failure is fixed.
 New capture and interaction evidence still gates publication.
 
