@@ -9,7 +9,7 @@ use crate::document::Document;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::{project_line, Projection};
 /// Syntax classifications stay independent of pixels.
-use crate::view_model::StyleSpan;
+use crate::source_style::StyleSpan;
 
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]

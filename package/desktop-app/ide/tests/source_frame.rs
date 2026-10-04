@@ -1,7 +1,7 @@
 //! Source-image invalidation must preserve caret geometry without needless painting.
 
 /// Consumer APIs use the same stamp as the native rendering boundary.
-use ide_app::{document::{Document, ReadingPosition}, shaped_text::Viewport, source_frame::FrameStamp, text_raster::CodeColors, view_model::StyleSpan};
+use ide_app::{document::{Document, ReadingPosition}, shaped_text::Viewport, source_frame::FrameStamp, text_raster::CodeColors, source_style::StyleSpan};
 
 /// Source-image fixture with explicit physical geometry and system colors.
 fn stamp(document: &Document) -> FrameStamp {

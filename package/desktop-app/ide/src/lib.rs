@@ -9,8 +9,8 @@
 /// ```
 pub mod document;
 
-/// Shared glyph geometry used by painting and pointer hit testing.
-pub mod view_model;
+/// Semantic source classifications do not depend on terminal-cell geometry.
+pub mod source_style;
 
 /// Session-local Ctrl+digit history with editord's promotion semantics.
 pub mod recent;

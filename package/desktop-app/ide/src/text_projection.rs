@@ -26,8 +26,8 @@ pub fn project_line(source: &str) -> Projection {
     let mut source_to_byte = vec![0];
     let mut byte_to_source = vec![0];
     let mut column = 0;
-    let mut source_index = 0;
-    for character in source.chars() {
+    // enumerate supplies each scalar index without a separate mutable counter.
+    for (source_index, character) in source.chars().enumerate() {
         if character == '\n' || character == '\r' {
             break;
         }
@@ -55,7 +55,6 @@ pub fn project_line(source: &str) -> Projection {
             // Missing width for a control character contributes no display columns.
             column += UnicodeWidthChar::width(character).unwrap_or(0);
         }
-        source_index += 1;
         source_to_byte.push(text.len());
     }
     return Projection { text, source_to_byte, byte_to_source };

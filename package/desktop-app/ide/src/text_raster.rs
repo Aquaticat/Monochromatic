@@ -110,7 +110,7 @@ impl TextRaster {
                     let font = run.font();
                     let mut font_ref = FontRef::from_index(font.data.as_ref(), font.index as usize)
                         .context("Unable to read a shaped source font face")?;
-                    let key = self.keys.entry((font.data.id(), font.index)).or_insert_with(CacheKey::new);
+                    let key = self.keys.entry((font.data.id(), font.index)).or_default();
                     font_ref.key = *key;
                     let mut scaler = self.scale.builder(font_ref)
                         .size(run.font_size()).hint(true)
@@ -145,16 +145,22 @@ impl TextRaster {
                                 let px = left + ix as i32;
                                 if px < 0 || px >= view.width as i32 { continue; }
                                 let source = (iy * image.placement.width + ix) as usize;
-                                let color;
-                                if image.content == Content::Mask {
-                                    color = [foreground[0], foreground[1], foreground[2],
-                                        ((u32::from(image.data[source]) * u32::from(foreground[3]) + 127) / 255) as u8];
+                                // What: if is an expression whose branch value initializes color.
+                                // Why: Every valid image format supplies a complete pixel; others fail.
+                                //
+                                // In TS you'd write (pseudocode):
+                                // ```ts
+                                // const color = isMask ? coloredAlphaMask : embeddedRgba;
+                                // ```
+                                let color = if image.content == Content::Mask {
+                                    [foreground[0], foreground[1], foreground[2],
+                                        ((u32::from(image.data[source]) * u32::from(foreground[3]) + 127) / 255) as u8]
                                 } else if image.content == Content::Color {
                                     let offset = source * 4;
-                                    color = [image.data[offset], image.data[offset + 1], image.data[offset + 2], image.data[offset + 3]];
+                                    [image.data[offset], image.data[offset + 1], image.data[offset + 2], image.data[offset + 3]]
                                 } else {
                                     bail!("Unexpected subpixel mask when rasterizing source with alpha format");
-                                }
+                                };
                                 let destination = (py as usize * view.width as usize + px as usize) * 4;
                                 blend(&mut bytes, destination, color);
                             }

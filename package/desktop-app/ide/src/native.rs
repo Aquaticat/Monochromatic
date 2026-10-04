@@ -18,7 +18,7 @@ use ui::AppWindow;
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString};
 /// Source and display geometry use the same library interface tested headlessly.
-use ide_app::{document::Document, view_model::StyleSpan};
+use ide_app::{document::Document, source_style::StyleSpan};
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Raster output retains the exact glyph positions used by selection.

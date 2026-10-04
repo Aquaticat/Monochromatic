@@ -7,7 +7,7 @@ use crate::shaped_text::Viewport;
 /// Palette colors affect pixels but not caret geometry.
 use crate::text_raster::CodeColors;
 /// Syntax spans belong to the source paint key even when text is unchanged.
-use crate::view_model::StyleSpan;
+use crate::source_style::StyleSpan;
 
 /// What: PartialEq generates field-by-field equality for this owned value.
 /// Why: Reusing an image requires every paint input to match, not a lossy hash.

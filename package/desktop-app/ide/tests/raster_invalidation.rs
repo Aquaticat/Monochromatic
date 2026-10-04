@@ -1,7 +1,7 @@
 //! Warm glyph caches must match a fresh renderer across every paint input change.
 
 /// Consumer APIs retain canonical source alongside the shared glyph geometry.
-use ide_app::{document::{Document, ReadingPosition}, shaped_text::{TextShaper, Viewport}, text_raster::{CodeColors, TextRaster}, view_model::StyleSpan};
+use ide_app::{document::{Document, ReadingPosition}, shaped_text::{TextShaper, Viewport}, text_raster::{CodeColors, TextRaster}, source_style::StyleSpan};
 
 /// Reuse one cache through font fallback, scale, origin, style, selection, and theme changes.
 #[test]
@@ -29,7 +29,7 @@ fn cached_pixels_match_fresh_pixels_after_input_changes() {
         let viewport = Viewport { first: 0, count: 3, width: 300.0, scale: [1.0, 1.25, 2.0][case % 3] };
         let horizontal = [0.0, 0.25, 5.75, 0.0][case % 4];
         let colors = CodeColors { foreground: [31, 70, 110, 200], selected: [240, 210, 255, 255], dark: case % 2 == 0 };
-        let styles = [StyleSpan { start: 0, end: document.text().len_chars(), style: (case % 4 + 1) as u8 }];
+        let styles = [StyleSpan { start: 0, end: document.text().len_chars(), style: case % 4 + 1 }];
         // What: & lends source and style slices without moving their ownership.
         // Why: Both renderers must consume exactly the same layout.
         //
