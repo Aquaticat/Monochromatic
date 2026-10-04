@@ -683,6 +683,26 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  20:56 UTC:
+  the next batch's baseline census taken at commit `c087e5884`:
+  `census written to ~/.cache/translation-repair/coverage/census-E4DYQO/census.json`
+  (`~/temp/agent/mimo-trial/census-58.log`).
+  `library source: 110 files, 176 stretches over 385 lines, 4 functions never called`.
+  The ranking's first three clusters carry documented-left arms.
+  The next actionable cluster is `corpus-run/canadian`
+  with 4 stretches over 4 lines in 3 files
+  (`canadian-date-parts.ts:354`,
+  `canadian-date-read-leading.ts:259`,
+  `335`,
+  `canadian-spelling-capital.ts:463`),
+  then `mask`,
+  `source`,
+  each at 4.
+  This line lands in the trial-log commit that follows `c087e5884`.
+  Next:
+  the `corpus-run/canadian` batch.
+
+- 2026-10-04,
   20:45 UTC:
   the next batch's baseline census taken at commit `2b86649b6`:
   `census written to ~/.cache/translation-repair/coverage/census-E2Gm5a/census.json`
