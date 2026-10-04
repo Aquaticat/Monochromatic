@@ -82,6 +82,12 @@ cargo binstall monochromatic-nested-wayland-session
 
 ## Usage
 
+`--help` or `-h` prints generated help and exits successfully without opening Wayland.
+`--version` reports the binary version without starting the compositor.
+Clap handles parent options only until the child command begins:
+`app --help` and `-- app --help` both forward `--help` to the child.
+Unknown options before the child remain usage errors.
+
 ```txt
 monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
     [--color-scheme dark|light] [--isolate]

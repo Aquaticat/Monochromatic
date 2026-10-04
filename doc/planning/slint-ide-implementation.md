@@ -13,11 +13,19 @@ Current process,
 verification,
 and resumption details are in [the handover][handover].
 
-- [ ] Nested Wayland session clap/help fix,
-  explicitly requested after the existing binary rejected `--help`.
-  Preserve hosted-command forwarding and verify help without starting a display.
-- [ ] Bundle JetBrains Mono and Inter with licenses and registration,
-  verified independently of installed copies of those families.
+- [ ] Finish nested Wayland session clap/help verification.
+  Parser replacement is implemented;
+  11 parser tests and 3 executable tests pass,
+  including no-display help and hosted-command forwarding.
+  Host debug `--help` succeeds.
+  Full tests/release/lint remain pending.
+- [ ] Verify embedded JetBrains Mono and Inter independently of installed copies.
+  Font assets,
+  original licenses,
+  checksums,
+  Slint imports,
+  and explicit embedding configuration are committed;
+  the markup check passes.
 - [ ] Source view and document correspondence.
   Document interface exists;
   all 7 consumer tests pass,

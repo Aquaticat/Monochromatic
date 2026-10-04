@@ -8,15 +8,14 @@ The user confirmed the [scope][scope],
 reviewed the [approach][plan],
 and explicitly said to implement.
 The IDE is **not complete**.
-The latest request is to update this handover before continuing.
+The user explicitly corrected an unnecessary stop after the checkpoint:
+handover updates do not pause the authorized implementation.
+Keep working through the queue unless the user requests a pause or a genuine blocker appears.
 
-Next implementation action:
-fix the repo-owned nested Wayland session's missing `--help` using clap,
-then use that compositor for native IDE verification.
-The user explicitly requested this additional fix after the existing binary rejected `--help`.
-
-The user-facing response to this handover should state what was recorded and which work remains;
-it must not claim the IDE or the clap fix is done.
+Current action:
+finish verification of the implemented clap/help fix and embedded fonts,
+then use the repo-owned nested compositor for native IDE verification.
+The IDE remains incomplete.
 
 ## Confirmed requirements and later additions
 
@@ -48,12 +47,21 @@ private caches/temp files outside the project are allowed.
 
 ## Work queue
 
-- [ ] Nested Wayland clap/help fix,
-  including real CLI exit/output checks without a display.
-- [ ] Bundled fonts,
-  native registration,
-  license/provenance records,
-  and verification without installed copies of those font families.
+- [ ] Finish nested Wayland clap/help verification.
+  The parser replacement is implemented;
+  11 parser tests and 3 real-executable tests pass,
+  and the host debug binary's `--help` invocation exits 0.
+  Full tests,
+  release build,
+  formatting,
+  and scoped lint remain to be completed.
+- [ ] Finish bundled-font verification.
+  Inter Regular/SemiBold and JetBrains Mono Regular,
+  their original licenses,
+  checksum provenance,
+  and Slint imports are committed.
+  The markup check passes;
+  embedded binary and font-isolation checks remain.
 - [ ] Native source-view interaction and external-change correspondence.
 - [ ] Live file tree,
   search,
@@ -142,7 +150,8 @@ Package:
   and live viewport preservation still need work.
 - Horizontal content width is currently a fixed 240 cells;
   replace that with measured document geometry before claiming arbitrary-line navigation.
-- Fonts are referenced by family name but not bundled yet.
+- Font assets and explicit embedding configuration now exist,
+  but the still-running original headless process predates them.
 - Clippy,
   Rust documentation/line-budget checks,
   formatting,
@@ -265,35 +274,48 @@ and `content-y`.
 
 ## Nested Wayland help fix
 
-This additional task is explicitly authorized.
-No source changes for it have been made yet.
+This additional task is explicitly authorized and the source change is implemented.
+`test:cli:container` passes 11 parser tests and 3 executable tests.
+`inspect:cli -- --help` also succeeds on the host.
+Full package/release/lint verification remains pending.
 
 Relevant files:
 
 - `package/cli/nested-wayland-session/src/cli.rs`:
-  manual parser,
-  configuration record,
-  and size parser;
-  includes duplicate handling blocks for isolation/CPU options.
-- `src/cli_tests.rs`:
-  existing color-scheme parsing tests.
+  converts clap matches to the existing public `Config` and preserves the anyhow error interface.
+- `src/cli_command.rs`:
+  clap builder grammar with generated help,
+  version,
+  repeated-option overrides,
+  and trailing child arguments.
+- `src/cli_config.rs` and `src/cli_size.rs`:
+  retained configuration and dimension validation.
+- `src/cli_tests.rs` and `tests/cli.rs`:
+  parser cases and no-display executable tests.
 - `src/main.rs`:
-  calls `parse_args(&args).context("parsing command-line arguments")?` before `run(config)`.
-- `src/lib.rs`:
-  reexports `parse_args` and `Config`.
+  recognizes wrapped clap errors and honors their print/exit policy before logging or Wayland startup.
 - `Cargo.toml`:
-  no clap dependency yet.
+  clap version 4 with the repository's canonical features.
 - `mise.toml`:
-  package build/test tasks exist,
-  but their container invocation currently has no memory/CPU bounds.
-  Bound compilation when running this task.
+  bounded container dispatch,
+  `test:cli:container`,
+  `format:rust:container`,
+  and `inspect:cli` tasks.
 
 The executable is not on PATH.
 An existing binary is at:
 `package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session`.
-Its real invocation with `--help` returned exit 1 and:
-`unknown flag: --help`.
-The package was clean when last inspected.
+Before the fix,
+its real invocation with `--help` returned exit 1 and `unknown flag: --help`.
+The new debug binary passes help verification;
+recheck the release artifact after its current rebuild completes.
+
+The first executable test incorrectly required a `Usage:` line for every clap error.
+A real `--socket` invocation demonstrated that clap emits affected-option text and `--help` guidance without usage.
+The corrected test retains exit-2,
+stdout/stderr,
+help guidance,
+and no-Wayland assertions.
 
 Use clap as requested.
 Root Cargo policy already defines clap as version `4` with `derive` enabled;
@@ -321,7 +343,13 @@ Verify the built binary with display-related environment variables absent.
 
 Also propose tightening `AGENTS.md` rule `VB1` to include successful no-startup CLI help verification.
 This policy proposal is not yet applied or accepted.
-Suggested replacement body:
+Also propose tightening `PXQ` for the observed stopping failure:
+completion means the queue;
+handover/checkpoint requests do not pause authorized work;
+continue remaining items unasked and stop only when complete or genuinely blocked.
+Neither proposal changes the current authorization to keep implementing.
+
+Suggested `VB1` replacement body:
 
 > Servers:
 > check responses.
@@ -335,8 +363,13 @@ Suggested replacement body:
 
 ## Fonts and system theme
 
-No font assets have been downloaded into the package yet.
-The host currently resolves:
+Font assets now live in `package/desktop-app/ide/asset/font`,
+with original licenses and SHA-256 provenance in that directory's README.
+`ui/app.slint` imports them and `build.rs` explicitly selects `EmbedResourcesKind::EmbedFiles`.
+The markup check accepts these imports.
+Runtime font-isolation verification remains pending.
+
+The host also resolves:
 `~/.local/share/fonts/JetBrainsMono-Regular.ttf` and
 `~/.local/share/fonts/Inter-Regular.ttf`.
 That explains the initial rendering and is not bundling verification.
@@ -355,8 +388,8 @@ including its non-regular weight if required.
 
 Installed `i-slint-compiler-1.18.1/parser/document.rs:299` documents `import "something.ttf";`.
 `passes/embed_glyphs.rs:47` implements loading imported font bytes.
-This is source evidence;
-font import and embedding have not yet been exercised in our app.
+The source evidence is now complemented by the successful Slint markup check with real font imports.
+Binary embedding and font-isolation verification remain separate checks.
 `slint-build` exposes `CompilerConfiguration::embed_resources(EmbedResourcesKind::EmbedFiles)`;
 Rust output defaults to embedded resources,
 but configure/test this explicitly rather than rely on a build-machine font path.

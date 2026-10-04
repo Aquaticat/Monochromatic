@@ -102,6 +102,10 @@ run = """
 runCargo(['package'])
 """
 
+[tasks."run:built"]
+description = "Run the already-built release compositor without rebuilding"
+run = "./target/release/monochromatic-nested-wayland-session"
+
 [tasks."inspect:cli"]
 description = "Run the already-built debug CLI for help and argument-boundary verification"
 run = "./target/debug/monochromatic-nested-wayland-session"
