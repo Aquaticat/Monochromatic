@@ -1097,7 +1097,18 @@ it neither rolls back an already-started child nor proves successful drain.
 Original judgment/cancellation linkage,
 queued-child release checks,
 and complete nested semantic membership remain unfinished.
-A separate native cancellation diagnostic is now testing inherited versus substituted child signals.
+`proc_8bea` separately measured cancellation while the parent remained active.
+Both cases aborted the original parent signal;
+the inherited signal prevented the child,
+but a substituted live signal allowed one inert child execution.
+The diagnostic used two SDK sessions,
+two injected requests,
+and two canned semantic attempts.
+A fresh wrapper derivative composes original and additional cancellation instead of substituting them.
+`proc_4be3` passed ten native signal/helper controls;
+`proc_4dbb` passed independent original/child cancellation guard removals.
+Actual SDK composition is the next verification step,
+not yet a qualified cancellation remedy.
 No external inference,
 semantic accuracy,
 instruction authority,

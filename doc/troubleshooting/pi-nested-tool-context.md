@@ -92,7 +92,8 @@ The omitted branch reports an unavailable nested-call function;
 it does not add a parent-execution lifetime check.
 Session/runner liveness therefore is not proof that the original parent invocation remains active.
 A child-supplied signal also needs separate handling when a consumer must retain the original cancellation scope.
-The diagnostic did not test signal substitution.
+The `proc_4202` diagnostic did not test signal substitution.
+The separate `proc_8bea` contrast measured that path after the context-lifetime prerequisite.
 
 ### Recorder lifetime and caller labels do not preserve execution occurrence identity
 
@@ -213,6 +214,55 @@ and injected transport are fixture controls,
 not OS isolation,
 atomicity,
 or a hard handback guarantee.
+
+## Original cancellation and a substituted child signal
+
+`proc_8bea` used two actual private SDK sessions and an active inert parent definition.
+The parent aborted the agent's original signal,
+then awaited a child call.
+The default inherited signal produced the native `Operation aborted` result and no leaf execution.
+Supplying another live signal executed one inert leaf instead.
+Both cases kept the parent invocation active during the call;
+this is separate from the saved-context-after-return incident.
+
+Agent-core `dist/agent.js:218-219` implements the abort used by the fixture:
+
+```javascript
+// pi-agent-core dist/agent.js:218-219
+abort() {
+  this.activeRun?.abortController.abort();
+}
+```
+
+The nested context still selected `options.signal ?? signal`
+in `dist/core/extensions/runner.js:713`.
+Agent-core's `prepareToolCall` checks that supplied signal after the before-call hook:
+
+```javascript
+// pi-agent-core dist/agent-loop.js:499-505, selected statements
+if (signal?.aborted) {
+  return {
+    kind: "immediate",
+    result: createErrorToolResult("Operation aborted"),
+    isError: true,
+  };
+}
+```
+
+The diagnostic kept two injected wire requests,
+two canned semantic attempts,
+complete native records,
+and successful disposal.
+No external inference or real tool effects occurred.
+See private `contract/collector/nested-cancellation-intake/result.json`.
+
+A fresh consumer wrapper now forwards the actual parent signal when no different child signal is requested,
+or composes both with native `AbortSignal.any`.
+Additional child cancellation remains effective rather than being discarded.
+`proc_4be3` passed ten runtime/helper controls,
+including a positive native-signal control;
+`proc_4dbb` removed each cancellation dependency separately and observed the intended assertion failure.
+Those controls are not actual SDK composition qualification.
 
 ## Verified workaround and remaining implementation
 
