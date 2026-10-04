@@ -164,8 +164,8 @@ impl ShapedView {
             let index = cursor.index().min(shaped.projection.byte_to_source.len() - 1);
             return shaped.source_start + shaped.projection.byte_to_source[index];
         }
-        let row = row.min(document.text().len_lines().saturating_sub(1));
-        return document.text().line_to_char(row);
+        let bounded_row = row.min(document.text().len_lines().saturating_sub(1));
+        return document.text().line_to_char(bounded_row);
     }
 
     /// Return caret x using exactly the same glyph advances as drawing.

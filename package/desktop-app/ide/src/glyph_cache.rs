@@ -89,7 +89,7 @@ impl GlyphCache {
             // let bytes = 0; if (image !== undefined) bytes = image.data.length;
             // ```
             let mut bytes = 0;
-            if let Some(image) = &image { bytes = image.data.len(); }
+            if let Some(rendered) = &image { bytes = rendered.data.len(); }
             if bytes > 16 * 1024 * 1024 {
                 bail!("Source glyph image exceeds the 16 MiB glyph limit; reduce the display scale");
             }
