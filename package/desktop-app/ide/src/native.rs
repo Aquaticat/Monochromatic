@@ -42,6 +42,9 @@ mod input;
 mod viewport;
 /// Background source reads apply correspondence to the latest UI reading state.
 mod reload;
+/// Consumer window events exercise the actual markup and source-image bindings.
+#[cfg(test)]
+mod tests;
 /// Shared rendering entry point.
 use render::render;
 /// Bind caret and selection callbacks.
@@ -87,6 +90,33 @@ struct State {
     frame_stamp: Option<FrameStamp>,
 }
 
+/// Construct the same reading state for the application and headless native event tests.
+impl State {
+    /// Retain source ownership and initialize viewport resources without changing the filesystem.
+    fn new(source: &str, file_path: Option<PathBuf>) -> Self {
+        return Self {
+        document: Document::new(source),
+        file_path,
+        file_generation: 1,
+        file_error: None,
+        syntax_revision: None,
+        syntax_error: None,
+        styles: SourceStyles::from([]),
+        first: 0,
+        count: 32,
+        width: 1044.0,
+        horizontal: 0.0,
+        document_width: 0.0,
+        shaper: TextShaper::new(),
+        raster: TextRaster::new(),
+        shaped: None,
+        presented_revision: None,
+        frame_stamp: None,
+
+        };
+    }
+}
+
 /// Run the source-view gate against a supplied file or its explicit fixture.
 pub fn run() -> anyhow::Result<()> {
     tracing_subscriber::fmt().with_env_filter("ide_app=debug,monochromatic_ide=debug").init();
@@ -114,25 +144,7 @@ pub fn run() -> anyhow::Result<()> {
         )
     };
     let window = AppWindow::new()?;
-    let state = Rc::new(RefCell::new(State {
-        document: Document::new(&source),
-        file_path,
-        file_generation: 1,
-        file_error: None,
-        syntax_revision: None,
-        syntax_error: None,
-        styles: SourceStyles::from([]),
-        first: 0,
-        count: 32,
-        width: 1044.0,
-        horizontal: 0.0,
-        document_width: 0.0,
-        shaper: TextShaper::new(),
-        raster: TextRaster::new(),
-        shaped: None,
-        presented_revision: None,
-        frame_stamp: None,
-    }));
+    let state = Rc::new(RefCell::new(State::new(&source, file_path)));
     window.set_file_label(SharedString::from(label));
     bind_pointer(&window, &state);
     bind_viewport(&window, &state);

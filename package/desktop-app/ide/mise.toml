@@ -90,6 +90,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
+[tasks."test:native"]
+description = "Exercise native window events using the real markup on the headless backend"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'test', '--features', 'slint/mcp', '--bin', 'monochromatic-ide'])
+"""
+
 [tasks."test:fonts"]
 description = "Exercise embedded font features and ligature selection through production geometry"
 shell = "node --input-type=module-typescript -e"
