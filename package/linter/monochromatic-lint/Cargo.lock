@@ -207,6 +207,8 @@ dependencies = [
  "ra_ap_syntax",
  "serde",
  "serde_json",
+ "unicode-ident",
+ "unicode-properties",
 ]
 
 [[package]]
@@ -465,9 +467,9 @@ checksum = "b40688ea6389c8171614b25491f71d4a27946e0c7ce2da1c6de27e25abf1a0ae"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.26"
+version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954"
+checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "unicode-properties"
