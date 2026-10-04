@@ -1,0 +1,5 @@
+# Extend the repository's existing native Slint environment without changing terminal's image.
+FROM localhost/monochromatic/terminal
+
+# Helix's grammar manager requests a C++ driver even for grammars whose generated parser is C.
+RUN dnf install --assumeyes gcc-c++ && dnf clean all
