@@ -683,6 +683,36 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  14:34 UTC:
+  the T8 `grade` batch closed with commits `894ef4d0c`,
+  `dd52f9ced`,
+  `df2c9a7f4`:
+  5 line stretches over `grade-agreement.ts`
+  and `grade-sheet-read.ts`,
+  one closed as unreachable
+  (the no-marker arm:
+  the item filter settles it),
+  four cased
+  (the unbounded answer,
+  the duplicate word,
+  the non-string verdict refusal,
+  and the duplicate indices).
+  The reach census reads `left 0 cold stretches`
+  (`~/temp/agent/mimo-trial/reach-grade3.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-grade-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-grade-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `df2c9a7f4`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `restoration` cluster
+  (the ranking's next at `census-G4ZkGi`).
+
+- 2026-10-04,
   14:19 UTC:
   the T8 `corpus-run/bench` batch closed with commit `2810a9104`:
   5 line stretches over `bench-report.ts`,

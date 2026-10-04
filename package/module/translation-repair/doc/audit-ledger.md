@@ -6355,6 +6355,28 @@ none in the whole-suite census
 (`census-G4ZkGi` lists no `bench-report.ts` stretch).
 No B entry found.
 
+The thirty-third cluster of that census,
+`grade`,
+against `census-G4ZkGi` at `9e92cf00f`:
+5 line stretches over `grade-agreement.ts`
+and `grade-sheet-read.ts`
+(`894ef4d0c`,
+`dd52f9ced`,
+`df2c9a7f4`).
+One closed as unreachable:
+the no-marker arm of the answer reader,
+whose item filter already keeps only lines carrying the marker.
+Four cased:
+an answer no legend bounds
+(the whole rest of the line),
+an answer opening on the duplicate word,
+a pre-grade whose verdict is no string
+(the vocabulary refusal),
+and the duplicate indices listed beside the rates.
+The reach census (`~/temp/agent/mimo-trial/reach-grade3.log`)
+reads `left 0 cold stretches` on the edited source.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
