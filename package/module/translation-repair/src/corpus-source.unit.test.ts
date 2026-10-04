@@ -261,6 +261,30 @@ await describe({
     },),
 
     it({
+      name: 'throws CorpusReadError for a byte path absent at the pinned commit, the byte reader '
+        + 'naming the failure the same way',
+      fn: async () => {
+        await using fixture = await makeThrowawayClone();
+        /** Value caught from byte read of a path that never existed. */
+        let caught: unknown;
+        try {
+          await readCorpusBytes({
+            pin: {
+              cloneDir: fixture.cloneDir,
+              commitSha: fixture.commitSha,
+            },
+            relPath: 'people/mittens/photos/intro.webp',
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof CorpusReadError,).toBe(true,);
+        expect((caught as CorpusReadError).kind,).toBe('missing-object',);
+      },
+    },),
+
+    it({
       name: 'throws CorpusReadError when the clone directory does not exist, and NAMES THE FAILURE other: an '
         + 'unreadable clone is a fault in the run, not a fact about the corpus, and no walk may step past it',
       fn: async () => {
