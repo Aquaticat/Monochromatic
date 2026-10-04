@@ -21,7 +21,9 @@
  "REFUSES to quote the text it could not find" case is that guard, and it is the reason this file is worth its length.
 
  FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
- because the real inputs are unlicensed corpus pages.
+ because the real inputs are unlicensed corpus pages. The runs directory and
+ the artifact file are process-wide, so every case here runs at
+ `concurrency: 1` and puts its own back.
 
  @module
  */
@@ -32,8 +34,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { mkdir, mkdtemp, writeFile, } from 'node:fs/promises';
-import { homedir, tmpdir, } from 'node:os';
+import { mkdir, writeFile, } from 'node:fs/promises';
+import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
@@ -43,6 +45,38 @@ import {
   locateSlice,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+
+/**
+ Points the runs directory variable at a path until the handle's scope ends.
+
+ The directory itself is the caller's own `scratchDir`, bound first so it is
+ removed after the variable is restored.
+
+ @param path - directory the variable names meanwhile
+
+ @returns Disposable handle restoring the variable as it stood
+
+ @example
+ ```ts
+ using pointed = runsDirPointedAt({ path: runs.path, },);
+ ```
+ */
+function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
+  /**
+   Runs directory standing before this case ran.
+   */
+  const before = process.env
+    .TRANSLATION_REPAIR_RUNS_DIR;
+  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
+  return {
+    [Symbol.dispose]: function restore(): void {
+      if (before === undefined)
+        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
+      else
+        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
+    },
+  };
+}
 
 //region Relabel case location tests
 
@@ -123,6 +157,7 @@ function refuseMissingSlice(): void {
 
 await describe({
   name: locateSlice.name,
+  concurrency: 1,
   children: [
     it({
       name: 'RETURNS the slice carrying the replaced text, not the whole page',
@@ -211,110 +246,77 @@ await describe({
         expect(refuseMissingSlice,).toThrow('slicing no longer reproduces the run',);
       },
     },),
-  ],
-},);
-
-//region Relabel case gathering tests
-// What the GATHERER does with a manifest whose draw names nothing it can rebuild.
-
-/**
- Points the runs directory variable at a path until the handle's scope ends.
-
- @param path - directory the variable names meanwhile
-
- @returns Disposable handle restoring the variable as it stood
-
- @example
- ```ts
- using pointed = runsDirPointedAt({ path: runs.path, },);
- ```
- */
-function runsDirPointedAt({ path, }: { readonly path: string; }): Disposable {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const stoodBefore = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      if (stoodBefore === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = stoodBefore;
-    },
-  };
-}
-
-await describe({
-  name: gatherRelabelCases.name,
-  children: [
-    it({
-      name: 'SKIPS A DRAWN ITEM whose issue id matches no damaged candidate, since the manifest names '
-        + 'positions production already damaged but nothing says the draw kept the same issues',
-      fn: async () => {
-        /**
-         Throwaway manifest drawing a damaged position under an issue id no
-         candidate carries, and a throwaway run whose entry artifact holds no
-         issues at all.
-         */
-        const manifestDir = await mkdtemp(join(tmpdir(), 'relabel-case-',),);
-        const manifestPath = join(manifestDir, 'manifest.json',);
-        await writeFile(
-          manifestPath,
-          JSON.stringify(buildSampleManifest({
-            sample: [{
-              entryId: 'Kitten',
-              band: 'small',
-              issueId: 'adjudicated/naps',
-              category: 'fluency/grammar',
-              severity: 'major',
-              summary: 'the tense is wrong',
-              sourceQuotes: ['猫坐在垫子上',],
-              targetQuotes: ['The cat sits on the mat.',],
-              sourceAnchor: 'quoted',
-            }, {
-              entryId: 'Kitten',
-              band: 'small',
-              issueId: 'adjudicated/never',
-              category: 'fluency/grammar',
-              severity: 'major',
-              summary: 'the tense is wrong',
-              sourceQuotes: ['猫坐在垫子上',],
-              targetQuotes: ['The cat sits on the mat.',],
-              sourceAnchor: 'quoted',
-            },],
-            seed: 'cat-seed',
-            corpusSha: 'sha/1',
-            generation: {
-              kind: 'unrecorded',
-              reason: 'the fixture draw',
-            },
-          },),),
-        );
-        await using runs = await scratchDir({ prefix: 'whiskers-relabel-case-', },);
-        await mkdir(join(runs.path, 'artifacts',), { recursive: true, },);
-        using pointed = runsDirPointedAt({ path: runs.path, },);
-        await writeFile(
-          join(runs.path, 'artifacts', 'Kitten.json',),
-          JSON.stringify({
-            id: 'Kitten',
-            status: 'settled',
-            issues: [],
-          },),
-          'utf8',
-        );
-        const gathered = await gatherRelabelCases({
-          manifestPath,
-          pin: {
-            cloneDir: join(homedir(), 'one-among-us/data',),
-            commitSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+    //region Relabel case gathering cases
+    // What the GATHERER does with a manifest whose draw names nothing it can rebuild.
+    describe({
+      name: gatherRelabelCases.name,
+      children: [
+        it({
+          name: 'SKIPS A DRAWN ITEM whose issue id matches no damaged candidate, since the manifest names '
+            + 'positions production already damaged but nothing says the draw kept the same issues',
+          fn: async () => {
+            /**
+             Throwaway run holding the manifest and the entry artifact.
+             */
+            await using runs = await scratchDir({ prefix: 'whiskers-relabel-case-', },);
+            const manifestPath = join(runs.path, 'manifest.json',);
+            await writeFile(
+              manifestPath,
+              JSON.stringify(buildSampleManifest({
+                sample: [{
+                  entryId: 'Kitten',
+                  band: 'small',
+                  issueId: 'adjudicated/naps',
+                  category: 'fluency/grammar',
+                  severity: 'major',
+                  summary: 'the tense is wrong',
+                  sourceQuotes: ['猫坐在垫子上',],
+                  targetQuotes: ['The cat sits on the mat.',],
+                  sourceAnchor: 'quoted',
+                }, {
+                  entryId: 'Kitten',
+                  band: 'small',
+                  issueId: 'adjudicated/never',
+                  category: 'fluency/grammar',
+                  severity: 'major',
+                  summary: 'the tense is wrong',
+                  sourceQuotes: ['猫坐在垫子上',],
+                  targetQuotes: ['The cat sits on the mat.',],
+                  sourceAnchor: 'quoted',
+                },],
+                seed: 'cat-seed',
+                corpusSha: 'sha/1',
+                generation: {
+                  kind: 'unrecorded',
+                  reason: 'the fixture draw',
+                },
+              },),),
+            );
+            await mkdir(join(runs.path, 'artifacts',), { recursive: true, },);
+            using pointed = runsDirPointedAt({ path: runs.path, },);
+            await writeFile(
+              join(runs.path, 'artifacts', 'Kitten.json',),
+              JSON.stringify({
+                id: 'Kitten',
+                status: 'settled',
+                issues: [],
+              },),
+              'utf8',
+            );
+            const gathered = await gatherRelabelCases({
+              manifestPath,
+              pin: {
+                cloneDir: join(homedir(), 'one-among-us/data',),
+                commitSha: 'a41fc607ea5a70d8a7625cc67d5ed8c444f53379',
+              },
+            },);
+            expect(gathered.length,).toBe(0,);
           },
-        },);
-        expect(gathered.length,).toBe(0,);
-      },
+        },),
+      ],
     },),
+    //endregion Relabel case gathering cases
   ],
 },);
 
-//endregion Relabel case gathering tests
+//endregion Relabel case location tests

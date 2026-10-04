@@ -97,6 +97,8 @@ const GLOBAL_WRITER_COPIES: readonly {
     locations: [
       'corpus-run/editor-width-report.unit.test.ts#runsDirPointedAt',
       'corpus-run/probe-relabel-artifact.unit.test.ts#runsDirPointedAt',
+      'corpus-run/probe-relabel-case.unit.test.ts#runsDirPointedAt',
+      'corpus-run/probe-relabel-control.unit.test.ts#runsDirPointedAt',
     ],
     reason: 'points TRANSLATION_REPAIR_RUNS_DIR at a case\'s directory, which the code under test reads itself',
   },
@@ -104,6 +106,8 @@ const GLOBAL_WRITER_COPIES: readonly {
     locations: [
       'corpus-run/editor-width-report.unit.test.ts#restore',
       'corpus-run/probe-relabel-artifact.unit.test.ts#restore',
+      'corpus-run/probe-relabel-case.unit.test.ts#restore',
+      'corpus-run/probe-relabel-control.unit.test.ts#restore',
     ],
     reason: 'nested inside runsDirPointedAt, putting the variable back',
   },

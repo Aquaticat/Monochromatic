@@ -9,14 +9,14 @@
 
  FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
  and the corpus pages live in a throwaway git clone the pin points at, since
- the real inputs are unlicensed corpus pages. The runs directory resolves once
- per process, so both cases write into one scratch run under two entries.
+ the real inputs are unlicensed corpus pages. The runs directory and the
+ artifact files are process-wide, so every case here runs at `concurrency: 1`
+ and puts its own back.
 
  @module
  */
 
-import { mkdir, mkdtemp, writeFile, } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
+import { mkdir, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -32,6 +32,38 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { namingFixtureGit, } from '../archive-naming.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+
+/**
+ Points the runs directory variable at a path until the handle's scope ends.
+
+ The directory itself is the caller's own `scratchDir`, bound first so it is
+ removed after the variable is restored.
+
+ @param path - directory the variable names meanwhile
+
+ @returns Disposable handle restoring the variable as it stood
+
+ @example
+ ```ts
+ using pointed = runsDirPointedAt({ path: runs.path, },);
+ ```
+ */
+function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
+  /**
+   Runs directory standing before this case ran.
+   */
+  const before = process.env
+    .TRANSLATION_REPAIR_RUNS_DIR;
+  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
+  return {
+    [Symbol.dispose]: function restore(): void {
+      if (before === undefined)
+        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
+      else
+        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
+    },
+  };
+}
 
 //region Control gathering tests
 // What the GATHERER does with regions it must not pick and regions it cannot.
@@ -87,52 +119,27 @@ function damagedCases({ entryId, }: { readonly entryId: string; }): readonly Rel
 }
 
 /**
- Points the runs directory variable at a path until the handle's scope ends.
+ Builds a corpus clone whose two fixture entries carry the fixture pages
+ inside the caller's scratch directory, and returns the pin pointing at its
+ one commit.
 
- @param path - directory the variable names meanwhile
+ @param cloneDir - scratch directory to build the clone in
 
- @returns Disposable handle restoring the variable as it stood
-
- @example
- ```ts
- using pointed = runsDirPointedAt({ path: runs.path, },);
- ```
- */
-function runsDirPointedAt({ path, }: { readonly path: string; }): Disposable {
-  /**
-   Runs directory standing before this case ran.
-   */
-  const stoodBefore = process.env
-    .TRANSLATION_REPAIR_RUNS_DIR;
-  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
-  return {
-    [Symbol.dispose]: function restore(): void {
-      if (stoodBefore === undefined)
-        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
-      else
-        process.env.TRANSLATION_REPAIR_RUNS_DIR = stoodBefore;
-    },
-  };
-}
-
-/**
- Builds a throwaway corpus clone whose two fixture entries carry the fixture
- pages, and returns the pin pointing at its one commit.
-
- @returns Pin of the throwaway clone
+ @returns Pin of the clone
 
  @throws Whatever the fixture git refuses with
 
  @example
  ```ts
- const pin = await fixturePin();
+ const pin = await fixturePin({ cloneDir: runs.path, },);
  ```
  */
-async function fixturePin(): Promise<{
+async function fixturePin(
+  { cloneDir, }: { readonly cloneDir: string; },
+): Promise<{
   readonly cloneDir: string;
   readonly commitSha: string;
 }> {
-  const cloneDir = await mkdtemp(join(tmpdir(), 'whiskers-control-corpus-',),);
   await mkdir(join(cloneDir, 'people', 'Kitten',), { recursive: true, },);
   await writeFile(join(cloneDir, 'people', 'Kitten', 'page.md',), SOURCE_TEXT, 'utf8',);
   await writeFile(join(cloneDir, 'people', 'Kitten', 'page.en.md',), TARGET_TEXT, 'utf8',);
@@ -153,18 +160,26 @@ async function fixturePin(): Promise<{
 }
 
 /**
- Writes one entry's artifact into the shared scratch run.
+ Gathers the control cases of one entry over a throwaway run and manifest of
+ its own.
 
- @param entryId - fixture entry the artifact records
+ Everything the gatherer reads is built inside this call, so the case calling
+ it writes no process global itself and runs the same either order.
+
+ @param entryId - fixture entry whose controls to gather
 
  @param repairRegions - regions the artifact records for that entry
 
+ @returns Control cases the gatherer produced
+
+ @throws Whatever the reads refuse with
+
  @example
  ```ts
- await writeArtifact({ entryId: 'Kitten', repairRegions: [], },);
+ const controls = await controlsFor({ entryId: 'Kitten', repairRegions: [], },);
  ```
  */
-async function writeArtifact(
+async function controlsFor(
   {
     entryId,
     repairRegions,
@@ -177,9 +192,37 @@ async function writeArtifact(
       readonly editorAfter: string;
     }[];
   },
-): Promise<void> {
+): Promise<readonly RelabelCase[]> {
+  await using corpus = await scratchDir({ prefix: 'whiskers-control-corpus-', },);
+  const pin = await fixturePin({ cloneDir: corpus.path, },);
+  await using runs = await scratchDir({ prefix: 'whiskers-relabel-control-', },);
+  const manifestPath = join(runs.path, 'manifest.json',);
   await writeFile(
-    join(process.env.TRANSLATION_REPAIR_RUNS_DIR ?? '', 'artifacts', `${entryId}.json`,),
+    manifestPath,
+    JSON.stringify(buildSampleManifest({
+      sample: [{
+        entryId,
+        band: 'small',
+        issueId: 'adjudicated/naps',
+        category: 'fluency/grammar',
+        severity: 'major',
+        summary: 'the tense is wrong',
+        sourceQuotes: ['猫坐在垫子上',],
+        targetQuotes: [HELD_BEFORE,],
+        sourceAnchor: 'quoted',
+      },],
+      seed: 'cat-seed',
+      corpusSha: 'sha/1',
+      generation: {
+        kind: 'unrecorded',
+        reason: 'the fixture draw',
+      },
+    },),),
+  );
+  await mkdir(join(runs.path, 'artifacts',), { recursive: true, },);
+  using pointed = runsDirPointedAt({ path: runs.path, },);
+  await writeFile(
+    join(runs.path, 'artifacts', `${entryId}.json`,),
     JSON.stringify({
       id: entryId,
       status: 'settled',
@@ -216,105 +259,16 @@ async function writeArtifact(
     },),
     'utf8',
   );
-}
-
-/**
- Gathers the control cases of one fixture entry.
-
- @param entryId - fixture entry whose controls to gather
-
- @param repairRegions - regions the artifact records for that entry
-
- @returns Control cases the gatherer produced
-
- @throws Whatever the reads refuse with
-
- @example
- ```ts
- const controls = await controlsFor({ entryId: 'Kitten', repairRegions: [], },);
- ```
- */
-async function controlsFor(
-  {
-    entryId,
-    repairRegions,
-  }: {
-    readonly entryId: string;
-    readonly repairRegions: readonly {
-      readonly envelopeId: string;
-      readonly issueIds: readonly string[];
-      readonly before: string;
-      readonly editorAfter: string;
-    }[];
-  },
-): Promise<readonly RelabelCase[]> {
-  await writeArtifact({
-    entryId,
-    repairRegions,
-  },);
   return await gatherControlCases({
-    manifestPath: MANIFEST_PATH,
+    manifestPath,
     damaged: damagedCases({ entryId, },),
-    pin: PIN,
+    pin,
   },);
 }
-
-/**
- Pin of the fixture corpus clone the cases read.
-
- Declared at module scope so the clone exists before any case runs.
- */
-const PIN = await fixturePin();
-
-/**
- Manifest both cases draw through.
-
- Declared at module scope beside the pin, since the runs directory resolves
- once per process and the cases share one scratch run.
- */
-const MANIFEST_PATH = join(
-  await mkdtemp(join(tmpdir(), 'whiskers-control-manifest-',),),
-  'manifest.json',
-);
-
-await writeFile(
-  MANIFEST_PATH,
-  JSON.stringify(buildSampleManifest({
-    sample: [{
-      entryId: 'Kitten',
-      band: 'small',
-      issueId: 'adjudicated/naps',
-      category: 'fluency/grammar',
-      severity: 'major',
-      summary: 'the tense is wrong',
-      sourceQuotes: ['猫坐在垫子上',],
-      targetQuotes: [HELD_BEFORE,],
-      sourceAnchor: 'quoted',
-    },],
-    seed: 'cat-seed',
-    corpusSha: 'sha/1',
-    generation: {
-      kind: 'unrecorded',
-      reason: 'the fixture draw',
-    },
-  },),),
-);
-
-/**
- Shared scratch run both cases write artifacts into.
-
- The runs directory resolves once per process, so the variable is pointed at
- this one directory before the first read and stays pointed until the module
- ends.
- */
-await using SCRATCH_RUNS = await scratchDir({ prefix: 'whiskers-relabel-control-', },);
-
-await mkdir(join(SCRATCH_RUNS.path, 'artifacts',), { recursive: true, },);
-
-using POINTED_AT_SCRATCH = runsDirPointedAt({ path: SCRATCH_RUNS.path, },);
 
 await describe({
   name: gatherControlCases.name,
+  concurrency: 1,
   children: [
     it({
       name: 'TAKES ONE REGION PER ENVELOPE, since a second region of the same envelope would answer as '
