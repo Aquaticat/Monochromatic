@@ -117,9 +117,13 @@ const client = async () => {
   assert.equal(process.env.WAYLAND_SOCKET, undefined)
   assert.equal(process.env.DISPLAY, undefined)
   assert.equal(process.env.XAUTHORITY, undefined)
+  const primary = spawnSync('wl-paste', ['--primary', '--list-types'], { timeout: 1000 })
+  assert.equal(primary.status, 1)
+  assert.match(primary.stderr.toString(), /does not seem to support primary selection/)
   const fixtures = [
     { mime: 'text/plain;charset=utf-8', bytes: Buffer.from('Nested clipboard: 猫 é') },
     { mime: 'application/octet-stream', bytes: Buffer.from([0, 1, 127, 128, 255, 10]) },
+    { mime: 'application/octet-stream', bytes: Buffer.alloc(2 * 1024 * 1024, 0xa5), abrupt: true },
   ]
   for (const fixture of fixtures) {
     const producer = spawn('wl-copy', ['--foreground', '--type', fixture.mime], { stdio: ['pipe', 'ignore', 'pipe'] })
@@ -130,9 +134,10 @@ const client = async () => {
     producer.stdin.end(fixture.bytes)
     try {
       let transferred = false
-      for (let attempt = 0; attempt < 30; attempt++) {
+      const started = performance.now()
+      for (let attempt = 0; attempt < 30 && performance.now() - started < 3000; attempt++) {
         const result = spawnSync('wl-paste', ['--no-newline', '--type', fixture.mime], {
-          env: { ...process.env, WAYLAND_DEBUG: 'client' }, timeout: 500,
+          env: { ...process.env, WAYLAND_DEBUG: 'client' }, timeout: 500, maxBuffer: 4 * 1024 * 1024,
         })
         if (result.status === 0) {
           assert.deepEqual(result.stdout, fixture.bytes)
@@ -145,16 +150,20 @@ const client = async () => {
         await wait(20)
       }
       assert(transferred, 'nested clipboard did not serve ' + fixture.mime)
-      const cleared = spawnSync('wl-copy', ['--clear'], { timeout: 1000 })
-      assert.equal(cleared.status, 0)
+      if (fixture.abrupt) {
+        producer.kill('SIGKILL')
+      } else {
+        const cleared = spawnSync('wl-copy', ['--clear'], { timeout: 1000 })
+        assert.equal(cleared.status, 0)
+      }
       const [code, signal] = await exited
-      assert.equal(code, 0, 'clipboard source must exit cleanly when replaced with empty selection')
-      assert.equal(signal, null)
+      assert.equal(code, fixture.abrupt ? null : 0, 'clipboard source must reach the expected shutdown state')
+      assert.equal(signal, fixture.abrupt ? 'SIGKILL' : null)
       const empty = spawnSync('wl-paste', ['--list-types'], { timeout: 1000 })
       assert.equal(empty.status, 1)
       assert.match(empty.stderr.toString(), /Nothing is copied/)
       assert.equal(Buffer.concat(errors).length, 0, 'clipboard source shutdown must not emit errors')
-      console.log('Nested clipboard verified: ' + fixture.mime + ', clear, and clean source exit')
+      console.log('Nested clipboard verified: ' + fixture.mime + ', ' + fixture.bytes.length + ' bytes, ' + (fixture.abrupt ? 'abrupt owner disconnect' : 'clear and clean source exit'))
     } finally {
       clearTimeout(deadline)
       if (producer.exitCode === null && producer.signalCode === null) producer.kill()
