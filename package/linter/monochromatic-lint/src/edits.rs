@@ -125,16 +125,25 @@ fn ordered_edit_indexes(source: &str, fix: &Fix) -> Result<Vec<usize>, FixError>
         return (edit.start, edit.end);
     });
     for edit in &fix.edits {
-        if edit.start > edit.end || edit.end > source.len()
-            || !source.is_char_boundary(edit.start) || !source.is_char_boundary(edit.end) {
-            return Err(FixError { message: String::from("A fix supplied an out-of-range or non-UTF-8-boundary source edit.") });
+        if edit.start > edit.end
+            || edit.end > source.len()
+            || !source.is_char_boundary(edit.start)
+            || !source.is_char_boundary(edit.end)
+        {
+            return Err(FixError {
+                message: String::from(
+                    "A fix supplied an out-of-range or non-UTF-8-boundary source edit.",
+                ),
+            });
         }
     }
     for pair in ordered.windows(2) {
         let previous = &fix.edits[pair[0]];
         let current = &fix.edits[pair[1]];
         if previous.end > current.start || previous.start == current.start {
-            return Err(FixError { message: String::from("A fix supplied overlapping edits within its own group.") });
+            return Err(FixError {
+                message: String::from("A fix supplied overlapping edits within its own group."),
+            });
         }
     }
     return Ok(ordered);
@@ -181,9 +190,17 @@ pub fn apply_fixes(source: &str, fixes: &[Fix]) -> Result<AppliedFixes, FixError
     }
     output.push_str(&source[cursor..]);
     if !source.is_empty() && output.is_empty() {
-        return Err(FixError { message: String::from("Autofix would replace non-empty file with empty output; leaving file unchanged.") });
+        return Err(FixError {
+            message: String::from(
+                "Autofix would replace non-empty file with empty output; leaving file unchanged.",
+            ),
+        });
     }
-    return Ok(AppliedFixes { source: output, applied, rejected });
+    return Ok(AppliedFixes {
+        source: output,
+        applied,
+        rejected,
+    });
 }
 
 /// Keep atomic-fix regressions out of release artifacts.

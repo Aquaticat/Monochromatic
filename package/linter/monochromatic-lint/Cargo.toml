@@ -23,6 +23,11 @@ monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0
 # Same glob compiler and gitignore-aware walker family as the incumbent Rust linter.
 globset = "0.4"
 ignore = "0.4"
+# Reuse the incumbent typed JSONL encoder; messages are never manually escaped.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# rust-analyzer syntax has no point-release API stability; retain the already approved parser revision.
+ra_ap_syntax = "=0.0.335"
 
 # Standalone package, matching the repository's Cargo ownership convention.
 [workspace]

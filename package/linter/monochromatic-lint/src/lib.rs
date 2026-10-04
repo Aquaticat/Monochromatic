@@ -34,11 +34,17 @@ pub mod config_match;
 pub mod configuration;
 /// Internal fixed-registry rule-option validation.
 mod configuration_rules;
-/// Internal finalization of matched partial rule settings.
-mod resolved_rules;
 /// Internal all-or-nothing grouped source edits.
 #[doc(hidden)]
 pub mod edits;
+/// Internal typed JSONL findings shared by rule execution and processor mapping.
+#[doc(hidden)]
+pub mod diagnostic;
+/// Internal shared Rust parse and code-line indexing.
+#[doc(hidden)]
+pub mod rust_source;
+/// Internal finalization of matched partial rule settings.
+mod resolved_rules;
 
 /// Disposable native filesystem helpers used only by tests.
 #[cfg(test)]

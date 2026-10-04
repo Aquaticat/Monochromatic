@@ -7,11 +7,15 @@
 //! ```
 
 /// Import the production edit planner and owned input types.
-use super::{apply_fixes, Edit, Fix};
+use super::{Edit, Fix, apply_fixes};
 
 /// Build a fixture replacement while keeping byte ranges explicit at every call.
 fn edit(start: usize, end: usize, replacement: &str) -> Edit {
-    return Edit { start, end, replacement: String::from(replacement) };
+    return Edit {
+        start,
+        end,
+        replacement: String::from(replacement),
+    };
 }
 
 /// Empty plans preserve bytes, and independent edits apply in source order rather than argument order.
@@ -20,7 +24,9 @@ fn empty_and_reversed_edit_plans_preserve_source_order() {
     let original = apply_fixes("abc", &[]).expect("no fixes");
     assert_eq!(original.source, "abc");
     assert!(original.applied.is_empty());
-    let fixes = [Fix { edits: vec![edit(3, 3, "]"), edit(0, 0, "[")] }];
+    let fixes = [Fix {
+        edits: vec![edit(3, 3, "]"), edit(0, 0, "[")],
+    }];
     let snapshot = fixes.clone();
     let applied = apply_fixes("abc", &fixes).expect("two insertions");
     assert_eq!(applied.source, "[abc]");
@@ -32,9 +38,15 @@ fn empty_and_reversed_edit_plans_preserve_source_order() {
 #[test]
 fn conflicting_multi_edit_fix_is_never_applied_partly() {
     let fixes = [
-        Fix { edits: vec![edit(2, 4, "X")] },
-        Fix { edits: vec![edit(0, 1, "A"), edit(3, 5, "Y")] },
-        Fix { edits: vec![edit(0, 1, "Z")] },
+        Fix {
+            edits: vec![edit(2, 4, "X")],
+        },
+        Fix {
+            edits: vec![edit(0, 1, "A"), edit(3, 5, "Y")],
+        },
+        Fix {
+            edits: vec![edit(0, 1, "Z")],
+        },
     ];
     let applied = apply_fixes("abcdef", &fixes).expect("conflict selection");
     assert_eq!(applied.source, "ZbXef");
@@ -46,8 +58,12 @@ fn conflicting_multi_edit_fix_is_never_applied_partly() {
 #[test]
 fn later_interval_conflict_rejects_the_new_fix() {
     let fixes = [
-        Fix { edits: vec![edit(4, 5, "E")] },
-        Fix { edits: vec![edit(1, 6, "whole")] },
+        Fix {
+            edits: vec![edit(4, 5, "E")],
+        },
+        Fix {
+            edits: vec![edit(1, 6, "whole")],
+        },
     ];
     let applied = apply_fixes("abcdef", &fixes).expect("successor overlap");
     assert_eq!(applied.source, "abcdEf");
@@ -58,9 +74,15 @@ fn later_interval_conflict_rejects_the_new_fix() {
 #[test]
 fn insertion_boundaries_have_explicit_ordering() {
     let fixes = [
-        Fix { edits: vec![edit(0, 1, "A")] },
-        Fix { edits: vec![edit(1, 1, "X")] },
-        Fix { edits: vec![edit(1, 1, "Y")] },
+        Fix {
+            edits: vec![edit(0, 1, "A")],
+        },
+        Fix {
+            edits: vec![edit(1, 1, "X")],
+        },
+        Fix {
+            edits: vec![edit(1, 1, "Y")],
+        },
     ];
     let applied = apply_fixes("ab", &fixes).expect("boundary insertions");
     assert_eq!(applied.source, "AXb");
@@ -83,33 +105,80 @@ fn internal_overlap_and_duplicate_insertions_are_rejected() {
 /// Bounds and UTF-8 boundaries are validated before any slice is formed.
 #[test]
 fn invalid_ranges_are_errors_not_panics() {
-    for invalid in [edit(2, 1, "x"), edit(0, 9, "x"), edit(usize::MAX, usize::MAX, "x")] {
-        let error = apply_fixes("abc", &[Fix { edits: vec![invalid] }]).expect_err("invalid range");
+    for invalid in [
+        edit(2, 1, "x"),
+        edit(0, 9, "x"),
+        edit(usize::MAX, usize::MAX, "x"),
+    ] {
+        let error = apply_fixes(
+            "abc",
+            &[Fix {
+                edits: vec![invalid],
+            }],
+        )
+        .expect_err("invalid range");
         assert!(error.message.contains("out-of-range"));
     }
     for invalid in [edit(0, 1, "x"), edit(1, 2, "x")] {
-        let error = apply_fixes("é", &[Fix { edits: vec![invalid] }]).expect_err("split scalar");
+        let error = apply_fixes(
+            "é",
+            &[Fix {
+                edits: vec![invalid],
+            }],
+        )
+        .expect_err("split scalar");
         assert!(error.message.contains("UTF-8-boundary"));
     }
-    assert_eq!(apply_fixes("éx", &[Fix { edits: vec![edit(0, 2, "a")] }]).expect("whole scalar").source, "ax");
+    assert_eq!(
+        apply_fixes(
+            "éx",
+            &[Fix {
+                edits: vec![edit(0, 2, "a")]
+            }]
+        )
+        .expect("whole scalar")
+        .source,
+        "ax"
+    );
 }
 
 /// Empty rewriting is refused without changing the caller's original source.
 #[test]
 fn nonempty_sources_cannot_be_erased() {
     let source = String::from("abc");
-    let error = apply_fixes(source.as_str(), &[Fix { edits: vec![edit(0, 3, "")] }]).expect_err("empty rewrite");
+    let error = apply_fixes(
+        source.as_str(),
+        &[Fix {
+            edits: vec![edit(0, 3, "")],
+        }],
+    )
+    .expect_err("empty rewrite");
     assert_eq!(source, "abc");
     assert!(error.message.contains("empty output"));
     assert_eq!(error.to_string(), error.message);
     assert_eq!(apply_fixes("", &[]).expect("already empty").source, "");
-    assert_eq!(apply_fixes("", &[Fix { edits: vec![edit(0, 0, "new")] }]).expect("insert into empty").source, "new");
+    assert_eq!(
+        apply_fixes(
+            "",
+            &[Fix {
+                edits: vec![edit(0, 0, "new")]
+            }]
+        )
+        .expect("insert into empty")
+        .source,
+        "new"
+    );
 }
 
 /// A valid no-op group does not fabricate source changes.
 #[test]
 fn empty_groups_and_identical_replacements_are_stable() {
-    let fixes = [Fix { edits: Vec::new() }, Fix { edits: vec![edit(0, 1, "a")] }];
+    let fixes = [
+        Fix { edits: Vec::new() },
+        Fix {
+            edits: vec![edit(0, 1, "a")],
+        },
+    ];
     let applied = apply_fixes("abc", &fixes).expect("no-op groups");
     assert_eq!(applied.source, "abc");
     assert!(applied.rejected.is_empty());
