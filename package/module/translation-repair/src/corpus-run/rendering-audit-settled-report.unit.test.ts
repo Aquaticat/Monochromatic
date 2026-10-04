@@ -621,6 +621,36 @@ await describe({
              */
             const said = printed.lines.join('\n',);
             expect(said.includes('One slot that cannot be checked',),).toBe(true,);
+
+            /**
+             The same read with two slots unrecorded on one side.
+             */
+            const two = await writeRun({
+              runsDir: scratch.path,
+              stamp: '2026-08-25T02-00-00.000Z',
+              body: runOver({
+                rows: [rowFor({
+                  sliceIndex: 0,
+                  texts: SAME_TEXTS,
+                },), rowFor({
+                  sliceIndex: 1,
+                  texts: SAME_TEXTS,
+                },),],
+              },),
+            },);
+            await printAcross({
+              rows: [rowFor({
+                sliceIndex: 0,
+              },), rowFor({
+                sliceIndex: 1,
+              },),],
+              against: two,
+            },);
+            /**
+             Everything both reads printed.
+             */
+            const both = printed.lines.join('\n',);
+            expect(both.includes('2 slots that cannot be checked',),).toBe(true,);
           },
         },),
 
