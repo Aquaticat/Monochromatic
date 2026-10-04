@@ -377,7 +377,7 @@ export function classifyDisplacement(
       return {
         ...reading,
         residual: reading.targetChars - (baseline.expansion * reading.sourceChars),
-        sliceClass: classes[slicePosition] ?? 'translated',
+        sliceClass: nonNullishOrThrow(classes[slicePosition],),
       };
     },);
 
