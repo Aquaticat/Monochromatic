@@ -6,11 +6,11 @@
 //! // Verify known violation counts, try raw source, then restore a known passing overlay.
 //! ```
 
+/// Import the fixed in-memory workspace owner.
+use crate::semantic_fixture::semantic_session;
 /// Import the actual rule result model and production session.
 use monochromatic_lint::diagnostic::{Diagnostic, Severity};
 use monochromatic_lint::rust_semantic_session::RustSemanticSession;
-/// Import the fixed in-memory workspace owner.
-use crate::semantic_fixture::semantic_session;
 /// Use a native absolute path matching the initialized virtual file.
 use std::path::Path;
 
@@ -65,22 +65,41 @@ fn check_bounds(source: &str, findings: &[Diagnostic]) {
 pub fn check_explicit_types(data: &[u8]) {
     let mut session: RustSemanticSession = semantic_session();
     let (source, expected): (String, usize) = generated_explicit_source(data);
-    let findings: Vec<Diagnostic> = session.check_file(Path::new("/input.rs"), source.as_str(), "input.rs", Severity::Error)
+    let findings: Vec<Diagnostic> = session
+        .check_file(
+            Path::new("/main.rs"),
+            source.as_str(),
+            "input.rs",
+            Severity::Error,
+        )
         .expect("generated source query completes");
     assert_eq!(findings.len(), expected, "{source}\n{findings:?}");
     for finding in &findings {
-        assert!(!finding.processing_failure, "generated source must have semantic coverage: {finding:?}");
+        assert!(
+            !finding.processing_failure,
+            "generated source must have semantic coverage: {finding:?}"
+        );
     }
     check_bounds(source.as_str(), &findings);
     // Raw strings go only through the production overlay, never through the fixture's directive interpreter.
     if let Ok(raw) = std::str::from_utf8(data) {
-        let raw_findings: Vec<Diagnostic> = session.check_file(Path::new("/input.rs"), raw, "input.rs", Severity::Warn)
+        let raw_findings: Vec<Diagnostic> = session
+            .check_file(Path::new("/main.rs"), raw, "input.rs", Severity::Warn)
             .expect("raw source must not panic the semantic backend");
         check_bounds(raw, &raw_findings);
     }
-    let restored: Vec<Diagnostic> = session.check_file(Path::new("/input.rs"), "fn main() {}", "input.rs", Severity::Error)
+    let restored: Vec<Diagnostic> = session
+        .check_file(
+            Path::new("/main.rs"),
+            "fn main() {}",
+            "input.rs",
+            Severity::Error,
+        )
         .expect("restoring known source works");
-    assert!(restored.is_empty(), "previous overlays must not leak findings");
+    assert!(
+        restored.is_empty(),
+        "previous overlays must not leak findings"
+    );
 }
 
 /// Reach every generator branch before coverage-guided execution is trusted.

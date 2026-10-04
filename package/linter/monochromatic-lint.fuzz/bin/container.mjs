@@ -90,7 +90,7 @@ async function main() {
       'COPY cargo-fuzz /usr/local/cargo/bin/cargo-fuzz',
       'RUN ["cargo-fuzz", "--version"]',
       'WORKDIR /work/package/linter/monochromatic-lint.fuzz',
-      'ENV CARGO_BUILD_JOBS=2 CARGO_NET_OFFLINE=true',
+      'ENV CARGO_BUILD_JOBS=2 CARGO_NET_OFFLINE=true CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
       'ENV PATH="/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"',
       'ENV RUSTC="/toolchain/bin/rustc" RUSTDOC="/toolchain/bin/rustdoc"',
       '',
