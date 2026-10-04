@@ -44,6 +44,9 @@ and change-set primitives.
 Do not assume its default selection affinities satisfy the user's replacement example.
 Test both supplied examples first,
 and keep application-specific range-mapping policy separate if needed.
+At installation,
+map the latest caret/selection/scroll state for the displayed base revision,
+not a stale interaction snapshot captured when background work started.
 
 Own conversions between UTF-8 offsets,
 Helix character positions,
@@ -125,6 +128,14 @@ mouse hit testing,
 and source-position lookup.
 Do not layer independently laid-out invisible input and colored text without proving they remain aligned.
 
+Investigate Helix's existing `DocumentFormatter` and `TextAnnotations` before writing layout logic.
+They expose source positions,
+grapheme traversal,
+virtual text,
+and visual coordinates.
+Those coordinates use terminal-style columns;
+matching them to Slint glyph geometry and font fallback is still a native integration check.
+
 Materialize visible content and overscan rather than a widget per character across the entire file.
 Keep the document model independent of that rendering decision.
 Full-file reading and reconciliation are permitted;
@@ -145,7 +156,8 @@ not deferred decorative work.
   diff,
   source-position primitives,
   syntax loading,
-  and highlighting.
+  highlighting,
+  and reusable document/annotation formatting where native geometry verifies.
 - `helix-lsp` and its required supporting crates:
   protocol transport,
   clients,
@@ -234,6 +246,8 @@ Revision:
   default range mapping uses sticky endpoint associations.
 - `helix-core/src/syntax.rs:514`:
   syntax creation/update and range highlighting.
+- `helix-core/src/doc_formatter.rs:1` and `helix-core/src/text_annotations.rs:15`:
+  grapheme/source-coordinate formatting and inline annotations.
 - `helix-lsp/src/client.rs:211`:
   process launch and transport construction.
 - `helix-lsp/src/client.rs:1081`:
@@ -256,7 +270,7 @@ Inspected the installed compiler and core sources under the Cargo registry.
   while cursor/anchor readback fields are marked internal/test-only.
 - `i-slint-compiler-1.17.0/widgets/common/textedit-base.slint:6`:
   `TextEditBase` wraps `TextInput` and a scroll view.
-- `i-slint-compiler-1.17.0/builtins.slint:730`:
+- `i-slint-compiler-1.17.0/builtins.slint:731`:
   styled text is a separate element.
 
 This identifies a rendering integration risk,
