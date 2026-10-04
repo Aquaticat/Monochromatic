@@ -1,3 +1,7 @@
+[env]
+# Bound compiler fan-out during local iteration; container gates also cap memory and CPUs.
+CARGO_BUILD_JOBS = "2"
+
 [tasks.build]
 description = "Build the native unified-linter implementation"
 run = "cargo build --release"

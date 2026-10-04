@@ -31,6 +31,11 @@ pub mod config_lookup;
 pub mod configuration;
 /// Internal fixed-registry rule-option validation.
 mod configuration_rules;
+/// Internal finalization of matched partial rule settings.
+mod resolved_rules;
+/// Internal compiled file-pattern matching and effective rule settings.
+#[doc(hidden)]
+pub mod config_match;
 
 /// Disposable native filesystem helpers used only by tests.
 #[cfg(test)]
