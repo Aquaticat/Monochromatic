@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { isIsoStampText, } from '../iso-stamp-text.ts';
 import { isWholeNumberText, } from '../whole-number-text.ts';
 import { STREAM_MARKER, } from './run-timing-parse.ts';
@@ -132,7 +134,7 @@ function stampOf({ line, }: { readonly line: string; },): number | 'unstamped' {
   /**
    What the line's second bracket holds.
    */
-  const stamp = line.split('] [',)[1] ?? '';
+  const stamp = nonNullishOrThrow(line.split('] [',)[1],);
   return isIsoStampText({ text: stamp, },) ? Date.parse(stamp,) : 'unstamped';
 }
 

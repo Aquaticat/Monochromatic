@@ -39,13 +39,43 @@ import {
  */
 const FALLBACK = 420;
 
+/**
+ Unsets the hard-cap variable until the handle's scope ends.
+
+ @returns Disposable handle restoring the variable as it stood
+
+ @example
+ ```ts
+ using unset = hardCapUnset();
+ ```
+ */
+function hardCapUnset(): Disposable {
+  /**
+   Variable's value standing before this case ran.
+   */
+  const stoodBefore = process.env[HARD_CAP_VAR];
+  // Static spelling: `delete` refuses computed keys (the spellings case
+  // guards the name against HARD_CAP_VAR).
+  delete process.env.TRANSLATION_REPAIR_HARD_CAP_MINUTES;
+  return {
+    [Symbol.dispose]: function restore(): void {
+      if (stoodBefore === undefined)
+        delete process.env.TRANSLATION_REPAIR_HARD_CAP_MINUTES;
+      else
+        process.env[HARD_CAP_VAR] = stoodBefore;
+    },
+  };
+}
+
 await describe({
   name: '',
   concurrency: 1,
   children: [
     describe({
       name: resolveHardCapMinutes.name,
-      concurrency: DEFAULT_CONCURRENCY,
+      // ONE AT A TIME: a case unsets the process-wide hard-cap variable
+      // (ledger B79).
+      concurrency: 1,
       children: [
         it({
           name: 'SPELLS the variable the way the documentation does. Earlier in '
@@ -255,6 +285,14 @@ await describe({
 
             expect(note.includes('no slice caches',),).toBe(true,);
             expect(note.includes('stalled',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'READS THE ENVIRONMENT when the caller names no raw text, and falls to the fallback where '
+            + 'the variable is unset',
+          fn: async () => {
+            using unset = hardCapUnset();
+            expect(resolveHardCapMinutes({ fallback: FALLBACK, },),).toBe(FALLBACK,);
           },
         },),
       ],
