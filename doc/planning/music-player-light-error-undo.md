@@ -281,8 +281,14 @@ The current SwiftShader probe reached authorized guest readiness and a
 separate startup snapshot in `proc_0c26`.
 The emitter explicitly reports Google SwiftShader;
 the original restoration snapshot remains unchanged.
-`proc_43c8` acquires a new complete initial cohort with renderer/build
-provenance and final post-stability layout diagnostics.
+The first SwiftShader acquisition attempt rejected a renamed private-root
+path before installation or any frame:
+Node reported `ENOENT` for the absent settings path.
+The consumer harness path is corrected without changing the emulator,
+APK or original snapshot.
+The renewed acquisition retains renderer/build provenance and final
+post-stability layout diagnostics;
+no initial cohort is complete yet.
 Boot success does not prove that the earlier graphics failure is fixed.
 New capture and interaction evidence still gates publication.
 
