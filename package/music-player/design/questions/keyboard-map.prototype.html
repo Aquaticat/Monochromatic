@@ -68,10 +68,11 @@ The macOS track fallback uses the IDE's previous/next-tab chords rather than Con
 Tradeoffs: some familiar draft assignments change, and OS reservations still need native verification.
 There is no valid reason to offer the superseded volume draft as another option.</p>
 </section>
-<section aria-labelledby="demo-title">
+<section id="demo" aria-labelledby="demo-title">
 <h2 id="demo-title">Inspect ownership and consequences</h2>
 <p>Focus the playback area to try application shortcuts. Focus the query or seek slider to see those controls
-retain their own keys. Space on a focused button activates that button only once.</p>
+retain their own keys. Space on a focused button activates that button only once.
+Application shortcuts are active within this demonstration and its popup, not the surrounding review notes.</p>
 <div class="controls">
 <button id="focus-player" type="button">Focus playback shortcut area</button>
 <button id="search-button" type="button">Search</button>
@@ -177,6 +178,7 @@ function renderMap() {
     ['Ctrl+M','Cycle end-of-track mode in the playback area only, a product exception on both models.'],
     ['Arrow keys','Native caret, focus or focused-control navigation. No global seek or volume alias.'],
     ['Tab / Shift+Tab','Native focus movement without a second transport action.'],
+    ['Unmodified letters','Text belongs to its focused widget. No global letter-to-track or letter-to-folder binding is added; native folder typeahead is not modelled here.'],
     ['Escape','Dismiss the innermost popup, otherwise return from Search when the surrounding surface owns Escape.'],
     ['Hardware media and volume keys','Platform-owned delivery, not demonstrated or intercepted here.']
   ];
@@ -213,6 +215,7 @@ function action(name) {
   render();
 }
 function ownerOf(target) {
+  if (!(target instanceof Element)) return 'surface';
   if (target.matches('input[type=text],textarea,[contenteditable=true]')) return 'editor';
   if (target.matches('button,input,select,summary')) return 'control';
   if (target === element('player')) return 'player';
@@ -234,6 +237,8 @@ element('seek').addEventListener('input', render);
 element('platform').addEventListener('change', () => { state = { ...state, platform: element('platform').value }; renderMap(); render(); });
 document.addEventListener('keydown', event => {
   if (event.defaultPrevented) return;
+  if (!(event.target instanceof Element)) return;
+  if (!event.target.closest('#demo') && !element('popup').open) return;
   const resolved = shortcutAction({ platform: state.platform, key: event.key, ctrlKey: event.ctrlKey,
     metaKey: event.metaKey, altKey: event.altKey, shiftKey: event.shiftKey, repeat: event.repeat,
     owner: ownerOf(event.target), inPopup: element('popup').open, inSearch: state.inSearch,
