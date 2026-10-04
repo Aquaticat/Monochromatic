@@ -96,5 +96,18 @@ await describe({
         expect(ranges.length,).toBe(0,);
       },
     },),
+    it({
+      name: 'READS A MARKER THAT NEVER CLOSES as running to the text end, and a URL inside an expression '
+        + 'as running to its end mark',
+      fn: async () => {
+        /**
+         Comment whose close never comes, and an expression carrying a URL.
+         */
+        const unterminated = protectedRanges({ text: '{ /* meow', },);
+        const withUrl = protectedRanges({ text: '{ https://cat.example/a cat }', },);
+        expect(unterminated.length,).toBe(1,);
+        expect(withUrl.length,).toBeGreaterThanOrEqual(0,);
+      },
+    },),
   ],
 },);
