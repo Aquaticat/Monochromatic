@@ -196,6 +196,21 @@ await describe({
         expect(stderr.includes('Tabby.json',),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'SAYS NOTHING WAS FOUND where the run directory will not read at all, rather than reading an '
+        + 'empty standing',
+      fn: async () => {
+        await using fixture = await scratchDirWith({
+          prefix: 'editor-standing-read-',
+          setup: async function empty({ path, },): Promise<{ readonly archive: string; }> {
+            return { archive: join(path, 'never-written',), };
+          },
+        },);
+        const { stderr, } = standingOver({ archive: fixture.archive, },);
+        expect(stderr.includes('no artifacts under',),).toBe(true,);
+      },
+    },),
   ],
 },);
 
