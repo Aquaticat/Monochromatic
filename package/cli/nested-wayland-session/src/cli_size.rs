@@ -12,7 +12,7 @@ use anyhow::{bail, Context, Result};
 /// Parse a `WIDTHxHEIGHT` string into a positive `(width, height)` pair.
 ///
 /// What:     `pub(super) fn parse_size(spec: &str) -> Result<(i32, i32)>`. Private helper
-///           (no `pub`). Borrows the spec string, returns a tuple of two `i32`s or
+///           shared only with the parser module. Borrows the spec string and returns two `i32`s or
 ///           an error. `(i32, i32)` is an anonymous two-field tuple.
 /// Why:      Isolate the split-and-validate logic so both parsing and tests can
 ///           exercise it directly.
@@ -26,7 +26,7 @@ use anyhow::{bail, Context, Result};
 /// ```ts
 /// parseSize("800x600"); // => [800, 600]
 /// ```
-fn parse_size(spec: &str) -> Result<(i32, i32)> {
+pub(super) fn parse_size(spec: &str) -> Result<(i32, i32)> {
     // What:     `let mut parts = spec.split(['x', 'X']);`. `.split(pattern)` returns
     //           a lazy iterator of substrings between separators; the pattern is a
     //           two-element array of `char`s, so it splits on either lowercase or
