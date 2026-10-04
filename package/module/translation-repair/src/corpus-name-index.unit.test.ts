@@ -162,5 +162,67 @@ await describe({
         expect(asked,).toContain('people/missing/page.en.md',);
       },
     },),
+
+    it({
+      name: 'INDEXES nothing from an entry whose translation declares no forms, since the renderings '
+        + 'are the point of the index',
+      fn: async () => {
+        expect(corpusNamesOf({
+          entries: [
+            ENTRIES[0],
+            {
+              id: 'bare',
+              sourceText: '---\nname: 影猫\n---\n',
+              targetText: '---\n---\n\nProse.\n',
+            },
+          ],
+        },).map(function sourceOf(name,) {
+          return name.source;
+        },),).toEqual([
+          '奇妙的猫糖',
+          '猫糖',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'INDEXES no form one code point long or past the longest name, since neither names anyone '
+        + 'this corpus would carry',
+      fn: async () => {
+        expect(corpusNamesOf({
+          entries: [{
+            id: 'sizes',
+            sourceText: '---\nname: 影\ninfo:\n  alias: 影猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫猫\n---\n',
+            targetText: '---\nname: Shadow\ninfo:\n  alias: Long\n---\n',
+          },],
+        },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'RETHROWS a read failure that is no missing object, since only the absent side of a pair '
+        + 'is stepped over',
+      fn: async () => {
+        /** Value caught from the read whose git failed for another reason. */
+        let caught: unknown;
+        try {
+          await readCorpusNames({
+            pin: { cloneDir: '/nonexistent', commitSha: 'deadbeef', },
+            listPeople: async () => ['gum',],
+            readFile: async ({ relPath, },) => {
+              throw new CorpusReadError({
+                detail: relPath,
+                cause: { stderr: 'fatal: ambiguous argument', },
+              },);
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof CorpusReadError,).toBe(true,);
+        expect((caught as CorpusReadError).kind,).toBe('other',);
+      },
+    },),
   ],
 },);

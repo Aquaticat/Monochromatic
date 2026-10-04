@@ -2,7 +2,7 @@ import { execFile, } from 'node:child_process';
 import { promisify, } from 'node:util';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
-import spawn, { SubprocessError, } from 'nano-spawn';
+import spawn from 'nano-spawn';
 
 import {
   CORPUS_GIT_FLAGS,
@@ -308,13 +308,19 @@ async function gitOutput(
     return stdout;
   }
   catch (error) {
-    if (error instanceof SubprocessError) {
-      throw new CorpusReadError({
-        detail,
-        cause: error,
-      },);
-    }
-    throw error;
+    // EVERY THROWABLE THIS CALL SEES IS A SUBPROCESS FAILURE: nano-spawn
+    // funnels each one through its result.js getErrorInstance, which wraps
+    // it as SubprocessError (exit codes, signals, spawn failures and stream
+    // errors alike; its one raw escape, an options.input stdin.end throw,
+    // this call never reaches), and a probe on the built package found no
+    // input arriving here as anything else
+    // (~/temp/agent/mimo-trial/corpus-rethrow-probe.mjs). The kind field
+    // keeps the distinction callers read: `missing-object` where git says
+    // the object is absent, `other` everywhere else.
+    throw new CorpusReadError({
+      detail,
+      cause: error,
+    },);
   }
 }
 

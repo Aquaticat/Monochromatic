@@ -295,5 +295,41 @@ await describe({
         expect((caught as CorpusReadError).kind,).toBe('other',);
       },
     },),
+
+    it({
+      name: 'CLASSIFIES a cause that is no object, or null, or one with no stderr as other, since none '
+        + 'of them holds git stderr to read',
+      fn: async () => {
+        expect(new CorpusReadError({
+          detail: 'people/gum/page.md at deadbeef',
+          cause: 'a plain string',
+        },).kind,).toBe('other',);
+        expect(new CorpusReadError({
+          detail: 'people/gum/page.md at deadbeef',
+          cause: null,
+        },).kind,).toBe('other',);
+        expect(new CorpusReadError({
+          detail: 'people/gum/page.md at deadbeef',
+          cause: { code: 1, },
+        },).kind,).toBe('other',);
+      },
+    },),
+
+    it({
+      name: 'READS a string stderr as its text, so a missing-object phrase lands on the kind, and one '
+        + 'that is neither buffer nor string as no stderr at all',
+      fn: async () => {
+        expect(new CorpusReadError({
+          detail: 'people/gum/page.md at deadbeef',
+          cause: {
+            stderr: "fatal: path 'people/gum/page.md' does not exist in 'deadbeef'",
+          },
+        },).kind,).toBe('missing-object',);
+        expect(new CorpusReadError({
+          detail: 'people/gum/page.md at deadbeef',
+          cause: { stderr: 42, },
+        },).kind,).toBe('other',);
+      },
+    },),
   ],
 },);
