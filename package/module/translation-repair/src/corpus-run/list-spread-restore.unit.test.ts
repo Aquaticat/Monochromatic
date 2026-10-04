@@ -172,19 +172,19 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES A SLICE WHOSE LIST COUNTS DIFFER between the page and the archive, pairing them '
-        + 'across that gap would respace the wrong list',
+      name: 'LEAVES A SLICE WHOSE LIST COUNTS DIFFER between the text it replaces and the replacement, '
+        + 'pairing them across that gap would respace the wrong list',
       fn: async () => {
         const restored = restoreListSpread({
           slices: [pair({
             sliceIndex: 0,
-            source: '- 猫\n- 狗\n\n---\n\n- 兔',
-            target: '- A cat.\n- A dog.',
+            source: '- 猫\n- 狗',
+            target: '- A cat.\n- A dog.\n\nSome prose.\n\n- A bird.',
           },),],
-          replacements: [{ sliceIndex: 0, replacementText: '- A cat.\n- A dog.', },],
+          replacements: [{ sliceIndex: 0, replacementText: '- A cat.\n\n- A dog.', },],
         },);
         expect(restored.restored,).toEqual([],);
-        expect(textsOf({ rows: restored.replacements, },),).toEqual(['- A cat.\n- A dog.',],);
+        expect(textsOf({ rows: restored.replacements, },),).toEqual(['- A cat.\n\n- A dog.',],);
       },
     },),
   ],
