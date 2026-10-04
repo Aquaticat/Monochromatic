@@ -55,5 +55,46 @@ await describe({
         expect(protectedRanges({ text: `${'>'.repeat(16_000,)} ${line}`, },),).toStrictEqual([],);
       },
     },),
+
+    it({
+      name: 'PROTECTS a line comment and READS ITS END at the line end or the text end, whichever ends '
+        + 'the comment',
+      fn: async () => {
+        /**
+         Comment whose line the text runs out over, and one whose line a
+         newline closes.
+         */
+        const atLineEnd = protectedRanges({ text: '{ // meow', },);
+        const atTextEnd = protectedRanges({ text: '{ // meow\n}\n', },);
+        expect(atLineEnd.length,).toBe(1,);
+        expect(atTextEnd.length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'PROTECTS an expression quoting with a backtick, since the template literal holds code the '
+        + 'cat words walk must not read',
+      fn: async () => {
+        const ranges = protectedRanges({ text: `{ \`meow \${cat} meow\` }`, },);
+        expect(ranges.length,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'PROTECTS A CODE FENCE and reads to its closing fence',
+      fn: async () => {
+        const ranges = protectedRanges({ text: 'A cat.\n```\ncode\n```\nA dog.\n', },);
+        expect(ranges.length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'READS A DOUBLE BACKTICK as no code-span end, since the second backtick opens a span of its '
+        + 'own',
+      fn: async () => {
+        const ranges = protectedRanges({ text: 'A ``cat`` word.', },);
+        expect(ranges.length,).toBeGreaterThan(0,);
+      },
+    },),
   ],
 },);
