@@ -37,6 +37,19 @@ not an adoption decision.
   Selected ranges follow corresponding replaced regions,
   not a later occurrence of the old selected text.
 - Do not include a go-to-line command.
+- Determine language coverage from actual `tokei` output,
+  bounded by Helix support.
+  Do not add custom integrations for languages missing from Helix.
+- Keep the paused editor's highlighting coverage where supported by Helix.
+- Display diagnostics for the current file only;
+  omit a project-wide problems view.
+- Choose inlay placement by implementation evidence;
+  the user delegates this choice rather than requiring either proposed presentation.
+- Helix-owned components are preapproved candidates.
+  The user explicitly requests no broad choosing-technology exercise for this task.
+  Inspect only the integration APIs,
+  relevant behavior,
+  and license obligations needed for reuse.
 
 Slint is settled as the UI toolkit.
 Host language,
@@ -294,61 +307,156 @@ media or rendered-document previews,
 and persistent session restore.
 The user did not request additions to these areas.
 
-## Round 3 frontier
+## Round 3 answers
 
-### Q9: semantic languages
+- Q9:
+  measure with `tokei` and support the languages the user actually uses.
+  Do not ask the user to supply an inventory that can be measured.
+- Q10:
+  keep highlighting coverage.
+- Q11:
+  displayed-file diagnostics only.
+  Server-internal project analysis is not restricted by this UI cut.
+- Q12:
+  choose whichever inlay placement is easier to implement.
+  Do not assume the earlier above-line recommendation is accepted;
+  determine the implementation path from Slint and reusable component evidence.
+- Follow-up dependency direction:
+  Helix components are preapproved;
+  no broad dependency-selection exercise is requested.
+  This is not authorization to embed every Helix subsystem or copy its editing/keybinding model.
+- Follow-up language ceiling:
+  any language missing from Helix is unsupported in 0.x.
+  Do not develop custom integrations to fill that gap.
 
-Which languages require all retained language-intelligence capabilities?
-The paused editor's language-service configuration targets JavaScript/TypeScript intelligence;
-its highlighter recognizes additional languages independently.
+## Measured language scope
+
+### Inventory method and limits
+
+Ran `tokei 15.0.0` through a disposable `mise run inventory` task,
+first with ordinary ignore behavior,
+then including hidden files.
+The hidden-file run also counted Git hooks;
+repeat with `--hidden --exclude .git --output json` excluded Git internals,
+verified by zero report paths containing `/.git/`.
+
+The final pass respects ignore files and includes active,
+paused,
+and deprecated packages plus documentation.
+It is not a tracked-files-only or handwritten-code-only census.
+Generated TypeScript and JSON benchmark reports contribute to counts.
+A `.js` ignore pattern may hide genuine tracked source;
+do not interpret absent reports as proof a language is unused.
+
+Standalone file languages are the base inventory.
+Embedded code fences are reported separately:
+Go,
+Python,
+Java,
+and other documentation examples do not automatically add full semantic-language requirements.
+
+Raw evidence and task definition are in the private scratch directory
+`~/temp/agent/slint-ide-languages.mEr8K9`.
+The durable findings are recorded here so the plan does not depend on scratch retention.
+
+### Standalone counts from the corrected pass
+
+- TypeScript:
+  5,380 files and 608,892 code lines.
+- Rust:
+  427 files and 43,248 code lines.
+- Kotlin:
+  70 files and 5,892 code lines.
+- JavaScript:
+  57 files and 4,758 code lines.
+- Slint:
+  2 files and 1,848 code lines.
+- QML:
+  8 files and 484 code lines.
+- HCL:
+  1 file and 722 code lines.
+- SQL:
+  7 files and 521 code lines.
+- Shell:
+  5 files and 351 code lines.
+- C:
+  1 file and 208 code lines,
+  a troubleshooting reproducer.
+- C++:
+  1 file and 17 code lines,
+  the Qt logging bridge.
+- Batch:
+  2 files and 128 code lines,
+  both Gradle wrappers.
+- Other standalone families:
+  JSON,
+  TOML,
+  YAML,
+  HTML,
+  CSS,
+  Markdown,
+  MDX,
+  XML,
+  SVG,
+  Dockerfile,
+  and plain text.
+
+Do not rank the user's language needs by raw code-line totals:
+generated data distorts those totals,
+and the user requested coverage rather than a popularity threshold.
+
+### Helix boundary evidence
+
+Inspected upstream `languages.toml`,
+`Cargo.toml`,
+and `LICENSE` from `helix-editor/helix`.
+Upstream master observed at `ba40e547426b0f9896c8bdc699a4ab11f2b37dbc`;
+the corresponding language-registry blob is `a5403e68b1f7fd9fb7a9924d464d09c08c1be264`.
+The fetched workspace manifest and license identify MPL-2.0;
+preserve applicable source and license notices for reused components.
+
+Registry mappings include these non-identical names:
+Shell maps to `bash`,
+C++ to `cpp`,
+SVG to `xml`,
+and `.mdx` to `markdown`.
+A `.mdx` association is not proof of complete JSX-aware MDX semantics.
+
+The inspected registry contains language entries for the standalone source/markup families in the inventory.
+However,
+its SQL,
+XML/SVG,
+and Batch entries do not specify a language server.
+Grammar recognition and highlighting are not equivalent to support for all semantic features.
+Configured servers for other entries are not proof that their executables are installed or every capability works.
+
+## Remaining scope questions
+
+### Q13: Helix ceiling per capability
+
+Does the Helix ceiling apply to individual language-intelligence capabilities as well as language names?
 
 Recommendation:
-JavaScript/TypeScript including JSX/TSX as the initial semantic scope.
-Ask for indispensable additions rather than assuming every language in this monorepo needs semantic support.
+implement the five required feature paths in the app,
+use the capabilities available for each supported language,
+and explicitly report unsupported capabilities.
+Languages with Helix grammar support but no language server remain highlight/read/search-only.
+Do not invent custom semantic backends to make every feature universal.
+This interpretation needs confirmation rather than silently weakening Q5.
 
-### Q10: highlighting languages
+### Q14: application-private writes
 
-Which languages require syntax highlighting even without semantic support?
-The current editord parser registry includes JavaScript/TypeScript and JSX/TSX,
-JSON-family files,
-CSS,
-HTML,
-Markdown,
-YAML,
-TOML,
-Rust,
-XML,
-and SVG.
+Does the no-write boundary allow disposable application/tool caches outside the project,
+or forbid those as well?
 
 Recommendation:
-retain that coverage as the acceptance target,
-with readable plain text for unrecognized types.
-This is a coverage proposal,
-not a commitment to reuse the existing parser implementation.
-
-### Q11: diagnostic scope
-
-Must diagnostics cover only the displayed file,
-or does 0.x need a project-wide problems view?
-
-Recommendation:
-displayed-file diagnostics only.
-This limits the application UI contract,
-not what files a language server may internally analyze.
-Diagnostic source selection follows the semantic-language answer.
-
-### Q12: inlay placement
-
-The paused editor renders hint labels on rows above the source line,
-not inserted between source tokens.
-Its `src/client/inlay/line.ts` packs hints onto annotation rows by source position.
-
-Recommendation:
-retain the above-line hint presentation.
-The alternative is visually inserted inline hints;
-this is independent of which hint categories are enabled.
-Diagnostic presentation is a separate decision,
-not bundled into this choice.
+no project-file mutations,
+no arbitrary task execution,
+and no persistent session-restore feature;
+permit explicitly scoped private temporary/cache storage if integration requires it.
+This is a proposed boundary,
+not a claim that selected tools already comply.
+Inspect and exercise subprocess writes before implementation is accepted.
 
 ## Agent-owned implementation investigation
 
@@ -399,10 +507,12 @@ Do not ask feature-specific questions before the primary job is settled.
 
 ## Next action
 
-Present Q9 through Q12.
-Treat the supplied caret example and the best-effort clarification as settled,
-not a question to reopen.
-Wait for answers and record them before opening dependent decisions.
+Present the measured language inventory and Q13/Q14.
+Do not reopen language enumeration,
+current-file diagnostic scope,
+inlay preference,
+or the caret/selection examples.
+Then consolidate the scope for explicit shared-understanding confirmation before implementation.
 
 Round 3 evidence:
 `git ls-files` over `package`,
