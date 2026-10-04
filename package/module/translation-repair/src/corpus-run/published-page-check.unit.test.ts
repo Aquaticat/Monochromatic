@@ -898,9 +898,13 @@ await describe({
         + 'slices than the stored archive carried',
       fn: async () => {
         /**
-         Artifact shipping two slices where the stored archive carries one.
+         Artifact shipping a wording slice and an anchor slice where the
+         stored archive carries one slice.
          */
-        const artifact = artifactOver(TWO_SWAPS,);
+        const artifact = artifactOver([{ incumbent: OLD_NAP, ships: FIRST_NAP, }, {
+          incumbent: OLD_PERCH,
+          ships: '',
+        },],);
         const weight = pageWeighsWhatItShould({
           artifact,
           archive: { kind: 'stored', text: ARCHIVE_PAGE, },
