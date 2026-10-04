@@ -518,7 +518,7 @@ new IME work and native accessibility acceptance.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
   including what ↑/↓ does after D43 removed the volume popover.
-- **SETTLED: Android media notification presentation (D82).**
+- Android media notification presentation is settled by D82.
   Accept what Android provides;
   no special notification design or variant round remains.
 - **OPEN: light surfaces not yet drawn (11d):**
@@ -528,7 +528,7 @@ new IME work and native accessibility acceptance.
  context menu,
   first-run prompt,
   scan bar.
-- **BUILT design evidence: D10 no-system-library/declined-source states.**
+- D10 no-system-library/declined-source states now have built design evidence.
   `evidence/first-run-access-boundaries.md` records the scoped authored
   native study and `questions/first-run-access.html` is verified evidence,
   not a new preference ballot.
