@@ -87,6 +87,13 @@ try {
       const [executable, ...args] = command;
       if (executable === undefined)
         throw new Error('Fixture received empty helper command.',);
+      if (scenario === 'detached-start') {
+        /** Real terminal launcher returns on spawn and does not retain child handle. */
+        const detached = spawn(executable, args, { stdio: ['ignore', 'ignore', 'inherit',], },);
+        await once(detached, 'spawn',);
+        detached.unref();
+        return;
+      }
       /**
        No shell interpolation and no dependency path supplied to relocated helper.
        */
