@@ -1591,6 +1591,98 @@ The existing upstream filing decision remains unchanged:
 these supported transformation behaviors expose a consumer requirement,
 not a newly established upstream defect.
 
+### Owned capture, pending cleanup, and SDK error wrapping
+
+A private constructor owner now captures the native callback inputs before transformation,
+not just the final getter results.
+It fixes the selected reader and callback identities,
+retains ordinary bounded input copies,
+and publishes only after the inspected native reload returns with its required phases.
+Direct callback calls do not create authority;
+a forged call during a reload makes the later genuine phase fail instead of publishing that record.
+`proc_5602` passed 17 pure controls and `proc_6b95` passed four actual native-loader cases.
+
+The raw-output comparison is separate from byte equality.
+The private `contract/collector/resource-input-custody-v2/owner.mjs:66`
+checks both:
+
+```javascript
+// Private prototype: resource-input-custody-v2/owner.mjs:66, selected condition
+outputs.raw.some((value,index)=>value!==references[index]) ||
+JSON.stringify(outputs.copies)!==JSON.stringify(scope.phases.map(value=>value.after))
+```
+
+`proc_0116` removed only the identity term.
+An identical copied array then failed the intended guard-sensitivity assertion:
+`AssertionError [ERR_ASSERTION]: Missing expected exception (ResourceInputCustodyError).`
+This was a new native-loader case,
+not a replay of the intact matrix.
+
+The first private owner delayed its guard failure while draining an unsupported Promise result.
+Its `contract/collector/resource-input-custody/owner.mjs:86` awaited the result before handing back the failure:
+
+```javascript
+// Private prototype: resource-input-custody/owner.mjs:86
+scope.unbound=(await Promise.all(scope.pending)).flat();
+```
+
+The corrected owner separates native reload completion from pending unsupported work.
+`proc_ef3d` compared both sources with manually controlled settlement:
+the original had recorded the failure but had not returned it,
+while the correction returned the failure with cleanup still pending.
+Both retained the later rejection,
+including `undefined`,
+and all test work was settled and drained.
+New reloads and current-use capture stay refused until that cleanup finishes.
+This is not a hard-stall guarantee or support for arbitrary Promise subclasses,
+modified Promise behavior,
+hostile thenables,
+or a callback waiting on its own drain.
+
+The actual SDK integration initially failed a fixture assertion in `proc_9b98`.
+The fixture expected the collector's leaf error directly.
+The existing private observer wraps source failures at
+`contract/lifecycle/root-lifecycle-retirement-entry/observer.mjs:39`:
+
+```javascript
+// Private prototype: root-lifecycle-retirement-entry/observer.mjs:39, final throw
+throw new RequestObservationStaleError('Observed request is no longer current',{cause:error});
+```
+
+The first completed baseline was preserved.
+The fresh changed-source case in `proc_edba` asserted both
+`RequestObservationStaleError: Observed request is no longer current`
+and its cause,
+`SourceCollectionError: Native resource reload replaced this snapshot`.
+A same-byte native reload blocked the second serial root while retaining the first outcome.
+No source-owner implementation change was needed for this fixture correction.
+
+The intended SDK pair consists of the retained baseline and fresh changed-source case:
+two sessions,
+four injected requests,
+two canned assessments,
+and definition counts `[2, 1]`.
+The original failed suffix adds a separate session,
+two requests,
+and one canned assessment to the execution ledger.
+It remains failed,
+not silently replaced by the recovery.
+
+The source checks,
+complete streams,
+persisted outcomes,
+and disposal checks passed for the accepted cases.
+The tasks were `mise --no-env --no-hooks run check`
+in the named private phase directories.
+No external model ran.
+The new owner still reports source authority,
+raw-file identity,
+and delegation as unestablished.
+A successful native reload is not a permission grant.
+The workaround is private input capture with conservative stale-result refusal;
+unsupported publishers and subsequent prompt transformations remain outside its qualified scope.
+There is no new upstream defect or filing artifact.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution

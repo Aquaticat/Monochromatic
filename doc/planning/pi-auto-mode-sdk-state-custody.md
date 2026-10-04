@@ -19,6 +19,60 @@ but neither closes the measured method routes.
 The [instruction snapshot findings](../troubleshooting/pi-instruction-snapshots.md)
 and private result records retain the evidence.
 
+## Owned resource inputs and request freshness
+
+The private loader factory in `contract/collector/resource-input-custody-v2/`
+now retains inputs before configured transformations and outputs after them.
+It composes with the existing collector rather than replacing policy-byte retention,
+request ownership,
+or the original judgment.
+Its resource records do not create another session/root registry or inference budget.
+
+`proc_5602` passed 17 pure controls.
+`proc_6b95` passed four actual SDK 1.0.0 loader cases,
+including original-input retention,
+same-byte reload invalidation,
+forged callback refusal during an owned reload,
+and copied-output refusal.
+These loader-only cases created no `AgentSession`.
+`proc_0116` removed only the raw output-identity comparison:
+the copied-output assertion failed with
+`AssertionError [ERR_ASSERTION]: Missing expected exception (ResourceInputCustodyError).`
+Value and occurrence checks remained intact.
+
+The actual-session integration retained the completed baseline from `proc_9b98`
+and qualified the changed-source case with `proc_edba`.
+The intended pair used two SDK sessions,
+four injected requests,
+and two original canned assessments,
+with root-definition counts `[2, 1]`.
+A same-byte native resource reload invalidated the original request occurrence;
+the first completed outcome stayed recorded and the second root remained unentered.
+The original failed suffix is separate evidence:
+including it,
+these executions used three sessions,
+six injected requests,
+and three canned assessments.
+
+The first SDK fixture expected a leaf `SourceCollectionError`
+instead of the observer's `RequestObservationStaleError` wrapper.
+That failed namespace remains unchanged;
+only the affected case was rerun with the outer error and cause asserted.
+The [instruction snapshot report](../troubleshooting/pi-instruction-snapshots.md)
+also records the unsupported-callback cleanup correction.
+
+This qualifies pre-transform observation custody and named freshness paths,
+not instruction authority,
+raw-file identity,
+legitimate delegation,
+all prompt transformations,
+semantic calibration,
+or current human permission.
+Next connect these owned inputs to native prompt composition and the final request,
+then apply code-owned source authority and policy without promoting filenames,
+role labels,
+or equal rendered text.
+
 ## Evidence determining the seam
 
 -   `manager-copy-boundary-v2/`,
