@@ -683,6 +683,37 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  15:55 UTC:
+  the T8 `corpus-run/published` batch closed with commits `13a1780c9`,
+  `2b3d73ec6`,
+  `39b9c1be1`:
+  5 line stretches over `published-page-disagreement.ts`
+  and `published-page-check.ts`,
+  the disagreement path and the weigh and wording checks driven
+  over a slice-count mismatch and an anchor slice,
+  four left documented
+  (the three incumbent-map fallbacks
+  and the unweighable return:
+  the map is built from the artifact's own comparison rows,
+  so a key miss needs a divergence the fixture builders
+  do not expose).
+  The reach census reads `still cold 4`:
+  those four
+  (`~/temp/agent/mimo-trial/reach-published3.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-published-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-published-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `39b9c1be1`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `edit` cluster
+  (the ranking's next at `census-HQOwnq`).
+
+- 2026-10-04,
   15:41 UTC:
   the next batch's baseline census taken at commit `5bd1c9712`:
   `census written to ~/.cache/translation-repair/coverage/census-HQOwnq/census.json`

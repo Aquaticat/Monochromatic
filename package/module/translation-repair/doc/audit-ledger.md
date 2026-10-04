@@ -6441,6 +6441,36 @@ The reach census (`~/temp/agent/mimo-trial/reach-cap3.log`)
 reads `left 0 cold stretches`.
 No B entry found.
 
+The thirty-seventh cluster of that census,
+`corpus-run/published`,
+against `census-HQOwnq` at `af80f65bc`:
+5 line stretches over `published-page-disagreement.ts`
+and `published-page-check.ts`
+(`13a1780c9`,
+`2b3d73ec6`,
+`39b9c1be1`).
+Landed:
+the disagreement path driven over an artifact shipping two slices
+where the stored archive carried one
+(the second fills an anchor),
+and the weigh and wording checks driven directly over the same
+mismatch beside an anchor slice.
+Left:
+the three incumbent-map fallbacks
+(`179`,
+`196`,
+`236`)
+and the unweighable return
+(`552`).
+The map is built from the artifact's own comparison rows,
+so a key miss needs a comparison and would-ship divergence
+the fixture builders do not expose;
+the empty-incumbent shape they do expose is covered.
+The reach census (`~/temp/agent/mimo-trial/reach-published3.log`)
+reads `still cold 4`:
+those four.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
