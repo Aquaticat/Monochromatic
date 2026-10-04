@@ -179,11 +179,13 @@ async function runBench(
     fanOut,
     quorumOver,
     maxAnswerChars,
+    graceMs,
   }: {
     readonly script: Parameters<typeof scriptedClient>[0];
     readonly fanOut?: 'window' | 'whole-bench';
     readonly quorumOver?: number;
     readonly maxAnswerChars?: number;
+    readonly graceMs?: number;
   },
 ) {
   const { client, asked, requests, } = scriptedClient(script,);
@@ -201,7 +203,7 @@ async function runBench(
     validate: isMeowReply,
     stage: 'meow',
     l,
-    graceMs: 50,
+    ...((graceMs === undefined) ? {} : { graceMs, }),
     ...((fanOut === undefined) ? {} : { fanOut, }),
     ...((quorumOver === undefined) ? {} : { quorumOver, }),
     ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
@@ -236,6 +238,7 @@ await describe({
         const withKnob = await runBench({
           script: { failsOnce: [], failsAlways: [], unreadable: [], },
           maxAnswerChars: 500,
+          graceMs: 50,
         },);
         const withoutKnob = await runBench({
           script: { failsOnce: [], failsAlways: [], unreadable: [], },
