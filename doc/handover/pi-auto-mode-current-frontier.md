@@ -1341,9 +1341,47 @@ Full image/store parity,
 arbitrary recursive queue ownership,
 body-return/queued-release combinations beyond the named cases,
 and general dynamic groups remain open.
-Next qualify later actual groups whose inputs depend on an earlier native result,
-without preparing every future concrete value before the parent starts
-or creating another judgment.
+The result-derived native profile then passed `proc_0963`:
+three SDK sessions,
+six injected requests,
+one original canned assessment per session,
+and child-definition counts `[3, 1, 1]`.
+A producer generated its string only after evidence collection closed;
+two later sinks received that exact owned value after complete native preparation.
+Advancing the owned clock did not create an execution deadline.
+An ordinary producer error left the successor group unreached,
+with no successor handles or attempts.
+Changing final successor inputs blocked both sink definitions.
+The full parent source and one original judgment remained in use.
+
+A separate boundary gap was measured in `proc_0b5a`.
+Refusing a converted non-string value became an ordinary VM script error,
+so an otherwise unstarted serial root tool still ran.
+The fresh guard category and original-program latch passed `proc_408c`:
+normal results,
+binding refusal,
+and ordinary producer failure produced tail-entry counts `[1, 0, 1]`.
+Ordinary conversion errors remain distinct from code-owned result guards.
+
+`proc_57e1` omitted only the final guard relay during program drainage.
+The expected assertion `AssertionError [ERR_ASSERTION]: 1 !== 0`
+showed that retaining a guard marker alone does not stop the sibling root.
+`proc_b8ff` refused a copied native producer outcome even though its actual conversion succeeded:
+the successor stayed unreached and the sibling root stayed unentered.
+`proc_abc3` omitted only the final receipt-derived input comparison.
+Its expected assertion `AssertionError [ERR_ASSERTION]: 3 !== 1`
+retained the successful producer and two transformed inert sink entries.
+
+Current private sources are
+`contract/lifecycle/result-binding-guard/`
+and `contract/collector/result-program-sdk-copy-guarded/`.
+This is a finite string-result producer/successor profile,
+not universal program analysis,
+qualified semantic effect estimates,
+governing-instruction authority,
+human permission,
+or production adoption.
+Current-use checks remain separate from retained result and cleanup records.
 Definition ownership is factory-closure ownership,
 not session or human authority;
 the fixed session reader and registered receiver separately bind each execution.
