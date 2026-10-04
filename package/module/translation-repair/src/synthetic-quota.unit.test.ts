@@ -127,5 +127,129 @@ await describe({
         ).toContain('remaining',);
       },
     },),
+
+    it({
+      name: 'throws QuotaShapeError when a body parses to no JSON object',
+      fn: async () => {
+        /** Value caught from parse of a JSON array where the object goes. */
+        let caught: unknown;
+        try {
+          parseQuotaSnapshot({ bodyText: '[1,2]', },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof QuotaShapeError,).toBe(true,);
+        expect(
+          caught instanceof QuotaShapeError
+            ? caught.message
+            : '',
+        ).toContain('not a JSON object',);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError when the weekly block is not an object',
+      fn: async () => {
+        /** Body whose weekly block arrives as a string. */
+        const bodyText = '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":"nope"}';
+        /** Value caught from parse of the mistyped body. */
+        let caught: unknown;
+        try {
+          parseQuotaSnapshot({ bodyText, },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught instanceof QuotaShapeError,).toBe(true,);
+        expect(
+          caught instanceof QuotaShapeError
+            ? caught.message
+            : '',
+        ).toContain('weeklyTokenLimit',);
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError on each mistyped five-hour field, naming the field it refused',
+      fn: async () => {
+        /**
+         Five-hour fields mistyped one at a time, each naming its own
+         refusal.
+         */
+        const variants: readonly {
+          readonly bodyText: string;
+          readonly field: string;
+        }[] = [
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":"640","limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            field: 'max',
+          },
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":"false","nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            field: 'limited',
+          },
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":5},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            field: 'nextTickAt',
+          },
+        ];
+        for (const { bodyText, field, } of variants) {
+          /** Value caught from parse of the mistyped body. */
+          let caught: unknown;
+          try {
+            parseQuotaSnapshot({ bodyText, },);
+          }
+          catch (error) {
+            caught = error;
+          }
+          expect(caught instanceof QuotaShapeError,).toBe(true,);
+          expect(
+            caught instanceof QuotaShapeError
+              ? caught.message
+              : '',
+          ).toContain(field,);
+        }
+      },
+    },),
+
+    it({
+      name: 'throws QuotaShapeError on each mistyped weekly field, naming the field it refused',
+      fn: async () => {
+        /**
+         Weekly fields mistyped one at a time, each naming its own
+         refusal.
+         */
+        const variants: readonly {
+          readonly bodyText: string;
+          readonly field: string;
+        }[] = [
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":"87.5","nextRegenAt":"2026-07-17T00:10:00.000Z"}}',
+            field: 'percentRemaining',
+          },
+          {
+            bodyText: '{"rollingFiveHourLimit":{"remaining":613.4,"max":640,"limited":false,"nextTickAt":"2026-07-16T22:55:00.000Z"},"weeklyTokenLimit":{"percentRemaining":87.5,"nextRegenAt":5}}',
+            field: 'nextRegenAt',
+          },
+        ];
+        for (const { bodyText, field, } of variants) {
+          /** Value caught from parse of the mistyped body. */
+          let caught: unknown;
+          try {
+            parseQuotaSnapshot({ bodyText, },);
+          }
+          catch (error) {
+            caught = error;
+          }
+          expect(caught instanceof QuotaShapeError,).toBe(true,);
+          expect(
+            caught instanceof QuotaShapeError
+              ? caught.message
+              : '',
+          ).toContain(field,);
+        }
+      },
+    },),
   ],
 },);
