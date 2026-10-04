@@ -337,6 +337,34 @@ await describe({
         },),
 
         it({
+          name: 'KEEPS an empty-quote claim out of the prior-issue dismissal, since wording that is '
+            + 'nothing restates nothing',
+          fn: async () => {
+            const [tally,] = screenIntroducedDefects({
+              regions: [REGION,],
+              ballots: {
+                'hf:cat/one': [catCheck({
+                  verdict: 'introduced-defect',
+                  evidence: '',
+                  omittedText: '',
+                },),],
+              },
+              issues: [{
+                issueId: 'issue/1',
+                status: 'accepted',
+                severity: 'minor',
+                claims: [{
+                  quote: 'the cat sleeps',
+                },],
+                tallies: {},
+              },] as unknown as AdjudicatedIssue[],
+            },);
+            expect(tally?.unanchored,).toBe(1,);
+            expect(tally?.claims,).toHaveLength(1,);
+          },
+        },),
+
+        it({
           name: 'drops a check whose verdict is outside the vocabulary instead of '
             + 'folding it into uncertain, so schema noise never reads as doubt',
           fn: async () => {

@@ -85,6 +85,16 @@ await describe({
             expect(isIntroducedDefectVerdict('clean',),).toBe(false,);
           },
         },),
+
+        it({
+          name: 'refuses a verdict that is no string at all, so the vocabulary is never read '
+            + 'off a number or a record',
+          fn: async () => {
+            expect(isIntroducedDefectVerdict(7,),).toBe(false,);
+            expect(isIntroducedDefectVerdict(null,),).toBe(false,);
+            expect(isIntroducedDefectVerdict({ verdict: 'clean', },),).toBe(false,);
+          },
+        },),
       ],
     },),
 
@@ -92,6 +102,38 @@ await describe({
       name: buildIntroducedDefectMessages.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'CARRIES one neighbour where only one was handed in, the other block reading empty',
+          fn: async () => {
+            /**
+             Sheet asking with the neighbouring source alone.
+             */
+            const sourceOnly = buildIntroducedDefectMessages({
+              sourceText: '猫在睡觉。',
+              baselineText: 'The cat naps.',
+              regions: [REGION,],
+              issues: [],
+              neighbouringSourceText: '邻猫在窗台上。',
+            },).messages[1]
+              ?.content
+              ?? '';
+            expect(sourceOnly.includes('邻猫在窗台上。',),).toBe(true,);
+            /**
+             Sheet asking with the neighbouring translation alone.
+             */
+            const incumbentOnly = buildIntroducedDefectMessages({
+              sourceText: '猫在睡觉。',
+              baselineText: 'The cat naps.',
+              regions: [REGION,],
+              issues: [],
+              neighbouringIncumbentText: 'The neighbouring cat is on the sill.',
+            },).messages[1]
+              ?.content
+              ?? '';
+            expect(incumbentOnly.includes('The neighbouring cat is on the sill.',),).toBe(true,);
+          },
+        },),
+
         it({
           name: 'frames the NATURALNESS refinement as an edit that was not fixing '
             + 'anything, because a prober told the editor was repairing defects '
@@ -385,6 +427,26 @@ await describe({
               },),
             ).toBe(false,);
             expect(isIntroducedDefectReportWire({ checks: 'none', },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'refuses a report that is no record, a check that is none, and a check whose region '
+            + 'is no number',
+          fn: async () => {
+            expect(isIntroducedDefectReportWire([1, 2],),).toBe(false,);
+            expect(isIntroducedDefectReportWire({ checks: [5,], },),).toBe(false,);
+            expect(isIntroducedDefectReportWire({
+              checks: [{
+                region: 'one',
+                verdict: 'uncertain',
+                category: 'accuracy',
+                severity: 'minor',
+                evidence: 'the dog barks',
+                omittedText: '',
+                reason: 'fixture',
+              },],
+            },),).toBe(false,);
           },
         },),
       ],
