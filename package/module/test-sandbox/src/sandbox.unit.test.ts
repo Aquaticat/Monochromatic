@@ -42,7 +42,12 @@ await describe({
           fn: async () => {
             const target = { method: (): string => 'original', };
             {
-              await using sandbox = createSinon({},);
+              await using sandbox = createSinon({
+                injectInto: null,
+                properties: [],
+                useFakeTimers: false,
+                assertOptions: {},
+              },);
               sandbox.stub(target, 'method',).returns('stubbed',);
               expect(target.method(),).toBe('stubbed',);
             }
@@ -70,7 +75,10 @@ await describe({
             expect(owner.phase,).toBe('completed',);
             expect(target.method(),).toBe('original',);
             expect(() => sandbox.sinon.stub(target, 'method',),).toThrow(SandboxOwnershipError,);
-            expect(() => stub.returns('late',),).toThrow(SandboxOwnershipError,);
+            expect(() => stub.value(() => 'late',),).toThrow(SandboxOwnershipError,);
+            // Local fake configuration remains available without reattaching the restored method.
+            stub.returns('detached',);
+            expect(stub(),).toBe('detached',);
             sandbox[Symbol.dispose]();
             expect(target.method(),).toBe('original',);
           },
