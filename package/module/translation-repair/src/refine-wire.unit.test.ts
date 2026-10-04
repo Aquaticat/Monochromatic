@@ -157,6 +157,16 @@ await describe({
         },),
 
         it({
+          name: 'refuses a rewrite that is no record at all, so no field is read off a number or a '
+            + 'string',
+          fn: async () => {
+            expect(isRefineReportWire({ rewrites: [5,], },),).toBe(false,);
+            expect(isRefineReportWire({ rewrites: ['The cat sleeps.',], },),).toBe(false,);
+            expect(isRefineReportWire({ rewrites: [null,], },),).toBe(false,);
+          },
+        },),
+
+        it({
           name: 'refuses a zero or negative paragraph number, because numbering is '
             + 'one-based and a zero would silently bind to the paragraph before '
             + 'the first',

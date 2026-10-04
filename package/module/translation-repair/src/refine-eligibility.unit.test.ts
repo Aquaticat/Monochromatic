@@ -79,6 +79,33 @@ await describe({
     },),
 
     it({
+      name: 'skips a paragraph standing in a non-body zone, since only body prose is refined',
+      fn: async () => {
+        /**
+         Paragraph standing in a footnote definition's zone, the shape no
+         parse emits but the boundary takes.
+         */
+        const [verdict,] = selectRefinableParagraphs({
+          document: {
+            nodes: [{
+              id: 'block/0',
+              zone: 'footnote-definition',
+              kind: 'paragraph',
+              text: LONG_PROSE,
+              startOffset: 0,
+              endOffset: LONG_PROSE.length,
+              contentHash: 'fixture',
+            },],
+            parseFindings: [],
+          } as unknown as Parameters<typeof selectRefinableParagraphs>[0]['document'],
+        },);
+        expect(verdict === undefined ? '' : (verdict.eligible ? 'eligible' : verdict.reason),).toBe(
+          'not-body-zone',
+        );
+      },
+    },),
+
+    it({
       name: 'ADMITS a soft-wrapped paragraph, because a source wrap renders as '
         + 'a space and carries no authored structure. 811 of 2067 prose '
         + 'paragraphs at the pinned corpus commit carry an internal newline '

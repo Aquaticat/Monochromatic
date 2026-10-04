@@ -30,7 +30,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  EMPTY_INTRODUCED_DEFECT_REPORT,
+  messageText,
   settleRefinedSlice,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type ChunkRepairOutcome,
   type RepairModels,
   type RosterModelId,
@@ -117,6 +121,61 @@ const REFUSING_CLIENT: SyntheticClient = {
 };
 
 /**
+ Client that scripts every stage the settle asks and records the sheet of
+ every call, so a case can read what the flow asked in order.
+ */
+function scriptedSettleClient({ asked, }: {
+  readonly asked: string[];
+},): SyntheticClient {
+  return {
+    chatText(): never {
+      throw new Error(CLIENT_WAS_REACHED,);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      /**
+       Last message, the sheet the stage composes.
+       */
+      const last = request.messages.at(-1,);
+      asked.push((last === undefined) ? '' : messageText({ message: last, },));
+      /**
+       Replies this call's guard accepts, tried in the flow's order.
+       */
+      const candidates: readonly unknown[] = [
+        {
+          rewrites: [{
+            paragraph: 1,
+            newText: `${REPAIRED_TEXT} Rewritten for flow.`,
+          },],
+        },
+        {
+          best: 1,
+          reason: 'scripted',
+        },
+        EMPTY_INTRODUCED_DEFECT_REPORT,
+      ];
+      for (const candidate of candidates) {
+        if (request.validate(candidate,))
+          return {
+            kind: 'ok',
+            value: candidate as ValueT,
+            rawText: JSON.stringify(candidate,),
+          };
+      }
+      return {
+        kind: 'schema-mismatch',
+        rawText: '',
+        detail: 'no scripted reply validated',
+      };
+    },
+    quotas(): never {
+      throw new Error(CLIENT_WAS_REACHED,);
+    },
+  };
+}
+
+/**
  Builds one settled accuracy outcome, standing as a translation or not.
 
  @param nonTranslationStanding - whether the critics' non-translation ruling
@@ -173,10 +232,20 @@ function settledOutcome(
  ```
  */
 async function settleWith(
-  { nonTranslationStanding, }: { readonly nonTranslationStanding: boolean; },
+  {
+    nonTranslationStanding,
+    client = REFUSING_CLIENT,
+    neighbouringSourceText,
+    neighbouringIncumbentText,
+  }: {
+    readonly nonTranslationStanding: boolean;
+    readonly client?: SyntheticClient;
+    readonly neighbouringSourceText?: string;
+    readonly neighbouringIncumbentText?: string;
+  },
 ): Promise<Awaited<ReturnType<typeof settleRefinedSlice>>> {
   return await settleRefinedSlice({
-    client: REFUSING_CLIENT,
+    client,
     outcome: settledOutcome({ nonTranslationStanding, },),
     sourceText: SOURCE_TEXT,
     incumbentText: REPAIRED_TEXT,
@@ -184,6 +253,8 @@ async function settleWith(
     models: MODELS,
     refinerModelIds: REFINERS,
     declaredNames: [],
+    ...(neighbouringSourceText === undefined ? {} : { neighbouringSourceText, }),
+    ...(neighbouringIncumbentText === undefined ? {} : { neighbouringIncumbentText, }),
     signal: AbortSignal.timeout(30_000,),
     perCallTimeoutMs: 1_000,
     l,
@@ -226,6 +297,27 @@ await describe({
         expect(settled.refinedBy,).toEqual([],);
         // The one refiner's voice was lost, so nobody was heard either.
         expect(settled.refinersHeard,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'CARRIES the neighbouring slice\'s source and incumbent onto the sheet it asks, so a rewrite '
+        + 'dropping repetition reads against its neighbour',
+      fn: async () => {
+        /**
+         Sheets the flow asked, in order.
+         */
+        const asked: string[] = [];
+        await settleWith({
+          nonTranslationStanding: true,
+          client: scriptedSettleClient({ asked, },),
+          neighbouringSourceText: '邻猫每天下午都在窗台上晒太阳。',
+          neighbouringIncumbentText: 'The neighbouring cat naps there too.',
+        },);
+        expect(asked.some(function carriesNeighbour(sheet,) {
+          return sheet.includes('邻猫每天下午都在窗台上晒太阳。',)
+            && sheet.includes('The neighbouring cat naps there too.',);
+        },),).toBe(true,);
       },
     },),
   ],

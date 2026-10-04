@@ -100,6 +100,7 @@ function scriptedRefiner(
   {
     newText,
     ballot,
+    paragraph = 1,
     selectionSheets,
   }: {
     readonly newText?:
@@ -108,6 +109,7 @@ function scriptedRefiner(
     readonly ballot:
       | number
       | ((modelId: RosterModelId) => number);
+    readonly paragraph?: number;
     readonly selectionSheets?: string[];
   },
 ): SyntheticClient {
@@ -145,7 +147,7 @@ function scriptedRefiner(
         ? {
           rewrites: modelText === undefined ? [] : [
             {
-              paragraph: 1,
+              paragraph,
               newText: modelText,
             },
           ],
@@ -268,6 +270,34 @@ await describe({
                   return finding.includes('refine-candidates',);
                 },),
             ).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'DROPS a rewrite naming a paragraph the envelopes do not carry, keeping the repaired text',
+          fn: async () => {
+            /** Run where the rewrite names an envelope the plan lacks. */
+            const result = await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+              paragraph: 99,
+            },),);
+            expect(result.changed,).toBe(false,);
+            expect(result.refinedText,).toBe(REPAIRED_TEXT,);
+          },
+        },),
+
+        it({
+          name: 'KEEPS the repaired text when the rewrite is the text itself, since the patch applied '
+            + 'nothing',
+          fn: async () => {
+            /** Run where the rewrite writes the base back unchanged. */
+            const result = await runFixture(scriptedRefiner({
+              newText: REPAIRED_TEXT,
+              ballot: 1,
+            },),);
+            expect(result.changed,).toBe(false,);
+            expect(result.refinedText,).toBe(REPAIRED_TEXT,);
           },
         },),
 
