@@ -79,6 +79,9 @@ The authored comparisons remain valid measurements,
 not template-engine output or implemented presets.
 Default-template design and customization/disambiguation interactions remain
 open without a replacement policy vote.
+These entries are not a request for another filename review round.
+The human rejected inconsequential decisions;
+apply the comparison plan's consequence gate before asking about them.
 The runtime's fresh settings were restored and it was stopped.
 `doc/planning/music-player-search-filename-comparison.md` selects no policy
 and authorizes no dependent implementation.

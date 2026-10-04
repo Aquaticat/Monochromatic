@@ -134,6 +134,11 @@ records the exact audit and manual-review boundary.
 Task 140's technical publication checks passed,
 but its policy-question framing is superseded by task 141.
 The user owes no placement/visibility answer.
+The human also rejected further rounds on inconsequential filename details.
+Use the comparison plan's consequence gate before new questions:
+only a concrete user-facing distinction needing human judgment justifies
+another design round.
+Open template entries alone trigger neither questions nor more captures.
 Task 141's artifact,
 guard-removal proofs,
 consumer and document checks passed.
