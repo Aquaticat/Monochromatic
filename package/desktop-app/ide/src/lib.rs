@@ -44,3 +44,6 @@ mod syntax_error;
 
 /// Partial ligature selection clips foreground against source selection geometry.
 mod selection_paint;
+
+/// One local project boundary exposes directory snapshots without mutation operations.
+pub mod workspace;
