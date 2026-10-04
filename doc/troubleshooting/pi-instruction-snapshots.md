@@ -1743,7 +1743,7 @@ The inspected SDK normalizer explicitly constructs both optional prompt keys,
 even when their values are undefined:
 
 ```javascript
-// SDK 1.0.2: dist/core/system-prompt.js:10
+// SDK 1.0.2: dist/core/system-prompt.js:11
 customPrompt: input.customPrompt,
 forceSystemPrompt: input.forceSystemPrompt,
 ```
@@ -1800,7 +1800,13 @@ if(!consumer)throw new RequestProducerError('Native producer stream is not bound
 
 The corrected fixture used the existing `producerOwner.bindConsumer`.
 It also separated the JSONL header from the entries comparison:
-the native manager's `getEntries()` excludes the header.
+the private native manager's `getEntries()` excludes the header:
+
+```javascript
+// Private base-prompt-sdk-copy/stage-private/manager.mjs:1115
+return structuredClone(this.#fileEntries.filter((e) => e.type !== "session"));
+```
+
 That comparison had not been reached in the original failure,
 so it is not a second observed failure.
 No base-helper or SDK behavior change was needed for this fixture correction.
