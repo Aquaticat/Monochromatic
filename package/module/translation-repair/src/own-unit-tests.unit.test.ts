@@ -685,7 +685,6 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/runs-lock-holder.ts',
   'src/corpus-run/slice-cache-claims.ts',
   'src/corpus-run/slice-cache-dir-read.ts',
-  'src/corpus-run/tag-attributes.ts',
   'src/corpus-run/text-runs.ts',
   'src/corpus-run/title-reference-locate.ts',
   'src/corpus-run/title-reference-rewrite.ts',
