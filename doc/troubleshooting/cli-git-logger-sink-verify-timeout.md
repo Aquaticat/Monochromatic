@@ -226,6 +226,10 @@ with the `issue-573-` prefix:
 - `issue-573-historical-log-window.ts`:
   read-only selection of retained incident-window logs.
 
+The detached historical worktree was removed after the trials;
+recreating it is necessary before rerunning the endpoint scripts.
+The scripts and evidence files remain.
+
 The scripts currently record this checkout's absolute path.
 They are local diagnostic artifacts,
 not portable package tests or a completed regression guard.
@@ -243,6 +247,15 @@ regressions: test historical endpoints, bisect with a validated signal. State at
 
 This is a proposal,
 not an applied change to agent instructions.
+
+## Documentation verification
+
+`mise run lint:markdown -- doc/troubleshooting/cli-git-logger-sink-verify-timeout.md` passed.
+Sätteri 0.10.5 rendered the document to HTML;
+headings,
+code spans,
+lists,
+and diagnostic blocks were inspected in the rendered output.
 
 ## Upstream filing decision
 
