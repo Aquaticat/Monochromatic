@@ -62,6 +62,12 @@ mod markdown_positions;
 /// Internal native Markdown/MDX parser interface.
 #[doc(hidden)]
 pub mod markdown_source;
+/// Native literal and glob command-input expansion.
+#[doc(hidden)]
+pub mod path_inputs;
+/// Input-expansion consumer controls.
+#[cfg(test)]
+mod path_inputs_tests;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
 /// Syntax-only Rust execution without initializing a Cargo workspace.
