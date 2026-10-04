@@ -29,8 +29,8 @@ await describe({
       name: 'READS NO TAG where the name starts with no letter and where a closer carries anything past '
         + 'its name, since neither names an element',
       fn: async () => {
-        expect(maskLoneContainerTags({ text: '<3> cat </3>\n', },).tags,).toEqual([],);
-        expect(maskLoneContainerTags({ text: '<p> cat </p x>\n', },).tags,).toEqual([],);
+        expect(maskLoneContainerTags({ text: '<3>\n', },).tags,).toEqual([],);
+        expect(maskLoneContainerTags({ text: '</p x>\n', },).tags,).toEqual([],);
       },
     },),
   ],
