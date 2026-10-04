@@ -289,7 +289,15 @@ stdin-filename requirements,
 positive concurrency,
 repeatable ignore flags,
 and rejection of an unsupported --rule option.
-The current gate is `proc_c3dd`.
+CLI grammar,
+dispatch,
+and literal discovery passed their gate (`proc_c3dd`).
+Glob expansion and JSONL/stdin-fix output routing were then added.
+`proc_2dfd` passed all 121 tests,
+but Clippy rejected one unnecessary cloned single-element test slice
+(`clippy::cloned_ref_to_slice_refs`);
+that assertion now uses `std::slice::from_ref`.
+The latest output/glob recheck is pending.
 The preceding gate passed 108 tests but one new settings fixture attempted to parse top-level null,
 which the JSONC package rejects before schema validation.
 The fixture now tests a valid JSONC array root and nested null instead.

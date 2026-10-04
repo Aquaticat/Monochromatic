@@ -32,7 +32,11 @@ pub struct RunOutput {
 }
 
 /// Route a completed run without manually escaping JSON or mixing source bytes with diagnostic records.
-pub fn run_output(findings: &[Diagnostic], fixed_stdin: Option<&str>, options: OutputOptions) -> Result<RunOutput, serde_json::Error> {
+pub fn run_output(
+    findings: &[Diagnostic],
+    fixed_stdin: Option<&str>,
+    options: OutputOptions,
+) -> Result<RunOutput, serde_json::Error> {
     let mut warnings: usize = 0;
     let mut errors: bool = false;
     let mut processing_failure: bool = false;
@@ -53,19 +57,27 @@ pub fn run_output(findings: &[Diagnostic], fixed_stdin: Option<&str>, options: O
     if errors {
         exit_code = 1;
     }
-    if let Some(limit) = options.max_warnings {
-        if warnings > limit {
-            exit_code = 1;
-        }
+    if let Some(limit) = options.max_warnings
+        && warnings > limit
+    {
+        exit_code = 1;
     }
     if processing_failure {
         exit_code = 2;
     }
     let diagnostics: String = render(&visible)?;
     if let Some(source) = fixed_stdin {
-        return Ok(RunOutput { stdout: String::from(source), stderr: diagnostics, exit_code });
+        return Ok(RunOutput {
+            stdout: String::from(source),
+            stderr: diagnostics,
+            exit_code,
+        });
     }
-    return Ok(RunOutput { stdout: diagnostics, stderr: String::new(), exit_code });
+    return Ok(RunOutput {
+        stdout: diagnostics,
+        stderr: String::new(),
+        exit_code,
+    });
 }
 
 /// Stream and status controls are not release code.
