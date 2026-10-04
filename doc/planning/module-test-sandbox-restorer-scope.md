@@ -2,10 +2,10 @@
 
 ## Status
 
-Proposed resolution of [issue 582](https://github.com/Aquaticat/Monochromatic/issues/582).
-The user requested a grilling round before implementation.
-No implementation edits have been made.
-The remaining question is confirmation of this shared plan.
+Confirmed resolution plan for [issue 582](https://github.com/Aquaticat/Monochromatic/issues/582).
+The user confirmed the scope-only change after the grilling round.
+The implementation moves the callback declaration without changing its body or execution order.
+Verification is pending; no design questions remain open.
 
 ## Evidence
 
@@ -21,7 +21,7 @@ and aggregates restoration failures.
 manual restoration and restubbing, completed-attempt guards, and combined body/cleanup failures
 through the public artifact.
 
-## Proposed change
+## Confirmed change
 
 Move the named function declaration into `createOwnedSandbox`, immediately before `restore`.
 Pass `restoreOrdinarySandbox` as the final callback after the lease callbacks.
@@ -37,7 +37,7 @@ the patch must preserve both explicitly.
 
 ## Verification and completion
 
-After confirmation:
+Completion checklist:
 
 - Commit the scoped implementation change with the issue reference.
 - Run package lint, including `lint:types`, and require no warnings or errors.

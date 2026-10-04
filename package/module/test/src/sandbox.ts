@@ -72,6 +72,10 @@ export function createOwnedSandbox({
    */
   const cleanupState = { active: false, };
   /**
+   Delegate ordinary fake restoration to the sandbox that owns them.
+   */
+  function restoreOrdinarySandbox(): void { raw.restore(); }
+  /**
    Restore every lease before delegating to Sinon's own collection cleanup.
    */
   function restore(): void {
@@ -86,7 +90,7 @@ export function createOwnedSandbox({
     };
     restoreSandboxSteps([
       ...leases,
-      function restoreOrdinarySandbox(): void { raw.restore(); },
+      restoreOrdinarySandbox,
     ],);
   }
   /**
