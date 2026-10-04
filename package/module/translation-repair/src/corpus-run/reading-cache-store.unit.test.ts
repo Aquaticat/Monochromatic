@@ -341,5 +341,24 @@ await describe({
       ).toBe(false,);
       },
     },),
+
+    it({
+      name: 'REFUSES a readings list that is no array, an unavailable verdict whose kept readers are no '
+        + 'array, and one whose reason is no string',
+      fn: async () => {
+        const badList = await roundTrip({
+          record: { kind: 'corroborated', readings: 5, overlap: 0.71, },
+        },);
+        expect(badList.has(KEY,),).toBe(false,);
+        const badReaders = await roundTrip({
+          record: { kind: 'unavailable', perReader: 5, reason: 'one-reader-only', },
+        },);
+        expect(badReaders.has(KEY,),).toBe(false,);
+        const badReason = await roundTrip({
+          record: { kind: 'unavailable', perReader: [], reason: 5, },
+        },);
+        expect(badReason.has(KEY,),).toBe(false,);
+      },
+    },),
   ],
 },);
