@@ -24,7 +24,7 @@ No new IME or TalkBack experiment follows.
 
 ## Independently verifiable queue
 
-- [ ] Audit current first-run access,
+- [x] Audit current first-run access,
   folder-grant,
   discovery and analysis boundaries against D10/D27.
   Completion requires executable-branch citations and explicit missing
@@ -112,10 +112,61 @@ this continuation does not claim the code is frozen against concurrent work.
   This is a source observation,
   not a live-run measurement or authority to revert concurrent production
   work.
-  The source-linked sweep decision must be read before attributing intent.
+  `package/music-player/android-app/DECISION.peak-sweep-parallelism.md:24`
+  explicitly records accepted provisional automatic initial indexing and a
+  planned better launch UX.
+  Preserve that provisional runtime independently from D27's target;
+  do not label it an unauthorized regression or revert it.
 
 These are design/source discrepancies,
 not authorization to fix production or proof of installed behavior.
+
+## Authored native study in progress
+
+The new branch `prototype/music-player-first-run-access` starts at
+`a5560abb223af9f700b9d9465eac1991a02aac07`,
+not the freshly inspected production revision.
+It lives in the owned worktree
+`${HOME}/temp/agent/music-player-first-run-access`.
+The other prototype's concurrent lock and evidence changes remain untouched.
+
+Exact scenes are declined device-wide access with no held source,
+no source opened,
+confirmed complete device-library enumeration with no eligible audio,
+and confirmed complete chosen-folder enumeration with no eligible audio.
+The latter scenes are authored premises,
+not production status evaluation or claims that the device/folder has no files.
+Partial-with-results,
+partial-without-results,
+failed and unread coverage must not permit those scoped empty claims.
+
+The activity inherits `ComponentActivity`,
+not `MainActivity`.
+The debug manifest disables the production launcher,
+playback service and initial sweep service.
+`Open a folder` and in-app `Settings` callbacks emit private debug events only;
+they do not open a picker,
+change grants,
+read music or demonstrate successful recovery.
+Merged-manifest and native service-isolation verification are still required.
+The study includes no production scan/dismiss preference implementation.
+
+D10's old `empty-a` statement that the first run analyses every file is
+superseded by D27's separate choice to analyse.
+No universal hour/fan prediction is copied from that historical candidate.
+The in-app Settings action is not Android permission settings.
+Source picker cancellation leaves the production callback unused
+(`MainActivity.kt:1124`);
+a non-null pick takes a persisted grant,
+saves the tree and requests source reload
+(`MainActivity.kt:1659`).
+These source paths were read,
+not exercised against real state.
+
+The current access flag is remembered on composition entry and updated
+by the permission-result callback.
+No independent Settings-return access refresh was observed inside
+`appRoot`; this scoped observation does not establish whole-app behavior.
 
 ## Continuation correction
 
