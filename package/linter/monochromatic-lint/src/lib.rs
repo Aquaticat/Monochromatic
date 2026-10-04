@@ -76,15 +76,22 @@ pub mod rust_no_anonymous_functions;
 /// Internal fixed Rust rule implementations.
 #[doc(hidden)]
 pub mod rust_rules;
-/// Internal source-anchored explicit-type findings and semantic coverage errors.
-mod rust_type_diagnostic;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;
+/// Internal source-anchored explicit-type findings and semantic coverage errors.
+mod rust_type_diagnostic;
 
 /// Disposable native filesystem helpers used only by tests.
 #[cfg(test)]
 mod test_fs;
+
+/// Disposable Cargo-backed contexts for the semantic rule's conformance suite.
+#[cfg(test)]
+mod rust_semantic_test_support;
+/// Full semantic annotation controls, including source-overlay cache changes.
+#[cfg(test)]
+mod rust_explicit_types_tests;
 
 /// Shared consumer-level regressions for the initial Markdown rule ports.
 #[cfg(test)]

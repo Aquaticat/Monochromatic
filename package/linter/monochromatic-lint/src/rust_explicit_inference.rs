@@ -17,7 +17,7 @@ use ra_ap_hir::{Callable, CallableKind, Semantics, Type};
 /// Import the database interface kept alive throughout semantic queries.
 use ra_ap_hir_ty::db::HirDatabase;
 /// Import syntax kinds and typed inference nodes.
-use ra_ap_syntax::{AstNode, SyntaxKind, ast};
+use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
 
 /// What: Recognize unnameable leaf types while retaining explicit outer structures.
 /// Why: A reference/container around a function item should be written as '&_'/'Container<_>', not replaced wholesale by '_'.
@@ -33,9 +33,13 @@ fn is_unnameable_leaf(database: &dyn HirDatabase, ty: &Type<'_>) -> bool {
             return false;
         };
         match callable.kind() {
-            CallableKind::Function(_) | CallableKind::TupleStruct(_) | CallableKind::TupleEnumVariant(_) => return true,
+            CallableKind::Function(_)
+            | CallableKind::TupleStruct(_)
+            | CallableKind::TupleEnumVariant(_) => return true,
             // Function pointers have a writable fn(...) -> ... type and are not exempt.
-            CallableKind::FnPtr | CallableKind::FnImpl(_) | CallableKind::Closure(_) => return false,
+            CallableKind::FnPtr | CallableKind::FnImpl(_) | CallableKind::Closure(_) => {
+                return false;
+            }
         }
     }
     // Closures have unnameable types; the independent anonymous-function rule can still reject their expressions.
@@ -46,6 +50,17 @@ fn is_unnameable_leaf(database: &dyn HirDatabase, ty: &Type<'_>) -> bool {
     return ty.as_impl_traits(database).is_some();
 }
 
+/// Distinguish constant inference from discard expressions, which have no annotation slot.
+fn is_constant_placeholder(node: &SyntaxNode) -> bool {
+    if node.kind() != SyntaxKind::UNDERSCORE_EXPR {
+        return false;
+    }
+    if let Some(parent) = node.parent() {
+        return parent.kind() == SyntaxKind::CONST_ARG;
+    }
+    return false;
+}
+
 /// Check every explicit type placeholder and reject inferred constant placeholders as values.
 pub(crate) fn check_inferred_types(
     semantics: &Semantics<'_, dyn HirDatabase>,
@@ -54,23 +69,20 @@ pub(crate) fn check_inferred_types(
 ) -> Vec<Diagnostic> {
     let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for node in context.syntax().descendants() {
-        if node.kind() == SyntaxKind::UNDERSCORE_EXPR {
-            if let Some(parent) = node.parent() {
-                if parent.kind() == SyntaxKind::CONST_ARG {
-                    findings.push(type_finding(
-                        context, &node, severity,
-                        "Replace inferred '_' with an explicit constant value.",
-                        "Write the array length or generic constant argument instead of asking Rust to infer it.",
-                    ));
-                }
-            }
+        if is_constant_placeholder(&node) {
+            findings.push(type_finding(
+                context, &node, severity,
+                "Replace inferred '_' with an explicit constant value.",
+                "Write the array length or generic constant argument instead of asking Rust to infer it.",
+            ));
             continue;
         }
         if node.kind() != SyntaxKind::INFER_TYPE {
             continue;
         }
         // The kind check guarantees this cast; keep the original registered node for its source span.
-        let syntax_type: ast::Type = ast::Type::cast(node.clone()).expect("inference kind is a type node");
+        let syntax_type: ast::Type =
+            ast::Type::cast(node.clone()).expect("inference kind is a type node");
         let Some(inferred): Option<Type<'_>> = semantics.resolve_type(&syntax_type) else {
             findings.push(resolution_failure(
                 context, &node,

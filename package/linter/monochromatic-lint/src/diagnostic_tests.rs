@@ -74,6 +74,17 @@ fn strings_are_encoded_at_the_json_boundary() {
     assert_eq!(value["help"], expected.help.expect("present help"));
 }
 
+/// Processing status informs exit handling without changing the accepted JSONL schema.
+#[test]
+fn processing_failure_state_is_internal() {
+    let mut finding: Diagnostic = fixture();
+    assert!(!finding.processing_failure);
+    finding.processing_failure = true;
+    let output: String = render(&[finding]).expect("encode processing diagnostic");
+    let record: serde_json::Value = serde_json::from_str(output.as_str()).expect("diagnostic JSON");
+    assert!(record.get("processing_failure").is_none());
+}
+
 /// A clean run prints no records, and multiple findings retain order without pretty-printing.
 #[test]
 fn clean_and_multiple_outputs_have_exact_line_cardinality() {
