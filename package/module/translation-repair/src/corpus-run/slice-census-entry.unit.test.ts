@@ -290,6 +290,25 @@ await describe({
       },
     },),
     it({
+      name: 'COUNTS the blocks the translation carries and the source does not, so an added section is '
+        + 'measured as what it added',
+      fn: async () => {
+        await using corpus = await throwawayCorpus({
+          targetPage: `${FULL_TARGET_PAGE}\n\nAn extra paragraph the source never wrote.\n`,
+        },);
+
+        /**
+         What the census made of that entry.
+         */
+        const row = await censusEntry({
+          entryId: ENTRY_ID,
+          pin: corpus.pin,
+        },);
+
+        expect(JSON.stringify(row,),).toContain('targetOnly',);
+      },
+    },),
+    it({
       name: 'COUNTS characters, not slices, so no slice is measured as empty',
       fn: async () => {
         await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);

@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { alignBlocks, } from '../align-blocks-walk.ts';
 import {
   alignDocumentSections,
@@ -253,10 +255,9 @@ export async function censusEntry(
       /**
        Characters this target-only block carries.
        */
-      const blockChars = targetNodes[step.targetIndex]
-        ?.text
-        .length
-        ?? 0;
+      const blockChars = nonNullishOrThrow(targetNodes[step.targetIndex],)
+        .text
+        .length;
       totals.targetOnlyBlocks += 1;
       totals.targetOnlyChars += blockChars;
       targetOnlyBlockChars.push(blockChars,);
