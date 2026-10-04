@@ -334,5 +334,14 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'REFUSES a reply that is no object and an edit that is no object, since nothing there names a '
+        + 'region or its text',
+      fn: async () => {
+        expect(isEditorReportWire(5,),).toBe(false,);
+        expect(isEditorReportWire({ edits: [5,], },),).toBe(false,);
+      },
+    },),
   ],
 },);

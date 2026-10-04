@@ -1,4 +1,5 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { ADDITION_IS_REMOVED_NOT_SOFTENED, } from './addition-repair-rule.ts';
@@ -91,7 +92,7 @@ function listedNames({ names, }: { readonly names: readonly string[]; },): strin
       0,
       -1,
     )
-      .join(', ',)} and ${names.at(-1,) ?? ''}`;
+      .join(', ',)} and ${nonNullishOrThrow(names.at(-1,),)}`;
 }
 
 /**

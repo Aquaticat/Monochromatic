@@ -74,5 +74,24 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'READS THE NEIGHBOURING BLOCK with either half alone, the other read as nothing',
+      fn: async () => {
+        /**
+         Prompt whose neighbouring context carries only an incumbent.
+         */
+        const content = userText({
+          messages: buildEditorMessages({
+            sourceText: RULED_SOURCE,
+            targetText: 'Line one.',
+            envelopes: [],
+            issues: [],
+            neighbouringIncumbentText: 'The cat sleeps.',
+          },).messages,
+        },);
+        expect(content.includes('NEARBY EXISTING TRANSLATION',),).toBe(true,);
+      },
+    },),
   ],
 },);
