@@ -698,6 +698,31 @@ so a fresh context resumes from this file alone.
   the `provider` batch.
 
 - 2026-10-04,
+  19:11 UTC:
+  the T8 `provider` batch closed with commit `f8598d546`:
+  4 line stretches over `provider-budget-refusal.ts`
+  and `provider-router.ts`,
+  three cased
+  (the two refusal reads
+  and the last-attempt rethrow),
+  the loop-exhausted throw its comment marks unreachable
+  left as written.
+  The reach census reads `ran 2, still cold 0, cold since then 0`
+  (`~/temp/agent/mimo-trial/reach-provider.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-provider-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-provider-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `f8598d546`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/runs` cluster
+  (the ranking's next at `census-cQ5IKo`).
+
+- 2026-10-04,
   18:24 UTC:
   the next batch's baseline census taken at commit `4cbad5f31`
   (its first run failed on a flaky timeout in the lane contest's

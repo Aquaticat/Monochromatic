@@ -6604,6 +6604,26 @@ the census's attribution leaves cold
 and both cases assert their behavior directly.
 No B entry found.
 
+The forty-fourth cluster of that census,
+`provider`,
+against `census-cQ5IKo` at `f5ad2832f`:
+4 line stretches over `provider-budget-refusal.ts`
+and `provider-router.ts`
+(`f8598d546`).
+Three cased:
+a failure that is not a provider reply
+reading as no payment refusal and no stated wait,
+and every provider refusing every attempt
+reraising the last refusal.
+The loop-exhausted throw its comment marks unreachable
+(`provider-router.ts:543-549`)
+stays as written.
+The reach census (`~/temp/agent/mimo-trial/reach-provider.log`)
+reads `ran 2, still cold 0, cold since then 0`
+on the two refusals,
+with one budget line cold since then in the focused run.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
