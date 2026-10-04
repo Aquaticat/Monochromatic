@@ -185,19 +185,25 @@ fn bind_keys(window: &AppWindow, state: &Rc<RefCell<State>>) {
         let mut current = state.borrow_mut();
         let mut position = current.document.position();
         let text = current.document.text().slice(..);
-        if key == slint::platform::Key::LeftArrow {
+        // Slint represents special keys as encoded strings, not Key enum values.
+        if key == SharedString::from(slint::platform::Key::LeftArrow) {
             position.head = helix_core::graphemes::prev_grapheme_boundary(text, position.head);
-        } else if key == slint::platform::Key::RightArrow {
+        } else if key == SharedString::from(slint::platform::Key::RightArrow) {
             position.head = helix_core::graphemes::next_grapheme_boundary(text, position.head);
-        } else if key == slint::platform::Key::Home {
+        } else if key == SharedString::from(slint::platform::Key::Home) {
             if control { position.head = 0; }
             else { position.head = text.line_to_char(text.char_to_line(position.head)); }
-        } else if key == slint::platform::Key::End {
+        } else if key == SharedString::from(slint::platform::Key::End) {
             if control { position.head = text.len_chars(); }
             else {
                 let row = text.char_to_line(position.head);
-                let end = text.line_to_char((row + 1).min(text.len_lines()));
-                position.head = end.saturating_sub(1).max(text.line_to_char(row));
+                let start = text.line_to_char(row);
+                let mut end = text.line_to_char((row + 1).min(text.len_lines()));
+                // Skip the line terminator, not the final source character.
+                while end > start && (text.char(end - 1) == '\n' || text.char(end - 1) == '\r') {
+                    end -= 1;
+                }
+                position.head = end;
             }
         } else {
             return;
