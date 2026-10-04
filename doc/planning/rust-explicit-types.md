@@ -35,9 +35,18 @@ mutation,
 and initial ASAN fuzz gates passed.
 Executable integration remains unfinished.
 
-The explicit-types checker is not implemented yet.
-The first investigation extends the already selected rust-analyzer frontend.
-No additional semantic dependency has been added to the production manifest.
+The explicit-types checker now has a composed implementation:
+`rust_explicit_declarations.rs`,
+`rust_explicit_generics.rs`,
+`rust_generic_arguments.rs`,
+and `rust_explicit_inference.rs`.
+`rust_explicit_types.rs` combines them over a registered semantic parse.
+The manifest now uses synchronized rust-analyzer 0.0.336 packages
+and Salsa 0.27.2's typed per-database input storage.
+The user example passed through the real rule as a dependency of the private consumer
+(process `proc_7d2f`).
+The expanded package conformance and Clippy gate is running;
+full-rule mutation/fuzz verification and CLI/workspace integration remain pending.
 
 ## Existing frontend source inspection
 
@@ -116,8 +125,20 @@ The corrected probe uses named functions through both APIs,
 without captured closures or new global request storage.
 This only exercises the single dependency-free crate;
 worklist selection and general workspace behavior remain to be implemented.
-The next probe checks whether `resolve_type` resolves written `_` sites to their actual inferred types.
-Production remains on syntax 0.0.335.
+`resolve_type` resolved written `_` sites to actual function-item or scalar types
+in declarations and generic arguments (`proc_a10b`).
+The typed-selection control then asserted those categories through a per-database Salsa input
+and named callbacks (`proc_39fb`).
+No parallel process-global or thread-local request store is needed.
+
+The standard-library control matched the user's example:
+`clone` and `iter` have no explicit generic parameters,
+`parse` and `collect` have one,
+and `map` has two.
+The `map` callback placeholder resolved to an unnameable function item (`proc_e5d4`).
+The actual rule then accepted that same example (`proc_7d2f`),
+not just the prototype's arity counters.
+Production dependencies in the unfinished crate were subsequently updated to 0.0.336.
 
 Verify with disposable fixtures:
 

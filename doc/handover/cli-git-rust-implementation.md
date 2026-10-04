@@ -220,18 +220,53 @@ The first consumer run compiled but lacked rust-analyzer's required database att
 The corrected run (`proc_46ae`) passed receiver disambiguation with counts `[1, 0, 1]`
 using named callbacks through `attach_db` and `with_attached_db`,
 without adding anonymous functions or mutable request globals.
-The `_`-site resolution probe is now running as `proc_a10b`
-(`rust-semantic-inference-hole-control`).
+The inference-site probe (`proc_a10b`) and typed per-database selection control (`proc_39fb`) passed.
+Salsa inputs let named callbacks read the selected file without captured closures or a second request-global store.
+The standard-library user example resolved correctly (`proc_e5d4`),
+then passed the real composed rule in an external Rust consumer (`proc_7d2f`).
+The unfinished crate now depends on synchronized rust-analyzer 0.0.336 and Salsa 0.27.2.
+
+The actual rule comprises declaration-presence checks,
+resolved generic methods/type or value paths,
+enum/alias argument ownership,
+and inferred-type validation.
+`Diagnostic.processing_failure` is internal and omitted from JSONL;
+the future executable must honor it for unavailable semantic coverage.
+`RustSource::from_syntax` reuses the registered tree rather than reparsing it.
+
+The package's new semantic conformance catalog uses disposable Cargo projects and source overlays,
+including positive/negative cache controls.
+Its first package run (`proc_ae2d`) passed 93 tests but stopped the semantic catalog
+on the intentionally disabled `AbsPath::exists()` method.
+The helper now uses `std::fs::metadata` as required by the inspected API;
+the full test/Clippy rerun is `proc_8e60`.
+The published API prerequisite failures are recorded in
+`doc/troubleshooting/rust-analyzer-semantic-scope.md`.
+The test image now includes Rust 1.97's matching rust-src component:
+`84f24e75017a7d8afa1c69e51c52f37e7d8d644cd2597a01f4732ad0b386dc20`.
+This image was built without host mounts using the inspected rustup component command.
+
 Next:
-verify nameable versus unnameable inferred types,
-then implement full declaration/call checks.
+inspect and fix any conformance/Clippy failures,
+add the remaining semantic edge controls,
+run full-rule mutation and bounded fuzzing,
+and integrate workspace loading/CLI dispatch.
+Do not call the explicit-types rule complete from its passing user example alone.
 
 The first full Markdown container run compiled and ran 77 tests:
-76 passed and `markdown_source::tests::invalid_mdx_is_a_processing_failure` failed
-because the parser accepted a fixture expected to be invalid.
-This needs diagnosis;
-do not weaken the assertion or equate the independent Rust rule gate with full-suite success.
-Clippy did not run because its prerequisite test task failed.
+76 passed and the assumed invalid-ESM error fixture failed.
+Source inspection established that Sätteri uses ESM parsing for completeness,
+then constructs an ESM node even when that check returns Error.
+The adapter's contract is rejection of reported parser errors,
+not independent JavaScript validation.
+The revised test first proves a mismatched JSX closing tag enters the native error vector,
+then asserts adapter rejection and original byte offsets with and without BOM.
+A separate control records ESM acceptance and the retained source newline.
+After correcting the source-slice expectation,
+the full existing slice passed 83 tests and Clippy (`proc_adf2`).
+That result precedes the new semantic conformance additions.
+The corrected error-boundary assumptions and source evidence are recorded in
+`doc/troubleshooting/satteri-mdx-error-fixtures.md`.
 
 Native Markdown/MDX arena adapter,
 owned byte/UTF-16 positions,
