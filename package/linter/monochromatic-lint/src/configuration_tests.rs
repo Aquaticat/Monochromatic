@@ -85,6 +85,15 @@ fn malformed_shapes_are_rejected() {
             "[{\"files\":[],\"rules\":{\"markdown/lfs-image-url\":{\"exclude\":true}}}]",
             "array of strings",
         ),
+        // These distinguish the rule-id AND option-name guard from an incorrect OR.
+        (
+            "[{\"files\":[],\"rules\":{\"rust/require-rustdoc\":{\"exclude\":[]}}}]",
+            "unknown option",
+        ),
+        (
+            "[{\"files\":[],\"rules\":{\"markdown/lfs-image-url\":{\"unexpected\":[]}}}]",
+            "unknown option",
+        ),
     ];
     for (source, expected) in cases {
         let error = parse_configuration(source).expect_err("schema must reject invalid source");
