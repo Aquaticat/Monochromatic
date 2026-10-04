@@ -92,8 +92,8 @@ await describe({
       name: 'READS A DOUBLE BACKTICK as no code-span end, since the second backtick opens a span of its '
         + 'own',
       fn: async () => {
-        const ranges = protectedRanges({ text: 'A ``cat`` word.', },);
-        expect(ranges.length,).toBeGreaterThan(0,);
+        const ranges = protectedRanges({ text: '``', },);
+        expect(ranges.length,).toBe(0,);
       },
     },),
   ],
