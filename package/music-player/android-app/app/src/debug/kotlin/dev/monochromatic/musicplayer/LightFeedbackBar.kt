@@ -119,7 +119,7 @@ internal fun LightFeedbackErrorBar(message: String, isCover: Boolean, onDismiss:
 internal fun LightFeedbackUndoToast(maximumWidth: Dp, onUndo: () -> Unit, onMeasure: (String) -> Unit) {
     Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = lightFeedbackMeasurement("undo-surface", onMeasure), shadowElevation = 3.dp) {
-        Row(modifier = Modifier.widthIn(max = maximumWidth).padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+        Row(modifier = Modifier.widthIn(max = maximumWidth).padding(start = 16.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically) {
             // What: weight with fill=false allocates remaining width without forcing short text to stretch.
             // Why: The unweighted Undo button keeps its layout floor; the message wraps inside the remainder.
@@ -128,8 +128,10 @@ internal fun LightFeedbackUndoToast(maximumWidth: Dp, onUndo: () -> Unit, onMeas
             // ```ts
             // renderText({ maxWidth: remainingWidth, grow: false });
             // ```
+            // Give only the message its vertical clearance; the native action retains its own content padding.
+            // This keeps the single-line baseline at the action's 48dp floor while wrapped text can grow.
             Text(text = "Ghost moved to trash", style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f, fill = false).padding(end = 8.dp))
+                modifier = Modifier.weight(1f, fill = false).padding(end = 8.dp, top = 8.dp, bottom = 8.dp))
             TextButton(onClick = onUndo, modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                 .then(lightFeedbackMeasurement("undo-button", onMeasure))) {
                 Text(text = "Undo", fontWeight = FontWeight.Bold)
