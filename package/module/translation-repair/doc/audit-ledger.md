@@ -5920,6 +5920,33 @@ reads `ran 2, still cold 0, cold since then 0, not loaded 0`
 and the two edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The sixteenth cluster of that census,
+`corpus-run/window`,
+against `census-koUGtg` at `87915c539`:
+7 line stretches over `window-trial-ledger.ts`,
+`window-trial-report.ts` and `window-trial-slice.ts`
+(`349a41a08`,
+`5997cef44`),
+the probe's three named ones the never-called functions the census books
+apart.
+Three are cased:
+the draw-and-preparation disagreement throw
+(a slice index the prepared list does not carry),
+both incumbent-kind arms of the trial
+(a rendered slice beside an insertion one,
+the translators' sheets showing the incumbent only in the first),
+and a ledger line that parses as JSON but is no row
+(the rows around it kept).
+Three were the shipped sum's index fallbacks,
+unreachable behind the fixed arm list that builds it,
+now read through a named function with no indexing.
+The `window-trial-slice` rig gained a ballot knob and a translator-sheet
+capture for it.
+The reach census (`~/temp/agent/mimo-trial/reach-window.log`)
+reads `ran 4, still cold 0, cold since then 0, not loaded 0`
+and the edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

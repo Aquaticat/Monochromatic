@@ -683,6 +683,37 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  06:30 UTC:
+  the T8 `corpus-run/window` batch closed with commits `349a41a08`
+  and `5997cef44`:
+  7 line stretches over three files,
+  the probe's three named ones the never-called functions the census
+  books apart.
+  Three carry cases
+  (the draw-and-preparation disagreement,
+  both incumbent-kind arms through a rendered slice beside an insertion
+  one,
+  a ledger line that parses as JSON but is no row),
+  and the shipped sum's three index fallbacks came out unreachable behind
+  its fixed arm list,
+  now read through a named function.
+  The reach census reads `ran 4, still cold 0, cold since then 0, not loaded 0`
+  and the edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-window.log`).
+  Counts at the close:
+  the full suite 1,552 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-window-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-window-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `5997cef44`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/contributor` cluster
+  (the ranking's next at `census-koUGtg`).
+
+- 2026-10-04,
   06:05 UTC:
   the next batch's baseline census taken at commit `75d19f5c3`:
   `census written to ~/.cache/translation-repair/coverage/census-koUGtg/census.json`
