@@ -31,6 +31,11 @@ no application implementation has started.
   and diagnostics.
 - Require syntax highlighting.
 - Keep combined file-path/content search and a browsable file tree.
+- Explicit implementation follow-up:
+  retain editord's Ctrl+0 through Ctrl+9 recency navigation,
+  promotion,
+  and tree reveal behavior.
+  History is session-local because persistent session restore remains cut.
 - Refresh automatically during external changes,
   including while text is selected.
   Best-effort content-relative caret/selection mapping and approximate viewport anchoring should minimize visual location loss.

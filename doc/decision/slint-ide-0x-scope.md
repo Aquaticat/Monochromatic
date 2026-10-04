@@ -18,6 +18,13 @@ The [implementation proposal][implementation] records that next step separately.
 - File tree,
   combined file-path/content search,
   and in-file find.
+- editord-compatible Ctrl+0 through Ctrl+9 recent-file navigation.
+  Slot 0 is current;
+  selecting another slot promotes it to 0 and updates tree recency badges.
+  Reveal the selected file by expanding its ancestors.
+  Unfilled slots are no-ops.
+  History is session-local;
+  persistent session restore remains excluded.
 - Syntax highlighting,
   line numbers,
   read-only caret and selection,

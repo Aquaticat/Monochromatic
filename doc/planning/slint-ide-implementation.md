@@ -19,7 +19,16 @@ The confirmed deliverable remains incomplete until every gate is verified.
   stale reload rejection,
   and selection movement during pending work.
   Native rendering/interaction is not yet verified.
-- [ ] Live workspace tree and search.
+  `slint-viewer --check` accepted the source-view declaration.
+  Cargo's first GUI build failed because the repository's manifest owner normalized Slint to a non-optional dependency;
+  the app's `gui` feature now gates code generation rather than `dep:slint`.
+- [ ] Live workspace tree and search,
+  including the user's explicit Ctrl+0 through Ctrl+9 requirement.
+  Source checked:
+  editord `src/client/recent-files.ts` uses ten unique push-to-front slots;
+  `src/client/app/app.ts:442` promotes the chosen slot and reveals/loads it.
+  The new history module and consumer tests exist;
+  native key binding and tree reveal remain pending.
 - [ ] Five required language-intelligence feature paths and synchronization.
 - [ ] Measured Helix-supported runtime languages and project-write confinement.
 - [ ] Native integration tests,

@@ -11,3 +11,6 @@ pub mod document;
 
 /// Shared glyph geometry used by painting and pointer hit testing.
 pub mod view_model;
+
+/// Session-local Ctrl+digit history with editord's promotion semantics.
+pub mod recent;

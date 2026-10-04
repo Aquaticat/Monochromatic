@@ -120,12 +120,12 @@ export component AppWindow inherits Window {
             scroll := Flickable {
                 width: parent.width;
                 height: parent.height;
-                viewport-width: max(self.width, 240 * root.cell-width + root.gutter-width);
-                viewport-height: max(self.height, root.total-lines * root.line-height);
-                viewport-y <=> root.scroll-y;
+                content-width: max(self.width, 240 * root.cell-width + root.gutter-width);
+                content-height: max(self.height, root.total-lines * root.line-height);
+                content-y <=> root.scroll-y;
 
-                changed viewport-y => { root.viewport-changed((0px - self.viewport-y) / 1px, self.height / 1px); }
-                changed height => { root.viewport-changed((0px - self.viewport-y) / 1px, self.height / 1px); }
+                changed content-y => { root.viewport-changed((0px - self.content-y) / 1px, self.height / 1px); }
+                changed height => { root.viewport-changed((0px - self.content-y) / 1px, self.height / 1px); }
 
                 for glyph in root.glyphs: Rectangle {
                     x: root.gutter-width + glyph.column * root.cell-width;
