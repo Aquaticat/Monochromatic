@@ -1,0 +1,210 @@
+// Native source-view gate. The model owns positions; this UI never edits source.
+import { Palette, Button } from "std-widgets.slint";
+
+export struct SourceGlyph {
+    text: string,
+    row: int,
+    column: int,
+    cells: int,
+    selected: bool,
+    style: int,
+}
+
+export component AppWindow inherits Window {
+    title: "Monochromatic IDE";
+    preferred-width: 1100px;
+    preferred-height: 660px;
+    min-width: 480px;
+    min-height: 320px;
+    background: Palette.background;
+    default-font-family: "Inter";
+    forward-focus: code-focus;
+
+    in property <[SourceGlyph]> glyphs;
+    in property <string> source-text;
+    in property <string> selected-text;
+    in property <string> file-label: "Source-view verification";
+    in property <string> status: "Read only";
+    in property <int> total-lines: 1;
+    in property <int> caret-row;
+    in property <int> caret-column;
+    in property <int> selection-anchor;
+    in property <int> selection-head;
+    in property <int> revision;
+    in-out property <length> scroll-y: 0px;
+    out property <float> viewport-height: scroll.height / 1px;
+    private property <length> line-height: 24px;
+    private property <length> gutter-width: 56px;
+    private property <length> font-size: 15px;
+    private property <length> cell-width: max(metrics.preferred-width / 32, 1px);
+    private property <bool> dark: Palette.color-scheme == ColorScheme.dark;
+    private property <int> first-visible: max(0, floor((0px - root.scroll-y) / root.line-height) - 1);
+
+    callback pointer-hit(int, float, bool);
+    callback key-input(string, bool, bool, bool);
+    callback viewport-changed(float, float);
+    callback reload-request;
+    callback select-all-request;
+
+    // Copy uses the toolkit's clipboard interface, not a second input layout.
+    public function copy-selection() {
+        clipboard-proxy.select-all();
+        clipboard-proxy.copy();
+    }
+
+    clipboard-proxy := TextInput {
+        visible: false;
+        accessible-role: none;
+        read-only: true;
+        text: root.selected-text;
+    }
+
+    metrics := Text {
+        visible: false;
+        text: "00000000000000000000000000000000";
+        font-family: "JetBrains Mono";
+        font-size: root.font-size;
+    }
+
+    VerticalLayout {
+        spacing: 0px;
+        Rectangle {
+            height: 48px;
+            background: Palette.alternate-background;
+            HorizontalLayout {
+                padding-left: 12px;
+                padding-right: 12px;
+                Text {
+                    text: root.file-label;
+                    color: Palette.foreground;
+                    vertical-alignment: center;
+                    overflow: elide;
+                    horizontal-stretch: 1;
+                }
+                Text {
+                    text: "◉  Read only";
+                    color: Palette.foreground;
+                    font-weight: 600;
+                    vertical-alignment: center;
+                }
+                Button {
+                    text: "Copy";
+                    min-width: 64px;
+                    min-height: 48px;
+                    enabled: root.selection-anchor != root.selection-head;
+                    clicked => { root.copy-selection(); }
+                }
+            }
+        }
+
+        code-focus := FocusScope {
+            vertical-stretch: 1;
+            focus-on-click: true;
+            accessible-role: text-input;
+            accessible-read-only: true;
+            accessible-label: "Source code";
+            accessible-value: root.source-text;
+            accessible-description: "Read-only source. Select text to copy; external changes refresh automatically.";
+
+            key-pressed(event) => {
+                if event.modifiers.control && (event.text == "c" || event.text == "C") {
+                    root.copy-selection();
+                } else if event.modifiers.control && (event.text == "a" || event.text == "A") {
+                    root.select-all-request();
+                } else {
+                    root.key-input(event.text, event.modifiers.control, event.modifiers.shift, event.modifiers.alt);
+                }
+                accept
+            }
+
+            scroll := Flickable {
+                width: parent.width;
+                height: parent.height;
+                viewport-width: max(self.width, 240 * root.cell-width + root.gutter-width);
+                viewport-height: max(self.height, root.total-lines * root.line-height);
+                viewport-y <=> root.scroll-y;
+
+                changed viewport-y => { root.viewport-changed((0px - self.viewport-y) / 1px, self.height / 1px); }
+                changed height => { root.viewport-changed((0px - self.viewport-y) / 1px, self.height / 1px); }
+
+                for glyph in root.glyphs: Rectangle {
+                    x: root.gutter-width + glyph.column * root.cell-width;
+                    y: glyph.row * root.line-height;
+                    width: glyph.cells * root.cell-width;
+                    height: root.line-height;
+                    background: glyph.selected ? Palette.selection-background : transparent;
+                    Text {
+                        text: glyph.text;
+                        width: parent.width;
+                        height: parent.height;
+                        font-family: "JetBrains Mono";
+                        font-size: root.font-size;
+                        vertical-alignment: center;
+                        color: glyph.selected ? Palette.selection-foreground
+                            : glyph.style == 1 ? (root.dark ? #c792ea : #7636a4)
+                            : glyph.style == 2 ? (root.dark ? #a8cc8c : #326520)
+                            : glyph.style == 3 ? (root.dark ? #a0a8b0 : #555c65)
+                            : glyph.style == 4 ? (root.dark ? #f0bc7a : #8b4d04)
+                            : Palette.foreground;
+                    }
+                }
+
+                for row in ceil(scroll.height / root.line-height) + 2: Text {
+                    visible: row + root.first-visible < root.total-lines;
+                    x: 0px;
+                    y: (row + root.first-visible) * root.line-height;
+                    width: root.gutter-width - 12px;
+                    height: root.line-height;
+                    text: row + root.first-visible + 1;
+                    horizontal-alignment: right;
+                    vertical-alignment: center;
+                    color: Palette.foreground;
+                    opacity: 0.6;
+                    font-family: "JetBrains Mono";
+                    font-size: root.font-size;
+                }
+
+                Rectangle {
+                    visible: code-focus.has-focus && root.selection-anchor == root.selection-head;
+                    x: root.gutter-width + root.caret-column * root.cell-width;
+                    y: root.caret-row * root.line-height + 2px;
+                    width: 2px;
+                    height: root.line-height - 4px;
+                    background: Palette.foreground;
+                }
+
+                pointer := TouchArea {
+                    width: parent.width;
+                    height: max(scroll.height, root.total-lines * root.line-height);
+                    mouse-cursor: text;
+                    pointer-event(event) => {
+                        if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
+                            code-focus.focus();
+                            root.pointer-hit(floor(self.mouse-y / root.line-height),
+                                max(0, (self.mouse-x - root.gutter-width) / root.cell-width),
+                                event.modifiers.shift);
+                        }
+                    }
+                    moved => {
+                        root.pointer-hit(floor(self.mouse-y / root.line-height),
+                            max(0, (self.mouse-x - root.gutter-width) / root.cell-width), true);
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 48px;
+            background: Palette.alternate-background;
+            Text {
+                x: 12px;
+                width: parent.width - 24px;
+                height: parent.height;
+                text: root.status;
+                color: Palette.foreground;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+        }
+    }
+}

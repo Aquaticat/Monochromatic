@@ -8,3 +8,6 @@
 /// export * as document from './document';
 /// ```
 pub mod document;
+
+/// Shared glyph geometry used by painting and pointer hit testing.
+pub mod view_model;
