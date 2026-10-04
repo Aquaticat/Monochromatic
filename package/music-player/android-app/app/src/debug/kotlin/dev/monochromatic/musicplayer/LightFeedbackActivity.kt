@@ -125,7 +125,15 @@ class LightFeedbackActivity : ComponentActivity() {
         val scene: String = intent.getStringExtra("scene")
             ?: throw IllegalArgumentException("Light-feedback study requires an explicit scene.")
         lightFeedbackFixture(scene)
-        Log.i("LightFeedback", "LightFeedbackActivity.onCreate: authored scene=$scene")
+        // What: getBooleanExtra reads an explicit debug flag with a false default.
+        // Why: Held screenshot poses cannot silently become the real auto-dismiss path.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const holdForCapture = intent.boolean('hold-for-capture') ?? false;
+        // ```
+        val holdForCapture: Boolean = intent.getBooleanExtra("hold-for-capture", false)
+        Log.i("LightFeedback", "LightFeedbackActivity.onCreate: authored scene=$scene,captureHold=$holdForCapture")
         enableEdgeToEdge()
         // What: A trailing lambda supplies UI to setContent, like passing a callback argument in TS.
         // Why: Only this study tree is mounted; no playback or storage operation is reachable.
@@ -136,7 +144,7 @@ class LightFeedbackActivity : ComponentActivity() {
         // ```
         setContent {
             MaterialTheme(colorScheme = lightFeedbackColorScheme()) {
-                LightFeedbackStudy(scene = scene, onAction = { action ->
+                LightFeedbackStudy(scene = scene, holdForCapture = holdForCapture, onAction = { action ->
                     // The event proves only a debug intent/dismissal callback, never actual trash or restore success.
                     Log.i("LightFeedback", "LightFeedbackActivity.onAction: debug-only $action")
                 })

@@ -70,7 +70,7 @@ internal fun lightFeedbackCanOfferUndo(input: LightTrashOutcomeFixture): Boolean
  * ```
  */
 data class LightFeedbackFixture(
-    /** Empty string means no authored error bar, not an unknown failure being ignored. */
+    /** Empty string means no authored error notice, not an unknown failure being ignored. */
     val error: String,
     /** Whether authored per-item verified trash success has a live restoration handle. */
     val undo: Boolean,

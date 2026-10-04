@@ -1,6 +1,6 @@
-//region Authored native fit study, no source discovery, playback or storage mutation
-// What: Package connects this isolated renderer to its debug fixture and host.
-// Why: No production activity or operation owner is constructed.
+//region Authored overlay study, no player-space reservation or storage/playback mutation
+// What: Package connects the isolated host, outcome fixtures and floating notices.
+// Why: Feedback can be exercised without constructing a production operation owner.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -8,74 +8,85 @@
 // ```
 package dev.monochromatic.musicplayer
 
-// What: Named imports supply native layout functions and measured coordinates.
-// Why: The Undo overlay follows the existing track viewport instead of copying a deck layout.
+// What: Named imports expose native layout, snackbar lifecycle and measured coordinates.
+// Why: The player remains unchanged while feedback is placed inside its existing track viewport.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Box, boundsInRoot } from 'native-ui';
+// import { Box, SnackbarHost } from 'native-ui';
 // ```
 import androidx.compose.foundation.layout.Box
-// Width/height constraints distinguish the cover panel from the inner panel.
+// Native constraints distinguish the two physical panels.
 import androidx.compose.foundation.layout.BoxWithConstraints
-// Consume Scaffold-owned insets before the shared player handles its local insets.
+// Column stacks simultaneous authored notices within the overlay only.
+import androidx.compose.foundation.layout.Column
+// Arrangement reserves separation between simultaneous overlays, never in the player.
+import androidx.compose.foundation.layout.Arrangement
+// Consume only the Scaffold-owned system insets.
 import androidx.compose.foundation.layout.consumeWindowInsets
-// Fill the study's available native area.
+// Native study fills its available area.
 import androidx.compose.foundation.layout.fillMaxSize
-// Offset relocates only the overlay, not any player content.
+// Offset changes overlay placement, not player layout.
 import androidx.compose.foundation.layout.offset
-// Padding gives the overlay its accepted 16dp edge separation.
+// Padding gives the overlay its existing 16dp edge separation.
 import androidx.compose.foundation.layout.padding
-// Explicit size reproduces the measured track viewport for the overlay's local coordinates.
+// Explicit size matches the measured track viewport.
 import androidx.compose.foundation.layout.size
-// Safe drawing avoids system bars and cutouts.
+// Window system-inset source.
 import androidx.compose.foundation.layout.WindowInsets
-// Platform safe-drawing inset source.
+// Safe drawing keeps controls out of system bars and cutouts.
 import androidx.compose.foundation.layout.safeDrawing
-// Native system appearance selects the existing player palette.
+// Actual system appearance selects the existing player palette.
 import androidx.compose.foundation.isSystemInDarkTheme
-// Scaffold owns the error bar and remaining player area.
+// Scaffold supplies system-inset handling only; it has no feedback bottomBar.
 import androidx.compose.material3.Scaffold
-// Composable functions emit native UI.
+// The host performs native timed/manual dismissal and animation.
+import androidx.compose.material3.SnackbarHost
+// Host state owns one notice lifecycle, separate from storage outcomes.
+import androidx.compose.material3.SnackbarHostState
+// Short is the actual transient path; Indefinite is an explicitly authored capture hold only.
+import androidx.compose.material3.SnackbarDuration
+// Native composition marker.
 import androidx.compose.runtime.Composable
-// LaunchedEffect records one authored scene entry, without an operation or timer.
+// Lifecycle effect can call the native suspending snackbar API.
 import androidx.compose.runtime.LaunchedEffect
-// remember keeps local presentation state for this isolated scene.
+// Retain local presentation state for a scene.
 import androidx.compose.runtime.remember
-// Mutable state triggers layout after measurements or error dismissal.
+// Coordinate state triggers overlay placement after measurement.
 import androidx.compose.runtime.mutableStateOf
-// Delegated state getter unwraps the stored presentation value.
+// Delegated state reads.
 import androidx.compose.runtime.getValue
-// Corresponding setter writes only the local presentation value.
+// Delegated state writes.
 import androidx.compose.runtime.setValue
-// BottomStart aligns the toast to its measured list owner.
+// BottomStart anchors the overlay to its measured owner.
 import androidx.compose.ui.Alignment
-// Modifier is immutable native layout configuration.
+// Immutable layout configuration.
 import androidx.compose.ui.Modifier
-// Rect stores four floating-point pixel edges, not glyph or action bounds.
+// Four measured pixel edges, not glyph or pointer-activation evidence.
 import androidx.compose.ui.geometry.Rect
-// boundsInRoot uses one coordinate system for player viewport and enclosing study.
+// Shared root-coordinate measurement.
 import androidx.compose.ui.layout.boundsInRoot
-// Position callbacks report settled layout bounds, not storage or gesture outcomes.
+// Callback after native layout.
 import androidx.compose.ui.layout.onGloballyPositioned
-// Density converts measured physical pixels into layout dp.
+// Physical pixels convert into native dp at actual density.
 import androidx.compose.ui.platform.LocalDensity
-// dp converts literal layout distances.
+// Literal layout distance conversion.
 import androidx.compose.ui.unit.dp
 
 /**
- * What: A named composable combines authored feedback with the accepted shared player renderer.
- * Why: Row omission and toast/bar placement can be inspected without real operation results.
+ * What: A named composable retains the accepted player and overlays independent transient notice hosts.
+ * Why: D83 feedback appearance, expiry and manual dismissal never resize the browser, list or deck.
+ * Capture hold is an explicit debug pose, not the default runtime duration or timeout acceptance.
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * function LightFeedbackStudy(input: { scene: string; onAction: (event: string) => void }): UIElement;
+ * function LightFeedbackStudy(input: { scene: string; onEvent: (event: string) => void; holdForCapture?: boolean }): UIElement;
  * ```
  */
 @Composable
-internal fun LightFeedbackStudy(scene: String, onAction: (String) -> Unit) {
-    // What: val is immutable for this render pass, unlike replaceable var.
-    // Why: Every rendered state is bound to the exact validated scene, never a fallback.
+internal fun LightFeedbackStudy(scene: String, onAction: (String) -> Unit, holdForCapture: Boolean = false) {
+    // What: val is a read-only binding, unlike replaceable var.
+    // Why: Each render pass is tied to one validated authored outcome, never a fallback operation result.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -84,42 +95,52 @@ internal fun LightFeedbackStudy(scene: String, onAction: (String) -> Unit) {
     val fixture = lightFeedbackFixture(scene)
     val density = LocalDensity.current
     val light = !isSystemInDarkTheme()
-    // What: by delegates reads/writes to Compose state; remember retains it for this scene.
-    // Why: Dismiss removes only the authored error bar, not a file or error source.
+    val errorHost = remember(scene) { SnackbarHostState() }
+    val undoHost = remember(scene) { SnackbarHostState() }
+    // What: An if expression chooses a native enum value rather than a descriptor or timer command.
+    // Why: Real transient behavior stays default; static fit capture explicitly declares a held pose.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const [errorVisible, setErrorVisible] = useState(fixture.error !== '');
+    // const duration = holdForCapture ? 'held-debug-pose' : 'native-short';
     // ```
-    var errorVisible by remember(scene) { mutableStateOf(fixture.error.isNotEmpty()) }
-    // What: Rect? permits null until native layout reports its first measured rectangle.
-    // Why: No guessed deck height or panel position is promoted into placement evidence.
+    val duration = if (holdForCapture) SnackbarDuration.Indefinite else SnackbarDuration.Short
+    // What: Rect? permits null before native layout; by delegates state reads/writes to Compose.
+    // Why: No guessed panel or deck dimensions become placement evidence.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const [rootBounds, setRootBounds] = useState<Rect | null>(null);
     // ```
     var rootBounds: Rect? by remember(scene) { mutableStateOf(null) }
-    // The viewport begins unknown for the same reason as the root.
+    // Track viewport has the same measured-only initial state.
     var trackBounds: Rect? by remember(scene) { mutableStateOf(null) }
-    // What: Trailing lambdas supply callbacks rather than execute a descriptor or command.
-    // Why: Entry logging remains a private event, with no native service launch.
+    // What: LaunchedEffect supplies a lifecycle callback; showSnackbar is suspending native work.
+    // Why: The platform host owns expiry and accessibility-adjusted timeout, not an invented fixed timer.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // onMount(() => onAction('LightFeedbackStudy.entry:' + scene));
+    // onMount(async () => { log(fullDetails); await showNativeNotice({ duration }); log('ended'); });
     // ```
-    LaunchedEffect(scene) { onAction("LightFeedbackStudy.entry:$scene") }
+    LaunchedEffect(scene, holdForCapture) {
+        onAction("LightFeedbackStudy.entry:$scene,captureHold=$holdForCapture")
+        if (fixture.error.isNotEmpty()) {
+            onAction("LightFeedbackStudy.operation-details:$scene:${fixture.error}")
+            val result = errorHost.showSnackbar(message = fixture.error, actionLabel = "Dismiss message",
+                withDismissAction = true, duration = duration)
+            onAction("LightFeedbackStudy.error-ended:$scene:$result")
+        }
+    }
+    LaunchedEffect(scene, holdForCapture) {
+        if (fixture.undo) {
+            val result = undoHost.showSnackbar(message = "Ghost moved to trash", actionLabel = "Undo",
+                withDismissAction = true, duration = duration)
+            onAction("LightFeedbackStudy.undo-ended:Ghost:$result")
+        }
+    }
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isCover: Boolean = maxWidth < 600.dp
-        Scaffold(contentWindowInsets = WindowInsets.safeDrawing, bottomBar = {
-            if (errorVisible) {
-                LightFeedbackErrorBar(message = fixture.error, isCover = isCover, onDismiss = {
-                    errorVisible = false
-                    onAction("LightFeedbackStudy.dismiss:$scene")
-                }, onMeasure = onAction)
-            }
-        }) { padding ->
+        Scaffold(contentWindowInsets = WindowInsets.safeDrawing) { padding ->
             Box(modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
                 .onGloballyPositioned { coordinates ->
                     rootBounds = coordinates.boundsInRoot()
@@ -132,28 +153,33 @@ internal fun LightFeedbackStudy(scene: String, onAction: (String) -> Unit) {
                         trackBounds = coordinates.boundsInRoot()
                         onAction("LightFeedbackStudy.viewport:$trackBounds")
                     })
-                // Explicit nullable bindings preserve the measured values for this branch.
+                // Preserve explicitly nullable measured values for this render branch.
                 val root: Rect? = rootBounds
                 val tracks: Rect? = trackBounds
-                if (fixture.undo && root != null && tracks != null) {
-                    // What: with(density) temporarily supplies pixel-to-dp conversion functions.
-                    // Why: Root and viewport measurements are physical pixels; overlay layout uses dp.
+                if (root != null && tracks != null) {
+                    // What: with supplies density conversion functions only within each callback.
+                    // Why: Measurements are pixels while overlay placement uses dp.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
                     // const left = (tracks.left - root.left) / density;
                     // ```
                     val left = with(density) { (tracks.left - root.left).toDp() }
-                    // Convert the remaining measured edges with the same density.
+                    // Convert the remaining measured dimensions with the same density.
                     val top = with(density) { (tracks.top - root.top).toDp() }
                     val width = with(density) { tracks.width.toDp() }
                     val height = with(density) { tracks.height.toDp() }
+                    val bothVisible = errorHost.currentSnackbarData != null && undoHost.currentSnackbarData != null
                     Box(modifier = Modifier.offset(x = left, y = top).size(width = width, height = height)) {
-                        Box(modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 16.dp)) {
-                            LightFeedbackUndoToast(maximumWidth = width - 32.dp, onUndo = {
-                                // An intent event is not a successful restore; rows are not returned by this callback.
-                                onAction("LightFeedbackStudy.undo-intent:Ghost")
-                            }, onMeasure = onAction)
+                        Column(modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(if (bothVisible) 16.dp else 0.dp)) {
+                            SnackbarHost(hostState = undoHost) { data ->
+                                LightFeedbackUndoNotice(maximumWidth = width - 32.dp, data = data, onEvent = onAction)
+                            }
+                            SnackbarHost(hostState = errorHost) { data ->
+                                LightFeedbackErrorNotice(scene = scene, message = fixture.error,
+                                    maximumWidth = width - 32.dp, data = data, onEvent = onAction)
+                            }
                         }
                     }
                 }
