@@ -41,7 +41,9 @@ const ctx: TestContext = {
 };
 ```
 
-`package/module/test/src/sinon.ts:39` delegates to ordinary Sinon:
+`package/module/test/src/sinon.ts:39` delegates to ordinary Sinon.
+The file moved on 2026-10-04 to `package/module/test-sandbox/src/sinon.ts`;
+the snippet retains its historical location:
 
 ```ts
 // package/module/test/src/sinon.ts
@@ -334,6 +336,7 @@ The first real browser run could not import the neutral consumer bundle.
 Firefox named `node:fs/promises`;
 the neutral chunk began with static Node builtin imports.
 `package/module/test/src/format-error.ts` imported the module-fs-path barrel at load time.
+The file moved on 2026-10-04 to `package/module/test-diagnostic/src/format-error.ts`.
 Its workspace lookup now dynamically imports that dependency only after Node detection.
 The subsequent run passed the no-process fixtures in Chromium,
 Firefox,

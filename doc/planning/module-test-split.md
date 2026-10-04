@@ -2,15 +2,15 @@
 
 ## Status
 
-Implementation authorized by the user's explicit "Do it. Proceed."
-The four-package layout is accepted.
-Extraction and workspace linking are complete.
-The runner and extracted artifacts build.
-All package unit suites and runner browser acceptance have passed.
-Remaining work covers leaf lint,
-diagnostic negative-control verification,
-consumer smoke checks,
-and generated-lockfile staging.
+Implementation authorized by the user's explicit instruction to proceed.
+The four-package layout is implemented.
+All affected packages build,
+pass package lint and type checks,
+and pass their unit suites.
+Runner browser acceptance,
+public-export checks,
+diagnostic negative controls,
+and frozen-lockfile validation passed.
 
 ## Confirmed direction
 
@@ -306,14 +306,49 @@ not proposals to replace our implementation or evidence of equivalent behavior.
 ## Work areas
 
 - [x] Confirm the proposed package layout and names.
-- [ ] Extract implementations,
+- [x] Extract implementations,
   metadata,
   and tests while preserving runner re-exports.
-- [ ] Verify package tasks,
+- [x] Verify package tasks,
   mixed-copy state,
   browser integration,
   and diagnostic relocation.
-- [ ] Record implementation commits and verification outcomes.
+- [x] Record implementation commits and verification outcomes.
+
+## Final verification
+
+- All four package builds and unit suites passed.
+  `module-test` now includes a root-export inventory check for both Node and neutral entries.
+- All four package lint tasks passed with zero warnings and errors,
+  including their type checks.
+  The moved Oxlint override's package also passed `lint:types`.
+- The existing bounded browser task passed all 6 tests across Chromium,
+  Firefox,
+  and WebKit.
+- In a detached throwaway worktree,
+  the relocation test passed with the new frame fragments,
+  failed in all 6 extracted-package cases when those fragments were removed,
+  and passed after restoration.
+  The 2 original-runner controls continued passing during the negative run.
+- A neutral-only diagnostic entry selected the neutral filesystem adapter under Node.
+  The new Node-prefix test reproduced the resulting unstripped workspace prefix in the throwaway worktree.
+  A conditional Node artifact restores filesystem-backed root discovery and passes that test.
+  Neutral artifacts remain available for browser consumers.
+- `mise run prepare:pnpm:install -- --offline --ignore-scripts --frozen-lockfile --dry-run` passed.
+  The initial generated task delta added only the new importers and moved runner dependency edges.
+  Concurrent commit `f1bca0541` included that generated lockfile alongside its unrelated work;
+  this session did not stage unrelated lockfile changes.
+- Independent final review found no remaining semantic,
+  bundling,
+  or test blocker.
+  Historical source references receive dated relocation notes rather than being silently rewritten.
+
+Implementation commits include `79a3565fc`,
+`2aea88562`,
+and `feff926c0`,
+followed by runner-export and diagnostic-Node verification commits.
+One `config-oxlint` type-check encountered concurrent Rolldown edits;
+the later complete check passed without this task modifying that concurrent source.
 
 ## Document verification
 
@@ -344,7 +379,8 @@ Browser acceptance passed through the existing bounded Playwright task.
 
 ## Next action
 
-Complete extraction and responsibility-local tests,
-link the workspace with the owning package manager,
-then run the scoped verification queue.
-Preserve unrelated existing changes in `pnpm-lock.yaml` when staging the generated update.
+No implementation work remains from the accepted split.
+Report the package layout,
+preserved imports,
+and verification results.
+No package was published and no `AGENTS.md` file was edited.

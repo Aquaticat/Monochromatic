@@ -13031,6 +13031,7 @@ Spot-checked against workspace findings rather than fixtures alone.
 there is no type change left to make.
 
 `package/module/test/src/expect.ts` is the case worth stating.
+The file moved on 2026-10-04 to `package/module/test-expect/src/expect.ts`.
 Its reported input is a rest parameter typed from `Parameters<MatcherSet[K]>`,
  where "readonly
 at every level" is not evident from the declaration at all.

@@ -268,6 +268,7 @@ above;
   disable with the reason.
 - **`chai`'s `.to.throw(string)` does substring matching** (verified in
   `package/module/test/src/expect.unit.test.ts:99-105`).
+  The file moved on 2026-10-04 to `package/module/test-expect/src/expect.unit.test.ts`.
    So
   `.toThrow(/foo/,)` swaps cleanly to `.toThrow('foo',)`.
    Similarly
@@ -379,6 +380,7 @@ unless the user asks otherwise.
   `\p{Lower}` Unicode property classes have no string-API equivalent).
 - `package/module/test/src/expect-matchers.ts:toMatch` (the matcher's
   contract is RegExp).
+  The file moved on 2026-10-04 to `package/module/test-expect/src/expect-matchers.ts`.
 
 ### If a downstream test fails
 

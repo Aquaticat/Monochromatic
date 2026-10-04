@@ -14,11 +14,13 @@ No design questions or follow-up actions remain open.
 Before the fix, `mise run //package/module/test:lint` exited with status 1.
 Oxlint reported one warning and no errors across 68 files:
 `unicorn(consistent-function-scoping)` at `package/module/test/src/sandbox.ts:89:16`.
+The file moved on 2026-10-04 to `package/module/test-sandbox/src/sandbox.ts`.
 The named callback `restoreOrdinarySandbox` contains only `raw.restore()`.
 Its captured `raw` belongs to `createOwnedSandbox`, not to `restore`.
 
 `package/module/test/src/sandbox-cleanup.ts` invokes each supplied callback
 and aggregates restoration failures.
+The file moved on 2026-10-04 to `package/module/test-sandbox/src/sandbox-cleanup.ts`.
 `package/module/test/src/sinon-cleanup.unit.test.ts` exercises automatic restoration,
 manual restoration and restubbing, completed-attempt guards, and combined body/cleanup failures
 through the public artifact.

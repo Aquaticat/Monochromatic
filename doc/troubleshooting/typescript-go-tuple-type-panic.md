@@ -23,6 +23,9 @@ The report is attached to `package/webapp-productivity/rss/src/index.ts`,
  at `1:1`,
  which is the file whose analysis is lost.
 
+The historical `package/module/test/src/expect-matchers.ts` moved on 2026-10-04
+ to `package/module/test-expect/src/expect-matchers.ts`.
+
 An earlier reading of mine named `package/module/test/src/expect-matchers.ts` instead,
  inferred from diagnostics printed near the panic in an interleaved log.
 That was wrong,
@@ -209,6 +212,7 @@ Does not reproduce,
  each run completing with findings and no panic:
 
 ```bash
+# Historical command; the file moved to package/module/test-expect/src/expect-matchers.ts on 2026-10-04.
 # 7 findings, no panic
 node package/dev-script/task-util/dist/final/node/oxlint-wrapper.mjs --type-aware package/module/test/src/expect-matchers.ts
 

@@ -34,6 +34,8 @@ including repeats and timed-out bodies.
 It irreversibly completes ownership before cleanup.
 
 `sandbox.ts` exposes the test capability and retains runner-owned restoration separately.
+On 2026-10-04 this file moved to `package/module/test-sandbox/src/sandbox.ts`;
+`it-attempt.ts` remains in the runner.
 The operation adapter delegates actual fake creation to Sinon on private method facades.
 A realm-shared registry selects those facades using the existing Node async execution context.
 The target's getter returns the current reader's fake or its original method;
@@ -55,9 +57,12 @@ This addition does not implement or supersede the failure-reporter work in this 
 
 - `package/module/test/src/it.ts`
 - `package/module/test/src/describe.ts`
-- `package/module/test/src/format-error.ts`
-- `package/module/test/src/assertion-source.ts`
-- `package/module/test/src/harness-frames.ts`
+- `package/module/test/src/format-error.ts`.
+  Moved on 2026-10-04 to `package/module/test-diagnostic/src/format-error.ts`.
+- `package/module/test/src/assertion-source.ts`.
+  Moved on 2026-10-04 to `package/module/test-diagnostic/src/assertion-source.ts`.
+- `package/module/test/src/harness-frames.ts`.
+  Moved on 2026-10-04 to `package/module/test-diagnostic/src/harness-frames.ts`.
 - `package/module/test/src/index.ts`
 - `package/module/test/src/*.unit.test.ts`
 - `package/module/test/README.md`

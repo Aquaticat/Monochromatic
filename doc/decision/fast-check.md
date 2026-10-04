@@ -6,6 +6,14 @@ Accepted.
  Plan:
  `~/.claude/plans/setup-fast-check-for-packages-module-tes-smooth-minsky.md`.
 
+## Package relocation
+
+On 2026-10-04,
+`format-error.ts` and `format-error.property.unit.test.ts` moved from `package/module/test/src/`
+to `package/module/test-diagnostic/src/`.
+The `fast-check` development dependency moved to that package too.
+The decision and historical paths in this record remain unchanged.
+
 ## Context
 
 `package/module/test` is the workspace's self-contained test harness.
