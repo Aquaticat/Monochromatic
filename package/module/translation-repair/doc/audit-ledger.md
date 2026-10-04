@@ -6837,6 +6837,21 @@ and the whole-suite census lists one
 (`census-ceHkbQ`).
 No B entry found.
 
+The fifty-fourth cluster of that census,
+`corpus-run/cache`,
+against `census-ceHkbQ` at `7f73d1ed7`:
+3 line stretches over `cache-account-read.ts`
+and `cache-account-slices.ts`
+(`4d5c7d96e`,
+`14a44721c`).
+One cased:
+the declaration name whose tail runs to its line end
+(the suffix scan's whole-length arm),
+the name then dropped for not ending in the marker.
+The reach census (`~/temp/agent/mimo-trial/reach-cache2.log`)
+reads `ran 1, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

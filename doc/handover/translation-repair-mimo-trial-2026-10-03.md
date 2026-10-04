@@ -728,6 +728,30 @@ so a fresh context resumes from this file alone.
   (the ranking's next at `census-oVnawX`).
 
 - 2026-10-04,
+  21:42 UTC:
+  the T8 `corpus-run/cache` batch closed with commits `4d5c7d96e`,
+  `14a44721c`:
+  3 line stretches over `cache-account-read.ts`
+  and `cache-account-slices.ts`,
+  one cased
+  (the name whose tail runs to its line end),
+  the other two matched in the reach run.
+  The reach census reads `ran 1, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-cache2.log`).
+  Counts at the close:
+  the full suite 1,562 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-cache-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-cache-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `14a44721c`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `hyper` cluster
+  (the ranking's next at `census-oVnawX`).
+
+- 2026-10-04,
   21:09 UTC:
   the next batch's baseline census taken at commit `a7d014baf`:
   `census written to ~/.cache/translation-repair/coverage/census-4BqrOY/census.json`
