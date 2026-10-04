@@ -233,6 +233,9 @@ export {
   RunsDirectoryBusyError,
 } from './corpus-run/runs-lock.ts';
 export {
+  lockFileText,
+} from './corpus-run/runs-lock-holder.ts';
+export {
   assertPipelineDigest,
   digestPipeline,
   isDigestShaped,

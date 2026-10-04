@@ -31,6 +31,7 @@ import {
 import {
   evictStaleLock,
   hostIdentity,
+  lockFileText,
   lockRunsDir,
   releaseIfOwned,
   RunsDirectoryBusyError,
@@ -794,6 +795,39 @@ await describe({
             },);
 
             expect(error.message,).toBe(expectedMessage,);
+            /**
+             Constructed directly, as the race-loss branch does, with a
+             holder it read back.
+             */
+            const withHolder = new RunsDirectoryBusyError({
+              runsDir: '/mittens/runs',
+              holder: {
+                pid: 1,
+                startedAt: '2026-09-28T10:00:00.000Z',
+                token: 't',
+                identity: { kind: 'unrecorded', },
+              },
+              judgedBy: 'race',
+            },);
+            expect(withHolder.message,).toContain('Another pass is running in /mittens/runs.',);
+            expect(withHolder.message,).not.toContain('records nothing readable',);
+          },
+        },),
+        it({
+          name: 'WRITES the lock line as the named fields alone where the identity is unrecorded, so a '
+            + 'host with no identity to read still locks',
+          fn: async () => {
+            const text = lockFileText({
+              holder: {
+                pid: 1,
+                startedAt: '2026-09-28T10:00:00.000Z',
+                token: 't',
+                identity: { kind: 'unrecorded', },
+              },
+            },);
+            expect(text.endsWith('\n',),).toBe(true,);
+            expect(text.includes('"pid":1',),).toBe(true,);
+            expect(text.includes('identity',),).toBe(false,);
           },
         },),
       ],
