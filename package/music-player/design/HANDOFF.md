@@ -4509,8 +4509,11 @@ Do not quietly promote the temporary baseline to final.
 is comparison evidence, not an unanswered question; subsequent visual reviews show only
 active P4 unless the user explicitly requests the rejected comparison (RVC).
  The
-keyboard map, cover-specific accessibility, remaining light surfaces,
-desktop size, empty state and display templating were in the live backlog
+keyboard map,
+cover-specific accessibility,
+remaining light surfaces,
+desktop size,
+empty state and display templating were in the live backlog
 at this historical checkpoint.
 Android notification presentation is now settled by D82;
 the current queue is recorded in `open-questions.md` section 0b.
