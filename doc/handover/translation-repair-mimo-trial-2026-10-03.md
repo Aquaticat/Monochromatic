@@ -754,6 +754,41 @@ so a fresh context resumes from this file alone.
   and case the two error paths.
 
 - 2026-10-04,
+  17:41 UTC:
+  the T8 `corpus-run/editor` batch closed with commits `26b7b7909`,
+  `df9436878`,
+  `41726bb37`,
+  `637c54309`,
+  `5b0bf4d57`:
+  the standing reader's 13 line stretches all cased
+  (the missing run directory,
+  the earlier-schema artifact,
+  the off-roster artifact,
+  the seated one read and reported,
+  and the runs variable),
+  plus the contest's none seat
+  and the width report's neither-shipped row.
+  The reach census reads `ran 13, still cold 0, cold since then 0`
+  for the standing reader
+  (`~/temp/agent/mimo-trial/reach-editor4.log`).
+  Left documented:
+  the width input's envelope and ready returns
+  (`editor-width-input.ts:221-254`),
+  whose claims pass the screen's own claim schema first.
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-editor-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-editor-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `5b0bf4d57`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/roster` cluster
+  (the ranking's next at `census-fUfTA1`).
+
+- 2026-10-04,
   16:26 UTC:
   the next batch's baseline census taken at commit `19f402d54`:
   `census written to ~/.cache/translation-repair/coverage/census-fUfTA1/census.json`

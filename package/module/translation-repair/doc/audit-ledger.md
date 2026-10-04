@@ -6516,6 +6516,37 @@ so the two lines' stretches are the census's attribution
 rather than unrun code.
 No B entry found.
 
+The fortieth cluster of that census,
+`corpus-run/editor`,
+against `census-fUfTA1` at `6babe5a0d`:
+13 line stretches over `editor-standing-read.ts`
+(`26b7b7909`,
+`df9436878`,
+`41726bb37`),
+all cased
+(the missing run directory named on the error stream,
+an artifact whose chunks the schema predates counted as
+earlier-schema,
+one naming a model the roster dropped named on the error
+stream,
+one naming a seated model read and reported,
+and the runs variable read where the line names no directory);
+plus the contest's none seat
+(`637c54309`)
+and the width report's neither-shipped row
+(`5b0bf4d57`).
+The settled-artifact fixture follows the schema walk
+recorded in the handover.
+Left:
+the width input's envelope and ready returns
+(`editor-width-input.ts:221-254`),
+whose claims pass through the screen's own claim schema
+before they reach the envelope derivation,
+one more read away than this pass budgeted.
+The reach census (`~/temp/agent/mimo-trial/reach-editor4.log`)
+reads `ran 13, still cold 0` for the standing reader.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
