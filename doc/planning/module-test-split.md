@@ -11,10 +11,12 @@ This document records the interview rather than an adopted architecture decision
 
 The user answered the first round:
 
-- Q1: maintainability and independent consumption are the goals.
+- Q1:
+  maintainability and independent consumption are the goals.
   No ordering between those goals was specified.
   Dependency minimization is not a selected goal.
-- Q2: preserve observable test behavior during the split.
+- Q2:
+  preserve observable test behavior during the split.
   Package and import interfaces may change;
   matcher semantics,
   concurrency,
@@ -122,27 +124,77 @@ not recommendations to replace our implementation or evidence of behavioral equi
 
 ## Second-round frontier
 
-### Independently consumable capabilities
+### Q3: Independent runtime assertions
 
-Ask separately whether assertions,
-sandbox functionality,
-and test-failure diagnostics should each receive a standalone package interface.
-Recommended answer:
-yes for each,
-subject to explicitly defining the sandbox interface before implementation.
+Recommend a dedicated assertion package preserving the full current matcher interface,
+including scoped assertion tracking and Sinon-based asymmetric matchers.
+Benefit:
+an existing assertion-only caller can depend directly on its responsibility.
+Cost:
+another supported package entry point and declaration surface.
 
-- Assertions offer an existing assertion-only caller a direct dependency.
-  Cost: owning an entry point that retains current matcher dependencies and semantics.
-- Sandbox functionality can isolate its implementation and expose disposable mocking.
-  Cost: distinguishing ordinary sandbox use from runner-integrated contextual ownership.
-- Failure diagnostics can own formatting and source inspection together.
-  Cost: retaining and documenting test-specific source and frame-classification policy.
+Alternative:
+keep assertions in the runner and extract other responsibilities.
+This avoids an assertion-package interface but leaves the demonstrated standalone caller coupled to the runner package.
 
-These capabilities are complements,
-not mutually exclusive package-layout options.
-Exact names and package count remain unsettled.
+Ranking:
+extract assertions > retain them in the runner,
+because there is an existing assertion-only consumer and this responsibility already has a distinct interface.
+The placement of `expectTypeOf` remains an export-surface decision,
+not a reason to create another wrapper package.
 
-### Ordinary test-author entry point
+### Q4: Independent sandbox contract
+
+Ask which contract to support,
+separately from where the implementation is stored:
+
+- Ordinary disposable sandbox only.
+  Benefit:
+  expose existing `createSinon(config?)` behavior without the runner.
+  Cost:
+  callers outside our runner do not get contextual isolation or test-attempt ownership.
+- Runner integration only,
+  with no separately supported standalone sandbox contract.
+  Benefit:
+  extracted implementation can serve maintainability without another consumer interface.
+  Cost:
+  it does not provide independent sandbox reuse.
+- Ordinary sandbox plus independently usable contextual ownership.
+  Benefit:
+  other executors could use our context-owned mocking.
+  Cost:
+  another executor must supply a defined ownership,
+  context,
+  and cleanup contract;
+  existing injection alone is not a complete consumer interface.
+
+Ranking:
+ordinary disposable sandbox > runner integration only > independent contextual ownership.
+The first buys reuse of existing standalone behavior rather than merely relocating implementation.
+The second outranks the third because no alternative executor requiring contextual ownership has been identified.
+This does not propose deleting or weakening contextual ownership inside our runner.
+
+### Q5: Independent test-failure diagnostics
+
+Recommend extracting the existing test-oriented formatting and assertion-source inspection together.
+Benefit:
+reporting consumers can use these without adopting the runner.
+Cost:
+the interface must retain and document harness-specific frame and source policies.
+
+Alternative:
+keep diagnostics in the runner.
+This avoids another package interface but retains formatting implementation and callers in that package.
+
+Ranking:
+extract test diagnostics > retain them in the runner,
+because a distinct existing exported interface can own source enrichment and frame filtering together.
+No actual standalone reporting consumer was established by the census;
+this recommendation is based on responsibility separation,
+not a claim of current demand.
+Generic application diagnostics are not proposed.
+
+### Q6: Ordinary test-author entry point
 
 Ask whether `module-test` should remain the runner with convenience re-exports,
 become a runner-only entry point,
@@ -153,15 +205,41 @@ runner with convenience re-exports > runner-only entry point > separate facade a
 
 - Runner with re-exports preserves an ordinary test's single entry point
   while enabling direct imports for standalone consumers.
-  Cost: the ordinary entry retains the integrated dependency graph.
+  Cost:
+  the ordinary entry retains the integrated dependency graph.
 - Runner-only entry makes ownership visible in imports.
-  Cost: consumers needing global assertions or type assertions may require extra imports.
+  Cost:
+  consumers needing global assertions or type assertions may require extra imports.
 - Separate facade and runner give assembly its own package.
-  Cost: another package and interface without an identified independently useful lower-level runner contract.
+  Cost:
+  another package and interface without an identified independently useful lower-level runner contract.
 
 The first option outranks the second because direct standalone imports already provide explicit ownership
 without imposing it on every test author.
 The second outranks the third because it avoids a facade-only package without demonstrated additional reuse.
+This ranking is about ergonomics,
+not an unverified claim of published compatibility obligations.
+Exact convenience re-exports remain unsettled.
+
+### Q7: Consumer scope
+
+Ask whether standalone contracts target consumers outside this workspace,
+without including publication in this task,
+or workspace consumers only.
+
+Recommend externally usable package contracts.
+Benefit:
+independent consumption is tested through built package entry points without repository-only assumptions.
+Cost:
+package contents,
+exports,
+and declarations need isolated consumer verification.
+
+Workspace-only contracts reduce that acceptance surface but leave external consumption unpromised.
+Ranking:
+externally usable contracts > workspace-only contracts,
+because it gives independent consumption a consumer-level acceptance criterion.
+No npm publish is authorized by this interview.
 
 ## Deferred decisions
 
@@ -192,9 +270,23 @@ or dependency-purity target is implied by the split.
 A package per helper or a wrapper package solely for the upstream `expectTypeOf` re-export
 has no demonstrated standalone responsibility in the inspected code.
 
+## Review and verification
+
+An independent Advisor review prompted separate questions for each consumer contract,
+explicit qualification of ordinary versus contextual sandbox ownership,
+and a consumer-scope question.
+Its earlier suggestion that public-shaped manifests prove publication was rejected:
+publication remains unverified.
+
+The initial Markdown lint reported `semantic-line-breaks` after inline label colons.
+Those prose breaks were corrected.
+The initial document was also rendered successfully through GitHub's Markdown endpoint;
+final checks follow each document revision.
+Only this planning document has been committed for this task.
+
 ## Next action
 
-Ask the second-round frontier and wait for the user's answers.
+Ask Q3 through Q7 and wait for the user's answers.
 Do not move source,
 change manifests,
 or migrate consumers during the interview.
