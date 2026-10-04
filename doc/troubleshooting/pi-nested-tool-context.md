@@ -417,7 +417,7 @@ and issuer states were `[returned, returned, returned, unentered]`.
 The completed second result remained in native persisted outcomes.
 No child executed.
 
-No complete nested-group handler is installed in this graph.
+The root-entry graph tested by `proc_681e` has no complete nested-group handler.
 The carrier therefore rejects that missing support before starting a child,
 rather than delegating to the old independent path.
 This is a verified closed default,
@@ -515,9 +515,60 @@ model attempt,
 permission,
 or runtime execution deadline was introduced.
 
-### Complete nested admission remains open
+### Connected literal native group profile
 
-There is no verified complete nested-admission workaround yet.
+The first connected literal SDK profile passed in `proc_5927`:
+two sessions,
+four injected requests,
+and one original canned assessment per session.
+Both native child preparations completed before either child definition entered.
+The valid program entered both children;
+a native hook changing final child inputs entered neither.
+Original child names,
+text results,
+update events,
+recorder entries,
+and persisted messages were checked.
+No child judgment or model attempt was created.
+
+`proc_994f` removed only the post-preparation input binding.
+Its expected native assertion was `AssertionError [ERR_ASSERTION]: 2 !== 0`:
+both inert children entered with transformed inputs where the intact group rejected them.
+Returned child/root issuer states,
+native outcomes,
+complete streams,
+and disposal were retained.
+
+`proc_79f0` passed three additional SDK cases:
+a copied definition with the same name,
+schema,
+and execute function rejected;
+advancing the owned clock after evidence close still allowed both children;
+changing a disposable target after the first serial child retained its result and blocked the second.
+These cases used three sessions,
+six injected requests,
+three canned assessments,
+and child-entry counts `[0, 2, 1]`.
+
+The graph is the private `contract/collector/native-program-sdk-copy-v3/` derivation.
+Its 21 artifacts bind parser dependencies explicitly,
+so SDK workers keep their cleared `HOME`.
+The failed original parser intake and a separate generator-escaping error remain preserved;
+see [SDK staging](pi-sdk-staging.md).
+The installed SDK and production auto-mode were not changed.
+
+This qualification covers model-issued native Codemode parents with the declared literal group shape.
+It does not establish full output/usage/image/store parity,
+shared-queue contention,
+outstanding-child lifetime at the connected seam,
+or general dynamic groups.
+Definition ownership is factory-closure ownership,
+not session or human authority;
+the fixed session reader and registered receiver separately bind each execution.
+
+### General nested admission remains open
+
+The connected literal profile is not a verified general nested-admission workaround.
 The implementation must extend existing execution/scope ownership,
 bind the exact original judgment and parent program,
 and reject stale or foreign execution occurrences without manufacturing another budget.

@@ -822,7 +822,57 @@ model attempt,
 permission,
 or runtime execution deadline was introduced.
 
-Complete parent-program/dataflow and prepared child membership remain unfinished.
+The first connected literal SDK profile passed in `proc_5927`:
+two sessions,
+four injected requests,
+and one original canned assessment per session.
+Both native child preparations completed before either child definition entered.
+The valid program entered both children;
+a native hook changing final child inputs entered neither.
+Original child names,
+text results,
+update events,
+recorder entries,
+and persisted messages were checked.
+No child judgment or model attempt was created.
+
+`proc_994f` removed only the post-preparation input binding.
+Its expected native assertion was `AssertionError [ERR_ASSERTION]: 2 !== 0`:
+both inert children entered with transformed inputs where the intact group rejected them.
+Returned child/root issuer states,
+native outcomes,
+complete streams,
+and disposal were retained.
+
+`proc_79f0` passed three additional SDK cases:
+a copied definition with the same name,
+schema,
+and execute function rejected;
+advancing the owned clock after evidence close still allowed both children;
+changing a disposable target after the first serial child retained its result and blocked the second.
+These cases used three sessions,
+six injected requests,
+three canned assessments,
+and child-entry counts `[0, 2, 1]`.
+
+The graph is the private `contract/collector/native-program-sdk-copy-v3/` derivation.
+Its 21 artifacts bind parser dependencies explicitly,
+so SDK workers keep their cleared `HOME`.
+The failed original parser intake and a separate generator-escaping error remain preserved;
+see [SDK staging](../troubleshooting/pi-sdk-staging.md).
+The installed SDK and production auto-mode were not changed.
+
+This qualification covers model-issued native Codemode parents with the declared literal group shape.
+It does not establish full output/usage/image/store parity,
+shared-queue contention,
+outstanding-child lifetime at the connected seam,
+or general dynamic groups.
+Definition ownership is factory-closure ownership,
+not session or human authority;
+the fixed session reader and registered receiver separately bind each execution.
+
+The literal native group profile is mechanically connected;
+general parent-program/dataflow coverage and dynamic child groups remain unfinished.
 The accepted preparation requirement applies to each actual execution group,
 not every future dynamic descendant at once.
 Whole-parent semantic coverage may include result-derived bindings;

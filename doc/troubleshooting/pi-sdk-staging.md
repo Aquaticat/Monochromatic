@@ -1353,3 +1353,98 @@ Nothing to file or draft.
 - Compatible upstream patch:
   unnecessary;
   the parser's rejection remains required.
+
+## Node 26.10.0 cleared-home parser import stopped the Pi 1.0.0 fixture
+
+### Symptom and deciding source
+
+`proc_7252` failed before SDK session construction.
+Node's module resolver emitted `MODULE_NOT_FOUND`:
+`Cannot find module 'yuku-parser'`.
+The require base was inside the disposable fixture's
+`controls-private/home/Monochromatic/package/git-policy/cli/package.json`,
+which was not a repository dependency tree.
+
+The owned loader selected its package base from `homedir()`:
+private `contract/research/composed-literal-facts/load-parser.mjs:7-9`.
+
+```javascript
+// Private contract/research/composed-literal-facts/load-parser.mjs:7-9
+const require = createRequire(join(homedir(), 'Monochromatic/package/git-policy/cli/package.json'));
+export const parserPath = require.resolve('yuku-parser');
+export const { parse } = await import(pathToFileURL(parserPath).href);
+```
+
+The new child-judgment constructor imported the source profile,
+which reached that loader in a worker whose `HOME` had already been cleared.
+This is an owned dependency-resolution assumption,
+not an upstream SDK inability or a missing parser installation.
+
+### Corrected source boundary and verification
+
+The fresh v3 generator binds the parser entry before launching the cleared-home worker.
+Private `contract/collector/native-program-sdk-copy-v3/stage.mjs:20-28`
+emits an explicit module and relocates the profile,
+collector,
+and constructor imports.
+
+```javascript
+// Private contract/collector/native-program-sdk-copy-v3/stage.mjs:21, formatted across lines
+save('parser',
+  'export {parse} from ' + JSON.stringify(url(parserPath))
+  + ';\nexport const parserPath=' + JSON.stringify(parserPath) + ';\n');
+```
+
+`proc_de32` staged 21 artifacts with no SDK imports.
+`proc_5927` then passed two actual SDK sessions,
+four injected requests,
+and one canned original assessment per session.
+The valid native literal program entered both children;
+changed final child inputs entered neither.
+The worker kept its cleared home,
+private descriptors,
+source checks,
+and network tripwire.
+No whole-home symlink or installed-source edit was used.
+
+The consumed verification command was `mise --no-env --no-hooks run check`
+in private `contract/collector/native-program-sdk-controls-v2/`.
+Its retained manifest and result are the reproducibility record;
+do not replay the consumed namespace unchanged.
+
+### Separate generator failure and rejected approaches
+
+`proc_d0d3` separately failed while parsing the owned v2 generator.
+Node emitted `SyntaxError: Invalid regular expression`
+with `Unterminated group` at `stage.mjs:19`.
+An extra escaping layer corrupted the regex literal;
+the generated parser module's newline spelling also needed correction.
+No SDK import occurred.
+Fresh v3 source corrected those syntax boundaries;
+both failed namespaces remain unchanged.
+
+Passing standalone parser tests under the real home was not evidence for a cleared-home SDK worker.
+Changing `HOME` back,
+exposing the whole repository through a home symlink,
+or editing consumed evidence was not the adopted remedy.
+Explicit source paths still depend on the pinned local dependency layout;
+the result is a private host qualification,
+not a portable production deployment.
+
+### Upstream filing decision
+
+Nothing is filed or drafted upstream.
+
+- Fault:
+  the owned loader and generator supplied the failing assumptions.
+- Fixability:
+  explicit staging passed the actual SDK consumer.
+- Supported use:
+  installed parser imports and the SDK's existing tool pipeline were exercised.
+- Contribution policy:
+  no upstream change is proposed.
+- Maintainer disposition:
+  no rejection or intent is inferred.
+- Prototype:
+  the correction lives in the owned staging boundary;
+  no upstream patch is justified.
