@@ -683,6 +683,38 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  01:37 UTC:
+  `B123` is in progress.
+  The red case through `applyFootnoteRelabel` is committed (`23137d784`):
+  one page per measured trigger shape
+  (a quoted `www.` literal,
+  one after an unbalanced `[`,
+  one beside CJK punctuation,
+  one after a comma),
+  each refusing today with the `position` kind
+  (`~/temp/agent/mimo-trial/b123-red.log`).
+  A probe of the built package settled the design
+  (`~/temp/agent/mimo-trial/b123-probe.mjs`):
+  the autolink transform's unpositioned runs hold `[^` text
+  in the empty-label,
+  spaced-label and unclosed shapes,
+  and their decoded values erase escapes
+  (`\[^x\]` reads as `[^x]`),
+  so no check off node values can tell a marker from an escaped opening.
+  The fix will bound each unpositioned run
+  between its positioned neighbours
+  (the parent's own bounds at either end)
+  and scan that raw region with `gfmMarkerSpans`,
+  which is escape-aware and reads labels as micromark does:
+  no fabricated positions,
+  no value checks,
+  and the existing graph verification still guards the rewrite.
+  This line lands in the trial-log commit that adds it.
+  Next:
+  the fix and its contract cases,
+  then the cache-version call measured on the pinned corpus.
+
+- 2026-10-04,
   01:13 UTC:
   the next batch's baseline census taken at commit `148979b36`:
   `census written to ~/.cache/translation-repair/coverage/census-xB1R6c/census.json`
