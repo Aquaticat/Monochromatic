@@ -24,7 +24,6 @@ package/
     time             @monochromatic-dev/build-time
   config/
     dprint           @monochromatic-dev/config-dprint
-    stylelint        @monochromatic-dev/config-stylelint
     tsdown           @monochromatic-dev/config-tsdown
     typescript       @monochromatic-dev/config-typescript
   fixture/
@@ -115,7 +114,6 @@ The convention `@monochromatic-dev/<category>-<name>` is used for most packages,
 These `package.json` files have empty or absent `description` fields:
 
 - `config-dprint`
-- `config-stylelint`
 - `config-tsdown`
 
 ## Proposed categories
@@ -209,7 +207,6 @@ package/
     css                          @monochromatic-dev/build-tool-css
   config/
     dprint                       @monochromatic-dev/config-dprint
-    stylelint                    @monochromatic-dev/config-stylelint
     tsdown                       @monochromatic-dev/config-tsdown
     typescript                   @monochromatic-dev/config-typescript
   dev-script/

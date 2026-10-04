@@ -24,6 +24,14 @@ Adopt a phased combined direction:
    CLI,
    and editor gates pass.
 
+Superseded 2026-10-04:
+ Stylelint was removed outright (`doc/decision/remove-stylelint.md`)
+ before the shadow migration ran,
+ so items 5 and 6 are moot and editor diagnostics no longer exist for CSS.
+The replacement CSS linter is tracked in issue #587.
+Everything below is retained as a probe record,
+ not as instructions still to run.
+
 This direction meets the owner's formatter-trust requirement and the intended Stylelint retirement without
 pretending the current probes already reproduce all Stylelint behavior.
 

@@ -1273,5 +1273,3 @@ panicking).
    VSCode extension configuration for TypeScript tools.
 - [Toolchain](./TROUBLESHOOTING.toolchain.md):
    build tools and toolchain management.
-- [Stylelint](stylelint.md):
-   CSS linting configuration issues.

@@ -50,7 +50,9 @@ A second throwing-stub substitution,
  was added later as a deliberate
 in-graph substitution rather than a forward-looking canary:
  it was already in the
-graph via `stylelint > cosmiconfig`,
+graph via `stylelint > cosmiconfig`
+ (stylelint removed 2026-10-04,
+ see `doc/decision/remove-stylelint.md`),
  and the policy strips the real package.
  It is
 not one of the 24 pre-emptive bans;

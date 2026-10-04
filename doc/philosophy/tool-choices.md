@@ -66,8 +66,6 @@ NueJS:
 
 - **oxlint**:
    primary JS/TS linter
-- **Stylelint**:
-   CSS-specific rules
 - **dprint**:
    universal formatter
 
@@ -75,6 +73,13 @@ Rejected alternatives:
 
 - **Biome**:
    insufficient rules
+- **Stylelint**:
+   removed 2026-10-04 and not an adoption candidate.
+   All `pnpm audit` findings for the unpatched `braces` advisory (GHSA-vfj7-8cjw-p6xm)
+   were reachable only through stylelint's tree,
+   and the repo writes little CSS.
+   A first-party replacement is tracked in issue #587;
+   see `doc/decision/remove-stylelint.md`.
 - **ESLint**:
    removed 2026-03-13 and not an adoption candidate.
    Oxlint covers the rules we relied on (gaps were filled by writing `@monochromatic-dev/oxlint-plugin-tsdoc`,

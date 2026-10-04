@@ -214,7 +214,7 @@ mise run buildAndTest
 # Build and test a specific file
 mise run buildAndTest -- package/module/async-time/src/wait.unit.test.ts
 
-# Lint all files (oxlint, dprint, stylelint, markdown, rust, detekt)
+# Lint all files (oxlint, dprint, markdown, rust, detekt)
 mise run lint
 
 # Format all files
@@ -249,7 +249,7 @@ package/
                               WireGuard helpers, forbidden-strings scanner,
                               nested Wayland compositor)
   config/                   Shared configurations (cosign, dotfiles, dprint, oxlint,
-                              rolldown, stylelint, tofu, typescript, lfs-r2-worker)
+                              rolldown, tofu, typescript, lfs-r2-worker)
   desktop-app/              Desktop applications (GTK4/Qt/Electron file managers,
                               Slint terminal, Electron infrastructure)
   desktop-daemon/           Background services (hall-monitor)
@@ -313,7 +313,6 @@ package-deprecated/         Deprecated packages retained for reference
   Oxlint (with custom JS plugins for TSDoc and restricted syntax),
   the in-repo pluggable Rust linter plus Clippy,
   detekt,
-  Stylelint,
   Harper (prose)
 - **Formatter**:
   dprint (orchestrates all formatters including oxlint auto-fix)

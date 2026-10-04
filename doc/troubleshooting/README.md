@@ -12,7 +12,6 @@ Issues related to TypeScript configuration,
 
 - TypeScript path warnings with dprint
 - [Learning Rust canonical HTML conflicts with dprint and Stylelint](dprint.md#bug-4-learning-rusts-canonical-compact-html-conflicts-with-repository-formatting-policy)
-- Stylelint and postcss-html resolution
 - Type predicate assignment errors with complex conditional types
 
 ### [Testing](testing.md)
