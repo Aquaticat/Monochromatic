@@ -5808,6 +5808,44 @@ reads `ran 3, still cold 0, cold since then 0, not loaded 0`
 and the edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The thirteenth cluster of that census,
+`coverage`,
+against `census-MBzNhP` at `5a7a5029c`:
+8 stretches over `coverage-candidates.ts`,
+`coverage-wire.ts`,
+`coverage-stage.ts` and `coverage-tail.ts`
+(`c9b1940fe`,
+`0f65e1f55`).
+Two `unreachable:` index guards in the candidate lister came out for
+`nonNullishOrThrow`
+(the matcher and the aligner name sections inside their own inputs).
+Four are the coverage wire's refusals,
+one case reading them all
+(a reply that is no record,
+or whose quote,
+reason or coverage is no string).
+One is the stage's `followupEvidence` spread,
+one case driving it with the evidence and its control without,
+the asked sheet carrying the `PRIOR UNRESOLVED VERDICT` JSON only in the
+first
+(the `scriptedClient` grew an `asks` sink,
+the consolidate-driver fixture's shape).
+One was `targetSize`'s insertion guard,
+dead behind `isPaired`'s own filter
+(an insertion's text is empty by `makeInsertionChunk` anyway),
+removed with no case.
+The reach census's `cold since then` reading named two of the same family
+(`0f65e1f55`):
+the `identityContext` and `foreignRegions` spreads,
+each cased with its control
+(the identity context rides the sheets where handed and not where not;
+a partial quote anchored in a region the pairing assigned to another
+original reads misattributed and names the quote).
+The reach census (`~/temp/agent/mimo-trial/reach-coverage3.log`)
+reads `ran 5, still cold 0, cold since then 0, not loaded 0`
+and the two edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

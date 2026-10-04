@@ -683,6 +683,38 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  04:28 UTC:
+  the T8 `coverage` batch closed with commits `c9b1940fe`
+  and `0f65e1f55`:
+  8 stretches over four files.
+  Two `unreachable:` index guards came out for `nonNullishOrThrow`,
+  the wire's four refusals read through one case,
+  the stage's three conditional spreads each carry its case and control
+  (the follow-up evidence's JSON on the asked sheet,
+  the identity context where handed,
+  the misattributed quote named in the verdict),
+  and `targetSize`'s insertion guard came out dead behind `isPaired`'s
+  own filter.
+  The reach census's `cold since then` reading named the identity and
+  foreign-region spreads along the way,
+  cased with `0f65e1f55`.
+  The reach census reads `ran 5, still cold 0, cold since then 0, not loaded 0`
+  and the two edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-coverage3.log`).
+  Counts at the close:
+  the full suite 1,549 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-coverage-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-coverage-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `0f65e1f55`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `markup` cluster
+  (the ranking's next at `census-MBzNhP`).
+
+- 2026-10-04,
   04:12 UTC:
   the next batch's baseline census taken at commit `c651bea68`:
   `census written to ~/.cache/translation-repair/coverage/census-MBzNhP/census.json`
