@@ -469,7 +469,7 @@ width,
  auto-dismissing after a few seconds.
  It does not span
 the window and does not push anything.
- Collision with the error bar (D9) is still open.
+ Collision with the error bar is now settled by D29.
 
 ### D9. Missing files and renamed folders = candidate err-b
 The list stays clean:

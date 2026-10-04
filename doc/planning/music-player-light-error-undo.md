@@ -125,8 +125,13 @@ The owned debug worktree now has exact missing,
 Undo,
 combined,
 failed-trash and pending-trash fixtures.
-A successful Undo fixture requires explicitly authored completed outcome,
+A successful Undo fixture requires explicitly authored per-item
+`verified-success`,
 a restoration handle and a live interval.
+`approved-but-unverified` is neither pending nor a known failure;
+it cannot borrow successful-trash feedback.
+The retired `completed` token is rejected rather than silently acquiring
+that stronger meaning.
 Failed,
 cancelled,
 pending,
@@ -136,8 +141,32 @@ successfully trashed authored row.
 No file is actually changed.
 
 The native renderer and overlap/fit evidence are still pending.
-The next action is committed fixture tests with fresh guard-removal proofs,
-then isolated native layout using the settled player baseline.
+Prototype `5a7232914` commits the original fixture;
+`d266f3664` separates accepted requests from per-item verified success.
+The revised 15 host-JVM tests passed,
+and fresh unknown-scene,
+pending and accepted-but-unverified mutants failed their intended tests.
+Exact restoration and the complete unit task passed in `proc_9e67`.
+
+Comparable MediaProvider revision
+`a183e2b92c71d86ec7b104c116ef3f4dbcbb523f`
+was inspected read-only.
+Its positive task can set `RESULT_OK` after batch operations whose per-item
+results are not checked,
+including a caught exception path.
+This is not proved equivalent to the installed image or an observed
+provider failure.
+The source demonstrates why request acceptance/completion does not supply
+that fixture's stronger per-item success premise.
+[The operation boundary](../troubleshooting/android-trash-request-outcome-boundary.md)
+retains exact source excerpts,
+dialog-skipping conditions and limits.
+
+The next action is to implement isolated native layout using the settled
+player baseline and explicitly authored legal outcome premises,
+then capture and verify overlap/fit without real storage actions.
+No user answer or new production permission request is blocking these
+remaining authorized design steps.
 The first-run captured APK and source revision remain immutable;
 new builds are a separate light-feedback cohort.
 
