@@ -211,6 +211,43 @@ previous credentials and PID paths were not treated as restart invariants.
 See [the lock lifecycle boundary](android-emulator-37-disposable-avd-lock-after-hard-stop.md).
 This lock recovery does not diagnose the initial graphics failure.
 
+## Separate post-readiness renderer failure
+
+After verified guest authorization,
+the host-renderer capture visit retained nine inner/100% frames before the
+owning emulator received `SIGSEGV`.
+The wrapper reported status `139`;
+the capture task separately timed out on `am force-stop`.
+The requested `-gpu host` configuration actually reported:
+
+```text
+# Android Emulator 37.2.12 runtime adapter diagnostic
+Graphics Adapter Android Emulator OpenGL ES Translator (llvmpipe (LLVM 22.1.8, 256 bits))
+```
+
+Its final diagnostics included `gles_v2_imp.cpp` functions reporting
+`error null ctx`.
+Comparable `host/gl/glestranslator/common/include/common/gles_macros.h:28`
+to `43` obtains the current context and routes a missing context through
+`FAIL_IF`.
+This identifies a diagnostic guard,
+not the crash's deciding instruction or whether the messages preceded
+teardown.
+No usable matching coredump was found in the local `coredumpctl` listing.
+No memory-cap,
+LLVM,
+Xvfb or driver defect is established from these messages alone.
+This is distinct from both the pre-guest allocation fatal and the older
+37.1.11 SwiftShader incident.
+
+The current 37.2.12 GPU help was exercised and lists `swiftshader` as a
+software renderer for GLES and Vulkan.
+That renderer is being probed under the same owned AVD and 6 GiB/2 CPU
+bounds,
+not ruled out by the older version's failure or claimed to fix this crash.
+New startup settings and renderer provenance remain separate from the
+original restoration snapshot and interrupted cohort.
+
 ## What does not work
 
 - Treating the feature-override attempt's lock fatal as a graphics result.
