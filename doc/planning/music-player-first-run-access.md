@@ -1,0 +1,140 @@
+# First-run access and empty-library design continuation
+
+## Scope and stop conditions
+
+The human directed continued work on the design queue after rejecting
+inconsequential filename questions.
+The next bounded area is D10's unresolved no-system-library treatment,
+not production implementation.
+This study preserves D27's automatic use of an available system library
+and its separate opt-in peak-analysis prompt.
+It does not reopen the scan answers,
+Search decisions,
+matcher choices,
+template defaults or IME behavior.
+
+This continuation is a design-only source audit and authored native study.
+It cannot manufacture source-status signals or bind recovery actions to
+production.
+No original AVD,
+real library or user permissions will be changed.
+Disposable native work retains the prior 6GiB/2CPU bounds;
+browser checks retain 2GiB/2CPU bounds.
+No new IME or TalkBack experiment follows.
+
+## Independently verifiable queue
+
+- [ ] Audit current first-run access,
+  folder-grant,
+  discovery and analysis boundaries against D10/D27.
+  Completion requires executable-branch citations and explicit missing
+  signals,
+  not interpreting an empty list as confirmed absence.
+- [ ] Build debug-only first-run state fixtures from settled actions and
+  inspect keyboard-closed fit on both panels,
+  themes and native text scales.
+  Completion requires tests rejecting unknown scenes and assumptions
+  about failed/partial reads,
+  native captures and inspected sanitized evidence.
+- [ ] Publish the verified design evidence with settled-action rationale
+  and an implementation gate.
+  Ask only for a consequential unresolved product choice;
+  do not turn text or spacing details into another ballot.
+  Restore and stop any owned native runtime before completion.
+
+The comparison explores states,
+not competing cosmetic policies.
+A genuine product constraint discovered during the audit can change the
+bounded study;
+unsupported recovery controls stay out rather than pretending they work.
+
+## Settled requirements
+
+D10 selects a primary `Open a folder` action,
+Settings access and an up-front explanation of true-peak analysis when
+nothing is open.
+D27 narrows this to no available system library or a declined system source.
+An available system library opens automatically;
+analysis does not begin merely because it was discovered.
+D27's scan prompt has its recorded scan/dismiss answers,
+and unanalysed music remains playable without invented peak values.
+
+D9 and D69/D71 require truthful operation/failure boundaries.
+A chosen empty folder does not imply that the device has no music.
+A failed or partial read does not establish that the chosen folder is empty.
+Changing the source is not repair of the old source.
+
+## Fresh source findings
+
+This audit reads current production files without modifying them.
+The source revision at the initial inspection is
+`0c391a82556eeda61a285de2d70c1270fbc8994d`.
+The older Search-state evidence remains bounded to its inspected revision;
+this continuation does not claim the code is frozen against concurrent work.
+
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt:1767`
+  defines `appRoot`.
+  Its final access branch renders `playerScreen` only for device-wide audio
+  permission;
+  the denied branch renders only `permissionGate`.
+  Folder choice is therefore not exposed by that denied branch,
+  although a held folder grant is a distinct source capability.
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LibrarySource.kt:179`
+  defines `load`.
+  A held folder wins before the device-wide permission check.
+  With neither source,
+  the function returns an empty track list.
+  That list is not a complete source-status result.
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LibrarySource.kt:331`
+  defines `scanRoot`.
+  Cancellation propagates;
+  another whole-walk exception is logged and converted to an empty list.
+  Individual unreadable directories can also be skipped inside
+  `SafTreeSource.scanDirectory`.
+  Normal list return does not establish complete coverage.
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LibraryRoot.kt:260`
+  defines `heldRoot`.
+  A saved folder without a live persisted read grant is logged,
+  cleared and returned as absent.
+  This erases the distinction between never chosen and revoked at that
+  return boundary.
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerUiState.kt:46`
+  supplies rows,
+  queue size and loading state,
+  but no complete/partial/failed source-discovery outcome.
+- `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt:1356`
+  calls `PeakSweepService.startIfNeeded` during activity creation.
+  `PeakSweepService.startIfNeeded` checks only its initial-completion flag
+  before starting the foreground service;
+  `runSweep` returns without analysis for an empty list and otherwise calls
+  the parallel sweep.
+  No D27 scan/dismiss preference is consulted along that inspected path.
+  This is a source observation,
+  not a live-run measurement or authority to revert concurrent production
+  work.
+  The source-linked sweep decision must be read before attributing intent.
+
+These are design/source discrepancies,
+not authorization to fix production or proof of installed behavior.
+
+## Continuation correction
+
+Completing the filename correction should have advanced the authorized
+queue,
+not ended the session on a status report.
+The consequence gate filters needless user questions;
+it does not stop substantive design work.
+
+The proposed tightening of `AGENTS.md`'s existing `PXQ` rule is recorded
+here only.
+No instruction file is edited in this round:
+
+```text
+# AGENTS.md (proposed, not applied)
+PXQ:
+ Finish an authorized item,
+ then inspect the queue and start the next unblocked item.
+ A consequence gate filters questions,
+ not work.
+ Stop only at queue completion or a named blocker or user choice.
+```

@@ -12,7 +12,24 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
-## Current frontier (2026-09-29)
+## Active continuation: first-run access and no-library states
+
+The filename evidence and its configurable-support correction are complete.
+The human directed continued work rather than another status-only stop.
+The next bounded design-only area is D10's no-system-library/declined-source
+flow,
+preserving D27 and all accepted Search/template decisions.
+`doc/planning/music-player-first-run-access.md` owns the active queue:
+fresh executable-source audit,
+debug-only native state/fit evidence,
+then verified publication.
+No production,
+real-library,
+original-AVD or new IME work is authorized.
+The consequence gate removes needless ballots,
+not the substantive design queue.
+
+## Filename investigation record (started 2026-09-29)
 
 The user accepted the reviewed accessibility goals as “good enough” and
 asked what comes next while directing continued work.

@@ -41,8 +41,12 @@ Do not treat unverified behavior as a reopened visual decision or schedule
 an IME experiment.
 The stopped disposable emulator and bounded inner speech evidence are
 recorded in `evidence/search-talkback-native-baseline.md`.
-The next design-only investigation is filename presentation,
-recorded in `evidence/search-filename-presentation-frontier.md`.
+The completed filename investigation is recorded in
+`evidence/search-filename-presentation-frontier.md`.
+The human directed continued design work;
+the active bounded first-run/no-library queue is in
+`doc/planning/music-player-first-run-access.md`.
+It preserves D10/D27 and does not reopen the filename ballot.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
 Search's extension display.
