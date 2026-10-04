@@ -87,6 +87,12 @@ pub mod rust_semantic_session;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;
+/// Read-only compiler and installed rust-src discovery.
+#[doc(hidden)]
+pub mod rust_toolchain;
+/// Fixed Cargo workspace preparation and generated-input error handling.
+#[doc(hidden)]
+pub mod rust_workspace;
 /// Internal source-anchored explicit-type findings and semantic coverage errors.
 mod rust_type_diagnostic;
 
