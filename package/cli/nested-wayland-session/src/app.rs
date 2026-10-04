@@ -162,10 +162,8 @@ pub fn run(config: Config) -> Result<i32> {
     //           to request the initial one.
     state.backend.window().request_redraw();
 
-    // What:     `event_loop.run(None, &mut state, |_| {}).context("event loop failed")?;`.
-    //           Runs the loop with no timeout (`None`), the state as shared data, and an
-    //           empty per-iteration callback. Returns when `loop_signal.stop()` is called.
-    // Why:      This is the program's main blocking loop.
+    // What: Run the event loop and flush protocol replies after each dispatch cycle.
+    // Why: Registry, configure, clipboard, and input delivery must not wait for GPU redraws.
     event_loop
         .run(None, &mut state, |current| {
             crate::protocol_flush::finish_dispatch(&mut current.display_handle);
