@@ -49,45 +49,53 @@ and migration choices follow only after their prerequisites are settled.
   scopes its all-Rust approval to that tool and records a single-file distribution requirement.
   That requirement must not silently transfer to cli-git.
 
-## First-round preference frontier
+## Settled interview requirements
 
-### Desired outcomes
+### Performance
 
-Which concrete frustration or desired capability motivates reconsidering the implementation?
-Rank the outcomes that matter,
-including latency,
-reliability,
-installation requirements,
-maintainability,
-and authoring experience.
-The user chooses priorities;
-the agent measures current behavior.
+The user wants faster execution throughout cli-git,
+not only faster startup.
+The reported experience is that a commit might take 20 seconds.
+This is a reported symptom,
+not an agent measurement or an attributed bottleneck.
+No numeric acceptance budget is settled yet.
 
-### Rust as means or goal
+### Language and runtime
 
-If retaining TypeScript achieved the desired operational outcomes,
-would that satisfy the user?
-Learning Rust or standardizing implementation languages is a separate possible goal,
-not evidence of a performance improvement.
+The user answered yes to whether achieving the desired outcomes without a rewrite would satisfy them.
+Rust is a means rather than an independent goal.
+Eliminating an external Node installation is not a hard requirement.
 
-### Runtime distribution requirement
+### Configuration
 
-Is removing an external Node installation a hard requirement,
-a preference,
-or irrelevant for cli-git?
-Distinguish requiring no separately installed Node from prohibiting any JavaScript engine.
-Do not assume the monorepo manager's distribution decision applies here.
+The user explicitly selected JSONC and removed the requirement to retain TypeScript support.
+They identified the repository's recently ported Rust JSONC package for reuse.
+Inspect that package before proposing another parser.
+Retiring executable configuration does not by itself decide whether custom policies may run as external commands.
 
-### Policy-authoring design freedom
+### Embedding
 
-Must repository owners retain arbitrary TypeScript or JavaScript policy functions,
-imports,
-and typed configuration,
-or may those capabilities be redesigned?
-Changing config syntax and retiring authoring capabilities are separate decisions.
-The current package is unpublished;
-a changed authoring model is a product design change,
-not an assumed published compatibility obligation.
+The user wants cli-git to "embed in forbidden-strings".
+The direction and scope of embedding are not yet settled:
+clarify whether forbidden-strings hosts the Git wrapper,
+the Git wrapper calls the scanner in-process,
+or both share reusable modules and a distribution artifact.
+Do not silently invert the user's wording.
+
+## Next preference frontier
+
+- Clarify the intended embedding relationship and user-facing executable arrangement.
+- Decide whether JSONC may register custom external policy commands,
+  in addition to selecting built-in policies.
+  This is separate from retaining TypeScript configuration.
+- Establish whether latency improvements must preserve current synchronous completion semantics,
+  including auto-push,
+  rather than merely return the shell prompt before work completes.
+
+Performance budgets and implementation ranking await measured workload evidence.
+No language,
+module arrangement,
+or migration strategy has been adopted.
 
 ## Pending evidence and dependent questions
 
@@ -118,5 +126,7 @@ not an assumed published compatibility obligation.
 
 ## Next action
 
-Ask the first-round preference questions together and wait for the user's answers.
-No answers or rejected implementation options have been recorded yet.
+Inspect the Rust JSONC and forbidden-strings interfaces and prepare disposable performance measurements.
+Ask the next independent preference questions together and wait for the user's answers.
+Keep the current implementation running;
+do not port code during the interview.
