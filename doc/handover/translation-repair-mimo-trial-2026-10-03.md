@@ -683,6 +683,25 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  21:09 UTC:
+  the next batch's baseline census taken at commit `a7d014baf`:
+  `census written to ~/.cache/translation-repair/coverage/census-4BqrOY/census.json`
+  (`~/temp/agent/mimo-trial/census-59.log`).
+  `library source: 109 files, 175 stretches over 384 lines, 4 functions never called`.
+  The ranking's first three clusters carry documented-left arms.
+  The next actionable cluster is `mask`
+  with 4 stretches over 4 lines in 2 files
+  (`mask-invisible-lines.ts:168`,
+  `333`,
+  `mask-container-tags.ts:156`,
+  `171`),
+  then `source`,
+  `corpus-run/cache`.
+  This line lands in the trial-log commit that follows `a7d014baf`.
+  Next:
+  the `mask` batch.
+
+- 2026-10-04,
   20:56 UTC:
   the next batch's baseline census taken at commit `c087e5884`:
   `census written to ~/.cache/translation-repair/coverage/census-E4DYQO/census.json`
