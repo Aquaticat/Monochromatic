@@ -155,5 +155,39 @@ await describe({
         },),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'READS an archive name that is absent or names either verdict, and REFUSES a value that is no '
+        + 'record at all',
+      fn: async () => {
+        expect(await roundTrip({
+          outcome: {
+            choice: 'translate',
+            ballots: [CAT_BALLOT,],
+            usable: 1,
+            findings: [],
+          },
+        },),).toBe(true,);
+        expect(await roundTrip({
+          outcome: {
+            choice: 'translate',
+            ballots: [CAT_BALLOT,],
+            usable: 1,
+            findings: [],
+            archive: 'publishable',
+          },
+        },),).toBe(true,);
+        expect(await roundTrip({
+          outcome: {
+            choice: 'translate',
+            ballots: [CAT_BALLOT,],
+            usable: 1,
+            findings: [],
+            archive: 'flawed',
+          },
+        },),).toBe(true,);
+        expect(await roundTrip({ outcome: 5, },),).toBe(false,);
+      },
+    },),
   ],
 },);
