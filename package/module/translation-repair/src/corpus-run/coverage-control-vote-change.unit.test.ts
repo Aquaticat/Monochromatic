@@ -35,7 +35,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   coverageControlHolds,
-  type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
   type SyntheticClient,
