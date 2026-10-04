@@ -265,6 +265,35 @@ await describe({
             expect(Object.keys(judgments,),).toHaveLength(0,);
           },
         },),
+
+        it({
+          name: 'COUNTS A BALLOT THAT NAMED ONE SEED ONLY on that seed, since the other seeds keep the '
+            + 'verdicts they did get',
+          fn: async () => {
+            /**
+             One judge names both seeds, one names only the first, one names
+             both: the second seed is judged from the two ballots it has.
+             */
+            const judgments = await runRestorationJudge({
+              client: judgingClient({
+                verdictsByModel: {
+                  [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',],
+                  [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['restored',],
+                  [SEAT_SYNTHETIC_VISION_WITHHELD]: ['restored', 'restored',],
+                },
+              },),
+              judgeModelIds: JUDGES,
+              sourceText: '猫猫追蝴蝶。碗是满的。',
+              repairedText: 'The cat chases butterflies. The bowl is full.',
+              references: REFERENCES,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: 1_000,
+              l,
+            },);
+            expect(judgments['seed/omission-1']?.judged,).toBe(true,);
+            expect(judgments['seed/omission-1']?.verdict,).toBe('restored',);
+          },
+        },),
       ],
     },),
   ],

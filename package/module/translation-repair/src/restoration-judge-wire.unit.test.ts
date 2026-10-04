@@ -16,7 +16,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   buildRestorationJudgeMessages,
+  isRestorationJudgeWire,
   isRestorationVerdict,
+  resolveRestorationJudgment,
   RESTORATION_JUDGE_VERDICTS,
 } from '../dist/final/node/index.mjs';
 import { userText, } from './chat-message-reading.test-fixture.ts';
@@ -157,6 +159,38 @@ await describe({
           },
         },),
       ],
+    },),
+
+    it({
+      name: 'REFUSES a reply that is no object, a judgment that is no object, and a reference that is no '
+        + 'number, since nothing there binds a judgment to a seed',
+      fn: async () => {
+        expect(isRestorationJudgeWire(5,),).toBe(false,);
+        expect(isRestorationJudgeWire({ judgments: [5,], },),).toBe(false,);
+        expect(isRestorationJudgeWire({
+          judgments: [{ reference: 'one', verdict: 'restored', },],
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'FINDS A DUPLICATE JUDGMENT where two judgments name one reference, since one seed gets one '
+        + 'verdict',
+      fn: async () => {
+        const resolved = resolveRestorationJudgment({
+          wire: {
+            judgments: [{
+              reference: 1,
+              verdict: 'restored',
+            }, {
+              reference: 1,
+              verdict: 'not-restored',
+            },],
+          },
+          seedIds: ['seed/omission-0',],
+        },);
+        expect(resolved.findings,).toContain('duplicate-judgment (1)',);
+      },
     },),
   ],
 },);
