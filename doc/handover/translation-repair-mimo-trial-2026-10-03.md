@@ -683,6 +683,28 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  16:31 UTC:
+  the T8 `corpus-run/editor` batch is in progress:
+  part 1 landed with commit `26b7b7909`
+  (the standing reader names a missing run directory
+  rather than reading an empty standing).
+  Uncommitted work:
+  none.
+  The reach census reads `ran 1, still cold 12`
+  on `editor-standing-read.ts`
+  (`~/temp/agent/mimo-trial/reach-editor2.log`),
+  the twelve being the artifact error paths
+  and the reporter bodies still to case.
+  Reasoning so far:
+  the reader runs as a CLI over fixture run directories
+  (`standingOver` spawns the built entry),
+  so the error paths need artifact files carrying
+  an off-roster model or no recorded rounds.
+  Next:
+  part 2,
+  those two error paths.
+
+- 2026-10-04,
   16:26 UTC:
   the next batch's baseline census taken at commit `19f402d54`:
   `census written to ~/.cache/translation-repair/coverage/census-fUfTA1/census.json`
