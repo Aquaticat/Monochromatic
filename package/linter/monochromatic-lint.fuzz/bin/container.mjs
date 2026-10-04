@@ -107,7 +107,7 @@ async function main() {
     ], capture: true }).stdout.trim();
     containers.push(buildContainer);
     execute({ command: 'podman', args: ['start', '--attach', buildContainer] });
-    const targets = ['merge_values', 'configuration', 'rust_style'];
+    const targets = ['merge_values', 'configuration', 'rust_style', 'rust_explicit_types'];
     await mkdir(join(context, 'bin'), { recursive: true });
     for (const target of targets)
       execute({ command: 'podman', args: ['cp', `${buildContainer}:/work/build/x86_64-unknown-linux-gnu/release/${target}`, join(context, 'bin', target)] });

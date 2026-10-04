@@ -21,6 +21,11 @@ libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
 jsonc-edit-fuzz = { path = "../../rust-module/jsonc-edit.fuzz" }
 monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit" }
 monochromatic-lint = { path = "../monochromatic-lint" }
+# Match the subject's semantic frontend; this fixed in-memory fixture avoids Cargo execution during fuzzing.
+ra_ap_hir = "=0.0.336"
+ra_ap_ide_db = "=0.0.336"
+ra_ap_test_fixture = "=0.0.336"
+ra_ap_vfs = "=0.0.336"
 
 [lib]
 name = "monochromatic_lint_fuzz"
@@ -43,6 +48,13 @@ bench = false
 [[bin]]
 name = "rust_style"
 path = "fuzz_targets/rust_style.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "rust_explicit_types"
+path = "fuzz_targets/rust_explicit_types.rs"
 test = false
 doc = false
 bench = false

@@ -6,6 +6,11 @@
 //! // Shared property assertions, called by both unit tests and fuzz targets.
 //! ```
 
+/// Semantic explicit-type property controls.
+pub mod explicit_types;
+/// Fixed in-memory workspace initialization for semantic properties.
+mod semantic_fixture;
+
 /// Structured and raw-source invariants for the anonymous-function ban.
 pub mod rust_style;
 
