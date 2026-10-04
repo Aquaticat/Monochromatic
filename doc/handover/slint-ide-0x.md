@@ -10,8 +10,11 @@ continue the queue without asking the user to say “continue”.
 The application remains an incomplete source-view gate.
 
 Current boundary:
-implement actual syntax highlighting and annotations in the shared source view,
-then continue workspace navigation and language intelligence.
+finish native font-fidelity verification requested by the user,
+then continue annotations,
+workspace navigation,
+and language intelligence.
+Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
 The simplified UI,
 nested clipboard,
 and live external-change correspondence are verified.
@@ -220,9 +223,7 @@ A hidden `TextInput` is only a clipboard bridge,
 not a second text layout.
 
 Unfinished surfaces:
-`styles` is empty;
-no syntax parser,
-tree,
+no tree,
 search,
 find,
 file switching,
@@ -304,6 +305,69 @@ v120 notch units,
 and ordinary axis deltas.
 See [the scroll investigation][scroll].
 
+## Syntax and font-fidelity additions
+
+`src/bin/ide-runtime.rs` and the `runtime` task own build-only grammar provisioning.
+They reuse pinned Helix fetching/building,
+with private configuration under `target`.
+The initial slice contains Rust,
+TypeScript,
+TSX,
+JavaScript,
+and JSDoc grammars;
+full measured-inventory coverage remains pending.
+Queries come from the pinned Cargo checkout,
+and each grammar's license is copied into the runtime.
+Assets are published beside debug/release binaries.
+The asset directory measured 5,655,910 bytes at this checkpoint.
+
+The terminal base image lacked `c++`,
+which Helix's grammar manager requests even for C parsers.
+`package/desktop-app/ide/Containerfile` now extends that image with `gcc-c++`;
+tasks use `localhost/monochromatic/ide` with the same resource bounds.
+The `runtime` task and actual parser tests pass.
+
+`src/syntax.rs` uses Helix filename/shebang recognition and tree-house offsets,
+converting byte ranges to source-character ranges.
+Adjacent equal paint intervals are merged;
+Rust comments arrived as adjacent `//` and ` 猫` captures rather than a single span.
+`HighlighterError` implements Display but not std::error::Error;
+`src/syntax_error.rs` supplies explicit operation-specific diagnostics.
+Syntax failures retain readable text rather than pretending an installed language is unrecognized.
+The worker computes initial and changed-source syntax and tags it with its target revision.
+Native application rejects stale syntax,
+and immutable `SourceStyles` prevent copying all spans during caret-only updates.
+
+The dark syntax screenshot was inspected at
+`/tmp/monochromatic-ide-native-KA8eTH/syntax-dark.png`.
+It shows real grammar classifications,
+not fixed example colors.
+
+The user explicitly requested correct ligatures and other JetBrains Mono/Inter font behavior.
+The source now explicitly enables JetBrains Mono's `calt` feature.
+Real on/off glyph controls,
+slashed-zero substitution,
+and ligature-interior caret/hit/copy checks pass.
+A committed regression exposed wrong selection ink inside the middle character of `===`.
+`src/selection_paint.rs` now clips foreground against the same rectangles used for native backgrounds,
+without reshaping or breaking the ligature.
+Fractional DPI/origin and opacity controls pass.
+
+Inter tests verify kerning against an off control (106.35498 versus 112.976074 pixels),
+real 400/600 face bytes,
+and tabular/proportional figures through the same Parley/fontique stack Slint uses.
+The bundled fonts are static,
+with no fvar table:
+no variable-weight or automatic optical-size capability is claimed.
+Optional stylistic sets remain upstream defaults;
+no font-settings panel was added.
+`asset/font/README.md` records the measured feature boundary.
+
+`ui/app.slint` now tracks a physical pixel converted to logical length,
+so an idle display-scale change invalidates source rasterization.
+`src/native/tests.rs` drives actual Slint window events through the headless backend.
+`test:native` and the markup check pass after the observed-failing DPI test.
+
 ## Latest clipboard and interface verification
 
 The user explicitly authorized adding clipboard support to the nested compositor.
@@ -315,9 +379,13 @@ selection clearing,
 and clean producer shutdown.
 See [the clipboard investigation][clipboard].
 
-The latest IDE suite passes 29 tests,
-including six disk-read/worker tests after retiring the five legacy geometry tests
-and adding raster/stamp coverage.
+The latest complete IDE suite passes 48 tests after font clipping coverage was added.
+A subsequent Inter contextual/discretionary test is running separately.
+The headless native DPI regression was observed failing (1300-pixel bitmap retained instead of 2600),
+then passed after adding physical-pixel scale invalidation.
+It checks scale factors 2,
+1.25,
+and back to 1 without source input or resize.
 The Slint markup check and native build pass.
 IDE Clippy remains blocked by shadowing in app bindings and generated Slint code;
 no shadow lint has been relaxed.
@@ -334,9 +402,18 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
-- `proc_1614`,
+- `proc_75d5`,
+  `ide-light-font-native`,
+  is starting a light/syntax fixture with the ligature and DPI fixes.
+  MCP will use port 9319.
+  Read its readiness logs for the new private socket and source file.
+- `proc_2d43`,
+  `ide-inter-default-features`,
+  runs the expanded font tests including Inter calt/dlig defaults.
+
+- `proc_1614` (stopped),
   `ide-live-reload-native-retry`,
-  is the active dark/scroll fixture with live refresh.
+  was the verified dark/scroll fixture with live refresh.
   Socket:
   `/tmp/monochromatic-ide-native-zCPqiB/control.sock`.
   MCP:
@@ -381,7 +458,7 @@ Read current `tools/list` schemas before driving input.
 
 ## Build and runtime evidence
 
-All Cargo tasks run through package `mise.toml` in the existing terminal build image,
+All Cargo tasks run through package `mise.toml` in the IDE image extending the terminal build image,
 with 2 GiB RAM,
 2 CPUs,
 512 processes,
