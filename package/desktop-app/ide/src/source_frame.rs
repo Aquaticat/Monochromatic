@@ -44,6 +44,7 @@ impl PartialEq for FrameStamp {
     }
 }
 
+/// Capture immutable paint inputs without treating a collapsed caret as image content.
 impl FrameStamp {
     /// Capture image inputs without including a collapsed caret's position.
     /// Reset the cached stamp when replacing the document with a different file.

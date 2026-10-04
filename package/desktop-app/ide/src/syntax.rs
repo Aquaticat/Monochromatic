@@ -41,6 +41,7 @@ pub struct SyntaxEngine {
     loader: Loader,
 }
 
+/// Translate pinned language recognition and highlighting into source-character paint ranges.
 impl SyntaxEngine {
     /// Initialize language recognition without starting servers or downloading assets.
     pub fn new() -> Result<Self> {

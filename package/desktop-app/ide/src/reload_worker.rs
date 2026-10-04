@@ -99,6 +99,7 @@ fn run(requests: Receiver<ReloadRequest>, replies: SyncSender<ReloadReply>) {
     }
 }
 
+/// Manage bounded requests and non-blocking UI consumption of background results.
 impl ReloadWorker {
     /// Start a named worker with bounded request and response channels.
     pub fn new() -> Result<Self> {

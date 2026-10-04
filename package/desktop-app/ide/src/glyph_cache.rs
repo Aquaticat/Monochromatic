@@ -53,6 +53,7 @@ pub(crate) struct GlyphCache {
     bytes: usize,
 }
 
+/// Reuse exact glyph images while enforcing the entry and byte budgets.
 impl GlyphCache {
     /// Borrow an image until the next cache operation, rendering only on a miss.
     /// The anonymous Scaler lifetime means its borrowed font cannot outlive its owner.

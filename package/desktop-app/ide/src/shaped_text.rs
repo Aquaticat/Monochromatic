@@ -68,6 +68,7 @@ pub struct TextShaper {
 
 /// Constructing a default shaper registers the bundled source font.
 impl Default for TextShaper {
+    /// Keep default construction on the same embedded-font and feature policy as explicit construction.
     fn default() -> Self {
         return Self::new();
     }
@@ -162,6 +163,7 @@ pub struct ReadingRect {
     pub height: f32,
 }
 
+/// Resolve reading geometry from the exact layouts used to paint source glyphs.
 impl ShapedView {
     /// Convert a pointer to a source character using the shaping engine's hit test.
     pub fn hit(&self, document: &Document, row: usize, x: f32) -> usize {

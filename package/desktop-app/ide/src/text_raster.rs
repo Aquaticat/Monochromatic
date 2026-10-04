@@ -46,7 +46,9 @@ pub struct TextRaster {
     glyphs: GlyphCache,
 }
 
+/// Default rendering retains the same bounded caches as explicit construction.
 impl Default for TextRaster {
+    /// Avoid a separate default path with different cache limits or font identities.
     fn default() -> Self {
         return Self::new();
     }
@@ -94,6 +96,7 @@ fn blend(bytes: &mut [u8], offset: usize, color: [u8; 4]) {
     bytes[offset + 3] = (alpha + (u32::from(bytes[offset + 3]) * inverse + 127) / 255).min(255) as u8;
 }
 
+/// Composite source glyphs and clipped selection ink into bounded viewport tiles.
 impl TextRaster {
     /// Initialize caches without allocating a viewport image.
     pub fn new() -> Self {
