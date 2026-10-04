@@ -28,8 +28,8 @@ struct Configuration {
 /// Copy the pinned runtime's query tree and preserve its exact file contents.
 fn copy_tree(source: &Path, destination: &Path) -> Result<()> {
     fs::create_dir_all(destination)?;
-    for entry in fs::read_dir(source)? {
-        let entry = entry?;
+    for entry_result in fs::read_dir(source)? {
+        let entry = entry_result?;
         let from = entry.path();
         let to = destination.join(entry.file_name());
         let kind = entry.file_type()?;
