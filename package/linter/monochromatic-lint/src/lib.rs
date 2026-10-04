@@ -61,12 +61,23 @@ mod resolved_rules;
 /// Declaration-site checks used by the full semantic explicit-types rule.
 #[doc(hidden)]
 pub mod rust_explicit_declarations;
+/// Generic argument checking by actual declaration identity.
+mod rust_explicit_generics;
+/// Written inference-hole validation against resolved types.
+mod rust_explicit_inference;
+/// Full explicit-type policy over a registered semantic parse.
+#[doc(hidden)]
+pub mod rust_explicit_types;
+/// Generic parameter ownership and argument-spelling helpers.
+mod rust_generic_arguments;
 /// Internal syntax-only rejection of anonymous Rust functions.
 #[doc(hidden)]
 pub mod rust_no_anonymous_functions;
 /// Internal fixed Rust rule implementations.
 #[doc(hidden)]
 pub mod rust_rules;
+/// Internal source-anchored explicit-type findings and semantic coverage errors.
+mod rust_type_diagnostic;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;

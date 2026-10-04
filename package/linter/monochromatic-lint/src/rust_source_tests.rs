@@ -10,6 +10,24 @@
 use super::RustSource;
 use crate::diagnostic::Span;
 
+/// A supplied syntax root retains its identity and exact bytes instead of being reparsed.
+#[test]
+fn reuses_registered_syntax_without_changing_source_bytes() {
+    let text: &str = "\u{feff}// 🚀\r\nfn main() { let value: u16 = 1; }\r\n";
+    let parsed: ra_ap_syntax::Parse<ra_ap_syntax::SourceFile> =
+        ra_ap_syntax::SourceFile::parse(text, ra_ap_syntax::Edition::CURRENT);
+    let syntax: ra_ap_syntax::SyntaxNode = parsed.syntax_node();
+    // Clone the syntax handle, not the source tree; equality below tests the retained node identity.
+    let context: RustSource = RustSource::from_syntax(String::from("registered.rs"), syntax.clone());
+    assert_eq!(context.source, text);
+    assert_eq!(context.syntax(), &syntax);
+    let separate: RustSource = RustSource::new(String::from("separate.rs"), String::from(text));
+    // Positive control: a new parse of the same text is not the registered syntax root.
+    assert_ne!(context.syntax(), separate.syntax());
+    assert_eq!(context.code_line_count(), separate.code_line_count());
+    assert_eq!(context.line_span(2), separate.line_span(2));
+}
+
 /// Blank and comment-only lines do not count, while string contents remain code.
 #[test]
 fn real_lexer_distinguishes_comments_from_string_contents() {

@@ -105,12 +105,10 @@ fn code_lines(syntax: &SyntaxNode, starts: &[usize]) -> Vec<usize> {
 /// // Parse once; rule code uses indexed source and the recoverable syntax tree.
 /// ```
 impl RustSource {
-    /// Parse under the already selected current Rust edition.
-    pub fn new(filename: String, source: String) -> RustSource {
-        let starts = line_starts(source.as_str());
-        let parsed = SourceFile::parse(source.as_str(), Edition::CURRENT);
-        let syntax = parsed.syntax_node();
-        let lines = code_lines(&syntax, starts.as_slice());
+    /// Index one already associated text/tree pair without another parse.
+    fn indexed(filename: String, source: String, syntax: SyntaxNode) -> RustSource {
+        let starts: Vec<usize> = line_starts(source.as_str());
+        let lines: Vec<usize> = code_lines(&syntax, starts.as_slice());
         return RustSource {
             filename,
             source,
@@ -118,6 +116,26 @@ impl RustSource {
             line_starts: starts,
             code_lines: lines,
         };
+    }
+
+    /// Parse under the already selected current Rust edition.
+    pub fn new(filename: String, source: String) -> RustSource {
+        let parsed = SourceFile::parse(source.as_str(), Edition::CURRENT);
+        let syntax: SyntaxNode = parsed.syntax_node();
+        return RustSource::indexed(filename, source, syntax);
+    }
+
+    /// What: Reuse a semantic database's registered syntax root and its exact lossless text.
+    /// Why: Semantic queries require nodes belonging to that database; a second standalone parse loses that identity.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static fromSyntax(filename: string, syntax: SyntaxNode): RustSource;
+    /// ```
+    pub fn from_syntax(filename: String, syntax: SyntaxNode) -> RustSource {
+        // Reconstruct owned source bytes from lossless tokens, not a formatter or diagnostic display.
+        let source: String = syntax.text().to_string();
+        return RustSource::indexed(filename, source, syntax);
     }
 
     /// Borrow the retained syntax handle for rule traversal.

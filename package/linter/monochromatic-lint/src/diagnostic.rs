@@ -92,6 +92,9 @@ pub struct Diagnostic {
     /// The fixing engine consumes this; it is not part of the accepted JSONL shape.
     #[serde(skip)]
     pub fix: Option<Fix>,
+    /// The driver distinguishes inability to check from an ordinary rule violation; omitted from JSONL.
+    #[serde(skip)]
+    pub processing_failure: bool,
 }
 
 /// What: Construct ordinary single-span rule findings.
@@ -121,6 +124,7 @@ impl Diagnostic {
             url: None,
             help: None,
             fix: None,
+            processing_failure: false,
         };
     }
 }

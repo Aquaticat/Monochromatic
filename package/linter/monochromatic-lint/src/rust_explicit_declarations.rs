@@ -14,40 +14,13 @@
 /// ```ts
 /// import { Diagnostic, Severity, Span, RustSource } from './core';
 /// ```
-use crate::diagnostic::{Diagnostic, Severity, Span};
+use crate::diagnostic::{Diagnostic, Severity};
 /// Import the retained Rust parse rather than parsing each declaration again.
 use crate::rust_source::RustSource;
 /// Import typed syntax accessors and source-node references.
-use ra_ap_syntax::{AstNode, SyntaxNode, TextRange, ast};
-
-/// What: Create a report-only finding anchored to the relevant authored syntax.
-/// Why: Inferring and inserting a type is a separate operation and can change inference or coercion behavior.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function finding(context: RustSource, node: SyntaxNode, severity: Severity, message: string, help: string): Diagnostic;
-/// ```
-fn finding(context: &RustSource, node: &SyntaxNode, severity: Severity, message: &str, help: &str) -> Diagnostic {
-    // TextRange holds byte coordinates. usize matches source indexing, unlike fixed-width u32/u64/i32/i64.
-    let range: TextRange = node.text_range();
-    let offset: usize = usize::from(range.start());
-    let length: usize = usize::from(range.len());
-    let span: Span = context.span(offset, length);
-    // String owns its bytes rather than borrowing an &str; diagnostics can outlive the parsed source.
-    let owned_message: String = String::from(message);
-    // Clone the owned filename without moving it out of the shared context.
-    let filename: String = context.filename.clone();
-    let mut diagnostic: Diagnostic = Diagnostic::new(
-        "rust/require-explicit-types",
-        severity,
-        owned_message,
-        filename,
-        span,
-    );
-    // Some stores present help text, whereas None would omit it from the wire output.
-    diagnostic.help = Some(String::from(help));
-    return diagnostic;
-}
+use ra_ap_syntax::{AstNode, ast};
+/// Reuse the type-policy diagnostic boundary for both syntax and semantic checks.
+use crate::rust_type_diagnostic::type_finding;
 
 /// What: Require annotations on let statements and anonymous-function parameters/results.
 /// Why: These are declaration positions where valid Rust otherwise infers a type.
@@ -71,10 +44,10 @@ pub fn check_declaration_annotations(context: &RustSource, severity: Severity) -
                 continue;
             }
             // Recovery nodes with no pattern do not establish a variable declaration.
-            let Some(pattern) = statement.pat() else {
+            let Some(pattern): Option<ast::Pat> = statement.pat() else {
                 continue;
             };
-            findings.push(finding(
+            findings.push(type_finding(
                 context,
                 pattern.syntax(),
                 severity,
@@ -85,17 +58,17 @@ pub fn check_declaration_annotations(context: &RustSource, severity: Severity) -
             continue;
         }
         // Some narrows an optional typed node; other syntax contributes no declaration requirement here.
-        let Some(closure) = ast::ClosureExpr::cast(node) else {
+        let Some(closure): Option<ast::ClosureExpr> = ast::ClosureExpr::cast(node) else {
             continue;
         };
-        let Some(parameters) = closure.param_list() else {
+        let Some(parameters): Option<ast::ParamList> = closure.param_list() else {
             continue;
         };
         for parameter in parameters.params() {
             if parameter.ty().is_some() {
                 continue;
             }
-            findings.push(finding(
+            findings.push(type_finding(
                 context,
                 parameter.syntax(),
                 severity,
@@ -106,7 +79,7 @@ pub fn check_declaration_annotations(context: &RustSource, severity: Severity) -
         if closure.ret_type().is_some() {
             continue;
         }
-        findings.push(finding(
+        findings.push(type_finding(
             context,
             parameters.syntax(),
             severity,
