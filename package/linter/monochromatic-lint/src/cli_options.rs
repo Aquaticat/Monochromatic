@@ -41,10 +41,10 @@ pub struct CliOptions {
     #[arg(long, value_name = "COUNT")]
     pub max_warnings: Option<usize>,
     /// Suppress warning diagnostics while retaining exit-status accounting.
-    #[arg(long, conflicts_with = "silent")]
+    #[arg(long)]
     pub quiet: bool,
     /// Suppress diagnostics while retaining exit status and required fixed-source output.
-    #[arg(long, conflicts_with = "quiet")]
+    #[arg(long)]
     pub silent: bool,
     /// Print the effective data-only configuration for one file without linting it.
     #[arg(long, value_name = "FILE", conflicts_with_all = ["init", "rules", "paths"])]

@@ -98,7 +98,8 @@ fn language_selection_keeps_schema_failures_visible() {
         r#"{"rust/no-anonymous-functions":{"severity":"off","max":1}}"#,
         r#"{"unknown/rule":{"severity":"off"}}"#,
         r#"{"rust/max-lines":{"severity":"error","severity":"off"}}"#,
-        "null",
+        r#"{"rust/max-lines":{"severity":"error","max":null}}"#,
+        "[]",
     ] {
         let value: JsoncValue = parse_jsonc(source).expect("syntactically valid fixture");
         assert!(rust_rule_settings(&value).is_err(), "{source}");
