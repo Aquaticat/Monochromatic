@@ -114,5 +114,32 @@ await describe({
         expect(restored.findings,).toEqual([],);
       },
     },),
+
+    it({
+      name: 'RESTORES NO GLOSS from a line whose quote never closes or whose name is not followed by the '
+        + 'gloss verb, so a stray quotation is not a gloss',
+      fn: async () => {
+        /**
+         Archives whose gloss lines hold an unclosed quote and a quoted name
+         with no verb after it.
+         */
+        const unclosed = restoreNameGlossLines({
+          slices: [pair({ sliceIndex: 0, target: '“Mittens means a cloud.\n', },),],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: 'Her handle was coined while she napped.',
+          },],
+        },);
+        expect(unclosed.restored,).toEqual([],);
+        const unverbed = restoreNameGlossLines({
+          slices: [pair({ sliceIndex: 0, target: '“Mittens” sleeps in the sun.\n', },),],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: 'Her handle was coined while she napped.',
+          },],
+        },);
+        expect(unverbed.restored,).toEqual([],);
+      },
+    },),
   ],
 },);
