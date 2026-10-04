@@ -40,6 +40,9 @@ path = "src/main.rs"
 # error type, not a hierarchy of custom error enums.
 anyhow = "1"
 
+# Own the CLI grammar and generated help, including child argv forwarding.
+clap = { version = "4", features = ["derive"] }
+
 # In-process PNG encode for the screenshot readback. Pure-Rust, memory-safe
 # encoder (no libpng process), matching the music-player's in-process decode
 # rule. `default-features = false` + `png` keeps only the one codec we emit.

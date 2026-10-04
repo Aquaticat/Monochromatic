@@ -29,7 +29,7 @@ const containerCargo = (cargoArgs) => {
   let imageExists = true
   try { execFileSync('podman', ['image', 'exists', IMAGE], { stdio: 'ignore' }) } catch { imageExists = false }
   if (!imageExists) { execFileSync('podman', ['build', '-t', IMAGE, '-f', 'Containerfile', '.'], { stdio: 'inherit' }) }
-  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', '-v', `${process.cwd()}:/work`, '-v', 'nested-wayland-session-cargo:/cargo', '-w', '/work', IMAGE, 'cargo', ...cargoArgs], { stdio: 'inherit' })
+  execFileSync('podman', ['run', '--rm', '--memory=2g', '--cpus=2', '--pids-limit=512', '--ulimit', 'nofile=4096:4096', '--env', 'CARGO_BUILD_JOBS=2', '--security-opt', 'label=disable', '--volume', `${process.cwd()}:/work`, '--volume', 'nested-wayland-session-cargo:/cargo', '--workdir', '/work', IMAGE, 'cargo', ...cargoArgs], { stdio: 'inherit' })
 }
 const runCargo = (cargoArgs) => { if (hostOk) { execFileSync('cargo', cargoArgs, { stdio: 'inherit' }) } else { containerCargo(cargoArgs) } }
 """
@@ -100,6 +100,23 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
 runCargo(['package'])
+"""
+
+[tasks."test:cli:container"]
+description = "Exercise clap parsing and real CLI help without a display in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo_dispatch}}
+containerCargo(['test', '--lib', 'cli::tests'])
+containerCargo(['test', '--test', 'cli'])
+"""
+
+[tasks."format:rust:container"]
+description = "Format the compositor's Rust sources in the build container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo_dispatch}}
+containerCargo(['fmt'])
 """
 
 [tasks."build:container"]

@@ -1,95 +1,83 @@
-//! Binary entry point for the nested Wayland session fixture.
-//!
-//! This file owns only process startup: install the log subscriber, parse the
-//! arguments, run the compositor, and translate the hosted client's exit code into
-//! the process exit code. All real work lives in the library crate.
+//! Parse informational/usage requests before logging or starting Wayland.
 
-/// What:     `use std::process::ExitCode;`. `ExitCode` is the type `main` can return to
-///           set the process exit status (sibling: returning `()` always exits 0).
-/// Why:      The fixture propagates the hosted app's exit code, so `main` returns one.
+/// What: ExitCode is the process status returned from main, unlike ().
+/// Why: The compositor must retain the hosted application's exit status.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// // ExitCode ~ the number you pass to process.exit(code).
+/// // Equivalent to a final process.exitCode value.
 /// ```
 use std::process::ExitCode;
-
-/// What:     `use anyhow::{Context, Result};`. Error helpers; `Result` is
-///           `anyhow::Result`.
-/// Why:      `main` returns `Result` so any error prints and exits non-zero.
+/// Context retains application diagnostics without changing the public error type.
 use anyhow::{Context, Result};
-
-/// What:     `use nested_wayland_session::{parse_args, run};`. Import the library's
-///           public entry points. `nested_wayland_session` is this crate's library name.
-/// Why:      The binary is a thin shell over these.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { parseArgs, run } from "nested_wayland_session";
-/// ```
+/// The library owns parsing and the compositor; this binary owns process policy.
 use nested_wayland_session::{parse_args, run};
-
-/// What:     `use tracing_subscriber::EnvFilter;`. The env-driven log-level filter.
-/// Why:      Configures which log events print, from `RUST_LOG`.
+/// Log selection is installed only after command-line parsing succeeds.
 use tracing_subscriber::EnvFilter;
 
-/// Process entry: set up logging, parse arguments, run, and return the exit code.
+/// Handle clap's help/version/usage exit policy while preserving other errors.
 ///
-/// What:     `fn main() -> Result<ExitCode>`. Returns `anyhow::Result<ExitCode>`: on
-///           `Err`, the runtime prints the error and exits non-zero; on `Ok(code)`, the
-///           process exits with `code`.
-/// Why:      One place that turns the command line into a running compositor and the
-///           app's exit code into ours.
+/// What: downcast_ref borrows a typed clap error from anyhow's error envelope.
+/// Why: DisplayHelp exits successfully instead of becoming main's generic failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function main(): Promise<number> { ... }
+/// function handleCliError(error: Error): Error {
+///   if (error instanceof CliError) error.printAndExit();
+///   return error;
+/// }
 /// ```
+fn handle_cli_error(error: anyhow::Error) -> anyhow::Error {
+    // Some means this is clap's error; ordinary application errors pass through.
+    if let Some(cli_error) = error.downcast_ref::<clap::Error>() {
+        // clap prints to the appropriate stream and uses its documented exit code.
+        cli_error.exit();
+    }
+    return error;
+}
+
+/// Run application work only after a validated non-informational invocation.
 fn main() -> Result<ExitCode> {
-    // What:     `let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_|
-    //           EnvFilter::new("info"));`. Read the `RUST_LOG` filter, or default to
-    //           `info` if it is unset/invalid. `.unwrap_or_else(closure)` supplies the
-    //           fallback lazily.
-    // Why:      Sensible default verbosity, overridable via the environment.
-    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| return EnvFilter::new("info"));
-
-    // What:     `tracing_subscriber::fmt().with_env_filter(filter).with_writer(
-    //           std::io::stderr).init();`. Install the global log subscriber writing to
-    //           stderr (stdout is reserved for machine-readable output later).
-    // Why:      Route all `tracing` events somewhere visible without polluting stdout.
-    tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .with_writer(std::io::stderr)
-        .init();
-
-    // What:     `let args: Vec<String> = std::env::args().skip(1).collect();`.
-    //           `env::args()` yields the program name plus arguments; `.skip(1)` drops the
-    //           program name; `.collect()` gathers the rest into an owned `Vec<String>`.
-    // Why:      `parse_args` wants just the arguments.
+    // What: collect creates an owned Vec<String> after dropping argv[0].
+    // Why: Keep the existing parse_args interface, which excludes the binary name.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const args = process.argv.slice(2);
     // ```
     let args: Vec<String> = std::env::args().skip(1).collect();
+    // What: map_err handles clap's control-flow exits; ? propagates other failures.
+    // Why: Help and invalid arguments must not connect to Wayland or start a child.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const config = parseArgs(args); // CLI errors print and exit before run()
+    // ```
+    let config = parse_args(&args)
+        .map_err(handle_cli_error)
+        .context("parsing command-line arguments")?;
 
-    // What:     `let config = parse_args(&args).context("parsing command-line arguments")?;`.
-    //           Parse the arguments; `?` returns the usage error (with context) on failure.
-    // Why:      Fail early and clearly on bad input.
-    let config = parse_args(&args).context("parsing command-line arguments")?;
+    // What: unwrap_or_else supplies a default when the optional log filter is absent.
+    // Why: Keep normal invocation's existing logging behavior.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const filter = tryReadLogFilter() ?? new EnvFilter('info');
+    // ```
+    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| return EnvFilter::new("info"));
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_writer(std::io::stderr)
+        .init();
 
-    // What:     `let code = run(config)?;`. Run the compositor to completion; `?`
-    //           propagates any setup/runtime error. `code` is the hosted app's exit code.
-    // Why:      Do the actual work.
+    // Run the validated child workflow and propagate compositor startup failures.
     let code = run(config)?;
-
-    // What:     `Ok(ExitCode::from(code as u8))`. Convert the `i32` exit code to `u8`
-    //           (the range an exit code occupies) and wrap it. Tail expression.
-    // Why:      Make the process exit with the same code the hosted app did.
+    // What: Ok wraps success and ExitCode narrows to the operating system's byte status.
+    // Why: Preserve the hosted client's exit result instead of always returning zero.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return code & 0xff;
     // ```
-    return Ok(ExitCode::from(code as u8))
+    return Ok(ExitCode::from(code as u8));
 }
