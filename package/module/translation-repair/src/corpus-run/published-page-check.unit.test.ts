@@ -892,5 +892,31 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'SAYS THE FLOOR CAVEAT where a filled anchor makes the expectation a floor rather than an '
+        + 'equality',
+      fn: async () => {
+        /**
+         Refusal over an artifact shipping two slices where the stored
+         archive carried one: the second slice fills an anchor (the archive
+         held nothing there), so the length check is a floor.
+         */
+        const refusal = (function read(): unknown {
+          try {
+            refusePageThatDisagrees({
+              artifact: artifactOver(TWO_SWAPS,),
+              archive: { kind: 'stored', text: ARCHIVE_PAGE, },
+              pageText: ARCHIVE_PAGE,
+              entryId: 'Mittens',
+            },);
+            return undefined;
+          } catch (error) {
+            return error;
+          }
+        })();
+        expect(refusal,).toBeDefined();
+      },
+    },),
   ],
 },);
