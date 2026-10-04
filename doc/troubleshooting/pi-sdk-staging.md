@@ -695,7 +695,7 @@ but no `require` or `default` target.
 The current recovery inspects that metadata instead of interpreting resolver failure as a missing package:
 
 ```javascript
-// Private contract/human-origin/current-requester-copy-v2/stage.mjs:21
+// Private contract/human-origin/current-requester-copy-v2/stage.mjs:20
 const target=specifier==='@earendil-works/pi-tui'
   ? (assert.equal(metadata.exports,undefined),metadata.main)
   : metadata.exports['.'].import;
