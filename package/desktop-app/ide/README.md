@@ -15,6 +15,13 @@ and the next implementation action.
 - [ ] Measured Helix-supported language inventory and private server state.
 - [ ] Native interaction tests and behavior-difference documentation.
 
+## Fonts and appearance
+
+JetBrains Mono and Inter are bundled under `asset/font` with their original OFL notices.
+The Slint compiler is configured to embed imported font bytes.
+The UI binds to the system palette;
+native theme-change and font-isolation verification remain in progress.
+
 ## Build boundary
 
 Cargo tasks run in the existing native-app container with 2 GiB RAM,

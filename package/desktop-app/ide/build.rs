@@ -23,6 +23,15 @@ fn main() {
         // ```ts
         // compileSlint('ui/app.slint'); // throws on failure
         // ```
-        slint_build::compile("ui/app.slint").expect("compile IDE UI");
+        // What: Configure fonts and other imported resources as embedded bytes.
+        // Why: Runtime rendering must not require the build machine's font files.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const config = compilerConfig({ embedResources: true });
+        // ```
+        let config = slint_build::CompilerConfiguration::new()
+            .embed_resources(slint_build::EmbedResourcesKind::EmbedFiles);
+        slint_build::compile_with_config("ui/app.slint", config).expect("compile IDE UI");
     }
 }
