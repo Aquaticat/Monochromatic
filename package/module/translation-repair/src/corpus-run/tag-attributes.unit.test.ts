@@ -16,6 +16,16 @@ await describe({
   name: readTags.name,
   children: [
     it({
+      name: 'READS NO TAG out of a bracket that opens no letter, since a tag name starts with one '
+        + '(ledger T8, the corpus-run/tag cluster)',
+      fn: async () => {
+        expect(readTags({ text: '<Cat n="1"/> then </Paw> and <3', },).map(function name(tag,) {
+          return tag.name;
+        },),).toEqual(['Cat'],);
+      },
+    },),
+
+    it({
       name: 'READS NO TAG out of a name cut off at the end of the text, since no close bracket ever '
         + 'follows (ledger T8, the corpus-run/tag cluster)',
       fn: async () => {
