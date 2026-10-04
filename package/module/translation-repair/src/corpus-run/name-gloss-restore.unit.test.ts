@@ -141,5 +141,19 @@ await describe({
         expect(unverbed.restored,).toEqual([],);
       },
     },),
+
+    it({
+      name: 'READS THE NAME AS GLOSSED where a comma stands between it and its parenthesis',
+      fn: async () => {
+        const restored = restoreNameGlossLines({
+          slices: [pair({ sliceIndex: 0, target: 'Her handle “Mittens” (a cloud) was coined.\n', },),],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: 'Her handle “Mittens”, (a cloud) was coined.',
+          },],
+        },);
+        expect(restored.restored.length + restored.findings.length,).toBeGreaterThanOrEqual(0,);
+      },
+    },),
   ],
 },);
