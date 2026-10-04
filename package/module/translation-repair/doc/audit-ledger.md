@@ -6816,6 +6816,27 @@ and the whole-suite census lists none for it
 (`census-g0gs4w`).
 No B entry found.
 
+The fifty-third cluster of that census,
+`source`,
+against `census-oVnawX` at `f232ce389`:
+4 line stretches over `source-only-breaks.ts`
+(`250da1333`).
+All four closed as unreachable:
+the break-count fallbacks
+(the breaks arrays are built one entry per block
+at the same indices the walks read back).
+Left:
+the sumOwed reduce's other-kind arm
+(`source-only-breaks.ts:188`),
+whose fixture needs blocks of more than one kind
+in one reduction.
+The reach census (`~/temp/agent/mimo-trial/reach-source.log`)
+reads `left 3 cold stretches` in the focused run
+(the baseline's lines had moved),
+and the whole-suite census lists one
+(`census-ceHkbQ`).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

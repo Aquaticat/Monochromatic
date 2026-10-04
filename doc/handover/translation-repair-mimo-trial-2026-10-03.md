@@ -701,6 +701,33 @@ so a fresh context resumes from this file alone.
   the `source` batch.
 
 - 2026-10-04,
+  21:36 UTC:
+  the T8 `source` batch closed with commit `250da1333`:
+  4 line stretches over `source-only-breaks.ts`,
+  all four closed as unreachable
+  (the break-count fallbacks
+  the walks' own indices settle),
+  one arm left documented
+  (the sumOwed reduce's other-kind arm:
+  its fixture needs blocks of more than one kind).
+  The whole-suite census lists one stretch for the file
+  (`census-ceHkbQ`,
+  `library source: 107 files, 168 stretches over 378 lines, 4 functions never called`).
+  Counts at the close:
+  the full suite 1,562 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-source-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-source-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `250da1333`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline
+  (`census-ceHkbQ` stands),
+  then the `corpus-run/cache` cluster
+  (the ranking's next at `census-oVnawX`).
+
+- 2026-10-04,
   21:09 UTC:
   the next batch's baseline census taken at commit `a7d014baf`:
   `census written to ~/.cache/translation-repair/coverage/census-4BqrOY/census.json`
