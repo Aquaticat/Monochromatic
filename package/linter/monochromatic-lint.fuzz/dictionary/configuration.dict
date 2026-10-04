@@ -14,6 +14,6 @@
 "\\u0066iles"
 "\\ud800"
 "/* comment */"
-"// comment\n"
+"// comment\x0a"
 "1e4000"
 "3e2"
