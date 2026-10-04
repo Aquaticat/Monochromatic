@@ -136,6 +136,10 @@ export {
   type EditorEnvironment,
 } from './editor-command.ts';
 export {
+  AnswerLaunchError,
+  resolveAnswerRuntime,
+} from './helper-launch.ts';
+export {
   readHelperRequest,
   type HelperRequest,
 } from './helper-request.ts';

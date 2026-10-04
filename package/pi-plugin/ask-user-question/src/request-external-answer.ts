@@ -23,6 +23,10 @@ import {
   editorEnvironmentFromProcess,
   resolveEditorCommand,
 } from './editor-command.ts';
+import {
+  prepareAnswerHelper,
+  resolveAnswerRuntime,
+} from './helper-launch.ts';
 import type { RequestRegistry, } from './request-registry.ts';
 
 //region Constants
@@ -192,10 +196,22 @@ export async function requestExternalAnswer(
       signal,
       request.signal,
     ],);
+  requestSignal.throwIfAborted();
+  /**
+   Executable retained by live Pi process where supported.
+   */
+  const runtimePath = await resolveAnswerRuntime();
   /**
    Private answer and coordination files.
    */
   await using workspace = await createAnswerWorkspace();
+  /**
+   Request-owned helper survives replacement of installed bundle during launch.
+   */
+  const helperPath = await prepareAnswerHelper({
+    workspace,
+    sourcePath: fileURLToPath(new URL(ANSWER_HELPER_FILENAME, import.meta.url,),),
+  },);
   /**
    Authenticated one-shot helper return channel.
    */
@@ -210,13 +226,7 @@ export async function requestExternalAnswer(
       editorCommand,
     },
   },);
-  /**
-   Built helper path relative to installed extension bundle.
-   */
-  const helperPath = fileURLToPath(new URL(
-    ANSWER_HELPER_FILENAME,
-    import.meta.url,
-  ),);
+  requestSignal.throwIfAborted();
   /**
    Wait begins before detached launch to avoid missing fast helper connection.
    */
@@ -226,7 +236,7 @@ export async function requestExternalAnswer(
       dir: cwd,
       title: ANSWER_TERMINAL_TITLE,
       command: [
-        process.execPath,
+        runtimePath,
         helperPath,
         '--request',
         workspace.requestPath,
