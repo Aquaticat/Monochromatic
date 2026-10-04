@@ -589,6 +589,42 @@ await describe({
         },),
 
         it({
+          name: 'COUNTS ONE UNVERIFIABLE SLOT in the singular, since the phrase opens a sentence a '
+            + 'reader follows',
+          fn: async (ctx) => {
+            using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+
+            /**
+             Earlier run that recorded the slot's text.
+             */
+            await using scratch = await scratchDir({ prefix: 'rendering-audit-settled-report-', },);
+            const against = await writeRun({
+              runsDir: scratch.path,
+              stamp: '2026-08-25T01-00-00.000Z',
+              body: runOver({
+                rows: [rowFor({
+                  sliceIndex: 0,
+                  texts: SAME_TEXTS,
+                },),],
+              },),
+            },);
+
+            await printAcross({
+              rows: [rowFor({
+                sliceIndex: 0,
+              },),],
+              against,
+            },);
+
+            /**
+             Everything printed, as one body to search.
+             */
+            const said = printed.lines.join('\n',);
+            expect(said.includes('One slot that cannot be checked',),).toBe(true,);
+          },
+        },),
+
+        it({
           name: 'SAYS THE TEXT DISAGREES and leaves the slot out where both runs recorded it and the '
             + 'archive moved between them',
           fn: async (ctx) => {

@@ -29,6 +29,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
+  identityOf,
   type ParsedTwoLaneArtifact,
   type SettledIdentity,
   subjectsOf,
@@ -292,6 +293,53 @@ await describe({
         expect(subject.corpusSha,).toBe('sha-bb22',);
         expect(subject.identity,).toEqual(IDENTITY,);
         expect(subject.pageSourceText,).toBe(PAGE_NAP,);
+      },
+    },),
+
+    it({
+      name: 'READS NO identity from a preparation declaring an empty one, since the declaration says '
+        + 'nothing to carry',
+      fn: async () => {
+        expect(identityOf({
+          prepared: { identityContext: '', },
+        } as unknown as Parameters<typeof identityOf>[0],),).toEqual({ kind: 'none', },);
+      },
+    },),
+
+    it({
+      name: 'THROWS the invariant naming a delivered slice no comparison row describes, rather than '
+        + 'quietly shrinking the audited population',
+      fn: async () => {
+        /**
+         Artifact whose translate lane delivered a slice the comparison
+         rows never named.
+         */
+        const inconsistent = {
+          ...ARTIFACT,
+          lanes: {
+            ...ARTIFACT.lanes,
+            translate: {
+              delivery: [
+                ...ARTIFACT.lanes.translate.delivery,
+                deliveryRow({
+                  sliceIndex: 7,
+                  sourceText: SOURCE_NAP,
+                  outcome: {
+                    kind: 'decided',
+                    acceptedText: TRANSLATE_NAP,
+                  },
+                  delivery: { kind: 'replacement-shipped', },
+                },),
+              ],
+            },
+          },
+        } as unknown as ParsedTwoLaneArtifact;
+        expect(() => subjectsOf({
+          artifact: inconsistent,
+          runSet: 'run/one',
+          identity: IDENTITY,
+          pageSourceText: PAGE_NAP,
+        },),).toThrow('named by no comparison row',);
       },
     },),
   ],

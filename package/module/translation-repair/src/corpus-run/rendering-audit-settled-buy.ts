@@ -3,7 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { citedReferenceUrlsOf, } from '../cited-reference-scan.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
-import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { askedAmong, } from './command-flags.ts';
 import type { PassReferenceReader, } from './pass-outside-reads.ts';
 import { digestAuditedText, } from './rendering-audit-settled-digest.ts';
@@ -289,18 +289,12 @@ export async function withCitedReferences(
 
   return subjects.map(function paired(subject,): CitedSubject {
     /**
-     What this subject's page cites.
+     What this subject's page cites. The map is total over the subjects:
+     it is built from this very list, one entry per page read, so a miss
+     here is a defect and never a page that cites nothing (ledger T8,
+     2026-10-04).
      */
-    const references = cited.get(subject.pageSourceText,);
-
-    // Every page was read out of these same subjects, so a miss is a
-    // defect here and never a page that cites nothing.
-    if (references === undefined)
-      throw new RenderingAuditInvariantError({
-        invariant: `${subject.entryId} slice ${
-          String(subject.sliceIndex,)
-        } was bought and its page was never read for references`,
-      },);
+    const references = nonNullishOrThrow(cited.get(subject.pageSourceText,),);
     return {
       subject,
       references,

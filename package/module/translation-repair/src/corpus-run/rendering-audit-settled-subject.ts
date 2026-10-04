@@ -1,7 +1,11 @@
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
-import type { ArtifactSliceDelivery, } from './artifact-two-lane-vocabulary.ts';
+import type {
+  ArtifactDeliveryRow,
+  ArtifactSliceDelivery,
+  ArtifactSliceOutcome,
+} from './artifact-two-lane-vocabulary.ts';
 import {
   pageRelationOf,
   type SettledPageRelation,
@@ -287,13 +291,18 @@ export function subjectsOf(
   );
 
   return delivery
-    .filter(function wasDecided(row,): boolean {
+    .filter(function wasDecided(row,): row is ArtifactDeliveryRow & {
+      readonly outcome: Extract<ArtifactSliceOutcome, { readonly kind: 'decided' }>;
+    } {
       /**
        What the lane did at this slice.
        */
       const { outcome, } = row;
 
-      // A slice the lane never reached has no rendering to audit.
+      // A slice the lane never reached has no rendering to audit. The
+      // predicate carries the narrowing downstream, so the mapping below
+      // reads the decided outcome without an invariant re-check (ledger
+      // T8, 2026-10-04).
       return outcome.kind === 'decided';
     },)
     .map(function asSubject(row,): SettledAuditSubject {
@@ -304,11 +313,6 @@ export function subjectsOf(
         outcome,
         delivery: shipped,
       } = row;
-
-      if (outcome.kind !== 'decided')
-        throw new RenderingAuditInvariantError({
-          invariant: `slice ${String(row.sliceIndex,)} passed the decided filter and is not decided`,
-        },);
 
       /**
        What would stand at this slice.

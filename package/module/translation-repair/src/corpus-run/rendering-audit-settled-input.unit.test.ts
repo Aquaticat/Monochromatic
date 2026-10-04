@@ -16,6 +16,7 @@
 
 import {
   mkdir,
+  readFile,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -582,6 +583,59 @@ await describe({
               return subject.pageSourceText === SOURCE_PAGE;
             },);
             expect(carriesPage,).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REPORTS A REFUSED VERIFICATION when a recorded measurement disagrees with what the '
+            + 'preparation measures, rather than auditing numbers nobody checked',
+          fn: async () => {
+            await using corpus = await makeCorpus();
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
+
+            /**
+             Preparation the fixture artifact was written over.
+             */
+            const prepared = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first',
+              prepared,
+              corpusSha: corpus.commitSha,
+              entryId: ENTRY_ID,
+            },);
+
+            /**
+             Artifact file as written, with one measurement bumped.
+             */
+            const artifactPath = join(
+              archive.path,
+              'first',
+              `${ENTRY_ID}.json`,
+            );
+            /**
+             Artifact as parsed, retampered at its recorded measurements.
+             */
+            const tampered = JSON.parse(await readFile(artifactPath, 'utf8',),) as {
+              preparation: { sourceChars: number; };
+            };
+            tampered.preparation.sourceChars += 1;
+            await writeFile(artifactPath, JSON.stringify(tampered,),);
+
+            /**
+             Reading of the tampered artifact.
+             */
+            const reading = await readArtifactSubjects({
+              archiveDir: archive.path,
+              runSetDir: 'first',
+              runSet: 'first',
+              artifactFile: `${ENTRY_ID}.json`,
+              cloneDir: corpus.cloneDir,
+            },);
+            expect(reading.verification.kind,).toBe('refused',);
           },
         },),
 
