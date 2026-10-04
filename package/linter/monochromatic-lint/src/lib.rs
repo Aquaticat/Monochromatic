@@ -58,9 +58,6 @@ mod markdown_positions;
 pub mod markdown_source;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
-/// Typed Rust rule selection from validated merged JSONC.
-#[doc(hidden)]
-pub mod rust_rule_settings;
 /// Syntax-only Rust execution without initializing a Cargo workspace.
 #[doc(hidden)]
 pub mod rust_dispatch;
@@ -81,6 +78,12 @@ mod rust_inferred_constants;
 /// Internal syntax-only rejection of anonymous Rust functions.
 #[doc(hidden)]
 pub mod rust_no_anonymous_functions;
+/// Invocation-level Rust dispatch and lazy workspace caching.
+#[doc(hidden)]
+pub mod rust_file_engine;
+/// Typed Rust rule selection from validated merged JSONC.
+#[doc(hidden)]
+pub mod rust_rule_settings;
 /// Internal fixed Rust rule implementations.
 #[doc(hidden)]
 pub mod rust_rules;
