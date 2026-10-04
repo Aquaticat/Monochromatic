@@ -87,6 +87,42 @@ const env = {
 execFileSync('./target/debug/monochromatic-ide', [], { stdio: 'inherit', env })
 """
 
+[tasks."inspect:native"]
+description = "Run the IDE in the repo compositor with isolated theme and font configuration"
+usage = 'arg "[scheme]" default="dark" help="Private system appearance: dark or light"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const scheme = process.env.usage_scheme ?? 'dark'
+if (scheme !== 'dark' && scheme !== 'light') { throw new Error('scheme must be dark or light') }
+runCargo(['build', '--features', 'slint/mcp'])
+const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-native-'))
+for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
+const fontConfig = join(scratch, 'fonts.conf')
+writeFileSync(fontConfig, '<fontconfig><dir>/usr/share/fonts</dir><cachedir prefix="xdg">fontconfig</cachedir></fontconfig>')
+const env = {
+  ...process.env,
+  SLINT_BACKEND: 'winit',
+  SLINT_MCP_PORT: scheme === 'dark' ? '9318' : '9319',
+  FONTCONFIG_FILE: fontConfig,
+  XDG_CONFIG_HOME: join(scratch, 'config'),
+  XDG_CACHE_HOME: join(scratch, 'cache'),
+  XDG_DATA_HOME: join(scratch, 'data'),
+}
+for (const family of ['Inter', 'JetBrains Mono']) {
+  const fallback = execFileSync('fc-match', ['--format', '%{family}', family], { env, encoding: 'utf8' }).trim()
+  if (fallback.split(',').includes(family)) { throw new Error('font isolation still exposes ' + family) }
+  console.error('System-font isolation: ' + family + ' resolves to ' + fallback)
+}
+const socket = join(scratch, 'control.sock')
+console.error('IDE_NATIVE_SOCKET=' + socket)
+const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
+execFileSync(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide')], { env, stdio: 'inherit' })
+"""
+
 [tasks.run]
 description = "Run the built IDE against a local root supplied as an argument"
 run = "./target/debug/monochromatic-ide"
