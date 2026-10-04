@@ -6287,6 +6287,33 @@ The reach census (`~/temp/agent/mimo-trial/reach-probe2.log`)
 reads `ran 2, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The thirtieth cluster of that census,
+`stage`,
+against `census-1VGtcy` at `0cb2d46fa`:
+5 line stretches over `stage-windowed-rounds.ts`,
+`stage-roster.ts`,
+`stage-fanout-window.ts`
+and `stage-decision-call.ts`
+(`6d45ab0a1`,
+`4095f47e3`,
+`e4f718feb`).
+Four cased:
+the roster reads no voices from a unit line carrying no heard pair,
+the decision call loses its voice where the stage guard refuses
+the reading,
+the decision call throws where the signal aborted,
+and both optional-knob spreads carry their field when set
+(`maxAnswerChars` and `graceMs`)
+and omit it when not.
+One came out rather than a case:
+the fanout content ternary's structured arm,
+since `ChatMessage.content` is string-only
+(`package/module/llm-type/src/message.ts:44`)
+and the `JSON.stringify` arm was unreachable at the type level.
+The reach census (`~/temp/agent/mimo-trial/reach-stage3.log`)
+reads `ran 1, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

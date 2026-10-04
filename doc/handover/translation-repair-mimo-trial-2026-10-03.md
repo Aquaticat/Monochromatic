@@ -683,6 +683,37 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  13:40 UTC:
+  the T8 `stage` batch closed with commits `6d45ab0a1`,
+  `4095f47e3`,
+  `e4f718feb`:
+  5 line stretches over the stage window,
+  roster,
+  fanout
+  and decision files.
+  Four cased
+  (the voice-pair read,
+  the decision guard and abort,
+  and both optional-knob spreads),
+  one removed as type-dead
+  (the fanout content ternary's structured arm:
+  `ChatMessage.content` is string-only).
+  The reach census reads `ran 1, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-stage3.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-stage-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-stage-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `e4f718feb`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/model` cluster
+  (the ranking's next at `census-1VGtcy`).
+
+- 2026-10-04,
   13:26 UTC:
   the next batch's baseline census taken at commit `682015402`:
   `census written to ~/.cache/translation-repair/coverage/census-1VGtcy/census.json`
