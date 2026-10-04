@@ -683,6 +683,29 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  12:04 UTC:
+  the T8 `preservation` batch closed with commit `05a02beab`:
+  6 line stretches over `preservation-tokens.ts`
+  and `preservation-check.ts`,
+  the name scanner's five dead empty-string fallbacks narrowed away,
+  one cased
+  (the empty licensed quote that blanks nothing).
+  The reach census reads `left 0 cold stretches`
+  (`~/temp/agent/mimo-trial/reach-preservation.log`).
+  Counts at the close:
+  the full suite 1,558 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-preservation-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-preservation-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `05a02beab`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/prose` cluster
+  (the ranking's next at `census-g87Ji1`).
+
+- 2026-10-04,
   12:02 UTC:
   the next batch's baseline census taken at commit `71e8d814d`
   (which followed a fix-forward `316f1afc7` corrected:

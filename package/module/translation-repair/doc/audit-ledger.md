@@ -6220,6 +6220,23 @@ reads `left 2 cold stretches`,
 those two.
 No B entry found.
 
+The twenty-seventh cluster of that census,
+`preservation`,
+against `census-g87Ji1` at `1c2219b35`:
+6 line stretches over `preservation-tokens.ts`
+and `preservation-check.ts`
+(`05a02beab`).
+The name scanner's five empty-string string-index fallbacks
+(dead:
+each guarded by its own bounds check)
+became `nonNullishOrThrow`.
+One cased:
+a licensed quote that is empty blanks nothing,
+since splitting on it would take the text apart character by character.
+The reach census (`~/temp/agent/mimo-trial/reach-preservation.log`)
+reads `left 0 cold stretches` on the edited source.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
