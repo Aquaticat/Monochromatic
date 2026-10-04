@@ -10,11 +10,11 @@
 /// Import the existing structured generator, native parser and verified invariants.
 use jsonc_edit_fuzz::GeneratedDocument;
 use libfuzzer_sys::fuzz_target;
-use monochromatic_jsonc_edit::parse_jsonc;
+use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 use monochromatic_lint_fuzz::check_merge;
 
-/// The macro supplies libFuzzer's executable entry and decodes structured inputs.
+// The macro supplies libFuzzer's executable entry and decodes structured inputs.
 fuzz_target!(|document: GeneratedDocument| {
-    let parsed = parse_jsonc(&document.source).expect("structured generator produces valid JSONC");
+    let parsed: JsoncValue = parse_jsonc(&document.source).expect("structured generator produces valid JSONC");
     check_merge(&parsed);
 });

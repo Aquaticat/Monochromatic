@@ -239,7 +239,91 @@ including positive/negative cache controls.
 Its first package run (`proc_ae2d`) passed 93 tests but stopped the semantic catalog
 on the intentionally disabled `AbsPath::exists()` method.
 The helper now uses `std::fs::metadata` as required by the inspected API;
-the full test/Clippy rerun is `proc_8e60`.
+the full test suite then passed all 94 tests in `proc_8e60`,
+including the semantic conformance/source-overlay catalog.
+Clippy found one `clippy::question_mark` occurrence;
+it has been rewritten with typed `?` propagation without changing rule severity.
+Additional const-inference,
+alias,
+trait,
+and lifetime cases are now running in `proc_cd25`
+(`unified-linter-semantic-edge-conformance`).
+That gate found a real classification defect:
+`build::<_>()` was parsed as a type-shaped generic argument,
+but its resolved declaration requires a constant.
+The checker now maps the argument position to the resolved type/const parameter list
+before asking for type information.
+Verification is pending on this correction.
+
+The production `RustSemanticSession` is now implemented:
+it owns a preloaded workspace,
+verifies selected-file membership,
+applies exact in-memory source overlays,
+uses named protected query callbacks,
+and preserves typed failures.
+The conformance fixture now calls this production session instead of test-only query glue.
+Session panic and missing/relative-file controls are included.
+The complete session snapshot passed 97 tests and Clippy (`proc_baf0`).
+The production Cargo loader is also implemented:
+explicit Cargo manifests,
+read-only installed-toolchain/source discovery,
+locked/offline dependency handling,
+and separate source-only/generated-source preparation.
+A real fixture proves generated definitions become visible after Cargo preparation
+and failed build scripts are not accepted as complete metadata.
+That snapshot passed 99 tests and Clippy (`proc_6bfb`).
+Typed Rust configuration selection,
+shared syntax/semantic dispatch,
+and a lazy invocation-level Rust workspace cache were added afterward.
+The syntax-only route does not inspect or open a Cargo workspace,
+and semantic source overlays retain the user's display filename.
+Native literal-path discovery now handles hidden directories,
+Git/dependency exclusions,
+combined extra ignore patterns,
+and explicit I/O failures.
+These dispatch/discovery additions await their gate;
+glob expansion and the executable are still unfinished.
+The accepted CLI grammar is now declared through the incumbent Clap family,
+including native path values,
+stdin-filename requirements,
+positive concurrency,
+repeatable ignore flags,
+and rejection of an unsupported --rule option.
+The current gate is `proc_c3dd`.
+The preceding gate passed 108 tests but one new settings fixture attempted to parse top-level null,
+which the JSONC package rejects before schema validation.
+The fixture now tests a valid JSONC array root and nested null instead.
+
+Full mutation is running as `proc_3d86` against its recorded immutable source snapshot.
+Semantic fuzz controls now exercise all generated branches through production sessions.
+The first fixture path was not a crate root;
+renaming the fixed metadata path to `/main.rs` made all generator controls pass.
+The optimized ASAN build then lost a rustc child to SIGKILL under the 2 GiB cap (`proc_d430`);
+this is not a fuzz-input failure or a verified OOM diagnosis.
+The retry uses one compiler job and 16 codegen units,
+retains container build state,
+and keeps ASAN/coverage instrumentation enabled
+(`proc_f48f`).
+That retry completed all targets successfully:
+155,424 merge executions,
+13,716 configuration executions,
+1,200 anonymous-function executions,
+and 485 semantic explicit-type executions.
+Evidence:
+`package/linter/monochromatic-lint.fuzz/target/verification/campaign-DWubzj`.
+All runtime fuzz containers remained mount-free with ASAN enabled.
+These figures cover the recorded source snapshot,
+not subsequent CLI/discovery changes.
+The build emitted unused-doc-comment warnings on two macro invocations;
+those comments are now ordinary comments rather than rustdoc.
+
+The user corrected a progress-only stopping point with "Don't stop."
+Continue the next unblocked item while background gates run;
+a future process notification is not a reason to issue a progress-only final reply.
+Proposed `AGENTS.md` tightening for `PXQ`:
+"While tracked work remains, start the next unblocked item during background verification.
+Do not end with a progress-only reply; finish the queue or identify a genuine blocker."
+The proposal has not been applied to `AGENTS.md`.
 The published API prerequisite failures are recorded in
 `doc/troubleshooting/rust-analyzer-semantic-scope.md`.
 The test image now includes Rust 1.97's matching rust-src component:

@@ -3,7 +3,8 @@
 Coverage-guided checks for the unified linter's native boundaries.
 Targets cover JSONC configuration validation,
 ordered merging,
-and the Rust anonymous-function rule.
+the Rust anonymous-function rule,
+and semantic explicit-type checking.
 
 The merge target reuses the repository's structured JSONC generator.
 The configuration target combines raw syntax mutation with always-valid generated rule settings.
@@ -13,6 +14,11 @@ Its controls distinguish move/async/nested closures from named callbacks,
 pipe operators,
 strings,
 and async blocks.
+The semantic target initializes a fixed in-memory Rust crate,
+submits generated/raw source only through the production session's source-overlay API,
+and checks independent violation counts plus restoration after changed input.
+Arbitrary bytes never enter the fixture metadata interpreter.
+
 Generator unit tests verify that successful validation,
 merging,
 and real closure checks are actually reached.

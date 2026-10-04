@@ -9,15 +9,15 @@
 
 /// Import the libFuzzer entry macro and the sidecar's shared checks.
 use libfuzzer_sys::fuzz_target;
-use monochromatic_jsonc_edit::emit_jsonc_value;
+use monochromatic_jsonc_edit::{JsoncValue, emit_jsonc_value};
 use monochromatic_lint_fuzz::{check_configuration, generated_configuration};
 
-/// Run valid generated settings for every draw, including byte strings that are not UTF-8.
+// Run valid generated settings for every draw, including byte strings that are not UTF-8.
 fuzz_target!(|data: &[u8]| {
-    let generated = generated_configuration(data);
-    let source = emit_jsonc_value(&generated);
-    check_configuration(source.as_str());
-    if let Ok(source) = std::str::from_utf8(data) {
-        check_configuration(source);
+    let generated: JsoncValue = generated_configuration(data);
+    let encoded: String = emit_jsonc_value(&generated);
+    check_configuration(encoded.as_str());
+    if let Ok(raw_source) = std::str::from_utf8(data) {
+        check_configuration(raw_source);
     }
 });
