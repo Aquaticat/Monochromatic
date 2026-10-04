@@ -63,6 +63,51 @@ await describe({
             }
           },
         },),
+        it({
+          name: 'relabels a literal-looking reference riding with an autolink literal micromark did not '
+            + 'tokenize, since an undefined call stays in its text (ledger B123)',
+          fn: async () => {
+            /**
+             Pages whose untokenized literal holds an undefined reference:
+             micromark's call tokenizer refuses an identifier no definition
+             names, so `[^9]` stays in the rebuilt text (ledger B123).
+             */
+            const texts = [
+              'A cat[^1] naps.\n\n[^1]: The cat.\n\n，www.example.com[^9] tail.\n',
+              'A cat[^1] naps.\n\n[^1]: The cat.\n\n[www.example.com[^9]\n',
+            ];
+            for (const text of texts) {
+              expect(applyFootnoteRelabel({
+                text,
+                map: [{ from: '9', to: 'x', },],
+              },),).toBe(text.replaceAll('[^9]', '[^x]',),);
+            }
+          },
+        },),
+        it({
+          name: 'keeps an escaped opening beside an autolink literal byte-identical while the footnote '
+            + 'relabels (ledger B123)',
+          fn: async () => {
+            const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\n，www.example.com \\[^9\\]\n';
+            const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\n，www.example.com \\[^9\\]\n';
+            expect(applyFootnoteRelabel({
+              text,
+              map: [{ from: '1', to: '2', },],
+            },),).toBe(expected,);
+          },
+        },),
+        it({
+          name: 'keeps malformed openings beside an autolink literal byte-identical, since none of them '
+            + 'is a marker (ledger B123)',
+          fn: async () => {
+            const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\n，www.example.com[^] [^a b] [^x\n';
+            const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\n，www.example.com[^] [^a b] [^x\n';
+            expect(applyFootnoteRelabel({
+              text,
+              map: [{ from: '1', to: '2', },],
+            },),).toBe(expected,);
+          },
+        },),
       ],
     },),
   ],
