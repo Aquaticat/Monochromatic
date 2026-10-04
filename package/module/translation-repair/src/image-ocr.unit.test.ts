@@ -284,6 +284,39 @@ await describe({
             expect(reading.reason,).toBe('ocr-failed',);
           },
         },),
+
+        it({
+          name: 'REPORTS the reader missing when its binary is not there at all, the distinction a '
+            + 'diagnosis needs',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'image-ocr-', },);
+            /**
+             Ordinary picture, read by a reader that is not installed.
+             */
+            const pngPath = join(scratch.path, 'cat.png',);
+            await spawn('magick', [
+              '-background',
+              'white',
+              '-fill',
+              'black',
+              '-pointsize',
+              '40',
+              'label:the cat sleeps on the windowsill',
+              pngPath,
+            ],);
+            const bytes = new Uint8Array(await readFile(pngPath,),);
+            const reading = await readImageWithOcr({
+              bytes,
+              assetName: 'cat.png',
+              l,
+              ocrTool: 'tesseract-definitely-not-installed',
+            },);
+            expect(reading.kind,).toBe('unavailable',);
+            if (reading.kind !== 'unavailable')
+              throw new Error('unavailable by construction',);
+            expect(reading.reason,).toBe('ocr-tool-missing',);
+          },
+        },),
       ],
     },),
   ],

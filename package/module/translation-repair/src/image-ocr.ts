@@ -296,6 +296,9 @@ async function decodeToPng(
 
  @param l - lane logger
 
+ @param ocrTool - reader binary name, overridable so a test can stand in a
+ machine whose reader is missing
+
  @returns What it read, that it read nothing, or why it could not try
 
  @throws Whatever `mkdtemp` raises when scratch cannot be made, which is a
@@ -311,10 +314,12 @@ export async function readImageWithOcr(
     bytes,
     assetName,
     l,
+    ocrTool = 'tesseract',
   }: {
     readonly bytes: Uint8Array;
     readonly assetName: string;
     readonly l: Logger;
+    readonly ocrTool?: string;
   },
 ): Promise<OcrReading> {
   /**
@@ -371,7 +376,7 @@ export async function readImageWithOcr(
   );
   try {
     await execFileAsync(
-      'tesseract',
+      ocrTool,
       [
         png,
         stem,
