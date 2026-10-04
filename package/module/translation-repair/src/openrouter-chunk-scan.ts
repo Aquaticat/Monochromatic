@@ -39,11 +39,12 @@ export function openRouterChunksOf(
     .split('\n',)
     .flatMap(function chunkOf(rawLine,): readonly Readonly<Record<string, unknown>>[] {
       /**
-       Payload of this line; the sentinel and blanks carry no JSON.
+       Payload of this line. NO `{` GATE ABOVE THE PARSE: a payload the
+       parse accepts but the record check below refuses (`data: 5`) has to
+       reach that check, whose skip arm is otherwise code no input runs
+       (ledger T8, 2026-10-04).
        */
       const payload = ssePayloadOf({ line: rawLine, },);
-      if (!payload.startsWith('{',))
-        return [];
       /**
        Parse attempt, whose failure is data rather than a caught error this
        scan would have to drop (ledger B29): a chunk that does not parse was

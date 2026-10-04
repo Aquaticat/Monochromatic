@@ -22,6 +22,7 @@ import {
   COMPLETION_CAP,
   COST_UNREPORTED,
   createOpenRouterClient,
+  ENDPOINT_UNREPORTED,
   estimateAbandonedSpend,
   InStreamProviderError,
   OPENROUTER_CHAT_URL,
@@ -328,6 +329,39 @@ await describe({
         },),
 
         it({
+          name: 'THROWS the shared HTTP failure class on a non-success /credits reply too, so the budget '
+            + 'layer reads one failure class off both endpoints (ledger T8, the openrouter cluster)',
+          fn: async () => {
+            /**
+             Client whose credits endpoint answers a server error.
+             */
+            const client = createOpenRouterClient({
+              apiKey: 'test-key',
+              transport: async function creditsBroken(exchange,) {
+                return (exchange.url === OPENROUTER_CREDITS_URL)
+                  ? { status: 500, bodyText: 'oops', }
+                  : { status: 200, bodyText: RECORDED_STREAM, };
+              },
+              retryPolicy: {
+                limit: 0,
+                baseMs: 1,
+              },
+            },);
+            /**
+             What a broken credits endpoint produces.
+             */
+            let thrown: unknown;
+            try {
+              await client.credits({ signal: SIGNAL, },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown instanceof SyntheticHttpError,).toBe(true,);
+            expect((thrown as SyntheticHttpError).status,).toBe(500,);
+          },
+        },),
+
+        it({
           name: 'REFUSES a roster model it has no slug for before touching the wire, since that is a '
             + 'routing mistake in our own code',
           fn: async () => {
@@ -460,19 +494,42 @@ await describe({
         },),
 
         it({
-          name: 'CARRIES costUsd and cachedTokens onto the spend fields only where the wire sent them, '
-            + 'dropping an unreported one (ledger T8, the openrouter cluster)',
+          name: 'CARRIES costUsd, endpoint and cachedTokens onto the spend fields only where the wire '
+            + 'sent them, dropping an unreported one (ledger T8, the openrouter cluster)',
           fn: async () => {
-            expect(reportedSpendFieldsOf({ cost: 0.5, cachedTokens: 12, },),).toEqual({
+            expect(reportedSpendFieldsOf({
+              cost: 0.5,
+              endpoint: {
+                reported: true,
+                name: 'Inceptron',
+              },
+              cachedTokens: 12,
+            },),).toEqual({
               costUsd: 0.5,
+              endpoint: 'Inceptron',
               cachedTokens: 12,
             },);
             expect(reportedSpendFieldsOf({
               cost: COST_UNREPORTED,
+              endpoint: ENDPOINT_UNREPORTED,
               cachedTokens: CACHED_UNREPORTED,
             },),).toEqual({},);
-            expect(reportedSpendFieldsOf({ cost: 0.5, cachedTokens: CACHED_UNREPORTED, },),).toEqual({ costUsd: 0.5, },);
-            expect(reportedSpendFieldsOf({ cost: COST_UNREPORTED, cachedTokens: 12, },),).toEqual({ cachedTokens: 12, },);
+            expect(reportedSpendFieldsOf({
+              cost: 0.5,
+              endpoint: ENDPOINT_UNREPORTED,
+              cachedTokens: CACHED_UNREPORTED,
+            },),).toEqual({ costUsd: 0.5, },);
+            expect(reportedSpendFieldsOf({
+              cost: COST_UNREPORTED,
+              endpoint: {
+                reported: true,
+                name: 'Inceptron',
+              },
+              cachedTokens: 12,
+            },),).toEqual({
+              endpoint: 'Inceptron',
+              cachedTokens: 12,
+            },);
           },
         },),
       ],

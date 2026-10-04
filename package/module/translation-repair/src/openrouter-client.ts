@@ -27,7 +27,10 @@ import {
   CACHED_UNREPORTED,
   openRouterCachedTokensOf,
 } from './openrouter-cached-tokens.ts';
-import { openRouterEndpointOf, } from './openrouter-endpoint.ts';
+import {
+  type EndpointReading,
+  openRouterEndpointOf,
+} from './openrouter-endpoint.ts';
 import {
   COST_UNREPORTED,
   openRouterCostOf,
@@ -204,14 +207,17 @@ function servedIdFor(
 }
 
 /**
- Fields of a spend report, each present only where the wire sent its number.
+ Fields of a spend report, each present only where the wire sent its value.
 
- THE CONDITIONAL SPREADS KEEP A FIELD ABSENT rather than zero where no chunk
- reported one, so the line and the meter read unreported and no reader sums
- a zero the wire never sent.
+ THE CONDITIONAL SPREADS KEEP A FIELD ABSENT rather than zero or blank where
+ no chunk reported one, so the line and the meter read unreported and no
+ reader sums a zero the wire never sent.
 
  @param cost - USD the stream's cost module read, its unreported mark where
  no chunk carried a cost
+
+ @param endpoint - upstream the gateway named, unreported where no chunk
+ named one
 
  @param cachedTokens - cache count the stream's cached-tokens module read,
  its unreported mark where no chunk carried one
@@ -220,20 +226,23 @@ function servedIdFor(
 
  @example
  ```ts
- reportSpend({ provider: 'openrouter', label, extracted, ...reportedSpendFieldsOf({ cost, cachedTokens, }), },);
+ reportSpend({ provider: 'openrouter', label, extracted, ...reportedSpendFieldsOf({ cost, endpoint, cachedTokens, }), },);
  ```
  */
 export function reportedSpendFieldsOf(
   {
     cost,
+    endpoint,
     cachedTokens,
   }: {
     readonly cost: number | typeof COST_UNREPORTED;
+    readonly endpoint: EndpointReading;
     readonly cachedTokens: number | typeof CACHED_UNREPORTED;
   },
-): Pick<Parameters<typeof reportSpend>[0], 'costUsd' | 'cachedTokens'> {
+): Pick<Parameters<typeof reportSpend>[0], 'costUsd' | 'endpoint' | 'cachedTokens'> {
   return {
     ...((cost === COST_UNREPORTED) ? {} : { costUsd: cost, }),
+    ...(endpoint.reported ? { endpoint: endpoint.name, } : {}),
     ...((cachedTokens === CACHED_UNREPORTED) ? {} : { cachedTokens, }),
   };
 }
@@ -505,11 +514,9 @@ export function createOpenRouterClient(
         provider: 'openrouter',
         label: servedId,
         extracted,
-        ...(endpoint.reported
-          ? { endpoint: endpoint.name, }
-          : {}),
         ...reportedSpendFieldsOf({
           cost,
+          endpoint,
           cachedTokens,
         },),
       },);
