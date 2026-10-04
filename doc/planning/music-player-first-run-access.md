@@ -148,8 +148,32 @@ playback service and initial sweep service.
 they do not open a picker,
 change grants,
 read music or demonstrate successful recovery.
-Merged-manifest and native service-isolation verification are still required.
+The rebuilt merged manifest disables those production components and
+omits the WorkManager initializer;
+native service-isolation verification remains a capture gate.
 The study includes no production scan/dismiss preference implementation.
+The 12 fixture tests passed,
+unknown-scene and partial-zero guard-removal mutants failed the intended
+assertions,
+then exact restoration,
+complete tests and APK build passed.
+Prototype `fca92d9d0` introduces the study;
+`a534bf5ac` additionally removes automatic WorkManager initialization.
+
+The corrected owned runtime booted within its 6GiB/2CPU cap.
+A fresh snapshot records font 1.0,
+light appearance,
+inner panel 2 and accessibility off.
+These are newly measured settings,
+not a claim that an older run's snapshot applies.
+The first capture attempt invoked uninstall unconditionally and received
+`Failure [DELETE_FAILED_INTERNAL_ERROR]`.
+Re-probes via package enumeration and package dump showed no installed
+`dev.monochromatic.musicplayer` package.
+The driver now checks presence before uninstalling and preserves the
+retained APK bytes on a same-artifact retry.
+No frame was accepted by the rejected attempt.
+The underlying uninstall diagnostic is not independently diagnosed.
 
 D10's old `empty-a` statement that the first run analyses every file is
 superseded by D27's separate choice to analyse.
