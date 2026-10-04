@@ -29,6 +29,36 @@ fn label(text: &str, weight: f32, features: &[FontFeature]) -> Layout<u32> {
     return layout;
 }
 
+/// Inspect substitutions without assuming that a ligature reduces the number of glyphs.
+fn glyph_ids(layout: &Layout<u32>) -> Vec<u32> {
+    let mut ids = Vec::new();
+    for line in layout.lines() {
+        for item in line.items() {
+            if let PositionedLayoutItem::GlyphRun(run) = item {
+                for glyph in run.positioned_glyphs() { ids.push(glyph.id); }
+            }
+        }
+    }
+    return ids;
+}
+
+/// Contextual alternates retain Inter's upstream default; optional discretionary ligatures stay opt-in.
+#[test]
+fn inter_contextual_and_discretionary_features_keep_distinct_defaults() {
+    let contextual = "3x9 12:34 3–8 +8+x -> --> => <->";
+    let defaults = label(contextual, 400.0, &[]);
+    let enabled = label(contextual, 400.0, &[FontFeature::new(Tag::new(b"calt"), 1)]);
+    let disabled = label(contextual, 400.0, &[FontFeature::new(Tag::new(b"calt"), 0)]);
+    assert_eq!(glyph_ids(&defaults), glyph_ids(&enabled));
+    assert_ne!(glyph_ids(&defaults), glyph_ids(&disabled));
+    let discretionary = "Difficult affine fjord interface";
+    let normal = label(discretionary, 400.0, &[]);
+    let off = label(discretionary, 400.0, &[FontFeature::new(Tag::new(b"dlig"), 0)]);
+    let on = label(discretionary, 400.0, &[FontFeature::new(Tag::new(b"dlig"), 1)]);
+    assert_eq!(glyph_ids(&normal), glyph_ids(&off));
+    assert_ne!(glyph_ids(&normal), glyph_ids(&on));
+}
+
 /// Kerning uses a real off control, rather than inferring shaping from a font-family label.
 #[test]
 fn inter_default_kerning_changes_real_advances() {
