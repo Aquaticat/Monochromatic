@@ -162,9 +162,32 @@ that fixture's stronger per-item success premise.
 retains exact source excerpts,
 dialog-skipping conditions and limits.
 
-The next action is to implement isolated native layout using the settled
-player baseline and explicitly authored legal outcome premises,
-then capture and verify overlap/fit without real storage actions.
+Prototype `36ea4fa46` adds the isolated `LightFeedbackActivity`,
+renderer,
+feedback surfaces and private native-layout measurements.
+Existing player routes retain default-empty row omissions and no measurement
+modifier;
+the feedback route names its authored omissions while retaining source
+indices and the complete shared folder/deck renderer.
+Undo emits only a debug intent and does not return a row or report recovery.
+Dismiss changes only local error-bar presentation.
+The error bar explicitly owns its navigation inset;
+Scaffold content padding is not assumed to protect custom bottom-bar controls.
+
+The bounded APK build is running in `proc_7d1d`.
+No native light-feedback capture or artifact acceptance is claimed yet.
+The next action is to inspect the build and fresh merged manifest,
+then capture on the owned disposable emulator.
+Verification must establish stable fresh root/viewport rectangles,
+LTR configuration,
+finite contained overlay geometry,
+measured action layout floors,
+visible copy and per-scene row omissions.
+Same-environment no-feedback and toast-only controls are required before
+claiming unchanged player geometry;
+post-Dismiss frames require new layout readiness checks.
+Semantic rectangles remain distinct from visible ink and pointer activation.
+Real storage actions and new IME/TalkBack work remain outside this study.
 No user answer or new production permission request is blocking these
 remaining authorized design steps.
 The first-run captured APK and source revision remain immutable;
