@@ -258,7 +258,27 @@ This is a bounded layout observation,
 not native activation,
 ink bounds,
 universal fit or actual operation/recovery acceptance.
-The independent initial panel/theme/font cohort is the next acquisition.
+The initial panel/theme/font attempt retained nine inner/100% frames
+before the owning emulator segfaulted with status `139`.
+The capture task's separate terminal diagnostic was a bounded
+`am force-stop` transport timeout.
+No complete manifest or full-cohort acceptance exists for that partial
+attempt and its artifacts remain private.
+The emitter reported OpenGL ES Translator over
+`llvmpipe (LLVM 22.1.8, 256 bits)` despite the requested `-gpu host` option.
+No usable coredump was found for this visit;
+nearby null-context messages do not establish the crash's deciding call.
+
+The current SDK's freshly exercised GPU help advertises `swiftshader`.
+A bounded current-37.2.12 software-renderer probe is starting with the
+same owned AVD,
+retained generated identity and 6 GiB/2 CPU bounds.
+The historical 37.1.11 SwiftShader failure is not treated as proof about
+this different installed build.
+The original settings snapshot remains unchanged;
+a new renderer's startup snapshot is separate.
+A successful probe still requires a new complete capture cohort and
+renderer-specific provenance before publication.
 
 The human correction identified a workflow gap:
 prioritize an available owned-device authorization prompt and verify its
