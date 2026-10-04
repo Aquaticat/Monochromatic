@@ -295,7 +295,9 @@ The source fixes are `1db6774ac`,
 and `c443026a6`;
 subsequent fixture and documentation commits complete their verification.
 
-Keep #581 open until the intermittent reported incident is matched or verified resolved in normal use.
+On 2026-10-04,
+#581 was closed at the reporter's explicit request with the comment `cannot reproduce`.
+This supersedes the investigation's initial recommendation to keep it open.
 No historical timeout was retroactively attributed to a particular missing file.
 Use a fresh Pi process to exercise the rebuilt extension rather than an already loaded bundle.
 
