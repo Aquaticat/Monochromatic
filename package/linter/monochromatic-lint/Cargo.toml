@@ -33,6 +33,10 @@ ra_ap_syntax = "=0.0.335"
 # Pin the same matching pair already locked by the incumbent Rust linter.
 unicode-ident = "=1.0.24"
 unicode-properties = "=0.1.4"
+# The approved Markdown/MDX parser crates are upgraded together behind the parity suite.
+satteri-pulldown-cmark = "=0.6.3"
+satteri-arena = "=0.3.1"
+satteri-ast = "=0.5.3"
 
 # Standalone package, matching the repository's Cargo ownership convention.
 [workspace]
