@@ -1,0 +1,25 @@
+[package]
+name = "monochromatic-lint"
+version = "0.1.0"
+edition = "2024"
+description = "Repository-owned Rust, Markdown and MDX linter."
+license = "LGPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/Aquaticat/Monochromatic.git"
+include = ["src/**/*.rs", "fixtures/*.json", "Cargo.toml", "Cargo.lock", "README.md", "LICENSES/*.txt"]
+
+[lints.clippy]
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+
+[lib]
+name = "monochromatic_lint"
+path = "src/lib.rs"
+
+[dependencies]
+# Reuse the repository's comment-preserving parser and exact-number value model.
+monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }
+
+# Standalone package, matching the repository's Cargo ownership convention.
+[workspace]

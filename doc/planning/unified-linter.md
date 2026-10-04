@@ -20,7 +20,9 @@ mutation testing,
 and fuzzing.
 The historical `monochromatic-lint.config.hcl` is now `monochromatic-lint.config.jsonc` (2026-10-04).
 Other settled behavior remains unchanged.
-No product code has been added by this session.
+The user authorized implementation on 2026-10-04 with "Do it."
+They subsequently selected a simple handwritten configuration merge for now,
+removing the separate deepmerge port and fork-test prerequisite.
 
 ## Goal and scope
 
@@ -60,11 +62,11 @@ No product code has been added by this session.
    and heavy dependencies would compile once per crate.
 - Binary:
    `monochromatic-lint`.
-- A separate crate,
-   `monochromatic-deepmerge`,
-   in `package/rust-module/monochromatic-deepmerge`:
-   a Rust port of deepmerge-ts,
-   licensed BSD-3-Clause with upstream's notice.
+- Configuration merging is a handwritten internal module over JSONC values.
+  Keep the agreed ordered merge semantics,
+  but do not build a generic deepmerge library,
+  port customizers,
+  or wait for the upstream fork.
 - Dependencies:
   - `ra_ap_syntax`,
      pinned exactly,
@@ -78,7 +80,7 @@ No product code has been added by this session.
      the repository's Rust JSONC package at `package/rust-module/jsonc-edit`,
      for configuration;
      no HCL dependency or compatibility parser;
-  - `monochromatic-deepmerge` for rule-setting merges.
+  - no external configuration-merge dependency.
 - Build-time C or assembly inside dependencies is allowed
    (`psm`,
    pulled in by Sätteri through `stacker`).
@@ -182,7 +184,7 @@ configuration uses `ignores` such as `**/*.md/**` when a block must reach real f
    `warn`,
    or `error`.
 - For each file,
-   the `rules` objects of every applying block merge in block order in one deepmerge-ts call:
+   the `rules` objects of every applying block merge together in block order through the internal merge function:
    objects merge key by key,
    arrays concatenate,
    and any other value,
@@ -312,10 +314,10 @@ there are no directive comments.
 
 ## Distribution and consumers
 
-- `monochromatic-lint` and `monochromatic-deepmerge` publish through `.github/workflows/cargo-publish.yml`
+- `monochromatic-lint` publishes through `.github/workflows/cargo-publish.yml`
    to crates.io with GitHub release assets in cargo-binstall's default naming,
    like `forbidden-strings`.
-  The first publish claims both crate names and waits for the user's go-ahead.
+  The first publish claims the crate name and still waits for the user's explicit approval.
 - Root `mise.toml` installs the binary as `"cargo:monochromatic-lint"` through cargo-binstall;
    `mise.lock` pins the version.
   Linter changes reach the repository through a release.
@@ -490,11 +492,10 @@ there are no directive comments.
      JSONC parsing through the repository package,
      lookup,
      block matching.
-    Rule-setting merge lands with `monochromatic-deepmerge`,
-     which waits for the user's deepmerge-ts fork and its fuller tests;
-     upstream deepmerge-ts 8.0.2 defines the semantics,
-     and a fork test that disagrees is decided case by case.
-    No interim merge code is written.
+    Rule-setting merge is handwritten inside this crate,
+     as authorized on 2026-10-04.
+    Preserve the agreed one-call semantics,
+     using the repository's public JSON merge corpus as an independent regression source.
 6.  Differential comparison against both incumbents over the whole repository,
      processors off,
      expecting identical findings and fixes
@@ -562,7 +563,7 @@ The combined plan specifies their concrete targets and gates:
    `--format`,
    `--lsp`,
    and a flag for running one rule.
-- `deepmergeCustom` customizers in the deepmerge port.
+- A generic deepmerge package and customizers.
 - A parse time budget.
 
 ## Not replicated from ESLint
@@ -624,7 +625,8 @@ and fence `filename=` metadata.
   The parity harness gates every upgrade.
 - Build cost:
    about 28.5 s for a clean dev build of the Markdown side alone.
-- The configuration merge depends on the deepmerge-ts fork's timeline.
+- Handwritten merging must preserve all-input type-mismatch semantics;
+   a left-fold pairwise merge is not equivalent.
 - Rust linting joining `mise run lint` exposes the Rust files no package task covered,
    handled by the `*.fuzz` and `doc/audit` exemptions.
 - `mise run lint` is already red on existing Markdown debt (#294);
@@ -632,10 +634,6 @@ and fence `filename=` metadata.
 
 ## Licences
 
-- `monochromatic-deepmerge`:
-   BSD-3-Clause,
-   with deepmerge-ts's notice (Copyright (c) 2021,
-   Rebecca Stevens).
 - `monochromatic-lint`:
    LGPL-3.0-or-later,
    carrying markdownlint's MIT notice for the rule logic ported from it,

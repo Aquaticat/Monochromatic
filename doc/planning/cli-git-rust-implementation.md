@@ -15,7 +15,9 @@ The expanded cli-git 2.x policy catalog is excluded;
 the unified linter's already agreed Rust,
 Markdown,
 and MDX replacement is included.
-No product changes have been made by this session.
+Implementation authorized by the user's "Do it" on 2026-10-04.
+Execution state is tracked in
+[`cli-git-rust-implementation.md`](../handover/cli-git-rust-implementation.md).
 
 The Rust wrapper supports the latest stable Git release only.
 Resolve and record that exact release in build and test evidence.
@@ -171,9 +173,9 @@ Preserve its accepted nearest-config lookup,
 block ordering,
 per-rule defaults,
 and deepmerge semantics.
-The existing deepmerge-fork prerequisite is not waived by changing configuration syntax;
-verify its current state before implementing the merge layer,
-and do not create interim merge code.
+The user subsequently authorized a simple handwritten merge module for now.
+Implement the agreed JSONC merge semantics inside the linter;
+do not build the separate deepmerge port or wait for the fork.
 
 Keep the already accepted linter CLI integration rather than introducing a new public library interface or `--rule` flag.
 Cli-git's built-in Markdown policy selects the coordinated installation's owned native linter,

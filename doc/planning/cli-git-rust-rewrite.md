@@ -12,7 +12,9 @@ The user confirmed the shared first-release scope,
 then asked to see the implementation approach before code changes.
 That proposal is recorded in
 [`cli-git-rust-implementation.md`](cli-git-rust-implementation.md).
-No production source changes have been made.
+Implementation was authorized on 2026-10-04 with "Do it."
+Current execution state is in
+[`cli-git-rust-implementation.md`](../handover/cli-git-rust-implementation.md).
 
 On 2026-10-04,
 the user restricted support to latest Git,
@@ -352,5 +354,6 @@ Do not restart this experiment merely to finish its planned sample count.
 
 ## Next action
 
-Present the implementation proposal without reopening Rust or the excluded 2.x catalog.
-Do not start product changes before the user has reviewed the requested approach.
+Continue the authorized implementation queue in `doc/handover/cli-git-rust-implementation.md`.
+The handwritten merge module is authorized;
+do not restart deepmerge-fork evaluation or the canceled incumbent profiling.

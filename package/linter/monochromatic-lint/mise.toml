@@ -1,0 +1,54 @@
+[tasks.build]
+description = "Build the native unified-linter implementation"
+run = "cargo build --release"
+
+[tasks."build:debug"]
+description = "Build the native unified-linter implementation for iteration"
+run = "cargo build"
+
+[tasks.lint]
+description = "Check the Rust implementation without code generation"
+run = "cargo check"
+
+[tasks."lint:types"]
+description = "Check Rust types and deny Clippy findings"
+run = ["cargo check", "cargo clippy --all-targets -- -D warnings"]
+
+[tasks."lint:rust"]
+description = "Check documented items and source code-line budgets using the incumbent Rust linter"
+run = "cargo run --quiet --manifest-path ../rust/Cargo.toml -- ."
+
+[tasks.test]
+description = "Run native unit and conformance tests"
+run = "cargo test --all-targets"
+
+[tasks.lock]
+description = "Regenerate the owning Cargo lockfile without fetching dependencies"
+run = "cargo generate-lockfile --offline"
+
+[tasks."test:container"]
+description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
+shell = "node --input-type=module -e"
+run = '''
+import { mkdtemp, cp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { spawnSync } from 'node:child_process'
+const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-test-'))
+const source = process.cwd()
+try {
+  for (const name of ['Cargo.toml', 'Cargo.lock', 'src', 'fixtures']) {
+    await cp(join(source, name), join(context, 'monochromatic-lint', name), { recursive: true })
+    await cp(resolve(source, '../../rust-module/jsonc-edit', name), join(context, 'jsonc-edit', name), { recursive: true })
+  }
+  await cp(join(source, 'test.Containerfile'), join(context, 'Containerfile'))
+  const build = spawnSync('podman', ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-test:development', context], { stdio: 'inherit' })
+  if (build.error) throw build.error
+  if (build.status !== 0) throw new Error(`Container build failed: ${build.status}`)
+  const run = spawnSync('podman', ['run', '--rm', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128', 'localhost/monochromatic-lint-test:development'], { stdio: 'inherit' })
+  if (run.error) throw run.error
+  if (run.status !== 0) throw new Error(`Container test failed: ${run.status}`)
+} finally {
+  await rm(context, { recursive: true, force: true })
+}
+'''

@@ -10,8 +10,9 @@ changed configuration to JSONC,
 and explicitly required container tests,
 mutation testing,
 and fuzzing.
-The current session is updating the combined implementation plan;
-no product code has been added.
+The user authorized implementation on 2026-10-04 with "Do it."
+Current execution state:
+[`cli-git-rust-implementation.md`](cli-git-rust-implementation.md).
 Goal (user,
 2026-09-23):
 replace the self-maintained Rust linter and Markdown linter with one unified linter,
@@ -57,7 +58,9 @@ and
 [`cli-git-rust-implementation.md`](../planning/cli-git-rust-implementation.md).
 The dated interview answers retain historical HCL choices as history,
 not current implementation instructions.
-The deepmerge-fork prerequisite and first-publication approval have not been waived.
+The user later authorized simple handwritten merging for now on 2026-10-04.
+That supersedes the separate deepmerge-port and fork-test prerequisite.
+The first-publication approval remains required.
 The earlier exclusion of a public linter library interface,
 `--rule`,
 and a production parse-time budget remains in force;
@@ -747,9 +750,7 @@ Final answers (user,
 
 Follow the combined plan in `doc/planning/cli-git-rust-implementation.md`
 and the amended JSONC build order in `doc/planning/unified-linter.md`.
-Verify the current deepmerge fork state before working on configuration merging;
-the recorded wait is historical evidence,
-not proof it is still blocked.
+Implement the handwritten JSONC merge module without waiting for or porting deepmerge-ts.
 Keep the explicit container,
 mutation,
 and fuzz gates.
