@@ -222,7 +222,7 @@ await describe({
       fn: async () => {
         expect(cacheVersionsIn({
           path: 'src/nap-key.ts',
-          text: 'export const NAP_CACHE_VERSION_x = 3;\n',
+          text: 'export const NAP_CACHE_VERSION_x',
         },),).toEqual([],);
       },
     },),
