@@ -6,12 +6,12 @@
 //! // parseConfiguration(source) returns validated ordered blocks.
 //! ```
 
-/// Import the repository's parser and exact value representation.
-use monochromatic_jsonc_edit::{parse_jsonc, JsoncValue};
 /// Import shared validation and the built-in rule schema.
 use crate::config_data::{key_text, strings, text, validate_data};
 use crate::config_error::ConfigError;
 use crate::configuration_rules::validate_rules;
+/// Import the repository's parser and exact value representation.
+use monochromatic_jsonc_edit::{JsoncValue, parse_jsonc};
 
 /// What: One immutable configuration block in source order.
 /// Why: File matching and rule merging need the same validated settings without rereading source.
@@ -51,7 +51,9 @@ fn parse_block(value: &JsoncValue) -> Result<ConfigBlock, ConfigError> {
     // if (!isRecord(value)) throw new ConfigError('...');
     // ```
     let Some(entries) = value.entries() else {
-        return Err(ConfigError::new("Each configuration block must be an object."));
+        return Err(ConfigError::new(
+            "Each configuration block must be an object.",
+        ));
     };
     // What: Start with absent optional fields and empty owned pattern vectors.
     // Why: Presence of files/rules, not their length, distinguishes global ignores.
@@ -85,14 +87,24 @@ fn parse_block(value: &JsoncValue) -> Result<ConfigBlock, ConfigError> {
             rules = entry.value.clone();
             has_rules = true;
         } else {
-            return Err(ConfigError::new(format!("Unknown configuration block field {key}.").as_str()));
+            return Err(ConfigError::new(
+                format!("Unknown configuration block field {key}.").as_str(),
+            ));
         }
     }
     let global_ignore = has_ignores && !has_files && !has_rules;
     if !global_ignore && !has_files {
-        return Err(ConfigError::new("Configuration blocks need files unless they contain only ignores and an optional name."));
+        return Err(ConfigError::new(
+            "Configuration blocks need files unless they contain only ignores and an optional name.",
+        ));
     }
-    return Ok(ConfigBlock { name, files, ignores, rules, global_ignore });
+    return Ok(ConfigBlock {
+        name,
+        files,
+        ignores,
+        rules,
+        global_ignore,
+    });
 }
 
 /// What: Parse and validate an ordered array of configuration blocks.
@@ -112,12 +124,22 @@ pub fn parse_configuration(source: &str) -> Result<Vec<ConfigBlock>, ConfigError
     // ```
     let document = match parse_jsonc(source) {
         Ok(document) => document,
-        Err(error) => return Err(ConfigError::new(format!("JSONC syntax error at byte {}: {}", error.offset, error.message).as_str())),
+        Err(error) => {
+            return Err(ConfigError::new(
+                format!(
+                    "JSONC syntax error at byte {}: {}",
+                    error.offset, error.message
+                )
+                .as_str(),
+            ));
+        }
     };
     // Validate every nested object before interpreting a block.
     validate_data(&document)?;
     let Some(elements) = document.elements() else {
-        return Err(ConfigError::new("Linter configuration must be an ordered array of blocks."));
+        return Err(ConfigError::new(
+            "Linter configuration must be an ordered array of blocks.",
+        ));
     };
     let mut result = Vec::with_capacity(elements.len());
     for element in elements {

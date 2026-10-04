@@ -18,11 +18,11 @@
 #[doc(hidden)]
 pub mod config_merge;
 
+/// Internal data-shape checks, including duplicate decoded keys.
+mod config_data;
 /// Internal typed configuration errors shared by the executable and verification drivers.
 #[doc(hidden)]
 pub mod config_error;
-/// Internal data-shape checks, including duplicate decoded keys.
-mod config_data;
 /// Internal ordered JSONC configuration parser.
 #[doc(hidden)]
 pub mod configuration;

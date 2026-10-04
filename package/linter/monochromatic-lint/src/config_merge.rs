@@ -132,7 +132,9 @@ fn merge_records(values: &[&JsoncValue]) -> JsoncValue {
         // ```ts
         // const entries = assertRecord(value).entries;
         // ```
-        let entries = value.entries().expect("merge_records receives classified record values");
+        let entries = value
+            .entries()
+            .expect("merge_records receives classified record values");
         for entry in entries {
             // What: Borrow the key's decoded units for lookup without copying them.
             // Why: Escape spelling must not split two equal logical keys into different groups.
@@ -154,14 +156,19 @@ fn merge_records(values: &[&JsoncValue]) -> JsoncValue {
             // grouped.set(key, group);
             // group.push(entry.value);
             // ```
-            grouped.entry(entry.key.units.clone()).or_default().push(&entry.value);
+            grouped
+                .entry(entry.key.units.clone())
+                .or_default()
+                .push(&entry.value);
         }
     }
     // Own the resulting members; capacity follows the measured number of distinct keys.
     let mut merged = Vec::with_capacity(keys.len());
     for key in keys {
         // Borrow the decoded key for lookup; the collecting loop created every ordered key's group.
-        let members = grouped.get(&key.units).expect("each ordered key has a collected group");
+        let members = grouped
+            .get(&key.units)
+            .expect("each ordered key has a collected group");
         // Recurse only into this key's structural child values, never the flat member sequence.
         let value = merge_values(members.as_slice());
         // Move the owned key and merged value into the result member.
@@ -194,7 +201,9 @@ fn merge_arrays(values: &[&JsoncValue]) -> JsoncValue {
         // ```ts
         // const elements = assertArray(value).elements;
         // ```
-        let elements = value.elements().expect("merge_arrays receives classified array values");
+        let elements = value
+            .elements()
+            .expect("merge_arrays receives classified array values");
         // Clone each appended element into result-owned storage without flattening nested arrays.
         merged.extend_from_slice(elements);
     }

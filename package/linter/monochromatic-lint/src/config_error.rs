@@ -42,7 +42,9 @@ impl ConfigError {
         // ```ts
         // return { message };
         // ```
-        return ConfigError { message: String::from(message) };
+        return ConfigError {
+            message: String::from(message),
+        };
     }
 }
 

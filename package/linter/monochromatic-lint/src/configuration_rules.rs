@@ -6,11 +6,11 @@
 //! // Validate options for the fixed shipped rule registry.
 //! ```
 
-/// Import the JSONC model so numbers stay exact until their rule-specific conversion.
-use monochromatic_jsonc_edit::{JsoncKind, JsoncValue};
 /// Import shared schema readers and typed errors.
 use crate::config_data::{key_text, strings, text};
 use crate::config_error::ConfigError;
+/// Import the JSONC model so numbers stay exact until their rule-specific conversion.
+use monochromatic_jsonc_edit::{JsoncKind, JsoncValue};
 
 /// What: The exact identifiers of the currently specified built-in rules.
 /// Why: No package name, executable or callback can add a runtime policy.
@@ -54,10 +54,14 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
     // if (value.kind !== 'number') throw new ConfigError('...');
     // ```
     let JsoncKind::Number { identity, .. } = &value.kind else {
-        return Err(ConfigError::new("rust/max-lines max must be a nonnegative integer."));
+        return Err(ConfigError::new(
+            "rust/max-lines max must be a nonnegative integer.",
+        ));
     };
     if identity.is_negative() {
-        return Err(ConfigError::new("rust/max-lines max must be a nonnegative integer."));
+        return Err(ConfigError::new(
+            "rust/max-lines max must be a nonnegative integer.",
+        ));
     }
     // Exact zero accepts every zero spelling, including -0 and 0e100000.
     if identity.is_zero() {
@@ -74,14 +78,20 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
     // if (coefficientIsInteger && exponentIsUnsigned) { ... }
     // ```
     let (Ok(coefficient), Ok(exponent)) = (coefficient, exponent) else {
-        return Err(ConfigError::new("rust/max-lines max must be a nonnegative integer that fits this platform's line index."));
+        return Err(ConfigError::new(
+            "rust/max-lines max must be a nonnegative integer that fits this platform's line index.",
+        ));
     };
     // Checked arithmetic returns absence on overflow instead of wrapping the line limit.
     let Some(scale) = 10_usize.checked_pow(exponent) else {
-        return Err(ConfigError::new("rust/max-lines max exceeds this platform's line index."));
+        return Err(ConfigError::new(
+            "rust/max-lines max exceeds this platform's line index.",
+        ));
     };
     let Some(result) = coefficient.checked_mul(scale) else {
-        return Err(ConfigError::new("rust/max-lines max exceeds this platform's line index."));
+        return Err(ConfigError::new(
+            "rust/max-lines max exceeds this platform's line index.",
+        ));
     };
     return Ok(result);
 }
@@ -96,10 +106,14 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
 pub(crate) fn validate_setting(id: &str, setting: &JsoncValue) -> Result<(), ConfigError> {
     // Borrow the rule name for registry lookup; membership does not allocate.
     if !RULE_IDS.contains(&id) {
-        return Err(ConfigError::new(format!("Unknown built-in rule {id}.").as_str()));
+        return Err(ConfigError::new(
+            format!("Unknown built-in rule {id}.").as_str(),
+        ));
     }
     let Some(entries) = setting.entries() else {
-        return Err(ConfigError::new(format!("Rule {id} settings must be an object.").as_str()));
+        return Err(ConfigError::new(
+            format!("Rule {id} settings must be an object.").as_str(),
+        ));
     };
     for entry in entries {
         // Decode the key and propagate invalid UTF-16 as a typed setup failure.
@@ -107,7 +121,9 @@ pub(crate) fn validate_setting(id: &str, setting: &JsoncValue) -> Result<(), Con
         if name == "severity" {
             let severity = text(&entry.value, "severity")?;
             if severity != "off" && severity != "warn" && severity != "error" {
-                return Err(ConfigError::new(format!("Rule {id} severity must be off, warn, or error.").as_str()));
+                return Err(ConfigError::new(
+                    format!("Rule {id} severity must be off, warn, or error.").as_str(),
+                ));
             }
             continue;
         }
@@ -120,7 +136,9 @@ pub(crate) fn validate_setting(id: &str, setting: &JsoncValue) -> Result<(), Con
             strings(&entry.value, "exclude")?;
             continue;
         }
-        return Err(ConfigError::new(format!("Rule {id} has unknown option {name}.").as_str()));
+        return Err(ConfigError::new(
+            format!("Rule {id} has unknown option {name}.").as_str(),
+        ));
     }
     return Ok(());
 }

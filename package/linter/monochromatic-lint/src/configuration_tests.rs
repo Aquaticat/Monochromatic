@@ -14,12 +14,15 @@ use monochromatic_jsonc_edit::parse_jsonc;
 /// Comments and trailing commas retain ordered blocks and typed pattern values.
 #[test]
 fn comments_and_trailing_commas_preserve_block_order() {
-    let blocks = parse_configuration(r#"[
+    let blocks = parse_configuration(
+        r#"[
       // Global exclusions
       { "name": "ignored", "ignores": ["generated/"], },
       { "name": "source", "files": ["**/*.rs"], "ignores": [],
         "rules": { "rust/max-lines": { "severity": "error", "max": 3e2 }, }, },
-    ]"#).expect("valid JSONC configuration");
+    ]"#,
+    )
+    .expect("valid JSONC configuration");
     assert_eq!(blocks.len(), 2);
     assert_eq!(blocks[0].name.as_deref(), Some("ignored"));
     assert!(blocks[0].global_ignore);
@@ -50,18 +53,46 @@ fn malformed_shapes_are_rejected() {
         ("[{\"files\":[false]}]", "must be a string"),
         ("[{\"files\":[],\"name\":true}]", "must be a string"),
         ("[{\"files\":[],\"rules\":[]}]", "rules must be an object"),
-        ("[{\"files\":[],\"plugins\":[]}]", "Unknown configuration block field"),
-        ("[{\"files\":[],\"command\":[\"program\"]}]", "Unknown configuration block field"),
-        ("[{\"files\":[],\"rules\":{\"unknown/rule\":{}}}]", "Unknown built-in rule"),
-        ("[{\"files\":[],\"rules\":{\"rust/max-lines\":\"off\"}}]", "settings must be an object"),
-        ("[{\"files\":[],\"rules\":{\"rust/max-lines\":{\"severity\":\"warning\"}}}]", "severity must be"),
-        ("[{\"files\":[],\"rules\":{\"rust/max-lines\":{\"severity\":1}}}]", "must be a string"),
-        ("[{\"files\":[],\"rules\":{\"rust/require-rustdoc\":{\"max\":2}}}]", "unknown option"),
-        ("[{\"files\":[],\"rules\":{\"markdown/lfs-image-url\":{\"exclude\":true}}}]", "array of strings"),
+        (
+            "[{\"files\":[],\"plugins\":[]}]",
+            "Unknown configuration block field",
+        ),
+        (
+            "[{\"files\":[],\"command\":[\"program\"]}]",
+            "Unknown configuration block field",
+        ),
+        (
+            "[{\"files\":[],\"rules\":{\"unknown/rule\":{}}}]",
+            "Unknown built-in rule",
+        ),
+        (
+            "[{\"files\":[],\"rules\":{\"rust/max-lines\":\"off\"}}]",
+            "settings must be an object",
+        ),
+        (
+            "[{\"files\":[],\"rules\":{\"rust/max-lines\":{\"severity\":\"warning\"}}}]",
+            "severity must be",
+        ),
+        (
+            "[{\"files\":[],\"rules\":{\"rust/max-lines\":{\"severity\":1}}}]",
+            "must be a string",
+        ),
+        (
+            "[{\"files\":[],\"rules\":{\"rust/require-rustdoc\":{\"max\":2}}}]",
+            "unknown option",
+        ),
+        (
+            "[{\"files\":[],\"rules\":{\"markdown/lfs-image-url\":{\"exclude\":true}}}]",
+            "array of strings",
+        ),
     ];
     for (source, expected) in cases {
         let error = parse_configuration(source).expect_err("schema must reject invalid source");
-        assert!(error.message.contains(expected), "{source}: {}", error.message);
+        assert!(
+            error.message.contains(expected),
+            "{source}: {}",
+            error.message
+        );
     }
 }
 
@@ -76,22 +107,39 @@ fn ambiguous_and_null_values_are_rejected_before_merge() {
     ];
     for source in duplicate_sources {
         let error = parse_configuration(source).expect_err("duplicate keys are rejected");
-        assert!(error.message.contains("duplicate"), "{source}: {}", error.message);
+        assert!(
+            error.message.contains("duplicate"),
+            "{source}: {}",
+            error.message
+        );
     }
-    for source in ["[null]", "[{\"files\":[null]}]", "[{\"files\":[],\"rules\":{\"rust/max-lines\":{\"max\":null}}}]"] {
+    for source in [
+        "[null]",
+        "[{\"files\":[null]}]",
+        "[{\"files\":[],\"rules\":{\"rust/max-lines\":{\"max\":null}}}]",
+    ] {
         let error = parse_configuration(source).expect_err("null is rejected");
-        assert!(error.message.contains("null"), "{source}: {}", error.message);
+        assert!(
+            error.message.contains("null"),
+            "{source}: {}",
+            error.message
+        );
     }
 }
 
 /// Invalid UTF-16 cannot become an identifier or filesystem pattern through replacement characters.
 #[test]
 fn unpaired_surrogates_are_rejected() {
-    for source in [r#"[{"files":[],"name":"\ud800"}]"#, r#"[{"files":["\udc00"]}]"#, r#"[{"files":[],"\ud800":1}]"#] {
+    for source in [
+        r#"[{"files":[],"name":"\ud800"}]"#,
+        r#"[{"files":["\udc00"]}]"#,
+        r#"[{"files":[],"\ud800":1}]"#,
+    ] {
         let error = parse_configuration(source).expect_err("invalid textual field");
         assert!(error.message.contains("unpaired UTF-16 surrogate"));
     }
-    let valid = parse_configuration(r#"[{"name":"\ud83d\ude80","files":["**/*.md"]}]"#).expect("paired surrogate");
+    let valid = parse_configuration(r#"[{"name":"\ud83d\ude80","files":["**/*.md"]}]"#)
+        .expect("paired surrogate");
     assert_eq!(valid[0].name.as_deref(), Some("🚀"));
 }
 
@@ -105,16 +153,32 @@ fn line_limits_use_exact_integer_values() {
     }
     for token in ["0", "-0", "0e100000"] {
         let input = parse_jsonc(format!("[{token}]").as_str()).expect("zero fixture");
-        assert_eq!(line_limit(&input.elements().expect("array")[0]).expect("zero count"), 0);
+        assert_eq!(
+            line_limit(&input.elements().expect("array")[0]).expect("zero count"),
+            0
+        );
     }
     let maximum = usize::MAX.to_string();
     let maximum_source = parse_jsonc(format!("[{maximum}]").as_str()).expect("maximum fixture");
-    assert_eq!(line_limit(&maximum_source.elements().expect("array")[0]).expect("maximum count"), usize::MAX);
+    assert_eq!(
+        line_limit(&maximum_source.elements().expect("array")[0]).expect("maximum count"),
+        usize::MAX
+    );
     let overflow_source = parse_jsonc(format!("[{maximum}0]").as_str()).expect("overflow fixture");
     assert!(line_limit(&overflow_source.elements().expect("array")[0]).is_err());
-    for token in ["-1", "0.5", "1e4000", "12345678901234567890123456789", "\"300\"", "true"] {
+    for token in [
+        "-1",
+        "0.5",
+        "1e4000",
+        "12345678901234567890123456789",
+        "\"300\"",
+        "true",
+    ] {
         let input = parse_jsonc(format!("[{token}]").as_str()).expect("rejected value fixture");
-        assert!(line_limit(&input.elements().expect("array")[0]).is_err(), "{token}");
+        assert!(
+            line_limit(&input.elements().expect("array")[0]).is_err(),
+            "{token}"
+        );
     }
 }
 

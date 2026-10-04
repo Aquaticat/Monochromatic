@@ -15,7 +15,7 @@
 /// import { parseJsonc, emitJsoncValue } from 'jsonc-edit';
 /// ```
 use super::merge_values;
-use monochromatic_jsonc_edit::{emit_jsonc_value, parse_jsonc, JsoncKind, JsoncValue};
+use monochromatic_jsonc_edit::{JsoncKind, JsoncValue, emit_jsonc_value, parse_jsonc};
 
 /// What: Read a required corpus field as an independent owned value.
 /// Why: Missing fixture fields must fail the test rather than silently remove a case.
@@ -49,7 +49,11 @@ fn merge_text(source: &str) -> JsoncValue {
     // Parse a known-valid test document, making syntax errors visible as test failures.
     let document = parse_jsonc(source).expect("merge fixture parses");
     // Borrow, rather than move, each element so the production signature matches runtime use.
-    let inputs: Vec<&JsoncValue> = document.elements().expect("merge fixture is an array").iter().collect();
+    let inputs: Vec<&JsoncValue> = document
+        .elements()
+        .expect("merge fixture is an array")
+        .iter()
+        .collect();
     // Lend the reference vector while the parsed fixture remains alive.
     return merge_values(&inputs);
 }
@@ -70,10 +74,19 @@ fn independent_json_corpus_matches() {
         // Read both sides before borrowing the input elements.
         let input_document = field(case, "inputs");
         let expected = field(case, "expected");
-        let inputs: Vec<&JsoncValue> = input_document.elements().expect("inputs are an array").iter().collect();
+        let inputs: Vec<&JsoncValue> = input_document
+            .elements()
+            .expect("inputs are an array")
+            .iter()
+            .collect();
         let actual = merge_values(&inputs);
         // Rust's assertion macro borrows both trees and displays their structural difference.
-        assert_eq!(actual, expected, "{}", emit_jsonc_value(&field(case, "name")));
+        assert_eq!(
+            actual,
+            expected,
+            "{}",
+            emit_jsonc_value(&field(case, "name"))
+        );
     }
 }
 
@@ -88,7 +101,8 @@ fn empty_inputs_produce_empty_record() {
 /// A type mismatch at any point selects the last value instead of folding later containers.
 #[test]
 fn all_input_mismatch_is_not_pairwise_folding() {
-    let input = parse_jsonc("[{\"k\":[1]}, {\"k\":false}, {\"k\":[2]}, {\"k\":[3]}]").expect("fixture parses");
+    let input = parse_jsonc("[{\"k\":[1]}, {\"k\":false}, {\"k\":[2]}, {\"k\":[3]}]")
+        .expect("fixture parses");
     let values: Vec<&JsoncValue> = input.elements().expect("array").iter().collect();
     let actual = merge_values(&values);
     let expected = parse_jsonc("{\"k\":[3]}").expect("expected record parses");
@@ -105,14 +119,21 @@ fn all_input_mismatch_is_not_pairwise_folding() {
 #[test]
 fn decoded_keys_and_first_key_spelling_survive() {
     let actual = merge_text(r#"[{"\u0061":{"first":true},"z":1},{"a":{"second":true},"b":2}]"#);
-    let expected = parse_jsonc(r#"{"\u0061":{"first":true,"second":true},"z":1,"b":2}"#).expect("expected record parses");
+    let expected = parse_jsonc(r#"{"\u0061":{"first":true,"second":true},"z":1,"b":2}"#)
+        .expect("expected record parses");
     assert_eq!(actual, expected);
 }
 
 /// Null, booleans, strings and numbers use the final value without treating null as absence.
 #[test]
 fn scalar_values_and_mixed_kinds_choose_last() {
-    for source in ["[null,null]", "[true,false]", "[1,2]", "[\"a\",\"b\"]", "[{},[],false]"] {
+    for source in [
+        "[null,null]",
+        "[true,false]",
+        "[1,2]",
+        "[\"a\",\"b\"]",
+        "[{},[],false]",
+    ] {
         let document = parse_jsonc(source).expect("fixture parses");
         let elements = document.elements().expect("array");
         let actual = merge_text(source);
@@ -125,10 +146,14 @@ fn scalar_values_and_mixed_kinds_choose_last() {
 fn input_trees_are_unchanged_and_output_is_owned() {
     // JSONC comments following a comma on the same line attach to the preceding value.
     // Put each leading comment on its own line so this fixture actually annotates both inputs.
-    let document = parse_jsonc("[\n/* first */ {\"a\":[1]},\n/* last */ {\"a\":[2]}\n]").expect("fixture parses");
+    let document = parse_jsonc("[\n/* first */ {\"a\":[1]},\n/* last */ {\"a\":[2]}\n]")
+        .expect("fixture parses");
     let snapshot = document.clone();
     let elements = document.elements().expect("array");
-    assert!(elements[1].comment.is_some(), "ownership control needs an actual final comment");
+    assert!(
+        elements[1].comment.is_some(),
+        "ownership control needs an actual final comment"
+    );
     let inputs: Vec<&JsoncValue> = elements.iter().collect();
     let mut actual = merge_values(&inputs);
     assert_eq!(actual.comment, elements[1].comment);
@@ -159,9 +184,12 @@ fn maximum_parser_depth_merges() {
     // A leaf record plus 511 enclosing records reaches the parser's 512-container limit.
     let prefix = "{\"x\":".repeat(511);
     let suffix = "}".repeat(511);
-    let left = parse_jsonc(&format!("{prefix}{{\"a\":1}}{suffix}")).expect("left boundary document parses");
-    let right = parse_jsonc(&format!("{prefix}{{\"b\":2}}{suffix}")).expect("right boundary document parses");
-    let expected = parse_jsonc(&format!("{prefix}{{\"a\":1,\"b\":2}}{suffix}")).expect("expected boundary document parses");
+    let left = parse_jsonc(&format!("{prefix}{{\"a\":1}}{suffix}"))
+        .expect("left boundary document parses");
+    let right = parse_jsonc(&format!("{prefix}{{\"b\":2}}{suffix}"))
+        .expect("right boundary document parses");
+    let expected = parse_jsonc(&format!("{prefix}{{\"a\":1,\"b\":2}}{suffix}"))
+        .expect("expected boundary document parses");
     let actual = merge_values(&[&left, &right]);
     assert_eq!(actual, expected);
 }
