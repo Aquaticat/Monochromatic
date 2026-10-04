@@ -103,5 +103,13 @@ await describe({
         },),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'KEEPS a rendering whose parenthesis opens with no space before it, since that shape is part '
+        + 'of the name rather than a gloss',
+      fn: async () => {
+        expect(withoutGloss({ rendering: 'Jinmao(Brocade)', },),).toBe('Jinmao(Brocade)',);
+      },
+    },),
   ],
 },);

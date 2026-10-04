@@ -272,5 +272,50 @@ await describe({
         expect(second.restored,).toEqual([],);
       },
     },),
+
+    it({
+      name: 'PLACES NO GLOSS where the parenthesis is unclosed or holds a line end, and NONE where the '
+        + 'handle sits inside a word',
+      fn: async () => {
+        /**
+         Passes over an unclosed parenthesis and a handle embedded in a word.
+         */
+        const unclosed = placeHandleGlosses({
+          slices: [HEADED,],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: '### Ten: Jinmao (Brocade Cat\n\nIt woke.\n\n'
+              + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
+          },],
+        },);
+        expect(bySlice({ replacements: unclosed.replacements, },).get(0,),).toContain(
+          '### Ten: Jinmao (Brocade Cat',
+        );
+        const embedded = placeHandleGlosses({
+          slices: [HEADED,],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: '### Ten: xJinmao\n\nIt woke.\n\n'
+              + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
+          },],
+        },);
+        expect(bySlice({ replacements: embedded.replacements, },).get(0,),).toContain('### Ten: xJinmao',);
+      },
+    },),
+
+    it({
+      name: 'LEAVES a replacement naming a slice the pass holds no text for, since nothing it writes can '
+        + 'be placed against a text that is not there',
+      fn: async () => {
+        const placed = placeHandleGlosses({
+          slices: [HEADED,],
+          replacements: [{
+            sliceIndex: 7,
+            replacementText: '### Ten: Jinmao (Brocade Cat)\n\nIt woke.',
+          },],
+        },);
+        expect(placed.replacements[0]?.replacementText,).toContain('Jinmao (Brocade Cat)',);
+      },
+    },),
   ],
 },);
