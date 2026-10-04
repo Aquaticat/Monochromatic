@@ -703,6 +703,30 @@ so a fresh context resumes from this file alone.
   the `corpus-run/canadian` batch.
 
 - 2026-10-04,
+  21:01 UTC:
+  the T8 `corpus-run/canadian` batch closed with commit `10210a333`:
+  4 line stretches over the canadian date and spelling files,
+  all cased
+  (the short year,
+  the missing year,
+  the runs-on comma,
+  and the stray underscore).
+  The reach census reads `ran 1, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-canadian.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-canadian-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-canadian-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `10210a333`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `mask` cluster
+  (the ranking's next at `census-E4DYQO`).
+
+- 2026-10-04,
   20:45 UTC:
   the next batch's baseline census taken at commit `2b86649b6`:
   `census written to ~/.cache/translation-repair/coverage/census-E2Gm5a/census.json`

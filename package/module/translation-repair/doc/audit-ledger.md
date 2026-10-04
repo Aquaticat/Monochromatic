@@ -6771,6 +6771,24 @@ reads `ran 2, still cold 2`:
 those two.
 No B entry found.
 
+The fifty-first cluster of that census,
+`corpus-run/canadian`,
+against `census-E4DYQO` at `5bad15aa9`:
+4 line stretches over `canadian-date-parts.ts`,
+`canadian-date-read-leading.ts`
+and `canadian-spelling-capital.ts`
+(`10210a333`).
+All cased:
+a date whose year is too short
+(the year drops and the day-month reorders),
+one whose sentence names no year,
+a sentence running on past its year
+(the year set off on both sides),
+and a stray underscore outside any emphasis.
+The reach census (`~/temp/agent/mimo-trial/reach-canadian.log`)
+reads `ran 1, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
