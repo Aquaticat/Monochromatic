@@ -120,6 +120,7 @@ No production implementation or new IME study is authorized by this artifact.</p
 <script>
 //region Pure shortcut classification, unknown platform data throws instead of choosing a fallback
 const modes = ['Repeat track','In order','Shuffle folder','Shuffle all'];
+const modeMarks = ['↻','→','⤨','⤨'];
 let state = { platform: 'windows-linux', playing: false, track: 0, mode: 1, inSearch: false,
   transportActions: 0, revealActions: 0, sourceChanges: 0, last: 'Focus a region to inspect its keys.' };
 function element(id) {
@@ -155,7 +156,7 @@ function shortcutAction(request) {
   return 'unbound';
 }
 function render() {
-  element('player-state').textContent = (state.playing ? 'Playing' : 'Paused') + ' · Authored track ' + (state.track + 1) + ' · ' + modes[state.mode];
+  element('player-state').textContent = (state.playing ? '▶ Playing' : 'Ⅱ Paused') + ' · Authored track ' + (state.track + 1) + ' · ' + modeMarks[state.mode] + ' ' + modes[state.mode];
   element('toggle').textContent = state.playing ? 'Pause' : 'Play';
   element('search').hidden = !state.inSearch;
   element('last-action').textContent = state.last;
