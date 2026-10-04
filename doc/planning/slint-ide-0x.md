@@ -2,11 +2,11 @@
 
 ## Status
 
-Scope questions are answered.
-The consolidated contract is awaiting the user's final shared-understanding confirmation.
-No implementation starts before that confirmation.
-This remains a planning record,
-not a completed implementation or final adoption record.
+The user confirmed the consolidated contract.
+The accepted scope is recorded in [the decision document][accepted-scope].
+The current request is to explain the build approach first.
+[The implementation proposal][implementation] records that explanation separately;
+no application implementation has started.
 
 ## Explicit requirements
 
@@ -293,7 +293,7 @@ Preserve a complete record when the plan moves into package documentation.
 - Baseline correction:
   remove go-to-line.
 
-Carry forward the rest of the proposed floor for final confirmation:
+The final confirmation also accepted the remaining floor:
 one local root,
 one window,
 one file view,
@@ -301,7 +301,7 @@ line numbers,
 selection/copy,
 and in-file find.
 
-Carry forward the proposed cuts for final confirmation:
+The final confirmation also accepted the remaining cuts:
 tabs,
 split panes,
 Git/status/diff UI,
@@ -454,7 +454,7 @@ no arbitrary task-launching feature,
 and no persistent session-restore feature are added.
 Inspect and exercise subprocess writes before implementation is accepted.
 
-## Consolidated build contract awaiting confirmation
+## Confirmed build contract
 
 ### Purpose and boundaries
 
@@ -577,11 +577,11 @@ No later editing roadmap is implied.
 
 ## Next action
 
-Present the consolidated contract and request final shared-understanding confirmation.
-Do not reopen settled scope questions.
-After confirmation,
-record the accepted contract and begin the agent-owned integration investigation and implementation.
-If probing exposes a genuine requirement conflict,
+The scope is confirmed and recorded in `doc/decision/slint-ide-0x-scope.md`.
+Explain `doc/planning/slint-ide-implementation.md` before implementation,
+as the user requested.
+Do not ask for scope confirmation again.
+If later integration probing exposes a genuine requirement conflict,
 report the evidence and ask only the controlling decision.
 
 Round 3 evidence:
@@ -607,6 +607,8 @@ Planning history:
 Scoped Markdown lint and micromark rendered-output checks passed through the language-scope update.
 Repeat both for the consolidated contract.
 
+[accepted-scope]: ../decision/slint-ide-0x-scope.md
+[implementation]: slint-ide-implementation.md
 [editor-readme]: ../../package-paused/desktop-daemon/editord/README.md
 [editor-philosophy]: ../../package-paused/desktop-daemon/editord/PHILOSOPHY.md
 [comparison]: ../../package-paused/desktop-daemon/editord/docs/decisions/webstorm-comparison.md
