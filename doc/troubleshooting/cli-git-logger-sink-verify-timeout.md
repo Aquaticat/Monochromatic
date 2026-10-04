@@ -27,15 +27,16 @@ Long tool calls that budget tightly around `git`
  from `package/module/logger/src/create-logger.ts`:
  `verifyAndApply` runs each sink's `verify()` under `withHostTimeout`
  with `verifyTimeoutMs` (5000 ms),
- and a timed-out verify reports the internal error above,
+ and a timed-out verify reports the quoted diagnostic,
  then drops that sink
  (`markEntryUnavailable`),
  so the records that sink would carry are lost for that process.
 
 ## Working diagnosis
 
-Sink entry 3 is the fourth sink the cli-git hook logger configures,
- and its `verify()` never answers within 5 seconds in this environment.
+In the reported invocations,
+entry 3's verification did not complete before its 5000 ms deadline.
+That index identifies the fourth sink in the emitting logger instance.
 The reporting session described the failure as persistent across invocations.
 That observation does not establish whether host load contributed.
 
@@ -143,8 +144,8 @@ Candidate endpoints:
 The logger and timeout source did not change between that reported revision and this investigation.
 Commit `ee58222bc` introduced the verification deadline on 2026-09-06,
 before the issue's reported onset window.
-The September 23 timerless-host changes remain a hypothesis to test,
-not an established cause.
+The September 23 timerless-host changes are not an established cause;
+the endpoint and positive-control results constrain that hypothesis.
 
 An isolated sparse worktree at `d322d083e` rebuilt the wrapper with
 `mise run //package/git-policy/cli:build:js:node`.
