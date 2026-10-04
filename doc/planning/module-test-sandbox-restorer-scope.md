@@ -2,19 +2,17 @@
 
 ## Status
 
-Confirmed resolution plan for [issue 582](https://github.com/Aquaticat/Monochromatic/issues/582).
+Resolved [issue 582](https://github.com/Aquaticat/Monochromatic/issues/582).
 The user confirmed the scope-only change after the grilling round.
 The implementation moves the callback declaration without changing its body or execution order.
-The first rebuilt-artifact unit run passed.
-Lint confirmed removal of the scope warning but reported `stylistic(max-statements-per-line)`
-on the moved one-line declaration.
-The declaration body now occupies its own line; final verification is pending.
-No design questions remain open.
+Final package lint, type checking, and rebuilt-artifact unit tests passed.
+GitHub confirms the issue is closed.
+No design questions or follow-up actions remain open.
 
 ## Evidence
 
-`mise run //package/module/test:lint` exits with status 1.
-Oxlint reports one warning and no errors across 68 files:
+Before the fix, `mise run //package/module/test:lint` exited with status 1.
+Oxlint reported one warning and no errors across 68 files:
 `unicorn(consistent-function-scoping)` at `package/module/test/src/sandbox.ts:89:16`.
 The named callback `restoreOrdinarySandbox` contains only `raw.restore()`.
 Its captured `raw` belongs to `createOwnedSandbox`, not to `restore`.
@@ -41,13 +39,21 @@ the patch must preserve both explicitly.
 
 ## Verification and completion
 
-Completion checklist:
+- `7a1df4dce` moved the declaration and referenced issue 582 for closure.
+- The first build/unit run passed, but lint reported `stylistic(max-statements-per-line)`
+  on the moved one-line declaration.
+  `fd6dbba98` placed its body on a separate line without changing the method call.
+- Final `mise run //package/module/test:lint` exited successfully,
+  including `lint:types`, with zero warnings and zero errors across 68 files.
+- Final `mise run //package/module/test:buildAndTest` exited successfully.
+  It rebuilt the Node and neutral artifacts and browser fixture before running the package unit suite.
+  Cleanup boundaries, attempt lifetime, ordinary timers, injected capabilities,
+  installation failure handling, and mixed harness copies passed.
+- Existing behavioral tests cover the unchanged restoration paths.
+  The lint baseline and final run verify the declaration-scope correction without adding a source-layout test.
+- The final source diff contains only the documented callback declaration move and reference replacement.
+  Unrelated concurrent changes were not included in task commits.
+- `gh issue view 582 --repo Aquaticat/Monochromatic --json state,closedAt,url` confirmed closure.
 
-- Commit the scoped implementation change with the issue reference.
-- Run package lint, including `lint:types`, and require no warnings or errors.
-- Rebuild the package and run its unit tests against fresh built artifacts.
-- Inspect cleanup test results and the final diff; leave unrelated concurrent work untouched.
-- Record results and verify that the issue closes after the fix reaches the default branch.
-
-Browser execution is not included in this proposed scope.
-A runtime-specific failure would require revisiting that boundary.
+Browser execution was excluded by the confirmed scope and was not run.
+Building the browser fixture is not evidence of browser execution.
