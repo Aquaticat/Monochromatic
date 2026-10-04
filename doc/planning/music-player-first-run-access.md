@@ -166,7 +166,8 @@ not exercised against real state.
 The current access flag is remembered on composition entry and updated
 by the permission-result callback.
 No independent Settings-return access refresh was observed inside
-`appRoot`; this scoped observation does not establish whole-app behavior.
+`appRoot`;
+this scoped observation does not establish whole-app behavior.
 
 ## Continuation correction
 
