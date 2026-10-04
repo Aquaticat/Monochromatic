@@ -683,6 +683,24 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:00 UTC:
+  the next batch's baseline census taken at commit `187348d0e`:
+  `census written to ~/.cache/translation-repair/coverage/census-pN6fUe/census.json`
+  (`~/temp/agent/mimo-trial/census-64.log`).
+  `library source: 105 files, 164 stretches over 367 lines, 4 functions never called`.
+  The ranking's first three clusters carry documented-left arms.
+  The next actionable cluster is `model`
+  with 3 stretches over 9 lines in 2 files
+  (`model-card-derive.ts:366`,
+  `421-427`,
+  `model-content.ts:36`),
+  then `corpus-run/runs`,
+  `transient`.
+  This line lands in the trial-log commit that follows `187348d0e`.
+  Next:
+  the `model` batch.
+
+- 2026-10-04,
   21:53 UTC:
   the T8 `hyper` batch closed with commit `309cafca9`:
   3 line stretches over `hyper-client.ts`,
