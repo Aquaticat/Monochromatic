@@ -2,10 +2,11 @@
 
 ## Status
 
-Grilling in progress.
-No implementation is authorized until the user confirms shared understanding at the end of the interview.
-This is a proposal record,
-not an adoption decision.
+Scope questions are answered.
+The consolidated contract is awaiting the user's final shared-understanding confirmation.
+No implementation starts before that confirmation.
+This remains a planning record,
+not a completed implementation or final adoption record.
 
 ## Explicit requirements
 
@@ -45,6 +46,11 @@ not an adoption decision.
   omit a project-wide problems view.
 - Choose inlay placement by implementation evidence;
   the user delegates this choice rather than requiring either proposed presentation.
+- Language support is capability-aware:
+  implement all five feature paths,
+  but do not fabricate capabilities unavailable for a particular language.
+- Private application/tool cache and temporary writes outside the project are allowed.
+  Project mutation remains excluded.
 - Helix-owned components are preapproved candidates.
   The user explicitly requests no broad choosing-technology exercise for this task.
   Inspect only the integration APIs,
@@ -120,11 +126,8 @@ A terminal or task launcher must not reintroduce these workflows.
 This is a product scope decision,
 not evidence of sandbox enforcement.
 Clipboard copying is not project-file mutation.
-No application-private persistence requirement has been accepted;
-resolve settings,
-logs,
-caches,
-and session-state writes if a surviving workflow needs them.
+Q14 explicitly allows private application/tool cache and temporary writes outside the project.
+This does not add a persistent session-restore feature or authorize project-file mutations.
 
 ### Round 1 answers
 
@@ -430,33 +433,100 @@ and Batch entries do not specify a language server.
 Grammar recognition and highlighting are not equivalent to support for all semantic features.
 Configured servers for other entries are not proof that their executables are installed or every capability works.
 
-## Remaining scope questions
+## Round 4 answers
 
 ### Q13: Helix ceiling per capability
 
-Does the Helix ceiling apply to individual language-intelligence capabilities as well as language names?
-
-Recommendation:
-implement the five required feature paths in the app,
-use the capabilities available for each supported language,
+Accepted:
+capability-aware language support.
+Implement the five required feature paths in the app,
+use capabilities available for each supported language,
 and explicitly report unsupported capabilities.
 Languages with Helix grammar support but no language server remain highlight/read/search-only.
 Do not invent custom semantic backends to make every feature universal.
-This interpretation needs confirmation rather than silently weakening Q5.
 
 ### Q14: application-private writes
 
-Does the no-write boundary allow disposable application/tool caches outside the project,
-or forbid those as well?
-
-Recommendation:
-no project-file mutations,
-no arbitrary task execution,
-and no persistent session-restore feature;
-permit explicitly scoped private temporary/cache storage if integration requires it.
-This is a proposed boundary,
-not a claim that selected tools already comply.
+Accepted:
+private application/tool cache and temporary storage outside the project.
+No project-file mutations,
+no arbitrary task-launching feature,
+and no persistent session-restore feature are added.
 Inspect and exercise subprocess writes before implementation is accepted.
+
+## Consolidated build contract awaiting confirmation
+
+### Purpose and boundaries
+
+Build a Slint desktop application for reading and navigating live local source code.
+Target this host only.
+Use editord as a familiar reference and document every deliberate difference.
+Helix-owned components are preapproved;
+this does not adopt Helix's modal interaction model or require embedding its full editor.
+
+### Required surface
+
+- One local project root,
+  one window,
+  and one source-file view.
+- File tree and combined file-path/content search.
+- Syntax highlighting,
+  line numbers,
+  read-only caret/selection,
+  copying,
+  and in-file find.
+- Go-to-definition,
+  references,
+  hover types/documentation,
+  inlay hints,
+  and displayed-file diagnostics,
+  subject to actual language capabilities.
+- Actual-use language inventory bounded by Helix support.
+  Unsupported types remain readable as plain text without fabricated language intelligence.
+- Automatic external-change refresh with no selection hold.
+  Reconcile caret and selection to corresponding text regions,
+  including replacements;
+  keep the reading location approximately stable in the viewport.
+  The supplied caret and selection examples are acceptance cases.
+- Private cache/temp writes outside the project when required by integration.
+
+### Explicit cuts
+
+- Editing,
+  saving,
+  formatting,
+  refactoring,
+  file creation,
+  rename,
+  move,
+  deletion,
+  and other direct or delegated project mutations.
+- Go-to-line command.
+  Position-targeted search and language navigation remain required.
+- Tabs,
+  split panes,
+  and multiple project roots in the app.
+- Git/status/diff UI,
+  terminal/task control,
+  and agent dashboards.
+- Project-wide problems view.
+- Media previews,
+  rendered Markdown/document previews,
+  and persistent session restore.
+- Remote filesystem support,
+  additional platform promises,
+  and custom integrations for languages missing from Helix.
+
+### Required verification
+
+- Verify through the actual Slint application on the current desktop,
+  not only unit tests or compilation.
+- Exercise all required language-intelligence feature paths against actual servers.
+  Distinguish unavailable capabilities from broken supported capabilities.
+- Exercise the supplied caret and replaced-selection examples under external file changes.
+- Verify refresh does not wait for selection release and stale asynchronous results do not overwrite newer state.
+- Verify app and subprocess project-write boundaries against disposable fixtures.
+- Check every deliberate reference deviation is in the behavior-difference register.
 
 ## Agent-owned implementation investigation
 
@@ -487,32 +557,32 @@ not questions to hand back to the user.
 - Establish search-result freshness and stale-target navigation behavior.
 - Probe file-size and directory-size behavior using disposable fixtures and explicit resource bounds.
 
-## Downstream decisions
+## Implementation decisions delegated to the agent
 
-Recompute the frontier after the user's answers.
-Do not ask feature-specific questions before the primary job is settled.
+Remaining research determines code reuse,
+host language,
+process boundaries,
+concrete rendering,
+server integration,
+and the implementation sequence.
+These are not new user preference questions unless evidence reveals a conflict with the accepted contract.
 
-- Workflow determines the minimum end-to-end acceptance scenario and feature cut list.
-- Mutation and execution boundaries determine what read-only means at the user boundary.
-- Chosen navigation features determine language-service and text-interaction requirements.
-- Supported environments determine deployment and native-integration acceptance.
-- Requirements determine code reuse,
-  host language,
-  libraries,
-  and process boundaries;
-  do not ask the user to substitute for source research.
-- Retained reference behavior determines interaction contracts and freshness tests.
-- The final scope must distinguish the first shippable slice from the rest of 0.x.
-- Implementation starts only after explicit confirmation of shared understanding.
+Choose inlay placement using implementation evidence.
+Retain familiar reference behavior where it fits the accepted scope;
+document each departure rather than treating all JetBrains behavior as mandatory.
+
+Do not split required features into unspecified future 0.x work:
+the first completed deliverable must meet the confirmed contract.
+No later editing roadmap is implied.
 
 ## Next action
 
-Present the measured language inventory and Q13/Q14.
-Do not reopen language enumeration,
-current-file diagnostic scope,
-inlay preference,
-or the caret/selection examples.
-Then consolidate the scope for explicit shared-understanding confirmation before implementation.
+Present the consolidated contract and request final shared-understanding confirmation.
+Do not reopen settled scope questions.
+After confirmation,
+record the accepted contract and begin the agent-owned integration investigation and implementation.
+If probing exposes a genuine requirement conflict,
+report the evidence and ask only the controlling decision.
 
 Round 3 evidence:
 `git ls-files` over `package`,
@@ -529,9 +599,13 @@ Planning history:
 `c5654c5e1` introduced the record;
 `c37f58ca5` fixed semantic line breaks;
 `3cf1e698c` applied the no-write requirement to candidate workflows;
-`9f1894d94` recorded Round 1 answers and the difference contract.
-The initial and Round 1 records passed scoped Markdown lint and micromark rendered-output checks.
-Repeat both after this round's update.
+`9f1894d94` recorded Round 1 answers and the difference contract;
+`3609e6b4b` recorded required intelligence and caret preservation;
+`aee461f00` recorded viewport/selection correspondence;
+`4fb29aa6b` fixed the clarification's semantic breaks;
+`383474dc5` recorded measured languages and the Helix ceiling.
+Scoped Markdown lint and micromark rendered-output checks passed through the language-scope update.
+Repeat both for the consolidated contract.
 
 [editor-readme]: ../../package-paused/desktop-daemon/editord/README.md
 [editor-philosophy]: ../../package-paused/desktop-daemon/editord/PHILOSOPHY.md
