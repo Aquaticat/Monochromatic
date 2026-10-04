@@ -6912,6 +6912,29 @@ reads `ran 0, still cold 2`:
 those two.
 No B entry found.
 
+The fifty-eighth cluster of that census,
+`corpus-run/dropped`,
+against `census-MkpU3W` at `d4822f994`:
+3 line stretches over `dropped-destinations.ts`
+(`b55509754`).
+Landed:
+the run case shedding its sentence stopper
+and reading several runs in order.
+Left:
+the earliest-reduce arm
+(`187`),
+the run-advance arm
+(`241`),
+and the stopper walk's return pair
+(`292-295`):
+the case's shapes did not reach them
+(the run walk's arms need a run consuming nothing
+and a trim walking to its first stopper).
+The reach census (`~/temp/agent/mimo-trial/reach-dropped.log`)
+reads `ran 0, still cold 3`:
+those three.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

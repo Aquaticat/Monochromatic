@@ -683,6 +683,34 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:24 UTC:
+  the T8 `corpus-run/dropped` batch closed with commit `b55509754`:
+  3 line stretches over `dropped-destinations.ts`,
+  the run case landed
+  (the stopper shed
+  and several runs read in order),
+  the three arms left documented
+  (the earliest-reduce arm,
+  the run-advance arm,
+  and the stopper walk's return pair:
+  the case's shapes did not reach them).
+  The reach census reads `ran 0, still cold 3`:
+  those three
+  (`~/temp/agent/mimo-trial/reach-dropped.log`).
+  Counts at the close:
+  the full suite 1,562 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-dropped-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-dropped-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `b55509754`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `lookup` cluster
+  (the ranking's next at `census-MkpU3W`).
+
+- 2026-10-04,
   22:20 UTC:
   the next batch's baseline census taken at commit `c06539dd8`:
   `census written to ~/.cache/translation-repair/coverage/census-MkpU3W/census.json`
