@@ -115,6 +115,7 @@ export {
   createAnswerChannel,
   type AnswerChannel,
 } from './answer-channel.ts';
+export { AnswerHelperStartupTimeoutError, } from './answer-channel-auth.ts';
 export {
   isBlankAnswer,
   normalizeEditorAnswer,

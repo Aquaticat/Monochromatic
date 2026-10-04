@@ -1,6 +1,9 @@
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
-import { rm, } from 'node:fs/promises';
+import {
+  rm,
+  stat,
+} from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
 //region Isolated running consumer
@@ -24,12 +27,25 @@ if (scenario === 'runtime-removed') {
   // Editor also needs the same still-running executable after its path is removed.
   editorCommand[0] = `/proc/${String(process.pid,)}/exe`;
 }
+if (scenario === 'helper-missing-before-launch')
+  await rm(new URL('./answer-helper.mjs', import.meta.url,),);
+try {
 const outcome = await requestExternalAnswer({
   cwd: process.cwd(),
   registry: createRequestRegistry(),
   editorCommand,
   resolveTerminalEntryId: async () => 'fixture',
   launch: async ({ command, },) => {
+    if (scenario === 'helper-missing-before-launch')
+      throw new Error('Opened terminal despite missing helper bundle.',);
+    const helperPath = command[1];
+    const requestPath = command.at(-1,);
+    if ((helperPath === undefined) || (requestPath === undefined))
+      throw new Error('Missing private helper or request path.',);
+    if (dirname(helperPath,) !== dirname(requestPath,))
+      throw new Error('Helper launch still depends on installed bundle path.',);
+    if ((process.platform !== 'win32') && (((await stat(helperPath,)).mode & 0o777) !== 0o600))
+      throw new Error('Private helper is not restricted to its owner.',);
     if (scenario === 'helper-removed-after-launch')
       await rm(new URL('./answer-helper.mjs', import.meta.url,),);
     const [executable, ...args] = command;
@@ -52,5 +68,12 @@ const outcome = await requestExternalAnswer({
 if ((outcome.status !== 'answered') || (outcome.answer !== 'first\nsecond'))
   throw new Error(`Unexpected answer: ${JSON.stringify(outcome,)}`,);
 console.log(`verified ${String(scenario,)}`,);
+}
+catch (error: unknown) {
+  if ((scenario !== 'helper-missing-before-launch') || !(error instanceof Error)
+    || (error.name !== 'AnswerLaunchError') || !error.message.includes('answer-helper.mjs'))
+    throw error;
+  console.log(`verified ${scenario}`,);
+}
 
 //endregion Isolated running consumer

@@ -40,6 +40,28 @@ const AUTHENTICATION_REJECTED: unique symbol = Symbol('ask-user-question/helper-
 
 //endregion Constants
 
+//region Startup failure
+
+/**
+ Distinguishes helper startup deadline from user or session cancellation.
+ */
+export class AnswerHelperStartupTimeoutError extends Error {
+  /**
+   Preserves timeout evidence without assigning an unobserved cause.
+
+   @param cause - channel wait interrupted by startup deadline
+   */
+  constructor(cause: unknown,) {
+    super(
+      'The answer helper did not connect within 30 seconds. The detached terminal may have failed to start it or opened too late. Inspect the detached terminal error and retry the question. If this repeats, check the runtime and helper bundle paths in the launch log, finish any package rebuild, and restart Pi.',
+      { cause, },
+    );
+    this.name = 'AnswerHelperStartupTimeoutError';
+  }
+}
+
+//endregion Startup failure
+
 //region Logger
 
 /**
@@ -116,6 +138,7 @@ export async function acceptAuthenticatedSocket(
       signal,
       deadlineSignal,
     ],);
+  try {
   for await (const connection of on(
     server,
     'connection',
@@ -143,6 +166,12 @@ export async function acceptAuthenticatedSocket(
     l.warn('rejected unauthenticated answer helper connection',);
   }
   throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
+  }
+  catch (error: unknown) {
+    if (deadlineSignal.aborted && (startupSignal.reason === deadlineSignal.reason))
+      throw new AnswerHelperStartupTimeoutError(error,);
+    throw error;
+  }
 }
 
 /**
