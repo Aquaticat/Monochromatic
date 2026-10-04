@@ -22,7 +22,7 @@ not asking about pill colour or spacing below their hard floors.
 
 ## Independently verifiable queue
 
-- [ ] Inspect the accepted dark error/toast candidates,
+- [x] Inspect the accepted dark error/toast candidates,
   current operation owners and token roles.
   Completion requires distinguishing known missing-file signals,
   failed trash operations and actual Undo capability from invented
@@ -69,5 +69,76 @@ not a current source-operation proof.
 `package/music-player/design/open-questions.md` section 11d lists the light error bar and
 Undo toast as undrawn.
 
-The next action is the state/operation-owner audit before any new native
-artifact is built.
+## Completed source/operation audit
+
+The historical `err-b` and `toast-a` files were read completely.
+They predate the accepted native Fold composition and still contain
+superseded track ordinals,
+play markers,
+in-app volume and sub-48dp controls.
+Carry D8/D9/D29's behavioral requirements,
+not those obsolete implementation details,
+into the native study.
+The historical six-second demo timer is not an accepted universal Undo
+interval or an accessibility timeout policy.
+
+A source search across Android main Kotlin,
+desktop Rust and Slint found no implemented trash/Undo UI action;
+the literal Undo hits were unrelated comments.
+`PlayerUiState` exposes no error/Undo outcome field.
+These are inspected-source limits,
+not proof that every platform or dependency path lacks such capability.
+
+`MainActivity.kt:1670` currently persists only the chosen tree's read grant.
+That does not establish permission to trash or restore its documents.
+The installed API37 `MediaStore.java:2027` to `2071` documents
+`createTrashRequest` as request generation:
+it displays a system prompt,
+then applies `IS_TRASHED` after approval,
+and finishes the operation before delivering `RESULT_OK`.
+Request generation or pending approval is not successful trash.
+The same API with `false` requests removal from trash.
+The current [shared-media guide][shared-media] corroborates the separate
+access and operation boundaries.
+
+The installed API37 source also exposes flagged path-based `trashFile`
+and `restoreFileFromTrash` methods,
+requiring declared and granted `MANAGE_EXTERNAL_STORAGE`.
+The current app manifest declares neither that permission nor
+`MANAGE_MEDIA`.
+Their SDK declarations establish neither availability in the captured
+runtime nor a reason to adopt broader access.
+No special storage access is selected or requested here.
+
+`DocumentsContract.java:576` marks deletability,
+while `deleteDocument` invokes provider deletion.
+That operation is not documented as a reversible trash/restore contract.
+Provider deletion capability alone supplies no Undo owner.
+The source audit does not claim Android universally requires one prompt
+or universally forbids direct operations;
+current ownership and grants matter.
+D8 does not authorize bypassing OS consent or falsely reporting success.
+
+## Fixture implementation in progress
+
+The owned debug worktree now has exact missing,
+Undo,
+combined,
+failed-trash and pending-trash fixtures.
+A successful Undo fixture requires explicitly authored completed outcome,
+a restoration handle and a live interval.
+Failed,
+cancelled,
+pending,
+expired and missing-handle controls reject successful Undo feedback.
+The combined state separates three unavailable-file outcomes from one
+successfully trashed authored row.
+No file is actually changed.
+
+The native renderer and overlap/fit evidence are still pending.
+The next action is committed fixture tests with fresh guard-removal proofs,
+then isolated native layout using the settled player baseline.
+The first-run captured APK and source revision remain immutable;
+new builds are a separate light-feedback cohort.
+
+[shared-media]: https://developer.android.com/training/data-storage/shared/media
