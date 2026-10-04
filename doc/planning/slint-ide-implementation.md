@@ -3,9 +3,34 @@
 ## Status and purpose
 
 The [0.x scope][scope] is accepted.
-The user requests the build approach before implementation.
-This document proposes architecture and sequencing;
-no application implementation or integration spike has run yet.
+The user reviewed the approach and explicitly requested implementation.
+Work has started in `package/desktop-app/ide`.
+The confirmed deliverable remains incomplete until every gate is verified.
+
+## Implementation queue
+
+- [ ] Source view and document correspondence.
+  Document interface exists;
+  all 7 consumer tests pass,
+  including both user examples,
+  reverse selection,
+  Unicode,
+  deletion,
+  stale reload rejection,
+  and selection movement during pending work.
+  Native rendering/interaction is not yet verified.
+- [ ] Live workspace tree and search.
+- [ ] Five required language-intelligence feature paths and synchronization.
+- [ ] Measured Helix-supported runtime languages and project-write confinement.
+- [ ] Native integration tests,
+  lint,
+  packaging,
+  and completed behavior-difference record.
+
+Verification so far:
+`mise run //package/desktop-app/ide:test` passed in a container capped at 2 GiB and 2 CPUs.
+Cargo resolved Slint to 1.18.1 under the sibling-compatible caret requirements;
+inspect those installed interfaces during the native-view work rather than assume the 1.17 source baseline is identical.
 
 ## Architecture
 
@@ -279,7 +304,7 @@ The proposed first gate must establish the usable implementation before the rest
 
 ## Next action
 
-Explain this proposal to the user before implementation.
-No application source files have been added or changed.
+Implement and verify the selectable highlighted source view with native input.
+Then continue through the remaining implementation queue without treating the document tests as product completion.
 
 [scope]: ../decision/slint-ide-0x-scope.md
