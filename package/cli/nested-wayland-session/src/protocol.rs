@@ -14,6 +14,10 @@
 /// ```
 use std::path::PathBuf;
 
+/// Real-wheel command parsing is separate from the existing control verbs.
+#[path = "protocol_wheel.rs"]
+mod wheel;
+
 /// Which pointer button a click uses.
 ///
 /// What:     `pub enum PointerButton { Left, Right, Middle }`. A closed set of three
@@ -124,6 +128,17 @@ pub enum Command {
         y: f64,
         /// Which button to click.
         button: PointerButton,
+    },
+    /// Deliver actual Wayland wheel notches at a logical point.
+    Wheel {
+        /// Logical x coordinate.
+        x: f64,
+        /// Logical y coordinate.
+        y: f64,
+        /// Positive notches move right.
+        horizontal: i32,
+        /// Positive notches move down.
+        vertical: i32,
     },
     /// Press/release/tap a named key.
     Key {
@@ -298,6 +313,7 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "ping" => return Ok(Command::Ping),
         "quit" => return Ok(Command::Quit),
         "click" => return parse_click(&mut tokens),
+        "wheel" => return wheel::parse(&mut tokens),
         "key" => return parse_key(&mut tokens),
         "resize" => return parse_resize(&mut tokens),
         "drop-file" => return parse_drop_file(&mut tokens),

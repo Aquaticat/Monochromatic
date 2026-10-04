@@ -73,6 +73,9 @@ pub mod encoder;
 /// ```
 pub mod input;
 
+/// True notched-wheel input reaches the hosted client's native Wayland path.
+pub mod input_wheel;
+
 /// What:     `pub mod keymap;`. Declares the US-layout keycode tables.
 /// Why:      Maps characters and key names to evdev keycodes; display-independent.
 ///

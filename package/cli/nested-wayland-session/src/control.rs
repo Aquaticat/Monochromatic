@@ -324,6 +324,12 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             input::click(state, x, y, button);
             return Response::Ok
         }
+        Command::Wheel { x, y, horizontal, vertical } => {
+            match crate::input_wheel::wheel(state, x, y, horizontal, vertical) {
+                Ok(()) => return Response::Ok,
+                Err(error) => return Response::Err(format!("{error:#}")),
+            }
+        }
         Command::Key { name, action } => {
             // What:     `match keymap::named_key(&name) { Some(evdev) => { input::key(...);
             //           Response::Ok } None => Response::Err(...) }`. Resolve the key name;
