@@ -6,12 +6,12 @@
 //! // MD034 and MD054 over parser-owned links and references.
 //! ```
 
-/// Import typed link/reference data and the common result models.
-use satteri_ast::mdast::{decode_link_data, decode_reference_data, MdastNodeType};
 use crate::diagnostic::{Diagnostic, Severity};
 use crate::edits::Edit;
 use crate::markdown_finding::finding;
 use crate::markdown_source::MarkdownSource;
+/// Import typed link/reference data and the common result models.
+use satteri_ast::mdast::{MdastNodeType, decode_link_data, decode_reference_data};
 
 /// Escape only the punctuation significant to the destination Markdown context.
 fn escape(text: &str, reserved: &[char]) -> String {
@@ -23,6 +23,23 @@ fn escape(text: &str, reserved: &[char]) -> String {
         output.push(character);
     }
     return output;
+}
+
+/// What: Select the target syntax and its explanation together.
+/// Why: Each branch returns a complete replacement instead of leaving late-initialized values.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function bareLinkReplacement(mdx: boolean, written: string, url: string): [string, string];
+/// ```
+fn bare_link_replacement(mdx: bool, written: &str, url: &str) -> (String, &'static str) {
+    if !mdx {
+        return (format!("<{written}>"), "Bare URL; wrap it in angle brackets.");
+    }
+    // Borrow context-specific punctuation lists; each output string owns its escaped content.
+    let label: String = escape(written, &['\\', '[', ']']);
+    let destination: String = escape(url, &['\\', '<', '>']);
+    return (format!("[{label}](<{destination}>)"), "Bare URL; use an inline link.");
 }
 
 /// Wrap bare supported URLs/emails without turning MDX text into JSX.
@@ -47,20 +64,20 @@ pub fn no_bare_urls(context: &MarkdownSource, severity: Severity) -> Vec<Diagnos
         if !wrappable {
             continue;
         }
-        let replacement;
-        let message;
-        if context.mdx {
-            let label = escape(written, &['\\', '[', ']']);
-            let destination = escape(url, &['\\', '<', '>']);
-            replacement = format!("[{label}](<{destination}>)");
-            message = "Bare URL; use an inline link.";
-        } else {
-            replacement = format!("<{written}>");
-            message = "Bare URL; wrap it in angle brackets.";
-        }
+        let (replacement, message): (String, &str) = bare_link_replacement(context.mdx, written, url);
         let (start, end) = context.offsets(*id);
-        findings.push(finding(context, *id, "markdown/no-bare-urls", severity,
-            String::from(message), Some(Edit { start, end, replacement })));
+        findings.push(finding(
+            context,
+            *id,
+            "markdown/no-bare-urls",
+            severity,
+            String::from(message),
+            Some(Edit {
+                start,
+                end,
+                replacement,
+            }),
+        ));
     }
     return findings;
 }
@@ -79,9 +96,18 @@ pub fn link_image_style(context: &MarkdownSource, severity: Severity) -> Vec<Dia
             continue;
         }
         let (_, end) = context.offsets(*id);
-        findings.push(finding(context, *id, "markdown/link-image-style", severity,
+        findings.push(finding(
+            context,
+            *id,
+            "markdown/link-image-style",
+            severity,
             String::from("Shortcut reference style; use the collapsed `[label][]` style."),
-            Some(Edit { start: end, end, replacement: String::from("[]") })));
+            Some(Edit {
+                start: end,
+                end,
+                replacement: String::from("[]"),
+            }),
+        ));
     }
     return findings;
 }

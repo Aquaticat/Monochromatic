@@ -72,17 +72,17 @@ fn native_adapter_distinguishes_file_absence_and_failures() {
             .expect("not a directory is absent"),
         None
     );
-    let error = adapter
+    let directory_error = adapter
         .read(&fixture.path)
         .expect_err("directory is not a file");
-    assert!(error.message.contains("not a regular file"));
+    assert!(directory_error.message.contains("not a regular file"));
     std::fs::write(&source, [0xff]).expect("write invalid UTF-8");
-    let error = adapter.read(&source).expect_err("invalid source encoding");
-    assert!(error.message.contains("Cannot read configuration"));
-    let error = adapter
+    let encoding_error = adapter.read(&source).expect_err("invalid source encoding");
+    assert!(encoding_error.message.contains("Cannot read configuration"));
+    let path_error = adapter
         .read(&fixture.path.join("invalid\0name"))
         .expect_err("NUL path is rejected");
-    assert!(error.message.contains("Cannot inspect configuration"));
+    assert!(path_error.message.contains("Cannot inspect configuration"));
 }
 
 /// The production entry point uses the native adapter and preserves an explicit config's base.
@@ -204,15 +204,15 @@ fn read_failures_and_relative_cwd_are_errors() {
     let base = root();
     let mut filesystem = MemoryFilesystem::default();
     filesystem.failures.insert(base.join(CONFIG_NAME));
-    let error = discover_with_filesystem(Path::new("file.rs"), &base, None, &filesystem)
+    let read_error = discover_with_filesystem(Path::new("file.rs"), &base, None, &filesystem)
         .expect_err("read failure");
-    assert!(error.message.contains("read failed"));
-    let error = discover_with_filesystem(
+    assert!(read_error.message.contains("read failed"));
+    let cwd_error = discover_with_filesystem(
         Path::new("file.rs"),
         Path::new("relative"),
         None,
         &filesystem,
     )
     .expect_err("relative cwd");
-    assert!(error.message.contains("absolute working directory"));
+    assert!(cwd_error.message.contains("absolute working directory"));
 }

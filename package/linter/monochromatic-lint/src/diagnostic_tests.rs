@@ -84,8 +84,8 @@ fn clean_and_multiple_outputs_have_exact_line_cardinality() {
     let output = render(&[first, second]).expect("two findings");
     let lines: Vec<&str> = output.lines().collect();
     assert_eq!(lines.len(), 2);
-    let first: serde_json::Value = serde_json::from_str(lines[0]).expect("first line");
-    let second: serde_json::Value = serde_json::from_str(lines[1]).expect("second line");
-    assert_eq!(first["code"], "rust/max-lines");
-    assert_eq!(second["code"], "markdown/no-bare-urls");
+    let first_record: serde_json::Value = serde_json::from_str(lines[0]).expect("first line");
+    let second_record: serde_json::Value = serde_json::from_str(lines[1]).expect("second line");
+    assert_eq!(first_record["code"], "rust/max-lines");
+    assert_eq!(second_record["code"], "markdown/no-bare-urls");
 }

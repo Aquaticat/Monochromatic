@@ -6,10 +6,10 @@
 //! // Build line starts and sparse Unicode-width adjustments once per source.
 //! ```
 
-/// Import the parser's CR, LF and CRLF boundary iterator instead of inventing another newline grammar.
-use satteri_arena::line_ending_iter;
 /// Import the common diagnostic wire span.
 use crate::diagnostic::Span;
+/// Import the parser's CR, LF and CRLF boundary iterator instead of inventing another newline grammar.
+use satteri_arena::line_ending_iter;
 
 /// What: Cumulative difference between UTF-8 bytes and UTF-16 units at a multibyte character end.
 /// Why: Sparse width changes let each position lookup use binary search without rescanning a long line.
@@ -65,15 +65,24 @@ impl MarkdownPositions {
             let extra = character.len_utf8() - character.len_utf16();
             if extra != 0 {
                 extra_bytes += extra;
-                widths.push(WidthChange { end: offset + character.len_utf8(), extra_bytes });
+                widths.push(WidthChange {
+                    end: offset + character.len_utf8(),
+                    extra_bytes,
+                });
             }
         }
-        return MarkdownPositions { starts, widths, length: source.len() };
+        return MarkdownPositions {
+            starts,
+            widths,
+            length: source.len(),
+        };
     }
 
     /// Read cumulative width adjustment through this byte boundary.
     fn extra_at(&self, offset: usize) -> usize {
-        let count = self.widths.partition_point(|entry| return entry.end <= offset);
+        let count = self
+            .widths
+            .partition_point(|entry| return entry.end <= offset);
         if count == 0 {
             return 0;
         }
@@ -81,16 +90,18 @@ impl MarkdownPositions {
     }
 
     /// Resolve a range without converting its byte length into character units.
-    pub(crate) fn span(&self, offset: usize, length: usize) -> Span {
-        let offset = offset.min(self.length);
+    pub(crate) fn span(&self, requested_offset: usize, length: usize) -> Span {
+        let offset: usize = requested_offset.min(self.length);
         let count = self.starts.partition_point(|start| return *start <= offset);
         let index = count.saturating_sub(1);
         let start = self.starts[index];
         let byte_column = offset.saturating_sub(start);
         let extra = self.extra_at(offset).saturating_sub(self.extra_at(start));
         return Span {
-            offset, length: length.min(self.length - offset),
-            line: index + 1, column: byte_column.saturating_sub(extra) + 1,
+            offset,
+            length: length.min(self.length - offset),
+            line: index + 1,
+            column: byte_column.saturating_sub(extra) + 1,
         };
     }
 }

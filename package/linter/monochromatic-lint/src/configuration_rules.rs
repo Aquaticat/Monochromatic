@@ -69,8 +69,8 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
         return Ok(0);
     }
     // Parse the normalized coefficient; no floating-point conversion or rounding occurs.
-    let coefficient = identity.digits().parse::<usize>();
-    let exponent = identity.exponent().parse::<u32>();
+    let coefficient_result = identity.digits().parse::<usize>();
+    let exponent_result = identity.exponent().parse::<u32>();
     // What: Narrow both numeric parses together into their successful variants.
     // Why: A negative exponent represents a fraction after canonical trailing-zero removal.
     //
@@ -78,7 +78,7 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
     // ```ts
     // if (coefficientIsInteger && exponentIsUnsigned) { ... }
     // ```
-    let (Ok(coefficient), Ok(exponent)) = (coefficient, exponent) else {
+    let (Ok(coefficient), Ok(exponent)) = (coefficient_result, exponent_result) else {
         return Err(ConfigError::new(
             "rust/max-lines max must be a nonnegative integer that fits this platform's line index.",
         ));

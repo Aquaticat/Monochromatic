@@ -101,7 +101,7 @@ fn compile_patterns(patterns: &[String], directories: bool) -> Result<GlobSet, C
         compiled.add(glob);
     }
     match compiled.build() {
-        Ok(patterns) => return Ok(patterns),
+        Ok(pattern_set) => return Ok(pattern_set),
         Err(error) => {
             return Err(ConfigError::new(
                 format!("Configuration pattern compilation failed: {error}").as_str(),

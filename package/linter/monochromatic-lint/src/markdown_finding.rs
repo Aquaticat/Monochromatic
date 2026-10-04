@@ -26,9 +26,15 @@ pub(crate) fn finding(
     message: String,
     edit: Option<Edit>,
 ) -> Diagnostic {
-    let mut diagnostic = Diagnostic::new(rule, severity, message, context.filename.clone(), context.node_span(id));
-    if let Some(edit) = edit {
-        diagnostic.fix = Some(Fix { edits: vec![edit] });
+    let mut diagnostic = Diagnostic::new(
+        rule,
+        severity,
+        message,
+        context.filename.clone(),
+        context.node_span(id),
+    );
+    if let Some(source_edit) = edit {
+        diagnostic.fix = Some(Fix { edits: vec![source_edit] });
     }
     return diagnostic;
 }
