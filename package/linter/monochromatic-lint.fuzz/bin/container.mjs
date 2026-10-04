@@ -90,7 +90,8 @@ async function main() {
       'COPY cargo-fuzz /usr/local/cargo/bin/cargo-fuzz',
       'RUN ["cargo-fuzz", "--version"]',
       'WORKDIR /work/package/linter/monochromatic-lint.fuzz',
-      'ENV CARGO_BUILD_JOBS=2 CARGO_NET_OFFLINE=true CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
+      // The optimized HIR ASAN build was SIGKILLed under the 2 GiB cap with two compiler jobs.
+      'ENV CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',
       'ENV PATH="/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"',
       'ENV RUSTC="/toolchain/bin/rustc" RUSTDOC="/toolchain/bin/rustdoc"',
       '',
@@ -102,16 +103,20 @@ async function main() {
     execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development', 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
     const buildContainer = execute({ command: 'podman', args: [
       'create', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development',
-      'cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address',
+      'cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address', '--codegen-units', '16',
       '--target', 'x86_64-unknown-linux-gnu', '--target-dir', '/work/build',
     ], capture: true }).stdout.trim();
     containers.push(buildContainer);
-    execute({ command: 'podman', args: ['start', '--attach', buildContainer] });
+    const built = execute({ command: 'podman', args: ['start', '--attach', buildContainer], allowFailure: true });
+    const buildState = execute({ command: 'podman', args: ['inspect', '--format', '{{json .State}}', buildContainer], capture: true });
+    await writeFile(join(evidence, 'build-state.json'), buildState.stdout);
+    if (built.status !== 0)
+      throw new FuzzVerificationError(`Instrumented build exited ${built.status}; container state retained in ${evidence}.`);
     const targets = ['merge_values', 'configuration', 'rust_style', 'rust_explicit_types'];
     await mkdir(join(context, 'bin'), { recursive: true });
     for (const target of targets)
       execute({ command: 'podman', args: ['cp', `${buildContainer}:/work/build/x86_64-unknown-linux-gnu/release/${target}`, join(context, 'bin', target)] });
-    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ compilerVersion, targets, sanitizer: 'address', maxInputBytes: 8192, secondsPerTarget: 30, memory: '2g', cpus: 2, compilerMount: 'read-only during compilation with container label isolation disabled; absent during fuzzing' }, null, 2) + '\n');
+    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ compilerVersion, targets, sanitizer: 'address', buildJobs: 1, codegenUnits: 16, maxInputBytes: 8192, secondsPerTarget: 30, memory: '2g', cpus: 2, compilerMount: 'read-only during compilation with container label isolation disabled; absent during fuzzing' }, null, 2) + '\n');
     if (buildOnly) {
       await cp(join(context, 'bin'), join(evidence, 'bin'), { recursive: true });
       console.log(`Instrumented binaries: ${evidence}`);
