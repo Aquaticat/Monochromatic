@@ -683,6 +683,40 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  15:02 UTC:
+  the T8 `han` batch closed with commit `3948763a2`:
+  5 line stretches over `han-only-text.ts`
+  and `han-title-read.ts`,
+  all cased
+  (the empty character,
+  the letter walk both ways,
+  the linked and linkless title reads,
+  and the skipped titles).
+  The reach census reads `still cold 0` on the five
+  (`~/temp/agent/mimo-trial/reach-han3.log`),
+  with one pre-existing line cold since then in the focused run
+  and none in the whole-suite census.
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-han-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-han-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `3948763a2`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline:
+  `census written to ~/.cache/translation-repair/coverage/census-4VTupe/census.json`
+  (`~/temp/agent/mimo-trial/census-40.log`),
+  `library source: 123 files, 213 stretches over 449 lines, 4 functions never called`.
+  Largest clusters by stretches then lines:
+  `corpus-run/cap` leads with 5 stretches over 6 lines in 3 files,
+  `corpus-run/published` with 5 over 6 in 2,
+  `edit` with 5 over 6 in 2.
+  Next:
+  the `corpus-run/cap` batch.
+
+- 2026-10-04,
   14:52 UTC:
   the next batch's baseline census taken at commit `91df90bfe`:
   `census written to ~/.cache/translation-repair/coverage/census-AwkhvA/census.json`

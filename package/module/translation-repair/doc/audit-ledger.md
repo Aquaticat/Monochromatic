@@ -6392,6 +6392,27 @@ The reach census (`~/temp/agent/mimo-trial/reach-restoration.log`)
 reads `ran 4, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The thirty-fifth cluster of that census,
+`han`,
+against `census-AwkhvA` at `ad2cc341b`:
+5 line stretches over `han-only-text.ts`
+and `han-title-read.ts`
+(`3948763a2`).
+All cased:
+an empty string read as no character,
+the ASCII-letter walk both ways,
+a linked title read down to its text beside a linkless bracket
+read whole,
+and a title skipped for a line end or a repeat.
+`carriesAsciiLetter`
+and the title readers join the text barrel so the cases reach them.
+The reach census (`~/temp/agent/mimo-trial/reach-han3.log`)
+reads `still cold 0` on the five,
+with `carriesHan`'s walk cold since then in the focused run
+and none in the whole-suite census
+(`census-4VTupe` lists no `han-only-text.ts` stretch).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
