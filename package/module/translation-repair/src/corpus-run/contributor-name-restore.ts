@@ -223,7 +223,7 @@ function restoreHeading(
    Heading as the page will carry it.
    */
   const after = `${page.marks} ${prefix}${authority.rendering}`;
-  return (after === line) ? UNCHANGED : {
+  return {
     rewritten: true,
     after,
     where: 'a heading',
@@ -270,7 +270,7 @@ function restoreSignature(
     0,
     signature.nameStart,
   )}${authority.rendering}${line.slice(signature.nameEnd,)}`;
-  return (after === line) ? UNCHANGED : {
+  return {
     rewritten: true,
     after,
     where: 'a signature',

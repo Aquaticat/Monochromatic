@@ -226,5 +226,20 @@ await describe({
           .toBe('### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',);
       },
     },),
+
+    it({
+      name: 'SKIPS a slice the replacements never wrote, since there is no line of it to restore',
+      fn: async () => {
+        const restored = restoreContributorNames({
+          slices: [CARRIED, UNCARRIED,],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: '### Three: Cat Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Cat Cat, December 17, 2024</p>',
+          },],
+        },);
+        expect(restored.replacements.length,).toBe(1,);
+        expect(restored.replacements[0]?.sliceIndex,).toBe(0,);
+      },
+    },),
   ],
 },);
