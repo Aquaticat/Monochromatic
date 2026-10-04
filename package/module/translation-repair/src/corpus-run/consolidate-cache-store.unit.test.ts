@@ -367,5 +367,102 @@ await describe({
         },),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'REFUSES A GATE BALLOT THAT IS NO RECORD, since nothing there says who judged what',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            gate: {
+              ...CAT_SETTLEMENT.gate,
+              ballots: [5,],
+              usable: 1,
+            },
+          },
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A GATE BALLOT whose unsupported rendering names no choice the gate knows',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            gate: {
+              ...CAT_SETTLEMENT.gate,
+              ballots: [{
+                ...CAT_SETTLEMENT.gate.ballots[0],
+                unsupported: [5,],
+              },],
+            },
+          },
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SLATE FLOOR THAT IS NO RECORD, since the floor is what says the slate was stopped',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            floor: 5,
+          } as unknown as Parameters<typeof roundTrip>[0]['settlement'],
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A GATE OUTCOME THAT IS NO RECORD, ABSENT still standing where no gate ran',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            gate: 5,
+          } as unknown as Parameters<typeof roundTrip>[0]['settlement'],
+        },),).toBe(false,);
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            gate: undefined,
+          },
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'READS BOTH SHIPPINGS the gate names, consolidated and standing',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            gate: {
+              ...CAT_SETTLEMENT.gate,
+              ships: 'consolidated',
+            },
+          },
+        },),).toBe(true,);
+        expect(await roundTrip({
+          settlement: {
+            ...CAT_SETTLEMENT,
+            gate: {
+              ...CAT_SETTLEMENT.gate,
+              ships: 'standing',
+            },
+          },
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SETTLEMENT THAT IS NO RECORD AT ALL',
+      fn: async () => {
+        expect(await roundTrip({
+          settlement: 5 as unknown as Parameters<typeof roundTrip>[0]['settlement'],
+        },),).toBe(false,);
+      },
+    },),
   ],
 },);
