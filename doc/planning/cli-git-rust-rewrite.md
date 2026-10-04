@@ -8,8 +8,10 @@ The original rewrite-versus-retain question is closed.
 Do not require comparative benchmarks or a new language-selection audit to reopen it.
 
 The main agent over-investigated the original decision after the direction was sufficiently settled.
-The remaining interview is limited to implementation-changing scope questions,
-followed by confirmation of shared understanding before implementation.
+The user confirmed the shared first-release scope,
+then asked to see the implementation approach before code changes.
+That proposal is recorded in
+[`cli-git-rust-implementation.md`](cli-git-rust-implementation.md).
 No production source changes have been made.
 
 Proposed instruction refinement for `AGENTS.md`:
@@ -334,12 +336,5 @@ Do not restart this experiment merely to finish its planned sample count.
 
 ## Next action
 
-Confirm the agreed first-release scope without reopening Rust:
-JSONC via the repository package,
-shipped policies only,
-bundled forbidden-strings,
-no executable-config trust subsystem,
-repository-controlled policy settings,
-and preservation of required Git behavior.
-The expanded 2.x catalog is excluded.
-Proceed to implementation only after shared understanding is confirmed.
+Present the implementation proposal without reopening Rust or the excluded 2.x catalog.
+Do not start product changes before the user has reviewed the requested approach.
