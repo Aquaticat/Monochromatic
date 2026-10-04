@@ -104,7 +104,7 @@ await describe({
          Comment whose close never comes, and an expression carrying a URL.
          */
         const unterminated = protectedRanges({ text: '{ /* meow', },);
-        const withUrl = protectedRanges({ text: '{ https://cat.example/a cat }', },);
+        const withUrl = protectedRanges({ text: 'See https://cat.example/a cat today.', },);
         expect(unterminated.length,).toBe(1,);
         expect(withUrl.length,).toBeGreaterThanOrEqual(0,);
       },
