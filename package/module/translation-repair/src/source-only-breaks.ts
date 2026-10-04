@@ -6,6 +6,8 @@ import type {
 import type { DeepReadonlyData, } from './readonly-data.ts';
 import type { BlockShape, } from './translate-skeleton.ts';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 //region Explicit source line structure
 // A single-block poem can miss the blank-block verse heuristic. Its explicit
 // breaks still belong to the source when no archive rendering exists to choose.
@@ -167,7 +169,7 @@ export function substituteBreakFindings(
         block,
         index,
       ): boolean {
-        return (!pageKinds.has(block.kind,)) && ((sourceBreaks[index] ?? 0) > 0);
+        return (!pageKinds.has(block.kind,)) && (nonNullishOrThrow(sourceBreaks[index],) > 0);
       },)
       .map(function toKind(block,): string {
         return block.kind;
@@ -183,7 +185,7 @@ export function substituteBreakFindings(
         block,
         index,
       ): number {
-        return (block.kind === kind) ? sum + (sourceBreaks[index] ?? 0) : sum;
+        return (block.kind === kind) ? sum + nonNullishOrThrow(sourceBreaks[index],) : sum;
       },
       0,
     );
@@ -196,7 +198,7 @@ export function substituteBreakFindings(
         block,
         index,
       ): number {
-        return (block.kind === kind) ? sum + (candidateBreaks[index] ?? 0) : sum;
+        return (block.kind === kind) ? sum + nonNullishOrThrow(candidateBreaks[index],) : sum;
       },
       0,
     );
