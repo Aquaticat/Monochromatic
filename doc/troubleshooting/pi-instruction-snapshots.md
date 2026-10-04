@@ -1847,6 +1847,164 @@ No upstream defect or contribution is established,
 and no upstream issue or patch is proposed.
 The existing upstream-filing decision remains unchanged.
 
+## Pi 1.0.2 owned run publication and first-turn fixture failure
+
+### Symptoms and deciding source
+
+The private v2 run helper had separate measured defects.
+`proc_73ca` changed the canonical prompt by mutating a retained handler object
+after emitter return but before publication.
+`proc_9709` observed one invocation of a thrown object's `toJSON`
+during publication-size accounting.
+Neither was an upstream defect.
+
+The v3 transfer boundary is
+`contract/collector/run-prompt-custody-v3/owner.mjs:120`:
+
+```javascript
+// Private collector/run-prompt-custody-v3/owner.mjs:120
+scope.delivery=copyPromptOptions(working);
+```
+
+Native reconciliation receives this separate mutable copy.
+Final publication copies again.
+At `owner.mjs:130`,
+the published failure projection selects inert fields instead of raw thrown objects:
+
+```javascript
+// Private collector/run-prompt-custody-v3/owner.mjs:130, projection expression
+Object.freeze({occurrence:failure.identity,ordinal,at:failure.at})
+```
+
+Raw thrown values remain in retained inspection.
+The tradeoff is deliberate:
+serialized source observations identify failure occurrences,
+while full error objects require diagnostic inspection.
+Before/after observations do not prove that a handler solely authored every mutation
+during an asynchronous interval.
+
+The first SDK fixture,
+`proc_602f`,
+failed its own assertion:
+
+```text
+# Private collector/run-prompt-native-controls/probe.mjs:77
+assert(retained.history.some(value=>value.kind==='next-turn-refresh'&&value.state==='published'))
+```
+
+It had produced one text response,
+not a tool-bearing turn followed by another response.
+The installed Pi agent-core 1.0.2 `dist/agent-loop.js:92-93`
+guards next-turn preparation:
+
+```javascript
+// Installed @earendil-works/pi-agent-core 1.0.2, dist/agent-loop.js:92-93
+if (lastCompletedTurn) {
+    const nextTurnSnapshot = await config.prepareNextTurn?.(lastCompletedTurn);
+```
+
+The call sits inside the continuing-turn loop at `dist/agent-loop.js:90`.
+Expecting it after a single terminal text response was the wrong fixture assumption.
+The failed worker retained one session,
+one injected request,
+and completed disposal;
+it did not persist a completed-case receipt.
+
+### Verification and corrected consumer controls
+
+`proc_1b81` passed 21 pure v2 controls.
+`proc_e503` passed the v3 changed-boundary controls.
+`proc_3237` independently removed only the reconciliation copy
+or only the inert failure projection.
+The first omission produced an `ERR_ASSERTION`:
+actual `LATE_BORROWED_MUTATION`,
+expected `undefined`.
+The second produced `ERR_ASSERTION` with actual `1`,
+expected `0`.
+The intact controls passed.
+These were pure helpers,
+not additional SDK executions.
+
+The clean native suffix,
+`proc_0a79`,
+used one SDK 1.0.2 session and one injected request.
+Its ordered handlers exercised the event and context renderers,
+forced text,
+a same-tool base rebuild,
+a custom text message,
+and a partial mutation followed by `throw undefined`.
+The error was reported once.
+A retained alias mutation after the native normalization await did not reach the wire.
+Current source capture,
+public run/runner shadows,
+native reset,
+persisted entries,
+disposal,
+and retained inspection were checked.
+This single-response case correctly observed no next-turn refresh.
+
+`proc_d157` supplied actual tool-bearing turns and genuine subsequent responses:
+two sessions,
+four injected requests,
+two canned assessments,
+and root-definition counts `[2, 1]`.
+Both genuine second responses observed `next-turn-refresh` source records.
+The negative case also injected the real native refresh callback during the first inert root
+to test source staleness;
+that injection does not authenticate a scheduled second turn.
+It changed only the run occurrence,
+not its bytes or base identity.
+The original judgment rejected the second root with:
+
+```text
+# Private collector/run-prompt-judgment-controls/result.json
+RequestObservationStaleError: Observed request is no longer current
+  cause: SourceCollectionError: Native run prompt was replaced after this source snapshot
+```
+
+The first outcome and original closed inference budget survived.
+The decisive collector comparison is
+`contract/collector/run-prompt-sdk-copy-v2/resource-owner.mjs:185`:
+
+```javascript
+// Private collector/run-prompt-sdk-copy-v2/resource-owner.mjs:185, comparison expression
+readSessionRun(session)!==saved.run
+```
+
+Run native fixtures with `mise --no-env --no-hooks run check`
+in their named fresh private directories;
+the consumed namespaces must not be rerun.
+The guard fixture uses the same task name.
+Receipts verify full streams,
+listed source identities,
+persisted results,
+and cleanup.
+No external semantic model ran.
+
+### Limits and upstream disposition
+
+Do not repair this fixture by forcing next-turn preparation on the initial response.
+That would change the behavior being tested.
+Keep the failed worker separate from the corrected suffix
+and use a genuine subsequent turn for refresh coverage.
+
+The private graph preserves native mutable handler behavior while isolating its published values.
+It does not establish source authority,
+instruction applicability,
+permission,
+or final policy.
+Images,
+arbitrary publishers,
+pending-hook session/runner replacement,
+hard stalls,
+and production retention limits remain unqualified.
+History is retained for the session lifetime;
+per-operation bounds are not a total-memory guarantee.
+
+There is no new upstream defect or contribution to file.
+The existing upstream-filing decision remains unchanged:
+the faulty assumption and helper defects belong to the private consumer.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution

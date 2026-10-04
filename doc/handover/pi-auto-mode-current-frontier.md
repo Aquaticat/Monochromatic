@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-02.
+Updated 2026-10-04.
 
 ## Settled design and authorization
 
@@ -1545,6 +1545,82 @@ qualified semantic applicability,
 and final policy decisions remain open.
 The next source step must preserve the actual handler snapshot and native working-copy flow,
 not infer source membership from callback counts or equal text.
+
+## Owned native run publication and next-turn refresh
+
+The private Pi 1.0.2 run derivative now records the actual ordered handler snapshot,
+handler processing and failures,
+an owned session reconciliation copy,
+and the final immutable run options.
+Native next-turn refresh retains its actual prior run and current base as separate ancestors.
+This extends source observations,
+not governing authority or policy decisions.
+
+`proc_1b81` passed 21 pure controls.
+Independent review and targeted diagnostics then found additional copy and serialization boundaries:
+`proc_73ca` let a retained handler alias change options between emitter return and final publication;
+`proc_9709` invoked a raw thrown value's `toJSON` during source-size accounting.
+The fresh v3 helper transfers a separate reconciliation copy before subsequent native awaits.
+Published failure records contain inert occurrence descriptors;
+retained inspection still contains the original thrown values.
+`proc_e503` passed the changed-boundary controls.
+`proc_3237` verified separate single-expression omission witnesses for both repairs.
+
+`proc_0a79` qualified the actual native handler path:
+one session,
+one injected request,
+three ordered handlers,
+one expected ordinary error report,
+and no semantic assessment.
+Forced text and partial mutations were retained;
+a same-tool base rebuild preserved its original causal base;
+a borrowed alias mutation after image normalization did not reach the request.
+Public run/runner shadows were ignored.
+Reset,
+persisted entries,
+disposal,
+and retained inspection were checked.
+
+`proc_d157` connected the run observation to the original judgment:
+two sessions,
+four injected requests,
+two canned assessments,
+and root-definition counts `[2, 1]`.
+The positive case executed after the original decision deadline.
+The negative case injected a real native refresh operation after the first inert root,
+changing the run occurrence without changing its bytes or base.
+The original source check stopped the second root,
+retaining the first outcome and closed budget.
+That injection is not evidence of a scheduled second turn.
+Both sessions separately reached a genuine next model response,
+where the native loop performed its scheduled refresh.
+
+The failed `proc_602f` remains separate:
+one session and one injected request,
+with completed cleanup,
+but no completed-case receipt.
+It incorrectly expected a next-turn refresh in a run containing only one text response.
+The native loop requires a completed turn and another loop iteration.
+The hooks-only recovery did not repeat the failed empty-case prefix.
+
+Current native graph:
+`contract/collector/run-prompt-sdk-copy-v2/stage-private/manifest.json`.
+The first staging attempt,
+`proc_f30f`,
+used the wrong source ledger and imported no SDK.
+The corrected graph derives the installed runner from the checked session import.
+
+Session-long history retention,
+hard stalls,
+images,
+pending-hook session/runner replacement,
+and arbitrary publishers remain unqualified.
+The next substantive work is host-source authority and deterministic policy integration,
+not another unchanged runtime matrix.
+These observations do not authenticate instructions,
+create permission,
+adopt thresholds,
+or complete the migration.
 
 ## Next work
 

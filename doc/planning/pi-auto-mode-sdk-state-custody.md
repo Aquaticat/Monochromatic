@@ -19,6 +19,54 @@ but neither closes the measured method routes.
 The [instruction snapshot findings](../troubleshooting/pi-instruction-snapshots.md)
 and private result records retain the evidence.
 
+## Native run-source consumer checkpoint
+
+The current private graph is
+`contract/collector/run-prompt-sdk-copy-v2/stage-private/manifest.json`.
+It uses the existing session,
+resource,
+base,
+request,
+and original-judgment owners.
+No additional session registry or inference budget was introduced.
+
+`proc_0a79` exercised native ordered handlers,
+forced text,
+partial failure,
+a legitimate base rebuild,
+separate mutable reconciliation data,
+immutable publication,
+and reset/disposal.
+It used one session and one injected request.
+`proc_d157` then passed the original-judgment consumer:
+two sessions,
+four requests,
+two canned assessments,
+and root-definition counts `[2, 1]`.
+A same-byte new run occurrence stopped the original batch's second definition,
+while its first completion and original closed budget survived.
+A genuine subsequent model response exercised native next-turn refresh in both cases.
+
+The helper evidence is `proc_1b81`,
+`proc_e503`,
+and `proc_3237`.
+The preserved `proc_602f` failure was a fixture assumption about first-turn refresh,
+not an upstream defect.
+The [instruction snapshot report](../troubleshooting/pi-instruction-snapshots.md)
+retains that source trace and the observed alias/serialization corrections.
+
+This closes the named run-source mechanics,
+not instruction authority,
+semantic applicability,
+final policy,
+all producers,
+or production readiness.
+Continue toward the end-to-end private decision trial by binding host-selected source origins
+and deterministic policy to these observations.
+Keep raw handler errors in diagnostics,
+not executable objects inside serialized source records.
+Session-long history retention and unsupported asynchronous publishers remain explicit limits.
+
 ## Owned resource inputs and request freshness
 
 The private loader factory in `contract/collector/resource-input-custody-v2/`
