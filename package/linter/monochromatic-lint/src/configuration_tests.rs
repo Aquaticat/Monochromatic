@@ -107,7 +107,12 @@ fn line_limits_use_exact_integer_values() {
         let input = parse_jsonc(format!("[{token}]").as_str()).expect("zero fixture");
         assert_eq!(line_limit(&input.elements().expect("array")[0]).expect("zero count"), 0);
     }
-    for token in ["-1", "0.5", "1e4000", "\"300\"", "true"] {
+    let maximum = usize::MAX.to_string();
+    let maximum_source = parse_jsonc(format!("[{maximum}]").as_str()).expect("maximum fixture");
+    assert_eq!(line_limit(&maximum_source.elements().expect("array")[0]).expect("maximum count"), usize::MAX);
+    let overflow_source = parse_jsonc(format!("[{maximum}0]").as_str()).expect("overflow fixture");
+    assert!(line_limit(&overflow_source.elements().expect("array")[0]).is_err());
+    for token in ["-1", "0.5", "1e4000", "12345678901234567890123456789", "\"300\"", "true"] {
         let input = parse_jsonc(format!("[{token}]").as_str()).expect("rejected value fixture");
         assert!(line_limit(&input.elements().expect("array")[0]).is_err(), "{token}");
     }

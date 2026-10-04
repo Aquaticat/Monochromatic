@@ -73,15 +73,17 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
     // ```ts
     // if (coefficientIsInteger && exponentIsUnsigned) { ... }
     // ```
-    if let (Ok(coefficient), Ok(exponent)) = (coefficient, exponent) {
-        // Checked arithmetic returns absence on overflow instead of wrapping the line limit.
-        if let Some(scale) = 10_usize.checked_pow(exponent) {
-            if let Some(result) = coefficient.checked_mul(scale) {
-                return Ok(result);
-            }
-        }
-    }
-    return Err(ConfigError::new("rust/max-lines max must be a nonnegative integer that fits this platform's line index."));
+    let (Ok(coefficient), Ok(exponent)) = (coefficient, exponent) else {
+        return Err(ConfigError::new("rust/max-lines max must be a nonnegative integer that fits this platform's line index."));
+    };
+    // Checked arithmetic returns absence on overflow instead of wrapping the line limit.
+    let Some(scale) = 10_usize.checked_pow(exponent) else {
+        return Err(ConfigError::new("rust/max-lines max exceeds this platform's line index."));
+    };
+    let Some(result) = coefficient.checked_mul(scale) else {
+        return Err(ConfigError::new("rust/max-lines max exceeds this platform's line index."));
+    };
+    return Ok(result);
 }
 
 /// What: Validate one rule-settings object without filling in missing fields.
