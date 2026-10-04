@@ -6971,6 +6971,24 @@ reads `left 2 cold stretches`:
 those.
 No B entry found.
 
+The sixty-second cluster of that census,
+`corpus-run/lane`,
+against `census-Fvq08a` at `196a32e66`:
+3 line stretches over `lane-contest-cache-store.ts`
+(`4fa547794`).
+All cased:
+an archive name that is absent or names either verdict
+reads back,
+and a value that is no record at all is refused.
+The reach census (`~/temp/agent/mimo-trial/reach-lane.log`)
+reads `ran 1, still cold 2`
+(`59-60`,
+`60-61`):
+the OR chain's branches the census's attribution leaves cold
+(the fourth instance of the pattern,
+with the cases asserting their round trips directly).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

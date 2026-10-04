@@ -683,6 +683,31 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  23:38 UTC:
+  the T8 `corpus-run/lane` batch closed with commit `4fa547794`:
+  3 line stretches over `lane-contest-cache-store.ts`,
+  all cased
+  (the archive names
+  and the non-record refusal).
+  The reach census reads `ran 1, still cold 2`,
+  the OR chain's branches the census's attribution leaves cold
+  (the fourth instance of the pattern,
+  with the cases asserting their round trips directly).
+  Counts at the close:
+  the full suite 1,563 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-lane-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-lane-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `4fa547794`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the next actionable cluster in the ranking
+  (all the leaders now carry documented-left arms
+  or the attribution quirk's records).
+
+- 2026-10-04,
   22:56 UTC:
   the T8 `retry` batch closed with commit `e8636cf64`:
   3 line stretches over `retry-stated-wait.ts`,
