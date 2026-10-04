@@ -140,16 +140,7 @@ export {
   type RunTiming,
   summariseRounds,
 } from './corpus-run/run-timing-read.ts';
-export {
-  belongsToNamespace,
-  CONSOLIDATE_NAMESPACE,
-  discardNamespace,
-  EVERY_SLICE_NAMESPACE,
-  PICTURE_READING_NAMESPACE,
-  REPAIR_SLICE_NAMESPACE,
-  type SliceNamespace,
-  TRANSLATE_SLICE_NAMESPACE,
-} from './corpus-run/slice-cache-namespace.ts';
+export * from './corpus-cache-barrel.ts';
 export {
   type GatheredProbe,
   reportProbeTelemetry,
