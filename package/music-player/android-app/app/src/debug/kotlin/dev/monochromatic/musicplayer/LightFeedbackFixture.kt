@@ -36,7 +36,7 @@ data class LightTrashOutcomeFixture(
  * In TS you'd write (pseudocode):
  * ```ts
  * function lightFeedbackCanOfferUndo(input: LightTrashOutcomeFixture): boolean {
- *   // Validate outcome; require completed success, handle and active interval.
+ *   // Validate outcome; require authored per-item verified success, handle and active interval.
  * }
  * ```
  */
@@ -72,7 +72,7 @@ internal fun lightFeedbackCanOfferUndo(input: LightTrashOutcomeFixture): Boolean
 data class LightFeedbackFixture(
     /** Empty string means no authored error bar, not an unknown failure being ignored. */
     val error: String,
-    /** Whether the authored completed-trash state has a live restoration handle. */
+    /** Whether authored per-item verified trash success has a live restoration handle. */
     val undo: Boolean,
     /** Literal debug-row titles omitted for these declared fixture outcomes. */
     val omittedTitles: List<String>,

@@ -780,7 +780,8 @@ private fun Modifier.accessibilityTraversalGroup(candidate: String, area: String
 
 /** Renders two equal 414dp panes around Material's centered 24dp expanded-layout spacer. */
 @Composable
-private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null) {
+private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null,
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -818,6 +819,8 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette, onSe
             },
             palette = palette,
             onSearch = onSearch,
+            omittedTitles = omittedTitles,
+            trackViewportModifier = trackViewportModifier,
         )
     }
 }
@@ -889,8 +892,9 @@ private fun CoverStudy(candidate: String, palette: CandidatePalette) {
 
 /** Keeps the closed cover's track list identical in the static and interactive studies. */
 @Composable
-private fun CoverTrackList(modifier: Modifier, candidate: String, palette: CandidatePalette) {
-    Column(modifier = modifier.background(palette.tracks).verticalScroll(rememberScrollState())) {
+private fun CoverTrackList(modifier: Modifier, candidate: String, palette: CandidatePalette,
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
+    Column(modifier = modifier.then(trackViewportModifier).background(palette.tracks).verticalScroll(rememberScrollState())) {
         val tracks = listOf(
             PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
             PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
@@ -903,14 +907,24 @@ private fun CoverTrackList(modifier: Modifier, candidate: String, palette: Candi
             PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
         )
         for (index in tracks.indices) {
-            TrackRow(index = index, track = tracks[index], candidate = candidate, palette = palette)
+            // What: !in tests non-membership in an authored read-only List<String>.
+            // Why: Omit only named fixture rows, never infer file state from this layout.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (!omittedTitles.includes(tracks[index].title)) renderTrack(tracks[index]);
+            // ```
+            if (tracks[index].title !in omittedTitles) {
+                TrackRow(index = index, track = tracks[index], candidate = candidate, palette = palette)
+            }
         }
     }
 }
 
 /** Exercises the persistent P4 trigger through opening, Back, and same-folder selection. */
 @Composable
-private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null) {
+private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null,
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
     // This study does not switch the library: selecting a name only tests dismissal and focus.
     var pickerOpen by remember { mutableStateOf(false) }
     val triggerFocusRequester = remember { FocusRequester() }
@@ -937,7 +951,8 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
                 FolderNames(background = palette.tracks, onFolderSelected = { closePicker() })
             }
         } else {
-            CoverTrackList(modifier = Modifier.weight(1f), candidate = candidate, palette = palette)
+            CoverTrackList(modifier = Modifier.weight(1f), candidate = candidate, palette = palette,
+                omittedTitles = omittedTitles, trackViewportModifier = trackViewportModifier)
         }
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(palette.sectionDivider))
         TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = candidate, palette = palette, deckHeightCap = false)
@@ -947,6 +962,8 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
 /** What: Render the accepted player or the debug-only E2-aware unfolded player with Search closed.
  *  Why: Compare the floor before entering Search while retaining the real folder browser,
  *      playback controls, track list and Search action.
+ *      Optional authored omissions and a viewport modifier affect only an explicitly owned debug study;
+ *      default calls retain every row and add no measurement hook or storage operation.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -955,7 +972,8 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
  */
 @Composable
 internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (() -> Unit)?,
-    e2InformationStartInset: Dp = 0.dp) {
+    e2InformationStartInset: Dp = 0.dp, omittedTitles: List<String> = emptyList(),
+    trackViewportModifier: Modifier = Modifier) {
     val palette = paletteFor(
         candidate = if (isCover) {
             if (light) "cover-picker-p4-light" else "cover-picker-p4"
@@ -969,6 +987,8 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
             candidate = if (light) "cover-picker-p4-interactive-light" else "cover-picker-p4-interactive",
             palette = palette,
             onSearch = onSearch,
+            omittedTitles = omittedTitles,
+            trackViewportModifier = trackViewportModifier,
         )
     } else if (e2InformationStartInset > 0.dp) {
         // What: Fill both half-screen surfaces while shifting only the right title and track text.
@@ -991,10 +1011,13 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
                 palette = palette,
                 onSearch = onSearch,
                 informationStartInset = e2InformationStartInset,
+                omittedTitles = omittedTitles,
+                trackViewportModifier = trackViewportModifier,
             )
         }
     } else {
-        FullUnfoldedStudy(candidate = "dark-stable-wallpaper-dynamic", palette = palette, onSearch = onSearch)
+        FullUnfoldedStudy(candidate = "dark-stable-wallpaper-dynamic", palette = palette, onSearch = onSearch,
+            omittedTitles = omittedTitles, trackViewportModifier = trackViewportModifier)
     }
 }
 
@@ -2064,7 +2087,8 @@ private fun ModeControl(modifier: Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette,
-    onSearch: (() -> Unit)? = null, informationStartInset: Dp = 0.dp) {
+    onSearch: (() -> Unit)? = null, informationStartInset: Dp = 0.dp,
+    omittedTitles: List<String> = emptyList(), trackViewportModifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize().background(color = palette.tracks)) {
         Row(modifier = Modifier.fillMaxSize()) {
             if (palette.paneDivider) {
@@ -2116,10 +2140,13 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                 Column(
                     modifier = Modifier
                         .weight(1f)
+                        .then(trackViewportModifier)
                         .verticalScroll(rememberScrollState())
                         .windowInsetsPadding(WindowInsets.navigationBars),
                 ) {
                     for (index in tracks.indices) {
+                        // Retain source indices and omit only explicitly authored unavailable/trashed titles.
+                        if (tracks[index].title in omittedTitles) continue
                         TrackRow(
                             index = index,
                             track = tracks[index],
