@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   isAsciiDigit,
   isAsciiLowerLetter,
@@ -139,7 +141,7 @@ function digitRunEnd(
   },
 ): number {
   for (let cursor = from; cursor < text.length; cursor += 1) {
-    if (!isAsciiDigit({ character: text[cursor] ?? '', },))
+    if (!isAsciiDigit({ character: nonNullishOrThrow(text[cursor],), },))
       return cursor;
   }
   return text.length;
