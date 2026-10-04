@@ -1223,6 +1223,47 @@ Private evidence is in `contract/lifecycle/codemode-declared-group/`;
 the concrete integration work is recorded in
 `contract/lifecycle/runtime-continuation/native-declared-group-integration-next.json`.
 
+The unsupported-child recorder/event check `proc_4d8b` passed one SDK session with two injected requests.
+An installed native-runner positive control produced child events and a recorder entry.
+The protected SDK case produced no child event,
+recorder start,
+or persisted nested record.
+This pins the refusal boundary,
+not admitted-child parity.
+
+Collector lifecycle diagnostics `proc_398f` then reproduced post-settlement cancellation relabeling,
+a native abort during the final parent-reader callback,
+and a separately thrown consumer failure lost behind an existing cancellation.
+The fresh `codemode-group-lifecycle` collector passed 17 controls in `proc_2404`,
+three actual native Codemode lifetime cases in `proc_3c7d`,
+and four exact guard omissions in `proc_3102`.
+Transport delivery and eventual completion are now separate:
+the native fail-fast case retained a delayed successful completion after its transport call was cancelled.
+Collector states do not establish actual SDK execution start.
+
+The subsequent `proc_62e1` contrasts preserved two original failure witnesses and passed four fresh candidate cases.
+A synchronous group-consumer callback could capture `drain()` before `work = dispatch()` assigned its result.
+The original callback control failed with `AssertionError [ERR_ASSERTION]: true !== false`;
+the candidate publishes its drain ticket before entering callbacks.
+The original malformed completion array also caused Node to report
+`Error: Owned unbound completion failure`.
+The candidate observes and drains short,
+sparse,
+and extra completion arrays,
+retaining their outcomes as unbound diagnostics rather than admitted member completions.
+The initial review's no-window conclusion covered ordinary callers after invocation return,
+not the synchronous callback exercised by this contrast.
+
+The current collector source is
+`contract/lifecycle/codemode-group-drain/collect.mjs`.
+Consumed predecessors remain preserved.
+These checks assume ordinary finite arrays from the fixed native consumer;
+they do not qualify hostile publishers or callbacks that await their own drain to produce its pending completions.
+No new judgment,
+model attempt,
+permission,
+or runtime execution deadline was introduced.
+
 Complete parent-program/dataflow and prepared child membership remain unfinished.
 The accepted preparation requirement applies to each actual execution group,
 not every future dynamic descendant at once.
