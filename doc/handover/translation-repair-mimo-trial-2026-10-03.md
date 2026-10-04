@@ -683,6 +683,38 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  02:26 UTC:
+  `B123` closed with commits `23137d784` (red),
+  `539cd11b8` (the design recorded mid-batch)
+  and `9d7bbbec2` (the fix):
+  the marker walk now reads the raw behind each unpositioned run,
+  bounded between its positioned neighbours,
+  so a page holding a footnote and an autolink literal relabels
+  instead of being refused whole.
+  The design reads the installed tokenizer's `defined.includes` gate:
+  an undefined reference stays in its text,
+  rides in the run,
+  and the recovery places it exactly,
+  while escaped openings and malformed ones stay byte-identical
+  (three contract cases beside the red one).
+  No cache version moves:
+  279 pinned `.md` and `.mdx` files scanned,
+  68 with marker text,
+  0 of those parsing into unpositioned nodes
+  (`~/temp/agent/mimo-trial/b123-corpus-scan.mjs`).
+  Counts at the close:
+  the full suite 1,548 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/b123-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/b123-scans.log`).
+  The ledger's B123 entry update lands in this line's commit.
+  This line lands in the trial-log commit that follows `9d7bbbec2`.
+  Next:
+  the `synthetic` T8 cluster
+  (9 stretches over 9 lines in 2 files at `census-xB1R6c`).
+
+- 2026-10-04,
   01:37 UTC:
   `B123` is in progress.
   The red case through `applyFootnoteRelabel` is committed (`23137d784`):

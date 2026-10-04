@@ -18941,8 +18941,8 @@ Recurrence:
 ### B123: a link literal the parser builds without a position makes the footnote relabel refuse the page
 
 Status:
-open,
-queued for a fix of its own.
+fixed in `9d7bbbec2` (red case in `23137d784`),
+2026-10-04.
 Found 2026-10-02 (UTC) reviewing what the T8 bundle 1 agent left,
 and written only into `23090a91d`'s commit message until 2026-10-03,
 when the handover to the trial model copied it here.
@@ -18973,12 +18973,37 @@ or `,www.example.com`
 throws `FootnoteRewriteError` with the `position` kind's message
 (`footnote rewrite: parsed marker positions do not match raw syntax; ...`).
 
-The fix is not designed yet,
-and its red case,
-through `applyFootnoteRelabel`,
-comes first.
-Whether a cache version moves follows from what the relabel changes on the pinned corpus,
-where the 2026-10-02 census found no page holding such a literal.
+The fix reads the raw behind each unpositioned run (`9d7bbbec2`),
+the run bounded between its positioned neighbours
+(the parent's own bounds at either end)
+and scanned with `gfmMarkerSpans`,
+which is escape-aware and reads labels as
+`micromark-extension-gfm-footnote` 2.1.0 does.
+The installed tokenizer settles the design:
+a call forms only when its identifier is defined somewhere in the document
+(`callData`'s `defined.includes` gate at `]`),
+so an undefined `[^9]` stays in the text
+and the walk's literal-looking recovery exists for exactly it.
+That category rides in unpositioned runs too
+(the probe put `，www.example.com[^9]` in one),
+so skipping unpositioned nodes would lose the recovery;
+a check off node values would mistake an escaped opening for a marker,
+since a decoded value erases the escape backslashes;
+and reconstructing positions would authorize edits off offsets no token
+carried.
+Probes on the built package:
+`~/temp/agent/mimo-trial/b123-probe.mjs` and `~/temp/agent/mimo-trial/b123-probe2.mjs`.
+No cache version moves:
+the pinned corpus at `a41fc607e` holds 279 `.md` and `.mdx` files,
+68 with marker text,
+and none of those parses into unpositioned nodes
+(`~/temp/agent/mimo-trial/b123-corpus-scan.mjs`),
+so the relabel changes nothing a cache entry keys on.
+The red case and three contract cases
+(the undefined reference riding with the literal relabels in both
+measured shapes,
+an escaped opening and the malformed ones stay byte-identical)
+sit in `apply-footnote-relabel.unit.test.ts`.
 
 ### B124: a refuser held out for no time ended the call as every provider dry
 
