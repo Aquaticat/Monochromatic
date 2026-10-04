@@ -210,5 +210,19 @@ await describe({
         expect(verdict.preserved,).toBe(true,);
       },
     },),
+
+    it({
+      name: 'BLANKS NOTHING for an empty licensed quote, since splitting on an empty quote would take '
+        + 'the text apart character by character',
+      fn: async () => {
+        const verdict = checkPreservation({
+          before: 'Mittens napped on the sill and often shared her opinions loudly.',
+          after: 'Mittens napped on the sill.',
+          licensedQuotes: ['and often shared her opinions loudly', '',],
+        },);
+
+        expect(verdict.preserved,).toBe(true,);
+      },
+    },),
   ],
 },);

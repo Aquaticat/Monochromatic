@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { codePointAt, } from './code-points.ts';
 import {
   continuesLatinWord,
@@ -257,17 +259,17 @@ export function properNouns(
     /**
      Character at this position.
      */
-    const character = text[index] ?? '';
+    const character = nonNullishOrThrow(text[index],);
     if (!isLatinCapital({ character, },))
       continue;
-    if ((index > 0) && isWordCharacter(text[index - 1] ?? '',))
+    if ((index > 0) && isWordCharacter(nonNullishOrThrow(text[index - 1],),))
       continue;
 
     /**
      End of this capitalized run.
      */
     let end = index;
-    while ((end < text.length) && isWordCharacter(text[end] ?? '',))
+    while ((end < text.length) && isWordCharacter(nonNullishOrThrow(text[end],),))
       end += 1;
     if ((end - index) < MIN_NAME_LENGTH) {
       index = end;
@@ -278,12 +280,12 @@ export function properNouns(
      Position of the last meaningful character before this word.
      */
     let back = index - 1;
-    while ((back >= 0) && LEADING_MARKS.includes(text[back] ?? '',))
+    while ((back >= 0) && LEADING_MARKS.includes(nonNullishOrThrow(text[back],),))
       back -= 1;
 
     // Start of text, or straight after a sentence end, means this capital is
     // positional rather than a name.
-    if ((back >= 0) && (!SENTENCE_ENDS.includes(text[back] ?? '',))) {
+    if ((back >= 0) && (!SENTENCE_ENDS.includes(nonNullishOrThrow(text[back],),))) {
       names.add(text
         .slice(
           index,
