@@ -264,6 +264,38 @@ it is not ruled out by the older version's failure.
 New startup settings and renderer provenance remain separate from the
 original restoration snapshot and interrupted cohort.
 
+## Separate SwiftShader visit memory-limit termination
+
+The current-37.2.12 SwiftShader visit completed the 40-state initial cohort
+and three native Undo-intent/Dismiss controls before its QEMU process was
+killed.
+The owning wrapper reported status `137` and the next validated hierarchy
+request rejected `adb: device offline`.
+This is not the host/llvmpipe `SIGSEGV`.
+
+A source of the termination is now measured:
+the kernel journal names the exact owning libpod memory cgroup and emits
+`CONSTRAINT_MEMCG` with:
+
+```text
+# Kernel journal, identifiers redacted; exact owning container matched privately.
+Memory cgroup out of memory: Killed process <qemu-pid> (qemu-system-x86)
+```
+
+Podman's terminal event for that owning container separately records exit
+`137`.
+The original `journalctl --kernel` command was invalid;
+the installed help names `--dmesg`,
+and that corrected invocation returned the cgroup OOM evidence.
+No empty result from the invalid command counts as kernel-log absence.
+The evidence establishes a contained memory-limit termination,
+not an isolated renderer leak,
+a click-specific cause or general host memory exhaustion.
+The 6 GiB/2 CPU caps are not raised.
+A fresh bounded visit retains the granted owned identity for the remaining
+native controls and explicit original-settings restoration/read-back;
+its startup snapshot remains separate from the restoration target.
+
 ## What does not work
 
 - Treating the feature-override attempt's lock fatal as a graphics result.

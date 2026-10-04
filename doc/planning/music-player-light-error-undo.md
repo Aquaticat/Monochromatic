@@ -314,8 +314,13 @@ each Dismiss callback fired once,
 removed the error bar and showed measured viewport/toast expansion.
 The owning SwiftShader process was subsequently killed with status `137`,
 and the next hierarchy read rejected `device offline`.
-That is not the host-renderer `SIGSEGV` incident or an established
-out-of-memory cause.
+That is not the host-renderer `SIGSEGV` incident.
+The subsequently corrected kernel-journal probe identifies
+`CONSTRAINT_MEMCG` for the exact owning container and
+`Memory cgroup out of memory: Killed process` for its QEMU process.
+The contained memory-limit kill is now established;
+a renderer leak,
+click-specific cause or general host exhaustion is not.
 The separate original restoration snapshot remains pending restoration.
 
 A fresh bounded visit with the retained granted identity is reserved for
