@@ -33,6 +33,7 @@ export {
   sliceProgressLine,
 } from './corpus-run/editor-calibrate-slice.ts';
 export * from './corpus-overlap-barrel.ts';
+export { nameAuthorities, } from './corpus-run/contributor-name-authorities.ts';
 export { readTags, } from './corpus-run/tag-attributes.ts';
 export { buildSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-build.ts';
 export {

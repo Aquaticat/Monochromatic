@@ -186,5 +186,45 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'MATCHES a heading naming the contributor outright and restores it with no prefix, the '
+        + 'rendering standing alone where the original heading carries no colon',
+      fn: async () => {
+        const restored = restoreContributorNames({
+          slices: [pair({
+            sliceIndex: 0,
+            source: '### 猫猫\n\n它睡了。\n\n> <p style="text-align: end;">——猫猫, 2024 年 12 月 17 日</p>',
+            target: '### Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',
+          },),],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: '### Cat Cat\n\nIt sleeps.\n\n> <p style="text-align: end;">—Cat Cat, December 17, 2024</p>',
+          },],
+        },);
+        expect(restored.replacements[0]?.replacementText,)
+          .toBe('### Maomao\n\nIt sleeps.\n\n> <p style="text-align: end;">—Maomao, December 17, 2024</p>',);
+      },
+    },),
+
+    it({
+      name: 'LEAVES a heading whose original names no contributor alone, since nothing authorises its '
+        + 'rewrite',
+      fn: async () => {
+        const restored = restoreContributorNames({
+          slices: [pair({
+            sliceIndex: 0,
+            source: '### 其三：猫猫\n\n它睡了。\n\n### 狗狗\n\n它跑了。',
+            target: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.',
+          },),],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: '### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.',
+          },],
+        },);
+        expect(restored.replacements[0]?.replacementText,)
+          .toBe('### Maomao\n\nIt sleeps.\n\n### Doggo\n\nIt runs.',);
+      },
+    },),
   ],
 },);

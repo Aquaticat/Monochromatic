@@ -629,7 +629,6 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/canadian-spelling-words.ts',
   'src/corpus-run/cap-census-read.ts',
   'src/corpus-run/cap-census-rule.ts',
-  'src/corpus-run/contributor-name-authorities.ts',
   'src/corpus-run/coverage-census-baseline.ts',
   'src/corpus-run/coverage-file.ts',
   'src/corpus-run/coverage-pieces.ts',
