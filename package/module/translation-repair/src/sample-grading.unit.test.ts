@@ -10,6 +10,7 @@ import {
   allocateBandQuota,
   type BandQuota,
   assertSourceBytes,
+  sourceBytesOf,
   classifyBand,
   classifySourceAnchor,
   drawStratifiedSample,
@@ -241,6 +242,23 @@ await describe({
 
         //endregion assertSourceBytes
 
+        //region sourceBytesOf
+
+        describe({
+          name: sourceBytesOf.name,
+          children: [
+            it({
+              name: 'MEASURES the UTF-8 bytes of a text, the yardstick the bands are cut at',
+              fn: async () => {
+                expect(sourceBytesOf({ text: '雨', },),).toBe(3,);
+                expect(sourceBytesOf({ text: 'rain', },),).toBe(4,);
+              },
+            },),
+          ],
+        },),
+
+        //endregion sourceBytesOf
+
         //region extractGradingCandidate
 
         describe({
@@ -281,6 +299,46 @@ await describe({
                 },);
                 expect(candidate.category,).toBe('(uncategorized)',);
                 expect(candidate.summary,).toBe('(no claim summary)',);
+              },
+            },),
+            it({
+              name: 'CARRIES the repair context where the issue has one, and omits the field where it '
+                + 'has none',
+              fn: async () => {
+                /**
+                 Repair context the issue carries.
+                 */
+                const repair = {
+                  issueIds: ['adjudicated/paw',],
+                  before: 'Whisker rendered as antenna.',
+                  editorAfter: 'Whisker rendered as whisker.',
+                  disposition: 'shipped',
+                  regions: [],
+                  refined: true,
+                } as unknown as NonNullable<Parameters<typeof extractGradingCandidate>[0]['repair']>;
+                const carried = extractGradingCandidate({
+                  issue: catIssue({
+                    issueId: 'adjudicated/paw',
+                    category: 'terminology/wrong-term',
+                    summary: 'Whisker rendered as antenna.',
+                    spans: [['source', '胡须',], ['target', 'antenna',],],
+                  },),
+                  repair,
+                  entryId: 'Kitten',
+                  band: 'small',
+                },);
+                expect(carried,).toHaveProperty('repair',);
+                const withoutRepair = extractGradingCandidate({
+                  issue: catIssue({
+                    issueId: 'adjudicated/paw',
+                    category: 'terminology/wrong-term',
+                    summary: 'Whisker rendered as antenna.',
+                    spans: [['source', '胡须',], ['target', 'antenna',],],
+                  },),
+                  entryId: 'Kitten',
+                  band: 'small',
+                },);
+                expect(Object.hasOwn(withoutRepair, 'repair',),).toBe(false,);
               },
             },),
             it({

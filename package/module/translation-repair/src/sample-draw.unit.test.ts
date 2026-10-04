@@ -106,26 +106,38 @@ await describe({
       name: drawStratifiedSample.name,
       children: [
         it({
-          name: 'BREAKS A CROSS-ENTRY RANK TIE by the entry shuffle, not by the order the candidates '
+          name: 'BREAKS A CROSS-BAND RANK TIE by the entry shuffle, whatever order the candidates '
             + 'arrived in',
           fn: async () => {
             /**
-             Two entries holding one candidate each, their ranks tied.
+             Two entries holding one candidate each, one per band, so both
+             sit at rank zero in their own bucket.
              */
             const drawn = drawStratifiedSample({
               candidates: [
-                candidateOf('Alpha', 'small', 'issue-a',),
-                candidateOf('Beta', 'small', 'issue-b',),
+                candidateOf('Zeta', 'small', 'issue-a',),
+                candidateOf('Alpha', 'large', 'issue-b',),
+              ],
+              size: 2,
+              seed: 'seed-two',
+            },);
+            /**
+             The same candidates arriving in the other order.
+             */
+            const reversed = drawStratifiedSample({
+              candidates: [
+                candidateOf('Alpha', 'large', 'issue-b',),
+                candidateOf('Zeta', 'small', 'issue-a',),
               ],
               size: 2,
               seed: 'seed-two',
             },);
             expect(drawn.map(function entryOf(candidate,) {
               return candidate.entryId;
-            },),).toEqual([
-              'Beta',
-              'Alpha',
-            ],);
+            },),).toEqual(['Zeta', 'Alpha'],);
+            expect(reversed.map(function entryOf(candidate,) {
+              return candidate.entryId;
+            },),).toEqual(['Zeta', 'Alpha'],);
           },
         },),
 
@@ -135,7 +147,7 @@ await describe({
           fn: async () => {
             /**
              Two candidates of one entry in two bands, so each is rank
-             zero in its own bucket and the keys settle the order.
+             zero in its own bucket and the issue keys settle the order.
              */
             const drawn = drawStratifiedSample({
               candidates: [
@@ -147,10 +159,7 @@ await describe({
             },);
             expect(drawn.map(function issueOf(candidate,) {
               return candidate.issueId;
-            },),).toEqual([
-              'issue-a',
-              'issue-b',
-            ],);
+            },),).toEqual(['issue-a', 'issue-b'],);
           },
         },),
       ],
