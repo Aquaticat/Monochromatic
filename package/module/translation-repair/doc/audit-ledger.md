@@ -6950,6 +6950,27 @@ the single-line returns the census's attribution leaves cold
 (the cases assert their values directly).
 No B entry found.
 
+The sixty-first cluster of that census,
+`retry`,
+against `census-bppPVq` at `f254bb963`:
+3 line stretches over `retry-stated-wait.ts`
+(`e8636cf64`).
+One closed as unreachable:
+the digit walk's character read
+(its loop bounds settle it).
+Left:
+the walk's return pair
+(`143-145`)
+and the gap's and-word arm
+(`219-220`),
+whose fixtures need a run ending at a non-digit,
+one running to the text's end,
+and a gap followed by `and `.
+The reach census (`~/temp/agent/mimo-trial/reach-retry.log`)
+reads `left 2 cold stretches`:
+those.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

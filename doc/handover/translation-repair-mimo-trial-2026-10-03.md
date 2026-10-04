@@ -683,6 +683,31 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:56 UTC:
+  the T8 `retry` batch closed with commit `e8636cf64`:
+  3 line stretches over `retry-stated-wait.ts`,
+  one closed as unreachable
+  (the digit walk's character read),
+  two left documented
+  (the walk's return pair
+  and the gap's and-word arm).
+  The reach census reads `left 2 cold stretches`:
+  those
+  (`~/temp/agent/mimo-trial/reach-retry.log`).
+  Counts at the close:
+  the full suite 1,563 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-retry-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-retry-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `e8636cf64`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/lane` cluster
+  (the ranking's next at `census-bppPVq`).
+
+- 2026-10-04,
   22:52 UTC:
   the next batch's baseline census taken at commit `ccf8a7eb7`:
   `census written to ~/.cache/translation-repair/coverage/census-bppPVq/census.json`
