@@ -88,17 +88,26 @@ function scriptedClient(
     readonly unreadable: readonly RosterModelId[];
     readonly refused?: readonly RosterModelId[];
   },
-): { readonly client: SyntheticClient; readonly asked: RosterModelId[]; } {
+): {
+  readonly client: SyntheticClient;
+  readonly asked: RosterModelId[];
+  readonly requests: readonly ChatJsonRequest<unknown>[];
+} {
   /**
    Seats asked, in call order.
    */
   const asked: RosterModelId[] = [];
+  /**
+   Requests seen, in call order, for cases that read the knobs on them.
+   */
+  const requests: ChatJsonRequest<unknown>[] = [];
   /**
    Seats that have already thrown once.
    */
   const thrown = new Set<RosterModelId>();
   return {
     asked,
+    requests,
     client: {
       chatText: async () => {
         throw new Error('chatText unused',);
@@ -107,6 +116,7 @@ function scriptedClient(
         request: ChatJsonRequest<ValueT>,
       ): Promise<ChatJsonOutcome<ValueT>> => {
         asked.push(request.modelId,);
+        requests.push(request as ChatJsonRequest<unknown>,);
         if (refused.includes(request.modelId,)) {
           throw new NoProviderForModelError({
             modelId: request.modelId,
@@ -168,13 +178,15 @@ async function runBench(
     script,
     fanOut,
     quorumOver,
+    maxAnswerChars,
   }: {
     readonly script: Parameters<typeof scriptedClient>[0];
     readonly fanOut?: 'window' | 'whole-bench';
     readonly quorumOver?: number;
+    readonly maxAnswerChars?: number;
   },
 ) {
-  const { client, asked, } = scriptedClient(script,);
+  const { client, asked, requests, } = scriptedClient(script,);
   const {
     outcomes,
     quorum,
@@ -192,12 +204,14 @@ async function runBench(
     graceMs: 50,
     ...((fanOut === undefined) ? {} : { fanOut, }),
     ...((quorumOver === undefined) ? {} : { quorumOver, }),
+    ...((maxAnswerChars === undefined) ? {} : { maxAnswerChars, }),
   },);
   return {
     outcomes,
     quorum,
     unreachable,
     asked,
+    requests,
   };
 }
 
@@ -212,6 +226,29 @@ const FOUR_REFUSED: readonly RosterModelId[] = BENCH.slice(
 await describe({
   name: runWindowedRounds.name,
   children: [
+    it({
+      name: 'CARRIES the maxAnswerChars knob on every request when the caller sets one, and carries no '
+        + 'such field when it does not',
+      fn: async () => {
+        /**
+         Runs with the knob and without it, and reads both request shapes.
+         */
+        const withKnob = await runBench({
+          script: { failsOnce: [], failsAlways: [], unreadable: [], },
+          maxAnswerChars: 500,
+        },);
+        const withoutKnob = await runBench({
+          script: { failsOnce: [], failsAlways: [], unreadable: [], },
+        },);
+        expect(withKnob.requests.length,).toBeGreaterThan(0,);
+        expect(withKnob.requests.every(function carries(request,): boolean {
+          return request.maxAnswerChars === 500;
+        },),).toBe(true,);
+        expect(withoutKnob.requests.every(function omits(request,): boolean {
+          return request.maxAnswerChars === undefined;
+        },),).toBe(true,);
+      },
+    },),
     it({
       name: 'ASKS quorum plus one seat of a healthy bench and returns exactly those, in roster order, '
         + 'so the seats the window spared are neither heard nor lost',
