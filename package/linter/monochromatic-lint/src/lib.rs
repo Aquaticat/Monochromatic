@@ -20,6 +20,9 @@ pub mod config_merge;
 
 /// Internal data-shape checks, including duplicate decoded keys.
 mod config_data;
+/// Internal nearest-file and explicit configuration discovery.
+#[doc(hidden)]
+pub mod config_lookup;
 /// Internal typed configuration errors shared by the executable and verification drivers.
 #[doc(hidden)]
 pub mod config_error;
@@ -28,3 +31,7 @@ pub mod config_error;
 pub mod configuration;
 /// Internal fixed-registry rule-option validation.
 mod configuration_rules;
+
+/// Disposable native filesystem helpers used only by tests.
+#[cfg(test)]
+mod test_fs;

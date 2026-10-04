@@ -47,7 +47,7 @@ async function main() {
     await copyFile(tool, join(context, 'cargo-mutants'));
     const command = [
       'cargo', 'mutants', '--in-place', '--baseline', 'run',
-      '--jobs', '1', '--build-timeout', '60', '--timeout', '30',
+      '--build-timeout', '60', '--timeout', '30',
       '--no-config', '--no-shuffle', '--output', '/work/mutation-report',
       '--cargo-arg=--offline', '--cargo-arg=--locked',
     ];
@@ -86,15 +86,18 @@ async function main() {
     console.log(`Mutation evidence: ${evidence}`);
     const result = podman({ args: ['start', '--attach', container], allowFailure: true });
     // Preserve evidence even when missed mutants correctly make the campaign nonzero.
-    podman({ args: ['cp', `${container}:/work/mutation-report/.`, evidence] });
+    const copy = podman({ args: ['cp', `${container}:/work/mutation-report/.`, evidence], capture: true, allowFailure: true });
     await writeFile(join(evidence, 'exit.json'), JSON.stringify({
-      status: result.status, signal: result.signal,
+      status: result.status, signal: result.signal, reportCopied: copy.status === 0,
+      reportCopyError: copy.status === 0 ? undefined : copy.stderr,
     }, null, 2) + '\n');
     if (result.status !== 0)
-      throw new VerificationError(`Mutation campaign exited ${result.status}; inspect ${evidence}.`);
+      throw new VerificationError(`Mutation campaign exited ${result.status}; report ${copy.status === 0 ? 'copied' : 'not generated or not copied'}; inspect ${evidence}.`);
+    if (copy.status !== 0)
+      throw new VerificationError(`Mutation campaign passed but its report was not copied: ${copy.stderr}`);
   } finally {
     if (container)
-      podman({ args: ['rm', '--force', container] });
+      podman({ args: ['rm', '--force', container], capture: true });
     await rm(context, { recursive: true, force: true });
   }
 }
