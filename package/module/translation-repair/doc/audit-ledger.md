@@ -6314,6 +6314,26 @@ The reach census (`~/temp/agent/mimo-trial/reach-stage3.log`)
 reads `ran 1, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The thirty-first cluster of that census,
+`corpus-run/model`,
+against `census-WleNhT` at `3788b184e`:
+5 line stretches over `model-catalog-compare.ts`
+(`013e5d3ff`,
+`581363446`).
+All cased:
+a models body and an entry that are no object
+(both `ArtifactParseError` refusals),
+the claimed-underlying read under either spelling
+(hf-prefixed and plain),
+and the catalog report:
+the owner blocklist under both spellings,
+the unlisted model it does not block,
+the missing model's 404 line,
+and the alias onto a claimed underlying.
+The reach census (`~/temp/agent/mimo-trial/reach-model2.log`)
+reads `ran 5, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

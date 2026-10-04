@@ -683,6 +683,33 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  13:52 UTC:
+  the T8 `corpus-run/model` batch closed with commits `013e5d3ff`,
+  `581363446`:
+  5 line stretches over `model-catalog-compare.ts`,
+  all cased
+  (the two parse refusals,
+  the claimed-underlying read under either spelling,
+  and the report's blocklist,
+  missing,
+  alias
+  and plain lines).
+  The reach census reads `ran 5, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-model2.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-model-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-model-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `581363446`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/bench` cluster
+  (the ranking's next at `census-WleNhT`).
+
+- 2026-10-04,
   13:48 UTC:
   the next batch's baseline census taken at commit `64c05616e`:
   `census written to ~/.cache/translation-repair/coverage/census-WleNhT/census.json`
