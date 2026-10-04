@@ -683,6 +683,36 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:12 UTC:
+  the T8 `container` batch closed with commit `4621ad099`:
+  3 line stretches over `container-integrity.ts`
+  and `container-half-pairs.ts`,
+  one closed as unreachable
+  (the splice's own guard),
+  two left documented
+  (the nameless-container arm
+  and the half-tag integrity error:
+  their fixtures need a container with no name
+  and a block cutting one tag).
+  The reach census reads `ran 0, still cold 2`:
+  those two
+  (`~/temp/agent/mimo-trial/reach-container.log`).
+  Counts at the close:
+  the full suite 1,562 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-container-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-container-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `4621ad099`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the next actionable cluster in the ranking
+  (`edit`,
+  `preservation`,
+  or the documented-left revisits).
+
+- 2026-10-04,
   22:10 UTC:
   the next batch's baseline census taken at commit `e91b5dd12`:
   `census written to ~/.cache/translation-repair/coverage/census-VzG5Wr/census.json`

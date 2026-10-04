@@ -6890,6 +6890,28 @@ the single-line return the census's attribution leaves cold
 (the case asserts its value directly).
 No B entry found.
 
+The fifty-seventh cluster of that census,
+`container`,
+against `census-VzG5Wr` at `1149ff79c`:
+3 line stretches over `container-integrity.ts`
+and `container-half-pairs.ts`
+(`4621ad099`).
+One closed as unreachable:
+the opening-half read's undefined guard
+(the partner index comes from the same list's find
+and is checked against not-found first).
+Left:
+the nameless-container arm
+(`container-integrity.ts:150-151`)
+and the half-tag integrity error
+(`263-266`),
+whose fixtures need a container with no name
+and a block cutting one tag.
+The reach census (`~/temp/agent/mimo-trial/reach-container.log`)
+reads `ran 0, still cold 2`:
+those two.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
