@@ -153,5 +153,73 @@ await describe({
         },),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'READS NO name and no alias out of front matter that is no record at all, a list reading '
+        + 'as neither',
+      fn: async () => {
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\n- 猫童\n- MaoTong\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS NO name where the name is no string, since a number names nobody',
+      fn: async () => {
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\nname: 42\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS NO alias where the info block is no record, so nothing there can name the id',
+      fn: async () => {
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\nname: 狗狗\ninfo: 7\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'STANDS where the alias is a list whose entries name the id, and falls where the alias is '
+        + 'neither text nor list',
+      fn: async () => {
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\nname: 狗狗\ninfo:\n  alias:\n    - maotong\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(true,);
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\nname: 狗狗\ninfo:\n  alias: 42\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS NO letters in a name of punctuation alone, so no id spells anything of it',
+      fn: async () => {
+        expect(directoryIdNameStands({
+          entryId: 'maotong',
+          source: blockOf({ text: '---\nname: ，。\n---\n', },),
+          page: blockOf({ text: ID_ONLY_PAGE, },),
+          archives: [],
+        },),).toBe(false,);
+      },
+    },),
   ],
 },);
