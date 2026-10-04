@@ -32,7 +32,10 @@ not an adoption decision.
 - Keep combined file-path/content search and a browsable file tree.
 - Refresh automatically during external changes,
   including while text is selected.
-  Preserve the user's position within surviving text.
+  Best-effort content-relative caret/selection mapping and approximate viewport anchoring should minimize visual location loss.
+  Exact pixel preservation and universal mapping through rewritten text are not required.
+  Selected ranges follow corresponding replaced regions,
+  not a later occurrence of the old selected text.
 - Do not include a go-to-line command.
 
 Slint is settled as the UI toolkit.
@@ -203,8 +206,11 @@ Preserve a complete record when the plan moves into package documentation.
   These call sites do not establish the new caret-preservation contract.
 - New scope:
   update automatically without a selection hold.
-  Preserve caret location within surviving text rather than the old numerical offset.
+  Prefer corresponding positions in surviving text over the old numerical offset.
   The user explicitly accepts brute-force work to achieve this behavior.
+  The later clarification makes mapping and viewport anchoring best effort:
+  roughly the same viewport position is sufficient;
+  minimize location loss for human eyes.
 - Reason:
   explicit Q8 answer and subsequent caret example.
 - Acceptance:
@@ -212,10 +218,19 @@ Preserve a complete record when the plan moves into package documentation.
   externally replace `am` with `was`;
   after refresh the caret is `I was a bi|g cat.`.
   The marker is not document content.
-  Repeated text,
-  changed caret context,
-  selection mapping,
-  and viewport anchoring need further acceptance cases.
+  Also display `I am a big cat` with selection `I [am a] big cat`;
+  externally replace the file with `I was a big cat, but now I am a human!`;
+  after refresh the selection is `I [was a] big cat, but now I am a human!`.
+  Brackets denote selection and are not document content.
+  Do not jump to the later literal `am a` or clear the selection merely because the selected words changed.
+  These supplied examples are concrete expected outcomes;
+  best effort governs genuinely ambiguous rewrites and approximate viewport placement.
+  Add repeated-text,
+  replaced-context,
+  selection,
+  and viewport cases without asking the user to prescribe a fallback algorithm.
+  No case may block refresh while selection exists.
+  Native caret and viewport behavior still require a Slint consumer-boundary probe.
 
 ### Go-to-line command
 
@@ -251,6 +266,13 @@ Preserve a complete record when the plan moves into package documentation.
   Try to preserve current relative position and brute-force the work where necessary.
   The follow-up example establishes content-anchored caret mapping,
   not fixed offsets or fractional scrolling.
+  The user then clarifies:
+  "Best effort. 'Roughly' the same position in the viewport is fine. Minimize location loss for human eyes."
+  No further preference question about deleted-context fallback is needed.
+  A subsequent selection example requires mapping `am a` to the replacement `was a`,
+  while ignoring a new literal `am a` later in the document.
+  Preserve the selected region's correspondence through edits,
+  not its original string value.
 - Baseline correction:
   remove go-to-line.
 
@@ -314,20 +336,7 @@ This limits the application UI contract,
 not what files a language server may internally analyze.
 Diagnostic source selection follows the semantic-language answer.
 
-### Q12: replaced caret context
-
-The user's unchanged-context case is settled.
-If the text containing the caret is itself replaced,
-what fallback is acceptable?
-
-Recommendation:
-place the caret at the start of the changed region when no corresponding interior position survives.
-Preserve selection endpoints when they map to surviving text;
-otherwise clear the affected selection rather than silently select replacement text.
-No outcome blocks refresh.
-This fallback remains a proposal pending the user's answer.
-
-### Q13: inlay placement
+### Q12: inlay placement
 
 The paused editor renders hint labels on rows above the source line,
 not inserted between source tokens.
@@ -339,6 +348,35 @@ The alternative is visually inserted inline hints;
 this is independent of which hint categories are enabled.
 Diagnostic presentation is a separate decision,
 not bundled into this choice.
+
+## Agent-owned implementation investigation
+
+These are engineering responsibilities,
+not questions to hand back to the user.
+
+- Design full-file refresh with old/new text reconciliation.
+  Investigate contextual old/new edit correspondence for caret,
+  selection ranges,
+  and a visible source-line anchor.
+  Simple substring relocation is insufficient:
+  replaced selections must expand or contract with their corresponding replacement,
+  even when the old string reappears elsewhere.
+  Use deterministic nearby fallbacks when correspondence is genuinely ambiguous.
+  Brute-force allowance does not justify blocking the UI or unbounded work.
+- Verify selectable highlighted text,
+  annotations,
+  hit testing,
+  caret placement,
+  and viewport anchoring through Slint before committing to a renderer design.
+- Verify actual language-server capabilities and user-visible behavior for every selected language.
+  Existing wrappers and completed-plan checkboxes do not establish current server support.
+- Keep stale language-service results from being presented as current after external file updates.
+  Caret mapping is application-owned;
+  language-server document synchronization is a separate lifecycle to verify.
+- Inspect writes from any selected language server or helper.
+  A read-only UI does not prove subprocesses leave files unchanged.
+- Establish search-result freshness and stale-target navigation behavior.
+- Probe file-size and directory-size behavior using disposable fixtures and explicit resource bounds.
 
 ## Downstream decisions
 
@@ -360,8 +398,8 @@ Do not ask feature-specific questions before the primary job is settled.
 
 ## Next action
 
-Present Q9 through Q13.
-Treat the supplied caret example as settled,
+Present Q9 through Q12.
+Treat the supplied caret example and the best-effort clarification as settled,
 not a question to reopen.
 Wait for answers and record them before opening dependent decisions.
 
