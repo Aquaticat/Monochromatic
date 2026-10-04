@@ -683,6 +683,21 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:20 UTC:
+  the next batch's baseline census taken at commit `c06539dd8`:
+  `census written to ~/.cache/translation-repair/coverage/census-MkpU3W/census.json`
+  (`~/temp/agent/mimo-trial/census-66.log`).
+  `library source: 103 files, 162 stretches over 365 lines, 4 functions never called`.
+  The ranking's first five clusters carry documented-left arms.
+  The next actionable cluster is `corpus-run/dropped`
+  with 3 stretches over 6 lines in 1 file,
+  then `lookup`,
+  `retry`.
+  This line lands in the trial-log commit that follows `c06539dd8`.
+  Next:
+  the `corpus-run/dropped` batch.
+
+- 2026-10-04,
   22:12 UTC:
   the T8 `container` batch closed with commit `4621ad099`:
   3 line stretches over `container-integrity.ts`
