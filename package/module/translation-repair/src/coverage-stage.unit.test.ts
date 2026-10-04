@@ -321,5 +321,109 @@ await describe({
         expect(JSON.stringify(plain,).includes('partly-carried',),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'CARRIES the identity context it was handed onto the sheets it asks, and none where it was '
+        + 'handed none',
+      fn: async () => {
+        /**
+         Sheets every roster call was asked with, context run first.
+         */
+        const asked: ChatJsonRequest<unknown>['messages'][] = [];
+        await runCoverageStage({
+          client: scriptedClient({
+            script: {
+              'hf:cat/Cat-A': {
+                coverage: 'all',
+                quote: 'the windowsill',
+              },
+              'hf:cat/Cat-B': {
+                coverage: 'all',
+                quote: 'the windowsill',
+              },
+            },
+            asks: asked,
+          },),
+          modelIds: ROSTER,
+          fanOut: 'whole-bench',
+          sourcePassage: '小猫中午在垫子上打盹。',
+          translation: TARGET,
+          identityContext: 'The translator signs as 喵工作室.',
+          signal: AbortSignal.timeout(30_000,),
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(JSON.stringify(asked,).includes('喵工作室',),).toBe(true,);
+        /**
+         Sheets the same ask collects with no identity context.
+         */
+        const plain: ChatJsonRequest<unknown>['messages'][] = [];
+        await runCoverageStage({
+          client: scriptedClient({
+            script: {
+              'hf:cat/Cat-A': {
+                coverage: 'all',
+                quote: 'the windowsill',
+              },
+              'hf:cat/Cat-B': {
+                coverage: 'all',
+                quote: 'the windowsill',
+              },
+            },
+            asks: plain,
+          },),
+          modelIds: ROSTER,
+          fanOut: 'whole-bench',
+          sourcePassage: '小猫中午在垫子上打盹。',
+          translation: TARGET,
+          signal: AbortSignal.timeout(30_000,),
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(JSON.stringify(plain,).includes('喵工作室',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS a partial quote anchored in a region the pairing assigned to another original as '
+        + 'misattributed, naming the quote',
+      fn: async () => {
+        /**
+         Sentence the pairing assigns to another original.
+         */
+        const FOREIGN_SENTENCE = 'She watches the birds outside.';
+        /**
+         Its region in the translation.
+         */
+        const startOffset = TARGET_TEXT.indexOf(FOREIGN_SENTENCE,);
+        const answer = await runCoverageStage({
+          client: scriptedClient({
+            script: {
+              'hf:cat/Cat-A': {
+                coverage: 'partial',
+                quote: FOREIGN_SENTENCE,
+              },
+              'hf:cat/Cat-B': {
+                coverage: 'partial',
+                quote: FOREIGN_SENTENCE,
+              },
+            },
+          },),
+          modelIds: ROSTER,
+          fanOut: 'whole-bench',
+          sourcePassage: '小猫中午在垫子上打盹。',
+          translation: TARGET,
+          foreignRegions: [{
+            startOffset,
+            endOffset: startOffset + FOREIGN_SENTENCE.length,
+          },],
+          signal: AbortSignal.timeout(30_000,),
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(answer.verdict
+          .misattributedQuotes,).toContain(FOREIGN_SENTENCE,);
+      },
+    },),
   ],
 },);
