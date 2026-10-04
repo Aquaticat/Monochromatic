@@ -5,6 +5,8 @@ import {
   type SliceSize,
   sliceRatios,
 } from './displacement-ratio.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { isPlausibleSlice, } from './slice-implausible.ts';
 
 //region Displacement classification
@@ -402,9 +404,8 @@ export function classifyDisplacement(
     /**
      Surplus this slice carries, known present by `isHigh`.
      */
-    const surplus = classified[high]
-      ?.residual
-      ?? 0;
+    const surplus = nonNullishOrThrow(classified[high],)
+      .residual;
     return [
       high - 1,
       high + 1,
@@ -462,9 +463,7 @@ export function classifyDisplacement(
     /**
      That slice, known present since the index came from the readings.
      */
-    const slice = classified[high];
-    if (slice === undefined)
-      return false;
+    const slice = nonNullishOrThrow(classified[high],);
     if (slice.sourceChars > MAX_TARGET_ONLY_SOURCE_CHARS)
       return false;
     return slice.targetChars >= MIN_TARGET_ONLY_TARGET_CHARS;
