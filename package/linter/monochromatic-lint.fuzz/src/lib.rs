@@ -10,7 +10,7 @@
 pub mod rust_style;
 
 /// Import owned JSONC values and the production operations under test.
-use monochromatic_jsonc_edit::{emit_jsonc_value, JsoncEntry, JsoncKey, JsoncValue};
+use monochromatic_jsonc_edit::{JsoncEntry, JsoncKey, JsoncValue, emit_jsonc_value};
 use monochromatic_lint::config_merge::merge_values;
 use monochromatic_lint::configuration::parse_configuration;
 /// Import decoded-key deduplication for an independent order invariant.
@@ -48,13 +48,20 @@ pub fn check_merge(document: &JsoncValue) {
         }
     }
     if mismatch || (first.entries().is_none() && first.elements().is_none()) {
-        assert_eq!(&actual, last, "scalar or mixed-kind group must select its final value");
+        assert_eq!(
+            &actual, last,
+            "scalar or mixed-kind group must select its final value"
+        );
     } else if first.elements().is_some() {
         let mut expected = Vec::new();
         for input in &inputs {
             expected.extend_from_slice(input.elements().expect("classified array"));
         }
-        assert_eq!(actual.elements().expect("merged array"), expected.as_slice(), "arrays concatenate without recursively merging elements");
+        assert_eq!(
+            actual.elements().expect("merged array"),
+            expected.as_slice(),
+            "arrays concatenate without recursively merging elements"
+        );
     } else {
         let mut seen = BTreeSet::new();
         let mut expected_keys = Vec::new();
@@ -69,10 +76,16 @@ pub fn check_merge(document: &JsoncValue) {
         for entry in actual.entries().expect("merged record") {
             actual_keys.push(entry.key.units.clone());
         }
-        assert_eq!(actual_keys, expected_keys, "record keys retain first-seen order");
+        assert_eq!(
+            actual_keys, expected_keys,
+            "record keys retain first-seen order"
+        );
     }
     let repeated = merge_values(&[&actual]);
-    assert_eq!(repeated, actual, "merging an already merged value alone must be stable");
+    assert_eq!(
+        repeated, actual,
+        "merging an already merged value alone must be stable"
+    );
 }
 
 /// What: Construct an owned record member for generated configurations.
@@ -83,7 +96,10 @@ pub fn check_merge(document: &JsoncValue) {
 /// function entry(name: string, value: JsoncValue): JsoncEntry;
 /// ```
 fn entry(name: &str, value: JsoncValue) -> JsoncEntry {
-    return JsoncEntry { key: JsoncKey::from_text(name), value };
+    return JsoncEntry {
+        key: JsoncKey::from_text(name),
+        value,
+    };
 }
 
 /// What: Construct ordinary generated string data through the JSONC value model.
@@ -113,11 +129,15 @@ pub fn generated_configuration(bytes: &[u8]) -> JsoncValue {
         let id;
         if *byte % 2 == 0 {
             id = "rust/max-lines";
-            let number = JsoncValue::number_from_token(byte.to_string().as_str()).expect("byte is an integer token");
+            let number = JsoncValue::number_from_token(byte.to_string().as_str())
+                .expect("byte is an integer token");
             options.push(entry("max", number));
         } else {
             id = "markdown/lfs-image-url";
-            options.push(entry("exclude", JsoncValue::array(vec![text(format!("path-{byte}/").as_str())])));
+            options.push(entry(
+                "exclude",
+                JsoncValue::array(vec![text(format!("path-{byte}/").as_str())]),
+            ));
         }
         let rules = JsoncValue::record(vec![entry(id, JsoncValue::record(options))]);
         blocks.push(JsoncValue::record(vec![
@@ -147,13 +167,19 @@ pub fn check_configuration(source: &str) {
         }
     }
     let merged = merge_values(&inputs);
-    assert_eq!(blocks, snapshot, "configuration merge changed parsed blocks");
+    assert_eq!(
+        blocks, snapshot,
+        "configuration merge changed parsed blocks"
+    );
     let source = JsoncValue::array(vec![JsoncValue::record(vec![
         entry("files", JsoncValue::array(Vec::new())),
         entry("rules", merged),
     ])]);
     let rendered = emit_jsonc_value(&source);
-    assert!(parse_configuration(rendered.as_str()).is_ok(), "merged valid rule settings became invalid: {rendered}");
+    assert!(
+        parse_configuration(rendered.as_str()).is_ok(),
+        "merged valid rule settings became invalid: {rendered}"
+    );
 }
 
 /// Generator controls prove every byte value reaches a valid configuration rather than only rejection paths.
@@ -162,7 +188,10 @@ fn generated_cases_reach_valid_settings() {
     for byte in 0..=u8::MAX {
         let generated = generated_configuration(&[byte, byte.wrapping_add(1)]);
         let source = emit_jsonc_value(&generated);
-        assert!(parse_configuration(source.as_str()).is_ok(), "invalid generated case: {source}");
+        assert!(
+            parse_configuration(source.as_str()).is_ok(),
+            "invalid generated case: {source}"
+        );
         check_configuration(source.as_str());
     }
 }
@@ -170,7 +199,13 @@ fn generated_cases_reach_valid_settings() {
 /// Fixed mixed-kind and array cases exercise the same invariant helper as the fuzzer.
 #[test]
 fn merge_invariant_controls_reach_mixed_and_array_shapes() {
-    for source in ["[null,[1],[2]]", "[{\"x\":[1]},{\"x\":false},{\"x\":[2]}]", "[[1],[2]]", "[]", "{\"a\":1}"] {
+    for source in [
+        "[null,[1],[2]]",
+        "[{\"x\":[1]},{\"x\":false},{\"x\":[2]}]",
+        "[[1],[2]]",
+        "[]",
+        "{\"a\":1}",
+    ] {
         let parsed = monochromatic_jsonc_edit::parse_jsonc(source).expect("control parses");
         check_merge(&parsed);
     }

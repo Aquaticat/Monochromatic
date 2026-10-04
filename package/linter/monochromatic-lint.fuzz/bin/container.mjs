@@ -123,7 +123,7 @@ async function main() {
       '# Fuzz execution has no compiler, registry, repository, home, or credential mounts.',
       'FROM 62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884',
       'COPY bin /fuzz/bin', 'COPY corpus /fuzz/corpus', 'COPY dictionary /fuzz/dictionary',
-      `RUN ${JSON.stringify(['mkdir', '--parents', ...targets.map(target => `/fuzz/artifacts/${target}`)])}`, 
+      `RUN ${JSON.stringify(['mkdir', '--parents', ...targets.map(target => `/fuzz/artifacts/${target}`)])}`,
       'WORKDIR /fuzz', '',
     ].join('\n'));
     execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-fuzz-run:development', '--file', join(context, 'Run.Containerfile'), context] });

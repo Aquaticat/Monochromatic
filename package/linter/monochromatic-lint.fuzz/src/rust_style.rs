@@ -7,7 +7,7 @@
 //! ```
 
 /// Import the production rule and owned source/finding models, not a second implementation.
-use monochromatic_lint::diagnostic::{Diagnostic, Severity};
+use monochromatic_lint::diagnostic::{Diagnostic, Severity, Span};
 /// Import the actual checker used by the linter.
 use monochromatic_lint::rust_no_anonymous_functions::check_no_anonymous_functions;
 /// Import the parser-owning input shared by all Rust rules.
@@ -28,7 +28,10 @@ const CASES: &[(&str, usize)] = &[
     ("call(|value: u16| -> u16 { return value; });\n", 1),
     ("call(|| || 1);\n", 2),
     ("call(named);\n", 0),
-    ("let bits: u16 = 1 | 2; let flag: bool = true || false;\n", 0),
+    (
+        "let bits: u16 = 1 | 2; let flag: bool = true || false;\n",
+        0,
+    ),
     ("let future = async { return 1; };\n", 0),
     ("let text: &str = \"move || {}\"; /* |x| x */\n", 0),
 ];
@@ -36,12 +39,13 @@ const CASES: &[(&str, usize)] = &[
 /// Build at most 64 grammar fragments while retaining the expected closure count.
 pub fn generated_source(data: &[u8]) -> (String, usize) {
     // String owns growable text; &str would only borrow it. usize matches byte and collection indexes.
-    let mut source: String = String::from("fn named(value: u16) -> u16 { return value; }\nfn main() {\n");
+    let mut source: String =
+        String::from("fn named(value: u16) -> u16 { return value; }\nfn main() {\n");
     let mut expected: usize = 0;
     for byte in data.iter().take(64) {
         // Copy the borrowed byte's value and convert it to the platform-sized case index.
         let index: usize = usize::from(*byte) % CASES.len();
-        let (fragment, added) = CASES[index];
+        let (fragment, added): (&str, usize) = CASES[index];
         source.push_str(fragment);
         expected += added;
     }
@@ -67,7 +71,7 @@ fn check_source(source: &str) -> usize {
         assert!(finding.fix.is_none());
         assert_eq!(finding.labels.len(), 1);
         // Borrow the label; ownership remains with the finding.
-        let span = &finding.labels[0].span;
+        let span: &Span = &finding.labels[0].span;
         assert!(span.offset <= source.len());
         assert!(span.length <= source.len() - span.offset);
         assert!(source.is_char_boundary(span.offset));
@@ -80,7 +84,7 @@ fn check_source(source: &str) -> usize {
 
 /// Exercise generated syntax on every draw, including non-UTF-8 byte inputs.
 pub fn check_rust_style(data: &[u8]) {
-    let (source, expected) = generated_source(data);
+    let (source, expected): (String, usize) = generated_source(data);
     // Borrow the generated String as a string slice for the real parser.
     assert_eq!(check_source(source.as_str()), expected);
     // What: UTF-8 decoding returns Ok(text) or Err(details), rather than throwing.
@@ -100,11 +104,12 @@ pub fn check_rust_style(data: &[u8]) {
 fn every_rust_style_generator_branch_has_a_positive_or_negative_control() {
     // Each position independently states whether its grammar fragment contains closures.
     let expected: [usize; 9] = [1, 1, 1, 1, 2, 0, 0, 0, 0];
-    for index in 0..expected.len() {
+    for (index, expected_count) in expected.iter().enumerate() {
         // The bounded case index fits in a byte by construction.
         let bytes: [u8; 1] = [index as u8];
-        let (source, count) = generated_source(&bytes);
-        assert_eq!(count, expected[index]);
+        let (source, count): (String, usize) = generated_source(&bytes);
+        // Read the borrowed count without taking ownership of the array slot.
+        assert_eq!(count, *expected_count);
         assert_eq!(check_source(source.as_str()), count);
     }
     check_rust_style(&[]);
