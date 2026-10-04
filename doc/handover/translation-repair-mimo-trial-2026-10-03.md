@@ -683,6 +683,41 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  13:18 UTC:
+  the T8 `corpus-run/probe` batch closed with commits `b37a5851f`,
+  `0176fa22d`,
+  `db84dbfa3`,
+  `5d817c448`:
+  5 line stretches over the probe telemetry and relabel files,
+  all cased
+  (the two telemetry notes,
+  the manifest item no candidate carries,
+  and the control's taken and holder refusals).
+  The fixtures are a throwaway corpus clone,
+  scratch-run entry artifacts,
+  and a manifest through `buildSampleManifest`.
+  Four source scans named the patterns the new cases must keep:
+  `concurrency: 1` for process-global writes,
+  the global-writer body groups (B111,
+  no shared fixture),
+  `scratchDir` for temp directories (B108),
+  and the own-tests allowlist (B102).
+  The reach census reads `ran 2, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-probe2.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-probe-suite5.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-probe-scans5.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `5d817c448`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `stage` cluster
+  (the ranking's next at `census-7LEx8b`).
+
+- 2026-10-04,
   12:31 UTC:
   the next batch's baseline census taken at commit `e9a2f06b1`:
   `census written to ~/.cache/translation-repair/coverage/census-7LEx8b/census.json`

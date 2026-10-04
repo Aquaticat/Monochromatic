@@ -6257,6 +6257,36 @@ The reach census over the corpus-run tests
 reads `ran 5, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The twenty-ninth cluster of that census,
+`corpus-run/probe`,
+against `census-7LEx8b` at `be8df8b13`:
+5 line stretches over `probe-telemetry-report.ts`,
+`probe-relabel-case.ts`
+and `probe-relabel-control.ts`
+(`b37a5851f`,
+`0176fa22d`,
+`db84dbfa3`,
+`5d817c448`).
+All cased:
+the telemetry report's degraded-editor and silent-refiner notes,
+a manifest drawing an issue id no candidate carries,
+one region taken per envelope
+(a second of the same envelope would answer as its own control),
+and a region the entry translation never held.
+The fixtures are a throwaway corpus clone of invented cat pages,
+a scratch run carrying entry artifacts built to the settled record shape,
+and a manifest built through `buildSampleManifest`.
+Four source scans named the patterns the new cases must keep
+(`5d817c448`):
+process-global writes run at `concurrency: 1`,
+the `runsDirPointedAt` and `restore` bodies join their existing
+global-writer groups rather than a shared fixture,
+temp directories go through `scratchDir`,
+and a module with its own test leaves the own-tests allowlist.
+The reach census (`~/temp/agent/mimo-trial/reach-probe2.log`)
+reads `ran 2, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
