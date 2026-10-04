@@ -17,6 +17,8 @@
  @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -29,6 +31,7 @@ import {
   estimateAbandonedSpend,
   MODEL_CARDS,
   OPENROUTER_MODELS,
+  rawCharsPerCompletionTokenOf,
   reportAbandonedSpend,
   resetRunSpend,
   runSpendUsd,
@@ -81,6 +84,41 @@ const ROOMY_MAX_TOKENS = 100_000;
  Tokens in one million, the listing's unit.
  */
 const MILLION = 1_000_000;
+
+/**
+ Median of ascending numbers: the middle one where the count is odd and the
+ mean of the two around the middle where it is even.
+
+ @param ascending - numbers least first
+
+ @returns Middle of the ascending numbers
+
+ @throws When the list holds no number
+ */
+function medianOf(ascending: readonly number[],): number {
+  /**
+   Position halfway through the list, an index where the count is odd.
+   */
+  const middle = (ascending.length - 1) / 2;
+  /**
+   Index of the value below the middle.
+   */
+  const lowerAt = Math.floor(middle,);
+  /**
+   Index of the value above the middle, the same index where the count is
+   odd.
+   */
+  const upperAt = Math.ceil(middle,);
+  /**
+   Value below the middle.
+   */
+  const lower = nonNullishOrThrow(ascending.at(lowerAt,),);
+  /**
+   Value above the middle.
+   */
+  const upper = nonNullishOrThrow(ascending.at(upperAt,),);
+  return (lower + upper) / 2;
+}
 
 await describe({
   name: '',
@@ -169,6 +207,30 @@ await describe({
               requestBodyBytes: 4_000,
               maxTokens,
             },).completionTokens,).toBe(maxTokens,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: rawCharsPerCompletionTokenOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS a measured ratio as itself and FALLS BACK to the median of the measured card '
+            + 'ratios where a card carries none (ledger T8, the openrouter cluster)',
+          fn: async () => {
+            /**
+             Measured ratios the roster's cards carry, least first.
+             */
+            const measured = Object.values(MODEL_CARDS,).flatMap(function carried(card,): number[] {
+              const ratio = card.openrouter?.rawCharsPerToken;
+              return ((typeof ratio) === 'number') ? [ratio,] : [];
+            },).toSorted(function ascending(a: number, b: number,): number {
+              return a - b;
+            },);
+            expect(rawCharsPerCompletionTokenOf('unmeasured',),).toBe(medianOf(measured,),);
+            expect(rawCharsPerCompletionTokenOf(3,),).toBe(3,);
           },
         },),
       ],

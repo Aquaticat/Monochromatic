@@ -52,5 +52,17 @@ await describe({
         expect(openRouterCachedTokensOf({ bodyText: 'data: [DONE]\n\n', },),).toBe('unreported',);
       },
     },),
+    it({
+      name: 'SKIPS a chunk that is not a record and a cache count that is not a safe integer, since '
+        + 'neither states a count (ledger T8, the openrouter cluster)',
+      fn: async () => {
+        expect(openRouterCachedTokensOf({
+          bodyText: 'data: 5\n\ndata: [DONE]\n\n',
+        },),).toBe('unreported',);
+        expect(openRouterCachedTokensOf({
+          bodyText: 'data: {"usage":{"prompt_tokens_details":{"cached_tokens":1.5}}}\n\ndata: [DONE]\n\n',
+        },),).toBe('unreported',);
+      },
+    },),
   ],
 },);

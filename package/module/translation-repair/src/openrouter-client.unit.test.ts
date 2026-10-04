@@ -18,13 +18,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CACHED_UNREPORTED,
   COMPLETION_CAP,
+  COST_UNREPORTED,
   createOpenRouterClient,
   estimateAbandonedSpend,
   InStreamProviderError,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,
   OpenRouterModelNotServedError,
+  reportedSpendFieldsOf,
   resetRunSpend,
   runSpendUsd,
   SyntheticHttpError,
@@ -419,6 +422,59 @@ await describe({
             expect((thrown as SyntheticHttpError).status,).toBe(402,);
           },
         },),
+
+        it({
+          name: 'ARMS a deadline where the caller sets one and passes a caller maxAnswerChars on, with the '
+            + 'answer read back under both (ledger T8, the openrouter cluster)',
+          fn: async () => {
+            const { client, } = recordedClient({},);
+            const reply = await client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [
+                {
+                  role: 'user',
+                  content: 'Where does the cat sleep?',
+                },
+              ],
+              signal: SIGNAL,
+              exchangeTimeoutMs: 5_000,
+              maxAnswerChars: 1_000,
+              responseFormat: {
+                type: 'json_schema',
+                json_schema: {
+                  name: 'nap_spot',
+                  schema: {
+                    type: 'object',
+                    required: ['spot',],
+                    properties: {
+                      spot: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                },
+              },
+            },);
+            expect(reply.text,).toBe('{"spot": "windowsill"}',);
+          },
+        },),
+
+        it({
+          name: 'CARRIES costUsd and cachedTokens onto the spend fields only where the wire sent them, '
+            + 'dropping an unreported one (ledger T8, the openrouter cluster)',
+          fn: async () => {
+            expect(reportedSpendFieldsOf({ cost: 0.5, cachedTokens: 12, },),).toEqual({
+              costUsd: 0.5,
+              cachedTokens: 12,
+            },);
+            expect(reportedSpendFieldsOf({
+              cost: COST_UNREPORTED,
+              cachedTokens: CACHED_UNREPORTED,
+            },),).toEqual({},);
+            expect(reportedSpendFieldsOf({ cost: 0.5, cachedTokens: CACHED_UNREPORTED, },),).toEqual({ costUsd: 0.5, },);
+            expect(reportedSpendFieldsOf({ cost: COST_UNREPORTED, cachedTokens: 12, },),).toEqual({ cachedTokens: 12, },);
+          },
+        },),
       ],
     },),
 
@@ -481,6 +537,104 @@ await describe({
               maxTokens: body.max_tokens,
             },);
             expect(runSpendUsd({ provider: 'openrouter', },),).toBeCloseTo(RECORDED_COST_USD + reckoned.usd, 12,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'the run meter moves only where the wire reported a cost (ledger P1)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'MOVES the run meter by the cost the wire reported and never by a stream that reported '
+            + 'none, so a total reads only what the gateway charged (ledger T8, the openrouter cluster)',
+          fn: async () => {
+            resetRunSpend();
+            /**
+             Stream whose usage block reports no cost.
+             */
+            const bare = [
+              chunkOf({
+                delta: {
+                  content: '{"spot": "windowsill"}',
+                },
+              },),
+              chunkOf({
+                delta: {
+                  content: '',
+                },
+                rest: {
+                  usage: {
+                    prompt_tokens: 342,
+                    completion_tokens: 400,
+                    total_tokens: 742,
+                  },
+                },
+              },),
+              'data: [DONE]\n\n',
+            ].join('',);
+            await recordedClient({
+              reply: {
+                status: 200,
+                bodyText: bare,
+              },
+            },).client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [
+                {
+                  role: 'user',
+                  content: 'Where does the cat sleep?',
+                },
+              ],
+              signal: SIGNAL,
+            },);
+            /**
+             Meter the uncosted stream left flat, the positive control below
+             proving the meter can move here at all.
+             */
+            expect(runSpendUsd({ provider: 'openrouter', },),).toBe(0,);
+            /**
+             Stream whose usage block reports a cost.
+             */
+            const reporting = [
+              chunkOf({
+                delta: {
+                  content: '{"spot": "windowsill"}',
+                },
+              },),
+              chunkOf({
+                delta: {
+                  content: '',
+                },
+                rest: {
+                  usage: {
+                    prompt_tokens: 342,
+                    completion_tokens: 400,
+                    total_tokens: 742,
+                    cost: 0.5,
+                    is_byok: false,
+                  },
+                },
+              },),
+              'data: [DONE]\n\n',
+            ].join('',);
+            await recordedClient({
+              reply: {
+                status: 200,
+                bodyText: reporting,
+              },
+            },).client.chatText({
+              modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+              messages: [
+                {
+                  role: 'user',
+                  content: 'Where does the cat sleep?',
+                },
+              ],
+              signal: SIGNAL,
+            },);
+            expect(runSpendUsd({ provider: 'openrouter', },),).toBeCloseTo(0.5, 12,);
           },
         },),
       ],

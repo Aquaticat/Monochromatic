@@ -32,6 +32,24 @@ import { reportSpend, } from './spend-line.ts';
 const UNMEASURED_RAW_CHARS_PER_TOKEN = 184;
 
 /**
+ Raw stream characters per completion token a card carries,
+ or the median of the measured ones where the card carries none.
+
+ @param rawCharsPerToken - Ratio the card carries, `'unmeasured'` where the
+ roster holds no observation for the model
+
+ @returns Raw characters the reckoning divides a completion token's count by
+
+ @example
+ ```ts
+ const ratio = rawCharsPerCompletionTokenOf('unmeasured',);
+ ```
+ */
+export function rawCharsPerCompletionTokenOf(rawCharsPerToken: number | 'unmeasured',): number {
+  return (rawCharsPerToken === 'unmeasured') ? UNMEASURED_RAW_CHARS_PER_TOKEN : rawCharsPerToken;
+}
+
+/**
  Raw stream characters per completion token, the 50th percentile over every
  completed OpenRouter stream of 2026-09-09 whose progress line sat beside
  its spend line (pass logs under `~/temp/agent`), read off the cards.
@@ -45,7 +63,7 @@ const RAW_CHARS_PER_COMPLETION_TOKEN: Readonly<Record<OpenRouterServedId, number
      Ratio the card carries, or the median of the measured ones.
      */
     const { rawCharsPerToken, } = card.openrouter;
-    return (rawCharsPerToken === 'unmeasured') ? UNMEASURED_RAW_CHARS_PER_TOKEN : rawCharsPerToken;
+    return rawCharsPerCompletionTokenOf(rawCharsPerToken,);
   },
 },);
 

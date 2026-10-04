@@ -204,6 +204,41 @@ function servedIdFor(
 }
 
 /**
+ Fields of a spend report, each present only where the wire sent its number.
+
+ THE CONDITIONAL SPREADS KEEP A FIELD ABSENT rather than zero where no chunk
+ reported one, so the line and the meter read unreported and no reader sums
+ a zero the wire never sent.
+
+ @param cost - USD the stream's cost module read, its unreported mark where
+ no chunk carried a cost
+
+ @param cachedTokens - cache count the stream's cached-tokens module read,
+ its unreported mark where no chunk carried one
+
+ @returns Fields to spread over a `reportSpend` call
+
+ @example
+ ```ts
+ reportSpend({ provider: 'openrouter', label, extracted, ...reportedSpendFieldsOf({ cost, cachedTokens, }), },);
+ ```
+ */
+export function reportedSpendFieldsOf(
+  {
+    cost,
+    cachedTokens,
+  }: {
+    readonly cost: number | typeof COST_UNREPORTED;
+    readonly cachedTokens: number | typeof CACHED_UNREPORTED;
+  },
+): Pick<Parameters<typeof reportSpend>[0], 'costUsd' | 'cachedTokens'> {
+  return {
+    ...((cost === COST_UNREPORTED) ? {} : { costUsd: cost, }),
+    ...((cachedTokens === CACHED_UNREPORTED) ? {} : { cachedTokens, }),
+  };
+}
+
+/**
  Builds one client over injected transport, speaking chat completions.
 
  @param apiKey - bearer token; never logged
@@ -470,16 +505,13 @@ export function createOpenRouterClient(
         provider: 'openrouter',
         label: servedId,
         extracted,
-        // Conditional spreads keep each field absent where the wire sent none.
-        ...((cost === COST_UNREPORTED)
-          ? {}
-          : { costUsd: cost, }),
         ...(endpoint.reported
           ? { endpoint: endpoint.name, }
           : {}),
-        ...((cachedTokens === CACHED_UNREPORTED)
-          ? {}
-          : { cachedTokens, }),
+        ...reportedSpendFieldsOf({
+          cost,
+          cachedTokens,
+        },),
       },);
       return extracted;
     },);
