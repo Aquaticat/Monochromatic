@@ -1804,6 +1804,51 @@ The next contract must be established from actual built-in construction and beha
 not a matching tool name.
 No additional Jev request was made for this control.
 
+## Native text-read implementation facts
+
+`proc_5efd` passed the first real built-in read profile:
+five SDK sessions,
+ten injected requests,
+zero semantic attempts,
+and completed native reads `[2, 0, 1, 0, 1]`.
+Default text reads returned their actual disposable file contents.
+Custom same-name reads remained unqualified.
+Replacing the original execute method or changing an observed file after the first result stopped the remaining read.
+Image-selected input stayed outside the text profile.
+
+The native default factory branch captures the original definition before extension setup.
+The existing private registry supplies the current definition.
+The original judgment's dependency facade supplies the observed file bytes,
+not a caller-provided text-file label.
+Public shadows,
+copied evidence,
+and copied member handles cannot replace those sources.
+Post-closure freshness checks retain the original budget and cancellation lineage.
+
+`proc_c618` checked the changed boundary without more SDK sessions or inference.
+Removing the execute-field comparison made the exact guard assertion fail.
+The actual native file MIME sniffer matched the snapshot-prefix detector in the named controls;
+a positive control proved full-buffer detection can differ from the native `4100`-byte prefix.
+The helper also left normalized alternate paths,
+controlled observers,
+undeclared files,
+images,
+and non-UTF-8 inputs unresolved.
+
+The emitted fact concerns the default native text-read body only.
+It explicitly does not establish the whole operation's lint-policy condition,
+callback effects,
+later transfers,
+atomicity,
+or permission.
+The next semantic work separates a clause's stated approval prerequisite from program-effect prediction.
+A positive prerequisite relation must not become a verdict or a demand for a new human grant:
+applicability,
+existing governing authorization,
+scope,
+approval type,
+and hierarchy remain separate.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,
