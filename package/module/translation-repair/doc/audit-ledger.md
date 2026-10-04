@@ -6131,6 +6131,30 @@ reads `ran 4, still cold 0, cold since then 0, not loaded 0`
 and the edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The twenty-third cluster of that census,
+`line`,
+against `census-8QcZ0L` at `7acd7e8a1`:
+6 line stretches over `line-structure.ts` and `line-structure-guard.ts`
+(`fe1f48671`,
+`76f87ac7b`,
+`5202dedc5`).
+Three are cased:
+the bilingual pair in both language orders
+(the English-first shape through its own case),
+the no-letter neighbour that pairs with nothing
+(so merging the two stays a fault the pairing never excused),
+and the page bound
+(a rendering carrying the pair's English more times than the page does).
+Three read strictly now:
+the median's zero fallback sat behind the five-block floor
+and the paired-line reads behind the loop bound,
+all three `nonNullishOrThrow`'s
+(the refine batch's shape).
+The reach census (`~/temp/agent/mimo-trial/reach-line2.log`)
+reads `ran 0, still cold 0, cold since then 0, not loaded 0`
+and the two edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

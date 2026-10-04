@@ -683,6 +683,35 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  11:02 UTC:
+  the T8 `line` batch closed with commits `fe1f48671`,
+  `76f87ac7b` and `5202dedc5`:
+  6 line stretches over two files.
+  Three carry cases
+  (the pair in both language orders,
+  the no-letter neighbour,
+  and the page bound),
+  and three read strictly behind their guarantees
+  (the five-block floor,
+  the loop bound),
+  `nonNullishOrThrow` throughout.
+  The reach census reads `ran 0, still cold 0, cold since then 0, not loaded 0`
+  and the two edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-line2.log`).
+  Counts at the close:
+  the full suite 1,558 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-line-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-line-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `5202dedc5`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/directory` cluster
+  (the ranking's next at `census-8QcZ0L`).
+
+- 2026-10-04,
   10:52 UTC:
   the next batch's baseline census taken at commit `41dd5bd89`:
   `census written to ~/.cache/translation-repair/coverage/census-8QcZ0L/census.json`
