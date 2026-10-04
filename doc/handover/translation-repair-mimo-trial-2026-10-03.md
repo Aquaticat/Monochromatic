@@ -703,6 +703,34 @@ so a fresh context resumes from this file alone.
   the `corpus-run/name` batch.
 
 - 2026-10-04,
+  20:48 UTC:
+  the T8 `corpus-run/name` batch closed with commits `1daaca6e1`,
+  `f29a7247c`:
+  4 line stretches over `name-gloss-restore.ts`,
+  two cased
+  (the unclosed quote
+  and the name with no gloss verb),
+  the comma case landed but missed the arm's shape,
+  two left documented
+  (the comma arm
+  and the archive-slice map fallback).
+  The reach census reads `ran 2, still cold 2`:
+  those two
+  (`~/temp/agent/mimo-trial/reach-name2.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-name-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-name-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `f29a7247c`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/canadian` cluster
+  (the ranking's next at `census-E2Gm5a`).
+
+- 2026-10-04,
   20:28 UTC:
   the next batch's baseline census taken at commit `81727ed38`:
   `census written to ~/.cache/translation-repair/coverage/census-vlck42/census.json`

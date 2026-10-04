@@ -6749,6 +6749,28 @@ The reach census (`~/temp/agent/mimo-trial/reach-displacement2.log`)
 reads `left 0 cold stretches`.
 No B entry found.
 
+The fiftieth cluster of that census,
+`corpus-run/name`,
+against `census-E2Gm5a` at `a070873af`:
+4 line stretches over `name-gloss-restore.ts`
+(`1daaca6e1`,
+`f29a7247c`).
+Two cased:
+a gloss line whose quote never closes,
+and one whose name is not followed by the gloss verb.
+Landed but not reached:
+the comma-separated gloss case
+(`f29a7247c`'s shape missed the tail check's comma arm).
+Left:
+the comma arm
+(`247`)
+and the archive-slice map fallback
+(`312`).
+The reach census (`~/temp/agent/mimo-trial/reach-name2.log`)
+reads `ran 2, still cold 2`:
+those two.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
