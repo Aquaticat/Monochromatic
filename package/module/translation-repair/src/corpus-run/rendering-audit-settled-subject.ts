@@ -300,9 +300,9 @@ export function subjectsOf(
       const { outcome, } = row;
 
       // A slice the lane never reached has no rendering to audit. The
-      // predicate carries the narrowing downstream, so the mapping below
-      // reads the decided outcome without an invariant re-check (ledger
-      // T8, 2026-10-04).
+      // predicate carries the narrowing downstream, so `asSubject` reads
+      // the decided outcome without an invariant re-check (ledger T8,
+      // 2026-10-04).
       return outcome.kind === 'decided';
     },)
     .map(function asSubject(row,): SettledAuditSubject {
