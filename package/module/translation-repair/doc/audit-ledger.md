@@ -6648,6 +6648,34 @@ reads `still cold 2`:
 those two.
 No B entry found.
 
+The forty-sixth cluster of that census,
+`transient`,
+against `census-KYvmuo` at `38cb6b1e8`:
+4 line stretches over `transient-retry.ts`
+(`c1b403b95`).
+One cased:
+a thrown value that is no Error wraps into one
+(the value thrown from an unknown-typed name
+so the lint reads no literal non-Error shape).
+Left:
+the backoff's non-abort rethrow
+(`225`,
+reachable only where the wait itself faults),
+the aborted-exchange pair
+(`580-583`),
+and the retry loop's exhausted throw
+(`584-585`,
+its own comment marks it unreachable).
+The commit message for `c1b403b95` names only two of
+the three left
+(the aborted-exchange pair went unnamed);
+recorded here rather than amended
+(ledger GCA).
+The reach census (`~/temp/agent/mimo-trial/reach-transient.log`)
+reads `ran 1, still cold 3`:
+those three.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

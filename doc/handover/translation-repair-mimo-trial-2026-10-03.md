@@ -702,6 +702,37 @@ so a fresh context resumes from this file alone.
   the `transient` batch.
 
 - 2026-10-04,
+  20:00 UTC:
+  the T8 `transient` batch closed with commit `c1b403b95`:
+  4 line stretches over `transient-retry.ts`,
+  one cased
+  (the non-Error throw wrapped into one),
+  three left documented
+  (the backoff's non-abort rethrow,
+  the aborted-exchange pair,
+  and the loop's exhausted throw).
+  The commit message for `c1b403b95` names only two of
+  the three left
+  (the aborted-exchange pair went unnamed);
+  recorded in the ledger rather than amended
+  (ledger GCA).
+  The reach census reads `ran 1, still cold 3`:
+  those three
+  (`~/temp/agent/mimo-trial/reach-transient.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-transient-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-transient-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `c1b403b95`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `active` cluster
+  (the ranking's next at `census-KYvmuo`).
+
+- 2026-10-04,
   19:18 UTC:
   the next batch's baseline census taken at commit `5840665be`:
   `census written to ~/.cache/translation-repair/coverage/census-pVW4Um/census.json`
