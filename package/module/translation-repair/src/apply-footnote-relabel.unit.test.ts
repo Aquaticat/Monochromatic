@@ -64,6 +64,22 @@ await describe({
           },
         },),
         it({
+          name: 'bounds a run at both the head and the tail of its parent, the whole paragraph one '
+            + 'untokenized literal',
+          fn: async () => {
+            /**
+             Paragraph whose only child is the untokenized literal, so the
+             run sits at both bounds of its parent's children.
+             */
+            const text = 'A cat[^1] naps.\n\n[^1]: The cat.\n\nwww.example.com\n';
+            const expected = 'A cat[^2] naps.\n\n[^2]: The cat.\n\nwww.example.com\n';
+            expect(applyFootnoteRelabel({
+              text,
+              map: [{ from: '1', to: '2', },],
+            },),).toBe(expected,);
+          },
+        },),
+        it({
           name: 'relabels a literal-looking reference riding with an autolink literal micromark did not '
             + 'tokenize, since an undefined call stays in its text (ledger B123)',
           fn: async () => {
