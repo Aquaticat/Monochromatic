@@ -217,13 +217,29 @@ not source/binary equivalence or a proved allocator cause.
 retains those separate outcomes.
 
 The owning runtime exited cleanly and its absence watch passed.
-The current SDK's inspected `-skip-adb-auth` option is being tested only
-on this owned disposable AVD in `proc_440d`;
-`proc_b7c7` owns bounded readiness and the fresh read-back snapshot.
-The next action is to inspect that terminal result and recorded settings,
-then begin the prepared fit controls.
-This debug-transport option is not storage-consent bypass or a change to
-the original AVD.
+The `-skip-adb-auth` attempt still reported an unauthorized guest transport;
+that flag is not a verified authorization workaround.
+An independent console screenshot showed a separate System UI ANR.
+Authenticated local gRPC touch removed that dialog,
+providing a visible input positive control;
+a console mouse command's `OK` alone had not shown the intended change.
+Neither observation establishes the ANR's cause or ADB authorization.
+
+The measured container network is isolated `pasta` and its ADB server
+used `HOME=/tmp`.
+A container-local server restart and reconnect retained unauthorized
+transport and showed no RSA approval dialog in the inspected frames.
+Only this runtime's generated key pair was retained in private mode-restricted
+storage for one bounded persistent-identity retry.
+No original host key,
+original AVD or guest authorization file is copied or changed.
+The current runtime accepted graceful console shutdown;
+`proc_3ef7` verifies absence before that last retry.
+The next action is to restart once without the unhelpful skip flag,
+rediscover its current local gRPC metadata,
+and inspect any actual authorization screen before input.
+If authorization remains unavailable,
+record the native verification blocker rather than repeat startup churn.
 The prepared cover/200% combined and failed-trash fit controls still run
 before any full capture cohort.
 Verification must establish stable fresh root/viewport rectangles,
