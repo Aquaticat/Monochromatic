@@ -14,3 +14,12 @@ pub mod view_model;
 
 /// Session-local Ctrl+digit history with editord's promotion semantics.
 pub mod recent;
+
+/// Tab expansion retains exact source/display correspondence.
+pub mod text_projection;
+
+/// Shared shaping for mixed-script source rows, caret, and hit testing.
+pub mod shaped_text;
+
+/// Pixel painting consumes the same shaped geometry as reading interaction.
+pub mod text_raster;

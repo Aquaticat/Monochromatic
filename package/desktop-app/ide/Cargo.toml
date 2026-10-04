@@ -27,6 +27,10 @@ anyhow = "1"
 helix-core = { git = "https://github.com/helix-editor/helix", rev = "ba40e547426b0f9896c8bdc699a4ab11f2b37dbc" }
 helix-lsp = { git = "https://github.com/helix-editor/helix", rev = "ba40e547426b0f9896c8bdc699a4ab11f2b37dbc" }
 helix-loader = { git = "https://github.com/helix-editor/helix", rev = "ba40e547426b0f9896c8bdc699a4ab11f2b37dbc" }
+# Reuse the text-layout/rasterization stack already present through Slint.
+# Native pixel geometry replaces terminal-column assumptions for fallback fonts.
+parley = "0.11"
+swash = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1.1"
