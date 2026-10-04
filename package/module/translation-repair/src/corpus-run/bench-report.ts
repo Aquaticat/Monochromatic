@@ -1,6 +1,8 @@
 import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { writeFileAtomic, } from './atomic-write.ts';
 import type {
   BenchCall,
@@ -151,7 +153,7 @@ export function benchWidths(
     // The MIDDLE width carries the repeat. The band is meant to describe the
     // bench as a whole, and the extremes are its two least representative
     // points.
-    repeated: widths[Math.floor(widths.length / 2,)] ?? NARROWEST_WIDTH,
+    repeated: nonNullishOrThrow(widths[Math.floor(widths.length / 2,)],),
   };
 }
 
@@ -271,7 +273,7 @@ function tokensOfRows(
 
  @param rows - rows to describe, all of one width and pass
 
- @returns Printable summary, or a note that nothing ran
+ @returns Printable summary
 
  @example
  ```ts
@@ -281,9 +283,6 @@ function tokensOfRows(
 function describeRows(
   { rows, }: { readonly rows: readonly BenchRow[]; },
 ): string {
-  if (rows.length === 0)
-    return 'no rows';
-
   /**
    Rows whose slice already had a translation.
    */
