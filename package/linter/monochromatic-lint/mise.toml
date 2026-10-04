@@ -34,6 +34,11 @@ run = "cargo test --all-targets"
 description = "Regenerate the owning Cargo lockfile without fetching dependencies"
 run = "cargo generate-lockfile --offline"
 
+[tasks.mutation]
+description = "Run cargo-mutants in the tested, mount-free 2 GiB / 2 CPU source snapshot"
+depends = ["test:container"]
+run = "node bin/mutate-container.mjs"
+
 [tasks."test:container"]
 description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
 shell = "node --input-type=module -e"
