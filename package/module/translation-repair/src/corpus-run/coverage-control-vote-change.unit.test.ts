@@ -33,7 +33,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { coverageControlHolds, } from '../../dist/final/node/index.mjs';
+import {
+  coverageControlHolds,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  messageText,
+  type SyntheticClient,
+} from '../../dist/final/node/index.mjs';
 import {
   coverageControlCasesAt,
   coverageControlClient,
@@ -126,6 +132,167 @@ await describe({
         // wire for answering at all rather than for answering differently.
         expect(control.sawAbsenceOnTarget,).toBe(0,);
         expect(control.held,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'RECORDS A REFUSAL for a case whose undamaged verdict never claimed the passage is '
+        + 'carried, since only a carried case can have its rendering deleted',
+      fn: async () => {
+        /**
+         Client answering that the passage is not carried at all.
+         */
+        const denying: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused by the coverage control',);
+          },
+          chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,) => {
+            /**
+             Reply claiming the passage is absent.
+             */
+            const scripted: unknown = {
+              coverage: 'none',
+              quote: '',
+              reason: 'fixture',
+            };
+            if (!request.validate(scripted,))
+              return {
+                kind: 'schema-mismatch',
+                rawText: '',
+                detail: 'fixture',
+              };
+            return {
+              kind: 'ok',
+              value: scripted as ValueT,
+              rawText: JSON.stringify(scripted,),
+            };
+          },
+          quotas: async () => {
+            throw new Error('quotas unused by the coverage control',);
+          },
+        };
+        const control = await coverageControlHolds({
+          client: denying,
+          cases: CASES,
+          modelIds: [...MODEL_IDS,],
+          signal: AbortSignal.timeout(120_000,),
+          exchangeTimeoutMs: 30_000,
+          l,
+        },);
+        expect(control.rows,).toHaveLength(0,);
+        expect(control.refusals.length,).toBeGreaterThan(0,);
+        expect(control.refusals[0]?.reason,).toBe('not-carried',);
+      },
+    },),
+
+    it({
+      name: 'RECORDS A REFUSAL when the evidence cut empties the translation, since nothing is left '
+        + 'to ask the roster about',
+      fn: async () => {
+        /**
+         Cases whose anchored span is the whole translation.
+         */
+        const whole = coverageControlCasesAt({
+          where: ['envelope/whole',],
+          sourcePassage: SOURCE_PASSAGE,
+          translationText: TRANSLATION,
+        },);
+        const control = await coverageControlHolds({
+          client: coverageControlClient({ quote: TRANSLATION, },),
+          cases: whole,
+          modelIds: [...MODEL_IDS,],
+          signal: AbortSignal.timeout(120_000,),
+          exchangeTimeoutMs: 30_000,
+          l,
+        },);
+        expect(control.rows,).toHaveLength(0,);
+        expect(control.refusals[0]?.reason,).toBe('evidence-not-locatable',);
+      },
+    },),
+
+    it({
+      name: 'RECORDS A REFUSAL when no window clear of the anchored span can take a decoy cut of the '
+        + 'same size',
+      fn: async () => {
+        /**
+         Quoted rendering filling all but one character of the translation.
+         */
+        const tight = `${QUOTED} x`;
+        const control = await coverageControlHolds({
+          client: coverageControlClient({ quote: QUOTED, },),
+          cases: coverageControlCasesAt({
+            where: ['envelope/tight',],
+            sourcePassage: SOURCE_PASSAGE,
+            translationText: tight,
+          },),
+          modelIds: [...MODEL_IDS,],
+          signal: AbortSignal.timeout(120_000,),
+          exchangeTimeoutMs: 30_000,
+          l,
+        },);
+        expect(control.rows,).toHaveLength(1,);
+        expect(control.refusals,).toHaveLength(0,);
+        expect(JSON.stringify(control.rows[0],).includes('no-room',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'HOLDS when the absence vote moves with the targeted cut and never with the decoy one',
+      fn: async () => {
+        /**
+         Client whose vote follows the quoted rendering on the sheet.
+         */
+        const moving: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused by the coverage control',);
+          },
+          chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,) => {
+            /**
+             Sheet as one text, where the rendering rides or does not.
+             */
+            const sheet = request.messages
+              .map(function toContent(message,) {
+                return messageText({ message, },);
+              },)
+              .join('\n',);
+            /**
+             Reply claiming what the sheet shows: coverage with the quote,
+             and none with an empty one, the two never contradicting.
+             */
+            const carries = sheet.includes(QUOTED,);
+            const scripted: unknown = {
+              coverage: carries ? 'full' : 'none',
+              quote: carries ? QUOTED : '',
+              reason: 'fixture',
+            };
+            if (!request.validate(scripted,))
+              return {
+                kind: 'schema-mismatch',
+                rawText: '',
+                detail: 'fixture',
+              };
+            return {
+              kind: 'ok',
+              value: scripted as ValueT,
+              rawText: JSON.stringify(scripted,),
+            };
+          },
+          quotas: async () => {
+            throw new Error('quotas unused by the coverage control',);
+          },
+        };
+        const control = await coverageControlHolds({
+          client: moving,
+          cases: CASES,
+          modelIds: [...MODEL_IDS,],
+          signal: AbortSignal.timeout(120_000,),
+          exchangeTimeoutMs: 30_000,
+          l,
+        },);
+        expect(control.rows.length,).toBeGreaterThan(0,);
+        expect(control.sawAbsenceOnTarget,).toBeGreaterThan(0,);
+        expect(control.sawAbsenceOnDecoy,).toBe(0,);
+        expect(control.held,).toBe(true,);
       },
     },),
   ],
