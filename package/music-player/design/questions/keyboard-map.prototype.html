@@ -50,11 +50,12 @@ padding-block: 1rem; padding-inline: 1rem; }
 <p>Design proposal and isolated behavior demonstration. No native application binding is implemented.</p>
 <h1>One keyboard map, with editing and controls owning their keys</h1>
 <p>Purpose: complete D25's whole-map IntelliJ alignment pass without asking about individual key labels.
-Search and the folder picker retain their settled assignments. The consequential concern is preventing
+D25's Ctrl+F and Ctrl+O reservations remain settled; their macOS equivalents and the other bindings
+are proposals. The consequential concern is preventing
 caret motion or a focused button from also changing playback.</p>
 <p class="note">This is an HTML behavior sandbox, not an Android/Slint screen mockup. It reads no files,
 plays no audio and implements no matcher. Platform shortcut delivery, media keys, IME behavior and native
-accessibility are unverified. The remaining assignments are a coherent proposal, not accepted defaults.</p>
+accessibility are unverified. The new assignments and playback-area scope are a coherent proposal, not accepted defaults.</p>
 </header>
 <section aria-labelledby="map-title">
 <h2 id="map-title">Proposed map</h2>
@@ -70,7 +71,7 @@ There is no valid reason to offer the superseded volume draft as another option.
 </section>
 <section id="demo" aria-labelledby="demo-title">
 <h2 id="demo-title">Inspect ownership and consequences</h2>
-<p>Focus the playback area to try application shortcuts. Focus the query or seek slider to see those controls
+<p>Focus the playback shortcut area itself to try its transport keys; its buttons and slider retain their own keys. Focus the query or seek slider to see those controls
 retain their own keys. Space on a focused button activates that button only once.
 Application shortcuts are active within this demonstration and its popup, not the surrounding review notes.</p>
 <div class="controls">
@@ -174,9 +175,9 @@ function renderMap() {
     [(mac ? 'Command' : 'Ctrl') + '+O','Open/focus the current-library folder picker, not choose a new library root.'],
     [mac ? 'Command+Comma' : 'Ctrl+Alt+S','Open in-app Settings.'],
     [mac ? 'Command+L' : 'Ctrl+G','Reveal the current track without starting or substituting another track.'],
-    [mac ? 'Command+Shift+[/]' : 'Ctrl+Left/Right','Previous/next track only in the playback shortcut area; editing retains caret keys.'],
-    ['Space','Toggle playback in the playback area; otherwise type a space or activate the focused control.'],
-    ['Ctrl+M','Cycle end-of-track mode in the playback area only, a product exception on both models.'],
+    [mac ? 'Command+Shift+[/]' : 'Ctrl+Left/Right','Previous/next track only while the playback shortcut area itself is focused; editors and focused controls retain their own keys.'],
+    ['Space','Toggle playback while the shortcut area itself is focused; otherwise type a space or activate the focused control.'],
+    ['Ctrl+M','Cycle end-of-track mode while the shortcut area itself is focused, a product exception on both models.'],
     ['Arrow keys','Native caret, focus or focused-control navigation. No global seek or volume alias.'],
     ['Tab / Shift+Tab','Native focus movement without a second transport action.'],
     ['Unmodified letters','Text belongs to its focused widget. No global letter-to-track or letter-to-folder binding is added; native folder typeahead is not modelled here.'],

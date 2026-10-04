@@ -42,9 +42,12 @@ not an actual OS keymap.
 - Previous/next proposes `Ctrl+Left`/`Ctrl+Right` in the Windows/Linux
   playback area and `Command+Shift+[`/`Command+Shift+]` in the macOS model.
   The latter uses the IDE's previous/next-tab chord precedent.
+  The area itself must have focus;
+  its descendant buttons and slider are control owners.
   These transport meanings are product exceptions,
   not literal IDE music operations.
-- Space toggles the authored player only in its playback shortcut area.
+- Space toggles the authored player only while the playback shortcut area
+  itself has focus.
   Editing and focused controls retain Space.
 - `Ctrl+M` cycles authored end-of-track mode in the playback area,
   an explicit product exception in both displayed models.
@@ -113,7 +116,8 @@ Logical composition cases prove no real Android or desktop IME behavior.
 [The verification summary](../questions/evidence/keyboard-map-prototype-verification.json)
 pins the HTML and committed classifier test.
 Checks ran offline in a 2GiB/2CPU Chromium container.
-Desktop/mobile light/dark contexts exercised the authored actions,
+Browser-dispatched keys using the Windows/Linux model exercised the
+four desktop/mobile light/dark contexts and authored actions,
 editing/control ownership,
 popup handling,
 current-row reveal and optional inert observations.
