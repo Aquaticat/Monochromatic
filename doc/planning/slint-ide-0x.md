@@ -17,6 +17,12 @@ not an adoption decision.
   "No changes to files via any way is needed in 0.x".
   Exclude file-mutation workflows whether performed directly or delegated to another process.
 - Resolve the design through a grilling interview before implementing.
+- Primary workflow:
+  live source reading and navigation while changes happen elsewhere.
+- Use editord as a familiar reference,
+  documenting every deliberate behavioral difference.
+- Support the current host only for 0.x.
+- Support local filesystem projects only.
 
 Slint is settled as the UI toolkit.
 Host language,
@@ -34,7 +40,7 @@ No promise of editing in a later version is implied.
   recent files,
   and keyboard navigation.
 - The README's `JetBrains parity` section calls every behavioral difference a bug.
-  Whether that constraint transfers to retained features is an open question.
+  The user explicitly replaces that obligation with familiar-reference behavior and a complete difference record.
 - [WebStorm comparison][comparison]:
   the recorded reason to retain editord shifted from scrolling to freshness.
   This is historical project rationale,
@@ -59,34 +65,17 @@ No promise of editing in a later version is implied.
   and UI gaps.
   Neither is adopted wholesale as the new backlog.
 - `uname --kernel-name --machine` reports `Linux x86_64` for the current host.
-  This establishes an available environment,
-  not the user's desired release-platform support.
+  The user selected the current host as the sole 0.x acceptance target.
+  Probe the actual desktop session and display configuration before native UI verification.
 
 The paused package remains untouched during the interview.
 No deprecation,
 replacement,
 or code-reuse commitment is made.
 
-## First-round decision frontier
+## Settled interview decisions
 
-### Q1: useful workflow
-
-What concrete task should justify opening this application rather than the existing tools?
-Name a primary workflow and any ordered secondary workflow.
-Reading and navigating source,
-reviewing changes,
-and observing externally running agents or tasks are distinguishable jobs,
-not mutually exclusive product identities.
-
-Provisional recommendation:
-live source reading and navigation while changes happen elsewhere.
-This follows the reference's freshness rationale and does not imply an accepted feature list.
-Change review adds comparison-state requirements;
-observing external agents or tasks adds session-discovery and status requirements.
-Neither extra responsibility is accepted by the original request.
-Agent or task control that mutates files is excluded by the follow-up clarification.
-
-### Q2: file mutations, settled
+### File mutations
 
 The user excludes file changes through any mechanism for 0.x.
 Cut editing,
@@ -99,7 +88,6 @@ delete,
 Git writes,
 and delegated mutation through agents or commands.
 A terminal or task launcher must not reintroduce these workflows.
-Read-only observation of externally running work remains a separate possibility.
 
 This is a product scope decision,
 not evidence of sandbox enforcement.
@@ -110,35 +98,174 @@ logs,
 caches,
 and session-state writes if a surviving workflow needs them.
 
-### Q3: behavioral inheritance
+### Round 1 answers
 
-For retained features,
-is editord's JetBrains behavior a strict compatibility requirement or a familiar reference?
+- Q1:
+  A,
+  live source reading and navigation.
+  Change-review and agent-observation workflows are not part of the selected starting scope.
+- Q2:
+  familiar reference,
+  with every deliberate difference documented.
+  Exact parity for retained features is rejected.
+- Q3:
+  current host only.
+  Generic Linux support and other operating systems are not acceptance promises.
+- Q4:
+  local only.
+  Do not add SSH,
+  remote-daemon,
+  or mounted-network-filesystem acceptance implicitly.
+
+## Behavior-difference register
+
+This register is required by the user.
+Entries describe the intended scope,
+not implemented or verified behavior.
+Record every later departure with the reference behavior,
+replacement behavior,
+reason,
+and acceptance check before implementing it.
+Preserve a complete record when the plan moves into package documentation.
+
+### UI platform
+
+- Reference:
+  editord serves a browser frontend;
+  [its philosophy][editor-philosophy] relies on browser-provided find,
+  zoom,
+  selection,
+  printing,
+  and accessibility behavior.
+- New scope:
+  Slint UI on the current host.
+  Browser-provided features are not automatically inherited;
+  required replacements must be selected and tested explicitly.
+- Reason:
+  user-selected toolkit and host boundary.
+- Acceptance:
+  run the actual native artifact on the current desktop session.
+  No browser facility counts as provided merely because editord had it.
+
+### Mutation commands and hidden writes
+
+- Reference:
+  keybindings expose save,
+  format,
+  rename,
+  and line edits;
+  the filesystem service also mutates files.
+  The watcher deletes orphaned atomic-write temporary files.
+- New scope:
+  no file-mutation workflow or delegated mutation.
+  Do not reuse the watcher's cleanup side effect.
+- Reason:
+  explicit 0.x no-write requirement.
+- Acceptance:
+  disposable-fixture checks exercise retained UI commands and file-open/watch paths,
+  verifying that application activity does not change fixture contents or directory entries.
+  This alone does not prove an OS sandbox or absence of writes elsewhere.
+
+### Compatibility contract
+
+- Reference:
+  README declares every JetBrains behavioral difference a bug.
+- New scope:
+  selected familiar behavior plus an explicit record of every difference.
+  Feature-specific contracts are pending the next rounds.
+- Reason:
+  user accepted familiar-reference behavior rather than exhaustive parity.
+- Acceptance:
+  compare implemented commands,
+  shortcuts,
+  navigation,
+  search,
+  reload behavior,
+  and omissions against the reference and this register.
+
+## Round 2 frontier
+
+### Q5: language intelligence
+
+Would file and text navigation without language services be useful for 0.x?
+If not,
+select the indispensable capabilities separately:
+semantic definition jumps,
+references,
+hover types or documentation,
+inline hints,
+and diagnostics.
 
 Recommendation:
-preserve chosen familiar interactions,
-not an exhaustive parity obligation.
-Exact shortcuts and interaction contracts depend on which features survive.
+cut language services unless their absence defeats the selected reading workflow.
+Text matches must never be described as semantic references.
+Languages and server choices depend on this answer.
 
-### Q4: release platforms
+### Q6: syntax highlighting
 
-Which operating systems must pass acceptance for 0.x?
-
-Recommendation:
-Linux on the current workstation first;
-no claim of macOS or Windows support before testing them.
-This does not require intentionally non-portable implementation.
-
-### Q5: filesystem location
-
-Must 0.x operate on remote projects,
-or can it accept only local filesystem projects?
+Is syntax coloring a release requirement independent of language intelligence?
 
 Recommendation:
-local projects only.
-Remote connection management is separate from choosing the release operating systems.
-Mounted remote filesystems need an explicit later acceptance boundary,
-not an accidental local-path loophole.
+plain text for the first agreed 0.x scope unless syntax coloring is essential to actual use.
+Highlighting languages and implementation feasibility depend on this answer.
+Plain text still needs readable typography,
+selection,
+copying,
+and navigation.
+
+### Q7: finding files and code
+
+Which discovery surfaces are necessary:
+combined file-path and content search,
+a browsable file tree,
+or both?
+
+Recommendation:
+search first without a tree.
+Ranking:
+search only > both > tree only.
+Search only avoids a second discovery surface;
+both supports browsing without known search terms;
+tree only loses project-wide content discovery.
+This is a proposed difference from editord,
+not an accepted cut.
+
+### Q8: external-change policy
+
+When a viewed file changes externally,
+should the view update immediately,
+hold the displayed version while text is selected,
+or require explicit reload?
+
+Recommendation:
+automatic refresh with a visibly marked temporary hold while selecting text.
+Ranking:
+selection hold > unconditional refresh > manual reload.
+Selection hold protects reading and copying;
+unconditional refresh avoids stale state but can interrupt selection;
+manual reload makes freshness depend on user action.
+Define delete,
+rename,
+read-failure,
+and replacement-file behavior after this policy is settled.
+
+### Proposed floor and additional cuts
+
+Propose one local project root,
+one window,
+one file view,
+line numbers,
+selection/copy,
+in-file find,
+and go-to-line.
+
+Propose cutting tabs,
+split panes,
+media or rendered-document previews,
+and persistent session restore.
+These are veto-open proposals presented with the round,
+not accepted requirements.
+Do not silently expand the selected live-source workflow into change review or process supervision.
 
 ## Downstream decisions
 
@@ -160,13 +287,19 @@ Do not ask feature-specific questions before the primary job is settled.
 
 ## Next action
 
-Q2 was answered before the first question round was presented.
-Present Q1 and Q3 through Q5,
-renumbering the user-facing round consecutively,
-and wait for answers.
-Record each answer before opening the next dependent decisions.
+Present Q5 through Q8 and the proposed floor/cuts.
+Invite explicit objections to the floor/cuts in the same round.
+Wait for answers and record them before opening dependent decisions.
+
+Planning history:
+`c5654c5e1` introduced the record;
+`c37f58ca5` fixed semantic line breaks;
+`3cf1e698c` applied the no-write requirement to candidate workflows.
+The initial record passed scoped Markdown lint and a micromark rendered-output check.
+Repeat both after this round's update.
 
 [editor-readme]: ../../package-paused/desktop-daemon/editord/README.md
+[editor-philosophy]: ../../package-paused/desktop-daemon/editord/PHILOSOPHY.md
 [comparison]: ../../package-paused/desktop-daemon/editord/docs/decisions/webstorm-comparison.md
 [watcher]: ../../package-paused/desktop-daemon/editord/src/server/operations/watch-filesystem.ts
 [keybindings]: ../../package-paused/desktop-daemon/editord/src/client/app/keybindings.ts
