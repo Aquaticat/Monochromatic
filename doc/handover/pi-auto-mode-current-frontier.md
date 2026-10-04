@@ -1773,6 +1773,37 @@ No real action permission,
 semantic threshold,
 or production deployment follows from these results.
 
+## Owned condition facts in the native consumer
+
+`proc_4670` connected the conservative condition fact to an actual SDK judgment.
+The existing native tool-definition registry became private,
+with a fixed reader returning the actual registered object.
+A factory owned both the concrete in-memory implementation and its active configuration.
+The condition owner read the canonical prepared program from the original judgment;
+it did not accept a caller's target path or profile label.
+
+The control used two sessions,
+four injected requests,
+zero semantic attempts,
+and root-definition counts `[2, 0]`.
+The code-resolved batch executed in the owned reference runtime,
+including after the original decision clock closed.
+The unresolved batch was withheld.
+Copied definitions and evidence rejected;
+public method/map shadows did not replace the intrinsic definition source.
+Persistence,
+full streams,
+source identities,
+and disposal were checked.
+
+This is a real consumer integration of a closed reference contract,
+not native filesystem or linter parity,
+arbitrary program execution,
+or real action permission.
+The next contract must be established from actual built-in construction and behavior,
+not a matching tool name.
+No additional Jev request was made for this control.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,
