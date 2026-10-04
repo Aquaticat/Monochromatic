@@ -1,0 +1,134 @@
+#!/usr/bin/env node
+/** Build instrumented targets with a read-only compiler, then fuzz without host mounts. */
+import { spawnSync } from 'node:child_process';
+import { copyFile, cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { homedir, tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+/** Preserve the failed verification boundary rather than masking it with a later copy error. */
+class FuzzVerificationError extends Error {}
+
+/** Run one shell-free command, capturing metadata only when requested. */
+function execute({ command, args, cwd = process.cwd(), capture = false, allowFailure = false }) {
+  const result = spawnSync(command, args, {
+    cwd, encoding: 'utf8', stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (result.error)
+    throw new FuzzVerificationError(`${command} could not start.`, { cause: result.error });
+  if (!allowFailure && result.status !== 0)
+    throw new FuzzVerificationError(`${command} ${args[0]} exited ${result.status}: ${result.stderr ?? ''}`);
+  return result;
+}
+
+/** Copy only package inputs, never its caches, dependencies, or private machine-local files. */
+async function copyPackage({ source, destination, fuzz }) {
+  for (const name of ['Cargo.toml', 'Cargo.lock', 'src'])
+    await cp(join(source, name), join(destination, name), { recursive: true });
+  if (fuzz)
+    await cp(join(source, 'fuzz_targets'), join(destination, 'fuzz_targets'), { recursive: true });
+}
+
+/** Build and run within explicit container limits and retain discoveries before cleanup. */
+async function main() {
+  if (process.argv.slice(2).some(argument => argument !== '--build-only'))
+    throw new FuzzVerificationError('Only --build-only is accepted.');
+  const buildOnly = process.argv.includes('--build-only');
+  const source = process.cwd();
+  const compiler = execute({ command: 'rustc', args: ['--print', 'sysroot'], capture: true }).stdout.trim();
+  const compilerVersion = execute({ command: 'rustc', args: ['--version'], capture: true }).stdout.trim();
+  if (!compilerVersion.includes('nightly'))
+    throw new FuzzVerificationError('Fuzz instrumentation requires the repository-managed nightly Rust toolchain.');
+  const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-fuzz-'));
+  const outputRoot = join(source, 'target', 'verification');
+  await mkdir(outputRoot, { recursive: true });
+  const evidence = await mkdtemp(join(outputRoot, 'campaign-'));
+  const containers = [];
+  const limits = ['--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128'];
+  try {
+    const packages = [
+      { source, destination: 'linter/monochromatic-lint.fuzz', fuzz: true },
+      { source: resolve(source, '../monochromatic-lint'), destination: 'linter/monochromatic-lint', fuzz: false },
+      { source: resolve(source, '../../rust-module/jsonc-edit'), destination: 'rust-module/jsonc-edit', fuzz: false },
+      { source: resolve(source, '../../rust-module/jsonc-edit.fuzz'), destination: 'rust-module/jsonc-edit.fuzz', fuzz: true },
+    ];
+    for (const item of packages)
+      await copyPackage({ source: item.source, destination: join(context, 'package', item.destination), fuzz: item.fuzz });
+    await cp(resolve(source, '../monochromatic-lint/fixtures'), join(context, 'package/linter/monochromatic-lint/fixtures'), { recursive: true });
+    await cp(resolve(source, '../../rust-module/jsonc-edit/fixtures'), join(context, 'package/rust-module/jsonc-edit/fixtures'), { recursive: true });
+    const vendor = execute({ command: 'cargo', args: ['vendor', '--locked', '--offline', '--versioned-dirs', join(context, 'vendor')], capture: true });
+    const config = vendor.stdout.replaceAll(JSON.stringify(join(context, 'vendor')), '"/work/vendor"');
+    if (!config.includes('directory = "/work/vendor"'))
+      throw new FuzzVerificationError('Cargo vendor did not emit the expected source directory mapping.');
+    await mkdir(join(context, '.cargo'), { recursive: true });
+    await writeFile(join(context, '.cargo/config.toml'), config);
+    await copyFile(join(process.env.CARGO_HOME ?? join(homedir(), '.cargo'), 'bin/cargo-fuzz'), join(context, 'cargo-fuzz'));
+    await writeFile(join(context, 'Containerfile'), [
+      '# Same installed Rust runtime image as the subject container tests; compiler is a separate read-only input.',
+      'FROM 62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884',
+      'COPY package /work/package',
+      'COPY vendor /work/vendor',
+      'COPY .cargo /work/.cargo',
+      'COPY cargo-fuzz /usr/local/cargo/bin/cargo-fuzz',
+      'RUN ["cargo-fuzz", "--version"]',
+      'WORKDIR /work/package/linter/monochromatic-lint.fuzz',
+      'ENV CARGO_BUILD_JOBS=2 CARGO_NET_OFFLINE=true',
+      'ENV PATH="/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"',
+      'ENV RUSTC="/toolchain/bin/rustc" RUSTDOC="/toolchain/bin/rustdoc"',
+      '',
+    ].join('\n'));
+    execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-fuzz-build:development', context] });
+    const compilerMount = ['--volume', `${compiler}:/toolchain:ro`];
+    execute({ command: 'podman', args: ['run', '--rm', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development', 'cargo', 'test', '--lib', '--offline', '--locked', '--', '--test-threads=2'] });
+    const buildContainer = execute({ command: 'podman', args: [
+      'create', ...limits, ...compilerMount, 'localhost/monochromatic-lint-fuzz-build:development',
+      'cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address',
+      '--target', 'x86_64-unknown-linux-gnu', '--target-dir', '/work/build',
+    ], capture: true }).stdout.trim();
+    containers.push(buildContainer);
+    execute({ command: 'podman', args: ['start', '--attach', buildContainer] });
+    const targets = ['merge_values', 'configuration'];
+    await mkdir(join(context, 'bin'), { recursive: true });
+    for (const target of targets)
+      execute({ command: 'podman', args: ['cp', `${buildContainer}:/work/build/x86_64-unknown-linux-gnu/release/${target}`, join(context, 'bin', target)] });
+    await writeFile(join(evidence, 'manifest.json'), JSON.stringify({ compilerVersion, targets, sanitizer: 'address', maxInputBytes: 8192, secondsPerTarget: 30, memory: '2g', cpus: 2, compilerMount: 'read-only during compilation; absent during fuzzing' }, null, 2) + '\n');
+    if (buildOnly) {
+      await cp(join(context, 'bin'), join(evidence, 'bin'), { recursive: true });
+      console.log(`Instrumented binaries: ${evidence}`);
+      return;
+    }
+    await cp(join(source, 'seed'), join(context, 'corpus'), { recursive: true });
+    await cp(join(source, 'dictionary'), join(context, 'dictionary'), { recursive: true });
+    await writeFile(join(context, 'Run.Containerfile'), [
+      '# Fuzz execution has no compiler, registry, repository, home, or credential mounts.',
+      'FROM 62ba2f7ce22ba9bc501110d3452c7ae814fba367c46f7eea3629a79286353884',
+      'COPY bin /fuzz/bin', 'COPY corpus /fuzz/corpus', 'COPY dictionary /fuzz/dictionary',
+      'RUN ["mkdir", "--parents", "/fuzz/artifacts/merge_values", "/fuzz/artifacts/configuration"]',
+      'WORKDIR /fuzz', '',
+    ].join('\n'));
+    execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-fuzz-run:development', '--file', join(context, 'Run.Containerfile'), context] });
+    console.log(`Fuzz evidence: ${evidence}`);
+    for (const target of targets) {
+      const dictionary = target === 'configuration' ? ['-dict=/fuzz/dictionary/configuration.dict'] : [];
+      const container = execute({ command: 'podman', args: [
+        'create', ...limits, 'localhost/monochromatic-lint-fuzz-run:development',
+        `/fuzz/bin/${target}`, `/fuzz/corpus/${target}`, '-max_total_time=30',
+        '-max_len=8192', '-rss_limit_mb=1536', '-timeout=5', `-artifact_prefix=/fuzz/artifacts/${target}/`, ...dictionary,
+      ], capture: true }).stdout.trim();
+      containers.push(container);
+      const result = execute({ command: 'podman', args: ['start', '--attach', container], allowFailure: true });
+      await mkdir(join(evidence, target), { recursive: true });
+      execute({ command: 'podman', args: ['cp', `${container}:/fuzz/corpus/${target}`, join(evidence, target, 'corpus')] });
+      execute({ command: 'podman', args: ['cp', `${container}:/fuzz/artifacts/${target}`, join(evidence, target, 'artifacts')] });
+      await writeFile(join(evidence, target, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal }) + '\n');
+      if (result.status !== 0)
+        throw new FuzzVerificationError(`${target} exited ${result.status}; retained inputs are in ${evidence}.`);
+    }
+  } finally {
+    for (const container of containers)
+      execute({ command: 'podman', args: ['rm', '--force', container], capture: true });
+    await rm(context, { recursive: true, force: true });
+  }
+}
+
+await main();

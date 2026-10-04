@@ -59,12 +59,46 @@ Verification:
 - The first comment-ownership fixture failed because comments after a comma on the same line belong to the preceding value.
   The fixture now uses separate lines and asserts that the intended final comment is present before testing ownership.
 
-Mutation and fuzz gates are not yet implemented;
-this is an implementation slice,
+JSONC schema validation and nearest/explicit configuration discovery are implemented.
+The loader rejects null,
+decoded duplicate keys,
+unknown fields/rules/options,
+invalid UTF-16 text,
+and invalid exact-integer limits before merging.
+Explicit config uses cwd as its pattern base;
+nearest config is used alone.
+Memory-backed discovery tests do not read host-wide configuration,
+and native adapter tests use owned disposable directories.
+
+The container suite now passes 23 tests.
+Cargo check and Clippy pass.
+The first mutation campaign generated 62 mutants:
+53 caught,
+1 missed,
+and 8 unviable.
+The missed mutation changed the LFS option-name guard from conjunction to disjunction.
+Added rejection cases for an exclusion on the wrong rule and an unrelated option on the LFS rule.
+The rerun caught all 54 viable mutants;
+8 remain unviable because rustc E0277 rejects generated `Default` construction for non-Default domain types.
+No mutant exclusions were added.
+Reports are under
+`package/linter/monochromatic-lint/target/verification/mutation-eXe8bh`
+and
+`package/linter/monochromatic-lint/target/verification/mutation-YOFJ8l`.
+
+The mutation runner uses cargo-mutants 27.1.0 inside a mount-free,
+network-disabled 2 GiB / 2 CPU container.
+`--in-place` applies only to the disposable container's source snapshot;
+that tool rejects an explicit `--jobs` with `--in-place`,
+so the runner leaves jobs implicit and retains Cargo's bounded compiler concurrency.
+The runner retains diagnostic reports before deleting its owned container.
+
+Fuzzing and the remaining executable/rule/processor work are not complete.
+This is a verified foundation slice,
 not package completion.
 
 ## Current step
 
-Add JSONC schema validation and configuration lookup.
-Reject duplicate keys and invalid data before invoking the merge;
-preserve the accepted nearest-config and ordered-block semantics.
+Add bounded fuzz targets for schema/merge boundaries,
+then implement pattern matching and resolved settings with the existing Rust glob dependencies.
+Continue through the full authorized queue without replacing current production tools early.

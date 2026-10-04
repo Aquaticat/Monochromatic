@@ -1,0 +1,44 @@
+[package]
+name = "monochromatic-lint-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[lints.clippy]
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+
+[dependencies]
+# Existing repository libFuzzer harness and structured JSONC generator.
+libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
+jsonc-edit-fuzz = { path = "../../rust-module/jsonc-edit.fuzz" }
+monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit" }
+monochromatic-lint = { path = "../monochromatic-lint" }
+
+[lib]
+name = "monochromatic_lint_fuzz"
+path = "src/lib.rs"
+
+[[bin]]
+name = "merge_values"
+path = "fuzz_targets/merge_values.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "configuration"
+path = "fuzz_targets/configuration.rs"
+test = false
+doc = false
+bench = false
+
+[profile.release]
+panic = "unwind"
+
+[workspace]
+members = ["."]
