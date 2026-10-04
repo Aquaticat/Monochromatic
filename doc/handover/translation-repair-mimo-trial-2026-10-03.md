@@ -683,6 +683,30 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  11:29 UTC:
+  the T8 `corpus-run/consolidate` batch closed with commit `445e5b718`:
+  6 line stretches over `consolidate-cache-store.ts`,
+  all cased through the store's own round trip
+  (the record and choice refusals,
+  the absent gate beside the unreadable one,
+  both shippings,
+  and the non-record settlement).
+  The reach census reads `ran 6, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-consolidate.log`).
+  Counts at the close:
+  the full suite 1,558 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-consolidate-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-consolidate-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `445e5b718`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/list` cluster
+  (the ranking's next at `census-xreqy1`).
+
+- 2026-10-04,
   11:27 UTC:
   the next batch's baseline census taken at commit `c56975df4`:
   `census written to ~/.cache/translation-repair/coverage/census-xreqy1/census.json`

@@ -6175,6 +6175,24 @@ The reach census (`~/temp/agent/mimo-trial/reach-directory2.log`)
 reads `ran 6, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The twenty-fifth cluster of that census,
+`corpus-run/consolidate`,
+against `census-xreqy1` at `372848f72`:
+6 line stretches over `consolidate-cache-store.ts`
+(`445e5b718`).
+All cased through the store's own round trip:
+a gate ballot that is no record,
+a ballot whose unsupported rendering names no choice the gate knows,
+a slate floor that is no record,
+a gate outcome that is no record beside the absent one the floor leaves
+standing,
+both shippings the gate names
+(consolidated and standing),
+and a settlement that is no record at all.
+The reach census (`~/temp/agent/mimo-trial/reach-consolidate.log`)
+reads `ran 6, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
