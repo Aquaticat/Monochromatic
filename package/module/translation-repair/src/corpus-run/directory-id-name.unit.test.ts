@@ -22,6 +22,7 @@ import {
 
 import {
   directoryIdNameStands,
+  namesDirectoryId,
   splitFrontMatter,
 } from '../../dist/final/node/index.mjs';
 
@@ -211,13 +212,27 @@ await describe({
     },),
 
     it({
-      name: 'READS NO letters in a name of punctuation alone, so no id spells anything of it',
+      name: 'READS NO letters in an id of punctuation alone, so no name can spell anything of it',
       fn: async () => {
         expect(directoryIdNameStands({
-          entryId: 'maotong',
-          source: blockOf({ text: '---\nname: ，。\n---\n', },),
-          page: blockOf({ text: ID_ONLY_PAGE, },),
+          entryId: '，。',
+          source: blockOf({ text: '---\nname: 猫童\n---\n', },),
+          page: blockOf({ text: '---\nname: nothing\n---\n', },),
           archives: [],
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'NAMES the id when the visible name is the id itself, and not when it is another handle',
+      fn: async () => {
+        expect(namesDirectoryId({
+          metadata: blockOf({ text: '---\nname: maotong\n---\n', },),
+          entryId: 'maotong',
+        },),).toBe(true,);
+        expect(namesDirectoryId({
+          metadata: blockOf({ text: '---\nname: 狗狗\n---\n', },),
+          entryId: 'maotong',
         },),).toBe(false,);
       },
     },),
