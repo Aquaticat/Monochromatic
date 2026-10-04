@@ -7,6 +7,39 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-04.
 
+## Current approval UI correction
+
+Use the working auto-mode Pi TUI,
+not the separate external-editor experiment.
+The user explicitly corrected that integration choice.
+`package/pi-plugin/auto-mode/src/ask-user.ts` owns the existing `askUser` interaction:
+`ctx.ui.select()` presents Allow,
+Deny,
+and Stop.
+`evaluate.ts` already routes its ask branch there.
+The notification,
+session-verdict recording,
+Stop abort,
+and no-UI handling are incumbent behavior to preserve.
+
+The external-editor interaction `proc_60f9` failed.
+Read-only diagnostic `proc_1fff` found a captured response rejected at the group-scope-binding boundary;
+the fixture then masked that failure by reading `approval.status` from an absent decision.
+No approval was established.
+Do not replay that interaction,
+promote its raw answer,
+or build more editor forms as a migration prerequisite.
+Those artifacts remain historical evidence only.
+
+The next implementation work is the adapter from the original complete prepared group and closed judgment
+to the existing TUI and its actual verdict append.
+No production cutover or threshold adoption is authorized by this correction.
+
+Proposed guidance clarification,
+not applied to protected `AGENTS.md`:
+expand the existing owner-discovery rule to cover UI and workflow implementations,
+so incumbent discovery precedes replacement work.
+
 ## Settled design and authorization
 
 - Models estimate narrow semantic axioms;
