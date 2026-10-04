@@ -46,6 +46,9 @@ pub mod edits;
 /// Native source-file discovery with explicit ignore and failure boundaries.
 #[doc(hidden)]
 pub mod file_discovery;
+/// Duplicate headings scoped by their textual ancestor path.
+#[doc(hidden)]
+pub mod markdown_duplicate_headings;
 /// Internal code-fence normalization.
 #[doc(hidden)]
 pub mod markdown_code;
@@ -70,6 +73,9 @@ pub mod path_inputs;
 mod path_inputs_tests;
 /// Internal finalization of matched partial rule settings.
 mod resolved_rules;
+/// JSONL routing, stdin-fix source output and exit-status accounting.
+#[doc(hidden)]
+pub mod run_output;
 /// Syntax-only Rust execution without initializing a Cargo workspace.
 #[doc(hidden)]
 pub mod rust_dispatch;
@@ -93,9 +99,6 @@ mod rust_inferred_constants;
 /// Internal syntax-only rejection of anonymous Rust functions.
 #[doc(hidden)]
 pub mod rust_no_anonymous_functions;
-/// JSONL routing, stdin-fix source output and exit-status accounting.
-#[doc(hidden)]
-pub mod run_output;
 /// Typed Rust rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod rust_rule_settings;
