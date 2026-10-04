@@ -677,6 +677,51 @@ the date and UTC time,
 what landed with its commit,
 the counts read from the logs,
 and the step in progress.
+A batch also writes one line before its first commit,
+and after any correction or decision inside it,
+naming the uncommitted work and the reasoning behind it,
+so a fresh context resumes from this file alone.
+
+- 2026-10-03,
+  23:59 UTC:
+  the `openrouter` batch is in progress,
+  this mid-batch line written after the correction that its state
+  lived only in working memory.
+  Written but uncommitted in the worktree:
+  two cases in `openrouter-client.unit.test.ts`
+  (a caller `exchangeTimeoutMs` and `maxAnswerChars` armed on the client
+  and read back under both,
+  and `costUsd` and `cachedTokens` carried only where the wire sent them,
+  both built on `chunkOf` streams),
+  one in `openrouter-cached-tokens.unit.test.ts`
+  (a non-record `data:` chunk and a fractional `cached_tokens`
+  both read as `unreported`),
+  one in `openrouter-cost.unit.test.ts`
+  (a non-finite `cost` read as `unreported`).
+  Decided,
+  not yet written:
+  `openrouter-abandoned-spend.ts:48`,
+  the `rawCharsPerToken === 'unmeasured'` ternary arm,
+  is reachable by shape
+  (the card side types `rawCharsPerToken` as `number | 'unmeasured'`
+  and `corpus-run/roster-card-render.ts` generates that spelling)
+  and cold only because no roster card carries it,
+  so it gets a narrow exported seam
+  (the shape the `fidelity` batch gave `needle` and `anchor`)
+  plus a case in `openrouter-abandoned-spend.unit.test.ts`,
+  the seam exported through `provider-barrel.ts`.
+  Remaining:
+  the seam and its case,
+  build,
+  the named test files,
+  lint,
+  the code commit and its line here,
+  the reach census against `census-XzBVZf`,
+  the full suite,
+  the source scans,
+  the ledger T8 paragraph,
+  and a fresh whole-suite census named in the line after.
+  This line lands in the trial-log commit that adds it.
 
 - 2026-10-03,
   23:07 UTC:
