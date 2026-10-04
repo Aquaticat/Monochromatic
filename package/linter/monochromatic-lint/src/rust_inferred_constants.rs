@@ -16,7 +16,10 @@ use ra_ap_hir_ty::db::HirDatabase;
 use ra_ap_syntax::{AstNode, SyntaxNode, ast};
 
 /// Find which resolved declaration supplies the argument-list grammar.
-fn argument_owner(semantics: &Semantics<'_, dyn HirDatabase>, list: &ast::GenericArgList) -> Option<GenericDef> {
+fn argument_owner(
+    semantics: &Semantics<'_, dyn HirDatabase>,
+    list: &ast::GenericArgList,
+) -> Option<GenericDef> {
     let parent: SyntaxNode = list.syntax().parent()?;
     if let Some(call) = ast::MethodCallExpr::cast(parent.clone()) {
         return Some(GenericDef::Function(semantics.resolve_method_call(&call)?));
@@ -50,7 +53,10 @@ fn argument_index(list: &ast::GenericArgList, target: &SyntaxNode) -> Option<usi
 }
 
 /// Prove a direct generic placeholder belongs to a const parameter before requesting type information for it.
-pub(crate) fn is_inferred_const_argument(semantics: &Semantics<'_, dyn HirDatabase>, node: &SyntaxNode) -> bool {
+pub(crate) fn is_inferred_const_argument(
+    semantics: &Semantics<'_, dyn HirDatabase>,
+    node: &SyntaxNode,
+) -> bool {
     let Some(argument): Option<SyntaxNode> = node.parent() else {
         return false;
     };
@@ -75,10 +81,10 @@ pub(crate) fn is_inferred_const_argument(semantics: &Semantics<'_, dyn HirDataba
         if let GenericParam::LifetimeParam(_) = parameter {
             continue;
         }
-        if let GenericParam::TypeParam(ty) = parameter {
-            if ty.is_implicit(semantics.db) {
-                continue;
-            }
+        if let GenericParam::TypeParam(ty) = parameter
+            && ty.is_implicit(semantics.db)
+        {
+            continue;
         }
         if index == wanted {
             return matches!(parameter, GenericParam::ConstParam(_));

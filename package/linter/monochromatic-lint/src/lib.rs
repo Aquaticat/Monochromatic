@@ -78,6 +78,12 @@ pub mod rust_no_anonymous_functions;
 /// Internal fixed Rust rule implementations.
 #[doc(hidden)]
 pub mod rust_rules;
+/// Typed semantic workspace and query failures.
+#[doc(hidden)]
+pub mod rust_semantic_error;
+/// Production session for selected-file analysis and exact source overlays.
+#[doc(hidden)]
+pub mod rust_semantic_session;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;
