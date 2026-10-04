@@ -833,5 +833,40 @@ await describe({
         expect(caught instanceof SyntheticHttpError,).toBe(true,);
       },
     },),
+
+    it({
+      name: 'CARRIES the per-exchange deadline and the answer-length knob when the caller sets them, and '
+        + 'neither when it does not',
+      fn: async () => {
+        /**
+         Exchanges recording what each call put on the wire.
+         */
+        const bare = recordedTransport({
+          replies: [{ status: 200, bodyText: TOOL_CALL_BODY, },],
+        },);
+        const bareClient = createHyperClient({ apiKey: 'test-key', transport: bare.transport, },);
+        await bareClient.chatText({
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          responseFormat: RESPONSE_FORMAT,
+        },);
+        expect(JSON.stringify(bare.exchanges,).includes('maxAnswerChars',),).toBe(false,);
+
+        const knobbed = recordedTransport({
+          replies: [{ status: 200, bodyText: TOOL_CALL_BODY, },],
+        },);
+        const knobbedClient = createHyperClient({ apiKey: 'test-key', transport: knobbed.transport, },);
+        await knobbedClient.chatText({
+          modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          responseFormat: RESPONSE_FORMAT,
+          exchangeTimeoutMs: 1_000,
+          maxAnswerChars: 500,
+        },);
+        expect(JSON.stringify(knobbed.exchanges,).includes('"maxAnswerChars":500',),).toBe(true,);
+      },
+    },),
   ],
 },);
