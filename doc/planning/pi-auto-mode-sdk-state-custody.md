@@ -674,8 +674,33 @@ Original-aborted inherited and substituted signals both prevented the child;
 live parent/child signals allowed it;
 a separately aborted child still prevented it.
 This qualifies that cancellation profile without introducing an execution deadline.
-The next draft extends existing judgment member records with opaque one-use native execution occurrences;
-actual child identity carriage and complete prepared nested membership remain unfinished.
+The next occurrence/carrier phase completed its declared root-member profiles.
+`proc_ae68` passed 13 occurrence-interface cases;
+`proc_89b5` passed seven focused guard mutations.
+`proc_8b95` passed 17 context-carrier interface cases,
+`proc_85d5` passed ten fixed-session reader cases,
+and `proc_9ed1` passed ten carrier/reader guard mutations.
+`proc_2da7` passed ten native invocation/retirement helper cases,
+including distinct original and cleanup `throw undefined` occurrences.
+
+`proc_b813` staged eleven private SDK artifacts.
+`proc_681e` then passed seven actual SDK cases:
+seven sessions,
+14 injected requests,
+six canned semantic attempts,
+eight root definition entries,
+and no child executions.
+The existing producer response and prepared member own the execution occurrence;
+the fixed session reader supplies its exact native context at actual entry.
+Result hooks observed returned occurrences,
+including exceptional exits.
+Missing context factories rejected the complete group before preparation;
+copied contexts entered no definition;
+ordinary tool errors retained native serial continuation;
+and source change retained the first result while blocking the next member.
+Missing complete nested-group support now rejects explicitly instead of falling back to independent child execution.
+An actual native retirement-omission control is running separately.
+Complete parent-program/dataflow and prepared child membership remain unfinished.
 No external inference,
 semantic accuracy,
 instruction authority,

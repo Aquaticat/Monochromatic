@@ -362,6 +362,37 @@ Tradeoffs and limits:
   and native disposal;
   it was not an installed-host guard test.
 
+### Exact original occurrence context at native root entry
+
+The later private carrier ties the native context to the existing producer response,
+prepared member,
+and one-use execution occurrence.
+A fixed session reader resolves the original response through that session's current owned stream,
+then validates the opaque execution token.
+A context copied from its public fields is not an issued context.
+The existing registered-wrapper fifth context slot carries that exact object;
+no ambient current-parent state or new session/root registry was added.
+
+`proc_681e` passed seven actual SDK profiles after interface and guard controls.
+Missing selected context factories rejected the group before native preparation.
+Copied contexts entered no definition.
+Ordinary tool errors still allowed the next serial member,
+while source staleness stopped it.
+The issuer occurrence was returned before native result hooks;
+local context return alone is not that proof.
+The native retirement-omission control remains separate.
+
+No complete nested-group handler is installed in this graph.
+The carrier therefore rejects that missing support before starting a child,
+rather than delegating to the old independent path.
+This is a verified closed default,
+not functional qualification of arbitrary nested programs.
+
+Private sources:
+`contract/lifecycle/execution-context-carrier/`,
+`contract/lifecycle/judgment-execution-occurrences/`,
+and `contract/collector/execution-context-sdk-copy/stage.mjs`.
+
 ### Complete nested admission remains open
 
 There is no verified complete nested-admission workaround yet.
