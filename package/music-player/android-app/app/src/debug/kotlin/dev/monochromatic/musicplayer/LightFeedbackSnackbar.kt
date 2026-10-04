@@ -118,7 +118,7 @@ internal fun LightFeedbackErrorNotice(scene: String, message: String, maximumWid
         // ```ts
         // const visible = needsLogs ? (briefFits ? brief : 'Capture Android logs.') : message;
         // ```
-        val visible = if (!needsLogs) message else if (briefMeasured.lineCount <= 2 && !briefMeasured.hasVisualOverflow) brief else "Capture Android logs."
+        val visible = if (!needsLogs) message else if (briefMeasured.lineCount <= 2 && !briefMeasured.hasVisualOverflow) brief else "Operation unavailable."
         LaunchedEffect(scene, visible, needsLogs) {
             onEvent("LightFeedbackErrorNotice.copy:lines=${measured.lineCount},logs=$needsLogs,visible=$visible")
         }
@@ -130,6 +130,9 @@ internal fun LightFeedbackErrorNotice(scene: String, message: String, maximumWid
                         modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onErrorContainer)
                     Text(text = visible, maxLines = 2, overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium,
+                        onTextLayout = { layout ->
+                            onEvent("LightFeedbackErrorNotice.rendered:lines=${layout.lineCount},overflow=${layout.hasVisualOverflow}")
+                        },
                         modifier = Modifier.weight(1f, fill = false).padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp))
                     // What: Trailing lambda passes a callback to the native control.
                     // Why: Manual dismissal changes only host-owned presentation, never the file outcome.

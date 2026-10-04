@@ -70,6 +70,8 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 // Physical pixels convert into native dp at actual density.
 import androidx.compose.ui.platform.LocalDensity
+// Host size remains nonzero during exit animation, unlike logical notice presence.
+import androidx.compose.ui.layout.onSizeChanged
 // Literal layout distance conversion.
 import androidx.compose.ui.unit.dp
 
@@ -115,6 +117,9 @@ internal fun LightFeedbackStudy(scene: String, onAction: (String) -> Unit, holdF
     var rootBounds: Rect? by remember(scene) { mutableStateOf(null) }
     // Track viewport has the same measured-only initial state.
     var trackBounds: Rect? by remember(scene) { mutableStateOf(null) }
+    // Measured host heights keep separation until outgoing notice animation has actually emptied its host.
+    var errorHeight: Int by remember(scene) { mutableStateOf(0) }
+    var undoHeight: Int by remember(scene) { mutableStateOf(0) }
     // What: LaunchedEffect supplies a lifecycle callback; showSnackbar is suspending native work.
     // Why: The platform host owns expiry and accessibility-adjusted timeout, not an invented fixed timer.
     //
@@ -169,14 +174,14 @@ internal fun LightFeedbackStudy(scene: String, onAction: (String) -> Unit, holdF
                     val top = with(density) { (tracks.top - root.top).toDp() }
                     val width = with(density) { tracks.width.toDp() }
                     val height = with(density) { tracks.height.toDp() }
-                    val bothVisible = errorHost.currentSnackbarData != null && undoHost.currentSnackbarData != null
+                    val bothVisible = errorHeight > 0 && undoHeight > 0
                     Box(modifier = Modifier.offset(x = left, y = top).size(width = width, height = height)) {
                         Column(modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(if (bothVisible) 16.dp else 0.dp)) {
-                            SnackbarHost(hostState = undoHost) { data ->
+                            SnackbarHost(hostState = undoHost, modifier = Modifier.onSizeChanged { size -> undoHeight = size.height }) { data ->
                                 LightFeedbackUndoNotice(maximumWidth = width - 32.dp, data = data, onEvent = onAction)
                             }
-                            SnackbarHost(hostState = errorHost) { data ->
+                            SnackbarHost(hostState = errorHost, modifier = Modifier.onSizeChanged { size -> errorHeight = size.height }) { data ->
                                 LightFeedbackErrorNotice(scene = scene, message = fixture.error,
                                     maximumWidth = width - 32.dp, data = data, onEvent = onAction)
                             }
