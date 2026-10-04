@@ -220,7 +220,75 @@ Allow-listing both owned names and activating only the parent repaired the fixtu
 Its tradeoff is explicit responsibility for maintaining allowed and declared tool sets separately.
 This configuration does not establish a parent-execution lifetime or complete nested semantic group.
 
-There is no verified nested-admission workaround yet.
+### Private invocation-lifetime prerequisite
+
+The derived registered-tool wrapper now scopes new nested invocation to the parent's actual execute call.
+`proc_cb12` passed seven interface controls using the native helper;
+`proc_01d5` verified both retirement and invocation-check omissions.
+`proc_fc01` exercised the changed private SDK in three sessions:
+live parallel/sequential children remained functional,
+while the saved context rejected `NestedContextClosedError` before another child started.
+The fixture retained six nested executions instead of the diagnostic's seven.
+
+The consumer-side source is
+`contract/lifecycle/nested-context-lifetime/wrapper.mjs`
+in the private workspace.
+`contract/collector/nested-context-sdk-copy/stage.mjs`
+binds it to the native helper and redirects the protected session's existing registered-wrapper imports.
+The installed packages and upstream checkout remain unchanged.
+
+The core change is the scoped method and the parent-return retirement:
+
+```javascript
+// contract/lifecycle/nested-context-lifetime/wrapper.mjs, selected statements
+const descriptors = Object.getOwnPropertyDescriptors(context);
+const invoke = descriptors.executeTool.value;
+const guarded = Object.defineProperties(Object.create(Object.getPrototypeOf(context)), {
+  ...descriptors,
+  executeTool: {
+    ...descriptors.executeTool,
+    value: async (name, args, options) => {
+      if (!isActive()) throw new NestedContextClosedError(toolCallId);
+      return await invoke(name, args, options);
+    },
+  },
+});
+```
+
+```javascript
+// contract/lifecycle/nested-context-lifetime/wrapper.mjs, actual execution lifetime
+let active = true;
+const guarded = guardContext({ context, toolCallId, isActive: () => active });
+try {
+  return await definition.execute(toolCallId, params, signal, onUpdate, guarded);
+} finally {
+  active = false;
+}
+```
+
+Tradeoffs and limits:
+
+- Native context getters stay lazy,
+  and method property descriptors are preserved.
+- A child invocation already initiated while the parent was active may still settle afterward.
+  This is not a claim that a queued child can start without another release check.
+- The helper retains exceptional parent exit,
+  including `throw undefined`,
+  while retiring later invocation.
+- Supplied native contexts are a trusted profile,
+  not authenticated arbitrary caller objects.
+- Original judgment identity,
+  original cancellation,
+  full nested group admission,
+  and complete native event/cleanup parity are separate unfinished work.
+- `proc_fc01` imported the actual derived SDK and checked full streams,
+  persistence,
+  and native disposal;
+  it was not an installed-host guard test.
+
+### Complete nested admission remains open
+
+There is no verified complete nested-admission workaround yet.
 The implementation must extend existing execution/scope ownership,
 bind the exact original judgment and parent program,
 and reject stale or foreign execution occurrences without manufacturing another budget.

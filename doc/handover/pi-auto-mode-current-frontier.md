@@ -1079,6 +1079,25 @@ without equating root liveness,
 parent return,
 recorder consumption,
 or a worker drain with complete semantic membership.
+
+`proc_cb12` passed seven interface controls for a per-invocation context-lifetime prerequisite,
+using the native tool-definition wrapper.
+`proc_01d5` passed an intact control and two guard removals.
+`proc_7b35` then staged ten private SDK artifacts.
+`proc_fc01` passed three actual SDK cases:
+three sessions,
+six injected requests,
+three outer inert executions,
+six nested inert executions,
+and three canned semantic attempts.
+Live parallel and sequential children retained native hooks and parent records.
+The saved context rejected `NestedContextClosedError` before another child invocation.
+The wrapper preserves lazy native context descriptors and closes only new nested invocation after parent return;
+it neither rolls back an already-started child nor proves successful drain.
+Original judgment/cancellation linkage,
+queued-child release checks,
+and complete nested semantic membership remain unfinished.
+A separate native cancellation diagnostic is now testing inherited versus substituted child signals.
 No external inference,
 semantic accuracy,
 instruction authority,
