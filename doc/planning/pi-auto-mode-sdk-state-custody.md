@@ -709,6 +709,36 @@ one canned semantic attempt,
 and two unchanged root definition entries;
 no extra effect or child execution was claimed.
 
+The focused stop-latch omission `proc_8319` removed only the stop-remaining check.
+The first member guard-failed;
+the otherwise intact second member then entered.
+The expected Node assertion was `AssertionError [ERR_ASSERTION]: 2 !== 1`.
+This added one session,
+two injected requests,
+one canned semantic attempt,
+and no child executions.
+
+`proc_b861` passed five changed-graph deadline/freshness regressions:
+five sessions,
+ten injected requests,
+two canned semantic attempts,
+and definition-entry counts `[0, 0, 0, 2, 1]`.
+Missing beginning and combined hooks,
+plus expired preparation,
+entered no definition.
+Execution after evidence close was not capped by the decision deadline;
+target change after the first effect stopped the next member.
+
+`proc_6894` passed the mixed-failure profile in one session with two injected requests and one canned attempt.
+The first member raised an ordinary tool error;
+the second completed;
+the third encountered a nested-support guard failure;
+the final intact member remained unentered.
+Native error flags were `[true, false, true, true]`,
+and issuer states were `[returned, returned, returned, unentered]`.
+The completed second result remained in native persisted outcomes.
+No child executed.
+
 Complete parent-program/dataflow and prepared child membership remain unfinished.
 The accepted preparation requirement applies to each actual execution group,
 not every future dynamic descendant at once.
