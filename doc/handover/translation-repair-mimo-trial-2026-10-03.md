@@ -683,6 +683,40 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  03:22 UTC:
+  the T8 `corpus-run/tag` batch closed with commits `a0d13daf7`
+  and `71c58938b`:
+  8 stretches over `corpus-run/tag-attributes.ts`,
+  cased in six in a new test file beside the module
+  (it sat on the own-unit-tests allowlist and now leaves it,
+  `readTags` exported through `corpus-barrel`).
+  The refusals read as:
+  a name cut off at the text's end,
+  a bare attribute with no equals staying out of the reading,
+  an attribute starting where no name may,
+  an unquoted value,
+  an unterminated quote,
+  and a bracket that opens no letter,
+  every refusal case keeping the readable tag before it as its control.
+  The first reach census named one `cold since then` stretch
+  (the first-letter refusal),
+  closed with `71c58938b`.
+  The reach census reads `ran 8, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-tag2.log`).
+  Counts at the close:
+  the full suite 1,549 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-tag-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-tag-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `71c58938b`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus` cluster
+  (the ranking's next at `census-E0TzdR`).
+
+- 2026-10-04,
   03:12 UTC:
   the next batch's baseline census taken at commit `63c8f25b0`:
   `census written to ~/.cache/translation-repair/coverage/census-E0TzdR/census.json`

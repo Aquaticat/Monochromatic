@@ -5737,6 +5737,36 @@ reads `still cold 0, cold since then 0, not loaded 0`
 and the edited source "loaded it and left 0 cold stretches".
 No B entry found.
 
+The eleventh cluster of that census,
+`corpus-run/tag`,
+against `census-E0TzdR` at `f7f3b7665`:
+8 stretches over `corpus-run/tag-attributes.ts`
+(`a0d13daf7`,
+`71c58938b`).
+The module carried no test of its own,
+sitting on the own-unit-tests allowlist;
+the new `corpus-run/tag-attributes.unit.test.ts` leaves it,
+`readTags` exported through `corpus-barrel` for the built-artifact tests.
+Five cases map the eight:
+a name cut off at the text's end
+(both scan loops running off their ends
+and the unclosed-tag return),
+a bare attribute with no equals
+(the tag reads and the name alone stays out,
+a name alone stating no value),
+an attribute starting where no name may,
+an unquoted value,
+and an unterminated quote,
+each refusal case keeping the readable tag before the failing one as its
+positive control.
+The reach census's `cold since then` reading named one more
+(`71c58938b`):
+the first-letter refusal,
+every other suite file reaching it and these files not.
+The reach census (`~/temp/agent/mimo-trial/reach-tag2.log`)
+reads `ran 8, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
