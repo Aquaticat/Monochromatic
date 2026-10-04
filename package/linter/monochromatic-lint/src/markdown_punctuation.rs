@@ -1,0 +1,115 @@
+//! What: Remove trailing periods/colons from a heading's final text node.
+//! Why: The edit must preserve inline markup and consume complete source escapes/entities, not only decoded character counts.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // Find the decoded punctuation suffix, then map each suffix character back to its authored bytes.
+//! ```
+
+/// Import native text decoding and heading kinds.
+use satteri_ast::mdast::{MdastNodeType, decode_string_ref_data};
+/// Import the existing diagnostic and localized edit boundaries.
+use crate::diagnostic::{Diagnostic, Severity};
+use crate::edits::Edit;
+use crate::markdown_finding::finding;
+use crate::markdown_source::MarkdownSource;
+
+/// Count only the configured ASCII punctuation suffix.
+fn trailing_count(value: &str) -> usize {
+    let mut count: usize = 0;
+    for character in value.chars().rev() {
+        if character != '.' && character != ':' {
+            break;
+        }
+        count += 1;
+    }
+    return count;
+}
+
+/// Decode only entity spellings for the punctuation this rule removes.
+fn punctuation_entity(entity: &str) -> bool {
+    if entity == "period" || entity == "colon" {
+        return true;
+    }
+    let parsed: Result<u32, std::num::ParseIntError>;
+    if let Some(hex) = entity.strip_prefix("#x") {
+        parsed = u32::from_str_radix(hex, 16);
+    } else if let Some(hex) = entity.strip_prefix("#X") {
+        parsed = u32::from_str_radix(hex, 16);
+    } else if let Some(decimal) = entity.strip_prefix('#') {
+        parsed = decimal.parse::<u32>();
+    } else {
+        return false;
+    }
+    if let Ok(value) = parsed {
+        return value == 46 || value == 58;
+    }
+    return false;
+}
+
+/// Locate the authored suffix without leaving a dangling escape or half an entity.
+fn suffix_start(written: &str, count: usize) -> Option<usize> {
+    let bytes: &[u8] = written.as_bytes();
+    let mut end: usize = bytes.len();
+    for _ in 0..count {
+        let last: u8 = *bytes.get(end.checked_sub(1)?)?;
+        if last == b'.' || last == b':' {
+            let mut start: usize = end - 1;
+            let mut slash_start: usize = start;
+            while slash_start > 0 && bytes[slash_start - 1] == b'\\' {
+                slash_start -= 1;
+            }
+            if (start - slash_start) % 2 == 1 {
+                start -= 1;
+            }
+            end = start;
+            continue;
+        }
+        if last != b';' {
+            return None;
+        }
+        let start: usize = written[..end].rfind('&')?;
+        if !punctuation_entity(&written[start + 1..end - 1]) {
+            return None;
+        }
+        end = start;
+    }
+    return Some(end);
+}
+
+/// Report heading punctuation while keeping the original heading and inline delimiters intact.
+pub fn no_trailing_punctuation(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
+    let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
+    for id in context.visible_nodes() {
+        if context.kind(*id) != MdastNodeType::Heading {
+            continue;
+        }
+        let text_nodes: Vec<u32> = context.text_nodes(*id);
+        let Some(last): Option<&u32> = text_nodes.last() else {
+            continue;
+        };
+        let reference = decode_string_ref_data(context.data(*last));
+        let count: usize = trailing_count(context.text(reference));
+        if count == 0 {
+            continue;
+        }
+        let (start, end): (usize, usize) = context.offsets(*last);
+        let written: &str = context.slice(*last);
+        let edit: Option<Edit> = if let Some(relative) = suffix_start(written, count) {
+            Some(Edit { start: start + relative, end, replacement: String::new() })
+        } else {
+            // An unsupported representation remains a finding, not a guessed destructive edit.
+            None
+        };
+        findings.push(finding(
+            context, *id, "markdown/no-trailing-punctuation", severity,
+            String::from("Heading ends with punctuation; remove the trailing punctuation."), edit,
+        ));
+    }
+    return findings;
+}
+
+/// Source-spelling controls are not included in release artifacts.
+#[cfg(test)]
+#[path = "markdown_punctuation_tests.rs"]
+mod tests;
