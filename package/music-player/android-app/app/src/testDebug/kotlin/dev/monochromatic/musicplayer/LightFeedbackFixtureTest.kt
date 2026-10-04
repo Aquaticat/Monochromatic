@@ -42,23 +42,42 @@ class LightFeedbackFixtureTest {
      * test('completed operation with handle permits Undo', () => expect(...).toBe(true));
      * ```
      */
-    @Test fun completedWithHandlePermitsUndo() {
-        assertTrue(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("completed", true, false)))
+    @Test fun verifiedSuccessWithHandlePermitsUndo() {
+        assertTrue(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("verified-success", true, false)))
     }
 
     /** Completion alone supplies no restoration operation. */
-    @Test fun completedWithoutHandleRejectsUndo() {
-        assertFalse(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("completed", false, false)))
+    @Test fun verifiedSuccessWithoutHandleRejectsUndo() {
+        assertFalse(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("verified-success", false, false)))
     }
 
     /** An expired authored interval does not keep an actionable Undo. */
-    @Test fun expiredCompletedHandleRejectsUndo() {
-        assertFalse(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("completed", true, true)))
+    @Test fun expiredVerifiedSuccessHandleRejectsUndo() {
+        assertFalse(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("verified-success", true, true)))
     }
 
     /** Request creation or pending Android approval is not operation completion. */
     @Test fun pendingEvenWithHandleRejectsUndo() {
         assertFalse(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("pending", true, false)))
+    }
+
+    /** Accepted or completed request receipt is not authored per-item verified success. */
+    @Test fun approvedUnverifiedEvenWithHandleRejectsUndo() {
+        assertFalse(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("approved-but-unverified", true, false)))
+    }
+
+    /**
+     * What: expected names the required exception class; ::class supplies its runtime type token.
+     * Why: Completion-only wording cannot silently acquire a per-item verified-success meaning.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * test('retired completion marker throws', () => expect(() => ...).toThrow());
+     * ```
+     */
+    @Test(expected = IllegalArgumentException::class)
+    fun completionOnlyMarkerIsRejected() {
+        lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("completed", true, false))
     }
 
     /** Cancelled provider requests cannot show successful-trash feedback. */
@@ -71,15 +90,7 @@ class LightFeedbackFixtureTest {
         assertFalse(lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("failed", true, false)))
     }
 
-    /**
-     * What: expected identifies the exception class; ::class is its runtime type token.
-     * Why: Unknown operation state must fail rather than borrow a success-looking fallback.
-     *
-     * In TS you'd write (pseudocode):
-     * ```ts
-     * test('unknown outcome throws', () => expect(() => ...).toThrow());
-     * ```
-     */
+    /** Unknown operation state must fail rather than borrow a success-looking fallback. */
     @Test(expected = IllegalArgumentException::class)
     fun unknownOutcomeIsRejected() {
         lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("assumed", true, false))

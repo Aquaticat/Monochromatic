@@ -11,7 +11,7 @@ package dev.monochromatic.musicplayer
 /**
  * What: A data class holds read-only authored operation fields; Boolean is a truth value,
  * and String is text rather than a nullable String? or an executable recovery descriptor.
- * Why: Request generation, completion and restoration capability must not collapse into one flag.
+ * Why: Request generation, acceptance, per-item success and restore capability remain separate authored facts.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -19,7 +19,7 @@ package dev.monochromatic.musicplayer
  * ```
  */
 data class LightTrashOutcomeFixture(
-    /** Authored request/completion marker, not a production storage-provider result. */
+    /** Authored per-item outcome; verified-success is a premise, never a RESULT_OK adapter or provider query. */
     val outcome: String,
     /** Authored owner has a restoration handle; not proof that a real restore will succeed. */
     val restoreHandle: Boolean,
@@ -29,7 +29,9 @@ data class LightTrashOutcomeFixture(
 
 /**
  * What: A named function classifies one authored operation record and returns Boolean.
- * Why: A request awaiting Android approval, a failure or expiry cannot advertise successful Undo.
+ * Why: Pending or accepted-but-unverified requests cannot advertise successful-trash Undo.
+ * Accepted-but-unverified may be a finished request, not failure or a still-pending task;
+ * the fixture does not query a provider or choose a production verification mechanism.
  *
  * In TS you'd write (pseudocode):
  * ```ts
@@ -44,9 +46,9 @@ internal fun lightFeedbackCanOfferUndo(input: LightTrashOutcomeFixture): Boolean
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const outcomes = ['pending', 'cancelled', 'failed', 'completed'] as const;
+    // const outcomes = ['pending', 'approved-but-unverified', 'cancelled', 'failed', 'verified-success'] as const;
     // ```
-    val outcomes: List<String> = listOf("pending", "cancelled", "failed", "completed")
+    val outcomes: List<String> = listOf("pending", "approved-but-unverified", "cancelled", "failed", "verified-success")
     // What: !in tests non-membership and throws a typed argument exception.
     // Why: A typo in the acquisition route must not silently select a success branch.
     //
@@ -55,7 +57,7 @@ internal fun lightFeedbackCanOfferUndo(input: LightTrashOutcomeFixture): Boolean
     // if (!outcomes.includes(input.outcome)) throw new Error('Unknown authored trash outcome');
     // ```
     if (input.outcome !in outcomes) throw IllegalArgumentException("Unknown authored trash outcome: ${input.outcome}")
-    return input.outcome == "completed" && input.restoreHandle && !input.expired
+    return input.outcome == "verified-success" && input.restoreHandle && !input.expired
 }
 
 /**
@@ -101,8 +103,8 @@ internal fun lightFeedbackFixture(scene: String): LightFeedbackFixture {
         )
     }
     if (scene == "undo" || scene == "combined") {
-        // Require an explicitly completed fixture with its authored restore handle.
-        val undo: Boolean = lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("completed", true, false))
+        // Require authored per-item verified success plus its restore handle, not request acceptance alone.
+        val undo: Boolean = lightFeedbackCanOfferUndo(LightTrashOutcomeFixture("verified-success", true, false))
         if (scene == "combined") {
             return LightFeedbackFixture(
                 error = "3 unavailable files were removed from this list.",
