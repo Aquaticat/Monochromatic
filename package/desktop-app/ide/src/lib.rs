@@ -23,3 +23,6 @@ pub mod shaped_text;
 
 /// Pixel painting consumes the same shaped geometry as reading interaction.
 pub mod text_raster;
+
+/// Internal bounded glyph images shared across source-raster frames.
+mod glyph_cache;

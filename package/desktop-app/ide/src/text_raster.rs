@@ -7,7 +7,9 @@ use anyhow::{bail, Context, Result};
 /// Positioned glyph runs come from the same layouts used for caret and hit testing.
 use parley::PositionedLayoutItem;
 /// Swash is already part of Slint's dependency graph and supports fallback/color glyphs.
-use swash::{CacheKey, FontRef, scale::{image::Content, Render, ScaleContext, Source, StrikeWith}};
+use swash::{CacheKey, FontRef, scale::{image::Content, ScaleContext}};
+/// Bounded glyph images prevent repeating outline rasterization on every viewport update.
+use crate::glyph_cache::{GlyphCache, GlyphKey};
 /// Source layout and geometry are independent of the native widget tree.
 use crate::shaped_text::ShapedView;
 
@@ -38,6 +40,8 @@ pub struct TextRaster {
     scale: ScaleContext,
     /// Stable cache identity for each font blob/face.
     keys: HashMap<(u64, u32), CacheKey>,
+    /// Color-independent alpha masks and embedded color glyph images.
+    glyphs: GlyphCache,
 }
 
 impl Default for TextRaster {
@@ -83,7 +87,7 @@ fn blend(bytes: &mut [u8], offset: usize, color: [u8; 4]) {
 impl TextRaster {
     /// Initialize caches without allocating a viewport image.
     pub fn new() -> Self {
-        return Self { scale: ScaleContext::new(), keys: HashMap::new() };
+        return Self { scale: ScaleContext::new(), keys: HashMap::new(), glyphs: GlyphCache::default() };
     }
 
     /// Paint only the bounded materialized viewport; horizontal offset stays fractional.
@@ -117,15 +121,21 @@ impl TextRaster {
                         let y = glyph.y + row_y + row.baseline_shift;
                         if x + glyph.advance < -32.0 || x > view.width as f32 + 32.0 { continue; }
                         let glyph_id = u16::try_from(glyph.id).context("Source glyph index exceeds OpenType range")?;
-                        let mut renderer = Render::new(&[
-                            Source::ColorOutline(0),
-                            Source::ColorBitmap(StrikeWith::BestFit),
-                            Source::Outline,
-                        ]);
-                        renderer.format(swash::zeno::Format::Alpha);
-                        renderer.offset(swash::zeno::Vector::new(x.fract(), y.fract()));
+                        // What: to_bits retains exact float identity; to_vec owns variation coordinates.
+                        // Why: Cached masks must distinguish scale, font face, and fractional placement.
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // const key = { font, face, size, variations: [...coords], glyph, x, y };
+                        // ```
+                        let glyph_key = GlyphKey {
+                            font: font.data.id(), face: font.index, size: run.font_size().to_bits(),
+                            variations: run.normalized_coords().to_vec(), glyph: glyph_id,
+                            x: x.fract().to_bits(), y: y.fract().to_bits(),
+                        };
+                        // Lend the scaler only on cache misses; ? preserves cache-limit diagnostics.
                         // Empty glyphs such as spaces legitimately have no ink image.
-                        let Some(image) = renderer.render(&mut scaler, glyph_id) else { continue; };
+                        let Some(image) = self.glyphs.image(glyph_key, &mut scaler)? else { continue; };
                         let left = x.floor() as i32 + image.placement.left;
                         let top = y.floor() as i32 - image.placement.top;
                         for iy in 0..image.placement.height {
