@@ -2,6 +2,7 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { wordForCount, } from './count-word.ts';
@@ -431,21 +432,12 @@ export async function readImagePair(
 
     /**
      Reader whose exchange threw, taken by position because a rejected
-     settlement carries no label of its own.
+     settlement carries no label of its own. The roster check is
+     `nonNullishOrThrow`'s: the capability gate answers every unnamed slot
+     with a reading before any exchange, so no rejected ask arrives at an
+     unnamed position (ledger T8, 2026-10-04).
      */
-    const modelId = readerModelIds[index];
-    if (modelId === undefined) {
-      throw new Error(
-        `readImagePair settled ${String(settled.length,)} ${
-          wordForCount({
-            count: settled.length,
-            one: 'reader',
-            many: 'readers',
-          },)
-        } for ${assetName} `
-          + `and then could not name the one at index ${String(index,)}`,
-      );
-    }
+    const modelId = nonNullishOrThrow(readerModelIds[index],);
     rl.warn(
       `${assetName}: ${modelId} failed outright, so it contributes no reading (${
         String(result.reason,)

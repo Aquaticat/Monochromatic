@@ -214,6 +214,7 @@ export {
 export {
   type EncodedAsset,
   encodeImageAsset,
+  extensionOf,
 } from './image-asset.ts';
 export {
   readingMakesSense,

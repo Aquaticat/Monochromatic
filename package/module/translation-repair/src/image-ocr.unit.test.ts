@@ -48,12 +48,21 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  readFile,
+} from 'node:fs/promises';
+import {
+  join,
+} from 'node:path';
+
+import spawn from 'nano-spawn';
 
 import {
   type OcrReading,
   readImageWithOcr,
   solidCharacters,
 } from '../dist/final/node/index.mjs';
+import { scratchDir, } from './scratch-dir.test-fixture.ts';
 
 /**
  Logger the reader writes its progress to.
@@ -152,6 +161,74 @@ await describe({
             if (reading.kind !== 'unavailable')
               throw new Error('unavailable by construction',);
             expect(reading.reason,).toBe('undecodable',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readImageWithOcr.name,
+      concurrency: 1,
+      children: [
+        it({
+          name: 'DECODES a picture the first decoder refuses and reads it with the OCR reader, the '
+            + 'fallback decoder and the whole read path running',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'image-ocr-', },);
+            /**
+             Picture with words on it, the decoder fixture's own making.
+             */
+            const pngPath = join(scratch.path, 'cat.png',);
+            await spawn('magick', [
+              '-background',
+              'white',
+              '-fill',
+              'black',
+              '-pointsize',
+              '40',
+              'label:the cat sleeps on the windowsill',
+              pngPath,
+            ],);
+            const bytes = new Uint8Array(await readFile(pngPath,),);
+            const reading = await readImageWithOcr({
+              bytes,
+              assetName: 'cat.png',
+              l,
+            },);
+            expect(reading.kind,).toBe('read',);
+            if (reading.kind !== 'read')
+              throw new Error('read by construction',);
+            expect(reading.text
+              .toLowerCase()
+              .includes('cat',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'DECODES a webp through the first decoder, the path that never reaches the fallback',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'image-ocr-', },);
+            /**
+             The same words in the webp container.
+             */
+            const webpPath = join(scratch.path, 'cat.webp',);
+            await spawn('magick', [
+              '-background',
+              'white',
+              '-fill',
+              'black',
+              '-pointsize',
+              '40',
+              'label:the cat sleeps on the windowsill',
+              webpPath,
+            ],);
+            const bytes = new Uint8Array(await readFile(webpPath,),);
+            const reading = await readImageWithOcr({
+              bytes,
+              assetName: 'cat.webp',
+              l,
+            },);
+            expect(reading.kind,).toBe('read',);
           },
         },),
       ],

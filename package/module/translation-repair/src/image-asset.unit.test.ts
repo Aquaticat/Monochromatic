@@ -25,7 +25,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { encodeImageAsset, } from '../dist/final/node/index.mjs';
+import {
+  encodeImageAsset,
+  extensionOf,
+} from '../dist/final/node/index.mjs';
 
 /**
  A ceiling a caller might set, standing in for whatever bound it chooses.
@@ -190,6 +193,13 @@ await describe({
           assetName: 'photo1.webp',
           maxBytes: 7_340_032,
         },).kind,).toBe('usable',);
+      },
+    },),
+
+    it({
+      name: 'READS NO extension for a name carrying no dot, since the name holds none',
+      fn: async () => {
+        expect(extensionOf({ assetName: 'mittens', },),).toBe('',);
       },
     },),
   ],

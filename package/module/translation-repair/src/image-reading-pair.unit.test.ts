@@ -913,5 +913,55 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'COUNTS the deterministic reading into the textless confirmation where it found text, and '
+        + 'zero where it found none',
+      fn: async () => {
+        /**
+         Client whose two readers both report little text.
+         */
+        const { client, } = scriptedClient({
+          byModel: {
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'There is no visible text in this image.',
+            [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 'I cannot read any text in this image.',
+          },
+        },);
+        /**
+         Picture the deterministic reader read words off.
+         */
+        const read = await readImagePair({
+          client,
+          readOcr: found,
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'noticeboard.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+        expect(read.kind,).toBe('no-text',);
+        if (read.kind !== 'no-text')
+          throw new Error('no-text by construction',);
+        expect(read.characters,).toBe(11,);
+        /**
+         The same picture where the deterministic reader found nothing.
+         */
+        const lost = await readImagePair({
+          client,
+          readOcr: async () => ({ kind: 'unavailable', reason: 'undecodable', }),
+          readerModelIds: READERS,
+          bytes: bytesOf({ length: 64, },),
+          assetName: 'noticeboard.webp',
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: 30_000,
+          l,
+        },);
+        expect(lost.kind,).toBe('no-text',);
+        if (lost.kind !== 'no-text')
+          throw new Error('no-text by construction',);
+        expect(lost.characters,).toBe(0,);
+      },
+    },),
   ],
 },);
