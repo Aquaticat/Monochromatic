@@ -23,5 +23,5 @@ description = "Build AddressSanitizer targets in a 2 GiB / 2 CPU container"
 run = "node bin/container.mjs --build-only"
 
 [tasks.smoke]
-description = "Run both ASAN targets for 30s each in mount-free bounded containers"
+description = "Run ASAN targets for 30s each in mount-free bounded containers"
 run = "node bin/container.mjs"

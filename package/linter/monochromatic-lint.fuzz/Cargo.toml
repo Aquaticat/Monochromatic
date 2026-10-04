@@ -40,6 +40,13 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "rust_style"
+path = "fuzz_targets/rust_style.rs"
+test = false
+doc = false
+bench = false
+
 [profile.release]
 panic = "unwind"
 

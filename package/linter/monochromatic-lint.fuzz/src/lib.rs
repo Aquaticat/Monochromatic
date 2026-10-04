@@ -6,6 +6,9 @@
 //! // Shared property assertions, called by both unit tests and fuzz targets.
 //! ```
 
+/// Structured and raw-source invariants for the anonymous-function ban.
+pub mod rust_style;
+
 /// Import owned JSONC values and the production operations under test.
 use monochromatic_jsonc_edit::{emit_jsonc_value, JsoncEntry, JsoncKey, JsoncValue};
 use monochromatic_lint::config_merge::merge_values;
