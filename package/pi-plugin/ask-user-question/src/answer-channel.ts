@@ -104,7 +104,8 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
     server,
     'listening',
   );
-  server.unref();
+  // Keep startup referenced until helper connects or deadline expires.
+  // Detached terminal launch must not let an otherwise idle requester exit.
   /**
    Bound endpoint assigned by operating system.
    */
