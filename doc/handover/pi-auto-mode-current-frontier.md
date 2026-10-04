@@ -1687,6 +1687,92 @@ bind qualified semantic relation evidence,
 and connect actual admission and approval paths.
 The existing source collector still correctly reports authority as not established.
 
+## Real policy binding and live instruction-condition study
+
+The private host path now explicitly designates a governing-policy input
+through the existing constructor-owned resource owner,
+rather than promoting a loaded filename or caller `readPolicy` label.
+`proc_2d5b` carried all 31,421 bytes of the protected current `AGENTS.md`
+through the native base,
+wire request,
+and original estimator envelope.
+It used one SDK 1.0.2 session,
+two injected requests,
+one canned assessment,
+and two inert root definitions.
+The file stayed unchanged.
+Priority,
+rule interpretation,
+delegation,
+total instruction coverage,
+and actual permission were not established by that designation.
+
+`proc_db07` then bound exact `PX3` and `LN7` clauses to original prepared-member identities
+using the incumbent native Markdown parser.
+Unknown clauses,
+copied handles,
+and replaced source occurrences rejected.
+The full policy is now an explicit envelope field,
+not replaced by clause excerpts.
+This remained a mechanical SDK control with canned estimates.
+
+The live Jev study was different:
+`proc_e22b` verified 14 actual requests,
+no retries,
+and two fixed passes over seven development programs.
+The predicate estimated whether a complete program weakened effective lint enforcement
+under a declared in-memory configuration contract.
+Expected labels came from independent reached-state execution before inference.
+The actual full policy and exact `LN7` text were included;
+no reserved cases were opened.
+
+Results were:
+
+- At 80/20:
+  ten correct,
+  three wrong,
+  one unresolved.
+- At 90/10:
+  six correct,
+  three wrong,
+  five unresolved.
+- At 95/05:
+  six correct,
+  zero wrong,
+  eight unresolved.
+
+An uncalled weakening function scored `0.90` and `0.93`.
+A write to an unused configuration scored `0.93` and `0.16` on identical input,
+an absolute spread of `0.77`.
+The stricter band abstained on every negative example;
+it is not an adopted remedy or held-out qualification.
+
+Published returned-input pricing gives study total US$0.005012028
+and mean US$0.000358002 per request/judgment.
+The combined retained semantic-study subtotal is US$0.044820032.
+These exclude unknown gateway charges and agent/reviewer costs;
+they do not establish invoices or representative production mean cost.
+
+The next change is decomposition,
+not new wording or threshold selection.
+The finite `lint-write-absence-v2` profile can establish absence of an active write
+for the documentation,
+uncalled-function,
+disabled-branch,
+and unused-target examples.
+Active writes or unsupported syntax remain unresolved.
+A first implementation's hoisted-shadowing error was measured by `proc_3cb1`
+before admission and corrected.
+`proc_dcb4` and `proc_74a8` retained the scoped controls and read-only replay.
+Replay keeps code facts distinct from unqualified estimates;
+it does not erase the 14 requests or lower their actual recorded spend.
+
+The integrating consumer must still own the exact tool contract and active configuration identity.
+Names such as `tools.write` and a supplied path cannot establish that ownership.
+No real action permission,
+semantic threshold,
+or production deployment follows from these results.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,

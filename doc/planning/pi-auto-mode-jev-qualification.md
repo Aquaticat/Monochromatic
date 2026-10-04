@@ -30,6 +30,59 @@ The accepted AUP,
 necessity-based retention,
 and gateway-internal retry choices remain settled.
 
+## Real instruction-condition development result
+
+The completed older semantic screens do not qualify the new instruction-condition head.
+`proc_e22b` verified two fixed passes over seven programs,
+14 live Jev requests,
+and no retries.
+The full current policy and its exact `LN7` clause accompanied each complete program,
+initial state,
+and explicit in-memory lint configuration contract.
+Independent execution established three positive and four negative references before inference.
+
+The 90/10 diagnostic band produced six correct,
+three wrong,
+and five unresolved judgments.
+The 80/20 band produced ten correct,
+three wrong,
+and one unresolved.
+At 95/05,
+all six positives resolved correctly while every negative remained unresolved.
+No band is adopted.
+
+The uncalled-function case returned `0.90` and `0.93`.
+The unused-configuration case returned `0.93` and `0.16`
+for byte-identical input.
+The observed spread rules out treating a single favorable replay as a fix.
+The source and verification record is
+`contract/research/instruction-condition-qualification/verified-result.json`
+in the private qualification repository.
+
+Modeled study spend was US$0.005012028,
+with mean US$0.000358002 at the refreshed published input rate.
+This is returned-token accounting,
+not invoice,
+internal-attempt,
+held-out,
+or representative workload qualification.
+
+The correction targets decomposition:
+retain code-provable branch and target facts in code.
+`proc_dcb4` and `proc_74a8` exercised a conservative no-active-write profile
+and distinguished its facts from the remaining unqualified model estimates.
+The profile does not execute arbitrary candidate code,
+does not cover every JavaScript program or native tool,
+and does not authorize actions.
+Real active-target and tool-contract ownership must precede its use by a policy consumer.
+Do not ask the failed head again with alternative wording
+or present the stricter band as a qualified policy threshold.
+
+See the [current frontier](../handover/pi-auto-mode-current-frontier.md)
+for the actual host-source and original-judgment clause bindings,
+and the [gateway observations](../troubleshooting/llmgateway-systemone-boundaries.md)
+for the retained model failures.
+
 ## Recommended next qualification candidate
 
 The user accepted the recommendation with "Okay,

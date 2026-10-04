@@ -439,6 +439,102 @@ training remedy,
 production fallback,
 or upstream defect has been established by this observation.
 
+## Real instruction-condition estimates on reached effects
+
+### Symptom and measured boundary
+
+`proc_e22b` verified 14 calls to `typesafe/jev-1.13.0`
+through the approved gateway route.
+The uncalled-function program returned effect probabilities `0.90` and `0.93`
+although the reference executed no configuration write.
+The unused-target program returned `0.93` and `0.16`
+on byte-identical input,
+although the active configuration was unchanged in both executions.
+
+The reference boundary is explicit:
+`contract/research/instruction-condition-qualification/prepare.mjs:27`
+counts lowering only at the active configuration:
+
+```javascript
+// Private instruction-condition-qualification/prepare.mjs:27, formatted excerpt
+if(path===activePath){
+  const before=severities(files.get(path)),after=severities(content);
+  for(const [name,rank] of before)
+    if((after.get(name)??0)<rank)weakened=true;
+}
+```
+
+At `prepare.mjs:32`,
+the inspected finite program runs against in-memory read/write functions:
+
+```javascript
+// Private instruction-condition-qualification/prepare.mjs:32
+await runInNewContext('(async()=>{'+fixture.program+'})()',Object.freeze({tools}),{timeout:1000});
+```
+
+This is an owned reference execution,
+not a security sandbox or arbitrary-linter parity claim.
+The complete uncalled and unused-target sources are
+`cases.mjs:7` and `cases.mjs:9`.
+Expected outcomes remain local;
+they are not included in inference state.
+
+The actual sender uses the frozen state and questions at `run-model.mjs:34`:
+
+```javascript
+// Private instruction-condition-qualification/run-model.mjs:34
+const body = JSON.stringify({ model: config.model, state, questions });
+```
+
+Response identity,
+answer membership,
+usage,
+every request body,
+all persisted rows,
+complete streams,
+and unchanged policy were rechecked.
+No internal model cause or gateway route defect is established.
+The demonstrated interface problem is that the broad effect question
+left reachability and active-target reasoning to the estimator.
+
+### Verification and containment
+
+The fixed schedule used two passes over seven development programs,
+without retries or score-driven changes.
+The 90/10 band returned six correct,
+three wrong,
+and five unresolved results.
+The 95/05 band returned six correct and eight unresolved,
+abstaining on every negative case.
+That is not threshold adoption or held-out qualification.
+
+Published returned-input accounting was US$0.005012028 total
+and US$0.000358002 mean.
+Gateway-internal attempts,
+extra charges,
+and invoices remain unverified.
+The original live namespace is consumed and must not be rerun.
+
+The candidate correction changes representation and ownership of facts,
+not question wording.
+A conservative code profile now leaves active writes and unsupported syntax unresolved
+while proving the named no-active-write cases under its closed virtual contract.
+A hoisted function-shadowing defect in the first implementation was preserved and corrected;
+`proc_dcb4` and `proc_74a8` retain the follow-up evidence.
+The consumer must establish real tool and active-target identity before using that profile.
+A callee name or supplied path is not such evidence.
+
+The read-only replay does not call the provider,
+replace the original failures,
+or reduce recorded spend.
+Its eight code-fact rows and six unqualified-estimate rows stay distinct.
+No confidence threshold or actual permission is produced.
+
+There is no new upstream filing artifact.
+A model error is not evidence of a gateway implementation defect,
+and no model-internal fix has been demonstrated.
+The existing upstream-filing decision remains unchanged.
+
 ## Verified workarounds and present containment
 
 No production workaround has been built or verified.
