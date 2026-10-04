@@ -67,6 +67,41 @@ Keep raw handler errors in diagnostics,
 not executable objects inside serialized source records.
 Session-long history retention and unsupported asynchronous publishers remain explicit limits.
 
+## Deterministic policy-consumer trial
+
+The private consumer now distinguishes authored permission,
+prohibition,
+required approval,
+unresolved applicability,
+and an unspecified no-applicable-rule outcome.
+`proc_dfd6` checked the kernel against 6,175 finite authored programs
+and 14,425 complete-fact evaluations.
+`proc_ec0f` clarified support metadata and checked priority gaps and bounds:
+settling an effect need not identify a unique controlling instruction.
+
+`proc_7efd` exercised the consumer through five real SDK 1.0.2 sessions,
+ten injected requests,
+five canned assessment attempts,
+and root-definition counts `[2, 0, 0, 0, 0]`.
+Policy computation occurred before original evidence closure.
+The permitting case retained post-deadline execution checks without another budget.
+`proc_7931` also checked the fixture adapter's binding and admission boundary.
+
+These are explicitly authored fixture meanings and oracle applicability facts.
+The canned numeric estimates do not qualify those facts.
+Real host admission refused every fixture receipt.
+The harness's withheld inert calls are not a production fallback,
+and the blocked diagnostics are not an interactive approval workflow.
+The [current frontier](../handover/pi-auto-mode-current-frontier.md)
+records the failed initial question-frontier control and precise coverage limits.
+
+Continue with configured-host source selection and qualified semantic relation adapters.
+Do not promote `readPolicy`,
+a rule tag,
+a filename,
+project trust,
+or a discrete model label into governing authority.
+
 ## Owned resource inputs and request freshness
 
 The private loader factory in `contract/collector/resource-input-custody-v2/`

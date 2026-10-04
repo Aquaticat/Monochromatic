@@ -1622,6 +1622,71 @@ create permission,
 adopt thresholds,
 or complete the migration.
 
+## Deterministic policy consumer with explicit fixture premises
+
+The first policy-consumer path now runs through actual private SDK judgments,
+rather than ending at source-custody checks.
+It is still a fixture trial:
+instruction effects and applicability are authored test premises,
+not admitted real-world authority or qualified model estimates.
+
+`proc_dfd6` compared the deterministic kernel against 6,175 authored rule programs
+and 14,425 complete-fact evaluations.
+The finite domain covered up to three rules,
+three effects,
+two priority values,
+and three applicability states.
+An initial `proc_9cec` failure retained 373 completed programs before exposing
+an unnecessary question about an already-settled equal-priority conflict.
+The corrected kernel no longer asks about additions that cannot repair that conflict.
+
+Independent review distinguished settled effects from settled controlling-instruction identity.
+A higher unresolved rule with the same effect can change which instruction controls
+without changing the effect.
+The clarified v3 metadata therefore names highest-known applicable support,
+not a unique winner.
+`proc_ec0f` checked that delta,
+priority gaps,
+multiple supports,
+and the 256-rule boundary.
+It also verified the native trial's distinct refusal diagnostics without rerunning SDK sessions.
+
+`proc_7931` checked the fixture adapter's original-response binding,
+one-shot resolution,
+original deadline,
+post-close freshness,
+copied-receipt rejection,
+and refusal to promote any fixture receipt into host admission.
+`proc_7efd` then ran five actual SDK 1.0.2 sessions,
+ten injected requests,
+and five canned assessment attempts.
+Root-definition counts were `[2, 0, 0, 0, 0]`
+for permission,
+prohibition,
+required approval,
+unresolved applicability,
+and no applicable fixture rule.
+The source program reached the actual wire;
+policy computation preceded finalization inside the original deadline.
+The permitting fixture's second inert body ran after the closed decision clock advanced.
+
+The canned numeric estimates were not treated as qualified policy facts.
+The harness independently restricted its own inert definitions.
+All non-permitting states used the same native block transport,
+with distinct recorded states and diagnostics.
+This does not test an interactive approval workflow
+or adopt a real instruction-free fallback.
+Every fixture receipt remained inadmissible for real host execution.
+
+Current kernel:
+`contract/lifecycle/instruction-policy-consumer-v3/resolve.mjs`.
+The native trial used the v2 kernel and remains effect-only evidence.
+Next:
+establish configured-host governing-source selection,
+bind qualified semantic relation evidence,
+and connect actual admission and approval paths.
+The existing source collector still correctly reports authority as not established.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,
