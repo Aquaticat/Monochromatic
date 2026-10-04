@@ -14,15 +14,15 @@ mod ui {
 }
 
 /// Native window and model row generated from the UI declaration.
-use ui::{AppWindow, SourceSelection};
+use ui::AppWindow;
 /// Toolkit handles and models bridge owned Rust state to the window.
-use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
+use slint::{ComponentHandle, SharedString};
 /// Source and display geometry use the same library interface tested headlessly.
-use ide_app::{document::{Document, ReadingPosition}, view_model::StyleSpan};
+use ide_app::{document::Document, view_model::StyleSpan};
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
-use ide_app::shaped_text::{ShapedView, TextShaper, Viewport};
+use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Raster output retains the exact glyph positions used by selection.
-use ide_app::text_raster::{CodeColors, TextRaster};
+use ide_app::text_raster::TextRaster;
 /// What: Rc shares one UI-thread owner; RefCell permits checked mutable borrowing.
 /// Why: Callbacks need the same document without cross-thread Arc/Mutex overhead.
 ///
@@ -31,6 +31,19 @@ use ide_app::text_raster::{CodeColors, TextRaster};
 /// const shared = { current: state };
 /// ```
 use std::{cell::RefCell, rc::Rc};
+
+/// Native rendering and input are split by their invalidation boundary.
+mod render;
+/// Source selection and keyboard callbacks.
+mod input;
+/// Fractional viewport movement and bounded tile materialization.
+mod viewport;
+/// Shared rendering entry point.
+use render::render;
+/// Bind caret and selection callbacks.
+use input::{bind_keys, bind_pointer};
+/// Bind viewport changes without line-snapping native scrolling.
+use viewport::bind_viewport;
 
 /// Shared UI-thread state; there is no project-writing operation.
 struct State {
@@ -56,218 +69,6 @@ struct State {
     shaped: Option<ShapedView>,
     /// Avoid cloning whole source for accessibility on each selection change.
     presented_revision: Option<u64>,
-}
-
-/// Convert a toolkit palette color to raster input without losing alpha.
-fn rgba(color: slint::Color) -> [u8; 4] {
-    return [color.red(), color.green(), color.blue(), color.alpha()];
-}
-
-/// Render shared shaped rows, releasing state before any Slint setter can reenter.
-fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    let factor = window.window().scale_factor();
-    let colors = CodeColors {
-        foreground: rgba(window.get_source_foreground().color()),
-        selected: rgba(window.get_selected_foreground().color()),
-        dark: window.get_dark_scheme(),
-    };
-    let mut current = state.borrow_mut();
-    let first = current.first;
-    let horizontal = current.horizontal;
-    let viewport = Viewport {
-        first, count: current.count, width: current.width + 256.0, scale: factor,
-    };
-    // What: Destructure a mutable borrow into disjoint fields.
-    // Why: The shaper and raster own caches while the document remains borrowed read-only.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const { document, styles, shaper, raster } = state.current;
-    // ```
-    let State { document, styles, shaper, raster, .. } = &mut *current;
-    let view = shaper.prepare(document, viewport, styles);
-    let pixels = match raster.paint(&view, colors, horizontal) {
-        Ok(pixels) => pixels,
-        Err(error) => {
-            tracing::error!(%error, "source raster failed");
-            drop(current);
-            window.set_source_image(slint::Image::default());
-            window.set_status(SharedString::from(format!("Cannot render source: {error}")));
-            return;
-        }
-    };
-    let caret = view.caret(document);
-    let mut selections = Vec::new();
-    for rect in view.selection(document) {
-        selections.push(SourceSelection { x: rect.x, y: rect.y, width: rect.width, height: rect.height });
-    }
-    let position = document.position();
-    let revision = document.revision();
-    let lines = document.text().len_lines();
-    let selected = document.selected_text();
-    let source;
-    if current.presented_revision != Some(revision) {
-        source = Some(current.document.text().to_string());
-        current.presented_revision = Some(revision);
-    } else {
-        source = None;
-    }
-    let mut document_width = current.document_width;
-    for row in &view.rows {
-        document_width = document_width.max(row.layout.width() / factor);
-    }
-    current.document_width = document_width;
-    current.shaped = Some(view);
-    drop(current);
-
-    // Premultiplied pixels share the font engine's baseline and advances.
-    let buffer = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::clone_from_slice(
-        &pixels.bytes, pixels.width, pixels.height,
-    );
-    window.set_source_image(slint::Image::from_rgba8_premultiplied(buffer));
-    window.set_source_selections(ModelRc::from(Rc::new(VecModel::from(selections))));
-    window.set_image_x(horizontal);
-    window.set_image_y(first as f32 * 24.0);
-    window.set_image_width(pixels.width as f32 / factor);
-    window.set_image_height(pixels.height as f32 / factor);
-    window.set_document_width(document_width);
-    window.set_caret_x(caret.x);
-    window.set_caret_y(caret.y);
-    if let Some(source) = source {
-        window.set_source_text(SharedString::from(source));
-    }
-    window.set_selected_text(SharedString::from(selected));
-    window.set_total_lines(lines as i32);
-    window.set_selection_anchor(position.anchor as i32);
-    window.set_selection_head(position.head as i32);
-    window.set_revision(revision as i32);
-    window.set_status(SharedString::from(format!(
-        "Read only · Revision {revision} · Selection {}:{} · Source-view gate",
-        position.anchor, position.head
-    )));
-}
-
-/// Bind pointer selection without letting the UI mutate source text.
-fn bind_pointer(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    // What: clone shares Rc ownership, whereas cloning a String copies its bytes.
-    // Why: The callback remains valid after this binding function returns.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const callbackState = state;
-    // ```
-    let state = Rc::clone(state);
-    let weak = window.as_weak();
-    // What: move |...| transfers captured handles into a stored callback.
-    // Why: Borrowed local variables would not outlive this function.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // window.onPointerHit((row, column, extend) => { ... });
-    // ```
-    window.on_pointer_hit(move |row, x, extend| {
-        let mut current = state.borrow_mut();
-        let Some(view) = &current.shaped else { return; };
-        let head = view.hit(&current.document, row.max(0) as usize, x);
-        let mut position = current.document.position();
-        if !extend {
-            position.anchor = head;
-        }
-        position.head = head;
-        current.document.select(position);
-        drop(current);
-        // What: upgrade returns Some only while the window still exists.
-        // Why: Closing the app must not keep a hidden window alive through callbacks.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const window = weak.deref(); if (window) render(window, state);
-        // ```
-        if let Some(window) = weak.upgrade() {
-            render(&window, &state);
-        }
-    });
-}
-
-/// Retain pixel scrolling; update the raster only at viewport tile boundaries.
-fn bind_viewport(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    let state = Rc::clone(state);
-    let weak = window.as_weak();
-    window.on_viewport_changed(move |horizontal, offset, width, height| {
-        let first = (offset.max(0.0) / 24.0) as usize;
-        let count = (height.max(0.0) / 24.0).ceil() as usize + 3;
-        let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
-        let width = width.max(1.0);
-        let mut current = state.borrow_mut();
-        if current.first == first.saturating_sub(1) && current.count == count
-            && current.horizontal == tile_x && current.width == width {
-            return;
-        }
-        current.first = first.saturating_sub(1);
-        current.count = count;
-        current.horizontal = tile_x;
-        current.width = width;
-        let text = current.document.text();
-        let line = first.min(text.len_lines().saturating_sub(1));
-        let mut position = current.document.position();
-        position.viewport = text.line_to_char(line);
-        current.document.select(position);
-        drop(current);
-        if let Some(window) = weak.upgrade() {
-            render(&window, &state);
-        }
-    });
-}
-
-/// Bind native keyboard caret movement and select-all.
-fn bind_keys(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    let select_state = Rc::clone(state);
-    let weak = window.as_weak();
-    window.on_select_all_request(move || {
-        let mut current = select_state.borrow_mut();
-        let end = current.document.text().len_chars();
-        current.document.select(ReadingPosition { anchor: 0, head: end, viewport: 0 });
-        drop(current);
-        if let Some(window) = weak.upgrade() {
-            render(&window, &select_state);
-        }
-    });
-    let state = Rc::clone(state);
-    let weak = window.as_weak();
-    window.on_key_input(move |key, control, shift, _alt| {
-        let mut current = state.borrow_mut();
-        let mut position = current.document.position();
-        let text = current.document.text().slice(..);
-        // Slint represents special keys as encoded strings, not Key enum values.
-        if key == SharedString::from(slint::platform::Key::LeftArrow) {
-            position.head = helix_core::graphemes::prev_grapheme_boundary(text, position.head);
-        } else if key == SharedString::from(slint::platform::Key::RightArrow) {
-            position.head = helix_core::graphemes::next_grapheme_boundary(text, position.head);
-        } else if key == SharedString::from(slint::platform::Key::Home) {
-            if control { position.head = 0; }
-            else { position.head = text.line_to_char(text.char_to_line(position.head)); }
-        } else if key == SharedString::from(slint::platform::Key::End) {
-            if control { position.head = text.len_chars(); }
-            else {
-                let row = text.char_to_line(position.head);
-                let start = text.line_to_char(row);
-                let mut end = text.line_to_char((row + 1).min(text.len_lines()));
-                // Skip the line terminator, not the final source character.
-                while end > start && (text.char(end - 1) == '\n' || text.char(end - 1) == '\r') {
-                    end -= 1;
-                }
-                position.head = end;
-            }
-        } else {
-            return;
-        }
-        if !shift { position.anchor = position.head; }
-        current.document.select(position);
-        drop(current);
-        if let Some(window) = weak.upgrade() {
-            render(&window, &state);
-        }
-    });
 }
 
 /// Run the source-view gate against a supplied file or its explicit fixture.
