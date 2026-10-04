@@ -177,7 +177,8 @@ were separately exercised in each desktop/mobile light/dark context.
 Four closed-page A/AA axe audits had zero violations or incomplete checks;
 no console errors or document overflow were observed.
 No open-dialog axe audit or Firefox acceptance is claimed.
-Browser controls met the verifier's 48CSSpx minimum.
+Visible closed-page controls met the verifier's 48CSSpx minimum.
+Modal size minima were not independently measured by this consumer script.
 
 The first implicit preview click missed a partly visible target.
 Explicit center scrolling before trusted native input passed the complete

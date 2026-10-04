@@ -1083,9 +1083,9 @@ surface with a Search button and page.
  acceptance.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
- the keyboard-map pass,
- Android media notification,
+ the keyboard-map pass
  and undrawn light surfaces remain open;
+ Android notification presentation is settled by D82;
   desktop
   window sizing follows the Fold design as developer-owned work (D49).
 
@@ -1153,7 +1153,7 @@ question remains in this round.
 No absent control or future feature is part of this round.
  The Search page (formerly the command-bar frontier),
  cover screen,
- notification,
+ notification (now standard platform presentation under D82),
  custom display templating,
  and every other unbuilt item remain
 outside the active form.

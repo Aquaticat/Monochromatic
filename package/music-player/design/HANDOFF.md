@@ -2413,7 +2413,7 @@ by swapping tokens.
 (focus order,
  screen-reader labels,
  reduced motion);
- Android media notification;
+ Android media notification (now settled as standard platform presentation by D82);
 MD3-on-Slint feasibility;
  cover screen still needs D1/D18/D20/D31 applied;
  the
@@ -4509,9 +4509,11 @@ Do not quietly promote the temporary baseline to final.
 is comparison evidence, not an unanswered question; subsequent visual reviews show only
 active P4 unless the user explicitly requests the rejected comparison (RVC).
  The
-keyboard map, cover-specific accessibility, Android media notification, remaining
-light surfaces, desktop size, empty state and display templating stay in the live backlog
-at `open-questions.md` 0b.
+keyboard map, cover-specific accessibility, remaining light surfaces,
+desktop size, empty state and display templating were in the live backlog
+at this historical checkpoint.
+Android notification presentation is now settled by D82;
+the current queue is recorded in `open-questions.md` section 0b.
  The user's "What next?"
 asked for a recommendation, not authorization for production changes.
 
