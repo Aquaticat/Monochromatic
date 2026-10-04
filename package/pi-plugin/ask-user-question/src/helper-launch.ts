@@ -12,6 +12,9 @@ import type { AnswerWorkspace, } from './answer-workspace.ts';
 
 //region Launch diagnostics
 
+/** Owner-only permissions for executable source stored with answer data. */
+const PRIVATE_FILE_MODE = 0o600;
+
 /**
  Reports missing or inaccessible inputs before opening detached terminal.
  */
@@ -50,7 +53,12 @@ const l = tagged({ tag: 'ask-user-question:helper-launch', },);
 
  @returns executable path checked before detached launch
 
- @throws {AnswerLaunchError} when no executable runtime is accessible
+ @throws when no executable runtime is accessible
+
+ @example
+ ```ts
+ await resolveAnswerRuntime();
+ ```
  */
 export async function resolveAnswerRuntime({
   platform = process.platform,
@@ -61,8 +69,10 @@ export async function resolveAnswerRuntime({
   readonly execPath?: string;
   readonly pid?: number;
 } = {},): Promise<string> {
+  /** Function-local runtime diagnostics omit all answer content. */
   const rl = tagged({ tag: resolveAnswerRuntime.name, l, },);
   if (platform === 'linux') {
+    /** Parent remains alive throughout detached helper lifetime. */
     const liveExecutable = `/proc/${String(pid,)}/exe`;
     try {
       await access(liveExecutable, constants.X_OK,);
@@ -100,7 +110,12 @@ export async function resolveAnswerRuntime({
 
  @returns private helper path passed to runtime
 
- @throws {AnswerLaunchError} when helper cannot be copied or protected
+ @throws when helper cannot be copied or protected
+
+ @example
+ ```ts
+ await prepareAnswerHelper({ workspace, sourcePath: '/installed/answer-helper.mjs' });
+ ```
  */
 export async function prepareAnswerHelper({
   workspace,
@@ -109,11 +124,13 @@ export async function prepareAnswerHelper({
   readonly workspace: AnswerWorkspace;
   readonly sourcePath: string;
 },): Promise<string> {
+  /** Function-local preparation diagnostics identify filesystem inputs. */
   const rl = tagged({ tag: prepareAnswerHelper.name, l, },);
+  /** Private launch target owned by same scope as request and answer. */
   const helperPath = join(workspace.directory, 'answer-helper.mjs',);
   try {
     await copyFile(sourcePath, helperPath, constants.COPYFILE_EXCL,);
-    await chmod(helperPath, 0o600,);
+    await chmod(helperPath, PRIVATE_FILE_MODE,);
   }
   catch (error: unknown) {
     throw new AnswerLaunchError({

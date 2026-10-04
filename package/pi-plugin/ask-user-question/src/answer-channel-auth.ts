@@ -18,6 +18,9 @@ import { HelperProtocolError, } from './helper-protocol.ts';
  */
 const HELPER_CONNECT_TIMEOUT_MS = 30_000;
 
+/** Milliseconds per second for user-facing startup deadline. */
+const MILLISECONDS_PER_SECOND = 1_000;
+
 /**
  Bytes in one kibibyte.
  */
@@ -53,7 +56,7 @@ export class AnswerHelperStartupTimeoutError extends Error {
    */
   constructor(cause: unknown,) {
     super(
-      'The answer helper did not connect within 30 seconds. The detached terminal may have failed to start it or opened too late. Inspect the detached terminal error and retry the question. If this repeats, check the runtime and helper bundle paths in the launch log, finish any package rebuild, and restart Pi.',
+      `The answer helper did not connect within ${String(HELPER_CONNECT_TIMEOUT_MS / MILLISECONDS_PER_SECOND,)} seconds. The detached terminal may have failed to start it or opened too late. Inspect the detached terminal error and retry the question. If this repeats, check the runtime and helper bundle paths in the launch log, finish any package rebuild, and restart Pi.`,
       { cause, },
     );
     this.name = 'AnswerHelperStartupTimeoutError';
@@ -168,7 +171,8 @@ export async function acceptAuthenticatedSocket(
   throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
   }
   catch (error: unknown) {
-    if (deadlineSignal.aborted && (startupSignal.reason === deadlineSignal.reason))
+    if (deadlineSignal.aborted && (startupSignal.reason === deadlineSignal.reason)
+      && ((error === deadlineSignal.reason) || (Error.isError(error,) && (error.cause === deadlineSignal.reason))))
       throw new AnswerHelperStartupTimeoutError(error,);
     throw error;
   }

@@ -1,7 +1,4 @@
-import {
-  mkdtemp,
-  rm,
-} from 'node:fs/promises';
+import { mkdtempDisposable, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
@@ -34,9 +31,8 @@ await describe({
     it({
       name: 'reports missing runtime with original cause and restart remediation',
       fn: async () => {
-        const directory = await mkdtemp(join(tmpdir(), 'ask-runtime-',),);
-        try {
-          const execPath = join(directory, 'missing-node',);
+        await using directory = await mkdtempDisposable(join(tmpdir(), 'ask-runtime-',),);
+          const execPath = join(directory.path, 'missing-node',);
           let caught: unknown;
           try {
             await resolveAnswerRuntime({ platform: 'darwin', execPath, },);
@@ -50,10 +46,6 @@ await describe({
           expect(caught.message,).toContain(execPath,);
           expect(caught.message,).toContain('Restart Pi',);
           expect(caught.cause,).toHaveProperty('code', 'ENOENT',);
-        }
-        finally {
-          await rm(directory, { recursive: true, force: true, },);
-        }
       },
     },),
   ],
