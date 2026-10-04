@@ -1,0 +1,258 @@
+# Pi 1.0.0 nested tool calls need separate parent-execution admission
+
+## Symptom
+
+The private auto-mode prototype admits a complete model-issued tool group through its changed agent loop.
+An extension tool calling `ctx.executeTool()` does not pass its children through that outer group interface.
+In the measured profile,
+a saved parent context also executed an inert child after the parent result and final assistant response.
+The child reused the original parent's `/1` identifier and did not update its persisted nested-call record.
+
+These are findings about the private consumer's coverage and parent-lifetime requirements,
+not evidence of an upstream security promise or a production auto-mode bypass.
+No installed SDK or production guard was changed.
+The diagnostic used fixed inert parent definitions,
+not Codemode source execution or semantic assessment of arbitrary programs.
+
+A separate fixture configuration failure preceded the diagnostic:
+agent-core emitted `Tool owned_leaf not found` for both attempted children.
+The fixture had excluded that leaf through the SDK `tools` allow-list.
+This was not a nested guard rejection or a missing execution context.
+
+## Source identity
+
+The installed artifacts are `@earendil-works/pi-coding-agent@1.0.0`
+and `@earendil-works/pi-agent-core@1.0.0`.
+Paths beginning with `dist/core/` refer to that installed coding-agent package;
+agent-core paths are named explicitly.
+The private manifests retain hashes of the inspected installed files and the derived SDK graph.
+The upstream `v1.0.0` tag resolves to `a13d35a742c6ef8462812a28fbe1d8c8b7431c32`.
+The earlier `v0.87.1` source checkout is not substituted for these artifacts.
+
+Private workspace:
+`~/temp/agent/auto-mode-consumer-contract.mDLkyNoP`.
+
+- Failed fixture:
+  `contract/collector/nested-judgment-intake/`.
+- Corrected diagnostic:
+  `contract/collector/nested-judgment-intake-v2/`.
+- Protected outer-group SDK graph:
+  `contract/collector/judgment-sdk-freshness/stage-private/manifest.json`.
+
+## Root cause trace
+
+### The session runs nested calls outside the changed outer loop
+
+`dist/core/agent-session.js:375` creates `NestedToolCallRunner` on demand.
+Its host calls native `runToolCall` directly and selects the latest assistant message:
+
+```javascript
+// dist/core/agent-session.js:379-397, selected statements
+const assistantMessage = this._findLastAssistantMessage();
+return runToolCall(toolCall, {
+  tools: this._getCallableTools(),
+  assistantMessage,
+  context: { messages: this.agent.state.messages, tools: this.agent.state.tools },
+  beforeToolCall: (context) => this._beforeToolCall(context, parentId),
+  afterToolCall: (context) => this._afterToolCall(context, parentId),
+  signal,
+  onUpdate,
+});
+```
+
+That path retains ordinary nested hooks.
+It does not call the private `beginToolJudgment`,
+combined prepared-group assessment,
+or captured outer-group freshness callback.
+The corrected diagnostic observed those group callbacks for the parent only.
+
+### A tool context captures a caller identifier and checks runner liveness
+
+`dist/core/extensions/runner.js:690` creates the tool context.
+The nested method checks the runner and forwards the captured identifier:
+
+```javascript
+// dist/core/extensions/runner.js:700-714, selected statements
+executeTool: {
+  value: async (name, args, options = {}) => {
+    runner.assertActive();
+    return runner.executeToolFn(toolCallId, name, args, {
+      ...options,
+      signal: options.signal ?? signal,
+    });
+  },
+},
+```
+
+The omitted branch reports an unavailable nested-call function;
+it does not add a parent-execution lifetime check.
+Session/runner liveness therefore is not proof that the original parent invocation remains active.
+A child-supplied signal also needs separate handling when a consumer must retain the original cancellation scope.
+The diagnostic did not test signal substitution.
+
+### Recorder lifetime and caller labels do not preserve execution occurrence identity
+
+`dist/core/nested-tool-calls.js:99` creates a scope when the caller identifier has no current entry:
+
+```javascript
+// dist/core/nested-tool-calls.js:99-112, selected statements
+let scope = this.scopes.get(callerId);
+if (!scope) {
+  scope = { recorder: new NestedCallRecorder(), nextId: 1, holdsQueue: false };
+  this.scopes.set(callerId, scope);
+}
+const toolCall = {
+  type: "toolCall",
+  id: `${callerId}/${scope.nextId++}`,
+  name,
+  arguments: args ?? {},
+};
+```
+
+`takeRecord` removes the parent scope.
+`dist/core/agent-session.js:698-709` attaches that snapshot to the parent tool result and clears scopes at agent end:
+
+```javascript
+// dist/core/agent-session.js:698-709, selected statements
+const summary = this._nestedToolCalls.takeRecord(message.toolCallId);
+if (summary?.calls) message.nestedCalls = summary.calls;
+// In the agent_end branch:
+this._nestedToolCalls.clear();
+```
+
+The late-context case then created another scope through the same saved method.
+The repeated child identifier described a different occurrence;
+it did not authenticate continuation of the original parent or revive its judgment.
+
+### The failed fixture confused allowed tools with active declarations
+
+`dist/core/sdk.js:145-148` uses `options.tools` as both an allow-list input and the initial active selection.
+`dist/core/agent-session.js:2780-2785` filters extension definitions before building the registry:
+
+```javascript
+// dist/core/sdk.js:145-148, selected statements
+const allowedToolNames = options.tools ?? (options.noTools === "all" ? [] : undefined);
+```
+
+```javascript
+// dist/core/agent-session.js:2780-2785, selected statements
+const allCustomTools = [/* registered and SDK custom definitions */]
+  .filter((tool) => this._isAllowedTool(tool.definition.name));
+```
+
+Agent-core `dist/agent-loop.js:486` reports the missing lookup as:
+
+```javascript
+// pi-agent-core dist/agent-loop.js:486
+createErrorToolResult(`Tool ${toolCall.name} not found`);
+```
+
+The corrected fixture allowed both owned tools,
+then called `session.setActiveToolsByName(['owned_probe'])`.
+Before prompting,
+it verified that only the parent was active,
+both tools were callable,
+and the leaf retained `codemode` exposure.
+
+## Verification
+
+`proc_8724` failed with `AssertionError [ERR_ASSERTION]: 0 !== 2`.
+Its persisted parent result contains two `Tool owned_leaf not found` records.
+No leaf executed,
+and the later planned cases did not run.
+That namespace and its consumed source remain unchanged.
+
+`proc_4202` passed the corrected diagnostic using Node `26.10.0`:
+three SDK sessions,
+six injected wire requests,
+three outer inert executions,
+seven nested inert executions,
+and three canned semantic attempts.
+There were no external model requests.
+The verifier checked complete streams,
+source hashes,
+parent persistence,
+ordinary nested hooks/events,
+and native disposal completion.
+
+Working catalog:
+
+- Registered and allow-listed leaf execution through the actual `ctx.executeTool()` method.
+- Parallel children and the native sequential queue.
+- Native nested hooks,
+  parent identifiers,
+  and complete persisted records for awaited children.
+- A parent-only model declaration with both parent and leaf callable.
+
+Coverage-gap catalog:
+
+- Child execution did not reenter complete-group preparation,
+  judgment construction,
+  or the outer freshness callback.
+- The cached parent context executed another leaf after the parent completed.
+- That call reused the `/1` child identifier.
+- The persisted parent record remained unchanged after the late call.
+
+The recorded invocation was:
+
+```bash
+# Private one-shot fixture; use a fresh source namespace for another execution.
+cd ~/temp/agent/auto-mode-consumer-contract.mDLkyNoP/contract/collector/nested-judgment-intake-v2
+mise --no-env --no-hooks run check
+```
+
+The fixture deliberately refuses to overwrite its existing evidence directory.
+Do not rerun it in the consumed namespace or treat raw result presence as terminal process success.
+Heap limits,
+cleared fixture directories,
+and injected transport are fixture controls,
+not OS isolation,
+atomicity,
+or a hard handback guarantee.
+
+## Verified workaround and remaining implementation
+
+Allow-listing both owned names and activating only the parent repaired the fixture setup.
+Its tradeoff is explicit responsibility for maintaining allowed and declared tool sets separately.
+This configuration does not establish a parent-execution lifetime or complete nested semantic group.
+
+There is no verified nested-admission workaround yet.
+The implementation must extend existing execution/scope ownership,
+bind the exact original judgment and parent program,
+and reject stale or foreign execution occurrences without manufacturing another budget.
+Sibling transport arrival,
+queue drains,
+and cached caller labels must not stand in for complete semantic membership.
+Preserve native hooks,
+updates,
+recorder/usage output,
+and completed effects.
+
+## What does not work
+
+- Treating `codemode` exposure as an override of the SDK allow-list.
+- Treating root or runner liveness as evidence that a particular parent execution is still active.
+- Treating a child identifier as an unforgeable execution occurrence.
+- Treating a successful outer-group guard test as coverage of the separate nested execution path.
+- Treating the fixed-parent diagnostic as qualification of arbitrary Codemode programs.
+
+## Upstream filing decision
+
+1.  Upstream fault is not established.
+    The excluded leaf was a fixture configuration error;
+    the nested judgment requirement belongs to the private consumer.
+2.  A consumer-side implementation remains under development.
+    No claim of architectural impossibility is made.
+3.  Native nested calls are supported;
+    no cited upstream contract promises this private whole-program judgment or parent-lifetime policy.
+4.  Contribution-policy review is not used to justify any filing here.
+5.  No maintainer rejection or intent is inferred from the observed behavior.
+6.  A complete nested-admission fix has not been qualified.
+    The verified allow-list correction is not that fix.
+
+The inspected `.out-of-scope/pi-gpt55-long-context.md` concerns context-window metadata,
+not this case.
+No upstream issue or comment is drafted or sent:
+the fixture error supplies no upstream bug,
+and a complete consumer-side fix is not yet available.
+No claim that the upstream tracker lacks a related issue is made.
