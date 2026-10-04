@@ -14,6 +14,7 @@ and
 
 - [ ] Unified-linter foundation: JSONC schema, ordered merge, command interface, and artifact tests.
 - [ ] Unified-linter Rust and Markdown/MDX rules, processors, fix mapping, and consumer parity.
+- [ ] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
 - [ ] Forbidden-strings structured embedding interface, standalone parity, and integration fuzzing.
 - [ ] Rust cli-git configuration, Git resolution/argv, static policies, and management commands.
 - [ ] Rust cli-git transactions, hooks, locks, replay, recovery, worktree copy, and auto-push.
@@ -93,12 +94,106 @@ that tool rejects an explicit `--jobs` with `--in-place`,
 so the runner leaves jobs implicit and retains Cargo's bounded compiler concurrency.
 The runner retains diagnostic reports before deleting its owned container.
 
-Fuzzing and the remaining executable/rule/processor work are not complete.
-This is a verified foundation slice,
-not package completion.
+Configuration pattern matching,
+resolved defaults,
+atomic grouped source edits,
+JSONL finding serialization,
+and the existing Rust rules are implemented.
+The last completed container run passed 56 tests;
+Cargo check and Clippy passed with the aligned parser dependencies.
+The extern-crate fixture initially assumed a named diagnostic;
+source inspection confirmed its identifier is a `NAME_REF`,
+so the fixture now preserves the incumbent's nameless message.
+
+The enlarged core mutation campaign generated 205 mutants:
+181 caught,
+7 missed,
+and 17 unviable.
+Added controls for exact ignore patterns,
+adjacent edits in both selection orders,
+an unterminated string token ending at EOF,
+and final lines without LF.
+Two reported comparison mutants were equivalent because an empty slice cannot end in LF;
+the redundant nonempty guards were removed instead of adding exclusions.
+The updated core campaign still needs rerunning.
+Evidence:
+`package/linter/monochromatic-lint/target/verification/mutation-pgvqN1`.
+
+The fuzz sidecar is implemented at `package/linter/monochromatic-lint.fuzz`.
+The first completed ASAN campaigns recorded 243,146 structured merge executions
+and 17,634 mixed raw/generated configuration executions,
+both exit 0.
+Evidence:
+`package/linter/monochromatic-lint.fuzz/target/verification/campaign-Bx5G2Z`.
+Those runs cover schema/merge foundations,
+not the subsequently added pattern matcher,
+edit engine,
+or language rules.
+The shared ordinary JSONC generator has a depth cap of 4;
+the separate 512-depth unit control remains necessary.
+
+Fuzz build containers read the installed nightly compiler through a read-only mount.
+SELinux label isolation is disabled only for those build containers,
+avoiding relabeling the shared host toolchain.
+Fuzz execution itself has no host mounts,
+retains normal label isolation,
+and runs under 2 GiB / 2 CPU / 128 PID bounds.
+The runner resolves the actual PATH-selected cargo-fuzz 0.13.2 rather than assuming Cargo home's older binary.
+The first dictionary attempt used a JSON newline escape;
+libFuzzer requires hexadecimal escapes,
+so the dictionary now uses `\\x0a`.
+The runner now requires a positive reported execution count as well as exit 0,
+so dictionary/setup failures cannot masquerade as clean fuzzing.
+
+Rust parser dependency correction:
+`ra-ap-rustc_lexer` 0.165.0 asserts equal Unicode-table versions.
+The fresh lock selected unicode-ident 1.0.26 (Unicode 18)
+with unicode-properties 0.1.4 (Unicode 17),
+causing rustc E0080.
+The manifest now pins unicode-ident 1.0.24 and unicode-properties 0.1.4,
+the same Unicode 17 pair as the incumbent;
+compilation and the Rust container suite pass.
+An explicit dependency-fetch task prepares all target archives before offline vendoring.
 
 ## Current step
 
-Add bounded fuzz targets for schema/merge boundaries,
-then implement pattern matching and resolved settings with the existing Rust glob dependencies.
-Continue through the full authorized queue without replacing current production tools early.
+The user added explicit Rust annotations,
+then a ban on anonymous Rust functions.
+The ban supersedes inline closures in the user's initial example;
+use a named callback instead.
+`rust/no-anonymous-functions` is implemented and registered in the configuration schema.
+Focused tests cover closure modifiers,
+nested closures,
+named callbacks,
+non-function pipe syntax,
+UTF-8 byte positions,
+and severity/option validation.
+`mise run //package/linter/monochromatic-lint:test:rust-style` passed independently of the Markdown gate:
+5 tests passed,
+77 unrelated tests filtered out.
+Evidence:
+process `proc_3877`,
+image `268493227fcaf3af6ae661616665f7da15fac28b1caeb987d12d438ad6787f67`.
+Mutation,
+fuzzing,
+and executable dispatch remain pending.
+Explicit generic-call checking conflicts with the prior no-semantic-analysis decision;
+ask the user rather than guessing from method names or silently omitting this part.
+
+The first full Markdown container run compiled and ran 77 tests:
+76 passed and `markdown_source::tests::invalid_mdx_is_a_processing_failure` failed
+because the parser accepted a fixture expected to be invalid.
+This needs diagnosis;
+do not weaken the assertion or equate the independent Rust rule gate with full-suite success.
+Clippy did not run because its prerequisite test task failed.
+
+Native Markdown/MDX arena adapter,
+owned byte/UTF-16 positions,
+and the initial heading/link/fence rule ports are written and awaiting their first verification.
+Dependencies retain the already approved Sätteri versions.
+The markdownlint MIT notice is now included.
+Continue with the remaining Markdown rules,
+processors,
+CLI and integration,
+then scanner embedding and the Rust Git wrapper.
+Do not replace current production tools early.

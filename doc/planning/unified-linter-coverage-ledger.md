@@ -26,6 +26,37 @@ and container,
 mutation,
 and fuzz tests became explicit acceptance gates.
 
+## New Rust requirements
+
+The user added these requirements on 2026-10-04;
+they are not incumbent parity work:
+
+- Reject anonymous functions using the new `rust/no-anonymous-functions` rule.
+  The implementation detects actual `CLOSURE_EXPR` nodes,
+  including assigned,
+  nested,
+  move,
+  async,
+  and const closures.
+  It does not expand macro token trees or rewrite captured state automatically.
+  Named functions,
+  methods,
+  and function pointers stay allowed.
+  Configuration registration and the focused container suite passed:
+  5 tests,
+  77 unrelated tests filtered out.
+  This is not a full-suite pass.
+  Rule dispatch in the unfinished executable,
+  mutation testing,
+  and fuzz coverage remain required.
+- Require explicit Rust annotations,
+  including the motivating `parse::<u16>()`,
+  `.map::<String, _>(user_name)`,
+  and `.collect::<Vec<String>>()` calls.
+  The closure ban supersedes the originally shown inline closure.
+  The prior syntax-only decision excludes reliable generic-callee resolution;
+  user clarification is required before introducing semantic analysis or narrowing call-site enforcement.
+
 ## Rust linter
 
 Packages:

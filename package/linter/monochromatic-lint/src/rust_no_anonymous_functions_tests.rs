@@ -71,7 +71,10 @@ fn rejects_bound_and_qualified_closures() {
         assert_eq!(findings[0].code, "rust/no-anonymous-functions");
         assert_eq!(findings[0].severity, Severity::Error);
         assert_eq!(findings[0].filename, "fixture.rs");
-        assert_eq!(findings[0].message, "Anonymous function; use a named function or method.");
+        assert_eq!(
+            findings[0].message,
+            "Anonymous function; use a named function or method."
+        );
         assert!(findings[0].fix.is_none());
         // What: as_deref borrows the optional owned String as an optional &str; expect unwraps it.
         // Why: Missing remediation text is a failed contract, not an empty-string fallback.
@@ -80,7 +83,13 @@ fn rejects_bound_and_qualified_closures() {
         // ```ts
         // assert(findings[0].help?.includes('captures surrounding values'));
         // ```
-        assert!(findings[0].help.as_deref().expect("capture guidance").contains("captures surrounding values"));
+        assert!(
+            findings[0]
+                .help
+                .as_deref()
+                .expect("capture guidance")
+                .contains("captures surrounding values")
+        );
     }
 }
 
@@ -123,7 +132,8 @@ fn main() {
 /// The underline uses original UTF-8 bytes and ends at the first line of a multiline closure.
 #[test]
 fn preserves_byte_offsets_and_first_line_underlines() {
-    let source: &str = "fn main() {\n    /* 🚀 */ let callback = move || {\n        return 1;\n    };\n}\n";
+    let source: &str =
+        "fn main() {\n    /* 🚀 */ let callback = move || {\n        return 1;\n    };\n}\n";
     let findings: Vec<Diagnostic> = check(source, Severity::Error);
     assert_eq!(findings.len(), 1);
     // What: find returns Option<usize>; expect extracts the guaranteed fixture marker's byte index.
@@ -136,7 +146,10 @@ fn preserves_byte_offsets_and_first_line_underlines() {
     let offset: usize = source.find("move ||").expect("closure marker");
     assert_eq!(findings[0].labels[0].span.offset, offset);
     assert_eq!(findings[0].labels[0].span.line, 2);
-    assert_eq!(findings[0].labels[0].span.column, "    /* 🚀 */ let callback = ".len() + 1);
+    assert_eq!(
+        findings[0].labels[0].span.column,
+        "    /* 🚀 */ let callback = ".len() + 1
+    );
     assert_eq!(findings[0].labels[0].span.length, "move || {".len());
 }
 
@@ -145,12 +158,16 @@ fn preserves_byte_offsets_and_first_line_underlines() {
 fn registers_severities_without_unrequested_options() {
     for severity in ["off", "warn", "error"] {
         // Interpolate only closed-enumeration fixture values into the JSONC schema sample.
-        let source: String = format!(r#"[{{"files":["**/*.rs"],"rules":{{"rust/no-anonymous-functions":{{"severity":"{severity}"}}}}}}]"#);
+        let source: String = format!(
+            r#"[{{"files":["**/*.rs"],"rules":{{"rust/no-anonymous-functions":{{"severity":"{severity}"}}}}}}]"#
+        );
         // Borrow the fixture for the real parser rather than duplicating registry validation.
         assert!(crate::configuration::parse_configuration(source.as_str()).is_ok());
     }
     for option in ["max", "exclude", "allowMove", "allowAsync"] {
-        let source: String = format!(r#"[{{"files":["**/*.rs"],"rules":{{"rust/no-anonymous-functions":{{"severity":"off","{option}":1}}}}}}]"#);
+        let source: String = format!(
+            r#"[{{"files":["**/*.rs"],"rules":{{"rust/no-anonymous-functions":{{"severity":"off","{option}":1}}}}}}]"#
+        );
         assert!(crate::configuration::parse_configuration(source.as_str()).is_err());
     }
 }

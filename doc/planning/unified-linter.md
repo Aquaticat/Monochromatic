@@ -215,6 +215,30 @@ Rust:
    public and private,
    and on the file itself,
    with today's hardcoded cxx-qt carve-out.
+- `rust/no-anonymous-functions`:
+   added by the user on 2026-10-04;
+   reject parsed closure expressions,
+   including named-variable bindings,
+   nested closures,
+   and `move`,
+   `async`,
+   and `const` modifiers.
+   Named functions,
+   methods,
+   function pointers,
+   and async blocks remain allowed.
+   No automatic extraction fix;
+   captured state may require redesigning the callback interface.
+   Macro token trees remain opaque to the current unexpanded syntax frontend.
+
+The user also requested explicit Rust type annotations on 2026-10-04,
+including declaration types and generic call arguments.
+The subsequent anonymous-function ban supersedes the inline closure in the motivating example;
+a named callback is now required instead.
+Enforcing omitted generic call arguments reliably requires resolving the callee,
+which conflicts with the prior syntax-only scope in the Rust parity plan's decision D1.
+The semantic-analysis scope question is pending;
+method-name heuristics are not an acceptable substitute.
 
 Markdown (numbers in each rule's documentation):
 
