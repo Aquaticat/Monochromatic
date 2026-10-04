@@ -1010,7 +1010,44 @@ SDK imports,
 semantic calibration,
 policy verdicts,
 or human permission were established.
-The next step binds this creator and its preparation checkpoints to the actual protected SDK group consumer.
+The subsequent native consumer result is recorded in the next named qualification section.
+
+## Native fixed-judgment consumer
+
+`proc_e427` passed eight actual private SDK cases:
+eight sessions,
+16 injected wire requests,
+eight inert executions,
+and five canned semantic attempts.
+The exact producer response/consumer reserved one judgment before native preparation.
+The final sealed member group,
+canonical question bindings,
+canned transport,
+finalization,
+and execution freshness checks consumed that same owner.
+
+Missing beginning or combined-admission hooks rejected the whole group with the historical opt-in flag disabled.
+Preparation deadline expiry prevented semantic dispatch and execution.
+Advancing the decision clock after evidence closed did not impose a tool-execution deadline.
+Separate source-change and target-change cases retained the first completed serial effect and rejected the next member.
+Native persisted outcomes,
+complete streams,
+source hashes,
+and disposal completion were reconciled.
+`proc_0c33` separately passed four preparation-checkpoint and JSON-profile controls;
+unsupported `undefined` and negative-zero tool values cannot silently change during JSON snapshotting.
+
+This qualifies the configured fixed-bootstrap profile,
+not arbitrary callback providers or nested semantic groups.
+The native freshness callback is still optional in this consumed SDK graph.
+A fresh source-derived graph is being staged to require and capture that callback;
+omission sensitivity remains next work.
+No external inference,
+semantic accuracy,
+instruction authority,
+policy verdict,
+current human permission,
+or production adoption was established.
 
 ## Next work
 
