@@ -167,8 +167,10 @@ export async function runStartupFixture(scenario: string,): Promise<string> {
     child,
     'close',
   );
-  /** Exit code narrowed independently from untyped event tuple. */
-  const code = exit[0];
+  /**
+   Exit code narrowed independently from untyped event tuple.
+   */
+  const [code,] = exit;
   if (code !== 0)
     throw new Error(`Startup fixture ${scenario} exited ${String(code,)}:\n${output.stderr}`,);
   if (output.stderr !== '')

@@ -265,6 +265,13 @@ const outcome = await requestAnswer({
 },);
 ```
 
+Startup update on 2026-10-04:
+the helper now runs from a request-private snapshot instead of the installed `dist/final/node/answer-helper.mjs` path.
+On Linux,
+the requester uses its live procfs executable when accessible.
+These lifetime protections do not change the answer-authentication or approval-scope conclusions.
+See [the startup investigation](pi-ask-user-question-startup.md).
+
 The helper authenticates its channel before running the editor.
 `package/pi-plugin/ask-user-question/src/helper-core.ts:61` writes the request token;
 line 76 then invokes the editor:

@@ -114,7 +114,17 @@ then keeps the channel open for the editor lifetime.
 The Pi tool awaits that channel,
 which blocks the model without taking input focus from the original Pi terminal.
 
-A connection-start deadline detects a terminal that starts without running the helper.
+Before opening the terminal,
+the extension copies its self-contained helper into the private request workspace.
+Replacing the installed helper after that point cannot remove the pending launch target.
+On Linux,
+it uses the live Pi executable through procfs to survive removal of the original runtime path.
+Other platforms and systems without accessible procfs use a checked original runtime path.
+Missing launch inputs fail inside Pi with a path-specific diagnostic.
+
+The channel keeps the requester alive while the detached helper starts.
+A connection-start deadline detects a terminal that starts without running the helper
+and reports a startup timeout separately from user cancellation.
 There is no editing deadline after authentication.
 Aborting the tool or shutting down the session closes the channel and removes its answer workspace.
 
@@ -132,7 +142,13 @@ mise run build
 mise run test:unit
 mise run lint
 mise run verify:extension
+mise run verify:terminal
 ```
+
+`verify:terminal` opens the real default terminal with a scripted editor,
+checking multiline submission and blank cancellation without changing editor settings.
+For diagnosed startup failures and remaining uncertainty,
+see [the startup investigation](../../../doc/troubleshooting/pi-ask-user-question-startup.md).
 
 End-to-end verification must also call the installed tool from a fresh interactive Pi session,
 inspect the transcript while the editor remains open,

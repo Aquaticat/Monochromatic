@@ -88,9 +88,22 @@ try {
       if (executable === undefined)
         throw new Error('Fixture received empty helper command.',);
       if (scenario === 'detached-start') {
-        /** Real terminal launcher returns on spawn and does not retain child handle. */
-        const detached = spawn(executable, args, { stdio: ['ignore', 'ignore', 'inherit',], },);
-        await once(detached, 'spawn',);
+        /**
+         Real terminal launcher returns on spawn and does not retain child handle.
+         */
+        const detached = spawn(
+          executable,
+          args,
+          { stdio: [
+            'ignore',
+            'ignore',
+            'inherit',
+          ], },
+        );
+        await once(
+          detached,
+          'spawn',
+        );
         detached.unref();
         return;
       }
@@ -128,8 +141,10 @@ try {
         child,
         'close',
       );
-      /** Exit code narrowed independently from untyped event tuple. */
-      const code = exit[0];
+      /**
+       Exit code narrowed independently from untyped event tuple.
+       */
+      const [code,] = exit;
       if (code !== 0)
         throw new Error(`Detached helper exited ${String(code,)}:\n${output.stderr}`,);
       if (output.stderr !== '')
