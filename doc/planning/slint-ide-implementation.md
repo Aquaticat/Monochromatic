@@ -27,6 +27,14 @@ and resumption details are in [the handover][handover].
   and explicit embedding configuration are committed;
   the markup check passes.
 - [ ] Source view and document correspondence.
+  The user rejected the CJK alignment in the first native screenshot.
+  Per-grapheme Slint items are being replaced with shared Parley shaped-row geometry and a viewport raster.
+  Painting,
+  selection,
+  and hit testing must consume the same layout.
+  Smooth pixel-level notched-wheel motion is explicitly required.
+  Music-player source and the existing smooth-scroll investigation confirm use of native Flickable physics,
+  not an additional markup animation.
   Document interface exists;
   all 7 consumer tests pass,
   including both user examples,

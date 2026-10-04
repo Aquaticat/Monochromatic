@@ -34,6 +34,10 @@ Important later additions are:
 - Follow system light/dark appearance,
   including changes while running.
   There is no app-specific theme override.
+- Correct the user-reported CJK/Latin source-line misalignment.
+  The first native screenshot is rejected as a layout acceptance result.
+- Preserve true pixel-level smooth scrolling even with a notched mouse wheel.
+  Consult music-player's implementation rather than adding a parallel scroll mechanism.
 - Use the repo-owned `package/cli/nested-wayland-session` for isolated native input,
   screenshots,
   and appearance verification.
@@ -62,7 +66,8 @@ private caches/temp files outside the project are allowed.
   and Slint imports are committed.
   The markup check passes;
   embedded binary and font-isolation checks remain.
-- [ ] Native source-view interaction and external-change correspondence.
+- [ ] Native source-view interaction and external-change correspondence,
+  including corrected CJK/Latin alignment and measured intermediate notched-wheel scroll positions.
 - [ ] Live file tree,
   search,
   file switching,
@@ -83,6 +88,20 @@ private caches/temp files outside the project are allowed.
 The document tests passing is not a completion boundary for this queue.
 
 ## Current IDE implementation
+
+Current layout correction in progress:
+`src/shaped_text.rs`,
+`src/text_projection.rs`,
+and `src/text_raster.rs` reuse Parley and Swash already present through Slint.
+The native bindings are being switched from independently centered glyph items to shaped-row pixels.
+The new tests and native build are running;
+treat the correction as unverified until their results and a new native screenshot are checked.
+
+Music-player evidence:
+`ui/app.slint` uses complete `Text` rows inside `Flickable` and two-way scrollbar bindings.
+Its README and `doc/troubleshooting/slint-flickable-smooth-scroll.md` explain built-in notched-wheel animation.
+The installed Slint 1.18.1 `items/flickable.rs` retains that physics path.
+Keep fractional content offsets and verify motion between endpoints.
 
 Package:
 `package/desktop-app/ide`.

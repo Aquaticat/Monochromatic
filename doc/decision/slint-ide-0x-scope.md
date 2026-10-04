@@ -33,6 +33,12 @@ The [implementation plan][implementation] and [handover][handover] record progre
   including the font faces used by the application and their license notices.
 - Light/dark appearance follows the system at startup and when its preference changes.
   No application-specific theme override.
+- True pixel-level smooth scrolling,
+  including eased movement for a notched mouse wheel,
+  matching editord's retained behavior.
+- Mixed-script source text,
+  including CJK and Latin on one line,
+  must share correct baseline and hit-test geometry.
 - Go-to-definition,
   references,
   hover information,
