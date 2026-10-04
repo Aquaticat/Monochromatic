@@ -69,6 +69,11 @@ description = "Run cargo-mutants in the tested, mount-free 2 GiB / 2 CPU source 
 depends = ["test:container"]
 run = "node bin/mutate-container.mjs"
 
+[tasks."mutation:rust-style"]
+description = "Mutate the anonymous-function rule with its focused baseline in the bounded source snapshot"
+depends = ["test:rust-style"]
+run = "node bin/mutate-container.mjs --rust-style"
+
 [tasks."test:container"]
 description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
 run = "node bin/test-container.mjs"

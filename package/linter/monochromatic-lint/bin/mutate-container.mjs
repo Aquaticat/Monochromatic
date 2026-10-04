@@ -29,6 +29,10 @@ function podman({ args, capture = false, allowFailure = false }) {
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
+  const options = process.argv.slice(2);
+  if (options.length > 1 || (options.length === 1 && options[0] !== '--rust-style'))
+    throw new VerificationError('Only --rust-style is accepted.');
+  const rustStyle = options.length === 1;
   const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-mutation-'));
   const evidenceRoot = join(process.cwd(), 'target', 'verification');
   await mkdir(evidenceRoot, { recursive: true });
@@ -51,6 +55,8 @@ async function main() {
       '--no-config', '--no-shuffle', '--output', '/work/mutation-report',
       '--cargo-arg=--offline', '--cargo-arg=--locked',
     ];
+    if (rustStyle)
+      command.push('--file', 'src/rust_no_anonymous_functions.rs', '--cargo-test-arg=rust_no_anonymous_functions');
     await writeFile(join(context, 'Containerfile'), [
       '# The tested image ID binds this campaign to an exact source snapshot.',
       `FROM ${base}`,

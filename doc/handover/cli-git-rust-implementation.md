@@ -177,8 +177,13 @@ image `268493227fcaf3af6ae661616665f7da15fac28b1caeb987d12d438ad6787f67`.
 Mutation,
 fuzzing,
 and executable dispatch remain pending.
-Explicit generic-call checking conflicts with the prior no-semantic-analysis decision;
-ask the user rather than guessing from method names or silently omitting this part.
+The user answered A to the annotation scope question:
+full semantic enforcement is authorized for `rust/require-explicit-types`,
+including explicit generic arguments on resolved calls.
+This supersedes the prior no-semantic-analysis decision for the new rule.
+Preserve `_` for unnameable function-item types;
+report resolution limitations honestly for standalone snippets.
+Do not reopen this settled scope question or substitute method-name heuristics.
 
 The first full Markdown container run compiled and ran 77 tests:
 76 passed and `markdown_source::tests::invalid_mdx_is_a_processing_failure` failed

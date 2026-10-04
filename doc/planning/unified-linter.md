@@ -235,10 +235,13 @@ The user also requested explicit Rust type annotations on 2026-10-04,
 including declaration types and generic call arguments.
 The subsequent anonymous-function ban supersedes the inline closure in the motivating example;
 a named callback is now required instead.
-Enforcing omitted generic call arguments reliably requires resolving the callee,
-which conflicts with the prior syntax-only scope in the Rust parity plan's decision D1.
-The semantic-analysis scope question is pending;
-method-name heuristics are not an acceptable substitute.
+The user selected full semantic enforcement (option A) on 2026-10-04.
+Add `rust/require-explicit-types` for declaration annotations and explicit generic arguments on resolved calls.
+This supersedes the Rust parity plan's decision D1 restriction against semantic analysis for this rule.
+Preserve `_` for unnameable function-item types such as `.map::<String, _>(user_name)`.
+Method-name heuristics are not an acceptable substitute for callee resolution.
+Standalone snippets can lack resolution context;
+the implementation must expose that coverage boundary rather than report an unchecked call as verified.
 
 Markdown (numbers in each rule's documentation):
 

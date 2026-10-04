@@ -54,8 +54,11 @@ they are not incumbent parity work:
   `.map::<String, _>(user_name)`,
   and `.collect::<Vec<String>>()` calls.
   The closure ban supersedes the originally shown inline closure.
-  The prior syntax-only decision excludes reliable generic-callee resolution;
-  user clarification is required before introducing semantic analysis or narrowing call-site enforcement.
+  The user selected full enforcement (option A),
+  authorizing semantic resolution for `rust/require-explicit-types`
+  and superseding the prior syntax-only restriction for this rule.
+  Preserve `_` for unnameable function-item types.
+  Do not mistake unresolved standalone snippet calls for verified annotation coverage.
 
 ## Rust linter
 

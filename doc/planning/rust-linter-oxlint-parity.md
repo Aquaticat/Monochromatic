@@ -240,8 +240,13 @@ In scope:
  autofix pipeline,
  custom plugin loading,
  language server.
-Out of scope:
+Out of scope in the original 2026-07-25 decision:
  semantic and type-aware analysis.
+On 2026-10-04,
+the user selected full semantic enforcement for the new unified-linter `rust/require-explicit-types` rule.
+That accepted addition supersedes this exclusion for the new rule;
+see `doc/planning/unified-linter.md`.
+The original constraints and consequences remain recorded as history.
 Consequence:
  the `Rule` trait must carry fix edits from the start,
 rule registration needs a runtime seam rather than `all_rules()`,
