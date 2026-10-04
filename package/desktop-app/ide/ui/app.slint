@@ -45,12 +45,16 @@ export component AppWindow inherits Window {
     private property <length> line-height: 24px;
     private property <length> gutter-width: 56px;
     private property <length> font-size: 15px;
+    // Converting a physical pixel tracks display scale even when logical window size is unchanged.
+    private property <length> physical-pixel: 1phx;
+    changed physical-pixel => { root.scale-changed(); }
     private property <int> first-visible: max(0, floor((0px - root.scroll-y) / root.line-height) - 1);
 
     callback pointer-hit(int, float, bool);
     callback key-input(string, bool, bool, bool);
     callback viewport-changed(float, float, float, float);
     callback theme-changed;
+    callback scale-changed;
     changed dark-scheme => { root.theme-changed(); }
     callback reload-request;
     callback select-all-request;

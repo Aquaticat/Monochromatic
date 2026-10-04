@@ -122,3 +122,17 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     window.set_selection_head(position.head as i32);
     tracing::debug!(revision, anchor = position.anchor, head = position.head, "source reading state presented");
 }
+
+/// Redraw cached source at a new system appearance or display scale without requiring user input.
+pub(super) fn bind_appearance(window: &AppWindow, shared: &Rc<RefCell<State>>) {
+    let theme_state = Rc::clone(shared);
+    let theme_window = window.as_weak();
+    window.on_theme_changed(move || {
+        if let Some(active) = theme_window.upgrade() { render(&active, &theme_state); }
+    });
+    let scale_state = Rc::clone(shared);
+    let scale_window = window.as_weak();
+    window.on_scale_changed(move || {
+        if let Some(active) = scale_window.upgrade() { render(&active, &scale_state); }
+    });
+}

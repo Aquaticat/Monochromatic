@@ -46,7 +46,7 @@ mod reload;
 #[cfg(test)]
 mod tests;
 /// Shared rendering entry point.
-use render::render;
+use render::{bind_appearance, render};
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Bind viewport changes without line-snapping native scrolling.
@@ -151,13 +151,7 @@ pub fn run() -> anyhow::Result<()> {
     bind_keys(&window, &state);
     // Retain the timer until window shutdown; its Drop also closes and joins the worker.
     let _reload_timer = reload::bind(&window, &state)?;
-    let theme_state = Rc::clone(&state);
-    let theme_window = window.as_weak();
-    window.on_theme_changed(move || {
-        if let Some(window) = theme_window.upgrade() {
-            render(&window, &theme_state);
-        }
-    });
+    bind_appearance(&window, &state);
     render(&window, &state);
     window.run()?;
     // What: Ok(()) reports success without a payload; Err would carry a failure.
