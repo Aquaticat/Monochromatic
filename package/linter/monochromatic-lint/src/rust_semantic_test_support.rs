@@ -1,106 +1,73 @@
-//! What: Disposable Cargo-backed semantic fixtures for the explicit-type rule.
-//! Why: Real resolution, source overlays and database attachment must be exercised together.
+//! What: Disposable Cargo-backed semantic fixtures using the production workspace loader.
+//! Why: Tests exercise discovery, source overlays and query protection rather than parallel test-only glue.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! // Own one temporary project; replace its in-memory source between semantic assertions.
+//! // Own a temporary project and reuse its real semantic session between source snapshots.
 //! ```
 
-/// Import real rule findings and the actual semantic checker.
+/// Import production findings and session ownership.
 use crate::diagnostic::{Diagnostic, Severity};
-/// Use the production session for membership, source-overlay and query-scope handling.
 use crate::rust_semantic_session::RustSemanticSession;
+/// Import the actual Cargo loader and its fixed preparation choices.
+use crate::rust_workspace::{WorkspacePreparation, load_cargo_workspace};
 /// Import exclusively owned temporary-directory cleanup.
 use crate::test_fs::Fixture;
-/// Import the database and loader owners supplied to the production session.
-use ra_ap_ide_db::RootDatabase;
-use ra_ap_load_cargo::{LoadCargoConfig, ProcMacroServerChoice, load_workspace_at};
-use ra_ap_proc_macro_api::ProcMacroClient;
-/// Import explicit standard-library paths instead of permitting automatic installation.
-use ra_ap_project_model::{CargoConfig, RustLibSource};
-use ra_ap_vfs::{AbsPathBuf, Vfs};
-/// Import owned native paths and compiler-query output.
-use std::path::PathBuf;
+/// Import native paths and captured fixture-preparation commands.
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// Read loader progress as captured test diagnostics, not as production lint output.
-fn progress(message: String) {
+/// Keep loader progress in the test harness's captured diagnostics.
+pub(crate) fn progress(message: String) {
     eprintln!("semantic fixture: {message}");
 }
 
-/// Discover only an already installed standard-library source tree, never auto-install on the host.
-fn cargo_configuration() -> CargoConfig {
-    let output: Output = Command::new("rustc")
-        .args(["--print", "sysroot"])
+/// Generate the fixture lockfile with Cargo, not by hand-writing a package-manager artifact.
+pub(crate) fn prepare_lockfile(directory: &Path) {
+    let output: Output = Command::new("cargo")
+        .args(["generate-lockfile", "--offline"])
+        .current_dir(directory)
         .output()
-        .expect("query fixture compiler sysroot");
-    assert!(output.status.success(), "compiler sysroot query failed");
-    let text: String = String::from_utf8(output.stdout).expect("compiler sysroot is UTF-8");
-    let sysroot: AbsPathBuf = AbsPathBuf::try_from(text.trim()).expect("absolute compiler sysroot");
-    let library: AbsPathBuf = sysroot.join("lib/rustlib/src/rust/library");
-    let core: AbsPathBuf = library.join("core/src/lib.rs");
-    // AbsPath deliberately disables filesystem methods; use the standard filesystem boundary explicitly.
-    let metadata: std::fs::Metadata = std::fs::metadata(&core)
-        .expect("semantic fixtures require the matching rust-src component; use the prepared container task");
-    assert!(
-        metadata.is_file(),
-        "rust-src core entry must be a regular file"
-    );
-    return CargoConfig {
-        sysroot: Some(RustLibSource::Path(sysroot)),
-        sysroot_src: Some(library),
-        metadata_extra_args: vec![String::from("--offline")],
-        ..CargoConfig::default()
-    };
+        .expect("run fixture lock generation");
+    assert!(output.status.success(), "fixture lock generation: {}", String::from_utf8_lossy(&output.stderr));
 }
 
-/// What: Own a temporary project and one reusable semantic database.
-/// Why: Alternating valid and invalid source in the same file tests cache invalidation as well as rule behavior.
+/// What: Owned source directory and production semantic session.
+/// Why: The session is released before cleanup deletes the physical fixture.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// class SemanticFixture { check(source: string, severity: Severity): Diagnostic[]; }
 /// ```
 pub(crate) struct SemanticFixture {
-    /// Production workspace session, dropped before the physical fixture.
+    /// Reused production session, including source-overlay handling.
     pub(crate) session: RustSemanticSession,
-    /// Real file whose bytes are replaced in memory, never on disk.
+    /// Path already present in the loaded workspace.
     pub(crate) source_path: PathBuf,
-    /// Keep the physical fixture alive until the database is no longer needed.
-    _directory: Fixture,
+    /// Keep source files alive until the session has been released.
+    pub(crate) directory: Fixture,
 }
 
-/// Create and query the disposable semantic consumer.
+/// Create and query the disposable production consumer.
 impl SemanticFixture {
-    /// Load an owned dependency-free fixture with explicit standard-library source and no project-code execution.
+    /// Load a dependency-free fixture; source-only preparation never executes its build scripts or macros.
     pub(crate) fn new() -> SemanticFixture {
         let directory: Fixture = Fixture::new();
         let source_directory: PathBuf = directory.path.join("src");
         std::fs::create_dir(&source_directory).expect("create fixture source directory");
-        std::fs::write(directory.path.join("Cargo.toml"), "[package]\nname = \"semantic-fixture\"\nversion = \"0.0.0\"\nedition = \"2024\"\n[workspace]\nmembers = [\".\"]\n").expect("write fixture manifest");
+        let manifest: PathBuf = directory.path.join("Cargo.toml");
+        std::fs::write(&manifest, "[package]\nname = \"semantic-fixture\"\nversion = \"0.0.0\"\nedition = \"2024\"\n[workspace]\nmembers = [\".\"]\n").expect("write fixture manifest");
         let source_path: PathBuf = source_directory.join("main.rs");
         std::fs::write(&source_path, "fn main() {}\n").expect("write initial fixture source");
-        let cargo: CargoConfig = cargo_configuration();
-        let loading: LoadCargoConfig = LoadCargoConfig {
-            load_out_dirs_from_check: false,
-            with_proc_macro_server: ProcMacroServerChoice::None,
-            prefill_caches: false,
-            num_worker_threads: 1,
-            proc_macro_processes: 1,
-        };
-        let (database, files, macro_server): (RootDatabase, Vfs, Option<ProcMacroClient>) =
-            load_workspace_at(&directory.path, &cargo, &loading, &progress).expect("load fixture");
-        assert!(macro_server.is_none());
-        let session: RustSemanticSession = RustSemanticSession::from_workspace(database, files, macro_server);
-        return SemanticFixture {
-            session,
-            source_path,
-            _directory: directory,
-        };
+        prepare_lockfile(&directory.path);
+        let session: RustSemanticSession = load_cargo_workspace(&manifest, WorkspacePreparation::SourceOnly, progress)
+            .expect("load fixture through production boundary");
+        return SemanticFixture { session, source_path, directory };
     }
 
-    /// Replace exact source bytes before querying; returned findings cannot borrow the database.
+    /// Replace exact in-memory bytes while leaving the physical fixture unchanged.
     pub(crate) fn check(&mut self, source: &str, severity: Severity) -> Vec<Diagnostic> {
-        return self.session.check_file(&self.source_path, source, "input.rs", severity).expect("check fixture snapshot");
+        return self.session.check_file(&self.source_path, source, "input.rs", severity)
+            .expect("check fixture snapshot");
     }
 }

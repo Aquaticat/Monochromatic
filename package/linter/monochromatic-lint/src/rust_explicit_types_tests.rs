@@ -220,13 +220,27 @@ fn semantic_conformance_and_source_overlay_controls() {
     }
     // Revisit the original good input after every changed-source case: stale cached failures are also failures.
     assert_case(&mut fixture, &cases[0]);
-    let disk_source: String = std::fs::read_to_string(&fixture.source_path).expect("read untouched physical fixture");
-    assert_eq!(disk_source, "fn main() {}\n", "semantic overlays must not rewrite the user file");
+    assert!(fixture.directory.path.is_dir());
+    let disk_source: String =
+        std::fs::read_to_string(&fixture.source_path).expect("read untouched physical fixture");
+    assert_eq!(
+        disk_source, "fn main() {}\n",
+        "semantic overlays must not rewrite the user file"
+    );
     let absent: std::path::PathBuf = fixture.source_path.with_file_name("absent.rs");
-    let missing = fixture.session.check_file(&absent, "fn main() {}", "absent.rs", Severity::Error)
+    let missing: crate::rust_semantic_error::SemanticError = fixture
+        .session
+        .check_file(&absent, "fn main() {}", "absent.rs", Severity::Error)
         .expect_err("unloaded source cannot be verified");
     assert!(missing.message.contains("was not loaded"));
-    let relative = fixture.session.check_file(std::path::Path::new("main.rs"), "fn main() {}", "relative.rs", Severity::Error)
+    let relative: crate::rust_semantic_error::SemanticError = fixture
+        .session
+        .check_file(
+            std::path::Path::new("main.rs"),
+            "fn main() {}",
+            "relative.rs",
+            Severity::Error,
+        )
         .expect_err("relative source path is not implicitly rebased");
     assert!(relative.message.contains("absolute path"));
     assert_case(&mut fixture, &cases[0]);

@@ -90,11 +90,11 @@ pub mod rust_source;
 /// Read-only compiler and installed rust-src discovery.
 #[doc(hidden)]
 pub mod rust_toolchain;
+/// Internal source-anchored explicit-type findings and semantic coverage errors.
+mod rust_type_diagnostic;
 /// Fixed Cargo workspace preparation and generated-input error handling.
 #[doc(hidden)]
 pub mod rust_workspace;
-/// Internal source-anchored explicit-type findings and semantic coverage errors.
-mod rust_type_diagnostic;
 
 /// Disposable native filesystem helpers used only by tests.
 #[cfg(test)]
@@ -106,6 +106,10 @@ mod rust_explicit_types_tests;
 /// Disposable Cargo-backed contexts for the semantic rule's conformance suite.
 #[cfg(test)]
 mod rust_semantic_test_support;
+
+/// Production Cargo discovery, generated-source and failure boundary controls.
+#[cfg(test)]
+mod rust_workspace_tests;
 
 /// Shared consumer-level regressions for the initial Markdown rule ports.
 #[cfg(test)]
