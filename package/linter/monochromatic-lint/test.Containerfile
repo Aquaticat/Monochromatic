@@ -6,5 +6,6 @@ COPY clippy.toml /work/clippy.toml
 COPY jsonc-edit /work/package/rust-module/jsonc-edit
 COPY monochromatic-lint /work/package/linter/monochromatic-lint
 WORKDIR /work/package/linter/monochromatic-lint
-ENV CARGO_BUILD_JOBS=2
+# Semantic-backend consumer controls used symbol-free development builds under the same memory cap.
+ENV CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0
 CMD ["cargo", "test", "--offline", "--locked", "--all-targets", "--", "--test-threads=2"]

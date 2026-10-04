@@ -30,8 +30,18 @@ ignore = "0.4"
 # Reuse the incumbent typed JSONL encoder; messages are never manually escaped.
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-# rust-analyzer syntax has no point-release API stability; retain the already approved parser revision.
-ra_ap_syntax = "=0.0.335"
+# Semantic checking was explicitly authorized; all rust-analyzer APIs must share one exact release.
+# HIR 0.0.335 was not published. The 0.0.336 consumer probes resolved generic receivers and the user example.
+ra_ap_syntax = "=0.0.336"
+ra_ap_hir = "=0.0.336"
+ra_ap_hir_ty = "=0.0.336"
+ra_ap_ide_db = "=0.0.336"
+ra_ap_load-cargo = "=0.0.336"
+ra_ap_project_model = "=0.0.336"
+ra_ap_proc_macro_api = "=0.0.336"
+ra_ap_vfs = "=0.0.336"
+# Match the backend's tested input-storage API; named query functions read typed per-database requests.
+salsa = { version = "=0.27.2", default-features = false, features = ["macros", "inventory"] }
 # ra-ap-rustc_lexer 0.165.0 asserts that both crates use the same Unicode tables.
 # 1.0.25+ of unicode-ident uses Unicode 18; the approved parser stack uses Unicode 17.
 # Pin the same matching pair already locked by the incumbent Rust linter.
