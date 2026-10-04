@@ -123,9 +123,12 @@ fn scalar_values_and_mixed_kinds_choose_last() {
 /// Merge results own their values and preserve the final container comment.
 #[test]
 fn input_trees_are_unchanged_and_output_is_owned() {
-    let document = parse_jsonc("[/* first */ {\"a\":[1]}, /* last */ {\"a\":[2]}]").expect("fixture parses");
+    // JSONC comments following a comma on the same line attach to the preceding value.
+    // Put each leading comment on its own line so this fixture actually annotates both inputs.
+    let document = parse_jsonc("[\n/* first */ {\"a\":[1]},\n/* last */ {\"a\":[2]}\n]").expect("fixture parses");
     let snapshot = document.clone();
     let elements = document.elements().expect("array");
+    assert!(elements[1].comment.is_some(), "ownership control needs an actual final comment");
     let inputs: Vec<&JsoncValue> = elements.iter().collect();
     let mut actual = merge_values(&inputs);
     assert_eq!(actual.comment, elements[1].comment);
