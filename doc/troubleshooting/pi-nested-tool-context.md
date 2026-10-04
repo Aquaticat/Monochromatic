@@ -27,6 +27,10 @@ Paths beginning with `dist/core/` refer to that installed coding-agent package;
 agent-core paths are named explicitly.
 The private manifests retain hashes of the inspected installed files and the derived SDK graph.
 The upstream `v1.0.0` tag resolves to `a13d35a742c6ef8462812a28fbe1d8c8b7431c32`.
+The read-only checkout `~/temp/agent/pi-sdk-1.0.0-source.qxeIPlda` is pinned to that commit.
+Its `packages/coding-agent/src/core/nested-tool-calls.ts:163-259`
+and `packages/coding-agent/src/core/extensions/wrapper.ts:17-21`
+confirm the existing scope map and context-factory path.
 The earlier `v0.87.1` source checkout is not substituted for these artifacts.
 
 Private workspace:

@@ -1060,7 +1060,25 @@ Its original assertion,
 cleanup completion,
 and full stream/source evidence were checked.
 No completed intact SDK worker was replayed.
-Native nested execution and complete enclosing-program linkage are the next mechanical area.
+Native nested execution and complete enclosing-program linkage remain the next mechanical area.
+`proc_4202` completed its corrected path/lifetime diagnostic:
+three sessions,
+six injected requests,
+three outer inert executions,
+and seven nested inert executions.
+Children retained ordinary native hooks and parent records but did not enter outer complete-group judgment hooks.
+A saved context executed another inert child after the parent result and final assistant response,
+reused the `/1` child label,
+and left the persisted parent record unchanged.
+The original `proc_8724` failure excluded the leaf through the fixture's SDK allow-list;
+its two `Tool owned_leaf not found` records remain preserved,
+not counted as nested guard rejections.
+See [the nested-context diagnosis](../troubleshooting/pi-nested-tool-context.md).
+The reviewed next design carries exact execution occurrences through existing contexts and scope owners,
+without equating root liveness,
+parent return,
+recorder consumption,
+or a worker drain with complete semantic membership.
 No external inference,
 semantic accuracy,
 instruction authority,
