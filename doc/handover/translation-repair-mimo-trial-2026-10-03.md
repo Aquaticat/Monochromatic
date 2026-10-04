@@ -683,6 +683,42 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  03:03 UTC:
+  the T8 `inspect` batch closed with commit `f8cf67026`:
+  8 stretches over `inspect-paragraph.ts`.
+  Three `atomsOfNode` arms are cased
+  (an image with a resolved reference,
+  formatting spans passing the walk through to their numbers),
+  three refusals are cased
+  (the strict-grammar catch and its `unparseable` rejection beside an
+  unclosed JSX tag,
+  the definitions-parse rejection beside broken definitions),
+  and `gateParagraphRewrite`'s base rejection is cased beside its
+  candidate twin.
+  The second `not-one-paragraph` check sat dead behind the first one's
+  kind half:
+  a probe over five one-paragraph texts and twenty-one definition shapes
+  never fired it,
+  so the first check proves only the one-block shape
+  and the leading-block check keeps the kind live,
+  pinned with a single heading.
+  The reach census reads `still cold 0, cold since then 0, not loaded 0`
+  and the edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-inspect.log`).
+  Counts at the close:
+  the full suite 1,548 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-inspect-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-inspect-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `f8cf67026`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/tag` cluster
+  (the ranking's next at `census-8aKVkN`).
+
+- 2026-10-04,
   02:52 UTC:
   the next batch's baseline census taken at commit `7cde68089`:
   `census written to ~/.cache/translation-repair/coverage/census-8aKVkN/census.json`

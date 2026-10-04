@@ -5702,6 +5702,40 @@ The reach census (`~/temp/agent/mimo-trial/reach-synthetic.log`)
 reads `ran 9, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The tenth cluster of that census,
+`inspect`,
+against `census-8aKVkN` at `5e5616dec`:
+8 stretches over `inspect-paragraph.ts` (`f8cf67026`).
+Three are `atomsOfNode` arms,
+one case carrying an image and a resolved reference together
+(the `image-url` and `reference` atoms)
+and one carrying formatting spans,
+which hold no atoms themselves and pass the walk through
+their children's numbers
+(the fall-through arm).
+Three are refusals:
+the strict-grammar catch and its first `unparseable` rejection
+cased with an unclosed JSX tag,
+and the definitions-parse rejection cased with a paragraph that parses
+alone and refuses beside broken definitions.
+One was the second `not-one-paragraph` check,
+dead behind the first one's kind half
+(its own comment: the structure check already proved the shape):
+a probe over five one-paragraph texts and twenty-one definition shapes
+never fired it
+(`~/temp/agent/mimo-trial/inspect-probe.mjs`),
+and a block appended after a blank line cannot move the first block's
+kind,
+so the first check proves only the one-block shape
+and the leading-block check reads the kind off the definitions parse,
+its rejection left live and cased with a single heading.
+The last is `gateParagraphRewrite`'s base rejection,
+cased beside its candidate twin.
+The reach census (`~/temp/agent/mimo-trial/reach-inspect.log`)
+reads `still cold 0, cold since then 0, not loaded 0`
+and the edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
