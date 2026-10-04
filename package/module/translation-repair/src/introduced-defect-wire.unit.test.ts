@@ -135,6 +135,43 @@ await describe({
         },),
 
         it({
+          name: 'CARRIES the identity context onto the sheet and its declared-name rules onto the '
+            + 'system half, and neither where none was handed in',
+          fn: async () => {
+            /**
+             Sheet and system asking with a declared-names entry in.
+             */
+            const named = buildIntroducedDefectMessages({
+              sourceText: '猫在睡觉。',
+              baselineText: 'The cat naps.',
+              regions: [REGION,],
+              issues: [],
+              identityContext: '- name: ORIGINAL declares "猫猫", TRANSLATION declares "Maomao"',
+            },);
+            /**
+             Sheet and system halves as text.
+             */
+            const namedSheet = named.messages[1]?.content ?? '';
+            const namedSystem = named.messages[0]?.content ?? '';
+            expect(namedSheet.includes('DECLARED NAMES',),).toBe(true,);
+            expect(namedSystem.includes('Declared identity',),).toBe(true,);
+            /**
+             Sheet asking with nothing handed in.
+             */
+            const plain = buildIntroducedDefectMessages({
+              sourceText: '猫在睡觉。',
+              baselineText: 'The cat naps.',
+              regions: [REGION,],
+              issues: [],
+            },);
+            const plainSheet = plain.messages[1]?.content ?? '';
+            const plainSystem = plain.messages[0]?.content ?? '';
+            expect(plainSheet.includes('DECLARED NAMES',),).toBe(false,);
+            expect(plainSystem.includes('Declared identity',),).toBe(false,);
+          },
+        },),
+
+        it({
           name: 'frames the NATURALNESS refinement as an edit that was not fixing '
             + 'anything, because a prober told the editor was repairing defects '
             + 'reads every rephrasing as a failed repair, and rephrasing is the '
