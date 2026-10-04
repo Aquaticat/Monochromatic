@@ -1,0 +1,1049 @@
+{
+  "schema": 1,
+  "scope": "Authored debug-native first-run source states, not production discovery, permission evaluation, recovery, analysis consent implementation, matching or native accessibility acceptance.",
+  "prototypeCommit": "a534bf5ac985e091cc93d6c663c24d72ad82a91c",
+  "basePrototype": "a5560abb223af9f700b9d9465eac1991a02aac07",
+  "apkSha256": "54603701d6b942128a23c9f070ad55c1283312321aa980daf50469e00cf80398",
+  "counts": {
+    "initial": 32,
+    "scrolled": 2,
+    "privatePostSwipeAttempts": 8,
+    "privateNoObservedMovementAttempts": 6
+  },
+  "privacy": "Only inspected app-area crops; status strips removed, navigation retained. Raw XML/logs/screenshots stay private.",
+  "reports": [
+    {
+      "role": "first-run-positive-report.xml",
+      "sha256": "0c766c9cead8f6ce260133d1f85c3de977d5a5c56ca72a1486220e0e4d4c0872"
+    },
+    {
+      "role": "first-run-unknown-mutant-report.xml",
+      "sha256": "926252f8037123cc0c683c60e724347d75b7f4c76307c85db727deabfb0def93"
+    },
+    {
+      "role": "first-run-partial-mutant-report.xml",
+      "sha256": "5cac299d8841a6c4defc7a21709125f75652cde2b355137b7911f49e4326b945"
+    },
+    {
+      "role": "first-run-restored-report.xml",
+      "sha256": "0c766c9cead8f6ce260133d1f85c3de977d5a5c56ca72a1486220e0e4d4c0872"
+    }
+  ],
+  "lifecycle": {
+    "restoredRecordedFields": {
+      "fontScale": "1.0",
+      "nightMode": "Night mode: no",
+      "panelState": "2",
+      "accessibilityEnabled": "0",
+      "enabledAccessibilityServices": "null",
+      "stayOnWhilePluggedIn": "1"
+    },
+    "baseStateAndOverrideConfigurationSeparatelyRestored": false,
+    "limitation": "Only recorded identifiers/settings are compared; separate device base-state and override configuration was not retained.",
+    "ownedContainerAbsent": true
+  },
+  "scrollClassification": [
+    {
+      "file": "first-run-access-inner-declined-light-s200-end.png",
+      "published": false,
+      "classification": "post-swipe with no observed retained-RGB or body-coordinate movement"
+    },
+    {
+      "file": "first-run-access-inner-not-opened-light-s200-end.png",
+      "published": true,
+      "classification": "changed retained RGB and identified body displacement"
+    },
+    {
+      "file": "first-run-access-inner-declined-dark-s200-end.png",
+      "published": false,
+      "classification": "post-swipe with no observed retained-RGB or body-coordinate movement"
+    },
+    {
+      "file": "first-run-access-inner-not-opened-dark-s200-end.png",
+      "published": true,
+      "classification": "changed retained RGB and identified body displacement"
+    },
+    {
+      "file": "first-run-access-cover-declined-light-s200-end.png",
+      "published": false,
+      "classification": "post-swipe with no observed retained-RGB or body-coordinate movement"
+    },
+    {
+      "file": "first-run-access-cover-not-opened-light-s200-end.png",
+      "published": false,
+      "classification": "post-swipe with no observed retained-RGB or body-coordinate movement"
+    },
+    {
+      "file": "first-run-access-cover-declined-dark-s200-end.png",
+      "published": false,
+      "classification": "post-swipe with no observed retained-RGB or body-coordinate movement"
+    },
+    {
+      "file": "first-run-access-cover-not-opened-dark-s200-end.png",
+      "published": false,
+      "classification": "post-swipe with no observed retained-RGB or body-coordinate movement"
+    }
+  ],
+  "verificationLimits": [
+    "Six post-swipe outcomes showed no retained-RGB/body-coordinate movement; gesture delivery or inability to scroll is not inferred.",
+    "Two inner200% no-source witnesses show content movement and a complete final paragraph, with the heading partly cropped.",
+    "Initial semantic clipping is not proof that visible glyphs were missing; no initial visible-ink recovery claim.",
+    "Native buttons are debug callbacks only; not picker/Settings or permission-recovery acceptance.",
+    "Hierarchy rectangles are not native action or ink bounds.",
+    "Settings restoration covers the freshly recorded fields, not separate base/override configuration or any earlier/original AVD."
+  ],
+  "witnesses": [
+    {
+      "file": "first-run-access-inner-declined-light-s100.png",
+      "panel": "inner",
+      "scene": "declined",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "855f89b9b30613e69684f8b95bc03a8d66771d48c277e8cee1b37fb6a6192cb2",
+      "privateRawSha256": "efe5eea2d0354fd2038551fe83ef27c843e2d5e513d95db85f3a7e15286c98ea",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-not-opened-light-s100.png",
+      "panel": "inner",
+      "scene": "not-opened",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "d64f01cf555c0e1f3d06a3ac4809a51f981ad2aa635eda91a0d5a0a7353f4818",
+      "privateRawSha256": "b9d967bb5ec353015f291f48b437b4bcec2f1536937b5b0de247c92015dee243",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-system-no-audio-light-s100.png",
+      "panel": "inner",
+      "scene": "system-no-audio",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "1f7f2c73b2dc1b96d143d0fa626b6b9ae599876866f6be9c4e68af09c7a0ee99",
+      "privateRawSha256": "c2ffdafa452a352239219a724e1f93ff17d8b280da0e9de93a22b88186b81000",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-folder-no-audio-light-s100.png",
+      "panel": "inner",
+      "scene": "folder-no-audio",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "eb13f656763f3d2cbd24b83a07dcd70a1cfd91e68798a93caa10c67bd0e82cea",
+      "privateRawSha256": "48f5c70c6bb1b45ebb3022d568b8c7698aa1e519acff3a0889f435e3327cc127",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-declined-dark-s100.png",
+      "panel": "inner",
+      "scene": "declined",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "96b912cfb93eeb3e6bb57bd5551a2a598dc8a8856464fe7d199b93e5da4903db",
+      "privateRawSha256": "44bcc8bde61a024429c1156419b51aafe3cf27a294377d21d52287549da1b566",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-not-opened-dark-s100.png",
+      "panel": "inner",
+      "scene": "not-opened",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "e58c25500b249e7eea49ecbd00ae111674eb0db304c973a350de3150e547571e",
+      "privateRawSha256": "12e89bc969e3ea4b9f9e09da80943a950eeb1d57b066d1947d660ca8f79bb460",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-system-no-audio-dark-s100.png",
+      "panel": "inner",
+      "scene": "system-no-audio",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "810f181b8fe97af4432dc1ef41844853f8acfd43444afcde73ff24e1add276a1",
+      "privateRawSha256": "762cf6a96ab730a863f232c04fc48ad826e41a1ac0c600be212f1db9e305e943",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-folder-no-audio-dark-s100.png",
+      "panel": "inner",
+      "scene": "folder-no-audio",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "1c633483edf8dfd44ca17128c36ecf354c6cbe354851f9ae8cc284e6b1d4e9b1",
+      "privateRawSha256": "eeeb9a377a0ecff24c54b66793d0c2c6042c3db20dffa3dfcb9354add2097eaa",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-declined-light-s200.png",
+      "panel": "inner",
+      "scene": "declined",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "a555650ae488907e244315370ed62d37d69e657c91d2a3ed1d92214140b7b690",
+      "privateRawSha256": "c61168176b23b0353aed0adc14c32950000268784a02edb9902b9a0936ff0e79",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-not-opened-light-s200.png",
+      "panel": "inner",
+      "scene": "not-opened",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "ba89e1db6b078d88316e9f7fe6e4a23c9ff10da6598a089a90f9a8b8b30735d8",
+      "privateRawSha256": "2998ce41856c6afb52564879990eabea51148b1c71578b1e8ed2b47e58f86909",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-not-opened-light-s200-end.png",
+      "panel": "inner",
+      "scene": "not-opened",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "6bd601943bfa4393c4c894e134d569ac85f336e6a76bd87a3eb261a35c946b14",
+      "privateRawSha256": "94166546bf9e94835d9c76fd07d77b782d7c73bca0876a226bccc14edbe1f020",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "scrollProof": {
+        "bodyText": "True peak is measured per audio file. Analysis uses CPU and battery; playback remains available while it runs. After opening a library, choose whether to analyse it.",
+        "beforeBounds": [
+          1097,
+          1384,
+          2017,
+          2074
+        ],
+        "afterBounds": [
+          1097,
+          1294,
+          2017,
+          2015
+        ],
+        "verticalDisplacement": -90,
+        "appRgbChanged": true
+      },
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-system-no-audio-light-s200.png",
+      "panel": "inner",
+      "scene": "system-no-audio",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "4cd0e4d204a8b784a7dff2f497d11419fc50579045418cfb777c670e5c0fce64",
+      "privateRawSha256": "590e7415ff62ae8c32a02fb54b8fba7f8f647aa22902339d645320c5104a5b76",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-folder-no-audio-light-s200.png",
+      "panel": "inner",
+      "scene": "folder-no-audio",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "c3a19933fa53bed265733c1bd3ba2ba166c6db14183f598fc65dd77c20975d5d",
+      "privateRawSha256": "42f1c4d1e17ea044c0cfa0af63f3413fc1228354763ea2502e437644ba498cc8",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-declined-dark-s200.png",
+      "panel": "inner",
+      "scene": "declined",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "f34ad83364ba091cd41fee2fe3236af3c290cd3a556ca3e41951cdb0c18e3169",
+      "privateRawSha256": "fb636e425f414219638560bdb95ca83a993c94386aeeeac4d9e720b92a5628d4",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-not-opened-dark-s200.png",
+      "panel": "inner",
+      "scene": "not-opened",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "d1563bfde7e2dde48bf9767e8aaf9818cfe4a2c1dfd0bd2ed306af1a4b323f83",
+      "privateRawSha256": "e05810a4af5a17c50c4209757ec6161276b6f5c4cf00d5b6717e70e052eac700",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-not-opened-dark-s200-end.png",
+      "panel": "inner",
+      "scene": "not-opened",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "scrolled",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "0b6c9bc4934033b9f7d0cd3ea949c11e50ef46ba98b72bfacc23c1a9f3a08eaa",
+      "privateRawSha256": "f40e03f391a0771a221d6e86bf64a46e7e62a081dc878995076ef3ef37d757a3",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "scrollProof": {
+        "bodyText": "True peak is measured per audio file. Analysis uses CPU and battery; playback remains available while it runs. After opening a library, choose whether to analyse it.",
+        "beforeBounds": [
+          1097,
+          1384,
+          2017,
+          2074
+        ],
+        "afterBounds": [
+          1097,
+          1294,
+          2017,
+          2015
+        ],
+        "verticalDisplacement": -90,
+        "appRgbChanged": true
+      },
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-system-no-audio-dark-s200.png",
+      "panel": "inner",
+      "scene": "system-no-audio",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "c8a5e684ed7be29f174589d18ad63092278e1e2e08b8bb46d257fac625502aea",
+      "privateRawSha256": "8d12f72cc2fce1ddece4beb272aa1c8b79e5cda9e59bff4d2ec30ea53f518d2f",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-inner-folder-no-audio-dark-s200.png",
+      "panel": "inner",
+      "scene": "folder-no-audio",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "densityDpi": 390,
+      "sha256": "e50dd738d1ed9e0bd0d6b44f293cf81ffb0ac17e47aefb1871ad5f2f67a263b0",
+      "privateRawSha256": "e97c541a70cf1275487c37665403bf2d742998ee26c57ff894c1f4d93d1dbae6",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-declined-light-s100.png",
+      "panel": "cover",
+      "scene": "declined",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "3aa6d93711b4be54794c5f7a1e8a439b7e3ee78ee9fe78639defca7bb5607fac",
+      "privateRawSha256": "2d9950ac21858d1be217e27dc0c7e9e48ae4e202538b394e6dd381d940009f21",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-not-opened-light-s100.png",
+      "panel": "cover",
+      "scene": "not-opened",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "6fc73e263f302eb1f4a9acf64790e9275ce594c43b420a62b3acc003b7b28163",
+      "privateRawSha256": "bcc1a783a1f5360fdbf03e5e4397c8cacc3cc64f9b9e0a1efd04eee05abc7a6d",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-system-no-audio-light-s100.png",
+      "panel": "cover",
+      "scene": "system-no-audio",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "0e984eed823d91bd7e1f91b9dd2e9644271a400e58d28ef148f2031dade2cfca",
+      "privateRawSha256": "befaaba2cb6699a67b6e1a79d713a3ceedb3a38c838e8ecd44d8c6f45f538b0a",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-folder-no-audio-light-s100.png",
+      "panel": "cover",
+      "scene": "folder-no-audio",
+      "scheme": "light",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "917c2948cbf60faa4581fe1845b245765dfc2e868fa3270a1e83d3750d56a3f0",
+      "privateRawSha256": "0d8d4a2b4e55c41839d7a61eefbadd1c7b8cb36024cb48e7517d6dae7bbcbf57",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-declined-dark-s100.png",
+      "panel": "cover",
+      "scene": "declined",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "9efe9f65316374c2637ec69bea3292ea81c1207455a0556db9e6d0194997c8f2",
+      "privateRawSha256": "cc1fdbe01e458ce984727a0f0ccc867581cd28bee0c26f0168aa6ff916d3919c",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-not-opened-dark-s100.png",
+      "panel": "cover",
+      "scene": "not-opened",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "840169ddb88dd6d5ceb9d6f0ecf3b10e7c8345ff9e2872bd65a74fa1d3c4c936",
+      "privateRawSha256": "714851aaf626bde83daa6a4ac7118003604d605911a7e8683d5500d0b2ea6087",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-system-no-audio-dark-s100.png",
+      "panel": "cover",
+      "scene": "system-no-audio",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "f018fa689554860e8815b75163c27c0138787d740e338e33d02fb9014796919f",
+      "privateRawSha256": "2c86ea770eac67b7cd3d2abf464b2ae42433404669b622504ba0c43c51cfa250",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-folder-no-audio-dark-s100.png",
+      "panel": "cover",
+      "scene": "folder-no-audio",
+      "scheme": "dark",
+      "fontScale": 1,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "bccd584e1bb4ace17d409295a3ebaa8b17cefd7182f90a2d9d554b29ac8dda7c",
+      "privateRawSha256": "5a217890580ae269eb69e325058e37946e8a380f17cd122c7b98c1f39822acc9",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-declined-light-s200.png",
+      "panel": "cover",
+      "scene": "declined",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "cdc9d755d2a137bcf88248b41637ddc4452e758f558de9ad422d38451fce4ee6",
+      "privateRawSha256": "968d6a546b94a2cc087cd8ab67123055a188fa84644a707408caf6035cc0c3e0",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-not-opened-light-s200.png",
+      "panel": "cover",
+      "scene": "not-opened",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "6ebf100e1d17d32a9619fac64411b037a3fa59f157ce126e2321a2831c8ddd6a",
+      "privateRawSha256": "76224d51c85198d055b6df83e540cd28e2d813d6efca77f1de97b5da34154227",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-system-no-audio-light-s200.png",
+      "panel": "cover",
+      "scene": "system-no-audio",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "9195b1f834e049f21750dfd46dd8229d68052f00e9c80205339c9a11bd5390a7",
+      "privateRawSha256": "b45e8eb4fd180bf37fd8ae62017a13f56b2fcd0e7229255c96c508b90c0d53e0",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-folder-no-audio-light-s200.png",
+      "panel": "cover",
+      "scene": "folder-no-audio",
+      "scheme": "light",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "e4edc16968af6acdd4f3847ce68e516923d7ca39a1339aaa2d3f7421c93f31d2",
+      "privateRawSha256": "1614ec70ef56f5b82b0e00cb32314f03b278d35884d22aec5d4144507a652a2b",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-declined-dark-s200.png",
+      "panel": "cover",
+      "scene": "declined",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "f845dfca34acad0280b64090dff2a9a449f4e64139808e061a4ad3ecb5366302",
+      "privateRawSha256": "af6a208296d67a5c542890bccc9908f6722fd647aa259b12c7b7409b052a607e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-not-opened-dark-s200.png",
+      "panel": "cover",
+      "scene": "not-opened",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "ec7b8acf39791ffa214a9f47cf19719bf4ba85e137b30d2b23a241c9cd36bf8b",
+      "privateRawSha256": "7163263af5c51f983ddf49331f3efe77f5af4c66a9429dd647d64438e2faeb3f",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-system-no-audio-dark-s200.png",
+      "panel": "cover",
+      "scene": "system-no-audio",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "c093fd06ebe6bf705056b0285f180a6536b5caacf80d066e6e346c9c9fcc859c",
+      "privateRawSha256": "3f5a2462e9779beaa6714079abce9439f2f8e26f324de335f16c853a40542612",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    },
+    {
+      "file": "first-run-access-cover-folder-no-audio-dark-s200.png",
+      "panel": "cover",
+      "scene": "folder-no-audio",
+      "scheme": "dark",
+      "fontScale": 2,
+      "position": "initial",
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "densityDpi": 390,
+      "sha256": "f0dafaebe086cf91ec6d2e9092681ff46d2760a6098daeb3125d9e9c6d6da38f",
+      "privateRawSha256": "b0a5edf4ae56fa362bee62389c9bbbd5f5698aeb93aa07b448df5a35948ecd69",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "freshHierarchyValidated": true,
+      "hierarchyAttemptCount": 1,
+      "productionServicesObserved": false,
+      "inspection": "Complete published app-area region inspected; scrolled paragraph first and last lines checked separately."
+    }
+  ]
+}
