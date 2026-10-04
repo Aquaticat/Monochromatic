@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  carriesAsciiLetter,
   isHanCharacter,
   isIdeograph,
 } from '../dist/final/node/index.mjs';
@@ -67,6 +68,16 @@ await describe({
         expect([...SINGLE_UNIT_HAN, ...NOT_HAN,].filter(function disagree(character,): boolean {
           return isHanCharacter({ character, },) !== isIdeograph(character,);
         },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'READS AN EMPTY STRING as no character at all, and CARRIES an ASCII letter where one is in '
+        + 'the range',
+      fn: async () => {
+        expect(isHanCharacter({ character: '', },),).toBe(false,);
+        expect(carriesAsciiLetter({ text: '猫a猫', from: 0, to: 3, },),).toBe(true,);
+        expect(carriesAsciiLetter({ text: '猫猫猫', from: 0, to: 3, },),).toBe(false,);
       },
     },),
   ],

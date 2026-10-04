@@ -38,7 +38,14 @@ export {
   type SpliceEdit,
   spliceDisjointEdits,
 } from './disjoint-splice.ts';
-export { isHanCharacter, } from './han-only-text.ts';
+export {
+  carriesAsciiLetter,
+  isHanCharacter,
+} from './han-only-text.ts';
+export {
+  bracketedTitles,
+  titleText,
+} from './han-title-read.ts';
 export {
   carriesHandleToken,
   isHandleCharacter,

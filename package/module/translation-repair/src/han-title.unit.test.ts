@@ -20,7 +20,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  bracketedTitles,
   type SliceValidation,
+  titleText,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
 import {
@@ -214,6 +216,19 @@ await describe({
           sourceText: '<!-- 《猫猫摇篮曲》 -->她睡了。',
           candidateText: 'She slept.',
         },),).toEqual(VALID_WITHOUT_PAGE,);
+      },
+    },),
+
+    it({
+      name: 'READS A LINKED TITLE down to its text and READS A LINKLESS BRACKET as its whole self, and '
+        + 'SKIPS a title with a line end or a repeat',
+      fn: async () => {
+        expect(titleText({ bracketed: '[猫猫摇篮曲](cat-song)', },),).toBe('猫猫摇篮曲',);
+        expect(titleText({ bracketed: '[猫猫摇篮曲)', },),).toBe('[猫猫摇篮曲)',);
+        expect(bracketedTitles({
+          text: '《猫\n猫》,《猫猫》,《猫猫》',
+          form: 'han-only',
+        },),).toEqual(['猫猫',],);
       },
     },),
   ],
