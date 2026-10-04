@@ -6676,6 +6676,33 @@ reads `ran 1, still cold 3`:
 those three.
 No B entry found.
 
+The forty-seventh cluster of that census,
+`active`,
+against `census-Kyrgyt` at `1f8e4b856`:
+4 line stretches over `active-footnote-markers.ts`
+(`4a87b3658`,
+`6fc0fd2a4`).
+Landed:
+the run-bounding case whose paragraph holds
+one untokenized autolink literal and nothing else,
+so the run bounds at both ends of its parent's children.
+Left:
+the four bounds arms
+(`309-310`,
+`315-316`,
+`328-329`,
+`334-335`).
+The autolink transform never produced a run
+whose parent holds only unpositioned children
+in these fixtures,
+and the walk is footnote-scoped,
+so the case's literal paragraph sits beside the marker
+without its own run.
+The reach census (`~/temp/agent/mimo-trial/reach-active2.log`)
+reads `ran 0, still cold 4`:
+those four.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

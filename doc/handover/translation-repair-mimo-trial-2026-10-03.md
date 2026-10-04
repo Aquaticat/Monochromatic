@@ -702,6 +702,33 @@ so a fresh context resumes from this file alone.
   the `active` batch.
 
 - 2026-10-04,
+  20:12 UTC:
+  the T8 `active` batch closed with commits `4a87b3658`,
+  `6fc0fd2a4`:
+  4 line stretches over `active-footnote-markers.ts`,
+  the run-bounding case landed
+  (the paragraph one untokenized literal),
+  the four bounds arms left documented
+  (the transform never produced a run whose parent
+  holds only unpositioned children in these fixtures,
+  and the walk is footnote-scoped).
+  The reach census reads `ran 0, still cold 4`:
+  those four
+  (`~/temp/agent/mimo-trial/reach-active2.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-active-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-active-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `6fc0fd2a4`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `declined` cluster
+  (the ranking's next at `census-Kyrgyt`).
+
+- 2026-10-04,
   19:48 UTC:
   the next batch's baseline census taken at commit `870253616`:
   `census written to ~/.cache/translation-repair/coverage/census-KYvmuo/census.json`
