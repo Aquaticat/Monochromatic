@@ -192,8 +192,10 @@ Changing a folder must not silently widen it to device-wide media.
 No production implementation or default-template selection is authorized.
 
 No new preference question is justified by this study.
-The next substantive design backlog item is Android media notification,
-starting with a fresh audit of the existing Media3 projection and settled
-no-art/playback requirements.
-That audit does not authorize live playback or modification of system
-notifications on a real device.
+The human closed custom Android media-notification design in D82:
+accept the standard platform presentation.
+No notification variants or visual preference question follows.
+The next substantive design item is the single IntelliJ-aligned keyboard-map
+revision already requested in `open-questions.md` section 6.
+It remains design-only,
+not authorization for production shortcuts or live playback.

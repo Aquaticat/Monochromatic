@@ -518,7 +518,9 @@ new IME work and native accessibility acceptance.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
   including what ↑/↓ does after D43 removed the volume popover.
-- **OPEN: Android media notification.**
+- **SETTLED: Android media notification presentation (D82).**
+  Accept what Android provides;
+  no special notification design or variant round remains.
 - **OPEN: light surfaces not yet drawn (11d):**
   error bar,
   undo toast,
@@ -829,13 +831,14 @@ single revised map rather than binding-by-binding questions.
 volume;
  decide what ↑/↓ does instead (system volume session, or nothing);
  and the
-Android media notification has never been designed.
+Android media notification appearance is settled by D82:
+accept the platform presentation with no special design.
 **Status (2026-09-17):**
  the design deliverable is a single revised map brought back as a
 whole;
  implementing it is developer work.
- The media notification is tracked in the
-0b backlog.
+ The custom media-notification design item is closed by D82;
+ functional integration remains separate.
 
 ---
 
@@ -959,7 +962,9 @@ of decisions.md.
 - **Accessibility pass — SETTLED for the unfolded screen (D39, D40).**
    Other surfaces
   get their accessibility treatment inside their own rounds.
-- **Android media notification** — never designed.
+- **Android media notification presentation** is settled by D82:
+  accept the platform's standard presentation,
+  without a custom design round.
 - **MD3-on-Slint feasibility (A4) — DEVELOPER-OWNED.**
    Feasibility and porting studies are
   developer work per user instruction 2026-09-17;

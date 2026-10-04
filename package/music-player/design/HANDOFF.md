@@ -28,6 +28,13 @@ real-library,
 original-AVD or new IME work is authorized.
 The consequence gate removes needless ballots,
 not the substantive design queue.
+The human then settled Android media notifications in D82:
+accept Android's standard presentation with no special design or variants.
+That item is removed from the design queue;
+functional media-session wiring is separate.
+After first-run publication verification,
+advance to the single IntelliJ-aligned keyboard-map revision,
+not binding-by-binding questions.
 
 ## Filename investigation record (started 2026-09-29)
 
@@ -2571,7 +2578,9 @@ the user as decisions;
     context menu (ctx-b),
    error bar (err-b),
     then a desktop window (ask the size first).
-7. **Android media notification** — never designed.
+7. **Android media notification presentation** is now settled by D82:
+   accept Android's standard presentation;
+   no special design round remains.
 
 ### Suggested skills for the next session
 - **Save as standalone HTML** — for the reviewer bundles.
@@ -4235,8 +4244,9 @@ explicit request.
   surface never designed.
 - Keyboard map (D25):
   one revised IntelliJ-aligned map is the design deliverable.
-- Android media notification:
-  never designed.
+- Android media notification presentation:
+  settled by D82,
+  with no custom design round.
 - Light theme:
   unfolded separation settled (D34);
   the undrawn light surfaces are listed in

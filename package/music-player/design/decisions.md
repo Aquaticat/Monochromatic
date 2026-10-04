@@ -779,7 +779,8 @@ Ctrl ,       settings
 Media keys are expected to work on both platforms (MPRIS on Linux,
  media session on
 Android).
- The Android media notification has not been designed.
+ D82 accepts Android's standard media notification presentation,
+ with no custom notification design round.
 
 ---
 
@@ -1258,7 +1259,9 @@ adjustment belongs to the system:
  hardware keys,
  the system media session,
  and whatever
-the future media notification round settles for the notification surface.
+Android's standard notification presentation.
+D82 removes the custom media-notification design round;
+functional media-session integration remains separate.
 **Why.**
  The user's instruction of 2026-09-17.
  It removes a control the system already owns and
@@ -2277,6 +2280,19 @@ D77's accessible-action naming direction and the need for visible distinction
 before activation remain intact;
 no automatic suffix restoration or collision fallback is selected.
 No production implementation is authorized by this clarification.
+
+### D82. Accept Android's standard media notification presentation
+
+The human explicitly chose no special designs for Android media notifications.
+Accept the presentation Android provides;
+do not build notification variants or ask for appearance,
+layout or custom-action design preferences.
+This closes the custom notification design backlog item.
+Functional playback/session wiring and truthful metadata remain implementation
+responsibilities,
+not proof supplied by this design choice.
+No production implementation,
+live playback or real-device notification mutation is authorized here.
 
 ## Pending after the theme picks (2026-09-04)
 
