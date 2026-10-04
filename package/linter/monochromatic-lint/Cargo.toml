@@ -24,6 +24,8 @@ path = "src/lib.rs"
 [dependencies]
 # Reuse the repository's comment-preserving parser and exact-number value model.
 monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }
+# Reuse the incumbent native CLI parser for operating-system paths and generated usage validation.
+clap = { version = "4", features = ["derive"] }
 # Same glob compiler and gitignore-aware walker family as the incumbent Rust linter.
 globset = "0.4"
 ignore = "0.4"

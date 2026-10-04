@@ -18,6 +18,9 @@
 #[doc(hidden)]
 pub mod config_merge;
 
+/// Accepted command grammar with native path values.
+#[doc(hidden)]
+pub mod cli_options;
 /// Internal data-shape checks, including duplicate decoded keys.
 mod config_data;
 /// Internal typed configuration errors shared by the executable and verification drivers.

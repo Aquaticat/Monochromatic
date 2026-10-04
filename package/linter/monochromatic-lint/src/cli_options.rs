@@ -1,0 +1,81 @@
+//! What: The accepted native unified-linter command grammar.
+//! Why: Flags, help and usage validation share the incumbent's CLI parser instead of divergent manual scanning.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // Declare typed command options; execution consumes native paths without lossy string conversion.
+//! ```
+
+/// Import the incumbent CLI parser's trait and declaration macro.
+use clap::Parser;
+/// Import native path storage and a strictly positive worker-count type.
+use std::path::PathBuf;
+use std::num::NonZeroUsize;
+
+/// What: Parsed command options, with absence retained for discovery and default selection.
+/// Why: Repository configuration remains data-only and cannot add executables, plugins or a rule-selection CLI.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type CliOptions = { paths: Path[]; config?: Path; fix: boolean; stdin: boolean; ... };
+/// ```
+#[derive(Parser, Debug, Eq, PartialEq)]
+#[command(name = "monochromatic-lint", version, about = "Lint Rust, Markdown and MDX with repository-owned policies.")]
+pub struct CliOptions {
+    /// Literal paths or path globs; execution supplies '.' only when this list is empty outside stdin mode.
+    #[arg(value_name = "PATH", conflicts_with = "stdin")]
+    pub paths: Vec<PathBuf>,
+    /// Use exactly this JSONC configuration instead of searching ancestors.
+    #[arg(long, value_name = "FILE")]
+    pub config: Option<PathBuf>,
+    /// Apply compatible source fixes and recheck the resulting input.
+    #[arg(long, conflicts_with_all = ["print_config", "init", "rules"])]
+    pub fix: bool,
+    /// Read one source from stdin instead of the filesystem.
+    #[arg(long, requires = "stdin_filename", conflicts_with_all = ["print_config", "init", "rules"])]
+    pub stdin: bool,
+    /// Logical filename selecting language, configuration and reported host identity for stdin.
+    #[arg(long, value_name = "FILE", requires = "stdin")]
+    pub stdin_filename: Option<PathBuf>,
+    /// Maximum accepted warning findings; absence does not impose a warning threshold.
+    #[arg(long, value_name = "COUNT")]
+    pub max_warnings: Option<usize>,
+    /// Suppress warning diagnostics while retaining exit-status accounting.
+    #[arg(long, conflicts_with = "silent")]
+    pub quiet: bool,
+    /// Suppress diagnostics while retaining exit status and required fixed-source output.
+    #[arg(long, conflicts_with = "quiet")]
+    pub silent: bool,
+    /// Print the effective data-only configuration for one file without linting it.
+    #[arg(long, value_name = "FILE", conflicts_with_all = ["init", "rules", "paths"])]
+    pub print_config: Option<PathBuf>,
+    /// Create a starter configuration without overwriting an existing file.
+    #[arg(long, conflicts_with_all = ["rules", "paths"])]
+    pub init: bool,
+    /// List the shipped rule identifiers and their documented capabilities.
+    #[arg(long, conflicts_with = "paths")]
+    pub rules: bool,
+    /// Positive worker limit; absence uses the operating system's available parallelism.
+    #[arg(long, value_name = "COUNT")]
+    pub concurrency: Option<NonZeroUsize>,
+    /// Additional traversal exclusion glob, repeatable without a delimiter mini-language.
+    #[arg(long = "ignore-pattern", value_name = "GLOB")]
+    pub ignore_patterns: Vec<String>,
+    /// Additional ignore file, repeatable and retained as a native path.
+    #[arg(long = "ignore-path", value_name = "FILE")]
+    pub ignore_paths: Vec<PathBuf>,
+    /// Disable traversal ignore sources; explicit configuration matching still determines selected rules.
+    #[arg(long)]
+    pub no_ignore: bool,
+    /// Permit a command-line path pattern with no matches.
+    #[arg(long)]
+    pub no_error_on_unmatched_pattern: bool,
+    /// Emit execution debug information separately from JSONL findings.
+    #[arg(long)]
+    pub debug: bool,
+}
+
+/// Argument grammar controls do not ship in release code.
+#[cfg(test)]
+#[path = "cli_options_tests.rs"]
+mod tests;
