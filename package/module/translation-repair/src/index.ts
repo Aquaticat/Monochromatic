@@ -66,6 +66,9 @@ export {
   maskHtmlComments,
 } from './mask-html-comments.ts';
 export {
+  maskLoneContainerTags,
+} from './mask-container-tags.ts';
+export {
   headingAffinity,
   latinTokens,
 } from './heading-affinity.ts';

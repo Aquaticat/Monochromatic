@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { fencedLineFlags, } from './code-fence-lines.ts';
 
 //region Invisible line masking
@@ -165,7 +167,7 @@ function nameOf({ character, }: { readonly character: string; },): string {
   /**
    Code point, which is what identifies the character to whoever reads this.
    */
-  const point = character.codePointAt(0,) ?? 0;
+  const point = nonNullishOrThrow(character.codePointAt(0,),);
 
   /**
    Hexadecimal digits, padded to the conventional minimum width.
@@ -330,7 +332,7 @@ export function maskInvisibleLines(
     /**
      Where this line starts, measured before anything was rewritten.
      */
-    const startOffset = lineStarts[index] ?? 0;
+    const startOffset = nonNullishOrThrow(lineStarts[index],);
     regions.push({
       startOffset,
       endOffset: startOffset + body.length,
