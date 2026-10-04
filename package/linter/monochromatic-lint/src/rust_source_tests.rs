@@ -119,7 +119,15 @@ fn unterminated_literal_does_not_claim_the_empty_final_line() {
 #[test]
 fn final_non_lf_line_keeps_its_last_byte() {
     let source = RustSource::new(String::from("last.rs"), String::from("abc"));
-    assert_eq!(source.line_span(1), Some(Span { offset: 0, length: 3, line: 1, column: 1 }));
+    assert_eq!(
+        source.line_span(1),
+        Some(Span {
+            offset: 0,
+            length: 3,
+            line: 1,
+            column: 1
+        })
+    );
 }
 
 /// Empty and syntactically broken sources still produce queryable recovery trees.

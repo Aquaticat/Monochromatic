@@ -1,0 +1,87 @@
+//! What: Heading-level, single-title and emphasis-heading checks.
+//! Why: Preserve the existing MD001, MD025 and MD036 behavior over the native tree.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // Port the existing report-only heading checks without a new rule configuration surface.
+//! ```
+
+/// Import native heading data and shared finding construction.
+use satteri_ast::mdast::{decode_heading_data, MdastNodeType};
+use crate::diagnostic::{Diagnostic, Severity};
+use crate::markdown_finding::finding;
+use crate::markdown_source::MarkdownSource;
+
+/// Report heading-depth increases larger than one after the first heading.
+pub fn heading_increment(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
+    let mut findings = Vec::new();
+    let mut previous = 0_u8;
+    for id in context.visible_nodes() {
+        if context.kind(*id) != MdastNodeType::Heading {
+            continue;
+        }
+        let depth = decode_heading_data(context.data(*id)).depth;
+        if previous != 0 && depth > previous + 1 {
+            findings.push(finding(context, *id, "markdown/heading-increment", severity,
+                format!("Heading level jumps from {previous} to {depth}; increment by one."), None));
+        }
+        previous = depth;
+    }
+    return findings;
+}
+
+/// Report every h1 after the first; frontmatter titles are not headings.
+pub fn single_h1(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
+    let mut findings = Vec::new();
+    let mut count = 0;
+    for id in context.visible_nodes() {
+        if context.kind(*id) != MdastNodeType::Heading {
+            continue;
+        }
+        if decode_heading_data(context.data(*id)).depth != 1 {
+            continue;
+        }
+        count += 1;
+        if count > 1 {
+            findings.push(finding(context, *id, "markdown/single-h1", severity,
+                String::from("Multiple top-level headings; a document should have a single h1."), None));
+        }
+    }
+    return findings;
+}
+
+/// What: Sentence-ending punctuation accepted by the incumbent emphasis check.
+/// Why: Full-width punctuation and ASCII punctuation follow the same policy.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const punctuation = new Set(['.', ',', ';', ':', '!', '?', '。', '，', '；', '：', '！', '？']);
+/// ```
+const SENTENCE_PUNCTUATION: &[char] = &['.', ',', ';', ':', '!', '?', '。', '，', '；', '：', '！', '？'];
+
+/// Report emphasis-only paragraphs that are not sentences or list labels.
+pub fn no_emphasis_as_heading(context: &MarkdownSource, severity: Severity) -> Vec<Diagnostic> {
+    let mut findings = Vec::new();
+    for id in context.visible_nodes() {
+        if context.kind(*id) != MdastNodeType::Paragraph || context.has_ancestor(*id, MdastNodeType::ListItem) {
+            continue;
+        }
+        let children = context.children(*id);
+        if children.len() != 1 {
+            continue;
+        }
+        let child = children[0];
+        let kind = context.kind(child);
+        if kind != MdastNodeType::Emphasis && kind != MdastNodeType::Strong {
+            continue;
+        }
+        let text = context.text_content(child);
+        let last = text.chars().last();
+        if last.is_some_and(|character| return SENTENCE_PUNCTUATION.contains(&character)) {
+            continue;
+        }
+        findings.push(finding(context, *id, "markdown/no-emphasis-as-heading", severity,
+            String::from("Emphasis used as a heading; use a real heading instead."), None));
+    }
+    return findings;
+}

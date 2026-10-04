@@ -60,10 +60,25 @@ fn file_globs_preserve_directory_boundaries() {
 #[test]
 fn file_and_ignore_patterns_do_not_gain_unrequested_wildcards() {
     let files = prepare(r#"[{"files":["src/"],"rules":{}}]"#);
-    assert_eq!(files.resolve(Path::new("src/file.rs")).expect("literal directory selector"), FileConfiguration::Unconfigured);
+    assert_eq!(
+        files
+            .resolve(Path::new("src/file.rs"))
+            .expect("literal directory selector"),
+        FileConfiguration::Unconfigured
+    );
     let ignores = prepare(r#"[{"files":["**/*"],"ignores":["exact.rs"],"rules":{}}]"#);
-    assert_eq!(ignores.resolve(Path::new("exact.rs")).expect("exact exclusion"), FileConfiguration::Unconfigured);
-    assert!(matches!(ignores.resolve(Path::new("exact.rs.md")).expect("not an exclusion prefix"), FileConfiguration::Configured { .. }));
+    assert_eq!(
+        ignores
+            .resolve(Path::new("exact.rs"))
+            .expect("exact exclusion"),
+        FileConfiguration::Unconfigured
+    );
+    assert!(matches!(
+        ignores
+            .resolve(Path::new("exact.rs.md"))
+            .expect("not an exclusion prefix"),
+        FileConfiguration::Configured { .. }
+    ));
 }
 
 /// Global exclusions remove files even when an ordinary block would otherwise select them.

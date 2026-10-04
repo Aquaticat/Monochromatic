@@ -45,6 +45,22 @@ mod resolved_rules;
 /// Internal fixed Rust rule implementations.
 #[doc(hidden)]
 pub mod rust_rules;
+/// Owned Markdown line and UTF-16 position indexes.
+mod markdown_positions;
+/// Internal native Markdown/MDX parser interface.
+#[doc(hidden)]
+pub mod markdown_source;
+/// Shared Markdown diagnostic construction.
+mod markdown_finding;
+/// Internal report-only heading checks.
+#[doc(hidden)]
+pub mod markdown_headings;
+/// Internal link normalization checks.
+#[doc(hidden)]
+pub mod markdown_links;
+/// Internal code-fence normalization.
+#[doc(hidden)]
+pub mod markdown_code;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;
@@ -52,3 +68,7 @@ pub mod rust_source;
 /// Disposable native filesystem helpers used only by tests.
 #[cfg(test)]
 mod test_fs;
+
+/// Shared consumer-level regressions for the initial Markdown rule ports.
+#[cfg(test)]
+mod markdown_basic_tests;
