@@ -90,6 +90,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
+[tasks."test:fonts"]
+description = "Exercise embedded font features and ligature selection through production geometry"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'font_features', '--', '--nocapture'])
+"""
+
 [tasks."test:raster"]
 description = "Compare repeated viewport pixels and report shape/raster stage timings"
 shell = "node --input-type=module-typescript -e"

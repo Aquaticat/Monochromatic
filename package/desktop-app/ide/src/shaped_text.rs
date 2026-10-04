@@ -1,7 +1,9 @@
 //! Shared shaped rows replace independently centered fallback-font glyph items.
 
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
-use parley::{Affinity, Cursor, FontContext, FontFamily, Layout, LayoutContext, LineHeight, Selection, StyleProperty};
+use parley::{Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, Layout, LayoutContext, LineHeight, Selection, StyleProperty};
+/// Four-byte OpenType tags avoid stringly typed feature names in the source defaults.
+use parley::setting::Tag;
 /// Font bytes are shared immutably across the font database.
 use std::{borrow::Cow, sync::Arc};
 /// Canonical source remains in the read-only document.
@@ -58,6 +60,8 @@ pub struct TextShaper {
     fonts: FontContext,
     /// Reusable paragraph-building allocations.
     layouts: LayoutContext<u32>,
+    /// Immutable source feature policy, shared by every row and baseline probe.
+    features: Vec<FontFeature>,
 }
 
 /// Constructing a default shaper registers the bundled source font.
@@ -71,6 +75,13 @@ impl Default for TextShaper {
 impl TextShaper {
     /// Register the embedded primary face; system fonts supply other scripts.
     pub fn new() -> Self {
+        // JetBrains Mono puts programming ligatures and contextual punctuation in calt, not liga.
+        return Self::with_features(vec![FontFeature::new(Tag::new(b"calt"), 1)]);
+    }
+
+    /// Create a source shaper with explicit OpenType features, without changing source characters.
+    /// Settings are immutable for this shaper; replacing it also requires invalidating native frame state.
+    pub fn with_features(features: Vec<FontFeature>) -> Self {
         // What: FontContext owns font discovery/cache state; Arc shares static bytes.
         // Why: The source font must remain available without its installed counterpart.
         //
@@ -83,7 +94,7 @@ impl TextShaper {
         let bytes: &'static [u8] = include_bytes!("../asset/font/JetBrainsMono-Regular.ttf");
         let blob = parley::fontique::Blob::new(Arc::new(bytes));
         fonts.collection.register_fonts(blob, None);
-        return Self { fonts, layouts: LayoutContext::new() };
+        return Self { fonts, layouts: LayoutContext::new(), features };
     }
 
     /// Shape text with explicit source typography and no soft wrapping.
@@ -94,6 +105,7 @@ impl TextShaper {
         builder.push_default(StyleProperty::FontSize(15.0));
         builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(24.0)));
         builder.push_default(StyleProperty::Brush(0));
+        builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(Cow::Borrowed(&self.features))));
         for (start, end, role) in roles {
             builder.push(StyleProperty::Brush(*role), *start..*end);
         }
