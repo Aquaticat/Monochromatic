@@ -22,6 +22,7 @@ use monochromatic_jsonc_edit::{JsoncKind, JsoncValue};
 pub const RULE_IDS: &[&str] = &[
     "rust/max-lines",
     "rust/require-rustdoc",
+    "rust/no-anonymous-functions",
     "markdown/heading-increment",
     "markdown/commands-show-output",
     "markdown/no-duplicate-heading",

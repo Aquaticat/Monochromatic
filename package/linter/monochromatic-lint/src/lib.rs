@@ -40,16 +40,9 @@ pub mod diagnostic;
 /// Internal all-or-nothing grouped source edits.
 #[doc(hidden)]
 pub mod edits;
-/// Internal finalization of matched partial rule settings.
-mod resolved_rules;
-/// Internal fixed Rust rule implementations.
+/// Internal code-fence normalization.
 #[doc(hidden)]
-pub mod rust_rules;
-/// Owned Markdown line and UTF-16 position indexes.
-mod markdown_positions;
-/// Internal native Markdown/MDX parser interface.
-#[doc(hidden)]
-pub mod markdown_source;
+pub mod markdown_code;
 /// Shared Markdown diagnostic construction.
 mod markdown_finding;
 /// Internal report-only heading checks.
@@ -58,9 +51,19 @@ pub mod markdown_headings;
 /// Internal link normalization checks.
 #[doc(hidden)]
 pub mod markdown_links;
-/// Internal code-fence normalization.
+/// Owned Markdown line and UTF-16 position indexes.
+mod markdown_positions;
+/// Internal native Markdown/MDX parser interface.
 #[doc(hidden)]
-pub mod markdown_code;
+pub mod markdown_source;
+/// Internal finalization of matched partial rule settings.
+mod resolved_rules;
+/// Internal syntax-only rejection of anonymous Rust functions.
+#[doc(hidden)]
+pub mod rust_no_anonymous_functions;
+/// Internal fixed Rust rule implementations.
+#[doc(hidden)]
+pub mod rust_rules;
 /// Internal shared Rust parse and code-line indexing.
 #[doc(hidden)]
 pub mod rust_source;

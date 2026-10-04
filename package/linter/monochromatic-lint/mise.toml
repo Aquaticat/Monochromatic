@@ -42,6 +42,28 @@ run = "cargo fetch --locked"
 description = "Regenerate the owning Cargo lockfile without fetching dependencies"
 run = "cargo generate-lockfile --offline"
 
+[tasks."lint:container"]
+description = "Run Clippy against the tested source snapshot with a read-only bounded compiler"
+depends = ["test:container"]
+shell = "node --input-type=module -e"
+run = '''
+import { spawnSync } from 'node:child_process'
+const toolchain = spawnSync('rustc', ['--print', 'sysroot'], { encoding: 'utf8' })
+if (toolchain.error) throw toolchain.error
+if (toolchain.status !== 0) throw new Error(toolchain.stderr)
+const root = toolchain.stdout.trim()
+const child = spawnSync('podman', [
+  'run', '--rm', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128',
+  '--security-opt', 'label=disable', '--volume', `${root}:/toolchain:ro`,
+  '--env', 'PATH=/toolchain/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+  '--env', 'RUSTC=/toolchain/bin/rustc', '--env', 'RUSTDOC=/toolchain/bin/rustdoc',
+  'localhost/monochromatic-lint-test:development',
+  '/toolchain/bin/cargo', 'clippy', '--offline', '--locked', '--all-targets', '--', '-D', 'warnings',
+], { stdio: 'inherit' })
+if (child.error) throw child.error
+if (child.status !== 0) throw new Error(`Container Clippy failed: ${child.status}`)
+'''
+
 [tasks.mutation]
 description = "Run cargo-mutants in the tested, mount-free 2 GiB / 2 CPU source snapshot"
 depends = ["test:container"]
@@ -49,35 +71,8 @@ run = "node bin/mutate-container.mjs"
 
 [tasks."test:container"]
 description = "Run artifact tests in a mount-free, network-disabled 2 GiB / 2 CPU container"
-shell = "node --input-type=module -e"
-run = '''
-import { mkdir, mkdtemp, cp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
-import { spawnSync } from 'node:child_process'
-const context = await mkdtemp(join(tmpdir(), 'monochromatic-lint-test-'))
-const source = process.cwd()
-try {
-  for (const name of ['Cargo.toml', 'Cargo.lock', 'src', 'fixtures']) {
-    await cp(join(source, name), join(context, 'monochromatic-lint', name), { recursive: true })
-    await cp(resolve(source, '../../rust-module/jsonc-edit', name), join(context, 'jsonc-edit', name), { recursive: true })
-  }
-  const vendorPath = join(context, 'vendor')
-  const vendor = spawnSync('cargo', ['vendor', '--locked', '--offline', '--versioned-dirs', vendorPath], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })
-  if (vendor.error) throw vendor.error
-  if (vendor.status !== 0) throw new Error(`Cargo vendor failed: ${vendor.stderr}`)
-  const config = vendor.stdout.replaceAll(JSON.stringify(vendorPath), '\"/work/vendor\"')
-  if (!config.includes('directory = \"/work/vendor\"')) throw new Error('Cargo vendor did not emit the expected source mapping')
-  await mkdir(join(context, 'cargo-config'), { recursive: true })
-  await writeFile(join(context, 'cargo-config/config.toml'), config)
-  await cp(join(source, 'test.Containerfile'), join(context, 'Containerfile'))
-  const build = spawnSync('podman', ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', 'localhost/monochromatic-lint-test:development', context], { stdio: 'inherit' })
-  if (build.error) throw build.error
-  if (build.status !== 0) throw new Error(`Container build failed: ${build.status}`)
-  const run = spawnSync('podman', ['run', '--rm', '--init', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=128', 'localhost/monochromatic-lint-test:development'], { stdio: 'inherit' })
-  if (run.error) throw run.error
-  if (run.status !== 0) throw new Error(`Container test failed: ${run.status}`)
-} finally {
-  await rm(context, { recursive: true, force: true })
-}
-'''
+run = "node bin/test-container.mjs"
+
+[tasks."test:rust-style"]
+description = "Verify the Rust style rule independently of unfinished Markdown adapters, under the same container bounds"
+run = "node bin/test-container.mjs rust_no_anonymous_functions"
