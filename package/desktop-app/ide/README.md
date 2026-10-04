@@ -9,7 +9,11 @@ and the next implementation action.
 
 ## Implementation queue
 
-- [ ] Source view and external-change correspondence.
+- [ ] Complete the source view:
+  shaped selection/copy and native external-change correspondence pass;
+  syntax,
+  annotations,
+  and remaining keyboard navigation are pending.
 - [ ] Live workspace tree and search.
 - [ ] Required language-intelligence feature paths.
 - [ ] Measured Helix-supported language inventory and private server state.
@@ -19,8 +23,28 @@ and the next implementation action.
 
 JetBrains Mono and Inter are bundled under `asset/font` with their original OFL notices.
 The Slint compiler is configured to embed imported font bytes.
-The UI binds to the system palette;
-native theme-change and font-isolation verification remain in progress.
+The UI binds to the system palette.
+Native dark rendering and font isolation are verified;
+light-mode and live theme-change acceptance remain in progress.
+
+## Current reader behavior
+
+Copy selected source with Ctrl+C.
+There is no read-only badge,
+Copy button,
+or permanent diagnostic footer.
+Source positions,
+painting,
+and selection share native shaped-row geometry.
+
+The displayed file is reread by a bounded background worker at 250 ms intervals.
+External changes map the latest caret,
+selection,
+and viewport through Helix correspondence,
+even while text remains selected.
+Read failures retain the last readable source and show a diagnostic until recovery.
+The concrete caret and replacement-selection cases in the accepted scope pass through the native GUI.
+This polling boundary is not yet a workspace tree watcher or language-server synchronization loop.
 
 ## Build boundary
 

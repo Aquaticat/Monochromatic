@@ -13,66 +13,60 @@ Current process,
 verification,
 and resumption details are in [the handover][handover].
 
-- [ ] Finish nested Wayland session clap/help verification.
-  Parser replacement is implemented;
-  11 parser tests and 3 executable tests pass,
-  including no-display help and hosted-command forwarding.
-  Host debug `--help` succeeds.
-  Full tests/release/lint remain pending.
-- [ ] Verify embedded JetBrains Mono and Inter independently of installed copies.
-  Font assets,
-  original licenses,
+- [x] Nested compositor clap help and isolated clipboard support.
+  Full helper tests,
+  release build,
+  Clippy,
+  text/binary clipboard transfer,
+  clearing,
+  and abrupt owner-disconnect checks pass.
+- [x] Bundle JetBrains Mono and Inter independently of installed copies.
+  Font files,
+  notices,
   checksums,
-  Slint imports,
-  and explicit embedding configuration are committed;
-  the markup check passes.
-- [ ] Source view and document correspondence.
-  The user rejected the CJK alignment in the first native screenshot.
-  Per-grapheme Slint items are being replaced with shared Parley shaped-row geometry and a viewport raster.
-  Painting,
+  explicit embedding,
+  and native font isolation are verified.
+- [ ] Finish the source-view gate.
+  Shared Parley rows now own CJK/Latin baseline,
+  caret,
   selection,
-  and hit testing must consume the same layout.
-  Smooth pixel-level notched-wheel motion is explicitly required.
-  Music-player source and the existing smooth-scroll investigation confirm use of native Flickable physics,
-  not an additional markup animation.
-  Document interface exists;
-  all 7 consumer tests pass,
-  including both user examples,
-  reverse selection,
-  Unicode,
-  deletion,
-  stale reload rejection,
-  and selection movement during pending work.
-  Native headless rendering and the accessible read-only source value are verified.
-  Pointer,
-  keyboard,
-  clipboard,
-  and running-GUI reload tests remain pending.
-  Recent-file and view-model tests added after the passing run still need execution.
-  `slint-viewer --check` accepted the source-view declaration.
-  Cargo's first GUI build failed because the repository's manifest owner normalized Slint to a non-optional dependency;
-  the app's `gui` feature now gates code generation rather than `dep:slint`.
-- [ ] Live workspace tree and search,
-  including the user's explicit Ctrl+0 through Ctrl+9 requirement.
-  Source checked:
-  editord `src/client/recent-files.ts` uses ten unique push-to-front slots;
-  `src/client/app/app.ts:442` promotes the chosen slot and reveals/loads it.
-  The new history module and consumer tests exist;
-  native key binding and tree reveal remain pending.
-- [ ] Five required language-intelligence feature paths and synchronization.
+  and hit geometry.
+  Bounded Swash glyph reuse avoids repeated outline rasterization.
+  Native notched-wheel samples include fractional offsets through tile transitions.
+  Clipboard readback verifies source,
+  CJK,
+  and combining sequences.
+  The 29-test IDE suite and native build pass.
+  Both required external-change correspondence cases now pass in the running GUI,
+  including stable fractional viewport placement and missing-file recovery.
+  Syntax highlighting,
+  annotations,
+  remaining keyboard navigation,
+  and complete lint/geometry coverage are still pending.
+- [ ] Live workspace tree and combined path/content search,
+  in-file find,
+  file switching,
+  and native Ctrl+0 through Ctrl+9 reveal/badges.
+  The tested session-local history module exists but is not yet bound to navigation.
+- [ ] Required language-intelligence feature paths and synchronization.
 - [ ] Measured Helix-supported runtime languages and project-write confinement.
-- [ ] Verify both system-theme modes and live appearance changes through the repo-owned nested Wayland session.
-  Palette bindings exist,
-  but the light headless screenshot is not proof of native system-theme tracking.
-- [ ] Native integration tests,
-  lint,
+- [ ] Light mode and live system-theme changes through the private appearance portal.
+- [ ] Complete native integration tests,
+  scoped lint,
   packaging,
-  and completed behavior-difference record.
+  and behavior-difference documentation.
 
-Verification so far:
-`mise run //package/desktop-app/ide:test` passed in a container capped at 2 GiB and 2 CPUs.
-Cargo resolved Slint to 1.18.1 under the sibling-compatible caret requirements;
-inspect those installed interfaces during the native-view work rather than assume the 1.17 source baseline is identical.
+Keep visible chrome minimal.
+The read-only badge,
+Copy button,
+and debug footer were removed at the user's request.
+Copy remains on Ctrl+C and read-only semantics remain accessible.
+Only actionable errors reserve additional UI when necessary.
+
+Cargo resolves Slint to 1.18.1.
+Use those installed interfaces rather than assuming the initial 1.17 inspection is identical.
+The source reader submits one bounded background job at 250 ms intervals;
+UI polling applies completed work to the latest reading state.
 
 ## Architecture
 
@@ -346,9 +340,9 @@ The proposed first gate must establish the usable implementation before the rest
 
 ## Next action
 
-Complete the explicitly requested clap/help fix for the native verification helper.
-Then bundle fonts and continue the selectable highlighted source view and remaining implementation queue.
-The document tests and first screenshot are not product completion.
+Implement actual syntax highlighting and annotations in the shared source-view path,
+then continue workspace navigation and language intelligence.
+The native source/clipboard/reload checks do not establish completion of the whole application.
 
 [handover]: ../handover/slint-ide-0x.md
 [scope]: ../decision/slint-ide-0x-scope.md

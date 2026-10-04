@@ -10,10 +10,11 @@ continue the queue without asking the user to say “continue”.
 The application remains an incomplete source-view gate.
 
 Current boundary:
-verify the newly wired live external-refresh worker through the native GUI,
-including both required correspondence cases and viewport preservation.
-The simplified source view and nested clipboard paths are verified.
-Continue remaining application surfaces afterward.
+implement actual syntax highlighting and annotations in the shared source view,
+then continue workspace navigation and language intelligence.
+The simplified UI,
+nested clipboard,
+and live external-change correspondence are verified.
 Do not restart technology selection:
 Helix reuse and the standalone Rust/Slint architecture are approved.
 
@@ -156,8 +157,18 @@ the document still rejects stale content revisions.
 It applies changes to the latest selection,
 retains fractional viewport placement,
 and keeps the last readable text with an actionable error on read failure.
-Its library tests and native build pass;
-live GUI correspondence remains the immediate verification step.
+Its library tests and native build pass.
+The live GUI verifies both required correspondence cases,
+fractional viewport preservation after a prefix line,
+and missing-file retention/recovery.
+The probe is `/tmp/monochromatic-ide-reload-probe-STkJVk/probe.mjs`;
+its native fixture is `/tmp/monochromatic-ide-native-zCPqiB/fixture.ts`.
+Caret x changed from 137 to 146 while y remained 34,
+and the next copied grapheme remained `g`.
+Selection copied `was a`,
+not the later literal.
+Viewport offsets changed from -240.5 to -264.5 for one inserted line.
+The selection screenshot was inspected.
 
 `src/recent.rs` implements ten unique push-to-front slots and exact Ctrl+digit decoding.
 Its four tests pass.
@@ -323,10 +334,17 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
-- `proc_4ae9`,
-  `ide-live-reload-native`,
-  is starting the dark/scroll fixture with the new live-refresh worker.
-  Rediscover its socket and source path from the readiness logs.
+- `proc_1614`,
+  `ide-live-reload-native-retry`,
+  is the active dark/scroll fixture with live refresh.
+  Socket:
+  `/tmp/monochromatic-ide-native-zCPqiB/control.sock`.
+  MCP:
+  `http://127.0.0.1:9318/mcp`.
+- `proc_4ae9` exited before spawning the IDE:
+  private D-Bus startup timed out.
+  The unchanged retry started successfully;
+  no root cause or fix is established for that separate fixture-startup incident.
 - `proc_b0cc` (stopped),
   `ide-minimal-clipboard-native`,
   is stopped after verifying the dark/basic fixture with the simplified UI and rebuilt clipboard-capable compositor.
@@ -432,8 +450,11 @@ and Batch entries have grammars but no configured LSP.
 
 Installed `hx` reports `25.07.1 (a05c151b)`.
 `hx --health typescript` found parser/query assets and typescript-language-server 6.0.0.
-Its runtime directory was not located;
-failed path guesses do not prove assets are missing or compatible with the pinned revision.
+A fresh `hx --health` probe found the installed runtime at `/usr/lib64/helix/runtime`.
+Its other reported candidates,
+`~/.config/helix/runtime` and `/usr/bin/runtime`,
+were absent.
+Installed assets are not assumed compatible with the pinned Helix revision.
 
 Editord reference:
 `package-paused/desktop-daemon/editord`.
