@@ -38,6 +38,14 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
+[tasks."test:raster"]
+description = "Compare repeated viewport pixels and report shape/raster stage timings"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'raster_reuse', '--', '--nocapture'])
+"""
+
 [tasks."lint:clippy"]
 description = "Check all IDE targets with warnings denied"
 shell = "node --input-type=module-typescript -e"
