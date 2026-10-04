@@ -6935,6 +6935,21 @@ reads `ran 0, still cold 3`:
 those three.
 No B entry found.
 
+The fifty-ninth cluster of that census,
+`lookup`,
+against `census-5AHbot` at `e3c92742c`:
+3 line stretches over `lookup-cache.ts`
+(`a9b5e71dc`).
+All cased:
+a parsed value that is no object reads as no hit
+and no record,
+and a cache file whose JSON is no record is ignored as a miss.
+The reach census (`~/temp/agent/mimo-trial/reach-lookup.log`)
+reads `ran 0, still cold 3`:
+the single-line returns the census's attribution leaves cold
+(the cases assert their values directly).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

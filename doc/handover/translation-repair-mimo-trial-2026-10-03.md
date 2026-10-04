@@ -683,6 +683,29 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:36 UTC:
+  the T8 `lookup` batch closed with commit `a9b5e71dc`:
+  3 line stretches over `lookup-cache.ts`,
+  all cased
+  (the non-object value
+  and the cache file that is no record).
+  The reach census reads `ran 0, still cold 3`,
+  the single-line returns the census's attribution leaves cold
+  (the cases assert their values directly).
+  Counts at the close:
+  the full suite 1,563 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-lookup-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-lookup-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `a9b5e71dc`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `retry` cluster
+  (the ranking's next at `census-5AHbot`).
+
+- 2026-10-04,
   22:31 UTC:
   the next batch's baseline census taken at commit `2b64f2e6e`:
   `census written to ~/.cache/translation-repair/coverage/census-5AHbot/census.json`
