@@ -90,5 +90,17 @@ await describe({
         expect([...declined,],).toEqual(['block/2',],);
       },
     },),
+
+    it({
+      name: 'DECLINES NOTHING where the pairing placed nothing at all, so an empty pass reports no block '
+        + 'left behind',
+      fn: async () => {
+        expect([...declinedTargetIdsOfPairing({
+          pairs: [],
+          sourceNodes: parseDocument({ text: SOURCE_PAGE, },).nodes,
+          targetNodes: parseDocument({ text: TARGET_PAGE, },).nodes,
+        },),],).toEqual([],);
+      },
+    },),
   ],
 },);
