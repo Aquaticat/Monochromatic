@@ -7,7 +7,8 @@ const question = join(process.cwd(), 'questions');
 const evidence = join(question, 'evidence');
 const manifest = JSON.parse(readFileSync(join(evidence, 'first-run-access-witnesses.json'), 'utf8'));
 if (manifest.witnesses.length !== 34 || manifest.counts.initial !== 32 || manifest.counts.scrolled !== 2 ||
-    !/^[a-f0-9]{64}$/.test(manifest.apkSha256) || !/^[a-f0-9]{40}$/.test(manifest.prototypeCommit)) {
+    manifest.apkSha256 !== '54603701d6b942128a23c9f070ad55c1283312321aa980daf50469e00cf80398' ||
+    manifest.prototypeCommit !== 'a534bf5ac985e091cc93d6c663c24d72ad82a91c') {
   throw new Error('First-run review provenance or cohort differs from the inspected study.');
 }
 const images = {};
@@ -76,7 +77,7 @@ if (process.argv[2] === 'build') {
   }
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
       /__FIRST_RUN_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
-      /<input\b[^>]*\btype="radio"|name="placement"|name="visibility"/i.test(html)) {
+      /<input\b[^>]*\btype="radio"|name="placement"|name="visibility"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
     throw new Error('First-run review must be self-contained evidence, not a policy ballot.');
   }
   console.log('Validated exact offline first-run review, optional observations and native provenance.');
