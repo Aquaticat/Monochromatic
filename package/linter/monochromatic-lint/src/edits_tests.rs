@@ -90,6 +90,21 @@ fn insertion_boundaries_have_explicit_ordering() {
     assert_eq!(applied.rejected, [2]);
 }
 
+/// Adjacent edits within one fix and a replacement ending at an earlier insertion are compatible.
+#[test]
+fn adjacency_is_not_overlap_in_either_selection_order() {
+    let adjacent = [Fix { edits: vec![edit(0, 1, "A"), edit(1, 2, "B")] }];
+    assert_eq!(apply_fixes("ab", &adjacent).expect("adjacent edits").source, "AB");
+    let reverse = [
+        Fix { edits: vec![edit(1, 1, "X")] },
+        Fix { edits: vec![edit(0, 1, "A")] },
+    ];
+    let applied = apply_fixes("ab", &reverse).expect("replacement ending at insertion");
+    assert_eq!(applied.source, "AXb");
+    assert_eq!(applied.applied, [0, 1]);
+    assert!(applied.rejected.is_empty());
+}
+
 /// Overlapping edits inside one fix are rejected as an invalid plan.
 #[test]
 fn internal_overlap_and_duplicate_insertions_are_rejected() {

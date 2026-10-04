@@ -106,6 +106,22 @@ fn ranges_preserve_byte_columns_and_clamp_underlines() {
     );
 }
 
+/// A recovered string token ending at EOF must not mark the empty line after its final newline.
+#[test]
+fn unterminated_literal_does_not_claim_the_empty_final_line() {
+    let source = RustSource::new(String::from("broken.rs"), String::from("\"unterminated\n"));
+    assert_eq!(source.code_line_count(), 1);
+    assert_eq!(source.code_line_at(0), Some(1));
+    assert_eq!(source.code_line_at(1), None);
+}
+
+/// A final line without LF retains its complete text span.
+#[test]
+fn final_non_lf_line_keeps_its_last_byte() {
+    let source = RustSource::new(String::from("last.rs"), String::from("abc"));
+    assert_eq!(source.line_span(1), Some(Span { offset: 0, length: 3, line: 1, column: 1 }));
+}
+
 /// Empty and syntactically broken sources still produce queryable recovery trees.
 #[test]
 fn empty_and_recovery_trees_do_not_become_parse_findings() {

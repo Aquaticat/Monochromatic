@@ -146,7 +146,8 @@ impl RustSource {
             .get(line)
             .copied()
             .unwrap_or(self.source.len());
-        let end = if next > start && self.source[start..next].ends_with('\n') {
+        // An empty slice cannot end in LF, so a separate next > start guard is redundant.
+        let end = if self.source[start..next].ends_with('\n') {
             next - 1
         } else {
             next
@@ -168,7 +169,8 @@ impl RustSource {
             .get(index + 1)
             .copied()
             .unwrap_or(self.source.len());
-        let end = if next > start && self.source[start..next].ends_with('\n') {
+        // ends_with is false for the empty final line as well as every non-LF ending.
+        let end = if self.source[start..next].ends_with('\n') {
             next - 1
         } else {
             next
