@@ -17,7 +17,7 @@ use ide_app::text_raster::CodeColors;
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
 /// UI callbacks share state without cross-thread synchronization.
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 /// Convert a toolkit palette color to raster input without losing alpha.
 fn rgba(color: slint::Color) -> [u8; 4] {
@@ -47,7 +47,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // if (!samePaintInputs(previous, next)) pixels = paint(prepare(document));
     // ```
     let mut pixels = None;
-    let stamp = FrameStamp::new(&current.document, viewport, horizontal, colors, &current.styles);
+    let stamp = FrameStamp::new(&current.document, viewport, horizontal, colors, Arc::clone(&current.styles));
     if current.frame_stamp.as_ref() != Some(&stamp) {
         // Destructure the mutable borrow so caches can update while source is lent read-only.
         let State { document, styles, shaper, raster, .. } = &mut *current;

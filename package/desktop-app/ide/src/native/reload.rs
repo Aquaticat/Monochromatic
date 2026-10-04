@@ -10,6 +10,8 @@
 use super::{AppWindow, State, render};
 /// Background replies retain the file generation and source base revision.
 use ide_app::reload_worker::{ReloadReply, ReloadWorker};
+/// Reset source classifications without mutating a snapshot shared with the previous frame.
+use ide_app::source_style::SourceStyles;
 /// Timer callbacks and weak window references belong to the toolkit event loop.
 use slint::{ComponentHandle, Timer, TimerMode};
 /// Rc/RefCell stay UI-local; Instant schedules reads without changing wall-clock state.
@@ -56,7 +58,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
     let lines = current.document.text().len_lines();
     current.first = first.saturating_sub(1);
     current.document_width = 0.0;
-    current.styles.clear();
+    current.styles = SourceStyles::from([]);
     drop(current);
     // Update extent before the offset so the old document height cannot clamp a mapped viewport.
     window.set_total_lines(lines as i32);

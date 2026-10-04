@@ -1,12 +1,12 @@
 //! Source-image invalidation must preserve caret geometry without needless painting.
 
 /// Consumer APIs use the same stamp as the native rendering boundary.
-use ide_app::{document::{Document, ReadingPosition}, shaped_text::Viewport, source_frame::FrameStamp, text_raster::CodeColors, source_style::StyleSpan};
+use ide_app::{document::{Document, ReadingPosition}, shaped_text::Viewport, source_frame::FrameStamp, text_raster::CodeColors, source_style::{SourceStyles, StyleSpan}};
 
 /// Source-image fixture with explicit physical geometry and system colors.
 fn stamp(document: &Document) -> FrameStamp {
     // Borrow source and empty syntax without transferring their ownership.
-    return FrameStamp::new(document, viewport(), 0.0, colors(), &[]);
+    return FrameStamp::new(document, viewport(), 0.0, colors(), SourceStyles::from([]));
 }
 
 /// Standard logical viewport, with a nonintegral scale to exercise physical identity.
@@ -58,28 +58,28 @@ fn materialization_scale_theme_and_syntax_invalidate() {
     let original = stamp(&document);
     let mut area = viewport();
     area.first = 1;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), &[]));
+    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
     area = viewport();
     area.count += 1;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), &[]));
+    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
     area = viewport();
     area.width += 1.0;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), &[]));
+    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
     area = viewport();
     area.scale = 1.5;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), &[]));
-    assert!(original != FrameStamp::new(&document, viewport(), 0.25, colors(), &[]));
+    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, viewport(), 0.25, colors(), SourceStyles::from([])));
     let mut palette = colors();
     palette.dark = false;
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, &[]));
+    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([])));
     palette = colors();
     palette.foreground = [0,0,0,255];
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, &[]));
+    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([])));
     palette = colors();
     palette.selected = [0,0,0,255];
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, &[]));
+    assert!(original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([])));
     let styles = [StyleSpan { start: 0, end: 1, style: 1 }];
-    assert!(original != FrameStamp::new(&document, viewport(), 0.0, colors(), &styles));
+    assert!(original != FrameStamp::new(&document, viewport(), 0.0, colors(), SourceStyles::from(styles)));
 }
 
 /// Reloads must invalidate even when reading position and geometry do not change.

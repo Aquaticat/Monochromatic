@@ -18,7 +18,7 @@ use ui::AppWindow;
 /// Toolkit handles and models bridge owned Rust state to the window.
 use slint::{ComponentHandle, SharedString};
 /// Source and display geometry use the same library interface tested headlessly.
-use ide_app::{document::Document, source_style::StyleSpan};
+use ide_app::{document::Document, source_style::SourceStyles};
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::{ShapedView, TextShaper};
 /// Raster output retains the exact glyph positions used by selection.
@@ -60,7 +60,7 @@ struct State {
     /// A failed refresh retains source and displays an actionable error only while needed.
     file_error: Option<String>,
     /// Highlight ranges, populated by the syntax integration.
-    styles: Vec<StyleSpan>,
+    styles: SourceStyles,
     /// First materialized source line, including viewport overscan.
     first: usize,
     /// Bounded number of materialized source lines.
@@ -115,7 +115,7 @@ pub fn run() -> anyhow::Result<()> {
         file_path,
         file_generation: 1,
         file_error: None,
-        styles: Vec::new(),
+        styles: SourceStyles::from([]),
         first: 0,
         count: 32,
         width: 1044.0,
