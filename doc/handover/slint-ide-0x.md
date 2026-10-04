@@ -151,7 +151,8 @@ Package:
 ## Verified results
 
 - `mise run //package/desktop-app/ide:fetch` succeeded.
-- `mise run //package/desktop-app/ide:test` ran **7 document tests**, all passing.
+- `mise run //package/desktop-app/ide:test` ran **7 document tests**,
+  all passing.
   It did not include the subsequently added recent-file and view-model tests.
 - `mise run //package/desktop-app/ide:build` succeeded after the key adapter fix.
 - `mise run //package/desktop-app/ide:mcp` built with `slint/mcp`,
@@ -322,11 +323,15 @@ Also propose tightening `AGENTS.md` rule `VB1` to include successful no-startup 
 This policy proposal is not yet applied or accepted.
 Suggested replacement body:
 
-> Servers: check responses.
-> CLIs: run real commands and check output;
+> Servers:
+> check responses.
+> CLIs:
+> run real commands and check output;
 > `--help` must exit 0 without normal startup.
-> Hooks/plugins: trigger via host.
-> Libraries: test from a consumer.
+> Hooks/plugins:
+> trigger via host.
+> Libraries:
+> test from a consumer.
 
 ## Fonts and system theme
 
@@ -348,7 +353,10 @@ Include the release's copyright/license notices and record asset checksums.
 Bundle the faces actually used by the UI,
 including its non-regular weight if required.
 
-Slint source supports declarative font imports such as `import "font.ttf";`.
+Installed `i-slint-compiler-1.18.1/parser/document.rs:299` documents `import "something.ttf";`.
+`passes/embed_glyphs.rs:47` implements loading imported font bytes.
+This is source evidence;
+font import and embedding have not yet been exercised in our app.
 `slint-build` exposes `CompilerConfiguration::embed_resources(EmbedResourcesKind::EmbedFiles)`;
 Rust output defaults to embedded resources,
 but configure/test this explicitly rather than rely on a build-machine font path.
@@ -359,7 +367,8 @@ The current UI uses `Palette.background`,
 `Palette.foreground`,
 selection colors,
 and `Palette.color-scheme` for token palette branches.
-The host portal probe returned appearance value **1**, meaning dark.
+The host portal probe returned appearance value **1**,
+meaning dark.
 The headless screenshot was light;
 it is not evidence of host-theme tracking.
 
