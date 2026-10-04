@@ -5880,6 +5880,46 @@ reads `ran 0, still cold 0, cold since then 0, not loaded 0`
 and the two edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The fifteenth cluster of that census,
+`refine`,
+against `census-UCyK9F` at `3016312ec`:
+7 stretches over `refine-eligibility.ts`,
+`refine-wire.ts`,
+`refine-stage.ts` and `refine-slice-settle.ts`
+(`d8aea82b3`,
+`0ddd86249`,
+`7710497e2`,
+`45f0eae68`,
+`2e827df9c`).
+Five are cased through the public surface:
+the eligibility boundary's `not-body-zone` skip
+(no parse reaches it,
+a footnote definition parsing as one node the kind check refuses first,
+so the case hands the boundary a paragraph in the footnote-definition
+zone through the document parameter it takes),
+a rewrite entry that is no record,
+a rewrite writing the base back,
+the neighbour spreads riding the damage probe
+(a scripted flow reads the asked sheets:
+the neighbour source and incumbent arrive together,
+and neither where the slice stands alone),
+and the identity and reference context spreads of both the stage and the
+settle
+(the checker tally case threading them through the recheck call).
+The checker tally is cased with its control:
+an accepted issue left open counts not-worsened where no tally speaks,
+and the slice rolls back where one checker verdict says worse.
+Two were unreachable behind their callers' own contracts:
+`resolveRefineRewrites` binds an operation only to an envelope it found,
+so the stage's envelope lookup came out for `nonNullishOrThrow`;
+and the checker stage builds one tally per issue asked and
+`nonNullishOrThrow`-reads it for its own readings,
+so the `?.worse ?? 0` fallback came out the same way.
+The reach census (`~/temp/agent/mimo-trial/reach-refine4.log`)
+reads `ran 2, still cold 0, cold since then 0, not loaded 0`
+and the two edited sources "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

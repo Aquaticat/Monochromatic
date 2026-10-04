@@ -683,6 +683,41 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  05:55 UTC:
+  the T8 `refine` batch closed with commits `d8aea82b3`,
+  `0ddd86249`,
+  `7710497e2`,
+  `45f0eae68` and `2e827df9c`:
+  7 stretches over four files.
+  Five carry cases
+  (the eligibility boundary's non-body zone through its document
+  parameter,
+  a rewrite entry that is no record,
+  a rewrite naming no envelope and one writing the base back,
+  the neighbour and context spreads read off the asked sheets of a fully
+  scripted flow,
+  and the checker tally with its worse-verdict control).
+  Two came out behind their callers' own contracts
+  (the resolver binds operations only to envelopes it found;
+  the checker stage builds a tally per issue it asked),
+  both now `nonNullishOrThrow`.
+  The reach census reads `ran 2, still cold 0, cold since then 0, not loaded 0`
+  and the two edited sources "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-refine4.log`).
+  Counts at the close:
+  the full suite 1,552 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-refine-suite2.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-refine-scans2.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `2e827df9c`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/window` cluster
+  (the ranking's next at `census-UCyK9F`).
+
+- 2026-10-04,
   05:10 UTC:
   the next batch's baseline census taken at commit `f0d26bb64`:
   `census written to ~/.cache/translation-repair/coverage/census-UCyK9F/census.json`
