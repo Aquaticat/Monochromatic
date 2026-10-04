@@ -6493,6 +6493,29 @@ The whole-suite census (`census-1iMkkv`)
 lists that one stretch for the file.
 No B entry found.
 
+The thirty-ninth cluster of that census,
+`corpus-run/spend`,
+against `census-1iMkkv` at `6148ad0ce`:
+5 line stretches over `spend-read.ts`
+(`07d5f9647`).
+All cased:
+a first field naming no record
+(`not-a-record`),
+a negative count,
+and a record missing its prompt or its completion
+(`unreadable`),
+each read off a logged SPEND line.
+The reach census (`~/temp/agent/mimo-trial/reach-spend.log`)
+reads `ran 3, still cold 2`
+(`238`,
+`345`),
+but a direct probe of the four refusals
+(`~/temp/agent/mimo-trial/spend-arm-probe.log`)
+shows each arm's own value returning,
+so the two lines' stretches are the census's attribution
+rather than unrun code.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

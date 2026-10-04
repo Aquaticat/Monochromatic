@@ -683,6 +683,33 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  16:20 UTC:
+  the T8 `corpus-run/spend` batch closed with commit `07d5f9647`:
+  5 line stretches over `spend-read.ts`,
+  all cased
+  (the not-a-record and unreadable refusals
+  read off logged SPEND lines).
+  The reach census reads `ran 3, still cold 2`
+  on `238`
+  and `345`,
+  but a direct probe shows each arm's own value returning
+  (`~/temp/agent/mimo-trial/spend-arm-probe.log`),
+  so those two are the census's line attribution
+  rather than unrun code.
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-spend-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-spend-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `07d5f9647`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/editor` cluster
+  (the ranking's next at `census-1iMkkv`).
+
+- 2026-10-04,
   16:10 UTC:
   the T8 `edit` batch closed with commit `527789637`:
   5 line stretches over `edit-prompt.ts`
