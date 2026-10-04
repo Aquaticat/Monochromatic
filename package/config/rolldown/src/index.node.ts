@@ -5,6 +5,7 @@ import {
 } from 'rolldown';
 import { dts, } from 'rolldown-plugin-dts';
 
+import { binShebangPlugin, } from './bin-shebang.ts';
 import { browserslistTargets, } from './browserslist-targets.ts';
 import {
   anchoredExternal,
@@ -68,6 +69,17 @@ export async function nodeExternal({ alwaysBundle, }: {
 }
 
 /**
+ Plugins shared by every Node build:
+ Oxc declarations,
+ executable bits for shebang outputs,
+ and Node shebang injection for bin-targeted chunks.
+ */
+const basePlugins = [
+  dts({ generator: 'oxc', },),
+  shebangExecutablePlugin(),
+];
+
+/**
  Shared raw-rolldown options for Node platform builds, without an input.
  
  Bundles workspace dependencies (`@monochromatic-dev/*`) into the output
@@ -83,10 +95,7 @@ const baseOptions: RolldownOptions = {
   platform: 'node',
   external: await nodeExternal({ alwaysBundle: NODE_ALWAYS_BUNDLE, },),
   transform: { target: [...target,], },
-  plugins: [
-    dts({ generator: 'oxc', },),
-    shebangExecutablePlugin(),
-  ],
+  plugins: basePlugins,
 };
 
 /**
@@ -128,6 +137,9 @@ function isInputList(
 /**
  Build one Node flavor config with overridable input and output directory.
  
+ Bin-targeted entry chunks get `#!/usr/bin/env node` injected at byte 0
+ through {@link binShebangPlugin}, so built CLIs cannot fall through to `/bin/sh`.
+ 
  @param input - Source input paths; defaults to the package index.
  
  @param outputDir - Output directory; committed Claude Code plugin bundles
@@ -165,6 +177,10 @@ export function nodeConfig(
     ...baseOptions,
     ...external === undefined ? {} : { external: [...external,], },
     input: isInputList(input,) ? [...input,] : { ...input, },
+    plugins: [
+      ...basePlugins,
+      binShebangPlugin({ outputDir, },),
+    ],
     output: {
       ...baseOutput,
       dir: outputDir,
@@ -233,6 +249,10 @@ export function perEntryNodeConfig(
     return {
       ...baseOptions,
       input: [entry,],
+      plugins: [
+        ...basePlugins,
+        binShebangPlugin({ outputDir, },),
+      ],
       output: {
         ...baseOutput,
         dir: outputDir,
