@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "scope": "One unaccepted keyboard-map design proposal with isolated authored browser behavior. No native application keyboard implementation, source operation, real audio, OS media-key delivery or IME study.",
-  "htmlSha256": "d9281ae926ecd6fa73c8a24f747abb1b83d9eda872885a55410c821ce187e28a",
+  "htmlSha256": "e982c284d2a054b2ea98ea8f20660c53628bbcfecff38a1c70475b05681f8e00",
   "classifierTestSha256": "c9c14b95774a45a8ff4e0ae16efb1163e9d95c4eb8b2bd2856f6085d07c8afab",
   "browserEngine": "Chromium; no Firefox or native OS delivery claim",
   "browserCli": "0.38.1",
