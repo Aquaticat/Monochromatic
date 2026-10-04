@@ -10,8 +10,8 @@ import {
   NO_SANDBOX_OWNER,
   type SandboxRuntime,
   type SandboxOwner,
-} from './sandbox-owner.ts';
-import { SandboxOwnershipError, } from './sandbox-error.ts';
+  SandboxOwnershipError,
+} from '@monochromatic-dev/module-test-sandbox/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
   ExecutionOptions,

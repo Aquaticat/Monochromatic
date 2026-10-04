@@ -12,9 +12,9 @@ import {
 import {
   createScopedExpect,
   type ScopedExpect,
-} from './expect.ts';
-import { formatFailure, } from './format-error.ts';
-import type { DisposableSandbox, } from './sinon.ts';
+} from '@monochromatic-dev/module-test-expect/ts';
+import { formatFailure, } from '@monochromatic-dev/module-test-diagnostic/ts';
+import type { DisposableSandbox, } from '@monochromatic-dev/module-test-sandbox/ts';
 import { runItAttempt, } from './it-attempt.ts';
 import { createVerdictLoggers, } from './verdict.ts';
 import { runObservedExecution, } from './execution.ts';

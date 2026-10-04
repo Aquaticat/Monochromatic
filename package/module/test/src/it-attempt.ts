@@ -3,12 +3,14 @@
  */
 import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import type { ScopedExpect, } from './expect.ts';
+import type { ScopedExpect, } from '@monochromatic-dev/module-test-expect/ts';
+import {
+  createOwnedSandbox,
+  SandboxCleanupError,
+  type SandboxOwner,
+} from '@monochromatic-dev/module-test-sandbox/ts';
 import type { TestContext, } from './it.ts';
-import { createOwnedSandbox, } from './sandbox.ts';
-import type { SandboxOwner, } from './sandbox-owner.ts';
 import { sandboxRuntime, } from './sandbox-runtime.ts';
-import { SandboxCleanupError, } from './sandbox-error.ts';
 
 /**
  Executes one attempt and closes its context before restoring any target state.

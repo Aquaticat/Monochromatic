@@ -71,17 +71,15 @@ export function readProperty({
  
  Three categories:
  
- - The harness's own built bundle, under two paths because consumers
-   resolve it either as a workspace package
-   (`package/module/test/dist/`) or via `node_modules`
-   (`module-test/dist/`). The source-export counterpart lives in
+ - Runner, assertion, sandbox, and diagnostic bundles, under workspace
+   paths (`package/module/test-expect/dist/`) and installed package paths
+   (`module-test-expect/dist/`). The source-export counterpart lives in
    {@link HARNESS_SOURCE_FRAGMENTS}, which needs the test-file guard.
  
  - The vendored assertion stack. `expect()` lands in `chai`, which
    dispatches through `chai-as-promised` and `sinon-chai`, and `sinon`
-   spies feed the sinon-chai matchers. These four are module/test's
-   only consumers in the monorepo, so any frame inside them on a
-   failure path comes from the harness's assertion dispatch.
+   spies feed the sinon-chai matchers. These package paths identify
+   assertion dispatch rather than the user's failing assertion.
  
  - `p-limit`, the concurrency limiter `describe.ts` uses to fan tests
    out. Its frames sit below the harness runner on every failure and
@@ -98,6 +96,12 @@ export function readProperty({
 export const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
   'package/module/test/dist/',
   'module-test/dist/',
+  'package/module/test-expect/dist/',
+  'module-test-expect/dist/',
+  'package/module/test-sandbox/dist/',
+  'module-test-sandbox/dist/',
+  'package/module/test-diagnostic/dist/',
+  'module-test-diagnostic/dist/',
   'node_modules/chai/',
   'node_modules/chai-as-promised/',
   'node_modules/sinon-chai/',
@@ -109,11 +113,9 @@ export const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
  Substrings identifying frames inside the harness's own **source**
  dispatch files (`it.ts`, `describe.ts`, `descriptor.ts`,
  `expect*.ts`, `format-error.ts`, ...). Consumers import the harness
- via its `/ts` export, which maps to `src/` (387 of 394 test files do
- this), so these frames leak into every failure trace and bury the
- user's assertion line. Both the workspace form
- (`package/module/test/src/`) and the `node_modules` form
- (`module-test/src/`) are listed.
+ via `/ts` exports, which map to `src/`, so those dispatch frames
+ must also be hidden. Both workspace and installed package forms
+ are listed for the runner and every extracted responsibility.
  
  Unlike {@link HARNESS_INTERNAL_FRAGMENTS} these match only when the
  frame is **not** a test file: the harness's own test suite lives
@@ -124,6 +126,12 @@ export const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
 export const HARNESS_SOURCE_FRAGMENTS: readonly string[] = [
   'package/module/test/src/',
   'module-test/src/',
+  'package/module/test-expect/src/',
+  'module-test-expect/src/',
+  'package/module/test-sandbox/src/',
+  'module-test-sandbox/src/',
+  'package/module/test-diagnostic/src/',
+  'module-test-diagnostic/src/',
 ];
 
 //endregion Harness frame fragments

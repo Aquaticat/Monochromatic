@@ -3,8 +3,10 @@ export {
   extractLocationSubstring,
   isIntegerString,
   readAssertionSites,
-} from './assertion-source.ts';
-export type { AssertionSite, } from './assertion-source.ts';
+  formatErrorDeep,
+  formatFailure,
+} from '@monochromatic-dev/module-test-diagnostic/ts';
+export type { AssertionSite, } from '@monochromatic-dev/module-test-diagnostic/ts';
 
 export { describe, } from './describe.ts';
 export type {
@@ -14,11 +16,6 @@ export type {
 } from './describe.ts';
 
 export type { TestDescriptor, } from './descriptor.ts';
-
-export {
-  formatErrorDeep,
-  formatFailure,
-} from './format-error.ts';
 
 export { it, } from './it.ts';
 export type {
@@ -30,15 +27,14 @@ export type {
 export {
   createScopedExpect,
   expect,
-} from './expect.ts';
+  expectTypeOf,
+} from '@monochromatic-dev/module-test-expect/ts';
 export type {
   AssertionTracker,
   AsyncMatcherSet,
   ExpectResult,
   MatcherSet,
   ScopedExpect,
-} from './expect.ts';
+} from '@monochromatic-dev/module-test-expect/ts';
 
-export type { DisposableSandbox, } from './sinon.ts';
-
-export { expectTypeOf, } from 'expect-type';
+export type { DisposableSandbox, } from '@monochromatic-dev/module-test-sandbox/ts';

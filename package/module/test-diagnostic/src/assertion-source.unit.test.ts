@@ -13,12 +13,14 @@
 import {
   describe,
   expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
   extractAssertionExpression,
   extractLocationSubstring,
   isIntegerString,
-  it,
   readAssertionSites,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test-diagnostic';
 
 /**
  Writes `lines` to a unique temp `.ts` file and returns its absolute

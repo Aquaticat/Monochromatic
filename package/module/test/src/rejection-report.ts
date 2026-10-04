@@ -4,7 +4,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ObservedExecution, } from './execution-types.ts';
-import { formatFailure, } from './format-error.ts';
+import { formatFailure, } from '@monochromatic-dev/module-test-diagnostic/ts';
 
 /**
  Emits an attributed async-work failure and explains the unchanged body verdict.

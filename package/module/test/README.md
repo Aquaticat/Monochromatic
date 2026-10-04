@@ -7,6 +7,32 @@ Designed to replace `bun:test` as the monorepo's test primitive
 with a runtime-neutral,
  self-contained alternative.
 
+## Package responsibilities
+
+This package remains the runner and convenient entry point.
+Its existing exports forward to responsibility-focused packages:
+
+- [module-test-expect](../test-expect/README.md):
+  matchers,
+  scoped assertion tracking,
+  and type assertions.
+- [module-test-sandbox](../test-sandbox/README.md):
+  disposable Sinon sandboxes,
+  guarded mocking,
+  and restoration ownership.
+- [module-test-diagnostic](../test-diagnostic/README.md):
+  failure formatting,
+  assertion-source inspection,
+  and harness-frame filtering.
+
+Existing test imports do not need to change.
+The runner retains execution,
+async-context attribution,
+timeouts,
+and verdict reporting.
+It injects its existing runtime adapter into the sandbox implementation.
+The extracted packages do not import the runner in production.
+
 ## Why not an existing framework
 
 Vitest was evaluated and rejected;
@@ -1735,14 +1761,11 @@ The browser consumer bundles only after its neutral artifact has finished buildi
 
 ## Property-based testing (internal)
 
-`format-error.property.unit.test.ts` fuzzes the wide-input surfaces of `format-error.ts` with
+The diagnostic package's `src/format-error.property.unit.test.ts` fuzzes its formatter with
 [fast-check](https://www.npmjs.com/package/fast-check).
- fast-check is an internal dev tool for this
-self-test only:
- it is a `devDependency`,
- is not re-exported from `index.ts`,
- and never reaches
-consumers of the harness.
+Run it with `mise run //package/module/test-diagnostic:buildAndTest`.
+`fast-check` is a development dependency of that package,
+not a runtime dependency of the harness.
 
 Conventions for adding property tests here:
 
@@ -1801,6 +1824,8 @@ Conventions for adding property tests here:
 - **@monochromatic-dev/module-logger**:
    tagged logger
 
-fast-check is a `devDependency` used only by the property-based self-tests;
- it is not a runtime
-dependency and is not part of the public API.
+`fast-check` belongs to `module-test-diagnostic`'s development dependencies.
+The runner retains declarations for Chai,
+Sinon,
+and their plugins because its built artifacts inline the extracted workspace source
+while preserving those third-party runtime imports as externals.

@@ -10,10 +10,12 @@
 import {
   describe,
   expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
   formatErrorDeep,
   formatFailure,
-  it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test-diagnostic';
 
 /**
  Builds an Error whose `.stack` is exactly the lines passed in.

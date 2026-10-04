@@ -15,7 +15,7 @@ import {
   RUN_WITH_CONTEXT,
   type TestDescriptor,
 } from './descriptor.ts';
-import { formatFailure, } from './format-error.ts';
+import { formatFailure, } from '@monochromatic-dev/module-test-diagnostic/ts';
 import type { ItResult, } from './it.ts';
 import { createVerdictLoggers, } from './verdict.ts';
 import { runObservedExecution, } from './execution.ts';

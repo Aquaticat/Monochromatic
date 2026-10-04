@@ -44,10 +44,12 @@ import { ASCII_LOWERCASE_ALPHANUMERIC_CHARS, } from '@monochromatic-dev/module-c
 import {
   describe,
   expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
   formatErrorDeep,
   formatFailure,
-  it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test-diagnostic';
 
 //region Constants
 
@@ -89,6 +91,12 @@ const MAX_HARNESS_FRAMES = 6;
 const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
   'package/module/test/dist/',
   'module-test/dist/',
+  'package/module/test-expect/dist/',
+  'module-test-expect/dist/',
+  'package/module/test-sandbox/dist/',
+  'module-test-sandbox/dist/',
+  'package/module/test-diagnostic/dist/',
+  'module-test-diagnostic/dist/',
   'node_modules/chai/',
   'node_modules/chai-as-promised/',
   'node_modules/sinon-chai/',

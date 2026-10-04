@@ -2,11 +2,13 @@
 
 ## Status
 
-Concrete layout proposed after the user's scope clarification.
-The user requested splitting `module-test` with `/grill-me`.
-Implementation waits for confirmation of the shared plan.
-This is a planning document,
-not an adopted architecture decision.
+Implementation authorized by the user's explicit "Do it. Proceed."
+The four-package layout is accepted.
+Extraction is in progress;
+package linking,
+builds,
+lint,
+and runtime verification are pending.
 
 ## Confirmed direction
 
@@ -301,7 +303,7 @@ not proposals to replace our implementation or evidence of equivalent behavior.
 
 ## Work areas
 
-- [ ] Confirm the proposed package layout and names.
+- [x] Confirm the proposed package layout and names.
 - [ ] Extract implementations,
   metadata,
   and tests while preserving runner re-exports.
@@ -321,5 +323,7 @@ Only this planning document has changed for this task.
 
 ## Next action
 
-Present the concrete layout and ask for shared-understanding confirmation.
-Do not treat the withdrawn contract questions as outstanding work.
+Complete extraction and responsibility-local tests,
+link the workspace with the owning package manager,
+then run the scoped verification queue.
+Preserve unrelated existing changes in `pnpm-lock.yaml` when staging the generated update.

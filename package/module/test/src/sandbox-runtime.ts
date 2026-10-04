@@ -4,7 +4,7 @@
 import {
   NO_SANDBOX_OWNER,
   type SandboxRuntime,
-} from './sandbox-owner.ts';
+} from '@monochromatic-dev/module-test-sandbox/ts';
 
 /**
  Resolves context support using the same runtime gate as descriptor observation.
