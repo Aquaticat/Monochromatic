@@ -218,6 +218,19 @@ await describe({
         },),
 
         it({
+          name: 'CHECKS THE PAGE BOUNDS where one was given, faulting a rendering carrying the pair\'s '
+            + 'English more times than the page does',
+          fn: async () => {
+            expect(compareLineCounts({
+              lineStructured: true,
+              sourceText: '猫住在北方的小村。\nÅ',
+              candidateText: 'Å. The cat lived in a small northern village.\nÅ. The cat lived in a small northern village.',
+              pageText: '猫住在北方的小村。\nÅ\n\n正文继续。',
+            },).length,).toBeGreaterThan(0,);
+          },
+        },),
+
+        it({
           name: 'COUNTS NO PAIR where the line beside the Han one carries no letter at all, numbers '
             + 'being neither tongue, so merging the two is a fault the pairing never excused',
           fn: async () => {
