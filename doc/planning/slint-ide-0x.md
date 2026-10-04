@@ -13,7 +13,8 @@ not an adoption decision.
 - Refer to the paused editor at `package-paused/desktop-daemon/editord`.
 - Cut the 0.x scope ruthlessly.
 - Actual text editing is not needed.
-- Follow-up clarification: "No changes to files via any way is needed in 0.x".
+- Follow-up clarification:
+  "No changes to files via any way is needed in 0.x".
   Exclude file-mutation workflows whether performed directly or delegated to another process.
 - Resolve the design through a grilling interview before implementing.
 
@@ -25,7 +26,8 @@ No promise of editing in a later version is implied.
 
 ## Reference evidence
 
-- [Paused editor README][editor-readme]: browser frontend plus daemon;
+- [Paused editor README][editor-readme]:
+  browser frontend plus daemon;
   search,
   filesystem operations,
   language services,
@@ -33,15 +35,18 @@ No promise of editing in a later version is implied.
   and keyboard navigation.
 - The README's `JetBrains parity` section calls every behavioral difference a bug.
   Whether that constraint transfers to retained features is an open question.
-- [WebStorm comparison][comparison]: the recorded reason to retain editord shifted from scrolling to freshness.
+- [WebStorm comparison][comparison]:
+  the recorded reason to retain editord shifted from scrolling to freshness.
   This is historical project rationale,
   not a newly verified claim about current WebStorm behavior.
 - The comparison's `The condition: fuzzing earns the keep` section identifies unverified watcher edges
   and a self-save suppression window.
   Do not inherit its stronger correctness-by-construction claims as proof.
-- [Current watcher source][watcher]: filesystem watching includes orphan-temp deletion and event suppression.
+- [Current watcher source][watcher]:
+  filesystem watching includes orphan-temp deletion and event suppression.
   Reusing a watcher does not automatically produce a read-only application.
-- [Current keybindings][keybindings]: navigation and copying coexist with saving,
+- [Current keybindings][keybindings]:
+  navigation and copying coexist with saving,
   formatting,
   rename,
   line edits,
