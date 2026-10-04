@@ -6727,6 +6727,28 @@ reads `ran 0, still cold 4`:
 those four.
 No B entry found.
 
+The forty-ninth cluster of that census,
+`displacement`,
+against `census-vlck42` at `4bc9dbb79`:
+4 line stretches over `displacement-class.ts`
+(`f7fa3843e`,
+`70ab0cae0`,
+`1160a11a8`).
+Three closed as unreachable:
+the relocation surplus,
+the target-only slice,
+and the slice class,
+all three reads their own comments mark as known present
+(the index came from the readings,
+the classes map built one entry per reading).
+One cased:
+a high slice whose neighbour's give-up
+is far below the surplus's conserved fraction
+pairs with nothing.
+The reach census (`~/temp/agent/mimo-trial/reach-displacement2.log`)
+reads `left 0 cold stretches`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

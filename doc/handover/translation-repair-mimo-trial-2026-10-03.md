@@ -705,6 +705,35 @@ so a fresh context resumes from this file alone.
   the `displacement` batch.
 
 - 2026-10-04,
+  20:37 UTC:
+  the T8 `displacement` batch closed with commits `f7fa3843e`,
+  `70ab0cae0`,
+  `1160a11a8`:
+  4 line stretches over `displacement-class.ts`,
+  three closed as unreachable
+  (the surplus,
+  the target-only slice,
+  and the class:
+  each read through a fallback its own comment
+  marks as known present),
+  one cased
+  (the conserved-fraction refusal).
+  The reach census reads `left 0 cold stretches`
+  (`~/temp/agent/mimo-trial/reach-displacement2.log`).
+  Counts at the close:
+  the full suite 1,561 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-displacement-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-displacement-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `1160a11a8`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/name` cluster
+  (the ranking's next at `census-vlck42`).
+
+- 2026-10-04,
   20:20 UTC:
   the next batch's baseline census taken at commit `edd68a330`:
   `census written to ~/.cache/translation-repair/coverage/census-PGu68D/census.json`
