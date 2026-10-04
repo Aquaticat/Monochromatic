@@ -5670,6 +5670,38 @@ reads `still cold 0, cold since then 0, not loaded 0`
 and the three edited sources "loaded it and left 0 cold stretches".
 No B entry found.
 
+The ninth cluster of that census,
+`synthetic`,
+against `census-xB1R6c` at `e7acc45c8`:
+9 stretches over `synthetic-quota.ts` and `synthetic-transport.ts`
+(`eca4d6e9f`).
+Seven are `QuotaShapeError` field refusals in `parseQuotaSnapshot`,
+all reachable from a malformed `/quotas` body,
+cased in four:
+the body parsing to a JSON array where the object goes,
+the weekly block arriving as a string,
+each mistyped five-hour field
+(`max`,
+`limited`,
+`nextTickAt`)
+and each mistyped weekly field
+(`percentRemaining`,
+`nextRegenAt`),
+every one naming its own field in the refusal message.
+Two are the `maxAnswerChars` and `wireFormat` conditional spreads
+`fetchTransport` passes into `drainBody`,
+cold on their present arms:
+one case raises the drain's overrun on an answer past a caller bound,
+one reads an anthropic-shaped stream when the exchange names its wire
+format
+and carries its control half,
+the same body unnamed completing untouched
+since an anthropic frame holds no `choices` key for the default scanner.
+Nothing came out as unreachable.
+The reach census (`~/temp/agent/mimo-trial/reach-synthetic.log`)
+reads `ran 9, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

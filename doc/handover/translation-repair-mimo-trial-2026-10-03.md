@@ -683,6 +683,36 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  02:42 UTC:
+  the T8 `synthetic` batch closed with commit `eca4d6e9f`:
+  9 stretches over `synthetic-quota.ts` and `synthetic-transport.ts`,
+  all cased and none unreachable.
+  Seven quota field refusals read through four cases
+  (the array-instead-of-object body,
+  the string weekly block,
+  each mistyped five-hour field,
+  each mistyped weekly field),
+  every refusal naming its own field.
+  Two transport pass-throughs read through one overrun case
+  and one wire-format case with its control half
+  (the anthropic body unnamed completes past the same bound,
+  its frames holding no `choices` key).
+  The reach census reads `ran 9, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-synthetic.log`).
+  Counts at the close:
+  the full suite 1,548 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-synthetic-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-synthetic-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `eca4d6e9f`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `inspect` cluster
+  (the ranking's next at `census-xB1R6c`).
+
+- 2026-10-04,
   02:26 UTC:
   `B123` closed with commits `23137d784` (red),
   `539cd11b8` (the design recorded mid-batch)
