@@ -10,10 +10,10 @@ continue the queue without asking the user to say “continue”.
 The application remains an incomplete source-view gate.
 
 Current boundary:
-finish native font-fidelity verification requested by the user,
-then continue annotations,
-workspace navigation,
-and language intelligence.
+continue workspace tree/search/navigation after the verified font fixes.
+The new read-only workspace model is committed and its test run is pending.
+Repeat native font isolation after the recent Slint procedural-macro integration change,
+then continue annotations and language intelligence.
 Actual TypeScript/Rust syntax is now wired and the highlighted native screenshot was inspected.
 The simplified UI,
 nested clipboard,
@@ -379,17 +379,23 @@ selection clearing,
 and clean producer shutdown.
 See [the clipboard investigation][clipboard].
 
-The latest complete IDE suite passes 48 tests after font clipping coverage was added.
-A subsequent Inter contextual/discretionary test is running separately.
+The latest complete IDE suite passes 49 tests after the expanded font checks;
+the native headless DPI test also passes.
+A new five-case workspace-model test file was added afterward and is running.
 The headless native DPI regression was observed failing (1300-pixel bitmap retained instead of 2600),
 then passed after adding physical-pixel scale invalidation.
 It checks scale factors 2,
 1.25,
 and back to 1 without source input or resize.
 The Slint markup check and native build pass.
-IDE Clippy remains blocked by shadowing in app bindings and generated Slint code;
-no shadow lint has been relaxed.
-An alternative macro compilation path was source-inspected but not applied or tested.
+IDE Clippy,
+Rust documentation/line budgets,
+and Slint markup checks now pass.
+`native.rs` uses Slint's supported procedural-macro re-export of `ui/app.slint`,
+retaining generated-code provenance rather than suppressing shadow lints.
+The earlier generated-module implicit-return allowance was removed.
+`build.rs` explicitly supplies `SLINT_EMBED_RESOURCES=true` to that macro and retains standalone markup validation.
+Native font-isolation verification should be repeated for this integration change.
 
 The minimal dark UI screenshot at
 `/tmp/monochromatic-ide-native-8rNGro/minimal-dark.png`
@@ -402,14 +408,30 @@ Only the file context and source remain visible in the normal source-view gate.
 
 ## Active probes at this checkpoint
 
-- `proc_75d5`,
+- `proc_f89f`,
+  `ide-workspace-model-tests`,
+  runs the IDE suite with new read-only workspace tests.
+- `proc_e9fe`,
+  `ide-font-cold-start`,
+  is the current dark/syntax probe.
+  Socket:
+  `/tmp/monochromatic-ide-native-46wFSY/control.sock`.
+  MCP:
+  `http://127.0.0.1:9318/mcp`.
+  It predates the procedural-macro integration change.
+  Its font probe copied the middle `=` of `===` and its dark screenshot was inspected.
+
+- `proc_75d5` (stopped),
   `ide-light-font-native`,
-  is starting a light/syntax fixture with the ligature and DPI fixes.
-  MCP will use port 9319.
-  Read its readiness logs for the new private socket and source file.
+  verified the light/syntax fixture with ligature and DPI fixes.
+  `/tmp/monochromatic-ide-native-SjCyvc/font-probe.mjs` copied exactly `=` from the middle of `===`.
+  Selection was at x=236,
+  y=32,
+  with width 9.
+  `ligature-light.png` in that directory was inspected.
 - `proc_2d43`,
   `ide-inter-default-features`,
-  runs the expanded font tests including Inter calt/dlig defaults.
+  passed the expanded font tests including Inter calt/dlig defaults.
 
 - `proc_1614` (stopped),
   `ide-live-reload-native-retry`,
@@ -540,12 +562,51 @@ Recency behavior is in `src/client/recent-files.ts`,
 and `src/client/file-tree/reveal.ts`.
 The paused browser/WebSocket daemon architecture is not being revived.
 
+## Workspace model and remaining verification details
+
+`src/workspace.rs` opens one canonical local root,
+resolves tree/search paths against it,
+and returns fresh directory snapshots in filesystem order.
+It preserves hidden entries and native filenames.
+`tests/workspace.rs` covers normal listings,
+refresh,
+contained paths,
+sibling-prefix/parent escapes,
+symlinks,
+and invalid directory inputs.
+No tree UI is wired yet.
+Canonical path checks do not claim race-proof OS-level read confinement;
+server project-write confinement remains a separate required gate.
+
+Reference search behavior was re-read:
+editord returns up to 20 smart-case substring file-path matches before up to 30 regex content matches,
+one content line per file,
+using concurrent ripgrep processes and cancellation.
+Its tree preserves readdir order and does not turn directory symlinks into expandable directories.
+Its CSS uses tab-size 2;
+the current source projection still expands tabs using a four-column terminal-width calculation.
+Tab-width parity and mixed-script physical tab geometry are outstanding findings,
+not verified font behavior.
+
+The runtime build helper's configuration-boundary test passes,
+but its guard still needs an observed-failing removal probe in disposable fixtures.
+Do not loosen the guard or touch real user configuration for that verification.
+
+The compositor protocol-delivery regression failed with an unflushed sync reply,
+then passed after end-of-dispatch flushing.
+Its full 41-test suite,
+Clippy,
+and release build pass.
+The rebuilt helper cold-started the native dark font probe successfully.
+The earlier light-startup stall recovered before the fix,
+so its exact trigger remains unproven.
+See `doc/troubleshooting/nested-wayland-protocol-delivery.md`.
+
 ## Repository safety and policy proposals
 
 Scope every commit to task files and preserve concurrent work.
 Auto-push is enabled.
-Untracked `package/desktop-app/ide/LICENSES/` was produced by repository enforcement;
-preserve and include it appropriately.
+Generated GPL/LGPL texts under `package/desktop-app/ide/LICENSES/` are now committed unchanged.
 Current unrelated linter work is concurrent work,
 not something to revert.
 
