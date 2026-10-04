@@ -265,12 +265,38 @@ Ghostty's diagnostic correctly reports an execution failure in the reproduced ca
     first-party fixes and regressions are committed;
     no Ghostty patch was made.
 
-## Tracking and next action
+## Final verification and tracking
+
+On 2026-10-04,
+all package verification commands in the Verification section passed.
+Oxlint reported `Found 0 warnings and 0 errors.`
+The regression output included every startup scenario,
+including `detached-start`,
+and both deadline and caller-abort cases.
+The real Ghostty task returned:
+
+```text
+Detached terminal verified: answered
+Detached terminal verified: cancelled
+```
+
+The extension verifier confirmed sequential registration,
+shutdown cleanup registration,
+and the helper artifact.
+Markdown was rendered with installed Marked `18.0.11` and inspected.
+Independent review found no remaining correctness blocker in the reproduced launch paths.
+
+The built output is intentionally ignored by `.gitignore:53` (`dist/`),
+not tracked;
+source commits were auto-pushed and local artifacts rebuilt.
+The source fixes are `1db6774ac`,
+`744e1d128`,
+`d0808a498`,
+and `c443026a6`;
+subsequent fixture and documentation commits complete their verification.
 
 Keep #581 open until the intermittent reported incident is matched or verified resolved in normal use.
-Finish package lint,
-repeat the corrected real-terminal verifier,
-and record the final check results before reporting completion.
-A fresh Pi process is required to verify its newly built extension rather than an already loaded bundle.
+No historical timeout was retroactively attributed to a particular missing file.
+Use a fresh Pi process to exercise the rebuilt extension rather than an already loaded bundle.
 
 [issue]: https://github.com/Aquaticat/Monochromatic/issues/581

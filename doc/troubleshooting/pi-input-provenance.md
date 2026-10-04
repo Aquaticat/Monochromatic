@@ -622,7 +622,14 @@ proving the reference would otherwise remain.
 These are inert bootstrap checks,
 not a genuine workflow repair claim.
 
-The private bootstrap remedy owns one event-loop reference through the callback:
+Production update on 2026-10-04:
+commit `c443026a6` keeps the ask-user channel listener referenced during detached startup.
+A separate disposable regression now reproduces the unreferenced requester exit,
+and the real-terminal verifier checks submission and cancellation after the production change.
+See [the startup investigation](pi-ask-user-question-startup.md).
+This does not replay or qualify any private genuine-confirmation epoch described here.
+
+The historical private bootstrap remedy owns one event-loop reference through the callback:
 
 ```javascript
 // Private contract/human-origin/liveness-controls/lease.mjs:4
