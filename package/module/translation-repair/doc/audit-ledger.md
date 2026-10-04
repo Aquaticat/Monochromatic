@@ -6334,6 +6334,27 @@ The reach census (`~/temp/agent/mimo-trial/reach-model2.log`)
 reads `ran 5, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The thirty-second cluster of that census,
+`corpus-run/bench`,
+against `census-WGrBjo` at `eb21c9e1e`:
+5 line stretches over `bench-report.ts`
+(`2810a9104`).
+Two closed as unreachable:
+the middle-width fallback
+(a `??` over an index the empty-widths throw already guards)
+became `nonNullishOrThrow`,
+and the `describeRows` empty-rows note came out
+(its one caller groups non-empty lists).
+Two cased:
+the middle width read as the repeat beside the empty-roster refusal,
+and the token sums of every call a row made
+(through the captured report output).
+The reach census (`~/temp/agent/mimo-trial/reach-bench.log`)
+left one cold stretch in the focused run,
+none in the whole-suite census
+(`census-G4ZkGi` lists no `bench-report.ts` stretch).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

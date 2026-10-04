@@ -683,6 +683,41 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  14:19 UTC:
+  the T8 `corpus-run/bench` batch closed with commit `2810a9104`:
+  5 line stretches over `bench-report.ts`,
+  two closed as unreachable
+  (the middle-width fallback narrowed,
+  the empty-rows note removed),
+  two cased
+  (the middle width repeat,
+  the token sums).
+  The reach census reads `left 1 cold stretch` in the focused run
+  and none in the whole-suite census
+  (`~/temp/agent/mimo-trial/reach-bench.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-model-suite.log` was the last full count;
+  this batch's tests ran green at `~/temp/agent/mimo-trial/t8-bench-named7.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL].
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `2810a9104`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline:
+  `census written to ~/.cache/translation-repair/coverage/census-G4ZkGi/census.json`
+  (`~/temp/agent/mimo-trial/census-37.log`),
+  `library source: 129 files, 228 stretches over 475 lines, 5 functions never called`
+  (the never-called count moved again,
+  8 to 5).
+  Largest clusters by stretches then lines:
+  `grade` leads with 5 stretches over 11 lines in 2 files,
+  `restoration` with 5 over 8 in 2,
+  `han` with 5 over 7 in 2.
+  Next:
+  the `grade` batch.
+
+- 2026-10-04,
   14:00 UTC:
   the next batch's baseline census taken at commit `3970d3c0d`:
   `census written to ~/.cache/translation-repair/coverage/census-WGrBjo/census.json`
