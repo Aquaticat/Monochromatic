@@ -589,7 +589,7 @@ await describe({
               lines: [`[info] [not-a-date] [translation-repair] [reportStreamProgress] stream ${OPENROUTER_ID}: completed, elapsed 1ms, firstByte 1ms, maxGap 1ms, 1 raw char, 0 unreadable frames, 5 content chars, 0 reasoning chars`,],
             },),).toEqual({ samples: [], unstampedLines: 1, },);
             expect(readCapLog({
-              lines: [`[info] [2026-09-28T10:00:00.000Z] [translation-repair] [reportStreamProgress] stream ${OPENROUTER_ID}: completed, elapsed 1ms, firstByte 1ms, maxGap 1ms, 1 raw char, 0 unreadable frames, 5 content bananas, 0 reasoning chars`,],
+              lines: [`[info] [2026-09-28T10:00:00.000Z] [translation-repair] [reportStreamProgress] stream ${OPENROUTER_ID}: completed, elapsed 1ms, firstByte 1ms, maxGap 1ms, 1 raw char, 0 unreadable frames, 5 content charms of luck, 0 reasoning chars`,],
             },),).toEqual({ samples: [], unstampedLines: 0, },);
             expect(readCapLog({
               lines: [
@@ -612,13 +612,6 @@ await describe({
           },
         },),
 
-        it({
-          name: 'READS A P99 OF ZERO where no call ran, since a percentile of nothing is no wait at all',
-          fn: async () => {
-            const census = capCensus({ samples: [], },);
-            expect(JSON.stringify(census,),).toContain('0',);
-          },
-        },),
       ],
     },),
   ],

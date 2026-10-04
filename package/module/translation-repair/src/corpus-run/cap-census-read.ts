@@ -339,10 +339,10 @@ export function readCapLog(
 
     /**
      The stream this line pairs with, taken off the queue, or that none does.
+     The index comes from the queue itself, so the entry is present.
      */
-    const paired = (index === NOT_FOUND) ? 'unpaired' : (queue[index]
-      ?.content
-      ?? 'unpaired');
+    const paired = (index === NOT_FOUND) ? 'unpaired' : nonNullishOrThrow(queue[index],)
+      .content;
     if (index !== NOT_FOUND) {
       queue.splice(
         index,

@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { textsInCodePointOrder, } from '../code-points.ts';
 import {
   COMPLETION_CAP,
@@ -205,10 +207,10 @@ function p99Of({ values, }: { readonly values: readonly number[]; },): number {
   ): number {
     return left - right;
   },);
-  return sorted[Math.min(
+  return nonNullishOrThrow(sorted[Math.min(
     sorted.length - 1,
     Math.floor(P99 * sorted.length,),
-  )] ?? 0;
+  )],);
 }
 
 /**
