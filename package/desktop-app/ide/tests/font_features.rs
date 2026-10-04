@@ -106,6 +106,7 @@ fn partial_ligature_selection_preserves_geometry_and_clips_ink() {
 fn fractional_ligature_selection_keeps_glyph_alpha_and_clip_edges() {
     let mut shaper = TextShaper::new();
     let colors = CodeColors { foreground: [255,0,0,255], selected: [0,255,0,255], dark: true };
+    let mut blended_edges = 0;
     for scale in [1.0, 1.25, 1.5, 2.0] {
         for horizontal in [0.0, 0.25, 5.75] {
             let mut area = viewport();
@@ -131,8 +132,17 @@ fn fractional_ligature_selection_keeps_glyph_alpha_and_clip_edges() {
                     if x as f32 + 1.0 <= left || x as f32 >= right {
                         assert_eq!(image.bytes[offset + 1], 0, "green outside clip at scale {scale}, origin {horizontal}");
                     }
+                    let covered = ((x as f32 + 1.0).min(right) - (x as f32).max(left)).clamp(0.0, 1.0);
+                    if covered > 0.1 && covered < 0.9 && image.bytes[offset + 3] >= 32 {
+                        blended_edges += 1;
+                        assert!(image.bytes[offset] > 0 && image.bytes[offset + 1] > 0,
+                            "fractional boundary must contain both foreground contributions");
+                        let expected = (f32::from(image.bytes[offset + 3]) * covered).round() as i16;
+                        assert!((i16::from(image.bytes[offset + 1]) - expected).abs() <= 1);
+                    }
                 }
             }
         }
     }
+    assert!(blended_edges > 0, "the raster control must exercise real mixed-color boundary pixels");
 }

@@ -31,11 +31,14 @@ retain the same operator advances,
 and verify caret/hit/copy boundaries inside the ligatures.
 Optional stylistic sets and character variants are not indiscriminately enabled.
 
-Selection foreground is clipped against source-character selection geometry.
+Monochrome glyph foreground is clipped against source-character selection geometry.
 It is not a text brush applied to an entire glyph:
 that previously left unselected-colored ink inside a partially selected ligature.
 The observed-failing regression selected the middle character of `===`.
 The fixed path preserves glyph identities and checks clipping/alpha at fractional scales and origins.
+Color-font glyphs retain their intrinsic RGBA colors rather than being tinted by selection foreground;
+selection is still indicated by the background.
+Real color-font selection has not been included in these monochrome-family acceptance tests.
 
 The bundled Inter faces have kerning,
 contextual alternates,
@@ -45,7 +48,15 @@ and character/style variants.
 The [Inter project][inter-site] describes these independent features.
 Tests verify default kerning against `kern` disabled,
 real 400/600 face selection against the embedded bytes,
-and tabular versus proportional numeral controls in the shared Parley/fontique stack.
+tabular versus proportional numeral controls,
+default `calt`,
+and opt-in `dlig` in the shared Parley/fontique stack.
+An observed-failing native window-event test also verifies bitmap regeneration after idle scale changes.
+It covers scale factors 2,
+1.25,
+and a return to 1 on the headless backend.
+Live physical-output scale migration remains unverified;
+the nested compositor currently advertises a fixed output scale.
 Slint's current UI path receives family,
 weight,
 size,
