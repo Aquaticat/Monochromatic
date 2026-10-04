@@ -91,7 +91,14 @@ The user subsequently selected shipped policies only,
 rejecting the proposed generic external-policy extension capability.
 The user also wants the executable-config trust subsystem removed.
 A broad enough built-in catalog to avoid writing new policies is a 2.x goal.
-Whether 2.x scopes the catalog alone or the whole redesign remains to be clarified.
+The user confirmed the release split:
+current required coverage comes first;
+the expanded catalog is out of scope for this session.
+
+The user's Q7 answer is read literally as yes to allowing repository JSONC to weaken enforcement:
+policy disabling and exclusions take effect without consent.
+The proposed personal non-overridable policy minimum is not selected.
+Do not introduce a replacement trust registry or global policy layer.
 
 Existing built-in adapters accept executable paths and command arrays:
 `package/git-policy/markdown-lint/src/index.ts` defines `command`,
@@ -100,8 +107,9 @@ The generated copies under `package/git-policy/cli/src/optional/` retain these o
 The shipped-only design must not preserve arbitrary program selection through JSONC;
 that would retain the executable-config problem under a different name.
 Deleting the trust subsystem does not remove the need to validate data,
-constrain file writes,
-or choose whether repository configuration may weaken user-required enforcement.
+or constrain file writes.
+Repository-controlled policy settings are an accepted product behavior,
+not a code-execution authorization mechanism.
 
 ### Embedding
 
@@ -131,17 +139,8 @@ No scanner replacement is requested.
 
 ## Next preference frontier
 
-- Decide whether repository JSONC may automatically weaken enforcement,
-  such as switching off secret scanning or excluding all files,
-  or whether user-required policies remain a non-overridable minimum.
-  This is configuration authority,
-  not consent to execute code.
-- Clarify whether the 2.x goal refers only to expanding the built-in catalog,
-  or also to the wrapper redesign,
-  JSONC,
-  bundling,
-  and trust removal.
-
+The configuration-authority and release-scope questions are answered.
+No new architecture question should be asked merely to repeat those choices.
 Performance budgets and implementation ranking await representative workload evidence.
 Do not propose backgrounding auto-push as a latency remedy before measuring it.
 Preserve accepted safety,
@@ -270,7 +269,6 @@ A consumer-boundary positive control remains required before drawing trust-cost 
 
 ## Next action
 
-Ask the configuration-authority and release-scope questions together and wait for the user's answers.
 Extend the fixture to exercise the actual Markdown policy and bundled scanner workload,
 and validate benchmark reach with positive controls,
 before attributing the reported delay or setting rewrite acceptance budgets.
