@@ -34,6 +34,38 @@ import {
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '../roster-seats.test-fixture.ts';
 
+/**
+ Points the runs directory variable at a path until the handle's scope ends.
+
+ The directory itself is the caller's own scratch, bound first so it is
+ removed after the variable is restored.
+
+ @param path - directory the variable names meanwhile
+
+ @returns Disposable handle restoring the variable as it stood
+
+ @example
+ ```ts
+ using pointed = runsDirPointedAt({ path: fixture.archive, },);
+ ```
+ */
+function runsDirPointedAt({ path, }: { readonly path: string; },): Disposable {
+  /**
+   Runs directory standing before this case ran.
+   */
+  const before = process.env
+    .TRANSLATION_REPAIR_RUNS_DIR;
+  process.env.TRANSLATION_REPAIR_RUNS_DIR = path;
+  return {
+    [Symbol.dispose]: function restore(): void {
+      if (before === undefined)
+        delete process.env.TRANSLATION_REPAIR_RUNS_DIR;
+      else
+        process.env.TRANSLATION_REPAIR_RUNS_DIR = before;
+    },
+  };
+}
+
 //region Editor standing read listing tests
 
 /**
@@ -208,6 +240,9 @@ async function standingOverArtifact(
 
 await describe({
   name: STANDING_COMMAND,
+  // ONE AT A TIME: a case points the process-wide runs directory variable
+  // at its fixture (ledger B79).
+  concurrency: 1,
   children: [
     it({
       name: 'COUNTS only the regular file in an archive\'s artifacts directory, skipping a directory and a '
@@ -421,6 +456,27 @@ await describe({
           },
         },);
         expect(seated.stdout.includes('read=1',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'READS THE RUNS THE VARIABLE NAMES when the command line names no directory',
+      fn: async () => {
+        await using fixture = await scratchDirWith({
+          prefix: 'editor-standing-read-',
+          setup: async function seeded({ path, },): Promise<{ readonly archive: string; }> {
+            await mkdir(join(path, 'artifacts',), { recursive: true, },);
+            await writeFile(join(path, 'artifacts', 'Mittens.json',), '{}', 'utf8',);
+            return { archive: path, };
+          },
+        },);
+        using pointed = runsDirPointedAt({ path: fixture.archive, },);
+        const finished = spawnSync(
+          process.execPath,
+          [STANDING_ENTRY,],
+          { encoding: 'utf8', },
+        );
+        expect(finished.stdout.includes('artifacts=',),).toBe(true,);
       },
     },),
   ],
