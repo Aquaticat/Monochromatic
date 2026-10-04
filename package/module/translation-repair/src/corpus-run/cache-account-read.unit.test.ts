@@ -215,5 +215,16 @@ await describe({
         },),
       ],
     },),
+
+    it({
+      name: 'READS A NAME RUNNING TO ITS LINE END and drops it when the name does not end in the marker, '
+        + 'since the suffix read finds no boundary',
+      fn: async () => {
+        expect(cacheVersionsIn({
+          path: 'src/nap-key.ts',
+          text: 'export const NAP_CACHE_VERSION_x = 3;\n',
+        },),).toEqual([],);
+      },
+    },),
   ],
 },);
