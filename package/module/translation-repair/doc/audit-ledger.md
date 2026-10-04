@@ -6547,6 +6547,20 @@ The reach census (`~/temp/agent/mimo-trial/reach-editor4.log`)
 reads `ran 13, still cold 0` for the standing reader.
 No B entry found.
 
+The forty-first cluster of that census,
+`corpus-run/roster`,
+against `census-IjEvWX` at `e34945b80`:
+4 line stretches over `roster-card-render.ts`
+(`e1ee49e95`).
+All cased:
+the body read as the row array itself,
+a modalities field that is no array,
+the vision flag read as a boolean and left unlisted otherwise,
+and a bedrock listing read as the bare fields it names.
+The reach census (`~/temp/agent/mimo-trial/reach-roster.log`)
+reads `ran 4, still cold 0, cold since then 0, not loaded 0`.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

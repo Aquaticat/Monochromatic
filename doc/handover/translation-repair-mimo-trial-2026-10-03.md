@@ -699,6 +699,30 @@ so a fresh context resumes from this file alone.
   the `corpus-run/roster` batch.
 
 - 2026-10-04,
+  18:00 UTC:
+  the T8 `corpus-run/roster` batch closed with commit `e1ee49e95`:
+  4 line stretches over `roster-card-render.ts`,
+  all cased
+  (the body as the row array,
+  the non-array modalities,
+  the vision flag both ways,
+  and the bedrock listing).
+  The reach census reads `ran 4, still cold 0, cold since then 0, not loaded 0`
+  (`~/temp/agent/mimo-trial/reach-roster.log`).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-roster-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-roster-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `e1ee49e95`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/handle` cluster
+  (the ranking's next at `census-IjEvWX`).
+
+- 2026-10-04,
   16:31 UTC:
   the T8 `corpus-run/editor` batch is in progress:
   part 1 landed with commit `26b7b7909`
