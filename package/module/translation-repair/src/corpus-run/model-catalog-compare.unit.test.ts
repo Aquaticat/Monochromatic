@@ -305,13 +305,18 @@ await describe({
           }, {
             id: 'mao-1',
             huggingFaceId: 'cats/Mao-1',
+          }, {
+            id: 'glm-5.3-second',
+            huggingFaceId: 'zai-org/GLM-5.3-Flash',
           },],
-          catalog: [],
+          catalog: ['cats/Mao-2', 'hf:zai-org/GLM-5.3-Flash',],
         },);
         const report = formatCatalogReport({ comparison, },);
         expect(report,).toContain('BLOCKED by owner: absurd cost in money',);
         expect(report,).toContain('BLOCKED by owner: too outdated',);
         expect(report,).toContain('  mao-1  (cats/Mao-1)',);
+        expect(report,).toContain('loses a voice to a 404',);
+        expect(report,).toContain('ALIASES onto models already seated: 1',);
       },
     },),
   ],
