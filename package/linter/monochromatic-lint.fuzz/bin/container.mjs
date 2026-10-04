@@ -133,16 +133,21 @@ async function main() {
       const container = execute({ command: 'podman', args: [
         'create', ...limits, 'localhost/monochromatic-lint-fuzz-run:development',
         `/fuzz/bin/${target}`, `/fuzz/corpus/${target}`, '-max_total_time=30',
-        '-max_len=8192', '-rss_limit_mb=1536', '-timeout=5', `-artifact_prefix=/fuzz/artifacts/${target}/`, ...dictionary,
+        '-max_len=8192', '-rss_limit_mb=1536', '-timeout=5', '-print_final_stats=1', `-artifact_prefix=/fuzz/artifacts/${target}/`, ...dictionary,
       ], capture: true }).stdout.trim();
       containers.push(container);
-      const result = execute({ command: 'podman', args: ['start', '--attach', container], allowFailure: true });
+      const result = execute({ command: 'podman', args: ['start', '--attach', container], capture: true, allowFailure: true });
       await mkdir(join(evidence, target), { recursive: true });
+      await writeFile(join(evidence, target, 'stdout.log'), result.stdout);
+      await writeFile(join(evidence, target, 'stderr.log'), result.stderr);
       execute({ command: 'podman', args: ['cp', `${container}:/fuzz/corpus/${target}`, join(evidence, target, 'corpus')] });
       execute({ command: 'podman', args: ['cp', `${container}:/fuzz/artifacts/${target}`, join(evidence, target, 'artifacts')] });
-      await writeFile(join(evidence, target, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal }) + '\n');
-      if (result.status !== 0)
-        throw new FuzzVerificationError(`${target} exited ${result.status}; retained inputs are in ${evidence}.`);
+      const statistics = `${result.stdout}\n${result.stderr}`.match(/stat::number_of_executed_units:\s+(\d+)/u);
+      const executedUnits = statistics ? Number(statistics[1]) : 0;
+      await writeFile(join(evidence, target, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal, executedUnits }) + '\n');
+      if (result.status !== 0 || executedUnits < 1)
+        throw new FuzzVerificationError(`${target} exited ${result.status} after ${executedUnits} verified executions; retained inputs and logs are in ${evidence}.`);
+      console.log(`${target}: ${executedUnits} executions, exit 0; evidence ${join(evidence, target)}`);
     }
   } finally {
     for (const container of containers)
