@@ -674,6 +674,55 @@ Result SHA-256:
 The [SDK observations](pi-instruction-snapshots.md#actual-sdk-session-observations)
 record the measured instruction-view differences and remaining authority limits.
 
+### Current requester repeats the import-condition mistake
+
+The private current-requester stage `proc_c9c9` failed under Node `26.10.0`
+before SDK imports,
+terminal launches,
+or human responses.
+Node emitted `ERR_PACKAGE_PATH_NOT_EXPORTED`
+for the installed Pi coding-agent `1.0.2` root export.
+The failing call was again a CommonJS resolver:
+
+```javascript
+// Private contract/human-origin/current-requester-copy/stage.mjs:18
+const resolved=require.resolve(specifier);
+```
+
+The installed coding-agent `package.json` has the same root shape shown for Pi AI:
+an `import` target,
+but no `require` or `default` target.
+The current recovery inspects that metadata instead of interpreting resolver failure as a missing package:
+
+```javascript
+// Private contract/human-origin/current-requester-copy-v2/stage.mjs:21
+const target=specifier==='@earendil-works/pi-tui'
+  ? (assert.equal(metadata.exports,undefined),metadata.main)
+  : metadata.exports['.'].import;
+```
+
+This selector is restricted to the inspected SDK,
+TUI,
+and TypeBox imports,
+not a general Node resolution algorithm.
+The fresh stage passed as `proc_aed8`;
+the subsequent pre-spawn instrumentation stage passed as `proc_4363`.
+`proc_3e9a` executed the current requester with its actual default launcher and request-owned helper
+using disposable scripted terminal/editor inputs.
+Its approved,
+denied,
+and blank-response paths completed with empty helper stderr and removed answer workspaces.
+That result verifies this current consumer profile,
+not a genuine human origin or permission.
+
+The failed stage remains unchanged.
+No dependency installation,
+installed package edit,
+or upstream fix was needed.
+The upstream-filing decision remains unchanged:
+this was an owned resolver mistake,
+not a demonstrated Node or Pi defect.
+
 ## Owned documentation renderer dependency-path drift
 
 The `proc_2b5e` handoff renderer failed under Node `v26.10.0` with `ERR_MODULE_NOT_FOUND`:

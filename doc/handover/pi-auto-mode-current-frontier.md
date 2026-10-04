@@ -1901,6 +1901,54 @@ Next,
 connect the fixed relation to the actual original SDK judgment beside the owned code-effect facts,
 while keeping estimates unqualified for policy permission.
 
+## Live native assessment and pending approval
+
+`proc_f481` verified one real Jev request inside an actual SDK original judgment,
+with two local injected main-model requests and two completed disposable-file reads.
+The fixed prerequisite question assessed the exact `LN7` clause
+and returned `0.97`.
+Complete policy,
+original main-request bytes,
+parent program,
+prepared group,
+and clause binding reached the guard request.
+The original deadline was retained.
+The estimate remained unqualified,
+and the reads relied on independent fixture-only authorization,
+not on its value.
+
+Modeled returned-token cost was US$0.00076335.
+The combined recorded semantic subtotal is US$0.049807826.
+Neither figure establishes a representative workload mean,
+invoice totals,
+or gateway-internal attempt counts.
+This live namespace is consumed.
+
+The next boundary is a genuine scoped-response handoff after model evidence closes.
+`proc_92b4` passed scripted presentation,
+original-capture,
+and pending-group controls.
+It also reproduced a dead Boolean-versus-number consistency check in the first capture helper:
+a nonblank captured approval could be paired with a cancelled requester result.
+The corrected helper rejects that inconsistency.
+It retains response diagnostics when source,
+member,
+or cancellation checks later prevent release.
+
+`proc_3e9a` then exercised the actual current requester,
+default launcher,
+request-owned helper,
+and original raw capture with a disposable scripted terminal/editor.
+Approved,
+denied,
+and blank/cancelled cases completed,
+with private workspace removal and empty helper stderr.
+Pre-spawn intent validation and post-spawn occurrence checks stayed separate.
+These were scripted controls,
+not genuine human responses.
+The current source is prepared for native pending-group integration;
+no new genuine approval has been captured.
+
 ## Next work
 
 The runtime result was a checkpoint in the migration,
