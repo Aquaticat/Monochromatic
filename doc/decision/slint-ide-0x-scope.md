@@ -31,8 +31,10 @@ The [implementation plan][implementation] and [handover][handover] record progre
   and copying.
 - Bundled JetBrains Mono for source text and Inter for UI text,
   including the font faces used by the application and their license notices.
-- Correct JetBrains Mono and Inter typography,
-  including ligatures and supported font settings.
+- Prefer the official variable fonts for JetBrains Mono and Inter,
+  including separate real italic faces for both families.
+  Correct typography includes ligatures and supported font settings;
+  synthesized slant or bold must not substitute for available real faces or axes.
   Ligature shaping must not break caret positions,
   hit testing,
   partial selection,
