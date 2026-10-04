@@ -705,6 +705,55 @@ so a fresh context resumes from this file alone.
   those two error paths.
 
 - 2026-10-04,
+  16:45 UTC:
+  the `corpus-run/editor` batch part 2 preparation:
+  the artifact schema walked field by field
+  (`~/temp/agent/mimo-trial/artifact-schema-walk.mjs`
+  iterates the CLI's refusals until parse),
+  leaving the fixture spec:
+  top keys `artifactSchemaVersion`,
+  `id`,
+  `tip`,
+  `pipelineDigest`,
+  `corpusSha`,
+  `callConfig`,
+  `durationMs`,
+  `timestamp`,
+  `preparation`,
+  `lanes`,
+  `comparison`,
+  `laneSelection`,
+  `consolidation`,
+  `pageAssembly`;
+  `preparation` carries `alignmentPairCount`,
+  `identity`
+  (`sha256-preparation-v2:`
+  plus 64 hex),
+  `sliceCount`,
+  `sourceChars`,
+  `targetChars`,
+  `sourceBytes`,
+  `alignmentFindings`;
+  each lane is `{ result, delivery }`
+  with `result.status` one of `repaired`,
+  `unchanged`,
+  `blocked-non-translation`
+  and `delivery` one row per prepared slice
+  (`chunkIndex`,
+  `sourceText`,
+  `incumbentKind`,
+  `incumbentText`,
+  `outcome`,
+  `shippedText`,
+  `delivery`).
+  Uncommitted work:
+  none.
+  Next:
+  write the off-roster and earlier-schema artifacts
+  from that spec
+  and case the two error paths.
+
+- 2026-10-04,
   16:26 UTC:
   the next batch's baseline census taken at commit `19f402d54`:
   `census written to ~/.cache/translation-repair/coverage/census-fUfTA1/census.json`
