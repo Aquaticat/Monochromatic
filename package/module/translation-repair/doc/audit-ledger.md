@@ -5767,6 +5767,47 @@ The reach census (`~/temp/agent/mimo-trial/reach-tag2.log`)
 reads `ran 8, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The twelfth cluster of that census,
+`corpus`,
+against `census-6x3Blt` at `6f70bdb9e`:
+8 stretches over `corpus-source.ts` and `corpus-name-index.ts`
+(`33fc7a459`,
+`6046af7be`,
+`0c0b80bd9`).
+Five are cased through the public surface:
+three cause-shape arms of the failure classifier
+(a cause that is no object,
+or null,
+or carries no stderr classifies `other`)
+and both unreadable-stderr arms of the stderr reader
+(a string stderr reads its text so a missing-object phrase lands on the
+kind,
+a stderr that is neither buffer nor string reads as none)
+through the `CorpusReadError` constructor,
+the no-renderings skip and the length gate of the name index
+(a translation declaring no forms contributes nothing;
+one-code-point and twenty-five-code-point forms index nothing),
+and the name index's catch rethrow
+(a failure that is no missing object propagates)
+through its injected reader.
+One was the `gitOutput` catch rethrow,
+dead behind nano-spawn's `getErrorInstance` wrapping
+every throwable as `SubprocessError`;
+the catch now wraps every throwable
+as the sibling `readCorpusBytes` catch already did,
+the tradeoff recorded under "Decisions for the owner to review".
+The reach census's whole-file reading named two more along the way
+(`6046af7be`,
+`0c0b80bd9`):
+the byte reader's body and its failure wrap,
+both with their own cases now
+(the CRLF page's bytes untouched at the pin,
+the absent byte path naming `missing-object`).
+The reach census (`~/temp/agent/mimo-trial/reach-corpus3.log`)
+reads `ran 3, still cold 0, cold since then 0, not loaded 0`
+and the edited source "loaded it and left 0 cold stretches".
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

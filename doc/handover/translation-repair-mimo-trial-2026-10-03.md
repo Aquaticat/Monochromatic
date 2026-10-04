@@ -683,6 +683,42 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  03:58 UTC:
+  the T8 `corpus` batch closed with commits `33fc7a459`,
+  `6046af7be` and `0c0b80bd9`:
+  8 stretches over `corpus-source.ts` and `corpus-name-index.ts`.
+  Five are cased through the public surface
+  (the failure classifier's cause shapes,
+  the stderr reader's string and unreadable arms,
+  the name index's no-renderings skip and length gate,
+  and its catch rethrow through the injected reader).
+  One was the `gitOutput` catch rethrow,
+  dead behind nano-spawn's error wrapping:
+  the catch now wraps every throwable
+  as the sibling `readCorpusBytes` catch already did,
+  and the tradeoff is recorded under "Decisions for the owner to review"
+  for the owner to veto.
+  The reach census's whole-file reading named the byte reader's body and
+  its failure wrap along the way,
+  both cased (`6046af7be`,
+  `0c0b80bd9`).
+  The reach census reads `ran 3, still cold 0, cold since then 0, not loaded 0`
+  and the edited source "loaded it and left 0 cold stretches"
+  (`~/temp/agent/mimo-trial/reach-corpus3.log`).
+  Counts at the close:
+  the full suite 1,549 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-corpus-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-corpus-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `0c0b80bd9`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `coverage` cluster
+  (the ranking's next at `census-6x3Blt`).
+
+- 2026-10-04,
   03:32 UTC:
   the next batch's baseline census taken at commit `5fe00bd6e`:
   `census written to ~/.cache/translation-repair/coverage/census-6x3Blt/census.json`
@@ -1455,7 +1491,31 @@ the one taken,
 why,
 and its commit.
 
-None yet.
+- 2026-10-04,
+  the `gitOutput` catch's rethrow (`33fc7a459`):
+  options were keeping the rethrow,
+  with the T8 stretch staying open on it,
+  or wrapping every throwable as the sibling `readCorpusBytes` catch
+  already does.
+  Evidence:
+  nano-spawn funnels every throwable through its `getErrorInstance`
+  and wraps it as `SubprocessError`
+  (`source/result.js`,
+  `source/spawn.js`;
+  its one raw escape needs `options.input`,
+  which the corpus call never sends),
+  and a probe on the built package delivered a `CorpusReadError` of kind
+  `other` for a NUL-byte `gitPath`,
+  an empty one and a missing binary
+  (`~/temp/agent/mimo-trial/corpus-rethrow-probe.mjs`).
+  Taken:
+  the wrap,
+  since the `kind` field still distinguishes `missing-object` from
+  `other`,
+  a catcher reads one failure class either way,
+  and T8 has no fourth outcome for a stretch.
+  The owner may veto and restore the rethrow,
+  which returns the stretch to T8's open count.
 
 [ledger]: ../../package/module/translation-repair/doc/audit-ledger.md
 [prevent]: ../../package/module/translation-repair/doc/mistake-prevention.md
