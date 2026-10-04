@@ -1456,6 +1456,20 @@ only the affected case was rerun with the outer error and cause asserted.
 The [instruction snapshot report](../troubleshooting/pi-instruction-snapshots.md)
 also records the unsupported-callback cleanup correction.
 
+The next private derivative binds collection through intrinsic session readers,
+not a caller-supplied context/loader pair.
+`proc_8417` passed seven controls using two actual SDK 1.0.0 sessions:
+public loader/prompt shadows did not redirect the native readers,
+copied sessions and foreign-owner substitutions rejected,
+and disposal blocked current use while old observations remained inspectable.
+`proc_7ed2` then passed the real original-judgment consumer:
+one session,
+two injected requests,
+one canned assessment,
+and two root definitions after evidence collection closed.
+This still observes a native prompt view;
+it does not establish the complete derivation of base/run options or their authority.
+
 This qualifies pre-transform observation custody and named freshness paths,
 not instruction authority,
 raw-file identity,

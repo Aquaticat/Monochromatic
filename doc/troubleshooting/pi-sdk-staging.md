@@ -1,5 +1,133 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## SDK 1.0.2 update retires installed 1.0.0 paths
+
+A background Pi update removed the installed 1.0.0 package paths used by the completed private fixtures.
+During that transition,
+the live Codemode tool reported `Cannot find module 'quickjs-wasi/quickjs.wasm'`
+with a 1.0.0 bundled-chunk require stack.
+After the update,
+a fresh live Codemode invocation succeeded and the installed Pi package directories were 1.0.2.
+This records the interruption and recovery,
+not a diagnosed upstream Wasm defect.
+
+The old qualification namespaces and hashes remain unchanged.
+`proc_fb7e` compared the latest listed-source manifest with current installed paths:
+307 unique entries,
+297 matching byte digests,
+nine changed entries,
+and one missing parser path.
+The missing `yuku-parser@0.14.0` entry was replaced by an explicitly selected 0.17.0 entry
+in fresh staging,
+not by altering the old manifest.
+These counts do not describe the full transitive dependency graph.
+
+### Account for source changes before relocation
+
+The SDK 1.0.2 session-source change was isolated to the HTML tool-renderer callback.
+The fresh staging controller reverses the new callback to the old form
+and requires the entire resulting file to match the historical digest:
+
+```javascript
+// Private contract/collector/sdk-1-0-2-paired-copy/stage.mjs, session delta check
+assert.equal(sha(currentSession.replace(newLine,oldLine)),sessionChange.expected);
+```
+
+The old and new callback fields are:
+
+```javascript
+// SDK 1.0.0: dist/core/agent-session.js, historical HTML renderer field
+getToolDefinition: (name) => this.getToolDefinition(name),
+```
+
+```javascript
+// SDK 1.0.2: dist/core/agent-session.js:3445
+getToolRenderers: (name) => this._extensionRunner.resolveToolRenderers(name, () => this.getToolDefinition(name)),
+```
+
+The same delta is applied to the private session copy.
+Other inspected changes include the extension renderer resolver,
+AI sampling-parameter resolution,
+and Codemode output limits.
+Those changes are not qualified merely by an import-path replacement.
+The upstream comparison is
+[Pi 1.0.0 to 1.0.2](https://github.com/earendil-works/pi/compare/v1.0.0...v1.0.2);
+the 1.0.2 release commit is `cd32f7725fdbddbaecdff5b1e68491563394e0ca`.
+
+### Preserve separate failed staging attempts
+
+The 26-artifact copy in `proc_59df` staged successfully,
+but an import inspection found its separately shared private manager still referenced old installed paths.
+No SDK worker had used that staging.
+
+The manager relocation initially used the wrong manifest:
+`proc_2f8f` failed its assertion that the manager pin was present in the parent graph inputs.
+That pin belongs to the manager's own manifest.
+The next attempt,
+`proc_0681`,
+used the right manifest but called `realpathSync` on every historical entry.
+It reached a removed installed path and failed with `ENOENT` before finding the retained manager.
+
+The corrected lookup selects the exact retained artifact path before reading its bytes:
+
+```javascript
+// Private contract/collector/sdk-1-0-2-closure-copy-v3/stage.mjs, manager lookup
+managerPin=managerManifest.sources.find(entry=>entry.path===oldManager);
+```
+
+Its unchanged native manager source is checked separately against the owning historical digest.
+`proc_c2ea` staged 27 artifacts and checked 45 reachable private literal-import modules
+and 46 installed literal edges.
+This is a bounded literal-import check,
+not complete transitive attestation or runtime qualification.
+
+Two dependent checks were started before the first manager staging had succeeded.
+`proc_0801` failed with `ERR_MODULE_NOT_FOUND` before parsing;
+`proc_e8a6` failed with `ENOENT` for the missing staging manifest before SDK import.
+Those were orchestration errors,
+not parser or SDK behavior failures.
+Their original namespaces remain preserved.
+Replacement checks started only after `proc_c2ea` had exited successfully
+and its receipt was reconciled.
+
+### Verified continuation and limits
+
+The new parser profile,
+`proc_7e8e`,
+passed the existing bounded result-program assertions on parser 0.17.0:
+six positive source forms,
+four producer values,
+17 source rejections,
+five value rejections,
+and two ownership rejections.
+It created no SDK session.
+
+The new SDK consumer,
+`proc_89f9`,
+passed one actual 1.0.2 session,
+two injected requests,
+one original canned assessment,
+and two root definitions.
+The intrinsic resource binding remained current after the decision deadline closed.
+This does not replay or requalify every historical SDK matrix.
+
+These phases use `mise --no-env --no-hooks run stage`
+or `mise --no-env --no-hooks run check`
+from their named directories under the private repository's `contract/collector/`.
+Existing output namespaces are not replayable.
+No installed package,
+dependency lockfile,
+or protected policy file was edited by this recovery.
+
+The workaround is fresh source-checked relocation plus targeted changed-dependency verification.
+Repointing old receipts,
+recreating old installed directories,
+assuming the staging manifest contains every shared dependency,
+and treating process start as prerequisite completion are not accepted alternatives.
+The staging failures were owned harness errors;
+no upstream issue or fix is proposed.
+The existing upstream-filing limits continue to apply.
+
 ## Owned fork consumer omitted a persisted system entry
 
 ### Symptom and evidence
