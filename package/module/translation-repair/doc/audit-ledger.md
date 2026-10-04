@@ -6471,6 +6471,28 @@ reads `still cold 4`:
 those four.
 No B entry found.
 
+The thirty-eighth cluster of that census,
+`edit`,
+against `census-i9Duoq` at `7e809aa9e`:
+5 line stretches over `edit-prompt.ts`
+and `edit-wire.ts`
+(`527789637`).
+One closed as unreachable:
+the listed-names join's last-name fallback
+(a `??` over an index the two-name minimum guarantees).
+Three cased:
+the neighbouring block read with either half alone,
+and a reply and an edit that are no object.
+Left:
+the single-name join
+(`edit-prompt.ts:89-90`),
+whose listed names shrink below two only for an issue
+touching one identifier kind,
+and the issue fixtures for that are the deeper suite's.
+The whole-suite census (`census-1iMkkv`)
+lists that one stretch for the file.
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

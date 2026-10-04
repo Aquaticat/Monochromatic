@@ -683,6 +683,42 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  16:10 UTC:
+  the T8 `edit` batch closed with commit `527789637`:
+  5 line stretches over `edit-prompt.ts`
+  and `edit-wire.ts`,
+  one closed as unreachable
+  (the last-name fallback narrowed),
+  three cased
+  (the neighbouring block with either half alone,
+  and the two wire refusals),
+  one left documented
+  (the single-name join:
+  its names shrink below two only for an issue
+  touching one identifier kind,
+  whose fixtures are the deeper suite's).
+  Counts at the close:
+  the full suite 1,560 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-edit-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-edit-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `527789637`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline:
+  `census written to ~/.cache/translation-repair/coverage/census-1iMkkv/census.json`
+  (`~/temp/agent/mimo-trial/census-45.log`),
+  `library source: 119 files, 204 stretches over 439 lines, 4 functions never called`.
+  Largest clusters by stretches then lines:
+  `corpus-run/published` leads with 5 stretches over 6 lines in 2 files
+  (its documented-left arms),
+  `corpus-run/spend` with 5 over 5 in 1,
+  `corpus-run/editor` with 4 over 38 in 3.
+  Next:
+  the `corpus-run/spend` batch.
+
+- 2026-10-04,
   16:02 UTC:
   the next batch's baseline census taken at commit `222e844fc`:
   `census written to ~/.cache/translation-repair/coverage/census-i9Duoq/census.json`
