@@ -8,6 +8,8 @@
 
 /// Import the owned diagnostic and source interfaces.
 use crate::diagnostic::{Diagnostic, Severity};
+/// Resolve ambiguous generic placeholder slots against their real parameter kinds.
+use crate::rust_inferred_constants::is_inferred_const_argument;
 /// Import the source whose syntax root belongs to the semantic database.
 use crate::rust_source::RustSource;
 /// Import separate finding and unavailable-information constructors.
@@ -69,7 +71,9 @@ pub(crate) fn check_inferred_types(
 ) -> Vec<Diagnostic> {
     let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for node in context.syntax().descendants() {
-        if is_constant_placeholder(&node) {
+        if is_constant_placeholder(&node)
+            || (node.kind() == SyntaxKind::INFER_TYPE && is_inferred_const_argument(semantics, &node))
+        {
             findings.push(type_finding(
                 context, &node, severity,
                 "Replace inferred '_' with an explicit constant value.",

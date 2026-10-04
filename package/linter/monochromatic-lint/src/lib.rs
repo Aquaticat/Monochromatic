@@ -70,6 +70,8 @@ mod rust_explicit_inference;
 pub mod rust_explicit_types;
 /// Generic parameter ownership and argument-spelling helpers.
 mod rust_generic_arguments;
+/// Semantic disambiguation of type-shaped generic constant placeholders.
+mod rust_inferred_constants;
 /// Internal syntax-only rejection of anonymous Rust functions.
 #[doc(hidden)]
 pub mod rust_no_anonymous_functions;
@@ -86,12 +88,12 @@ mod rust_type_diagnostic;
 #[cfg(test)]
 mod test_fs;
 
-/// Disposable Cargo-backed contexts for the semantic rule's conformance suite.
-#[cfg(test)]
-mod rust_semantic_test_support;
 /// Full semantic annotation controls, including source-overlay cache changes.
 #[cfg(test)]
 mod rust_explicit_types_tests;
+/// Disposable Cargo-backed contexts for the semantic rule's conformance suite.
+#[cfg(test)]
+mod rust_semantic_test_support;
 
 /// Shared consumer-level regressions for the initial Markdown rule ports.
 #[cfg(test)]

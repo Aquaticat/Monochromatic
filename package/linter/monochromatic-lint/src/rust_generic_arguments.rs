@@ -7,13 +7,16 @@
 //! ```
 
 /// Import resolved declarations rather than spelling-based method catalogues.
-use ra_ap_hir::{Adt, Crate, DisplayTarget, EnumVariant, GenericDef, GenericParam, Module, ModuleDef, PathResolution, Semantics};
+use ra_ap_hir::{
+    Adt, Crate, DisplayTarget, EnumVariant, GenericDef, GenericParam, Module, ModuleDef,
+    PathResolution, Semantics,
+};
 /// Import the database interface queried inside the existing attachment scope.
 use ra_ap_hir_ty::db::HirDatabase;
-/// Import typed syntax views and the shared generic-argument accessor.
-use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
 /// Import the trait implementing generic_arg_list on both methods and path segments.
 use ra_ap_syntax::ast::HasGenericArgs;
+/// Import typed syntax views and the shared generic-argument accessor.
+use ra_ap_syntax::{AstNode, SyntaxKind, SyntaxNode, ast};
 
 /// What: Written arguments paired with the declaration that supplies their meaning.
 /// Why: A fixed alias can eliminate an underlying enum's parameters without requiring redundant variant arguments.
@@ -30,7 +33,7 @@ pub(crate) struct GenericSite {
 }
 
 /// Convert the resolved item kind without inspecting any identifier text.
-fn generic_definition(item: ModuleDef) -> Option<GenericDef> {
+pub(crate) fn generic_definition(item: ModuleDef) -> Option<GenericDef> {
     // Match extracts each tagged payload, like a switch over a TypeScript discriminated union.
     match item {
         ModuleDef::Function(value) => return Some(GenericDef::Function(value)),
@@ -40,7 +43,10 @@ fn generic_definition(item: ModuleDef) -> Option<GenericDef> {
         ModuleDef::Const(value) => return Some(GenericDef::Const(value)),
         ModuleDef::Static(value) => return Some(GenericDef::Static(value)),
         // A variant's enum or alias supplies its parameters; handled at the paired path boundary.
-        ModuleDef::EnumVariant(_) | ModuleDef::Module(_) | ModuleDef::BuiltinType(_) | ModuleDef::Macro(_) => return None,
+        ModuleDef::EnumVariant(_)
+        | ModuleDef::Module(_)
+        | ModuleDef::BuiltinType(_)
+        | ModuleDef::Macro(_) => return None,
     }
 }
 
@@ -57,7 +63,11 @@ fn written_arguments(path: &ast::Path) -> usize {
 }
 
 /// Pair enum-constructor spellings and count them at the variant rather than at both adjacent names.
-fn variant_site(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::Path, variant: EnumVariant) -> GenericSite {
+fn variant_site(
+    semantics: &Semantics<'_, dyn HirDatabase>,
+    path: &ast::Path,
+    variant: EnumVariant,
+) -> GenericSite {
     let fallback: GenericSite = GenericSite {
         definition: GenericDef::Adt(Adt::Enum(variant.parent_enum(semantics.db))),
         provided: written_arguments(path),
@@ -65,7 +75,9 @@ fn variant_site(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::Path, va
     let Some(qualifier): Option<ast::Path> = path.qualifier() else {
         return fallback;
     };
-    let Some(PathResolution::Def(item)): Option<PathResolution> = semantics.resolve_path(&qualifier) else {
+    let Some(PathResolution::Def(item)): Option<PathResolution> =
+        semantics.resolve_path(&qualifier)
+    else {
         return fallback;
     };
     let Some(owner): Option<GenericDef> = generic_definition(item) else {
@@ -74,7 +86,10 @@ fn variant_site(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::Path, va
     // The qualifier can be a generic or fixed alias, not necessarily the underlying enum name.
     // Do not add counts: enum and variant lists spell the same parameter group, not separate groups.
     let provided: usize = fallback.provided.max(written_arguments(&qualifier));
-    return GenericSite { definition: owner, provided };
+    return GenericSite {
+        definition: owner,
+        provided,
+    };
 }
 
 /// True when the parent path selects an enum variant, which owns the combined enum/alias argument check.
@@ -85,14 +100,20 @@ fn followed_by_variant(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::P
     let Some(parent_path): Option<ast::Path> = ast::Path::cast(parent) else {
         return false;
     };
-    if let Some(PathResolution::Def(ModuleDef::EnumVariant(_))) = semantics.resolve_path(&parent_path) {
+    if let Some(PathResolution::Def(ModuleDef::EnumVariant(_))) =
+        semantics.resolve_path(&parent_path)
+    {
         return true;
     }
     return false;
 }
 
 /// Return a type/expression site's actual generic declaration, with valid nongeneric items returning absence.
-pub(crate) fn path_site(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::Path, item: ModuleDef) -> Option<GenericSite> {
+pub(crate) fn path_site(
+    semantics: &Semantics<'_, dyn HirDatabase>,
+    path: &ast::Path,
+    item: ModuleDef,
+) -> Option<GenericSite> {
     if let ModuleDef::EnumVariant(variant) = item {
         return Some(variant_site(semantics, path, variant));
     }
@@ -101,7 +122,10 @@ pub(crate) fn path_site(semantics: &Semantics<'_, dyn HirDatabase>, path: &ast::
     if followed_by_variant(semantics, path) {
         return None;
     }
-    return Some(GenericSite { definition, provided: written_arguments(path) });
+    return Some(GenericSite {
+        definition,
+        provided: written_arguments(path),
+    });
 }
 
 /// Type and expression paths carry instantiations; imports and match patterns do not create this requirement.
@@ -113,7 +137,9 @@ pub(crate) fn is_instantiation_path(path: &ast::Path) -> bool {
             current = parent.parent();
             continue;
         }
-        return kind == SyntaxKind::PATH_EXPR || kind == SyntaxKind::PATH_TYPE || kind == SyntaxKind::RECORD_EXPR;
+        return kind == SyntaxKind::PATH_EXPR
+            || kind == SyntaxKind::PATH_TYPE
+            || kind == SyntaxKind::RECORD_EXPR;
     }
     return false;
 }
