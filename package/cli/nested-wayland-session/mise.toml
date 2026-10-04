@@ -102,6 +102,72 @@ run = """
 runCargo(['package'])
 """
 
+[tasks."inspect:clipboard"]
+description = "Verify nested clipboard text, binary data, replacement, and clearing without host clipboard access"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const client = async () => {
+  const { spawn, spawnSync } = await import('node:child_process')
+  const { once } = await import('node:events')
+  const { setTimeout: wait } = await import('node:timers/promises')
+  const { default: assert } = await import('node:assert/strict')
+  assert(process.env.WAYLAND_DISPLAY)
+  assert.notEqual(process.env.WAYLAND_DISPLAY, process.argv[1])
+  assert.equal(process.env.WAYLAND_SOCKET, undefined)
+  assert.equal(process.env.DISPLAY, undefined)
+  assert.equal(process.env.XAUTHORITY, undefined)
+  const fixtures = [
+    { mime: 'text/plain;charset=utf-8', bytes: Buffer.from('Nested clipboard: 猫 é') },
+    { mime: 'application/octet-stream', bytes: Buffer.from([0, 1, 127, 128, 255, 10]) },
+  ]
+  for (const fixture of fixtures) {
+    const producer = spawn('wl-copy', ['--foreground', '--type', fixture.mime], { stdio: ['pipe', 'ignore', 'pipe'] })
+    const exited = once(producer, 'exit')
+    const errors = []
+    producer.stderr.on('data', chunk => errors.push(chunk))
+    const deadline = setTimeout(() => producer.kill(), 5000)
+    producer.stdin.end(fixture.bytes)
+    try {
+      let transferred = false
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const result = spawnSync('wl-paste', ['--no-newline', '--type', fixture.mime], {
+          env: { ...process.env, WAYLAND_DEBUG: 'client' }, timeout: 500,
+        })
+        if (result.status === 0) {
+          assert.deepEqual(result.stdout, fixture.bytes)
+          const protocol = result.stderr.toString()
+          assert(protocol.includes('zwlr_data_control_manager_v1'))
+          assert(protocol.includes('ext_data_control_manager_v1'))
+          transferred = true
+          break
+        }
+        await wait(20)
+      }
+      assert(transferred, 'nested clipboard did not serve ' + fixture.mime)
+      const cleared = spawnSync('wl-copy', ['--clear'], { timeout: 1000 })
+      assert.equal(cleared.status, 0)
+      const [code, signal] = await exited
+      assert.equal(code, 0, 'clipboard source must exit cleanly when replaced with empty selection')
+      assert.equal(signal, null)
+      const empty = spawnSync('wl-paste', ['--list-types'], { timeout: 1000 })
+      assert.equal(empty.status, 1)
+      assert.match(empty.stderr.toString(), /Nothing is copied/)
+      assert.equal(Buffer.concat(errors).length, 0, 'clipboard source shutdown must not emit errors')
+      console.log('Nested clipboard verified: ' + fixture.mime + ', clear, and clean source exit')
+    } finally {
+      clearTimeout(deadline)
+      if (producer.exitCode === null && producer.signalCode === null) producer.kill()
+      await exited
+    }
+  }
+}
+execFileSync('./target/release/monochromatic-nested-wayland-session', [
+  '--size', '480x320', '--', 'node', '--input-type=module', '-e',
+  'await (' + client.toString() + ')()', '--', process.env.WAYLAND_DISPLAY ?? '',
+], { stdio: 'inherit' })
+"""
+
 [tasks."run:built"]
 description = "Run the already-built release compositor without rebuilding"
 run = "./target/release/monochromatic-nested-wayland-session"
