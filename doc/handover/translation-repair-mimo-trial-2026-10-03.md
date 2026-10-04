@@ -688,7 +688,8 @@ so a fresh context resumes from this file alone.
   `census written to ~/.cache/translation-repair/coverage/census-14CEcx/census.json`
   (`~/temp/agent/mimo-trial/census-22b.log`,
   its first attempt at `census-22.log` failing after the run finished
-  with no census written and no suite fault, retry clean).
+  with no census written and no suite fault,
+  retry clean).
   `library source: 152 files, 298 stretches over 682 lines, 9 functions never called`.
   Largest clusters by stretches then lines:
   `corpus-run/coverage` leads with 6 stretches over 43 lines in 1 file,
