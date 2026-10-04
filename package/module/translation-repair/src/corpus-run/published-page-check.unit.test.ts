@@ -894,6 +894,24 @@ await describe({
     },),
 
     it({
+      name: 'WEIGHS A SLICE THE ARCHIVE HELD NOTHING UNDER as nothing held, the artifact shipping more '
+        + 'slices than the stored archive carried',
+      fn: async () => {
+        /**
+         Artifact shipping two slices where the stored archive carries one.
+         */
+        const artifact = artifactOver(TWO_SWAPS,);
+        const weight = pageWeighsWhatItShould({
+          artifact,
+          archive: { kind: 'stored', text: ARCHIVE_PAGE, },
+          pageText: SWAPPED_PAGE,
+        },);
+        expect(weight.kind,).not.toBe('unweighable',);
+        pageCarriesEveryWording({ artifact, pageText: SWAPPED_PAGE, },);
+      },
+    },),
+
+    it({
       name: 'SAYS THE FLOOR CAVEAT where a filled anchor makes the expectation a floor rather than an '
         + 'equality',
       fn: async () => {
