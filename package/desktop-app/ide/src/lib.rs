@@ -38,3 +38,6 @@ pub mod reload_worker;
 
 /// Helix-backed source classifications use canonical character offsets.
 pub mod syntax;
+
+/// User-facing parser diagnostics distinguish limits from missing assets.
+mod syntax_error;

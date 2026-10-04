@@ -14,6 +14,8 @@ use anyhow::{Context, Result};
 use helix_core::{Rope, syntax::{Loader, Syntax, config::Configuration}};
 /// Source paint spans remain unrelated to native pixel coordinates.
 use crate::source_style::StyleSpan;
+/// The upstream error enum needs explicit conversion and operation-specific remedies.
+use crate::syntax_error::parser_failure;
 
 /// Ordered palette roles; role zero stays ordinary source and 64 stays selection ink.
 const SCOPES: &[&str] = &[
@@ -53,9 +55,8 @@ impl SyntaxEngine {
         let Some(language) = recognized else { return Ok(None); };
         let name = &self.loader.language(language).config().language_id;
         tracing::debug!(path = %path.display(), language = %name, "preparing source syntax");
-        let syntax = Syntax::new(text.slice(..), language, &self.loader).with_context(|| {
-            return format!("Cannot highlight {} as {name}: the bundled parser or highlighting rules could not be loaded or parsing did not finish. Rebuild matching language assets and restart the application", path.display());
-        })?;
+        let syntax = Syntax::new(text.slice(..), language, &self.loader)
+            .map_err(|error| return parser_failure(path, name, error))?;
         let length = u32::try_from(text.len_bytes())
             .with_context(|| return format!("Cannot highlight {}: source exceeds the parser byte-offset limit", path.display()))?;
         let mut highlighter = syntax.highlighter(text.slice(..), &self.loader, ..);
