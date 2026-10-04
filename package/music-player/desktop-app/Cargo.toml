@@ -10,6 +10,9 @@ description = "Minimal Wayland + PipeWire music player built with Slint. Ad-hoc 
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "music_player"

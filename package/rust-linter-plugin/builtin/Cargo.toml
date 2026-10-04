@@ -23,6 +23,9 @@ description = "The rules monochromatic-rust-linter ships with: max-lines, requir
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "monochromatic_rust_linter_plugin_builtin"

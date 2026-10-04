@@ -1424,7 +1424,9 @@ const CARGO_README_FILENAME = 'README.md';
 /**
  Canonical `[lints.clippy]` block appended to crates lacking it. Denies
  `Result::unwrap` (the root `clippy.toml` supplies the disallowed-methods
- list), denies implicit returns, and allows explicit returns.
+ list), denies implicit returns and the three `clippy::shadow_*` name-rebinding
+ lints (`shadow_reuse`, `shadow_same`, `shadow_unrelated`), and allows explicit
+ returns.
  
  @example
  ```ts
@@ -1436,6 +1438,9 @@ const CARGO_LINTS_BLOCK = `# Canonical lint policy, enforced by file-enforcer (d
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 `;
 
 /**
@@ -1464,6 +1469,9 @@ const CARGO_LINTS_CLIPPY_KEYS = {
   disallowed_methods: 'deny',
   implicit_return: 'deny',
   needless_return: 'allow',
+  shadow_reuse: 'deny',
+  shadow_same: 'deny',
+  shadow_unrelated: 'deny',
 } as const satisfies Record<string, CanonicalTomlValue>;
 
 /**

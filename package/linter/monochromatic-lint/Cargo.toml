@@ -7,11 +7,15 @@ license = "LGPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
 include = ["src/**/*.rs", "fixtures/*.json", "Cargo.toml", "Cargo.lock", "README.md", "LICENSES/*.txt"]
+homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/linter/monochromatic-lint"
 
 [lints.clippy]
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "monochromatic_lint"

@@ -23,6 +23,9 @@ description = "Rule trait, lint context, diagnostic and fix model shared by mono
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "monochromatic_rust_linter_core"

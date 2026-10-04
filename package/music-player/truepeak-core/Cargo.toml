@@ -17,6 +17,9 @@ description = "Shared true-peak meter, attenuate-only gain math, and versioned p
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 # Standalone crate: there is no root Cargo workspace in this repo, and the Android
 # package is its own Gradle island with an empty [workspace] table. Pinning this

@@ -24,6 +24,9 @@ description = "Comment-preserving JSONC parse, immutable edit, and canonical emi
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "monochromatic_jsonc_edit"

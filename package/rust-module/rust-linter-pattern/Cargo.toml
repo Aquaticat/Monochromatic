@@ -23,6 +23,9 @@ description = "Structural pattern matching over Rust syntax trees, for declarati
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "monochromatic_rust_linter_pattern"

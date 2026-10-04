@@ -50,6 +50,9 @@ slint-build = "1.17.0"
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [profile.dev]
 debug = 0

@@ -21,6 +21,9 @@ description = "Minimal single-app nested Wayland compositor for GUI testing: hos
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 # Library holds the display-independent logic (control protocol parsing, the
 # US-layout char-to-keycode table, argument parsing) so it can be unit-tested

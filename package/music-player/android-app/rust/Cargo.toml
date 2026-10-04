@@ -8,6 +8,9 @@ publish = false
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 # Standalone crate: this Android package is a Gradle island that no parent cargo
 # workspace owns. An empty [workspace] table pins this crate as its own root, so a

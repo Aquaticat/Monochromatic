@@ -10,6 +10,9 @@ description = "Qt/cxx-qt desktop file-manager: native Wayland drag-and-drop, suc
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [[bin]]
 name = "monochromatic-file-manager-qt"

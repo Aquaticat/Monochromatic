@@ -27,6 +27,9 @@ description = "Out-of-band scanner for forbidden literal strings and regex patte
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "forbidden_strings"

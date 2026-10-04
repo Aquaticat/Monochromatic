@@ -21,6 +21,9 @@ description = "Loads a cgroup-BPF program that marks sockets from chosen app cgr
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [[bin]]
 name = "wg-quicker-exempt"

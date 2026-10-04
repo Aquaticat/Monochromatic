@@ -16,6 +16,9 @@ description = "Corpus evaluation and corrected-target parameter search for the s
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 # Standalone crate, its own workspace root, matching the core crate and the Android
 # island so no ancestor Cargo.toml absorbs it.

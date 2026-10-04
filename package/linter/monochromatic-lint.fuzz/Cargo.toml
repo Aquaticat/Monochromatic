@@ -11,6 +11,9 @@ cargo-fuzz = true
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [dependencies]
 # Existing repository libFuzzer harness and structured JSONC generator.

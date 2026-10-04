@@ -23,6 +23,9 @@ description = "Restricted byte-oriented regex engine for line-at-a-time secret s
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "forbidden_regex"

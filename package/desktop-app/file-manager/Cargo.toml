@@ -53,6 +53,9 @@ objc2-app-kit = { version = "0.3", features = ["NSApplication", "NSResponder", "
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
