@@ -26,6 +26,7 @@ import {
   CorpusReadError,
   isMissingCorpusObject,
   listCorpusPeople,
+  readCorpusBytes,
   readCorpusFile,
 } from '../dist/final/node/index.mjs';
 import { fixtureGit, REAL_GIT, } from './hermetic-git-run.test-fixture.ts';
@@ -198,6 +199,21 @@ await describe({
         },);
         expect(read.includes('\r',),).toBe(false,);
         expect(read,).toBe(TABBY_CRLF_PAGE.replaceAll('\r\n', '\n',),);
+      },
+    },),
+    it({
+      name: 'READS one file\'s bytes at the pinned commit untouched, the CRLF page still carrying its '
+        + 'carriage returns where the text reader folds them',
+      fn: async () => {
+        await using fixture = await makeThrowawayClone();
+        expect(new TextDecoder()
+          .decode(await readCorpusBytes({
+            pin: {
+              cloneDir: fixture.cloneDir,
+              commitSha: fixture.commitSha,
+            },
+            relPath: 'people/tabby/page.md',
+          },),),).toBe(TABBY_CRLF_PAGE,);
       },
     },),
     it({
