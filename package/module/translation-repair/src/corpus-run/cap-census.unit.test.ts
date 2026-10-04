@@ -582,11 +582,9 @@ await describe({
           name: 'READS A MALFORMED STAMP as unstamped, A LINE WHOSE UNIT WORD IS WRONG as an other line, '
             + 'and a stream carrying no content count as pairing to none',
           fn: async () => {
-            /**
-             A stream line whose stamp bracket holds no date, one whose
-             content unit word is wrong, and one carrying no content phrase
-             at all.
-             */
+            // A stream line whose stamp bracket holds no date, one whose
+            // content unit word is wrong, and one carrying no content phrase
+            // at all.
             expect(readCapLog({
               lines: [`[info] [not-a-date] [translation-repair] [reportStreamProgress] stream ${OPENROUTER_ID}: completed, elapsed 1ms, firstByte 1ms, maxGap 1ms, 1 raw char, 0 unreadable frames, 5 content chars, 0 reasoning chars`,],
             },),).toEqual({ samples: [], unstampedLines: 1, },);
