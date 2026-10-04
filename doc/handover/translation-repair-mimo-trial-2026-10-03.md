@@ -683,6 +683,33 @@ naming the uncommitted work and the reasoning behind it,
 so a fresh context resumes from this file alone.
 
 - 2026-10-04,
+  22:02 UTC:
+  the T8 `model` batch closed with commit `cb4b07506`:
+  3 line stretches over `model-card-derive.ts`
+  and `model-content.ts`,
+  one cased
+  (the fence line with no line end),
+  two left documented
+  (the two RangeError guards:
+  their builders take keys from the roster lists
+  and need a fixture disagreeing with them).
+  The reach census reads `still cold 1` on `model-content.ts:36`,
+  the single-line return the census's attribution leaves cold
+  (the case asserts its value directly).
+  Counts at the close:
+  the full suite 1,562 [PASS] and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-model2-suite.log`),
+  lint "Found 0 warnings and 0 errors.",
+  35 source scans and no [FAIL]
+  (`~/temp/agent/mimo-trial/t8-model2-scans.log`).
+  The T8 paragraph for the batch lands in this line's commit.
+  This line lands in the trial-log commit that follows `cb4b07506`.
+  Next:
+  the whole-suite census at this commit as the next batch's baseline,
+  then the `corpus-run/runs` cluster's remaining arms
+  or the next in the ranking.
+
+- 2026-10-04,
   22:00 UTC:
   the next batch's baseline census taken at commit `187348d0e`:
   `census written to ~/.cache/translation-repair/coverage/census-pN6fUe/census.json`

@@ -6867,6 +6867,29 @@ The reach census (`~/temp/agent/mimo-trial/reach-hyper.log`)
 reads `ran 3, still cold 0, cold since then 0, not loaded 0`.
 No B entry found.
 
+The fifty-sixth cluster of that census,
+`model`,
+against `census-pN6fUe` at `77e29656d`:
+3 line stretches over `model-card-derive.ts`
+and `model-content.ts`
+(`cb4b07506`).
+One cased:
+the fence line with no line end after it
+(the whole text is the opening line).
+Left:
+the two RangeError guards
+(`model-card-derive.ts:366`,
+`421-427`,
+the keys-repeat and cards-and-lists-disagree refusals),
+whose builders take their keys from the roster lists
+and need a fixture disagreeing with them.
+The reach census (`~/temp/agent/mimo-trial/reach-model2.log`)
+reads `still cold 1`
+(`model-content.ts:36`):
+the single-line return the census's attribution leaves cold
+(the case asserts its value directly).
+No B entry found.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
