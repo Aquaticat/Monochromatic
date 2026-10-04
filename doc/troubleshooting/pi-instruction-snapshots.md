@@ -1430,6 +1430,167 @@ this proves omission detection,
 not an unsafe execution.
 No intact SDK worker was replayed.
 
+## Pi 1.0.0 instruction originals versus source labels
+
+The private instruction-origin intake distinguishes native file selection,
+callback replacement,
+and rendering.
+It does not assign instruction authority or change production auto-mode.
+The source checkout for this subsection is
+`~/temp/agent/pi-sdk-1.0.0-source.qxeIPlda`,
+commit `a13d35a742c6ef8462812a28fbe1d8c8b7431c32`.
+Paths in its source excerpts are relative to that checkout.
+The worker imported installed SDK 1.0.0 modules directly under Node 26.10.0.
+
+### Source selection and replacement
+
+The native loader selects the first supported context filename in a directory.
+The selection order is explicit at
+`packages/coding-agent/src/core/resource-loader.ts:185`:
+
+```typescript
+// packages/coding-agent/src/core/resource-loader.ts:185
+const candidates = ["AGENTS.override.md", "AGENTS.md", "AGENTS.MD", "CLAUDE.md", "CLAUDE.MD"];
+```
+
+That selection is a loader fact,
+not proof of a file's governing authority.
+The fixture confirmed that a selected `AGENTS.override.md`
+does not delete or change the underlying `AGENTS.md`.
+The guard's required complete current policy remains a separate input.
+
+The selected file records can then be replaced by a callback.
+At `packages/coding-agent/src/core/resource-loader.ts:642`:
+
+```typescript
+// packages/coding-agent/src/core/resource-loader.ts:642
+const resolvedAgentsFiles = this.agentsFilesOverride ? this.agentsFilesOverride(agentsFiles) : agentsFiles;
+this.agentsFiles = resolvedAgentsFiles.agentsFiles;
+```
+
+The fixture callback returned a record with an actual original file's path
+but different content.
+The getter exposed the replacement;
+the original file bytes stayed unchanged.
+Pairing getter text with a path label therefore does not establish that those bytes came from that file.
+
+The configured prompt path is also retained independently of replacement text.
+At `packages/coding-agent/src/core/resource-loader.ts:646`:
+
+```typescript
+// packages/coding-agent/src/core/resource-loader.ts:646
+const baseSystemPrompt = resolvePromptInput(systemPromptSource, "system prompt");
+this.systemPrompt = this.systemPromptOverride ? this.systemPromptOverride(baseSystemPrompt) : baseSystemPrompt;
+this.systemPromptSourcePath =
+    systemPromptSource && existsSync(systemPromptSource) ? resolvePath(systemPromptSource) : undefined;
+```
+
+The probe observed the unchanged original path alongside callback-replaced prompt text.
+Append text and source paths likewise follow different operations:
+
+```typescript
+// packages/coding-agent/src/core/resource-loader.ts:659
+this.appendSystemPrompt = this.appendSystemPromptOverride
+    ? this.appendSystemPromptOverride(baseAppend)
+    : baseAppend;
+this.appendSystemPromptSourcePaths = appendSources
+    .filter((source) => existsSync(source))
+    .map((source) => resolvePath(source));
+```
+
+The fixture returned reordered and added append text:
+three text entries with one file-path entry.
+The existing collector correctly leaves their text-to-path relation unestablished;
+array position cannot supply the missing relation.
+
+### Equal sections are not necessarily equal whole prompts
+
+The first worker,
+`proc_02e4`,
+failed at its final comparison with Node's
+`AssertionError [ERR_ASSERTION]: Expected values to be strictly equal`
+at `instruction-origin-intake/probe.mjs:56:10`.
+Its whole-prompt equality expectation was wrong.
+The generated project section preceded `cwd`,
+while the new custom section followed it.
+
+The deciding builder statements are at
+`packages/coding-agent/src/core/system-prompt.ts:164`
+and line 170:
+
+```typescript
+// packages/coding-agent/src/core/system-prompt.ts:164
+if (contextFiles.length > 0) promptSections.project_context = renderProjectContext(contextFiles);
+```
+
+```typescript
+// packages/coding-agent/src/core/system-prompt.ts:170
+promptSections.cwd = cwd.replace(/\\/g, "/");
+for (const [name, content] of Object.entries(customSections)) {
+    if (content) promptSections[name] = content;
+}
+```
+
+The fresh builder-only recovery,
+`proc_aa7a`,
+verified equal project-section bytes but different unforced whole-prompt bytes.
+It also verified whole-prompt equality through an explicit forced-text input,
+without context-file originals.
+That is a different representation path,
+not a relabeled success for the failed unforced comparison.
+The forced branch is explicit at
+`packages/coding-agent/src/core/system-prompt.ts:190`:
+
+```typescript
+// packages/coding-agent/src/core/system-prompt.ts:190
+if (input.forceSystemPrompt !== undefined) return { content: input.forceSystemPrompt };
+```
+
+Neither the section text nor forced rendered text authenticates its original source.
+
+### Verification scope and next consumer work
+
+Both namespaces used `mise --no-env --no-hooks run check`
+from their respective directories under
+`~/temp/agent/auto-mode-consumer-contract.mDLkyNoP/contract/collector/`.
+The controllers refuse existing output namespaces.
+Keep the consumed artifacts;
+do not rerun them in place.
+
+The original failed worker reached four completed loader assertion groups
+before the final comparison failed.
+The recovery checked original source identities,
+the exact failure location,
+and retained streams to reconcile that straight-line prefix.
+Those are reconstructed completed-prefix observations,
+not separately persisted successful case receipts.
+The original worker remains failed.
+
+The recovery created no additional resource loader and no `AgentSession`.
+It exercised only the corrected native builder comparison.
+Both phases made no model request or external fetch.
+The original failed stream remains retained;
+the recovery stream checks passed.
+Cleared home,
+private descriptors,
+a 512 MiB old-space setting,
+and a 60-second worker bound are fixture controls,
+not OS isolation or total-memory guarantees.
+
+Positive controls include exact native original file records,
+unchanged source files,
+and visibly different whole prompts when section order changes.
+Rejected shortcuts are path-label authentication,
+append-array index pairing,
+and the initial whole-prompt equality expectation.
+No production workaround or complete source-authority collector is qualified.
+The next implementation must retain native originals before transformations,
+link subsequent representations to their actual producers,
+and keep source authority and legitimate delegation distinct from those observations.
+The existing upstream filing decision remains unchanged:
+these supported transformation behaviors expose a consumer requirement,
+not a newly established upstream defect.
+
 ## Verified workarounds and limits
 
 The source-method control showed that reading the later getter sees the tested run-option contribution
