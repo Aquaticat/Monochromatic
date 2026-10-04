@@ -1010,7 +1010,7 @@ SDK imports,
 semantic calibration,
 policy verdicts,
 or human permission were established.
-The subsequent native consumer result is recorded in the next named qualification section.
+The native consumer result is recorded in [Native fixed-judgment consumer](#native-fixed-judgment-consumer).
 
 ## Native fixed-judgment consumer
 
