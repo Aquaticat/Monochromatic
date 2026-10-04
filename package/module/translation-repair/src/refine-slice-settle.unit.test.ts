@@ -407,12 +407,14 @@ await describe({
           tallies: {},
         },] as unknown as ChunkRepairOutcome['issues'];
         /**
-         Recheck whose checkers named nothing: the tally falls back to zero.
+         Recheck whose checkers named nothing: the tally reads zero worse.
          */
         const quiet = await settleWith({
           nonTranslationStanding: false,
           client: scriptedSettleClient({ asked: [], },),
           issues,
+          identityContext: 'The translator signs as 喵工作室.',
+          referenceContext: 'Cat naps are documented in the glossary.',
         },);
         expect(quiet.findings
           .some(function passed(finding,) {
@@ -428,6 +430,8 @@ await describe({
             worseTally: true,
           },),
           issues,
+          identityContext: 'The translator signs as 喵工作室.',
+          referenceContext: 'Cat naps are documented in the glossary.',
         },);
         expect(loud.findings
           .some(function rolledBack(finding,) {

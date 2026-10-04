@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { wordForCount, } from './count-word.ts';
@@ -652,10 +653,13 @@ async function retainsResolvedIssues(
    */
   const worsened = open
     .filter(function madeItWorse(issue,) {
-      return (checker.tallies[issue.issueId]
-        ?.worse
-        ?? 0)
-        > 0;
+      /**
+       Tally of this issue's recheck, present by the checker stage's own
+       contract: it builds one per issue asked and `nonNullishOrThrow`-reads
+       it for its own readings, and `open` is a subset of the checked list.
+       */
+      const tally = nonNullishOrThrow(checker.tallies[issue.issueId],);
+      return tally.worse > 0;
     },)
     .map(function toId(issue,) {
       return issue.issueId;
